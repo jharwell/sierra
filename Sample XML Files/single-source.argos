@@ -1,0 +1,131 @@
+<argos-configuration>
+
+
+
+
+  <framework>
+    <system threads="0" />
+    <experiment length="5000" random_seed="123" ticks_per_second="5" />
+  </framework>
+
+
+
+  <controllers>
+
+    <depth1_foraging_controller id="ffc" library="build/lib/libfordyca">
+      <actuators>
+        <differential_steering implementation="hello world" />
+        <leds implementation="default" medium="leds" />
+        <range_and_bearing implementation="default" />
+      </actuators>
+      <sensors>
+        <footbot_proximity implementation="default" show_rays="false" />
+        <footbot_light implementation="rot_z_only" show_rays="false" />
+        <footbot_motor_ground implementation="rot_z_only" />
+        <range_and_bearing implementation="medium" medium="rab" />
+      </sensors>
+      <params>
+        <output>
+          <robot output_dir="__current_date__" output_root="output" />
+        </output>
+        <occupancy_grid>
+          <grid resolution="0.2" size="10, 5, 2" />
+          <pheromone repeat_deposit="false" rho="0.00001" />
+        </occupancy_grid>
+        <task_allocation>
+          <executive abort_offset="4" abort_reactivity="8" always_partition="true" estimation_alpha="0.8" never_partition="false" partition_method="pini2011" partition_offset="2" partition_reactivity="0.5" subtask_selection_method="harwell2018" />
+          <init_estimates collector_range="1000:2000" enabled="true" generalist_range="2000:4000" harvester_range="1000:2000" />
+        </task_allocation>
+        <sensors>
+          <proximity delta="0.001" go_straight_angle_range="-5:5" />
+        </sensors>
+        <actuators>
+          <wheels max_speed="10" no_turn_angle_max="5" soft_turn_angle_max="30" />
+        </actuators>
+        <fsm frequent_collision_thresh="300" nest="2.0, 2.5" speed_throttle_block_carry="0.1" unsuccessful_explore_dir_change="1000" />
+      </params>
+    </depth1_foraging_controller>
+
+  </controllers>
+
+
+
+
+  <loop_functions label="depth1_foraging_loop_functions" library="build/lib/libfordyca">
+    <output>
+      <sim output_dir="__current_date__" output_root="output" sim_log_fname="sim.log" />
+      <metrics block_fname="block-stats.csv" cache_fname="cache-stats.csv" collect_interval="1000" depth1_fname="depth1-stats.csv" distance_fname="distance-stats.csv" output_dir="metrics" stateful_fname="stateful-stats.csv" stateless_fname="stateless-stats.csv" task_execution_fname="task-execution-stats.csv" task_management_fname="task-management-stats.csv" />
+    </output>
+    <arena_map>
+      <grid resolution="0.2" size="10, 5, 2" />
+      <blocks dimension="0.2" dist_model="single_source" n_blocks="20" />
+      <caches create_dynamic="false" create_static="true" dimension="0.8" min_dist="0.8" static_respawn_scale_factor="0.05" static_size="2" usage_penalty="10" />
+      <nest center="2, 2.5" size="0.5, 2.0" />
+    </arena_map>
+    <visualization block_id="false" robot_id="true" robot_los="false" robot_task="true" />
+  </loop_functions>
+
+
+
+
+  <arena center="5,2.5,1" size="10, 5, 2">
+
+    <floor id="floor" pixels_per_meter="50" source="loop_functions" />
+
+    <box id="wall_north" movable="false" size="10,0.1,0.5">
+      <body orientation="0,0,0" position="5,5,0" />
+    </box>
+    <box id="wall_south" movable="false" size="10,0.1,0.5">
+      <body orientation="0,0,0" position="5,0,0" />
+    </box>
+    <box id="wall_east" movable="false" size="0.1,5,0.5">
+      <body orientation="0,0,0" position="10,2.5,0" />
+    </box>
+    <box id="wall_west" movable="false" size="0.1,5,0.5">
+      <body orientation="0,0,0" position="0,2.5,0" />
+    </box>
+
+    <light color="yellow" id="light_1" intensity="10.0" medium="leds" orientation="0,0,0" position="2,1.25,1.0" />
+    <light color="yellow" id="light_2" intensity="10.0" medium="leds" orientation="0,0,0" position="2,2.5,1.0" />
+    <light color="yellow" id="light_3" intensity="10.0" medium="leds" orientation="0,0,0" position="2,3.75,1.0" />
+
+    <distribute>
+      <position max="9,4,0" method="uniform" min="1,1,0" />
+      <orientation max="360,0,0" method="uniform" min="0,0,0" />
+      <entity max_trials="1000" quantity="16">
+        <foot-bot id="fb">
+          <controller config="ffc" />
+        </foot-bot>
+      </entity>
+    </distribute>
+
+  </arena>
+
+
+
+
+  <physics_engines>
+    <dynamics2d id="dyn2d" />
+  </physics_engines>
+
+
+
+
+  <media>
+    <range_and_bearing id="rab" />
+    <led id="leds" />
+  </media>
+
+
+
+
+  <visualization>
+    <qt-opengl>
+      <camera>
+        <placement idx="0" lens_focal_length="20" look_at="5,2.5,0" position="5,2.5,6" up="0,1,0" />
+      </camera>
+      <user_functions label="depth1_foraging_qt_user_functions" />
+    </qt-opengl>
+  </visualization>
+
+</argos-configuration>
