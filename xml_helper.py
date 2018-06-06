@@ -7,13 +7,12 @@ class ElementNotFoundError(RuntimeError):
 
 
 class XMLHelper:
-    '''A class to help edit and save xml files'''
     def __init__(self, input_filename, output_filename=None):
         '''
-        Initialization
+        A class to help edit and save xml files
         parameters:
             input_filename: the location of the xml file to process
-            output_filename: where the object should save changes it has made to the xml file
+            output_filename (optional): where the object should save changes it has made to the xml file
                 (defaults to overwriting the input file)
         '''
         if output_filename is None:
