@@ -5,7 +5,7 @@
 
   <framework>
     <system threads="0" />
-    <experiment length="5000" random_seed="321" ticks_per_second="5" />
+    <experiment length="5000" random_seed="21" ticks_per_second="5" />
   </framework>
 
 

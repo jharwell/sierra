@@ -50,5 +50,29 @@ Okay, so I now have a class that can edit and save xml files pretty easily.
 '''
 
 '''
-path to xml path to argos files path to xml storage path to csvs and graphs
+6/6/2018
+Okay, so the next goal is to create a class that takes a path to:
+* An XML file specifying the setup for the experiment
+* A folder containing the code for the experiment
+* A folder where the modified XML files should be stored
+* A folder where the graphs should be stored
+
+Then, it should copy the XML file and create different seeds for each experiment, run each experiment in parallel, collect all the data needed, combine it together, and create graphs.
+'''
+
+'''
+6/7/2018
+
+Just copying some terminal output that will help me remember where certain folders are and how this is organized.
+$ ls output/
+2018-6-7:14-17
+$ ls output/2018-6-7\:14-17/
+fb0.log   fb11.log  fb13.log  fb15.log  fb2.log  fb4.log  fb6.log  fb8.log  metrics
+fb10.log  fb12.log  fb14.log  fb1.log   fb3.log  fb5.log  fb7.log  fb9.log  sim.log
+$ ls output/2018-6-7\:14-17/metrics/
+block-acquisition-stats.csv  block-stats.csv  block-transport-stats.csv  distance-stats.csv
+
+So, I tried deleting both visualization tags, and that failed, but deleting the bottom visualization tag seemed to work.
+It then ran without doing a visualization.
+So, I'm going to need to add something into the xml helper to delete tags, and it may need to be specific. 
 '''

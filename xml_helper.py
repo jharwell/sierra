@@ -1,37 +1,65 @@
+'''
+By: London Lowmanstone
+
+Terminology/Definitions:
+    element path: something in the form "tag.tag.(...).tag.tag" that specifies an element in the tree
+
+    element path list: same thing as an element path except for it's in the form [tag, tag, ..., tag, tag]
+
+    attribute path: same thing as an element path except for it ends with an attribute. In the form "tag.tag.(...).tag.attribute"
+
+    attribute path list: (see "element path list" and "attribute path" for the corresponding definitions)
+
+    strict path: a path that begins with the root tag and each subsequent tag is a child of the previous tag.
+        Specifies exactly one element (or attribute; the attribute must be an attribute of the most recent tag).
+
+    loose path: a path where all of the subsequent tags are children of the previous tags, but generations may be skipped.
+        For example, the bath "b.d.g" may refer to an element with the specific path "a.b.c.d.e.f.g"
+
+    loose-strict path: a path where the first tag in the path is found via a loose search, and the following tags are expected to be direct children.
+        In other words, this is basically a strict path that doesn't start with the root tag.
+
+    strict search: a search for an element using a strict path.
+
+    loose search: (see "strict search" for the corresponding definition)
+
+    loose-strict search: (see "strict search" for the corresponding definition)
+'''
+
 import xml.etree.ElementTree as ET
 
 
-class ElementNotFoundError(RuntimeError):
-    '''Error class for when an element cannot be found.'''
+class InvalidElementError(RuntimeError):
+    '''Error class for when an element cannot be found or used'''
     pass
 
 
 class XMLHelper:
-    def __init__(self, input_filename, output_filename=None):
+    def __init__(self, input_filepath, output_filepath=None):
         '''
         A class to help edit and save xml files
         parameters:
-            input_filename: the location of the xml file to process
-            output_filename (optional): where the object should save changes it has made to the xml file
+            input_filepath: the location of the xml file to process
+            output_filepath (optional): where the object should save changes it has made to the xml file
                 (defaults to overwriting the input file)
         '''
-        if output_filename is None:
-            output_filename = input_filename
+        if output_filepath is None:
+            output_filepath = input_filepath
 
-        self.input_filename = input_filename
-        self.output_filename = output_filename
+        self.input_filepath = input_filepath
+        self.output_filepath = output_filepath
 
-        self.tree = ET.parse(input_filename)
+        self.tree = ET.parse(input_filepath)
         # restriction: assumes the root of the xml file is not going to change
         self.root = self.tree.getroot()
 
 
-    def write(self, filename=None):
-        '''Write the XML stored in the object to an output file path'''
-        if filename is None:
-            filename = self.output_filename
+    def write(self, filepath=None):
+        '''Write the XML stored in the object to an output filepath'''
+        if filepath is None:
+            filepath = self.output_filepath
 
-        self.tree.write(filename)
+        self.tree.write(filepath)
 
 
     def get_element(self, s):
@@ -46,14 +74,9 @@ class XMLHelper:
 
     def get_element_with_path_attribute(self, s):
         '''
-        Takes a string in the form "tag.tag.tag.attribute" with as many tags as you want (only one attribute allowed).
-        Returns the element that's in that position on the tree with that particular attribute.
-        Each tag should be the descendant of a previous tag in the path, but does not have to be any previous tag's child.
-        The attribute can also be in any descendant of the last tag. (If no tags are specified, the attribute can in any descendant of the root element)
-
-        In other words, this is extremely flexible. As long as you follow the hierarchy, it should work.
-
-        Returns None if an element on the given path without the given attribute is not found.
+        Takes a loose path to an attribute.
+        Returns an element with the matching attribute.
+        (Returns None if such an element cannot be found.)
         '''
         # the last string in this list will be the attribute
         tag_list = s.split(".")
@@ -67,23 +90,24 @@ class XMLHelper:
 
     def set_path_attribute(self, s, value):
         '''
-        Takes a path attribute (see "get_element_with_path_attribute" for form) and sets it to a particular value.
-        Raises an ElementNotFoundError if a matching element for the given path attribute cannot be found
+        Takes a loose path to an attribute and sets that attribute to the given value
+        Raises an InvalidElementError if a matching element with the attribute cannot be found.
+        Converts the value to a string before setting the attribute.
         '''
         element = self.get_element_with_path_attribute(s)
         if element is not None:
+            value = str(value)
             element.set(s.split(".")[-1], value)
         else:
-            raise ElementNotFoundError("An element matching the path attribute '{}' could not be found".format(s))
+            raise InvalidElementError("An element matching the path attribute '{}' could not be found".format(s))
 
 
     def _get_element_with_path_attribute(self, tags, starting_element):
         '''
-        Recursive function to accomplish the corresponding "public" function (the one without an underscore)
-        Takes a list in the form [tag, tag, ..., tag, tag, attribute]
-        As long as the specified tag and attributes are within the hierarchy, this will return the tag that contains the specified attribute.
-
-        Returns None if a matching element cannot be found
+        Recursive function to accomplish the corresponding "public" function (the function of the same name that does not begin with an underscore)
+        Takes an attribute path list.
+        Returns an element with the matching attribute.
+        (Returns None if such an element cannot be found.)
         '''
 
         if len(tags) == 1:
@@ -113,9 +137,11 @@ class XMLHelper:
 
 
 if __name__ == "__main__":
-    x = XMLHelper("Sample XML Files/single-source.argos")
+    x = XMLHelper("Sample XML Files/single-source-test.argos")
     # ans = x.get_element_with_path_attribute("footbot_light.implementation")
     # print(ans.get("implementation"))
     x.set_path_attribute("differential_steering.implementation", "hello world")
+    print("did it")
     # print(x.get_element("actuators.implementation").get("implementation"))
-    x.write() # to change it on the actual file
+    x.remove_element()
+    # x.write() # to change it on the actual file
