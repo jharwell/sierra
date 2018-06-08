@@ -74,5 +74,14 @@ block-acquisition-stats.csv  block-stats.csv  block-transport-stats.csv  distanc
 
 So, I tried deleting both visualization tags, and that failed, but deleting the bottom visualization tag seemed to work.
 It then ran without doing a visualization.
-So, I'm going to need to add something into the xml helper to delete tags, and it may need to be specific. 
+So, I'm going to need to add something into the xml helper to delete tags, and it may need to be specific.
+'''
+
+'''
+6/8/2018
+
+Wow, deleting stuff was a lot harder than I expected, because I had to get the elements, not just the tags.
+I might want to convert some of the older functions to returning elements as well, but for now this works.
+
+I decided to make all the functions that deal with path lists private, because I think people should just be putting in paths, not path lists.
 '''
