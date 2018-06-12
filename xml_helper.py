@@ -4,11 +4,14 @@ By: London Lowmanstone
 Terminology/Definitions:
     attribute path: same thing as an element path except for it ends with an attribute. In the form "tag.tag.(...).tag.attribute".
 
-    element path: something in the form "tag.tag.(...).tag.tag" that specifies an element in the tree.
+    element list: a list of elements in the form [element, element, element].
+        Usually corresponds to a element path list. (See "element path list".)
 
-    element path list: same thing as an element path except for it's in the form [tag, tag, ..., tag, tag].
+    element path: a string in the form "tag.tag.(...).tag.tag" that specifies an element in the tree.
 
-    empty path: a loose path path with no tags or attributes. Refers to the first element found (usually the root element).
+    element path list: same thing as an element path except for it's a list in the form [tag, tag, ..., tag, tag].
+
+    empty path: a loose path with no tags or attributes (written as ""). Refers to the first element found (usually the root element).
 
     loose attribute path: same as a loose element path, except for the final attribute must be an attribute of the element with the previous tag.
         (See "attribute path" for more clarification.)
@@ -75,9 +78,9 @@ class XMLHelper:
         return self.get_element_with_loose_attribute_path(path)
 
 
-    def set_attribute(self, path):
+    def set_attribute(self, path, value):
         '''Alias for set_attribute_with_loose_path_to.'''
-        return self.set_attribute_with_loose_path_to(path)
+        return self.set_attribute_with_loose_path_to(path, value)
 
 
     def remove_element(self, path):
@@ -94,6 +97,7 @@ class XMLHelper:
         '''
         return self._remove_element_with_loose_strict_path_list(self._path_to_path_list(path))
 
+
     def strict_loose_to_strict_path_list(self, path_list):
         '''
         Takes a strict-loose path list and returns the corresponding strict path list.
@@ -108,17 +112,23 @@ class XMLHelper:
         Returns an element with the matching attribute.
         (Returns None if such an element cannot be found.)
         '''
-
         return self._get_element_with_loose_attribute_path_list(self._path_to_path_list(path))
+
 
     def _path_to_path_list(self, path):
         '''Takes a path and returns the corresponding path list.'''
         return path.split(".")
 
+
     def _remove_element_with_loose_strict_path_list(self, path_list):
-        '''TODO document'''
+        '''Takes a loose strict element path list and removes the corresponding element (and all of it's subelements) from the tree.'''
         strict_element_list = self._loose_strict_element_path_list_to_strict_element_list(path_list)
-        strict_element_list[-2].remove(strict_element_list[-1])
+        try:
+            strict_element_list[-2].remove(strict_element_list[-1])
+        except IndexError:
+            # trying to remove the root element
+            raise InvalidElementError("You cannot remove the root element")
+
 
     def _loose_strict_element_path_list_to_strict_element_list(self, path_list):
         '''Takes a loose-strict element path list and returns the corresponding strict element list.'''
@@ -134,7 +144,9 @@ class XMLHelper:
             else:
                 return initial_strict_element_list + ans
 
+
     def _strict_element_path_list_to_strict_element_list_starting_at(self, path_list, starting_element):
+        '''Takes a strict element path list starting under a given starting element, and returns the element list corresponding to the path list'''
         # base case
         if not path_list:
             # the list is empty, we've reached the goal
@@ -153,19 +165,14 @@ class XMLHelper:
 
 
     def _loose_element_path_list_to_strict_element_list(self, path_list):
-        '''Takes a loose element path list and returns the corresponding strict path list'''
-        # TODO dp
-        print("Here's the path list I got")
-        print(path_list)
+        '''Takes a loose element path list and returns the corresponding strict element list'''
         path_list, starting_element = self._check_path_list_starting_point(path_list)
-        print("after")
-        print(path_list)
         ans = self._loose_element_path_list_to_strict_element_list_starting_at(path_list, starting_element)
-        print("ans:", ans)
         if ans is None:
             return ans
         else:
             return [starting_element] + ans
+
 
     def _loose_element_path_list_to_strict_element_list_starting_at(self, path_list, starting_element):
         '''Takes a loose element path list and a starting element to search in, and returns the strict path list continuing after the starting element'''
@@ -187,40 +194,6 @@ class XMLHelper:
                 return [subelement] + ans
         # could not find the rest of the path under this starting element
         return None
-
-
-    def _get_element_with_loose_strict_path_list(self, path_list):
-        '''TODO document'''
-        starting_element = self._get_element_with_loose_path_list(path_list[0])
-        return get_element_with_strict_path_list_inside(self, path_list[1:], starting_element)
-
-    # def _get_element_with_loose_path_list(self, path_list): # TODO if going to use this, check _check_path function for ([root]) case
-    #     '''TODO document'''
-    #     return self._get_element_with_loose_path_list_inside(self._check_path_list_starting_point(path_list))
-
-    def _get_element_with_strict_path_list_inside(self, path_list, starting_element):
-        '''TODO document'''
-        # base case
-        if not path_list:
-            # the list is empty, we've reached the goal
-            return starting_element
-
-        goal_tag = path_list.pop(0)
-
-        for subelement in starting_element:
-            if subelement.tag == goal_tag:
-                ans = self._get_element_with_strict_path_list_inside(path_list, subelement)
-                if ans is not None:
-                    return ans
-
-        return None
-
-
-
-    # TODO if going to use this, check _check_path for [root] case
-    # def _get_element_with_loose_attribute_path_list(self, path_list, starting_element=None):
-    #     '''TODO document'''
-    #     return self._get_element_with_loose_attribute_path_list_inside(*self._check_path_list_starting_point(path_list, starting_element))
 
     def _check_path_list_starting_point(self, path_list, starting_element=None):
         '''
@@ -253,69 +226,6 @@ class XMLHelper:
         else:
             raise InvalidElementError("An element matching the path attribute '{}' could not be found".format(path))
 
-    def _get_element_with_loose_path_list_inside(self, path_list, starting_element):
-        '''
-        Recursive function that takes a loose element path list and an element object to start the search at.
-        Returns an element inside the starting element that matches the given path.
-        (Returns None if such an element cannot be found.)
-        Restriction: only searches *inside* the starting_element for the an element with the given path.
-            This means that a strict path list *will not work*; it won't be able to find the root tag within the root tag.
-        '''
-        # base case
-        if not path_list:
-            # the list is empty, we've found the goal
-            return starting_element
-
-        goal_tag = path_list.pop(0)
-        # iterate through matching inner elements
-        for element in starting_element.iter(goal_tag):
-            if element is starting_element:
-                # skip over searching starting_element for the tag or attribute; we're only interested in subelements
-                continue
-
-                ans = self._get_element_with_loose_path_list_inside(path_list, element)
-                if ans is not None:
-                    return ans
-
-        # no matching element was found under the starting element
-        return None
-
-
-    def _get_element_with_loose_attribute_path_list_inside(self, path_list, starting_element):
-        '''
-        Recursive function that takes a loose attribute path list and an element object to start the search at.
-        Returns an element with the matching attribute.
-        (Returns None if such an element cannot be found.)
-        Restriction: only searches *inside* the starting_element for the loose attribute path list.
-            This means that a strict path list will not work; it won't be able to find the root tag within the root tag.
-        Note that if the element matching the last tag in the path list does not have the given attribute,
-            this function will search for that attribut
-        '''
-        if len(path_list) == 1:
-            # looking for an element with the attribute path_list[0]
-            if starting_element.get(path_list[0]) is not None:
-                # it's in this tag specifically
-                return starting_element
-            else:
-                # search all inner elements of this tag for something with this attribute
-                goal_tag = None
-        else:
-            # searching for an element with this tag
-            goal_tag = path_list.pop(0)
-
-        # iterate through inner elements that match the goal tag
-        for element in starting_element.iter(goal_tag):
-            if element is starting_element:
-                # skip over searching starting_element for the tag or attribute; we're only interested in subelements
-                continue
-
-            ans = self._get_element_with_loose_attribute_path_list_inside(path_list, element)
-            if ans is not None:
-                return ans
-
-        # no matching element was found under the starting element
-        return None
-
 
 if __name__ == "__main__":
     x = XMLHelper("Sample XML Files/single-source-test.argos")
@@ -325,7 +235,7 @@ if __name__ == "__main__":
     # print(x.get_element("actuators.implementation").get("implementation"))
     # x.remove_element()
     # x.write() # to change it on the actual file
-    print(x._loose_strict_element_path_list_to_strict_element_list(["argos-configuration", "loop_functions", "visualization"]))
-    print(x._loose_strict_element_path_list_to_strict_element_list(["argos-configuration", "visualization"]))
-    x.remove_element("argos-configuration.visualization")
+    # print(x._loose_strict_element_path_list_to_strict_element_list(["argos-configuration", "loop_functions", "visualization"]))
+    # print(x._loose_strict_element_path_list_to_strict_element_list(["argos-configuration", "visualization"]))
+    x.remove_element("argos-configuration")
     x.write()
