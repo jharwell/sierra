@@ -98,6 +98,21 @@ class XMLHelper:
         return self._remove_element_with_loose_strict_path_list(self._path_to_path_list(path))
 
 
+    def set_attribute_with_loose_path_to(self, path, value):
+        '''
+        Takes a loose path to an attribute and sets that attribute to the given value.
+        Raises an InvalidElementError if a matching element with the attribute cannot be found.
+        Converts the value to a string before setting the attribute.
+        '''
+        path_list = self._path_to_path_list(path)
+        element = self._get_element_with_loose_attribute_path_list(path_list)
+        if element is not None:
+            value = str(value)
+            element.set(path_list[-1], value)
+        else:
+            raise InvalidElementError("An element matching the path attribute '{}' could not be found".format(path))
+
+
     def strict_loose_to_strict_path_list(self, path_list):
         '''
         Takes a strict-loose path list and returns the corresponding strict path list.
@@ -212,19 +227,40 @@ class XMLHelper:
 
         return (path_list, starting_element)
 
-    def set_attribute_with_loose_path_to(self, path, value):
-        '''
-        Takes a loose path to an attribute and sets that attribute to the given value.
-        Raises an InvalidElementError if a matching element with the attribute cannot be found.
-        Converts the value to a string before setting the attribute.
-        '''
-        path_list = self._path_to_path_list(path)
-        element = self._get_element_with_loose_attribute_path_list(path_list)
-        if element is not None:
-            value = str(value)
-            element.set(path_list[-1], value)
-        else:
-            raise InvalidElementError("An element matching the path attribute '{}' could not be found".format(path))
+
+
+    def _get_element_with_loose_attribute_path_list(self, path_list, starting_element):
+       '''
+       Takes a loose attribute path list.
+       Returns an element with the matching attribute.
+       (Returns None if such an element cannot be found.)
+       '''
+
+       if len(path_list) == 1:
+           # looking for an element with the attribute of path_list[0]
+           if starting_element.get(path_list[0]) is not None:
+               # it's in this tag specifically
+               return starting_element
+           else:
+               # search all inner elements of this tag for something with this attribute
+               goal_tag = None
+       else:
+           # searching for an element with this tag
+           goal_tag = path_list.pop(0)
+
+       # iterate through inner elements
+       for element in starting_element.iter(goal_tag):
+           if element is starting_element:
+               # skip over searching starting_element for the tag or attribute; we're only interested in the child elements
+               continue
+
+           ans = self._get_element_with_path_attribute(path_list, element)
+           if ans is not None:
+               return ans
+
+       # no matching element was found under the starting element
+       return None
+
 
 
 if __name__ == "__main__":
