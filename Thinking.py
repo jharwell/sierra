@@ -84,4 +84,43 @@ Wow, deleting stuff was a lot harder than I expected, because I had to get the e
 I might want to convert some of the older functions to returning elements as well, but for now this works.
 
 I decided to make all the functions that deal with path lists private, because I think people should just be putting in paths, not path lists.
+
+Since I started creating a lot of useless functions, I used a tool called Pyan to track which functions were calling which.
+The results of this are in pyan_output.dot, and you can copy/paste that file into http://www.webgraphviz.com/ to see the output.
+'''
+
+'''
+6/11/2018
+
+So, the goal is by the end of this week to have something that can be tested out on MSI.
+This will need to:
+Take a configuration file
+Remove the visualization component of the file.
+Set a random seed.
+Add a command to run the config file to a command file.
+
+Then, someone will run the commands.
+
+After those are done, I'll have another part that combines the CSVs together.
+'''
+
+'''
+The code deals with loose strict stuff pretty badly right now.
+I added a TODO in the code to address it.
+I think the biggest thing to fix it is to follow the model of generators, where we create a generator all the possible options, and then just iterate through one by one.
+
+From https://www.msi.umn.edu/support/faq/how-can-i-use-gnu-parallel-run-lot-commands-parallel :
+You have a file named commands.txt containing a list of multi-threaded commands and want to run one command per node on multiple nodes:
+$ module load parallel
+$ sort -u $PBS_NODEFILE > unique-nodelist.txt
+$ parallel --jobs 1 --sshloginfile unique-nodelist.txt --workdir $PWD < commands.txt
+'''
+
+'''
+6/13/2018
+
+I just ran my first job on MSI. It was pretty easy and quick.
+Now I'm going to do a basic script that should display the ability to use the one system folder to create working directories to use.
+So, I think what I want to do is have a python script that takes in parameters and generates a command file with a particular name.
+Then, I'll have the pdb file use that file to run a bunch of things in parallel.
 '''
