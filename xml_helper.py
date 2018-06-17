@@ -37,6 +37,12 @@ Terminology/Definitions:
         (See "loose attribute path list" for an example of this.)
 '''
 
+'''
+TODO: right now, loose strict paths are not found correctly. The current algorithm merely looks for the first tag loosely and assumes all the strict tags will come afterwards.
+    This may not always be the case: the first element that comes up in the loose search for the first tag may not be the right element; it could be a different element with the same tag.
+    Switching to functions that returned generators (rather than just returning the first value found) would help solve this issue.
+'''
+
 import xml.etree.ElementTree as ET
 
 
@@ -105,7 +111,7 @@ class XMLHelper:
         Converts the value to a string before setting the attribute.
         '''
         path_list = self._path_to_path_list(path)
-        element = self._get_element_with_loose_attribute_path_list(path_list)
+        element = self._get_element_with_loose_attribute_path_list_inside(*self._check_path_list_starting_point(path_list))
         if element is not None:
             value = str(value)
             element.set(path_list[-1], value)
@@ -127,7 +133,7 @@ class XMLHelper:
         Returns an element with the matching attribute.
         (Returns None if such an element cannot be found.)
         '''
-        return self._get_element_with_loose_attribute_path_list(self._path_to_path_list(path))
+        return self._get_element_with_loose_attribute_path_list_inside(*self._check_path_list_starting_point(self._path_to_path_list(path)))
 
 
     def _path_to_path_list(self, path):
@@ -140,20 +146,26 @@ class XMLHelper:
         strict_element_list = self._loose_strict_element_path_list_to_strict_element_list(path_list)
         try:
             strict_element_list[-2].remove(strict_element_list[-1])
-        except IndexError:
-            # trying to remove the root element
-            raise InvalidElementError("You cannot remove the root element")
+        except (IndexError, TypeError) as e:
+            if isinstance(e, IndexError):
+                # trying to remove the root element
+                raise InvalidElementError("You cannot remove the root element")
+            else: # TypeError: the strict element list was not found
+                raise InvalidElementError("The path list '{}' could not be found".format(path_list))
 
 
     def _loose_strict_element_path_list_to_strict_element_list(self, path_list):
-        '''Takes a loose-strict element path list and returns the corresponding strict element list.'''
+        '''
+        Takes a loose-strict element path list and returns the corresponding strict element list.
+        This function will modify the path list.
+        '''
         initial_tag = path_list.pop(0)
         # will have the element corresponding to the first tag in the list
         initial_strict_element_list = self._loose_element_path_list_to_strict_element_list([initial_tag])
         if initial_strict_element_list is None:
             return None
         else:
-            ans = self._strict_element_path_list_to_strict_element_list_starting_at(path_list, initial_strict_element_list[0]) # TODO write
+            ans = self._strict_element_path_list_to_strict_element_list_starting_at(path_list, initial_strict_element_list[0])
             if ans is None:
                 return None
             else:
@@ -168,7 +180,6 @@ class XMLHelper:
             return []
 
         goal_tag = path_list.pop(0)
-
         # iterate through children
         for subelement in starting_element:
             if subelement.tag == goal_tag:
@@ -215,8 +226,12 @@ class XMLHelper:
         Helper function for finding the correct place to start a search.
         If starting_element is None, this means that the search is inside the document as a whole.
         The goal is to pass the data to a function that searches inside an element; the document is not an element.
-        So this function minimizes the search to a search within
-        So this will check if the root element matches with the first tag, making it so that the search can then be done inside of the root element.'''
+        So this will check if the root element matches with the first tag, making it so that the search can then be done inside of the root element.
+        restriction: do not have elements inside the root element with the same tag as the root element
+        # TODO this may cause a subsequent search to fail or return an incorrect value if there are multiple elements with the same tag as the root
+            # for example, searching for the loose strict path "a.a.b.c" might not be able to find "a.e.a.a.b.c" because it will search for "a.b.c" directly below the first "a"
+            # if the above restriction is followed, everything should work as expected.
+        '''
         if starting_element is None:
             # deal with the case where we search inside the xml document itself
             starting_element = self.root
@@ -228,38 +243,36 @@ class XMLHelper:
         return (path_list, starting_element)
 
 
+    def _get_element_with_loose_attribute_path_list_inside(self, path_list, starting_element):
+        '''
+        Takes a loose attribute path list.
+        Returns an element with the matching attribute.
+        (Returns None if such an element cannot be found.)
+        '''
 
-    def _get_element_with_loose_attribute_path_list(self, path_list, starting_element):
-       '''
-       Takes a loose attribute path list.
-       Returns an element with the matching attribute.
-       (Returns None if such an element cannot be found.)
-       '''
+        if len(path_list) == 1:
+            # looking for an element with the attribute of path_list[0]
+            if starting_element.get(path_list[0]) is not None:
+                # it's in this tag specifically
+                return starting_element
+            else:
+                # search all inner elements of this tag for something with this attribute
+                goal_tag = None
+        else:
+            # searching for an element with this tag
+            goal_tag = path_list[0]
 
-       if len(path_list) == 1:
-           # looking for an element with the attribute of path_list[0]
-           if starting_element.get(path_list[0]) is not None:
-               # it's in this tag specifically
-               return starting_element
-           else:
-               # search all inner elements of this tag for something with this attribute
-               goal_tag = None
-       else:
-           # searching for an element with this tag
-           goal_tag = path_list.pop(0)
+        # iterate through inner elements
+        for element in starting_element.iter(goal_tag):
+            if element is starting_element:
+                # skip over searching starting_element for the tag or attribute; we're only interested in the child elements
+                continue
+            ans = self._get_element_with_loose_attribute_path_list_inside(path_list[1:], element)
+            if ans is not None:
+                return ans
 
-       # iterate through inner elements
-       for element in starting_element.iter(goal_tag):
-           if element is starting_element:
-               # skip over searching starting_element for the tag or attribute; we're only interested in the child elements
-               continue
-
-           ans = self._get_element_with_path_attribute(path_list, element)
-           if ans is not None:
-               return ans
-
-       # no matching element was found under the starting element
-       return None
+        # no matching element was found under the starting element
+        return None
 
 
 
@@ -273,5 +286,8 @@ if __name__ == "__main__":
     # x.write() # to change it on the actual file
     # print(x._loose_strict_element_path_list_to_strict_element_list(["argos-configuration", "loop_functions", "visualization"]))
     # print(x._loose_strict_element_path_list_to_strict_element_list(["argos-configuration", "visualization"]))
-    x.remove_element("argos-configuration")
-    x.write()
+    # x.remove_element("argos-configuration")
+    # x.remove_element("argos-configuration.visualization")
+    # x.remove_element("argos-configuration.visualization")
+    x.set_attribute("output.metrics.output_dir", "new_metrics")
+    x.write("testing.argos")

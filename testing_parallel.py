@@ -20,7 +20,7 @@ if __name__ == '__main__':
     amount = args.amount
     amount2 = args.amount2
     # create the folder
-    subprocess.run('mkdir {}'.format(path_to_main_folder), shell=True)
+    subprocess.run('mkdir -p {}'.format(path_to_main_folder), shell=True)
     # create the commands file
     subprocess.run('touch {}'.format(path_to_commands_file_name), shell=True)
 
@@ -28,7 +28,7 @@ if __name__ == '__main__':
         for experiment_number in range(amount):
             command = 'cd "{}"'.format(path_to_main_folder)
             output_folder = 'output_dir_{}'.format(experiment_number)
-            command = append_command(command, 'mkdir "{}"'.format(output_folder))
+            command = append_command(command, 'mkdir -p "{}"'.format(output_folder))
             command = append_command(command, 'cd "{}"'.format(output_folder))
             for output_number in range(amount2):
                 filename = 'file_number_{}_{}.txt'.format(output_number, experiment_number)
@@ -37,3 +37,6 @@ if __name__ == '__main__':
                 # run the program that will produce the output
                 command = append_command(command, 'echo "hello world {}_{}" > "{}"'.format(output_number, experiment_number, filename))
             add_command(commands_file, command)
+
+    # run the final parallel command as if it were in the shell
+    subprocess.run('parallel < "{}"'.format(path_to_commands_file_name), shell=True)

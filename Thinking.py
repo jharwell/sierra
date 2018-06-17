@@ -87,6 +87,7 @@ I decided to make all the functions that deal with path lists private, because I
 
 Since I started creating a lot of useless functions, I used a tool called Pyan to track which functions were calling which.
 The results of this are in pyan_output.dot, and you can copy/paste that file into http://www.webgraphviz.com/ to see the output.
+(Note from 6/17/2018: I have since deleted the pyan_output.dot file. If you would like to see it, you will need to re-generate it.)
 '''
 
 '''
