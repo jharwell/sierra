@@ -9,7 +9,7 @@ import subprocess
 from xml_helper import XMLHelper, InvalidElementError
 
 class ExperimentRunner:
-    def __init__(self, config_path, code_path, config_save_path, graph_save_path, amount, random_seed_min=None, random_seed_max=None,
+    def __init__(self, config_path, code_path, config_save_path, graph_save_path, output_save_path, amount, random_seed_min=None, random_seed_max=None,
                  remove_both_visusalizations=False):
         # where the main config file is
         assert os.path.isfile(config_path), "The path '{}' (which should point to the main config file) did not point to a file".format(config_path)
@@ -23,13 +23,17 @@ class ExperimentRunner:
             config_save_path = os.path.join(os.path.dirname(self.config_path), "Generated_Config_Files")
         self.config_save_path = os.path.abspath(config_save_path)
 
-        assert self.config_save_path.find(" ") == -1, ("Argos does not support files with spaces in the path. Please make sure configuration file "+
+        assert self.config_save_path.find(" ") == -1, ("Argos does not support config files with spaces in the path. Please make sure configuration file "+
                                                      "save path '{}' does not have any spaces in it").format(self.config_save_path)
 
         # where the graphs should be stored
         if graph_save_path is None:
             graph_save_path = os.path.join(os.path.dirname(self.config_path), "Generated_Graph_Files")
         self.graph_save_path = os.path.abspath(graph_save_path)
+
+        if output_save_path is None:
+            output_save_path = os.path.join(os.path.dirname(self.config_path), "output")
+        self.output_save_path = os.path.abspath(output_save_path)
 
         # how many experiments should be run
         self.amount = amount
@@ -102,7 +106,9 @@ class ExperimentRunner:
                 # this should throw an error if the attributes don't exist
                 output_dir = new_main_name + "_output"
                 xml_helper.set_attribute("controllers.output.sim.output_dir", output_dir)
+                xml_helper.set_attribute("controllers.output.sim.output_root", self.output_save_path)
                 xml_helper.set_attribute("loop_functions.output.sim.output_dir", output_dir)
+                xml_helper.set_attribute("loop_functions.output.sim.output_root", self.output_save_path)
                 save_path = os.path.join(self.config_save_path, new_name)
                 open(save_path, 'w').close() # create an empty file
                 xml_helper.write(save_path)
@@ -125,6 +131,7 @@ if __name__ == "__main__":
     parser.add_argument("code_path", help="where the code is to run the experiment")
     parser.add_argument("amount", help="how many experiments to run", type=int)
     parser.add_argument("--config_save_path", help="where to save the generated config files")
+    parser.add_argument("--output_save_path", help="where to save the generated output")
     parser.add_argument("--graph_save_path", help="where to save the generated graph files")
     run_group = parser.add_mutually_exclusive_group()
     run_group.add_argument("--do_not_run", help="include to only generate the config files and command file, not run them", action="store_true")
@@ -135,7 +142,7 @@ if __name__ == "__main__":
     parser.add_argument("--remove_both_visuals", help="include to remove the loop function visualization (in addition to the argos visualization)",
                         action="store_true")
     args = parser.parse_args()
-    runner = ExperimentRunner(args.config_path, args.code_path, args.config_save_path, args.graph_save_path, args.amount,
+    runner = ExperimentRunner(args.config_path, args.code_path, args.config_save_path, args.output_save_path, args.graph_save_path, args.amount,
                               args.random_seed_min, args.random_seed_max, args.remove_both_visuals)
     if not args.only_run:
         runner.generate_xml_files()
