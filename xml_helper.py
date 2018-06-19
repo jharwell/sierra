@@ -145,6 +145,13 @@ class XMLHelper:
         '''Takes a loose strict element path list and removes the corresponding element (and all of it's subelements) from the tree.'''
         strict_element_list = self._loose_strict_element_path_list_to_strict_element_list(path_list)
         try:
+            # TODO dp
+            print("strict element list")
+            print(strict_element_list[-2])
+            print("next")
+            print(strict_element_list[-1])
+            print("children:")
+            print([child for child in strict_element_list[-2]])
             strict_element_list[-2].remove(strict_element_list[-1])
         except (IndexError, TypeError) as e:
             if isinstance(e, IndexError):
@@ -165,7 +172,7 @@ class XMLHelper:
         if initial_strict_element_list is None:
             return None
         else:
-            ans = self._strict_element_path_list_to_strict_element_list_starting_at(path_list, initial_strict_element_list[0])
+            ans = self._strict_element_path_list_to_strict_element_list_starting_at(path_list, initial_strict_element_list[-1])
             if ans is None:
                 return None
             else:
@@ -181,7 +188,13 @@ class XMLHelper:
 
         goal_tag = path_list.pop(0)
         # iterate through children
+        # TODO dp
+        print("starting element")
+        print(starting_element)
         for subelement in starting_element:
+            # TODO dp
+            print("subelement")
+            print(subelement)
             if subelement.tag == goal_tag:
                 ans = self._strict_element_path_list_to_strict_element_list_starting_at(path_list, subelement)
                 if ans is not None:
@@ -277,17 +290,6 @@ class XMLHelper:
 
 
 if __name__ == "__main__":
-    x = XMLHelper("Sample XML Files/single-source-test.argos")
-    # ans = x.get_element_with_path_attribute("footbot_light.implementation")
-    # print(ans.get("implementation"))
-    # x.set_attribute_with_loose_path_to("differential_steering.implementation", "hello world")
-    # print(x.get_element("actuators.implementation").get("implementation"))
-    # x.remove_element()
-    # x.write() # to change it on the actual file
-    # print(x._loose_strict_element_path_list_to_strict_element_list(["argos-configuration", "loop_functions", "visualization"]))
-    # print(x._loose_strict_element_path_list_to_strict_element_list(["argos-configuration", "visualization"]))
-    # x.remove_element("argos-configuration")
-    # x.remove_element("argos-configuration.visualization")
-    # x.remove_element("argos-configuration.visualization")
-    x.set_attribute("output.metrics.output_dir", "new_metrics")
+    x = XMLHelper("Sample XML Files/new-single-source-test.argos")
+    x.remove_element("loop_functions.visualization")
     x.write("testing.argos")
