@@ -9,7 +9,7 @@ import subprocess
 from xml_helper import XMLHelper, InvalidElementError
 
 class ExperimentRunner:
-    def __init__(self, config_path, code_path, config_save_path, graph_save_path, output_save_path, amount, random_seed_min=None, random_seed_max=None,
+    def __init__(self, config_path, code_path, config_save_path, output_save_path, graph_save_path, amount, random_seed_min=None, random_seed_max=None,
                  remove_both_visusalizations=False):
         # where the main config file is
         assert os.path.isfile(config_path), "The path '{}' (which should point to the main config file) did not point to a file".format(config_path)
