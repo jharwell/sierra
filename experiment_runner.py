@@ -126,7 +126,9 @@ if __name__ == "__main__":
     parser.add_argument("amount", help="how many experiments to run", type=int)
     parser.add_argument("--config_save_path", help="where to save the generated config files")
     parser.add_argument("--graph_save_path", help="where to save the generated graph files")
-    parser.add_argument("--do_not_run", help="include to only generate the config files and command file, not run them", action="store_true")
+    run_group = parser.add_mutually_exclusive_group()
+    run_group.add_argument("--do_not_run", help="include to only generate the config files and command file, not run them", action="store_true")
+    run_group.add_argument("--only_run", help="include to only run the config files, not generate them", action="store_true")
     parser.add_argument("--personal", help="include if running parallel on a personal computer (otherwise runs supercomputer commands)", action="store_true")
     parser.add_argument("--random_seed_min", help="the minimum random seed number", type=int)
     parser.add_argument("--random_seed_max", help="the maximum random seed number", type=int)
@@ -135,6 +137,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     runner = ExperimentRunner(args.config_path, args.code_path, args.config_save_path, args.graph_save_path, args.amount,
                               args.random_seed_min, args.random_seed_max, args.remove_both_visuals)
-    runner.generate_xml_files()
+    if not args.only_run:
+        runner.generate_xml_files()
     if not args.do_not_run:
         runner.run_experiments(personal=args.personal)
