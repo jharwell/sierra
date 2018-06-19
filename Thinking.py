@@ -125,3 +125,11 @@ Now I'm going to do a basic script that should display the ability to use the on
 So, I think what I want to do is have a python script that takes in parameters and generates a command file with a particular name.
 Then, I'll have the pdb file use that file to run a bunch of things in parallel.
 '''
+
+'''
+6/19/2018
+
+Finally got the experiment runner up and running experiments on my computer.
+About to test it on MSI to see how it works.
+Need to find a way to get this onto MSI and working.
+'''

@@ -41,6 +41,8 @@ Terminology/Definitions:
 TODO: right now, loose strict paths are not found correctly. The current algorithm merely looks for the first tag loosely and assumes all the strict tags will come afterwards.
     This may not always be the case: the first element that comes up in the loose search for the first tag may not be the right element; it could be a different element with the same tag.
     Switching to functions that returned generators (rather than just returning the first value found) would help solve this issue.
+    Everything should work correctly as long as the following restriction is followed:
+    restriction: the first tag in a loose strict path should refer to the topmost element with that tag
 '''
 
 import xml.etree.ElementTree as ET
