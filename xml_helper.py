@@ -145,13 +145,6 @@ class XMLHelper:
         '''Takes a loose strict element path list and removes the corresponding element (and all of it's subelements) from the tree.'''
         strict_element_list = self._loose_strict_element_path_list_to_strict_element_list(path_list)
         try:
-            # TODO dp
-            print("strict element list")
-            print(strict_element_list[-2])
-            print("next")
-            print(strict_element_list[-1])
-            print("children:")
-            print([child for child in strict_element_list[-2]])
             strict_element_list[-2].remove(strict_element_list[-1])
         except (IndexError, TypeError) as e:
             if isinstance(e, IndexError):
@@ -188,13 +181,7 @@ class XMLHelper:
 
         goal_tag = path_list.pop(0)
         # iterate through children
-        # TODO dp
-        print("starting element")
-        print(starting_element)
         for subelement in starting_element:
-            # TODO dp
-            print("subelement")
-            print(subelement)
             if subelement.tag == goal_tag:
                 ans = self._strict_element_path_list_to_strict_element_list_starting_at(path_list, subelement)
                 if ans is not None:
