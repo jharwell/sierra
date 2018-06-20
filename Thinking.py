@@ -132,4 +132,10 @@ Then, I'll have the pdb file use that file to run a bunch of things in parallel.
 Finally got the experiment runner up and running experiments on my computer.
 About to test it on MSI to see how it works.
 Need to find a way to get this onto MSI and working.
+
+Currently need
+1. Fordyca on MSI
+2. Ability to run argos projects on MSI (right now the argos3 command is not being recognized)
+
+John recommended htop for viewing things on MSI
 '''

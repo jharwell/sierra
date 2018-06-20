@@ -1,28 +1,38 @@
+'''
+By: London Lowmanstone
+'''
+
 import numbers
 import csv
 from pprint import pformat
 
-class InvalidDimensions(RuntimeError):
-    pass
-
-
 class CSV:
-    def __init__(self, arg, delimiter=";"):
-        self.delimiter = delimiter
-        if isinstance(arg, list):
-            self.csv = arg
-        elif isinstance(arg, str):
-            with open(arg, "r") as csv_file:
-                reader = csv.reader(csv_file, delimiter=self.delimiter)
-                output = []
-                for input_row in reader:
-                    output_row = []
-                    for input_column in input_row:
-                        output_row.append(input_column)
-                    output.append(output_row)
-                self.csv = output
+    def __init__(self, arg, delimiter=None):
+        if isinstance(arg, CSV):
+            self.csv = [row[:] for row in arg.csv] # copy the list
+            if delimiter is None:
+                self.delimiter = arg.delimiter
         else:
-            raise TypeError("Incorrect parameter type '{}' for CSV class initialization: must be list or string".format(type(arg)))
+            if delimiter is None:
+                delimiter = ";"
+            self.delimiter = delimiter
+
+            if isinstance(arg, list):
+                self.csv = [row[:] for row in arg] # copy the list
+            elif isinstance(arg, str):
+                with open(arg, "r") as csv_file:
+                    reader = csv.reader(csv_file, delimiter=self.delimiter)
+                    output = []
+                    for input_row in reader:
+                        output_row = []
+                        for input_column in input_row:
+                            output_row.append(input_column)
+                        output.append(output_row)
+                    self.csv = output
+            else:
+                raise TypeError("Incorrect parameter type '{}' for CSV class initialization: must be list or string".format(type(arg)))
+
+
 
 
     def write(self, filename):
@@ -44,7 +54,10 @@ class CSV:
 
     @property
     def width(self):
-        return len(self.csv[0])
+        try:
+            return len(self.csv[0])
+        except IndexError: # len(self.csv) == 0
+            return 0
 
     @property
     def dims(self):
@@ -55,7 +68,7 @@ class CSV:
         if isinstance(other, CSV):
             dims = self.dims # cache
             if dims != other.dims:
-                raise InvalidDimensions("CSVs with dimensions {} and {} are incompatible".format(self.dims, other.dims))
+                raise ValueError("CSVs with dimensions {} and {} cannot be added together".format(self.dims, other.dims))
             height, width = dims
             ans = []
             for row_index in range(height):
@@ -67,7 +80,7 @@ class CSV:
                 ans.append(ans_row)
             return CSV(ans)
         else:
-            raise NotImplementedError("Addition between CVS and {} is not supported".format(type(other)))
+            raise NotImplementedError("Addition between CVS objects and objects of type '{}' is not supported".format(type(other)))
 
 
     def __truediv__(self, other):
@@ -81,7 +94,7 @@ class CSV:
                 ans.append(ans_row)
             return CSV(ans)
         else:
-            raise NotImplementedError("Division of CVS by object of type '{}' is not supported".formt(type(other)))
+            raise NotImplementedError("Division of a CVS object by an object of type '{}' is not supported".formt(type(other)))
 
 
     def __str__(self):

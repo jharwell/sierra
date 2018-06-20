@@ -1,6 +1,8 @@
 '''
 By: London Lowmanstone
+'''
 
+'''
 Terminology/Definitions:
     attribute path: same thing as an element path except for it ends with an attribute. In the form "tag.tag.(...).tag.attribute".
 
