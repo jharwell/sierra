@@ -22,13 +22,20 @@ class CSV:
                     output.append(output_row)
                 self.csv = output
         else:
-            raise ValueError("Incorrect parameter type '{}' for CSV class initialization: must be list or string".format(type(arg)))
+            raise TypeError("Incorrect parameter type '{}' for CSV class initialization: must be list or string".format(type(arg)))
+
 
     def write(self, filename):
         with open(filename, "w") as f:
             for row in self.csv:
                 f.write(self.delimiter.join([str(val) for val in row]) + "\n")
 
+
+    def __eq__(self, other):
+        if isinstance(other, CSV):
+            return self.csv == other.csv
+        else:
+            raise NotImplementedError("Equality operator between CVS object and object of type '{}' is not supported".format(type(other)))
 
 
     @property
@@ -66,9 +73,13 @@ class CSV:
     def __truediv__(self, other):
         if isinstance(other, numbers.Number):
             # divide each number in the CSV by the given number (keep the strings the same)
+            ans = []
             for row in self.csv:
-                for column_index, val in enumerate(row):
-                    row[column_index] = self._div_value(val, other)
+                ans_row = []
+                for val in row:
+                    ans_row.append(str(self._div_value(val, other)))
+                ans.append(ans_row)
+            return CSV(ans)
         else:
             raise NotImplementedError("Division of CVS by object of type '{}' is not supported".formt(type(other)))
 
@@ -79,14 +90,14 @@ class CSV:
 
     def _div_value(self, val1, val2):
         '''
-        Divides the first parameter by the second parameter if the first parameter is a number.
+        If the first parameter is a number, divides the first parameter by the second parameter and returns the results .
         If the first parameter is a string, returns the string.
         (The second parameter should always be a number.)
         '''
         try:
             float_val = float(val1)
             return self._int_if_possible(float_val / val2)
-        except ValueError:
+        except (ValueError, TypeError):
             return val1
 
 
@@ -100,9 +111,9 @@ class CSV:
             add_val1 = float(val1)
             add_val2 = float(val2)
             return self._int_if_possible(add_val1 + add_val2)
-        except ValueError: # they must be strings
+        except (ValueError, TypeError): # they must be strings
             if val1 != val2:
-                raise ValueError("Cannot add together the strings '{}' and '{}'".format(val1, val2))
+                raise ValueError("Cannot add together the strings '{}' and '{}' because they are different strings".format(val1, val2))
             return val1
 
 
@@ -118,4 +129,10 @@ if __name__ == "__main__":
     print(x)
     x.write("testing.csv")
     k = CSV("testing.csv")
+    print("k")
     print(k)
+    j = (k+k)/2
+    print("j")
+    print(j)
+    print("j==k")
+    print(j==k)
