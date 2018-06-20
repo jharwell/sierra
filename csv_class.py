@@ -110,6 +110,8 @@ class CSV:
         int_num = int(num) # cache
         if int_num == num:
             return int_num
+        else:
+            return num
 
 if __name__ == "__main__":
     x = CSV("Sample CSV Files/bas0-test.csv")
