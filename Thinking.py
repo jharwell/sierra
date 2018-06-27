@@ -139,3 +139,122 @@ Currently need
 
 John recommended htop for viewing things on MSI
 '''
+
+'''
+6/20/2018
+
+Okay, finally got Argos up and running on MSI.
+Now I just need to test this.
+How is this supposed to work?
+
+I think what it should do is you create your .pbs file in the form:
+#!/bin/bash -l
+#PBS -l walltime=8:00:00,nodes=3:ppn=8,pmem=1000mb
+#PBS -m abe
+#PBS -M sample_email@umn.edu
+module load python3
+cd sierra
+python3 experiment_runner.py [options]
+
+And then let python3 run its magic.
+I just want to do a basic test to make sure it works.
+I can't ensure that it will actually use all the cores yet, but if it at least runs that will be great.
+
+For now I'll just run 3.
+
+Current documentation for reference:
+usage: experiment_runner.py [-h] [--config_save_path CONFIG_SAVE_PATH]
+                            [--output_save_path OUTPUT_SAVE_PATH]
+                            [--graph_save_path GRAPH_SAVE_PATH]
+                            [--do_not_run | --only_run] [--do_not_average]
+                            [--personal] [--random_seed_min RANDOM_SEED_MIN]
+                            [--random_seed_max RANDOM_SEED_MAX]
+                            [--remove_both_visuals]
+                            config_path code_path amount
+
+positional arguments:
+  config_path           the configuration file for the experiment to be run
+  code_path             where the code is to run the experiment
+  amount                how many experiments to run (specify 0 to just average
+                        CSVs and create graphs without generating config files
+                        or running experiments)
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --config_save_path CONFIG_SAVE_PATH
+                        where to save the generated config files
+  --output_save_path OUTPUT_SAVE_PATH
+                        where to save the generated output
+  --graph_save_path GRAPH_SAVE_PATH
+                        where to save the generated graph files
+  --do_not_run          include to only generate the config files and command
+                        file, not run them
+  --only_run            include to only run the config files, not generate
+                        them
+  --do_not_average      include to not average the CSVs
+  --personal            include if running parallel on a personal computer
+                        (otherwise runs supercomputer commands)
+  --random_seed_min RANDOM_SEED_MIN
+                        the minimum random seed number
+  --random_seed_max RANDOM_SEED_MAX
+                        the maximum random seed number
+  --remove_both_visuals
+                        include to remove the loop function visualization (in
+                        addition to the argos visualization)
+
+
+So my pbs script is currently
+
+
+#!/bin/bash -l
+#PBS -l walltime=0:15:00,nodes=5:ppn=8,pmem=1000mb
+#PBS -m abe
+#PBS -M lowma016@umn.edu
+module load python3
+cd sierra
+python3 experiment_runner.py "Sample XML Files/new-single-source-test.argos" ~/fordycaResearch/fordyca 5 --config_save_path ~/sierra_config_test_files --output_save_path ~/sierra_output_test_files
+
+
+Okay, on my second try I'm going to test doing 10.
+#!/bin/bash -l
+#PBS -l walltime=0:15:00,nodes=10:ppn=8,pmem=1000mb
+#PBS -m abe
+#PBS -M lowma016@umn.edu
+module load python3
+cd sierra
+python3 experiment_runner.py "Sample XML Files/new-single-source-test.argos" ~/fordycaResearch/fordyca 10 --config_save_path ~/sierra_config_test_files --output_save_path ~/sierra_output_test_files
+
+I got weird errors regarding a character that was out of bounds. If that happens, just log out and log back in again.
+
+Got back the message "You must specify ppn=24 when requesting 10 or more nodes.", so I'm setting it back to 5 nodes, but keeping it running 10 experiments.
+#!/bin/bash -l
+#PBS -l walltime=0:15:00,nodes=5:ppn=8,pmem=1000mb
+#PBS -m abe
+#PBS -M lowma016@umn.edu
+module load python3
+cd sierra
+python3 experiment_runner.py "Sample XML Files/new-single-source-test.argos" ~/fordycaResearch/fordyca 10 --config_save_path ~/sierra_config_test_files --output_save_path ~/sierra_output_test_files
+'''
+
+'''
+6/27/2018
+
+Finally got it to run and average CSVs on MSI about a week ago, so here's the .pbs file that actually ran it:
+
+#!/bin/bash -l
+#PBS -l walltime=0:15:00,nodes=5:ppn=8,pmem=1000mb
+#PBS -m abe
+#PBS -M lowma016@umn.edu
+
+# Script to get Argos to work
+source /home/gini/shared/swarm/bin/build-env-setup.sh
+
+# Load python
+module load python3
+
+# From MSI: transfers all of the loaded modules to the nodes
+export PARALLEL="--workdir . --env PATH --env LD_LIBRARY_PATH --env LOADEDMODULES --env _LMFILES_ --env MODULE_VERSION --env MODULEPATH --env MODULEVERSION_STACK --env MODULESHOME --env OMP_DYNAMICS --env OMP_MAX_ACTIVE_LEVELS --env OMP_NESTED --env OMP_NUM_THREADS --env OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY"
+# Actual commands to run
+cd sierra
+python3 experiment_runner.py "Sample XML Files/new-single-source-test.argos" ~/fordycaResearch/fordyca 10 --config_save_path ~/sierra_config_test_files --output_save_path ~/sierra_output_test_files
+'''

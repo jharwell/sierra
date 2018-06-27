@@ -8,6 +8,8 @@ from pprint import pformat
 
 class CSV:
     def __init__(self, arg, delimiter=None):
+        '''A class to store the information of CSV files'''
+
         if isinstance(arg, CSV):
             self.csv = [row[:] for row in arg.csv] # copy the list
             if delimiter is None:
@@ -36,12 +38,14 @@ class CSV:
 
 
     def write(self, filename):
+        '''Saves the CSV data into a .csv file'''
         with open(filename, "w") as f:
             for row in self.csv:
                 f.write(self.delimiter.join([str(val) for val in row]) + "\n")
 
 
     def __eq__(self, other):
+        '''Equality operator "=" '''
         if isinstance(other, CSV):
             return self.csv == other.csv
         else:
@@ -65,6 +69,7 @@ class CSV:
 
 
     def __add__(self, other):
+        '''Addition operator "+" '''
         if isinstance(other, CSV):
             dims = self.dims # cache
             if dims != other.dims:
@@ -84,6 +89,7 @@ class CSV:
 
 
     def __truediv__(self, other):
+        '''Division operator "/" '''
         if isinstance(other, numbers.Number):
             # divide each number in the CSV by the given number (keep the strings the same)
             ans = []
@@ -98,6 +104,7 @@ class CSV:
 
 
     def __str__(self):
+        '''Gives back string form of the CSV object'''
         return pformat(self.csv)
 
 
@@ -131,6 +138,7 @@ class CSV:
 
 
     def _int_if_possible(self, num):
+        '''Takes a float, returns an integer if the float represents an integer (i.e. "2.0"->"2"), otherwise returns back the float.'''
         int_num = int(num) # cache
         if int_num == num:
             return int_num
@@ -138,6 +146,7 @@ class CSV:
             return num
 
 if __name__ == "__main__":
+    # just testing
     x = CSV("Sample CSV Files/bas0-test.csv")
     print(x)
     x.write("testing.csv")

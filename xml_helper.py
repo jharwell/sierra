@@ -123,14 +123,6 @@ class XMLHelper:
             raise InvalidElementError("An element matching the path attribute '{}' could not be found".format(path))
 
 
-    def strict_loose_to_strict_path_list(self, path_list):
-        '''
-        Takes a strict-loose path list and returns the corresponding strict path list.
-        '''
-        # find out the strict location of the first tag
-        strict_start = self.get_element_with_loose_attribute_path()
-
-
     def get_element_with_loose_attribute_path(self, path):
         '''
         Takes a loose path to an attribute.
@@ -168,12 +160,12 @@ class XMLHelper:
         initial_strict_element_list = self._loose_element_path_list_to_strict_element_list([initial_tag])
         if initial_strict_element_list is None:
             return None
+
+        ans = self._strict_element_path_list_to_strict_element_list_starting_at(path_list, initial_strict_element_list[-1])
+        if ans is None:
+            return None
         else:
-            ans = self._strict_element_path_list_to_strict_element_list_starting_at(path_list, initial_strict_element_list[-1])
-            if ans is None:
-                return None
-            else:
-                return initial_strict_element_list + ans
+            return initial_strict_element_list + ans
 
 
     def _strict_element_path_list_to_strict_element_list_starting_at(self, path_list, starting_element):
@@ -232,7 +224,7 @@ class XMLHelper:
         The goal is to pass the data to a function that searches inside an element; the document is not an element.
         So this will check if the root element matches with the first tag, making it so that the search can then be done inside of the root element.
         restriction: do not have elements inside the root element with the same tag as the root element
-        # TODO this may cause a subsequent search to fail or return an incorrect value if there are multiple elements with the same tag as the root
+        # Warning: this may cause a subsequent search to fail or return an incorrect value if there are multiple elements with the same tag as the root
             # for example, searching for the loose strict path "a.a.b.c" might not be able to find "a.e.a.a.b.c" because it will search for "a.b.c" directly below the first "a"
             # if the above restriction is followed, everything should work as expected.
         '''
