@@ -17,49 +17,41 @@
 """
 
 import os
-import random
-import argparse
-import subprocess
 import re
 from csv_class import CSV
-class CSVAverager:
 
+
+class CSVAverager:
     """
     Averages a set of .csv output files from a set of simulation runs.
 
     Attributes:
-      config_path(str): Path(relative to current dir or absolute) to the
-                        template XML configuration file.
-      output_save_path(str): Directory for averaged .csv output. Can be relative or absolute.
+      template_config_fpath(str): Path(relative to current dir or absolute) to the template XML configuration file.
+      exp_output_root(str): Directory for averaged .csv output. Can be relative or absolute.
     """
 
-    def __init__(self, config_path, output_save_path):
-
-        assert os.path.isfile(
-            config_path), "The path '{}' (which should point to the main config file) did not point to a file".format(config_path)
-        self.config_path = os.path.abspath(config_path)
-
+    def __init__(self, template_config_fpath, exp_output_root):
         # will get the main name and extension of the config file (without the full absolute path)
-        self.main_config_name, self.main_config_extension = os.path.splitext(
-            os.path.basename(self.config_path))
+        self.template_config_fname, self.template_config_ext = os.path.splitext(
+            os.path.basename(template_config_fpath))
 
-        # where the output data should be stored
-        if output_save_path is None:
-            output_save_path = os.path.join(os.path.dirname(
-                self.config_save_path), "Generated_Output")
-        self.output_save_path = os.path.abspath(output_save_path)
+        self.exp_output_root = os.path.abspath(exp_output_root)
+        self.template_config_fpath = template_config_fpath
 
         # to be formatted like: self.config_name_format.format(name, experiment_number)
         format_base = "{}_{}"
         self.output_name_format = format_base + "_output"
 
     def average_csvs(self):
-        '''Averages the CSV files found in the output save path'''
+        """Averages the CSV files found in the output save path"""
+        print("- Averaging CSVs...")
+
         csvs = {}
         # create a regex that searches for output CSVs regardless of which number experiment they are
         pattern = self.output_name_format.format(
-            re.escape(self.main_config_name), "\d+")
-        for entry in os.scandir(self.output_save_path):
+            re.escape(self.template_config_fname), "\d+")
+
+        for entry in os.scandir(self.exp_output_root):
             # check to make sure the file name matches the regex
             if re.fullmatch(pattern, entry.name):
                 # restriction: csv files must be in the "metrics" folder inside the output folder
@@ -73,13 +65,14 @@ class CSVAverager:
                         csvs[inner_entry.name].append(csv)
         # average the CSVs based on their name; all the CSV files with the same base name will be averaged together
         averaged_csvs = {key: self._average_csvs(csvs[key]) for key in csvs}
-        csvs_path = os.path.join(self.output_save_path, "Averaged_Output")
+        csvs_path = os.path.join(self.exp_output_root, "Averaged_Output")
         os.makedirs(csvs_path, exist_ok=True)
+
         # save the averaged CSV files
         for name, value in averaged_csvs.items():
             value.write(os.path.join(csvs_path, name))
-        print(
-            "The CSVs have been averaged. (Output can be found in '{}')".format(csvs_path))
+
+        print("- CSV averaging complete")
 
     def _average_csvs(self, csvs):
         '''

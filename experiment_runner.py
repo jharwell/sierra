@@ -19,6 +19,7 @@
 import os
 import subprocess
 
+
 class ExperimentRunner:
 
     """
@@ -26,51 +27,31 @@ class ExperimentRunner:
     the provided set of hosts on MSI (or on a single personal computer for testing).
 
     Attributes:
-      code_path(str): Path(relative to current dir or absolute) to the C++
-                      code to be run.
-      config_save_path(str): Where XML configuration files generated from the
-                             template should be stored(relative to current
-                             dir or absolute).
-      n_sims(int): Number of simulations to run in parallel.
+      generation_root(str): Root directory for all generated simulation input files.
+
     """
+    def __init__(self, generation_root):
+        self.generation_root = os.path.abspath(generation_root)
 
-    def __init__(self, config_save_path, code_path, n_sims):
-
-        # will get the main name and extension of the config file (without the full absolute path)
-        self.main_config_name, self.main_config_extension = os.path.splitext(
-            os.path.basename(self.config_path))
-
-        # where the generated config and command files should be stored
-        if config_save_path is None:
-            config_save_path = os.path.join(os.path.dirname(
-                self.config_path), "Generated_Config_Files")
-        self.config_save_path = os.path.abspath(config_save_path)
-
-        # where the code for the experiment is
-        # (this may not be necessary, but I use it)
-        self.code_path = os.path.abspath(code_path)
-
-        # how many experiments should be run
-        self.n_sims = n_sims
-
-        # where the commands file will be stored
-        self.commands_file_path = os.path.abspath(
-            os.path.join(self.config_save_path, "commands.txt"))
-
-    def run_experiments(self, personal=False):
+    def run(self, personal=False):
         '''Runs the experiments.'''
+        assert os.environ.get("ARGOS_PLUGIN_PATH") is not None, ("ERROR: You must have ARGOS_PLUGIN_PATH defined")
+
+        print("- Running all experiments...")
         try:
             # so that it can be run on non-supercomputers
             if personal:
-                subprocess.run('cd "{}" && parallel < "{}"'.format(
-                    self.code_path, self.commands_file_path), shell=True, check=True)
+                p = subprocess.Popen('cd {0} && parallel --no-notice < "{1}"'.format(
+                    self.generation_root, self.generation_root + "/commands.txt"), shell=True,
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                stdout, stderr = p.communicate()
+                # print(stdout, stderr)
             else:
                 # running on a supercomputer - specifically MSI
                 subprocess.run('cd "{}" && module load parallel && sort -u $PBS_NODEFILE > unique-nodelist.txt && \
-                                parallel --jobs 1 --sshloginfile unique-nodelist.txt --workdir $PWD < "{}"'.format(self.code_path, self.commands_file_path),
+                                parallel --jobs 1 --sshloginfile unique-nodelist.txt --workdir $PWD < "{}"'.format(self.repo_dir, self.commands_file_path),
                                shell=True, check=True)
-            print("Experiments ran successfully. (Output can be found in '{}')".format(
-                self.output_save_path))
         except subprocess.CalledProcessError as e:
-            print("Experiments failed.")
+            print("ERROR: Experiments failed!")
             raise e
+        print("- Experiments finished!")
