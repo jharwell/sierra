@@ -16,11 +16,10 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from experiment_input_generator import ExperimentInputGenerator
-from xml_helper import XMLHelper
-import xml
+from exp_input_generator import ExpInputGenerator
 
-class StatelessInputGenerator(ExperimentInputGenerator):
+
+class BaseInputGenerator(ExpInputGenerator):
 
     """
     Generates simulation input for base/simple stateless foraging experiments.
@@ -38,7 +37,6 @@ class StatelessInputGenerator(ExperimentInputGenerator):
         #                          "stateless_foraging_controller")
         xml_helper.set_attribute("argos-configuration.loop_functions.label",
                                  "stateless_foraging_loop_functions")
-
         self._generate_all_sim_inputs(self._generate_random_seeds(), xml_helper)
         xml_helper.write()
         return xml_helper

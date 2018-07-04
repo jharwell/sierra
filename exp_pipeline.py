@@ -16,16 +16,18 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from csv_averager import CSVAverager
-from experiment_runner import ExperimentRunner
+from exp_csv_averager import ExpCSVAverager
+from batched_exp_csv_averager import BatchedExpCSVAverager
+from exp_runner import ExpRunner
+from batched_exp_runner import BatchedExpRunner
+import os
 
-
-class ExperimentPipeline:
+class ExpPipeline:
 
     """
-    Automation for running ARGoS robotic simulation experiments in parallel.
+    Automation for running ARGoS robotic simulation experiments in parallel
 
-    Implements the following pipeline:
+    Implements the following pipeline for single OR batched experiments:
 
     1. Generate a set of XML configuration files from a template suitable for
        input into ARGoS that contain user-specified modifications.
@@ -41,21 +43,34 @@ class ExperimentPipeline:
     def generate_inputs(self):
         # Generate simulation inputs
         if not self.args.run_only and not self.args.average_only:
-            print("- Generating input files for {} simulations....".format(self.args.n_sims))
+            print("- Generating input files for '{0}'...".format(self.args.exp_type))
             self.input_generator.generate()
-            print("- Experiment input files generated.")
+            print("- Input files generated.")
 
     def run_experiments(self):
-        # Run simulations!
-        runner = ExperimentRunner(self.args.generation_root)
+        if self.args.average_only:
+            return
 
-        if not self.args.average_only:
-            runner.run(personal=self.args.personal)
+        if self.args.batch:
+            runner = BatchedExpRunner(self.args.generation_root)
+        else:
+            runner = ExpRunner(self.args.generation_root)
+
+        runner.run(personal=self.args.personal)
 
     def average_results(self):
-        # Average results
-        averager = CSVAverager(self.args.template_config_file, self.args.exp_output_root)
+        template_config_leaf, template_config_ext = os.path.splitext(
+            os.path.basename(self.args.template_config_file))
+
+        if self.args.batch:
+            averager = BatchedExpCSVAverager(template_config_leaf, self.args.output_root)
+        else:
+            averager = ExpCSVAverager(template_config_leaf, self.args.output_root)
+
+        print("- Averaging outputs for '{0}'...".format(self.args.exp_type))
         averager.average_csvs()
+        print("- Averaging output complete")
+
 
     def run(self):
         assert self.args.n_sims > 0, ("Must specify at least 1 simulation!")
