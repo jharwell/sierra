@@ -18,8 +18,9 @@
 
 import argparse
 import os
-from experiment_pipeline import ExperimentPipeline
-from depth0.stateless_input_generator import StatelessInputGenerator
+from exp_pipeline import ExpPipeline
+from batched_exp_input_generator import BatchedExpInputGenerator
+import batch_criteria
 
 if __name__ == "__main__":
     # check python version
@@ -41,7 +42,7 @@ if __name__ == "__main__":
                         default=os.path.expanduser("~/generated-inputs"))
 
     # upgrade: think about adding a save CSV path
-    parser.add_argument("--exp-output-root",
+    parser.add_argument("--output-root",
                         help="Root directory for saving simulation outputs (sort of a scratch dir). Defaults to ~/output",
                         default=os.path.expanduser("~/output"))
     parser.add_argument("--graph-save-root",
@@ -59,9 +60,8 @@ if __name__ == "__main__":
                            help="Only perform CSV averaging on a previously run set of experiments.",
                            action="store_true")
 
-    parser.add_argument("exp",
-                        choices=("stateless_foraging"),
-                        help="Experiment to run")
+    parser.add_argument("exp_type",
+                        help="Experiment to run. Options are: [stateless]")
     parser.add_argument("--personal",
                         help="Include if running on a personal computer (otherwise runs supercomputer commands).",
                         action="store_true")
@@ -69,16 +69,35 @@ if __name__ == "__main__":
                         help="The minimum random seed number", type=int)
     parser.add_argument("--random-seed-max",
                         help="The maximum random seed number", type=int)
+    parser.add_argument("--batch",
+                        help="Run a batch of experiments instead of a single one.",
+                        action="store_true")
+    parser.add_argument("--batch-criteria",
+                        help="Name of criteria to use to generate the batched experiments.")
     args = parser.parse_args()
 
     input_generator = None
+    pipeline = None
 
-    if args.exp == "stateless_foraging":
-        input_generator = StatelessInputGenerator(args.template_config_file,
-                                                  args.generation_root,
-                                                  args.exp_output_root,
-                                                  args.n_sims,
-                                                  args.random_seed_min,
-                                                  args.random_seed_max)
-    pipeline = ExperimentPipeline(args, input_generator)
+    criteria = []
+    module = __import__(str("experiments." + args.exp_type), fromlist=["*"])
+
+    if args.batch:
+        input_generator = BatchedExpInputGenerator(args.template_config_file,
+                                                   args.generation_root,
+                                                   args.output_root,
+                                                   getattr(batch_criteria,
+                                                           str(args.batch_criteria))().gen_list(),
+                                                   getattr(module, "BaseInputGenerator"),
+                                                   args.n_sims,
+                                                   args.random_seed_min,
+                                                   args.random_seed_max)
+    else:
+        input_generator = getattr(module, "BaseInputGenerator")(args.template_config_file,
+                                                                args.generation_root,
+                                                                args.output_root,
+                                                                args.n_sims,
+                                                                args.random_seed_min,
+                                                                args.random_seed_max)
+    pipeline = ExpPipeline(args, input_generator)
     pipeline.run()

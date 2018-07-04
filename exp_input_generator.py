@@ -21,17 +21,20 @@ import random
 from xml_helper import XMLHelper, InvalidElementError
 
 
-class ExperimentInputGenerator:
+class ExpInputGenerator:
 
     """
-    Base class for generating a set of ARGoS simulation input files from a template and a text file with commands to run
-    each simulation suitable for input into GNU Parallel.
+    Base class for generating:
+
+    1. A set of ARGoS simulation input files from a template for a *single* experiment.
+    2. A command file with commands to run each simulation suitable for input into GNU Parallel for a *single* experiment.
 
     Attributes:
       template_config_path(str): Path(relative to current dir or absolute) to the template XML configuration file.
-      generation_root(str): Where XML configuration files generated from the template should be stored(relative to
+      generation_root(str): Where generated XML input files for ARGoS for this experiment should be stored(relative to
                              current dir or absolute).
-      exp_output_root(str): Root directory for simulation outputs(sort of a scratch directory). Can be relative or absolute.
+      exp_output_root(str): Root directory for simulation outputs for this experiment (sort of a scratch directory). Can
+                            be relative or absolute.
       n_sims(int): Number of simulations to run in parallel.
       random_seed_min(int): Minimum random seed for the experiment. Defaults to 1.
       random_seed_max(int): Maximum random seed for the experiment. Defaults to 10 * n_s.
@@ -48,18 +51,12 @@ class ExperimentInputGenerator:
             os.path.basename(self.template_config_file))
 
         # where the generated config and command files should be stored
-        if generation_root is None:
-            generation_root = os.path.join(os.path.dirname(
-                self.template_config_file), "Generated_Config_Files")
         self.generation_root = os.path.abspath(generation_root)
 
         assert self.generation_root.find(" ") == -1, ("ARGoS (apparently) does not support running configuration files with spaces in the path. Please make sure the " +
                                                       "configuration file save path '{}' does not have any spaces in it").format(self.generation_root)
 
         # where the output data should be stored
-        if exp_output_root is None:
-            exp_output_root = os.path.join(os.path.dirname(
-                self.generation_root), "Generated_Output")
         self.exp_output_root = os.path.abspath(exp_output_root)
 
         # how many experiments should be run
