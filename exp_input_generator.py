@@ -35,12 +35,14 @@ class ExpInputGenerator:
                              current dir or absolute).
       exp_output_root(str): Root directory for simulation outputs for this experiment (sort of a scratch directory). Can
                             be relative or absolute.
-      n_sims(int): Number of simulations to run in parallel.
+      n_sims(int): # of simulations to run in parallel.
+      n_threads(int): # of ARGoS threads to use.
       random_seed_min(int): Minimum random seed for the experiment. Defaults to 1.
       random_seed_max(int): Maximum random seed for the experiment. Defaults to 10 * n_s.
     """
 
-    def __init__(self, template_config_file, generation_root, exp_output_root, n_sims, random_seed_min=None, random_seed_max=None):
+    def __init__(self, template_config_file, generation_root, exp_output_root,
+                 n_sims, n_threads, random_seed_min=None, random_seed_max=None):
 
         assert os.path.isfile(
             template_config_file), "The path '{}' (which should point to the main config file) did not point to a file".format(template_config_file)
@@ -56,11 +58,9 @@ class ExpInputGenerator:
         assert self.generation_root.find(" ") == -1, ("ARGoS (apparently) does not support running configuration files with spaces in the path. Please make sure the " +
                                                       "configuration file save path '{}' does not have any spaces in it").format(self.generation_root)
 
-        # where the output data should be stored
         self.exp_output_root = os.path.abspath(exp_output_root)
-
-        # how many experiments should be run
         self.n_sims = n_sims
+        self.n_threads = n_threads
 
         if random_seed_min is None:
             random_seed_min = 1
@@ -91,9 +91,12 @@ class ExpInputGenerator:
             os.remove(self.commands_fpath)
 
         # Remove visualization elements
-        self._remove_xml_elements(xml_helper, [
-            "argos-configuration.visualization", "loop_functions.visualization"])
+        self._remove_xml_elements(xml_helper, ["argos-configuration.visualization",
+                                               "loop_functions.visualization"])
 
+        # Set # cores for each simulation to use
+        xml_helper.set_attribute("argos-configuration.framework.system.threads",
+                                 self.n_threads)
         return xml_helper
 
     def _generate_all_sim_inputs(self, random_seeds, xml_helper):
