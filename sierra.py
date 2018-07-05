@@ -18,6 +18,7 @@
 
 import argparse
 import os
+import textwrap
 from exp_pipeline import ExpPipeline
 from batched_exp_input_generator import BatchedExpInputGenerator
 import batch_criteria
@@ -65,7 +66,7 @@ if __name__ == "__main__":
                            help="Only perform graph generation on a previous run experiments/set of experiments.",
                            action="store_true")
     parser.add_argument("--exp_type",
-                        help="Experiment to run. Options are: [stateless]")
+                        help="Experiment to run. Options are: [stateless, stateful]")
 
     parser.add_argument("--personal",
                         help="Include if running on a personal computer (otherwise runs supercomputer commands).",
@@ -80,7 +81,13 @@ if __name__ == "__main__":
                         help="Run a batch of experiments instead of a single one.",
                         action="store_true")
     parser.add_argument("--batch-criteria",
-                        help="Name of criteria to use to generate the batched experiments.")
+                        help='''\
+                        Name of criteria to use to generate the batched experiments. Options are:
+                        SwarmSize<X>Linear (<X> = 64...1024 by powers of 2),
+                        SwarmSize<X>Log (<X> = 64...1024 by powers of 2),
+                        RectArenaSizeTwoByOne (X=10...100 by 10s, Y=5...50 by 5s),
+                        RectArenaSizeCorridor (X=10...100 by 10s, Y=5),
+                        TaskEstimationAlpha (Alpha=0.1...0.9)''')
     args = parser.parse_args()
 
     input_generator = None
@@ -98,6 +105,7 @@ if __name__ == "__main__":
                                                                str(args.batch_criteria))().gen_list(),
                                                        getattr(module, "BaseInputGenerator"),
                                                        args.n_sims,
+                                                       args.n_threads,
                                                        args.random_seed_min,
                                                        args.random_seed_max)
         else:
@@ -105,6 +113,7 @@ if __name__ == "__main__":
                                                                     args.generation_root,
                                                                     args.output_root,
                                                                     args.n_sims,
+                                                                    args.n_threads,
                                                                     args.random_seed_min,
                                                                     args.random_seed_max)
     pipeline = ExpPipeline(args, input_generator)

@@ -17,7 +17,8 @@
 """
 
 import os
-
+import matplotlib
+matplotlib.use('Agg')
 import pandas as pd
 
 
@@ -63,7 +64,6 @@ class DistanceTraveledGraphs:
 
     def generate(self):
         path = self.exp_output_root + '/distance-stats.csv'
-        print(path)
         if not os.path.exists(path):
                 return
         df = pd.read_csv(self.exp_output_root + '/distance-stats.csv',

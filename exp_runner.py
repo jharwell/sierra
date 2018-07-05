@@ -52,8 +52,8 @@ class ExpRunner:
                 # print(stdout, stderr)
             else:
                 # running on a supercomputer - specifically MSI
-                subprocess.run('cd "{}" && module load parallel && sort -u $PBS_NODEFILE > unique-nodelist.txt && \
-                                parallel --jobs 1 --sshloginfile unique-nodelist.txt --workdir $PWD < "{}"'.format(self.repo_dir, self.commands_file_path),
+                subprocess.run('sort -u $PBS_NODEFILE > unique-nodelist.txt && \
+                                parallel --jobs 1 --sshloginfile unique-nodelist.txt --workdir $PWD < "{}"'.format(self.exp_generation_root  + '/commands.txt'),
                                shell=True, check=True)
         except subprocess.CalledProcessError as e:
             print("ERROR: Experiment failed!")
