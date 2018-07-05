@@ -20,7 +20,9 @@ from exp_csv_averager import ExpCSVAverager
 from batched_exp_csv_averager import BatchedExpCSVAverager
 from exp_runner import ExpRunner
 from batched_exp_runner import BatchedExpRunner
+from intra_exp_graph_generator import IntraExpGraphGenerator
 import os
+
 
 class ExpPipeline:
 
@@ -41,20 +43,15 @@ class ExpPipeline:
         self.input_generator = input_generator
 
     def generate_inputs(self):
-        # Generate simulation inputs
-        if not self.args.run_only and not self.args.average_only:
-            print("- Generating input files for '{0}'...".format(self.args.exp_type))
-            self.input_generator.generate()
-            print("- Input files generated.")
+        print("- Generating input files for '{0}'...".format(self.args.exp_type))
+        self.input_generator.generate()
+        print("- Input files generated.")
 
     def run_experiments(self):
-        if self.args.average_only:
-            return
-
         if self.args.batch:
             runner = BatchedExpRunner(self.args.generation_root)
         else:
-            runner = ExpRunner(self.args.generation_root)
+            runner = ExpRunner(self.args.generation_root, False)
 
         runner.run(personal=self.args.personal)
 
@@ -71,19 +68,24 @@ class ExpPipeline:
         averager.average_csvs()
         print("- Averaging output complete")
 
+    def generate_graphs(self):
+
+        g = IntraExpGraphGenerator(self.args.output_root, self.args.graph_root)
+
+        print("- Generating intra-exp graphs...")
+        g.generate_graphs()
+        print("- Intra-exp graph generation complete")
 
     def run(self):
-        assert self.args.n_sims > 0, ("Must specify at least 1 simulation!")
 
-        self.generate_inputs()
-        if self.args.generate_only:
-            return
+        if not any([self.args.run_only, self.args.average_only, self.args.graphs_only]):
+            self.generate_inputs()
 
-        self.run_experiments()
-        if self.args.run_only:
-            return
+        if not any([self.args.inputs_only, self.args.average_only, self.args.graphs_only]):
+            self.run_experiments()
 
-        self.average_results()
+        if not any([self.args.inputs_only, self.args.run_only, self.args.graphs_only]):
+            self.average_results()
 
-        # Finally, generate graphs
-        # graph_generator = BaseGraphGenerator(self.args.exp_output_root, self.args.graph_save_path)
+        if not any([self.args.inputs_only, self.args.run_only, self.args.average_only]):
+            self.generate_graphs()

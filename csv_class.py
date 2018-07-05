@@ -85,6 +85,7 @@ class CSV:
 
     def __add__(self, other):
         '''Addition operator "+" '''
+        
         if isinstance(other, CSV):
             dims = self.dims # cache
             if dims != other.dims:
