@@ -36,7 +36,6 @@ class ExpCSVAverager:
         self.template_config_fname, self.template_config_ext = os.path.splitext(
             os.path.basename(exp_config_leaf))
 
-        print(exp_config_leaf, exp_output_root)
         self.exp_output_root = os.path.abspath(exp_output_root)
         self.exp_config_leaf = exp_config_leaf
 
@@ -65,7 +64,7 @@ class ExpCSVAverager:
                         csvs[inner_entry.name].append(csv)
         # average the CSVs based on their name; all the CSV files with the same base name will be averaged together
         averaged_csvs = {key: self._average_csvs(csvs[key]) for key in csvs}
-        csvs_path = os.path.join(self.exp_output_root, "Averaged_Output")
+        csvs_path = os.path.join(self.exp_output_root, "averaged-output")
         os.makedirs(csvs_path, exist_ok=True)
 
         # save the averaged CSV files

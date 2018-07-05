@@ -1,0 +1,25 @@
+#!/bin/bash -l
+#PBS -l walltime=0:15:00,nodes=5:ppn=8,pmem=1000mb
+#PBS -m abe
+#PBS -M harwe006@umn.edu
+
+# Script to get Argos to work
+source /home/gini/shared/swarm/bin/build-env-setup.sh
+
+# Load python
+module load python3
+
+# From MSI: transfers all of the loaded modules to the nodes
+export PARALLEL="--workdir . --env PATH --env LD_LIBRARY_PATH --env
+LOADEDMODULES --env _LMFILES_ --env MODULE_VERSION --env MODULEPATH --env
+MODULEVERSION_STACK --env MODULESHOME --env OMP_DYNAMICS --env
+OMP_MAX_ACTIVE_LEVELS --env OMP_NESTED --env OMP_NUM_THREADS --env
+OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY"
+
+# Actual commands to run
+cd sierra
+python3 sierra.py --template-config-file=~/git/fordyca/exp/single-source.argos \
+        --n-sims=16 --generation-root=~/fordyca-exp/generated-inputs \
+        --output-root=~/fordyca-exp/exp-outputs \
+        --graph-root=~/fordyca-exp/generated-graphs \
+        --exp-type=stateless
