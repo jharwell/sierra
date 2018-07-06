@@ -16,27 +16,17 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-import os
-from exp_runner import ExpRunner
+import numpy as np
+from batch_criteria.base_criteria import BaseCriteria
 
 
-class BatchedExpRunner:
-
+class EstimationAlpha(BaseCriteria):
     """
-    Runs each experiment in the specified batch directory in sequence.
-
+    Define a list of floating point values in [0,1] to test with.
     Attributes:
-      batch_exp_root(str): Root directory for the batch experiment.
-
+      range_list(list): List of values for estimation alpha.
     """
 
-    def __init__(self, batch_exp_root):
-        self.batch_exp_root = os.path.abspath(batch_exp_root)
-
-    def run(self, no_msi=False):
-        """Runs all experiments in the batch."""
-        print("- Running all experiments...")
-        for item in os.listdir(self.batch_exp_root):
-            path = os.path.join(self.batch_exp_root, item)
-            if os.path.isdir(path):
-                ExpRunner(path, True).run(no_msi)
+    def gen_list(self):
+        """Generate list of lists criteria for input into batch pipeline."""
+        return [[("params.task_executive.estimation.alpha", s)] for s in np.arange(0.1, 0.95, 0.05)]
