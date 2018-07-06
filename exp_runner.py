@@ -32,18 +32,21 @@ class ExpRunner:
       batch(bool): Whether or not the experiment is part of a batch.
 
     """
+
     def __init__(self, exp_generation_root, batch):
         self.exp_generation_root = os.path.abspath(exp_generation_root)
         self.batch = batch
 
-    def run(self, personal=False):
+    def run(self, no_msi=False):
         '''Runs the experiment.'''
-        assert os.environ.get("ARGOS_PLUGIN_PATH") is not None, ("ERROR: You must have ARGOS_PLUGIN_PATH defined")
+        assert os.environ.get(
+            "ARGOS_PLUGIN_PATH") is not None, ("ERROR: You must have ARGOS_PLUGIN_PATH defined")
 
-        print('-' + '-' * self.batch +  " Running experiment in {0}...".format(self.exp_generation_root))
+        print('-' + '-' * self.batch +
+              " Running experiment in {0}...".format(self.exp_generation_root))
         try:
             # so that it can be run on non-supercomputers
-            if personal:
+            if no_msi:
                 p = subprocess.Popen('cd {0} && parallel --no-notice < "{1}"'.format(self.exp_generation_root,
                                                                                      self.exp_generation_root + "/commands.txt"),
                                      shell=True,
@@ -53,7 +56,7 @@ class ExpRunner:
             else:
                 # running on a supercomputer - specifically MSI
                 subprocess.run('sort -u $PBS_NODEFILE > unique-nodelist.txt && \
-                                parallel --jobs 1 --sshloginfile unique-nodelist.txt --workdir $PWD < "{}"'.format(self.exp_generation_root  + '/commands.txt'),
+                                parallel --jobs 1 --sshloginfile unique-nodelist.txt --workdir $PWD < "{}"'.format(self.exp_generation_root + '/commands.txt'),
                                shell=True, check=True)
         except subprocess.CalledProcessError as e:
             print("ERROR: Experiment failed!")

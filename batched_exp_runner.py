@@ -29,13 +29,14 @@ class BatchedExpRunner:
       batch_exp_root(str): Root directory for the batch experiment.
 
     """
+
     def __init__(self, batch_exp_root):
         self.batch_exp_root = os.path.abspath(batch_exp_root)
 
-    def run(self, personal=False):
+    def run(self, no_msi=False):
         """Runs all experiments in the batch."""
         print("- Running all experiments...")
         for item in os.listdir(self.batch_exp_root):
             path = os.path.join(self.batch_exp_root, item)
             if os.path.isdir(path):
-                ExpRunner(path, True).run(personal)
+                ExpRunner(path, True).run(no_msi)

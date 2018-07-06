@@ -58,7 +58,7 @@ class BatchedExpInputGenerator:
 
         self.batch_generation_root = os.path.abspath(batch_generation_root)
         assert self.batch_generation_root.find(" ") == -1, ("ARGoS (apparently) does not support running configuration files with spaces in the path. Please make sure the " +
-                                                      "batch generation root directory '{}' does not have any spaces in it").format(self.batch_generation_root)
+                                                            "batch generation root directory '{}' does not have any spaces in it").format(self.batch_generation_root)
 
         self.batch_output_root = os.path.abspath(batch_output_root)
         self.batch_criteria = batch_criteria
@@ -82,6 +82,8 @@ class BatchedExpInputGenerator:
                 xml_helper.set_attribute(xml_tag, attr)
             xml_helper.output_filepath = exp_generation_root + "/" + self.batch_config_leaf
             xml_helper.write()
+            with open(exp_generation_root + '/exp_def.txt', 'w') as f:
+                f.write(str(exp_def))
             exp_num += 1
 
         # Create and run generators
@@ -90,7 +92,7 @@ class BatchedExpInputGenerator:
             exp_generation_root = "{0}/exp{1}".format(self.batch_generation_root, exp_num)
             exp_output_root = "{0}/exp{1}".format(self.batch_output_root, exp_num)
             g = self.exp_generator_cname(exp_generation_root + "/" + self.batch_config_leaf,
-                                         exp_generation_root, exp_output_root,
-                                         self.n_sims, self.n_threads, self.random_seed_min, self.random_seed_max)
+                                         exp_generation_root, exp_output_root, self.n_sims,
+                                         self.n_threads, self.random_seed_min, self.random_seed_max)
             g.generate()
             exp_num += 1

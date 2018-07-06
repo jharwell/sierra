@@ -1,12 +1,11 @@
 """
- Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
+Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 
   This file is part of SIERRA.
 
-  SIERRA is free software: you can redistribute it and/or modify it under the
-  terms of the GNU General Public License as published by the Free Software
-  Foundation, either version 3 of the License, or (at your option) any later
-  version.
+  SIERRA is free software: you can redistribute it and/or modify it under the terms of the GNU
+  General Public License as published by the Free Software Foundation, either version 3 of the
+  License, or (at your option) any later version.
 
   SIERRA is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
@@ -14,22 +13,45 @@
 
   You should have received a copy of the GNU General Public License along with
   SIERRA.  If not, see <http://www.gnu.org/licenses/
+
 """
 
 import argparse
 import os
-import textwrap
 from exp_pipeline import ExpPipeline
 from batched_exp_input_generator import BatchedExpInputGenerator
 import batch_criteria
 
-if __name__ == "__main__":
-    # check python version
-    import sys
-    if sys.version_info < (3, 0):
-        # restriction: cannot use Python 2.x to run this code
-        raise RuntimeError("Python 3.x should must be used to run this code.")
 
+def get_input_generator(args):
+    """Get the input generator to use to create experiment/batch inputs."""
+    if not any([args.graphs_only, args.run_only, args.average_only]):
+        module = __import__(
+            str("experiments." + args.exp_type), fromlist=["*"])
+
+        if args.batch:
+            return BatchedExpInputGenerator(args.template_config_file,
+                                            args.generation_root,
+                                            args.output_root,
+                                            getattr(batch_criteria, str(
+                                                args.batch_criteria))().gen_list(),
+                                            getattr(module, "BaseInputGenerator"),
+                                            args.n_sims,
+                                            args.n_threads,
+                                            args.random_seed_min,
+                                            args.random_seed_max)
+        else:
+            return getattr(module, "BaseInputGenerator")(args.template_config_file,
+                                                         args.generation_root,
+                                                         args.output_root,
+                                                         args.n_sims,
+                                                         args.n_threads,
+                                                         args.random_seed_min,
+                                                         args.random_seed_max)
+
+
+def define_cmdline():
+    """Define the command line arguments for sierra. Returns a parser with the definitions."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--template-config-file",
                         help="The template configuration file for the experiment.")
@@ -68,7 +90,7 @@ if __name__ == "__main__":
     parser.add_argument("--exp_type",
                         help="Experiment to run. Options are: [stateless, stateful]")
 
-    parser.add_argument("--personal",
+    parser.add_argument("--no-msi",
                         help="Include if running on a personal computer (otherwise runs supercomputer commands).",
                         action="store_true")
 
@@ -88,33 +110,18 @@ if __name__ == "__main__":
                         RectArenaSizeTwoByOne (X=10...100 by 10s, Y=5...50 by 5s),
                         RectArenaSizeCorridor (X=10...100 by 10s, Y=5),
                         TaskEstimationAlpha (Alpha=0.1...0.9)''')
+    return parser
+
+
+if __name__ == "__main__":
+    # check python version
+    import sys
+    if sys.version_info < (3, 0):
+        # restriction: cannot use Python 2.x to run this code
+        raise RuntimeError("Python 3.x should must be used to run this code.")
+
+    parser = define_cmdline()
     args = parser.parse_args()
 
-    input_generator = None
-    pipeline = None
-
-    criteria = []
-    if not any([args.graphs_only, args.run_only, args.average_only]):
-        module = __import__(str("experiments." + args.exp_type), fromlist=["*"])
-
-        if args.batch:
-            input_generator = BatchedExpInputGenerator(args.template_config_file,
-                                                       args.generation_root,
-                                                       args.output_root,
-                                                       getattr(batch_criteria,
-                                                               str(args.batch_criteria))().gen_list(),
-                                                       getattr(module, "BaseInputGenerator"),
-                                                       args.n_sims,
-                                                       args.n_threads,
-                                                       args.random_seed_min,
-                                                       args.random_seed_max)
-        else:
-            input_generator = getattr(module, "BaseInputGenerator")(args.template_config_file,
-                                                                    args.generation_root,
-                                                                    args.output_root,
-                                                                    args.n_sims,
-                                                                    args.n_threads,
-                                                                    args.random_seed_min,
-                                                                    args.random_seed_max)
-    pipeline = ExpPipeline(args, input_generator)
+    pipeline = ExpPipeline(args, get_input_generator(args))
     pipeline.run()
