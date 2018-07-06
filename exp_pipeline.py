@@ -21,6 +21,8 @@ from batched_exp_csv_averager import BatchedExpCSVAverager
 from exp_runner import ExpRunner
 from batched_exp_runner import BatchedExpRunner
 from intra_exp_graph_generator import IntraExpGraphGenerator
+from batched_csv_collator import BatchedCSVCollator
+from batched_intra_exp_graph_generator import BatchedIntraExpGraphGenerator
 import os
 
 
@@ -38,6 +40,7 @@ class ExpPipeline:
     3. Average the .csv results of the simulation runs together.
     4. Generate a user-defined set of pretty graphs based on the averaged results.
     """
+
     def __init__(self, args, input_generator):
         self.args = args
         self.input_generator = input_generator
@@ -53,7 +56,7 @@ class ExpPipeline:
         else:
             runner = ExpRunner(self.args.generation_root, False)
 
-        runner.run(personal=self.args.personal)
+        runner.run(no_msi=self.args.no_msi)
 
     def average_results(self):
         template_config_leaf, template_config_ext = os.path.splitext(
@@ -69,12 +72,77 @@ class ExpPipeline:
         print("- Averaging output complete")
 
     def generate_graphs(self):
+        targets = [('block-transport-stats.csv',
+                    'n_collected',
+                    'blocks-collected.csv'),
+                   ('block-transport-stats.csv',
+                    'avg_transporters',
+                    'blocks-avg-transporters.csv'),
+                   ('block-transport-stats.csv',
+                    'avg_transport_time',
+                    'blocks-avg-transport-time.csv'),
+                   ('block-transport-stats.csv',
+                    'avg_initial_wait_time',
+                    'blocks-initial-wait-time.csv'),
+                   ('block-acquisition-stats.csv',
+                    'avg_acquiring_goal',
+                    'block-acquisition.csv'),
+                   ('block-acquisition-stats.csv',
+                    'avg_vectoring_to_goal',
+                    'block-acquisition-vectoring.csv'),
+                   ('block-acquisition-stats.csv',
+                    'avg_exploring_for_goal',
+                    'block-acquisition-exploring.csv'),
+                   ('cache-acquisition-stats.csv',
+                    'avg_acquiring_goal',
+                    'cache-acquisition.csv'),
+                   ('cache-acquisition-stats.csv',
+                    'avg_vectoring_to_goal',
+                    'cache-acquisition-vectoring.csv'),
+                   ('cache-acquisition-stats.csv',
+                    'avg_exploring_for_goal',
+                    'cache-acquisition-exploring.csv'),
+                   ('cache-lifecycle-stats.csv',
+                    'n_created',
+                    'cache-lifecycle-avg-created.csv'),
+                   ('cache-lifecycle-stats.csv',
+                    'n_depleted',
+                    'cache-lifecycle-avg-depleted.csv'),
+                   ('cache-lifecycle-stats.csv',
+                    'n_created',
+                    'cache-lifecycle-avg-created.csv'),
+                   ('cache-lifecycle-stats.csv',
+                    'n_depleted',
+                    'cache-lifecycle-avg-depleted.csv'),
+                   ('cache-utilization-stats.csv',
+                    'avg_blocks',
+                    'cache-avg-blocks.csv'),
+                   ('cache-utilization-stats.csv',
+                    'avg_pickups',
+                    'cache-avg-pickups.csv'),
+                   ('cache-utilization-stats.csv',
+                    'avg_drops',
+                    'cache-avg-drops.csv'),
+                   ('cache-utilization-stats.csv',
+                    'avg_penalty',
+                    'cache-avg-penalty.csv'),
+                   ]
 
-        g = IntraExpGraphGenerator(self.args.output_root, self.args.graph_root)
+        if self.args.batch:
+            BatchedCSVCollator(self.args.output_root, self.args.graph_root, targets)()
+            intra_exp = BatchedIntraExpGraphGenerator(self.args.output_root, self.args.graph_root)
+        else:
 
-        print("- Generating intra-exp graphs...")
-        g.generate_graphs()
-        print("- Intra-exp graph generation complete")
+            intra_exp = IntraExpGraphGenerator(self.args.output_root, self.args.graph_root)
+        print("- Generating intra-experiment graphs...")
+        intra_exp()
+        print("- Intra-experiment graph generation complete")
+
+        if self.args.batch:
+            print("- Generating inter-experiment graphs...")
+            # InterExpGraphGenerator(os.path.join(self.args.output_root, "collated-csvs"),
+            #                        self.args.graph_root)()
+            print("- Inter-experiment graph generation complete")
 
     def run(self):
 
