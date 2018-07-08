@@ -20,34 +20,35 @@ import argparse
 import os
 from exp_pipeline import ExpPipeline
 from batched_exp_input_generator import BatchedExpInputGenerator
-import batch_criteria
 
 
 def get_input_generator(args):
     """Get the input generator to use to create experiment/batch inputs."""
     if not any([args.graphs_only, args.run_only, args.average_only]):
-        module = __import__(
+        exp = __import__(
             str("experiments." + args.exp_type), fromlist=["*"])
 
         if args.batch:
+            criteria = __import__("batch_criteria.{0}".format(
+                args.batch_criteria.split(".")[0]), fromlist=["*"])
             return BatchedExpInputGenerator(args.template_config_file,
                                             args.generation_root,
                                             args.output_root,
-                                            getattr(batch_criteria, str(
-                                                args.batch_criteria))().gen_list(),
-                                            getattr(module, "BaseInputGenerator"),
+                                            getattr(criteria, args.batch_criteria.split(
+                                                ".")[1])().gen_list(),
+                                            getattr(exp, "BaseInputGenerator"),
                                             args.n_sims,
                                             args.n_threads,
                                             args.random_seed_min,
                                             args.random_seed_max)
         else:
-            return getattr(module, "BaseInputGenerator")(args.template_config_file,
-                                                         args.generation_root,
-                                                         args.output_root,
-                                                         args.n_sims,
-                                                         args.n_threads,
-                                                         args.random_seed_min,
-                                                         args.random_seed_max)
+            return getattr(exp, "BaseInputGenerator")(args.template_config_file,
+                                                      args.generation_root,
+                                                      args.output_root,
+                                                      args.n_sims,
+                                                      args.n_threads,
+                                                      args.random_seed_min,
+                                                      args.random_seed_max)
 
 
 def define_cmdline():
@@ -105,11 +106,11 @@ def define_cmdline():
     parser.add_argument("--batch-criteria",
                         help='''\
                         Name of criteria to use to generate the batched experiments. Options are:
-                        SwarmSize<X>Linear (<X> = 64...1024 by powers of 2),
-                        SwarmSize<X>Log (<X> = 64...1024 by powers of 2),
-                        RectArenaSizeTwoByOne (X=10...100 by 10s, Y=5...50 by 5s),
-                        RectArenaSizeCorridor (X=10...100 by 10s, Y=5),
-                        TaskEstimationAlpha (Alpha=0.1...0.9)''')
+                        swarm_size.Linear<X> (<X> = 64...1024 by powers of 2),
+                        swarm_size.Log<X> (<X> = 64...1024 by powers of 2),
+                        arena_size.RectangularArenaTwoByOne (X=10...100 by 10s, Y=5...50 by 5s),
+                        arena_size.RectangularArenaCorridor (X=10...100 by 10s, Y=5),
+                        task_allocation.EstimationAlpha (Alpha=0.1...0.9)''')
     return parser
 
 

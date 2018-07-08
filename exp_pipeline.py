@@ -21,7 +21,7 @@ from batched_exp_csv_averager import BatchedExpCSVAverager
 from exp_runner import ExpRunner
 from batched_exp_runner import BatchedExpRunner
 from intra_exp_graph_generator import IntraExpGraphGenerator
-from batched_csv_collator import BatchedCSVCollator
+from csv_collator import CSVCollator
 from batched_intra_exp_graph_generator import BatchedIntraExpGraphGenerator
 import os
 
@@ -40,7 +40,6 @@ class ExpPipeline:
     3. Average the .csv results of the simulation runs together.
     4. Generate a user-defined set of pretty graphs based on the averaged results.
     """
-
     def __init__(self, args, input_generator):
         self.args = args
         self.input_generator = input_generator
@@ -129,7 +128,7 @@ class ExpPipeline:
                    ]
 
         if self.args.batch:
-            BatchedCSVCollator(self.args.output_root, self.args.graph_root, targets)()
+            CSVCollator(self.args.output_root, self.args.graph_root, targets)()
             intra_exp = BatchedIntraExpGraphGenerator(self.args.output_root, self.args.graph_root)
         else:
 
