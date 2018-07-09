@@ -35,25 +35,29 @@ class CSVCollator:
 
     def __init__(self, batch_output_root, targets):
         self.batch_output_root = os.path.abspath(batch_output_root)
+        self.collate_root = os.path.join(self.batch_output_root, "collated-csvs")
+        os.makedirs(self.collate_root, exist_ok=True)
         self.targets = targets
 
     def __call__(self):
-        print("- Collating inter-experiment .csv files...")
+        print("- Collating inter-experiment .csv files to {0}...".format(self.collate_root))
         for csv_ifname, csv_col, csv_ofname in self.targets:
             df_new = pd.DataFrame()
             for item in os.listdir(self.batch_output_root):
                 exp_output_root = os.path.join(self.batch_output_root, item)
                 if os.path.isdir(exp_output_root):
-                    csv_ipath = os.path.join(exp_output_root, csv_ifname)
-                    assert os.path.exists(csv_ipath), "FATAL: {0} not found in {1}".format(
-                        csv_ifname, exp_output_root)
+                    csv_ipath = os.path.join(exp_output_root, "averaged-output", csv_ifname)
+                    if not os.path.exists(csv_ipath):
+                        continue
                     df = pd.read_csv(csv_ipath, sep=';')
-                    cols = df.columns.values.to_list()
-                    assert csv_col in cols, "FATAL: {0} not in columns of {1}".format(
+
+                    assert csv_col in df.columns.values, "FATAL: {0} not in columns of {1}".format(
                         csv_col, csv_ifname)
                     df_new['clock'] = df['clock']
-                    # Need to use experiment definition as the column name to make graph generation
-                    # easier later on
-                    col_name = open(os.path.join(exp_output_root, 'exp_def.txt')).readlines()
-                    df_new[col_name] = df[csv_col]
-            df_new.write_csv(os.path.join(self.batch_output_root, "collated-csvs", csv_ofname))
+                    df_new[item] = df[csv_col]
+            # Sort columns except clock. They all start with 'exp' so only sort on the numerals
+            # after that part.
+            new_cols = ['clock'] + sorted([c for c in df_new.columns if c not in ['clock']],
+                                          key=lambda t: (int(t[3:])))
+            df_new = df_new.reindex(new_cols, axis=1)
+            df_new.to_csv(os.path.join(self.collate_root, csv_ofname), sep=';', index=False)

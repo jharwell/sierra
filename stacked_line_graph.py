@@ -55,10 +55,13 @@ class StackedLineGraph:
 
         if self.legend is not None:
             lines, labels = ax.get_legend_handles_labels()
-            ax.legend(lines, self.legend)
+            ax.legend(lines, self.legend, loc=9, bbox_to_anchor=(0.5, -0.1), ncol=2)
+        else:
+            ax.legend(loc=9, bbox_to_anchor=(0.5, -0.1), ncol=2)
 
         ax.set_xlabel(self.xlabel)
         ax.set_ylabel(self.ylabel)
         fig = ax.get_figure()
-        fig.savefig(self.output_fpath)
+        fig.set_size_inches(10, 10)
+        fig.savefig(self.output_fpath, bbox_inches='tight', dpi=100)
         fig.clf()

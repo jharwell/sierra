@@ -36,11 +36,10 @@ class BatchedIntraExpGraphGenerator:
         self.batch_output_root = os.path.abspath(batch_output_root)
         self.batch_graph_root = batch_graph_root
 
-    def generate(self):
+    def __call__(self):
         """Generate all intra-experiment graphs for all experiments in the batch."""
-        print("- Generating all intra-experiment graphs...")
         for item in os.listdir(self.batch_output_root):
             exp_output_root = os.path.join(self.batch_output_root, item)
             exp_graph_root = os.path.join(self.batch_graph_root, item)
-            if os.path.isdir(exp_output_root):
-                IntraExpGraphGenerator(exp_output_root, exp_graph_root).generate()
+            if os.path.isdir(exp_output_root) and 'collated-csvs' != item:
+                IntraExpGraphGenerator(exp_output_root, exp_graph_root)()
