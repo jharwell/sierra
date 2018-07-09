@@ -40,7 +40,6 @@ class ExpPipeline:
     3. Average the .csv results of the simulation runs together.
     4. Generate a user-defined set of pretty graphs based on the averaged results.
     """
-
     def __init__(self, args, input_generator):
         self.args = args
         self.input_generator = input_generator
