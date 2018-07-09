@@ -23,6 +23,7 @@ from batched_exp_runner import BatchedExpRunner
 from intra_exp_graph_generator import IntraExpGraphGenerator
 from csv_collator import CSVCollator
 from batched_intra_exp_graph_generator import BatchedIntraExpGraphGenerator
+from inter_exp_graph_generator import InterExpGraphGenerator
 import os
 
 
@@ -38,8 +39,10 @@ class ExpPipeline:
     2. Run the specified  # of experiments in parallel using GNU Parallel on
        the provided set of hosts on MSI (or on a single personal computer for testing).
     3. Average the .csv results of the simulation runs together.
-    4. Generate a user-defined set of pretty graphs based on the averaged results.
+    4. Generate a user-defined set of graphs based on the averaged results for each
+       experiment, and possibly across experiments for batches
     """
+
     def __init__(self, args, input_generator):
         self.args = args
         self.input_generator = input_generator
@@ -128,7 +131,7 @@ class ExpPipeline:
                    ]
 
         if self.args.batch:
-            CSVCollator(self.args.output_root, self.args.graph_root, targets)()
+            CSVCollator(self.args.output_root, targets)()
             intra_exp = BatchedIntraExpGraphGenerator(self.args.output_root, self.args.graph_root)
         else:
 
@@ -139,8 +142,7 @@ class ExpPipeline:
 
         if self.args.batch:
             print("- Generating inter-experiment graphs...")
-            # InterExpGraphGenerator(os.path.join(self.args.output_root, "collated-csvs"),
-            #                        self.args.graph_root)()
+            InterExpGraphGenerator(self.args.output_root, self.args.graph_root)()
             print("- Inter-experiment graph generation complete")
 
     def run(self):

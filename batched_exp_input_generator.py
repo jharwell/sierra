@@ -26,7 +26,10 @@ class BatchedExpInputGenerator:
     Class for generating:
 
     1. A set of ARGoS simulation input files from a template for a set of experiments.
-    2. A command file with commands to run each simulation suitable for input into GNU Parallel for a set experiment.
+    2. A command file with commands to run each simulation suitable for input into GNU Parallel for
+       a set of experiments .
+    3. An experiment definition file for each experiment, containing what values of the batch
+       criteria are present in the input files.
 
     Attributes:
       batch_config_template(str): Path (relative to current dir or absolute) to the root template XML configuration
