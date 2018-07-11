@@ -17,7 +17,7 @@
 """
 
 import numpy as np
-from batch_criteria.base_criteria import BaseCriteria
+from base_criteria import BaseCriteria
 
 
 class EstimationAlpha(BaseCriteria):

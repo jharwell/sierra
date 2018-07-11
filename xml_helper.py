@@ -88,6 +88,9 @@ class XMLHelper:
         # restriction: assumes the root of the xml file is not going to change
         self.root = self.tree.getroot()
 
+
+    ### Simple exposed functions ###
+    # These are the functions most people should call
     def write(self, filepath=None):
         '''Write the XML stored in the object to an output filepath.'''
         if filepath is None:
@@ -95,27 +98,22 @@ class XMLHelper:
 
         self.tree.write(filepath)
 
-    def get_element(self, path):
-        '''Alias for get_element_with_loose_attribute_path.'''
-        return self.get_element_with_loose_attribute_path(path)
-
     def set_attribute(self, path, value):
         '''Alias for set_attribute_with_loose_path_to.'''
         return self.set_attribute_with_loose_path_to(path, value)
+
+    def set_tag(self, path, value):
+        '''Alias for set_tag_of_element_with_loose_strict_path_to.'''
+        return self.set_tag_of_element_with_loose_strict_path_to(path, value)
 
     def remove_element(self, path):
         '''Alias for remove_element_with_loose_strict_path.'''
         return self.remove_element_with_loose_strict_path(path)
 
-    def remove_element_with_loose_strict_path(self, path):
-        '''
-        Takes a loose-strict path to an element.
-        Removes that element from the tree (including all of its subelements).
-        Raises an InvalidElementError if an element cannot be found or if the specified element is the root element.
-        Restriction: the root element cannot be removed.
-        '''
-        return self._remove_element_with_loose_strict_path_list(self._path_to_path_list(path))
 
+    ### Explicit exposed functions ###
+    # These functions can be called, and they have more explicit names
+    # I separate them from the simple functions so that end users don't need to be confused by them
     def set_attribute_with_loose_path_to(self, path, value):
         '''
         Takes a loose path to an attribute and sets that attribute to the given value.
@@ -132,17 +130,32 @@ class XMLHelper:
             raise InvalidElementError(
                 "An element matching the path attribute '{}' could not be found".format(path))
 
-    def get_element_with_loose_attribute_path(self, path):
-        '''
-        Takes a loose path to an attribute.
-        Returns an element with the matching attribute.
-        (Returns None if such an element cannot be found.)
-        '''
-        return self._get_element_with_loose_attribute_path_list_inside(*self._check_path_list_starting_point(self._path_to_path_list(path)))
+    def set_tag_of_element_with_loose_strict_path_to(self, path, value):
+        '''Takes a loose strict path to an element and sets the tag of that element to the given value.'''
+        return self._set_tag_of_element_with_loose_strict_path_list_to(self._path_to_path_list(path), value)
 
+    def remove_element_with_loose_strict_path(self, path):
+        '''
+        Takes a loose-strict path to an element.
+        Removes that element from the tree (including all of its subelements).
+        Raises an InvalidElementError if an element cannot be found or if the specified element is the root element.
+        Restriction: the root element cannot be removed.
+        '''
+        return self._remove_element_with_loose_strict_path_list(self._path_to_path_list(path))
+
+
+    ### Private functions ###
+    # These are the helper functions that are used by other functions in the class
+    # These start with an underscore to indicate that they are private and should not be called by end users
     def _path_to_path_list(self, path):
         '''Takes a path and returns the corresponding path list.'''
         return path.split(".")
+
+    def  _set_tag_of_element_with_loose_strict_path_list_to(self, path_list, value):
+        '''Takes a loose strict path list to an element and sets the tag of that element to the given value.'''
+        # get the specified element at the end of the path
+        element = self._loose_strict_element_path_list_to_strict_element_list(path_list)[-1]
+        element.tag = value
 
     def _remove_element_with_loose_strict_path_list(self, path_list):
         '''Takes a loose strict element path list and removes the corresponding element (and all of it's subelements) from the tree.'''
@@ -156,17 +169,16 @@ class XMLHelper:
                 raise InvalidElementError("You cannot remove the root element")
             else:  # TypeError: the strict element list was not found
                 raise InvalidElementError(
-                    "The path list '{}' could not be found".format(path_list))
+                    "The element path list '{}' could not be found".format(path_list))
 
     def _loose_strict_element_path_list_to_strict_element_list(self, path_list):
         '''
         Takes a loose-strict element path list and returns the corresponding strict element list.
-        This function will modify the path list.
+        This function will modify the element path list.
         '''
         initial_tag = path_list.pop(0)
         # will have the element corresponding to the first tag in the list
-        initial_strict_element_list = self._loose_element_path_list_to_strict_element_list([
-                                                                                           initial_tag])
+        initial_strict_element_list = self._loose_element_path_list_to_strict_element_list([initial_tag])
         if initial_strict_element_list is None:
             return None
 
@@ -187,7 +199,7 @@ class XMLHelper:
         goal_tag = path_list.pop(0)
         # iterate through children
         for subelement in starting_element:
-            if subelement.tag == goal_tag:
+            if self._has_tag_or_id(subelement.tag, goal_tag):
                 ans = self._strict_element_path_list_to_strict_element_list_starting_at(
                     path_list, subelement)
                 if ans is not None:
@@ -216,7 +228,7 @@ class XMLHelper:
         goal_tag = path_list[0]
 
         for subelement in starting_element:
-            if subelement.tag == goal_tag:
+            if self._has_tag_or_id(subelement, goal_tag):
                 # this might be the element we were searching for next
                 new_path_list = path_list[1:]
             else:
@@ -234,16 +246,21 @@ class XMLHelper:
         If starting_element is None, this means that the search is inside the document as a whole.
         The goal is to pass the data to a function that searches inside an element; the document is not an element.
         So this will check if the root element matches with the first tag, making it so that the search can then be done inside of the root element.
-        restriction: do not have elements inside the root element with the same tag as the root element
+        restriction: do not have elements inside the root element with the same tag or id as the root element
         # Warning: this may cause a subsequent search to fail or return an incorrect value if there are multiple elements with the same tag as the root
             # for example, searching for the loose strict path "a.a.b.c" might not be able to find "a.e.a.a.b.c" because it will search for "a.b.c" directly below the first "a"
             # if the above restriction is followed, everything should work as expected.
+        # upgrade: the starting_element parameter may not be needed; if this function is being used, it's probably set to None.
+
+        path_list is an element path list
+        starting_element is an element object
         '''
+
         if starting_element is None:
             # deal with the case where we search inside the xml document itself
             starting_element = self.root
 
-            if len(path_list) >= 1 and path_list[0] == self.root.tag:
+            if len(path_list) >= 1 and self._has_tag_or_id(self.root, path_list[0]):
                 # having the root as the first tag will cause the function to search inside root for root itself (and thus fail), so catch that case here.
                 path_list = path_list[1:]
 
@@ -269,9 +286,10 @@ class XMLHelper:
             goal_tag = path_list[0]
 
         # iterate through inner elements
-        for element in starting_element.iter(goal_tag):
-            if element is starting_element:
-                # skip over searching starting_element for the tag or attribute; we're only interested in the child elements
+        for element in starting_element:
+            # skip over searching starting_element for the tag or attribute; we're only interested in the child elements
+            # also skip over things that don't match what we're looking for
+            if element is starting_element or not self._has_tag_or_id(element, goal_tag):
                 continue
             ans = self._get_element_with_loose_attribute_path_list_inside(
                 path_list[1:], element)
@@ -281,8 +299,22 @@ class XMLHelper:
         # no matching element was found under the starting element
         return None
 
+    def _has_tag_or_id(self, element, tag_or_id):
+        '''
+        Determines whether or not the given element has the given tag or id
+        element is an element object
+        tag_or_id is a tag (a string)
+        '''
+        # check to see if the tag matches
+        if element.tag == tag_or_id:
+            return True
+        # make sure it has an id and that the id matches
+        if "id" in element.attrib and element.attrib["id"] == tag_or_id:
+            return True
+        return False
+
 
 if __name__ == "__main__":
-    x = XMLHelper("sample-xml-files/new-single-source-test.argos")
-    x.remove_element("loop_functions.visualization")
+    x = XMLHelper("testing_generated_configs/new-single-source-test_0.argos")
+    x.set_tag("wall_north", "the north wall")
     x.write("testing.argos")
