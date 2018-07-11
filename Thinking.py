@@ -257,4 +257,30 @@ export PARALLEL="--workdir . --env PATH --env LD_LIBRARY_PATH --env LOADEDMODULE
 # Actual commands to run
 cd sierra
 python3 experiment_runner.py "Sample XML Files/new-single-source-test.argos" ~/fordycaResearch/fordyca 10 --config_save_path ~/sierra_config_test_files --output_save_path ~/sierra_output_test_files
+
+Here are the things that are next to do:
+    make it so that paths can have IDs instead of just tags, and that works in the path
+    add in the ability to change tags
+    update the README to explain the difference between strict, loose, and loose-strict paths
+'''
+
+'''
+7/11/2018
+So I don't know why I decided to go with loose strict paths for finding elements instead of just being completely loose again,
+...like I was for attributes.
+Now I'm trying to set the tag of a certain element, and I don't know if that element should be specified with a loose strict path or a loose one.
+Was there some reason I couldn't do loose paths with elements?
+Yes, I think it was because at the second level there were two elements with the same name and inner structure.
+Nope, looking at it, that's not quite right.
+It's because I had visualization tag at the bottom (second layer) that I wanted to delete,
+...and there was a visualization tag (3rd layer) at the top that I wanted to keep.
+So even though they had different layers, I couldn't specify which one I wanted.
+
+Talked to John about it, and he said to keep it the way it is.
+That is, keep it doing the loose search for attributes and the loose strict search for elements.
+So, I'll also be doing loose strict searches when editing element tags.
+
+Alright, that's done.
+So, I've made all the searched work with IDs as well as tags, and you can now change tags.
+All that's left is updating the README.
 '''
