@@ -16,7 +16,7 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from base_criteria import BaseCriteria
+from batch_criteria.base_criteria import BaseCriteria
 
 
 class SwarmSize(BaseCriteria):
