@@ -198,8 +198,8 @@ class XMLHelper:
 
         goal_tag = path_list.pop(0)
         # iterate through children
-        for subelement in starting_element:
-            if self._has_tag_or_id(subelement.tag, goal_tag):
+        for subelement in starting_element.iter():
+            if self._has_tag_or_id(subelement, goal_tag):
                 ans = self._strict_element_path_list_to_strict_element_list_starting_at(
                     path_list, subelement)
                 if ans is not None:
@@ -227,7 +227,8 @@ class XMLHelper:
 
         goal_tag = path_list[0]
 
-        for subelement in starting_element:
+        # iterate through all children
+        for subelement in starting_element.iter():
             if self._has_tag_or_id(subelement, goal_tag):
                 # this might be the element we were searching for next
                 new_path_list = path_list[1:]
@@ -286,10 +287,11 @@ class XMLHelper:
             goal_tag = path_list[0]
 
         # iterate through inner elements
-        for element in starting_element:
+        for element in starting_element.iter():
             # skip over searching starting_element for the tag or attribute; we're only interested in the child elements
             # also skip over things that don't match what we're looking for
             if element is starting_element or not self._has_tag_or_id(element, goal_tag):
+                print("skipped")
                 continue
             ans = self._get_element_with_loose_attribute_path_list_inside(
                 path_list[1:], element)
@@ -305,6 +307,9 @@ class XMLHelper:
         element is an element object
         tag_or_id is a tag (a string)
         '''
+        print("called with")
+        print(element)
+        print(tag_or_id)
         # check to see if the tag matches
         if element.tag == tag_or_id:
             return True
@@ -316,5 +321,5 @@ class XMLHelper:
 
 if __name__ == "__main__":
     x = XMLHelper("testing_generated_configs/new-single-source-test_0.argos")
-    x.set_tag("wall_north", "the north wall")
-    x.write("testing.argos")
+    x.set_attribute("experiment.random_seed", "500")
+    x.write("testing2.argos")
