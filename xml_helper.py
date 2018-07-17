@@ -87,6 +87,9 @@ class XMLHelper:
         self.tree = ET.parse(input_filepath)
         # restriction: assumes the root of the xml file is not going to change
         self.root = self.tree.getroot()
+        # TODO delete
+        for element in self.root:
+            print(element)
 
 
     ### Simple exposed functions ###
@@ -197,9 +200,9 @@ class XMLHelper:
             return []
 
         goal_tag = path_list.pop(0)
-        # iterate through children
-        for subelement in starting_element.iter():
-            if self._has_tag_or_id(subelement, goal_tag):
+        # iterate only through direct children
+        for subelement in starting_element:
+            if not subelement is starting_element and self._has_tag_or_id(subelement, goal_tag):
                 ans = self._strict_element_path_list_to_strict_element_list_starting_at(
                     path_list, subelement)
                 if ans is not None:
@@ -227,9 +230,9 @@ class XMLHelper:
 
         goal_tag = path_list[0]
 
-        # iterate through all children
-        for subelement in starting_element.iter():
-            if self._has_tag_or_id(subelement, goal_tag):
+        # iterate through all direct children
+        for subelement in starting_element:
+            if not subelement is starting_element and self._has_tag_or_id(subelement, goal_tag):
                 # this might be the element we were searching for next
                 new_path_list = path_list[1:]
             else:
@@ -321,5 +324,6 @@ class XMLHelper:
 
 if __name__ == "__main__":
     x = XMLHelper("testing_generated_configs/new-single-source-test_0.argos")
-    x.set_attribute("experiment.random_seed", "500")
-    x.write("testing2.argos")
+    x.remove_element("actuators.differential_steering")
+    x.set_attribute("loop_functions.grid.size", "big")
+    x.write("testing3.argos")
