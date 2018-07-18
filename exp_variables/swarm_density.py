@@ -39,7 +39,7 @@ class ConstantDensity(BaseVariable):
         self.target_density = target_density
         self.changes = SquareArena(sqrange=self.sqrange).gen_list()
 
-    def gen_list(self):
+    def gen_attr_changelist(self):
         """
         Generate list of sets of changes to input file to set the # robots for a set of arena
         sizes such that the swarm density is constant.
@@ -51,6 +51,9 @@ class ConstantDensity(BaseVariable):
                     n_robots = (x * y) / self.target_density / (math.pi * kFootBotRadius ** 2)
                     changeset.add(("arena.entity.quanity", int(n_robots)))
                     break
+
+    def gen_tag_rmlist(self):
+        return []
 
 
 class ConstantDensity2p0(ConstantDensity):

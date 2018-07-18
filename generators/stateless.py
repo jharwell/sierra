@@ -16,10 +16,9 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from exp_input_generator import ExpInputGenerator
-import exp_variables as ev
-import powerlaw
-import single_source
+from generators.exp_input_generator import ExpInputGenerator
+import generators.powerlaw
+import generators.single_source
 
 
 class BaseGenerator(ExpInputGenerator):
@@ -60,7 +59,7 @@ class PowerlawGenerator(BaseGenerator):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.powerlaw = powerlaw.PowerlawGenerator(*args, **kwargs)
+        self.powerlaw = generators.powerlaw.PowerlawGenerator(*args, **kwargs)
 
     def generate(self):
         xml_helper = self.powerlaw.generate(self.init_sim_defs())
@@ -75,8 +74,8 @@ class SingleSourceGenerator(BaseGenerator):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.powerlaw = single_source.SingleSourceGenerator(*args, **kwargs)
+        self.ss = generators.single_source.SingleSourceGenerator(*args, **kwargs)
 
     def generate(self):
-        xml_helper = self.powerlaw.generate(self.init_sim_defs())
+        xml_helper = self.ss.generate(self.init_sim_defs())
         self._create_all_sim_inputs(self._generate_random_seeds(), xml_helper)

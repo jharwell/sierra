@@ -16,14 +16,14 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from exp_csv_averager import ExpCSVAverager
-from batched_exp_csv_averager import BatchedExpCSVAverager
-from exp_runner import ExpRunner
-from batched_exp_runner import BatchedExpRunner
-from intra_exp_graph_generator import IntraExpGraphGenerator
-from csv_collator import CSVCollator
-from batched_intra_exp_graph_generator import BatchedIntraExpGraphGenerator
-from inter_exp_graph_generator import InterExpGraphGenerator
+from pipeline.exp_csv_averager import ExpCSVAverager
+from pipeline.batched_exp_csv_averager import BatchedExpCSVAverager
+from pipeline.exp_runner import ExpRunner
+from pipeline.batched_exp_runner import BatchedExpRunner
+from pipeline.intra_exp_graph_generator import IntraExpGraphGenerator
+from pipeline.csv_collator import CSVCollator
+from pipeline.batched_intra_exp_graph_generator import BatchedIntraExpGraphGenerator
+from pipeline.inter_exp_graph_generator import InterExpGraphGenerator
 import os
 
 

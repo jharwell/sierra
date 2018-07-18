@@ -33,7 +33,7 @@ class NestPose(BaseVariable):
         self.dist_type = dist_type
         self.dimensions = dimensions
 
-    def gen_list(self):
+    def gen_attr_changelist(self):
         """
         Generate list of sets of changes necessary to make to the input file to correctly set up the
         simulation for the specified block distribution/nest.
@@ -49,6 +49,20 @@ class NestPose(BaseVariable):
                 ("fsm.nest", "2.0, {0}".format(s[1] / 2.0))
             ])
                 for s in self.dimensions]
+        elif self.dist_type == "powerlaw":
+            return [set([
+                ("arena.light1.position", "{0}, {0}, 1.0".format(s[1] * 0.5)),
+                ("arena_map.nest.size", "{0}, {1}".format(s[0] / 10.0, s[0] / 10.0)),
+                ("arena_map.nest.center", "{0}, {0}".format(s[0] * 0.5)),
+                ("fsm.nest", "{0}, {0}".format(s[0] * 0.5))
+            ])
+                for s in self.dimensions]
         else:
             # Eventually, I'll want to have definitions for the other block distribution types
             raise NotImplementedError
+
+    def gen_tag_rmlist(self):
+        if self.dist_type == "single_source":
+            return []
+        elif self.dist_type == "powerlaw":
+            return [set(["arena.light2", "arena.light3"])]

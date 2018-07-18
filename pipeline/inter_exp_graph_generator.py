@@ -18,7 +18,7 @@ Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 """
 
 import os
-from stacked_line_graph import StackedLineGraph
+from graphs.stacked_line_graph import StackedLineGraph
 
 
 class InterExpGraphGenerator:

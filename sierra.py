@@ -18,8 +18,8 @@ Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 
 import argparse
 import os
-from exp_pipeline import ExpPipeline
-from batched_exp_input_generator import BatchedExpInputGenerator
+from pipeline.exp_pipeline import ExpPipeline
+from pipeline.batched_exp_input_generator import BatchedExpInputGenerator
 
 
 def get_input_generator(args):
@@ -29,13 +29,13 @@ def get_input_generator(args):
             str("generators." + args.generator.split('.')[0]), fromlist=["*"])
 
         if args.batch:
-            criteria = __import__("batch_criteria.{0}".format(
+            criteria = __import__("exp_variables.{0}".format(
                 args.batch_criteria.split(".")[0]), fromlist=["*"])
             return BatchedExpInputGenerator(args.template_config_file,
                                             args.generation_root,
                                             args.output_root,
                                             getattr(criteria, args.batch_criteria.split(
-                                                ".")[1])().gen_list(),
+                                                ".")[1])().gen_attr_changelist(),
                                             getattr(exp, args.generator.split('.')[1]),
                                             args.n_sims,
                                             args.n_threads)
@@ -57,7 +57,7 @@ def define_cmdline():
                         help="How many simulations to run in a single experiment in parallel. Defaults to 100.", type=int, default=100)
     parser.add_argument("--generation-root",
                         help="Root directory to save generated files. Defaults to ~/generated-inputs.",
-                        default=os.path.expanduser("~/generated-inputs"))
+                        default=os.path.expanduser("~/sierra-root/generated-inputs"))
     parser.add_argument("--n_threads",
                         help="How many ARGoS simulation threads to use. Defaults to 4.",
                         type=int,
@@ -66,10 +66,10 @@ def define_cmdline():
     # upgrade: think about adding a save CSV path
     parser.add_argument("--output-root",
                         help="Root directory for saving simulation outputs (sort of a scratch dir). Defaults to ~/output",
-                        default=os.path.expanduser("~/output"))
+                        default=os.path.expanduser("~/sierra-root/output"))
     parser.add_argument("--graph-root",
                         help="Root directory for saving generated graph files. Defaults to ~/generated-graphs.",
-                        default=os.path.expanduser("~/generated-graphs"))
+                        default=os.path.expanduser("~/sierra-root/generated-graphs"))
 
     run_group = parser.add_mutually_exclusive_group()
     run_group.add_argument("--inputs-only",
@@ -96,12 +96,8 @@ def define_cmdline():
                         action="store_true")
     parser.add_argument("--batch-criteria",
                         help='''\
-                        Name of criteria to use to generate the batched experiments. Options are:
-                        swarm_size.Linear<X> (<X> = 64...1024 by powers of 2),
-                        swarm_size.Log<X> (<X> = 64...1024 by powers of 2),
-                        arena_size.RectangularArenaTwoByOne (X=10...100 by 10s, Y=5...50 by 5s),
-                        arena_size.RectangularArenaCorridor (X=10...100 by 10s, Y=5),
-                        task_allocation.EstimationAlpha (Alpha=0.1...0.9)''')
+                        Name of criteria to use to generate the batched experiments. Options are
+                        specified as <filename>.<class name> as found in the exp_variables/ directory.''')
     return parser
 
 

@@ -31,12 +31,15 @@ class Type(BaseVariable):
     def __init__(self, dist_type):
         self.dist_type = dist_type
 
-    def gen_list(self):
+    def gen_attr_changelist(self):
         """
         Generate a list of sets of changes necessary to make to the input file to correctly set up
         the simulation with the specified block distribution
         """
         return [set([("block_distribution.dist_type", "{0}".format(self.dist_type))])]
+
+    def gen_tag_rmlist(self):
+        return []
 
 
 class TypeSingleSource(Type):

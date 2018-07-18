@@ -17,7 +17,7 @@
 """
 
 import os
-from exp_runner import ExpRunner
+from pipeline.exp_runner import ExpRunner
 
 
 class BatchedExpRunner:

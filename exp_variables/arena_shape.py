@@ -31,7 +31,7 @@ class RectangularArena(BaseVariable):
     def __init__(self, dimensions):
         self.dimensions = dimensions
 
-    def gen_list(self):
+    def gen_attr_changelist(self):
         """
         Generate list of sets of changes necessary to make to the input file to correctly set up the
         simulation with the specified area size/shape.
@@ -43,19 +43,22 @@ class RectangularArena(BaseVariable):
         """
         return [set([("arena.size", "{0}, {1}, 2".format(s[0], s[1])),
                      ("arena.center", "{0}, {1}, 1".format(s[0] / 2.0, s[1] / 2.0)),
-                     ("arena.box.wall_north.size", "{0}, 0.1, 0.5".format(s[0])),
-                     ("arena.box.wall_north.position", "{0}, {1}, 0".format(s[0] / 2.0, s[1], 0)),
-                     ("arena.box.wall_south.size", "{0}, 0.1, 0.5".format(s[0])),
-                     ("arena.box.wall_south.position", "{0}, 0, 0 ".format(s[0] / 2.0)),
-                     ("arena.box.wall_east.size", "0.1, {0}, 0.5".format(s[1])),
-                     ("arena.box.wall_east.position", "{0}, {1}, 0".format(s[0], s[1] / 2.0)),
-                     ("arena.box.wall_west.size", "0.1, {0}, 0.5".format(s[1])),
-                     ("arena.box.wall_west.position", "0, {0}, 0".format(s[1] / 2.0)),
+                     ("arena.wall_north.size", "{0}, 0.1, 0.5".format(s[0])),
+                     ("arena.wall_north.position", "{0}, {1}, 0".format(s[0] / 2.0, s[1], 0)),
+                     ("arena.wall_south.size", "{0}, 0.1, 0.5".format(s[0])),
+                     ("arena.wall_south.position", "{0}, 0, 0 ".format(s[0] / 2.0)),
+                     ("arena.wall_east.size", "0.1, {0}, 0.5".format(s[1])),
+                     ("arena.wall_east.position", "{0}, {1}, 0".format(s[0], s[1] / 2.0)),
+                     ("arena.wall_west.size", "0.1, {0}, 0.5".format(s[1])),
+                     ("arena.wall_west.position", "0, {0}, 0".format(s[1] / 2.0)),
                      ("arena.distribute.position.max", "{0}, {1}, 0".format(s[0] - 2, s[1] - 1)),
                      ("arena_map.grid.size", "{0}, {1}, 2".format(s[0], s[1])),
                      ("occupancy_grid.grid.size", "{0}, {1}, 2".format(s[0], s[1]))
                      ])
                 for s in self.dimensions]
+
+    def gen_tag_rmlist(self):
+        return []
 
 
 class RectangularArenaTwoByOne(RectangularArena):
@@ -70,4 +73,4 @@ class RectangularArenaCorridor(RectangularArena):
 
 class SquareArena(RectangularArena):
     def __init__(self, sqrange=range(10, 110, 10)):
-        super().__init__(x_range=sqrange, y_range=sqrange)
+        super().__init__([(x, x) for x in sqrange])

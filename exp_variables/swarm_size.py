@@ -31,13 +31,16 @@ class SwarmSize(BaseVariable):
     def __init__(self, size_list):
         self.size_list = size_list
 
-    def gen_list(self):
+    def gen_attr_changelist(self):
         """
         Generate list of sets of swarm sizes. Each entry in the list is a set of changes
         necessary to make to the input file to correctly set up the simulation with the specified
         swarm size.
         """
         return [set([("arena.entity.quantity", s)]) for s in self.size_list]
+
+    def gen_tag_rmlist(self):
+        return []
 
 
 class Linear1024(SwarmSize):
