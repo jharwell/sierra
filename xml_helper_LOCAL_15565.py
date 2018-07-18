@@ -119,29 +119,22 @@ class XMLHelper:
         Converts the value to a string before setting the attribute.
         '''
         path_list = self._path_to_path_list(path)
-        try:
-            element = self._get_element_with_loose_attribute_path_list_inside(
-                *self._check_path_list_starting_point(path_list))
-        except InvalidElementError as e:
-            raise InvalidElementError("An element matching the attribute path '{}' could not be found".format(path)) from e
-
-        value = str(value)
-        element.set(path_list[-1], value)
+        element = self._get_element_with_loose_attribute_path_list_inside(
+            *self._check_path_list_starting_point(path_list))
+        if element is not None:
+            value = str(value)
+            element.set(path_list[-1], value)
+        else:
+            raise InvalidElementError(
+                "An element matching the path attribute '{}' could not be found".format(path))
 
     def set_tag_of_element_with_loose_strict_path_to(self, path, value):
         '''Takes a loose strict path to an element and sets the tag of that element to the given value.'''
         try:
             return self._set_tag_of_element_with_loose_strict_path_list_to(self._path_to_path_list(path), value)
-
-
-<< << << < HEAD
         except InvalidElementError:
             raise InvalidElementError(
                 "Could not find the element with the loose strict path '{}'".format(path))
-== == == =
-        except InvalidElementError as e:
-            raise InvalidElementError("Could not find the element with the loose strict path '{}'".format(path)) from e
->>>>>> > devel
 
     def remove_element_with_loose_strict_path(self, path):
         '''
@@ -150,10 +143,7 @@ class XMLHelper:
         Raises an InvalidElementError if an element cannot be found or if the specified element is the root element.
         Restriction: the root element cannot be removed.
         '''
-        try:
-            return self._remove_element_with_loose_strict_path_list(self._path_to_path_list(path))
-        except InvalidElementError as e:
-            raise InvalidElementError("Could not find element with loose strict path '{}'".format(path)) from e
+        return self._remove_element_with_loose_strict_path_list(self._path_to_path_list(path))
 
     ### Private functions ###
     # These are the helper functions that are used by other functions in the class
@@ -167,45 +157,32 @@ class XMLHelper:
         try:
             # get the specified element at the end of the path
             element = self._loose_strict_element_path_list_to_strict_element_list(path_list)[-1]
-<< << << < HEAD
             element.tag = value
         except:
             raise InvalidElementError(
                 "The element with path_list {} could not be found".format(path_list))
-=======
-        except InvalidElementError as e:
-            raise InvalidElementError("The element with path_list {} could not be found".format(path_list)) from e
-
-        # set the value of the tag
-        element.tag = value
-
->>>>>>> devel
 
     def _remove_element_with_loose_strict_path_list(self, path_list):
         '''Takes a loose strict element path list and removes the corresponding element (and all of it's subelements) from the tree.'''
-        try:
-            strict_element_list = self._loose_strict_element_path_list_to_strict_element_list(path_list)
-        except InvalidElementError as e:
-            raise InvalidElementError("The element path list {} could not be found".format(path_list)) from e
-
+        strict_element_list = self._loose_strict_element_path_list_to_strict_element_list(
+            path_list)
         try:
             strict_element_list[-2].remove(strict_element_list[-1])
-        except IndexError as e:
-            # trying to remove the root element
-            # [-2] will not be a valid index if there's only one element in the strict_element_list, causing an IndexError
-            raise InvalidElementError("You cannot remove the root element") from None
-
+        except (IndexError, TypeError) as e:
+            if isinstance(e, IndexError):
+                # trying to remove the root element
+                raise InvalidElementError("You cannot remove the root element")
+            else:  # TypeError: the strict element list was not found
+                raise InvalidElementError(
+                    "The element path list {} could not be found".format(path_list))
 
     def _loose_strict_element_path_list_to_strict_element_list(self, path_list):
         '''
         Takes a loose-strict element path list and returns the corresponding strict element list.
+        This function will modify the element path list.
         '''
-        # copy the path list so it's not modified
-        path_list = path_list[:]
-
         initial_tag = path_list.pop(0)
         # will have the element corresponding to the first tag in the list
-<<<<<<< HEAD
         initial_strict_element_list = self._loose_element_path_list_to_strict_element_list([
             initial_tag])
 
@@ -215,25 +192,10 @@ class XMLHelper:
                 "Could not find the tag '{}' which came at the start of a loose strict path".format(initial_tag))
         ans = self._strict_element_path_list_to_strict_element_list_starting_at(
             path_list, initial_strict_element_list[-1])
-=======
-        try:
-            initial_strict_element_list = self._loose_element_path_list_to_strict_element_list([initial_tag])
-        except InvalidElementError as e:
-            # couldn't find the first tag
-            raise InvalidElementError("Could not find the tag '{}' which came at the start of a loose strict path".format(initial_tag)) from e
-
-        # upgrade: could catch and raise a different error here for more clarification
-        ans = self._strict_element_path_list_to_strict_element_list_starting_at(path_list, initial_strict_element_list[-1])
-
->>>>>>> devel
         return initial_strict_element_list + ans
 
     def _strict_element_path_list_to_strict_element_list_starting_at(self, path_list, starting_element):
         '''Takes a strict element path list starting under a given starting element, and returns the element list corresponding to the path list'''
-
-        # copy the path list so it's not modified
-        path_list = path_list[:]
-
         # base case
         if not path_list:
             # the list is empty, we've reached the goal
@@ -242,7 +204,7 @@ class XMLHelper:
         goal_tag = path_list.pop(0)
         # iterate only through direct children
         for subelement in starting_element:
-            if self._has_tag_or_id(subelement, goal_tag):
+            if not subelement is starting_element and self._has_tag_or_id(subelement, goal_tag):
                 try:
                     ans = self._strict_element_path_list_to_strict_element_list_starting_at(
                         path_list, subelement)
@@ -258,10 +220,12 @@ class XMLHelper:
         '''Takes a loose element path list and returns the corresponding strict element list'''
         path_list, starting_element = self._check_path_list_starting_point(
             path_list)
-        try:
-            return [starting_element] + self._loose_element_path_list_to_strict_element_list_starting_at(path_list, starting_element)
-        except InvalidElementError as e:
-            raise InvalidElementError("Could not find element with loose path list {}".format(path_list)) from e
+        ans = self._loose_element_path_list_to_strict_element_list_starting_at(
+            path_list, starting_element)
+        if ans is None:
+            return ans
+        else:
+            return [starting_element] + ans
 
     def _loose_element_path_list_to_strict_element_list_starting_at(self, path_list, starting_element):
         '''Takes a loose element path list and a starting element to search in, and returns the strict path list continuing after the starting element'''
@@ -274,20 +238,17 @@ class XMLHelper:
 
         # iterate through all direct children
         for subelement in starting_element:
-            if self._has_tag_or_id(subelement, goal_tag):
+            if not subelement is starting_element and self._has_tag_or_id(subelement, goal_tag):
                 # this might be the element we were searching for next
                 new_path_list = path_list[1:]
             else:
                 new_path_list = path_list[:]
-
-            try:
-                return [subelement] + self._loose_element_path_list_to_strict_element_list_starting_at(new_path_list, subelement)
-            except InvalidElementError:
-                # could not find the path undert this element; try the next one
-                pass
-
+            ans = self._loose_element_path_list_to_strict_element_list_starting_at(
+                new_path_list, subelement)
+            if ans is not None:
+                return [subelement] + ans
         # could not find the rest of the path under this starting element
-        raise InvalidElementError("Could not find an element with the path list {} under the element {}".format(path_list, starting_element))
+        return None
 
     def _check_path_list_starting_point(self, path_list, starting_element=None):
         '''
@@ -321,6 +282,7 @@ class XMLHelper:
         Returns an element with the matching attribute.
         (Returns None if such an element cannot be found.)
         '''
+
         if len(path_list) == 1:
             # looking for an element with the attribute of path_list[0]
             if starting_element.get(path_list[0]) is not None:
@@ -335,26 +297,18 @@ class XMLHelper:
 
         # iterate through inner elements
         for element in starting_element.iter():
-            # skip over searching starting_element for the tag or attribute; we're only interested in the child elements
-            if element is starting_element:
+            # skip over searching starting_element for the tag or attribute; we're only interested
+            # in the child elements also skip over things that don't match what we're looking for
+            if element is starting_element or not self._has_tag_or_id(element, goal_tag):
                 continue
 
-            # if this element matches the next part of the path, remove it from the path since it was found
-            if self._has_tag_or_id(element, goal_tag):
-                new_path_list = path_list[1:]
-            else:
-                # copy the path so that it can backtrack
-                new_path_list = path_list[:]
-
-            # check inside this element for the rest of the path
-            try:
-                return self._get_element_with_loose_attribute_path_list_inside(new_path_list, element)
-            except InvalidElementError:
-                # couldn't find the attribute under that element, try the next one
-                pass
+            ans = self._get_element_with_loose_attribute_path_list_inside(
+                path_list[1:], element)
+            if ans is not None:
+                return ans
 
         # no matching element was found under the starting element
-        raise InvalidElementError("Could not find an element matching the path list {} under the element {}".format(path_list, starting_element))
+        return None
 
     def _has_tag_or_id(self, element, tag_or_id):
         '''
@@ -374,6 +328,6 @@ class XMLHelper:
 if __name__ == "__main__":
     x = XMLHelper("testing_generated_configs/new-single-source-test_0.argos")
     x.remove_element("actuators.differential_steering")
-    x.set_attribute("arena.wall_east.position", "big")
-    # x.set_tag("loop_functions.output.grid", "hello")
-    x.write("testing4.argos")
+    x.set_attribute("loop_functions.grid.size", "big")
+    x.set_tag("loop_functions.output.grid", "hello")
+    x.write("testing3.argos")

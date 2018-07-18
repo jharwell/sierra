@@ -132,16 +132,14 @@ class XMLHelper:
         '''Takes a loose strict path to an element and sets the tag of that element to the given value.'''
         try:
             return self._set_tag_of_element_with_loose_strict_path_list_to(self._path_to_path_list(path), value)
-
-
-<< << << < HEAD
+<<<<<<< HEAD
         except InvalidElementError:
             raise InvalidElementError(
                 "Could not find the element with the loose strict path '{}'".format(path))
-== == == =
+=======
         except InvalidElementError as e:
             raise InvalidElementError("Could not find the element with the loose strict path '{}'".format(path)) from e
->>>>>> > devel
+>>>>>>> devel
 
     def remove_element_with_loose_strict_path(self, path):
         '''
@@ -167,7 +165,7 @@ class XMLHelper:
         try:
             # get the specified element at the end of the path
             element = self._loose_strict_element_path_list_to_strict_element_list(path_list)[-1]
-<< << << < HEAD
+<<<<<<< HEAD
             element.tag = value
         except:
             raise InvalidElementError(
@@ -335,6 +333,17 @@ class XMLHelper:
 
         # iterate through inner elements
         for element in starting_element.iter():
+<<<<<<< HEAD
+            # skip over searching starting_element for the tag or attribute; we're only interested
+            # in the child elements also skip over things that don't match what we're looking for
+            if element is starting_element or not self._has_tag_or_id(element, goal_tag):
+                continue
+
+            ans = self._get_element_with_loose_attribute_path_list_inside(
+                path_list[1:], element)
+            if ans is not None:
+                return ans
+=======
             # skip over searching starting_element for the tag or attribute; we're only interested in the child elements
             if element is starting_element:
                 continue
@@ -352,6 +361,7 @@ class XMLHelper:
             except InvalidElementError:
                 # couldn't find the attribute under that element, try the next one
                 pass
+>>>>>>> devel
 
         # no matching element was found under the starting element
         raise InvalidElementError("Could not find an element matching the path list {} under the element {}".format(path_list, starting_element))

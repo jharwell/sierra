@@ -26,7 +26,7 @@ def get_input_generator(args):
     """Get the input generator to use to create experiment/batch inputs."""
     if not any([args.graphs_only, args.run_only, args.average_only]):
         exp = __import__(
-            str("experiments." + args.generator.split('.')[0]), fromlist=["*"])
+            str("generators." + args.generator.split('.')[0]), fromlist=["*"])
 
         if args.batch:
             criteria = __import__("batch_criteria.{0}".format(
