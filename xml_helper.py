@@ -282,7 +282,6 @@ class XMLHelper:
         Returns an element with the matching attribute.
         (Returns None if such an element cannot be found.)
         '''
-
         if len(path_list) == 1:
             # looking for an element with the attribute of path_list[0]
             if starting_element.get(path_list[0]) is not None:
@@ -298,16 +297,25 @@ class XMLHelper:
         # iterate through inner elements
         for element in starting_element.iter():
             # skip over searching starting_element for the tag or attribute; we're only interested in the child elements
-            # also skip over things that don't match what we're looking for
-            if element is starting_element or not self._has_tag_or_id(element, goal_tag):
+            if element is starting_element:
                 continue
-            ans = self._get_element_with_loose_attribute_path_list_inside(
-                path_list[1:], element)
-            if ans is not None:
-                return ans
+
+            # if this element matches the next part of the path, remove it from the path since it was found
+            if self._has_tag_or_id(element, goal_tag):
+                new_path_list = path_list[1:]
+            else:
+                # copy the path so that it can backtrack
+                new_path_list = path_list[:]
+
+            # check inside this element for the rest of the path
+            try:
+                return self._get_element_with_loose_attribute_path_list_inside(new_path_list, element)
+            except InvalidElementError:
+                # couldn't find the attribute under that element, try the next one
+                pass
 
         # no matching element was found under the starting element
-        return None
+        raise InvalidElementError("Could not find an element matching the path list {} under the element {}".format(path_list, starting_element))
 
     def _has_tag_or_id(self, element, tag_or_id):
         '''
@@ -327,6 +335,6 @@ class XMLHelper:
 if __name__ == "__main__":
     x = XMLHelper("testing_generated_configs/new-single-source-test_0.argos")
     x.remove_element("actuators.differential_steering")
-    x.set_attribute("loop_functions.grid.size", "big")
-    x.set_tag("loop_functions.output.grid", "hello")
-    x.write("testing3.argos")
+    x.set_attribute("arena.wall_east.position", "big")
+    # x.set_tag("loop_functions.output.grid", "hello")
+    x.write("testing4.argos")
