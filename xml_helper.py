@@ -88,7 +88,6 @@ class XMLHelper:
         # restriction: assumes the root of the xml file is not going to change
         self.root = self.tree.getroot()
 
-
     ### Simple exposed functions ###
     # These are the functions most people should call
     def write(self, filepath=None):
@@ -109,7 +108,6 @@ class XMLHelper:
     def remove_element(self, path):
         '''Alias for remove_element_with_loose_strict_path.'''
         return self.remove_element_with_loose_strict_path(path)
-
 
     ### Explicit exposed functions ###
     # These functions can be called, and they have more explicit names
@@ -135,7 +133,8 @@ class XMLHelper:
         try:
             return self._set_tag_of_element_with_loose_strict_path_list_to(self._path_to_path_list(path), value)
         except InvalidElementError:
-            raise InvalidElementError("Could not find the element with the loose strict path '{}'".format(path))
+            raise InvalidElementError(
+                "Could not find the element with the loose strict path '{}'".format(path))
 
     def remove_element_with_loose_strict_path(self, path):
         '''
@@ -146,7 +145,6 @@ class XMLHelper:
         '''
         return self._remove_element_with_loose_strict_path_list(self._path_to_path_list(path))
 
-
     ### Private functions ###
     # These are the helper functions that are used by other functions in the class
     # These start with an underscore to indicate that they are private and should not be called by end users
@@ -154,15 +152,15 @@ class XMLHelper:
         '''Takes a path and returns the corresponding path list.'''
         return path.split(".")
 
-    def  _set_tag_of_element_with_loose_strict_path_list_to(self, path_list, value):
+    def _set_tag_of_element_with_loose_strict_path_list_to(self, path_list, value):
         '''Takes a loose strict path list to an element and sets the tag of that element to the given value.'''
         try:
             # get the specified element at the end of the path
             element = self._loose_strict_element_path_list_to_strict_element_list(path_list)[-1]
             element.tag = value
         except:
-            raise InvalidElementError("The element with path_list {} could not be found".format(path_list))
-
+            raise InvalidElementError(
+                "The element with path_list {} could not be found".format(path_list))
 
     def _remove_element_with_loose_strict_path_list(self, path_list):
         '''Takes a loose strict element path list and removes the corresponding element (and all of it's subelements) from the tree.'''
@@ -185,14 +183,16 @@ class XMLHelper:
         '''
         initial_tag = path_list.pop(0)
         # will have the element corresponding to the first tag in the list
-        initial_strict_element_list = self._loose_element_path_list_to_strict_element_list([initial_tag])
+        initial_strict_element_list = self._loose_element_path_list_to_strict_element_list([
+            initial_tag])
+
         if initial_strict_element_list is None:
             # couldn't find the first tag
-            raise InvalidElementError("Could not find the tag '{}' which came at the start of a loose strict path".format(initial_tag))
+            raise InvalidElementError(
+                "Could not find the tag '{}' which came at the start of a loose strict path".format(initial_tag))
         ans = self._strict_element_path_list_to_strict_element_list_starting_at(
             path_list, initial_strict_element_list[-1])
         return initial_strict_element_list + ans
-
 
     def _strict_element_path_list_to_strict_element_list_starting_at(self, path_list, starting_element):
         '''Takes a strict element path list starting under a given starting element, and returns the element list corresponding to the path list'''
@@ -213,8 +213,8 @@ class XMLHelper:
                     # couldn't find it; move on to the next one
                     pass
 
-
-        raise InvalidElementError("Could not find an element matching the strict path list {} by looking under the element {}".format(path_list, starting_element))
+        raise InvalidElementError("Could not find an element matching the strict path list {} by looking under the element {}".format(
+            path_list, starting_element))
 
     def _loose_element_path_list_to_strict_element_list(self, path_list):
         '''Takes a loose element path list and returns the corresponding strict element list'''
@@ -297,10 +297,11 @@ class XMLHelper:
 
         # iterate through inner elements
         for element in starting_element.iter():
-            # skip over searching starting_element for the tag or attribute; we're only interested in the child elements
-            # also skip over things that don't match what we're looking for
+            # skip over searching starting_element for the tag or attribute; we're only interested
+            # in the child elements also skip over things that don't match what we're looking for
             if element is starting_element or not self._has_tag_or_id(element, goal_tag):
                 continue
+
             ans = self._get_element_with_loose_attribute_path_list_inside(
                 path_list[1:], element)
             if ans is not None:

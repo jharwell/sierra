@@ -26,7 +26,7 @@ def get_input_generator(args):
     """Get the input generator to use to create experiment/batch inputs."""
     if not any([args.graphs_only, args.run_only, args.average_only]):
         exp = __import__(
-            str("experiments." + args.exp_type), fromlist=["*"])
+            str("experiments." + args.generator.split('.')[0]), fromlist=["*"])
 
         if args.batch:
             criteria = __import__("batch_criteria.{0}".format(
@@ -36,19 +36,15 @@ def get_input_generator(args):
                                             args.output_root,
                                             getattr(criteria, args.batch_criteria.split(
                                                 ".")[1])().gen_list(),
-                                            getattr(exp, "BaseInputGenerator"),
+                                            getattr(exp, args.generator.split('.')[1]),
                                             args.n_sims,
-                                            args.n_threads,
-                                            args.random_seed_min,
-                                            args.random_seed_max)
+                                            args.n_threads)
         else:
-            return getattr(exp, "BaseInputGenerator")(args.template_config_file,
-                                                      args.generation_root,
-                                                      args.output_root,
-                                                      args.n_sims,
-                                                      args.n_threads,
-                                                      args.random_seed_min,
-                                                      args.random_seed_max)
+            return getattr(exp, args.generator.split('.')[1])(args.template_config_file,
+                                                              args.generation_root,
+                                                              args.output_root,
+                                                              args.n_sims,
+                                                              args.n_threads)
 
 
 def define_cmdline():
@@ -88,17 +84,12 @@ def define_cmdline():
     run_group.add_argument("--graphs-only",
                            help="Only perform graph generation on a previous run experiments/set of experiments.",
                            action="store_true")
-    parser.add_argument("--exp_type",
-                        help="Experiment to run. Options are: [stateless, stateful]")
+    parser.add_argument("--generator",
+                        help="Experiment generator to use. Options are: [stateless.SingleSourceInputGenerator]")
 
     parser.add_argument("--no-msi",
                         help="Include if running on a personal computer (otherwise runs supercomputer commands).",
                         action="store_true")
-
-    parser.add_argument("--random-seed-min",
-                        help="The minimum random seed number", type=int)
-    parser.add_argument("--random-seed-max",
-                        help="The maximum random seed number", type=int)
 
     parser.add_argument("--batch",
                         help="Run a batch of experiments instead of a single one.",

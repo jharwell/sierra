@@ -37,12 +37,10 @@ class ExpInputGenerator:
                             be relative or absolute.
       n_sims(int): # of simulations to run in parallel.
       n_threads(int): # of ARGoS threads to use.
-      random_seed_min(int): Minimum random seed for the experiment. Defaults to 1.
-      random_seed_max(int): Maximum random seed for the experiment. Defaults to 10 * n_s.
     """
 
     def __init__(self, template_config_file, generation_root, exp_output_root,
-                 n_sims, n_threads, random_seed_min=None, random_seed_max=None):
+                 n_sims, n_threads):
 
         assert os.path.isfile(
             template_config_file), "The path '{}' (which should point to the main config file) did not point to a file".format(template_config_file)
@@ -62,12 +60,8 @@ class ExpInputGenerator:
         self.n_sims = n_sims
         self.n_threads = n_threads
 
-        if random_seed_min is None:
-            random_seed_min = 1
-        if random_seed_max is None:
-            random_seed_max = 10 * self.n_sims
-        self.random_seed_min = random_seed_min
-        self.random_seed_max = random_seed_max
+        self.random_seed_min = 1
+        self.random_seed_max = 10 * self.n_sims
 
         # where the commands file will be stored
         self.commands_fpath = os.path.abspath(
@@ -78,8 +72,8 @@ class ExpInputGenerator:
         self.config_name_format = format_base + self.main_config_extension
         self.output_name_format = format_base + "_output"
 
-    def generate(self):
-        """Generates and saves all the input files for all stateless experiments"""
+    def init_sim_defs(self):
+        """Generates simulation definitions common to all simulations."""
         # create an object that will edit the XML file
         xml_helper = XMLHelper(self.template_config_file)
 
@@ -99,25 +93,28 @@ class ExpInputGenerator:
                                  self.n_threads)
         return xml_helper
 
-    def _generate_all_sim_inputs(self, random_seeds, xml_helper):
-        """Generate the input files for all simulation runs."""
+    def _create_all_sim_inputs(self, random_seeds, xml_helper):
+        """Generate and the input files for all simulation runs."""
 
         for exp_num in range(self.n_sims):
-            self._generate_sim_input(random_seeds, xml_helper, exp_num)
+            self._create_sim_input_file(random_seeds, xml_helper, exp_num)
             self._add_sim_to_command_file(os.path.join(self.generation_root,
                                                        self.config_name_format.format(
                                                            self.main_config_name, exp_num)))
 
-    def _generate_sim_input(self, random_seeds, xml_helper, exp_num):
-        """Generate the input files for a particular simulation run."""
+    def _create_sim_input_file(self, random_seeds, xml_helper, exp_num):
+        """Generate and write the input files for a particular simulation run."""
 
         # create a new name for this experiment's config file
         new_config_name = self.config_name_format.format(
             self.main_config_name, exp_num)
+
         # get the random seed for this experiment
         random_seed = random_seeds[exp_num]
+
         # set the random seed in the config file
-        # restriction: the config file must have these fields in order for this function to work correctly.
+        # restriction: the config file must have these fields in order for this function to work
+        # correctly.
         xml_helper.set_attribute("experiment.random_seed", random_seed)
 
         # set the output directory

@@ -17,7 +17,7 @@ This file is part of SIERRA.
 """
 
 
-class BaseCriteria:
+class BaseVariable:
     def gen_list(self):
         """Generate list of lists criteria for input into batch pipeline."""
         raise NotImplementedError

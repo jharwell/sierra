@@ -48,7 +48,7 @@ class ExpPipeline:
         self.input_generator = input_generator
 
     def generate_inputs(self):
-        print("- Generating input files for '{0}'...".format(self.args.exp_type))
+        print("- Generating input files for '{0}'...".format(self.args.generator))
         self.input_generator.generate()
         print("- Input files generated.")
 
@@ -69,7 +69,7 @@ class ExpPipeline:
         else:
             averager = ExpCSVAverager(template_config_leaf, self.args.output_root)
 
-        print("- Averaging outputs for '{0}'...".format(self.args.exp_type))
+        print("- Averaging outputs for '{0}'...".format(self.args.generator))
         averager.average_csvs()
         print("- Averaging output complete")
 

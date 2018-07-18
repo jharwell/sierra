@@ -17,26 +17,30 @@
 """
 
 from exp_input_generator import ExpInputGenerator
+import exp_variables as ev
 
 
-class BaseInputGenerator(ExpInputGenerator):
+class PowerlawGenerator(ExpInputGenerator):
 
     """
-    Generates simulation input for base/simple stateless foraging experiments.
+    Modifies simulation input file template  for powerlaw stateless foraging:
 
-    Extends ExperimentInputGenerator.
+    - Square arena
+    - Powerlaw block distribution
+    - # robots unspecified
+    - # blocks unspecified
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def generate(self):
-        '''Generates and saves all the input files for all the experiments'''
-        xml_helper = super().generate()
+    def generate(self, xml_helper):
+        [xml_helper.set_attribute(a[0], a[1])
+         for a in ev.arena_shape.SquareArena(sqrange=[10]).gen_list()[0]]
 
-        # xml_helper.set_attribute("argos-configuration.controllers.__template__",
-        #                          "stateful_foraging_controller")
-        xml_helper.set_attribute("argos-configuration.loop_functions.label",
-                                 "stateful_foraging_loop_functions")
-        self._generate_all_sim_inputs(self._generate_random_seeds(), xml_helper)
-        xml_helper.write()
+        [xml_helper.set_attribute(a[0], a[1])
+         for a in ev.block_distribution.TypePowerLaw().gen_list()[0]]
+
+        [xml_helper.set_attribute(a[0], a[1])
+         for a in ev.nest_pose("powerlaw", [(10, 10)]).gen_list()[0]]
         return xml_helper

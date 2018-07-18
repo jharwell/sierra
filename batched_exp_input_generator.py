@@ -32,11 +32,12 @@ class BatchedExpInputGenerator:
        criteria are present in the input files.
 
     Attributes:
-      batch_config_template(str): Path (relative to current dir or absolute) to the root template XML configuration
-                                  file.
-      batch_generation_root(str): Root directory for all generated XML input files all experiments should be stored
-                                  (relative to current dir or absolute). Each experiment will get a directory 'exp<n>'
-                                  within this root to store the xml input files for the simulation runs comprising an
+      batch_config_template(str): Path (relative to current dir or absolute) to the root template
+                                  XML configuration file.
+      batch_generation_root(str): Root directory for all generated XML input files all experiments
+                                  should be stored (relative to current dir or absolute). Each
+                                  experiment will get a directory 'exp<n>' within this root to store
+                                  the xml input files for the simulation runs comprising an
                                   experiment.
       batch_output_root(str): Root directory for all experiment outputs (relative to current dir or absolute). Each
                               experiment will get a directory 'exp<n>' in this directory for its outputs.
@@ -60,8 +61,9 @@ class BatchedExpInputGenerator:
             os.path.basename(self.batch_config_template))
 
         self.batch_generation_root = os.path.abspath(batch_generation_root)
-        assert self.batch_generation_root.find(" ") == -1, ("ARGoS (apparently) does not support running configuration files with spaces in the path. Please make sure the " +
-                                                            "batch generation root directory '{}' does not have any spaces in it").format(self.batch_generation_root)
+        assert self.batch_generation_root.find(" ") == -1, \
+            ("ARGoS (apparently) does not support running configuration files with spaces in the path. Please make sure the " +
+             "batch generation root directory '{}' does not have any spaces in it").format(self.batch_generation_root)
 
         self.batch_output_root = os.path.abspath(batch_output_root)
         self.batch_criteria = batch_criteria

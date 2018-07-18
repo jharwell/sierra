@@ -17,26 +17,30 @@
 """
 
 from exp_input_generator import ExpInputGenerator
+import exp_variables as ev
 
 
-class BaseInputGenerator(ExpInputGenerator):
-
+class SingleSourceGenerator(ExpInputGenerator):
     """
-    Generates simulation input for base/simple stateless foraging experiments.
+    Modifies simulation input file template for single source foraging:
 
-    Extends ExperimentInputGenerator.
+    - Rectangular 2x1 arena
+    - Single source block distribution
+    - # blocks unspecified
+    - # robots unspecified
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     def generate(self):
-        '''Generates and saves all the input files for all the experiments'''
-        xml_helper = super().generate()
+        xml_helper = self.init_sim_defs()
+        [xml_helper.set_attribute(a[0], a[1])
+         for a in ev.arena_shape.RectangularArenaTwoByOne(x_range=[10],
+                                                          y_range=[5]).gen_list()[0]]
+        [xml_helper.set_attribute(a[0], a[1])
+         for a in ev.block_distribution.TypeSingleSource().gen_list()[0]]
 
-        # xml_helper.set_attribute("argos-configuration.controllers.__template__",
-        #                          "stateless_foraging_controller")
-        xml_helper.set_attribute("argos-configuration.loop_functions.label",
-                                 "stateless_foraging_loop_functions")
-        self._generate_all_sim_inputs(self._generate_random_seeds(), xml_helper)
-        xml_helper.write()
+        [xml_helper.set_attribute(a[0], a[1])
+         for a in ev.nest_pose("single_source", [(10, 5)]).gen_list()[0]]
         return xml_helper
