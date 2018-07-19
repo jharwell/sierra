@@ -48,7 +48,8 @@ class ExpPipeline:
         self.input_generator = input_generator
 
     def generate_inputs(self):
-        print("- Generating input files for '{0}'...".format(self.args.generator))
+        print("- Generating input files for '{0}' in {1}...".format(self.args.generator,
+                                                                    self.args.generation_root))
         self.input_generator.generate()
         print("- Input files generated.")
 

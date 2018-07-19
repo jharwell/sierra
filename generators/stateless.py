@@ -17,8 +17,9 @@
 """
 
 from generators.exp_input_generator import ExpInputGenerator
-import generators.powerlaw
-import generators.single_source
+import generators.powerlaw as pl
+import generators.single_source as ss
+import generators.random as rnd
 
 
 class BaseGenerator(ExpInputGenerator):
@@ -47,35 +48,148 @@ class BaseGenerator(ExpInputGenerator):
         Generates and saves all the input files for all the experiments.
         """
         xml_helper = self.init_sim_defs()
-        self._create_all_sim_inputs(self._generate_random_seeds(), xml_helper)
         return xml_helper
 
 
-class PowerlawGenerator(BaseGenerator):
+class SS10x5Generator(BaseGenerator):
 
     """
-    Modifies simulation input file template for powerlaw stateless foraging.
+    Modifies simulation input file template for single source stateless foraging in a small 10x5
+    arena.
     """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.powerlaw = generators.powerlaw.PowerlawGenerator(*args, **kwargs)
+        self.ss = ss.SSGenerator10x5(*args, **kwargs)
 
     def generate(self):
-        xml_helper = self.powerlaw.generate(self.init_sim_defs())
+        xml_helper = self.ss.generate(super().generate())
         self._create_all_sim_inputs(self._generate_random_seeds(), xml_helper)
 
 
-class SingleSourceGenerator(BaseGenerator):
+class SS20x10Generator(BaseGenerator):
 
     """
-    Modifies simulation input file template for single source stateless foraging.
+    Modifies simulation input file template for single source stateless foraging in a 20x10
+    arena.
     """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ss = generators.single_source.SingleSourceGenerator(*args, **kwargs)
+        self.ss = ss.SSGenerator20x10(*args, **kwargs)
 
     def generate(self):
-        xml_helper = self.ss.generate(self.init_sim_defs())
+        xml_helper = self.ss.generate(super().generate())
+        self._create_all_sim_inputs(self._generate_random_seeds(), xml_helper)
+
+
+class SS40x20Generator(BaseGenerator):
+
+    """
+    Modifies simulation input file template for single source stateless foraging in a 40x20
+    arena.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ss = ss.SSGenerator40x20(*args, **kwargs)
+
+    def generate(self):
+        xml_helper = self.ss.generate(super().generate())
+        self._create_all_sim_inputs(self._generate_random_seeds(), xml_helper)
+
+
+class PL10x10Generator(BaseGenerator):
+
+    """
+    Modifies simulation input file template for powerlaw stateless foraging in a 10x10
+    arena.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ss = pl.PLGenerator10x10(*args, **kwargs)
+
+    def generate(self):
+        xml_helper = self.ss.generate(super().generate())
+        self._create_all_sim_inputs(self._generate_random_seeds(), xml_helper)
+
+
+class PL20x20Generator(BaseGenerator):
+
+    """
+    Modifies simulation input file template for powerlaw stateless foraging in a 20x20
+    arena.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ss = pl.PLGenerator20x20(*args, **kwargs)
+
+    def generate(self):
+        xml_helper = self.ss.generate(super().generate())
+        self._create_all_sim_inputs(self._generate_random_seeds(), xml_helper)
+
+
+class PL40x40Generator(BaseGenerator):
+
+    """
+    Modifies simulation input file template for powerlaw stateless foraging in a 40x40
+    arena.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ss = pl.PLGenerator40x40(*args, **kwargs)
+
+    def generate(self):
+        xml_helper = self.ss.generate(super().generate())
+        self._create_all_sim_inputs(self._generate_random_seeds(), xml_helper)
+
+
+class RND10x10Generator(BaseGenerator):
+
+    """
+    Modifies simulation input file template for powerlaw stateless foraging in a 10x10
+    arena.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ss = rnd.RNDGenerator10x10(*args, **kwargs)
+
+    def generate(self):
+        xml_helper = self.ss.generate(super().generate())
+        self._create_all_sim_inputs(self._generate_random_seeds(), xml_helper)
+
+
+class RND20x20Generator(BaseGenerator):
+
+    """
+    Modifies simulation input file template for powerlaw stateless foraging in a 20x20
+    arena.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ss = rnd.RNDGenerator20x20(*args, **kwargs)
+
+    def generate(self):
+        xml_helper = self.ss.generate(super().generate())
+        self._create_all_sim_inputs(self._generate_random_seeds(), xml_helper)
+
+
+class RND40x40Generator(BaseGenerator):
+
+    """
+    Modifies simulation input file template for powerlaw stateless foraging in a 40x40
+    arena.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ss = rnd.RNDGenerator40x40(*args, **kwargs)
+
+    def generate(self):
+        xml_helper = self.ss.generate(super().generate())
         self._create_all_sim_inputs(self._generate_random_seeds(), xml_helper)

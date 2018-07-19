@@ -20,13 +20,13 @@ from generators.exp_input_generator import ExpInputGenerator
 import exp_variables as ev
 
 
-class PLBaseGenerator(ExpInputGenerator):
+class RNDBaseGenerator(ExpInputGenerator):
 
     """
-    Modifies simulation input file template for powerlaw foraging:
+    Modifies simulation input file template random foraging:
 
     - Square arena
-    - Powerlaw block distribution
+    - Random block distribution
     - # robots unspecified
     - # blocks unspecified
 
@@ -48,13 +48,13 @@ class PLBaseGenerator(ExpInputGenerator):
         if len(rms):
             [xml_helper.remove_element(a) for a in rms[0]]
 
-        source = ev.block_distribution.TypePowerLaw()
+        source = ev.block_distribution.TypeRandom()
         [xml_helper.set_attribute(a[0], a[1]) for a in source.gen_attr_changelist()[0]]
         rms = source.gen_tag_rmlist()
         if len(rms):
             [xml_helper.remove_element(a) for a in rms[0]]
 
-        nest_pose = ev.nest_pose.NestPose("powerlaw", [(self.dimension, self.dimension)])
+        nest_pose = ev.nest_pose.NestPose("random", [(self.dimension, self.dimension)])
         [xml_helper.set_attribute(a[0], a[1]) for a in nest_pose.gen_attr_changelist()[0]]
         rms = nest_pose.gen_tag_rmlist()
         if len(rms):
@@ -63,10 +63,10 @@ class PLBaseGenerator(ExpInputGenerator):
         return xml_helper
 
 
-class PLGenerator10x10(PLBaseGenerator):
+class RNDGenerator10x10(RNDBaseGenerator):
 
     """
-    Modifies simulation input file template for powerlaw foraging in a 10x10 arena.
+    Modifies simulation input file template for random foraging in a 10x10 arena.
 
     """
 
@@ -79,10 +79,10 @@ class PLGenerator10x10(PLBaseGenerator):
         return super().generate(xml_helper)
 
 
-class PLGenerator20x20(PLBaseGenerator):
+class RNDGenerator20x20(RNDBaseGenerator):
 
     """
-    Modifies simulation input file template for powerlaw foraging in a 20x20 arena.
+    Modifies simulation input file template for random foraging in a 20x20 arena.
 
     """
 
@@ -95,10 +95,10 @@ class PLGenerator20x20(PLBaseGenerator):
         return super().generate(xml_helper)
 
 
-class PLGenerator40x40(PLBaseGenerator):
+class RNDGenerator40x40(RNDBaseGenerator):
 
     """
-    Modifies simulation input file template for powerlaw foraging in a 40x40 arena.
+    Modifies simulation input file template for random foraging in a 40x40 arena.
 
     """
 
