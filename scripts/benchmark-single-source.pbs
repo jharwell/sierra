@@ -18,7 +18,7 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 --env ARGOS_PLUGIN_PATH"
 
 cd $HOME/git/sierra
-NSIMS=64
+NSIMS=16
 XDIMS=(10 20 40)
 YDIMS=(5 10 20)
 OUTPUT_ROOT=$HOME/exp
@@ -28,12 +28,14 @@ for x in "${XDIMS[@]}"
 do
          for y in "${YDIMS[@]}"
          do
+             rm -rf $OUTPUT_ROOT/benchmark-ss${x}x${y}/stateless
              python3 sierra.py \
              --template-config-file=$HOME/git/fordyca/exp/single-source.argos\
              --n_sims=$NSIMS\
-             --sierra-root=$OUTPUT_ROOT/benchmark-${x}x${y}/stateless \
+             --sierra-root=$OUTPUT_ROOT/benchmark-ss${x}x${y}/stateless \
              --generator=stateless.SS${x}x${y}Generator --batch \
-             --batch-criteria=swarm_size.Log64
+             --batch-criteria=swarm_size.Log64\
+             --no-msi
          done
 done
 

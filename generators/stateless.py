@@ -17,8 +17,9 @@
 """
 
 from generators.exp_input_generator import ExpInputGenerator
-import generators.powerlaw
-import generators.single_source
+import generators.powerlaw as pl
+import generators.single_source as ss
+import generators.random as rnd
 
 
 class BaseGenerator(ExpInputGenerator):
@@ -59,7 +60,7 @@ class SS10x5Generator(BaseGenerator):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ss = generators.single_source.SSGenerator10x5(*args, **kwargs)
+        self.ss = ss.SSGenerator10x5(*args, **kwargs)
 
     def generate(self):
         xml_helper = self.ss.generate(super().generate())
@@ -75,7 +76,7 @@ class SS20x10Generator(BaseGenerator):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ss = generators.single_source.SSGenerator20x10(*args, **kwargs)
+        self.ss = ss.SSGenerator20x10(*args, **kwargs)
 
     def generate(self):
         xml_helper = self.ss.generate(super().generate())
@@ -91,7 +92,7 @@ class SS40x20Generator(BaseGenerator):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ss = generators.single_source.SSGenerator40x20(*args, **kwargs)
+        self.ss = ss.SSGenerator40x20(*args, **kwargs)
 
     def generate(self):
         xml_helper = self.ss.generate(super().generate())
@@ -107,7 +108,7 @@ class PL10x10Generator(BaseGenerator):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ss = generators.single_source.PLGenerator10x10(*args, **kwargs)
+        self.ss = pl.PLGenerator10x10(*args, **kwargs)
 
     def generate(self):
         xml_helper = self.ss.generate(super().generate())
@@ -123,7 +124,7 @@ class PL20x20Generator(BaseGenerator):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ss = generators.single_source.PLGenerator20x20(*args, **kwargs)
+        self.ss = pl.PLGenerator20x20(*args, **kwargs)
 
     def generate(self):
         xml_helper = self.ss.generate(super().generate())
@@ -139,7 +140,55 @@ class PL40x40Generator(BaseGenerator):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ss = generators.single_source.PLGenerator40x40(*args, **kwargs)
+        self.ss = pl.PLGenerator40x40(*args, **kwargs)
+
+    def generate(self):
+        xml_helper = self.ss.generate(super().generate())
+        self._create_all_sim_inputs(self._generate_random_seeds(), xml_helper)
+
+
+class RND10x10Generator(BaseGenerator):
+
+    """
+    Modifies simulation input file template for powerlaw stateless foraging in a 10x10
+    arena.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ss = rnd.RNDGenerator10x10(*args, **kwargs)
+
+    def generate(self):
+        xml_helper = self.ss.generate(super().generate())
+        self._create_all_sim_inputs(self._generate_random_seeds(), xml_helper)
+
+
+class RND20x20Generator(BaseGenerator):
+
+    """
+    Modifies simulation input file template for powerlaw stateless foraging in a 20x20
+    arena.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ss = rnd.RNDGenerator20x20(*args, **kwargs)
+
+    def generate(self):
+        xml_helper = self.ss.generate(super().generate())
+        self._create_all_sim_inputs(self._generate_random_seeds(), xml_helper)
+
+
+class RND40x40Generator(BaseGenerator):
+
+    """
+    Modifies simulation input file template for powerlaw stateless foraging in a 40x40
+    arena.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ss = rnd.RNDGenerator40x40(*args, **kwargs)
 
     def generate(self):
         xml_helper = self.ss.generate(super().generate())

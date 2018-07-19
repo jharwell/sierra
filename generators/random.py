@@ -20,7 +20,7 @@ from generators.exp_input_generator import ExpInputGenerator
 import exp_variables as ev
 
 
-class RBaseGenerator(ExpInputGenerator):
+class RNDBaseGenerator(ExpInputGenerator):
 
     """
     Modifies simulation input file template random foraging:
@@ -54,7 +54,7 @@ class RBaseGenerator(ExpInputGenerator):
         if len(rms):
             [xml_helper.remove_element(a) for a in rms[0]]
 
-        nest_pose = ev.nest_pose.NestPose("random", [(10, 5)])
+        nest_pose = ev.nest_pose.NestPose("random", [(self.dimension, self.dimension)])
         [xml_helper.set_attribute(a[0], a[1]) for a in nest_pose.gen_attr_changelist()[0]]
         rms = nest_pose.gen_tag_rmlist()
         if len(rms):
@@ -63,7 +63,7 @@ class RBaseGenerator(ExpInputGenerator):
         return xml_helper
 
 
-class RGenerator10x10(RBaseGenerator):
+class RNDGenerator10x10(RNDBaseGenerator):
 
     """
     Modifies simulation input file template for random foraging in a 10x10 arena.
@@ -79,7 +79,7 @@ class RGenerator10x10(RBaseGenerator):
         return super().generate(xml_helper)
 
 
-class RGenerator20x20(RBaseGenerator):
+class RNDGenerator20x20(RNDBaseGenerator):
 
     """
     Modifies simulation input file template for random foraging in a 20x20 arena.
@@ -95,7 +95,7 @@ class RGenerator20x20(RBaseGenerator):
         return super().generate(xml_helper)
 
 
-class RGenerator40x40(RBaseGenerator):
+class RNDGenerator40x40(RNDBaseGenerator):
 
     """
     Modifies simulation input file template for random foraging in a 40x40 arena.

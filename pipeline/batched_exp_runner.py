@@ -35,7 +35,7 @@ class BatchedExpRunner:
 
     def run(self, no_msi=False):
         """Runs all experiments in the batch."""
-        print("- Running all experiments in batch in {0}...".format(self.batch_exp_root))
+        print("- Running batched experiment in {0}...".format(self.batch_exp_root))
         for item in os.listdir(self.batch_exp_root):
             path = os.path.join(self.batch_exp_root, item)
             if os.path.isdir(path):

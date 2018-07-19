@@ -123,7 +123,7 @@ if __name__ == "__main__":
         args.output_root = os.path.join(args.sierra_root, "outputs")
 
     if args.graph_root is None:
-        args.graph_root = os.path.join(args.sierra_root, "generation-graphs")
+        args.graph_root = os.path.join(args.sierra_root, "generated-graphs")
 
     pipeline = ExpPipeline(args, get_input_generator(args))
     pipeline.run()

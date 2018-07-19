@@ -54,7 +54,7 @@ class PLBaseGenerator(ExpInputGenerator):
         if len(rms):
             [xml_helper.remove_element(a) for a in rms[0]]
 
-        nest_pose = ev.nest_pose.NestPose("powerlaw", [(10, 5)])
+        nest_pose = ev.nest_pose.NestPose("powerlaw", [(self.dimension, self.dimension)])
         [xml_helper.set_attribute(a[0], a[1]) for a in nest_pose.gen_attr_changelist()[0]]
         rms = nest_pose.gen_tag_rmlist()
         if len(rms):

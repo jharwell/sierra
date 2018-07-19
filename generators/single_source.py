@@ -38,7 +38,6 @@ class SSBaseGenerator(ExpInputGenerator):
         super().__init__(template_config_file, generation_root, exp_output_root,
                          n_sims, n_threads)
         self.dimension = dimension
-        print(dimension)
 
     def generate(self, xml_helper):
         shape = ev.arena_shape.RectangularArenaTwoByOne(x_range=[self.dimension[0]],
@@ -89,7 +88,7 @@ class SSGenerator20x10(SSBaseGenerator):
 
     def __init__(self, template_config_file, generation_root, exp_output_root,
                  n_sims, n_threads):
-        super().__init__(self, template_config_file, generation_root, exp_output_root,
+        super().__init__(template_config_file, generation_root, exp_output_root,
                          n_sims, n_threads, (20, 10))
 
     def generate(self, xml_helper):
@@ -105,7 +104,7 @@ class SSGenerator40x20(SSBaseGenerator):
 
     def __init__(self, template_config_file, generation_root, exp_output_root,
                  n_sims, n_threads):
-        super().__init__(self, template_config_file, generation_root, exp_output_root,
+        super().__init__(template_config_file, generation_root, exp_output_root,
                          n_sims, n_threads, (40, 20))
 
     def generate(self, xml_helper):
