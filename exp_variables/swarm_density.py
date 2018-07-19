@@ -18,17 +18,13 @@
 
 from exp_variables.base_variable import BaseVariable
 from exp_variables.arena_shape import SquareArena
-import math
-
-# From http://www.swarm-bots.org/index.php@main=3&sub=31&conpage=sbot.html
-kFootBotRadius = 0.116 / 2
 
 
 class ConstantDensity(BaseVariable):
 
     """
     Defines a range of swarm and arena sizes to test with such that the arena ratio is always the
-    same. Assumes a square arena.
+    same. Sets arena dimensions to be square.
 
     Attributes:
       target_density(list): The target swarm density.
@@ -37,20 +33,23 @@ class ConstantDensity(BaseVariable):
     def __init__(self, target_density):
         self.sqrange = range(10, 110, 10)
         self.target_density = target_density
-        self.changes = SquareArena(sqrange=self.sqrange).gen_list()
+        self.changes = SquareArena(sqrange=self.sqrange).gen_attr_changelist()
 
     def gen_attr_changelist(self):
         """
         Generate list of sets of changes to input file to set the # robots for a set of arena
-        sizes such that the swarm density is constant.
+        sizes such that the swarm density is constant. Robots are approximated as point masses, an
+        assumption that should be valid as long as the environment is large compared to the size of
+        a robot.
         """
         for changeset in self.changes:
             for c in changeset:
                 if c[0] == "arena.size":
                     x, y, z = c[1].split(',')
-                    n_robots = (x * y) / self.target_density / (math.pi * kFootBotRadius ** 2)
-                    changeset.add(("arena.entity.quanity", int(n_robots)))
+                    n_robots = (int(x) * int(y)) * (self.target_density / 100.0)
+                    changeset.add(("arena.entity.quantity", int(n_robots)))
                     break
+        return self.changes
 
     def gen_tag_rmlist(self):
         return []

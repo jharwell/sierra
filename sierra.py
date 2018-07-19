@@ -51,25 +51,28 @@ def define_cmdline():
     """Define the command line arguments for sierra. Returns a parser with the definitions."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--template-config-file",
+                        required=True,
                         help="The template configuration file for the experiment.")
 
     parser.add_argument("--n_sims",
                         help="How many simulations to run in a single experiment in parallel. Defaults to 100.", type=int, default=100)
-    parser.add_argument("--generation-root",
-                        help="Root directory to save generated files. Defaults to ~/generated-inputs.",
-                        default=os.path.expanduser("~/sierra-root/generated-inputs"))
     parser.add_argument("--n_threads",
                         help="How many ARGoS simulation threads to use. Defaults to 4.",
                         type=int,
                         default=4)
 
     # upgrade: think about adding a save CSV path
+    parser.add_argument("--sierra-root",
+                        help="Root directory for all sierra generate/created files. Subdirectories " +
+                        "for each pipeline stage will be automatically created in this directory " +
+                        "unless the corresponding option is explicitly passed to override.")
+
+    parser.add_argument("--generation-root",
+                        help="Root directory to save generated files. Defaults to <sierra_root>/generated-inputs.")
     parser.add_argument("--output-root",
-                        help="Root directory for saving simulation outputs (sort of a scratch dir). Defaults to ~/output",
-                        default=os.path.expanduser("~/sierra-root/output"))
+                        help="Root directory for saving simulation outputs (sort of a scratch dir). Defaults to <sierra_root>/output")
     parser.add_argument("--graph-root",
-                        help="Root directory for saving generated graph files. Defaults to ~/generated-graphs.",
-                        default=os.path.expanduser("~/sierra-root/generated-graphs"))
+                        help="Root directory for saving generated graph files. Defaults to <sierra_root>/generated-graphs.")
 
     run_group = parser.add_mutually_exclusive_group()
     run_group.add_argument("--inputs-only",
@@ -85,7 +88,9 @@ def define_cmdline():
                            help="Only perform graph generation on a previous run experiments/set of experiments.",
                            action="store_true")
     parser.add_argument("--generator",
-                        help="Experiment generator to use. Options are: [stateless.SingleSourceInputGenerator]")
+                        help="Experiment generator to use. Options are: " +
+                        "[stateless.*, stateful.*] (specifics can be found in generators/*.py)",
+                        required=True)
 
     parser.add_argument("--no-msi",
                         help="Include if running on a personal computer (otherwise runs supercomputer commands).",
@@ -110,6 +115,15 @@ if __name__ == "__main__":
 
     parser = define_cmdline()
     args = parser.parse_args()
+
+    if args.generation_root is None:
+        args.generation_root = os.path.join(args.sierra_root, "generated-inputs")
+
+    if args.output_root is None:
+        args.output_root = os.path.join(args.sierra_root, "outputs")
+
+    if args.graph_root is None:
+        args.graph_root = os.path.join(args.sierra_root, "generation-graphs")
 
     pipeline = ExpPipeline(args, get_input_generator(args))
     pipeline.run()

@@ -49,7 +49,7 @@ class NestPose(BaseVariable):
                 ("fsm.nest", "2.0, {0}".format(s[1] / 2.0))
             ])
                 for s in self.dimensions]
-        elif self.dist_type == "powerlaw":
+        elif self.dist_type == "powerlaw" or self.dist_type == "random":
             return [set([
                 ("arena.light1.position", "{0}, {0}, 1.0".format(s[1] * 0.5)),
                 ("arena_map.nest.size", "{0}, {1}".format(s[0] / 10.0, s[0] / 10.0)),
@@ -58,11 +58,11 @@ class NestPose(BaseVariable):
             ])
                 for s in self.dimensions]
         else:
-            # Eventually, I'll want to have definitions for the other block distribution types
+            # Eventually, I might want to have definitions for the other block distribution types
             raise NotImplementedError
 
     def gen_tag_rmlist(self):
         if self.dist_type == "single_source":
             return []
-        elif self.dist_type == "powerlaw":
+        elif self.dist_type == "powerlaw" or self.dist_type == "random":
             return [set(["arena.light2", "arena.light3"])]
