@@ -43,7 +43,6 @@ class ExpInputGenerator:
 
     def __init__(self, template_config_file, generation_root, exp_output_root,
                  n_sims, n_threads):
-
         assert os.path.isfile(template_config_file), \
             "The path '{}' (which should point to the main config file) did not point to a file".format(
                 template_config_file)

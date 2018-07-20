@@ -1,5 +1,5 @@
 """
- Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
+ Copyright 2018 John Harwell, All rights reserved.
 
   This file is part of SIERRA.
 
@@ -63,7 +63,7 @@ class SSBaseGenerator(ExpInputGenerator):
         return xml_helper
 
 
-class SSGenerator10x5(SSBaseGenerator):
+class SS10x5(SSBaseGenerator):
 
     """
     Modifies simulation input file template for single source foraging in a 10x5 arena.
@@ -76,10 +76,10 @@ class SSGenerator10x5(SSBaseGenerator):
                          n_sims, n_threads, (10, 5))
 
     def generate(self, xml_helper):
-        return super().generate(xml_helper)
+        self._create_all_sim_inputs(self._generate_random_seeds(), super().generate(xml_helper))
 
 
-class SSGenerator20x10(SSBaseGenerator):
+class SS20x10(SSBaseGenerator):
 
     """
     Modifies simulation input file template for single source foraging in a 20x10 arena.
@@ -92,10 +92,10 @@ class SSGenerator20x10(SSBaseGenerator):
                          n_sims, n_threads, (20, 10))
 
     def generate(self, xml_helper):
-        return super().generate(xml_helper)
+        self._create_all_sim_inputs(self._generate_random_seeds(), super().generate(xml_helper))
 
 
-class SSGenerator40x20(SSBaseGenerator):
+class SS40x20(SSBaseGenerator):
 
     """
     Modifies simulation input file template for single source foraging in a 40x20 arena.
@@ -108,4 +108,4 @@ class SSGenerator40x20(SSBaseGenerator):
                          n_sims, n_threads, (40, 20))
 
     def generate(self, xml_helper):
-        return super().generate(xml_helper)
+        self._create_all_sim_inputs(self._generate_random_seeds(), super().generate(xml_helper))

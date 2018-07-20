@@ -19,26 +19,26 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 
 cd $HOME/git/sierra
 NSIMS=16
-XDIMS=(10 20 40)
-YDIMS=(5 10 20)
+DIMS=(10x5 20x10 40x20)
 OUTPUT_ROOT=$HOME/exp
+BASE_CMD="python3 sierra.py --template-config-file=$HOME/git/fordyca/exp/single-source.argos \
+        --n_sims=$NSIMS --batch --batch-criteria=swarm_size.Log64"
 
 # Stateless (does not change # blocks from template)
-for x in "${XDIMS[@]}"
+for d in "${DIMS[@]}"
 do
-         for y in "${YDIMS[@]}"
-         do
-             rm -rf $OUTPUT_ROOT/benchmark-ss${x}x${y}/stateless
-             python3 sierra.py \
-             --template-config-file=$HOME/git/fordyca/exp/single-source.argos\
-             --n_sims=$NSIMS\
-             --sierra-root=$OUTPUT_ROOT/benchmark-ss${x}x${y}/stateless \
-             --generator=stateless.SS${x}x${y}Generator --batch \
-             --batch-criteria=swarm_size.Log64\
-             --no-msi
-         done
+    rm -rf $OUTPUT_ROOT/benchmark-ss$d/stateless
+    $BASE_CMD --sierra-root=$OUTPUT_ROOT/benchmark-ss$d/stateless \
+              --generator=stateless.SS${d} \
+              --no-msi
 done
 
-# Stateful
 
-# Depth1
+# Stateful (does not change # blocks from template)
+for d in "${DIMS[@]}"
+do
+    rm -rf $OUTPUT_ROOT/benchmark-ss$d/stateful
+    $BASE_CMD --sierra-root=$OUTPUT_ROOT/benchmark-ss$d/stateful \
+              --generator=stateful.SS${d} \
+              --no-msi
+done

@@ -21,16 +21,25 @@ cd $HOME/git/sierra
 NSIMS=64
 DENSITIES=(2p0 3p0 4p0 5p0)
 OUTPUT_ROOT=$HOME/exp
+BASE_CMD="python3 sierra.py --template-config-file=$HOME/git/fordyca/exp/single-source.argos \
+        --n_sims=$NSIMS --batch"
 
 # Stateless
 for d in "${DENSITIES[@]}"
 do
-    python3 sierra.py --template-config-file=$HOME/git/fordyca/exp/single-source.argos \
-            --n_sims=$NSIMS --sierra-root=$OUTPUT_ROOT/constant-density-$d/stateless \
-            --generator=stateless.BaseGenerator --batch \
-            --batch-criteria=swarm_density.ConstantDensity$d
+    $BASE_CMD --sierra-root=$OUTPUT_ROOT/constant-density-$d/stateless \
+              --generator=stateless.BaseGenerator \
+              --batch-criteria=swarm_density.ConstantDensity$d \
+              --no-msi
 done
 
 # Stateful
+for d in "${DENSITIES[@]}"
+do
+    $BASE_CMD --sierra-root=$OUTPUT_ROOT/constant-density-$d/stateful \
+              --generator=stateful.BaseGenerator \
+              --batch-criteria=swarm_density.ConstantDensity$d \
+              --no-msi
+done
 
 # Depth1

@@ -65,19 +65,19 @@ class Linear64(SwarmSize):
 
 class Log1024(SwarmSize):
     def __init__(self):
-        super().__init__([x ** 2 for x in range(2, 11)])
+        super().__init__([2 ** x for x in range(2, 11)])
 
 
 class Log256(SwarmSize):
     def __init__(self):
-        super().__init__([x ** 2 for x in range(2, 10)])
+        super().__init__([2 ** x for x in range(2, 10)])
 
 
 class Log128(SwarmSize):
     def __init__(self):
-        super().__init__([x ** 2 for x in range(2, 8)])
+        super().__init__([2 ** x for x in range(2, 8)])
 
 
 class Log64(SwarmSize):
     def __init__(self):
-        super().__init__([x ** 2 for x in range(2, 7)])
+        super().__init__([2 ** x for x in range(2, 7)])
