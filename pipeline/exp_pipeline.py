@@ -25,6 +25,7 @@ from pipeline.csv_collator import CSVCollator
 from pipeline.batched_intra_exp_graph_generator import BatchedIntraExpGraphGenerator
 from pipeline.inter_exp_graph_generator import InterExpGraphGenerator
 import os
+import generators
 
 
 class ExpPipeline:

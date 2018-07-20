@@ -20,13 +20,24 @@ import argparse
 import os
 from pipeline.exp_pipeline import ExpPipeline
 from pipeline.batched_exp_input_generator import BatchedExpInputGenerator
+from generators.factory import GeneratorFactory
 
 
 def get_input_generator(args):
     """Get the input generator to use to create experiment/batch inputs."""
     if not any([args.graphs_only, args.run_only, args.average_only]):
-        exp = __import__(
-            str("generators." + args.generator.split('.')[0]), fromlist=["*"])
+
+        # To ease the ache in my typing fingers
+        abbrev_dict = {"SS": "single_source", "PL": "powerlaw", "RN": "random"}
+
+        # The two generator class names from which should be created a new class for my scenario +
+        # controller changes.
+        if 2 == len(args.generator.split('.')[0]):
+            generator_pair = ("generators." + args.generator.split('.')[0] + ".BaseGenerator",
+                              "generators." + abbrev_dict[args.generator.split('.')[1][:2]] +
+                              "." + args.generator.split('.')[1])
+        else:
+            generator_pair = ("generators." + args.generator.split('.')[0] + ".BaseGenerator",)
 
         if args.batch:
             criteria = __import__("exp_variables.{0}".format(
@@ -36,15 +47,16 @@ def get_input_generator(args):
                                             args.output_root,
                                             getattr(criteria, args.batch_criteria.split(
                                                 ".")[1])().gen_attr_changelist(),
-                                            getattr(exp, args.generator.split('.')[1]),
+                                            generator_pair,
                                             args.n_sims,
                                             args.n_threads)
         else:
-            return getattr(exp, args.generator.split('.')[1])(args.template_config_file,
-                                                              args.generation_root,
-                                                              args.output_root,
-                                                              args.n_sims,
-                                                              args.n_threads)
+            return GeneratorFactory(generator_pair,
+                                    args.template_config_file,
+                                    args.generation_root,
+                                    args.output_root,
+                                    args.n_sims,
+                                    args.n_threads)
 
 
 def define_cmdline():

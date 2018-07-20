@@ -84,24 +84,24 @@ class Quantity(BaseVariable):
 
 class QuantityLog64(Quantity):
     def __init__(self):
-        super().__init__([x ** 2 for x in range(2, 7)])
+        super().__init__([2 ** x for x in range(2, 7)])
 
 
 class QuantityLog128(Quantity):
     def __init__(self):
-        super().__init__([x ** 2 for x in range(2, 8)])
+        super().__init__([2 ** x for x in range(2, 8)])
 
 
 class QuantityLog256(Quantity):
     def __init__(self):
-        super().__init__([x ** 2 for x in range(2, 9)])
+        super().__init__([2 ** x for x in range(2, 9)])
 
 
 class QuantityLog512(Quantity):
     def __init__(self):
-        super().__init__([x ** 2 for x in range(2, 10)])
+        super().__init__([2 ** x for x in range(2, 10)])
 
 
 class QuantityLog1024(Quantity):
     def __init__(self):
-        super().__init__([x ** 2 for x in range(2, 11)])
+        super().__init__([2 ** x for x in range(2, 11)])

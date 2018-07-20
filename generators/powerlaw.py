@@ -1,5 +1,5 @@
 """
- Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
+ Copyright 2018 John Harwell, All rights reserved.
 
   This file is part of SIERRA.
 
@@ -63,7 +63,7 @@ class PLBaseGenerator(ExpInputGenerator):
         return xml_helper
 
 
-class PLGenerator10x10(PLBaseGenerator):
+class PL10x10(PLBaseGenerator):
 
     """
     Modifies simulation input file template for powerlaw foraging in a 10x10 arena.
@@ -76,10 +76,10 @@ class PLGenerator10x10(PLBaseGenerator):
                          n_sims, n_threads, 10)
 
     def generate(self, xml_helper):
-        return super().generate(xml_helper)
+        self._create_all_sim_inputs(self._generate_random_seeds(), super().generate(xml_helper))
 
 
-class PLGenerator20x20(PLBaseGenerator):
+class PL20x20(PLBaseGenerator):
 
     """
     Modifies simulation input file template for powerlaw foraging in a 20x20 arena.
@@ -92,10 +92,10 @@ class PLGenerator20x20(PLBaseGenerator):
                          n_sims, n_threads, 20)
 
     def generate(self, xml_helper):
-        return super().generate(xml_helper)
+        self._create_all_sim_inputs(self._generate_random_seeds(), super().generate(xml_helper))
 
 
-class PLGenerator40x40(PLBaseGenerator):
+class PL40x40(PLBaseGenerator):
 
     """
     Modifies simulation input file template for powerlaw foraging in a 40x40 arena.
@@ -108,4 +108,4 @@ class PLGenerator40x40(PLBaseGenerator):
                          n_sims, n_threads, 40)
 
     def generate(self, xml_helper):
-        return super().generate(xml_helper)
+        self._create_all_sim_inputs(self._generate_random_seeds(), super().generate(xml_helper))
