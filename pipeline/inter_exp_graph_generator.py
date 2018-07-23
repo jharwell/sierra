@@ -18,7 +18,7 @@ Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 """
 
 import os
-from stacked_line_graph import StackedLineGraph
+from graphs.stacked_line_graph import StackedLineGraph
 
 
 class InterExpGraphGenerator:
@@ -101,3 +101,21 @@ class InterExpGraphGenerator:
             legend=None,
             xlabel="Timestep",
             ylabel="# Timesteps Waiting").generate()
+
+        StackedLineGraph(input_fpath=os.path.join(self.batch_output_root, "blocks-pickup-rates.csv"),
+                         output_fpath=os.path.join(
+            self.batch_graph_root, "blocks-pickup-rates.eps"),
+            cols=None,
+            title="Average Block Pickup Rates",
+            legend=None,
+            xlabel="Timestep",
+            ylabel="# Events").generate()
+
+        StackedLineGraph(input_fpath=os.path.join(self.batch_output_root, "blocks-drop-rates.csv"),
+                         output_fpath=os.path.join(
+            self.batch_graph_root, "blocks-drop-rates.eps"),
+            cols=None,
+            title="Average Block Drop Rates",
+            legend=None,
+            xlabel="Timestep",
+            ylabel="# Events").generate()

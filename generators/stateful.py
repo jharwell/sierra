@@ -1,5 +1,5 @@
 """
- Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
+ Copyright 2018 John Harwell, All rights reserved.
 
   This file is part of SIERRA.
 
@@ -16,27 +16,40 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from exp_input_generator import ExpInputGenerator
+from generators.exp_input_generator import ExpInputGenerator
 
 
-class BaseInputGenerator(ExpInputGenerator):
+class BaseGenerator(ExpInputGenerator):
 
     """
-    Generates simulation input for base/simple stateless foraging experiments.
+    Generates simulation input for base stateful foraging experiments.
 
-    Extends ExperimentInputGenerator.
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def generate(self):
-        '''Generates and saves all the input files for all the experiments'''
-        xml_helper = super().generate()
+    def init_sim_defs(self):
+        """
+        Initialize sim defs common to all stateful simulations.
+        """
+        xml_helper = super().init_sim_defs()
 
-        # xml_helper.set_attribute("argos-configuration.controllers.__template__",
-        #                          "stateful_foraging_controller")
+        xml_helper.set_tag("argos-configuration.controllers.__template__",
+                           "stateful_foraging_controller")
         xml_helper.set_attribute("argos-configuration.loop_functions.label",
                                  "stateful_foraging_loop_functions")
-        self._generate_all_sim_inputs(self._generate_random_seeds(), xml_helper)
-        xml_helper.write()
         return xml_helper
+
+    def generate(self):
+        """
+        Generates and all changes to the input file for the simulation.
+        """
+        xml_helper = self.init_sim_defs()
+        return xml_helper
+
+    def generate_and_save(self):
+        """
+        Generates and saves input file for the simulation.
+        """
+        self._create_all_sim_inputs(self._generate_random_seeds(), self.init_sim_defs())

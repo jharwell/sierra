@@ -17,7 +17,7 @@
 """
 
 import os
-from intra_exp_graph_generator import IntraExpGraphGenerator
+from pipeline.intra_exp_graph_generator import IntraExpGraphGenerator
 
 
 class BatchedIntraExpGraphGenerator:

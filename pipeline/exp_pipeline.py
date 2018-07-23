@@ -16,15 +16,16 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from exp_csv_averager import ExpCSVAverager
-from batched_exp_csv_averager import BatchedExpCSVAverager
-from exp_runner import ExpRunner
-from batched_exp_runner import BatchedExpRunner
-from intra_exp_graph_generator import IntraExpGraphGenerator
-from csv_collator import CSVCollator
-from batched_intra_exp_graph_generator import BatchedIntraExpGraphGenerator
-from inter_exp_graph_generator import InterExpGraphGenerator
+from pipeline.exp_csv_averager import ExpCSVAverager
+from pipeline.batched_exp_csv_averager import BatchedExpCSVAverager
+from pipeline.exp_runner import ExpRunner
+from pipeline.batched_exp_runner import BatchedExpRunner
+from pipeline.intra_exp_graph_generator import IntraExpGraphGenerator
+from pipeline.csv_collator import CSVCollator
+from pipeline.batched_intra_exp_graph_generator import BatchedIntraExpGraphGenerator
+from pipeline.inter_exp_graph_generator import InterExpGraphGenerator
 import os
+import generators
 
 
 class ExpPipeline:
@@ -48,7 +49,8 @@ class ExpPipeline:
         self.input_generator = input_generator
 
     def generate_inputs(self):
-        print("- Generating input files for '{0}'...".format(self.args.exp_type))
+        print("- Generating input files for '{0}' in {1}...".format(self.args.generator,
+                                                                    self.args.generation_root))
         self.input_generator.generate()
         print("- Input files generated.")
 
@@ -69,7 +71,7 @@ class ExpPipeline:
         else:
             averager = ExpCSVAverager(template_config_leaf, self.args.output_root)
 
-        print("- Averaging outputs for '{0}'...".format(self.args.exp_type))
+        print("- Averaging outputs for '{0}'...".format(self.args.generator))
         averager.average_csvs()
         print("- Averaging output complete")
 
@@ -86,6 +88,12 @@ class ExpPipeline:
                    ('block-transport-stats.csv',
                     'avg_initial_wait_time',
                     'blocks-initial-wait-time.csv'),
+                   ('block-transport-stats.csv',
+                    'avg_pickup_events',
+                    'blocks-pickup-rates.csv'),
+                   ('block-transport-stats.csv',
+                    'avg_drop_events',
+                    'blocks-drop-rates.csv'),
                    ('block-acquisition-stats.csv',
                     'avg_acquiring_goal',
                     'block-acquisition.csv'),

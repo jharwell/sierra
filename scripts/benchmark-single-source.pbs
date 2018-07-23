@@ -1,0 +1,44 @@
+#!/bin/bash -l
+#PBS -l walltime=0:15:00,nodes=5:ppn=8,pmem=1000mb
+#PBS -m abe
+#PBS -M harwe006@umn.edu
+
+# Script to get Argos to work
+source /home/gini/shared/swarm/bin/build-env-setup.sh
+
+# Set ARGoS library search path
+export ARGOS_PLUGIN_PATH=$ARGOS_PLUGIN_PATH:$HOME/git/fordyca/build/lib
+
+# From MSI: transfers all of the loaded modules to the nodes
+export PARALLEL="--workdir . --env PATH --env LD_LIBRARY_PATH --env
+LOADEDMODULES --env _LMFILES_ --env MODULE_VERSION --env MODULEPATH --env
+MODULEVERSION_STACK --env MODULESHOME --env OMP_DYNAMICS --env
+OMP_MAX_ACTIVE_LEVELS --env OMP_NESTED --env OMP_NUM_THREADS --env
+OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
+--env ARGOS_PLUGIN_PATH"
+
+cd $HOME/git/sierra
+NSIMS=16
+DIMS=(10x5 20x10 40x20)
+OUTPUT_ROOT=$HOME/exp
+BASE_CMD="python3 sierra.py --template-config-file=$HOME/git/fordyca/exp/single-source.argos \
+        --n_sims=$NSIMS --batch --batch-criteria=swarm_size.Log64"
+
+# Stateless (does not change # blocks from template)
+for d in "${DIMS[@]}"
+do
+    rm -rf $OUTPUT_ROOT/benchmark-ss$d/stateless
+    $BASE_CMD --sierra-root=$OUTPUT_ROOT/benchmark-ss$d/stateless \
+              --generator=stateless.SS${d} \
+              --no-msi
+done
+
+
+# Stateful (does not change # blocks from template)
+for d in "${DIMS[@]}"
+do
+    rm -rf $OUTPUT_ROOT/benchmark-ss$d/stateful
+    $BASE_CMD --sierra-root=$OUTPUT_ROOT/benchmark-ss$d/stateful \
+              --generator=stateful.SS${d} \
+              --no-msi
+done

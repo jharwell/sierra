@@ -17,7 +17,7 @@
 """
 
 import os
-from exp_csv_averager import ExpCSVAverager
+from pipeline.exp_csv_averager import ExpCSVAverager
 
 
 class BatchedExpCSVAverager:

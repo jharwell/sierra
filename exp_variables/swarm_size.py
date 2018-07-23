@@ -16,10 +16,10 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from batch_criteria.base_criteria import BaseCriteria
+from exp_variables.base_variable import BaseVariable
 
 
-class SwarmSize(BaseCriteria):
+class SwarmSize(BaseVariable):
 
     """
     Defines a range of swarm sizes to test with
@@ -31,9 +31,16 @@ class SwarmSize(BaseCriteria):
     def __init__(self, size_list):
         self.size_list = size_list
 
-    def gen_list(self):
-        """Generate list of lists criteria for input into batch pipeline."""
-        return [[("arena.entity.quantity", s)] for s in self.size_list]
+    def gen_attr_changelist(self):
+        """
+        Generate list of sets of swarm sizes. Each entry in the list is a set of changes
+        necessary to make to the input file to correctly set up the simulation with the specified
+        swarm size.
+        """
+        return [set([("arena.entity.quantity", s)]) for s in self.size_list]
+
+    def gen_tag_rmlist(self):
+        return []
 
 
 class Linear1024(SwarmSize):
@@ -58,19 +65,19 @@ class Linear64(SwarmSize):
 
 class Log1024(SwarmSize):
     def __init__(self):
-        super().__init__([x ** 2 for x in range(2, 11)])
+        super().__init__([2 ** x for x in range(2, 11)])
 
 
 class Log256(SwarmSize):
     def __init__(self):
-        super().__init__([x ** 2 for x in range(2, 10)])
+        super().__init__([2 ** x for x in range(2, 10)])
 
 
 class Log128(SwarmSize):
     def __init__(self):
-        super().__init__([x ** 2 for x in range(2, 8)])
+        super().__init__([2 ** x for x in range(2, 8)])
 
 
 class Log64(SwarmSize):
     def __init__(self):
-        super().__init__([x ** 2 for x in range(2, 7)])
+        super().__init__([2 ** x for x in range(2, 7)])

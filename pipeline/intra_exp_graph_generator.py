@@ -18,7 +18,7 @@ Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 """
 
 import os
-from stacked_line_graph import StackedLineGraph
+from graphs.stacked_line_graph import StackedLineGraph
 
 
 class IntraExpGraphGenerator:
@@ -115,6 +115,15 @@ class IntraExpGraphGenerator:
             cols=['avg_transport_time', 'avg_initial_wait_time'],
             title="Swarm Block Transport Time",
             legend=['Average Block Transport Time', "Average Initial Wait Time"],
+            xlabel="Timestep",
+            ylabel="Time").generate()
+
+        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "block-transport-stats.csv"),
+                         output_fpath=os.path.join(
+            self.exp_graph_root, "block-pickup-drop-rates.eps"),
+            cols=['avg_pickup_events', 'avg_drop_events'],
+            title="Swarm Average Block Pickup/Drop Rates",
+            legend=['Average Pickup Events', "Average Drop Events"],
             xlabel="Timestep",
             ylabel="Time").generate()
 

@@ -18,7 +18,7 @@
 
 import os
 import re
-from csv_class import CSV
+from pipeline.csv_class import CSV
 
 
 class ExpCSVAverager:

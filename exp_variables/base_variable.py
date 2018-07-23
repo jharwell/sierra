@@ -17,7 +17,11 @@ This file is part of SIERRA.
 """
 
 
-class BaseCriteria:
-    def gen_list(self):
-        """Generate list of lists criteria for input into batch pipeline."""
+class BaseVariable:
+    def gen_attr_changelist(self):
+        """Generate list of sets for changing attributes in the template input file."""
+        raise NotImplementedError
+
+    def gen_tag_rmlist(self):
+        """Generate list of sets for removing tags in the template input file."""
         raise NotImplementedError
