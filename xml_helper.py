@@ -61,6 +61,8 @@ TODO: right now, loose strict paths are not found correctly. The current algorit
     Switching to functions that returned generators (rather than just returning the first value found) would help solve this issue.
     Everything should work correctly as long as the following restriction is followed:
     restriction: the first tag in a loose strict path should refer to the topmost element with that tag
+
+    Of course, the way to always get the correct element is to just start with the root tag.
 '''
 
 
@@ -351,6 +353,6 @@ class XMLHelper:
 if __name__ == "__main__":
     x = XMLHelper("testing_generated_configs/new-single-source-test_0.argos")
     x.remove_element("actuators.differential_steering")
-    x.set_attribute("arena.wall_east.position", "big")
+    x.set_attribute("arena.wall_west.position", "big")
     # x.set_tag("loop_functions.output.grid", "hello")
     x.write("testing4.argos")
