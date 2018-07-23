@@ -118,6 +118,15 @@ class IntraExpGraphGenerator:
             xlabel="Timestep",
             ylabel="Time").generate()
 
+        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "block-transport-stats.csv"),
+                         output_fpath=os.path.join(
+            self.exp_graph_root, "block-pickup-drop-rates.eps"),
+            cols=['avg_pickup_events', 'avg_drop_events'],
+            title="Swarm Average Block Pickup/Drop Rates",
+            legend=['Average Pickup Events', "Average Drop Events"],
+            xlabel="Timestep",
+            ylabel="Time").generate()
+
         StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "cache-lifecycle-stats.csv"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "cache-lifecycle.eps"),
