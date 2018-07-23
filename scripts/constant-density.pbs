@@ -18,10 +18,10 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 --env ARGOS_PLUGIN_PATH"
 
 cd $HOME/git/sierra
-NSIMS=64
+NSIMS=12
 DENSITIES=(2p0 3p0 4p0 5p0)
 OUTPUT_ROOT=$HOME/exp
-BASE_CMD="python3 sierra.py --template-config-file=$HOME/git/fordyca/exp/single-source.argos \
+BASE_CMD="python3 sierra.py --template-config-file=$HOME/git/sierra/single-source.argos \
         --n_sims=$NSIMS --batch"
 
 # Stateless
@@ -34,12 +34,12 @@ do
 done
 
 # Stateful
-for d in "${DENSITIES[@]}"
-do
-    $BASE_CMD --sierra-root=$OUTPUT_ROOT/constant-density-$d/stateful \
-              --generator=stateful.BaseGenerator \
-              --batch-criteria=swarm_density.ConstantDensity$d \
-              --no-msi
-done
+# for d in "${DENSITIES[@]}"
+# do
+#     $BASE_CMD --sierra-root=$OUTPUT_ROOT/constant-density-$d/stateful \
+#               --generator=stateful.BaseGenerator \
+#               --batch-criteria=swarm_density.ConstantDensity$d \
+#               --no-msi
+# done
 
 # Depth1
