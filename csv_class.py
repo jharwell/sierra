@@ -23,7 +23,11 @@ from pprint import pformat
 
 class CSV:
     def __init__(self, arg, delimiter=None):
-        '''A class to store the information of CSV files'''
+        '''
+        A class to store the information of CSV files
+
+        arg: either a CSV object (in which case it the init function makes a duplicate)
+        '''
 
         if isinstance(arg, CSV):
             self.csv = [row[:] for row in arg.csv] # copy the list
@@ -49,7 +53,17 @@ class CSV:
             else:
                 raise TypeError("Incorrect parameter type '{}' for CSV class initialization: must be list or string".format(type(arg)))
 
+        # self.csv is a row-major array
+        # how many rows there are in the CSV
+        self.height = len(self.csv)
+        self.width = len(self.csv[0])
 
+        # check to make sure the array is a perfect rectangle; all rows must have the same amount of entries
+        for row_index in range(1, self.height):
+            if len(self.csv[row_index]) != self.width:
+                raise ValueError("CSV object did not have the same amount of entries in each row")
+
+        self.dims = (self.height, self.width)
 
 
     def write(self, filename):
@@ -60,32 +74,16 @@ class CSV:
 
 
     def __eq__(self, other):
-        '''Equality operator "=" '''
+        '''Equality operator "==" '''
         if isinstance(other, CSV):
             return self.csv == other.csv
         else:
-            raise NotImplementedError("Equality operator between CVS object and object of type '{}' is not supported".format(type(other)))
-
-
-    @property
-    def height(self):
-        return len(self.csv)
-
-    @property
-    def width(self):
-        try:
-            return len(self.csv[0])
-        except IndexError: # len(self.csv) == 0
-            return 0
-
-    @property
-    def dims(self):
-        return (self.height, self.width)
+            raise NotImplementedError("Equality operator between CSV object and object of type '{}' is not supported".format(type(other)))
 
 
     def __add__(self, other):
         '''Addition operator "+" '''
-        
+
         if isinstance(other, CSV):
             dims = self.dims # cache
             if dims != other.dims:
@@ -116,7 +114,7 @@ class CSV:
                 ans.append(ans_row)
             return CSV(ans)
         else:
-            raise NotImplementedError("Division of a CVS object by an object of type '{}' is not supported".formt(type(other)))
+            raise NotImplementedError("Division of a CVS object by an object of type '{}' is not supported".format(type(other)))
 
 
     def __str__(self):
