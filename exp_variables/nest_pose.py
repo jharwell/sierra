@@ -46,7 +46,6 @@ class NestPose(BaseVariable):
                 ("arena.light3.position", "{0}, {1}, 1.0".format(s[0] * 0.1, s[1] * 0.75)),
                 ("arena_map.nest.size", "{0}, {1}".format(s[0] / 10.0, s[1] * 0.8)),
                 ("arena_map.nest.center", "{0}, {1}".format(s[0] * 0.1, s[1] / 2.0)),
-                ("fsm.nest", "{0}, {1}".format(s[0] * 0.1, s[1] / 2.0))
             ])
                 for s in self.dimensions]
         elif self.dist_type == "powerlaw" or self.dist_type == "random":
@@ -54,7 +53,6 @@ class NestPose(BaseVariable):
                 ("arena.light1.position", "{0}, {0}, 1.0".format(s[1] * 0.5)),
                 ("arena_map.nest.size", "{0}, {1}".format(s[0] / 10.0, s[0] / 10.0)),
                 ("arena_map.nest.center", "{0}, {0}".format(s[0] * 0.5)),
-                ("fsm.nest", "{0}, {0}".format(s[0] * 0.5))
             ])
                 for s in self.dimensions]
         else:

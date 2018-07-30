@@ -38,6 +38,16 @@ class IntraExpGraphGenerator:
         os.makedirs(self.exp_graph_root, exist_ok=True)
 
     def __call__(self):
+        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "collision-stats.csv"),
+                         output_fpath=os.path.join(
+            self.exp_graph_root, "collision-avoidance.eps"),
+            cols=['n_avoiding_collision', 'n_cum_avoiding_collision'],
+            title="Swarm Collision Avoidance",
+            legend=['# Robots Avoiding Collision (within interval)',
+                    '# Cumulative Robots Avoiding Collision'],
+            xlabel="Timestep",
+            ylabel="# Robots").generate()
+
         StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "distance-stats.csv"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "distance-stats.eps"),
@@ -94,9 +104,9 @@ class IntraExpGraphGenerator:
         StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "block-transport-stats.csv"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "blocks-collected.eps"),
-            cols=['n_collected'],
+            cols=['n_collected', 'n_cube_collected', 'n_ramp_collected'],
             title="Swarm Blocks Collected",
-            legend=['# Blocks Collected'],
+            legend=['# Blocks Collected', '# Cube blocks collected', '# Ramp blocks collected'],
             xlabel="Timestep",
             ylabel="# Blocks").generate()
 
