@@ -26,7 +26,8 @@ class CSV:
         '''
         A class to store the information of CSV files
 
-        arg: either a CSV object (in which case it the init function makes a duplicate)
+        arg: either a CSV object (in which case the init function makes a duplicate) or a file path that the CSV object should load its data from
+        delimiter: a string of the symbol that is used to separate the symbols inside the file. This can be kept as None if arg is not a file path.
         '''
 
         if isinstance(arg, CSV):
