@@ -19,27 +19,26 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 
 cd $HOME/git/sierra
 NSIMS=12
-DENSITIES=(2p0 3p0 4p0 5p0)
+DIMS=(10x10 20x20 40x40)
 OUTPUT_ROOT=$HOME/exp
-BASE_CMD="python3 sierra.py --template-config-file=$HOME/git/sierra/constant-density-template.argos \
-        --n_sims=$NSIMS --batch"
+BASE_CMD="python3 sierra.py --template-config-file=$HOME/git/sierra/ideal-template.argos \
+        --n_sims=$NSIMS --batch --batch-criteria=swarm_size.Log64"
 
-# Stateless
-for d in "${DENSITIES[@]}"
+# Stateless (does not change # blocks from template)
+for d in "${DIMS[@]}"
 do
-    $BASE_CMD --sierra-root=$OUTPUT_ROOT/constant-density-$d/stateless \
-              --generator=stateless.BaseGenerator \
-              --batch-criteria=swarm_density.ConstantDensity$d \
+    rm -rf $OUTPUT_ROOT/ideal-rnd$d/stateless
+    $BASE_CMD --sierra-root=$OUTPUT_ROOT/ideal-rnd$d/stateless \
+              --generator=stateless.PL${d} \
               --no-msi
 done
 
-# Stateful
-for d in "${DENSITIES[@]}"
+
+# Stateful (does not change # blocks from template)
+for d in "${DIMS[@]}"
 do
-    $BASE_CMD --sierra-root=$OUTPUT_ROOT/constant-density-$d/stateful \
-              --generator=stateful.BaseGenerator \
-              --batch-criteria=swarm_density.ConstantDensity$d \
+    rm -rf $OUTPUT_ROOT/ideal-rnd$d/stateful
+    $BASE_CMD --sierra-root=$OUTPUT_ROOT/ideal-rnd$d/stateful \
+              --generator=stateful.PL${d} \
               --no-msi
 done
-
-# Depth1
