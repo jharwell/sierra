@@ -22,7 +22,7 @@ from exp_variables.base_variable import BaseVariable
 class Type(BaseVariable):
 
     """
-    Defines the distribution of objects in the arena.
+    Defines the type of distribution of objects in the arena.
 
     Attributes:
       dist_type(str): [single_source, dual_source, powerlaw, random].
@@ -65,7 +65,8 @@ class TypeRandom(Type):
 class Quantity(BaseVariable):
 
     """
-    Defines the # of blocks in the arena.
+    Defines the # of blocks in the arena. An equal # of all block types are created (# blocks/ #
+    block types).
 
     Attributes:
       blocks_list(list): List of block quantities to be distributed.
@@ -79,7 +80,9 @@ class Quantity(BaseVariable):
         Generate a list of sets of changes necessary to make to the input file to correctly set up
         the simulation with the specified # blocks.
         """
-        return [set([("block_distribution.n_blocks", "{0}".format(n)) for n in self.blocks_list])]
+        return [set([
+            ("block_distribution.manifest.n_cube", "{0}".format(n / 2.0)),
+            ("block_distribution.manifest.n_ramp", "{0}".format(n / 2.0))]) for n in self.blocks_list]
 
 
 class QuantityLog64(Quantity):

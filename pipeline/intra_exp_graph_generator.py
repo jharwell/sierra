@@ -94,9 +94,9 @@ class IntraExpGraphGenerator:
         StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "block-transport-stats.csv"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "blocks-collected.eps"),
-            cols=['n_collected'],
+            cols=['n_collected', 'n_cube_collected', 'n_ramp_collected'],
             title="Swarm Blocks Collected",
-            legend=['# Blocks Collected'],
+            legend=['# Blocks Collected', '# Cube blocks collected', '# Ramp blocks collected'],
             xlabel="Timestep",
             ylabel="# Blocks").generate()
 
