@@ -7,7 +7,7 @@
   <!-- ************************* -->
   <framework>
     <system threads="0" />
-    <experiment length="1000"
+    <experiment length="10000"
                 ticks_per_second="5"
                 random_seed="123" />
   </framework>
@@ -123,6 +123,7 @@
            />
       <metrics
           output_dir="metrics"
+          collision_fname="collision-stats.csv"
           block_fname="block-stats.csv"
           block_acquisition_fname="block-acquisition-stats.csv"
           block_transport_fname="block-transport-stats.csv"

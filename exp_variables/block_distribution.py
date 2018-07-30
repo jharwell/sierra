@@ -75,7 +75,7 @@ class Quantity(BaseVariable):
     def __init__(self, blocks_list):
         self.blocks_list = blocks_list
 
-    def gen_list(self):
+    def gen_attr_changelist(self):
         """
         Generate a list of sets of changes necessary to make to the input file to correctly set up
         the simulation with the specified # blocks.
