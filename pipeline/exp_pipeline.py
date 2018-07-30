@@ -55,7 +55,7 @@ class ExpPipeline:
         print("- Input files generated.")
 
     def run_experiments(self):
-        if self.args.batch:
+        if self.args.batch_criteria is not None:
             runner = BatchedExpRunner(self.args.generation_root)
         else:
             runner = ExpRunner(self.args.generation_root, False)
@@ -66,7 +66,7 @@ class ExpPipeline:
         template_config_leaf, template_config_ext = os.path.splitext(
             os.path.basename(self.args.template_config_file))
 
-        if self.args.batch:
+        if self.args.batch_criteria is not None:
             averager = BatchedExpCSVAverager(template_config_leaf, self.args.output_root)
         else:
             averager = ExpCSVAverager(template_config_leaf, self.args.output_root)
@@ -145,7 +145,7 @@ class ExpPipeline:
              'cache-avg-penalty.csv'),
         ]
 
-        if self.args.batch:
+        if self.args.batch_criteria is not None:
             CSVCollator(self.args.output_root, targets)()
             intra_exp = BatchedIntraExpGraphGenerator(self.args.output_root, self.args.graph_root)
         else:
@@ -155,7 +155,7 @@ class ExpPipeline:
         intra_exp()
         print("- Intra-experiment graph generation complete")
 
-        if self.args.batch:
+        if self.args.batch_criteria is not None:
             print("- Generating inter-experiment graphs...")
             InterExpGraphGenerator(self.args.output_root, self.args.graph_root)()
             print("- Inter-experiment graph generation complete")

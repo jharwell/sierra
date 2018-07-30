@@ -39,7 +39,7 @@ def get_input_generator(args):
         else:
             generator_pair = ("generators." + args.generator.split('.')[0] + ".BaseGenerator",)
 
-        if args.batch:
+        if args.batch_criteria is not None:
             criteria = __import__("exp_variables.{0}".format(
                 args.batch_criteria.split(".")[0]), fromlist=["*"])
             return BatchedExpInputGenerator(args.template_config_file,
@@ -49,21 +49,22 @@ def get_input_generator(args):
                                                 ".")[1])().gen_attr_changelist(),
                                             generator_pair,
                                             args.n_sims,
-                                            args.n_threads)
+                                            args.n_threads,
+                                            args.time_setup)
         else:
             return GeneratorFactory(generator_pair,
                                     args.template_config_file,
                                     args.generation_root,
                                     args.output_root,
                                     args.n_sims,
-                                    args.n_threads)
+                                    args.n_threads,
+                                    args.time_setup)
 
 
 def define_cmdline():
     """Define the command line arguments for sierra. Returns a parser with the definitions."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--template-config-file",
-                        required=True,
                         help="The template configuration file for the experiment.")
 
     parser.add_argument("--n_sims",
@@ -85,7 +86,6 @@ def define_cmdline():
                         help="Root directory for saving simulation outputs (sort of a scratch dir). Defaults to <sierra_root>/output")
     parser.add_argument("--graph-root",
                         help="Root directory for saving generated graph files. Defaults to <sierra_root>/generated-graphs.")
-
     run_group = parser.add_mutually_exclusive_group()
     run_group.add_argument("--inputs-only",
                            help="Only generate the config files and command file for an experiment/set of experiments.",
@@ -101,20 +101,20 @@ def define_cmdline():
                            action="store_true")
     parser.add_argument("--generator",
                         help="Experiment generator to use. Options are: " +
-                        "[stateless.*, stateful.*] (specifics can be found in generators/*.py)",
-                        required=True)
+                        "[stateless.*, stateful.*] (specifics can be found in generators/*.py)")
 
     parser.add_argument("--no-msi",
                         help="Include if running on a personal computer (otherwise runs supercomputer commands).",
                         action="store_true")
 
-    parser.add_argument("--batch",
-                        help="Run a batch of experiments instead of a single one.",
-                        action="store_true")
     parser.add_argument("--batch-criteria",
                         help='''\
                         Name of criteria to use to generate the batched experiments. Options are
                         specified as <filename>.<class name> as found in the exp_variables/ directory.''')
+    parser.add_argument("--time-setup",
+                        help='''The base simulation setup to use, which sets duration and metric
+                        reporting interval. Options are: time_setup.[Default, Long, Short]''',
+                        default="time_setup.Default")
     return parser
 
 
