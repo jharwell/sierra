@@ -50,10 +50,11 @@ class BatchedExpInputGenerator:
                                  (scenario + controller changes).
       n_sims(int): Number of simulations to run in parallel.
       n_threads(int): Number of ARGoS simulation threads to use.
+      time_setup(str): Name of simulation time setup class
     """
 
     def __init__(self, batch_config_template, batch_generation_root, batch_output_root, batch_criteria,
-                 exp_generator_pair, n_sims, n_threads):
+                 exp_generator_pair, n_sims, n_threads, time_setup):
         assert os.path.isfile(
             batch_config_template), \
             "The path '{}' (which should point to the main config file) did not point to a file".format(
@@ -73,6 +74,7 @@ class BatchedExpInputGenerator:
         self.batch_criteria = batch_criteria
         self.n_sims = n_sims
         self.n_threads = n_threads
+        self.time_setup = time_setup
         self.exp_generator_pair = exp_generator_pair
 
     def generate(self):
@@ -101,6 +103,6 @@ class BatchedExpInputGenerator:
             g = GeneratorFactory(self.exp_generator_pair,
                                  os.path.join(exp_generation_root, self.batch_config_leaf),
                                  exp_generation_root, exp_output_root, self.n_sims,
-                                 self.n_threads)
+                                 self.n_threads, self.time_setup)
             g.generate()
             exp_num += 1

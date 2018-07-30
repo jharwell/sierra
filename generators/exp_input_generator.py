@@ -19,6 +19,7 @@
 import os
 import random
 from xml_helper import XMLHelper, InvalidElementError
+from exp_variables import time_setup
 
 
 class ExpInputGenerator:
@@ -39,10 +40,11 @@ class ExpInputGenerator:
                             scratch directory). Can be relative or absolute.
       n_sims(int): # of simulations to run in parallel.
       n_threads(int): # of ARGoS threads to use.
+      time_setup(str): Name of class to use for simulation time setup.
     """
 
     def __init__(self, template_config_file, generation_root, exp_output_root,
-                 n_sims, n_threads):
+                 n_sims, n_threads, time_setup):
         assert os.path.isfile(template_config_file), \
             "The path '{}' (which should point to the main config file) did not point to a file".format(
                 template_config_file)
@@ -65,6 +67,7 @@ class ExpInputGenerator:
 
         self.random_seed_min = 1
         self.random_seed_max = 10 * self.n_sims
+        self.time_setup = time_setup
 
         # where the commands file will be stored
         self.commands_fpath = os.path.abspath(
@@ -94,6 +97,13 @@ class ExpInputGenerator:
         # Set # cores for each simulation to use
         xml_helper.set_attribute("argos-configuration.framework.system.threads",
                                  self.n_threads)
+
+        # Setup simulation time parameters
+        setup = eval(self.time_setup)()
+        print("-- Using time_setup.{0}".format(setup.__class__.__name__))
+        for a in setup.gen_attr_changelist()[0]:
+            xml_helper.set_attribute(a[0], a[1])
+
         return xml_helper
 
     def _create_all_sim_inputs(self, random_seeds, xml_helper):

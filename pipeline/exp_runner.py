@@ -52,7 +52,7 @@ class ExpRunner:
                                      shell=True,
                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 stdout, stderr = p.communicate()
-                # print(stdout, stderr)
+                print(stdout, stderr)
             else:
                 # running on a supercomputer - specifically MSI
                 subprocess.run('sort -u $PBS_NODEFILE > unique-nodelist.txt && \
