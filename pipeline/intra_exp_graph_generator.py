@@ -38,7 +38,7 @@ class IntraExpGraphGenerator:
         os.makedirs(self.exp_graph_root, exist_ok=True)
 
     def __call__(self):
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "collision-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "collision-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "collision-avoidance.eps"),
             cols=['n_avoiding_collision', 'n_cum_avoiding_collision'],
@@ -48,7 +48,7 @@ class IntraExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Robots").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "distance-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "distance-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "distance-stats.eps"),
             cols=['cum_distance'],
@@ -57,7 +57,7 @@ class IntraExpGraphGenerator:
             xlabel="Timestep",
             ylabel="Distance (m)").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "block-acquisition-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "block-acquisition-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "robots-acquiring-blocks.eps"),
             cols=['avg_acquiring_goal', 'avg_vectoring_to_goal',
@@ -68,7 +68,7 @@ class IntraExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Robots").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "cache-acquisition-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "cache-acquisition-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "robots-acquiring-caches.eps"),
             cols=['avg_acquiring_goal', 'avg_vectoring_to_goal',
@@ -79,7 +79,7 @@ class IntraExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Robots").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "block-acquisition-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "block-acquisition-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "cum-robots-acquiring-blocks.eps"),
             cols=['avg_cum_acquiring_goal', 'avg_cum_vectoring_to_goal',
@@ -90,7 +90,7 @@ class IntraExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Robots").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "cache-acquisition-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "cache-acquisition-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "cum-robots-acquiring-caches.eps"),
             cols=['avg_cum_acquiring_goal', 'avg_cum_vectoring_to_goal',
@@ -101,7 +101,7 @@ class IntraExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Robots").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "block-transport-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "block-transport-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "blocks-collected.eps"),
             cols=['n_collected', 'n_cube_collected', 'n_ramp_collected'],
@@ -110,7 +110,7 @@ class IntraExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Blocks").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "block-transport-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "block-transport-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "blocks-avg-transporters.eps"),
             cols=['avg_transporters'],
@@ -119,7 +119,7 @@ class IntraExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Transporters").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "block-transport-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "block-transport-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "block-transport-time.eps"),
             cols=['avg_transport_time', 'avg_initial_wait_time'],
@@ -128,7 +128,7 @@ class IntraExpGraphGenerator:
             xlabel="Timestep",
             ylabel="Time").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "block-transport-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "block-transport-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "block-pickup-drop-rates.eps"),
             cols=['avg_pickup_events', 'avg_drop_events'],
@@ -137,7 +137,7 @@ class IntraExpGraphGenerator:
             xlabel="Timestep",
             ylabel="Time").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "cache-lifecycle-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "cache-lifecycle-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "cache-lifecycle.eps"),
             cols=['n_depleted', 'n_created'],
@@ -147,7 +147,7 @@ class IntraExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Caches").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "cache-utilization-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "cache-utilization-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "cache-utilization-avg-blocks.eps"),
             cols=['avg_blocks'],
@@ -156,7 +156,7 @@ class IntraExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Blocks").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "cache-utilization-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "cache-utilization-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "cache-utilization-pickups-drops.eps"),
             cols=['avg_pickups', 'avg_drops'],
@@ -165,7 +165,7 @@ class IntraExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Pickups/Drops").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "cache-utilization-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "cache-utilization-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "cache-utilization-avg-penalty.eps"),
             cols=['avg_penalty'],
@@ -174,7 +174,7 @@ class IntraExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Penalty Timesteps").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "perception-world-model.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "perception-world-model"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "perception-world-model-inaccuracies.eps"),
             cols=['ST_EMPTY_inaccuracies', 'ST_HAS_BLOCK_inaccuracies',

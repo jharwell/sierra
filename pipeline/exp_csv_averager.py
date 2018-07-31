@@ -18,7 +18,9 @@
 
 import os
 import re
+import statistics
 from pipeline.csv_class import CSV
+import pandas as pd
 
 
 class ExpCSVAverager:
@@ -64,12 +66,20 @@ class ExpCSVAverager:
                         csvs[inner_entry.name].append(csv)
         # average the CSVs based on their name; all the CSV files with the same base name will be averaged together
         averaged_csvs = {key: self._average_csvs(csvs[key]) for key in csvs}
+
+        stats = {key: self._gen_statistics(csvs[key]) for key in csvs}
         csvs_path = os.path.join(self.exp_output_root, "averaged-output")
         os.makedirs(csvs_path, exist_ok=True)
 
         # save the averaged CSV files
         for name, value in averaged_csvs.items():
             value.write(os.path.join(csvs_path, name))
+
+        # Save statistics with the same stem as the averaged .csv file, but with the .stats
+        # extension.
+        for key, value in stats.items():
+            value.to_csv(os.path.join(csvs_path, key.split('.')
+                                      [0] + ".stats"), sep=';', index=False)
 
     def _average_csvs(self, csvs):
         '''
@@ -82,3 +92,23 @@ class ExpCSVAverager:
         for index in range(1, len(csvs)):
             csv_sum += csvs[index]
         return csv_sum / len(csvs)
+
+    def _gen_statistics(self, csvs):
+        """Generate statistics across all columns in all .csv files perclock interval."""
+        n_cols = csvs[0].width
+        n_rows = csvs[0].height
+
+        # Last column is always ';', which is read as empty, hence the -1
+        df = pd.DataFrame(columns=csvs[0].csv[0][:-1])
+        df['clock'] = [i[0] for i in csvs[0].csv[1:]]
+
+        # First column is clock, which doesn't need to be averaged.
+        # Last column is always ';', which is read as empty, hence the -1
+        for col in range(1, n_cols - 1):
+            # First row is column headers so skip it
+            for row in range(1, n_rows):
+                vals = []
+                for i in range(0, len(csvs)):
+                    vals.append(float(csvs[i].csv[row][col]))
+                df.loc[row - 1, df.columns[col]] = round(statistics.stdev(vals), 4)
+        return df

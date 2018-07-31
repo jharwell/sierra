@@ -44,14 +44,14 @@ class TimeSetup(BaseVariable):
 
 class Default(TimeSetup):
     def __init__(self):
-        super().__init__(100000, 1000)
+        super().__init__(100000, 5000)
 
 
 class Short(TimeSetup):
     def __init__(self):
-        super().__init__(10000, 100)
+        super().__init__(10000, 1000)
 
 
 class Long(TimeSetup):
     def __init__(self):
-        super().__init__(1000000, 10000)
+        super().__init__(1000000, 50000)
