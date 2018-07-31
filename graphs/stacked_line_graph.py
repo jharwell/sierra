@@ -21,6 +21,7 @@ import os
 import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 
 class StackedLineGraph:
@@ -29,12 +30,14 @@ class StackedLineGraph:
     respectively, from the specified .csv with the specified graph visuals.
 
     If the necessary .csv file does not exist, the graph is not generated.
+    If the .stats file that goes with the .csv does not exist, then no error bars are printed.
 
     """
 
-    def __init__(self, input_fpath, output_fpath, cols, title, legend, xlabel, ylabel):
+    def __init__(self, input_stem_fpath, output_fpath, cols, title, legend, xlabel, ylabel):
 
-        self.input_fpath = os.path.abspath(input_fpath)
+        self.input_csv_fpath = os.path.abspath(input_stem_fpath) + ".csv"
+        self.input_stats_fpath = os.path.abspath(input_stem_fpath) + ".stats"
         self.output_fpath = os.path.abspath(output_fpath)
         self.cols = cols
         self.title = title
@@ -43,15 +46,25 @@ class StackedLineGraph:
         self.ylabel = ylabel
 
     def generate(self):
-        if not os.path.exists(self.input_fpath):
+        if not os.path.exists(self.input_csv_fpath):
             return
 
-        df = pd.read_csv(self.input_fpath, sep=';', index_col=0)
+        df = pd.read_csv(self.input_csv_fpath, sep=';')
+        if not os.path.exists(self.input_stats_fpath):
+            df2 = None
+        else:
+            df2 = pd.read_csv(self.input_stats_fpath, sep=';')
 
         if self.cols is None:
             ax = df.plot(title=self.title)
         else:
             ax = df[self.cols].plot(title=self.title)
+
+        # @BUG This makes all lines appear 1 color...
+        # if df2 is not None:
+        #     for c in self.cols:
+        #         plt.errorbar(df.index, df[c], yerr=df2[c],
+        #                      ecolor='gray', lw=2, capsize=5, capthick=2)
 
         if self.legend is not None:
             lines, labels = ax.get_legend_handles_labels()

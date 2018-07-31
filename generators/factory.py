@@ -26,7 +26,8 @@ def GeneratorFactory(generator_pair, *args, **kwargs):
     def __init__(self, *args, **kwargs):
         self.controller_changes = eval(generator_pair[0])(*args, **kwargs)
         if 2 == len(generator_pair):
-            self.scenario_changes = eval(generator_pair[1])(*args, **kwargs)
+            self.scenario_changes = eval(generator_pair[1])(*args[:len(args) - 1],
+                                                            **kwargs)
 
     def generate(self):
         if 2 == len(generator_pair):

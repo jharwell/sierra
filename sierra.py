@@ -32,10 +32,11 @@ def get_input_generator(args):
 
         # The two generator class names from which should be created a new class for my scenario +
         # controller changes.
-        if 2 == len(args.generator.split('.')[0]):
+        if 2 == len(args.generator.split('.')):
             generator_pair = ("generators." + args.generator.split('.')[0] + ".BaseGenerator",
                               "generators." + abbrev_dict[args.generator.split('.')[1][:2]] +
                               "." + args.generator.split('.')[1])
+
         else:
             generator_pair = ("generators." + args.generator.split('.')[0] + ".BaseGenerator",)
 

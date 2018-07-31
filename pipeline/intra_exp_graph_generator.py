@@ -38,26 +38,26 @@ class IntraExpGraphGenerator:
         os.makedirs(self.exp_graph_root, exist_ok=True)
 
     def __call__(self):
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "collision-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "collision-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "collision-avoidance.eps"),
-            cols=['n_avoiding_collision', 'n_cum_avoiding_collision'],
+            cols=['avg_avoiding_collision', 'avg_cum_avoiding_collision'],
             title="Swarm Collision Avoidance",
             legend=['# Robots Avoiding Collision (within interval)',
-                    '# Cumulative Robots Avoiding Collision'],
+                    'Cumulative Average Robots Avoiding Collision'],
             xlabel="Timestep",
             ylabel="# Robots").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "distance-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "distance-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "distance-stats.eps"),
-            cols=['cum_distance'],
+            cols=['avg_distance', 'avg_cum_distance'],
             title="Swarm Cumulative Distance Traveled",
-            legend=['Average Distance (within interval)'],
+            legend=['Average Distance (within interval)', 'Cumulative Average Distance Traveled'],
             xlabel="Timestep",
             ylabel="Distance (m)").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "block-acquisition-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "block-acquisition-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "robots-acquiring-blocks.eps"),
             cols=['avg_acquiring_goal', 'avg_vectoring_to_goal',
@@ -68,7 +68,7 @@ class IntraExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Robots").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "cache-acquisition-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "cache-acquisition-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "robots-acquiring-caches.eps"),
             cols=['avg_acquiring_goal', 'avg_vectoring_to_goal',
@@ -79,7 +79,7 @@ class IntraExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Robots").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "block-acquisition-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "block-acquisition-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "cum-robots-acquiring-blocks.eps"),
             cols=['avg_cum_acquiring_goal', 'avg_cum_vectoring_to_goal',
@@ -90,7 +90,7 @@ class IntraExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Robots").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "cache-acquisition-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "cache-acquisition-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "cum-robots-acquiring-caches.eps"),
             cols=['avg_cum_acquiring_goal', 'avg_cum_vectoring_to_goal',
@@ -101,16 +101,16 @@ class IntraExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Robots").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "block-transport-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "block-transport-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "blocks-collected.eps"),
-            cols=['n_collected', 'n_cube_collected', 'n_ramp_collected'],
+            cols=['n_collected'],
             title="Swarm Blocks Collected",
-            legend=['# Blocks Collected', '# Cube blocks collected', '# Ramp blocks collected'],
+            legend=['# Blocks Collected'],
             xlabel="Timestep",
             ylabel="# Blocks").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "block-transport-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "block-transport-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "blocks-avg-transporters.eps"),
             cols=['avg_transporters'],
@@ -119,7 +119,7 @@ class IntraExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Transporters").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "block-transport-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "block-transport-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "block-transport-time.eps"),
             cols=['avg_transport_time', 'avg_initial_wait_time'],
@@ -128,16 +128,29 @@ class IntraExpGraphGenerator:
             xlabel="Timestep",
             ylabel="Time").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "block-transport-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "block-manipulation-stats"),
                          output_fpath=os.path.join(
-            self.exp_graph_root, "block-pickup-drop-rates.eps"),
-            cols=['avg_pickup_events', 'avg_drop_events'],
-            title="Swarm Average Block Pickup/Drop Rates",
-            legend=['Average Pickup Events', "Average Drop Events"],
+            self.exp_graph_root, "block-manipulation-op.eps"),
+            cols=['avg_free_pickup_events', 'avg_free_drop_events',
+                  'avg_cache_pickup_events', 'avg_cache_drop_events'],
+            title="Block Manipulation Pickups/Drops",
+            legend=['Average # Free Pickups', 'Average # Free Drops',
+                    'Average # Cache Pickups', 'Average # Cache Drops'],
             xlabel="Timestep",
-            ylabel="Time").generate()
+            ylabel="# Pickups/Drops").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "cache-lifecycle-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "block-manipulation-stats"),
+                         output_fpath=os.path.join(
+            self.exp_graph_root, "block-manipulation-penalty.eps"),
+            cols=['avg_free_pickup_penalty', 'avg_free_drop_penalty',
+                  'avg_cache_pickup_penalty', 'avg_cache_drop_penalty'],
+            title="Block Manipulation Penalties",
+            legend=['Average Free Pickup Penalty', 'Average Free Drop Penalty',
+                    'Average Cache Picup Penalty', 'Average Cache Drop Penalty'],
+            xlabel="Timestep",
+            ylabel="Penalty").generate()
+
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "cache-lifecycle-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "cache-lifecycle.eps"),
             cols=['n_depleted', 'n_created'],
@@ -147,7 +160,7 @@ class IntraExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Caches").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "cache-utilization-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "cache-utilization-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "cache-utilization-avg-blocks.eps"),
             cols=['avg_blocks'],
@@ -156,16 +169,7 @@ class IntraExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Blocks").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "cache-utilization-stats.csv"),
-                         output_fpath=os.path.join(
-            self.exp_graph_root, "cache-utilization-pickups-drops.eps"),
-            cols=['avg_pickups', 'avg_drops'],
-            title="Swarm Cache Pickups/Drops",
-            legend=['Average # Pickups', 'Average # Drops'],
-            xlabel="Timestep",
-            ylabel="# Pickups/Drops").generate()
-
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "cache-utilization-stats.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "cache-utilization-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "cache-utilization-avg-penalty.eps"),
             cols=['avg_penalty'],
@@ -174,7 +178,7 @@ class IntraExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Penalty Timesteps").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.exp_output_root, "perception-world-model.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "perception-world-model"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "perception-world-model-inaccuracies.eps"),
             cols=['ST_EMPTY_inaccuracies', 'ST_HAS_BLOCK_inaccuracies',

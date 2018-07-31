@@ -34,12 +34,15 @@ class InterExpGraphGenerator:
 
     def __init__(self, batch_output_root, batch_graph_root):
 
-        self.batch_output_root = os.path.abspath(os.path.join(batch_output_root, 'collated-csvs'))
-        self.batch_graph_root = os.path.abspath(os.path.join(batch_graph_root, 'collated-graphs'))
+        self.batch_output_root = os.path.abspath(os.path.join(batch_output_root,
+                                                              'collated-csvs'))
+        self.batch_graph_root = os.path.abspath(os.path.join(batch_graph_root,
+                                                             'collated-graphs'))
         os.makedirs(self.batch_graph_root, exist_ok=True)
 
     def __call__(self):
-        StackedLineGraph(input_fpath=os.path.join(self.batch_output_root, "blocks-collected.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.batch_output_root,
+                                                       "blocks-collected"),
                          output_fpath=os.path.join(
             self.batch_graph_root, "blocks-collected.eps"),
             cols=None,
@@ -48,7 +51,8 @@ class InterExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Blocks").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.batch_output_root, "blocks-avg-transporters.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.batch_output_root,
+                                                       "blocks-avg-transporters"),
                          output_fpath=os.path.join(
             self.batch_graph_root, "blocks-avg-transporters.eps"),
             cols=None,
@@ -57,7 +61,8 @@ class InterExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Transporters").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.batch_output_root, "block-acquisition.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.batch_output_root,
+                                                       "block-acquisition"),
                          output_fpath=os.path.join(
             self.batch_graph_root, "block-acquisition.eps"),
             cols=None,
@@ -66,7 +71,8 @@ class InterExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Robots").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.batch_output_root, "block-acquisition-exploring.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.batch_output_root,
+                                                       "block-acquisition-exploring"),
                          output_fpath=os.path.join(
             self.batch_graph_root, "block-acquisition-exploring.eps"),
             cols=None,
@@ -75,7 +81,8 @@ class InterExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Robots").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.batch_output_root, "block-acquisition-vectoring.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.batch_output_root,
+                                                       "block-acquisition-vectoring"),
                          output_fpath=os.path.join(
             self.batch_graph_root, "block-acquisition-vectoring.eps"),
             cols=None,
@@ -84,7 +91,8 @@ class InterExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Robots").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.batch_output_root, "blocks-avg-transport-times.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.batch_output_root,
+                                                       "blocks-avg-transport-times"),
                          output_fpath=os.path.join(
             self.batch_graph_root, "blocks-avg-transport-times.eps"),
             cols=None,
@@ -93,7 +101,8 @@ class InterExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Timesteps For Transport").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.batch_output_root, "blocks-initial-wait-time.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.batch_output_root,
+                                                       "blocks-initial-wait-time"),
                          output_fpath=os.path.join(
             self.batch_graph_root, "blocks-initial-wait-time.eps"),
             cols=None,
@@ -102,7 +111,8 @@ class InterExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Timesteps Waiting").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.batch_output_root, "blocks-pickup-rates.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.batch_output_root,
+                                                       "blocks-pickup-rates"),
                          output_fpath=os.path.join(
             self.batch_graph_root, "blocks-pickup-rates.eps"),
             cols=None,
@@ -111,7 +121,8 @@ class InterExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Events").generate()
 
-        StackedLineGraph(input_fpath=os.path.join(self.batch_output_root, "blocks-drop-rates.csv"),
+        StackedLineGraph(input_stem_fpath=os.path.join(self.batch_output_root,
+                                                       "blocks-drop-rates"),
                          output_fpath=os.path.join(
             self.batch_graph_root, "blocks-drop-rates.eps"),
             cols=None,

@@ -127,6 +127,7 @@
           block_fname="block-stats.csv"
           block_acquisition_fname="block-acquisition-stats.csv"
           block_transport_fname="block-transport-stats.csv"
+          block_manipulation_fname="block-manipulation-stats.csv"
           cache_acquisition_fname="cache-acquisition-stats.csv"
           cache_utilization_fname="cache-utilization-stats.csv"
           cache_lifecycle_fname="cache-lifecycle-stats.csv"
@@ -145,10 +146,10 @@
       <blocks>
         <manipulation_penalty>
           <waveform
-              type="Null"
-              frequency="100"
-              amplitude="500"
-              offset="10"/>
+              type="Square"
+              frequency="25000"
+              amplitude="50"
+              offset="100"/>
         </manipulation_penalty>
         <distribution
             arena_resolution="0.2"

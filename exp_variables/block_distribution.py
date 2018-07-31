@@ -36,7 +36,7 @@ class Type(BaseVariable):
         Generate a list of sets of changes necessary to make to the input file to correctly set up
         the simulation with the specified block distribution
         """
-        return [set([("block_distribution.dist_type", "{0}".format(self.dist_type))])]
+        return [set([("arena_map.blocks.distribution.dist_type", "{0}".format(self.dist_type))])]
 
     def gen_tag_rmlist(self):
         return []
@@ -81,8 +81,8 @@ class Quantity(BaseVariable):
         the simulation with the specified # blocks.
         """
         return [set([
-            ("block_distribution.manifest.n_cube", "{0}".format(n / 2.0)),
-            ("block_distribution.manifest.n_ramp", "{0}".format(n / 2.0))]) for n in self.blocks_list]
+            ("arena_map.blocks.manifest.n_cube", "{0}".format(n / 2.0)),
+            ("arena_map.blocks.manifest.n_ramp", "{0}".format(n / 2.0))]) for n in self.blocks_list]
 
 
 class QuantityLog64(Quantity):

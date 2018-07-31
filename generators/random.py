@@ -72,8 +72,8 @@ class RND10x10(RNDBaseGenerator):
 
     def __init__(self, template_config_file, generation_root, exp_output_root,
                  n_sims, n_threads):
-        super().__init__(template_config_file, generation_root, exp_output_root,
-                         n_sims, n_threads, 10)
+        RNDBaseGenerator.__init__(self, template_config_file, generation_root, exp_output_root,
+                                  n_sims, n_threads, 10)
 
     def generate(self, xml_helper):
         self._create_all_sim_inputs(self._generate_random_seeds(), super().generate(xml_helper))
