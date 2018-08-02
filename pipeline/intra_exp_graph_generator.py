@@ -19,6 +19,7 @@ Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 
 import os
 from graphs.stacked_line_graph import StackedLineGraph
+from graphs.histogram import Histogram
 
 
 class IntraExpGraphGenerator:
@@ -38,6 +39,71 @@ class IntraExpGraphGenerator:
         os.makedirs(self.exp_graph_root, exist_ok=True)
 
     def __call__(self):
+        self.depth0_generate_linegraphs()
+        self.depth0_generate_histograms()
+
+    def depth0_generate_histograms(self):
+        Histogram(input_fpath=os.path.join(self.exp_output_root, "collision-stats.csv"),
+                  output_fpath=os.path.join(
+            self.exp_graph_root, "collision-avoidance-hist.eps"),
+            col=['avg_avoiding_collision'],
+            title="Swarm Average Collision Avoidance",
+            xlabel="# Robots",
+            ylabel="Count").generate()
+
+        Histogram(input_fpath=os.path.join(self.exp_output_root, "distance-stats.csv"),
+                  output_fpath=os.path.join(
+            self.exp_graph_root, "distance-stats-hist.eps"),
+            col=['avg_distance'],
+            title="Swarm Cumulative Distance Traveled",
+            xlabel="Distance (m)",
+            ylabel="Count").generate()
+
+        Histogram(input_fpath=os.path.join(self.exp_output_root, "block-acquisition-stats.csv"),
+                  output_fpath=os.path.join(
+            self.exp_graph_root, "robots-acquiring-blocks-hist.eps"),
+            col=['avg_acquiring_goal'],
+            title="Swarm Block Acquisition",
+            xlabel="# Robots",
+            ylabel="Count").generate()
+        Histogram(input_fpath=os.path.join(self.exp_output_root, "block-acquisition-stats.csv"),
+                  output_fpath=os.path.join(
+            self.exp_graph_root, "robots-vectoring-to-blocks-hist.eps"),
+            col=['avg_vectoring_to_goal'],
+            title="Swarm Block Acquisition Vectoring",
+            xlabel="# Robots",
+            ylabel="Count").generate()
+        Histogram(input_fpath=os.path.join(self.exp_output_root, "block-acquisition-stats.csv"),
+                  output_fpath=os.path.join(
+            self.exp_graph_root, "robots-exploring-for-blocks-hist.eps"),
+            col=['avg_exploring_for_goal'],
+            title="Swarm Block Acquisition Exploring",
+            xlabel="# Robots",
+            ylabel="Count").generate()
+
+        Histogram(input_fpath=os.path.join(self.exp_output_root, "block-transport-stats.csv"),
+                  output_fpath=os.path.join(
+            self.exp_graph_root, "blocks-collected-hist.eps"),
+            col=['n_collected'],
+            title="Swarm Blocks Collected",
+            xlabel="# Blocks",
+            ylabel="Count").generate()
+        Histogram(input_fpath=os.path.join(self.exp_output_root, "block-transport-stats.csv"),
+                  output_fpath=os.path.join(
+            self.exp_graph_root, "blocks-transporters-hist.eps"),
+            col=['avg_transporters'],
+            title="Swarm Blocks Collected Average Transporters",
+            xlabel="# Transporters",
+            ylabel="Count").generate()
+        Histogram(input_fpath=os.path.join(self.exp_output_root, "block-transport-stats.csv"),
+                  output_fpath=os.path.join(
+            self.exp_graph_root, "blocks-transport-time-hist.eps"),
+            col=['avg_transport_time'],
+            title="Swarm Average Transport Time",
+            xlabel="# Timesteps",
+            ylabel="Count").generate()
+
+    def depth0_generate_linegraphs(self):
         StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "collision-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "collision-avoidance.eps"),
@@ -68,17 +134,6 @@ class IntraExpGraphGenerator:
             xlabel="Timestep",
             ylabel="# Robots").generate()
 
-        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "cache-acquisition-stats"),
-                         output_fpath=os.path.join(
-            self.exp_graph_root, "robots-acquiring-caches.eps"),
-            cols=['avg_acquiring_goal', 'avg_vectoring_to_goal',
-                  'avg_exploring_for_goal'],
-            title="Swarm Cache Acquisition",
-            legend=['# Robots Acquiring Caches', '# Robots Vectoring To Caches',
-                    '# Robots Exploring For Caches'],
-            xlabel="Timestep",
-            ylabel="# Robots").generate()
-
         StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "block-acquisition-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "cum-robots-acquiring-blocks.eps"),
@@ -87,17 +142,6 @@ class IntraExpGraphGenerator:
             title="Swarm Block Acquisition",
             legend=['# Robots Acquiring Blocks', '# Robots Vectoring To Blocks',
                     '# Robots Exploring For Blocks'],
-            xlabel="Timestep",
-            ylabel="# Robots").generate()
-
-        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "cache-acquisition-stats"),
-                         output_fpath=os.path.join(
-            self.exp_graph_root, "cum-robots-acquiring-caches.eps"),
-            cols=['avg_cum_acquiring_goal', 'avg_cum_vectoring_to_goal',
-                  'avg_cum_exploring_for_goal'],
-            title="Swarm Cache Acquisition",
-            legend=['# Robots Acquiring Caches', '# Robots Vectoring To Caches',
-                    '# Robots Exploring For Caches'],
             xlabel="Timestep",
             ylabel="# Robots").generate()
 
@@ -150,6 +194,39 @@ class IntraExpGraphGenerator:
             xlabel="Timestep",
             ylabel="Penalty").generate()
 
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "cache-acquisition-stats"),
+                         output_fpath=os.path.join(
+            self.exp_graph_root, "robots-acquiring-caches.eps"),
+            cols=['avg_acquiring_goal', 'avg_vectoring_to_goal',
+                  'avg_exploring_for_goal'],
+            title="Swarm Cache Acquisition",
+            legend=['# Robots Acquiring Caches', '# Robots Vectoring To Caches',
+                    '# Robots Exploring For Caches'],
+            xlabel="Timestep",
+            ylabel="# Robots").generate()
+
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "cache-acquisition-stats"),
+                         output_fpath=os.path.join(
+            self.exp_graph_root, "cum-robots-acquiring-caches.eps"),
+            cols=['avg_cum_acquiring_goal', 'avg_cum_vectoring_to_goal',
+                  'avg_cum_exploring_for_goal'],
+            title="Swarm Cache Acquisition",
+            legend=['# Robots Acquiring Caches', '# Robots Vectoring To Caches',
+                    '# Robots Exploring For Caches'],
+            xlabel="Timestep",
+            ylabel="# Robots").generate()
+
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "perception-world-model"),
+                         output_fpath=os.path.join(
+            self.exp_graph_root, "perception-world-model-inaccuracies.eps"),
+            cols=['ST_EMPTY_inaccuracies', 'ST_HAS_BLOCK_inaccuracies',
+                  'ST_HAS_CACHE_inaccuracies'],
+            title="Swarm Perception Model Inaccuracies",
+            legend=['ST_EMPTY', 'ST_HAS_BLOCK', 'ST_HAS_CACHE'],
+            xlabel="Timestep",
+            ylabel="# Inaccuracies").generate()
+
+    def depth1_generate_linegraphs(self):
         StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "cache-lifecycle-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "cache-lifecycle.eps"),
@@ -177,13 +254,3 @@ class IntraExpGraphGenerator:
             legend=['Average Penalty'],
             xlabel="Timestep",
             ylabel="# Penalty Timesteps").generate()
-
-        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "perception-world-model"),
-                         output_fpath=os.path.join(
-            self.exp_graph_root, "perception-world-model-inaccuracies.eps"),
-            cols=['ST_EMPTY_inaccuracies', 'ST_HAS_BLOCK_inaccuracies',
-                  'ST_HAS_CACHE_inaccuracies'],
-            title="Swarm Perception Model Inaccuracies",
-            legend=['ST_EMPTY', 'ST_HAS_BLOCK', 'ST_HAS_CACHE'],
-            xlabel="Timestep",
-            ylabel="# Inaccuracies").generate()
