@@ -146,7 +146,7 @@
       <blocks>
         <manipulation_penalty>
           <waveform
-              type="Square"
+              type="Null"
               frequency="25000"
               amplitude="50"
               offset="100"/>

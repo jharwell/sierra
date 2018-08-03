@@ -108,4 +108,4 @@ class RND40x40(RNDBaseGenerator):
                          n_sims, n_threads, 40)
 
     def generate(self, xml_helper):
-        return super().generate(xml_helper)
+        self._create_all_sim_inputs(self._generate_random_seeds(), super().generate(xml_helper))

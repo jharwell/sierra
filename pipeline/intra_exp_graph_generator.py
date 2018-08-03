@@ -45,10 +45,31 @@ class IntraExpGraphGenerator:
     def depth0_generate_histograms(self):
         Histogram(input_fpath=os.path.join(self.exp_output_root, "collision-stats.csv"),
                   output_fpath=os.path.join(
-            self.exp_graph_root, "collision-avoidance-hist.eps"),
-            col=['avg_avoiding_collision'],
+            self.exp_graph_root, "collision-avoidance-in-hist.eps"),
+            col=['avg_in_avoidance'],
             title="Swarm Average Collision Avoidance",
             xlabel="# Robots",
+            ylabel="Count").generate()
+        Histogram(input_fpath=os.path.join(self.exp_output_root, "collision-stats.csv"),
+                  output_fpath=os.path.join(
+            self.exp_graph_root, "collision-avoidance-entered-hist.eps"),
+            col=['avg_entered_avoidance'],
+            title="Swarm Average Entering Collision Avoidance",
+            xlabel="# Robots",
+            ylabel="Count").generate()
+        Histogram(input_fpath=os.path.join(self.exp_output_root, "collision-stats.csv"),
+                  output_fpath=os.path.join(
+            self.exp_graph_root, "collision-avoidance-exited-hist.eps"),
+            col=['avg_exited_avoidance'],
+            title="Swarm Average Exited Collision Avoidance",
+            xlabel="# Robots",
+            ylabel="Count").generate()
+        Histogram(input_fpath=os.path.join(self.exp_output_root, "collision-stats.csv"),
+                  output_fpath=os.path.join(
+            self.exp_graph_root, "collision-avoidance-duration-hist.eps"),
+            col=['avg_avoidance_duration'],
+            title="Swarm Average Collision Avoidance Duration",
+            xlabel="Duration (timesteps)",
             ylabel="Count").generate()
 
         Histogram(input_fpath=os.path.join(self.exp_output_root, "distance-stats.csv"),
@@ -106,13 +127,27 @@ class IntraExpGraphGenerator:
     def depth0_generate_linegraphs(self):
         StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "collision-stats"),
                          output_fpath=os.path.join(
-            self.exp_graph_root, "collision-avoidance.eps"),
-            cols=['avg_avoiding_collision', 'avg_cum_avoiding_collision'],
+            self.exp_graph_root, "collision-avoidance-counts.eps"),
+            cols=['avg_in_avoidance', 'avg_cum_in_avoidance', 'avg_entered_avoidance',
+                  'avg_cum_entered_avoidance', 'avg_exited_avoidance', 'avg_cum_exited_avoidance'],
             title="Swarm Collision Avoidance",
-            legend=['# Robots Avoiding Collision (within interval)',
-                    'Cumulative Average Robots Avoiding Collision'],
+            legend=['Average # Robots Avoiding Collision (within interval)',
+                    'Cumulative Average Robots Avoiding Collision',
+                    'Average # Robots Entered Avoidance (within interval)',
+                    'Cumulative Average Robots Entered Avoidance',
+                    'Average # Robots Exited Avoidance (within interval)',
+                    'Cumulative Average Robots Exited Avoidance'],
             xlabel="Timestep",
             ylabel="# Robots").generate()
+        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "collision-stats"),
+                         output_fpath=os.path.join(
+            self.exp_graph_root, "collision-avoidance-duration.eps"),
+            cols=['avg_avoidance_duration', 'avg_cum_avoidance_duration'],
+            title="Swarm Collision Avoidance",
+            legend=['Average Avoidance Duration (within interval)',
+                    'Cumulative Average Avoidance Duration'],
+            xlabel="Timestep",
+            ylabel="Duration").generate()
 
         StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "distance-stats"),
                          output_fpath=os.path.join(
@@ -148,27 +183,30 @@ class IntraExpGraphGenerator:
         StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "block-transport-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "blocks-collected.eps"),
-            cols=['n_collected'],
+            cols=['n_collected', 'cum_collected'],
             title="Swarm Blocks Collected",
-            legend=['# Blocks Collected'],
+            legend=['# Blocks Collected', 'Cumulative # Blocks Collected'],
             xlabel="Timestep",
             ylabel="# Blocks").generate()
 
         StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "block-transport-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "blocks-avg-transporters.eps"),
-            cols=['avg_transporters'],
+            cols=['avg_transporters', 'avg_cum_transporters'],
             title="Swarm Block Average Transporters",
-            legend=['Average # Transporters Per Block'],
+            legend=['Average # Transporters Per Block',
+                    'Cumulative Average # Transporters Per Block'],
             xlabel="Timestep",
             ylabel="# Transporters").generate()
 
         StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "block-transport-stats"),
                          output_fpath=os.path.join(
             self.exp_graph_root, "block-transport-time.eps"),
-            cols=['avg_transport_time', 'avg_initial_wait_time'],
+            cols=['avg_transport_time', 'avg_initial_wait_time',
+                  'avg_cum_transport_time', 'avg_cum_initial_wait_time'],
             title="Swarm Block Transport Time",
-            legend=['Average Block Transport Time', "Average Initial Wait Time"],
+            legend=['Average Block Transport Time', "Average Initial Wait Time",
+                    'Cumulative Average Transport Time', 'Cumulative Average Initial Wait Time'],
             xlabel="Timestep",
             ylabel="Time").generate()
 

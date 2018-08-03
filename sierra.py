@@ -23,22 +23,27 @@ from pipeline.batched_exp_input_generator import BatchedExpInputGenerator
 from generators.factory import GeneratorFactory
 
 
+def get_generator_pair(args):
+    """Get the (controller, scenario) generator pair as a string tuple"""
+    # To ease the ache in my typing fingers
+    abbrev_dict = {"SS": "single_source", "PL": "powerlaw", "RN": "random"}
+
+    if 2 == len(args.generator.split('.')):
+        return ("generators." + args.generator.split('.')[0] + ".BaseGenerator",
+                "generators." + abbrev_dict[args.generator.split('.')[1][:2]] +
+                "." + args.generator.split('.')[1])
+
+    else:
+        return ("generators." + args.generator.split('.')[0] + ".BaseGenerator",)
+
+
 def get_input_generator(args):
     """Get the input generator to use to create experiment/batch inputs."""
     if not any([args.graphs_only, args.run_only, args.average_only]):
 
-        # To ease the ache in my typing fingers
-        abbrev_dict = {"SS": "single_source", "PL": "powerlaw", "RN": "random"}
-
         # The two generator class names from which should be created a new class for my scenario +
         # controller changes.
-        if 2 == len(args.generator.split('.')):
-            generator_pair = ("generators." + args.generator.split('.')[0] + ".BaseGenerator",
-                              "generators." + abbrev_dict[args.generator.split('.')[1][:2]] +
-                              "." + args.generator.split('.')[1])
-
-        else:
-            generator_pair = ("generators." + args.generator.split('.')[0] + ".BaseGenerator",)
+        generator_pair = get_generator_pair(args)
 
         if args.batch_criteria is not None:
             criteria = __import__("exp_variables.{0}".format(
@@ -78,15 +83,22 @@ def define_cmdline():
     # upgrade: think about adding a save CSV path
     parser.add_argument("--sierra-root",
                         help="Root directory for all sierra generate/created files. Subdirectories " +
-                        "for each pipeline stage will be automatically created in this directory " +
-                        "unless the corresponding option is explicitly passed to override.")
-
+                        "for controllers, scenarios, experiment/simulation inputs/outputs will be" +
+                        "created in this directory as needed. Can persist between invocations.")
     parser.add_argument("--generation-root",
-                        help="Root directory to save generated files. Defaults to <sierra_root>/generated-inputs.")
+                        help="""Root directory to save generated experiment input files, or the
+                        directory which will contain directories for each experiment's input files,
+                        for batch mode. Defaults to <sierra_root>/<controller>/<scenario>/exp-inputs.""")
     parser.add_argument("--output-root",
-                        help="Root directory for saving simulation outputs (sort of a scratch dir). Defaults to <sierra_root>/output")
+                        help="""Root directory for saving simulation outputs a single experiment, or
+                        the root directory which will contain directories for each experiment's
+                        outputs for batch mode). Defaults to <sierra_root>/<controller>/<scenario>/exp-outputs""")
     parser.add_argument("--graph-root",
-                        help="Root directory for saving generated graph files. Defaults to <sierra_root>/generated-graphs.")
+                        help="""Root directory for saving generated graph files for a single
+                        experiment, or the root directory which will contain directories for each
+                        experiment's generated graphs for batch mode. Defaults to
+                        <sierra_root>/<controller>/<scenario>/generated-graphs.""")
+
     run_group = parser.add_mutually_exclusive_group()
     run_group.add_argument("--inputs-only",
                            help="Only generate the config files and command file for an experiment/set of experiments.",
@@ -129,14 +141,30 @@ if __name__ == "__main__":
     parser = define_cmdline()
     args = parser.parse_args()
 
+    pair = get_generator_pair(args)
+    controller = pair[0].split('.')[1]
+    scenario = pair[1].split('.')[2]
+    template, ext = os.path.splitext(os.path.basename(args.template_config_file))
+
+    print("- Controller={0}, Scenario={1}".format(controller, scenario))
+
     if args.generation_root is None:
-        args.generation_root = os.path.join(args.sierra_root, "generated-inputs")
+        args.generation_root = os.path.join(args.sierra_root,
+                                            controller,
+                                            template + '-' + scenario,
+                                            "exp-inputs")
 
     if args.output_root is None:
-        args.output_root = os.path.join(args.sierra_root, "outputs")
+        args.output_root = os.path.join(args.sierra_root,
+                                        controller,
+                                        template + '-' + scenario,
+                                        "exp-outputs")
 
     if args.graph_root is None:
-        args.graph_root = os.path.join(args.sierra_root, "generated-graphs")
+        args.graph_root = os.path.join(args.sierra_root,
+                                       controller,
+                                       template + '-' + scenario,
+                                       "graphs")
 
     pipeline = ExpPipeline(args, get_input_generator(args))
     pipeline.run()
