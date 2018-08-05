@@ -16,7 +16,7 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from exp_variables.base_variable import BaseVariable
+from variables.base_variable import BaseVariable
 
 kMinHz = 10
 kMaxHz = 1000

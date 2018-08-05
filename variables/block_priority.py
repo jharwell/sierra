@@ -16,7 +16,7 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from exp_variables.base_variable import BaseVariable
+from variables.base_variable import BaseVariable
 
 kMinPriority = 1
 kMaxPriority = 10

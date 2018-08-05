@@ -16,10 +16,9 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from exp_variables.base_variable import BaseVariable
+from variables.base_variable import BaseVariable
 
-kMinPriority = 1
-kMaxPriority = 10
+kDataPoints = 50
 
 
 class TimeSetup(BaseVariable):
@@ -44,14 +43,14 @@ class TimeSetup(BaseVariable):
 
 class Default(TimeSetup):
     def __init__(self):
-        super().__init__(100000, 5000)
+        super().__init__(100000, 100000 / kDataPoints)
 
 
 class Short(TimeSetup):
     def __init__(self):
-        super().__init__(10000, 1000)
+        super().__init__(10000, 10000 / kDataPoints)
 
 
 class Long(TimeSetup):
     def __init__(self):
-        super().__init__(1000000, 50000)
+        super().__init__(1000000, 100000 / kDataPoints)

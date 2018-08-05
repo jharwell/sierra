@@ -26,15 +26,16 @@ from generators.factory import GeneratorFactory
 def get_generator_pair(args):
     """Get the (controller, scenario) generator pair as a string tuple"""
     # To ease the ache in my typing fingers
-    abbrev_dict = {"SS": "single_source", "PL": "powerlaw", "RN": "random"}
+    abbrev_dict = {"SS": "single_source",
+                   "PL": "powerlaw",
+                   "RN": "random"}
 
-    if 2 == len(args.generator.split('.')):
+    if 1 == len(args.generator.split('.')):
+        return ("generators." + args.generator + ".BaseGenerator",)
+    else:
         return ("generators." + args.generator.split('.')[0] + ".BaseGenerator",
                 "generators." + abbrev_dict[args.generator.split('.')[1][:2]] +
                 "." + args.generator.split('.')[1])
-
-    else:
-        return ("generators." + args.generator.split('.')[0] + ".BaseGenerator",)
 
 
 def get_input_generator(args):
@@ -46,7 +47,7 @@ def get_input_generator(args):
         generator_pair = get_generator_pair(args)
 
         if args.batch_criteria is not None:
-            criteria = __import__("exp_variables.{0}".format(
+            criteria = __import__("variables.{0}".format(
                 args.batch_criteria.split(".")[0]), fromlist=["*"])
             return BatchedExpInputGenerator(args.template_config_file,
                                             args.generation_root,
@@ -123,7 +124,7 @@ def define_cmdline():
     parser.add_argument("--batch-criteria",
                         help='''\
                         Name of criteria to use to generate the batched experiments. Options are
-                        specified as <filename>.<class name> as found in the exp_variables/ directory.''')
+                        specified as <filename>.<class name> as found in the variables/ directory.''')
     parser.add_argument("--time-setup",
                         help='''The base simulation setup to use, which sets duration and metric
                         reporting interval. Options are: time_setup.[Default, Long, Short]''',
@@ -142,8 +143,21 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     pair = get_generator_pair(args)
-    controller = pair[0].split('.')[1]
-    scenario = pair[1].split('.')[2]
+
+    # If the user specified a controller + scenario combination for the generator, use it to
+    # determine directory names. If they only specified the controller part, then they *MUST* be
+    # using batch criteria, and so use the batch criteria to uniquely specify directory names.
+    #
+    # Also, add the template file leaf to the root directory path to help track what experiment was
+    # run.
+
+    if 2 == len(pair):
+        controller = pair[0].split('.')[1]
+        scenario = pair[1].split('.')[2]
+    else:
+        controller = pair[0].split('.')[1]
+        scenario = args.batch_criteria.split('.')[1]
+
     template, ext = os.path.splitext(os.path.basename(args.template_config_file))
 
     print("- Controller={0}, Scenario={1}".format(controller, scenario))

@@ -16,15 +16,17 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from exp_variables.base_variable import BaseVariable
-from exp_variables.arena_shape import SquareArena
+from variables.base_variable import BaseVariable
+from variables.arena_shape import SquareArena
+from variables.block_distribution import TypeRandom
 
 
 class ConstantDensity(BaseVariable):
 
     """
     Defines a range of swarm and arena sizes to test with such that the arena ratio is always the
-    same. Sets arena dimensions to be square.
+    same. Sets arena dimensions to be square, and uses a random distribution. Does not change the
+    # blocks/block manifest.
 
     Attributes:
       target_density(list): The target swarm density.
@@ -34,6 +36,7 @@ class ConstantDensity(BaseVariable):
         self.sqrange = range(10, 110, 10)
         self.target_density = target_density
         self.changes = SquareArena(sqrange=self.sqrange).gen_attr_changelist()
+        self.changes.extend(TypeRandom().gen_attr_changelist())
 
     def gen_attr_changelist(self):
         """

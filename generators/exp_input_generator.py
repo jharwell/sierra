@@ -19,7 +19,7 @@
 import os
 import random
 from xml_helper import XMLHelper, InvalidElementError
-from exp_variables import time_setup
+from variables import time_setup
 
 
 class ExpInputGenerator:

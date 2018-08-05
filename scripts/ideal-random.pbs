@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#PBS -l walltime=0:15:00,nodes=5:ppn=8,pmem=1000mb
+#PBS -l walltime=3:00:00,nodes=25:ppn=8,pmem=1000mb
 #PBS -m abe
 #PBS -M harwe006@umn.edu
 
@@ -18,27 +18,27 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 --env ARGOS_PLUGIN_PATH"
 
 cd $HOME/git/sierra
-NSIMS=12
+NSIMS=25
 DIMS=(10x10 20x20 40x40)
 OUTPUT_ROOT=$HOME/exp
-BASE_CMD="python3 sierra.py --template-config-file=$HOME/git/sierra/templates/ideal.argos \
-        --n_sims=$NSIMS --batch-criteria=swarm_size.Log64"
+BASE_CMD="python3 sierra.py \
+                  --sierra-root=$OUTPUT_ROOT \
+                  --template-config-file=$HOME/git/sierra/templates/ideal.argos \
+                  --n_sims=$NSIMS \
+                  --batch-criteria=swarm_size.Log64 \
+                  --time-setup=time_setup.short"
 
-# Stateless (does not change # blocks from template)
+# Stateless (does not change # blocks/manifest from template)
 for d in "${DIMS[@]}"
 do
-    rm -rf $OUTPUT_ROOT/ideal-rnd$d/stateless
-    $BASE_CMD --sierra-root=$OUTPUT_ROOT/ideal-rnd$d/stateless \
-              --generator=stateless.RND${d} \
-              --no-msi
+    rm -rf $OUTPUT_ROOT/stateless/ideal-RND$d/
+    $BASE_CMD --generator=stateless.RND${d}
 done
 
 
-# Stateful (does not change # blocks from template)
+# Stateful (does not change # blocks/manifest from template)
 for d in "${DIMS[@]}"
 do
-    rm -rf $OUTPUT_ROOT/ideal-rnd$d/stateful
-    $BASE_CMD --sierra-root=$OUTPUT_ROOT/ideal-rnd$d/stateful \
-              --generator=stateful.RND${d} \
-              --no-msi
+    rm -rf $OUTPUT_ROOT/stateful/ideal-RND$d
+    $BASE_CMD --generator=stateful.RND${d}
 done

@@ -17,7 +17,7 @@
 """
 
 from generators.exp_input_generator import ExpInputGenerator
-import exp_variables as ev
+import variables as ev
 
 
 class PLBaseGenerator(ExpInputGenerator):

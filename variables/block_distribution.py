@@ -16,7 +16,7 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from exp_variables.base_variable import BaseVariable
+from variables.base_variable import BaseVariable
 
 
 class Type(BaseVariable):
@@ -87,24 +87,24 @@ class Quantity(BaseVariable):
 
 class QuantityLog64(Quantity):
     def __init__(self):
-        super().__init__([2 ** x for x in range(2, 7)])
+        super().__init__([2 ** x for x in range(0, 7)])
 
 
 class QuantityLog128(Quantity):
     def __init__(self):
-        super().__init__([2 ** x for x in range(2, 8)])
+        super().__init__([2 ** x for x in range(0, 8)])
 
 
 class QuantityLog256(Quantity):
     def __init__(self):
-        super().__init__([2 ** x for x in range(2, 9)])
+        super().__init__([2 ** x for x in range(0, 9)])
 
 
 class QuantityLog512(Quantity):
     def __init__(self):
-        super().__init__([2 ** x for x in range(2, 10)])
+        super().__init__([2 ** x for x in range(0, 10)])
 
 
 class QuantityLog1024(Quantity):
     def __init__(self):
-        super().__init__([2 ** x for x in range(2, 11)])
+        super().__init__([2 ** x for x in range(0, 11)])
