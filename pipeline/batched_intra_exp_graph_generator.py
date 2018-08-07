@@ -29,12 +29,15 @@ class BatchedIntraExpGraphGenerator:
     batch_output_root(str): Root directory (relative to current dir or absolute) for experiment outputs.
     batch_graph_root(str): Root directory (relative to current dir or absolute) of where the
                            generated graphs should be saved for the experimentsn.
+    targets(list): Dictionary of lists of dictiaries specifying what graphs should be
+                   generated. Passed here to reduce typing.
 
     """
 
-    def __init__(self, batch_output_root, batch_graph_root):
+    def __init__(self, batch_output_root, batch_graph_root, targets):
         self.batch_output_root = os.path.abspath(batch_output_root)
         self.batch_graph_root = batch_graph_root
+        self.targets = targets
 
     def __call__(self):
         """Generate all intra-experiment graphs for all experiments in the batch."""
@@ -42,4 +45,4 @@ class BatchedIntraExpGraphGenerator:
             exp_output_root = os.path.join(self.batch_output_root, item)
             exp_graph_root = os.path.join(self.batch_graph_root, item)
             if os.path.isdir(exp_output_root) and 'collated-csvs' != item:
-                IntraExpGraphGenerator(exp_output_root, exp_graph_root)()
+                IntraExpGraphGenerator(exp_output_root, exp_graph_root, self.targets)()
