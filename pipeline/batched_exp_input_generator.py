@@ -97,6 +97,7 @@ class BatchedExpInputGenerator:
 
         # Create and run generators
         exp_num = 0
+        print("-- Using joint generator class '{0}'".format('+'.join(self.exp_generator_pair)))
         for exp_def in self.batch_criteria:
             exp_generation_root = "{0}/exp{1}".format(self.batch_generation_root, exp_num)
             exp_output_root = "{0}/exp{1}".format(self.batch_output_root, exp_num)

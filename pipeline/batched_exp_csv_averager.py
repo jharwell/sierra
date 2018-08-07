@@ -38,7 +38,6 @@ class BatchedExpCSVAverager:
 
     def average_csvs(self):
         """Average .csv output files for all experiments in the batch."""
-        print("- Averaging all experiment results...")
         for item in os.listdir(self.batch_output_root):
             path = os.path.join(self.batch_output_root, item)
             if os.path.isdir(path):

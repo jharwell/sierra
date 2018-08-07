@@ -100,7 +100,6 @@ class ExpInputGenerator:
 
         # Setup simulation time parameters
         setup = eval(self.time_setup)()
-        print("-- Using time_setup.{0}".format(setup.__class__.__name__))
         for a in setup.gen_attr_changelist()[0]:
             xml_helper.set_attribute(a[0], a[1])
 
