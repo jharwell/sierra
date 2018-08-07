@@ -19,6 +19,7 @@ Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 
 import os
 from graphs.stacked_line_graph import StackedLineGraph
+from pipeline.inter_exp_linegraphs import InterExpLinegraphs
 
 
 class InterExpGraphGenerator:
@@ -30,103 +31,20 @@ class InterExpGraphGenerator:
                               outputs.
       batch_graph_root(str): Root directory (relative to current dir or absolute) of where the
                              generated graphs should be saved for the experiment.
+    collate_targets(list): List of tuples of (src csv, column, dest csv) for collating .csv
+                           files. Passed here to reduce typing.
     """
 
-    def __init__(self, batch_output_root, batch_graph_root):
+    def __init__(self, batch_output_root, batch_graph_root, collate_targets):
 
         self.batch_output_root = os.path.abspath(os.path.join(batch_output_root,
                                                               'collated-csvs'))
         self.batch_graph_root = os.path.abspath(os.path.join(batch_graph_root,
                                                              'collated-graphs'))
+        self.collate_targets = collate_targets
         os.makedirs(self.batch_graph_root, exist_ok=True)
 
     def __call__(self):
-        StackedLineGraph(input_stem_fpath=os.path.join(self.batch_output_root,
-                                                       "blocks-collected"),
-                         output_fpath=os.path.join(
-            self.batch_graph_root, "blocks-collected.eps"),
-            cols=None,
-            title="Average Blocks Collected Across Experiments",
-            legend=None,
-            xlabel="Timestep",
-            ylabel="# Blocks").generate()
-
-        StackedLineGraph(input_stem_fpath=os.path.join(self.batch_output_root,
-                                                       "blocks-avg-transporters"),
-                         output_fpath=os.path.join(
-            self.batch_graph_root, "blocks-avg-transporters.eps"),
-            cols=None,
-            title="Average Block Transporters Across Experiments",
-            legend=None,
-            xlabel="Timestep",
-            ylabel="# Transporters").generate()
-
-        StackedLineGraph(input_stem_fpath=os.path.join(self.batch_output_root,
-                                                       "block-acquisition"),
-                         output_fpath=os.path.join(
-            self.batch_graph_root, "block-acquisition.eps"),
-            cols=None,
-            title="Average Robots Acquiring Blocks Across Experiments",
-            legend=None,
-            xlabel="Timestep",
-            ylabel="# Robots").generate()
-
-        StackedLineGraph(input_stem_fpath=os.path.join(self.batch_output_root,
-                                                       "block-acquisition-exploring"),
-                         output_fpath=os.path.join(
-            self.batch_graph_root, "block-acquisition-exploring.eps"),
-            cols=None,
-            title="Average Robots Exploring For Blocks Across Experiments",
-            legend=None,
-            xlabel="Timestep",
-            ylabel="# Robots").generate()
-
-        StackedLineGraph(input_stem_fpath=os.path.join(self.batch_output_root,
-                                                       "block-acquisition-vectoring"),
-                         output_fpath=os.path.join(
-            self.batch_graph_root, "block-acquisition-vectoring.eps"),
-            cols=None,
-            title="Average Robots Vectoring To Blocks Across Experiments",
-            legend=None,
-            xlabel="Timestep",
-            ylabel="# Robots").generate()
-
-        StackedLineGraph(input_stem_fpath=os.path.join(self.batch_output_root,
-                                                       "blocks-avg-transport-times"),
-                         output_fpath=os.path.join(
-            self.batch_graph_root, "blocks-avg-transport-times.eps"),
-            cols=None,
-            title="Average Block Transport Times Across Experiments",
-            legend=None,
-            xlabel="Timestep",
-            ylabel="# Timesteps For Transport").generate()
-
-        StackedLineGraph(input_stem_fpath=os.path.join(self.batch_output_root,
-                                                       "blocks-initial-wait-time"),
-                         output_fpath=os.path.join(
-            self.batch_graph_root, "blocks-initial-wait-time.eps"),
-            cols=None,
-            title="Average Block Initial Wait Times Across Experiments",
-            legend=None,
-            xlabel="Timestep",
-            ylabel="# Timesteps Waiting").generate()
-
-        StackedLineGraph(input_stem_fpath=os.path.join(self.batch_output_root,
-                                                       "blocks-pickup-rates"),
-                         output_fpath=os.path.join(
-            self.batch_graph_root, "blocks-pickup-rates.eps"),
-            cols=None,
-            title="Average Block Pickup Rates",
-            legend=None,
-            xlabel="Timestep",
-            ylabel="# Events").generate()
-
-        StackedLineGraph(input_stem_fpath=os.path.join(self.batch_output_root,
-                                                       "blocks-drop-rates"),
-                         output_fpath=os.path.join(
-            self.batch_graph_root, "blocks-drop-rates.eps"),
-            cols=None,
-            title="Average Block Drop Rates",
-            legend=None,
-            xlabel="Timestep",
-            ylabel="# Events").generate()
+        InterExpLinegraphs(self.batch_output_root,
+                           self.batch_graph_root,
+                           self.collate_targets).generate()

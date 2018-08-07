@@ -35,7 +35,6 @@ def GeneratorFactory(generator_pair, *args, **kwargs):
         else:
             self.controller_changes.generate_and_save()
 
-    print("-- Created joint generator class '{0}'".format('+'.join(generator_pair)))
     return type('+'.join(generator_pair), (object,), {"__init__": __init__,
                                                       "generate": generate
                                                       })(*args, **kwargs)

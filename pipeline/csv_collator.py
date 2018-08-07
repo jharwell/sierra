@@ -42,23 +42,34 @@ class CSVCollator:
     def __call__(self):
         print("- Collating inter-experiment .csv files from batch in {0} to {1}...".format(self.batch_output_root,
                                                                                            self.collate_root))
-        for csv_ifname, csv_col, csv_ofname in self.targets:
-            df_new = pd.DataFrame()
-            for item in os.listdir(self.batch_output_root):
-                exp_output_root = os.path.join(self.batch_output_root, item)
-                if os.path.isdir(exp_output_root):
-                    csv_ipath = os.path.join(exp_output_root, "averaged-output", csv_ifname)
-                    if not os.path.exists(csv_ipath):
+        for target_set in self.targets.values():
+            for target in target_set:
+                df_new = pd.DataFrame()
+                src_exists = True
+                for item in os.listdir(self.batch_output_root):
+                    exp_output_root = os.path.join(self.batch_output_root, item)
+                    # So we can re-run graph # generation multiple times on the same data
+                    if "collated-csvs" == item:
                         continue
-                    df = pd.read_csv(csv_ipath, sep=';')
+                    if os.path.isdir(exp_output_root):
+                        csv_ipath = os.path.join(exp_output_root, "averaged-output",
+                                                 target['src_stem'] + '.csv')
 
-                    assert csv_col in df.columns.values, "FATAL: {0} not in columns of {1}".format(
-                        csv_col, csv_ifname)
-                    df_new['clock'] = df['clock']
-                    df_new[item] = df[csv_col]
-            # Sort columns except clock. They all start with 'exp' so only sort on the numerals
-            # after that part.
-            new_cols = ['clock'] + sorted([c for c in df_new.columns if c not in ['clock']],
-                                          key=lambda t: (int(t[3:])))
-            df_new = df_new.reindex(new_cols, axis=1)
-            df_new.to_csv(os.path.join(self.collate_root, csv_ofname), sep=';', index=False)
+                        if not os.path.exists(csv_ipath):
+                            src_exists = False
+                            continue
+
+                        df = pd.read_csv(csv_ipath, sep=';')
+
+                        assert target['col'] in df.columns.values, "FATAL: {0} not in columns of {1}".format(
+                            target['col'], target['src_stem'] + '.csv')
+                        df_new['clock'] = df['clock']
+                        df_new[item] = df[target['col']]
+                # Sort columns except clock. They all start with 'exp' so only sort on the numerals
+                # after that part.
+                if src_exists:
+                    new_cols = sorted([c for c in df_new.columns if c not in ['clock']],
+                                      key=lambda t: (int(t[3:])))
+                    df_new = df_new.reindex(new_cols, axis=1)
+                    df_new.to_csv(os.path.join(self.collate_root,
+                                               target['dest_stem'] + '.csv'), sep=';', index=False)

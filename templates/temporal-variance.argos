@@ -7,7 +7,7 @@
   <!-- ************************* -->
   <framework>
     <system threads="0" />
-    <experiment length="200"
+    <experiment length="10000"
                 ticks_per_second="5"
                 random_seed="123" />
   </framework>
@@ -147,9 +147,9 @@
         <manipulation_penalty>
           <waveform
               type="Null"
-              frequency="100"
-              amplitude="500"
-              offset="10"/>
+              frequency="25000"
+              amplitude="50"
+              offset="100"/>
         </manipulation_penalty>
         <distribution
             arena_resolution="0.2"
@@ -160,8 +160,8 @@
               n_clusters="25"
               />
           <manifest
-              n_cube="50"
-              n_ramp="0"
+              n_cube="25"
+              n_ramp="25"
               unit_dim="0.2"
               />
         </distribution>
