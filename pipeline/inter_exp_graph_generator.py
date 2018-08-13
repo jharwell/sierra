@@ -18,8 +18,8 @@ Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 """
 
 import os
-from graphs.stacked_line_graph import StackedLineGraph
 from pipeline.inter_exp_linegraphs import InterExpLinegraphs
+from perf_measures.scalability import ScalabilityMeasure
 
 
 class InterExpGraphGenerator:
@@ -48,3 +48,5 @@ class InterExpGraphGenerator:
         InterExpLinegraphs(self.batch_output_root,
                            self.batch_graph_root,
                            self.collate_targets).generate()
+        ScalabilityMeasure(self.batch_output_root,
+                           self.batch_graph_root).generate()

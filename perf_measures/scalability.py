@@ -19,8 +19,12 @@ This file is part of SIERRA.
 import os
 import pandas as pd
 import math
+import numpy as np
+from graphs.stacked_line_graph import StackedLineGraph
+from graphs.scalability_graph import ScalabilityGraph
 
-kTargetCSV = "blocks-collected.csv"
+kTargetIntCSV = "blocks-collected-int.csv"
+kTargetCumCSV = "blocks-collected-cum.csv"
 
 
 class ScalabilityMeasure:
@@ -39,19 +43,44 @@ class ScalabilityMeasure:
 
     """
 
-    def __init__(self, collate_root, batch_graph_root):
-        self.collate_root = collate_root
+    def __init__(self, batch_output_root, batch_graph_root):
+        self.batch_output_root = batch_output_root
         self.batch_graph_root = batch_graph_root
 
-    def calc(self):
-        """Calculate the scalability metric within each interval, as well as a cumulative average,
+    def generate(self):
+        """Calculate the scalability metric within each interval for a given controller,
         and output a nice graph."""
-        assert(os.path.exists(kTargetCSV))
-        df = pd.read_csv(kTargetCSV, sep=';')
-        new_cols = ['clock'] + sorted([c for c in df.columns if c not in ['clock']],
-                                      key=lambda t: (int(t[3:])))
-        df = df.reindex(new_cols, axis=1)
+
+        path = os.path.join(self.batch_output_root, kTargetIntCSV)
+        assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
+        df = pd.read_csv(path, sep=';')
         scale_cols = [c for c in df.columns if c not in ['clock', 'exp0']]
         for c in scale_cols:
-            df[c] = df[c].apply(lambda x: x / (math.pow(2, int(c[3:])) *
-                                               df[df.loc[df[c] == x]['exp0']]))
+            df[c] = (df[c] / ((math.pow(2, int(c[3:]))) * df['exp0'])).replace(np.inf, 0)
+
+        int_stem = os.path.join(self.batch_output_root, "pm-scalability-int")
+        df.to_csv(int_stem + ".csv", sep=';', index=False)
+
+        path = os.path.join(self.batch_output_root, kTargetCumCSV)
+        assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
+        df = pd.read_csv(path, sep=';')
+        scale_cols = [c for c in df.columns if c not in ['clock', 'exp0']]
+        cum_stem = os.path.join(self.batch_output_root, "pm-scalability-cum")
+        df_new = pd.DataFrame(columns=scale_cols)
+        for c in scale_cols:
+            df_new[c] = df.tail(1)[c] / (df.tail(1)['exp0'] * 2 ** (int(c[3:])))
+
+        df_new.to_csv(cum_stem + ".csv", sep=';', index=False)
+
+        StackedLineGraph(input_stem_fpath=int_stem,
+                         output_fpath=os.path.join(self.batch_graph_root,
+                                                   "pm-scalability-int.eps"),
+                         cols=None,
+                         title="Swarm Scalability (interval)",
+                         legend=None,
+                         xlabel="Timestep",
+                         ylabel="Scalability").generate()
+
+        ScalabilityGraph(inputy_fpath=cum_stem + ".csv",
+                         output_fpath=os.path.join(self.batch_graph_root,
+                                                   "pm-scalability-cum.eps")).generate()

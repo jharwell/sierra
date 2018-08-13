@@ -19,6 +19,7 @@
 from variables.base_variable import BaseVariable
 
 kDataPoints = 50
+kTicksPerSecond = 5
 
 
 class TimeSetup(BaseVariable):
@@ -38,19 +39,20 @@ class TimeSetup(BaseVariable):
     def gen_attr_changelist(self):
         return [set([
             ("experiment.length", "{0}".format(self.sim_duration)),
+            ("experiment.ticks_per_second", "{0}".format(kTicksPerSecond)),
             ("metrics.collect_interval", "{0}".format(self.metric_interval))])]
 
 
 class Default(TimeSetup):
     def __init__(self):
-        super().__init__(100000, 100000 / kDataPoints)
+        super().__init__(100000, 100000 * kTicksPerSecond / kDataPoints)
 
 
 class Short(TimeSetup):
     def __init__(self):
-        super().__init__(10000, 10000 / kDataPoints)
+        super().__init__(10000, 10000 * kTicksPerSecond / kDataPoints)
 
 
 class Long(TimeSetup):
     def __init__(self):
-        super().__init__(1000000, 100000 / kDataPoints)
+        super().__init__(1000000, 100000 * kTicksPerSecond / kDataPoints)

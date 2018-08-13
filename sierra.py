@@ -30,7 +30,9 @@ def get_generator_pair(args):
                    "PL": "powerlaw",
                    "RN": "random"}
 
-    if 1 == len(args.generator.split('.')):
+    if args.generator is None:
+        return None
+    elif 1 == len(args.generator.split('.')):
         return ("generators." + args.generator + ".BaseGenerator",)
     else:
         return ("generators." + args.generator.split('.')[0] + ".BaseGenerator",
@@ -40,7 +42,7 @@ def get_generator_pair(args):
 
 def get_input_generator(args):
     """Get the input generator to use to create experiment/batch inputs."""
-    if not any([args.graphs_only, args.run_only, args.average_only]):
+    if not any([args.exp_graphs_only, args.exp_run_only, args.exp_average_only]):
 
         # The two generator class names from which should be created a new class for my scenario +
         # controller changes.
@@ -106,20 +108,27 @@ def define_cmdline():
                         never have to change this.""")
 
     run_group = parser.add_mutually_exclusive_group()
-    run_group.add_argument("--inputs-only",
+    run_group.add_argument("--exp-inputs-only",
                            help="""Only generate the config files and command file for an
                            experiment/set of experiments.""",
                            action="store_true")
-    run_group.add_argument("--run-only",
+    run_group.add_argument("--exp-run-only",
                            help="""Only run the experiments on previously generated set of input
                            files for an experiment/set of experiments.""",
                            action="store_true")
-    run_group.add_argument("--average-only",
+    run_group.add_argument("--exp-average-only",
                            help="Only perform CSV averaging on a previously run experiment/set of experiments.",
                            action="store_true")
-    run_group.add_argument("--graphs-only",
+    run_group.add_argument("--exp-graphs-only",
                            help="Only perform graph generation on a previous run experiments/set of experiments.",
                            action="store_true")
+    run_group.add_argument("--comp-graphs-only",
+                           help="""Only perform graph generation for comparing controllers. All
+                           controllers within <sierra_root> will be compared, so it is assumed that
+                           if this option is passed that the # experiments/batch criteria is the
+                           same for all. This is NOT part of the default pipeline""",
+                           action="store_true")
+
     parser.add_argument("--generator",
                         help="""Experiment generator to use. Must be specified as <controller> or
                         <controller>.<scenario>.
@@ -163,34 +172,39 @@ if __name__ == "__main__":
     # Also, add the template file leaf to the root directory path to help track what experiment was
     # run.
 
-    if 2 == len(pair):
-        controller = pair[0].split('.')[1]
-        scenario = pair[1].split('.')[2]
-    else:
-        controller = pair[0].split('.')[1]
-        scenario = args.batch_criteria.split('.')[1]
+    if pair is not None:
+        if 2 == len(pair):
+            controller = pair[0].split('.')[1]
+            scenario = pair[1].split('.')[2]
+        else:
+            controller = pair[0].split('.')[1]
+            scenario = args.batch_criteria.split('.')[1]
 
-    template, ext = os.path.splitext(os.path.basename(args.template_config_file))
+        template, ext = os.path.splitext(os.path.basename(args.template_config_file))
 
-    print("- Controller={0}, Scenario={1}".format(controller, scenario))
+        print("- Controller={0}, Scenario={1}".format(controller, scenario))
 
-    if args.generation_root is None:
-        args.generation_root = os.path.join(args.sierra_root,
+        if args.generation_root is None:
+            args.generation_root = os.path.join(args.sierra_root,
+                                                controller,
+                                                template + '-' + scenario,
+                                                "exp-inputs")
+
+        if args.output_root is None:
+            args.output_root = os.path.join(args.sierra_root,
                                             controller,
                                             template + '-' + scenario,
-                                            "exp-inputs")
+                                            "exp-outputs")
 
-    if args.output_root is None:
-        args.output_root = os.path.join(args.sierra_root,
-                                        controller,
-                                        template + '-' + scenario,
-                                        "exp-outputs")
+        if args.graph_root is None:
+            args.graph_root = os.path.join(args.sierra_root,
+                                           controller,
+                                           template + '-' + scenario,
+                                           "graphs")
 
-    if args.graph_root is None:
-        args.graph_root = os.path.join(args.sierra_root,
-                                       controller,
-                                       template + '-' + scenario,
-                                       "graphs")
+        generator = get_input_generator(args)
+    else:
+        generator = None
 
-    pipeline = ExpPipeline(args, get_input_generator(args))
+    pipeline = ExpPipeline(args, generator)
     pipeline.run()
