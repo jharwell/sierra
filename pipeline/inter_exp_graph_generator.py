@@ -18,8 +18,8 @@ Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 """
 
 import os
-from graphs.stacked_line_graph import StackedLineGraph
 from pipeline.inter_exp_linegraphs import InterExpLinegraphs
+from perf_measures.scalability import ScalabilityMeasure
 
 
 class InterExpGraphGenerator:
@@ -31,8 +31,8 @@ class InterExpGraphGenerator:
                               outputs.
       batch_graph_root(str): Root directory (relative to current dir or absolute) of where the
                              generated graphs should be saved for the experiment.
-    collate_targets(list): List of tuples of (src csv, column, dest csv) for collating .csv
-                           files. Passed here to reduce typing.
+      collate_targets(list): List of tuples of (src csv, column, dest csv) for collating .csv
+                             files.
     """
 
     def __init__(self, batch_output_root, batch_graph_root, collate_targets):
@@ -48,3 +48,5 @@ class InterExpGraphGenerator:
         InterExpLinegraphs(self.batch_output_root,
                            self.batch_graph_root,
                            self.collate_targets).generate()
+        ScalabilityMeasure(self.batch_output_root,
+                           self.batch_graph_root).generate()
