@@ -89,23 +89,30 @@ def define_cmdline():
     parser.add_argument("--generation-root",
                         help="""Root directory to save generated experiment input files, or the
                         directory which will contain directories for each experiment's input files,
-                        for batch mode. Defaults to <sierra_root>/<controller>/<scenario>/exp-inputs.""")
+                        for batch mode. Defaults to
+                        <sierra_root>/<controller>/<scenario>/exp-inputs. You should almost never
+                        have to change this.""")
     parser.add_argument("--output-root",
                         help="""Root directory for saving simulation outputs a single experiment, or
                         the root directory which will contain directories for each experiment's
-                        outputs for batch mode). Defaults to <sierra_root>/<controller>/<scenario>/exp-outputs""")
+                        outputs for batch mode). Defaults to
+                        <sierra_root>/<controller>/<scenario>/exp-outputs. You should almost never
+                        have to change this.""")
     parser.add_argument("--graph-root",
                         help="""Root directory for saving generated graph files for a single
                         experiment, or the root directory which will contain directories for each
                         experiment's generated graphs for batch mode. Defaults to
-                        <sierra_root>/<controller>/<scenario>/generated-graphs.""")
+                        <sierra_root>/<controller>/<scenario>/generated-graphs. You should almost
+                        never have to change this.""")
 
     run_group = parser.add_mutually_exclusive_group()
     run_group.add_argument("--inputs-only",
-                           help="Only generate the config files and command file for an experiment/set of experiments.",
+                           help="""Only generate the config files and command file for an
+                           experiment/set of experiments.""",
                            action="store_true")
     run_group.add_argument("--run-only",
-                           help="Only run the experiments on previously generated set of input files for an experiment/set of experiments.",
+                           help="""Only run the experiments on previously generated set of input
+                           files for an experiment/set of experiments.""",
                            action="store_true")
     run_group.add_argument("--average-only",
                            help="Only perform CSV averaging on a previously run experiment/set of experiments.",
@@ -114,8 +121,13 @@ def define_cmdline():
                            help="Only perform graph generation on a previous run experiments/set of experiments.",
                            action="store_true")
     parser.add_argument("--generator",
-                        help="Experiment generator to use. Options are: " +
-                        "[stateless.*, stateful.*] (specifics can be found in generators/*.py)")
+                        help="""Experiment generator to use. Must be specified as <controller> or
+                        <controller>.<scenario>.
+                        Controller options are: [stateless, stateful]
+                        Scenario options are: [RND{10x10, 20x20, 40x40},
+                                              SS{10x5, 20x10, 40x20},
+                                              PL{10x10, 20x20, 40x40}]
+                        """)
 
     parser.add_argument("--no-msi",
                         help="Include if running on a personal computer (otherwise runs supercomputer commands).",
