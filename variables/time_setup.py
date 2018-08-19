@@ -28,7 +28,7 @@ class TimeSetup(BaseVariable):
     Defines the simulation duration, metric collection interval.
 
     Attributes:
-      sim_duration(int): The simulation duration.
+      sim_duration(int): The simulation duration in seconds, NOT timesteps.
       metric_interval(int): Interval for metric collection.
     """
 
@@ -43,16 +43,31 @@ class TimeSetup(BaseVariable):
             ("metrics.collect_interval", "{0}".format(self.metric_interval))])]
 
 
-class Default(TimeSetup):
+class T1000(TimeSetup):
     def __init__(self):
-        super().__init__(100000, 100000 * kTicksPerSecond / kDataPoints)
+        super().__init__(1000, 1000 * kTicksPerSecond / kDataPoints)
 
 
-class Short(TimeSetup):
+class T5000(TimeSetup):
+    def __init__(self):
+        super().__init__(5000, 5000 * kTicksPerSecond / kDataPoints)
+
+
+class T10000(TimeSetup):
     def __init__(self):
         super().__init__(10000, 10000 * kTicksPerSecond / kDataPoints)
 
 
-class Long(TimeSetup):
+class T20000(TimeSetup):
     def __init__(self):
-        super().__init__(1000000, 100000 * kTicksPerSecond / kDataPoints)
+        super().__init__(20000, 20000 * kTicksPerSecond / kDataPoints)
+
+
+class T50000(TimeSetup):
+    def __init__(self):
+        super().__init__(50000, 50000 * kTicksPerSecond / kDataPoints)
+
+
+class T100000(TimeSetup):
+    def __init__(self):
+        super().__init__(100000, 100000 * kTicksPerSecond / kDataPoints)

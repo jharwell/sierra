@@ -18,6 +18,8 @@
 
 import os
 import subprocess
+import time
+import sys
 
 
 class ExpRunner:
@@ -42,8 +44,10 @@ class ExpRunner:
         assert os.environ.get(
             "ARGOS_PLUGIN_PATH") is not None, ("ERROR: You must have ARGOS_PLUGIN_PATH defined")
 
-        print('-' + '-' * self.batch +
-              " Running experiment in {0}...".format(self.exp_generation_root))
+        sys.stdout.write('-' + '-' * self.batch +
+                         " Running experiment in {0}...".format(self.exp_generation_root))
+        sys.stdout.flush()
+        start = time.time()
         try:
             # so that it can be run on non-supercomputers
             if no_msi:
@@ -61,3 +65,5 @@ class ExpRunner:
         except subprocess.CalledProcessError as e:
             print("ERROR: Experiment failed!")
             raise e
+        elapsed = time.time() - start
+        sys.stdout.write("{:.3f}s\n".format(elapsed))

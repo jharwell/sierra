@@ -24,22 +24,19 @@ OUTPUT_ROOT=$HOME/exp
 BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \
                   --template-config-file=$HOME/git/sierra/templates/constant-density.argos \
-                  --n_sims=$NSIMS \
-                  --time-setup=time_setup.short"
+                  --n_sims=$NSIMS"
 
 # Stateless
 for d in "${DENSITIES[@]}"
 do
-    rm -rf $OUTPUT_ROOT/stateless/constant-density-RND10x10
-    $BASE_CMD --generator=stateless.BaseGenerator \
+    $BASE_CMD --generator=stateless \
               --batch-criteria=swarm_density.ConstantDensity$d
 done
 
 # Stateful
 for d in "${DENSITIES[@]}"
 do
-    rm -rf $OUTPUT_ROOT/stateful/constant-density-RND10x10
-    $BASE_CMD --generator=stateful.BaseGenerator \
+    $BASE_CMD --generator=stateful \
               --batch-criteria=swarm_density.ConstantDensity$d
 done
 

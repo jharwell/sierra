@@ -25,8 +25,7 @@ BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \
                   --template-config-file=$HOME/git/sierra/templates/ideal.argos \
                   --n_sims=$NSIMS \
-                  --batch-criteria=swarm_size.Log64 \
-                  --time-setup=time_setup.short"
+                  --batch-criteria=swarm_size.Log64"
 
 # Stateless (does not change # blocks/manifest from template)
 for d in "${DIMS[@]}"
