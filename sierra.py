@@ -148,8 +148,8 @@ def define_cmdline():
                         specified as <filename>.<class name> as found in the variables/ directory.''')
     parser.add_argument("--time-setup",
                         help='''The base simulation setup to use, which sets duration and metric
-                        reporting interval. Options are: time_setup.[Default, Long, Short]''',
-                        default="time_setup.Default")
+                        reporting interval. For options, see time_setup.py''',
+                        default="time_setup.T5000")
     return parser
 
 
