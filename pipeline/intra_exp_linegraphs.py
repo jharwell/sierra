@@ -43,8 +43,8 @@ class IntraExpLinegraphs:
         self.depth0_generate_linegraphs()
 
     def depth0_generate_linegraphs(self):
-        for target_set in [self.targets[x] for x in ['collision',
-                                                     'distance',
+        for target_set in [self.targets[x] for x in ['fsm-collision',
+                                                     'fsm-movement',
                                                      'block_trans',
                                                      'block_acq',
                                                      'block_manip',
@@ -54,7 +54,7 @@ class IntraExpLinegraphs:
                                                                target['src_stem']),
                                  output_fpath=os.path.join(
                                      self.exp_graph_root,
-                                     target['src_stem'] + '.eps'),
+                                     target['dest_stem'] + '.eps'),
                                  cols=target['cols'],
                                  title=target['title'],
                                  legend=target['legend'],

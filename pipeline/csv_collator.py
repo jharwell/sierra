@@ -43,18 +43,21 @@ class CSVCollator:
         print("- Collating inter-experiment .csv files from batch in {0} to {1}...".format(self.batch_output_root,
                                                                                            self.collate_root))
         for target_set in self.targets.values():
+
             for target in target_set:
-                df_new = pd.DataFrame()
                 src_exists = True
+
+                df_new = pd.DataFrame()
                 for item in os.listdir(self.batch_output_root):
                     exp_output_root = os.path.join(self.batch_output_root, item)
+
                     # So we can re-run graph # generation multiple times on the same data
-                    if "collated-csvs" == item:
+                    if "collated-csvs" == item or "averaged-output" == item:
                         continue
+
                     if os.path.isdir(exp_output_root):
                         csv_ipath = os.path.join(exp_output_root, "averaged-output",
                                                  target['src_stem'] + '.csv')
-
                         if not os.path.exists(csv_ipath):
                             src_exists = False
                             continue
@@ -71,5 +74,6 @@ class CSVCollator:
                     new_cols = sorted([c for c in df_new.columns if c not in ['clock']],
                                       key=lambda t: (int(t[3:])))
                     df_new = df_new.reindex(new_cols, axis=1)
+
                     df_new.to_csv(os.path.join(self.collate_root,
                                                target['dest_stem'] + '.csv'), sep=';', index=False)
