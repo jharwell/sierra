@@ -22,8 +22,8 @@ from generators.exp_input_generator import ExpInputGenerator
 class BaseGenerator(ExpInputGenerator):
 
     """
-    Generates simulation input for base stateful foraging experiments.
-
+    Generates simulation input for base depth1 foraging experiments. Should only really be used with
+    single source foraging scenarios.
     """
 
     def __init__(self, *args, **kwargs):
@@ -36,9 +36,9 @@ class BaseGenerator(ExpInputGenerator):
         xml_helper = super().init_sim_defs()
 
         xml_helper.set_tag("argos-configuration.controllers.__template__",
-                           "stateful_foraging_controller")
+                           "depth1_foraging_controller")
         xml_helper.set_attribute("argos-configuration.loop_functions.label",
-                                 "stateful_foraging_loop_functions")
+                                 "depth1_foraging_loop_functions")
         return xml_helper
 
     def generate(self):

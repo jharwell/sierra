@@ -62,12 +62,12 @@ def get_input_generator(args):
                                             args.time_setup)
         else:
             return GeneratorFactory(generator_pair,
-                                    args.template_config_file,
-                                    args.generation_root,
-                                    args.output_root,
-                                    args.n_sims,
-                                    args.n_threads,
-                                    args.time_setup)
+                                    template_config_file=args.template_config_file,
+                                    generation_root=args.generation_root,
+                                    exp_output_root=args.output_root,
+                                    n_sims=args.n_sims,
+                                    n_threads=args.n_threads,
+                                    tsetup=args.time_setup)
 
 
 def define_cmdline():
