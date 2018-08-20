@@ -43,19 +43,20 @@ class IntraExpHistograms:
         self.depth0_generate_histograms()
 
     def depth0_generate_histograms(self):
-        for target_set in [self.targets[x] for x in ['collision',
-                                                     'distance',
+        for target_set in [self.targets[x] for x in ['fsm-collision',
+                                                     'fsm-movement',
                                                      'block_trans',
                                                      'block_acq',
                                                      'block_manip',
                                                      'world_model']]:
             for target in target_set:
-                Histogram(input_fpath=os.path.join(self.exp_output_root,
-                                                   target['src_stem'] + '.csv'),
-                          output_fpath=os.path.join(
-                    self.exp_graph_root,
-                    target['src_stem'] + '-hist.eps'),
-                    col=target['cols'],
-                    title=target['title'],
-                    xlabel=target['xlabel'],
-                    ylabel='Count').generate()
+                for col in target['cols']:
+                    Histogram(input_fpath=os.path.join(self.exp_output_root,
+                                                       target['src_stem'] + '.csv'),
+                              output_fpath=os.path.join(
+                                  self.exp_graph_root,
+                        target['src_stem'] + '-' + col + '-hist.eps'),
+                        col=col,
+                        title=target['title'],
+                        xlabel=target['xlabel'],
+                        ylabel='Count').generate()

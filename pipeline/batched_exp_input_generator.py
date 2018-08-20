@@ -105,7 +105,7 @@ class BatchedExpInputGenerator:
                                  template_config_file=os.path.join(exp_generation_root,
                                                                    self.batch_config_leaf),
                                  generation_root=exp_generation_root,
-                                 output_root=exp_output_root,
+                                 exp_output_root=exp_output_root,
                                  n_sims=self.n_sims,
                                  n_threads=self.n_threads,
                                  tsetup=self.time_setup)

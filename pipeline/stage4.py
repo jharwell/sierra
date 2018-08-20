@@ -37,54 +37,54 @@ class PipelineStage4:
 
     def _inter_exp_targets(self):
         collision = [
-            {'src_stem': 'collision-stats',
+            {'src_stem': 'fsm-collision',
              'col': 'int_avg_in_avoidance',
              'dest_stem': 'in-avoidance-int-avg',
              'title': 'Average Robots in Collision Avoidance (interval)',
              'xlabel': 'timestep',
              'ylabel': '# Robots'},
-            {'src_stem': 'collision-stats',
+            {'src_stem': 'fsm-collision',
              'col': 'cum_avg_in_avoidance',
              'dest_stem': 'in-avoidance-cum-avg',
              'title': 'Average Robots in Collision Avoidance (cumulative)',
              'xlabel': 'timestep',
              'ylabel': '# Robots'},
-            {'src_stem': 'collision-stats',
+            {'src_stem': 'fsm-collision',
              'col': 'int_avg_entered_avoidance',
              'dest_stem': 'entered-avoidance-int-avg',
              'title': 'Average Robots Entering Collision Avoidance (interval)',
              'xlabel': 'timestep',
              'ylabel': '# Robots'
              },
-            {'src_stem': 'collision-stats',
+            {'src_stem': 'fsm-collision',
              'col': 'cum_avg_entered_avoidance',
              'dest_stem': 'entered-avoidance-cum-avg',
              'title': 'Average Robots Entering Collision Avoidance (cumulative)',
              'xlabel': 'timestep',
              'ylabel': '# Robots'
              },
-            {'src_stem': 'collision-stats',
+            {'src_stem': 'fsm-collision',
              'col': 'int_avg_exited_avoidance',
              'dest_stem': 'exited-avoidance-int-avg',
              'title': 'Average Robots Exiting Collision Avoidance (interval)',
              'xlabel': 'timestep',
              'ylabel': '# Robots'
              },
-            {'src_stem': 'collision-stats',
+            {'src_stem': 'fsm-collision',
              'col': 'cum_avg_exited_avoidance',
              'dest_stem': 'exited-avoidance-cum-avg',
              'title': 'Average Robots Exiting Collision Avoidance (cumulative)',
              'xlabel': 'timestep',
              'ylabel': '# Robots'
              },
-            {'src_stem': 'collision-stats',
+            {'src_stem': 'fsm-collision',
              'col': 'int_avg_avoidance_duration',
              'dest_stem': 'avoidance-duration-int-avg',
              'title': 'Average Collision Avoidance Duration (interval)',
              'xlabel': 'timestep',
              'ylabel': '# Robots'
              },
-            {'src_stem': 'collision-stats',
+            {'src_stem': 'fsm-collision',
              'col': 'cum_avg_avoidance_duration',
              'dest_stem': 'avoidance-duration-cum-avg',
              'title': 'Average Collision Avoidance Duration (cumulative)',
@@ -93,106 +93,123 @@ class PipelineStage4:
              },
         ]
 
-        distance = [
-            {'src_stem': 'distance-stats',
-             'col': 'int_avg_distance',
-             'dest_stem': 'distance-int-avg',
-             'title': 'Total Distance Traveled (interval)',
-             'xlabel': 'timestep',
-             'ylabel': 'Distance (m)'
-             },
-            {'src_stem': 'distance-stats',
-             'col': 'cum_avg_distance',
-             'dest_stem': 'distance-cum-avg',
-             'title': 'Total Distance Traveled (cumulative)',
-             'xlabel': 'timestep',
-             'ylabel': 'Distance (m)'}
+        movement = [
+            {
+                'src_stem': 'fsm-movement',
+                'col': 'int_avg_distance',
+                'dest_stem': 'distance-int-avg',
+                'title': 'Per-robot Distance Traveled (interval)',
+                'xlabel': 'timestep',
+                'ylabel': 'Distance (m)'
+            },
+            {
+                'src_stem': 'fsm-movement',
+                'col': 'cum_avg_distance',
+                'dest_stem': 'distance-cum-avg',
+                'title': 'Per-robot Distance Traveled (cumulative)',
+                'xlabel': 'timestep',
+                'ylabel': 'Distance (m)'},
+            {
+                'src_stem': 'fsm-movement',
+                'col': 'int_avg_velocity',
+                'dest_stem': 'velocity-int-avg',
+                'title': 'Per-robot Velocity (interval)',
+                'xlabel': 'timestep',
+                'ylabel': 'Velocity (m/s)'
+            },
+            {
+                'src_stem': 'fsm-movement',
+                'col': 'cum_avg_velocity',
+                'dest_stem': 'velocity-cum-avg',
+                'title': 'Per-robot Velocity (cumulative)',
+                'xlabel': 'timestep',
+                'ylabel': 'Velocity (m/s)'}
         ]
 
         block_trans = [
             {
-                'src_stem': 'block-transport-stats',
+                'src_stem': 'block-transport',
                 'col': 'int_collected',
                 'dest_stem': 'blocks-collected-int',
                 'title': 'Blocks Collected (interval)',
                 'xlabel': 'timestep',
                 'ylabel': '# Blocks'},
             {
-                'src_stem': 'block-transport-stats',
+                'src_stem': 'block-transport',
                 'col': 'cum_collected',
                 'dest_stem': 'blocks-collected-cum',
                 'title': 'Blocks Collected (cumulative)',
                 'xlabel': 'timestep',
                 'ylabel': '# Blocks'
             },
-            {'src_stem': 'block-transport-stats',
+            {'src_stem': 'block-transport',
              'col': 'int_cube_collected',
              'dest_stem': 'cube-blocks-collected-int',
              'title': 'Cube Blocks Collected (interval)',
              'xlabel': 'timestep',
              'ylabel': '# Blocks'},
-            {'src_stem': 'block-transport-stats',
+            {'src_stem': 'block-transport',
              'col': 'int_ramp_collected',
              'dest_stem': 'ramp-blocks-collected-int',
              'title': 'Ramp Blocks Collected (interval)',
              'xlabel': 'timestep',
              'ylabel': '# Blocks'
              },
-            {'src_stem': 'block-transport-stats',
+            {'src_stem': 'block-transport',
              'col': 'cum_collected',
              'dest_stem': 'blocks-collected-cum-avg',
              'title': 'Average Blocks Collected (cumulative)',
              'xlabel': 'timestep',
              'ylabel': '# Blocks'
              },
-            {'src_stem': 'block-transport-stats',
+            {'src_stem': 'block-transport',
              'col': 'cum_cube_collected',
              'dest_stem': 'cube-blocks-collected-cum-avg',
              'title': 'Average Cube Blocks Collected (cumulative)',
              'xlabel': 'timestep',
              'ylabel': '# Blocks'},
-            {'src_stem': 'block-transport-stats',
+            {'src_stem': 'block-transport',
              'col': 'cum_ramp_collected',
              'dest_stem': 'ramp-blocks-collected-cum-avg',
              'title': 'Average Ramp Blocks Collected (cumulative)',
              'xlabel': 'timestep',
              'ylabel': '# Blocks'
              },
-            {'src_stem': 'block-transport-stats',
+            {'src_stem': 'block-transport',
              'col': 'int_avg_transporters',
              'dest_stem': 'block-transporters-int-avg',
              'title': 'Average Block Transporters (interval)',
              'xlabel': 'timestep',
              'ylabel': '# Robots'
              },
-            {'src_stem': 'block-transport-stats',
+            {'src_stem': 'block-transport',
              'col': 'cum_avg_transporters',
              'dest_stem': 'block-transporters-cum-avg',
              'title': 'Average Block Transporters (cumulative)',
              'xlabel': 'timestep',
              'ylabel': '# Robots'
              },
-            {'src_stem': 'block-transport-stats',
+            {'src_stem': 'block-transport',
              'col': 'int_avg_transport_time',
              'dest_stem': 'blocks-transport-time-int-avg',
              'title': 'Average Block Transport Time (interval)',
              'xlabel': 'timestep',
              'ylabel': '# Timesteps'
              },
-            {'src_stem': 'block-transport-stats',
+            {'src_stem': 'block-transport',
              'col': 'cum_avg_transport_time',
              'dest_stem': 'blocks-transport-time-cum-avg',
              'title': 'Average Block Transport Time (Cumulative)',
              'xlabel': 'timestep',
              'ylabel': '# Timesteps'
              },
-            {'src_stem': 'block-transport-stats',
+            {'src_stem': 'block-transport',
              'col': 'int_avg_initial_wait_time',
              'dest_stem': 'blocks-initial-wait-time-int-avg',
              'title': 'Average Block Initial Wait Time (interval)',
              'xlabel': 'timestep',
              'ylabel': '# Timesteps'},
-            {'src_stem': 'block-transport-stats',
+            {'src_stem': 'block-transport',
              'col': 'cum_avg_initial_wait_time',
              'dest_stem': 'blocks-initial-wait-time-cum-avg',
              'title': 'Average Block Initial Wait Time (cumulative)',
@@ -200,42 +217,42 @@ class PipelineStage4:
              'ylabel': '# Robots'},
         ]
         block_acq = [
-            {'src_stem': 'block-acquisition-stats',
+            {'src_stem': 'block-acquisition',
              'col': 'int_avg_acquiring_goal',
              'dest_stem': 'block-acquisition-int-avg',
              'title': 'Average Robots Acquiring Blocks (interval)',
              'xlabel': 'timestep',
              'ylabel': '# Robots'
              },
-            {'src_stem': 'block-acquisition-stats',
+            {'src_stem': 'block-acquisition',
              'col': 'int_avg_vectoring_to_goal',
              'dest_stem': 'block-acquisition-vectoring-int-avg',
              'title': 'Average Robots Vectoring To Blocks (interval)',
              'xlabel': 'timestep',
              'ylabel': '# Robots'
              },
-            {'src_stem': 'block-acquisition-stats',
+            {'src_stem': 'block-acquisition',
              'col': 'int_avg_exploring_for_goal',
              'dest_stem': 'block-acquisition-exploring-int-avg',
              'title': 'Average Robots Exploring For Blocks (interval)',
              'xlabel': 'timestep',
              'ylabel': '# Robots'
              },
-            {'src_stem': 'block-acquisition-stats',
+            {'src_stem': 'block-acquisition',
              'col': 'cum_avg_acquiring_goal',
              'dest_stem': 'block-acquisition-cum-avg',
              'title': 'Average Robots Acquiring Blocks (cumulative)',
              'xlabel': 'timestep',
              'ylabel': '# Robots'
              },
-            {'src_stem': 'block-acquisition-stats',
+            {'src_stem': 'block-acquisition',
              'col': 'cum_avg_vectoring_to_goal',
              'dest_stem': 'block-acquisition-vectoring-cum-avg',
              'title': 'Average Robots Vectoring To Blocks (cumulative)',
              'xlabel': 'timestep',
              'ylabel': '# Robots'
              },
-            {'src_stem': 'block-acquisition-stats',
+            {'src_stem': 'block-acquisition',
              'col': 'cum_avg_exploring_for_goal',
              'dest_stem': 'block-acquisition-exploring-cum-avg',
              'title': 'Average Robots Exploring For Blocks (cumulative)',
@@ -245,25 +262,25 @@ class PipelineStage4:
         ]
 
         block_manip = [
-            {'src_stem': 'block-manipulation-stats',
+            {'src_stem': 'block-manipulation',
              'col': 'int_avg_free_pickup_events',
              'dest_stem': 'free-pickup-events-int-avg',
              'title': 'Average Free Block Pickup Events (interval)',
              'xlabel': 'timestep',
              'ylabel': '# Pickups'},
-            {'src_stem': 'block-manipulation-stats',
+            {'src_stem': 'block-manipulation',
              'col': 'int_avg_free_drop_events',
              'dest_stem': 'free-drop-events-int-avg',
              'title': 'Average Free Block Drop Events (interval)',
              'xlabel': 'timestep',
              'ylabel': '# Drops'},
-            {'src_stem': 'block-manipulation-stats',
+            {'src_stem': 'block-manipulation',
              'col': 'int_avg_free_pickup_penalty',
              'dest_stem': 'free-pickup-penalty-int-avg',
              'title': 'Average Free Block Pickup Penalty (interval)',
              'xlabel': 'timestep',
              'ylabel': '# Timesteps'},
-            {'src_stem': 'block-manipulation-stats',
+            {'src_stem': 'block-manipulation',
              'col': 'int_avg_free_drop_penalty',
              'dest_stem': 'free-drop-penalty-int-avg',
              'title': 'Average Free Block Drop Penalty (interval)',
@@ -291,8 +308,8 @@ class PipelineStage4:
              'ylabel': '# Inaccuracies'}
         ]
 
-        return {'collision': collision,
-                'distance': distance,
+        return {'fsm-collision': collision,
+                'fsm-movement': movement,
                 'block_trans': block_trans,
                 'block_acq': block_acq,
                 'block_manip': block_manip,
@@ -302,7 +319,8 @@ class PipelineStage4:
     def _intra_exp_targets(self):
         collision = [
             {
-                'src_stem': 'collision-stats',
+                'src_stem': 'fsm-collision',
+                'dest_stem': 'fsm-collision-counts',
                 'cols': ['int_avg_in_avoidance', 'cum_avg_in_avoidance',
                          'int_avg_entered_avoidance', 'cum_avg_entered_avoidance',
                          'int_avg_exited_avoidance', 'cum_avg_exited_avoidance'],
@@ -317,7 +335,8 @@ class PipelineStage4:
                 'ylabel': '# Robots'
             },
             {
-                'src_stem': 'collision-stats',
+                'src_stem': 'fsm-collision',
+                'dest_stem': 'fsm-collision-duration',
                 'cols': ['int_avg_avoidance_duration', 'cum_avg_avoidance_duration'],
                 'title': 'Swarm Collision Avoidance Duration',
                 'legend':['Average Avoidance Duration (interval)',
@@ -327,20 +346,31 @@ class PipelineStage4:
             },
         ]
 
-        distance = [
+        movement = [
             {
-                'src_stem': 'distance-stats',
-                'cols': ['int_avg_distance'],
-                'title': 'Total Distance Traveled',
-                'legend': ['Average Distance (interval)', 'Average Distance (cumulative)'],
+                'src_stem': 'fsm-movement',
+                'dest_stem': 'fsm-movement-distance',
+                'cols': ['int_avg_distance', 'cum_avg_distance'],
+                'title': 'Average Per-robot Distance Traveled',
+                'legend': ['Distance (interval)', 'Distance (cumulative)'],
                 'xlabel': 'timestep',
                 'ylabel': 'Distance (m)'
+            },
+            {
+                'src_stem': 'fsm-movement',
+                'dest_stem': 'fsm-movement-velocity',
+                'cols': ['int_avg_velocity', 'cum_avg_velocity'],
+                'title': 'Average Per-robot Velocity',
+                'legend': ['Velocity (interval)', 'Velocity (cumulative)'],
+                'xlabel': 'timestep',
+                'ylabel': 'Velocity (m/s)'
             }
         ]
 
         block_trans = [
             {
-                'src_stem': 'block-transport-stats',
+                'src_stem': 'block-transport',
+                'dest_stem': 'blocks-collected-int',
                 'cols': ['int_collected', 'int_cube_collected', 'int_ramp_collected'],
                 'legend': ['All Blocks', '# Cube Blocks', '# Ramp Blocks'],
                 'title': 'Blocks Collected (interval)',
@@ -348,7 +378,8 @@ class PipelineStage4:
                 'ylabel': '# Blocks'
             },
             {
-                'src_stem': 'block-transport-stats',
+                'src_stem': 'block-transport',
+                'dest_stem': 'blocks-collected-cum',
                 'cols': ['cum_collected', 'cum_cube_collected', 'cum_ramp_collected'],
                 'title': 'Blocks Collected (cumulative)',
                 'legend': ['All Blocks', '# Cube Blocks', '# Ramp Blocks'],
@@ -356,7 +387,8 @@ class PipelineStage4:
                 'ylabel': '# Blocks'
             },
             {
-                'src_stem': 'block-transport-stats',
+                'src_stem': 'block-transport',
+                'dest_stem': 'block-transporters-int',
                 'cols': ['int_avg_transporters', 'cum_avg_transporters'],
                 'title': "Swarm Block Average Transporters",
                 'legend': ['Average # Transporters Per Block (interval)',
@@ -365,12 +397,13 @@ class PipelineStage4:
                 'ylabel': '# Transporters'
             },
             {
-                'src_stem': 'block-transport-stats',
+                'src_stem': 'block-transport',
+                'dest_stem': 'block-transporters-cum',
                 'cols': ['int_avg_transport_time', 'cum_avg_transport_time',
                          'int_avg_initial_wait_time', 'cum_avg_initial_wait_time'],
                 'title': "Swarm Block Transport Time",
-                'legend': ['Average Block Transport Time (interval)',
-                           'Cumulative Average Transport Time (cumulative)',
+                'legend': ['Average Transport Time (interval)',
+                           'Average Transport Time (cumulative)',
                            "Average Initial Wait Time (interval)",
                            'Average Initial Wait Time (cumulative)'],
                 'xlabel': 'timestep',
@@ -379,7 +412,8 @@ class PipelineStage4:
         ]
         block_acq = [
             {
-                'src_stem': 'block-acquisition-stats',
+                'src_stem': 'block-acquisition',
+                'dest_stem': 'blocks-acq-counts',
                 'cols': ['int_avg_acquiring_goal', 'cum_avg_acquiring_goal',
                          'int_avg_vectoring_to_goal', 'cum_avg_vectoring_to_goal',
                          'int_avg_exploring_for_goal', 'cum_avg_exploring_for_goal'],
@@ -397,7 +431,8 @@ class PipelineStage4:
 
         block_manip = [
             {
-                'src_stem': 'block-manipulation-stats',
+                'src_stem': 'block-manipulation',
+                'dest_stem': 'block-manip-events',
                 'cols': ['int_avg_free_pickup_events', 'int_avg_free_drop_events',
                          'int_avg_cache_pickup_events', 'int_avg_cache_drop_events'],
                 'title': "Block Manipulation Pickups/Drops",
@@ -409,7 +444,8 @@ class PipelineStage4:
                 'ylabel': '# Pickups/Drops'
             },
             {
-                'src_stem': 'block-manipulation-stats',
+                'src_stem': 'block-manipulation',
+                'dest_stem': 'block-manip-penalties',
                 'cols': ['int_avg_free_pickup_penalty', 'int_avg_free_drop_penalty',
                          'int_avg_cache_pickup_penalty', 'int_avg_cache_drop_penalty'],
                 'title': "Block Manipulation Penalties",
@@ -424,6 +460,7 @@ class PipelineStage4:
         world_model = [
             {
                 'src_stem': 'perception-world-model',
+                'dest_stem': 'perception-world-model',
                 'cols': ['ST_EMPTY_inaccuracies', 'ST_HAS_BLOCK_inaccuracies',
                          'ST_HAS_CACHE_inaccuracies'],
                 'title': "Swarm Perception Model Inaccuracies",
@@ -434,8 +471,8 @@ class PipelineStage4:
             },
         ]
 
-        return {'collision': collision,
-                'distance': distance,
+        return {'fsm-collision': collision,
+                'fsm-movement': movement,
                 'block_trans': block_trans,
                 'block_acq': block_acq,
                 'block_manip': block_manip,

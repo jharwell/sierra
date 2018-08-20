@@ -43,8 +43,8 @@ class InterExpLinegraphs:
         self.depth0_generate_linegraphs()
 
     def depth0_generate_linegraphs(self):
-        for target_set in [self.collate_targets[x] for x in ['collision',
-                                                             'distance',
+        for target_set in [self.collate_targets[x] for x in ['fsm-collision',
+                                                             'fsm-movement',
                                                              'block_trans',
                                                              'block_acq',
                                                              'block_manip',
