@@ -51,7 +51,7 @@ class NestPose(BaseVariable):
         elif self.dist_type == "powerlaw" or self.dist_type == "random":
             return [set([
                 ("arena.light1.position", "{0}, {0}, 1.0".format(s[1] * 0.5)),
-                ("arena_map.nest.size", "{0}, {1}".format(s[0] / 5.0, s[0] / 5.0)),
+                ("arena_map.nest.size", "{0}, {1}".format(s[0] / 10.0, s[0] / 10.0)),
                 ("arena_map.nest.center", "{0}, {0}".format(s[0] * 0.5)),
             ])
                 for s in self.dimensions]

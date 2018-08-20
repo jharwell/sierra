@@ -34,10 +34,11 @@ class SSBaseGenerator(ExpInputGenerator):
     """
 
     def __init__(self, template_config_file, generation_root, exp_output_root,
-                 n_sims, n_threads, dimension):
+                 n_sims, n_threads, dimension, tsetup, controller):
         super().__init__(template_config_file, generation_root, exp_output_root,
-                         n_sims, n_threads)
+                         n_sims, n_threads, tsetup)
         self.dimension = dimension
+        self.controller = controller
 
     def generate(self, xml_helper):
         shape = ev.arena_shape.RectangularArenaTwoByOne(x_range=[self.dimension[0]],
@@ -60,6 +61,12 @@ class SSBaseGenerator(ExpInputGenerator):
         if len(rms):
             [xml_helper.remove_element(a) for a in rms[0]]
 
+        if "depth1" in self.controller:
+            cache = ev.static_cache.StaticCache([2], [self.dimension])
+            [xml_helper.set_attribute(a[0], a[1]) for a in cache.gen_attr_changelist()[0]]
+            rms = cache.gen_tag_rmlist()
+            if len(rms):
+                [xml_helper.remove_element(a) for a in rms[0]]
         return xml_helper
 
 
@@ -71,9 +78,9 @@ class SS10x5(SSBaseGenerator):
     """
 
     def __init__(self, template_config_file, generation_root, exp_output_root,
-                 n_sims, n_threads):
+                 n_sims, n_threads, tsetup, controller):
         super().__init__(template_config_file, generation_root, exp_output_root,
-                         n_sims, n_threads, (10, 5))
+                         n_sims, n_threads, (10, 5), tsetup, controller)
 
     def generate(self, xml_helper):
         self._create_all_sim_inputs(self._generate_random_seeds(), super().generate(xml_helper))
@@ -87,9 +94,9 @@ class SS20x10(SSBaseGenerator):
     """
 
     def __init__(self, template_config_file, generation_root, exp_output_root,
-                 n_sims, n_threads):
+                 n_sims, n_threads, tsetup, controller):
         super().__init__(template_config_file, generation_root, exp_output_root,
-                         n_sims, n_threads, (20, 10))
+                         n_sims, n_threads, (20, 10), tsetup, controller)
 
     def generate(self, xml_helper):
         self._create_all_sim_inputs(self._generate_random_seeds(), super().generate(xml_helper))
@@ -103,9 +110,9 @@ class SS40x20(SSBaseGenerator):
     """
 
     def __init__(self, template_config_file, generation_root, exp_output_root,
-                 n_sims, n_threads):
+                 n_sims, n_threads, tsetup, controller):
         super().__init__(template_config_file, generation_root, exp_output_root,
-                         n_sims, n_threads, (40, 20))
+                         n_sims, n_threads, (40, 20), tsetup, controller)
 
     def generate(self, xml_helper):
         self._create_all_sim_inputs(self._generate_random_seeds(), super().generate(xml_helper))

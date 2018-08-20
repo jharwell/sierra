@@ -102,8 +102,12 @@ class BatchedExpInputGenerator:
             exp_generation_root = "{0}/exp{1}".format(self.batch_generation_root, exp_num)
             exp_output_root = "{0}/exp{1}".format(self.batch_output_root, exp_num)
             g = GeneratorFactory(self.exp_generator_pair,
-                                 os.path.join(exp_generation_root, self.batch_config_leaf),
-                                 exp_generation_root, exp_output_root, self.n_sims,
-                                 self.n_threads, self.time_setup)
+                                 template_config_file=os.path.join(exp_generation_root,
+                                                                   self.batch_config_leaf),
+                                 generation_root=exp_generation_root,
+                                 output_root=exp_output_root,
+                                 n_sims=self.n_sims,
+                                 n_threads=self.n_threads,
+                                 tsetup=self.time_setup)
             g.generate()
             exp_num += 1

@@ -20,13 +20,14 @@ import generators.stateful
 import generators.single_source
 import generators.powerlaw
 import generators.random
+import generators.depth1
 
 
-def GeneratorFactory(generator_pair, *args, **kwargs):
-    def __init__(self, *args, **kwargs):
-        self.controller_changes = eval(generator_pair[0])(*args, **kwargs)
+def GeneratorFactory(generator_pair, **kwargs):
+    def __init__(self, **kwargs):
+        self.controller_changes = eval(generator_pair[0])(**kwargs)
         if 2 == len(generator_pair):
-            self.scenario_changes = eval(generator_pair[1])(*args[:len(args) - 1],
+            self.scenario_changes = eval(generator_pair[1])(controller=generator_pair[0],
                                                             **kwargs)
 
     def generate(self):
@@ -37,4 +38,4 @@ def GeneratorFactory(generator_pair, *args, **kwargs):
 
     return type('+'.join(generator_pair), (object,), {"__init__": __init__,
                                                       "generate": generate
-                                                      })(*args, **kwargs)
+                                                      })(**kwargs)

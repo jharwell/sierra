@@ -35,7 +35,7 @@ class PLBaseGenerator(ExpInputGenerator):
     """
 
     def __init__(self, template_config_file, generation_root, exp_output_root,
-                 n_sims, n_threads, dimension):
+                 n_sims, n_threads, dimension, controller=None):
         super().__init__(template_config_file, generation_root, exp_output_root,
                          n_sims, n_threads)
         self.dimension = dimension
