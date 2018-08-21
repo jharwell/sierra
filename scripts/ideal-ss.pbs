@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#PBS -l walltime=3:00:00,nodes=50:ppn=8,pmem=1000mb
+#PBS -l walltime=12:00:00,nodes=50:ppn=8,pmem=1000mb
 #PBS -m abe
 #PBS -M harwe006@umn.edu
 
@@ -25,9 +25,9 @@ BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \
                   --template-config-file=$HOME/git/sierra/templates/ideal.argos \
                   --n_sims=$NSIMS \
-                  --batch-criteria=swarm_size.Log64"
+                  --batch-criteria=swarm_size.Log256"
 
-# Stateless (does not change # blocks from template)
+# Stateless (does not change # blocks/block manifest from template)
 for d in "${DIMS[@]}"
 do
     rm -rf $OUTPUT_ROOT/stateless.SS${d}
@@ -35,9 +35,16 @@ do
 done
 
 
-# Stateful (does not change # blocks from template)
+# Stateful (does not change # blocks/block manifest from template)
 for d in "${DIMS[@]}"
 do
     rm -rf $OUTPUT_ROOT/stateful.SS${d}
     $BASE_CMD --generator=stateful.SS${d}
+done
+
+# Depth1 (does not change # blocks/block manifest from template)
+for d in "${DIMS[@]}"
+do
+    rm -rf $OUTPUT_ROOT/depth1.SS${d}
+    $BASE_CMD --generator=depth1.SS${d}
 done

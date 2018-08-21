@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#PBS -l walltime=3:00:00,nodes=50:ppn=8,pmem=1000mb
+#PBS -l walltime=12:00:00,nodes=50:ppn=8,pmem=1000mb
 #PBS -m abe
 #PBS -M harwe006@umn.edu
 
@@ -27,7 +27,7 @@ BASE_CMD="python3 sierra.py \
                   --template-config-file=$HOME/git/sierra/templates/temporal-variance.argos \
                   --n_sims=$NSIMS"
 
-# Stateless (does not change # blocks/manifest from template)
+# Stateless (does not change # blocks/block manifest from template)
 for d in "${BLOCK_CARRY[@]}"
 do
     rm -rf $OUTPUT_ROOT/stateless/temporal-variance-BlockCarry${d}
@@ -36,7 +36,7 @@ do
 done
 
 
-# Stateful (does not change # blocks/manifest from template)
+# Stateful (does not change # blocks/block manifest from template)
 for d in "${BLOCK_CARRY[@]}"
 do
     rm -rf $OUTPUT_ROOT/stateful/temporal-variance-BlockCarry${d}
@@ -44,7 +44,7 @@ do
               --batch-criteria=temporal_variance.BlockCarry${d}
 done
 
-# Stateless (does not change # blocks/manifest from template)
+# Stateless (does not change # blocks/block manifest from template)
 for d in "${BLOCK_MANIP[@]}"
 do
     rm -rf $OUTPUT_ROOT/stateless/temporal-variance-BlockManipulation${d}
@@ -53,7 +53,7 @@ do
 done
 
 
-# Stateful (does not change # blocks/manifest from template)
+# Stateful (does not change # blocks/block manifest from template)
 for d in "${BLOCK_MANIP[@]}"
 do
     rm -rf $OUTPUT_ROOT/stateful/temporal-variance-BlockManipulation${d}

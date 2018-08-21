@@ -68,9 +68,14 @@ class Log1024(SwarmSize):
         super().__init__([2 ** x for x in range(0, 11)])
 
 
-class Log256(SwarmSize):
+class Log512(SwarmSize):
     def __init__(self):
         super().__init__([2 ** x for x in range(0, 10)])
+
+
+class Log256(SwarmSize):
+    def __init__(self):
+        super().__init__([2 ** x for x in range(0, 9)])
 
 
 class Log128(SwarmSize):
