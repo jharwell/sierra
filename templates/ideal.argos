@@ -232,7 +232,7 @@
     <distribute>
       <position method="uniform" min="1,1,0" max="8,4,0" />
       <orientation method="uniform" min="0,0,0" max="360,0,0" />
-      <entity quantity="64" max_trials="1000">
+      <entity quantity="256" max_trials="1000">
         <foot-bot id="fb">
           <controller config="ffc" />
         </foot-bot>

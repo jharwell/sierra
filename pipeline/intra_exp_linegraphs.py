@@ -41,6 +41,7 @@ class IntraExpLinegraphs:
 
     def generate(self):
         self.depth0_generate_linegraphs()
+        self.depth1_generate_linegraphs()
 
     def depth0_generate_linegraphs(self):
         for target_set in [self.targets[x] for x in ['fsm-collision',
@@ -61,68 +62,20 @@ class IntraExpLinegraphs:
                                  xlabel=target['xlabel'],
                                  ylabel=target['ylabel']).generate()
 
-
-#
-# @FIXME This will be moved to a diction in the main pipeline file once I
-# get depth1 stuff working. Leaving here for now, because big parts of it can be copy-pasted.
-#
     def depth1_generate_linegraphs(self):
-        self.depth0_generate_linegraphs()
-        self.generate_cache_acq_linegraphs()
-        self.generate_cache_util_linegraphs()
-        self.generate_cache_lifecycle_linegraphs()
-
-    def generate_cache_acq_linegraphs(self):
-        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "cache-acquisition-stats"),
-                         output_fpath=os.path.join(
-            self.exp_graph_root, "robots-acquiring-caches.eps"),
-            cols=['int_avg_acquiring_goal', 'int_avg_vectoring_to_goal',
-                  'int_avg_exploring_for_goal'],
-            title="Swarm Cache Acquisition",
-            legend=['# Robots Acquiring Caches (interval)',
-                    '# Robots Vectoring To Caches (interval)',
-                    '# Robots Exploring For Caches (interval)'],
-            xlabel="Timestep",
-            ylabel="# Robots").generate()
-
-        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "cache-acquisition-stats"),
-                         output_fpath=os.path.join(
-            self.exp_graph_root, "cum-robots-acquiring-caches.eps"),
-            cols=['cum_avg_acquiring_goal', 'cum_avg_vectoring_to_goal',
-                  'cum_avg_exploring_for_goal'],
-            title="Swarm Cache Acquisition",
-            legend=['# Robots Acquiring Caches (cumulative)',
-                    '# Robots Vectoring To Caches (cumulative)',
-                    '# Robots Exploring For Caches (cumulative)'],
-            xlabel="Timestep",
-            ylabel="# Robots").generate()
-
-    def generate_cache_lifecycle_linegraphs(self):
-        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "cache-lifecycle-stats"),
-                         output_fpath=os.path.join(
-            self.exp_graph_root, "cache-lifecycle.eps"),
-            cols=['n_depleted', 'n_created'],
-            title="Swarm Cache Lifecycles",
-            legend=['# Caches Created (within interval)',
-                    "# Caches Depleted (within interval)"],
-            xlabel="Timestep",
-            ylabel="# Caches").generate()
-
-    def generate_cache_util_linegraphs(self):
-        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "cache-utilization-stats"),
-                         output_fpath=os.path.join(
-            self.exp_graph_root, "cache-utilization-avg-blocks.eps"),
-            cols=['avg_blocks'],
-            title="Swarm Cache Size",
-            legend=['Cache Size (blocks)'],
-            xlabel="Timestep",
-            ylabel="# Blocks").generate()
-
-        StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root, "cache-utilization-stats"),
-                         output_fpath=os.path.join(
-            self.exp_graph_root, "cache-utilization-avg-penalty.eps"),
-            cols=['avg_penalty'],
-            title="Swarm Cache Penalties",
-            legend=['Average Penalty'],
-            xlabel="Timestep",
-            ylabel="# Penalty Timesteps").generate()
+        for target_set in [self.targets[x] for x in ['cache_util',
+                                                     'cache_lifecycle',
+                                                     'cache_acq',
+                                                     'task_exec',
+                                                     'generalist_tab']]:
+            for target in target_set:
+                StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root,
+                                                               target['src_stem']),
+                                 output_fpath=os.path.join(
+                                     self.exp_graph_root,
+                                     target['dest_stem'] + '.eps'),
+                                 cols=target['cols'],
+                                 title=target['title'],
+                                 legend=target['legend'],
+                                 xlabel=target['xlabel'],
+                                 ylabel=target['ylabel']).generate()
