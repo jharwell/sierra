@@ -40,15 +40,34 @@ class InterExpLinegraphs:
         self.collate_targets = collate_targets
 
     def generate(self):
-        self.depth0_generate_linegraphs()
+        self._depth0_generate_linegraphs()
+        self._depth1_generate_linegraphs()
 
-    def depth0_generate_linegraphs(self):
+    def _depth0_generate_linegraphs(self):
         for target_set in [self.collate_targets[x] for x in ['fsm-collision',
                                                              'fsm-movement',
                                                              'block_trans',
                                                              'block_acq',
                                                              'block_manip',
                                                              'world_model']]:
+            for target in target_set:
+                StackedLineGraph(input_stem_fpath=os.path.join(self.csv_root,
+                                                               target['dest_stem']),
+                                 output_fpath=os.path.join(
+                                     self.graph_root,
+                                     target['dest_stem'] + '.eps'),
+                                 cols=None,
+                                 title=target['title'],
+                                 legend=None,
+                                 xlabel=target['xlabel'],
+                                 ylabel=target['ylabel']).generate()
+
+    def _depth1_generate_linegraphs(self):
+        for target_set in [self.collate_targets[x] for x in ['cache_acq',
+                                                             'cache_util',
+                                                             'cache_lifecycle',
+                                                             'task_exec',
+                                                             'generalist_tab']]:
             for target in target_set:
                 StackedLineGraph(input_stem_fpath=os.path.join(self.csv_root,
                                                                target['dest_stem']),

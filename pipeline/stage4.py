@@ -361,14 +361,294 @@ class PipelineStage4:
              'ylabel': '# Robots'
              }
         ]
+        cache_util = [
+            {
+                'src_stem': 'cache-utilization',
+                'dest_stem': 'cache-utilization-pickups-int-avg',
+                'col': 'int_avg_pickups',
+                'title': "Average # Pickups Across All Caches (Interval)",
+                'xlabel': 'timestep',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'cache-utilization',
+                'dest_stem': 'cache-utilization-drops-int-avg',
+                'col': 'int_avg_drops',
+                'title': "Average # Drops Across All Caches (Interval)",
+                'xlabel': 'timestep',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'cache-utilization',
+                'dest_stem': 'cache-utilization-int',
+                'col': ['int_unique_caches'],
+                'title': "# Caches in Arena (Interval)",
+                'legend': ['# Caches'],
+                'xlabel': 'timestep',
+                'ylabel': 'Count'
+            },
+        ]
+        cache_lifecycle = [
+            {
+                'src_stem': 'cache-lifecycle',
+                'dest_stem': 'cache-lifecyle-created-int',
+                'col': 'int_created',
+                'title': "# Caches Created (Interval)",
+                'xlabel': 'timestep',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'cache-lifecycle',
+                'dest_stem': 'cache-lifecyle-depleted-int',
+                'col': 'int_depleted',
+                'title': "# Caches  (Interval)",
+                'xlabel': 'timestep',
+                'ylabel': 'Count'
+            },
+        ]
+        task_exec = [
+            {
+                'src_stem': 'task-execution-collector',
+                'dest_stem': 'task-execution-collector-exec-time-int-avg',
+                'col': 'int_avg_exec_time',
+                'title': "Average Collector Execution Times (Interval)",
+                'xlabel': 'timestep',
+                'ylabel': 'Time'
+            },
+            {
+                'src_stem': 'task-execution-collector',
+                'dest_stem': 'task-execution-collector-exec-time-cum-avg',
+                'col': 'cum_avg_exec_time',
+                'title': "Average Collector Execution Times (Cumulative)",
+                'xlabel': 'timestep',
+                'ylabel': 'Time'
+            },
+            {
+                'src_stem': 'task-execution-collector',
+                'dest_stem': 'task-execution-collector-interface-time-cum-avg',
+                'col': 'cum_avg_interface_time',
+                'title': "Average Collector Interface Times (Cumulative)",
+                'xlabel': 'timestep',
+                'ylabel': 'Time'
+            },
+            {
+                'src_stem': 'task-execution-collector',
+                'dest_stem': 'task-execution-collector-interface-time-cum-avg',
+                'col': 'cum_avg_interface_time',
+                'title': "Average Collector Interface Times (Cumulative)",
+                'xlabel': 'timestep',
+                'ylabel': 'Time'
+            },
+            {
+                'src_stem': 'task-execution-collector',
+                'dest_stem': 'task-execution-collector-abort-count-int',
+                'col': 'int_abort_count',
+                'title': "Collector Abort Counts (Interval)",
+                'xlabel': 'timestep',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-execution-collector',
+                'dest_stem': 'task-execution-collector-complete-count-cum-avg',
+                'col': 'cum_avg_complete_count',
+                'title': "Average Collector Completion Counts (Cumulative)",
+                'xlabel': 'timestep',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-execution-harvester',
+                'dest_stem': 'task-execution-harvester-exec-time-int-avg',
+                'col': 'int_avg_exec_time',
+                'title': "Average Harvester Execution Times (Interval)",
+                'xlabel': 'timestep',
+                'ylabel': 'Time'
+            },
+            {
+                'src_stem': 'task-execution-harvester',
+                'dest_stem': 'task-execution-harvester-exec-time-cum-avg',
+                'col': 'cum_avg_exec_time',
+                'title': "Average Harvester Execution Times (Cumulative)",
+                'xlabel': 'timestep',
+                'ylabel': 'Time'
+            },
+            {
+                'src_stem': 'task-execution-harvester',
+                'dest_stem': 'task-execution-harvester-interface-time-cum-avg',
+                'col': 'cum_avg_interface_time',
+                'title': "Average Harvester Interface Times (Cumulative)",
+                'xlabel': 'timestep',
+                'ylabel': 'Time'
+            },
+            {
+                'src_stem': 'task-execution-harvester',
+                'dest_stem': 'task-execution-harvester-interface-time-cum-avg',
+                'col': 'cum_avg_interface_time',
+                'title': "Average Harvester Interface Times (Cumulative)",
+                'xlabel': 'timestep',
+                'ylabel': 'Time'
+            },
+            {
+                'src_stem': 'task-execution-harvester',
+                'dest_stem': 'task-execution-harvester-abort-count-int',
+                'col': 'int_abort_count',
+                'title': "Harvester Abort Counts (Interval)",
+                'xlabel': 'timestep',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-execution-harvester',
+                'dest_stem': 'task-execution-harvester-complete-count-cum-avg',
+                'col': 'cum_avg_complete_count',
+                'title': "Average Harvester Completion Counts (Cumulative)",
+                'xlabel': 'timestep',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-execution-generalist',
+                'dest_stem': 'task-execution-generalist-exec-time-int-avg',
+                'col': 'int_avg_exec_time',
+                'title': "Average Generalist Execution Times (Interval)",
+                'xlabel': 'timestep',
+                'ylabel': 'Time'
+            },
+            {
+                'src_stem': 'task-execution-generalist',
+                'dest_stem': 'task-execution-generalist-exec-time-cum-avg',
+                'col': 'cum_avg_exec_time',
+                'title': "Average Generalist Execution Times (Cumulative)",
+                'xlabel': 'timestep',
+                'ylabel': 'Time'
+            },
+            {
+                'src_stem': 'task-execution-generalist',
+                'dest_stem': 'task-execution-generalist-interface-time-cum-avg',
+                'col': 'cum_avg_interface_time',
+                'title': "Average Generalist Interface Times (Cumulative)",
+                'xlabel': 'timestep',
+                'ylabel': 'Time'
+            },
+            {
+                'src_stem': 'task-execution-generalist',
+                'dest_stem': 'task-execution-generalist-interface-time-cum-avg',
+                'col': 'cum_avg_interface_time',
+                'title': "Average Generalist Interface Times (Cumulative)",
+                'xlabel': 'timestep',
+                'ylabel': 'Time'
+            },
+            {
+                'src_stem': 'task-execution-generalist',
+                'dest_stem': 'task-execution-generalist-abort-count-int',
+                'col': 'int_abort_count',
+                'title': "Generalist Abort Counts (Interval)",
+                'xlabel': 'timestep',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-execution-generalist',
+                'dest_stem': 'task-execution-generalist-complete-count-cum-avg',
+                'col': 'cum_avg_complete_count',
+                'title': "Average Generalist Completion Counts (Cumulative)",
+                'xlabel': 'timestep',
+                'ylabel': 'Count'
+            }
+        ]
+        generalist_tab = [
+            {
+                'src_stem': 'task-generalist-tab',
+                'dest_stem': 'task-generalist-tab-subtask1-counts-int (Interval)',
+                'col': 'int_subtask1_count',
+                'title': "Generalist TAB Subtask1 Selection Counts",
+                'xlabel': 'timestep',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-generalist-tab',
+                'dest_stem': 'task-generalist-tab-subtask2-counts-int',
+                'col': 'int_subtask2_count',
+                'title': "Generalist TAB Subtask2 Selection Counts (Interval)",
+                'xlabel': 'timestep',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-generalist-tab',
+                'dest_stem': 'task-generalist-tab-subtask1-counts-cum',
+                'col': 'cum_subtask1_count',
+                'title': "Generalist TAB Subtask1 Selection Counts (Cumulative)",
+                'xlabel': 'timestep',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-generalist-tab',
+                'dest_stem': 'task-generalist-tab-subtask2-counts-cum',
+                'col': 'cum_subtask2_count',
+                'title': "Generalist TAB Subtask2 Selection Counts (Cumulative)",
+                'xlabel': 'timestep',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-generalist-tab',
+                'dest_stem': 'task-generalist-tab-partition-counts-int',
+                'col': 'int_partition_count',
+                'title': "Generalist TAB Partition Counts (Interval)",
+                'xlabel': 'timestep',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-generalist-tab',
+                'dest_stem': 'task-generalist-tab-nopartition-counts-int',
+                'col': 'int_no_partition_count',
+                'title': "Generalist TAB Nopartition Counts (Interval)",
+                'xlabel': 'timestep',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-generalist-tab',
+                'dest_stem': 'task-generalist-tab-partition-counts-cum',
+                'col': 'cum_partition_count',
+                'title': "Generalist TAB Partition Counts (Cumulative)",
+                'xlabel': 'timestep',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-generalist-tab',
+                'dest_stem': 'task-generalist-tab-nopartition-counts-cum',
+                'col': 'cum_nopartition_count',
+                'title': "Generalist TAB Nopartition Counts (Cumulative)",
+                'xlabel': 'timestep',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-generalist-tab',
+                'dest_stem': 'task-generalist-tab-sw-counts-int',
+                'col': 'int_task_sw_count',
+                'title': "Generalist TAB Task Switch Counts (Interval)",
+                'xlabel': 'timestep',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-generalist-tab',
+                'dest_stem': 'task-generalist-tab-sw-counts-cum',
+                'col': 'cum_task_sw_count',
+                'title': "Generalist TAB Task Switch Counts (Cumulative)",
+                'xlabel': 'timestep',
+                'ylabel': 'Count'
+            },
+        ]
+        return {'cache_acq': cache_acq,
+                'cache_util': cache_util,
+                'cache_lifecycle': cache_lifecycle,
+                'task_exec': task_exec,
+                'generalist_tab': generalist_tab}
 
-    def inter_exp_targets(self):
+    def _inter_exp_targets(self):
         """
         Get a list of dictionaries specifying all the graphs that should be created within a batched
         experiment (i.e. across experiments).
         """
 
-        return self._depth0_inter_exp_targets()
+        d = self._depth0_inter_exp_targets()
+        d.update(self._depth1_inter_exp_targets())
+        return d
 
     def _depth0_intra_exp_targets(self):
         collision = [
@@ -537,7 +817,7 @@ class PipelineStage4:
         cache_util = [
             {
                 'src_stem': 'cache-utilization',
-                'dest_stem': 'cache-utilization-int',
+                'dest_stem': 'cache-utilization-opcounts-int',
                 'cols': ['int_avg_pickups', 'int_avg_drops'],
                 'title': "Average # Pickups/Drops Across All Caches (Interval)",
                 'legend': ['Average # Pickups', 'Average # Drops'],
@@ -546,7 +826,7 @@ class PipelineStage4:
             },
             {
                 'src_stem': 'cache-utilization',
-                'dest_stem': 'cache-utilization-int',
+                'dest_stem': 'cache-utilization-cache-counts-int',
                 'cols': ['int_unique_caches'],
                 'title': "# Caches in Arena (Interval)",
                 'legend': ['# Caches'],
@@ -557,7 +837,7 @@ class PipelineStage4:
         cache_lifecycle = [
             {
                 'src_stem': 'cache-lifecycle',
-                'dest_stem': 'cache-lifecyle',
+                'dest_stem': 'cache-lifecyle-int',
                 'cols': ['int_created', 'int_depleted'],
                 'title': "# Caches Created/Depleted (Interval)",
                 'legend': ['# Created', '# Depleted'],
@@ -711,7 +991,9 @@ class PipelineStage4:
         Get a list of dictionaries specifying all the graphs that should be created within an
         experiment (i.e. across simulation runs).
         """
-        return self._depth0_intra_exp_targets() + self._depth1_intra_exp_targets()
+        d = self._depth0_intra_exp_targets()
+        d.update(self._depth1_intra_exp_targets())
+        return d
 
     def run(self):
         inter_targets = self._inter_exp_targets()
