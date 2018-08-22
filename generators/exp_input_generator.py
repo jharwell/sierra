@@ -40,7 +40,7 @@ class ExpInputGenerator:
                             scratch directory). Can be relative or absolute.
       n_sims(int): # of simulations to run in parallel.
       n_threads(int): # of ARGoS threads to use.
-      time_setup(str): Name of class to use for simulation time setup.
+      tsetup(str): Name of class to use for simulation time setup.
     """
 
     def __init__(self, template_config_file, generation_root, exp_output_root,
