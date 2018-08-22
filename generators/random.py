@@ -35,9 +35,9 @@ class RNDBaseGenerator(ExpInputGenerator):
     """
 
     def __init__(self, template_config_file, generation_root, exp_output_root,
-                 n_sims, n_threads, dimension, controller=None):
+                 n_sims, n_threads, dimension, tsetup, controller):
         super().__init__(template_config_file, generation_root, exp_output_root,
-                         n_sims, n_threads)
+                         n_sims, n_threads, tsetup)
         self.dimension = dimension
 
     def generate(self, xml_helper):
@@ -71,9 +71,9 @@ class RND10x10(RNDBaseGenerator):
     """
 
     def __init__(self, template_config_file, generation_root, exp_output_root,
-                 n_sims, n_threads):
-        RNDBaseGenerator.__init__(self, template_config_file, generation_root, exp_output_root,
-                                  n_sims, n_threads, 10)
+                 n_sims, n_threads, tsetup, controller):
+        super().__init__(template_config_file, generation_root, exp_output_root,
+                         n_sims, n_threads, 10, tsetup, controller)
 
     def generate(self, xml_helper):
         self._create_all_sim_inputs(self._generate_random_seeds(), super().generate(xml_helper))
@@ -87,9 +87,9 @@ class RND20x20(RNDBaseGenerator):
     """
 
     def __init__(self, template_config_file, generation_root, exp_output_root,
-                 n_sims, n_threads):
+                 n_sims, n_threads, tsetup, controller):
         super().__init__(template_config_file, generation_root, exp_output_root,
-                         n_sims, n_threads, 20)
+                         n_sims, n_threads, 20, tsetup, controller)
 
     def generate(self, xml_helper):
         self._create_all_sim_inputs(self._generate_random_seeds(), super().generate(xml_helper))
@@ -103,9 +103,9 @@ class RND40x40(RNDBaseGenerator):
     """
 
     def __init__(self, template_config_file, generation_root, exp_output_root,
-                 n_sims, n_threads):
+                 n_sims, n_threads, tsetup, controller):
         super().__init__(template_config_file, generation_root, exp_output_root,
-                         n_sims, n_threads, 40)
+                         n_sims, n_threads, 40, tsetup, controller)
 
     def generate(self, xml_helper):
         self._create_all_sim_inputs(self._generate_random_seeds(), super().generate(xml_helper))

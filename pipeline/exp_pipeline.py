@@ -58,7 +58,10 @@ class ExpPipeline:
         PipelineStage4(self.args).run()
 
     def compare_controllers(self):
-        PipelineStage5(self.args, ["stateless", "stateful"]).run()
+        if self.args.comp_controllers is not "all":
+            PipelineStage5(self.args, self.args.comp_controllers).run()
+        else:
+            PipelineStage5(self.args, None).run()
 
     def run(self):
 

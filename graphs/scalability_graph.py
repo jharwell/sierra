@@ -23,6 +23,7 @@ import matplotlib
 matplotlib.use('Agg')
 import numpy as np
 import matplotlib.pyplot as plt
+import itertools
 
 
 class ScalabilityGraph:
@@ -33,10 +34,11 @@ class ScalabilityGraph:
 
     """
 
-    def __init__(self, inputy_fpath, output_fpath):
+    def __init__(self, inputy_fpath, output_fpath, legend):
 
         self.inputy_csv_fpath = os.path.abspath(inputy_fpath)
         self.output_fpath = os.path.abspath(output_fpath)
+        self.legend = legend
 
     def generate(self):
         if not os.path.exists(self.inputy_csv_fpath):
@@ -45,14 +47,22 @@ class ScalabilityGraph:
         dfy = pd.read_csv(self.inputy_csv_fpath, sep=';')
         fig, ax = plt.subplots()
 
-        x = [2 ** x for x in range(1, len(dfy.columns.values) + 1)]
-        coeffs = np.polyfit(x, dfy.values[0], 2)
-        ffit = np.poly1d(coeffs)
-        x_new = np.linspace(x[0], x[-1], 50)
+        x = [2 ** x for x in range(0, len(dfy.columns.values))]
 
-        y_new = ffit(x_new)
+        for v in dfy.values:
+            coeffs = np.polyfit(x, v, 2)
+            ffit = np.poly1d(coeffs)
+            x_new = np.linspace(x[0], x[-1], 50)
+            y_new = ffit(x_new)
+            plt.plot(x, v, 'o', x_new, y_new, '--')
 
-        plt.plot(x, dfy.values[0], 'o', x_new, y_new, '--')
+        if self.legend is not None:
+            legend = []
+            # Stupid hack to double each item in list sequentially because I'm bad at python
+            for l in self.legend:
+                legend.append(l)
+                legend.append(l)
+            plt.legend(legend)
 
         plt.ylabel("Scalability Value")
         plt.xlabel("Swarm Size")
