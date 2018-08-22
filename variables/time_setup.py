@@ -43,6 +43,12 @@ class TimeSetup(BaseVariable):
             ("metrics.collect_interval", "{0}".format(self.metric_interval))])]
 
 
+class TInterval(TimeSetup):
+    def __init__(self):
+        super().__init__(200,
+                         200 * kTicksPerSecond / kDataPoints)
+
+
 class T1000(TimeSetup):
     def __init__(self):
         super().__init__(1000, 1000 * kTicksPerSecond / kDataPoints)
