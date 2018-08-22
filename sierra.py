@@ -126,13 +126,17 @@ def define_cmdline():
                            help="""Only perform graph generation for comparing controllers. All
                            controllers within <sierra_root> will be compared, so it is assumed that
                            if this option is passed that the # experiments/batch criteria is the
-                           same for all. This is NOT part of the default pipeline""",
+                           same for all. This is NOT part of the default pipeline.""",
                            action="store_true")
-
+    parser.add_argument("--comp-controllers",
+                        help="""Comma separated list of controllers to compare within <sierra
+                        oot>. Specify 'all' to compare all controllers in <sierra root>. Only used
+                        if --comp-graphs-only is passed. Default=all.""",
+                        default="all")
     parser.add_argument("--generator",
-                        help="""Experiment generator to use. Must be specified as <controller> or
-                        <controller>.<scenario>.
-                        Controller options are: [stateless, stateful]
+                        help="""Experiment generator to use. Must be specified as < controller > or
+                        < controller > . < scenario > .
+                        Controller options are: [stateless, stateful, depth1]
                         Scenario options are: [RND{10x10, 20x20, 40x40},
                                               SS{10x5, 20x10, 40x20},
                                               PL{10x10, 20x20, 40x40}]

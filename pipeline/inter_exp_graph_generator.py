@@ -19,7 +19,7 @@ Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 
 import os
 from pipeline.inter_exp_linegraphs import InterExpLinegraphs
-from perf_measures.scalability import ScalabilityMeasure
+from perf_measures.scalability import InterExpScalabilityMeasure
 
 
 class InterExpGraphGenerator:
