@@ -37,53 +37,63 @@ class PipelineStage4:
 
     def _depth0_inter_exp_targets(self):
         collision = [
-            {'src_stem': 'fsm-collision',
-             'col': 'int_avg_in_avoidance',
-             'dest_stem': 'in-avoidance-int-avg',
-             'title': 'Average Robots in Collision Avoidance (interval)',
-             'xlabel': 'timestep',
-             'ylabel': '# Robots'},
-            {'src_stem': 'fsm-collision',
-             'col': 'cum_avg_in_avoidance',
-             'dest_stem': 'in-avoidance-cum-avg',
-             'title': 'Average Robots in Collision Avoidance (cumulative)',
-             'xlabel': 'timestep',
-             'ylabel': '# Robots'},
-            {'src_stem': 'fsm-collision',
-             'col': 'int_avg_entered_avoidance',
-             'dest_stem': 'entered-avoidance-int-avg',
-             'title': 'Average Robots Entering Collision Avoidance (interval)',
-             'xlabel': 'timestep',
-             'ylabel': '# Robots'
-             },
-            {'src_stem': 'fsm-collision',
-             'col': 'cum_avg_entered_avoidance',
-             'dest_stem': 'entered-avoidance-cum-avg',
-             'title': 'Average Robots Entering Collision Avoidance (cumulative)',
-             'xlabel': 'timestep',
-             'ylabel': '# Robots'
-             },
-            {'src_stem': 'fsm-collision',
-             'col': 'int_avg_exited_avoidance',
-             'dest_stem': 'exited-avoidance-int-avg',
-             'title': 'Average Robots Exiting Collision Avoidance (interval)',
-             'xlabel': 'timestep',
-             'ylabel': '# Robots'
-             },
-            {'src_stem': 'fsm-collision',
-             'col': 'cum_avg_exited_avoidance',
-             'dest_stem': 'exited-avoidance-cum-avg',
-             'title': 'Average Robots Exiting Collision Avoidance (cumulative)',
-             'xlabel': 'timestep',
-             'ylabel': '# Robots'
-             },
-            {'src_stem': 'fsm-collision',
-             'col': 'int_avg_avoidance_duration',
-             'dest_stem': 'avoidance-duration-int-avg',
-             'title': 'Average Collision Avoidance Duration (interval)',
-             'xlabel': 'timestep',
-             'ylabel': '# Robots'
-             },
+            {
+                'src_stem': 'fsm-collision',
+                'col': 'int_avg_in_avoidance',
+                'dest_stem': 'in-avoidance-int-avg',
+                'title': 'Average Robots in Collision Avoidance (interval)',
+                'xlabel': 'timestep',
+                'ylabel': '# Robots',
+            },
+            {
+                'src_stem': 'fsm-collision',
+                'col': 'cum_avg_in_avoidance',
+                'dest_stem': 'in-avoidance-cum-avg',
+                'title': 'Average Robots in Collision Avoidance (cumulative)',
+                'xlabel': 'timestep',
+                'ylabel': '# Robots'},
+            {
+                'src_stem': 'fsm-collision',
+                'col': 'int_avg_entered_avoidance',
+                'dest_stem': 'entered-avoidance-int-avg',
+                'title': 'Average Robots Entering Collision Avoidance (interval)',
+                'xlabel': 'timestep',
+                'ylabel': '# Robots'
+            },
+            {
+                'src_stem': 'fsm-collision',
+                'col': 'cum_avg_entered_avoidance',
+                'dest_stem': 'entered-avoidance-cum-avg',
+                'title': 'Average Robots Entering Collision Avoidance (cumulative)',
+                'xlabel': 'timestep',
+                'ylabel': '# Robots',
+                'analytical_model': 'CAModelEnter'
+            },
+            {
+                'src_stem': 'fsm-collision',
+                'col': 'int_avg_exited_avoidance',
+                'dest_stem': 'exited-avoidance-int-avg',
+                'title': 'Average Robots Exiting Collision Avoidance (interval)',
+                'xlabel': 'timestep',
+                'ylabel': '# Robots'
+            },
+            {
+                'src_stem': 'fsm-collision',
+                'col': 'cum_avg_exited_avoidance',
+                'dest_stem': 'exited-avoidance-cum-avg',
+                'title': 'Average Robots Exiting Collision Avoidance (cumulative)',
+                'xlabel': 'timestep',
+                'ylabel': '# Robots'
+            },
+            {
+                'src_stem': 'fsm-collision',
+                'col': 'int_avg_avoidance_duration',
+                'dest_stem': 'avoidance-duration-int-avg',
+                'title': 'Average Collision Avoidance Duration (interval)',
+                'xlabel': 'timestep',
+                'ylabel': '# Robots',
+                'analytical_model': 'CAModelDuration'
+            },
             {'src_stem': 'fsm-collision',
              'col': 'cum_avg_avoidance_duration',
              'dest_stem': 'avoidance-duration-cum-avg',
@@ -555,9 +565,9 @@ class PipelineStage4:
         generalist_tab = [
             {
                 'src_stem': 'task-generalist-tab',
-                'dest_stem': 'task-generalist-tab-subtask1-counts-int (Interval)',
+                'dest_stem': 'task-generalist-tab-subtask1-counts-int',
                 'col': 'int_subtask1_count',
-                'title': "Generalist TAB Subtask1 Selection Counts",
+                'title': "Generalist TAB Subtask1 Selection Counts (Interval)",
                 'xlabel': 'timestep',
                 'ylabel': 'Count'
             },
@@ -572,7 +582,7 @@ class PipelineStage4:
             {
                 'src_stem': 'task-generalist-tab',
                 'dest_stem': 'task-generalist-tab-subtask1-counts-cum',
-                'col': 'cum_subtask1_count',
+                'col': 'cum_avg_subtask1_count',
                 'title': "Generalist TAB Subtask1 Selection Counts (Cumulative)",
                 'xlabel': 'timestep',
                 'ylabel': 'Count'
@@ -580,7 +590,7 @@ class PipelineStage4:
             {
                 'src_stem': 'task-generalist-tab',
                 'dest_stem': 'task-generalist-tab-subtask2-counts-cum',
-                'col': 'cum_subtask2_count',
+                'col': 'cum_avg_subtask2_count',
                 'title': "Generalist TAB Subtask2 Selection Counts (Cumulative)",
                 'xlabel': 'timestep',
                 'ylabel': 'Count'
@@ -604,7 +614,7 @@ class PipelineStage4:
             {
                 'src_stem': 'task-generalist-tab',
                 'dest_stem': 'task-generalist-tab-partition-counts-cum',
-                'col': 'cum_partition_count',
+                'col': 'cum_avg_partition_count',
                 'title': "Generalist TAB Partition Counts (Cumulative)",
                 'xlabel': 'timestep',
                 'ylabel': 'Count'
@@ -612,7 +622,7 @@ class PipelineStage4:
             {
                 'src_stem': 'task-generalist-tab',
                 'dest_stem': 'task-generalist-tab-nopartition-counts-cum',
-                'col': 'cum_nopartition_count',
+                'col': 'cum_avg_no_partition_count',
                 'title': "Generalist TAB Nopartition Counts (Cumulative)",
                 'xlabel': 'timestep',
                 'ylabel': 'Count'
@@ -1015,5 +1025,6 @@ class PipelineStage4:
         if self.args.batch_criteria is not None:
             print("- Generating inter-experiment graphs...")
             InterExpGraphGenerator(self.args.output_root,
-                                   self.args.graph_root, inter_targets)()
+                                   self.args.graph_root,
+                                   self.args.generation_root, inter_targets)()
             print("- Inter-experiment graph generation complete")

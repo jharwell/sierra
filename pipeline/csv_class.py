@@ -41,6 +41,7 @@ class CSV:
             if isinstance(arg, list):
                 self.csv = [row[:] for row in arg]  # copy the list
             elif isinstance(arg, str):
+                print(arg)
                 with open(arg, "r") as csv_file:
                     reader = csv.reader(csv_file, delimiter=self.delimiter)
                     output = []
@@ -58,7 +59,6 @@ class CSV:
         # how many rows there are in the CSV
         self.height = len(self.csv)
         self.width = len(self.csv[0])
-
         # check to make sure the array is a perfect rectangle; all rows must have the same amount of
         # entries
         for row_index in range(1, self.height):

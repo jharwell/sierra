@@ -18,6 +18,7 @@
 
 from generators.exp_input_generator import ExpInputGenerator
 import variables as ev
+import pickle
 
 
 class RNDBaseGenerator(ExpInputGenerator):
@@ -35,14 +36,18 @@ class RNDBaseGenerator(ExpInputGenerator):
     """
 
     def __init__(self, template_config_file, generation_root, exp_output_root,
-                 n_sims, n_threads, dimension, tsetup, controller):
+                 n_sims, n_threads, dimension, tsetup, controller, exp_def_fname):
         super().__init__(template_config_file, generation_root, exp_output_root,
-                         n_sims, n_threads, tsetup)
+                         n_sims, n_threads, tsetup, exp_def_fname)
         self.dimension = dimension
 
     def generate(self, xml_helper):
         shape = ev.arena_shape.SquareArena(sqrange=[self.dimension])
         [xml_helper.set_attribute(a[0], a[1]) for a in shape.gen_attr_changelist()[0]]
+
+        # Write arena dimension info to file for later retrieval
+        with open(self.exp_def_fpath, 'ab') as f:
+            pickle.dump(shape.gen_attr_changelist()[0], f)
 
         rms = shape.gen_tag_rmlist()
         if len(rms):
@@ -71,9 +76,9 @@ class RND10x10(RNDBaseGenerator):
     """
 
     def __init__(self, template_config_file, generation_root, exp_output_root,
-                 n_sims, n_threads, tsetup, controller):
+                 n_sims, n_threads, tsetup, controller, exp_def_fname):
         super().__init__(template_config_file, generation_root, exp_output_root,
-                         n_sims, n_threads, 10, tsetup, controller)
+                         n_sims, n_threads, 10, tsetup, controller, exp_def_fname)
 
     def generate(self, xml_helper):
         self._create_all_sim_inputs(self._generate_random_seeds(), super().generate(xml_helper))
@@ -87,9 +92,9 @@ class RND20x20(RNDBaseGenerator):
     """
 
     def __init__(self, template_config_file, generation_root, exp_output_root,
-                 n_sims, n_threads, tsetup, controller):
+                 n_sims, n_threads, tsetup, controller, exp_def_fname):
         super().__init__(template_config_file, generation_root, exp_output_root,
-                         n_sims, n_threads, 20, tsetup, controller)
+                         n_sims, n_threads, 20, tsetup, controller, exp_def_fname)
 
     def generate(self, xml_helper):
         self._create_all_sim_inputs(self._generate_random_seeds(), super().generate(xml_helper))
@@ -103,9 +108,9 @@ class RND40x40(RNDBaseGenerator):
     """
 
     def __init__(self, template_config_file, generation_root, exp_output_root,
-                 n_sims, n_threads, tsetup, controller):
+                 n_sims, n_threads, tsetup, controller, exp_def_fname):
         super().__init__(template_config_file, generation_root, exp_output_root,
-                         n_sims, n_threads, 40, tsetup, controller)
+                         n_sims, n_threads, 40, tsetup, controller, exp_def_fname)
 
     def generate(self, xml_helper):
         self._create_all_sim_inputs(self._generate_random_seeds(), super().generate(xml_helper))

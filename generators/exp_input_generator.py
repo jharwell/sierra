@@ -18,6 +18,7 @@
 
 import os
 import random
+import pickle
 from xml_helper import XMLHelper, InvalidElementError
 from variables import time_setup
 
@@ -41,10 +42,11 @@ class ExpInputGenerator:
       n_sims(int): # of simulations to run in parallel.
       n_threads(int): # of ARGoS threads to use.
       tsetup(str): Name of class to use for simulation time setup.
+      exp_def_fname(str): Name of file to use for pickling experiment definitions.
     """
 
     def __init__(self, template_config_file, generation_root, exp_output_root,
-                 n_sims, n_threads, tsetup=None):
+                 n_sims, n_threads, tsetup, exp_def_fname):
         assert os.path.isfile(template_config_file), \
             "The path '{}' (which should point to the main config file) did not point to a file".format(
                 template_config_file)
@@ -64,6 +66,7 @@ class ExpInputGenerator:
         self.exp_output_root = os.path.abspath(exp_output_root)
         self.n_sims = n_sims
         self.n_threads = n_threads
+        self.exp_def_fpath = os.path.join(self.generation_root, exp_def_fname)
 
         self.random_seed_min = 1
         self.random_seed_max = 10 * self.n_sims
@@ -102,6 +105,10 @@ class ExpInputGenerator:
         setup = eval(self.time_setup)()
         for a in setup.gen_attr_changelist()[0]:
             xml_helper.set_attribute(a[0], a[1])
+
+        # Write time setup  info to file for later retrieval
+        with open(self.exp_def_fpath, 'ab') as f:
+            pickle.dump(setup.gen_attr_changelist()[0], f)
 
         return xml_helper
 

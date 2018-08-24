@@ -38,7 +38,7 @@ class StackedLineGraph:
 
         self.input_csv_fpath = os.path.abspath(input_stem_fpath) + ".csv"
         self.input_stats_fpath = os.path.abspath(input_stem_fpath) + ".stats"
-        self.output_fpath = os.path.abspath(output_fpath)
+        self.output_fpath = output_fpath
         self.cols = cols
         self.title = title
         self.legend = legend

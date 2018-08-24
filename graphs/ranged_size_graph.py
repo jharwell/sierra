@@ -26,19 +26,22 @@ import matplotlib.pyplot as plt
 import itertools
 
 
-class ScalabilityGraph:
+class RangedSizeGraph:
     """
-    Generates a graph of swarm scalibility (specialized scatter plot with best fit quadratic line).
+    Generates a graph of SOMETHING vs swarm size across a set of swarm sizes. Only valid for batched
+    experiments.
 
     If the necessary .csv file does not exist, the graph is not generated.
 
     """
 
-    def __init__(self, inputy_fpath, output_fpath, legend):
+    def __init__(self, inputy_fpath, output_fpath, title, ylabel, legend):
 
         self.inputy_csv_fpath = os.path.abspath(inputy_fpath)
         self.output_fpath = os.path.abspath(output_fpath)
         self.legend = legend
+        self.ylabel = ylabel
+        self.title = title
 
     def generate(self):
         if not os.path.exists(self.inputy_csv_fpath):
@@ -64,9 +67,9 @@ class ScalabilityGraph:
                 legend.append(l)
             plt.legend(legend)
 
-        plt.ylabel("Scalability Value")
+        plt.ylabel(self.ylabel)
         plt.xlabel("Swarm Size")
-        plt.title("Swarm Scalability")
+        plt.title(self.title)
 
         fig = ax.get_figure()
         fig.set_size_inches(10, 10)

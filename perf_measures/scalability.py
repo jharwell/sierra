@@ -21,7 +21,7 @@ import pandas as pd
 import math
 import numpy as np
 from graphs.stacked_line_graph import StackedLineGraph
-from graphs.scalability_graph import ScalabilityGraph
+from graphs.ranged_size_graph import RangedSizeGraph
 
 kTargetIntCSV = "blocks-collected-int.csv"
 kTargetCumCSV = "blocks-collected-cum.csv"
@@ -81,9 +81,12 @@ class InterExpScalabilityMeasure:
                          xlabel="Timestep",
                          ylabel="Scalability").generate()
 
-        ScalabilityGraph(inputy_fpath=cum_stem + ".csv",
-                         output_fpath=os.path.join(self.batch_graph_root,
-                                                   "pm-scalability-cum.eps")).generate()
+        RangedSizeGraph(inputy_fpath=cum_stem + ".csv",
+                        output_fpath=os.path.join(self.batch_graph_root,
+                                                  "pm-scalability-cum.eps"),
+                        title="Swarm Scalability",
+                        ylabel="Scalability Value",
+                        legend=None).generate()
 
 
 class ControllerCompScalabilityMeasure:
@@ -124,7 +127,6 @@ class ControllerCompScalabilityMeasure:
 
         # We can do this because we have already checked that all controllers executed the same set
         # of batch experiments
-        print(self.controllers)
         scenarios = os.listdir(os.path.join(self.sierra_root, self.controllers[0]))
         for s in scenarios:
             df = pd.DataFrame()
@@ -143,7 +145,10 @@ class ControllerCompScalabilityMeasure:
             print("-- Scenario {0}".format(s))
             csv_opath = os.path.join(self.comp_csv_root, 'comp-' +
                                      self.src_stem + "-" + s + ".csv")
-            ScalabilityGraph(inputy_fpath=csv_opath,
-                             output_fpath=os.path.join(self.comp_graph_root,
-                                                       self.dest_stem) + "-" + s + ".eps",
-                             legend=self.controllers).generate()
+
+            RangedSizeGraph(inputy_fpath=csv_opath,
+                            output_fpath=os.path.join(self.comp_graph_root,
+                                                      self.dest_stem) + "-" + s + ".eps",
+                            title="Swarm Scalability",
+                            ylabel="Scalability Value",
+                            legend=self.controllers).generate()

@@ -20,6 +20,7 @@ Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 import os
 from pipeline.inter_exp_linegraphs import InterExpLinegraphs
 from perf_measures.scalability import InterExpScalabilityMeasure
+from graphs.ca_graphs import InterExpCAModelEnterGraph
 
 
 class InterExpGraphGenerator:
@@ -35,12 +36,13 @@ class InterExpGraphGenerator:
                              files.
     """
 
-    def __init__(self, batch_output_root, batch_graph_root, collate_targets):
+    def __init__(self, batch_output_root, batch_graph_root, batch_generation_root, collate_targets):
 
         self.batch_output_root = os.path.abspath(os.path.join(batch_output_root,
                                                               'collated-csvs'))
         self.batch_graph_root = os.path.abspath(os.path.join(batch_graph_root,
                                                              'collated-graphs'))
+        self.batch_generation_root = batch_generation_root
         self.collate_targets = collate_targets
         os.makedirs(self.batch_graph_root, exist_ok=True)
 
@@ -48,5 +50,7 @@ class InterExpGraphGenerator:
         InterExpLinegraphs(self.batch_output_root,
                            self.batch_graph_root,
                            self.collate_targets).generate()
-        ScalabilityMeasure(self.batch_output_root,
-                           self.batch_graph_root).generate()
+        InterExpScalabilityMeasure(self.batch_output_root,
+                                   self.batch_graph_root).generate()
+        # InterExpCAModelEnterGraph(self.batch_output_root, self.batch_graph_root,
+        #                           self.batch_generation_root).generate()

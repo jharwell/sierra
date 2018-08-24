@@ -17,6 +17,7 @@
 """
 
 import os
+import pickle
 from xml_helper import XMLHelper
 from generators.factory import GeneratorFactory
 
@@ -54,7 +55,7 @@ class BatchedExpInputGenerator:
     """
 
     def __init__(self, batch_config_template, batch_generation_root, batch_output_root, batch_criteria,
-                 exp_generator_pair, n_sims, n_threads, time_setup):
+                 exp_generator_pair, n_sims, n_threads, tsetup):
         assert os.path.isfile(
             batch_config_template), \
             "The path '{}' (which should point to the main config file) did not point to a file".format(
@@ -74,7 +75,7 @@ class BatchedExpInputGenerator:
         self.batch_criteria = batch_criteria
         self.n_sims = n_sims
         self.n_threads = n_threads
-        self.time_setup = time_setup
+        self.time_setup = tsetup
         self.exp_generator_pair = exp_generator_pair
 
     def generate(self):
@@ -91,8 +92,10 @@ class BatchedExpInputGenerator:
                 xml_helper.set_attribute(xml_tag, attr)
             xml_helper.output_filepath = exp_generation_root + "/" + self.batch_config_leaf
             xml_helper.write()
-            with open(exp_generation_root + '/exp_def.txt', 'w') as f:
-                f.write(str(exp_def))
+
+            # Write criteria to file for later retrieval
+            with open(os.path.join(exp_generation_root, 'exp_def.pkl'), 'ab') as f:
+                pickle.dump(exp_def, f)
             exp_num += 1
 
         # Create and run generators
@@ -108,6 +111,7 @@ class BatchedExpInputGenerator:
                                  exp_output_root=exp_output_root,
                                  n_sims=self.n_sims,
                                  n_threads=self.n_threads,
-                                 tsetup=self.time_setup)
+                                 tsetup=self.time_setup,
+                                 exp_def_fname="exp_def.pkl")
             g.generate()
             exp_num += 1

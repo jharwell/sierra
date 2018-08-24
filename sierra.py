@@ -67,7 +67,8 @@ def get_input_generator(args):
                                     exp_output_root=args.output_root,
                                     n_sims=args.n_sims,
                                     n_threads=args.n_threads,
-                                    tsetup=args.time_setup)
+                                    tsetup=args.time_setup,
+                                    exp_def_fname="exp_def.pkl")
 
 
 def define_cmdline():

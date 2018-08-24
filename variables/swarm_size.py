@@ -43,26 +43,6 @@ class SwarmSize(BaseVariable):
         return []
 
 
-class Linear1024(SwarmSize):
-    def __init__(self):
-        super().__init__([x for x in range(4, 1028, 4)])
-
-
-class Linear512(SwarmSize):
-    def __init__(self):
-        super().__init__([x for x in range(4, 516, 4)])
-
-
-class Linear256(SwarmSize):
-    def __init__(self):
-        super().__init__([x for x in range(4, 260, 4)])
-
-
-class Linear64(SwarmSize):
-    def __init__(self):
-        super().__init__([x for x in range(4, 68, 4)])
-
-
 class Log1024(SwarmSize):
     def __init__(self):
         super().__init__([2 ** x for x in range(0, 11)])
@@ -86,3 +66,13 @@ class Log128(SwarmSize):
 class Log64(SwarmSize):
     def __init__(self):
         super().__init__([2 ** x for x in range(0, 7)])
+
+
+class Log32(SwarmSize):
+    def __init__(self):
+        super().__init__([2 ** x for x in range(0, 6)])
+
+
+class Log16(SwarmSize):
+    def __init__(self):
+        super().__init__([2 ** x for x in range(0, 5)])

@@ -18,6 +18,7 @@
 
 from generators.exp_input_generator import ExpInputGenerator
 import variables as ev
+import pickle
 
 
 class PLBaseGenerator(ExpInputGenerator):
@@ -35,7 +36,7 @@ class PLBaseGenerator(ExpInputGenerator):
     """
 
     def __init__(self, template_config_file, generation_root, exp_output_root,
-                 n_sims, n_threads, dimension, controller=None):
+                 n_sims, n_threads, dimension, controller, exp_def_fname):
         super().__init__(template_config_file, generation_root, exp_output_root,
                          n_sims, n_threads)
         self.dimension = dimension
@@ -43,6 +44,10 @@ class PLBaseGenerator(ExpInputGenerator):
     def generate(self, xml_helper):
         shape = ev.arena_shape.SquareArena(sqrange=[self.dimension])
         [xml_helper.set_attribute(a[0], a[1]) for a in shape.gen_attr_changelist()[0]]
+
+        # Write arena dimension info to file for later retrieval
+        with open(self.exp_def_fpath, 'ab') as f:
+            pickle.dump(shape.gen_attr_changelist()[0], f)
 
         rms = shape.gen_tag_rmlist()
         if len(rms):

@@ -51,12 +51,13 @@ class ExpRunner:
         try:
             # so that it can be run on non-supercomputers
             if no_msi:
-                p = subprocess.Popen('cd {0} && parallel --no-notice < "{1}"'.format(self.exp_generation_root,
-                                                                                     self.exp_generation_root + "/commands.txt"),
+                p = subprocess.Popen('cd {0} && parallel --joblog /tmp/foo --no-notice < "{1}"'.format(self.exp_generation_root,
+                                                                                                       self.exp_generation_root + "/commands.txt"),
                                      shell=True,
                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 stdout, stderr = p.communicate()
-                # print(stdout, stderr)
+                if p.returncode != 0:
+                    print("ERROR: Process exited with {0}".format(p.returncode))
             else:
                 # running on a supercomputer - specifically MSI
                 subprocess.run('sort -u $PBS_NODEFILE > unique-nodelist.txt && \
