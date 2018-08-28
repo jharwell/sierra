@@ -21,6 +21,7 @@ import os
 from pipeline.inter_exp_linegraphs import InterExpLinegraphs
 from perf_measures.scalability import InterExpScalabilityMeasure
 from graphs.ca_graphs import InterExpCAModelEnterGraph
+from pipeline.inter_exp_targets import Linegraphs
 
 
 class InterExpGraphGenerator:
@@ -32,24 +33,21 @@ class InterExpGraphGenerator:
                               outputs.
       batch_graph_root(str): Root directory (relative to current dir or absolute) of where the
                              generated graphs should be saved for the experiment.
-      collate_targets(list): List of tuples of (src csv, column, dest csv) for collating .csv
-                             files.
     """
 
-    def __init__(self, batch_output_root, batch_graph_root, batch_generation_root, collate_targets):
+    def __init__(self, batch_output_root, batch_graph_root, batch_generation_root):
 
         self.batch_output_root = os.path.abspath(os.path.join(batch_output_root,
                                                               'collated-csvs'))
         self.batch_graph_root = os.path.abspath(os.path.join(batch_graph_root,
                                                              'collated-graphs'))
         self.batch_generation_root = batch_generation_root
-        self.collate_targets = collate_targets
         os.makedirs(self.batch_graph_root, exist_ok=True)
 
     def __call__(self):
         InterExpLinegraphs(self.batch_output_root,
                            self.batch_graph_root,
-                           self.collate_targets).generate()
+                           Linegraphs.targets()).generate()
         InterExpScalabilityMeasure(self.batch_output_root,
                                    self.batch_graph_root).generate()
         # InterExpCAModelEnterGraph(self.batch_output_root, self.batch_graph_root,
