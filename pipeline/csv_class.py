@@ -41,15 +41,14 @@ class CSV:
             if isinstance(arg, list):
                 self.csv = [row[:] for row in arg]  # copy the list
             elif isinstance(arg, str):
-                print(arg)
                 with open(arg, "r") as csv_file:
                     reader = csv.reader(csv_file, delimiter=self.delimiter)
                     output = []
                     for input_row in reader:
-                        output_row = []
-                        for input_column in input_row:
-                            output_row.append(input_column)
-                        output.append(output_row)
+                        # For some reason, when you print a 2D matrix to a .csv file and read it
+                        # here, the last row is always blank/empty, which causes averaging errors.
+                        if len(input_row) > 0:
+                            output.append(input_row)
                     self.csv = output
             else:
                 raise TypeError(
@@ -57,6 +56,7 @@ class CSV:
 
         # self.csv is a row-major array
         # how many rows there are in the CSV
+
         self.height = len(self.csv)
         self.width = len(self.csv[0])
         # check to make sure the array is a perfect rectangle; all rows must have the same amount of
