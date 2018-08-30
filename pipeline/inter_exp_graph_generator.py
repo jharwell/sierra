@@ -20,6 +20,7 @@ Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 import os
 from pipeline.inter_exp_linegraphs import InterExpLinegraphs
 from perf_measures.scalability import InterExpScalabilityMeasure
+from perf_measures.emergence import InterExpEmergenceMeasure
 from graphs.ca_graphs import InterExpCAModelEnterGraph
 from pipeline.inter_exp_targets import Linegraphs
 
@@ -49,6 +50,11 @@ class InterExpGraphGenerator:
                            self.batch_graph_root,
                            Linegraphs.targets()).generate()
         InterExpScalabilityMeasure(self.batch_output_root,
-                                   self.batch_graph_root).generate()
+                                   self.batch_graph_root,
+                                   self.batch_generation_root).generate()
+        InterExpEmergenceMeasure(self.batch_output_root,
+                                 self.batch_graph_root,
+                                 self.batch_generation_root).generate()
+
         # InterExpCAModelEnterGraph(self.batch_output_root, self.batch_graph_root,
         #                           self.batch_generation_root).generate()
