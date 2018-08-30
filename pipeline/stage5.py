@@ -17,8 +17,7 @@
 """
 
 import os
-from perf_measures.scalability import ControllerCompScalabilityMeasure
-from perf_measures.emergence import ControllerCompEmergenceMeasure
+from perf_measures.controller_comp import ControllerComp
 
 
 class PipelineStage5:
@@ -47,19 +46,28 @@ class PipelineStage5:
     def _comp_measures(self):
         measures = [
             {
-                'type': 'ControllerCompScalabilityMeasure',
                 'src_stem': 'pm-scalability-raw',
                 'dest_stem': 'comp-pm-scalability-raw',
+                'title': 'Swarm Scalability (Raw)',
+                'ylabel': 'Scalability Value'
             },
             {
-                'type': 'ControllerCompScalabilityMeasure',
                 'src_stem': 'pm-scalability-fl',
                 'dest_stem': 'comp-pm-scalability-fl',
+                'title': 'Swarm Scalability (Sub-Linear Fractional Losses)',
+                'ylabel': 'Scalability Value'
             },
             {
-                'type': 'ControllerCompEmergenceMeasure',
-                'src_stem': 'pm-emergence',
-                'dest_stem': 'comp-pm-emergence',
+                'src_stem': 'pm-scalability-norm',
+                'dest_stem': 'comp-pm-scalability-norm',
+                'title': 'Swarm Scalability (Normalized)',
+                'ylabel': 'Scalability Value'
+            },
+            {
+                'src_stem': 'pm-self-org',
+                'dest_stem': 'comp-pm-self-org',
+                'title': 'Swarm Self Organization',
+                'ylabel': 'Self Organization Value'
             },
         ]
         return measures
@@ -89,8 +97,10 @@ class PipelineStage5:
 
         measures = self._comp_measures()
         for m in measures:
-            eval(m['type'])(sierra_root=self.args.sierra_root,
-                            controllers=self.targets,
-                            src_stem=m['src_stem'],
-                            dest_stem=m['dest_stem']).generate()
+            ControllerComp(sierra_root=self.args.sierra_root,
+                           controllers=self.targets,
+                           src_stem=m['src_stem'],
+                           dest_stem=m['dest_stem'],
+                           title=m['title'],
+                           ylabel=m['ylabel']).generate()
         print("- Controller comparison complete")

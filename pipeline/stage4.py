@@ -1,7 +1,7 @@
 """
  Copyright 2018 John Harwell, All rights reserved.
 
-  This file is part of SIERRA.
+This file is part of SIERRA.
 
   SIERRA is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
@@ -46,7 +46,7 @@ class PipelineStage4:
             intra_exp = IntraExpGraphGenerator(self.args.output_root,
                                                self.args.graph_root)
         print("- Generating intra-experiment graphs...")
-        intra_exp()
+        # intra_exp()
         print("- Intra-experiment graph generation complete")
 
         if self.args.batch_criteria is not None:
