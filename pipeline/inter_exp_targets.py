@@ -29,7 +29,7 @@ class Linegraphs:
             {
                 'src_stem': 'fsm-collision',
                 'col': 'int_avg_in_avoidance',
-                'dest_stem': 'in-avoidance-int-avg',
+                'dest_stem': 'ca-in-int-avg',
                 'title': 'Average Robots in Collision Avoidance (interval)',
                 'xlabel': 'timestep',
                 'ylabel': '# Robots',
@@ -37,14 +37,14 @@ class Linegraphs:
             {
                 'src_stem': 'fsm-collision',
                 'col': 'cum_avg_in_avoidance',
-                'dest_stem': 'in-avoidance-cum-avg',
+                'dest_stem': 'ca-in-cum-avg',
                 'title': 'Average Robots in Collision Avoidance (cumulative)',
                 'xlabel': 'timestep',
                 'ylabel': '# Robots'},
             {
                 'src_stem': 'fsm-collision',
                 'col': 'int_avg_entered_avoidance',
-                'dest_stem': 'entered-avoidance-int-avg',
+                'dest_stem': 'ca-entered-int-avg',
                 'title': 'Average Robots Entering Collision Avoidance (interval)',
                 'xlabel': 'timestep',
                 'ylabel': '# Robots'
@@ -52,7 +52,7 @@ class Linegraphs:
             {
                 'src_stem': 'fsm-collision',
                 'col': 'cum_avg_entered_avoidance',
-                'dest_stem': 'entered-avoidance-cum-avg',
+                'dest_stem': 'ca-entered-cum-avg',
                 'title': 'Average Robots Entering Collision Avoidance (cumulative)',
                 'xlabel': 'timestep',
                 'ylabel': '# Robots',
@@ -61,7 +61,7 @@ class Linegraphs:
             {
                 'src_stem': 'fsm-collision',
                 'col': 'int_avg_exited_avoidance',
-                'dest_stem': 'exited-avoidance-int-avg',
+                'dest_stem': 'ca-exited-int-avg',
                 'title': 'Average Robots Exiting Collision Avoidance (interval)',
                 'xlabel': 'timestep',
                 'ylabel': '# Robots'
@@ -69,7 +69,7 @@ class Linegraphs:
             {
                 'src_stem': 'fsm-collision',
                 'col': 'cum_avg_exited_avoidance',
-                'dest_stem': 'exited-avoidance-cum-avg',
+                'dest_stem': 'ca-exited-cum-avg',
                 'title': 'Average Robots Exiting Collision Avoidance (cumulative)',
                 'xlabel': 'timestep',
                 'ylabel': '# Robots'
@@ -77,7 +77,7 @@ class Linegraphs:
             {
                 'src_stem': 'fsm-collision',
                 'col': 'int_avg_avoidance_duration',
-                'dest_stem': 'avoidance-duration-int-avg',
+                'dest_stem': 'ca-duration-int-avg',
                 'title': 'Average Collision Avoidance Duration (interval)',
                 'xlabel': 'timestep',
                 'ylabel': '# Robots',
@@ -85,7 +85,7 @@ class Linegraphs:
             },
             {'src_stem': 'fsm-collision',
              'col': 'cum_avg_avoidance_duration',
-             'dest_stem': 'avoidance-duration-cum-avg',
+             'dest_stem': 'ca-duration-cum-avg',
              'title': 'Average Collision Avoidance Duration (cumulative)',
              'xlabel': 'timestep',
              'ylabel': '# Robots'

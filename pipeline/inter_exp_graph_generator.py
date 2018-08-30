@@ -1,5 +1,5 @@
 """
-Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
+Copyright 2018 John Harwell, All rights reserved.
 
   This file is part of SIERRA.
 
@@ -19,7 +19,8 @@ Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 
 import os
 from pipeline.inter_exp_linegraphs import InterExpLinegraphs
-from perf_measures.scalability import InterExpScalabilityMeasure
+from perf_measures.scalability import InterExpScalability
+from perf_measures.self_organization import InterExpSelfOrganization
 from graphs.ca_graphs import InterExpCAModelEnterGraph
 from pipeline.inter_exp_targets import Linegraphs
 
@@ -48,7 +49,12 @@ class InterExpGraphGenerator:
         InterExpLinegraphs(self.batch_output_root,
                            self.batch_graph_root,
                            Linegraphs.targets()).generate()
-        InterExpScalabilityMeasure(self.batch_output_root,
-                                   self.batch_graph_root).generate()
+        InterExpScalability(self.batch_output_root,
+                            self.batch_graph_root,
+                            self.batch_generation_root).generate()
+        InterExpSelfOrganization(self.batch_output_root,
+                                 self.batch_graph_root,
+                                 self.batch_generation_root).generate()
+
         # InterExpCAModelEnterGraph(self.batch_output_root, self.batch_graph_root,
         #                           self.batch_generation_root).generate()

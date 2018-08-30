@@ -53,7 +53,7 @@ class RangedSizeGraph:
         x = [2 ** x for x in range(0, len(dfy.columns.values))]
 
         for v in dfy.values:
-            coeffs = np.polyfit(x, v, 2)
+            coeffs = np.polyfit(x, v, 3)
             ffit = np.poly1d(coeffs)
             x_new = np.linspace(x[0], x[-1], 50)
             y_new = ffit(x_new)
