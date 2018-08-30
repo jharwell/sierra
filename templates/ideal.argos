@@ -95,7 +95,7 @@
                           max_angle_delta="5"
                           max="9.0"
                           interval="1"
-                          normal_dist="true"/>
+                          normal_dist="false"/>
             <phototaxis_force max="8"/>
           </steering2D>
 

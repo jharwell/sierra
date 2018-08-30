@@ -18,6 +18,7 @@
 
 import os
 from perf_measures.scalability import ControllerCompScalabilityMeasure
+from perf_measures.emergence import ControllerCompEmergenceMeasure
 
 
 class PipelineStage5:
@@ -37,16 +38,28 @@ class PipelineStage5:
     def __init__(self, args, targets):
         self.args = args
         self.targets = targets
+        self.comp_graph_root = os.path.join(args.sierra_root, "comp-graphs")
+        self.comp_csv_root = os.path.join(args.sierra_root, "comp-csvs")
+
+        os.makedirs(self.comp_graph_root, exist_ok=True)
+        os.makedirs(self.comp_csv_root, exist_ok=True)
 
     def _comp_measures(self):
         measures = [
             {
                 'type': 'ControllerCompScalabilityMeasure',
-                'src_stem': 'pm-scalability-cum',
-                'dest_stem': 'comp-pm-scalability-cum',
-                'title': 'Scalability: {0}'.format('. '.join(self.targets)),
-                'xlabel': 'timestep',
-                'ylabel': '# Blocks Gathered (cumulative)'
+                'src_stem': 'pm-scalability-raw',
+                'dest_stem': 'comp-pm-scalability-raw',
+            },
+            {
+                'type': 'ControllerCompScalabilityMeasure',
+                'src_stem': 'pm-scalability-fl',
+                'dest_stem': 'comp-pm-scalability-fl',
+            },
+            {
+                'type': 'ControllerCompEmergenceMeasure',
+                'src_stem': 'pm-emergence',
+                'dest_stem': 'comp-pm-emergence',
             },
         ]
         return measures
@@ -79,8 +92,5 @@ class PipelineStage5:
             eval(m['type'])(sierra_root=self.args.sierra_root,
                             controllers=self.targets,
                             src_stem=m['src_stem'],
-                            dest_stem=m['dest_stem'],
-                            title=m['title'],
-                            xlabel=m['xlabel'],
-                            ylabel=['ylabel']).generate()
+                            dest_stem=m['dest_stem']).generate()
         print("- Controller comparison complete")
