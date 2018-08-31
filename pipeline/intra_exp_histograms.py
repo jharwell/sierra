@@ -18,6 +18,8 @@ Copyright 2018 John Harwell, All rights reserved.
 """
 
 import os
+import multiprocessing
+from multiprocessing import Queue
 from graphs.histogram import Histogram
 
 
@@ -38,25 +40,43 @@ class IntraExpHistograms:
         self.exp_output_root = exp_output_root
         self.exp_graph_root = exp_graph_root
         self.targets = targets
+        self.graph_queue = Queue()
 
     def generate(self):
-        self.depth0_generate_histograms()
+        depth0_labels = ['fsm-collision',
+                         'fsm-movement',
+                         'block_trans',
+                         'block_acq',
+                         'block_manip',
+                         'world_model']
 
-    def depth0_generate_histograms(self):
-        for target_set in [self.targets[x] for x in ['fsm-collision',
-                                                     'fsm-movement',
-                                                     'block_trans',
-                                                     'block_acq',
-                                                     'block_manip',
-                                                     'world_model']]:
+        labels = depth0_labels
+        print("-- Generating histograms {0}".format(self.exp_output_root))
+        for target_set in [self.targets[x] for x in labels]:
+
             for target in target_set:
-                for col in target['cols']:
-                    Histogram(input_fpath=os.path.join(self.exp_output_root,
-                                                       target['src_stem'] + '.csv'),
-                              output_fpath=os.path.join(
-                                  self.exp_graph_root,
-                        target['src_stem'] + '-' + col + '-hist.eps'),
-                        col=col,
-                        title=target['title'],
-                        xlabel=col,
-                        ylabel='Count').generate()
+                self.graph_queue.put(target)
+
+            for i in range(0, 8):
+                t = multiprocessing.Process(target=IntraExpHistograms._process_queue, args=(self,))
+                t.start()
+                t.join()
+
+    def _generate_graph_mt(self, target):
+        """Generates a graph inside a thread from the specified dictionary of target attributes."""
+        # print(target)
+        for col in target['cols']:
+            Histogram(input_fpath=os.path.join(self.exp_output_root,
+                                               target['src_stem'] + '.csv'),
+                      output_fpath=os.path.join(
+                self.exp_graph_root,
+                target['src_stem'] + '-' + col + '-hist.eps'),
+                col=col,
+                title=target['title'],
+                xlabel=col,
+                ylabel='Count').generate()
+
+    def _process_queue(self):
+        while not self.graph_queue.empty():
+            target = self.graph_queue.get()
+            self._generate_graph_mt(target)

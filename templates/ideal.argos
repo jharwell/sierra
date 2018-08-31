@@ -53,9 +53,9 @@
                       />
           <task_partition
               method="pini2011"
-              always_partition="true"
+              always_partition="false"
               never_partition="false"
-              reactivity="1.5"
+              reactivity="4.0"
               offset="1.0"
               />
           <subtask_selection

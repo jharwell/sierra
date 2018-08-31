@@ -287,24 +287,30 @@ class Linegraphs:
              'ylabel': '# Timesteps'}
         ]
         world_model = [
-            {'src_stem': 'perception-world-model',
-             'col': 'ST_EMPTY_inaccuracies',
-             'dest_stem': 'world-model-empty-int',
-             'title': 'Average ST_EMPTY Inaccuracies (interval)',
-             'xlabel': 'timestep',
-             'ylabel': '# Inaccuracies'},
-            {'src_stem': 'perception-world-model',
-             'col': 'ST_HAS_BLOCK_inaccuracies',
-             'dest_stem': 'world-model-block-int',
-             'title': 'Average ST_HAS_BLOCK Inaccuracies (interval)',
-             'xlabel': 'timestep',
-             'ylabel': '# Inaccuracies'},
-            {'src_stem': 'perception-world-model',
-             'col': 'ST_HAS_CACHE_inaccuracies',
-             'dest_stem': 'world-model-cache-int',
-             'title': 'Average ST_HAS_CACHE Inaccuracies (interval)',
-             'xlabel': 'timestep',
-             'ylabel': '# Inaccuracies'}
+            {
+                'src_stem': 'perception-world-model',
+                'col': 'ST_EMPTY_inaccuracies',
+                'dest_stem': 'world-model-empty-int',
+                'title': 'Average ST_EMPTY Inaccuracies (interval)',
+                'xlabel': 'timestep',
+                'ylabel': '# Inaccuracies'
+            },
+            {
+                'src_stem': 'perception-world-model',
+                'col': 'ST_HAS_BLOCK_inaccuracies',
+                'dest_stem': 'world-model-block-int',
+                'title': 'Average ST_HAS_BLOCK Inaccuracies (interval)',
+                'xlabel': 'timestep',
+                'ylabel': '# Inaccuracies'
+            },
+            {
+                'src_stem': 'perception-world-model',
+                'col': 'ST_HAS_CACHE_inaccuracies',
+                'dest_stem': 'world-model-cache-int',
+                'title': 'Average ST_HAS_CACHE Inaccuracies (interval)',
+                'xlabel': 'timestep',
+                'ylabel': '# Inaccuracies'
+            }
         ]
 
         return {'fsm-collision': collision,
