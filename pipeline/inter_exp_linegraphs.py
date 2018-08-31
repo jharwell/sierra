@@ -18,6 +18,8 @@ Copyright 2018 John Harwell, All rights reserved.
 """
 
 import os
+import multiprocessing
+from multiprocessing import Queue
 from graphs.stacked_line_graph import StackedLineGraph
 
 
@@ -38,44 +40,49 @@ class InterExpLinegraphs:
         self.csv_root = csv_root
         self.graph_root = graph_root
         self.collate_targets = collate_targets
+        self.graph_queue = Queue()
 
     def generate(self):
-        self._depth0_generate_linegraphs()
-        self._depth1_generate_linegraphs()
+        depth0_labels = ['fsm-collision',
+                         'fsm-movement',
+                         'block_trans',
+                         'block_acq',
+                         'block_manip',
+                         'world_model']
+        depth1_labels = ['cache_util',
+                         'cache_lifecycle',
+                         'cache_acq',
+                         'task_exec',
+                         'generalist_tab']
 
-    def _depth0_generate_linegraphs(self):
-        for target_set in [self.collate_targets[x] for x in ['fsm-collision',
-                                                             'fsm-movement',
-                                                             'block_trans',
-                                                             'block_acq',
-                                                             'block_manip',
-                                                             'world_model']]:
-            for target in target_set:
-                StackedLineGraph(input_stem_fpath=os.path.join(self.csv_root,
-                                                               target['dest_stem']),
-                                 output_fpath=os.path.join(
-                                     self.graph_root,
-                                     target['dest_stem'] + '.eps'),
-                                 cols=None,
-                                 title=target['title'],
-                                 legend=None,
-                                 xlabel=target['xlabel'],
-                                 ylabel=target['ylabel']).generate()
+        labels = depth0_labels + depth1_labels
+        print("-- Generating linegraphs from {0}".format(self.csv_root))
+        for target_set in [self.collate_targets[x] for x in labels]:
 
-    def _depth1_generate_linegraphs(self):
-        for target_set in [self.collate_targets[x] for x in ['cache_acq',
-                                                             'cache_util',
-                                                             'cache_lifecycle',
-                                                             'task_exec',
-                                                             'generalist_tab']]:
             for target in target_set:
-                StackedLineGraph(input_stem_fpath=os.path.join(self.csv_root,
-                                                               target['dest_stem']),
-                                 output_fpath=os.path.join(
-                                     self.graph_root,
-                                     target['dest_stem'] + '.eps'),
-                                 cols=None,
-                                 title=target['title'],
-                                 legend=None,
-                                 xlabel=target['xlabel'],
-                                 ylabel=target['ylabel']).generate()
+                self.graph_queue.put(target)
+
+            for i in range(0, 8):
+                t = multiprocessing.Process(target=InterExpLinegraphs._process_queue, args=(self,))
+                t.start()
+                t.join()
+
+    def _generate_graph_mt(self, target):
+        """
+        Generates a graph inside a thread from the specified dictionary of target attributes.
+        """
+        StackedLineGraph(input_stem_fpath=os.path.join(self.csv_root,
+                                                       target['dest_stem']),
+                         output_fpath=os.path.join(
+            self.graph_root,
+            target['dest_stem'] + '.eps'),
+            cols=None,
+            title=target['title'],
+            legend=None,
+            xlabel=target['xlabel'],
+            ylabel=target['ylabel']).generate()
+
+    def _process_queue(self):
+        while not self.graph_queue.empty():
+            target = self.graph_queue.get()
+            self._generate_graph_mt(target)

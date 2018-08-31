@@ -49,7 +49,6 @@ class Histogram:
 
         df = pd.read_csv(self.input_csv_fpath, sep=';')
         fig, ax = plt.subplots()
-
         n, bins, patches = plt.hist(x=df[self.col].values, bins=50)
 
         (mu, sigma) = norm.fit(df[self.col])
