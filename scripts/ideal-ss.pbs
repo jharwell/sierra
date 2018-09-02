@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#PBS -l walltime=12:00:00,nodes=50:ppn=8,pmem=1000mb
+#PBS -l walltime=12:00:00,nodes=50:ppn=8,pmem=2500mb
 #PBS -m abe
 #PBS -M harwe006@umn.edu
 
@@ -19,7 +19,7 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 
 cd $HOME/git/sierra
 NSIMS=6
-DIMS=(10x5 20x10 40x20)
+DIMS=(12x6 24x12 48x24)
 OUTPUT_ROOT=$HOME/exp
 BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \
@@ -48,3 +48,6 @@ do
     rm -rf $OUTPUT_ROOT/depth1.SS${d}
     $BASE_CMD --generator=depth1.SS${d}
 done
+
+# Generate comparison graphs
+$BASE_CMD --comp-graphs-only

@@ -77,10 +77,10 @@ class SSBaseGenerator(ExpInputGenerator):
         return xml_helper
 
 
-class SS10x5(SSBaseGenerator):
+class SS12x6(SSBaseGenerator):
 
     """
-    Modifies simulation input file template for single source foraging in a 10x5 arena.
+    Modifies simulation input file template for single source foraging in a 12x6 arena.
 
     """
 
@@ -93,10 +93,10 @@ class SS10x5(SSBaseGenerator):
         self._create_all_sim_inputs(self._generate_random_seeds(), super().generate(xml_helper))
 
 
-class SS20x10(SSBaseGenerator):
+class SS24x12(SSBaseGenerator):
 
     """
-    Modifies simulation input file template for single source foraging in a 20x10 arena.
+    Modifies simulation input file template for single source foraging in a 24x12 arena.
 
     """
 
@@ -109,10 +109,10 @@ class SS20x10(SSBaseGenerator):
         self._create_all_sim_inputs(self._generate_random_seeds(), super().generate(xml_helper))
 
 
-class SS40x20(SSBaseGenerator):
+class SS48x24(SSBaseGenerator):
 
     """
-    Modifies simulation input file template for single source foraging in a 40x20 arena.
+    Modifies simulation input file template for single source foraging in a 48x24 arena.
 
     """
 

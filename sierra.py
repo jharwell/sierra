@@ -139,7 +139,7 @@ def define_cmdline():
                         < controller > . < scenario > .
                         Controller options are: [stateless, stateful, depth1]
                         Scenario options are: [RND{10x10, 20x20, 40x40},
-                                              SS{10x5, 20x10, 40x20},
+                                              SS{12x6, 24x12, 48x24},
                                               PL{10x10, 20x20, 40x40}]
                         """)
 

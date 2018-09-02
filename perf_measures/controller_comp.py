@@ -2,7 +2,7 @@
  Copyright 2018 John Harwell, All rights reserved.
 
 This file is part of SIERRA.
-
+nnnnn
   SIERRA is free software: you can redistribute it and/or modify it under the
   terms of the GNU General Public License as published by the Free Software
   Foundation, either version 3 of the License, or (at your option) any later
@@ -22,9 +22,9 @@ from graphs.ranged_size_graph import RangedSizeGraph
 
 measures = [
     {
-        'src_stem': 'pm-scalability-raw',
-        'dest_stem': 'comp-pm-scalability-raw',
-        'title': 'Swarm Scalability (Raw)',
+        'src_stem': 'pm-scalability-comp',
+        'dest_stem': 'comp-pm-scalability-comp',
+        'title': 'Swarm Scalability (Comparitive)',
         'ylabel': 'Scalability Value'
     },
     {

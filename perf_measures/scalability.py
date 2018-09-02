@@ -24,7 +24,7 @@ from perf_measures.utils import FractionalLosses
 kTargetCumCSV = "blocks-collected-cum.csv"
 
 
-class Raw:
+class Comparative:
     """
     Calculates the following scalability measure for each experiment in a batch:
 
@@ -45,17 +45,17 @@ class Raw:
         assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
         df = pd.read_csv(path, sep=';')
         scale_cols = [c for c in df.columns if c not in ['clock', 'exp0']]
-        cum_stem = os.path.join(self.batch_output_root, "pm-scalability-raw")
+        cum_stem = os.path.join(self.batch_output_root, "pm-scalability-comp")
         df_new = pd.DataFrame(columns=scale_cols)
         for c in scale_cols:
-            df_new[c] = df.tail(1)[c] / (df.tail(1)['exp0'] * 2 ** (int(c[3:])))
+            df_new[c] = df.tail(1)[c] / (df.tail(1)['exp0'] * 2 ** int(c[3:]))
 
         df_new.to_csv(cum_stem + ".csv", sep=';', index=False)
 
         RangedSizeGraph(inputy_fpath=cum_stem + ".csv",
                         output_fpath=os.path.join(self.batch_graph_root,
-                                                  "pm-scalability-raw.eps"),
-                        title="Swarm Raw Scalability",
+                                                  "pm-scalability-comp.eps"),
+                        title="Swarm Comparitive Scalability",
                         ylabel="Scalability Value",
                         legend=None).generate()
 
@@ -144,7 +144,7 @@ class InterExpScalability:
         """Calculate the scalability metric within each interval for a given controller,
         and output a nice graph."""
 
-        Raw(self.batch_output_root, self.batch_graph_root).generate()
+        Comparative(self.batch_output_root, self.batch_graph_root).generate()
         Normalized(self.batch_output_root, self.batch_graph_root).generate()
         FractionalPerformanceLoss(self.batch_output_root, self.batch_graph_root,
                                   self.batch_generation_root).generate()
