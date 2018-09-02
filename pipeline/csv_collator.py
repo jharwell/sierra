@@ -40,8 +40,8 @@ class CSVCollator:
         self.targets = targets
 
     def __call__(self):
-        print("- Collating inter-experiment .csv files from batch in {0} to {1}...".format(self.batch_output_root,
-                                                                                           self.collate_root))
+        print("- Stage4: Collating inter-experiment .csv files from batch in {0} to {1}...".format(self.batch_output_root,
+                                                                                                   self.collate_root))
         for target_set in self.targets.values():
 
             for target in target_set:

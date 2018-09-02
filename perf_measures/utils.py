@@ -27,7 +27,8 @@ kBlocksGatheredCumCSV = "blocks-collected-cum.csv"
 
 class FractionalLosses:
     """
-    Calculates the fractional performance losses of a swarm across a range of swarm sizes.
+    Calculates the fractional performance losses of a swarm across a range of swarm sizes (i.e. how
+    much performance is maintained as the swarm size increases).
     """
 
     def __init__(self, batch_output_root, batch_generation_root):
@@ -87,7 +88,7 @@ class FractionalLosses:
                 (tlost_n[c] - tlost_n['exp0'] * math.pow(2, int(c[3:]))) / \
                 math.pow(2, int(c[3:]))
 
-        # Finally, calculate emergence as:
+        # Finally, calculate fractional losses as:
         #
         # ( performance lost with N robots / performance with N robots )
         path = os.path.join(self.batch_output_root, kBlocksGatheredCumCSV)

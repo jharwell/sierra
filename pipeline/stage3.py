@@ -38,12 +38,12 @@ class PipelineStage3:
 
         if self.args.batch_criteria is not None:
             print(
-                "- Averaging batched experiment outputs for '{0}'...".format(self.args.generator))
+                "- Stage3: Averaging batched experiment outputs for '{0}'...".format(self.args.generator))
             averager = BatchedExpCSVAverager(template_config_leaf, self.args.output_root)
         else:
             print(
-                "- Averaging single experiment outputs for '{0}'...".format(self.args.generator))
+                "- Stage3: Averaging single experiment outputs for '{0}'...".format(self.args.generator))
             averager = ExpCSVAverager(template_config_leaf, self.args.output_root)
 
         averager.average_csvs()
-        print("- Averaging complete")
+        print("- Stage3: Averaging complete")

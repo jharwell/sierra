@@ -32,18 +32,18 @@ class PipelineStage1:
 
     def run(self):
         if self.args.batch_criteria is not None:
-            print("- Generating input files for batched experiment '{0}' in {1}...".format(self.args.generator,
-                                                                                           self.args.generation_root))
+            print("- Stage1: Generating input files for batched experiment '{0}' in {1}...".format(self.args.generator,
+                                                                                                   self.args.generation_root))
 
             print("-- Using time_setup.{0}".format(self.args.time_setup))
             self.input_generator.generate()
-            print("- {0} Input files generated in {1} experiments.".format(
+            print("- Stage1: {0} Input files generated in {1} experiments.".format(
                 sum([len(files) for r, d, files in os.walk(self.args.generation_root)]),
                 sum([len(d) for r, d, files in os.walk(self.args.generation_root)])))
         else:
-            print("- Generating input files for experiment '{0}' in {1}...".format(self.args.generator,
-                                                                                   self.args.generation_root))
+            print("- Stage1: Generating input files for experiment '{0}' in {1}...".format(self.args.generator,
+                                                                                           self.args.generation_root))
             print("-- Using time_setup.{0}".format(self.args.time_setup))
             self.input_generator.generate()
-            print("- {0} Input files generated for experiment.".format(
+            print("- Stage1: {0} Input files generated for experiment.".format(
                 sum([len(files) for r, d, files in os.walk(self.args.generation_root)])))

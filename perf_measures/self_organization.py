@@ -17,6 +17,7 @@ This file is part of SIERRA.
 """
 
 import os
+import math
 import pandas as pd
 from graphs.ranged_size_graph import RangedSizeGraph
 from perf_measures.utils import FractionalLosses
@@ -30,8 +31,6 @@ class InterExpSelfOrganization:
     Assumes:
     - The batch criteria used to generate the experiment definitions was swarm size, logarithmic,
       and that the swarm size for exp0 was 1.
-    - The performance criteria is # blocks gathered.
-    - The only source of interference is that from collision avoidance.
     """
 
     def __init__(self, batch_output_root, batch_graph_root, batch_generation_root):
@@ -48,11 +47,30 @@ class InterExpSelfOrganization:
         df = FractionalLosses(self.batch_output_root, self.batch_generation_root).calc()
         df_new = pd.DataFrame(columns=[c for c in df.columns if c not in ['exp0']])
 
+        # This is a tricky measure to calculate. It has 4 parts:
+        #
+        # 1. The difference between the performance loss observed at swarm size i and at swarm size
+        #    i/2. If this difference is sub-linear (i.e. double the swarm size does not result in 2x
+        #    the performance losses), then we conclude that self-organization occurred.
+        #
+        # 2. We take the negative inverse of this value in order to (1) be able to easily show that
+        #      super-linear losses occurred (i.e. negative values), (2) magnify small differences
+        #      (as the swarm size is increased logarithmically, even small sublinearities can be
+        #      significant)
+        #
+        # 3. We multiply by log(swarm size) in order to give more weight to values at higher swarm
+        #      sizes, where self organization is more reliably observed as well as more important.
+        #
+        # 4. We divide by the performance loss observed at swarm size i so that approaches with a
+        #    smaller average performance loss (even if they have similar slopes as a function of
+        #    population size as approaches with greater average performance loss) score more
+        #    favorably at higher population sizes.
         for i in range(1, len(df.columns)):
-            df_new['exp' + str(i)] = - (df['exp' + str(i)] - 2 * df['exp' + str(i - 1)])
+            exp = -(df['exp' + str(i)] - 2 * df['exp' + str(i - 1)])
+            df_new['exp' + str(i)] = (2**i) / (exp / df['exp' + str(i)])
 
         int_path = os.path.join(self.batch_output_root, "pm-self-org.csv")
-        df.to_csv(int_path, sep=';', index=False)
+        df_new.to_csv(int_path, sep=';', index=False)
 
         RangedSizeGraph(inputy_fpath=int_path,
                         output_fpath=os.path.join(self.batch_graph_root,

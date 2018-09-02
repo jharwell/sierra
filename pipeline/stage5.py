@@ -17,7 +17,7 @@
 """
 
 import os
-from perf_measures.controller_comp import ControllerComp
+import perf_measures.controller_comp as cc
 
 
 class PipelineStage5:
@@ -43,45 +43,14 @@ class PipelineStage5:
         os.makedirs(self.comp_graph_root, exist_ok=True)
         os.makedirs(self.comp_csv_root, exist_ok=True)
 
-    def _comp_measures(self):
-        measures = [
-            {
-                'src_stem': 'pm-scalability-raw',
-                'dest_stem': 'comp-pm-scalability-raw',
-                'title': 'Swarm Scalability (Raw)',
-                'ylabel': 'Scalability Value'
-            },
-            {
-                'src_stem': 'pm-scalability-fl',
-                'dest_stem': 'comp-pm-scalability-fl',
-                'title': 'Swarm Scalability (Sub-Linear Fractional Losses)',
-                'ylabel': 'Scalability Value'
-            },
-            {
-                'src_stem': 'pm-scalability-norm',
-                'dest_stem': 'comp-pm-scalability-norm',
-                'title': 'Swarm Scalability (Normalized)',
-                'ylabel': 'Scalability Value'
-            },
-            {
-                'src_stem': 'pm-self-org',
-                'dest_stem': 'comp-pm-self-org',
-                'title': 'Swarm Self Organization',
-                'ylabel': 'Self Organization Value'
-            },
-        ]
-        return measures
-
     def run(self):
         # Verify that all controllers have run the same set of experiments before doing the
         # comparison
-        print("- Comparing controllers...")
         if self.targets is None:
-            self.targets = [d for d in os.listdir(self.args.sierra_root) if d not in ["comp-graphs",
-                                                                                      "comp-csvs"]
-                            and os.path.isdir(os.path.join(self.args.sierra_root, d))]
+            self.targets = ['stateless', 'stateful', 'depth1']
         else:
             self.targets = self.targets.split(',')
+        print("- Stage5: Comparing controllers {0}...".format(self.targets))
 
         for t1 in self.targets:
             for t2 in self.targets:
@@ -95,12 +64,11 @@ class PipelineStage5:
                     if os.path.isdir(path2):
                         assert(os.path.exists(path1)), "FATAL: {0} does not exist".format(path1)
 
-        measures = self._comp_measures()
-        for m in measures:
-            ControllerComp(sierra_root=self.args.sierra_root,
-                           controllers=self.targets,
-                           src_stem=m['src_stem'],
-                           dest_stem=m['dest_stem'],
-                           title=m['title'],
-                           ylabel=m['ylabel']).generate()
-        print("- Controller comparison complete")
+        for m in cc.measures:
+            cc.ControllerComp(sierra_root=self.args.sierra_root,
+                              controllers=self.targets,
+                              src_stem=m['src_stem'],
+                              dest_stem=m['dest_stem'],
+                              title=m['title'],
+                              ylabel=m['ylabel']).generate()
+        print("- Stage5: Controller comparison complete")

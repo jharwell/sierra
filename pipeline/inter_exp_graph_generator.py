@@ -21,6 +21,7 @@ import os
 from pipeline.inter_exp_linegraphs import InterExpLinegraphs
 from perf_measures.scalability import InterExpScalability
 from perf_measures.self_organization import InterExpSelfOrganization
+from perf_measures.collection import InterExpBlockCollection
 from graphs.ca_graphs import InterExpCAModelEnterGraph
 from pipeline.inter_exp_targets import Linegraphs
 
@@ -55,6 +56,7 @@ class InterExpGraphGenerator:
         InterExpSelfOrganization(self.batch_output_root,
                                  self.batch_graph_root,
                                  self.batch_generation_root).generate()
+        InterExpBlockCollection(self.batch_output_root, self.batch_graph_root).generate()
 
         # InterExpCAModelEnterGraph(self.batch_output_root, self.batch_graph_root,
         #                           self.batch_generation_root).generate()
