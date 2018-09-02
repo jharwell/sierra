@@ -20,6 +20,40 @@ import os
 import pandas as pd
 from graphs.ranged_size_graph import RangedSizeGraph
 
+measures = [
+    {
+        'src_stem': 'pm-scalability-raw',
+        'dest_stem': 'comp-pm-scalability-raw',
+        'title': 'Swarm Scalability (Raw)',
+        'ylabel': 'Scalability Value'
+    },
+    {
+        'src_stem': 'pm-scalability-fl',
+        'dest_stem': 'comp-pm-scalability-fl',
+        'title': 'Swarm Scalability (Sub-Linear Fractional Losses)',
+        'ylabel': 'Scalability Value'
+    },
+    {
+        'src_stem': 'pm-scalability-norm',
+        'dest_stem': 'comp-pm-scalability-norm',
+        'title': 'Swarm Scalability (Normalized)',
+        'ylabel': 'Scalability Value'
+    },
+    {
+        'src_stem': 'pm-self-org',
+        'dest_stem': 'comp-pm-self-org',
+        'title': 'Swarm Self Organization',
+        'ylabel': 'Self Organization Value'
+    },
+    {
+        'src_stem': 'pm-blocks-collected',
+        'dest_stem': 'comp-pm-blocks-collected',
+        'title': 'Swarm Total Blocks Collected',
+        'ylabel': '# Blocks'
+    },
+
+]
+
 
 class ControllerComp:
     """
@@ -59,7 +93,6 @@ class ControllerComp:
                 df.to_csv(csv_opath, sep=';')
 
         for s in scenarios:
-            print("-- Scenario {0}".format(s))
             csv_opath = os.path.join(self.comp_csv_root, 'comp-' +
                                      self.src_stem + "-" + s + ".csv")
 
