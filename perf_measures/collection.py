@@ -49,7 +49,6 @@ class InterExpBlockCollection:
 
         for c in scale_cols:
             final_collect_count[c] = blocks.tail(1)[c]
-
         opath = os.path.join(self.batch_output_root, "pm-blocks-collected.csv")
         final_collect_count.to_csv(opath, sep=';', index=False)
 
