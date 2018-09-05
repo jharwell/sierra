@@ -48,9 +48,10 @@ class Heatmap:
         fig, ax = plt.subplots()
         plt.imshow(df, cmap='hot', interpolation='nearest')
 
-        plt.xlabel(self.xlabel)
-        plt.ylabel(self.ylabel)
-        plt.title(self.title)
+        plt.xlabel(self.xlabel, fontsize=18)
+        plt.ylabel(self.ylabel, fontsize=18)
+        plt.title(self.title, fontsize=24)
+        ax.tick_params(labelsize=12)
 
         fig = ax.get_figure()
         fig.set_size_inches(10, 10)

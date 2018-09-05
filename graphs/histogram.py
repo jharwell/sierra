@@ -55,9 +55,11 @@ class Histogram:
         y = mlab.normpdf(bins, mu, sigma)
         plt.plot(bins, y, 'r--', linewidth=2)
 
-        plt.xlabel(self.xlabel)
-        plt.ylabel(self.ylabel)
-        plt.title(r'$\mathrm{Histogram\ of\ IQ:}\ \mu=%.3f,\ \sigma=%.3f$' % (mu, sigma))
+        plt.xlabel(self.xlabel, fontsize=18)
+        plt.ylabel(self.ylabel, fontsize=18)
+        plt.title(r'$\mathrm{Histogram\ of\ IQ:}\ \mu=%.3f,\ \sigma=%.3f$' % (mu, sigma),
+                  fontsize=24)
+        ax.tick_params(labelsize=12)
 
         plt.title(self.title + r" ($\mu=%.3f, \sigma=%.3f$)" % (mu, sigma))
         fig = ax.get_figure()

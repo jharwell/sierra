@@ -39,7 +39,7 @@ class Linegraphs:
                            'Average # Robots Entered Avoidance (cumulative)',
                            'Average # Robots Exited Avoidance (interval)',
                            'Average # Robots Exited Avoidance (cumulative)'],
-                'xlabel': 'timestep',
+                'xlabel': 'Interval',
                 'ylabel': '# Robots'
             },
             {
@@ -49,7 +49,7 @@ class Linegraphs:
                 'title': 'Swarm Collision Avoidance Duration',
                 'legend':['Average Avoidance Duration (interval)',
                           'Average Avoidance Duration (cumulative)'],
-                'xlabel': 'timestep',
+                'xlabel': 'Interval',
                 'ylabel': '# Timesteps'
             },
         ]
@@ -61,7 +61,7 @@ class Linegraphs:
                 'cols': ['int_avg_distance', 'cum_avg_distance'],
                 'title': 'Average Per-robot Distance Traveled',
                 'legend': ['Distance (interval)', 'Distance (cumulative)'],
-                'xlabel': 'timestep',
+                'xlabel': 'Interval',
                 'ylabel': 'Distance (m)'
             },
             {
@@ -70,7 +70,7 @@ class Linegraphs:
                 'cols': ['int_avg_velocity', 'cum_avg_velocity'],
                 'title': 'Average Per-robot Velocity',
                 'legend': ['Velocity (interval)', 'Velocity (cumulative)'],
-                'xlabel': 'timestep',
+                'xlabel': 'Interval',
                 'ylabel': 'Velocity (m/s)'
             }
         ]
@@ -82,7 +82,7 @@ class Linegraphs:
                 'cols': ['int_collected', 'int_cube_collected', 'int_ramp_collected'],
                 'legend': ['All Blocks', '# Cube Blocks', '# Ramp Blocks'],
                 'title': 'Blocks Collected (interval)',
-                'xlabel': 'timestep',
+                'xlabel': 'Interval',
                 'ylabel': '# Blocks'
             },
             {
@@ -91,7 +91,7 @@ class Linegraphs:
                 'cols': ['cum_collected', 'cum_cube_collected', 'cum_ramp_collected'],
                 'title': 'Blocks Collected (cumulative)',
                 'legend': ['All Blocks', '# Cube Blocks', '# Ramp Blocks'],
-                'xlabel': 'timestep',
+                'xlabel': 'Interval',
                 'ylabel': '# Blocks'
             },
             {
@@ -101,7 +101,7 @@ class Linegraphs:
                 'title': "Swarm Block Average Transporters",
                 'legend': ['Average # Transporters Per Block (interval)',
                            'Average # Transporters Per Block (cumulative)'],
-                'xlabel': 'timestep',
+                'xlabel': 'Interval',
                 'ylabel': '# Transporters'
             },
             {
@@ -114,7 +114,7 @@ class Linegraphs:
                            'Average Transport Time (cumulative)',
                            "Average Initial Wait Time (interval)",
                            'Average Initial Wait Time (cumulative)'],
-                'xlabel': 'timestep',
+                'xlabel': 'Interval',
                 'ylabel': '# Timesteps'
             }
         ]
@@ -132,7 +132,7 @@ class Linegraphs:
                            'Average # Robots Vectoring To Blocks (cumulative)',
                            'Average # Robots Exploring For Blocks (interval)',
                            'Average # Robots Exploring For Blocks (cumulative)'],
-                'xlabel': 'timestep',
+                'xlabel': 'Interval',
                 'ylabel': '# Robots'
             },
         ]
@@ -148,7 +148,7 @@ class Linegraphs:
                            'Average # Free Drops (interval)',
                            'Average # Cache Pickups (interval)',
                            'Average # Cache Drops (interval)'],
-                'xlabel': 'timestep',
+                'xlabel': 'Interval',
                 'ylabel': '# Pickups/Drops'
             },
             {
@@ -161,7 +161,7 @@ class Linegraphs:
                            'Average Free Drop Penalty (interval)',
                            'Average Cache Picup Penalty (interval)',
                            'Average Cache Drop Penalty (interval)'],
-                'xlabel': 'timestep',
+                'xlabel': 'Interval',
                 'ylabel': 'Penalty'
             },
         ]
@@ -174,7 +174,7 @@ class Linegraphs:
                 'title': "Swarm Perception Model Inaccuracies",
                 'legend': ['ST_EMPTY (interval)', 'ST_HAS_BLOCK (interval)',
                            'ST_HAS_CACHE (interval)'],
-                'xlabel': 'timestep',
+                'xlabel': 'Interval',
                 'ylabel': 'Count'
             },
         ]
@@ -195,7 +195,7 @@ class Linegraphs:
                 'cols': ['int_avg_pickups', 'int_avg_drops'],
                 'title': "Average # Pickups/Drops Across All Caches (Interval)",
                 'legend': ['Average # Pickups', 'Average # Drops'],
-                'xlabel': 'timestep',
+                'xlabel': 'Interval',
                 'ylabel': 'Count'
             },
             {
@@ -204,7 +204,7 @@ class Linegraphs:
                 'cols': ['int_unique_caches'],
                 'title': "# Caches in Arena (Interval)",
                 'legend': ['# Caches'],
-                'xlabel': 'timestep',
+                'xlabel': 'Interval',
                 'ylabel': 'Count'
             },
         ]
@@ -215,7 +215,7 @@ class Linegraphs:
                 'cols': ['int_created', 'int_depleted'],
                 'title': "# Caches Created/Depleted (Interval)",
                 'legend': ['# Created', '# Depleted'],
-                'xlabel': 'timestep',
+                'xlabel': 'Interval',
                 'ylabel': 'Count'
             },
         ]
@@ -233,7 +233,7 @@ class Linegraphs:
                            'Average # Robots Vectoring To Caches (cumulative)',
                            'Average # Robots Exploring For Caches (interval)',
                            'Average # Robots Exploring For Caches (cumulative)'],
-                'xlabel': 'timestep',
+                'xlabel': 'Interval',
                 'ylabel': 'Count'
             },
         ]
@@ -248,7 +248,7 @@ class Linegraphs:
                            'Average Exec Time (Cumulative)',
                            'Average Interface Time (Interval)',
                            'Average Interface Time (Cumulative)'],
-                'xlabel': 'timestep',
+                'xlabel': 'Interval',
                 'ylabel': 'Time'
             },
             {
@@ -261,7 +261,7 @@ class Linegraphs:
                            'Average Abort Count (Cumulative)',
                            'Completion Count (Interval)',
                            'Average Completion Count (Cumulative)'],
-                'xlabel': 'timestep',
+                'xlabel': 'Interval',
                 'ylabel': 'Count'
             },
             {
@@ -274,7 +274,7 @@ class Linegraphs:
                            'Average Exec Time (Cumulative)',
                            'Average Interface Time (Interval)',
                            'Average Interface Time (Cumulative)'],
-                'xlabel': 'timestep',
+                'xlabel': 'Interval',
                 'ylabel': 'Time'
             },
             {
@@ -287,7 +287,7 @@ class Linegraphs:
                            'Average Abort Count (Cumulative)',
                            'Completion Count (Interval)',
                            'Average Completion Count (Cumulative)'],
-                'xlabel': 'timestep',
+                'xlabel': 'Interval',
                 'ylabel': 'Count'
             },
             {
@@ -300,7 +300,7 @@ class Linegraphs:
                            'Average Exec Time (Cumulative)',
                            'Average Interface Time (Interval)',
                            'Average Interface Time (Cumulative)'],
-                'xlabel': 'timestep',
+                'xlabel': 'Interval',
                 'ylabel': 'Time'
             },
             {
@@ -313,7 +313,7 @@ class Linegraphs:
                            'Average Abort Count (Cumulative)',
                            'Completion Count (Interval)',
                            'Average Completion Count (Cumulative)'],
-                'xlabel': 'timestep',
+                'xlabel': 'Interval',
                 'ylabel': 'Count'
             },
         ]
@@ -328,7 +328,7 @@ class Linegraphs:
                            'Subtask1 (Cumulative)',
                            'Subtask2 (Interval)',
                            'Subtask2 (Cumulative)'],
-                'xlabel': 'timestep',
+                'xlabel': 'Interval',
                 'ylabel': 'Count'
             },
             {
@@ -341,7 +341,7 @@ class Linegraphs:
                            'Partition (Cumulative)',
                            'No Partition (Interval)',
                            'No Partition (Cumulative)'],
-                'xlabel': 'timestep',
+                'xlabel': 'Interval',
                 'ylabel': 'Count'
             },
             {
@@ -350,7 +350,7 @@ class Linegraphs:
                 'cols': ['int_task_sw_count', 'cum_task_sw_count'],
                 'title': "Generalist TAB Task Switch Counts",
                 'legend': ['Interval', 'Cumulative'],
-                'xlabel': 'timestep',
+                'xlabel': 'Interval',
                 'ylabel': 'Count'
             },
         ]
