@@ -40,6 +40,7 @@ class IntraExpHeatmaps:
         self.targets = targets
 
     def generate(self):
+        print("-- Heatmaps from {0}".format(self.exp_output_root))
         self.depth0_generate_heatmaps()
 
     def depth0_generate_heatmaps(self):

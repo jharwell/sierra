@@ -41,6 +41,8 @@ class InterExpBlockCollection:
         """
         Calculate the blocks collected metric for a given controller, and output a nice graph.
         """
+        print("-- Block collection from {0}".format(self.batch_output_root))
+
         path = os.path.join(self.batch_output_root, kBlocksGatheredCumCSV)
         assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
         blocks = pd.read_csv(path, sep=';')

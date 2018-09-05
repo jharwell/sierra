@@ -56,9 +56,11 @@ class StackedLineGraph:
             df2 = pd.read_csv(self.input_stats_fpath, sep=';')
 
         if self.cols is None:
-            ax = df.plot(title=self.title)
+            ax = df.plot()
+            ncols = max(1, int(len(df.columns) / 3.0))
         else:
-            ax = df[self.cols].plot(title=self.title)
+            ax = df[self.cols].plot()
+            ncols = max(1, int(len(self.cols) / 3.0))
 
         # @BUG This makes all lines appear 1 color...
         # if df2 is not None:
@@ -66,14 +68,20 @@ class StackedLineGraph:
         #         plt.errorbar(df.index, df[c], yerr=df2[c],
         #                      ecolor='gray', lw=2, capsize=5, capthick=2)
 
+        # Legend should have ~3 entries per column, in order to maximize real estate on tightly
+        # constrained papers.
         if self.legend is not None:
             lines, labels = ax.get_legend_handles_labels()
-            ax.legend(lines, self.legend, loc=9, bbox_to_anchor=(0.5, -0.1), ncol=2)
+            ax.legend(lines, self.legend, loc=9, bbox_to_anchor=(
+                0.5, -0.1), ncol=ncols, fontsize=14)
         else:
-            ax.legend(loc=9, bbox_to_anchor=(0.5, -0.1), ncol=2)
+            ax.legend(loc=9, bbox_to_anchor=(0.5, -0.1), ncol=ncols, fontsize=14)
 
-        ax.set_xlabel(self.xlabel)
-        ax.set_ylabel(self.ylabel)
+        ax.set_title(self.title, fontsize=24)
+        ax.set_xlabel(self.xlabel, fontsize=18)
+        ax.set_ylabel(self.ylabel, fontsize=18)
+        ax.tick_params(labelsize=12)
+
         fig = ax.get_figure()
         fig.set_size_inches(10, 10)
         fig.savefig(self.output_fpath, bbox_inches='tight', dpi=100)

@@ -43,7 +43,7 @@ class InterExpSelfOrganization:
         Calculate the self-org metric for a given controller, and output a
         nice graph.
         """
-
+        print("-- Self-organization from {0}".format(self.batch_output_root))
         df = FractionalLosses(self.batch_output_root, self.batch_generation_root).calc()
         df_new = pd.DataFrame(columns=[c for c in df.columns if c not in ['exp0']])
 
