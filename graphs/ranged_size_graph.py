@@ -33,6 +33,14 @@ class RangedSizeGraph:
 
     If the necessary .csv file does not exist, the graph is not generated.
 
+    Attributes:
+      inputy_csv_fpath(str): The absolute/relative path to the csv file containing the y values to
+                             be graphed.
+      output_fpath(str): The absolute/relative path to the output image file to save generated graph
+                         to.
+      title(str): Graph title.
+      ylabel(str): Y-label for graph.
+      legend(str): Legend for graph. If None, no legend is shown.
     """
 
     def __init__(self, inputy_fpath, output_fpath, title, ylabel, legend):

@@ -91,7 +91,7 @@ class ControllerComp:
                 df = df.append(pd.read_csv(csv_ipath, sep=';'))
                 csv_opath = os.path.join(self.cc_csv_root, 'cc-' +
                                          self.src_stem + "-" + s + ".csv")
-                df.to_csv(csv_opath, sep=';')
+                df.to_csv(csv_opath, sep=';', index=False)
 
         for s in scenarios:
             csv_opath = os.path.join(self.cc_csv_root, 'cc-' +
