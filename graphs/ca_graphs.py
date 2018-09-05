@@ -57,7 +57,6 @@ class InterExpCAModelEnterGraph:
         # Row 0 is analytical prediction, row 1 is empirical data
         df_new.loc[0] = model
         df_new.loc[1] = df.tail(1)[scale_cols].values[0]
-        print(df_new)
         df_new.to_csv(cum_stem + ".csv", sep=';', index=False)
         RangedSizeGraph(inputy_fpath=cum_stem + ".csv",
                         output_fpath=os.path.join(self.batch_graph_root,

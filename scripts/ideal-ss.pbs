@@ -24,7 +24,7 @@ OUTPUT_ROOT=$HOME/exp
 BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \
                   --template-config-file=$HOME/git/sierra/templates/ideal.argos \
-                  --n_sims=$NSIMS --no-msi \
+                  --n_sims=$NSIMS --no-msi --exp-graphs-only \
                   --batch-criteria=swarm_size.Log256"
 
 # Stateless (does not change # blocks/block manifest from template)

@@ -43,9 +43,11 @@ class BarGraph:
             return
 
         df = pd.read_csv(self.input_csv_fpath, sep=';')
-        df.plot.bar(title=self.title, legend=True)
+        df.plot.bar(legend=True)
         ax = plt.gca()
-
+        ax.legend(fontsize=14)
+        ax.set_title(self.title, fontsize=24)
+        ax.tick_params(labelsize=12)
         fig = ax.get_figure()
         fig.set_size_inches(10, 10)
         fig.savefig(self.output_fpath, bbox_inches='tight', dpi=100)

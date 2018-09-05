@@ -61,7 +61,7 @@ class RangedSizeGraph:
         x = [2 ** x for x in range(0, len(dfy.columns.values))]
 
         for v in dfy.values:
-            coeffs = np.polyfit(x, v, 3)
+            coeffs = np.polyfit(x, v, 2)
             ffit = np.poly1d(coeffs)
             x_new = np.linspace(x[0], x[-1], 50)
             y_new = ffit(x_new)
@@ -73,11 +73,12 @@ class RangedSizeGraph:
             for l in self.legend:
                 legend.append(l)
                 legend.append(l)
-            plt.legend(legend)
+            plt.legend(legend, fontsize=14, ncol=max(1, int(len(legend) / 3.0)))
 
-        plt.ylabel(self.ylabel)
-        plt.xlabel("Swarm Size")
-        plt.title(self.title)
+        plt.ylabel(self.ylabel, fontsize=18)
+        plt.xlabel("Swarm Size", fontsize=18)
+        plt.title(self.title, fontsize=24)
+        ax.tick_params(labelsize=12)
 
         fig = ax.get_figure()
         fig.set_size_inches(10, 10)
