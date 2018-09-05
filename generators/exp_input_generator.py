@@ -171,7 +171,8 @@ class ExpInputGenerator:
         """Adds the command to run a particular simulation definition to the command file."""
         # need the double quotes around the path so that it works in both Linux and Windows
         with open(self.commands_fpath, "a") as commands_file:
-            commands_file.write('argos3 -c "{}"\n'.format(xml_fname))
+            commands_file.write(
+                'argos3 -c "{} --log-file /dev/null --logerr-file /dev/null"\n'.format(xml_fname))
 
     def _generate_random_seeds(self):
         """Generates random seeds for experiments to use."""
