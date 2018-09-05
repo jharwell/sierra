@@ -123,7 +123,7 @@ def define_cmdline():
     run_group.add_argument("--exp-graphs-only",
                            help="Only perform graph generation on a previous run experiments/set of experiments.",
                            action="store_true")
-    run_group.add_argument("--comp-graphs-only",
+    run_group.add_argument("--cc-graphs-only",
                            help="""Only perform graph generation for comparing controllers. All
                            controllers within <sierra_root> will be compared, so it is assumed that
                            if this option is passed that the # experiments/batch criteria is the

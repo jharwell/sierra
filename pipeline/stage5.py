@@ -37,11 +37,11 @@ class PipelineStage5:
     def __init__(self, args, targets):
         self.args = args
         self.targets = targets
-        self.comp_graph_root = os.path.join(args.sierra_root, "comp-graphs")
-        self.comp_csv_root = os.path.join(args.sierra_root, "comp-csvs")
+        self.cc_graph_root = os.path.join(args.sierra_root, "cc-graphs")
+        self.cc_csv_root = os.path.join(args.sierra_root, "cc-csvs")
 
-        os.makedirs(self.comp_graph_root, exist_ok=True)
-        os.makedirs(self.comp_csv_root, exist_ok=True)
+        os.makedirs(self.cc_graph_root, exist_ok=True)
+        os.makedirs(self.cc_csv_root, exist_ok=True)
 
     def run(self):
         # Verify that all controllers have run the same set of experiments before doing the

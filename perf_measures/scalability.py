@@ -17,8 +17,10 @@ This file is part of SIERRA.
 """
 
 import os
+import math
 import pandas as pd
 from graphs.ranged_size_graph import RangedSizeGraph
+from graphs.bar_graph import BarGraph
 from perf_measures.utils import FractionalLosses
 
 kTargetCumCSV = "blocks-collected-cum.csv"
@@ -107,7 +109,7 @@ class FractionalPerformanceLoss:
 
     def generate(self):
         """Calculate the scalability metric within each interval for a given controller,
-        and output a nice graph."""
+        and outputs a graph."""
 
         df = FractionalLosses(self.batch_output_root, self.batch_generation_root).calc()
         for c in df.columns:
@@ -122,6 +124,40 @@ class FractionalPerformanceLoss:
                         title="Swarm Scalability: Fractional Performance Loss Due To Inter-robot Interference",
                         legend=None,
                         ylabel="").generate()
+
+
+class WeightUnifiedEstimate:
+    """
+    Calculates a single number for each controller in the input .csv representing its scalability
+    across all experiments in the batch (i.e. on the same scenario) using the following equation:
+        1
+    -------------  * SUM(scalability experiment i * log(swarm size for experiment i))
+    # experiments
+    """
+
+    def __init__(self, input_csv_fname, output_stem_fname, cc_graph_root, cc_csv_root, controllers):
+        self.cc_csv_root = cc_csv_root
+        self.output_stem_fname = output_stem_fname
+        self.cc_graph_root = cc_graph_root
+        self.input_csv_fname = input_csv_fname
+        self.controllers = controllers
+
+    def generate(self):
+        df = pd.read_csv(os.path.join(self.cc_csv_root, self.input_csv_fname), sep=';')
+        df_new = pd.DataFrame(columns=self.controllers, index=[0])
+        swarm_sizes = [2**i for i in range(0, len(df.columns))]
+        for i in range(0, len(df.index)):
+            val = 0
+            for s in swarm_sizes:
+                val += df.iloc[i, int(math.log2(s))] * math.log2(s)
+            df_new[self.controllers[i]] = val / float(len(swarm_sizes))
+
+        opath = os.path.join(self.cc_csv_root, self.output_stem_fname + ".csv")
+        df_new.to_csv(opath, index=False, sep=';')
+        BarGraph(input_fpath=opath,
+                 output_fpath=os.path.join(self.cc_graph_root,
+                                           self.output_stem_fname + '.eps'),
+                 title="Weighted Unified Scalability Estimate").generate()
 
 
 class InterExpScalability:
