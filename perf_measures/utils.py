@@ -25,6 +25,22 @@ kCAInCumCSV = "ca-in-cum-avg.csv"
 kBlocksGatheredCumCSV = "blocks-collected-cum.csv"
 
 
+def unpickle_exp_def(exp_def_fpath):
+    """
+    Read in all the different sets of parameter changes that were pickled to make
+    crucial parts of the experiment definition easily accessible. I don't know how
+    many there are, so go until you get an exception.
+    """
+    try:
+        with open(exp_def_fpath, 'rb') as f:
+            exp_def = set()
+            while True:
+                exp_def = exp_def | pickle.load(f)
+    except EOFError:
+        pass
+    return exp_def
+
+
 class FractionalLosses:
     """
     Calculates the fractional performance losses of a swarm across a range of swarm sizes (i.e. how
@@ -34,18 +50,7 @@ class FractionalLosses:
     def __init__(self, batch_output_root, batch_generation_root):
         self.batch_output_root = batch_output_root
 
-        exp_def_fpath = os.path.join(batch_generation_root, "exp0/exp_def.pkl")
-        # Read in all the different sets of parameter changes that were pickled to make
-        # crucial parts of the experiment definition easily accessible. I don't know how
-        # many there are, so go until you get an exception.
-        try:
-            with open(exp_def_fpath, 'rb') as f:
-                exp_def = set()
-                while True:
-                    exp_def = exp_def | pickle.load(f)
-        except EOFError:
-            pass
-
+        exp_def = unpickle_exp_def(os.path.join(batch_generation_root, "exp0/exp_def.pkl"))
         for e in exp_def:
             if 'experiment.length' in e[0]:
                 length = int(e[1])

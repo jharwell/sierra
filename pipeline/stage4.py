@@ -46,12 +46,13 @@ class PipelineStage4:
             intra_exp = IntraExpGraphGenerator(self.args.output_root,
                                                self.args.graph_root)
         print("- Stage4: Generating intra-experiment graphs...")
-        intra_exp()
+        # intra_exp()
         print("- Stage4: Intra-experiment graph generation complete")
 
         if self.args.batch_criteria is not None:
             print("- Stage4: Generating inter-experiment graphs...")
             InterExpGraphGenerator(self.args.output_root,
                                    self.args.graph_root,
-                                   self.args.generation_root)()
+                                   self.args.generation_root,
+                                   self.args.batch_criteria)()
             print("- Stage4: Inter-experiment graph generation complete")

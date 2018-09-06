@@ -19,6 +19,7 @@ This file is part of SIERRA.
 import os
 import pandas as pd
 from graphs.ranged_size_graph import RangedSizeGraph
+import perf_measures.utils as pm_utils
 
 kBlocksGatheredCumCSV = "blocks-collected-cum.csv"
 
@@ -33,9 +34,11 @@ class InterExpBlockCollection:
       and that the swarm size for exp0 was 1.
     """
 
-    def __init__(self, batch_output_root, batch_graph_root):
+    def __init__(self, batch_output_root, batch_graph_root, batch_generation_root, batch_criteria):
         self.batch_output_root = batch_output_root
         self.batch_graph_root = batch_graph_root
+        self.batch_generation_root = batch_generation_root
+        self.batch_criteria = batch_criteria
 
     def generate(self):
         """
@@ -54,9 +57,27 @@ class InterExpBlockCollection:
         opath = os.path.join(self.batch_output_root, "pm-blocks-collected.csv")
         final_collect_count.to_csv(opath, sep=';', index=False)
 
-        RangedSizeGraph(inputy_fpath=opath,
-                        output_fpath=os.path.join(self.batch_graph_root,
-                                                  "pm-blocks-collected.eps"),
-                        title="Swarm Blocks Collected",
-                        legend=None,
-                        ylabel="# Blocks").generate()
+        if "swarm_size" in self.batch_criteria:
+            RangedSizeGraph(inputy_fpath=opath,
+                            output_fpath=os.path.join(self.batch_graph_root,
+                                                      "pm-blocks-collected.eps"),
+                            title="Swarm Blocks Collected",
+                            ylabel="# Blocks",
+                            xvals=[2**x for x in range(0, len(blocks.columns))],
+                            legend=None).generate()
+        elif "swarm_density" in self.batch_criteria:
+            sizes = []
+            for i in range(0, len(blocks.columns)):
+                exp_def = pm_utils.unpickle_exp_def(os.path.join(
+                    self.batch_generation_root, "exp" + str(i), "exp_def.pkl"))
+                for e in exp_def:
+                    if 'arena.entity.quantity' in e[0]:
+                        sizes.append(int(e[1]))
+
+            RangedSizeGraph(inputy_fpath=opath,
+                            output_fpath=os.path.join(self.batch_graph_root,
+                                                      "pm-blocks-collected.eps"),
+                            title="Swarm Blocks Collected",
+                            ylabel="# Blocks",
+                            xvals=sizes,
+                            legend=None).generate()

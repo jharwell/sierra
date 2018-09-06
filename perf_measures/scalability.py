@@ -21,7 +21,8 @@ import math
 import pandas as pd
 from graphs.ranged_size_graph import RangedSizeGraph
 from graphs.bar_graph import BarGraph
-from perf_measures.utils import FractionalLosses
+import perf_measures.utils as pm_utils
+import variables.swarm_density as rho
 
 kTargetCumCSV = "blocks-collected-cum.csv"
 
@@ -35,9 +36,12 @@ class Comparative:
     N * performance 1 robot
     """
 
-    def __init__(self, batch_output_root, batch_graph_root):
+    def __init__(self, batch_output_root, batch_graph_root, batch_generation_root,
+                 batch_criteria):
         self.batch_output_root = batch_output_root
         self.batch_graph_root = batch_graph_root
+        self.batch_generation_root = batch_generation_root
+        self.batch_criteria = batch_criteria
 
     def generate(self):
         """Calculate the scalability metric within each interval for a given controller,
@@ -54,12 +58,29 @@ class Comparative:
 
         df_new.to_csv(cum_stem + ".csv", sep=';', index=False)
 
-        RangedSizeGraph(inputy_fpath=cum_stem + ".csv",
-                        output_fpath=os.path.join(self.batch_graph_root,
-                                                  "pm-scalability-comp.eps"),
-                        title="Swarm Comparitive Scalability",
-                        ylabel="Scalability Value",
-                        legend=None).generate()
+        if "swarm_size" in self.batch_criteria:
+            RangedSizeGraph(inputy_fpath=cum_stem + ".csv",
+                            output_fpath=os.path.join(self.batch_graph_root,
+                                                      "pm-scalability-comp.eps"),
+                            title="Swarm Comparitive Scalability",
+                            ylabel="Scalability Value",
+                            xvals=[2**x for x in range(0, len(df_new.columns.values))],
+                            legend=None).generate()
+        elif "swarm_density" in self.batch_criteria:
+            sizes = []
+            for i in range(0, len(df_new.columns.values)):
+                exp_def = pm_utils.unpickle_exp_def(os.path.join(
+                    self.batch_generation_root, "exp" + str(i), "exp_def.pkl"))
+                for e in exp_def:
+                    if 'arena.entity.quantity' in e[0]:
+                        sizes.append(int(e[1]))
+            RangedSizeGraph(inputy_fpath=cum_stem + ".csv",
+                            output_fpath=os.path.join(self.batch_graph_root,
+                                                      "pm-scalability-comp.eps"),
+                            title="Swarm Comparitive Scalability",
+                            ylabel="Scalability Value",
+                            xvals=sizes,
+                            legend=None).generate()
 
 
 class Normalized:
@@ -69,9 +90,11 @@ class Normalized:
     Performance N robots / N
     """
 
-    def __init__(self, batch_output_root, batch_graph_root):
+    def __init__(self, batch_output_root, batch_graph_root, batch_generation_root, batch_criteria):
         self.batch_output_root = batch_output_root
         self.batch_graph_root = batch_graph_root
+        self.batch_generation_root = batch_generation_root
+        self.batch_criteria = batch_criteria
 
     def generate(self):
         """Calculate the scalability metric within each interval for a given controller,
@@ -88,12 +111,29 @@ class Normalized:
 
         df_new.to_csv(cum_stem + ".csv", sep=';', index=False)
 
-        RangedSizeGraph(inputy_fpath=cum_stem + ".csv",
-                        output_fpath=os.path.join(self.batch_graph_root,
-                                                  "pm-scalability-norm.eps"),
-                        title="Swarm Normalized Scalability",
-                        ylabel="Scalability Value",
-                        legend=None).generate()
+        if "swarm_size" in self.batch_criteria:
+            RangedSizeGraph(inputy_fpath=cum_stem + ".csv",
+                            output_fpath=os.path.join(self.batch_graph_root,
+                                                      "pm-scalability-norm.eps"),
+                            title="Swarm Scalability (normalized)",
+                            ylabel="Scalability Value",
+                            xvals=[2**x for x in range(0, len(df_new.columns))],
+                            legend=None).generate()
+        elif "swarm_density" in self.batch_criteria:
+            sizes = []
+            for i in range(0, len(df_new.columns)):
+                exp_def = pm_utils.unpickle_exp_def(os.path.join(
+                    self.batch_generation_root, "exp" + str(i), "exp_def.pkl"))
+                for e in exp_def:
+                    if 'arena.entity.quantity' in e[0]:
+                        sizes.append(int(e[1]))
+            RangedSizeGraph(inputy_fpath=cum_stem + ".csv",
+                            output_fpath=os.path.join(self.batch_graph_root,
+                                                      "pm-scalability-norm.eps"),
+                            title="Swarm Scalability (normalized)",
+                            ylabel="Scalability Value",
+                            xvals=sizes,
+                            legend=None).generate()
 
 
 class FractionalPerformanceLoss:
@@ -102,28 +142,47 @@ class FractionalPerformanceLoss:
     to inter-robot interference as swarm size increases.
     """
 
-    def __init__(self, batch_output_root, batch_graph_root, batch_generation_root):
+    def __init__(self, batch_output_root, batch_graph_root, batch_generation_root, batch_criteria):
         self.batch_output_root = batch_output_root
         self.batch_graph_root = batch_graph_root
         self.batch_generation_root = batch_generation_root
+        self.batch_criteria = batch_criteria
 
     def generate(self):
         """Calculate the scalability metric within each interval for a given controller,
         and outputs a graph."""
 
-        df = FractionalLosses(self.batch_output_root, self.batch_generation_root).calc()
+        df = pm_utils.FractionalLosses(self.batch_output_root, self.batch_generation_root).calc()
         for c in df.columns:
             df[c] = 1.0 - df[c]
 
-        int_path = os.path.join(self.batch_output_root, "pm-scalability-fl.csv")
-        df.to_csv(int_path, sep=';', index=False)
+        path = os.path.join(self.batch_output_root, "pm-scalability-fl.csv")
+        df.to_csv(path, sep=';', index=False)
 
-        RangedSizeGraph(inputy_fpath=int_path,
-                        output_fpath=os.path.join(self.batch_graph_root,
-                                                  "pm-scalability-fl.eps"),
-                        title="Swarm Scalability: Fractional Performance Loss Due To Inter-robot Interference",
-                        legend=None,
-                        ylabel="").generate()
+        if "swarm_size" in self.batch_criteria:
+            RangedSizeGraph(inputy_fpath=path,
+                            output_fpath=os.path.join(self.batch_graph_root,
+                                                      "pm-scalability-fl.eps"),
+                            title="Swarm Scalability: Fractional Performance Loss Due To Inter-robot Interference",
+                            ylabel="Scalability Value",
+                            xvals=[2**x for x in range(0, len(df.columns))],
+                            legend=None).generate()
+        elif "swarm_density" in self.batch_criteria:
+            sizes = []
+            for i in range(0, len(df.columns)):
+                exp_def = pm_utils.unpickle_exp_def(os.path.join(
+                    self.batch_generation_root, "exp" + str(i), "exp_def.pkl"))
+                for e in exp_def:
+                    if 'arena.entity.quantity' in e[0]:
+                        sizes.append(int(e[1]))
+
+            RangedSizeGraph(inputy_fpath=path,
+                            output_fpath=os.path.join(self.batch_graph_root,
+                                                      "pm-scalability-fl.eps"),
+                            title="Swarm Scalability: Fractional Performance Loss Due To Inter-robot Interference",
+                            ylabel="Scalability Value",
+                            xvals=sizes,
+                            legend=None).generate()
 
 
 class WeightUnifiedEstimate:
@@ -157,7 +216,7 @@ class WeightUnifiedEstimate:
         BarGraph(input_fpath=opath,
                  output_fpath=os.path.join(self.cc_graph_root,
                                            self.output_stem_fname + '.eps'),
-                 title="Weighted Unified Scalability Estimate").generate()
+                 title="Weighted Unified Estimate").generate()
 
 
 class InterExpScalability:
@@ -166,21 +225,22 @@ class InterExpScalability:
     the same scenario from collated .csv data.
 
     Assumes:
-    - The batch criteria used to generate the experiment definitions was swarm size, logarithmic,
-      and that the swarm size for exp0 was 1.
     - The performance criteria is # blocks gathered.
     """
 
-    def __init__(self, batch_output_root, batch_graph_root, batch_generation_root):
+    def __init__(self, batch_output_root, batch_graph_root, batch_generation_root, batch_criteria):
         self.batch_output_root = batch_output_root
         self.batch_graph_root = batch_graph_root
         self.batch_generation_root = batch_generation_root
+        self.batch_criteria = batch_criteria
 
     def generate(self):
         """Calculate the scalability metric within each interval for a given controller,
         and output a nice graph."""
         print("-- Scalability from {0}".format(self.batch_output_root))
-        Comparative(self.batch_output_root, self.batch_graph_root).generate()
-        Normalized(self.batch_output_root, self.batch_graph_root).generate()
+        Comparative(self.batch_output_root, self.batch_graph_root,
+                    self.batch_generation_root, self.batch_criteria).generate()
+        Normalized(self.batch_output_root, self.batch_graph_root,
+                   self.batch_generation_root, self.batch_criteria).generate()
         FractionalPerformanceLoss(self.batch_output_root, self.batch_graph_root,
-                                  self.batch_generation_root).generate()
+                                  self.batch_generation_root, self.batch_criteria).generate()

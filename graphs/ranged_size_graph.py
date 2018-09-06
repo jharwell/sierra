@@ -43,13 +43,14 @@ class RangedSizeGraph:
       legend(str): Legend for graph. If None, no legend is shown.
     """
 
-    def __init__(self, inputy_fpath, output_fpath, title, ylabel, legend):
+    def __init__(self, inputy_fpath, output_fpath, title, ylabel, legend, xvals):
 
         self.inputy_csv_fpath = os.path.abspath(inputy_fpath)
         self.output_fpath = os.path.abspath(output_fpath)
-        self.legend = legend
-        self.ylabel = ylabel
         self.title = title
+        self.ylabel = ylabel
+        self.legend = legend
+        self.xvals = xvals
 
     def generate(self):
         if not os.path.exists(self.inputy_csv_fpath):
@@ -58,14 +59,12 @@ class RangedSizeGraph:
         dfy = pd.read_csv(self.inputy_csv_fpath, sep=';')
         fig, ax = plt.subplots()
 
-        x = [2 ** x for x in range(0, len(dfy.columns.values))]
-
         for v in dfy.values:
-            coeffs = np.polyfit(x, v, 2)
+            coeffs = np.polyfit(self.xvals, v, 2)
             ffit = np.poly1d(coeffs)
-            x_new = np.linspace(x[0], x[-1], 50)
+            x_new = np.linspace(self.xvals[0], self.xvals[-1], 50)
             y_new = ffit(x_new)
-            plt.plot(x, v, 'o', x_new, y_new, '--')
+            plt.plot(self.xvals, v, 'o', x_new, y_new, '--')
 
         if self.legend is not None:
             legend = []

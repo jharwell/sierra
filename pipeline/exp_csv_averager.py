@@ -67,9 +67,12 @@ class ExpCSVAverager:
 
         # average the CSVs based on their name; all the CSV files with the same base name will be
         # averaged together
+
         averaged_csvs = {key: self._average_csvs(csvs[key]) for key in csvs}
 
-        stats = {key: self._gen_statistics(csvs[key]) for key in csvs}
+        # FIXME: Disabled for now until #29 is fixed
+        # stats = {key: self._gen_statistics(csvs[key]) for key in csvs}
+
         csvs_path = os.path.join(self.exp_output_root, "averaged-output")
         os.makedirs(csvs_path, exist_ok=True)
 
@@ -78,10 +81,10 @@ class ExpCSVAverager:
             value.write(os.path.join(csvs_path, name))
 
         # Save statistics with the same stem as the averaged .csv file, but with the .stats
-        # extension.
-        for key, value in stats.items():
-            value.to_csv(os.path.join(csvs_path, key.split('.')
-                                      [0] + ".stats"), sep=';', index=False)
+        # extension. FIXME: Disabled for now until #29 is fixed.
+        # for key, value in stats.items():
+        #     value.to_csv(os.path.join(csvs_path, key.split('.')
+        #                               [0] + ".stats"), sep=';', index=False)
 
     def _average_csvs(self, csvs):
         '''

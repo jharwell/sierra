@@ -17,26 +17,22 @@ This file is part of SIERRA.
 """
 
 import os
-import math
 import pandas as pd
 from graphs.ranged_size_graph import RangedSizeGraph
-from perf_measures.utils import FractionalLosses
+import perf_measures.utils as pm_utils
 
 
 class InterExpSelfOrganization:
     """
     Calculates the self-organization of the swarm configuration across a batched set of experiments within
     the same scenario from collated .csv data.
-
-    Assumes:
-    - The batch criteria used to generate the experiment definitions was swarm size, logarithmic,
-      and that the swarm size for exp0 was 1.
     """
 
-    def __init__(self, batch_output_root, batch_graph_root, batch_generation_root):
+    def __init__(self, batch_output_root, batch_graph_root, batch_generation_root, batch_criteria):
         self.batch_output_root = batch_output_root
         self.batch_graph_root = batch_graph_root
         self.batch_generation_root = batch_generation_root
+        self.batch_criteria = batch_criteria
 
     def generate(self):
         """
@@ -44,7 +40,7 @@ class InterExpSelfOrganization:
         nice graph.
         """
         print("-- Self-organization from {0}".format(self.batch_output_root))
-        df = FractionalLosses(self.batch_output_root, self.batch_generation_root).calc()
+        df = pm_utils.FractionalLosses(self.batch_output_root, self.batch_generation_root).calc()
         df_new = pd.DataFrame(columns=[c for c in df.columns if c not in ['exp0']])
 
         # This is a tricky measure to calculate. It has 4 parts:
@@ -69,12 +65,30 @@ class InterExpSelfOrganization:
             exp = -(df['exp' + str(i)] - 2 * df['exp' + str(i - 1)])
             df_new['exp' + str(i)] = (2**i) / (exp / df['exp' + str(i)])
 
-        int_path = os.path.join(self.batch_output_root, "pm-self-org.csv")
-        df_new.to_csv(int_path, sep=';', index=False)
+        path = os.path.join(self.batch_output_root, "pm-self-org.csv")
+        df_new.to_csv(path, sep=';', index=False)
 
-        RangedSizeGraph(inputy_fpath=int_path,
-                        output_fpath=os.path.join(self.batch_graph_root,
-                                                  "pm-self-org.eps"),
-                        title="Swarm Self-Organization Due To Sub-Linear Fractional Performance Losses",
-                        legend=None,
-                        ylabel="").generate()
+        if "swarm_size" in self.batch_criteria:
+            RangedSizeGraph(inputy_fpath=path,
+                            output_fpath=os.path.join(self.batch_graph_root,
+                                                      "pm-self-org.eps"),
+                            title="Swarm Self-Organization Due To Sub-Linear Fractional Performance Losses",
+                            ylabel="",
+                            xvals=[2**x for x in range(0, len(df_new.columns))],
+                            legend=None).generate()
+        elif "swarm_density" in self.batch_criteria:
+            sizes = []
+            for i in range(0, len(df_new.columns)):
+                exp_def = pm_utils.unpickle_exp_def(os.path.join(
+                    self.batch_generation_root, "exp" + str(i), "exp_def.pkl"))
+                for e in exp_def:
+                    if 'arena.entity.quantity' in e[0]:
+                        sizes.append(int(e[1]))
+
+            RangedSizeGraph(inputy_fpath=path,
+                            output_fpath=os.path.join(self.batch_graph_root,
+                                                      "pm-self-org.eps"),
+                            title="Swarm Self-Organization Due To Sub-Linear Fractional Performance Losses",
+                            ylabel="",
+                            xvals=sizes,
+                            legend=None).generate()
