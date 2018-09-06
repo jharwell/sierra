@@ -84,6 +84,7 @@ class BatchedExpInputGenerator:
         # create experiment input XML templates
         xml_helper = XMLHelper(self.batch_config_template)
         exp_num = 0
+        print(len(self.batch_criteria))
         for exp_def in self.batch_criteria:
             exp_generation_root = "{0}/exp{1}".format(self.batch_generation_root, exp_num)
             os.makedirs(exp_generation_root, exist_ok=True)

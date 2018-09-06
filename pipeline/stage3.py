@@ -26,7 +26,9 @@ class PipelineStage3:
     """
     Implements stage 3 of the experimental pipeline:
 
-    Average the .csv results of the simulation runs together.
+    Average the .csv results of simulation runs within an experiment/within multiple experiments
+    together.
+
     """
 
     def __init__(self, args):

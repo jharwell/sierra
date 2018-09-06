@@ -36,7 +36,7 @@ class RectangularArena(BaseVariable):
         Generate list of sets of changes necessary to make to the input file to correctly set up the
         simulation with the specified area size/shape.
 
-        tuples of modifications to simulation input files to change:
+        Tuples of modifications to simulation input files to change:
 
         - The shape of the arena [square, rectangular]
         - The size of the arena
@@ -62,15 +62,15 @@ class RectangularArena(BaseVariable):
 
 
 class RectangularArenaTwoByOne(RectangularArena):
-    def __init__(self, x_range=range(10, 110, 10), y_range=range(5, 55, 555)):
+    def __init__(self, x_range=range(12, 120, 12), y_range=range(6, 66, 6)):
         super().__init__([(x, y) for x in x_range for y in y_range])
 
 
 class RectangularArenaCorridor(RectangularArena):
-    def __init__(self, x_range=range(20, 110, 10)):
-        super().__init__([(x, 5) for x in x_range])
+    def __init__(self, x_range=range(24, 120, 12)):
+        super().__init__([(x, 6) for x in x_range])
 
 
 class SquareArena(RectangularArena):
-    def __init__(self, sqrange=range(10, 110, 10)):
+    def __init__(self, sqrange=range(12, 120, 12)):
         super().__init__([(x, x) for x in sqrange])
