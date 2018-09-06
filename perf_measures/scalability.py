@@ -179,7 +179,7 @@ class InterExpScalability:
     def generate(self):
         """Calculate the scalability metric within each interval for a given controller,
         and output a nice graph."""
-
+        print("-- Scalability from {0}".format(self.batch_output_root))
         Comparative(self.batch_output_root, self.batch_graph_root).generate()
         Normalized(self.batch_output_root, self.batch_graph_root).generate()
         FractionalPerformanceLoss(self.batch_output_root, self.batch_graph_root,
