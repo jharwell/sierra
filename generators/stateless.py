@@ -26,7 +26,6 @@ class BaseGenerator(ExpInputGenerator):
     """
 
     def __init__(self, *args, **kwargs):
-
         super().__init__(*args, **kwargs)
 
     def init_sim_defs(self):

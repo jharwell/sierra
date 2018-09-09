@@ -91,3 +91,18 @@ class CD4p0SS(ConstantDensity):
 class CD5p0SS(ConstantDensity):
     def __init__(self):
         super().__init__(5.0, ConstantDensity.kRect2x1Dims, "TypeSingleSource")
+
+
+class CD6p0SS(ConstantDensity):
+    def __init__(self):
+        super().__init__(6.0, ConstantDensity.kRect2x1Dims, "TypeSingleSource")
+
+
+class CD7p0SS(ConstantDensity):
+    def __init__(self):
+        super().__init__(7.0, ConstantDensity.kRect2x1Dims, "TypeSingleSource")
+
+
+class CD8p0SS(ConstantDensity):
+    def __init__(self):
+        super().__init__(8.0, ConstantDensity.kRect2x1Dims, "TypeSingleSource")

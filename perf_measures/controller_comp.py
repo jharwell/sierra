@@ -71,6 +71,12 @@ inter_scenario_measures = [
         'dest_stem': 'sc-pm-self-org',
         'title': 'Weight Unified Swarm Self Organization',
     },
+    {
+        'src_stem': 'pm-blocks-collected',
+        'dest_stem': 'sc-pm-blocks-collected',
+        'title': 'Weight Unified Blocks Collected',
+    },
+
 ]
 
 

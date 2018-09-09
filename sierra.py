@@ -20,7 +20,8 @@ import argparse
 import os
 from pipeline.exp_pipeline import ExpPipeline
 from pipeline.batched_exp_input_generator import BatchedExpInputGenerator
-from generators.factory import GeneratorFactory
+from generators.factory import GeneratorPairFactory
+from generators.factory import ScenarioGeneratorFactory
 
 
 def get_generator_pair(args):
@@ -32,8 +33,6 @@ def get_generator_pair(args):
 
     if args.generator is None:
         return None
-    elif 1 == len(args.generator.split('.')):
-        return ("generators." + args.generator + ".BaseGenerator",)
     else:
         return ("generators." + args.generator.split('.')[0] + ".BaseGenerator",
                 "generators." + abbrev_dict[args.generator.split('.')[1][:2]] +
@@ -61,14 +60,34 @@ def get_input_generator(args):
                                             args.n_threads,
                                             args.time_setup)
         else:
-            return GeneratorFactory(generator_pair,
-                                    template_config_file=args.template_config_file,
-                                    generation_root=args.generation_root,
-                                    exp_output_root=args.output_root,
-                                    n_sims=args.n_sims,
-                                    n_threads=args.n_threads,
-                                    tsetup=args.time_setup,
-                                    exp_def_fname="exp_def.pkl")
+            # The scenario dimensions were specified on the command line. Format of:
+            # 'generators.<scenario>.<type>'
+            if len(generator_pair[1].split('.')[2]) > 2:
+
+                x, y = generator_pair[1][2:].split('x')
+                dimensions = (int(x), int(y))
+
+            scenario = ScenarioGeneratorFactory(controller=generator_pair[0],
+                                                scenario=generator_pair[1] +
+                                                'BaseGenerator',
+                                                dimensions=dimensions,
+                                                template_config_file=args.template_config_file,
+                                                generation_root=args.generation_root,
+                                                exp_output_root=args.output_root,
+                                                n_sims=args.n_sims,
+                                                n_threads=args.n_threads,
+                                                tsetup=args.time_setup,
+                                                exp_def_fname="exp_def.pkl")
+
+            return GeneratorPairFactory(scenario,
+                                        controller=generator_pair[0],
+                                        template_config_file=args.template_config_file,
+                                        generation_root=args.generation_root,
+                                        exp_output_root=args.output_root,
+                                        n_sims=args.n_sims,
+                                        n_threads=args.n_threads,
+                                        tsetup=args.time_setup,
+                                        exp_def_fname="exp_def.pkl")
 
 
 def define_cmdline():
@@ -138,9 +157,11 @@ def define_cmdline():
                         help="""Experiment generator to use. Must be specified as < controller > or
                         < controller > . < scenario > .
                         Controller options are: [stateless, stateful, depth1]
-                        Scenario options are: [RND{10x10, 20x20, 40x40},
-                                              SS{12x6, 24x12, 48x24},
-                                              PL{10x10, 20x20, 40x40}]
+                        Scenario options are: [RN, SS, PL]. You can also add 'AxB' after the
+                        distribution type selection to set the dimensions of the scenario to
+                        something specific, which may be desirable, depending on what kind of
+                        experiment you are doing. A and B should ALWAYS be evenly divisible by
+                        4. You ALWAYS have to specify both parts of the generator.
                         """)
 
     parser.add_argument("--no-msi",
@@ -170,18 +191,22 @@ if __name__ == "__main__":
 
     pair = get_generator_pair(args)
 
-    # If the user specified a controller + scenario combination for the generator, use it to
-    # determine directory names. If they only specified the controller part, then they *MUST* be
-    # using batch criteria, and so use the batch criteria to uniquely specify directory names.
+    # If the user specified a controller + scenario combination for the generator (including
+    # dimensions), use it to determine directory names.
+    #
+    # Otherwise, they *MUST* be using batch criteria, and so use the batch criteria to uniquely
+    # specify directory names.
+    #
+    # Format for pair is (generatiors.<controller>.BaseGenerator, generators.<scenario>.[SS,RN,PL])
     #
     # Also, add the template file leaf to the root directory path to help track what experiment was
     # run.
 
     if pair is not None:
-        if 2 == len(pair):
+        if len(pair[1].split('.')[2]) > 2:  # They specified scenario dimensions
             controller = pair[0].split('.')[1]
             scenario = pair[1].split('.')[2]
-        else:
+        else:  # They did not specify scenario dimensions
             controller = pair[0].split('.')[1]
             scenario = args.batch_criteria.split('.')[1]
 
