@@ -57,6 +57,7 @@ class ExpRunner:
                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 stdout, stderr = p.communicate()
                 if p.returncode != 0:
+                    print(stdout, stderr)
                     print("ERROR: Process exited with {0}".format(p.returncode))
             else:
                 # running on a supercomputer - specifically MSI
