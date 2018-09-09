@@ -56,15 +56,15 @@ class Comparative:
             df_new[c] = df.tail(1)[c] / (df.tail(1)['exp0'] * 2 ** int(c[3:]))
 
         df_new.to_csv(cum_stem + ".csv", sep=';', index=False)
-
+        swarm_sizes = pm_utils.calc_swarm_sizes(self.batch_criteria,
+                                                self.batch_generation_root,
+                                                len(df.columns))
         RangedSizeGraph(inputy_fpath=cum_stem + ".csv",
                         output_fpath=os.path.join(self.batch_graph_root,
                                                   "pm-scalability-comp.eps"),
                         title="Swarm Comparitive Scalability",
                         ylabel="Scalability Value",
-                        xvals=pm_utils.calc_swarm_sizes(self.batch_criteria,
-                                                        self.batch_generation_root,
-                                                        len(df.columns)),
+                        xvals=swarm_sizes[1:],
                         legend=None).generate()
 
 
@@ -95,15 +95,15 @@ class Normalized:
             df_new[c] = df.tail(1)[c] / (2 ** (int(c[3:])))
 
         df_new.to_csv(cum_stem + ".csv", sep=';', index=False)
-
+        swarm_sizes = pm_utils.calc_swarm_sizes(self.batch_criteria,
+                                                self.batch_generation_root,
+                                                len(df.columns))
         RangedSizeGraph(inputy_fpath=cum_stem + ".csv",
                         output_fpath=os.path.join(self.batch_graph_root,
                                                   "pm-scalability-norm.eps"),
                         title="Swarm Scalability (normalized)",
                         ylabel="Scalability Value",
-                        xvals=pm_utils.calc_swarm_sizes(self.batch_criteria,
-                                                        self.batch_generation_root,
-                                                        len(df.columns)),
+                        xvals=swarm_sizes,
                         legend=None).generate()
 
 
@@ -130,14 +130,15 @@ class FractionalPerformanceLoss:
         path = os.path.join(self.batch_output_root, "pm-scalability-fl.csv")
         df.to_csv(path, sep=';', index=False)
 
+        swarm_sizes = pm_utils.calc_swarm_sizes(self.batch_criteria,
+                                                self.batch_generation_root,
+                                                len(df.columns))
         RangedSizeGraph(inputy_fpath=path,
                         output_fpath=os.path.join(self.batch_graph_root,
                                                   "pm-scalability-fl.eps"),
                         title="Swarm Scalability: Fractional Performance Loss Due To Inter-robot Interference",
                         ylabel="Scalability Value",
-                        xvals=pm_utils.calc_swarm_sizes(self.batch_criteria,
-                                                        self.batch_generation_root,
-                                                        len(df.columns)),
+                        xvals=swarm_sizes,
                         legend=None).generate()
 
 

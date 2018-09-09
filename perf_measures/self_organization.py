@@ -75,5 +75,5 @@ class InterExpSelfOrganization:
                         ylabel="",
                         xvals=pm_utils.calc_swarm_sizes(self.batch_criteria,
                                                         self.batch_generation_root,
-                                                        len(df.columns)),
+                                                        len(df.columns))[1:],
                         legend=None).generate()
