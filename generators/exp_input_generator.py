@@ -46,7 +46,7 @@ class ExpInputGenerator:
     """
 
     def __init__(self, template_config_file, generation_root, exp_output_root,
-                 n_sims, n_threads, tsetup, exp_def_fname):
+                 n_sims, n_threads, tsetup, exp_def_fname, dimensions=None):
         assert os.path.isfile(template_config_file), \
             "The path '{}' (which should point to the main config file) did not point to a file".format(
                 template_config_file)
@@ -67,6 +67,7 @@ class ExpInputGenerator:
         self.n_sims = n_sims
         self.n_threads = n_threads
         self.exp_def_fpath = os.path.join(self.generation_root, exp_def_fname)
+        self.dimensions = dimensions
 
         self.random_seed_min = 1
         self.random_seed_max = 10 * self.n_sims
@@ -172,7 +173,7 @@ class ExpInputGenerator:
         # need the double quotes around the path so that it works in both Linux and Windows
         with open(self.commands_fpath, "a") as commands_file:
             commands_file.write(
-                'argos3 -c "{} --log-file /dev/null --logerr-file /dev/null"\n'.format(xml_fname))
+                'argos3 -c "{}" --log-file /dev/null --logerr-file /dev/null\n'.format(xml_fname))
 
     def _generate_random_seeds(self):
         """Generates random seeds for experiments to use."""

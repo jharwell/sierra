@@ -23,19 +23,44 @@ import generators.random
 import generators.depth1
 
 
-def GeneratorFactory(generator_pair, **kwargs):
+def GeneratorPairFactory(controller, scenario, **kwargs):
+    """
+    Given a controller(str), and a scenario(generator), construct a joint generator class that can
+    be used for experiment generation.
+
+    """
+
     def __init__(self, **kwargs):
-        self.controller_changes = eval(generator_pair[0])(**kwargs)
-        if 2 == len(generator_pair):
-            self.scenario_changes = eval(generator_pair[1])(controller=generator_pair[0],
-                                                            **kwargs)
+        self.controller = eval(controller)(**kwargs)
+        self.scenario = scenario
 
     def generate(self):
-        if 2 == len(generator_pair):
-            self.scenario_changes.generate(self.controller_changes.generate())
-        else:
-            self.controller_changes.generate_and_save()
+        self.scenario.generate(self.controller.generate())
 
-    return type('+'.join(generator_pair), (object,), {"__init__": __init__,
-                                                      "generate": generate
-                                                      })(**kwargs)
+    return type('+'.join([controller, scenario.__class__.__name__]),
+                (object,), {"__init__": __init__, "generate":
+                            generate})(**kwargs)
+
+
+def ScenarioGeneratorFactory(scenario, controller, dimensions, **kwargs):
+    """
+    Creates a scenario generator using arbitrary arena dimensions and with an arbitrary controller.
+
+    scenario(str): The name of scenario to run.
+    controller(str): The name of controller to run.
+    dimensions(str): AxB string representing desired dimensions of the arena.
+
+    """
+
+    def __init__(self, **kwargs):
+        self.scenario_changes = eval(scenario)(controller=controller,
+                                               dimensions=dimensions,
+                                               **kwargs)
+
+    def generate(self, xml_helper):
+        return self.scenario_changes.generate(xml_helper)
+
+    return type(scenario + '{0}x{1}'.format(dimensions[0], dimensions[1]),
+                (object,), {"__init__": __init__,
+                            "generate": generate
+                            })(**kwargs)

@@ -19,7 +19,8 @@
 import os
 import pickle
 from xml_helper import XMLHelper
-from generators.factory import GeneratorFactory
+from generators.factory import GeneratorPairFactory
+from generators.factory import ScenarioGeneratorFactory
 
 
 class BatchedExpInputGenerator:
@@ -101,18 +102,47 @@ class BatchedExpInputGenerator:
 
         # Create and run generators
         exp_num = 0
-        print("-- Using joint generator class '{0}'".format('+'.join(self.exp_generator_pair)))
         for exp_def in self.batch_criteria:
+            dimensions = None
+            # The scenario dimensions were specified on the command line
+            # Format of 'generators.<scenario>.<type>'
+            if len(self.exp_generator_pair[1].split('.')[2]) > 2:
+
+                x, y = self.exp_generator_pair[1][2:].split('x')
+                dimensions = (int(x), int(y))
+            else:  # Scenario dimensions should be obtained from batch criteria
+                for c in exp_def:
+                    if c[0] == "arena.size":
+                        x, y, z = c[1].split(',')
+                        dimensions = (int(x), int(y))
+
             exp_generation_root = "{0}/exp{1}".format(self.batch_generation_root, exp_num)
             exp_output_root = "{0}/exp{1}".format(self.batch_output_root, exp_num)
-            g = GeneratorFactory(self.exp_generator_pair,
-                                 template_config_file=os.path.join(exp_generation_root,
-                                                                   self.batch_config_leaf),
-                                 generation_root=exp_generation_root,
-                                 exp_output_root=exp_output_root,
-                                 n_sims=self.n_sims,
-                                 n_threads=self.n_threads,
-                                 tsetup=self.time_setup,
-                                 exp_def_fname="exp_def.pkl")
+            scenario = ScenarioGeneratorFactory(controller=self.exp_generator_pair[0],
+                                                scenario=self.exp_generator_pair[1] +
+                                                'BaseGenerator',
+                                                dimensions=dimensions,
+                                                template_config_file=os.path.join(exp_generation_root,
+                                                                                  self.batch_config_leaf),
+                                                generation_root=exp_generation_root,
+                                                exp_output_root=exp_output_root,
+                                                n_sims=self.n_sims,
+                                                n_threads=self.n_threads,
+                                                tsetup=self.time_setup,
+                                                exp_def_fname="exp_def.pkl")
+
+            print("-- Created joint generator class '{0}'".format('+'.join([self.exp_generator_pair[0],
+                                                                            scenario.__class__.__name__])))
+
+            g = GeneratorPairFactory(scenario=scenario,
+                                     controller=self.exp_generator_pair[0],
+                                     template_config_file=os.path.join(exp_generation_root,
+                                                                       self.batch_config_leaf),
+                                     generation_root=exp_generation_root,
+                                     exp_output_root=exp_output_root,
+                                     n_sims=self.n_sims,
+                                     n_threads=self.n_threads,
+                                     tsetup=self.time_setup,
+                                     exp_def_fname="exp_def.pkl")
             g.generate()
             exp_num += 1

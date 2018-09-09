@@ -48,6 +48,3 @@ do
     rm -rf $OUTPUT_ROOT/depth1.SS${d}
     $BASE_CMD --generator=depth1.SS${d}
 done
-
-# Generate comparison graphs
-$BASE_CMD --comp-graphs-only
