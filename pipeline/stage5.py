@@ -39,9 +39,13 @@ class PipelineStage5:
         self.targets = targets
         self.cc_graph_root = os.path.join(args.sierra_root, "cc-graphs")
         self.cc_csv_root = os.path.join(args.sierra_root, "cc-csvs")
+        self.sc_graph_root = os.path.join(args.sierra_root, "sc-graphs")
+        self.sc_csv_root = os.path.join(args.sierra_root, "sc-csvs")
 
         os.makedirs(self.cc_graph_root, exist_ok=True)
         os.makedirs(self.cc_csv_root, exist_ok=True)
+        os.makedirs(self.sc_graph_root, exist_ok=True)
+        os.makedirs(self.sc_csv_root, exist_ok=True)
 
     def run(self):
         # Verify that all controllers have run the same set of experiments before doing the
@@ -64,11 +68,7 @@ class PipelineStage5:
                     if os.path.isdir(path2):
                         assert(os.path.exists(path1)), "FATAL: {0} does not exist".format(path1)
 
-        for m in cc.measures:
-            cc.ControllerComp(sierra_root=self.args.sierra_root,
-                              controllers=self.targets,
-                              src_stem=m['src_stem'],
-                              dest_stem=m['dest_stem'],
-                              title=m['title'],
-                              ylabel=m['ylabel']).generate()
+        cc.ControllerComp(sierra_root=self.args.sierra_root,
+                          controllers=self.targets,
+                          batch_criteria=self.args.batch_criteria).generate()
         print("- Stage5: Controller comparison complete")
