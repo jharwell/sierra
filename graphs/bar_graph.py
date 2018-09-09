@@ -32,22 +32,27 @@ class BarGraph:
 
     """
 
-    def __init__(self, input_fpath, output_fpath, title):
+    def __init__(self, input_fpath, output_fpath, title, xlabels):
 
         self.input_csv_fpath = os.path.abspath(input_fpath)
         self.output_fpath = os.path.abspath(output_fpath)
         self.title = title
+        self.xlabels = xlabels
 
     def generate(self):
         if not os.path.exists(self.input_csv_fpath):
             return
 
+        # fig, ax = plt.subplots()
         df = pd.read_csv(self.input_csv_fpath, sep=';')
         df.plot.bar(legend=True)
+        fig = plt.gcf()
         ax = plt.gca()
+        plt.xticks(range(len(self.xlabels)), self.xlabels, rotation='vertical')
         ax.legend(fontsize=14)
         ax.set_title(self.title, fontsize=24)
         ax.tick_params(labelsize=12)
+
         fig = ax.get_figure()
         fig.set_size_inches(10, 10)
         fig.savefig(self.output_fpath, bbox_inches='tight', dpi=100)

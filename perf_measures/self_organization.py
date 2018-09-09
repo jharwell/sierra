@@ -68,27 +68,12 @@ class InterExpSelfOrganization:
         path = os.path.join(self.batch_output_root, "pm-self-org.csv")
         df_new.to_csv(path, sep=';', index=False)
 
-        if "swarm_size" in self.batch_criteria:
-            RangedSizeGraph(inputy_fpath=path,
-                            output_fpath=os.path.join(self.batch_graph_root,
-                                                      "pm-self-org.eps"),
-                            title="Swarm Self-Organization Due To Sub-Linear Fractional Performance Losses",
-                            ylabel="",
-                            xvals=[2**x for x in range(0, len(df_new.columns))],
-                            legend=None).generate()
-        elif "swarm_density" in self.batch_criteria:
-            sizes = []
-            for i in range(0, len(df_new.columns)):
-                exp_def = pm_utils.unpickle_exp_def(os.path.join(
-                    self.batch_generation_root, "exp" + str(i), "exp_def.pkl"))
-                for e in exp_def:
-                    if 'arena.entity.quantity' in e[0]:
-                        sizes.append(int(e[1]))
-
-            RangedSizeGraph(inputy_fpath=path,
-                            output_fpath=os.path.join(self.batch_graph_root,
-                                                      "pm-self-org.eps"),
-                            title="Swarm Self-Organization Due To Sub-Linear Fractional Performance Losses",
-                            ylabel="",
-                            xvals=sizes,
-                            legend=None).generate()
+        RangedSizeGraph(inputy_fpath=path,
+                        output_fpath=os.path.join(self.batch_graph_root,
+                                                  "pm-self-org.eps"),
+                        title="Swarm Self-Organization Due To Sub-Linear Fractional Performance Losses",
+                        ylabel="",
+                        xvals=pm_utils.calc_swarm_sizes(self.batch_criteria,
+                                                        self.batch_generation_root,
+                                                        len(df.columns)),
+                        legend=None).generate()

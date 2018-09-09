@@ -25,6 +25,25 @@ kCAInCumCSV = "ca-in-cum-avg.csv"
 kBlocksGatheredCumCSV = "blocks-collected-cum.csv"
 
 
+def calc_swarm_sizes(batch_criteria, batch_generation_root, n_exp):
+    """
+    batch_criteria(str): String of batch criteria passed on command line.
+    batch_generation_root(str): Root directory where experiment input files were generated.
+    n_exp(int): How many experiments were run.
+    """
+    if "swarm_size" in batch_criteria:
+        return [2**x for x in range(0, n_exp)]
+    elif "swarm_density" in batch_criteria:
+        sizes = []
+        for i in range(0, n_exp):
+            exp_def = unpickle_exp_def(os.path.join(
+                batch_generation_root, "exp" + str(i), "exp_def.pkl"))
+            for e in exp_def:
+                if 'arena.entity.quantity' in e[0]:
+                    sizes.append(int(e[1]))
+        return sizes
+
+
 def unpickle_exp_def(exp_def_fpath):
     """
     Read in all the different sets of parameter changes that were pickled to make
@@ -108,3 +127,26 @@ class FractionalLosses:
                 df[c] = round(plost_n[c] / perf_n[c], 4)
 
         return df
+
+
+class WeightUnifiedEstimate:
+    """
+    Calculates a single number for each controller in the input .csv representing its scalability
+    across all experiments in the batch (i.e. on the same scenario) using the following equation:
+        1
+    -------------  * SUM(scalability experiment i * log(swarm size for experiment i))
+    # experiments
+    """
+
+    def __init__(self, input_csv_fpath, swarm_sizes):
+        self.input_csv_fpath = input_csv_fpath
+        self.swarm_sizes = swarm_sizes
+
+    def calc(self):
+        df = pd.read_csv(self.input_csv_fpath, sep=';')
+        val = 0
+        for i in range(0, len(df.columns)):
+            val += df.iloc[0, i] * math.log2(self.swarm_sizes[i])
+        val = val / float(len(self.swarm_sizes))
+
+        return val
