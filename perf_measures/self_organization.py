@@ -61,9 +61,13 @@ class InterExpSelfOrganization:
         #    smaller average performance loss (even if they have similar slopes as a function of
         #    population size as approaches with greater average performance loss) score more
         #    favorably at higher population sizes.
+        swarm_sizes = pm_utils.calc_swarm_sizes(self.batch_criteria,
+                                                self.batch_generation_root,
+                                                len(df.columns))
         for i in range(1, len(df.columns)):
-            exp = -(df['exp' + str(i)] - 2 * df['exp' + str(i - 1)])
-            df_new['exp' + str(i)] = (2**i) / (exp / df['exp' + str(i)])
+            exp = -(df['exp' + str(i)] - float(swarm_sizes[i]) /
+                    float(swarm_sizes[i - 1]) * df['exp' + str(i - 1)])
+            df_new['exp' + str(i)] = swarm_sizes[i] / (exp / df['exp' + str(i)])
 
         path = os.path.join(self.batch_output_root, "pm-self-org.csv")
         df_new.to_csv(path, sep=';', index=False)
@@ -73,7 +77,5 @@ class InterExpSelfOrganization:
                                                   "pm-self-org.eps"),
                         title="Swarm Self-Organization Due To Sub-Linear Fractional Performance Losses",
                         ylabel="",
-                        xvals=pm_utils.calc_swarm_sizes(self.batch_criteria,
-                                                        self.batch_generation_root,
-                                                        len(df.columns))[1:],
+                        xvals=swarm_sizes[1:],
                         legend=None).generate()
