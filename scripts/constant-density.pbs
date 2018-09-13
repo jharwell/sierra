@@ -24,7 +24,7 @@ OUTPUT_ROOT=$HOME/exp
 BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \
                   --template-config-file=$HOME/git/sierra/templates/constant-density.argos \
-                  --n_sims=$NSIMS --no-msi --exp-graphs-only"
+                  --n_sims=$NSIMS --no-msi"
 
 # Stateless (does not change # blocks/block manifest from template)
 for d in "${DENSITIES[@]}"

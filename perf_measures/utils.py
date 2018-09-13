@@ -25,6 +25,36 @@ kCAInCumCSV = "ca-in-cum-avg.csv"
 kBlocksGatheredCumCSV = "blocks-collected-cum.csv"
 
 
+def prettify_scenario_labels(batch_criteria, scenarios):
+    """
+    batch_criteria(str): String of batch criteria passed on command line.
+    scenarios(list): SORTED list of directories in sierra root representing the scenarios
+    that each controller was tested on.
+
+    Returns a sorted list of prettified labels suitable for scenario comparison graphs.
+
+    """
+    if "swarm_size" in batch_criteria:
+        return [s[-4:] for s in scenarios]
+    elif "swarm_density" in batch_criteria:
+        return [s[-5:-2].replace('p', '.') for s in scenarios]
+
+
+def sort_scenarios(batch_criteria, scenarios):
+    """
+    batch_criteria(str): String of batch criteria passed on command line.
+    scenarios(list):  List of directories in sierra root representing the scenarios
+    that each controller was tested on.
+
+    Returns a sorted list of scenarios.
+
+    """
+    if "swarm_size" in batch_criteria:
+        return scenarios  # No sorting needed
+    elif "swarm_density" in batch_criteria:
+        return sorted(scenarios, key=lambda s: float(s[-5:-2].replace('p', '.')))
+
+
 def calc_swarm_sizes(batch_criteria, batch_generation_root, n_exp):
     """
     batch_criteria(str): String of batch criteria passed on command line.

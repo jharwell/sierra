@@ -116,7 +116,10 @@ class ControllerComp:
     def _generate_inter_scenario_graph(self, src_stem, dest_stem, title):
         # We can do this because we have already checked that all controllers executed the same set
         # of batch experiments
-        scenarios = os.listdir(os.path.join(self.sierra_root, self.controllers[0]))
+        scenarios = pm_utils.sort_scenarios(self.batch_criteria,
+                                            os.listdir(os.path.join(self.sierra_root,
+                                                                    self.controllers[0])))
+
         swarm_sizes = []
         df = pd.DataFrame(columns=self.controllers, index=scenarios)
 
@@ -136,10 +139,11 @@ class ControllerComp:
                                          src_stem + ".csv")
                 df.loc[s, c] = pm_utils.WeightUnifiedEstimate(input_csv_fpath=csv_ipath,
                                                               swarm_sizes=swarm_sizes).calc()
-            csv_opath = os.path.join(self.sc_csv_root, 'sc-' +
-                                     src_stem + "-" + s + ".csv")
-            df.to_csv(csv_opath, sep=';', index=False)
+        csv_opath = os.path.join(self.sc_csv_root, 'sc-' +
+                                 src_stem + "-wue.csv")
+        df.to_csv(csv_opath, sep=';', index=False)
 
+        scenarios = pm_utils.prettify_scenario_labels(self.batch_criteria, scenarios)
         BarGraph(input_fpath=csv_opath,
                  output_fpath=os.path.join(self.sc_graph_root,
                                            dest_stem + '-wue.eps'),
@@ -164,6 +168,7 @@ class ControllerComp:
         # We can do this because we have already checked that all controllers executed the same set
         # of batch experiments
         scenarios = os.listdir(os.path.join(self.sierra_root, self.controllers[0]))
+
         for s in scenarios:
             df = pd.DataFrame()
             for c in self.controllers:
