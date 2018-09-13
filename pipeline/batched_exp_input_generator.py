@@ -104,23 +104,24 @@ class BatchedExpInputGenerator:
         exp_num = 0
         for exp_def in self.batch_criteria:
             dimensions = None
+            scenario = None
             # The scenario dimensions were specified on the command line
             # Format of 'generators.<scenario>.<type>'
             if len(self.exp_generator_pair[1].split('.')[2]) > 2:
-
-                x, y = self.exp_generator_pair[1][2:].split('x')
+                x, y = self.exp_generator_pair[1].split('.')[2][2:].split('x')
+                scenario = self.exp_generator_pair[1].strip('{0}x{1}'.format(x, y))
                 dimensions = (int(x), int(y))
             else:  # Scenario dimensions should be obtained from batch criteria
                 for c in exp_def:
                     if c[0] == "arena.size":
                         x, y, z = c[1].split(',')
                         dimensions = (int(x), int(y))
+                scenario = self.exp_generator_pair[1]
 
             exp_generation_root = "{0}/exp{1}".format(self.batch_generation_root, exp_num)
             exp_output_root = "{0}/exp{1}".format(self.batch_output_root, exp_num)
             scenario = ScenarioGeneratorFactory(controller=self.exp_generator_pair[0],
-                                                scenario=self.exp_generator_pair[1] +
-                                                'BaseGenerator',
+                                                scenario=scenario + 'BaseGenerator',
                                                 dimensions=dimensions,
                                                 template_config_file=os.path.join(exp_generation_root,
                                                                                   self.batch_config_leaf),

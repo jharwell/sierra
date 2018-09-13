@@ -18,14 +18,14 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 --env ARGOS_PLUGIN_PATH"
 
 cd $HOME/git/sierra
-NSIMS=6
+NSIMS=8
 DIMS=(12x6 24x12 48x24)
-OUTPUT_ROOT=$HOME/exp
+OUTPUT_ROOT=$HOME/exp/ideal
 BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \
                   --template-config-file=$HOME/git/sierra/templates/ideal.argos \
-                  --n_sims=$NSIMS --no-msi --exp-graphs-only \
-                  --batch-criteria=swarm_size.Log256"
+                  --n_sims=$NSIMS --no-msi \
+                  --batch-criteria=swarm_size.Log512"
 
 # Stateless (does not change # blocks/block manifest from template)
 for d in "${DIMS[@]}"
