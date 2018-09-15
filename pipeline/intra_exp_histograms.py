@@ -57,7 +57,7 @@ class IntraExpHistograms:
                                                        target['src_stem'] + '.csv'),
                               output_fpath=os.path.join(
                         self.exp_graph_root,
-                        target['src_stem'] + '-' + col + '-hist.eps'),
+                        target['src_stem'] + '-' + col + '-hist.png'),
                         col=col,
                         title=target['title'],
                         xlabel=col,

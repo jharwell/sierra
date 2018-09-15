@@ -49,7 +49,7 @@ class IntraExpHeatmaps:
                 Heatmap(input_fpath=os.path.join(self.exp_output_root,
                                                  target['src_stem'] + '.csv'),
                         output_fpath=os.path.join(self.exp_graph_root,
-                                                  target['src_stem'] + '-hm.eps'),
+                                                  target['src_stem'] + '-hm.png'),
                         title=target['title'],
                         xlabel='X',
                         ylabel='Y').generate()

@@ -146,7 +146,7 @@ class ControllerComp:
         scenarios = pm_utils.prettify_scenario_labels(self.batch_criteria, scenarios)
         BarGraph(input_fpath=csv_opath,
                  output_fpath=os.path.join(self.sc_graph_root,
-                                           dest_stem + '-wue.eps'),
+                                           dest_stem + '-wue.png'),
                  title=title,
                  xlabels=scenarios).generate()
 
@@ -180,7 +180,7 @@ class ControllerComp:
                 df = df.append(pd.read_csv(csv_ipath, sep=';'))
                 csv_opath = os.path.join(self.cc_csv_root, 'cc-' +
                                          src_stem + "-" + s + ".csv")
-                df.to_csv(csv_opath, sep=';', index=False)
+                # df.to_csv(csv_opath, sep=';', index=False)
 
         for s in scenarios:
             csv_opath = os.path.join(self.cc_csv_root, 'cc-' +
@@ -191,10 +191,9 @@ class ControllerComp:
                                                  self.controllers[0],
                                                  s,
                                                  "exp-inputs")
-
             RangedSizeGraph(inputy_fpath=csv_opath,
                             output_fpath=os.path.join(self.cc_graph_root,
-                                                      dest_stem) + "-rng-" + s + ".eps",
+                                                      dest_stem) + "-rng-" + s + ".png",
                             title=title,
                             ylabel=ylabel,
                             xvals=pm_utils.calc_swarm_sizes(self.batch_criteria,

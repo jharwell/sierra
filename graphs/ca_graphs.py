@@ -60,7 +60,7 @@ class InterExpCAModelEnterGraph:
         df_new.to_csv(cum_stem + ".csv", sep=';', index=False)
         RangedSizeGraph(inputy_fpath=cum_stem + ".csv",
                         output_fpath=os.path.join(self.batch_graph_root,
-                                                  "model-ca-enter-cum.eps"),
+                                                  "model-ca-enter-cum.png"),
                         title="Analytic Prediction vs Empirical Measurements of CA Entry",
                         ylabel="# Robots Entering CA",
                         legend=["Analytic", "Empirical"]).generate()

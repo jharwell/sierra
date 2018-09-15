@@ -61,7 +61,7 @@ class InterExpLinegraphs:
                                                                target['dest_stem']),
                                  output_fpath=os.path.join(
                     self.graph_root,
-                    target['dest_stem'] + '.eps'),
+                    target['dest_stem'] + '.png'),
                     cols=None,
                     title=target['title'],
                     legend=None,

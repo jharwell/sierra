@@ -51,9 +51,9 @@ class InterExpGraphGenerator:
         os.makedirs(self.batch_graph_root, exist_ok=True)
 
     def __call__(self):
-        InterExpLinegraphs(self.batch_output_root,
-                           self.batch_graph_root,
-                           Linegraphs.targets()).generate()
+        # InterExpLinegraphs(self.batch_output_root,
+        #                    self.batch_graph_root,
+        #                    Linegraphs.targets()).generate()
         InterExpScalability(self.batch_output_root,
                             self.batch_graph_root,
                             self.batch_generation_root,
