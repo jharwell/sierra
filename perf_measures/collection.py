@@ -59,7 +59,7 @@ class InterExpBlockCollection:
 
         RangedSizeGraph(inputy_fpath=opath,
                         output_fpath=os.path.join(self.batch_graph_root,
-                                                  "pm-blocks-collected.eps"),
+                                                  "pm-blocks-collected.png"),
                         title="Swarm Blocks Collected",
                         ylabel="# Blocks",
                         xvals=pm_utils.calc_swarm_sizes(self.batch_criteria,

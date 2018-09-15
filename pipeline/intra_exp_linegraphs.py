@@ -60,7 +60,7 @@ class IntraExpLinegraphs:
                                                                target['src_stem']),
                                  output_fpath=os.path.join(
                     self.exp_graph_root,
-                    target['dest_stem'] + '.eps'),
+                    target['dest_stem'] + '.png'),
                     cols=target['cols'],
                     title=target['title'],
                     legend=target['legend'],

@@ -19,7 +19,7 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 
 cd $HOME/git/sierra
 NSIMS=8
-DIMS=(12x6)
+DIMS=(48x24)
 OUTPUT_ROOT=$HOME/tmp/ideal
 BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \

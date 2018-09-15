@@ -64,18 +64,20 @@ class InterExpSelfOrganization:
         swarm_sizes = pm_utils.calc_swarm_sizes(self.batch_criteria,
                                                 self.batch_generation_root,
                                                 len(df.columns))
+        df_new['exp0'] = df['exp0']
         for i in range(1, len(df.columns)):
             exp = -(df['exp' + str(i)] - float(swarm_sizes[i]) /
                     float(swarm_sizes[i - 1]) * df['exp' + str(i - 1)])
             df_new['exp' + str(i)] = swarm_sizes[i] / (exp / df['exp' + str(i)])
 
         path = os.path.join(self.batch_output_root, "pm-self-org.csv")
+        df_new = df_new.reindex(sorted(df_new.columns, key=lambda t: int(t[3:])), axis=1)
         df_new.to_csv(path, sep=';', index=False)
 
         RangedSizeGraph(inputy_fpath=path,
                         output_fpath=os.path.join(self.batch_graph_root,
-                                                  "pm-self-org.eps"),
+                                                  "pm-self-org.png"),
                         title="Swarm Self-Organization Due To Sub-Linear Fractional Performance Losses",
                         ylabel="",
-                        xvals=swarm_sizes[1:],
+                        xvals=swarm_sizes,
                         legend=None).generate()

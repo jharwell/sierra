@@ -46,7 +46,6 @@ class StackedLineGraph:
         self.ylabel = ylabel
 
     def generate(self):
-        print(self.input_csv_fpath)
         if not os.path.exists(self.input_csv_fpath):
             return
 

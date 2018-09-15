@@ -52,19 +52,23 @@ class Comparative:
         scale_cols = [c for c in df.columns if c not in ['clock', 'exp0']]
         cum_stem = os.path.join(self.batch_output_root, "pm-scalability-comp")
         df_new = pd.DataFrame(columns=scale_cols)
+
+        df_new['exp0'] = 1  # Perfect scalability with 1 robot
         for c in scale_cols:
             df_new[c] = df.tail(1)[c] / (df.tail(1)['exp0'] * 2 ** int(c[3:]))
 
+        df_new = df_new.reindex(sorted(df_new.columns, key=lambda t: int(t[3:])), axis=1)
         df_new.to_csv(cum_stem + ".csv", sep=';', index=False)
         swarm_sizes = pm_utils.calc_swarm_sizes(self.batch_criteria,
                                                 self.batch_generation_root,
                                                 len(df.columns))
+
         RangedSizeGraph(inputy_fpath=cum_stem + ".csv",
                         output_fpath=os.path.join(self.batch_graph_root,
-                                                  "pm-scalability-comp.eps"),
+                                                  "pm-scalability-comp.png"),
                         title="Swarm Comparitive Scalability",
                         ylabel="Scalability Value",
-                        xvals=swarm_sizes[1:],
+                        xvals=swarm_sizes,
                         legend=None).generate()
 
 
@@ -100,7 +104,7 @@ class Normalized:
                                                 len(df.columns))
         RangedSizeGraph(inputy_fpath=cum_stem + ".csv",
                         output_fpath=os.path.join(self.batch_graph_root,
-                                                  "pm-scalability-norm.eps"),
+                                                  "pm-scalability-norm.png"),
                         title="Swarm Scalability (normalized)",
                         ylabel="Scalability Value",
                         xvals=swarm_sizes,
@@ -135,7 +139,7 @@ class FractionalPerformanceLoss:
                                                 len(df.columns))
         RangedSizeGraph(inputy_fpath=path,
                         output_fpath=os.path.join(self.batch_graph_root,
-                                                  "pm-scalability-fl.eps"),
+                                                  "pm-scalability-fl.png"),
                         title="Swarm Scalability: Fractional Performance Loss Due To Inter-robot Interference",
                         ylabel="Scalability Value",
                         xvals=swarm_sizes,

@@ -60,7 +60,7 @@ class RangedSizeGraph:
         fig, ax = plt.subplots()
 
         for v in dfy.values:
-            coeffs = np.polyfit(self.xvals, v, 2)
+            coeffs = np.polyfit(self.xvals, v, 3)
             ffit = np.poly1d(coeffs)
             x_new = np.linspace(self.xvals[0], self.xvals[-1], 50)
             y_new = ffit(x_new)
