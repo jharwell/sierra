@@ -18,7 +18,7 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 --env ARGOS_PLUGIN_PATH"
 
 cd $HOME/git/sierra
-NSIMS=8
+NSIMS=4
 DIMS=(48x24)
 OUTPUT_ROOT=$HOME/tmp/ideal
 BASE_CMD="python3 sierra.py \

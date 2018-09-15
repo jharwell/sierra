@@ -43,6 +43,8 @@ class ExpRunner:
         '''Runs the experiment.'''
         assert os.environ.get(
             "ARGOS_PLUGIN_PATH") is not None, ("ERROR: You must have ARGOS_PLUGIN_PATH defined")
+        assert os.environ.get(
+            "LOG4CXX_CONFIGURATION") is not None, ("ERROR: You must LOG4CXX_CONFIGURATION defined")
 
         sys.stdout.write('-' + '-' * self.batch +
                          " Running experiment in {0}...".format(self.exp_generation_root))
