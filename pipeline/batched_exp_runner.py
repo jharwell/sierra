@@ -30,16 +30,21 @@ class BatchedExpRunner:
 
     """
 
-    def __init__(self, batch_exp_root):
+    def __init__(self, batch_exp_root, batch_exp_num):
         self.batch_exp_root = os.path.abspath(batch_exp_root)
+        self.batch_exp_num = batch_exp_num
 
     def run(self, no_msi=False):
         """Runs all experiments in the batch."""
         print("- Stage2: Running batched experiment in {0}...".format(self.batch_exp_root))
 
-        # All dirs start with 'exp', so only sort on stuff after that. Running exp in order will
-        # make collecting timing data/eyeballing runtimes much easier.
-        for item in sorted(os.listdir(self.batch_exp_root), key=lambda e: int(e[3:])):
-            path = os.path.join(self.batch_exp_root, item)
-            if os.path.isdir(path):
-                ExpRunner(path, True).run(no_msi)
+        if self.batch_exp_num is not None:
+            path = os.path.join(self.batch_exp_root, "exp" + self.batch_exp_num)
+            ExpRunner(path, True).run(no_msi)
+        else:
+            # All dirs start with 'exp', so only sort on stuff after that. Running exp in order will
+            # make collecting timing data/eyeballing runtimes much easier.
+            for item in sorted(os.listdir(self.batch_exp_root), key=lambda e: int(e[3:])):
+                path = os.path.join(self.batch_exp_root, item)
+                if os.path.isdir(path):
+                    ExpRunner(path, True).run(no_msi)

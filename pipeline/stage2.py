@@ -34,7 +34,7 @@ class PipelineStage2:
 
     def run(self):
         if self.args.batch_criteria is not None:
-            runner = BatchedExpRunner(self.args.generation_root)
+            runner = BatchedExpRunner(self.args.generation_root, self.args.batch_exp_num)
         else:
             runner = ExpRunner(self.args.generation_root, False)
 

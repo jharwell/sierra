@@ -24,23 +24,23 @@ OUTPUT_ROOT=$HOME/tmp/ideal
 BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \
                   --template-config-file=$HOME/git/sierra/templates/ideal.argos \
-                  --n_sims=$NSIMS --no-msi --exp-graphs-only \
+                  --n_sims=$NSIMS --no-msi\
                   --batch-criteria=swarm_size.Log512"
 
-# Stateless (does not change # blocks/block manifest from template)
-for d in "${DIMS[@]}"
-do
-    rm -rf $OUTPUT_ROOT/stateless.SS${d}
-    $BASE_CMD --generator=stateless.SS${d}
-done
+# # Stateless (does not change # blocks/block manifest from template)
+# for d in "${DIMS[@]}"
+# do
+#     rm -rf $OUTPUT_ROOT/stateless.SS${d}
+#     $BASE_CMD --generator=stateless.SS${d}
+# done
 
 
-# Stateful (does not change # blocks/block manifest from template)
-for d in "${DIMS[@]}"
-do
-    rm -rf $OUTPUT_ROOT/stateful.SS${d}
-    $BASE_CMD --generator=stateful.SS${d}
-done
+# # Stateful (does not change # blocks/block manifest from template)
+# for d in "${DIMS[@]}"
+# do
+#     rm -rf $OUTPUT_ROOT/stateful.SS${d}
+#     $BASE_CMD --generator=stateful.SS${d}
+# done
 
 # Depth1 (does not change # blocks/block manifest from template)
 for d in "${DIMS[@]}"

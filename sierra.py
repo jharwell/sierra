@@ -171,7 +171,13 @@ def define_cmdline():
     parser.add_argument("--batch-criteria",
                         help='''\
                         Name of criteria to use to generate the batched experiments. Options are
-                        specified as <filename>.<class name> as found in the variables/ directory.''')
+                        specified as <filename>.<class name> as found in the variables/
+                        directory.''')
+    parser.add_argument("--batch-exp-num",
+                        help='''\
+                        Experiment number from the batch to run. Ignored if --batch-criteria is not
+                        passed.
+                        ''')
     parser.add_argument("--time-setup",
                         help='''The base simulation setup to use, which sets duration and metric
                         reporting interval. For options, see time_setup.py''',
