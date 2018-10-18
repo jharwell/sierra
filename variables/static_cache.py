@@ -26,8 +26,9 @@ class StaticCache(BaseVariable):
     source foraging scenarios, but will work with only types as well.
 
     Attributes:
-      sizes(list): List of the # of blocks the cache should have each time the simulation respawns it.
-      dimension(list) List of the arena (X,Y) dimensions.
+      sizes(list): List of the # of blocks the cache should have each time the simulation respawns
+                   it.
+      dimension(list): List of the arena (X,Y) dimensions.
     """
 
     def __init__(self, sizes, dimension):
@@ -37,17 +38,20 @@ class StaticCache(BaseVariable):
     def gen_attr_changelist(self):
         """
         Generate list of sets of changes necessary to make to the input file to correctly set up the
-        simulation with the specified static cache.
+        simulation for the list of static cache sizes specified in constructor.
 
-        Tuples of modifications to simulation input files to change:
-
+        - Disables dynamic caches
+        - Enables static caches
+        - Sets static cache size (initial # blocks upon creation) and its dimensions in the arena
+          during its existence.
         """
-        return [set([("static_caches.enable", "true"),
-                     ("static_caches.size", "{0}".format(s)),
-                     ("static_caches.min_dist", "{0}".format(d[0] / 10.0)),
-                     ("static_caches.dimension", "{0}".format(d[0] / 10.0))
-                     ])
-                for d in self.dimension for s in self.sizes]
+        return [set([
+            ("caches.dynamic.enable", "false"),
+            ("caches.static.enable", "true"),
+            ("caches.static.size", "{0}".format(s)),
+            ("caches.dimension", "{0}".format(d[0] / 10.0))
+        ])
+            for d in self.dimension for s in self.sizes]
 
     def gen_tag_rmlist(self):
         return []
