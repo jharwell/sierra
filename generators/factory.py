@@ -15,12 +15,12 @@
   You should have received a copy of the GNU General Public License along with
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
-import generators.stateless
-import generators.stateful
 import generators.single_source
 import generators.powerlaw
 import generators.random
+import generators.depth0
 import generators.depth1
+import generators.depth2
 
 
 def GeneratorPairFactory(controller, scenario, **kwargs):
@@ -31,6 +31,7 @@ def GeneratorPairFactory(controller, scenario, **kwargs):
     """
 
     def __init__(self, **kwargs):
+
         self.controller = eval(controller)(**kwargs)
         self.scenario = scenario
 

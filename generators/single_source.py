@@ -21,7 +21,7 @@ import variables as ev
 import pickle
 
 
-class SSBaseGenerator(ExpInputGenerator):
+class SSGenerator(ExpInputGenerator):
     """
     Modifies simulation input file template for single source foraging:
 

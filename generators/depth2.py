@@ -22,7 +22,7 @@ from generators.exp_input_generator import ExpInputGenerator
 class BaseGenerator(ExpInputGenerator):
 
     """
-    Generates simulation input for base depth1 foraging experiments.
+    Generates simulation input for base depth2 foraging experiments.
     """
 
     def __init__(self, *args, **kwargs):
@@ -30,12 +30,12 @@ class BaseGenerator(ExpInputGenerator):
 
     def init_sim_defs(self):
         """
-        Initialize sim defs common to all depth1 simulations.
+        Initialize sim defs common to all depth2 simulations.
         """
         xml_helper = super().init_sim_defs()
 
         xml_helper.set_attribute("argos-configuration.loop_functions.label",
-                                 "depth1_loop_functions")
+                                 "depth2_loop_functions")
         return xml_helper
 
     def generate(self):
@@ -52,10 +52,10 @@ class BaseGenerator(ExpInputGenerator):
         self._create_all_sim_inputs(self._generate_random_seeds(), self.init_sim_defs())
 
 
-class GreedyPartitioningGenerator(BaseGenerator):
+class GreedyRecPartGenerator(BaseGenerator):
 
     """
-    Generates simulation input common to all  depth1 greedy partitioning controllers.
+    Generates simulation input common to all  depth2 greedy recursive partitioning controllers.
     """
 
     def __init__(self, *args, **kwargs):
@@ -63,12 +63,12 @@ class GreedyPartitioningGenerator(BaseGenerator):
 
     def init_sim_defs(self):
         """
-        Initialize sim defs common to all greedy partitioning controller simulations.
+        Initialize sim defs common to all greedy recursive partitioning controller simulations.
         """
         xml_helper = super().init_sim_defs()
 
         xml_helper.set_tag("argos-configuration.controllers.__template__",
-                           "greedy_partitioning_controller")
+                           "greedy_recpart_controller")
         return xml_helper
 
     def generate(self):
@@ -85,10 +85,10 @@ class GreedyPartitioningGenerator(BaseGenerator):
         self._create_all_sim_inputs(self._generate_random_seeds(), self.init_sim_defs())
 
 
-class OracularPartitioningGenerator(BaseGenerator):
+class OracularRecPartGenerator(BaseGenerator):
 
     """
-    Generates simulation input common to all depth1 oracular partitioning controllers.
+    Generates simulation input common to all depth2 oracular recursive partitioning controllers.
     """
 
     def __init__(self, *args, **kwargs):
@@ -96,12 +96,12 @@ class OracularPartitioningGenerator(BaseGenerator):
 
     def init_sim_defs(self):
         """
-        Initialize sim defs common to all stateful simulations.
+        Initialize sim defs common to all oracular recursive partitioning controllers.
         """
         xml_helper = super().init_sim_defs()
 
         xml_helper.set_tag("argos-configuration.controllers.__template__",
-                           "oracular_partitioning_controller")
+                           "oracular_recpart_controller")
         return xml_helper
 
     def generate(self):
