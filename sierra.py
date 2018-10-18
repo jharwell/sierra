@@ -34,9 +34,10 @@ def get_generator_pair(args):
     if args.generator is None:
         return None
     else:
-        return ("generators." + args.generator.split('.')[0] + ".BaseGenerator",
-                "generators." + abbrev_dict[args.generator.split('.')[1][:2]] +
-                "." + args.generator.split('.')[1])
+        components = args.generator.split('.')
+        controller = components[0] + "." + components[1]
+        scenario = abbrev_dict[components[2][:2]] + "." + components[2]
+        return (controller, scenario)
 
 
 def get_input_generator(args):
@@ -61,15 +62,15 @@ def get_input_generator(args):
                                             args.time_setup)
         else:
             # The scenario dimensions were specified on the command line. Format of:
-            # 'generators.<scenario>.<type>'
-            if len(generator_pair[1].split('.')[2]) > 2:
-
-                x, y = generator_pair[1][2:].split('x')
+            # 'generators.<scenario>.<dimensions>'
+            if len(generator_pair[1].split('.')[1]) > 2:
+                x, y = generator_pair[1].split('.')[1][2:].split('x')
                 dimensions = (int(x), int(y))
 
-            scenario = ScenarioGeneratorFactory(controller=generator_pair[0],
-                                                scenario=generator_pair[1] +
-                                                'BaseGenerator',
+            scenario_name = generator_pair[1].split(
+                '.')[0] + "." + generator_pair[1].split('.')[1][:2] + "Generator"
+            scenario = ScenarioGeneratorFactory(controller='generators.' + generator_pair[0] + "Generator",
+                                                scenario='generators.' + scenario_name,
                                                 dimensions=dimensions,
                                                 template_config_file=args.template_config_file,
                                                 generation_root=args.generation_root,
@@ -79,8 +80,8 @@ def get_input_generator(args):
                                                 tsetup=args.time_setup,
                                                 exp_def_fname="exp_def.pkl")
 
-            return GeneratorPairFactory(scenario,
-                                        controller=generator_pair[0],
+            return GeneratorPairFactory(controller='generators.' + generator_pair[0] + "Generator",
+                                        scenario=scenario,
                                         template_config_file=args.template_config_file,
                                         generation_root=args.generation_root,
                                         exp_output_root=args.output_root,
@@ -99,11 +100,10 @@ def define_cmdline():
     parser.add_argument("--n_sims",
                         help="How many simulations to run in a single experiment in parallel. Defaults to 100.", type=int, default=100)
     parser.add_argument("--n_threads",
-                        help="How many ARGoS simulation threads to use. Defaults to 4.",
+                        help="How many ARGoS simulation threads to use. Defaults to 8.",
                         type=int,
-                        default=4)
+                        default=8)
 
-    # upgrade: think about adding a save CSV path
     parser.add_argument("--sierra-root",
                         help="Root directory for all sierra generate/created files. Subdirectories " +
                         "for controllers, scenarios, experiment/simulation inputs/outputs will be" +
@@ -203,15 +203,15 @@ if __name__ == "__main__":
     # Otherwise, they *MUST* be using batch criteria, and so use the batch criteria to uniquely
     # specify directory names.
     #
-    # Format for pair is (generatiors.<controller>.BaseGenerator, generators.<scenario>.[SS,RN,PL])
+    # Format for pair is (generators.<decomposition depth>.<controller>Generator, generators.<scenario>.[SS,RN,PL])
     #
     # Also, add the template file leaf to the root directory path to help track what experiment was
     # run.
 
     if pair is not None:
-        if len(pair[1].split('.')[2]) > 2:  # They specified scenario dimensions
-            controller = pair[0].split('.')[1]
-            scenario = pair[1].split('.')[2]
+        if len(pair[1].split('.')[1]) > 2:  # They specified scenario dimensions
+            controller = pair[0]
+            scenario = pair[1].split('.')[1]
         else:  # They did not specify scenario dimensions
             controller = pair[0].split('.')[1]
             scenario = args.batch_criteria.split('.')[1]
