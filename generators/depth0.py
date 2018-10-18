@@ -22,7 +22,8 @@ from generators.exp_input_generator import ExpInputGenerator
 class BaseGenerator(ExpInputGenerator):
 
     """
-    Generates simulation input for base depth1 foraging experiments.
+    Generates simulation input common to all depth0 simulations.
+
     """
 
     def __init__(self, *args, **kwargs):
@@ -30,12 +31,10 @@ class BaseGenerator(ExpInputGenerator):
 
     def init_sim_defs(self):
         """
-        Initialize sim defs common to all depth1 simulations.
+        Initialize sim defs common to all depth0 simulations (does nothing for now...)
         """
         xml_helper = super().init_sim_defs()
 
-        xml_helper.set_attribute("argos-configuration.loop_functions.label",
-                                 "depth1_loop_functions")
         return xml_helper
 
     def generate(self):
@@ -52,43 +51,11 @@ class BaseGenerator(ExpInputGenerator):
         self._create_all_sim_inputs(self._generate_random_seeds(), self.init_sim_defs())
 
 
-class GreedyPartitioningGenerator(BaseGenerator):
+class StatefulGenerator(BaseGenerator):
 
     """
-    Generates simulation input common to all  depth1 greedy partitioning controllers.
-    """
+    Generates simulation inputs common to all stateful foraging experiments.
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def init_sim_defs(self):
-        """
-        Initialize sim defs common to all greedy partitioning controller simulations.
-        """
-        xml_helper = super().init_sim_defs()
-
-        xml_helper.set_tag("argos-configuration.controllers.__template__",
-                           "greedy_partitioning_controller")
-        return xml_helper
-
-    def generate(self):
-        """
-        Generates all changes to the input file for the simulation (does not save).
-        """
-        xml_helper = self.init_sim_defs()
-        return xml_helper
-
-    def generate_and_save(self):
-        """
-        Generates and saves input file for the simulation.
-        """
-        self._create_all_sim_inputs(self._generate_random_seeds(), self.init_sim_defs())
-
-
-class OracularPartitioningGenerator(BaseGenerator):
-
-    """
-    Generates simulation input common to all depth1 oracular partitioning controllers.
     """
 
     def __init__(self, *args, **kwargs):
@@ -101,7 +68,43 @@ class OracularPartitioningGenerator(BaseGenerator):
         xml_helper = super().init_sim_defs()
 
         xml_helper.set_tag("argos-configuration.controllers.__template__",
-                           "oracular_partitioning_controller")
+                           "stateful_controller")
+        xml_helper.set_attribute("argos-configuration.loop_functions.label",
+                                 "stateful_loop_functions")
+        return xml_helper
+
+    def generate(self):
+        """
+        Generates all changes to the input file for the simulation (does not save).
+        """
+        xml_helper = self.init_sim_defs()
+        return xml_helper
+
+    def generate_and_save(self):
+        """
+        Generates and saves input file for the simulation.
+        """
+        self._create_all_sim_inputs(self._generate_random_seeds(), self.init_sim_defs())
+
+
+class StatelessGenerator(BaseGenerator):
+    """
+    Generates simulation inputs common to all stateless foraging experiments.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def init_sim_defs(self):
+        """
+        Initialize sim defs common to all stateless simulations.
+        """
+        xml_helper = super().init_sim_defs()
+
+        xml_helper.set_tag("argos-configuration.controllers.__template__",
+                           "stateless_controller")
+        xml_helper.set_attribute("argos-configuration.loop_functions.label",
+                                 "stateless_loop_functions")
         return xml_helper
 
     def generate(self):
