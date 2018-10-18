@@ -25,7 +25,8 @@ class NestPose(BaseVariable):
     Defines the position/size of the nest based on block distribution type.
 
     Attributes:
-      dist_type(str): The block distribution type.
+      dist_type(str): The block distribution type. Valid values are [single_source, dual_source,
+                                                                    quad_source, random, powerlaw].
       dimensions(list): List (X,Y) dimensions to generate nest poses for.
     """
 
@@ -49,7 +50,8 @@ class NestPose(BaseVariable):
                 ("occupancy_grid.nest", "{0}, {1}".format(s[0] * 0.1, s[1] / 2.0)),
             ])
                 for s in self.dimensions]
-        elif self.dist_type == "powerlaw" or self.dist_type == "random":
+        elif (self.dist_type == "powerlaw" or self.dist_type == "random" or
+              self.dist_type == "dual_source" or self.dist_type == "quad_source"):
             return [set([
                 ("arena.light1.position", "{0}, {0}, 1.0".format(s[1] * 0.5)),
                 ("arena_map.nest.size", "{0}, {1}".format(s[0] / 10.0, s[0] / 10.0)),
@@ -64,5 +66,6 @@ class NestPose(BaseVariable):
     def gen_tag_rmlist(self):
         if self.dist_type == "single_source":
             return []
-        elif self.dist_type == "powerlaw" or self.dist_type == "random":
+        elif (self.dist_type == "powerlaw" or self.dist_type == "random" or
+              self.dist_type == "dual_source" or self.dist_type == "quad_source"):
             return [set(["arena.light2", "arena.light3"])]
