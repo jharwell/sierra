@@ -28,6 +28,8 @@ def get_generator_pair(args):
     """Get the (controller, scenario) generator pair as a string tuple"""
     # To ease the ache in my typing fingers
     abbrev_dict = {"SS": "single_source",
+                   "DS": "dual_source",
+                   "QS": "quad_source",
                    "PL": "powerlaw",
                    "RN": "random"}
 

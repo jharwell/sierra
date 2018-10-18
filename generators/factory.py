@@ -16,6 +16,7 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 import generators.single_source
+import generators.dual_source
 import generators.powerlaw
 import generators.random
 import generators.depth0
