@@ -88,7 +88,9 @@ class GreedyPartitioningGenerator(BaseGenerator):
 class OracularPartitioningGenerator(BaseGenerator):
 
     """
-    Generates simulation input common to all depth1 oracular partitioning controllers.
+    Generates simulation input common to all depth1 oracular partitioning controllers. Enables the
+    oracle itself in the loop functions, but does not specify what elements of it are to be used;
+    that is left to either manual template configuration or to batch criteria.
     """
 
     def __init__(self, *args, **kwargs):
@@ -102,6 +104,9 @@ class OracularPartitioningGenerator(BaseGenerator):
 
         xml_helper.set_tag("argos-configuration.controllers.__template__",
                            "oracular_partitioning_controller")
+        xml_helper.set_attribute("loop_functions.oracle.enabled",
+                                 "true")
+
         return xml_helper
 
     def generate(self):
