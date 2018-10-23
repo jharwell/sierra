@@ -107,8 +107,12 @@ class BatchedExpInputGenerator:
             scenario = None
             # The scenario dimensions were specified on the command line
             # Format of 'generators.<scenario>.<type>'
-            if len(self.exp_generator_pair[1].split('.')[2]) > 2:
-                x, y = self.exp_generator_pair[1].split('.')[2][2:].split('x')
+            scenario_name = self.exp_generator_pair[1].split('.')[0] + \
+                "." + self.exp_generator_pair[1].split('.')[1][:2] + "Generator"
+
+            if len(self.exp_generator_pair[1].split('.')[1]) > 2:
+                x, y = self.exp_generator_pair[1].split('.')[1][2:].split('x')
+
                 scenario = self.exp_generator_pair[1].strip('{0}x{1}'.format(x, y))
                 dimensions = (int(x), int(y))
             else:  # Scenario dimensions should be obtained from batch criteria
@@ -120,8 +124,11 @@ class BatchedExpInputGenerator:
 
             exp_generation_root = "{0}/exp{1}".format(self.batch_generation_root, exp_num)
             exp_output_root = "{0}/exp{1}".format(self.batch_output_root, exp_num)
-            scenario = ScenarioGeneratorFactory(controller=self.exp_generator_pair[0],
-                                                scenario=scenario + 'BaseGenerator',
+
+            controller_name = 'generators.' + self.exp_generator_pair[0] + "Generator"
+            scenario_name = 'generators.' + scenario_name
+            scenario = ScenarioGeneratorFactory(controller=controller_name,
+                                                scenario=scenario_name,
                                                 dimensions=dimensions,
                                                 template_config_file=os.path.join(exp_generation_root,
                                                                                   self.batch_config_leaf),
@@ -136,7 +143,7 @@ class BatchedExpInputGenerator:
                                                                             scenario.__class__.__name__])))
 
             g = GeneratorPairFactory(scenario=scenario,
-                                     controller=self.exp_generator_pair[0],
+                                     controller=controller_name,
                                      template_config_file=os.path.join(exp_generation_root,
                                                                        self.batch_config_leaf),
                                      generation_root=exp_generation_root,

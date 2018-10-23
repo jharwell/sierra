@@ -180,7 +180,7 @@ class ControllerComp:
                 df = df.append(pd.read_csv(csv_ipath, sep=';'))
                 csv_opath = os.path.join(self.cc_csv_root, 'cc-' +
                                          src_stem + "-" + s + ".csv")
-                # df.to_csv(csv_opath, sep=';', index=False)
+                df.to_csv(csv_opath, sep=';', index=False)
 
         for s in scenarios:
             csv_opath = os.path.join(self.cc_csv_root, 'cc-' +
@@ -199,4 +199,5 @@ class ControllerComp:
                             xvals=pm_utils.calc_swarm_sizes(self.batch_criteria,
                                                             batch_generation_root,
                                                             len(df.columns)),
-                            legend=self.controllers).generate()
+                            legend=self.controllers,
+                            polynomial_fit=-1).generate()

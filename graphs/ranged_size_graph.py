@@ -19,11 +19,16 @@ Copyright 2018 John Harwell, All rights reserved.
 
 import os
 import pandas as pd
-import matplotlib
-matplotlib.use('Agg')
+import matplotlib as mpl
+mpl.rcParams['lines.linewidth'] = 3
+mpl.rcParams['lines.markersize'] = 10
+mpl.use('Agg')
 import numpy as np
 import matplotlib.pyplot as plt
 import itertools
+
+# Maximum # of rows that the input .csv can have
+kMaxRows = 4
 
 
 class RangedSizeGraph:
@@ -41,9 +46,12 @@ class RangedSizeGraph:
       title(str): Graph title.
       ylabel(str): Y-label for graph.
       legend(str): Legend for graph. If None, no legend is shown.
+      polynomial_fit(it): The degree of the polynomial to use for interpolating each row in the
+                          input .csv (the resulting trendline is then plotted). -1 disables
+                          interpolation and plotting.
     """
 
-    def __init__(self, inputy_fpath, output_fpath, title, ylabel, legend, xvals):
+    def __init__(self, inputy_fpath, output_fpath, title, ylabel, legend, xvals, polynomial_fit):
 
         self.inputy_csv_fpath = os.path.abspath(inputy_fpath)
         self.output_fpath = os.path.abspath(output_fpath)
@@ -51,6 +59,7 @@ class RangedSizeGraph:
         self.ylabel = ylabel
         self.legend = legend
         self.xvals = xvals
+        self.polynomial_fit = polynomial_fit
 
     def generate(self):
         if not os.path.exists(self.inputy_csv_fpath):
@@ -58,21 +67,26 @@ class RangedSizeGraph:
 
         dfy = pd.read_csv(self.inputy_csv_fpath, sep=';')
         fig, ax = plt.subplots()
+        line_styles = [':', '--', '.-', '-']
+        mark_styles = ['o', '^', 's', 'x']
+        colors = ['tab:blue', 'tab:green', 'tab:red', 'tab:brown']
+        i = 0
+        assert len(dfy.values) < kMaxRows, "FATAL: Too many rows {0} >= {1}".format(len(dfy.values),
+                                                                                    kMaxRows)
+        for i in range(0, len(dfy.values)):
+            plt.plot(self.xvals, dfy.values[i], line_styles[i],
+                     marker=mark_styles[i],
+                     color=colors[i])
 
-        for v in dfy.values:
-            coeffs = np.polyfit(self.xvals, v, 3)
-            ffit = np.poly1d(coeffs)
-            x_new = np.linspace(self.xvals[0], self.xvals[-1], 50)
-            y_new = ffit(x_new)
-            plt.plot(self.xvals, v, 'o', x_new, y_new, '--')
+            if -1 != self.polynomial_fit:
+                coeffs = np.polyfit(self.xvals, dfy.values[i], self.polynomial_fit)
+                ffit = np.poly1d(coeffs)
+                x_new = np.linspace(self.xvals[0], self.xvals[-1], 50)
+                y_new = ffit(x_new)
+                plt.plot(x_new, y_new, line_styles[i])
 
         if self.legend is not None:
-            legend = []
-            # Stupid hack to double each item in list sequentially because I'm bad at python
-            for l in self.legend:
-                legend.append(l)
-                legend.append(l)
-            plt.legend(legend, fontsize=14, ncol=max(1, int(len(legend) / 3.0)))
+            plt.legend(self.legend, fontsize=14, ncol=max(1, int(len(self.legend) / 3.0)))
 
         plt.ylabel(self.ylabel, fontsize=18)
         plt.xlabel("Swarm Size", fontsize=18)

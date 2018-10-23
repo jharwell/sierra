@@ -24,7 +24,7 @@ from generators.factory import GeneratorPairFactory
 from generators.factory import ScenarioGeneratorFactory
 
 
-def get_generator_pair(args):
+def get_generator_names(args):
     """Get the (controller, scenario) generator pair as a string tuple"""
     # To ease the ache in my typing fingers
     abbrev_dict = {"SS": "single_source",
@@ -48,7 +48,11 @@ def get_input_generator(args):
 
         # The two generator class names from which should be created a new class for my scenario +
         # controller changes.
-        generator_pair = get_generator_pair(args)
+        generator_names = get_generator_names(args)
+
+        # Running stage 4 or 5
+        if generator_names is None:
+            return None
 
         if args.batch_criteria is not None:
             criteria = __import__("variables.{0}".format(
@@ -58,20 +62,20 @@ def get_input_generator(args):
                                             args.output_root,
                                             getattr(criteria, args.batch_criteria.split(
                                                 ".")[1])().gen_attr_changelist(),
-                                            generator_pair,
+                                            generator_names,
                                             args.n_sims,
                                             args.n_threads,
                                             args.time_setup)
         else:
             # The scenario dimensions were specified on the command line. Format of:
             # 'generators.<scenario>.<dimensions>'
-            if len(generator_pair[1].split('.')[1]) > 2:
-                x, y = generator_pair[1].split('.')[1][2:].split('x')
+            if len(generator_names[1].split('.')[1]) > 2:
+                x, y = generator_names[1].split('.')[1][2:].split('x')
                 dimensions = (int(x), int(y))
 
-            scenario_name = generator_pair[1].split(
-                '.')[0] + "." + generator_pair[1].split('.')[1][:2] + "Generator"
-            scenario = ScenarioGeneratorFactory(controller='generators.' + generator_pair[0] + "Generator",
+            scenario_name = generator_names[1].split(
+                '.')[0] + "." + generator_names[1].split('.')[1][:2] + "Generator"
+            scenario = ScenarioGeneratorFactory(controller='generators.' + generator_names[0] + "Generator",
                                                 scenario='generators.' + scenario_name,
                                                 dimensions=dimensions,
                                                 template_config_file=args.template_config_file,
@@ -82,7 +86,7 @@ def get_input_generator(args):
                                                 tsetup=args.time_setup,
                                                 exp_def_fname="exp_def.pkl")
 
-            return GeneratorPairFactory(controller='generators.' + generator_pair[0] + "Generator",
+            return GeneratorPairFactory(controller='generators.' + generator_names[0] + "Generator",
                                         scenario=scenario,
                                         template_config_file=args.template_config_file,
                                         generation_root=args.generation_root,
@@ -156,14 +160,22 @@ def define_cmdline():
                         if --comp-graphs-only is passed. Default=all.""",
                         default="all")
     parser.add_argument("--generator",
-                        help="""Experiment generator to use. Must be specified as < controller > or
-                        < controller > . < scenario > .
-                        Controller options are: [stateless, stateful, depth1]
-                        Scenario options are: [RN, SS, PL]. You can also add 'AxB' after the
-                        distribution type selection to set the dimensions of the scenario to
-                        something specific, which may be desirable, depending on what kind of
-                        experiment you are doing. A and B should ALWAYS be evenly divisible by
-                        4. You ALWAYS have to specify both parts of the generator.
+                        help="""Experiment generator to use, which is a combination of
+                        controller+scenario configuration. Full specification is [depth0, depth1,
+                        depth2].<controller>.<scenario>.AxB, where A and B are the scenario
+                        dimensions (which can be any non-negative integer values).
+
+                        However, the dimensions can be omitted for some batch criteria.
+
+                        Valid controllers can be found in the [depth0,depth1,depth2] files in the
+                        generators/ directory.
+
+
+                        Scenario options are: [RN, SS, DS, QS, PL], which correspond to [random,
+                        single source, dual source, quad source, powerlaw block distributions].
+
+                        The generator can be omitted if only running stages [4,5], but must be
+                        present if any of the other stages will be running, or sierra will crash.
                         """)
 
     parser.add_argument("--no-msi",
@@ -197,7 +209,8 @@ if __name__ == "__main__":
     parser = define_cmdline()
     args = parser.parse_args()
 
-    pair = get_generator_pair(args)
+    pair = get_generator_names(args)
+    template, ext = os.path.splitext(os.path.basename(args.template_config_file))
 
     # If the user specified a controller + scenario combination for the generator (including
     # dimensions), use it to determine directory names.
@@ -209,7 +222,6 @@ if __name__ == "__main__":
     #
     # Also, add the template file leaf to the root directory path to help track what experiment was
     # run.
-
     if pair is not None:
         if len(pair[1].split('.')[1]) > 2:  # They specified scenario dimensions
             controller = pair[0]
@@ -221,7 +233,6 @@ if __name__ == "__main__":
         template, ext = os.path.splitext(os.path.basename(args.template_config_file))
 
         print("- Controller={0}, Scenario={1}".format(controller, scenario))
-
         if args.generation_root is None:
             args.generation_root = os.path.join(args.sierra_root,
                                                 controller,
@@ -240,9 +251,7 @@ if __name__ == "__main__":
                                            template + '-' + scenario,
                                            "graphs")
 
-        generator = get_input_generator(args)
-    else:
-        generator = None
+    generator = get_input_generator(args)
 
     pipeline = ExpPipeline(args, generator)
     pipeline.run()
