@@ -94,6 +94,7 @@ class ExpCSVAverager:
         if not csvs:
             return None
         csv_sum = csvs[0]
+
         for index in range(1, len(csvs)):
             csv_sum += csvs[index]
         return csv_sum / len(csvs)

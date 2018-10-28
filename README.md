@@ -54,12 +54,13 @@ MAY FALL UPON THEE.*
 `perf_measures/` - Measures to compare performance of different controllers
                    across experiments.
 
-`pipeline/` - Core pipline code in 4 stages:
+`pipeline/` - Core pipline code in 5 stages:
 
               1. Generate inputs
               2. Run experiments
               3. Average results
-              4. Generate graphs
+              4. Generate graphs within a batched experiment
+              5. Generate graphs comparing controllers within/across scenarios
 
 `scripts/` - Contains `.pbs` scripts to be run on MSI.
 
@@ -71,6 +72,13 @@ MAY FALL UPON THEE.*
 
 `variables/` - Generators for experimental variables to modify template .argos
                files in order to run experiments with a given controller.
+
+## General Usage
+
+- There are 5 pipeline stages, though only the first 4 will run automatically.
+
+- If you run stages individually, then before stage X will run without crashing,
+  you need to run stage X-1.
 
 ## How to Add A Controller
 
