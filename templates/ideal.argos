@@ -43,8 +43,8 @@
                      repeat_deposit="false"/>
         </occupancy_grid>
         <task_executive
-            update_exec_ests="false"
-            update_interface_ests="false"
+            update_exec_ests="true"
+            update_interface_ests="true"
             tab_init_method="max_depth"
             />
         <task_allocation>
@@ -60,7 +60,7 @@
               </src_sigmoid_sel>
           </task_abort>
           <task_partition
-              always_partition="true"
+              always_partition="false"
               never_partition="false">
             <src_sigmoid_sel
                 input_src="exec">
@@ -75,7 +75,7 @@
           </task_partition>
           <subtask_sel>
             <src_sigmoid_sel
-                input_src="exec">
+                input_src="interface">
               <sigmoid_sel
                   method="harwell2018">
                 <sigmoid

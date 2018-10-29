@@ -80,4 +80,5 @@ class InterExpSelfOrganization:
                         title="Swarm Self-Organization Due To Sub-Linear Fractional Performance Losses",
                         ylabel="",
                         xvals=swarm_sizes,
-                        legend=None).generate()
+                        legend=None,
+                        polynomial_fit=-1).generate()

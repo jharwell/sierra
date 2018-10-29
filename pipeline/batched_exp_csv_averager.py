@@ -41,6 +41,5 @@ class BatchedExpCSVAverager:
 
         for item in os.listdir(self.batch_output_root):
             path = os.path.join(self.batch_output_root, item)
-            print(path)
             if os.path.isdir(path):
                 ExpCSVAverager(self.batch_config_leaf, path).average_csvs()

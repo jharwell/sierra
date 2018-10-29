@@ -29,20 +29,23 @@ class IntraExpGraphGenerator:
     Generates common/basic graphs from averaged output data within a single experiment.
 
     Attributes:
-      exp_output_root(str): Root directory (relative to current dir or absolute) for experiment outputs.
+      exp_output_root(str): Root directory (relative to current dir or absolute) for experiment
+                            outputs.
       exp_graph_root(str): Root directory (relative to current dir or absolute) of where the
                            generated graphs should be saved for the experiment.
+      generator(str): Fully qualified name of the generator used to create/run the experiments.
     """
 
-    def __init__(self, exp_output_root, exp_graph_root):
+    def __init__(self, exp_output_root, exp_graph_root, generator):
 
         self.exp_output_root = os.path.abspath(os.path.join(exp_output_root, 'averaged-output'))
         self.exp_graph_root = os.path.abspath(exp_graph_root)
+        self.generator = generator
         os.makedirs(self.exp_graph_root, exist_ok=True)
 
     def __call__(self):
         IntraExpLinegraphs(self.exp_output_root, self.exp_graph_root,
-                           Linegraphs.targets()).generate()
+                           Linegraphs.targets('depth2' in self.generator)).generate()
         IntraExpHistograms(self.exp_output_root, self.exp_graph_root,
                            Histograms.targets()).generate()
         IntraExpHeatmaps(self.exp_output_root, self.exp_graph_root,
