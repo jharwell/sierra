@@ -69,7 +69,8 @@ class Comparative:
                         title="Swarm Comparitive Scalability",
                         ylabel="Scalability Value",
                         xvals=swarm_sizes,
-                        legend=None).generate()
+                        legend=None,
+                        polynomial_fit=-1).generate()
 
 
 class Normalized:
@@ -108,7 +109,8 @@ class Normalized:
                         title="Swarm Scalability (normalized)",
                         ylabel="Scalability Value",
                         xvals=swarm_sizes,
-                        legend=None).generate()
+                        legend=None,
+                        polynomial_fit=-1).generate()
 
 
 class FractionalPerformanceLoss:
@@ -143,7 +145,8 @@ class FractionalPerformanceLoss:
                         title="Swarm Scalability: Fractional Performance Loss Due To Inter-robot Interference",
                         ylabel="Scalability Value",
                         xvals=swarm_sizes,
-                        legend=None).generate()
+                        legend=None,
+                        polynomial_fit=-1).generate()
 
 
 class InterExpScalability:

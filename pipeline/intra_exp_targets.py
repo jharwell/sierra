@@ -254,8 +254,8 @@ class Linegraphs:
             {
                 'src_stem': 'task-execution-collector',
                 'dest_stem': 'task-execution-collector-times',
-                'cols': ['int_abort_count', 'cum_avg_abort_count',
-                         'int_complete_count', 'cum_avg_complete_count'],
+                'cols': ['int_abort_count', 'cum_abort_count',
+                         'int_complete_count', 'cum_complete_count'],
                 'title': "Collector Abort/Completion Counts",
                 'legend': ['Abort Count (Interval)',
                            'Average Abort Count (Cumulative)',
@@ -280,8 +280,8 @@ class Linegraphs:
             {
                 'src_stem': 'task-execution-harvester',
                 'dest_stem': 'task-execution-harvester-times',
-                'cols': ['int_abort_count', 'cum_avg_abort_count',
-                         'int_complete_count', 'cum_avg_complete_count'],
+                'cols': ['int_abort_count', 'cum_abort_count',
+                         'int_complete_count', 'cum_complete_count'],
                 'title': "Harvester Abort/Completion Counts",
                 'legend': ['Abort Count (Interval)',
                            'Average Abort Count (Cumulative)',
@@ -306,8 +306,8 @@ class Linegraphs:
             {
                 'src_stem': 'task-execution-generalist',
                 'dest_stem': 'task-execution-generalist-times',
-                'cols': ['int_abort_count', 'cum_avg_abort_count',
-                         'int_complete_count', 'cum_avg_complete_count'],
+                'cols': ['int_abort_count', 'cum_abort_count',
+                         'int_complete_count', 'cum_complete_count'],
                 'title': "Generalist Abort/Completion Counts",
                 'legend': ['Abort Count (Interval)',
                            'Average Abort Count (Cumulative)',
@@ -321,21 +321,21 @@ class Linegraphs:
             {
                 'src_stem': 'task-generalist-tab',
                 'dest_stem': 'task-generalist-tab-subtask-counts',
-                'cols': ['int_subtask1_count', 'cum_avg_subtask1_count',
-                         'int_subtask2_count', 'cum_avg_subtask2_count'],
+                'cols': ['int_subtask1_count', 'cum_subtask1_count',
+                         'int_subtask2_count', 'cum_subtask2_count'],
                 'title': "Generalist TAB Subtask Selection Counts",
-                'legend': ['Subtask1 (Interval)',
-                           'Subtask1 (Cumulative)',
-                           'Subtask2 (Interval)',
-                           'Subtask2 (Cumulative)'],
+                'legend': ['Harvester (Interval)',
+                           'Harvester (Cumulative)',
+                           'Collector (Interval)',
+                           'Collector (Cumulative)'],
                 'xlabel': 'Interval',
                 'ylabel': 'Count'
             },
             {
                 'src_stem': 'task-generalist-tab',
                 'dest_stem': 'task-generalist-tab-partition-counts',
-                'cols': ['int_partition_count', 'cum_avg_partition_count',
-                         'int_no_partition_count', 'cum_avg_no_partition_count'],
+                'cols': ['int_partition_count', 'cum_partition_count',
+                         'int_no_partition_count', 'cum_no_partition_count'],
                 'title': "Generalist TAB Partition Counts",
                 'legend': ['Partition (Interval)',
                            'Partition (Cumulative)',
@@ -354,19 +354,409 @@ class Linegraphs:
                 'ylabel': 'Count'
             },
         ]
+        task_dist = [
+            {
+                'src_stem': 'task-distribution',
+                'dest_stem': 'task-distribution-int-depth-counts',
+                'cols': ['int_depth0_count', 'cum_avg_depth0_count',
+                         'int_depth1_count', 'cum_avg_depth1_count'],
+                'title': "Task Distribution Depth Counts",
+                'legend': ['Depth0 (Interval)',
+                           'Depth0 (Cumulative Average)',
+                           'Depth1 (Interval)',
+                           'Depth1 (Cumulative Average)'],
+                'xlabel': 'Interval',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-distribution',
+                'dest_stem': 'task-generalist-task-counts',
+                'cols': ['int_task0_count', 'cum_avg_task0_count',
+                         'int_task1_count', 'cum_avg_task1_count',
+                         'int_task2_count', 'cum_avg_task2_count'],
+                'title': "Task Distribution Task Counts",
+                'legend': ['Generalist (Interval)',
+                           'Generalist (Cumulative Average)',
+                           'Harvester (Interval)',
+                           'Harvester (Cumulative Average)',
+                           'Collector (Interval)',
+                           'Collector (Cumulative Average)'],
+                'xlabel': 'Interval',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-distribution',
+                'dest_stem': 'task-distribution-tab-counts',
+                'cols': ['int_tab0_count', 'cum_avg_tab0_count'],
+                'title': "Task Distribution TAB Counts",
+                'legend': ['TAB0 (Interval)', 'TAB0 (Cumulative Average)'],
+                'xlabel': 'Interval',
+                'ylabel': 'Count'
+            },
+
+        ]
+
         return {'cache_util': cache_util,
                 'cache_lifecycle': cache_lifecycle,
                 'cache_acq': cache_acq,
-                'task_exec': task_exec,
+                'depth1_task_exec': task_exec,
+                'depth1_task_dist': task_dist,
                 'generalist_tab': generalist_tab}
 
-    def targets():
+    def _depth2_targets():
+        task_dist = [
+            {
+                'src_stem': 'task-distribution',
+                'dest_stem': 'task-distribution-int-depth-counts',
+                'cols': ['int_depth0_count', 'cum_avg_depth0_count',
+                         'int_depth1_count', 'cum_avg_depth1_count',
+                         'int_depth2_count', 'cum_avg_depth2_count'],
+                'title': "Task Distribution Depth Counts",
+                'legend': ['Depth0 (Interval)',
+                           'Depth0 (Cumulative Average)',
+                           'Depth1 (Interval)',
+                           'Depth1 (Cumulative Average)',
+                           'Depth2 (Interval)',
+                           'Depth2 (Cumulative Average)'],
+                'xlabel': 'Interval',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-distribution',
+                'dest_stem': 'task-counts',
+                'cols': ['int_task0_count', 'cum_avg_task0_count',
+                         'int_task1_count', 'cum_avg_task1_count',
+                         'int_task2_count', 'cum_avg_task2_count',
+                         'int_task3_count', 'cum_avg_task3_count'
+                         'int_task4_count', 'cum_avg_task4_count'
+                         'int_task5_count', 'cum_avg_task5_count'
+                         'int_task6_count', 'cum_avg_task6_count'],
+                'title': "Task Distribution Task Counts",
+                'legend': ['Generalist (Interval)',
+                           'Generalist (Cumulative Average)',
+                           'Harvester (Interval)',
+                           'Harvester (Cumulative Average)',
+                           'Collector (Interval)',
+                           'Collector (Cumulative Average)'
+                           'Cache Starter (Interval)',
+                           'Cache Starter (Cumulative Average)'
+                           'Cache Finisher (Interval)',
+                           'Cache Finisher (Cumulative Average)'
+                           'Cache Transferer (Interval)',
+                           'Cache Transferer (Cumulative Average)'
+                           'Cache Collector (Interval)',
+                           'Cache Collector (Cumulative Average)'],
+                'xlabel': 'Interval',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-distribution',
+                'dest_stem': 'task-distribution-tab-counts',
+                'cols': ['int_tab0_count', 'cum_avg_tab0_count',
+                         'int_tab1_count', 'cum_avg_tab1_count'
+                         'int_tab2_count', 'cum_avg_tab2_count'],
+                'title': "Task Distribution TAB Counts",
+                'legend': ['TAB0 (Interval)', 'TAB0 (Cumulative Average)',
+                           'TAB1 (Interval)', 'TAB1 (Cumulative Average)'
+                           'TAB2 (Interval)', 'TAB2 (Cumulative Average)'],
+                'xlabel': 'Interval',
+                'ylabel': 'Count'
+            },
+
+        ]
+        harvester_tab = [
+            {
+                'src_stem': 'task-harvester-tab',
+                'dest_stem': 'task-harvester-tab-subtask-counts',
+                'cols': ['int_subtask1_count', 'cum_subtask1_count',
+                         'int_subtask2_count', 'cum_subtask2_count'],
+                'title': "Harvester TAB Subtask Selection Counts",
+                'legend': ['Cache Starter (Interval)',
+                           'Cache Starter (Cumulative)',
+                           'Cache Finisher (Interval)',
+                           'Cache Finisher (Cumulative)'],
+                'xlabel': 'Interval',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-harvester-tab',
+                'dest_stem': 'task-harvester-tab-partition-counts',
+                'cols': ['int_partition_count', 'cum_partition_count',
+                         'int_no_partition_count', 'cum_no_partition_count'],
+                'title': "Harvester TAB Partition Counts",
+                'legend': ['Partition (Interval)',
+                           'Partition (Cumulative)',
+                           'No Partition (Interval)',
+                           'No Partition (Cumulative)'],
+                'xlabel': 'Interval',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-harvester-tab',
+                'dest_stem': 'task-harvester-tab-task-sw-counts',
+                'cols': ['int_task_sw_count', 'cum_task_sw_count'],
+                'title': "Harvester TAB Task Switch Counts",
+                'legend': ['Interval', 'Cumulative'],
+                'xlabel': 'Interval',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-harvester-tab',
+                'dest_stem': 'task-harvester-tab-task-depth-sw-counts',
+                'cols': ['int_task_depth_sw_count', 'cum_task_depth_sw_count'],
+                'title': "Harvester TAB Task Depth Switch Counts",
+                'legend': ['Interval', 'Cumulative'],
+                'xlabel': 'Interval',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-harvester-tab',
+                'dest_stem': 'task-harvester-tab-prob',
+                'cols': ['int_avg_partition_prob', 'cum_avg_partition_prob',
+                         'int_avg_subtask_selection_prob', 'cum_avg_subtask_selection_prob'],
+                'title': "Harvester TAB Partition/Subtask Selection Probabilities",
+                'legend': ['Partition Probability (Interval Average)',
+                           'Partition Probability (Cumulative Average)',
+                           'Subtask Selection Probability (Interval Average)',
+                           'Subtask Selection Probability (Cumulative Average)'],
+                'xlabel': 'Interval',
+                'ylabel': 'Value'
+            },
+        ]
+        collector_tab = [
+            {
+                'src_stem': 'task-collector-tab',
+                'dest_stem': 'task-collector-tab-subtask-counts',
+                'cols': ['int_subtask1_count', 'cum_subtask1_count',
+                         'int_subtask2_count', 'cum_subtask2_count'],
+                'title': "Collector TAB Subtask Selection Counts",
+                'legend': ['Cache Transferer (Interval)',
+                           'Cache Transferer (Cumulative)',
+                           'Cache Collector (Interval)',
+                           'Cache Collector (Cumulative)'],
+                'xlabel': 'Interval',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-collector-tab',
+                'dest_stem': 'task-collector-tab-partition-counts',
+                'cols': ['int_partition_count', 'cum_partition_count',
+                         'int_no_partition_count', 'cum_no_partition_count'],
+                'title': "Collector TAB Partition Counts",
+                'legend': ['Partition (Interval)',
+                           'Partition (Cumulative)',
+                           'No Partition (Interval)',
+                           'No Partition (Cumulative)'],
+                'xlabel': 'Interval',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-collector-tab',
+                'dest_stem': 'task-collector-tab-task-sw-counts',
+                'cols': ['int_task_sw_count', 'cum_task_sw_count'],
+                'title': "Collector TAB Task Switch Counts",
+                'legend': ['Interval', 'Cumulative'],
+                'xlabel': 'Interval',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-collector-tab',
+                'dest_stem': 'task-collector-tab-task-depth-sw-counts',
+                'cols': ['int_task_depth_sw_count', 'cum_task_depth_sw_count'],
+                'title': "Collector TAB Task Depth Switch Counts",
+                'legend': ['Interval', 'Cumulative'],
+                'xlabel': 'Interval',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-collector-tab',
+                'dest_stem': 'task-collector-tab-prob',
+                'cols': ['int_avg_partition_prob', 'cum_avg_partition_prob',
+                         'int_avg_subtask_selection_prob', 'cum_avg_subtask_selection_prob'],
+                'title': "Collector TAB Partition/Subtask Selection Probabilities",
+                'legend': ['Partition Probability (Interval Average)',
+                           'Partition Probability (Cumulative Average)',
+                           'Subtask Selection Probability (Interval Average)',
+                           'Subtask Selection Probability (Cumulative Average)'],
+                'xlabel': 'Interval',
+                'ylabel': 'Value'
+            },
+        ]
+        task_exec = [
+            {
+                'src_stem': 'task-execution-cache-starter',
+                'dest_stem': 'task-execution-cache-starter-times',
+                'cols': ['int_avg_exec_time', 'cum_avg_exec_time',
+                         'int_avg_interface_time', 'cum_avg_interface_time'],
+                'title': "Cache Starter Execution/Interface Times",
+                'legend': ['Average Exec Time (Interval)',
+                           'Average Exec Time (Cumulative)',
+                           'Average Interface Time (Interval)',
+                           'Average Interface Time (Cumulative)'],
+                'xlabel': 'Interval',
+                'ylabel': 'Time'
+            },
+            {
+                'src_stem': 'task-execution-cache-starter',
+                'dest_stem': 'task-execution-cache-starter-ests',
+                'cols': ['int_avg_exec_estimate', 'cum_avg_exec_estimate',
+                         'int_avg_interface_estimate', 'cum_avg_interface_estimate'],
+                'title': "Cache Starter Execution/Interface Estimates",
+                'legend': ['Average Exec Estimate (Interval)',
+                           'Average Exec Estimate (Cumulative)',
+                           'Average Interface Estimate (Interval)',
+                           'Average Interface Estimate (Cumulative)'],
+                'xlabel': 'Interval',
+                'ylabel': 'Time'
+            },
+
+            {
+                'src_stem': 'task-execution-cache-starter',
+                'dest_stem': 'task-execution-cache-starter-counts',
+                'cols': ['int_abort_count', 'cum_abort_count',
+                         'int_complete_count', 'cum_complete_count'],
+                'title': "Cache Starter Abort/Completion Counts",
+                'legend': ['Abort Count (Interval)',
+                           'Abort Count (Cumulative)',
+                           'Completion Count (Interval)',
+                           'Completion Count (Cumulative)'],
+                'xlabel': 'Interval',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-execution-cache-finisher',
+                'dest_stem': 'task-execution-cache-finisher-times',
+                'cols': ['int_avg_exec_time', 'cum_avg_exec_time',
+                         'int_avg_interface_time', 'cum_avg_interface_time'],
+                'title': "Cache Finisher Execution/Interface Times",
+                'legend': ['Average Exec Time (Interval)',
+                           'Average Exec Time (Cumulative)',
+                           'Average Interface Time (Interval)',
+                           'Average Interface Time (Cumulative)'],
+                'xlabel': 'Interval',
+                'ylabel': 'Time'
+            },
+            {
+                'src_stem': 'task-execution-cache-finisher',
+                'dest_stem': 'task-execution-cache-finisher-ests',
+                'cols': ['int_avg_exec_estimate', 'cum_avg_exec_estimate',
+                         'int_avg_interface_estimate', 'cum_avg_interface_estimate'],
+                'title': "Cache Finisher Execution/Interface Estimates",
+                'legend': ['Average Exec Estimate (Interval)',
+                           'Average Exec Estimate (Cumulative)',
+                           'Average Interface Estimate (Interval)',
+                           'Average Interface Estimate (Cumulative)'],
+                'xlabel': 'Interval',
+                'ylabel': 'Time'
+            },
+            {
+                'src_stem': 'task-execution-cache-finisher',
+                'dest_stem': 'task-execution-cache-finisher-counts',
+                'cols': ['int_abort_count', 'cum_abort_count',
+                         'int_complete_count', 'cum_complete_count'],
+                'title': "Cache Finisher Abort/Completion Counts",
+                'legend': ['Abort Count (Interval)',
+                           'Average Abort Count (Cumulative)',
+                           'Completion Count (Interval)',
+                           'Average Completion Count (Cumulative)'],
+                'xlabel': 'Interval',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-execution-cache-starter',
+                'dest_stem': 'task-execution-cache-transferer-times',
+                'cols': ['int_avg_exec_time', 'cum_avg_exec_time',
+                         'int_avg_interface_time', 'cum_avg_interface_time'],
+                'title': "Cache Transferer Execution/Interface Times",
+                'legend': ['Average Exec Time (Interval)',
+                           'Average Exec Time (Cumulative)',
+                           'Average Interface Time (Interval)',
+                           'Average Interface Time (Cumulative)'],
+                'xlabel': 'Interval',
+                'ylabel': 'Time'
+            },
+            {
+                'src_stem': 'task-execution-cache-transferer',
+                'dest_stem': 'task-execution-cache-transferer-ests',
+                'cols': ['int_avg_exec_estimate', 'cum_avg_exec_estimate',
+                         'int_avg_interface_estimate', 'cum_avg_interface_estimate'],
+                'title': "Cache Transferer Execution/Interface Estimates",
+                'legend': ['Average Exec Estimate (Interval)',
+                           'Average Exec Estimate (Cumulative)',
+                           'Average Interface Estimate (Interval)',
+                           'Average Interface Estimate (Cumulative)'],
+                'xlabel': 'Interval',
+                'ylabel': 'Time'
+            },
+
+            {
+                'src_stem': 'task-execution-cache-transferer',
+                'dest_stem': 'task-execution-cache-transferer-counts',
+                'cols': ['int_abort_count', 'cum_abort_count',
+                         'int_complete_count', 'cum_complete_count'],
+                'title': "Cache Transferer Abort/Completion Counts",
+                'legend': ['Abort Count (Interval)',
+                           'Abort Count (Cumulative)',
+                           'Completion Count (Interval)',
+                           'Completion Count (Cumulative)'],
+                'xlabel': 'Interval',
+                'ylabel': 'Count'
+            },
+            {
+                'src_stem': 'task-execution-cache-collector',
+                'dest_stem': 'task-execution-cache-collector-times',
+                'cols': ['int_avg_exec_time', 'cum_avg_exec_time',
+                         'int_avg_interface_time', 'cum_avg_interface_time'],
+                'title': "Cache Collector Execution/Interface Times",
+                'legend': ['Average Exec Time (Interval)',
+                           'Average Exec Time (Cumulative)',
+                           'Average Interface Time (Interval)',
+                           'Average Interface Time (Cumulative)'],
+                'xlabel': 'Interval',
+                'ylabel': 'Time'
+            },
+            {
+                'src_stem': 'task-execution-cache-collector',
+                'dest_stem': 'task-execution-cache-collector-ests',
+                'cols': ['int_avg_exec_estimate', 'cum_avg_exec_estimate',
+                         'int_avg_interface_estimate', 'cum_avg_interface_estimate'],
+                'title': "Cache Collector Execution/Interface Estimates",
+                'legend': ['Average Exec Estimate (Interval)',
+                           'Average Exec Estimate (Cumulative)',
+                           'Average Interface Estimate (Interval)',
+                           'Average Interface Estimate (Cumulative)'],
+                'xlabel': 'Interval',
+                'ylabel': 'Time'
+            },
+            {
+                'src_stem': 'task-execution-cache-collector',
+                'dest_stem': 'task-execution-cache-collector-counts',
+                'cols': ['int_abort_count', 'cum_abort_count',
+                         'int_complete_count', 'cum_complete_count'],
+                'title': "Cache Collector Abort/Completion Counts",
+                'legend': ['Abort Count (Interval)',
+                           'Average Abort Count (Cumulative)',
+                           'Completion Count (Interval)',
+                           'Average Completion Count (Cumulative)'],
+                'xlabel': 'Interval',
+                'ylabel': 'Count'
+            },
+        ]
+
+        return {"depth2_task_dist": task_dist,
+                "depth2_task_exec": task_exec,
+                "harvester_tab": harvester_tab,
+                "collector_tab": collector_tab}
+
+    def targets(gen_depth2):
         """
         Get a list of dictionaries specifying all the graphs that should be created within an
         experiment (i.e. across simulation runs).
         """
         d = Linegraphs._depth0_targets()
         d.update(Linegraphs._depth1_targets())
+        if gen_depth2:
+            d.update(Linegraphs._depth2_targets())
         return d
 
 
@@ -375,7 +765,7 @@ class Histograms:
 
     def targets():
         """Get the histogram targets, which are shared with linegraphs"""
-        return Linegraphs.targets()
+        return Linegraphs.targets(False)
 
 
 class Heatmaps:

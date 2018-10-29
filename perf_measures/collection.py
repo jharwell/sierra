@@ -65,4 +65,5 @@ class InterExpBlockCollection:
                         xvals=pm_utils.calc_swarm_sizes(self.batch_criteria,
                                                         self.batch_generation_root,
                                                         len(final_collect_count.columns)),
-                        legend=None).generate()
+                        legend=None,
+                        polynomial_fit=-1).generate()

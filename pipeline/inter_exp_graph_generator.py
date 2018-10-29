@@ -37,10 +37,11 @@ class InterExpGraphGenerator:
                              generated graphs should be saved for the experiment.
       batch_generation_root(str): Root directory (relative to current dir or absolute) of where the
                                   input experiment definition file is stored.
+      generator(str): Fully qualified name of the generator used to create/run the experiments.
     """
 
     def __init__(self, batch_output_root, batch_graph_root, batch_generation_root,
-                 batch_criteria):
+                 batch_criteria, generator):
 
         self.batch_output_root = os.path.abspath(os.path.join(batch_output_root,
                                                               'collated-csvs'))
@@ -48,12 +49,13 @@ class InterExpGraphGenerator:
                                                              'collated-graphs'))
         self.batch_generation_root = batch_generation_root
         self.batch_criteria = batch_criteria
+        self.generator = generator
         os.makedirs(self.batch_graph_root, exist_ok=True)
 
     def __call__(self):
-        # InterExpLinegraphs(self.batch_output_root,
-        #                    self.batch_graph_root,
-        #                    Linegraphs.targets()).generate()
+        InterExpLinegraphs(self.batch_output_root,
+                           self.batch_graph_root,
+                           Linegraphs.targets('depth2' in self.generator)).generate()
         InterExpScalability(self.batch_output_root,
                             self.batch_graph_root,
                             self.batch_generation_root,

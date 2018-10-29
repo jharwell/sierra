@@ -22,6 +22,9 @@ from pipeline.batched_intra_exp_graph_generator import BatchedIntraExpGraphGener
 from pipeline.inter_exp_graph_generator import InterExpGraphGenerator
 import pipeline.inter_exp_targets
 
+import matplotlib as mpl
+mpl.rcParams['figure.max_open_warning'] = 500
+
 
 class PipelineStage4:
 
@@ -37,16 +40,19 @@ class PipelineStage4:
         self.args = args
 
     def run(self):
+
         if self.args.batch_criteria is not None:
             CSVCollator(self.args.output_root,
-                        pipeline.inter_exp_targets.Linegraphs.targets())()
+                        pipeline.inter_exp_targets.Linegraphs.targets('depth2' in self.args.generator))()
             intra_exp = BatchedIntraExpGraphGenerator(self.args.output_root,
-                                                      self.args.graph_root)
+                                                      self.args.graph_root,
+                                                      self.args.generator)
         else:
             intra_exp = IntraExpGraphGenerator(self.args.output_root,
-                                               self.args.graph_root)
+                                               self.args.graph_root,
+                                               self.args.generator)
         print("- Stage4: Generating intra-experiment graphs...")
-        intra_exp()
+        # intra_exp()
         print("- Stage4: Intra-experiment graph generation complete")
 
         if self.args.batch_criteria is not None:
@@ -54,5 +60,6 @@ class PipelineStage4:
             InterExpGraphGenerator(self.args.output_root,
                                    self.args.graph_root,
                                    self.args.generation_root,
-                                   self.args.batch_criteria)()
+                                   self.args.batch_criteria,
+                                   self.args.generator)()
             print("- Stage4: Inter-experiment graph generation complete")

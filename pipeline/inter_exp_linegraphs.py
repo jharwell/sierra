@@ -49,12 +49,24 @@ class InterExpLinegraphs:
         depth1_labels = ['cache_util',
                          'cache_lifecycle',
                          'cache_acq',
-                         'task_exec',
+                         'depth1_task_exec',
+                         'depth1_task_dist',
                          'generalist_tab']
+        depth2_labels = ['depth2_task_exec',
+                         'depth2_task_dist',
+                         'harvester_tab',
+                         'collector_tab']
 
-        labels = depth0_labels + depth1_labels
+        labels = depth0_labels + depth1_labels + depth2_labels
+        valid_labels = []
+        for l in labels:
+            if l in self.collate_targets:
+                valid_labels.append(l)
+            else:
+                print("WARNING: Key {0} not found in targets".format(l))
+
         print("-- Linegraphs from {0}".format(self.csv_root))
-        for target_set in [self.collate_targets[x] for x in labels]:
+        for target_set in [self.collate_targets[x] for x in valid_labels]:
 
             for target in target_set:
                 StackedLineGraph(input_stem_fpath=os.path.join(self.csv_root,
