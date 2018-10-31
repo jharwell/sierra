@@ -18,9 +18,9 @@
 
 import os
 import pickle
-from xml_helper import XMLHelper
-from generators.factory import GeneratorPairFactory
-from generators.factory import ScenarioGeneratorFactory
+from pipeline.xml_luigi import XMLLuigi
+from generators.generator_factory import GeneratorPairFactory
+from generators.generator_factory import ScenarioGeneratorFactory
 
 
 class BatchedExpInputGenerator:
@@ -45,18 +45,18 @@ class BatchedExpInputGenerator:
       batch_output_root(str): Root directory for all experiment outputs (relative to current dir or
                               absolute). Each experiment will get a directory 'exp<n>' in this
                               directory for its outputs.
-      batch_criteria(list): List of lists, where each entry in the inner list is a list of (xml tag,
-                            value) pairs to be replaced in the main template XML file for each
-                            experiment.
+      batch_criteria(list): List of lists, where each entry in the inner list is a list of tuples
+                            pairs to be replaced in the main template XML file for each experiment.
       exp_generator_pair(tuple): Pair of class names to use when creating the new generator
                                  (scenario + controller changes).
       n_sims(int): Number of simulations to run in parallel.
       n_threads(int): Number of ARGoS simulation threads to use.
+      n_physics_engines(int): Number of ARGoS physics engines to use.
       time_setup(str): Name of simulation time setup class
     """
 
     def __init__(self, batch_config_template, batch_generation_root, batch_output_root, batch_criteria,
-                 exp_generator_pair, n_sims, n_threads, tsetup):
+                 exp_generator_pair, n_sims, n_threads, n_physics_engines, tsetup):
         assert os.path.isfile(
             batch_config_template), \
             "The path '{}' (which should point to the main config file) did not point to a file".format(
@@ -76,6 +76,7 @@ class BatchedExpInputGenerator:
         self.batch_criteria = batch_criteria
         self.n_sims = n_sims
         self.n_threads = n_threads
+        self.n_physics_engines = n_physics_engines
         self.time_setup = tsetup
         self.exp_generator_pair = exp_generator_pair
 
@@ -83,17 +84,17 @@ class BatchedExpInputGenerator:
         """Generates and saves all the input files for all experiments"""
 
         # create experiment input XML templates
-        xml_helper = XMLHelper(self.batch_config_template)
+        xml_luigi = XMLLuigi(self.batch_config_template)
         exp_num = 0
 
         for exp_def in self.batch_criteria:
             exp_generation_root = "{0}/exp{1}".format(self.batch_generation_root, exp_num)
             os.makedirs(exp_generation_root, exist_ok=True)
 
-            for xml_tag, attr in exp_def:
-                xml_helper.set_attribute(xml_tag, attr)
-            xml_helper.output_filepath = exp_generation_root + "/" + self.batch_config_leaf
-            xml_helper.write()
+            for path, attr, value in exp_def:
+                xml_luigi.attribute_change(path, attr, value)
+            xml_luigi.output_filepath = exp_generation_root + "/" + self.batch_config_leaf
+            xml_luigi.write()
 
             # Write criteria to file for later retrieval
             with open(os.path.join(exp_generation_root, 'exp_def.pkl'), 'ab') as f:
@@ -106,19 +107,17 @@ class BatchedExpInputGenerator:
             dimensions = None
             scenario = None
             # The scenario dimensions were specified on the command line
-            # Format of 'generators.<scenario>.<type>'
-            scenario_name = self.exp_generator_pair[1].split('.')[0] + \
-                "." + self.exp_generator_pair[1].split('.')[1][:2] + "Generator"
-
-            if len(self.exp_generator_pair[1].split('.')[1]) > 2:
+            # Format of '(generators.<decomposition depth>.<controller>.[SS,DS,QS,RN,PL]>'
+            if "Generator" not in self.exp_generator_pair[1]:
                 x, y = self.exp_generator_pair[1].split('.')[1][2:].split('x')
 
-                scenario = self.exp_generator_pair[1].strip('{0}x{1}'.format(x, y))
+                scenario = self.exp_generator_pair[1].split(
+                    '.')[0] + "." + self.exp_generator_pair[1].split('.')[1][:2] + "Generator"
                 dimensions = (int(x), int(y))
             else:  # Scenario dimensions should be obtained from batch criteria
                 for c in exp_def:
-                    if c[0] == "arena.size":
-                        x, y, z = c[1].split(',')
+                    if c[0] == ".//arena" and c[1] == "size":
+                        x, y, z = c[2].split(',')
                         dimensions = (int(x), int(y))
                 scenario = self.exp_generator_pair[1]
 
@@ -126,7 +125,7 @@ class BatchedExpInputGenerator:
             exp_output_root = "{0}/exp{1}".format(self.batch_output_root, exp_num)
 
             controller_name = 'generators.' + self.exp_generator_pair[0] + "Generator"
-            scenario_name = 'generators.' + scenario_name
+            scenario_name = 'generators.' + scenario
             scenario = ScenarioGeneratorFactory(controller=controller_name,
                                                 scenario=scenario_name,
                                                 dimensions=dimensions,
@@ -136,6 +135,7 @@ class BatchedExpInputGenerator:
                                                 exp_output_root=exp_output_root,
                                                 n_sims=self.n_sims,
                                                 n_threads=self.n_threads,
+                                                n_physics_engines=self.n_physics_engines,
                                                 tsetup=self.time_setup,
                                                 exp_def_fname="exp_def.pkl")
 

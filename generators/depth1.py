@@ -32,18 +32,17 @@ class BaseGenerator(ExpInputGenerator):
         """
         Initialize sim defs common to all depth1 simulations.
         """
-        xml_helper = super().init_sim_defs()
+        xml_luigi = super().init_sim_defs()
 
-        xml_helper.set_attribute("argos-configuration.loop_functions.label",
-                                 "depth1_loop_functions")
-        return xml_helper
+        xml_luigi.attribute_change(".//loop_functions", "label", "depth1_loop_functions")
+        return xml_luigi
 
     def generate(self):
         """
         Generates all changes to the input file for the simulation (does not save).
         """
-        xml_helper = self.init_sim_defs()
-        return xml_helper
+        xml_luigi = self.init_sim_defs()
+        return xml_luigi
 
     def generate_and_save(self):
         """
@@ -65,18 +64,17 @@ class GreedyPartitioningGenerator(BaseGenerator):
         """
         Initialize sim defs common to all greedy partitioning controller simulations.
         """
-        xml_helper = super().init_sim_defs()
+        xml_luigi = super().init_sim_defs()
 
-        xml_helper.set_tag("argos-configuration.controllers.__template__",
-                           "greedy_partitioning_controller")
-        return xml_helper
+        xml_luigi.tag_change(".//controllers", "__template__", "greedy_partitioning_controller")
+        return xml_luigi
 
     def generate(self):
         """
         Generates all changes to the input file for the simulation (does not save).
         """
-        xml_helper = self.init_sim_defs()
-        return xml_helper
+        xml_luigi = self.init_sim_defs()
+        return xml_luigi
 
     def generate_and_save(self):
         """
@@ -100,21 +98,19 @@ class OracularPartitioningGenerator(BaseGenerator):
         """
         Initialize sim defs common to all stateful simulations.
         """
-        xml_helper = super().init_sim_defs()
+        xml_luigi = super().init_sim_defs()
 
-        xml_helper.set_tag("argos-configuration.controllers.__template__",
-                           "oracular_partitioning_controller")
-        xml_helper.set_attribute("loop_functions.oracle.enabled",
-                                 "true")
+        xml_luigi.tag_change(".//controllers", "__template__", "oracular_partitioning_controller")
+        xml_luigi.attribute_change(".//loop_functions/oracle", "enabled", "true")
 
-        return xml_helper
+        return xml_luigi
 
     def generate(self):
         """
         Generates all changes to the input file for the simulation (does not save).
         """
-        xml_helper = self.init_sim_defs()
-        return xml_helper
+        xml_luigi = self.init_sim_defs()
+        return xml_luigi
 
     def generate_and_save(self):
         """

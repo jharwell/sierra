@@ -37,9 +37,12 @@ class SwarmSize(BaseVariable):
         necessary to make to the input file to correctly set up the simulation with the specified
         swarm size.
         """
-        return [set([("arena.entity.quantity", s)]) for s in self.size_list]
+        return [set([(".//arena/distribute/entity", "quantity", str(s))]) for s in self.size_list]
 
     def gen_tag_rmlist(self):
+        return []
+
+    def gen_tag_addlist(self):
         return []
 
 

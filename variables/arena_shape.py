@@ -41,23 +41,33 @@ class RectangularArena(BaseVariable):
         - The shape of the arena [square, rectangular]
         - The size of the arena
         """
-        return [set([("arena.size", "{0}, {1}, 2".format(s[0], s[1])),
-                     ("arena.center", "{0}, {1}, 1".format(s[0] / 2.0, s[1] / 2.0)),
-                     ("arena.wall_north.size", "{0}, 0.1, 0.5".format(s[0])),
-                     ("arena.wall_north.position", "{0}, {1}, 0".format(s[0] / 2.0, s[1], 0)),
-                     ("arena.wall_south.size", "{0}, 0.1, 0.5".format(s[0])),
-                     ("arena.wall_south.position", "{0}, 0, 0 ".format(s[0] / 2.0)),
-                     ("arena.wall_east.size", "0.1, {0}, 0.5".format(s[1])),
-                     ("arena.wall_east.position", "{0}, {1}, 0".format(s[0], s[1] / 2.0)),
-                     ("arena.wall_west.size", "0.1, {0}, 0.5".format(s[1])),
-                     ("arena.wall_west.position", "0, {0}, 0".format(s[1] / 2.0)),
-                     ("arena.distribute.position.max", "{0}, {1}, 0".format(s[0] - 2, s[1] - 1)),
-                     ("arena_map.grid.size", "{0}, {1}, 2".format(s[0], s[1])),
-                     ("occupancy_grid.grid.size", "{0}, {1}, 2".format(s[0], s[1]))
+        return [set([(".//arena", "size", "{0}, {1}, 2".format(s[0], s[1])),
+                     (".//arena", "center", "{0}, {1}, 1".format(s[0] / 2.0, s[1] / 2.0)),
+                     (".//arena/distribute/position", "max", "{0}, {1}, 0".format(s[0] - 2,
+                                                                                  s[1] - 1)),
+
+                     (".//arena/*[@id='wall_north']", "size", "{0}, 0.1, 0.5".format(s[0])),
+                     (".//arena/*[@id='wall_north']/body", "position", "{0}, {1}, 0".format(s[0] / 2.0,
+                                                                                            s[1], 0)),
+                     (".//arena/*[@id='wall_south']", "size", "{0}, 0.1, 0.5".format(s[0])),
+                     (".//arena/*[@id='wall_south']/body",
+                      "position", "{0}, 0, 0 ".format(s[0] / 2.0)),
+                     (".//arena/*[@id='wall_east']", "size", "0.1, {0}, 0.5".format(s[1])),
+                     (".//arena/*[@id='wall_east']/body", "position", "{0}, {1}, 0".format(s[0],
+                                                                                           s[1] / 2.0)),
+                     (".//arena/*[@id='wall_west']", "size", "0.1, {0}, 0.5".format(s[1])),
+                     (".//arena/*[@id='wall_west']/body",
+                      "position", "0, {0}, 0".format(s[1] / 2.0)),
+
+                     (".//arena_map/grid", "size", "{0}, {1}, 2".format(s[0], s[1])),
+                     (".//occupancy_grid/grid", "size", "{0}, {1}, 2".format(s[0], s[1]))
                      ])
                 for s in self.dimensions]
 
     def gen_tag_rmlist(self):
+        return []
+
+    def gen_tag_addlist(self):
         return []
 
 

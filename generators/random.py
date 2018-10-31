@@ -21,7 +21,7 @@ import variables as ev
 import pickle
 
 
-class RNDBaseGenerator(ExpInputGenerator):
+class RNGenerator(ExpInputGenerator):
 
     """
     Modifies simulation input file template random foraging:
@@ -33,13 +33,16 @@ class RNDBaseGenerator(ExpInputGenerator):
     """
 
     def __init__(self, template_config_file, generation_root, exp_output_root,
-                 n_sims, n_threads, tsetup, controller, exp_def_fname, dimensions):
+                 n_sims, n_threads, n_physics_engines, tsetup, controller, exp_def_fname,
+                 dimensions):
         super().__init__(template_config_file, generation_root, exp_output_root,
                          n_sims, n_threads, tsetup, exp_def_fname, dimensions)
+        self.n_physics_engines = n_physics_engines
 
-    def generate(self, xml_helper):
-        shape = ev.arena_shape.SquareArena(sqrange=[self.dimensions])
-        [xml_helper.set_attribute(a[0], a[1]) for a in shape.gen_attr_changelist()[0]]
+    def generate(self, xml_luigi):
+
+        shape = ev.arena_shape.SquareArena(sqrange=[self.dimensions[0]])
+        [xml_luigi.attribute_change(a[0], a[1], a[2]) for a in shape.gen_attr_changelist()[0]]
 
         # Write arena dimensions info to file for later retrieval
         with open(self.exp_def_fpath, 'ab') as f:
@@ -47,18 +50,31 @@ class RNDBaseGenerator(ExpInputGenerator):
 
         rms = shape.gen_tag_rmlist()
         if len(rms):
-            [xml_helper.remove_element(a) for a in rms[0]]
+            [xml_luigi.tag_remove(a) for a in rms[0]]
 
         source = ev.block_distribution.TypeRandom()
-        [xml_helper.set_attribute(a[0], a[1]) for a in source.gen_attr_changelist()[0]]
+        [xml_luigi.attribute_change(a[0], a[1], a[2]) for a in source.gen_attr_changelist()[0]]
         rms = source.gen_tag_rmlist()
         if len(rms):
-            [xml_helper.remove_element(a) for a in rms[0]]
+            [xml_luigi.tag_remove(a) for a in rms[0]]
 
-        nest_pose = ev.nest_pose.NestPose("random", [(self.dimensions, self.dimensions)])
-        [xml_helper.set_attribute(a[0], a[1]) for a in nest_pose.gen_attr_changelist()[0]]
+        nest_pose = ev.nest_pose.NestPose("random", [(self.dimensions[0], self.dimensions[0])])
+        [xml_luigi.attribute_change(a[0], a[1], a[2]) for a in nest_pose.gen_attr_changelist()[0]]
         rms = nest_pose.gen_tag_rmlist()
         if len(rms):
-            [xml_helper.remove_element(a) for a in rms[0]]
+            [xml_luigi.tag_remove(a) for a in rms[0]]
 
-        return xml_helper
+        # Configure physics engines. Cannot be done in the parent class, as that is for BOTH
+        # controller and scenario generation, and the arena dimensions are None for configuring
+        # controllers.
+        engines = ev.physics_engines.PhysicsEngines(self.n_physics_engines,
+                                                    "uniform_grid",
+                                                    self.dimensions)
+
+        for a in engines.gen_tag_rmlist()[0]:
+            xml_luigi.tag_remove(a[0], a[1])
+
+        for a in engines.gen_tag_addlist()[0]:
+            xml_luigi.tag_add(a[0], a[1], a[2])
+
+        self._create_all_sim_inputs(self._generate_random_seeds(), xml_luigi)

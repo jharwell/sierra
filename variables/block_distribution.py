@@ -36,9 +36,12 @@ class Type(BaseVariable):
         Generate a list of sets of changes necessary to make to the input file to correctly set up
         the simulation with the specified block distribution
         """
-        return [set([("arena_map.blocks.distribution.dist_type", "{0}".format(self.dist_type))])]
+        return [set([(".//arena_map/blocks/distribution", "dist_type", "{0}".format(self.dist_type))])]
 
     def gen_tag_rmlist(self):
+        return []
+
+    def gen_tag_addlist(self):
         return []
 
 

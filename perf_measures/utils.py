@@ -69,8 +69,8 @@ def calc_swarm_sizes(batch_criteria, batch_generation_root, n_exp):
             exp_def = unpickle_exp_def(os.path.join(
                 batch_generation_root, "exp" + str(i), "exp_def.pkl"))
             for e in exp_def:
-                if 'arena.entity.quantity' in e[0]:
-                    sizes.append(int(e[1]))
+                if e[0] == ".//arena/distribute/entity" and e[1] == "quantity":
+                    sizes.append(int(e[2]))
         return sizes
 
 
@@ -101,10 +101,10 @@ class FractionalLosses:
 
         exp_def = unpickle_exp_def(os.path.join(batch_generation_root, "exp0/exp_def.pkl"))
         for e in exp_def:
-            if 'experiment.length' in e[0]:
-                length = int(e[1])
-            elif 'ticks_per_second' in e[0]:
-                ticks = int(e[1])
+            if './/experiment' == e[0] and 'length' == e[1]:
+                length = int(e[2])
+            elif './/experiment' == e[0] and 'ticks_per_second' == e[1]:
+                ticks = int(e[2])
         self.duration = length * ticks
 
     def calc(self):

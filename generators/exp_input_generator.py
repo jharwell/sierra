@@ -19,7 +19,7 @@
 import os
 import random
 import pickle
-from xml_helper import XMLHelper, InvalidElementError
+from pipeline.xml_luigi import XMLLuigi, InvalidElementError
 from variables import time_setup
 
 
@@ -85,7 +85,7 @@ class ExpInputGenerator:
     def init_sim_defs(self):
         """Generates simulation definitions common to all simulations."""
         # create an object that will edit the XML file
-        xml_helper = XMLHelper(self.template_config_file)
+        xml_luigi = XMLLuigi(self.template_config_file)
 
         # make the save path
         os.makedirs(self.generation_root, exist_ok=True)
@@ -95,34 +95,35 @@ class ExpInputGenerator:
             os.remove(self.commands_fpath)
 
         # Remove visualization elements
-        self._remove_xml_elements(xml_helper, ["argos-configuration.visualization",
-                                               "loop_functions.visualization"])
+        self._remove_xml_elements(xml_luigi, [(".", "./visualization"),
+                                              ("./loop_functions", "./visualization")])
 
         # Set # cores for each simulation to use
-        xml_helper.set_attribute("argos-configuration.framework.system.threads",
-                                 self.n_threads)
+        xml_luigi.attribute_change(".//system",
+                                   "threads",
+                                   str(self.n_threads))
 
         # Setup simulation time parameters
         setup = eval(self.time_setup)()
         for a in setup.gen_attr_changelist()[0]:
-            xml_helper.set_attribute(a[0], a[1])
+            xml_luigi.attribute_change(a[0], a[1], a[2])
 
         # Write time setup  info to file for later retrieval
         with open(self.exp_def_fpath, 'ab') as f:
             pickle.dump(setup.gen_attr_changelist()[0], f)
 
-        return xml_helper
+        return xml_luigi
 
-    def _create_all_sim_inputs(self, random_seeds, xml_helper):
+    def _create_all_sim_inputs(self, random_seeds, xml_luigi):
         """Generate and the input files for all simulation runs."""
 
         for exp_num in range(self.n_sims):
-            self._create_sim_input_file(random_seeds, xml_helper, exp_num)
+            self._create_sim_input_file(random_seeds, xml_luigi, exp_num)
             self._add_sim_to_command_file(os.path.join(self.generation_root,
                                                        self.config_name_format.format(
                                                            self.main_config_name, exp_num)))
 
-    def _create_sim_input_file(self, random_seeds, xml_helper, exp_num):
+    def _create_sim_input_file(self, random_seeds, xml_luigi, exp_num):
         """Generate and write the input files for a particular simulation run."""
 
         # create a new name for this experiment's config file
@@ -135,34 +136,34 @@ class ExpInputGenerator:
         # set the random seed in the config file
         # restriction: the config file must have these fields in order for this function to work
         # correctly.
-        xml_helper.set_attribute("experiment.random_seed", random_seed)
+        xml_luigi.attribute_change(".//experiment", "random_seed", str(random_seed))
 
         # set the output directory
         # restriction: these attributes must exist in the config file
         # this should throw an error if the attributes don't exist
         output_dir = self.output_name_format.format(
             self.main_config_name, exp_num)
-        xml_helper.set_attribute(
-            "controllers.output.sim.output_dir", output_dir)
-        xml_helper.set_attribute(
-            "controllers.output.sim.output_root", self.exp_output_root)
-        xml_helper.set_attribute(
-            "loop_functions.output.sim.output_dir", output_dir)
-        xml_helper.set_attribute(
-            "loop_functions.output.sim.output_root", self.exp_output_root)
+        xml_luigi.attribute_change(
+            ".//controllers/*/params/output/sim", "output_dir", output_dir)
+        xml_luigi.attribute_change(
+            ".//controllers/*/params/output/sim", "output_root", self.exp_output_root)
+        xml_luigi.attribute_change(
+            ".//loop_functions/output/sim", "output_dir", output_dir)
+        xml_luigi.attribute_change(
+            ".//loop_functions/output/sim", "output_root", self.exp_output_root)
         save_path = os.path.join(
             self.generation_root, new_config_name)
-        xml_helper.output_filepath = save_path
+        xml_luigi.output_filepath = save_path
         open(save_path, 'w').close()  # create an empty file
         # save the config file to the correct place
-        xml_helper.write()
+        xml_luigi.write()
 
-    def _remove_xml_elements(self, xml_helper, remove_list):
+    def _remove_xml_elements(self, xml_luigi, remove_list):
         """Generates and saves all the XML config files for all the experiments"""
 
         for item in remove_list:
             try:
-                xml_helper.remove_element(item)
+                xml_luigi.tag_remove(item[0], item[1])
             except InvalidElementError:
                 # it's okay if this one doesn't exist
                 print("XML elements '{}' not found: not removed.".format(item))

@@ -17,6 +17,7 @@
 """
 import generators.single_source
 import generators.dual_source
+import generators.quad_source
 import generators.powerlaw
 import generators.random
 import generators.depth0
@@ -59,8 +60,8 @@ def ScenarioGeneratorFactory(scenario, controller, dimensions, **kwargs):
                                                dimensions=dimensions,
                                                **kwargs)
 
-    def generate(self, xml_helper):
-        return self.scenario_changes.generate(xml_helper)
+    def generate(self, xml_luigi):
+        return self.scenario_changes.generate(xml_luigi)
 
     return type(scenario + '{0}x{1}'.format(dimensions[0], dimensions[1]),
                 (object,), {"__init__": __init__,

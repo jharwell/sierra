@@ -5,3 +5,4 @@ import variables.swarm_density
 import variables.swarm_size
 import variables.temporal_variance
 import variables.static_cache
+import variables.physics_engines

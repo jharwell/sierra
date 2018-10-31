@@ -46,12 +46,15 @@ class StaticCache(BaseVariable):
           during its existence.
         """
         return [set([
-            ("caches.dynamic.enable", "false"),
-            ("caches.static.enable", "true"),
-            ("caches.static.size", "{0}".format(s)),
-            ("caches.dimension", "{0}".format(d[0] / 10.0))
+            (".//caches/dynamic", "enable", "false"),
+            (".//caches/static", "enable", "true"),
+            (".//caches/static", "size", "{0}".format(s)),
+            (".//caches", "dimension", "{0}".format(d[0] / 10.0))
         ])
             for d in self.dimension for s in self.sizes]
 
     def gen_tag_rmlist(self):
+        return []
+
+    def gen_tag_addlist(self):
         return []

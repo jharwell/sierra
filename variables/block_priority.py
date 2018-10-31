@@ -44,6 +44,12 @@ class Priority(BaseVariable):
             ("occupancy_grid.block_priorities.cube", "{0}".format(n[0])),
             ("occupancy_grid.block_priorities.ramp", "{0}".format(n[1]))]) for n in self.priorities]
 
+    def gen_tag_addlist(self):
+        return []
+
+    def gen_tag_rmlist(self):
+        return []
+
 
 class StaticCube(Priority):
     """Gives a higher priority to cube blocks than ramp blocks that does not change with time."""

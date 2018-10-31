@@ -38,12 +38,19 @@ class TimeSetup(BaseVariable):
 
     def gen_attr_changelist(self):
         return [set([
-            ("experiment.length", "{0}".format(self.sim_duration)),
-            ("experiment.ticks_per_second", "{0}".format(kTicksPerSecond)),
-            ("metrics.collect_interval", "{0}".format(self.metric_interval))])]
+            (".//experiment", "length", "{0}".format(self.sim_duration)),
+            (".//experiment", "ticks_per_second", "{0}".format(kTicksPerSecond)),
+            (".//output/metrics", "collect_interval", "{0}".format(self.metric_interval))])]
 
+    def gen_tag_rmlist(self):
+        return []
+
+    def gen_tag_addlist(self):
+        return []
 
 # Just for testing
+
+
 class TInterval(TimeSetup):
     def __init__(self):
         super().__init__(1000 / kTicksPerSecond, 1000 / kDataPoints)

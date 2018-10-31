@@ -153,11 +153,11 @@ batch experiments) then you need to do the following:
 
 3. Once finished, open a pull request with your new graph.
 
-## How to use the XMLHelper class
+## How to use the XMLLuigi class
 
 ### What it can do
 
-The XMLHelper class is the main class for editing Argos configuration files.
+The XMLLuigi class is the main class for editing Argos configuration files.
 It allows you to do three things:
 
 1. Change attributes
@@ -186,7 +186,7 @@ are used, and when editing tags or removing elements, *element paths* are used.
 
 ### Searching Algorithms
 
-There are two different search algorithms that the XMLHelper class uses to
+There are two different search algorithms that the XMLLuigi class uses to
 figure out what your path leads to.  The first is a *loose search* and the
 second is a *strict-loose search*.  Loose searches are always used for attribute
 paths, and strict-loose searches are always used for element paths.

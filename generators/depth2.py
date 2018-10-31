@@ -32,18 +32,17 @@ class BaseGenerator(ExpInputGenerator):
         """
         Initialize sim defs common to all depth2 simulations.
         """
-        xml_helper = super().init_sim_defs()
+        xml_luigi = super().init_sim_defs()
 
-        xml_helper.set_attribute("argos-configuration.loop_functions.label",
-                                 "depth2_loop_functions")
-        return xml_helper
+        xml_luigi.attribute_change(".//loop_functions", "label", "depth2_loop_functions")
+        return xml_luigi
 
     def generate(self):
         """
         Generates all changes to the input file for the simulation (does not save).
         """
-        xml_helper = self.init_sim_defs()
-        return xml_helper
+        xml_luigi = self.init_sim_defs()
+        return xml_luigi
 
     def generate_and_save(self):
         """
@@ -65,18 +64,17 @@ class GreedyRecPartGenerator(BaseGenerator):
         """
         Initialize sim defs common to all greedy recursive partitioning controller simulations.
         """
-        xml_helper = super().init_sim_defs()
+        xml_luigi = super().init_sim_defs()
 
-        xml_helper.set_tag("argos-configuration.controllers.__template__",
-                           "greedy_recpart_controller")
-        return xml_helper
+        xml_luigi.tag_change(".//controllers", "__template__", "greedy_recpart_controller")
+        return xml_luigi
 
     def generate(self):
         """
         Generates all changes to the input file for the simulation (does not save).
         """
-        xml_helper = self.init_sim_defs()
-        return xml_helper
+        xml_luigi = self.init_sim_defs()
+        return xml_luigi
 
     def generate_and_save(self):
         """
@@ -102,20 +100,17 @@ class OracularRecPartGenerator(BaseGenerator):
         """
         Initialize sim defs common to all oracular recursive partitioning controllers.
         """
-        xml_helper = super().init_sim_defs()
+        xml_luigi = super().init_sim_defs()
 
-        xml_helper.set_tag("argos-configuration.controllers.__template__",
-                           "oracular_recpart_controller")
-        xml_helper.set_attribute("loop_functions.oracle.enabled",
-                                 "true")
-        return xml_helper
+        xml_luigi.tag_change(".//controllers", "__template__", "oracular_recpart_controller")
+        return xml_luigi
 
     def generate(self):
         """
         Generates all changes to the input file for the simulation (does not save).
         """
-        xml_helper = self.init_sim_defs()
-        return xml_helper
+        xml_luigi = self.init_sim_defs()
+        return xml_luigi
 
     def generate_and_save(self):
         """

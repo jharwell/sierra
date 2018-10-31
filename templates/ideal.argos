@@ -75,7 +75,7 @@
           </task_partition>
           <subtask_sel>
             <src_sigmoid_sel
-                input_src="interface">
+                input_src="exec">
               <sigmoid_sel
                   method="harwell2018">
                 <sigmoid
@@ -118,7 +118,8 @@
         </block_selection_matrix>
         <cache_selection_matrix
             cache_prox_dist="1.0"
-            block_prox_dist="1.0"/>
+            block_prox_dist="1.0"
+            nest_prox_dist="3.0"/>
         <sensing>
           <proximity_sensor angle_range="-1.1:1.1"
                             delta="0.0001" />
@@ -190,9 +191,9 @@
           task_execution_cache_finisher_fname="task-execution-cache_finisher.csv"
           task_execution_cache_transferer_fname="task-execution-cache_transferer.csv"
           task_execution_cache_collector_fname="task-execution-cache_collector.csv"
-          task_generalist_tab_fname="task-generalist-tab.csv"
-          task_collector_tab_fname="task-collector-tab.csv"
-          task_harvester_tab_fname="task-harvester-tab.csv"
+          task_tab_generalist_fname="task-tab-generalist.csv"
+          task_tab_collector_fname="task-tab-collector.csv"
+          task_tab_harvester_fname="task-tab-harvester.csv"
           task_distribution_fname="task-distribution.csv"
           perception_world_model_fname="perception-world-model.csv"
           arena_robot_occupancy_fname="arena-robot-occupancy.csv"
@@ -211,22 +212,22 @@
       <blocks>
         <manipulation_penalty>
           <waveform
-              type="Sine"
+              type="Null"
               frequency="0.01"
               amplitude="50"
               offset="50"/>
         </manipulation_penalty>
         <distribution
             arena_resolution="0.2"
-            dist_type="random">
+            dist_type="single_source">
           <powerlaw
               pwr_min="0"
               pwr_max="3"
               n_clusters="15"
               />
           <manifest
-              n_cube="10"
-              n_ramp="10"
+              n_cube="25"
+              n_ramp="25"
               unit_dim="0.2"
               />
         </distribution>
@@ -235,19 +236,18 @@
     </arena_map>
     <caches
         dimension="0.8">
-      <static enable="false"
+      <static enable="true"
               size="2"
-              respawn_scale_factor="0.05"
-              >
+              respawn_scale_factor="0.05">
       </static>
       <usage_penalty>
         <waveform
             type="Null"
             frequency="100"
             amplitude="500"
-            offset="10"/>
+            offset="50"/>
       </usage_penalty>
-      <dynamic enable="true"
+      <dynamic enable="false"
                min_dist="0.8"
                min_blocks="2"/>
 

@@ -368,11 +368,11 @@ class Linegraphs:
         ]
         generalist_tab = [
             {
-                'src_stem': 'task-generalist-tab',
-                'dest_stem': 'task-generalist-tab-subtask-counts',
-                'cols': ['int_subtask1_count', 'cum_subtask1_count',
-                         'int_subtask2_count', 'cum_subtask2_count'],
-                'title': "Generalist TAB Subtask Selection Counts",
+                'src_stem': 'task-tab-generalist',
+                'dest_stem': 'task-tab-generalist-subtask-counts',
+                'cols': ['int_avg_subtask1_count', 'cum_avg_subtask1_count',
+                         'int_avg_subtask2_count', 'cum_avg_subtask2_count'],
+                'title': "Average Generalist TAB Subtask Selection Counts",
                 'legend': ['Harvester (Interval)',
                            'Harvester (Cumulative)',
                            'Collector (Interval)',
@@ -381,11 +381,11 @@ class Linegraphs:
                 'ylabel': 'Count'
             },
             {
-                'src_stem': 'task-generalist-tab',
-                'dest_stem': 'task-generalist-tab-partition-counts',
-                'cols': ['int_partition_count', 'cum_partition_count',
-                         'int_no_partition_count', 'cum_no_partition_count'],
-                'title': "Generalist TAB Partition Counts",
+                'src_stem': 'task-tab-generalist',
+                'dest_stem': 'task-tab-generalist-partition-counts',
+                'cols': ['int_avg_partition_count', 'cum_avg_partition_count',
+                         'int_avg_no_partition_count', 'cum_avg_no_partition_count'],
+                'title': "Averge Generalist TAB Partition Counts",
                 'legend': ['Partition (Interval)',
                            'Partition (Cumulative)',
                            'No Partition (Interval)',
@@ -394,35 +394,35 @@ class Linegraphs:
                 'ylabel': 'Count'
             },
             {
-                'src_stem': 'task-generalist-tab',
-                'dest_stem': 'task-generalist-tab-task-sw-counts',
-                'cols': ['int_task_sw_count', 'cum_task_sw_count'],
-                'title': "Generalist TAB Task Switch Counts",
+                'src_stem': 'task-tab-generalist',
+                'dest_stem': 'task-tab-generalist-task-sw-counts',
+                'cols': ['int_avg_task_sw_count', 'cum_avg_task_sw_count'],
+                'title': "Average Generalist TAB Task Switch Counts",
                 'legend': ['Interval', 'Cumulative'],
                 'xlabel': 'Interval',
                 'ylabel': 'Count'
             },
             {
-                'src_stem': 'task-generalist-tab',
-                'dest_stem': 'task-generalist-tab-task-sw-counts',
-                'cols': ['int_task_sw_count', 'cum_task_sw_count'],
-                'title': "Generalist TAB Task Switch Counts",
+                'src_stem': 'task-tab-generalist',
+                'dest_stem': 'task-tab-generalist-task-sw-counts',
+                'cols': ['int_avg_task_sw_count', 'cum_avg_task_sw_count'],
+                'title': "Average Generalist TAB Task Switch Counts",
                 'legend': ['Interval', 'Cumulative'],
                 'xlabel': 'Interval',
                 'ylabel': 'Count'
             },
             {
-                'src_stem': 'task-generalist-tab',
-                'dest_stem': 'task-generalist-tab-task-depth-sw-counts',
-                'cols': ['int_task_depth_sw_count', 'cum_task_depth_sw_count'],
-                'title': "Generalist TAB Task Depth Switch Counts",
+                'src_stem': 'task-tab-generalist',
+                'dest_stem': 'task-tab-generalist-task-depth-sw-counts',
+                'cols': ['int_avg_task_depth_sw_count', 'cum_avg_task_depth_sw_count'],
+                'title': "Average Generalist TAB Task Depth Switch Counts",
                 'legend': ['Interval', 'Cumulative'],
                 'xlabel': 'Interval',
                 'ylabel': 'Count'
             },
             {
-                'src_stem': 'task-generalist-tab',
-                'dest_stem': 'task-generalist-tab-prob',
+                'src_stem': 'task-tab-generalist',
+                'dest_stem': 'task-tab-generalist-prob',
                 'cols': ['int_avg_partition_prob', 'cum_avg_partition_prob',
                          'int_avg_subtask_selection_prob', 'cum_avg_subtask_selection_prob'],
                 'title': "Generalist TAB Partition/Subtask Selection Probabilities",
@@ -451,7 +451,7 @@ class Linegraphs:
             },
             {
                 'src_stem': 'task-distribution',
-                'dest_stem': 'task-generalist-task-counts',
+                'dest_stem': 'task-distribution-task-counts',
                 'cols': ['int_avg_task0_count', 'cum_avg_task0_count',
                          'int_avg_task1_count', 'cum_avg_task1_count',
                          'int_avg_task2_count', 'cum_avg_task2_count'],
@@ -504,7 +504,7 @@ class Linegraphs:
             },
             {
                 'src_stem': 'task-distribution',
-                'dest_stem': 'task-counts',
+                'dest_stem': 'task-distribution-task-counts',
                 'cols': ['int_avg_task0_count', 'cum_avg_task0_count',
                          'int_avg_task1_count', 'cum_avg_task1_count',
                          'int_avg_task2_count', 'cum_avg_task2_count',
@@ -547,11 +547,11 @@ class Linegraphs:
         ]
         harvester_tab = [
             {
-                'src_stem': 'task-harvester-tab',
-                'dest_stem': 'task-harvester-tab-subtask-counts',
-                'cols': ['int_subtask1_count', 'cum_subtask1_count',
-                         'int_subtask2_count', 'cum_subtask2_count'],
-                'title': "Harvester TAB Subtask Selection Counts",
+                'src_stem': 'task-tab-harvester',
+                'dest_stem': 'task-tab-harvester-subtask-counts',
+                'cols': ['int_avg_subtask1_count', 'cum_avg_subtask1_count',
+                         'int_avg_subtask2_count', 'cum_avg_subtask2_count'],
+                'title': "Average Harvester TAB Subtask Selection Counts",
                 'legend': ['Cache Starter (Interval)',
                            'Cache Starter (Cumulative)',
                            'Cache Finisher (Interval)',
@@ -560,11 +560,11 @@ class Linegraphs:
                 'ylabel': 'Count'
             },
             {
-                'src_stem': 'task-harvester-tab',
-                'dest_stem': 'task-harvester-tab-partition-counts',
-                'cols': ['int_partition_count', 'cum_partition_count',
-                         'int_no_partition_count', 'cum_no_partition_count'],
-                'title': "Harvester TAB Partition Counts",
+                'src_stem': 'task-tab-harvester',
+                'dest_stem': 'task-tab-harvester-partition-counts',
+                'cols': ['int_avg_partition_count', 'cum_avg_partition_count',
+                         'int_avg_no_partition_count', 'cum_avg_no_partition_count'],
+                'title': "Average Harvester TAB Partition Counts",
                 'legend': ['Partition (Interval)',
                            'Partition (Cumulative)',
                            'No Partition (Interval)',
@@ -573,26 +573,26 @@ class Linegraphs:
                 'ylabel': 'Count'
             },
             {
-                'src_stem': 'task-harvester-tab',
-                'dest_stem': 'task-harvester-tab-task-sw-counts',
-                'cols': ['int_task_sw_count', 'cum_task_sw_count'],
-                'title': "Harvester TAB Task Switch Counts",
+                'src_stem': 'task-tab-harvester',
+                'dest_stem': 'task-tab-harvester-task-sw-counts',
+                'cols': ['int_avg_task_sw_count', 'cum_avg_task_sw_count'],
+                'title': "Average Harvester TAB Task Switch Counts",
                 'legend': ['Interval', 'Cumulative'],
                 'xlabel': 'Interval',
                 'ylabel': 'Count'
             },
             {
-                'src_stem': 'task-harvester-tab',
-                'dest_stem': 'task-harvester-tab-task-depth-sw-counts',
-                'cols': ['int_task_depth_sw_count', 'cum_task_depth_sw_count'],
-                'title': "Harvester TAB Task Depth Switch Counts",
+                'src_stem': 'task-tab-harvester',
+                'dest_stem': 'task-tab-harvester-task-depth-sw-counts',
+                'cols': ['int_avg_task_depth_sw_count', 'cum_avg_task_depth_sw_count'],
+                'title': "Average Harvester TAB Task Depth Switch Counts",
                 'legend': ['Interval', 'Cumulative'],
                 'xlabel': 'Interval',
                 'ylabel': 'Count'
             },
             {
-                'src_stem': 'task-harvester-tab',
-                'dest_stem': 'task-harvester-tab-prob',
+                'src_stem': 'task-tab-harvester',
+                'dest_stem': 'task-tab-harvester-prob',
                 'cols': ['int_avg_partition_prob', 'cum_avg_partition_prob',
                          'int_avg_subtask_selection_prob', 'cum_avg_subtask_selection_prob'],
                 'title': "Harvester TAB Partition/Subtask Selection Probabilities",
@@ -606,11 +606,11 @@ class Linegraphs:
         ]
         collector_tab = [
             {
-                'src_stem': 'task-collector-tab',
-                'dest_stem': 'task-collector-tab-subtask-counts',
-                'cols': ['int_subtask1_count', 'cum_subtask1_count',
-                         'int_subtask2_count', 'cum_subtask2_count'],
-                'title': "Collector TAB Subtask Selection Counts",
+                'src_stem': 'task-tab-collector',
+                'dest_stem': 'task-tab-collector-subtask-counts',
+                'cols': ['int_avg_subtask1_count', 'cum_avg_subtask1_count',
+                         'int_avg_subtask2_count', 'cum_avg_subtask2_count'],
+                'title': "Average Collector TAB Subtask Selection Counts",
                 'legend': ['Cache Transferer (Interval)',
                            'Cache Transferer (Cumulative)',
                            'Cache Collector (Interval)',
@@ -619,11 +619,11 @@ class Linegraphs:
                 'ylabel': 'Count'
             },
             {
-                'src_stem': 'task-collector-tab',
-                'dest_stem': 'task-collector-tab-partition-counts',
-                'cols': ['int_partition_count', 'cum_partition_count',
-                         'int_no_partition_count', 'cum_no_partition_count'],
-                'title': "Collector TAB Partition Counts",
+                'src_stem': 'task-tab-collector',
+                'dest_stem': 'task-tab-collector-partition-counts',
+                'cols': ['int_avg_partition_count', 'cum_avg_partition_count',
+                         'int_avg_no_partition_count', 'cum_avg_no_partition_count'],
+                'title': "Average Collector TAB Partition Counts",
                 'legend': ['Partition (Interval)',
                            'Partition (Cumulative)',
                            'No Partition (Interval)',
@@ -632,26 +632,26 @@ class Linegraphs:
                 'ylabel': 'Count'
             },
             {
-                'src_stem': 'task-collector-tab',
-                'dest_stem': 'task-collector-tab-task-sw-counts',
-                'cols': ['int_task_sw_count', 'cum_task_sw_count'],
-                'title': "Collector TAB Task Switch Counts",
+                'src_stem': 'task-tab-collector',
+                'dest_stem': 'task-tab-collector-task-sw-counts',
+                'cols': ['int_avg_task_sw_count', 'cum_avg_task_sw_count'],
+                'title': "Average Collector TAB Task Switch Counts",
                 'legend': ['Interval', 'Cumulative'],
                 'xlabel': 'Interval',
                 'ylabel': 'Count'
             },
             {
-                'src_stem': 'task-collector-tab',
-                'dest_stem': 'task-collector-tab-task-depth-sw-counts',
-                'cols': ['int_task_depth_sw_count', 'cum_task_depth_sw_count'],
-                'title': "Collector TAB Task Depth Switch Counts",
+                'src_stem': 'task-tab-collector',
+                'dest_stem': 'task-tab-collector-task-depth-sw-counts',
+                'cols': ['int_avg_task_depth_sw_count', 'cum_avg_task_depth_sw_count'],
+                'title': "Average Collector TAB Task Depth Switch Counts",
                 'legend': ['Interval', 'Cumulative'],
                 'xlabel': 'Interval',
                 'ylabel': 'Count'
             },
             {
-                'src_stem': 'task-collector-tab',
-                'dest_stem': 'task-collector-tab-prob',
+                'src_stem': 'task-tab-collector',
+                'dest_stem': 'task-tab-collector-prob',
                 'cols': ['int_avg_partition_prob', 'cum_avg_partition_prob',
                          'int_avg_subtask_selection_prob', 'cum_avg_subtask_selection_prob'],
                 'title': "Collector TAB Partition/Subtask Selection Probabilities",

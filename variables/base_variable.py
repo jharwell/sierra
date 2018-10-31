@@ -25,3 +25,10 @@ class BaseVariable:
     def gen_tag_rmlist(self):
         """Generate list of sets for removing tags in the template input file."""
         raise NotImplementedError
+
+    def gen_tag_addlist(self):
+        """
+        Generate list of sets for adding tags (and possibly attributes) in the template input
+        file.
+        """
+        raise NotImplementedError

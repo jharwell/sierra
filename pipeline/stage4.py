@@ -25,7 +25,7 @@ import pipeline.inter_exp_targets
 import matplotlib as mpl
 mpl.rcParams['lines.linewidth'] = 3
 mpl.rcParams['lines.markersize'] = 10
-mpl.rcParams['figure.max_open_warning'] = 500
+mpl.rcParams['figure.max_open_warning'] = 10000
 mpl.use('Agg')
 
 

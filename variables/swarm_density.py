@@ -55,16 +55,19 @@ class ConstantDensity(BaseVariable):
         """
         for changeset in self.changes:
             for c in changeset:
-                if c[0] == "arena.size":
-                    x, y, z = c[1].split(',')
+                if c[0] == ".//arena" and c[1] == "size":
+                    x, y, z = c[2].split(',')
                     # ARGoS won't start if there are 0 robots, so you always need to put at least
                     # 1.
                     n_robots = max(1, (int(x) * int(y)) * (self.target_density / 100.0))
-                    changeset.add(("arena.entity.quantity", int(n_robots)))
+                    changeset.add((".//arena/distribute/entity", "quantity", str(int(n_robots))))
                     break
         return self.changes
 
     def gen_tag_rmlist(self):
+        return []
+
+    def gen_tag_addlist(self):
         return []
 
 

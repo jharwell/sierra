@@ -46,15 +46,21 @@ class TemporalVariance(BaseVariable):
         the simulation with the specified block priorities.
         """
         return [set([
-            ("{0}.waveform.type".format(v[0]), v[1]),
-            ("{0}.waveform.frequency".format(v[0]), v[2]),
-            ("{0}.waveform.amplitude".format(v[0]), v[3]),
-            ("{0}.waveform.offset".format(v[0]), v[3])]) for v in self.variances]
+            ("{0}/waveform", "type".format(v[0]), v[1]),
+            ("{0}/waveform", "frequency".format(v[0]), v[2]),
+            ("{0}/waveform", "amplitude".format(v[0]), v[3]),
+            ("{0}/waveform", "offset".format(v[0]), v[3])]) for v in self.variances]
+
+    def gen_tag_rmlist(self):
+        return []
+
+    def gen_tag_addlist(self):
+        return []
 
 
 class BlockCarrySine(TemporalVariance):
     def __init__(self):
-        super().__init__([("actuation.block_carry_throttle",
+        super().__init__([(".//actuation/block_carry_throttle",
                            "Sine",
                            1.0 / hz,
                            amp) for hz in kHZ for amp in kAMPS])
@@ -62,7 +68,7 @@ class BlockCarrySine(TemporalVariance):
 
 class BlockCarrySquare(TemporalVariance):
     def __init__(self):
-        super().__init__([("actuation.block_carry_throttle",
+        super().__init__([(".//actuation/block_carry_throttle",
                            "Square",
                            1.0 / hz,
                            amp) for hz in kHZ for amp in kAMPS])
@@ -70,7 +76,7 @@ class BlockCarrySquare(TemporalVariance):
 
 class BlockCarrySawtooth(TemporalVariance):
     def __init__(self):
-        super().__init__([("actuation.block_carry_throttle",
+        super().__init__([(".//actuation/block_carry_throttle",
                            "Sawtooth",
                            1.0 / hz,
                            amp) for hz in kHZ for amp in kAMPS])
@@ -78,7 +84,7 @@ class BlockCarrySawtooth(TemporalVariance):
 
 class BlockCarryStep50000(TemporalVariance):
     def __init__(self):
-        super().__init__([("actuation.block_carry_throttle",
+        super().__init__([(".//actuation/block_carry_throttle",
                            "Square",
                            1.0 / 50000,
                            amp) for amp in kAMPS])
@@ -86,7 +92,7 @@ class BlockCarryStep50000(TemporalVariance):
 
 class BlockCarryConstant(TemporalVariance):
     def __init__(self):
-        super().__init__([("actuation.block_carry_throttle",
+        super().__init__([(".//actuation/block_carry_throttle",
                            "Constant",
                            0.0,
                            amp) for amp in kAMPS])
@@ -94,7 +100,7 @@ class BlockCarryConstant(TemporalVariance):
 
 class BlockManipulationSine(TemporalVariance):
     def __init__(self):
-        super().__init__([("arena_map.blocks.manipulation_penalty",
+        super().__init__([(".//arena_map/blocks/manipulation_penalty",
                            "Sine",
                            1.0 / hz,
                            amp) for hz in kHZ for amp in kAMPS])
@@ -102,7 +108,7 @@ class BlockManipulationSine(TemporalVariance):
 
 class BlockManipulationSquare(TemporalVariance):
     def __init__(self):
-        super().__init__([("arena_map.blocks.manipulation_penalty",
+        super().__init__([(".//arena_map/blocks/manipulation_penalty",
                            "Square",
                            1.0 / hz,
                            amp) for hz in kHZ for amp in kAMPS])
@@ -110,7 +116,7 @@ class BlockManipulationSquare(TemporalVariance):
 
 class BlockManipulationSawtooth(TemporalVariance):
     def __init__(self):
-        super().__init__([("arena_map.blocks.manipulation_penalty",
+        super().__init__([(".//arena_map/blocks/manipulation_penalty",
                            "Sawtooth",
                            1.0 / hz,
                            amp) for hz in kHZ for amp in kAMPS])
@@ -118,7 +124,7 @@ class BlockManipulationSawtooth(TemporalVariance):
 
 class BlockManipulationStep50000(TemporalVariance):
     def __init__(self):
-        super().__init__([("arena_map.blocks.manipulation_penalty",
+        super().__init__([(".//arena_map/blocks/manipulation_penalty",
                            "Square",
                            1.0 / 50000,
                            amp) for amp in kAMPS])
@@ -126,7 +132,7 @@ class BlockManipulationStep50000(TemporalVariance):
 
 class BlockManipulationConstant(TemporalVariance):
     def __init__(self):
-        super().__init__([("arena_map.blocks.manipulation_penalty",
+        super().__init__([(".//arena_map/blocks/manipulation_penalty",
                            "Constant",
                            0.0,
                            amp) for amp in kAMPS])
@@ -134,7 +140,7 @@ class BlockManipulationConstant(TemporalVariance):
 
 class CacheUsageSine(TemporalVariance):
     def __init__(self):
-        super().__init__([("arena_map.static_caches.usage_penalty",
+        super().__init__([(".//arena_map/static_caches/usage_penalty",
                            "Sine",
                            1.0 / hz,
                            amp) for hz in kHZ for amp in kAMPS])
@@ -142,7 +148,7 @@ class CacheUsageSine(TemporalVariance):
 
 class CacheUsageSquare(TemporalVariance):
     def __init__(self):
-        super().__init__([("arena_map.static_caches.usage_penalty",
+        super().__init__([(".//arena_map/static_caches/usage_penalty",
                            "Square",
                            1.0 / hz,
                            amp) for hz in kHZ for amp in kAMPS])
@@ -150,7 +156,7 @@ class CacheUsageSquare(TemporalVariance):
 
 class CacheUsageSawtooth(TemporalVariance):
     def __init__(self):
-        super().__init__([("arena_map.static_caches.usage_penalty",
+        super().__init__([(".//arena_map/static_caches/usage_penalty",
                            "Sawtooth",
                            1.0 / hz,
                            amp) for hz in kHZ for amp in kAMPS])
@@ -158,7 +164,7 @@ class CacheUsageSawtooth(TemporalVariance):
 
 class CacheUsageStep50000(TemporalVariance):
     def __init__(self):
-        super().__init__([("arena_map.static_caches.usage_penalty",
+        super().__init__([(".//arena_map/static_caches/usage_penalty",
                            "Square",
                            1.0 / 50000,
                            amp) for amp in kAMPS])
@@ -166,7 +172,7 @@ class CacheUsageStep50000(TemporalVariance):
 
 class CacheUsageConstant(TemporalVariance):
     def __init__(self):
-        super().__init__([("arena_map.static_caches.usage_penalty",
+        super().__init__([(".//arena_map/static_caches/usage_penalty",
                            "Constant",
                            0.0,
                            amp) for amp in kAMPS])

@@ -63,7 +63,6 @@ class CSVCollator:
                             continue
 
                         df = pd.read_csv(csv_ipath, sep=';')
-
                         assert target['col'] in df.columns.values, "FATAL: {0} not in columns of {1}".format(
                             target['col'], target['src_stem'] + '.csv')
                         df_new['clock'] = df['clock']
