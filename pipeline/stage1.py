@@ -39,7 +39,7 @@ class PipelineStage1:
             self.input_generator.generate()
             print("- Stage1: {0} Input files generated in {1} experiments.".format(
                 sum([len(files) for r, d, files in os.walk(self.args.generation_root)]),
-                sum([len(d) for r, d, files in os.walk(self.args.generation_root)])))
+                sum([len(d) for r, d, files in os.walk(self.args.generation_root)]) - 1))
         else:
             print("- Stage1: Generating input files for experiment '{0}' in {1}...".format(self.args.generator,
                                                                                            self.args.generation_root))

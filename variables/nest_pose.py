@@ -42,12 +42,6 @@ class NestPose(BaseVariable):
         """
         if self.dist_type == "single_source":
             return [set([
-                (".//arena/*[@id='light1']", "position",
-                 "{0}, {1}, 1.0".format(s[0] * 0.1, s[1] * 0.25)),
-                (".//arena/*[@id='light2']", "position", "{0}, {1}, 1.0".format(s[0] * 0.1,
-                                                                                s[1] * 0.5)),
-                (".//arena/*[@id='light3']", "position", "{0}, {1}, 1.0".format(s[0] * 0.1,
-                                                                                s[1] * 0.75)),
                 (".//arena_map/nest", "size", "{0}, {1}".format(s[0] / 10.0, s[1] * 0.8)),
                 (".//arena_map/nest", "center", "{0}, {1}".format(s[0] * 0.1, s[1] / 2.0)),
                 (".//block_selection_matrix", "nest", "{0}, {1}".format(s[0] * 0.1, s[1] / 2.0)),
@@ -56,7 +50,6 @@ class NestPose(BaseVariable):
         elif (self.dist_type == "powerlaw" or self.dist_type == "random" or
               self.dist_type == "dual_source" or self.dist_type == "quad_source"):
             return [set([
-                (".//arena/*[@id='light1']", "position", "{0}, {0}, 1.0".format(s[1] * 0.5)),
                 (".//arena_map/nest", "size", "{0}, {1}".format(s[0] / 10.0, s[0] / 10.0)),
                 (".//arena_map/nest", "center", "{0}, {0}".format(s[0] * 0.5)),
                 (".//block_selection_matrix", "nest", "{0}, {0}".format(s[0] * 0.5)),
@@ -67,11 +60,7 @@ class NestPose(BaseVariable):
             raise NotImplementedError
 
     def gen_tag_rmlist(self):
-        if self.dist_type == "single_source":
-            return []
-        elif (self.dist_type == "powerlaw" or self.dist_type == "random" or
-              self.dist_type == "dual_source" or self.dist_type == "quad_source"):
-            return [set([(".//arena", "./*[@id='light2']"), (".//arena", "./*[@id='light3']")])]
+        return []
 
     def gen_tag_addlist(self):
         return []

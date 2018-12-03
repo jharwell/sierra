@@ -96,7 +96,7 @@ with sierra from the command line you have to:
 
    `init_sim_defs()` - Initial simulation definitions common to ANY simulation
    that uses the controller (this usually is just changing the controller/loop
-   function labels). See the stateful/stateless controllers for examples.
+   function labels). See the stateful/CRW controllers for examples.
 
    `generate()` - Generate simulation definitions without saving the file
    (non-terminal generator).

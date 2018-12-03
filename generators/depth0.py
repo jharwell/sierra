@@ -68,7 +68,7 @@ class StatefulGenerator(BaseGenerator):
         xml_luigi = super().init_sim_defs()
 
         xml_luigi.tag_change(".//controllers", "__template__", "stateful_controller")
-        xml_luigi.attribute_change(".//loop_functions", "label", "stateful_loop_functions")
+        xml_luigi.attribute_change(".//loop_functions", "label", "depth0_loop_functions")
         return xml_luigi
 
     def generate(self):
@@ -85,9 +85,9 @@ class StatefulGenerator(BaseGenerator):
         self._create_all_sim_inputs(self._generate_random_seeds(), self.init_sim_defs())
 
 
-class StatelessGenerator(BaseGenerator):
+class CRWGenerator(BaseGenerator):
     """
-    Generates simulation inputs common to all stateless foraging experiments.
+    Generates simulation inputs common to all CRW foraging experiments.
     """
 
     def __init__(self, *args, **kwargs):
@@ -99,8 +99,8 @@ class StatelessGenerator(BaseGenerator):
         """
         xml_luigi = super().init_sim_defs()
 
-        xml_luigi.tag_change(".//controllers", "__template__", "stateless_controller")
-        xml_luigi.attribute_change(".//loop_functions", "label", "stateless_loop_functions")
+        xml_luigi.tag_change(".//controllers", "__template__", "crw_controller")
+        xml_luigi.attribute_change(".//loop_functions", "label", "depth0_loop_functions")
         return xml_luigi
 
     def generate(self):
