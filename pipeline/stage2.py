@@ -25,7 +25,7 @@ class PipelineStage2:
     """
     Implements stage 2 of the experimental pipeline:
 
-    Run the specified  # of experiments in parallel using GNU Parallel on
+    Runs all experiments in the generation root in parallel using GNU Parallel on
     the provided set of hosts on MSI (or on a single personal computer for testing).
     """
 

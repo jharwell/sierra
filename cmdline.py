@@ -29,60 +29,64 @@ class Cmdline:
                             help="The template configuration file for the experiment.")
 
         parser.add_argument("--n_sims",
-                            help="How many simulations to run in a single experiment in parallel. Defaults to 100.", type=int, default=100)
+                            help="""How many should be averaged together to form a single experiment. Use=stage1. Default=100.""",
+                            type=int,
+                            default=100)
         parser.add_argument("--n_threads",
-                            help="How many ARGoS simulation threads to use. Defaults to 8.",
+                            help="""How many ARGoS simulation threads to use for each simulation in
+                            each experiment. Use=stage1. Default=8.""",
                             type=int,
                             default=8)
 
         parser.add_argument("--sierra-root",
-                            help="Root directory for all sierra generate/created files. Subdirectories " +
-                            "for controllers, scenarios, experiment/simulation inputs/outputs will be" +
-                            "created in this directory as needed. Can persist between invocations.")
+                            help="""Root directory for all sierra generated/created files. Subdirectories for controllers, scenarios,
+                            experiment/simulation inputs/outputs will be created in this directory
+                            as needed. Can persist between invocations of sierra.""")
         parser.add_argument("--generation-root",
-                            help="""Root directory to save generated experiment input files, or the
-                            directory which will contain directories for each experiment's input files,
-                            for batch mode. Defaults to
-                            <sierra_root>/<controller>/<scenario>/exp-inputs. You should almost never
-                            have to change this.""")
+                            help="""Root directory to save generated experiment input files, or the directory which will contain
+                            directories for each experiment's input files, for batch
+                            mode. Use=stage[1,2,3]. Default=<sierra_root>/<controller>/<scenario>/exp-inputs. You
+                            should almost never have to change this.""")
         parser.add_argument("--output-root",
                             help="""Root directory for saving simulation outputs a single experiment, or
                             the root directory which will contain directories for each experiment's
-                            outputs for batch mode). Defaults to
+                            outputs for batch mode). Use=stage[3,4,5]. Defaults to
                             <sierra_root>/<controller>/<scenario>/exp-outputs. You should almost never
                             have to change this.""")
         parser.add_argument("--graph-root",
-                            help="""Root directory for saving generated graph files for a single
-                            experiment, or the root directory which will contain directories for each
-                            experiment's generated graphs for batch mode. Defaults to
-                            <sierra_root>/<controller>/<scenario>/generated-graphs. You should almost
-                            never have to change this.""")
+                            help="""Root directory for saving generated graph files for a single experiment, or the root directory
+                            which will contain directories for each experiment's generated graphs
+                            for batch
+                            mode. Use=stage[4,5]. Defaults=<sierra_root>/<controller>/<scenario>/generated-graphs. You
+                            should almost never have to change this.""")
 
         run_group = parser.add_mutually_exclusive_group()
         run_group.add_argument("--exp-inputs-only",
                                help="""Only generate the config files and command file for an
-                               experiment/set of experiments.""",
+                               experiment/set of experiments (stage1).""",
                                action="store_true")
         run_group.add_argument("--exp-run-only",
                                help="""Only run the experiments on previously generated set of input
-                               files for an experiment/set of experiments.""",
+                               files for an experiment/set of experiments (stage2).""",
                                action="store_true")
         run_group.add_argument("--exp-average-only",
-                               help="Only perform CSV averaging on a previously run experiment/set of experiments.",
+                               help="""Only perform CSV averaging on a previously run experiment/set
+                               of experiments (stage3).""",
                                action="store_true")
         run_group.add_argument("--exp-graphs-only",
-                               help="Only perform graph generation on a previous run experiments/set of experiments.",
+                               help="""Only perform graph generation on a previous run
+                               experiments/set of experiments (stage4).""",
                                action="store_true")
         run_group.add_argument("--cc-graphs-only",
-                               help="""Only perform graph generation for comparing controllers. All
-                               controllers within <sierra_root> will be compared, so it is assumed that
-                               if this option is passed that the # experiments/batch criteria is the
-                               same for all. This is NOT part of the default pipeline.""",
+                               help="""Only perform graph generation for comparing controllers (stage5). It is assumed that if this
+                               option is passed that the # experiments/batch criteria is the same
+                               for all controllers that will be compared. This is NOT part of the
+                               default pipeline.""",
                                action="store_true")
         parser.add_argument("--comp-controllers",
                             help="""Comma separated list of controllers to compare within <sierra
                             oot>. Specify 'all' to compare all controllers in <sierra root>. Only used
-                            if --comp-graphs-only is passed. Default=all.""",
+                            if --cc-graphs-only is passed. Default=all.""",
                             default="all")
         parser.add_argument("--generator",
                             help="""Experiment generator to use, which is a combination of
