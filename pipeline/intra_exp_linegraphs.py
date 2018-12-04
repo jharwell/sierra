@@ -45,7 +45,8 @@ class IntraExpLinegraphs:
                          'block_trans',
                          'block_acq',
                          'block_manip',
-                         'world_model']
+                         'world_model',
+                         'convergence']
         depth1_labels = ['cache_util',
                          'cache_lifecycle',
                          'cache_acq',

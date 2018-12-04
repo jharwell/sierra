@@ -45,7 +45,8 @@ class IntraExpHistograms:
                          'block_trans',
                          'block_acq',
                          'block_manip',
-                         'world_model']
+                         'world_model',
+                         'convergence']
 
         labels = depth0_labels
         print("-- Histograms from {0}".format(self.exp_output_root))

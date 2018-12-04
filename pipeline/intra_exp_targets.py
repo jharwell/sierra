@@ -178,13 +178,42 @@ class Linegraphs:
                 'ylabel': 'Count'
             },
         ]
-
+        convergence = [
+            {
+                'src_stem': 'swarm-convergence',
+                'dest_stem': 'swarm-conv-int-deg-raw',
+                'cols': ['int_avg_interact_deg_raw', 'int_avg_interact_deg_raw_dt'],
+                'title': "Swarm Convergence (Interaction Degree)",
+                'legend': ['Raw', 'DT'],
+                'xlabel': 'Interval',
+                'ylabel': 'Degree'
+            },
+            {
+                'src_stem': 'swarm-convergence',
+                'dest_stem': 'swarm-conv-int-deg-norm',
+                'cols': ['int_avg_interact_deg_norm', 'int_avg_interact_deg_norm_dt'],
+                'title': "Swarm Convergence (Interaction Degree)",
+                'legend': ['Normalized', 'DT'],
+                'xlabel': 'Interval',
+                'ylabel': 'Degree'
+            },
+            {
+                'src_stem': 'swarm-convergence',
+                'dest_stem': 'swarm-conv-ang-order',
+                'cols': ['int_avg_ang_order', 'int_avg_ang_order_dt'],
+                'title': "Swarm Convergence (Angular Order)",
+                'legend': ['Order', 'DT'],
+                'xlabel': 'Interval',
+                'ylabel': 'Value'
+            },
+        ]
         return {'fsm-collision': collision,
                 'fsm-movement': movement,
                 'block_trans': block_trans,
                 'block_acq': block_acq,
                 'block_manip': block_manip,
-                'world_model': world_model
+                'world_model': world_model,
+                'convergence': convergence
                 }
 
     def _depth1_targets():

@@ -60,29 +60,29 @@ class Cmdline:
                             mode. Use=stage[4,5]. Defaults=<sierra_root>/<controller>/<scenario>/generated-graphs. You
                             should almost never have to change this.""")
 
-        run_group = parser.add_mutually_exclusive_group()
-        run_group.add_argument("--exp-inputs-only",
-                               help="""Only generate the config files and command file for an
+        stage_group = parser.add_mutually_exclusive_group()
+        stage_group.add_argument("--exp-inputs-only",
+                                 help="""Only generate the config files and command file for an
                                experiment/set of experiments (stage1).""",
-                               action="store_true")
-        run_group.add_argument("--exp-run-only",
-                               help="""Only run the experiments on previously generated set of input
+                                 action="store_true")
+        stage_group.add_argument("--exp-run-only",
+                                 help="""Only run the experiments on previously generated set of input
                                files for an experiment/set of experiments (stage2).""",
-                               action="store_true")
-        run_group.add_argument("--exp-average-only",
-                               help="""Only perform CSV averaging on a previously run experiment/set
+                                 action="store_true")
+        stage_group.add_argument("--exp-average-only",
+                                 help="""Only perform CSV averaging on a previously run experiment/set
                                of experiments (stage3).""",
-                               action="store_true")
-        run_group.add_argument("--exp-graphs-only",
-                               help="""Only perform graph generation on a previous run
+                                 action="store_true")
+        stage_group.add_argument("--exp-graphs-only",
+                                 help="""Only perform graph generation on a previous run
                                experiments/set of experiments (stage4).""",
-                               action="store_true")
-        run_group.add_argument("--cc-graphs-only",
-                               help="""Only perform graph generation for comparing controllers (stage5). It is assumed that if this
+                                 action="store_true")
+        stage_group.add_argument("--cc-graphs-only",
+                                 help="""Only perform graph generation for comparing controllers (stage5). It is assumed that if this
                                option is passed that the # experiments/batch criteria is the same
                                for all controllers that will be compared. This is NOT part of the
                                default pipeline.""",
-                               action="store_true")
+                                 action="store_true")
         parser.add_argument("--comp-controllers",
                             help="""Comma separated list of controllers to compare within <sierra
                             oot>. Specify 'all' to compare all controllers in <sierra root>. Only used
@@ -91,14 +91,13 @@ class Cmdline:
         parser.add_argument("--generator",
                             help="""Experiment generator to use, which is a combination of
                             controller+scenario configuration. Full specification is [depth0, depth1,
-                            depth2].<controller>.<scenario>.AxB, where A and B are the scenario
+                            depth2].<controller>.<scenario>AxB, where A and B are the scenario
                             dimensions (which can be any non-negative integer values).
 
                             However, the dimensions can be omitted for some batch criteria.
 
                             Valid controllers can be found in the [depth0,depth1,depth2] files in the
                             generators/ directory.
-
 
                             Scenario options are: [RN, SS, DS, QS, PL], which correspond to [random,
                             single source, dual source, quad source, powerlaw block distributions].
@@ -119,7 +118,7 @@ class Cmdline:
         parser.add_argument("--batch-exp-num",
                             help='''\
                             Experiment number from the batch to run. Ignored if --batch-criteria is not
-                            passed.
+                            passed. Only used if stage2 will be run.
                             ''')
         parser.add_argument("--time-setup",
                             help='''The base simulation setup to use, which sets duration and metric

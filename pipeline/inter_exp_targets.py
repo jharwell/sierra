@@ -313,12 +313,63 @@ class Linegraphs:
             }
         ]
 
+        convergence = [
+            {
+                'src_stem': 'swarm-convergence',
+                'col': 'int_avg_interact_deg_raw',
+                'dest_stem': 'swarm-convergence-int-deg-raw',
+                'title': "Swarm Convergence: Interaction Degree (Raw)",
+                'xlabel': 'Interval',
+                'ylabel': 'Degree'
+            },
+            {
+                'src_stem': 'swarm-convergence',
+                'col': 'int_avg_interact_deg_raw_dt',
+                'dest_stem': 'swarm-convergence-int-deg-raw-dt',
+                'title': "Swarm Convergence: Interaction Degree DT (Raw)",
+                'xlabel': 'Interval',
+                'ylabel': 'Degree'
+            },
+            {
+                'src_stem': 'swarm-convergence',
+                'col': 'int_avg_interact_deg_norm',
+                'dest_stem': 'swarm-convergence-int-deg-norm',
+                'title': "Swarm Convergence: Interaction Degree (Normalized)",
+                'xlabel': 'Interval',
+                'ylabel': 'Degree'
+            },
+            {
+                'src_stem': 'swarm-convergence',
+                'col': 'int_avg_interact_deg_norm_dt',
+                'dest_stem': 'swarm-convergence-int-deg-norm-dt',
+                'title': "Swarm Convergence: Interaction Degree DT (Normalized)",
+                'xlabel': 'Interval',
+                'ylabel': 'Degree'
+            },
+            {
+                'src_stem': 'swarm-convergence',
+                'col': 'int_avg_ang_order',
+                'dest_stem': 'swarm-convergence-ang-order',
+                'title': "Swarm Convergence: Angular Order",
+                'xlabel': 'Interval',
+                'ylabel': 'Degree'
+            },
+            {
+                'src_stem': 'swarm-convergence',
+                'col': 'int_avg_ang_order_dt',
+                'dest_stem': 'swarm-convergence-ang-order-dt',
+                'title': "Swarm Convergence: Angular Order DT",
+                'xlabel': 'Interval',
+                'ylabel': 'Degree'
+            },
+        ]
         return {'fsm-collision': collision,
                 'fsm-movement': movement,
                 'block_trans': block_trans,
                 'block_acq': block_acq,
                 'block_manip': block_manip,
-                'world_model': world_model
+                'world_model': world_model,
+                'convergence': convergence
                 }
 
     def _depth1_targets():

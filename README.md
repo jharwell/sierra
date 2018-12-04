@@ -7,7 +7,17 @@ non-MSI machines for testing.
 It is named thusly because it will save you a LITERAL, (not figurative) mountain
 of work.
 
-## Quick Setup
+## Setup
+
+1. Install python dependencies with pip3:
+
+   - pandas
+
+2. Install packages:
+
+   - GNU parallel (`parallel` on ubuntu)
+
+## Quick start
 
 1. Get an MSI account (you will need to talk to Maria Gini, my advisor).
 
@@ -33,11 +43,11 @@ of work.
 4. Modify one of the PBS scripts under `scripts/` file in this repo for your
    experiment/batch experiment.
 
-6. Submit your job on MSI with:
+5. Submit your job on MSI with:
 
         qsub your-pbs-script.pbs
 
-7. Reap the rewards of research!
+6. Reap the rewards of research!
 
 *WARNING: SIERRA DOES NOT DELETE DIRECTORIES FOR YOU. ALWAYS MAKE SURE YOU RUN
 DIFFERENT EXPERIMENTS (BATCH OR NOT) IN DIFFERENT DIRECTORIES OR ODIN'S WRATH
