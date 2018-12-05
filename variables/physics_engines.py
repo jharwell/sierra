@@ -33,7 +33,7 @@ class PhysicsEngines(BaseVariable):
     """
 
     def __init__(self, n_engines, layout, dimensions):
-        self.n_engines = int(n_engines)
+        self.n_engines = n_engines
         self.layout = layout
         self.dimensions = dimensions
 

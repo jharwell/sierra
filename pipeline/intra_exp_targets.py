@@ -206,6 +206,15 @@ class Linegraphs:
                 'xlabel': 'Interval',
                 'ylabel': 'Value'
             },
+            {
+                'src_stem': 'swarm-convergence',
+                'dest_stem': 'swarm-conv-pos-entropy',
+                'cols': ['int_avg_pos_entropy', 'int_avg_pos_entropy_dt'],
+                'title': "Swarm Convergence (Positional Entropy)",
+                'legend': ['Entropy', 'DT'],
+                'xlabel': 'Interval',
+                'ylabel': 'Value'
+            },
         ]
         return {'fsm-collision': collision,
                 'fsm-movement': movement,

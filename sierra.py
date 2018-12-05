@@ -32,7 +32,6 @@ if __name__ == "__main__":
     args = Cmdline().init().parse_args()
 
     pair = GeneratorPairParser()(args)
-    template, ext = os.path.splitext(os.path.basename(args.template_config_file))
 
     # If the user specified a controller + scenario combination for the generator (including
     # dimensions), use it to determine directory names.

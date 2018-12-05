@@ -17,6 +17,11 @@ Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 """
 
 import argparse
+import os.path
+
+
+class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawTextHelpFormatter):
+    pass
 
 
 class Cmdline:
@@ -24,108 +29,196 @@ class Cmdline:
         """
         Defines the command line arguments for sierra. Returns a parser with the definitions.
         """
-        parser = argparse.ArgumentParser()
+        parser = argparse.ArgumentParser(prog='sierra',
+                                         formatter_class=HelpFormatter)
         parser.add_argument("--template-config-file",
-                            help="The template configuration file for the experiment.")
+                            metavar="filepath",
+                            help="""
 
-        parser.add_argument("--n_sims",
-                            help="""How many should be averaged together to form a single experiment. Use=stage1. Default=100.""",
+                            The template configuration file for the experiment. Use=stage[1, 2, 3, 4}; can be omitted if
+                            only running other stages.
+
+                            """)
+
+        parser.add_argument("--sierra-root",
+                            metavar="dirpath",
+                            help="""
+
+                            Root directory for all sierra generated/created files. Subdirectories for controllers,
+                            scenarios, experiment/simulation inputs/outputs will be created in this directory as
+                            needed. Can persist between invocations of sierra.
+
+                            """,
+                            default=os.path.expanduser("~") + "/exp")
+        parser.add_argument("--generation-root",
+                            metavar="dirpath",
+                            help="""
+
+                            Root directory to save generated experiment input files, or the directory which will contain
+                            directories for each experiment's input files, for batch mode. Use=stage{1,2,3}. Will
+                            default to <sierra_root>/<controller>/<scenario>/exp-inputs. You should almost never have to
+                            change this.
+
+                            """)
+        parser.add_argument("--output-root",
+                            metavar="dirpath",
+                            help="""
+
+                            Root directory for saving simulation outputs a single experiment, or the root directory
+                            which will contain directories for each experiment's outputs for batch
+                            mode). Use=stage{3,4,5}. Will default to
+                            <sierra_root>/<controller>/<scenario>/exp-outputs. You should almost never have to change
+                            this.
+
+                            """)
+        parser.add_argument("--graph-root",
+                            metavar="dirpath",
+                            help="""
+
+                            Root directory for saving generated graph files for a single experiment, or the root
+                            directory which will contain directories for each experiment's generated graphs for batch
+                            mode. Use=stage{4,5}. Will default to
+                            <sierra_root>/<controller>/<scenario>/generated-graphs. You should almost never have to
+                            change this.
+
+                            """)
+
+        parser.add_argument("--generator",
+                            metavar="{depth0, depth1, depth2}.<controller>.<scenario>AxB",
+                            help="""
+
+                            Experimental generator to use, which is a combination of controller+scenario
+                            configuration.
+
+                            Valid controllers: {depth0.{CRW, Stateful},
+                                                depth1.{GreedyPartitioning, OracularPartitioning},
+                                                depth2.{GreedyRecPart, OracularRecPart}.
+
+                            Valid scenarios: {RN, SS, DS, QS, PL}, which correspond to {random, single source, dual
+                            source, quad source, powerlaw} block distributions.
+
+                            A and B are the scenario dimensions (which can be any non-negative
+                            integer values); the dimensions can be omitted for some batch criteria.
+
+                            Use=stage{1,2,3,4}; can be omitted if only running other stages.
+
+                            """)
+
+        parser.add_argument("--batch-criteria",
+                            metavar="<filename>.<class name>",
+                            help="""
+
+                            Name of criteria to use to generate the batched experiments. <filename> must be from the
+                            variables/ directory, and <class name> must be a class within that file. Use=stage{1,2,4};
+                            can be omitted otherwise.
+
+                            """)
+
+        parser.add_argument("--pipeline",
+                            metavar="stages",
+                            help="""
+
+
+                            Define which stages of the experimental pipeline to run:
+
+                            Stage1: Generate the config files and command file for an experiment/set of experiments.
+                            Stage2: Run the experiments on previously generated set of input files for an experiment/set
+                                    of experiments. Part of default pipeline.
+                            Stage3: Perform CSV averaging on a previously run experiment/set of experiments. Part of
+                                    default pipeline.
+                            Stage4: Perform graph generation on a previous run experiments/set of experiments. Part of
+                                    default pipeline.
+                            Stage5: Perform graph generation for comparing controllers AFTER graph generation for
+                                    batched experiments has been run. It is assumed that if this option is passed that
+                                    the # experiments/batch criteria is the same for all controllers that will be
+                                    compared. Not part of default pipeline.
+
+                            Specified as a space-separated list after the option.
+                            """,
+                            type=int,
+                            nargs='?',
+                            default=[1, 2, 3, 4]
+                            )
+        stage1 = parser.add_argument_group('stage1 (Generating experimental inputs)')
+
+        stage1.add_argument("--time-setup",
+                            help="""
+
+                            The simulation time setup to use, which sets duration and metric reporting interval. For
+                            options, see time_setup.py
+
+                            """,
+                            default="time_setup.T5000")
+        stage1.add_argument("--n-physics-engines",
+                            choices=[1, 4, 16],
+                            type=int,
+                            help="""
+
+                            The # of physics engines to use during simulation (yay ARGoS!). If n > 1, the engines will
+                            be tiled in a uniform grid within the arena.
+
+                            """,
+                            default=1)
+        stage1.add_argument("--n_sims",
+                            help="""
+
+                            How many should be averaged together to form a single experiment.
+
+                            """,
                             type=int,
                             default=100)
-        parser.add_argument("--n_threads",
-                            help="""How many ARGoS simulation threads to use for each simulation in
-                            each experiment. Use=stage1. Default=8.""",
+        stage1.add_argument("--n_threads",
+                            help="""
+
+                            How many ARGoS simulation threads to use for each simulation in each experiment.
+
+                            """,
                             type=int,
                             default=8)
 
-        parser.add_argument("--sierra-root",
-                            help="""Root directory for all sierra generated/created files. Subdirectories for controllers, scenarios,
-                            experiment/simulation inputs/outputs will be created in this directory
-                            as needed. Can persist between invocations of sierra.""")
-        parser.add_argument("--generation-root",
-                            help="""Root directory to save generated experiment input files, or the directory which will contain
-                            directories for each experiment's input files, for batch
-                            mode. Use=stage[1,2,3]. Default=<sierra_root>/<controller>/<scenario>/exp-inputs. You
-                            should almost never have to change this.""")
-        parser.add_argument("--output-root",
-                            help="""Root directory for saving simulation outputs a single experiment, or
-                            the root directory which will contain directories for each experiment's
-                            outputs for batch mode). Use=stage[3,4,5]. Defaults to
-                            <sierra_root>/<controller>/<scenario>/exp-outputs. You should almost never
-                            have to change this.""")
-        parser.add_argument("--graph-root",
-                            help="""Root directory for saving generated graph files for a single experiment, or the root directory
-                            which will contain directories for each experiment's generated graphs
-                            for batch
-                            mode. Use=stage[4,5]. Defaults=<sierra_root>/<controller>/<scenario>/generated-graphs. You
-                            should almost never have to change this.""")
+        stage2 = parser.add_argument_group('stage2 (Running experiments)')
+        stage2.add_argument("--no-msi",
+                            help="""
 
-        stage_group = parser.add_mutually_exclusive_group()
-        stage_group.add_argument("--exp-inputs-only",
-                                 help="""Only generate the config files and command file for an
-                               experiment/set of experiments (stage1).""",
-                                 action="store_true")
-        stage_group.add_argument("--exp-run-only",
-                                 help="""Only run the experiments on previously generated set of input
-                               files for an experiment/set of experiments (stage2).""",
-                                 action="store_true")
-        stage_group.add_argument("--exp-average-only",
-                                 help="""Only perform CSV averaging on a previously run experiment/set
-                               of experiments (stage3).""",
-                                 action="store_true")
-        stage_group.add_argument("--exp-graphs-only",
-                                 help="""Only perform graph generation on a previous run
-                               experiments/set of experiments (stage4).""",
-                                 action="store_true")
-        stage_group.add_argument("--cc-graphs-only",
-                                 help="""Only perform graph generation for comparing controllers (stage5). It is assumed that if this
-                               option is passed that the # experiments/batch criteria is the same
-                               for all controllers that will be compared. This is NOT part of the
-                               default pipeline.""",
-                                 action="store_true")
-        parser.add_argument("--comp-controllers",
-                            help="""Comma separated list of controllers to compare within <sierra
-                            oot>. Specify 'all' to compare all controllers in <sierra root>. Only used
-                            if --cc-graphs-only is passed. Default=all.""",
-                            default="all")
-        parser.add_argument("--generator",
-                            help="""Experiment generator to use, which is a combination of
-                            controller+scenario configuration. Full specification is [depth0, depth1,
-                            depth2].<controller>.<scenario>AxB, where A and B are the scenario
-                            dimensions (which can be any non-negative integer values).
+                            Include if running on a personal computer (otherwise runs supercomputer commands).
 
-                            However, the dimensions can be omitted for some batch criteria.
+                            """,
+                            action="store_true")
+        stage2.add_argument("--batch-exp-num",
+                            help="""
 
-                            Valid controllers can be found in the [depth0,depth1,depth2] files in the
-                            generators/ directory.
+                            Experiment number from the batch to run (instead of running every experiment from the batch
+                            in sequence, which is the default behavior). Ignored if --batch-criteria is not passed.
 
-                            Scenario options are: [RN, SS, DS, QS, PL], which correspond to [random,
-                            single source, dual source, quad source, powerlaw block distributions].
-
-                            The generator can be omitted if only running stages [4,5], but must be
-                            present if any of the other stages will be running, or sierra will crash.
                             """)
 
-        parser.add_argument("--no-msi",
-                            help="Include if running on a personal computer (otherwise runs supercomputer commands).",
-                            action="store_true")
+        stage4 = parser.add_argument_group('stage4 (graph generation)')
 
-        parser.add_argument("--batch-criteria",
-                            help='''\
-                            Name of criteria to use to generate the batched experiments. Options are
-                            specified as <filename>.<class name> as found in the variables/
-                            directory.''')
-        parser.add_argument("--batch-exp-num",
-                            help='''\
-                            Experiment number from the batch to run. Ignored if --batch-criteria is not
-                            passed. Only used if stage2 will be run.
-                            ''')
-        parser.add_argument("--time-setup",
-                            help='''The base simulation setup to use, which sets duration and metric
-                            reporting interval. For options, pppsee time_setup.py''',
-                            default="time_setup.T5000")
-        parser.add_argument("--n-physics-engines",
-                            help='''The # of physics engines to use during simulation (yay
-                            ARGoS!). Possible values are [1,4,16] currently, arranged in a uniform grid.''',
-                            default=1)
+        stage4.add_argument("--with-hists",
+                            help="""
+
+                            Enable generation of intra-experiment histograms (if that part of the stage will berun).
+
+                            """,
+                            action="store_true")
+        stage4.add_argument("--with-graphs",
+                            choices=['intra', 'inter', 'all'],
+                            help="""
+
+                            Specify which graphs should be generated: Only intra-experiment graphs, only
+                            inter-experiment graphs, or both.
+
+                            """,
+                            default='all')
+
+        stage5 = parser.add_argument_group('stage5 (Controller/scenario comparison)')
+
+        stage5.add_argument("--comp-controllers",
+                            help="""
+
+                            Comma separated list of bcontrollers to compare within <sierra root>. Specify 'all' to compare all
+                            controllers in <sierra root>.
+
+                            """,
+                            default="all")
         return parser

@@ -352,7 +352,7 @@ class Linegraphs:
                 'dest_stem': 'swarm-convergence-ang-order',
                 'title': "Swarm Convergence: Angular Order",
                 'xlabel': 'Interval',
-                'ylabel': 'Degree'
+                'ylabel': 'Order'
             },
             {
                 'src_stem': 'swarm-convergence',
@@ -360,7 +360,23 @@ class Linegraphs:
                 'dest_stem': 'swarm-convergence-ang-order-dt',
                 'title': "Swarm Convergence: Angular Order DT",
                 'xlabel': 'Interval',
-                'ylabel': 'Degree'
+                'ylabel': 'Order'
+            },
+            {
+                'src_stem': 'swarm-convergence',
+                'col': 'int_avg_pos_entropy',
+                'dest_stem': 'swarm-convergence-pos-entropy',
+                'title': "Swarm Convergence: Positional Entropy",
+                'xlabel': 'Interval',
+                'ylabel': 'Entropy'
+            },
+            {
+                'src_stem': 'swarm-convergence',
+                'col': 'int_avg_pos_entropy_dt',
+                'dest_stem': 'swarm-convergence-pos-entropy-dt',
+                'title': "Swarm Convergence: Positional Entropy DT",
+                'xlabel': 'Interval',
+                'ylabel': 'Entropy'
             },
         ]
         return {'fsm-collision': collision,

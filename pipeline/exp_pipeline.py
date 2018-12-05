@@ -65,22 +65,18 @@ class ExpPipeline:
 
     def run(self):
 
-        if not any([self.args.exp_run_only, self.args.exp_average_only, self.args.exp_graphs_only,
-                    self.args.cc_graphs_only]):
+        if 1 in self.args.pipeline:
             self.generate_inputs()
 
-        if not any([self.args.exp_inputs_only, self.args.exp_average_only, self.args.exp_graphs_only,
-                    self.args.cc_graphs_only]):
+        if 2 in self.args.pipeline:
             self.run_experiments()
 
-        if not any([self.args.exp_inputs_only, self.args.exp_run_only, self.args.exp_graphs_only,
-                    self.args.cc_graphs_only]):
+        if 3 in self.args.pipeline:
             self.average_results()
 
-        if not any([self.args.exp_inputs_only, self.args.exp_run_only, self.args.exp_average_only,
-                    self.args.cc_graphs_only]):
+        if 4 in self.args.pipeline:
             self.generate_graphs()
 
         # not part of default pipeline
-        if self.args.cc_graphs_only:
+        if 5 in self.args.pipeline:
             self.compare_controllers()

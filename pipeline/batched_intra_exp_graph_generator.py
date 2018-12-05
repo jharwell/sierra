@@ -31,13 +31,14 @@ class BatchedIntraExpGraphGenerator:
     batch_graph_root(str): Root directory (relative to current dir or absolute) of where the
                            generated graphs should be saved for the experimentsn.
     generator(str): Fully qualified name of the generator used to create/run the experiments.
-
+    with_hists(bool): If TRUE, then histograms will be generated.
     """
 
-    def __init__(self, batch_output_root, batch_graph_root, generator):
+    def __init__(self, batch_output_root, batch_graph_root, generator, with_hists):
         self.batch_output_root = os.path.abspath(batch_output_root)
         self.batch_graph_root = batch_graph_root
         self.generator = generator
+        self.with_hists = with_hists
 
     def __call__(self):
         """Generate all intra-experiment graphs for all experiments in the batch."""
@@ -45,4 +46,7 @@ class BatchedIntraExpGraphGenerator:
             exp_output_root = os.path.join(self.batch_output_root, item)
             exp_graph_root = os.path.join(self.batch_graph_root, item)
             if os.path.isdir(exp_output_root) and 'collated-csvs' != item:
-                IntraExpGraphGenerator(exp_output_root, exp_graph_root, self.generator)()
+                IntraExpGraphGenerator(exp_output_root,
+                                       exp_graph_root,
+                                       self.generator,
+                                       self.with_hists)()

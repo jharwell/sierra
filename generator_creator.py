@@ -27,7 +27,7 @@ class GeneratorCreator:
     """
 
     def __call__(self, args, generator_names):
-        if not any([args.exp_graphs_only, args.exp_run_only, args.exp_average_only]):
+        if not any([[2], [3], [4]]) == args.pipeline:
 
             # Running stage 4 or 5
             if generator_names is None:
