@@ -40,43 +40,17 @@ class InterExpLinegraphs:
         self.collate_targets = collate_targets
 
     def generate(self):
-        depth0_labels = ['fsm-collision',
-                         'fsm-movement',
-                         'block_trans',
-                         'block_acq',
-                         'block_manip',
-                         'world_model',
-                         'convergence']
-        depth1_labels = ['cache_util',
-                         'cache_lifecycle',
-                         'cache_acq',
-                         'depth1_task_exec',
-                         'depth1_task_dist',
-                         'generalist_tab']
-        depth2_labels = ['depth2_task_exec',
-                         'depth2_task_dist',
-                         'harvester_tab',
-                         'collector_tab']
-
-        labels = depth0_labels + depth1_labels + depth2_labels
-        valid_labels = []
-        for l in labels:
-            if l in self.collate_targets:
-                valid_labels.append(l)
-            else:
-                print("WARNING: Key {0} not found in targets".format(l))
-
         print("-- Linegraphs from {0}".format(self.csv_root))
-        for target_set in [self.collate_targets[x] for x in valid_labels]:
-
+        for target_set in [self.collate_targets[x] for x in self.collate_targets]:
             for target in target_set:
                 StackedLineGraph(input_stem_fpath=os.path.join(self.csv_root,
                                                                target['dest_stem']),
                                  output_fpath=os.path.join(
-                    self.graph_root,
-                    target['dest_stem'] + '.png'),
-                    cols=None,
-                    title=target['title'],
-                    legend=None,
-                    xlabel=target['xlabel'],
-                    ylabel=target['ylabel']).generate()
+                                     self.graph_root,
+                                     target['dest_stem'] + '.png'),
+                                 cols=None,
+                                 title=target['title'],
+                                 legend=None,
+                                 xlabel=target['xlabel'],
+                                 ylabel=target['ylabel'],
+                                 linestyles=None).generate()

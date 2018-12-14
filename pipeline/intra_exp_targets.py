@@ -19,10 +19,95 @@
 
 class Linegraphs:
 
+    """Linegraph intra-experiment targets.
+    Each dictionary in the returned list of targets for intra-experiment linegraphs has the
+    following fields:
+
+    src_stem: The filename (no path) of the .csv within the output directory for a simulation to
+              look for the column(s) to plot, sans the .csv extension.
+
+    dest_stem: The filename (no path) of the graph to be generated (extension/image type is
+               determined elsewhere).
+
+    cols: List of names of columns within the source .csv that should be included on the plot. Must
+          match EXACTLY (i.e. no fuzzy matching). Can be 'None'/omitted to plot all columns within
+          the .csv.
+
+    styles: List of matplotlib linestyles to use for each of the plotted lines in the graphs. Can be
+            omitted to use solid lines everywhere. If it is included, then it must specify for ALL
+            columns, not just the non-default ones.
+
+    title: The title the graph should have. LaTeX syntax is supported (uses matplotlib after all).
+
+    legend: List of names of the plotted lines within the graph. Can be 'None'/omitted to set the
+            legend for each column to the name of the column in the .csv
+
+    xlabel: The label of the X-axis of the graph.
+
+    ylabel: The label of the Y-axis of the graph.
+
+    temporal_var: The name of the column within the temporal variance .csv that should be
+                  included on the graph. Can be 'None'/omitted if no variance should be plotted
+                  in addition to the columns in the .csv.
     """
 
-    Linegraph intra-experiment targets.
-    """
+    kTemporalVarSwarmMotionThrottle = 'swarm_motion_throttle'
+    kTemporalVarEnvBlockManip = 'env_block_manip'
+    kTemporalVarEnvCacheUsage = 'env_cache_usage'
+
+    def all_targets():
+        """
+        Get a list of dictionaries specifying all the linegraphs graphs that COULD be created within
+        an experiment. Not all experiments/controllers will generate the necessary .csv files to
+        generate all the graphs, so filtering is generally required.
+
+        """
+        d = Linegraphs._depth0_targets()
+        d.update(Linegraphs._depth1_targets())
+        d.update(Linegraphs._depth2_targets())
+        return d
+
+    def filtered_target_keys(valid_keys):
+        keys = []
+        for k in Linegraphs.all_targets():
+            if k in valid_keys:
+                keys.append(k)
+            else:
+                print("WARNING: Key {0} not found in targets".format(k))
+        return keys
+
+    def depth0_keys():
+        return ['fsm_collision',
+                'fsm_movement',
+                'block_trans',
+                'block_acq',
+                'block_manip',
+                'world_model',
+                'convergence']
+
+    def depth1_keys():
+        return ['cache_util',
+                'cache_lifecycle',
+                'cache_acq',
+                'depth1_task_exec',
+                'depth1_task_dist',
+                'generalist_tab']
+
+    def depth2_keys():
+        return ['depth2_task_exec',
+                'depth2_task_dist',
+                'harvester_tab',
+                'collector_tab']
+
+    def all_target_keys():
+        """
+        Get a list of all the target keys for intra-experiment graph generation.
+        """
+        return Linegraphs.depth0_keys() + Linegraphs.depth1_keys() + Linegraphs.depth2_keys()
+
+    def filtered_targets(keys):
+        targets = Linegraphs.all_targets()
+        return {k: targets[k] for k in keys}
 
     def _depth0_targets():
         collision = [
@@ -40,7 +125,7 @@ class Linegraphs:
                            'Average # Robots Exited Avoidance (interval)',
                            'Average # Robots Exited Avoidance (cumulative)'],
                 'xlabel': 'Interval',
-                'ylabel': '# Robots'
+                'ylabel': '# Robots',
             },
             {
                 'src_stem': 'fsm-collision',
@@ -50,7 +135,7 @@ class Linegraphs:
                 'legend':['Average Avoidance Duration (interval)',
                           'Average Avoidance Duration (cumulative)'],
                 'xlabel': 'Interval',
-                'ylabel': '# Timesteps'
+                'ylabel': '# Timesteps',
             },
         ]
 
@@ -62,7 +147,7 @@ class Linegraphs:
                 'title': 'Average Per-robot Distance Traveled',
                 'legend': ['Distance (interval)', 'Distance (cumulative)'],
                 'xlabel': 'Interval',
-                'ylabel': 'Distance (m)'
+                'ylabel': 'Distance (m)',
             },
             {
                 'src_stem': 'fsm-movement',
@@ -71,7 +156,7 @@ class Linegraphs:
                 'title': 'Average Per-robot Velocity',
                 'legend': ['Velocity (interval)', 'Velocity (cumulative)'],
                 'xlabel': 'Interval',
-                'ylabel': 'Velocity (m/s)'
+                'ylabel': 'Velocity (m/s)',
             }
         ]
 
@@ -83,7 +168,10 @@ class Linegraphs:
                 'legend': ['All Blocks', '# Cube Blocks', '# Ramp Blocks'],
                 'title': 'Blocks Collected (interval)',
                 'xlabel': 'Interval',
-                'ylabel': '# Blocks'
+                'ylabel': '# Blocks',
+                'temporal_var': Linegraphs.kTemporalVarEnvBlockManip,
+                'styles': ['-', '-', '-']
+
             },
             {
                 'src_stem': 'block-transport',
@@ -92,11 +180,13 @@ class Linegraphs:
                 'title': 'Blocks Collected (cumulative)',
                 'legend': ['All Blocks', '# Cube Blocks', '# Ramp Blocks'],
                 'xlabel': 'Interval',
-                'ylabel': '# Blocks'
+                'ylabel': '# Blocks',
+                'temporal_var': Linegraphs.kTemporalVarEnvBlockManip,
+                'styles': ['-', '-', '-']
             },
             {
                 'src_stem': 'block-transport',
-                'dest_stem': 'block-transporters-int',
+                'dest_stem': 'block-transporters-count',
                 'cols': ['int_avg_transporters', 'cum_avg_transporters'],
                 'title': "Swarm Block Average Transporters",
                 'legend': ['Average # Transporters Per Block (interval)',
@@ -106,7 +196,7 @@ class Linegraphs:
             },
             {
                 'src_stem': 'block-transport',
-                'dest_stem': 'block-transporters-cum',
+                'dest_stem': 'block-transporters-time',
                 'cols': ['int_avg_transport_time', 'cum_avg_transport_time',
                          'int_avg_initial_wait_time', 'cum_avg_initial_wait_time'],
                 'title': "Swarm Block Transport Time",
@@ -149,7 +239,9 @@ class Linegraphs:
                            'Average # Cache Pickups (interval)',
                            'Average # Cache Drops (interval)'],
                 'xlabel': 'Interval',
-                'ylabel': '# Pickups/Drops'
+                'ylabel': '# Pickups/Drops',
+                'temporal_var': Linegraphs.kTemporalVarEnvBlockManip,
+                'styles': ['-', '-', '-']
             },
             {
                 'src_stem': 'block-manipulation',
@@ -162,7 +254,9 @@ class Linegraphs:
                            'Average Cache Picup Penalty (interval)',
                            'Average Cache Drop Penalty (interval)'],
                 'xlabel': 'Interval',
-                'ylabel': 'Penalty'
+                'ylabel': 'Penalty',
+                'temporal_var': Linegraphs.kTemporalVarEnvBlockManip,
+                'styles': ['-', '-', '-']
             },
         ]
         world_model = [
@@ -216,8 +310,8 @@ class Linegraphs:
                 'ylabel': 'Value'
             },
         ]
-        return {'fsm-collision': collision,
-                'fsm-movement': movement,
+        return {'fsm_collision': collision,
+                'fsm_movement': movement,
                 'block_trans': block_trans,
                 'block_acq': block_acq,
                 'block_manip': block_manip,
@@ -236,7 +330,8 @@ class Linegraphs:
                 'legend': ['Average # Pickups (Interval)', 'Average # Drops (Interval)',
                            'Average # Pickups (Cumulative)', 'Average # Drops (Cumulative)'],
                 'xlabel': 'Interval',
-                'ylabel': 'Count'
+                'ylabel': 'Count',
+                'temporal_var': Linegraphs.kTemporalVarEnvCacheUsage
             },
             {
                 'src_stem': 'cache-utilization',
@@ -254,7 +349,8 @@ class Linegraphs:
                 'title': "# Blocks in Caches",
                 'legend': ['Average # Blocks (Interval)', 'Average # Blocks (Cumulative)'],
                 'xlabel': 'Interval',
-                'ylabel': 'Count'
+                'ylabel': 'Count',
+                'temporal_var': Linegraphs.kTemporalVarEnvCacheUsage
             },
         ]
         cache_lifecycle = [
@@ -867,30 +963,19 @@ class Linegraphs:
                 "harvester_tab": harvester_tab,
                 "collector_tab": collector_tab}
 
-    def targets(gen_depth2):
-        """
-        Get a list of dictionaries specifying all the graphs that should be created within an
-        experiment (i.e. across simulation runs).
-        """
-        d = Linegraphs._depth0_targets()
-        d.update(Linegraphs._depth1_targets())
-        if gen_depth2:
-            d.update(Linegraphs._depth2_targets())
-        return d
-
 
 class Histograms:
     """Histogram intra-experiment targets."""
 
-    def targets():
-        """Get the histogram targets, which are shared with linegraphs"""
-        return Linegraphs.targets(False)
+    def all_targets():
+        """Get the histogram targets, which are shared with linegraphs."""
+        return Linegraphs.filtered_targets(Linegraphs.depth0_keys())
 
 
 class Heatmaps:
     """Heatmap intra-experiment targets."""
 
-    def targets():
+    def all_targets():
         arena = [
             {
                 'src_stem': 'arena-robot-occupancy',

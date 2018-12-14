@@ -379,8 +379,8 @@ class Linegraphs:
                 'ylabel': 'Entropy'
             },
         ]
-        return {'fsm-collision': collision,
-                'fsm-movement': movement,
+        return {'fsm_collision': collision,
+                'fsm_movement': movement,
                 'block_trans': block_trans,
                 'block_acq': block_acq,
                 'block_manip': block_manip,

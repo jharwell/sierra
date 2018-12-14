@@ -49,14 +49,10 @@ class BatchedExpInputGenerator:
                             pairs to be replaced in the main template XML file for each experiment.
       exp_generator_pair(tuple): Pair of class names to use when creating the new generator
                                  (scenario + controller changes).
-      n_sims(int): Number of simulations to run in parallel.
-      n_threads(int): Number of ARGoS simulation threads to use.
-      n_physics_engines(int): Number of ARGoS physics engines to use.
-      time_setup(str): Name of simulation time setup class
     """
 
     def __init__(self, batch_config_template, batch_generation_root, batch_output_root, batch_criteria,
-                 exp_generator_pair, n_sims, n_threads, n_physics_engines, tsetup):
+                 exp_generator_pair, sim_opts):
         assert os.path.isfile(
             batch_config_template), \
             "The path '{}' (which should point to the main config file) did not point to a file".format(
@@ -74,10 +70,7 @@ class BatchedExpInputGenerator:
 
         self.batch_output_root = os.path.abspath(batch_output_root)
         self.batch_criteria = batch_criteria
-        self.n_sims = n_sims
-        self.n_threads = n_threads
-        self.n_physics_engines = n_physics_engines
-        self.time_setup = tsetup
+        self.sim_opts = sim_opts
         self.exp_generator_pair = exp_generator_pair
 
     def generate(self):
@@ -104,7 +97,7 @@ class BatchedExpInputGenerator:
         # Create and run generators
         exp_num = 0
         for exp_def in self.batch_criteria:
-            dimensions = None
+            self.sim_opts["arena_dim"] = None
             scenario = None
             # The scenario dimensions were specified on the command line
             # Format of '(generators.<decomposition depth>.<controller>.[SS,DS,QS,RN,PL]>'
@@ -113,12 +106,12 @@ class BatchedExpInputGenerator:
 
                 scenario = self.exp_generator_pair[1].split(
                     '.')[0] + "." + self.exp_generator_pair[1].split('.')[1][:2] + "Generator"
-                dimensions = (int(x), int(y))
+                self.sim_opts["arena_dim"] = (int(x), int(y))
             else:  # Scenario dimensions should be obtained from batch criteria
                 for c in exp_def:
                     if c[0] == ".//arena" and c[1] == "size":
                         x, y, z = c[2].split(',')
-                        dimensions = (int(x), int(y))
+                        self.sim_opts["arena_dim"] = (int(x), int(y))
                 scenario = self.exp_generator_pair[1]
 
             exp_generation_root = "{0}/exp{1}".format(self.batch_generation_root, exp_num)
@@ -128,16 +121,12 @@ class BatchedExpInputGenerator:
             scenario_name = 'generators.' + scenario
             scenario = ScenarioGeneratorFactory(controller=controller_name,
                                                 scenario=scenario_name,
-                                                dimensions=dimensions,
                                                 template_config_file=os.path.join(exp_generation_root,
                                                                                   self.batch_config_leaf),
                                                 generation_root=exp_generation_root,
                                                 exp_output_root=exp_output_root,
-                                                n_sims=self.n_sims,
-                                                n_threads=self.n_threads,
-                                                n_physics_engines=self.n_physics_engines,
-                                                tsetup=self.time_setup,
-                                                exp_def_fname="exp_def.pkl")
+                                                exp_def_fname="exp_def.pkl",
+                                                sim_opts=self.sim_opts)
 
             print("-- Created joint generator class '{0}'".format('+'.join([self.exp_generator_pair[0],
                                                                             scenario.__class__.__name__])))
@@ -148,9 +137,7 @@ class BatchedExpInputGenerator:
                                                                        self.batch_config_leaf),
                                      generation_root=exp_generation_root,
                                      exp_output_root=exp_output_root,
-                                     n_sims=self.n_sims,
-                                     n_threads=self.n_threads,
-                                     tsetup=self.time_setup,
-                                     exp_def_fname="exp_def.pkl")
+                                     exp_def_fname="exp_def.pkl",
+                                     sim_opts=self.sim_opts)
             g.generate()
             exp_num += 1

@@ -40,12 +40,11 @@ class IntraExpHistograms:
         self.targets = targets
 
     def generate(self):
-        depth0_labels = ['fsm-collision',
-                         'fsm-movement',
+        depth0_labels = ['fsm_collision',
+                         'fsm_movement',
                          'block_trans',
                          'block_acq',
-                         'block_manip',
-                         'world_model']
+                         'block_manip']
 
         labels = depth0_labels
         print("-- Histograms from {0}".format(self.exp_output_root))

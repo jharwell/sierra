@@ -34,7 +34,8 @@ class StackedLineGraph:
 
     """
 
-    def __init__(self, input_stem_fpath, output_fpath, cols, title, legend, xlabel, ylabel):
+    def __init__(self, input_stem_fpath, output_fpath, cols, title, legend, xlabel, ylabel,
+                 linestyles):
 
         self.input_csv_fpath = os.path.abspath(input_stem_fpath) + ".csv"
         self.input_stats_fpath = os.path.abspath(input_stem_fpath) + ".stats"
@@ -44,6 +45,7 @@ class StackedLineGraph:
         self.legend = legend
         self.xlabel = xlabel
         self.ylabel = ylabel
+        self.linestyles = linestyles
 
     def generate(self):
         if not os.path.exists(self.input_csv_fpath):
@@ -56,11 +58,20 @@ class StackedLineGraph:
             df2 = pd.read_csv(self.input_stats_fpath, sep=';')
 
         if self.cols is None:
-            ax = df.plot()
             ncols = max(1, int(len(df.columns) / 3.0))
+            if self.linestyles is None:
+                ax = df.plot()
+            else:
+                for c in df.columns:
+                    ax = df[c].plot(linestyle=self.linestyles[c])
+
         else:
-            ax = df[self.cols].plot()
             ncols = max(1, int(len(self.cols) / 3.0))
+            if self.linestyles is None:
+                ax = df[self.cols].plot()
+            else:
+                for c, s in zip(self.cols, self.linestyles):
+                    ax = df[c].plot(linestyle=s)
 
         # @BUG This makes all lines appear 1 color...
         # if df2 is not None:

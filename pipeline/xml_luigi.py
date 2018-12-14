@@ -82,7 +82,7 @@ class XMLLuigi:
             if child.tag == tag:
                 child.tag = value
                 return
-        raise InvalidElementError("No such element '{0} found in '{1}'".format(tag, path))
+        raise InvalidElementError("No such element '{0}' found in '{1}'".format(tag, path))
 
     def tag_remove(self, path, tag):
         """
@@ -96,7 +96,11 @@ class XMLLuigi:
         """
         parent = self.root.find(path)
         victim = parent.find(tag)
-        parent.remove(victim)
+        try:
+            parent.remove(victim)
+        except TypeError:
+            print("WARNING: No victim '{0}' found in parent '{1}'".format(tag, path))
+            pass
 
     def tag_add(self, path, tag, attr={}):
         ET.SubElement(self.root.find(path), tag, attr)

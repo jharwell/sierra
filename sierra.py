@@ -21,6 +21,7 @@ from cmdline import Cmdline
 from pipeline.exp_pipeline import ExpPipeline
 from generator_pair_parser import GeneratorPairParser
 from generator_creator import GeneratorCreator
+import collections
 
 if __name__ == "__main__":
     # check python version
@@ -70,7 +71,12 @@ if __name__ == "__main__":
                                            template + '-' + scenario,
                                            "graphs")
 
-    generator = GeneratorCreator()(args, pair)
+    # If only 1 pipeline stage is passed, then the list of stages to run is parsed as a non-iterable
+    # integer, which causes the generator to fail to be created sometimes, which is a problem. So
+    # make it iterable in that case as well.
+    if not isinstance(args.pipeline, collections.Iterable):
+        args.pipeline = [args.pipeline]
 
+    generator = GeneratorCreator()(args, pair)
     pipeline = ExpPipeline(args, generator)
     pipeline.run()

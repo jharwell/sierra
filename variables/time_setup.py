@@ -33,8 +33,8 @@ class TimeSetup(BaseVariable):
     """
 
     def __init__(self, sim_duration, metric_interval):
-        self.sim_duration = sim_duration
-        self.metric_interval = metric_interval
+        self.sim_duration = str(int(sim_duration))
+        self.metric_interval = str(int(metric_interval))
 
     def gen_attr_changelist(self):
         return [set([

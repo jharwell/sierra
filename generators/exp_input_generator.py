@@ -39,14 +39,21 @@ class ExpInputGenerator:
                             stored(relative to current dir or absolute).
       exp_output_root(str): Root directory for simulation outputs for this experiment (sort of a
                             scratch directory). Can be relative or absolute.
-      n_sims(int): # of simulations to run in parallel.
-      n_threads(int): # of ARGoS threads to use.
-      tsetup(str): Name of class to use for simulation time setup.
       exp_def_fname(str): Name of file to use for pickling experiment definitions.
+      sim_opts(dict): Dictionary containing the following keys:
+                      n_sims : # of simulations to run in parallel
+                      n_threads: # of ARGoS threads to use for each parallel simulation
+                      tsetup: Name of class in time_setup.py to use for simulation time setup.
+                      n_physics_engines: # of ARGoS physics engines to use.
+                      arena_dim: (X,Y) dimensions of the arena.
+                      with_robot_rab(bool): Should the range and bearing sensors/actuators be
+                                            enabled?
+                      with_robot_leds(bool): Should the LED actuators be enabled?
+                      with_robot_battery(bool): Should the battery sensor be enabled?
     """
 
-    def __init__(self, template_config_file, generation_root, exp_output_root,
-                 n_sims, n_threads, tsetup, exp_def_fname, dimensions=None):
+    def __init__(self, template_config_file, generation_root, exp_output_root, exp_def_fname,
+                 sim_opts):
         assert os.path.isfile(template_config_file), \
             "The path '{}' (which should point to the main config file) did not point to a file".format(
                 template_config_file)
@@ -64,14 +71,11 @@ class ExpInputGenerator:
              "Please make sure the configuration file save path '{}' does not have any spaces in it").format(self.generation_root)
 
         self.exp_output_root = os.path.abspath(exp_output_root)
-        self.n_sims = n_sims
-        self.n_threads = n_threads
+        self.sim_opts = sim_opts
         self.exp_def_fpath = os.path.join(self.generation_root, exp_def_fname)
-        self.dimensions = dimensions
 
         self.random_seed_min = 1
-        self.random_seed_max = 10 * self.n_sims
-        self.time_setup = tsetup
+        self.random_seed_max = 10 * self.sim_opts["n_sims"]
 
         # where the commands file will be stored
         self.commands_fpath = os.path.abspath(
@@ -101,23 +105,35 @@ class ExpInputGenerator:
         # Set # cores for each simulation to use
         xml_luigi.attribute_change(".//system",
                                    "threads",
-                                   str(self.n_threads))
+                                   str(self.sim_opts["n_threads"]))
+
+        # Enable/disable sensors/actuators, which are computationally expensive in large swarms
+        if not self.sim_opts["with_robot_rab"]:
+            xml_luigi.tag_remove(".//media", "range_and_bearing")
+            xml_luigi.tag_remove(".//actuators", "range_and_bearing")
+            xml_luigi.tag_remove(".//sensors", "range_and_bearing")
+
+        if not self.sim_opts["with_robot_leds"]:
+            xml_luigi.tag_remove(".//actuators", "leds")
+
+        if not self.sim_opts["with_robot_battery"]:
+            xml_luigi.tag_remove(".//sensors", "battery")
+            xml_luigi.tag_remove(".//entity/foot-bot", "battery")
 
         # Setup simulation time parameters
-        setup = eval(self.time_setup)()
+        setup = eval(self.sim_opts["tsetup"])()
         for a in setup.gen_attr_changelist()[0]:
             xml_luigi.attribute_change(a[0], a[1], a[2])
 
         # Write time setup  info to file for later retrieval
         with open(self.exp_def_fpath, 'ab') as f:
             pickle.dump(setup.gen_attr_changelist()[0], f)
-
         return xml_luigi
 
     def _create_all_sim_inputs(self, random_seeds, xml_luigi):
         """Generate and the input files for all simulation runs."""
 
-        for exp_num in range(self.n_sims):
+        for exp_num in range(self.sim_opts["n_sims"]):
             self._create_sim_input_file(random_seeds, xml_luigi, exp_num)
             self._add_sim_to_command_file(os.path.join(self.generation_root,
                                                        self.config_name_format.format(
@@ -179,7 +195,7 @@ class ExpInputGenerator:
     def _generate_random_seeds(self):
         """Generates random seeds for experiments to use."""
         try:
-            return random.sample(range(self.random_seed_min, self.random_seed_max + 1), self.n_sims)
+            return random.sample(range(self.random_seed_min, self.random_seed_max + 1), self.sim_opts["n_sims"])
         except ValueError:
             # create a new error message that clarifies the previous one
             raise ValueError("Too few seeds for the required experiment amount; change the random seed parameters") from None

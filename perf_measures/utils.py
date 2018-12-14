@@ -100,11 +100,14 @@ class FractionalLosses:
         self.batch_output_root = batch_output_root
 
         exp_def = unpickle_exp_def(os.path.join(batch_generation_root, "exp0/exp_def.pkl"))
+
+        # Integers always seem to be pickled as floats, so you can't convert directly without an
+        # exception.
         for e in exp_def:
             if './/experiment' == e[0] and 'length' == e[1]:
-                length = int(e[2])
+                length = int(float(e[2]))
             elif './/experiment' == e[0] and 'ticks_per_second' == e[1]:
-                ticks = int(e[2])
+                ticks = int(float(e[2]))
         self.duration = length * ticks
 
     def calc(self):

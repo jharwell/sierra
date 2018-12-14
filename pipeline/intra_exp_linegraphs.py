@@ -19,9 +19,12 @@ Copyright 2018 London John Harwell, All rights reserved.
 
 import os
 from graphs.stacked_line_graph import StackedLineGraph
+import pandas as pd
 
 
 class IntraExpLinegraphs:
+    kTemporalVarCSV = 'loop-temporal-variance.csv'
+
     """
     Generates linegrahs from averaged output data within a single experiment.
 
@@ -40,40 +43,18 @@ class IntraExpLinegraphs:
         self.targets = targets
 
     def generate(self):
-        depth0_labels = ['fsm-collision',
-                         'fsm-movement',
-                         'block_trans',
-                         'block_acq',
-                         'block_manip',
-                         'world_model',
-                         'convergence']
-        depth1_labels = ['cache_util',
-                         'cache_lifecycle',
-                         'cache_acq',
-                         'depth1_task_exec',
-                         'depth1_task_dist',
-                         'generalist_tab']
-        depth2_labels = ['depth2_task_exec',
-                         'depth2_task_dist']
-
-        labels = depth0_labels + depth1_labels + depth2_labels
         print("-- Linegraphs from {0}".format(self.exp_output_root))
-        valid_labels = []
-        for l in labels:
-            if l in self.targets:
-                valid_labels.append(l)
-            else:
-                print("WARNING: Key {0} not found in targets".format(l))
 
-        for target_set in [self.targets[x] for x in valid_labels]:
+        for target_set in [self.targets[x] for x in self.targets.keys()]:
             for target in target_set:
                 StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root,
                                                                target['src_stem']),
                                  output_fpath=os.path.join(
-                    self.exp_graph_root,
-                    target['dest_stem'] + '.png'),
-                    cols=target['cols'],
-                    title=target['title'],
-                    legend=target['legend'],
-                    xlabel=target['xlabel'],
-                    ylabel=target['ylabel']).generate()
+                                     self.exp_graph_root,
+                                     target['dest_stem'] + '.png'),
+                                 cols=target['cols'],
+                                 title=target['title'],
+                                 legend=target['legend'],
+                                 xlabel=target['xlabel'],
+                                 ylabel=target['ylabel'],
+                                 linestyles=target.get('styles', None)).generate()

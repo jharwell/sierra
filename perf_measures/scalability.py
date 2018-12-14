@@ -17,7 +17,6 @@ This file is part of SIERRA.
 """
 
 import os
-import math
 import pandas as pd
 from graphs.ranged_size_graph import RangedSizeGraph
 import perf_measures.utils as pm_utils

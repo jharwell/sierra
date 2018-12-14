@@ -46,6 +46,36 @@ class SwarmSize(BaseVariable):
         return []
 
 
+class Linear10000(SwarmSize):
+    def __init__(self):
+        super().__init__([1000 * x for x in range(1, 11)])
+
+
+class Linear1000(SwarmSize):
+    def __init__(self):
+        super().__init__([100 * x for x in range(1, 11)])
+
+
+class Log16384(SwarmSize):
+    def __init__(self):
+        super().__init__([2 ** x for x in range(0, 15)])
+
+
+class Log8192(SwarmSize):
+    def __init__(self):
+        super().__init__([2 ** x for x in range(0, 14)])
+
+
+class Log4096(SwarmSize):
+    def __init__(self):
+        super().__init__([2 ** x for x in range(0, 13)])
+
+
+class Log2048(SwarmSize):
+    def __init__(self):
+        super().__init__([2 ** x for x in range(0, 12)])
+
+
 class Log1024(SwarmSize):
     def __init__(self):
         super().__init__([2 ** x for x in range(0, 11)])

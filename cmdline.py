@@ -175,6 +175,33 @@ class Cmdline:
                             """,
                             type=int,
                             default=8)
+        stage1.add_argument("--with-robot-rab",
+                            help="""
+
+                            Include the Range and Bearing sensor/actuator in the generated input files for robot if
+                            TRUE. Otherwise, those tags are removed in the template input file if they exist.
+
+                            """,
+                            action="store_true",
+                            default=False)
+        stage1.add_argument("--with-robot-leds",
+                            help="""
+
+                            Include the robot LED actuator in the generated input files if TRUE. Otherwise, it is
+                            removed if it exists.
+
+                            """,
+                            action="store_true",
+                            default=False)
+        stage1.add_argument("--with-robot-battery",
+                            help="""
+
+                            Include the robot battery sensor in the generated input files if TRUE. Otherwise, it is
+                            removed if it exists.
+
+                            """,
+                            action="store_true",
+                            default=False)
 
         stage2 = parser.add_argument_group('stage2 (Running experiments)')
         stage2.add_argument("--no-msi",
@@ -197,11 +224,11 @@ class Cmdline:
         stage4.add_argument("--with-hists",
                             help="""
 
-                            Enable generation of intra-experiment histograms (if that part of the stage will berun).
+                            Enable generation of intra-experiment histograms (if that part of the graph generation will be run).
 
                             """,
                             action="store_true")
-        stage4.add_argument("--with-graphs",
+        stage4.add_argument("--exp-graphs",
                             choices=['intra', 'inter', 'all'],
                             help="""
 
@@ -210,7 +237,21 @@ class Cmdline:
 
                             """,
                             default='all')
+        stage4.add_argument("--plot-applied-variances",
+                            help="""
 
+                            If TRUE, then the plot of the temporal variances that were applied to the swarm during
+                            simulation will be included on relevant graphs.
+
+                            """,
+                            action="store_true")
+        stage4.add_argument("--plot-errorbars",
+                            help="""
+
+                            If TRUE, then error bars will be included on all linegraphs,
+
+                            """,
+                            action="store_true")
         stage5 = parser.add_argument_group('stage5 (Controller/scenario comparison)')
 
         stage5.add_argument("--comp-controllers",

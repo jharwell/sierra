@@ -35,16 +35,15 @@ class SSGenerator(ExpInputGenerator):
     """
 
     def __init__(self, template_config_file, generation_root, exp_output_root,
-                 n_sims, n_threads, n_physics_engines, tsetup, controller, exp_def_fname,
-                 dimensions):
+                 exp_def_fname, sim_opts, controller):
         super().__init__(template_config_file, generation_root, exp_output_root,
-                         n_sims, n_threads, tsetup, exp_def_fname, dimensions)
+                         exp_def_fname, sim_opts)
         self.controller = controller
-        self.n_physics_engines = n_physics_engines
 
     def generate(self, xml_luigi):
-        shape = ev.arena_shape.RectangularArenaTwoByOne(x_range=[self.dimensions[0]],
-                                                        y_range=[self.dimensions[1]])
+        arena_dim = self.sim_opts["arena_dim"]
+        shape = ev.arena_shape.RectangularArenaTwoByOne(x_range=[arena_dim[0]],
+                                                        y_range=[arena_dim[1]])
         [xml_luigi.attribute_change(a[0], a[1], a[2]) for a in shape.gen_attr_changelist()[0]]
 
         # Write arena dimensions info to file for later retrieval
@@ -62,7 +61,7 @@ class SSGenerator(ExpInputGenerator):
         if len(rms):
             [xml_luigi.tag_remove(a) for a in rms[0]]
 
-        nest_pose = ev.nest_pose.NestPose("single_source", [self.dimensions])
+        nest_pose = ev.nest_pose.NestPose("single_source", [arena_dim])
         [xml_luigi.attribute_change(a[0], a[1], a[2]) for a in nest_pose.gen_attr_changelist()[0]]
         rms = nest_pose.gen_tag_rmlist()
         if len(rms):
@@ -71,9 +70,9 @@ class SSGenerator(ExpInputGenerator):
         # Configure physics engines. Cannot be done in the parent class, as that is for BOTH
         # controller and scenario generation, and the arena dimensions are None for configuring
         # controllers.
-        engines = ev.physics_engines.PhysicsEngines(self.n_physics_engines,
+        engines = ev.physics_engines.PhysicsEngines(self.sim_opts["n_physics_engines"],
                                                     "uniform_grid",
-                                                    self.dimensions)
+                                                    arena_dim)
 
         for a in engines.gen_tag_rmlist()[0]:
             xml_luigi.tag_remove(a[0], a[1])
@@ -82,7 +81,7 @@ class SSGenerator(ExpInputGenerator):
             xml_luigi.tag_add(a[0], a[1], a[2])
 
         if "depth1" in self.controller:
-            cache = ev.static_cache.StaticCache([2], [self.dimensions])
+            cache = ev.static_cache.StaticCache([2], [arena_dim])
             [xml_luigi.attribute_change(a[0], a[1], a[2]) for a in cache.gen_attr_changelist()[0]]
             rms = cache.gen_tag_rmlist()
             if len(rms):

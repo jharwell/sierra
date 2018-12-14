@@ -34,11 +34,12 @@ class BatchedIntraExpGraphGenerator:
     with_hists(bool): If TRUE, then histograms will be generated.
     """
 
-    def __init__(self, batch_output_root, batch_graph_root, generator, with_hists):
+    def __init__(self, batch_output_root, batch_graph_root, generator, with_hists, plot_applied_variances):
         self.batch_output_root = os.path.abspath(batch_output_root)
         self.batch_graph_root = batch_graph_root
         self.generator = generator
         self.with_hists = with_hists
+        self.plot_applied_variances = plot_applied_variances
 
     def __call__(self):
         """Generate all intra-experiment graphs for all experiments in the batch."""
@@ -49,4 +50,5 @@ class BatchedIntraExpGraphGenerator:
                 IntraExpGraphGenerator(exp_output_root,
                                        exp_graph_root,
                                        self.generator,
-                                       self.with_hists)()
+                                       self.with_hists,
+                                       self.plot_applied_variances)()

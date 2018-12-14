@@ -45,25 +45,24 @@ def GeneratorPairFactory(controller, scenario, **kwargs):
                             generate})(**kwargs)
 
 
-def ScenarioGeneratorFactory(scenario, controller, dimensions, **kwargs):
+def ScenarioGeneratorFactory(scenario, controller, **kwargs):
     """
     Creates a scenario generator using arbitrary arena dimensions and with an arbitrary controller.
 
     scenario(str): The name of scenario to run.
     controller(str): The name of controller to run.
-    dimensions(str): AxB string representing desired dimensions of the arena.
 
     """
 
     def __init__(self, **kwargs):
         self.scenario_changes = eval(scenario)(controller=controller,
-                                               dimensions=dimensions,
                                                **kwargs)
 
     def generate(self, xml_luigi):
         return self.scenario_changes.generate(xml_luigi)
 
-    return type(scenario + '{0}x{1}'.format(dimensions[0], dimensions[1]),
+    arena_dim = kwargs["sim_opts"]["arena_dim"]
+    return type(scenario + '{0}x{1}'.format(arena_dim[0], arena_dim[1]),
                 (object,), {"__init__": __init__,
                             "generate": generate
                             })(**kwargs)

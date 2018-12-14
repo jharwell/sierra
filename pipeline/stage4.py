@@ -43,10 +43,10 @@ class PipelineStage4:
         self.args = args
 
     def run(self):
-        if self.args.with_graphs == 'all' or self.args.with_graphs == 'intra':
+        if self.args.exp_graphs == 'all' or self.args.exp_graphs == 'intra':
             self._gen_intra_graphs()
 
-        if self.args.with_graphs == 'all' or self.args.with_graphs == 'inter':
+        if self.args.exp_graphs == 'all' or self.args.exp_graphs == 'inter':
             self._gen_inter_graphs()
 
     def _gen_inter_graphs(self):
@@ -66,12 +66,14 @@ class PipelineStage4:
             intra_exp = BatchedIntraExpGraphGenerator(self.args.output_root,
                                                       self.args.graph_root,
                                                       self.args.generator,
-                                                      self.args.with_hists)
+                                                      self.args.with_hists,
+                                                      self.args.plot_applied_variances)
         else:
             intra_exp = IntraExpGraphGenerator(self.args.output_root,
                                                self.args.graph_root,
                                                self.args.generator,
-                                               self.args.with_hists)
+                                               self.args.with_hists,
+                                               self.args.plot_applied_variances)
         print("- Stage4: Generating intra-experiment graphs...")
         intra_exp()
         print("- Stage4: Intra-experiment graph generation complete")
