@@ -61,6 +61,11 @@ class T1000(TimeSetup):
         super().__init__(1000, 1000 * kTicksPerSecond / kDataPoints)
 
 
+class T2000(TimeSetup):
+    def __init__(self):
+        super().__init__(2000, 2000 * kTicksPerSecond / kDataPoints)
+
+
 class T5000(TimeSetup):
     def __init__(self):
         super().__init__(5000, 5000 * kTicksPerSecond / kDataPoints)

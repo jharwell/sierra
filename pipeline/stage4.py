@@ -20,7 +20,7 @@ from pipeline.intra_exp_graph_generator import IntraExpGraphGenerator
 from pipeline.csv_collator import CSVCollator
 from pipeline.batched_intra_exp_graph_generator import BatchedIntraExpGraphGenerator
 from pipeline.inter_exp_graph_generator import InterExpGraphGenerator
-import pipeline.inter_exp_targets
+from pipeline.inter_exp_targets import Linegraphs
 
 import matplotlib as mpl
 mpl.rcParams['lines.linewidth'] = 3
@@ -46,6 +46,10 @@ class PipelineStage4:
         if self.args.exp_graphs == 'all' or self.args.exp_graphs == 'intra':
             self._gen_intra_graphs()
 
+        # Collation must be after intra-experiment graph generation, so that all .csv files to be
+        # collated have been generated/modified according to parameters.
+        CSVCollator(self.args.output_root,
+                    Linegraphs.targets('depth2' in self.args.generator))()
         if self.args.exp_graphs == 'all' or self.args.exp_graphs == 'inter':
             self._gen_inter_graphs()
 
@@ -61,8 +65,7 @@ class PipelineStage4:
 
     def _gen_intra_graphs(self):
         if self.args.batch_criteria is not None:
-            CSVCollator(self.args.output_root,
-                        pipeline.inter_exp_targets.Linegraphs.targets('depth2' in self.args.generator))()
+
             intra_exp = BatchedIntraExpGraphGenerator(self.args.output_root,
                                                       self.args.graph_root,
                                                       self.args.generator,

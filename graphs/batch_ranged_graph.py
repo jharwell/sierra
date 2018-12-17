@@ -31,10 +31,10 @@ import itertools
 kMaxRows = 4
 
 
-class RangedSizeGraph:
+class BatchRangedGraph:
     """
-    Generates a graph of SOMETHING vs swarm size across a set of swarm sizes. Only valid for batched
-    experiments.
+    Generates a graph of some performance metric vs some batch criteria (swarm size, swarm density,
+    etc.). Only valid for batched experiments.
 
     If the necessary .csv file does not exist, the graph is not generated.
 
@@ -44,18 +44,21 @@ class RangedSizeGraph:
       output_fpath(str): The absolute/relative path to the output image file to save generated graph
                          to.
       title(str): Graph title.
+      xlabel(str): X-label for graph.
       ylabel(str): Y-label for graph.
       legend(str): Legend for graph. If None, no legend is shown.
       polynomial_fit(it): The degree of the polynomial to use for interpolating each row in the
                           input .csv (the resulting trendline is then plotted). -1 disables
                           interpolation and plotting.
+
     """
 
-    def __init__(self, inputy_fpath, output_fpath, title, ylabel, legend, xvals, polynomial_fit):
+    def __init__(self, inputy_fpath, output_fpath, title, xlabel, ylabel, legend, xvals, polynomial_fit):
 
         self.inputy_csv_fpath = os.path.abspath(inputy_fpath)
         self.output_fpath = os.path.abspath(output_fpath)
         self.title = title
+        self.xlabel = xlabel
         self.ylabel = ylabel
         self.legend = legend
         self.xvals = xvals
@@ -89,7 +92,7 @@ class RangedSizeGraph:
             plt.legend(self.legend, fontsize=14, ncol=max(1, int(len(self.legend) / 3.0)))
 
         plt.ylabel(self.ylabel, fontsize=18)
-        plt.xlabel("Swarm Size", fontsize=18)
+        plt.xlabel(self.xlabel, fontsize=18)
         plt.title(self.title, fontsize=24)
         ax.tick_params(labelsize=12)
 

@@ -17,6 +17,9 @@
 """
 
 from variables.base_variable import BaseVariable
+from variables.swarm_size import SwarmSize
+from variables.temporal_variance_parser import TemporalVarianceParser
+import math
 
 kMinHz = 10
 kMaxHz = 1000
@@ -34,22 +37,27 @@ class TemporalVariance(BaseVariable):
 
     Attributes:
       variances(list): List of tuples specifying the waveform characteristics for each type of
-      applied variance. Each tuple is (xml_path, type, frequency, amplitude).
+      applied variance. Each tuple is (xml parent path, [type, frequency, amplitude, offset, phase],
+      value).
     """
 
-    def __init__(self, variances):
+    def __init__(self, variances, swarm_size):
         self.variances = variances
+        self.swarm_size = swarm_size
 
     def gen_attr_changelist(self):
         """
         Generate a list of sets of changes necessary to make to the input file to correctly set up
         the simulation with the specified block priorities.
         """
+        size_attr = next(iter(SwarmSize([self.swarm_size]).gen_attr_changelist()[0]))
         return [set([
-            ("{0}/waveform", "type".format(v[0]), v[1]),
-            ("{0}/waveform", "frequency".format(v[0]), v[2]),
-            ("{0}/waveform", "amplitude".format(v[0]), v[3]),
-            ("{0}/waveform", "offset".format(v[0]), v[3])]) for v in self.variances]
+            size_attr,
+            ("{0}/waveform".format(v[0]), "type", str(v[1])),
+            ("{0}/waveform".format(v[0]), "frequency", str(v[2])),
+            ("{0}/waveform".format(v[0]), "amplitude", str(v[3])),
+            ("{0}/waveform".format(v[0]), "offset", str(v[4])),
+            ("{0}/waveform".format(v[0]), "phase", str(v[5]))]) for v in self.variances]
 
     def gen_tag_rmlist(self):
         return []
@@ -58,121 +66,39 @@ class TemporalVariance(BaseVariable):
         return []
 
 
-class BlockCarrySine(TemporalVariance):
+def Factory(criteria_str):
+    """
+    Creates variance classes from the command line definition of batch criteria.
+    """
+    attr = TemporalVarianceParser().parse(criteria_str.split(".")[1])
+
+    def gen_variances(criteria_str):
+
+        if any(v == attr["waveform_type"] for v in ["Sine, Square, Sawtooth"]):
+            return [(attr["xml_parent_path"],
+                     attr["waveform_type"],
+                     1.0 / hz,
+                     amp,
+                     amp,
+                     0) for hz in kHZ for amp in kAMPS]
+        elif "StepD" == attr["waveform_type"]:
+            return [(attr["xml_parent_path"],
+                     "Square",
+                     1 / (2 * attr["waveform_param"]),
+                     amp,
+                     amp,
+                     0) for amp in kAMPS]
+        if "StepU" == attr["waveform_type"]:
+            return [(attr["xml_parent_path"],
+                     "Square",
+                     1 / (2 * attr["waveform_param"]),
+                     amp,
+                     amp,
+                     math.pi) for amp in kAMPS]
+
     def __init__(self):
-        super().__init__([(".//actuation/block_carry_throttle",
-                           "Sine",
-                           1.0 / hz,
-                           amp) for hz in kHZ for amp in kAMPS])
+        TemporalVariance.__init__(self, gen_variances(criteria_str), attr["swarm_size"])
 
-
-class BlockCarrySquare(TemporalVariance):
-    def __init__(self):
-        super().__init__([(".//actuation/block_carry_throttle",
-                           "Square",
-                           1.0 / hz,
-                           amp) for hz in kHZ for amp in kAMPS])
-
-
-class BlockCarrySawtooth(TemporalVariance):
-    def __init__(self):
-        super().__init__([(".//actuation/block_carry_throttle",
-                           "Sawtooth",
-                           1.0 / hz,
-                           amp) for hz in kHZ for amp in kAMPS])
-
-
-class BlockCarryStep50000(TemporalVariance):
-    def __init__(self):
-        super().__init__([(".//actuation/block_carry_throttle",
-                           "Square",
-                           1.0 / 50000,
-                           amp) for amp in kAMPS])
-
-
-class BlockCarryConstant(TemporalVariance):
-    def __init__(self):
-        super().__init__([(".//actuation/block_carry_throttle",
-                           "Constant",
-                           0.0,
-                           amp) for amp in kAMPS])
-
-
-class BlockManipulationSine(TemporalVariance):
-    def __init__(self):
-        super().__init__([(".//arena_map/blocks/manipulation_penalty",
-                           "Sine",
-                           1.0 / hz,
-                           amp) for hz in kHZ for amp in kAMPS])
-
-
-class BlockManipulationSquare(TemporalVariance):
-    def __init__(self):
-        super().__init__([(".//arena_map/blocks/manipulation_penalty",
-                           "Square",
-                           1.0 / hz,
-                           amp) for hz in kHZ for amp in kAMPS])
-
-
-class BlockManipulationSawtooth(TemporalVariance):
-    def __init__(self):
-        super().__init__([(".//arena_map/blocks/manipulation_penalty",
-                           "Sawtooth",
-                           1.0 / hz,
-                           amp) for hz in kHZ for amp in kAMPS])
-
-
-class BlockManipulationStep50000(TemporalVariance):
-    def __init__(self):
-        super().__init__([(".//arena_map/blocks/manipulation_penalty",
-                           "Square",
-                           1.0 / 50000,
-                           amp) for amp in kAMPS])
-
-
-class BlockManipulationConstant(TemporalVariance):
-    def __init__(self):
-        super().__init__([(".//arena_map/blocks/manipulation_penalty",
-                           "Constant",
-                           0.0,
-                           amp) for amp in kAMPS])
-
-
-class CacheUsageSine(TemporalVariance):
-    def __init__(self):
-        super().__init__([(".//arena_map/static_caches/usage_penalty",
-                           "Sine",
-                           1.0 / hz,
-                           amp) for hz in kHZ for amp in kAMPS])
-
-
-class CacheUsageSquare(TemporalVariance):
-    def __init__(self):
-        super().__init__([(".//arena_map/static_caches/usage_penalty",
-                           "Square",
-                           1.0 / hz,
-                           amp) for hz in kHZ for amp in kAMPS])
-
-
-class CacheUsageSawtooth(TemporalVariance):
-    def __init__(self):
-        super().__init__([(".//arena_map/static_caches/usage_penalty",
-                           "Sawtooth",
-                           1.0 / hz,
-                           amp) for hz in kHZ for amp in kAMPS])
-
-
-class CacheUsageStep50000(TemporalVariance):
-    def __init__(self):
-        super().__init__([(".//arena_map/static_caches/usage_penalty",
-                           "Square",
-                           1.0 / 50000,
-                           amp) for amp in kAMPS])
-
-
-class CacheUsageConstant(TemporalVariance):
-    def __init__(self):
-        super().__init__([(".//arena_map/static_caches/usage_penalty",
-                           "Constant",
-                           0.0,
-                           amp) for amp in kAMPS])
+    return type(criteria_str,
+                (TemporalVariance,),
+                {"__init__": __init__})

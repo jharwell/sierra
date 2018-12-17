@@ -17,6 +17,8 @@
 """
 
 from variables.base_variable import BaseVariable
+from variables.swarm_size_parser import SwarmSizeParser
+import math
 
 
 class SwarmSize(BaseVariable):
@@ -46,66 +48,30 @@ class SwarmSize(BaseVariable):
         return []
 
 
-class Linear10000(SwarmSize):
+def Factory(criteria_str):
+    """
+    Creates variance classes from the command line definition of batch criteria. The string must be
+    formatted as:
+
+    <increment_type><max size>
+
+    For example:
+
+    Log1024 -> Swarm sizes 1..1024 by powers of 2
+    Linear1000 -> Swarm sizes 10...1000, step size of 100
+    """
+    attr = SwarmSizeParser().parse(criteria_str.split(".")[1])
+
+    def gen_variances(criteria_str):
+
+        if "Linear" == attr["increment_type"]:
+            return [attr["linear_increment"] * x for x in range(1, 11)]
+        if "Log" == attr["increment_type"]:
+            return [2 ** x for x in range(0, int(math.log2(attr["max_size"])))]
+
     def __init__(self):
-        super().__init__([1000 * x for x in range(1, 11)])
+        SwarmSize.__init__(self, gen_variances(criteria_str))
 
-
-class Linear1000(SwarmSize):
-    def __init__(self):
-        super().__init__([100 * x for x in range(1, 11)])
-
-
-class Log16384(SwarmSize):
-    def __init__(self):
-        super().__init__([2 ** x for x in range(0, 15)])
-
-
-class Log8192(SwarmSize):
-    def __init__(self):
-        super().__init__([2 ** x for x in range(0, 14)])
-
-
-class Log4096(SwarmSize):
-    def __init__(self):
-        super().__init__([2 ** x for x in range(0, 13)])
-
-
-class Log2048(SwarmSize):
-    def __init__(self):
-        super().__init__([2 ** x for x in range(0, 12)])
-
-
-class Log1024(SwarmSize):
-    def __init__(self):
-        super().__init__([2 ** x for x in range(0, 11)])
-
-
-class Log512(SwarmSize):
-    def __init__(self):
-        super().__init__([2 ** x for x in range(0, 10)])
-
-
-class Log256(SwarmSize):
-    def __init__(self):
-        super().__init__([2 ** x for x in range(0, 9)])
-
-
-class Log128(SwarmSize):
-    def __init__(self):
-        super().__init__([2 ** x for x in range(0, 8)])
-
-
-class Log64(SwarmSize):
-    def __init__(self):
-        super().__init__([2 ** x for x in range(0, 7)])
-
-
-class Log32(SwarmSize):
-    def __init__(self):
-        super().__init__([2 ** x for x in range(0, 6)])
-
-
-class Log16(SwarmSize):
-    def __init__(self):
-        super().__init__([2 ** x for x in range(0, 5)])
+    return type(criteria_str,
+                (SwarmSize,),
+                {"__init__": __init__})

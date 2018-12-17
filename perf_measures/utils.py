@@ -55,23 +55,80 @@ def sort_scenarios(batch_criteria, scenarios):
         return sorted(scenarios, key=lambda s: float(s[-5:-2].replace('p', '.')))
 
 
-def calc_swarm_sizes(batch_criteria, batch_generation_root, n_exp):
+def batch_swarm_sizes(batch_criteria, batch_generation_root, n_exp):
     """
+    Return the list of swarm sizes used during a batched experiment.
+
+    Defined for the following batch criteria:
+
+    - swarm_size
+    - swarm_density
+    - temporal_variance
+
     batch_criteria(str): String of batch criteria passed on command line.
     batch_generation_root(str): Root directory where experiment input files were generated.
     n_exp(int): How many experiments were run.
     """
-    if "swarm_size" in batch_criteria:
-        return [2**x for x in range(0, n_exp)]
-    elif "swarm_density" in batch_criteria:
+    if any(c in batch_criteria for c in ["swarm_density", "temporal_variance", "swarm_size"]):
         sizes = []
         for i in range(0, n_exp):
+
             exp_def = unpickle_exp_def(os.path.join(
                 batch_generation_root, "exp" + str(i), "exp_def.pkl"))
             for e in exp_def:
                 if e[0] == ".//arena/distribute/entity" and e[1] == "quantity":
                     sizes.append(int(e[2]))
         return sizes
+    else:
+        return None
+
+
+def batch_criteria_xvals(batch_criteria, batch_generation_root, n_exp):
+    """
+    Return a list of batch criteria-specific values to use as the x values for input into graph
+    generation.
+
+    Defined for the following batch criteria:
+
+    - swarm_size -> # of robots in each experiment in the batch.
+    - swarm_density -> Density [0, inf) of robots in each experiment in the batch.
+    - temporal_variance -> Distance between ideal conditions and the variance for each experiment in
+                           the batch.
+
+    batch_criteria(str): String of batch criteria passed on command line.
+    batch_generation_root(str): Root directory where experiment input files were generated.
+    n_exp(int): How many experiments were run.
+
+    """
+    if "swarm_size" in batch_criteria:
+        return batch_swarm_sizes(batch_criteria, batch_generation_root, n_exp)
+    elif "swarm_density" in batch_criteria:
+        densities = []
+        for i in range(0, n_exp):
+            exp_def = unpickle_exp_def(os.path.join(
+                batch_generation_root, "exp" + str(i), "exp_def.pkl"))
+            for e in exp_def:
+                if e[0] == ".//arena/distribute/entity" and e[1] == "quantity":
+                    n_robots = int(e[2])
+                if e[0] == ".//arena/size" and e[1] == "size":
+                    x, y, z = e[1].split(",")
+            densities.append(n_robots / (int(x) * int(y)))
+        return densities
+    elif "temporal_variance" in batch_criteria:
+        return [x for x in range(0, n_exp)]
+
+
+def batch_criteria_xlabel(batch_criteria):
+    """
+    Return the X-label that should be used for the graphs of various performance measures across
+    batch criteria.
+    """
+    if "swarm_size" in batch_criteria:
+        return "Swarm Size"
+    elif "swarm_density" in batch_criteria:
+        return "Swarm Density"
+    elif "temporal_variance" in batch_criteria:
+        return "Frechet Distance"
 
 
 def unpickle_exp_def(exp_def_fpath):
@@ -93,7 +150,8 @@ def unpickle_exp_def(exp_def_fpath):
 class FractionalLosses:
     """
     Calculates the fractional performance losses of a swarm across a range of swarm sizes (i.e. how
-    much performance is maintained as the swarm size increases).
+    much performance is maintained as the swarm size increases). The swarm sizes are assumed to be
+    powers of 2.
     """
 
     def __init__(self, batch_output_root, batch_generation_root):
@@ -139,7 +197,6 @@ class FractionalLosses:
 
         plost_n = pd.DataFrame(columns=scale_cols)
         plost_n['exp0'] = blocks.tail(1)['exp0'] * (tlost_n['exp0'])
-
         for c in [c for c in scale_cols if c not in ['exp0']]:
             plost_n[c] = blocks.tail(1)[c] * \
                 (tlost_n[c] - tlost_n['exp0'] * math.pow(2, int(c[3:]))) / \

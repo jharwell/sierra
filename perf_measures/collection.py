@@ -18,7 +18,7 @@ This file is part of SIERRA.
 
 import os
 import pandas as pd
-from graphs.ranged_size_graph import RangedSizeGraph
+from graphs.batch_ranged_graph import BatchRangedGraph
 import perf_measures.utils as pm_utils
 
 kBlocksGatheredCumCSV = "blocks-collected-cum.csv"
@@ -57,13 +57,14 @@ class InterExpBlockCollection:
         opath = os.path.join(self.batch_output_root, "pm-blocks-collected.csv")
         final_collect_count.to_csv(opath, sep=';', index=False)
 
-        RangedSizeGraph(inputy_fpath=opath,
-                        output_fpath=os.path.join(self.batch_graph_root,
-                                                  "pm-blocks-collected.png"),
-                        title="Swarm Blocks Collected",
-                        ylabel="# Blocks",
-                        xvals=pm_utils.calc_swarm_sizes(self.batch_criteria,
-                                                        self.batch_generation_root,
-                                                        len(final_collect_count.columns)),
-                        legend=None,
-                        polynomial_fit=-1).generate()
+        BatchRangedGraph(inputy_fpath=opath,
+                         output_fpath=os.path.join(self.batch_graph_root,
+                                                   "pm-blocks-collected.png"),
+                         title="Swarm Blocks Collected",
+                         xlabel=pm_utils.batch_criteria_xlabel(self.batch_criteria),
+                         ylabel="# Blocks",
+                         xvals=pm_utils.batch_criteria_xvals(self.batch_criteria,
+                                                             self.batch_generation_root,
+                                                             len(final_collect_count.columns)),
+                         legend=None,
+                         polynomial_fit=-1).generate()

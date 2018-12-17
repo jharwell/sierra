@@ -63,7 +63,11 @@ class XMLLuigi:
           value(str): The value to set the attribute to.
         """
         el = self.root.find(path)
-        el.attrib[attr] = value
+        try:
+            el.attrib[attr] = value
+        except AttributeError:
+            print("No attribute '{1}' found in node '{0}'".format(path, attr))
+            pass
 
     def tag_change(self, path, tag, value):
         """

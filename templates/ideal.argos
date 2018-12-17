@@ -132,7 +132,8 @@
                 type="Null"
                 frequency="100"
                 amplitude="0.4"
-                offset="0.1"/>
+                offset="0.1"
+                phase="0"/>
           </block_carry_throttle>
           <steering2D>
             <avoidance_force lookahead="0.5"
@@ -228,7 +229,8 @@
               type="Sine"
               frequency="0.001"
               amplitude="50"
-              offset="50"/>
+              offset="50"
+              phase="0"/>
         </manipulation_penalty>
         <distribution
             arena_resolution="0.2"
@@ -258,7 +260,8 @@
             type="Null"
             frequency="100"
             amplitude="500"
-            offset="50"/>
+            offset="50"
+            phase="0"/>
       </usage_penalty>
       <dynamic enable="false"
                min_dist="0.8"
@@ -320,7 +323,7 @@
   <!-- ********* -->
   <media>
     <range_and_bearing id="rab" />
-    <led id="leds" grid_size="373,187,1"/>
+    <led id="leds"/>
   </media>
 
   <!-- ****************** -->

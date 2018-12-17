@@ -6,7 +6,8 @@
   <!-- * General configuration * -->
   <!-- ************************* -->
   <framework>
-    <system threads="0" />
+    <system threads="0"
+            method="balance_quantity"/>
     <experiment length="10000"
                 ticks_per_second="5"
                 random_seed="123" />
@@ -28,6 +29,7 @@
         <footbot_light implementation="rot_z_only" show_rays="false" />
         <footbot_motor_ground implementation="rot_z_only" />
         <range_and_bearing implementation="medium" medium="rab" />
+        <battery implementation="default" />
       </sensors>
       <params>
         <output>
@@ -35,43 +37,92 @@
                output_dir="__current_date__"
                />
         </output>
-        <occupancy_grid
-            nest="2.0, 2.5">
+        <occupancy_grid>
           <grid resolution="0.2"
-                size="10, 5, 2"/>
+                size="12, 6, 2"/>
           <pheromone rho="0.00001"
                      repeat_deposit="false"/>
-          <block_priorities
-              cube="1.0"
-              ramp="1.0"
-              />
         </occupancy_grid>
-        <task_executive>
-          <estimation alpha="0.8"/>
-          <task_abort reactivity="8"
-                      offset="3"
-                      />
-          <task_partition
-              method="pini2011"
-              always_partition="true"
-              never_partition="false"
-              reactivity="1.5"
-              offset="1.0"
-              />
-          <subtask_selection
-              method="harwell2018"
-              reactivity="8"
-              offset="1.25"
-              gamma="1.0"
-              />
-        </task_executive>
-        <task_exec_estimates
-            enabled="true"
-            generalist_range="2000:4000"
-            collector_range="1000:2000"
-            harvester_range="1000:2000"
+        <task_executive
+            update_exec_ests="true"
+            update_interface_ests="true"
+            tab_init_method="max_depth"
             />
-        <sensing>
+        <task_allocation>
+          <task_abort>
+            <src_sigmoid_sel
+                input_src="exec">
+              <sigmoid_sel
+                  method="">
+                <sigmoid reactivity="8"
+                         offset="3"
+                         gamma="1.0"/>
+              </sigmoid_sel>
+              </src_sigmoid_sel>
+          </task_abort>
+          <task_partition
+              always_partition="false"
+              never_partition="false">
+            <src_sigmoid_sel
+                input_src="exec">
+              <sigmoid_sel
+                  method="pini2011">
+                <sigmoid
+                    reactivity="4"
+                    offset="1.0"
+                    gamma="1.0"/>
+              </sigmoid_sel>
+            </src_sigmoid_sel>
+          </task_partition>
+          <subtask_sel>
+            <src_sigmoid_sel
+                input_src="exec">
+              <sigmoid_sel
+                  method="harwell2018">
+                <sigmoid
+                    reactivity="8"
+                    offset="1.25"
+                    gamma="1.0"/>
+              </sigmoid_sel>
+            </src_sigmoid_sel>
+          </subtask_sel>
+          <task_exec_estimates
+              seed_enabled="true"
+              generalist="2000:4000"
+              collector="1000:2000"
+              harvester="1000:2000"
+              cache_starter="1000:2000"
+              cache_finisher="1000:2000"
+              cache_collector="1000:2000"
+              cache_transferer="1000:2000">
+            <ema alpha="0.8"/>
+          </task_exec_estimates>
+          <tab_sel>
+            <src_sigmoid_sel
+                input_src="exec">
+              <sigmoid_sel
+                  method="harwell2019">
+                <sigmoid
+                    reactivity="4"
+                    offset="1.0"
+                    gamma="1.0"/>
+              </sigmoid_sel>
+            </src_sigmoid_sel>
+          </tab_sel>
+        </task_allocation>
+        <block_selection_matrix
+              nest="2.0, 3">
+              <block_priorities
+                  cube="1.0"
+                  ramp="1.0"
+                  />
+        </block_selection_matrix>
+        <cache_selection_matrix
+            cache_prox_dist="1.0"
+            block_prox_dist="1.0"
+            nest_prox_dist="3.0"/>
+        <sensing
+            los_dim="0.4">
           <proximity_sensor angle_range="-1.1:1.1"
                             delta="0.0001" />
         </sensing>
@@ -81,7 +132,8 @@
                 type="Null"
                 frequency="100"
                 amplitude="0.4"
-                offset="0.1"/>
+                offset="0.1"
+                phase="0"/>
           </block_carry_throttle>
           <steering2D>
             <avoidance_force lookahead="0.5"
@@ -94,11 +146,12 @@
                           circle_radius="100.0"
                           max_angle_delta="5"
                           max="9.0"
-                          interval="1"/>
+                          interval="1"
+                          normal_dist="false"/>
             <phototaxis_force max="8"/>
           </steering2D>
 
-          <differential_drive soft_turn_max="30"
+          <differential_drive soft_turn_max="15"
                               max_speed="10.0" />
         </actuation>
         <visualization robot_id="true"
@@ -115,50 +168,77 @@
   <!-- * Loop functions * -->
   <!-- ****************** -->
   <loop_functions library="libfordyca"
-                  label="stateful_foraging_loop_functions">
+                  label="depth2_loop_functions">
+    <battery
+        power_station_amount="0"
+        power_station_size="1"
+        power_station_distrubtion="normal"/>
     <output>
-      <sim log_fname="sim.log"
-           output_root="output"
+      <sim output_root="output"
            output_dir="__current_date__"
            />
       <metrics
-          output_dir="metrics"
-          collision_fname="collision-stats.csv"
-          block_fname="block-stats.csv"
-          block_acquisition_fname="block-acquisition-stats.csv"
-          block_transport_fname="block-transport-stats.csv"
-          block_manipulation_fname="block-manipulation-stats.csv"
-          cache_acquisition_fname="cache-acquisition-stats.csv"
-          cache_utilization_fname="cache-utilization-stats.csv"
-          cache_lifecycle_fname="cache-lifecycle-stats.csv"
-          task_execution_generalist_fname="task-execution-generalist-stats.csv"
-          task_execution_collector_fname="task-execution-collector-stats.csv"
-          task_execution_harvester_fname="task-execution-harvester-stats.csv"
-          task_generalist_tab_fname="task-generalist-tab-stats.csv"
-          distance_fname="distance-stats.csv"
-          perception_world_model_fname="perception-world-model.csv"
-          arena_robot_occupancy="arena-robot-occupancy.csv"
-          collect_interval="1000"
-          />
+        output_dir="metrics"
+        fsm_collision_fname="fsm-collision.csv"
+        fsm_movement_fname="fsm-movement.csv"
+        block_acquisition_fname="block-acquisition.csv"
+        block_transport_fname="block-transport.csv"
+        block_manipulation_fname="block-manipulation.csv"
+        cache_acquisition_fname="cache-acquisition.csv"
+        cache_utilization_fname="cache-utilization.csv"
+        cache_lifecycle_fname="cache-lifecycle.csv"
+        cache_locations_fname="cache-locations.csv"
+        task_execution_generalist_fname="task-execution-generalist.csv"
+        task_execution_collector_fname="task-execution-collector.csv"
+        task_execution_harvester_fname="task-execution-harvester.csv"
+        task_execution_cache_starter_fname="task-execution-cache_starter.csv"
+        task_execution_cache_finisher_fname="task-execution-cache_finisher.csv"
+        task_execution_cache_transferer_fname="task-execution-cache_transferer.csv"
+        task_execution_cache_collector_fname="task-execution-cache_collector.csv"
+        task_tab_generalist_fname="task-tab-generalist.csv"
+        task_tab_collector_fname="task-tab-collector.csv"
+        task_tab_harvester_fname="task-tab-harvester.csv"
+        task_distribution_fname="task-distribution.csv"
+        swarm_convergence_fname="swarm-convergence.csv"
+        perception_world_model_fname="perception-world-model.csv"
+        arena_robot_occupancy_fname="arena-robot-occupancy.csv"
+        loop_temporal_variance_fname="loop-temporal-variance.csv"
+        collect_interval="1000">
+
+      </metrics>
+
     </output>
+    <convergence>
+      <positional_entropy
+          enable="false"
+          n_iterations="10"/>
+      <interactivity enable="false"/>
+      <angular_order enable="false"/>
+    </convergence>
+    <oracle
+        enabled="false"
+        task_exec_est="false"
+        task_interface_est="false"
+        />
     <arena_map>
       <grid resolution="0.2"
-            size="10, 5, 2"/>
+            size="12, 6, 2"/>
       <blocks>
         <manipulation_penalty>
           <waveform
-              type="Null"
-              frequency="25000"
+              type="Sine"
+              frequency="0.001"
               amplitude="50"
-              offset="100"/>
+              offset="50"
+              phase="0"/>
         </manipulation_penalty>
         <distribution
             arena_resolution="0.2"
-            dist_type="random">
+            dist_type="single_source">
           <powerlaw
               pwr_min="0"
-              pwr_max="4"
-              n_clusters="25"
+              pwr_max="3"
+              n_clusters="15"
               />
           <manifest
               n_cube="25"
@@ -167,22 +247,28 @@
               />
         </distribution>
       </blocks>
-
-      <static_caches enable="true"
-                     size="2"
-                     respawn_scale_factor="0.05"
-                     dimension="0.8"
-                     min_dist="0.8">
-        <usage_penalty>
-          <waveform
-              type="Null"
-              frequency="100"
-              amplitude="500"
-              offset="10"/>
-        </usage_penalty>
-      </static_caches>
-      <nest size="1.0, 4.0" center="2, 2.5" />
+      <nest size="1.0, 4.0" center="2, 3" />
     </arena_map>
+    <caches
+        dimension="0.8">
+      <static enable="true"
+              size="2"
+              respawn_scale_factor="0.05">
+      </static>
+      <usage_penalty>
+        <waveform
+            type="Null"
+            frequency="100"
+            amplitude="500"
+            offset="50"
+            phase="0"/>
+      </usage_penalty>
+      <dynamic enable="false"
+               min_dist="0.8"
+               min_blocks="2"/>
+
+    </caches>
+
     <visualization robot_id="true"
                    robot_los="false"
                    robot_task="true"
@@ -193,50 +279,32 @@
   <!-- *********************** -->
   <!-- * Arena configuration * -->
   <!-- *********************** -->
-  <arena size="10, 5, 2" center="5,2.5,1">
+  <arena size="12, 6, 2" center="6,3,1">
 
     <floor id="floor"
            source="loop_functions"
            pixels_per_meter="50" />
 
-    <box id="wall_north" size="10,0.1,0.5" movable="false">
-      <body position="5,5,0" orientation="0,0,0" />
+    <box id="wall_north" size="12,0.1,0.5" movable="false">
+      <body position="6,6,0" orientation="0,0,0" />
     </box>
-    <box id="wall_south" size="10,0.1,0.5" movable="false">
-      <body position="5,0,0" orientation="0,0,0" />
+    <box id="wall_south" size="12,0.1,0.5" movable="false">
+      <body position="6,0,0" orientation="0,0,0" />
     </box>
-    <box id="wall_east" size="0.1,5,0.5" movable="false">
-      <body position="10,2.5,0" orientation="0,0,0" />
+    <box id="wall_east" size="0.1,6,0.5" movable="false">
+      <body position="12,3,0" orientation="0,0,0" />
     </box>
-    <box id="wall_west" size="0.1,5,0.5" movable="false">
-      <body position="0,2.5,0" orientation="0,0,0" />
+    <box id="wall_west" size="0.1,6,0.5" movable="false">
+      <body position="0,3,0" orientation="0,0,0" />
     </box>
-
-    <light id="light1"
-           position="2,1.25,1.0"
-           orientation="0,0,0"
-           color="yellow"
-           intensity="10.0"
-           medium="leds" />
-    <light id="light2"
-           position="2,2.5,1.0"
-           orientation="0,0,0"
-           color="yellow"
-           intensity="10.0"
-           medium="leds" />
-    <light id="light3"
-           position="2,3.75,1.0"
-           orientation="0,0,0"
-           color="yellow"
-           intensity="10.0"
-           medium="leds" />
 
     <distribute>
-      <position method="uniform" min="1,1,0" max="8,4,0" />
+      <position method="uniform" min="1,1,0" max="10,5,0" />
       <orientation method="uniform" min="0,0,0" max="360,0,0" />
       <entity quantity="16" max_trials="1000">
         <foot-bot id="fb">
           <controller config="ffc" />
+          <battery model= "time_motion"/>
         </foot-bot>
       </entity>
     </distribute>
@@ -255,7 +323,7 @@
   <!-- ********* -->
   <media>
     <range_and_bearing id="rab" />
-    <led id="leds" />
+    <led id="leds"/>
   </media>
 
   <!-- ****************** -->

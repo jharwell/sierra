@@ -19,6 +19,7 @@
 from variables.base_variable import BaseVariable
 from variables.arena_shape import RectangularArena
 from variables.block_distribution import TypeRandom, TypeSingleSource
+from variables.swarm_density_parser import SwarmDensityParser
 
 
 def Calculate(n_robots, arena_x, arena_y):
@@ -71,41 +72,21 @@ class ConstantDensity(BaseVariable):
         return []
 
 
-class CD1p0SS(ConstantDensity):
+def Factory(criteria_str):
+    """
+    Creates variance classes from the command line definition of batch criteria.
+    """
+    attr = SwarmDensityParser().parse(criteria_str.split(".")[1])
+
+    if "TypeSingleSource" == attr["block_dist_type"]:
+        dims = ConstantDensity.kRect2x1Dims
+
     def __init__(self):
-        super().__init__(1.0, ConstantDensity.kRect2x1Dims, "TypeSingleSource")
+        ConstantDensity.__init__(self,
+                                 attr["target_density"],
+                                 dims,
+                                 attr["block_dist_type"])
 
-
-class CD2p0SS(ConstantDensity):
-    def __init__(self):
-        super().__init__(2.0, ConstantDensity.kRect2x1Dims, "TypeSingleSource")
-
-
-class CD3p0SS(ConstantDensity):
-    def __init__(self):
-        super().__init__(3.0, ConstantDensity.kRect2x1Dims, "TypeSingleSource")
-
-
-class CD4p0SS(ConstantDensity):
-    def __init__(self):
-        super().__init__(4.0, ConstantDensity.kRect2x1Dims, "TypeSingleSource")
-
-
-class CD5p0SS(ConstantDensity):
-    def __init__(self):
-        super().__init__(5.0, ConstantDensity.kRect2x1Dims, "TypeSingleSource")
-
-
-class CD6p0SS(ConstantDensity):
-    def __init__(self):
-        super().__init__(6.0, ConstantDensity.kRect2x1Dims, "TypeSingleSource")
-
-
-class CD7p0SS(ConstantDensity):
-    def __init__(self):
-        super().__init__(7.0, ConstantDensity.kRect2x1Dims, "TypeSingleSource")
-
-
-class CD8p0SS(ConstantDensity):
-    def __init__(self):
-        super().__init__(8.0, ConstantDensity.kRect2x1Dims, "TypeSingleSource")
+    return type(criteria_str,
+                (ConstantDensity,),
+                {"__init__": __init__})

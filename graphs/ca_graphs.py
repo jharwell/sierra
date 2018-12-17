@@ -18,7 +18,7 @@ This file is part of SIERRA.
 
 import os
 import pandas as pd
-from graphs.ranged_size_graph import RangedSizeGraph
+from graphs.batch_ranged_graph import BatchRangedGraph
 from models.collision_avoidance import CAModelEnter
 
 kTargetCumCSV = "entered-avoidance-cum-avg.csv"
@@ -58,9 +58,9 @@ class InterExpCAModelEnterGraph:
         df_new.loc[0] = model
         df_new.loc[1] = df.tail(1)[scale_cols].values[0]
         df_new.to_csv(cum_stem + ".csv", sep=';', index=False)
-        RangedSizeGraph(inputy_fpath=cum_stem + ".csv",
-                        output_fpath=os.path.join(self.batch_graph_root,
-                                                  "model-ca-enter-cum.png"),
-                        title="Analytic Prediction vs Empirical Measurements of CA Entry",
-                        ylabel="# Robots Entering CA",
-                        legend=["Analytic", "Empirical"]).generate()
+        BatchRangedGraph(inputy_fpath=cum_stem + ".csv",
+                         output_fpath=os.path.join(self.batch_graph_root,
+                                                   "model-ca-enter-cum.png"),
+                         title="Analytic Prediction vs Empirical Measurements of CA Entry",
+                         ylabel="# Robots Entering CA",
+                         legend=["Analytic", "Empirical"]).generate()

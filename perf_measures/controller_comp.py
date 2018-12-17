@@ -18,7 +18,7 @@ This file is part of SIERRA.
 
 import os
 import pandas as pd
-from graphs.ranged_size_graph import RangedSizeGraph
+from graphs.batch_ranged_graph import BatchRangedGraph
 from graphs.bar_graph import BarGraph
 import perf_measures.utils as pm_utils
 
@@ -191,13 +191,14 @@ class ControllerComp:
                                                  self.controllers[0],
                                                  s,
                                                  "exp-inputs")
-            RangedSizeGraph(inputy_fpath=csv_opath,
-                            output_fpath=os.path.join(self.cc_graph_root,
-                                                      dest_stem) + "-rng-" + s + ".png",
-                            title=title,
-                            ylabel=ylabel,
-                            xvals=pm_utils.calc_swarm_sizes(self.batch_criteria,
-                                                            batch_generation_root,
-                                                            len(df.columns)),
-                            legend=self.controllers,
-                            polynomial_fit=-1).generate()
+            BatchRangedGraph(inputy_fpath=csv_opath,
+                             output_fpath=os.path.join(self.cc_graph_root,
+                                                       dest_stem) + s + ".png",
+                             title=title,
+                             xlabel=pm_utils.batch_criteria_xlabel(self.batch_criteria),
+                             ylabel=ylabel,
+                             xvals=pm_utils.batch_criteria_xvals(self.batch_criteria,
+                                                                 batch_generation_root,
+                                                                 len(df.columns)),
+                             legend=self.controllers,
+                             polynomial_fit=-1).generate()

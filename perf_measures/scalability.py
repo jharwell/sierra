@@ -18,7 +18,7 @@ This file is part of SIERRA.
 
 import os
 import pandas as pd
-from graphs.ranged_size_graph import RangedSizeGraph
+from graphs.batch_ranged_graph import BatchRangedGraph
 import perf_measures.utils as pm_utils
 import variables.swarm_density as rho
 
@@ -32,6 +32,8 @@ class Comparative:
     Performance N robots
     --------------------
     N * performance 1 robot
+
+    Swarm sizes do not have to be a power of 2.
     """
 
     def __init__(self, batch_output_root, batch_graph_root, batch_generation_root,
@@ -42,8 +44,9 @@ class Comparative:
         self.batch_criteria = batch_criteria
 
     def generate(self):
-        """Calculate the scalability metric within each interval for a given controller,
-        and output a nice graph."""
+        """
+        Calculate the scalability metric within each interval for a given controller.
+        """
 
         path = os.path.join(self.batch_output_root, kTargetCumCSV)
         assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
@@ -53,23 +56,28 @@ class Comparative:
         df_new = pd.DataFrame(columns=scale_cols)
 
         df_new['exp0'] = 1  # Perfect scalability with 1 robot
-        for c in scale_cols:
-            df_new[c] = df.tail(1)[c] / (df.tail(1)['exp0'] * 2 ** int(c[3:]))
+        swarm_sizes = pm_utils.batch_swarm_sizes(self.batch_criteria,
+                                                 self.batch_generation_root,
+                                                 len(df.columns))
+        for i in range(0, len(scale_cols)):
+            col = scale_cols[i]
+            n_robots = swarm_sizes[i]
+            df_new[col] = df.tail(1)[col] / (df.tail(1)['exp0'] * n_robots)
 
         df_new = df_new.reindex(sorted(df_new.columns, key=lambda t: int(t[3:])), axis=1)
         df_new.to_csv(cum_stem + ".csv", sep=';', index=False)
-        swarm_sizes = pm_utils.calc_swarm_sizes(self.batch_criteria,
-                                                self.batch_generation_root,
-                                                len(df.columns))
 
-        RangedSizeGraph(inputy_fpath=cum_stem + ".csv",
-                        output_fpath=os.path.join(self.batch_graph_root,
-                                                  "pm-scalability-comp.png"),
-                        title="Swarm Comparitive Scalability",
-                        ylabel="Scalability Value",
-                        xvals=swarm_sizes,
-                        legend=None,
-                        polynomial_fit=-1).generate()
+        BatchRangedGraph(inputy_fpath=cum_stem + ".csv",
+                         output_fpath=os.path.join(self.batch_graph_root,
+                                                   "pm-scalability-comp.png"),
+                         title="Swarm Comparitive Scalability",
+                         xlabel=pm_utils.batch_criteria_xlabel(self.batch_criteria),
+                         ylabel="Scalability Value",
+                         xvals=pm_utils.batch_criteria_xvals(self.batch_criteria,
+                                                             self.batch_generation_root,
+                                                             len(df.columns)),
+                         legend=None,
+                         polynomial_fit=-1).generate()
 
 
 class Normalized:
@@ -77,6 +85,8 @@ class Normalized:
     Calculates the following scalability measure for each experiment in a batch:
 
     Performance N robots / N
+
+    Swarm sizes do not have to be powers of 2.
     """
 
     def __init__(self, batch_output_root, batch_graph_root, batch_generation_root, batch_criteria):
@@ -86,8 +96,7 @@ class Normalized:
         self.batch_criteria = batch_criteria
 
     def generate(self):
-        """Calculate the scalability metric within each interval for a given controller,
-        and output a nice graph."""
+        """Calculate the scalability metric within each interval for a given controller."""
 
         path = os.path.join(self.batch_output_root, kTargetCumCSV)
         assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
@@ -95,27 +104,33 @@ class Normalized:
         scale_cols = [c for c in df.columns if c not in ['clock']]
         cum_stem = os.path.join(self.batch_output_root, "pm-scalability-norm")
         df_new = pd.DataFrame(columns=scale_cols)
-        for c in scale_cols:
-            df_new[c] = df.tail(1)[c] / (2 ** (int(c[3:])))
+        swarm_sizes = pm_utils.batch_swarm_sizes(self.batch_criteria,
+                                                 self.batch_generation_root,
+                                                 len(df.columns))
+
+        for i in range(0, len(scale_cols)):
+            col = scale_cols[i]
+            n_robots = swarm_sizes[i]
+            df_new[col] = df.tail(1)[col] / n_robots
 
         df_new.to_csv(cum_stem + ".csv", sep=';', index=False)
-        swarm_sizes = pm_utils.calc_swarm_sizes(self.batch_criteria,
-                                                self.batch_generation_root,
-                                                len(df.columns))
-        RangedSizeGraph(inputy_fpath=cum_stem + ".csv",
-                        output_fpath=os.path.join(self.batch_graph_root,
-                                                  "pm-scalability-norm.png"),
-                        title="Swarm Scalability (normalized)",
-                        ylabel="Scalability Value",
-                        xvals=swarm_sizes,
-                        legend=None,
-                        polynomial_fit=-1).generate()
+        BatchRangedGraph(inputy_fpath=cum_stem + ".csv",
+                         output_fpath=os.path.join(self.batch_graph_root,
+                                                   "pm-scalability-norm.png"),
+                         title="Swarm Scalability (normalized)",
+                         xlabel=pm_utils.batch_criteria_xlabel(self.batch_criteria),
+                         ylabel="Scalability Value",
+                         xvals=pm_utils.batch_criteria_xvals(self.batch_criteria,
+                                                             self.batch_generation_root,
+                                                             len(df.columns)),
+                         legend=None,
+                         polynomial_fit=-1).generate()
 
 
 class FractionalPerformanceLoss:
     """
     Calculates the scalability of across an experiment batch using fractions of performance lost due
-    to inter-robot interference as swarm size increases.
+    to inter-robot interference as swarm size increases. Swarm sizes do not have to be a power of 2.
     """
 
     def __init__(self, batch_output_root, batch_graph_root, batch_generation_root, batch_criteria):
@@ -125,8 +140,7 @@ class FractionalPerformanceLoss:
         self.batch_criteria = batch_criteria
 
     def generate(self):
-        """Calculate the scalability metric within each interval for a given controller,
-        and outputs a graph."""
+        """Calculate the scalability metric within each interval for a given controller."""
 
         df = pm_utils.FractionalLosses(self.batch_output_root, self.batch_generation_root).calc()
         for c in df.columns:
@@ -135,17 +149,17 @@ class FractionalPerformanceLoss:
         path = os.path.join(self.batch_output_root, "pm-scalability-fl.csv")
         df.to_csv(path, sep=';', index=False)
 
-        swarm_sizes = pm_utils.calc_swarm_sizes(self.batch_criteria,
-                                                self.batch_generation_root,
-                                                len(df.columns))
-        RangedSizeGraph(inputy_fpath=path,
-                        output_fpath=os.path.join(self.batch_graph_root,
-                                                  "pm-scalability-fl.png"),
-                        title="Swarm Scalability: Fractional Performance Loss Due To Inter-robot Interference",
-                        ylabel="Scalability Value",
-                        xvals=swarm_sizes,
-                        legend=None,
-                        polynomial_fit=-1).generate()
+        BatchRangedGraph(inputy_fpath=path,
+                         output_fpath=os.path.join(self.batch_graph_root,
+                                                   "pm-scalability-fl.png"),
+                         title="Swarm Scalability: Fractional Performance Loss Due To Inter-robot Interference",
+                         xlabel=pm_utils.batch_criteria_xlabel(self.batch_criteria),
+                         ylabel="Scalability Value",
+                         xvals=pm_utils.batch_criteria_xvals(self.batch_criteria,
+                                                             self.batch_generation_root,
+                                                             len(df.columns)),
+                         legend=None,
+                         polynomial_fit=-1).generate()
 
 
 class InterExpScalability:
