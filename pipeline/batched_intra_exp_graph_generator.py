@@ -17,6 +17,7 @@
 """
 
 import os
+import copy
 from pipeline.intra_exp_graph_generator import IntraExpGraphGenerator
 
 
@@ -26,29 +27,18 @@ class BatchedIntraExpGraphGenerator:
     Generates all intra-experiment graphs from a batch of experiments.
 
     Attributes:
-    batch_output_root(str): Root directory (relative to current dir or absolute) for experiment
-                            outputs.
-    batch_graph_root(str): Root directory (relative to current dir or absolute) of where the
-                           generated graphs should be saved for the experimentsn.
-    generator(str): Fully qualified name of the generator used to create/run the experiments.
-    with_hists(bool): If TRUE, then histograms will be generated.
+    cmdopts(dict): Dictionary commandline attributes used during intra-experiment graph generation.
     """
 
-    def __init__(self, batch_output_root, batch_graph_root, generator, with_hists, plot_applied_variances):
-        self.batch_output_root = os.path.abspath(batch_output_root)
-        self.batch_graph_root = batch_graph_root
-        self.generator = generator
-        self.with_hists = with_hists
-        self.plot_applied_variances = plot_applied_variances
+    def __init__(self, cmdopts):
+        self.cmdopts = copy.deepcopy(cmdopts)
 
     def __call__(self):
         """Generate all intra-experiment graphs for all experiments in the batch."""
-        for item in os.listdir(self.batch_output_root):
-            exp_output_root = os.path.join(self.batch_output_root, item)
-            exp_graph_root = os.path.join(self.batch_graph_root, item)
-            if os.path.isdir(exp_output_root) and 'collated-csvs' != item:
-                IntraExpGraphGenerator(exp_output_root,
-                                       exp_graph_root,
-                                       self.generator,
-                                       self.with_hists,
-                                       self.plot_applied_variances)()
+        batch_output_root = self.cmdopts["output_root"]
+        batch_graph_root = self.cmdopts["graph_root"]
+        for item in os.listdir(batch_output_root):
+            self.cmdopts["output_root"] = os.path.join(batch_output_root, item)
+            self.cmdopts["graph_root"] = os.path.join(batch_graph_root, item)
+            if os.path.isdir(self.cmdopts["output_root"]) and 'collated-csvs' != item:
+                IntraExpGraphGenerator(self.cmdopts)()

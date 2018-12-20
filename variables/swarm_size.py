@@ -67,7 +67,7 @@ def Factory(criteria_str):
         if "Linear" == attr["increment_type"]:
             return [attr["linear_increment"] * x for x in range(1, 11)]
         if "Log" == attr["increment_type"]:
-            return [2 ** x for x in range(0, int(math.log2(attr["max_size"])))]
+            return [2 ** x for x in range(0, int(math.log2(attr["max_size"])) + 1)]
 
     def __init__(self):
         SwarmSize.__init__(self, gen_variances(criteria_str))

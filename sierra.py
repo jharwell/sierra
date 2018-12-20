@@ -34,21 +34,19 @@ if __name__ == "__main__":
 
     pair = GeneratorPairParser()(args)
 
-    # If the user specified a controller + scenario combination for the generator (including
-    # dimensions), use it to determine directory names.
-    #
-    # Otherwise, they *MUST* be using batch criteria, and so use the batch criteria to uniquely
-    # specify directory names.
+    # If batch criteria is used, prefer to use it to uniquely determine directory names. Otherwise,
+    # if the user is not using batch criteria, but specified a controller + scenario combination for
+    # the generator (including dimensions), use that to determine directory names.
     #
     # Also, add the template file leaf to the root directory path to help track what experiment was
     # run.
     if pair is not None:
-        if "Generator" not in pair[1]:  # They specified scenario dimensions explicitly
-            controller = pair[0]
-            scenario = pair[1].split('.')[1]
-        else:  # They did not specify scenario dimensions explicitly
+        if args.batch_criteria is not None:
             controller = pair[0]
             scenario = args.batch_criteria.split('.')[1]
+        elif "Generator" not in pair[1]:  # They specified scenario dimensions explicitly
+            controller = pair[0]
+            scenario = pair[1].split('.')[1]
 
         template, ext = os.path.splitext(os.path.basename(args.template_config_file))
 

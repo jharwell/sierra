@@ -17,6 +17,7 @@ This file is part of SIERRA.
 """
 
 import os
+import copy
 import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
 import perf_measures.utils as pm_utils
@@ -29,11 +30,10 @@ class InterExpSelfOrganization:
 
     """
 
-    def __init__(self, batch_output_root, batch_graph_root, batch_generation_root, batch_criteria):
-        self.batch_output_root = batch_output_root
-        self.batch_graph_root = batch_graph_root
-        self.batch_generation_root = batch_generation_root
-        self.batch_criteria = batch_criteria
+    def __init__(self, cmdopts):
+        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
+        # are generated after us
+        self.cmdopts = copy.deepcopy(cmdopts)
 
     def generate(self):
         """
@@ -41,8 +41,9 @@ class InterExpSelfOrganization:
         the result.
         """
 
-        print("-- Self-organization from {0}".format(self.batch_output_root))
-        df = pm_utils.FractionalLosses(self.batch_output_root, self.batch_generation_root).calc()
+        print("-- Self-organization from {0}".format(self.cmdopts["collate_root"]))
+        df = pm_utils.FractionalLosses(self.cmdopts["collate_root"],
+                                       self.cmdopts["generation_root"]).calc()
         df_new = pd.DataFrame(columns=[c for c in df.columns if c not in ['exp0']])
 
         # This is a tricky measure to calculate. It has 4 parts:
@@ -63,27 +64,25 @@ class InterExpSelfOrganization:
         #    smaller average performance loss (even if they have similar slopes as a function of
         #    population size as approaches with greater average performance loss) score more
         #    favorably at higher population sizes.
-        swarm_sizes = pm_utils.batch_swarm_sizes(self.batch_criteria,
-                                                 self.batch_generation_root,
-                                                 len(df.columns))
+        self.cmdopts["n_exp"] = len(df.columns)
+        swarm_sizes = pm_utils.batch_swarm_sizes(self.cmdopts)
+
         df_new['exp0'] = df['exp0']
         for i in range(1, len(df.columns)):
             exp = -(df['exp' + str(i)] - float(swarm_sizes[i]) /
                     float(swarm_sizes[i - 1]) * df['exp' + str(i - 1)])
             df_new['exp' + str(i)] = swarm_sizes[i] / (exp / df['exp' + str(i)])
 
-        path = os.path.join(self.batch_output_root, "pm-self-org.csv")
+        path = os.path.join(self.cmdopts["collate_root"], "pm-self-org.csv")
         df_new = df_new.reindex(sorted(df_new.columns, key=lambda t: int(t[3:])), axis=1)
         df_new.to_csv(path, sep=';', index=False)
 
         BatchRangedGraph(inputy_fpath=path,
-                         output_fpath=os.path.join(self.batch_graph_root,
+                         output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-self-org.png"),
                          title="Swarm Self-Organization Due To Sub-Linear Fractional Performance Losses",
-                         xlabel=pm_utils.batch_criteria_xlabel(self.batch_criteria),
+                         xlabel=pm_utils.batch_criteria_xlabel(self.cmdopts),
                          ylabel="",
-                         xvals=pm_utils.batch_criteria_xvals(self.batch_criteria,
-                                                             self.batch_generation_root,
-                                                             len(df.columns)),
+                         xvals=pm_utils.batch_criteria_xvals(self.cmdopts),
                          legend=None,
                          polynomial_fit=-1).generate()

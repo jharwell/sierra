@@ -18,6 +18,7 @@ Copyright 2018 John Harwell, All rights reserved.
 """
 
 import os
+import copy
 from pipeline.inter_exp_linegraphs import InterExpLinegraphs
 from perf_measures.scalability import InterExpScalability
 from perf_measures.self_organization import InterExpSelfOrganization
@@ -28,44 +29,34 @@ from pipeline.inter_exp_targets import Linegraphs
 
 class InterExpGraphGenerator:
     """
-    Generates graphs from collated .csv data across a batch of experiments
+    Generates graphs from collated .csv data across a batch of experiments.
 
     Attributes:
-      batch_output_root(str): Root directory (relative to current dir or absolute) for experiment
-                              outputs.
-      batch_graph_root(str): Root directory (relative to current dir or absolute) of where the
-                             generated graphs should be saved for the experiment.
-      batch_generation_root(str): Root directory (relative to current dir or absolute) of where the
-                                  input experiment definition file is stored.
-      generator(str): Fully qualified name of the generator used to create/run the experiments.
     """
 
-    def __init__(self, batch_output_root, batch_graph_root, batch_generation_root,
-                 batch_criteria, generator):
+    def __init__(self, cmdopts):
 
-        self.batch_output_root = os.path.abspath(os.path.join(batch_output_root,
-                                                              'collated-csvs'))
-        self.batch_graph_root = os.path.abspath(os.path.join(batch_graph_root,
-                                                             'collated-graphs'))
-        self.batch_generation_root = batch_generation_root
-        self.batch_criteria = batch_criteria
-        self.generator = generator
-        os.makedirs(self.batch_graph_root, exist_ok=True)
+        self.cmdopts = copy.deepcopy(cmdopts)
+        self.cmdopts["collate_root"] = os.path.abspath(os.path.join(self.cmdopts["output_root"],
+                                                                    'collated-csvs'))
+        self.cmdopts["graph_root"] = os.path.abspath(os.path.join(self.cmdopts["graph_root"],
+                                                                  'collated-graphs'))
+        os.makedirs(self.cmdopts["graph_root"], exist_ok=True)
 
     def __call__(self):
-        InterExpLinegraphs(self.batch_output_root,
-                           self.batch_graph_root,
-                           Linegraphs.targets('depth2' in self.generator)).generate()
-        InterExpScalability(self.batch_output_root,
-                            self.batch_graph_root,
-                            self.batch_generation_root,
-                            self.batch_criteria).generate()
-        InterExpSelfOrganization(self.batch_output_root,
-                                 self.batch_graph_root,
-                                 self.batch_generation_root,
-                                 self.batch_criteria).generate()
-        InterExpBlockCollection(self.batch_output_root, self.batch_graph_root,
-                                self.batch_generation_root, self.batch_criteria).generate()
+        if "all" == self.cmdopts["perf_measures"]:
+            InterExpLinegraphs(self.cmdopts["collate_root"],
+                               self.cmdopts["graph_root"],
+                               Linegraphs.targets('depth2' in self.cmdopts["generator"])).generate()
+
+        if "all" == self.cmdopts["perf_measures"] or "sc" == self.cmdopts["perf_measures"]:
+            InterExpScalability(self.cmdopts).generate()
+
+        if "all" == self.cmdopts["perf_measures"] or "so" == self.cmdopts["perf_measures"]:
+            InterExpSelfOrganization(self.cmdopts).generate()
+
+        if "all" == self.cmdopts["perf_measures"] or "sp" == self.cmdopts["perf_measures"]:
+            InterExpBlockCollection(self.cmdopts).generate()
 
         # InterExpCAModelEnterGraph(self.batch_output_root, self.batch_graph_root,
         #                           self.batch_generation_root).generate()

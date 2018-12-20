@@ -17,6 +17,7 @@
 """
 
 from variables.base_variable import BaseVariable
+import math
 
 
 class RectangularArena(BaseVariable):
@@ -60,7 +61,13 @@ class RectangularArena(BaseVariable):
                       "position", "0, {0}, 0".format(s[1] / 2.0)),
 
                      (".//arena_map/grid", "size", "{0}, {1}, 2".format(s[0], s[1])),
-                     (".//occupancy_grid/grid", "size", "{0}, {1}, 2".format(s[0], s[1]))
+                     (".//occupancy_grid/grid", "size", "{0}, {1}, 2".format(s[0], s[1])),
+                     (".//convergence/positional_entropy",
+                      "horizon",
+                      "0:{0}".format(math.sqrt(s[0] ** 2 + s[1] ** 2))),
+                     (".//convergence/positional_entropy",
+                      "horizon_delta",
+                      "{0}".format(math.sqrt(s[0] ** 2 + s[1] ** 2) / 10.0))
                      ])
                 for s in self.dimensions]
 

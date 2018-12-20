@@ -17,6 +17,7 @@ This file is part of SIERRA.
 """
 
 import os
+import copy
 import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
 import perf_measures.utils as pm_utils
@@ -29,24 +30,20 @@ class InterExpBlockCollection:
     Generates a nice graph from the cumulative blocks collected count of the swarm configuration
     across a batched set of experiments within the same scenario from collated .csv data.
 
-    Assumes:
-    - The batch criteria used to generate the experiment definitions was swarm size, logarithmic,
-      and that the swarm size for exp0 was 1.
     """
 
-    def __init__(self, batch_output_root, batch_graph_root, batch_generation_root, batch_criteria):
-        self.batch_output_root = batch_output_root
-        self.batch_graph_root = batch_graph_root
-        self.batch_generation_root = batch_generation_root
-        self.batch_criteria = batch_criteria
+    def __init__(self, cmdopts):
+        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
+        # are generated after us
+        self.cmdopts = copy.deepcopy(cmdopts)
 
     def generate(self):
         """
         Calculate the blocks collected metric for a given controller, and output a nice graph.
         """
-        print("-- Block collection from {0}".format(self.batch_output_root))
+        print("-- Block collection from {0}".format(self.cmdopts["collate_root"]))
 
-        path = os.path.join(self.batch_output_root, kBlocksGatheredCumCSV)
+        path = os.path.join(self.cmdopts["collate_root"], kBlocksGatheredCumCSV)
         assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
         blocks = pd.read_csv(path, sep=';')
         scale_cols = [c for c in blocks.columns if c not in ['clock']]
@@ -54,17 +51,17 @@ class InterExpBlockCollection:
 
         for c in scale_cols:
             final_collect_count[c] = blocks.tail(1)[c]
-        opath = os.path.join(self.batch_output_root, "pm-blocks-collected.csv")
+        opath = os.path.join(self.cmdopts["collate_root"], "pm-blocks-collected.csv")
         final_collect_count.to_csv(opath, sep=';', index=False)
 
+        self.cmdopts["n_exp"] = len(final_collect_count.columns)
+
         BatchRangedGraph(inputy_fpath=opath,
-                         output_fpath=os.path.join(self.batch_graph_root,
+                         output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-blocks-collected.png"),
                          title="Swarm Blocks Collected",
-                         xlabel=pm_utils.batch_criteria_xlabel(self.batch_criteria),
+                         xlabel=pm_utils.batch_criteria_xlabel(self.cmdopts),
                          ylabel="# Blocks",
-                         xvals=pm_utils.batch_criteria_xvals(self.batch_criteria,
-                                                             self.batch_generation_root,
-                                                             len(final_collect_count.columns)),
+                         xvals=pm_utils.batch_criteria_xvals(self.cmdopts),
                          legend=None,
                          polynomial_fit=-1).generate()

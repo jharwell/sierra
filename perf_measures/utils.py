@@ -20,6 +20,8 @@ import os
 import pandas as pd
 import math
 import pickle
+import copy
+from perf_measures import vcs
 
 kCAInCumCSV = "ca-in-cum-avg.csv"
 kBlocksGatheredCumCSV = "blocks-collected-cum.csv"
@@ -55,7 +57,7 @@ def sort_scenarios(batch_criteria, scenarios):
         return sorted(scenarios, key=lambda s: float(s[-5:-2].replace('p', '.')))
 
 
-def batch_swarm_sizes(batch_criteria, batch_generation_root, n_exp):
+def batch_swarm_sizes(cmdopts):
     """
     Return the list of swarm sizes used during a batched experiment.
 
@@ -64,17 +66,15 @@ def batch_swarm_sizes(batch_criteria, batch_generation_root, n_exp):
     - swarm_size
     - swarm_density
     - temporal_variance
-
-    batch_criteria(str): String of batch criteria passed on command line.
-    batch_generation_root(str): Root directory where experiment input files were generated.
-    n_exp(int): How many experiments were run.
     """
-    if any(c in batch_criteria for c in ["swarm_density", "temporal_variance", "swarm_size"]):
+    if any(c in cmdopts["criteria_category"] for c in ["swarm_density",
+                                                       "temporal_variance",
+                                                       "swarm_size"]):
         sizes = []
-        for i in range(0, n_exp):
+        for i in range(0, cmdopts["n_exp"]):
 
             exp_def = unpickle_exp_def(os.path.join(
-                batch_generation_root, "exp" + str(i), "exp_def.pkl"))
+                cmdopts["generation_root"], "exp" + str(i), "exp_def.pkl"))
             for e in exp_def:
                 if e[0] == ".//arena/distribute/entity" and e[1] == "quantity":
                     sizes.append(int(e[2]))
@@ -83,7 +83,7 @@ def batch_swarm_sizes(batch_criteria, batch_generation_root, n_exp):
         return None
 
 
-def batch_criteria_xvals(batch_criteria, batch_generation_root, n_exp):
+def batch_criteria_xvals(cmdopts):
     """
     Return a list of batch criteria-specific values to use as the x values for input into graph
     generation.
@@ -94,41 +94,36 @@ def batch_criteria_xvals(batch_criteria, batch_generation_root, n_exp):
     - swarm_density -> Density [0, inf) of robots in each experiment in the batch.
     - temporal_variance -> Distance between ideal conditions and the variance for each experiment in
                            the batch.
-
-    batch_criteria(str): String of batch criteria passed on command line.
-    batch_generation_root(str): Root directory where experiment input files were generated.
-    n_exp(int): How many experiments were run.
-
     """
-    if "swarm_size" in batch_criteria:
-        return batch_swarm_sizes(batch_criteria, batch_generation_root, n_exp)
-    elif "swarm_density" in batch_criteria:
+    if "swarm_size" in cmdopts["criteria_category"]:
+        return batch_swarm_sizes(cmdopts)
+    elif "swarm_density" in cmdopts["criteria_category"]:
         densities = []
-        for i in range(0, n_exp):
+        for i in range(0, cmdopts["n_exp"]):
             exp_def = unpickle_exp_def(os.path.join(
-                batch_generation_root, "exp" + str(i), "exp_def.pkl"))
+                cmdopts["generation_root"], "exp" + str(i), "exp_def.pkl"))
             for e in exp_def:
                 if e[0] == ".//arena/distribute/entity" and e[1] == "quantity":
                     n_robots = int(e[2])
-                if e[0] == ".//arena/size" and e[1] == "size":
-                    x, y, z = e[1].split(",")
+                if e[0] == ".//arena" and e[1] == "size":
+                    x, y, z = e[2].split(",")
             densities.append(n_robots / (int(x) * int(y)))
         return densities
-    elif "temporal_variance" in batch_criteria:
-        return [x for x in range(0, n_exp)]
+    elif "temporal_variance" in cmdopts["criteria_category"]:
+        return [vcs.compute_vcs(cmdopts, x, cmdopts["n_exp"] - 1) for x in range(0, cmdopts["n_exp"])]
 
 
-def batch_criteria_xlabel(batch_criteria):
+def batch_criteria_xlabel(cmdopts):
     """
     Return the X-label that should be used for the graphs of various performance measures across
     batch criteria.
     """
-    if "swarm_size" in batch_criteria:
-        return "Swarm Size"
-    elif "swarm_density" in batch_criteria:
-        return "Swarm Density"
-    elif "temporal_variance" in batch_criteria:
-        return "Frechet Distance"
+    labels = {
+        "swarm_size": "Swarm Size",
+        "swarm_density": "Swarm Density",
+        "temporal_variance": vcs.method_xlabel(cmdopts["envc_cs_method"])
+    }
+    return labels[cmdopts["criteria_category"]]
 
 
 def unpickle_exp_def(exp_def_fpath):
@@ -145,6 +140,62 @@ def unpickle_exp_def(exp_def_fpath):
     except EOFError:
         pass
     return exp_def
+
+
+class ProjectivePerformance:
+    """
+    Calculates the following measure for each experiment in a batch (N does not have to be a power
+    of 2):
+
+    Performance(exp i)
+    --------------------
+    Distance(exp i, exp 0) * Performance(exp 0)
+
+    Domain: [0, inf)
+
+    If things are X amount better/worse (in terms of increasing/decreasing the swarm's potential for
+    performance) than they were for exp0 (baseline for comparison), then we *should* see a
+    corresponding increase/decrease in the level of observed performance.
+
+    Only valid for exp i, i > 0 (you are comparing with a projected performance value of exp0 after
+    all).
+    """
+
+    def __init__(self, cmdopts, projection_type):
+        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
+        # are generated after us
+        self.cmdopts = copy.deepcopy(cmdopts)
+        self.projection_type = projection_type
+
+    def calculate(self):
+        path = os.path.join(self.cmdopts["collate_root"], kBlocksGatheredCumCSV)
+        assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
+        df = pd.read_csv(path, sep=';')
+        scale_cols = [c for c in df.columns if c not in ['clock', 'exp0']]
+        df_new = pd.DataFrame(columns=scale_cols, index=[0])
+
+        self.cmdopts["n_exp"] = len(df.columns)
+        xvals = batch_criteria_xvals(self.cmdopts)
+
+        for c in scale_cols:
+            exp_num = int(c[3:])
+            v = xvals[exp_num]
+
+            if "positive" == self.projection_type:
+                df_new[c] = ProjectivePerformance._calc_positive(df.tail(1)[c].values[0],
+                                                                 df.tail(1)['exp0'].values[0],
+                                                                 v)
+            elif "negative" == self.projection_type:
+                df_new[c] = ProjectivePerformance._calc_negative(df.tail(1)[c].values[0],
+                                                                 df.tail(1)['exp0'].values[0],
+                                                                 v)
+        return df_new
+
+    def _calc_positive(observed, exp0, similarity):
+        return observed / (exp0 * similarity)
+
+    def _calc_negative(observed, exp0, similarity):
+        return observed / (exp0 * (1.0 - similarity))
 
 
 class FractionalLosses:

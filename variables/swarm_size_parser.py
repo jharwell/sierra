@@ -36,9 +36,7 @@ class SwarmSizeParser():
         ret = {}
 
         ret.update(self.increment_type_parse(criteria_str))
-        print(ret)
         ret.update(self.max_size_parse(criteria_str))
-        print(ret)
         return ret
 
     def increment_type_parse(self, criteria_str):

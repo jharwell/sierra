@@ -18,6 +18,7 @@ Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 """
 
 import os
+import copy
 from pipeline.intra_exp_linegraphs import IntraExpLinegraphs
 from pipeline.intra_exp_histograms import IntraExpHistograms
 from pipeline.intra_exp_heatmaps import IntraExpHeatmaps
@@ -30,47 +31,36 @@ class IntraExpGraphGenerator:
     Generates common/basic graphs from averaged output data within a single experiment.
 
     Attributes:
-      exp_output_root(str): Root directory (relative to current dir or absolute) for experiment
-                            outputs.
-      exp_graph_root(str): Root directory (relative to current dir or absolute) of where the
-                           generated graphs should be saved for the experiment.
-      generator(str): Fully qualified name of the generator used to create/run the experiments.
-      with_hists(bool): If TRUE, then histograms will be generated.
-      plot_applied_variances(bool): If TRUE, then plots of the temporal variances that were applied
-                                    during simulation will be included in on relevant plots.
+      cmdopts(dict): Dictionary of commandline arguments used during intra-experiment graph
+                     generation.
     """
 
-    def __init__(self, exp_output_root, exp_graph_root, generator, with_hists,
-                 plot_applied_variances):
+    def __init__(self, cmdopts):
+        self.cmdopts = copy.deepcopy(cmdopts)
+        self.cmdopts["output_root"] = os.path.join(self.cmdopts["output_root"], 'averaged-output')
 
-        self.exp_output_root = os.path.abspath(os.path.join(exp_output_root, 'averaged-output'))
-        self.exp_graph_root = os.path.abspath(exp_graph_root)
-        self.generator = generator
-        self.with_hists = with_hists
-        self.plot_applied_variances = plot_applied_variances
-
-        os.makedirs(self.exp_graph_root, exist_ok=True)
+        os.makedirs(self.cmdopts["graph_root"], exist_ok=True)
 
     def __call__(self):
-        if 'depth2' in self.generator:
+        if 'depth2' in self.cmdopts["generator"]:
             keys = Linegraphs.all_target_keys()
-        elif 'depth1' in self.generator:
+        elif 'depth1' in self.cmdopts["generator"]:
             keys = Linegraphs.depth0_keys() + Linegraphs.depth1_keys()
         else:
             keys = Linegraphs.depth0_keys()
 
         targets = Linegraphs.filtered_targets(keys)
-        if self.plot_applied_variances:
+        if self.cmdopts["plot_applied_variances"]:
             self._add_temporal_variances(targets)
 
-        IntraExpLinegraphs(self.exp_output_root,
-                           self.exp_graph_root,
+        IntraExpLinegraphs(self.cmdopts["output_root"],
+                           self.cmdopts["graph_root"],
                            targets).generate()
-        if self.with_hists:
-            IntraExpHistograms(self.exp_output_root, self.exp_graph_root,
+        if self.cmdopts["with_hists"]:
+            IntraExpHistograms(self.cmdopts["output_root"], self.cmdopts["graph_root"],
                                Histograms.all_targets()).generate()
 
-        IntraExpHeatmaps(self.exp_output_root, self.exp_graph_root,
+        IntraExpHeatmaps(self.cmdopts["output_root"], self.cmdopts["graph_root"],
                          Heatmaps.all_targets()).generate()
 
     def _add_temporal_variances(self, targets):
@@ -79,7 +69,7 @@ class IntraExpGraphGenerator:
         Add column to the .csv files for some graphs and modify the graph dictionary so that so that
         the temporal variance can be graphed.
         """
-        var_df = pd.read_csv(os.path.join(self.exp_output_root,
+        var_df = pd.read_csv(os.path.join(self.cmdopts["ouput_root"],
                                           IntraExpLinegraphs.kTemporalVarCSV),
                              sep=';')
         for graph_set in targets.values():
@@ -93,7 +83,7 @@ class IntraExpGraphGenerator:
                         continue
 
                     has_var = True
-                    target_df = pd.read_csv(os.path.join(self.exp_output_root,
+                    target_df = pd.read_csv(os.path.join(self.cmdopts["ouput_root"],
                                                          graph['src_stem'] + ".csv"),
                                             sep=';')
 
@@ -117,7 +107,7 @@ class IntraExpGraphGenerator:
                     var = m * (var - var.min()) / (var.max() - var.min())
 
                     target_df.insert(1, graph['temporal_var'], var)
-                    target_df.to_csv(os.path.join(self.exp_output_root,
+                    target_df.to_csv(os.path.join(self.cmdopts["ouput_root"],
                                                   graph['src_stem']) + ".csv", sep=';',
                                      index=False)
                 if has_var:

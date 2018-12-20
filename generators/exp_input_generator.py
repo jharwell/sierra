@@ -106,6 +106,9 @@ class ExpInputGenerator:
         xml_luigi.attribute_change(".//system",
                                    "threads",
                                    str(self.sim_opts["n_threads"]))
+        xml_luigi.attribute_change(".//loop_functions/convergence",
+                                   "n_threads",
+                                   str(self.sim_opts["n_threads"]))
 
         # Enable/disable sensors/actuators, which are computationally expensive in large swarms
         if not self.sim_opts["with_robot_rab"]:

@@ -41,6 +41,18 @@ class PipelineStage4:
 
     def __init__(self, args):
         self.args = args
+        self.cmdopts = {
+            "output_root": self.args.output_root,
+            "graph_root": self.args.graph_root,
+            "generation_root": self.args.generation_root,
+            "criteria_category": self.args.batch_criteria.split('.')[0],
+            "criteria_def": self.args.batch_criteria.split('.')[1],
+            "generator": self.args.generator,
+            "envc_cs_method": self.args.envc_cs_method,
+            "with_hists": self.args.with_hists,
+            "plot_applied_variances": self.args.plot_applied_variances,
+            "perf_measures": self.args.perf_measures
+        }
 
     def run(self):
         if self.args.exp_graphs == 'all' or self.args.exp_graphs == 'intra':
@@ -56,27 +68,16 @@ class PipelineStage4:
     def _gen_inter_graphs(self):
         if self.args.batch_criteria is not None:
             print("- Stage4: Generating inter-experiment graphs...")
-            InterExpGraphGenerator(self.args.output_root,
-                                   self.args.graph_root,
-                                   self.args.generation_root,
-                                   self.args.batch_criteria,
-                                   self.args.generator)()
+            InterExpGraphGenerator(self.cmdopts)()
             print("- Stage4: Inter-experiment graph generation complete")
 
     def _gen_intra_graphs(self):
         if self.args.batch_criteria is not None:
 
-            intra_exp = BatchedIntraExpGraphGenerator(self.args.output_root,
-                                                      self.args.graph_root,
-                                                      self.args.generator,
-                                                      self.args.with_hists,
-                                                      self.args.plot_applied_variances)
+            intra_exp = BatchedIntraExpGraphGenerator(self.cmdopts)
         else:
-            intra_exp = IntraExpGraphGenerator(self.args.output_root,
-                                               self.args.graph_root,
-                                               self.args.generator,
-                                               self.args.with_hists,
-                                               self.args.plot_applied_variances)
+            intra_exp = IntraExpGraphGenerator(self.cmdopts)
+
         print("- Stage4: Generating intra-experiment graphs...")
         intra_exp()
         print("- Stage4: Intra-experiment graph generation complete")

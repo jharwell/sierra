@@ -18,45 +18,38 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 --env ARGOS_PLUGIN_PATH"
 
 cd $HOME/git/sierra
-NSIMS=50
-BLOCK_CARRY=(Sine Square)
-BLOCK_MANIP=(Sine Square)
+NSIMS=4
+WAVEFORMS=(StepU StepD)
 OUTPUT_ROOT=$HOME/exp
 BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \
                   --template-config-file=$HOME/git/sierra/templates/temporal-variance.argos \
-                  --n_sims=$NSIMS"
+                  --n-sims=$NSIMS\
+                  --n-physics-engines=4\
+                  --n-threads=4\
+                  --no-msi\
+                  --time-setup=time_setup.T5000"
 
-# Stateless (does not change # blocks/block manifest from template)
-for d in "${BLOCK_CARRY[@]}"
+# CRW (does not change # blocks/block manifest from template)
+for w in "${WAVEFORMS[@]}"
 do
-    rm -rf $OUTPUT_ROOT/stateless/temporal-variance-BlockCarry${d}
-    $BASE_CMD --generator=stateless \
-              --batch-criteria=temporal_variance.BlockCarry${d}
+    rm -rf $OUTPUT_ROOT/depth0.CRW/temporal-variance-BM${w}12500Z32
+    $BASE_CMD --generator=depth0.CRW.SS12x6 \
+              --batch-criteria=temporal_variance.BM${w}12500Z32
+
+    rm -rf $OUTPUT_ROOT/depth0.CRW/temporal-variance-BC${w}12500Z32
+    $BASE_CMD --generator=depth0.CRW.SS12x6 \
+              --batch-criteria=temporal_variance.BC${w}12500Z32
 done
 
-
-# Stateful (does not change # blocks/block manifest from template)
-for d in "${BLOCK_CARRY[@]}"
+# CRW (does not change # blocks/block manifest from template)
+for w in "${WAVEFORMS[@]}"
 do
-    rm -rf $OUTPUT_ROOT/stateful/temporal-variance-BlockCarry${d}
-    $BASE_CMD --generator=stateful \
-              --batch-criteria=temporal_variance.BlockCarry${d}
-done
+    rm -rf $OUTPUT_ROOT/depth0.Stateful/temporal-variance-BM${w}12500Z32
+    $BASE_CMD --generator=depth0.Stateful.SS12x6 \
+              --batch-criteria=temporal_variance.BM${w}12500Z32
 
-# Stateless (does not change # blocks/block manifest from template)
-for d in "${BLOCK_MANIP[@]}"
-do
-    rm -rf $OUTPUT_ROOT/stateless/temporal-variance-BlockManipulation${d}
-    $BASE_CMD --generator=stateless \
-              --batch-criteria=temporal_variance.BlockManipulation${d}
-done
-
-
-# Stateful (does not change # blocks/block manifest from template)
-for d in "${BLOCK_MANIP[@]}"
-do
-    rm -rf $OUTPUT_ROOT/stateful/temporal-variance-BlockManipulation${d}
-    $BASE_CMD --generator=stateful \
-              --batch-criteria=temporal_variance.BlockManipulation${d}
+    rm -rf $OUTPUT_ROOT/depth0.Stateful/temporal-variance-BC${w}12500Z32
+    $BASE_CMD --generator=depth0.Stateful.SS12x6 \
+              --batch-criteria=temporal_variance.BC${w}12500Z32
 done

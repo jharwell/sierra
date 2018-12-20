@@ -17,114 +17,114 @@ This file is part of SIERRA.
 """
 
 import os
+import copy
 import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
 import perf_measures.utils as pm_utils
-import variables.swarm_density as rho
 
 kTargetCumCSV = "blocks-collected-cum.csv"
 
 
-class Comparative:
+class Efficiency:
     """
-    Calculates the following scalability measure for each experiment in a batch:
-
-    Performance N robots
-    --------------------
-    N * performance 1 robot
-
-    Swarm sizes do not have to be a power of 2.
-    """
-
-    def __init__(self, batch_output_root, batch_graph_root, batch_generation_root,
-                 batch_criteria):
-        self.batch_output_root = batch_output_root
-        self.batch_graph_root = batch_graph_root
-        self.batch_generation_root = batch_generation_root
-        self.batch_criteria = batch_criteria
-
-    def generate(self):
-        """
-        Calculate the scalability metric within each interval for a given controller.
-        """
-
-        path = os.path.join(self.batch_output_root, kTargetCumCSV)
-        assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
-        df = pd.read_csv(path, sep=';')
-        scale_cols = [c for c in df.columns if c not in ['clock', 'exp0']]
-        cum_stem = os.path.join(self.batch_output_root, "pm-scalability-comp")
-        df_new = pd.DataFrame(columns=scale_cols)
-
-        df_new['exp0'] = 1  # Perfect scalability with 1 robot
-        swarm_sizes = pm_utils.batch_swarm_sizes(self.batch_criteria,
-                                                 self.batch_generation_root,
-                                                 len(df.columns))
-        for i in range(0, len(scale_cols)):
-            col = scale_cols[i]
-            n_robots = swarm_sizes[i]
-            df_new[col] = df.tail(1)[col] / (df.tail(1)['exp0'] * n_robots)
-
-        df_new = df_new.reindex(sorted(df_new.columns, key=lambda t: int(t[3:])), axis=1)
-        df_new.to_csv(cum_stem + ".csv", sep=';', index=False)
-
-        BatchRangedGraph(inputy_fpath=cum_stem + ".csv",
-                         output_fpath=os.path.join(self.batch_graph_root,
-                                                   "pm-scalability-comp.png"),
-                         title="Swarm Comparitive Scalability",
-                         xlabel=pm_utils.batch_criteria_xlabel(self.batch_criteria),
-                         ylabel="Scalability Value",
-                         xvals=pm_utils.batch_criteria_xvals(self.batch_criteria,
-                                                             self.batch_generation_root,
-                                                             len(df.columns)),
-                         legend=None,
-                         polynomial_fit=-1).generate()
-
-
-class Normalized:
-    """
-    Calculates the following scalability measure for each experiment in a batch:
+    Calculates the per-robot efficiency in the following way for each experiment in a batch:
 
     Performance N robots / N
 
     Swarm sizes do not have to be powers of 2.
+
+    Contains separate functions for returning the calculated measure and generating a graph of the
+    calculated measure.
     """
 
-    def __init__(self, batch_output_root, batch_graph_root, batch_generation_root, batch_criteria):
-        self.batch_output_root = batch_output_root
-        self.batch_graph_root = batch_graph_root
-        self.batch_generation_root = batch_generation_root
-        self.batch_criteria = batch_criteria
+    def __init__(self, cmdopts):
+        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
+        # are generated after us
+        self.cmdopts = copy.deepcopy(cmdopts)
 
-    def generate(self):
-        """Calculate the scalability metric within each interval for a given controller."""
+    def calculate(self):
+        """
+        Calculate efficiency metric for the givenn controller for each experiment in a
+        batch.
 
-        path = os.path.join(self.batch_output_root, kTargetCumCSV)
+        Return:
+          Dataframe with the calculated metric in the first and only row for each experiment.
+        """
+        path = os.path.join(self.cmdopts["collate_root"], kTargetCumCSV)
         assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
         df = pd.read_csv(path, sep=';')
         scale_cols = [c for c in df.columns if c not in ['clock']]
-        cum_stem = os.path.join(self.batch_output_root, "pm-scalability-norm")
         df_new = pd.DataFrame(columns=scale_cols)
-        swarm_sizes = pm_utils.batch_swarm_sizes(self.batch_criteria,
-                                                 self.batch_generation_root,
-                                                 len(df.columns))
+        self.cmdopts["n_exp"] = len(df.columns)
+        swarm_sizes = pm_utils.batch_swarm_sizes(self.cmdopts)
 
         for i in range(0, len(scale_cols)):
             col = scale_cols[i]
             n_robots = swarm_sizes[i]
             df_new[col] = df.tail(1)[col] / n_robots
 
-        df_new.to_csv(cum_stem + ".csv", sep=';', index=False)
+        return df_new
+
+    def generate(self, df):
+        """
+        Generate an efficiency graph after calculating the metric.
+        """
+
+        cum_stem = os.path.join(self.cmdopts["collate_root"], "pm-scalability-norm")
+        df.to_csv(cum_stem + ".csv", sep=';', index=False)
+        self.cmdopts["n_exp"] = len(df.columns)
+
         BatchRangedGraph(inputy_fpath=cum_stem + ".csv",
-                         output_fpath=os.path.join(self.batch_graph_root,
-                                                   "pm-scalability-norm.png"),
-                         title="Swarm Scalability (normalized)",
-                         xlabel=pm_utils.batch_criteria_xlabel(self.batch_criteria),
-                         ylabel="Scalability Value",
-                         xvals=pm_utils.batch_criteria_xvals(self.batch_criteria,
-                                                             self.batch_generation_root,
-                                                             len(df.columns)),
+                         output_fpath=os.path.join(self.cmdopts["graph_root"],
+                                                   "pm-efficiency.png"),
+                         title="Swarm Efficiency (normalized)",
+                         xlabel=pm_utils.batch_criteria_xlabel(self.cmdopts),
+                         ylabel="Efficiency",
+                         xvals=pm_utils.batch_criteria_xvals(self.cmdopts),
                          legend=None,
                          polynomial_fit=-1).generate()
+
+
+class ProjectivePerformanceComparison:
+    """
+    Calculates projective performance for each experiment i > 0 in the batch and productes a graph.
+    """
+
+    def __init__(self, cmdopts, projection_type):
+        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
+        # are generated after us
+        self.cmdopts = copy.deepcopy(cmdopts)
+        self.projection_type = projection_type
+
+    def calculate(self):
+        return pm_utils.ProjectivePerformance(self.cmdopts, self.projection_type).calculate()
+
+    def generate(self, df):
+        self.cmdopts["n_exp"] = len(df.columns) + 1
+        cum_stem = os.path.join(self.cmdopts["collate_root"], "pm-pp-comp-" + self.projection_type)
+        df.to_csv(cum_stem + ".csv", sep=';', index=False)
+        xvals = pm_utils.batch_criteria_xvals(self.cmdopts)
+
+        BatchRangedGraph(inputy_fpath=cum_stem + ".csv",
+                         output_fpath=os.path.join(self.cmdopts["graph_root"],
+                                                   "pm-pp-comp-" + self.projection_type + ".png"),
+                         title="Swarm Projective Performance Comparison ({0})".format(
+                             self.projection_type),
+                         xlabel=pm_utils.batch_criteria_xlabel(self.cmdopts),
+                         ylabel="Observed-Projected Ratio",
+                         xvals=xvals[1:],
+                         legend=None,
+                         polynomial_fit=-1).generate()
+
+
+class ProjectivePerformanceComparisonPositive(ProjectivePerformanceComparison):
+    def __init__(self, cmdopts):
+        super().__init__(cmdopts, "positive")
+
+
+class ProjectivePerformanceComparisonNegative(ProjectivePerformanceComparison):
+    def __init__(self, cmdopts):
+        super().__init__(cmdopts, "negative")
 
 
 class FractionalPerformanceLoss:
@@ -133,31 +133,75 @@ class FractionalPerformanceLoss:
     to inter-robot interference as swarm size increases. Swarm sizes do not have to be a power of 2.
     """
 
-    def __init__(self, batch_output_root, batch_graph_root, batch_generation_root, batch_criteria):
-        self.batch_output_root = batch_output_root
-        self.batch_graph_root = batch_graph_root
-        self.batch_generation_root = batch_generation_root
-        self.batch_criteria = batch_criteria
+    def __init__(self, cmdopts):
+        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
+        # are generated after us
+        self.cmdopts = copy.deepcopy(cmdopts)
 
-    def generate(self):
-        """Calculate the scalability metric within each interval for a given controller."""
-
-        df = pm_utils.FractionalLosses(self.batch_output_root, self.batch_generation_root).calc()
+    def calculate(self):
+        df = pm_utils.FractionalLosses(
+            self.cmdopts["collate_root"], self.cmdopts["generation_root"]).calc()
         for c in df.columns:
             df[c] = 1.0 - df[c]
+        return df
 
-        path = os.path.join(self.batch_output_root, "pm-scalability-fl.csv")
+    def generate(self, df):
+        path = os.path.join(self.cmdopts["collate_root"], "pm-scalability-fl.csv")
+        df.to_csv(path, sep=';', index=False)
+
+        self.cmdopts["n_exp"] = len(df.columns)
+        BatchRangedGraph(inputy_fpath=path,
+                         output_fpath=os.path.join(self.cmdopts["graph_root"],
+                                                   "pm-scalability-fl.png"),
+                         title="Swarm Scalability: Fractional Performance Loss Due To Inter-robot Interference",
+                         xlabel=pm_utils.batch_criteria_xlabel(self.cmdopts),
+                         ylabel="Scalability Value",
+                         xvals=pm_utils.batch_criteria_xvals(self.cmdopts),
+                         legend=None,
+                         polynomial_fit=-1).generate()
+
+
+class KarpFlatt:
+    """
+    Given a swarm exhibiting speedup X with N robots(N > 1), compute the serial fraction Y of the
+    swarm's performance. The lower the value of Y, the better the parallelization/scalability,
+    suggesting that the addition of more robots will bring additional performance improvements:
+
+    Y = 1/X - 1/N
+        ---------
+        1 - 1/N
+    """
+
+    def __init__(self, cmdopts):
+        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
+        # are generated after us
+        self.cmdopts = copy.deepcopy(cmdopts)
+
+    def calculate(self):
+        df = pm_utils.ProjectivePerformance(self.cmdopts, "positive").calculate()
+        self.cmdopts["n_exp"] = len(df.columns) + 1
+
+        # includes exp0 size which we don't want.
+        sizes = pm_utils.batch_swarm_sizes(self.cmdopts)[1:]
+
+        for i in range(0, len(df.columns)):
+            c = df.columns[i]
+            s = sizes[i]
+            df[c] = (1.0 / df[c] - 1.0 / s) / (1 - 1.0 / s)
+
+        return df
+
+    def generate(self, df):
+        path = os.path.join(self.cmdopts["collate_root"], "pm-karpflatt.csv")
         df.to_csv(path, sep=';', index=False)
 
         BatchRangedGraph(inputy_fpath=path,
-                         output_fpath=os.path.join(self.batch_graph_root,
-                                                   "pm-scalability-fl.png"),
-                         title="Swarm Scalability: Fractional Performance Loss Due To Inter-robot Interference",
-                         xlabel=pm_utils.batch_criteria_xlabel(self.batch_criteria),
-                         ylabel="Scalability Value",
-                         xvals=pm_utils.batch_criteria_xvals(self.batch_criteria,
-                                                             self.batch_generation_root,
-                                                             len(df.columns)),
+                         output_fpath=os.path.join(self.cmdopts["graph_root"],
+                                                   "pm-karpflatt.png"),
+                         title="Swarm Serial Fraction: Karp-Flatt Metric",
+                         xlabel=pm_utils.batch_criteria_xlabel(self.cmdopts),
+                         ylabel="",
+                         xvals=pm_utils.batch_criteria_xvals(self.cmdopts)[1:],
                          legend=None,
                          polynomial_fit=-1).generate()
 
@@ -168,22 +212,26 @@ class InterExpScalability:
     the same scenario from collated .csv data.
 
     Assumes:
-    - The performance criteria is # blocks gathered.
+    - The performance criteria is  # blocks gathered.
     """
 
-    def __init__(self, batch_output_root, batch_graph_root, batch_generation_root, batch_criteria):
-        self.batch_output_root = batch_output_root
-        self.batch_graph_root = batch_graph_root
-        self.batch_generation_root = batch_generation_root
-        self.batch_criteria = batch_criteria
+    def __init__(self, cmdopts):
+        self.cmdopts = cmdopts
 
     def generate(self):
-        """Calculate the scalability metric within each interval for a given controller,
-        and output a nice graph."""
-        print("-- Scalability from {0}".format(self.batch_output_root))
-        Comparative(self.batch_output_root, self.batch_graph_root,
-                    self.batch_generation_root, self.batch_criteria).generate()
-        Normalized(self.batch_output_root, self.batch_graph_root,
-                   self.batch_generation_root, self.batch_criteria).generate()
-        FractionalPerformanceLoss(self.batch_output_root, self.batch_graph_root,
-                                  self.batch_generation_root, self.batch_criteria).generate()
+        print("-- Scalability from {0}".format(self.cmdopts["collate_root"]))
+
+        e = Efficiency(self.cmdopts)
+        e.generate(e.calculate())
+
+        p = ProjectivePerformanceComparisonPositive(self.cmdopts)
+        p.generate(p.calculate())
+
+        p = ProjectivePerformanceComparisonNegative(self.cmdopts)
+        p.generate(p.calculate())
+
+        f = FractionalPerformanceLoss(self.cmdopts)
+        f.generate(f.calculate())
+
+        k = KarpFlatt(self.cmdopts)
+        k.generate(k.calculate())

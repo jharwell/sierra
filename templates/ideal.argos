@@ -210,8 +210,9 @@
     </output>
     <convergence>
       <positional_entropy
-          enable="false"
-          n_iterations="10"/>
+          enable="true"
+          horizon="0:13.41"
+          horizon_delta="1.34"/>
       <interactivity enable="false"/>
       <angular_order enable="false"/>
     </convergence>

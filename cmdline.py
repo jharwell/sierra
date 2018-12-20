@@ -159,7 +159,7 @@ class Cmdline:
 
                             """,
                             default=1)
-        stage1.add_argument("--n_sims",
+        stage1.add_argument("--n-sims",
                             help="""
 
                             How many should be averaged together to form a single experiment.
@@ -167,7 +167,7 @@ class Cmdline:
                             """,
                             type=int,
                             default=100)
-        stage1.add_argument("--n_threads",
+        stage1.add_argument("--n-threads",
                             help="""
 
                             How many ARGoS simulation threads to use for each simulation in each experiment.
@@ -237,6 +237,23 @@ class Cmdline:
 
                             """,
                             default='all')
+        stage4.add_argument("--perf-measures",
+                            choices=["sc", "so", "bc", "all"],
+                            help="""
+
+                            Specify which performance measure graphs should be generated. Only active if
+                            inter-experiment graphs are generated. Note that inter-experiment linegraphs are only
+                            generated if 'all' is selected. This is mainly useful for debugging/developing so I don't
+                            have to wait when developing a new graph/model for other graphs I'm not currently interested
+                            to regenerate.
+
+                            sc: Generate comparison plots of scalability.
+                            so: Generate comparison plots of self-organization.
+                            sp: Generate comparison plots of swarm performance (blocks collected).
+                            all: Generate all inter-experiment graphs.
+
+                            """,
+                            default="all")
         stage4.add_argument("--plot-applied-variances",
                             help="""
 
@@ -252,6 +269,23 @@ class Cmdline:
 
                             """,
                             action="store_true")
+        stage4.add_argument("--envc-cs-method",
+                            help="""
+
+                            Environmental Conditions Curve Similar Method. Specify the method to use to calculate the
+                            similarity between curves of applied variance (non-ideal conditions) and ideal conditions
+                            (exp0). Only applies for temporal_variance batch criteria. Valid values are:
+
+                            pcm:          Partial Curve Mapping (Witowski2012)
+                            area_between: Area between the two curves (Jekel2018)
+                            frechet:      Frechet distance (Frechet1906)
+                            dtw:          Dynamic Time Warping (Berndt1994)
+                            curve_length: Arc-length distance along the curve from the origin of (applied - ideal)
+                                          curve (Andrade-campos2009).
+                            """,
+                            choices=["pcm", "area_between", "frechet", "dtw", "curve_length"],
+                            default="pcm")
+
         stage5 = parser.add_argument_group('stage5 (Controller/scenario comparison)')
 
         stage5.add_argument("--comp-controllers",

@@ -102,8 +102,11 @@ class BatchedExpInputGenerator:
             # The scenario dimensions were specified on the command line
             # Format of '(generators.<decomposition depth>.<controller>.[SS,DS,QS,RN,PL]>'
             if "Generator" not in self.exp_generator_pair[1]:
-                x, y = self.exp_generator_pair[1].split('.')[1][2:].split('x')
-
+                try:
+                    x, y = self.exp_generator_pair[1].split('.')[1][2:].split('x')
+                except ValueError:
+                    print("FATAL: Scenario dimensions should be specified on cmdline, but they were not")
+                    raise
                 scenario = self.exp_generator_pair[1].split(
                     '.')[0] + "." + self.exp_generator_pair[1].split('.')[1][:2] + "Generator"
                 self.sim_opts["arena_dim"] = (int(x), int(y))

@@ -21,13 +21,21 @@ from variables.swarm_size import SwarmSize
 from variables.temporal_variance_parser import TemporalVarianceParser
 import math
 
-kMinHz = 10
+kMinHz = 100
+kHzDelta = 100
 kMaxHz = 1000
-kMinAmp = 100
-kMaxAmp = 1000
 
-kHZ = [x for x in range(kMinHz, kMaxHz + 100, 100)]
-kAMPS = [x for x in range(kMinAmp, kMaxAmp + 100, 100)]
+kMinBMAmp = 100
+kBMAmpDelta = 100
+kMaxBMAmp = 1000
+
+kMinBCAmp = 0.1
+kBCAmpDelta = 0.1
+kMaxBCAmp = 0.9
+
+kHZ = [x for x in range(kMinHz, kMaxHz + kHzDelta, kHzDelta)]
+kBMAmps = [x for x in range(kMinBMAmp, kMaxBMAmp + kBMAmpDelta, kBMAmpDelta)]
+kBCAmps = [kMinBCAmp + x * kBCAmpDelta for x in range(0, int(kMaxBCAmp / kMinBCAmp))]
 
 
 class TemporalVariance(BaseVariable):
@@ -74,27 +82,33 @@ def Factory(criteria_str):
 
     def gen_variances(criteria_str):
 
+        if "BC" in criteria_str:
+            amps = kBCAmps
+        elif "BM" in criteria_str:
+            amps = kBMAmps
+
         if any(v == attr["waveform_type"] for v in ["Sine, Square, Sawtooth"]):
             return [(attr["xml_parent_path"],
                      attr["waveform_type"],
                      1.0 / hz,
                      amp,
                      amp,
-                     0) for hz in kHZ for amp in kAMPS]
+                     0) for hz in kHZ for amp in amps]
         elif "StepD" == attr["waveform_type"]:
             return [(attr["xml_parent_path"],
                      "Square",
                      1 / (2 * attr["waveform_param"]),
                      amp,
                      amp,
-                     0) for amp in kAMPS]
+                     0) for amp in amps]
+
         if "StepU" == attr["waveform_type"]:
             return [(attr["xml_parent_path"],
                      "Square",
                      1 / (2 * attr["waveform_param"]),
                      amp,
                      amp,
-                     math.pi) for amp in kAMPS]
+                     math.pi) for amp in amps]
 
     def __init__(self):
         TemporalVariance.__init__(self, gen_variances(criteria_str), attr["swarm_size"])

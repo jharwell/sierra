@@ -12,6 +12,7 @@ of work.
 1. Install python dependencies with pip3:
 
    - pandas
+   - similaritymeasures (only needed for temporal variance graph generation)
 
 2. Install packages:
 
