@@ -17,6 +17,7 @@
 """
 
 from variables.base_variable import BaseVariable
+from variables.time_setup_parser import TimeSetupParser
 
 kDataPoints = 50
 kTicksPerSecond = 5
@@ -56,36 +57,22 @@ class TInterval(TimeSetup):
         super().__init__(1000 / kTicksPerSecond, 1000 / kDataPoints)
 
 
+def Factory(time_str):
+    """
+    Creates time setup classes from the command line definition of time setup.
+    """
+    attr = TimeSetupParser().parse(time_str.split(".")[1])
+
+    def __init__(self):
+        TimeSetup.__init__(self,
+                           attr["sim_duration"],
+                           attr["sim_duration"] * kTicksPerSecond / attr["n_datapoints"])
+
+    return type(time_str,
+                (TimeSetup,),
+                {"__init__": __init__})
+
+
 class T1000(TimeSetup):
     def __init__(self):
         super().__init__(1000, 1000 * kTicksPerSecond / kDataPoints)
-
-
-class T2000(TimeSetup):
-    def __init__(self):
-        super().__init__(2000, 2000 * kTicksPerSecond / kDataPoints)
-
-
-class T5000(TimeSetup):
-    def __init__(self):
-        super().__init__(5000, 5000 * kTicksPerSecond / kDataPoints)
-
-
-class T10000(TimeSetup):
-    def __init__(self):
-        super().__init__(10000, 10000 * kTicksPerSecond / kDataPoints)
-
-
-class T20000(TimeSetup):
-    def __init__(self):
-        super().__init__(20000, 20000 * kTicksPerSecond / kDataPoints)
-
-
-class T50000(TimeSetup):
-    def __init__(self):
-        super().__init__(50000, 50000 * kTicksPerSecond / kDataPoints)
-
-
-class T100000(TimeSetup):
-    def __init__(self):
-        super().__init__(100000, 100000 * kTicksPerSecond / kDataPoints)

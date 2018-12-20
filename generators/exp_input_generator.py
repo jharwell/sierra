@@ -124,13 +124,15 @@ class ExpInputGenerator:
             xml_luigi.tag_remove(".//entity/foot-bot", "battery")
 
         # Setup simulation time parameters
-        setup = eval(self.sim_opts["tsetup"])()
-        for a in setup.gen_attr_changelist()[0]:
+        setup = __import__("variables.{0}".format(
+            self.sim_opts["tsetup"].split(".")[0]), fromlist=["*"])
+        tsetup_inst = getattr(setup, "Factory")(self.sim_opts["tsetup"])()
+        for a in tsetup_inst.gen_attr_changelist()[0]:
             xml_luigi.attribute_change(a[0], a[1], a[2])
 
         # Write time setup  info to file for later retrieval
         with open(self.exp_def_fpath, 'ab') as f:
-            pickle.dump(setup.gen_attr_changelist()[0], f)
+            pickle.dump(tsetup_inst.gen_attr_changelist()[0], f)
         return xml_luigi
 
     def _create_all_sim_inputs(self, random_seeds, xml_luigi):

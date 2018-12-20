@@ -50,15 +50,7 @@ class SwarmSize(BaseVariable):
 
 def Factory(criteria_str):
     """
-    Creates variance classes from the command line definition of batch criteria. The string must be
-    formatted as:
-
-    <increment_type><max size>
-
-    For example:
-
-    Log1024 -> Swarm sizes 1..1024 by powers of 2
-    Linear1000 -> Swarm sizes 10...1000, step size of 100
+    Creates swarm size classes from the command line definition of batch criteria.
     """
     attr = SwarmSizeParser().parse(criteria_str.split(".")[1])
 

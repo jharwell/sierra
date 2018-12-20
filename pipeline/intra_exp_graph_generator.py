@@ -19,11 +19,12 @@ Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 
 import os
 import copy
+import pandas as pd
+import numpy as np
 from pipeline.intra_exp_linegraphs import IntraExpLinegraphs
 from pipeline.intra_exp_histograms import IntraExpHistograms
 from pipeline.intra_exp_heatmaps import IntraExpHeatmaps
 from pipeline.intra_exp_targets import Linegraphs, Histograms, Heatmaps
-import pandas as pd
 
 
 class IntraExpGraphGenerator:
@@ -50,7 +51,7 @@ class IntraExpGraphGenerator:
             keys = Linegraphs.depth0_keys()
 
         targets = Linegraphs.filtered_targets(keys)
-        if self.cmdopts["plot_applied_variances"]:
+        if self.cmdopts["plot_applied_vc"]:
             self._add_temporal_variances(targets)
 
         IntraExpLinegraphs(self.cmdopts["output_root"],
@@ -69,12 +70,12 @@ class IntraExpGraphGenerator:
         Add column to the .csv files for some graphs and modify the graph dictionary so that so that
         the temporal variance can be graphed.
         """
-        var_df = pd.read_csv(os.path.join(self.cmdopts["ouput_root"],
+        var_df = pd.read_csv(os.path.join(self.cmdopts["output_root"],
                                           IntraExpLinegraphs.kTemporalVarCSV),
                              sep=';')
+
         for graph_set in targets.values():
             for graph in graph_set:
-                has_var = False
 
                 for key in graph.keys():
                     # The 'temporal_var' is optional, so we only want to modify graph generation for
@@ -82,36 +83,48 @@ class IntraExpGraphGenerator:
                     if 'temporal_var' != key:
                         continue
 
-                    has_var = True
-                    target_df = pd.read_csv(os.path.join(self.cmdopts["ouput_root"],
+                    target_df = pd.read_csv(os.path.join(self.cmdopts["output_root"],
                                                          graph['src_stem'] + ".csv"),
                                             sep=';')
 
-                    # It is possible that different sets of columns within same .csv are used to
-                    # generate graphs that should have the *same* variance graph on them, so we need
-                    # to delete old column so the scaling works out correctly.
-                    if graph['temporal_var'] in target_df.columns:
-                        target_df = target_df.drop(graph['temporal_var'], axis=1)
+                    for col in graph['temporal_var']:
+                        added = self._add_temporal_variance_col(target_df, var_df, graph, col)
+                        if not added:
+                            continue
 
-                    # Find the maximum value among all the rows of all the columns that will be
-                    # included in the graph. This is used for scaling the variance so it looks nice
-                    # on the generated graphs.
-                    m = 0
-                    for c in target_df[graph['cols']]:
-                        m = max(m, target_df[c].max())
+                        graph['cols'].append(col)
+                        graph['legend'].append('Applied Variance(scaled {0})'.format(col))
+                        if 'styles' in graph:
+                            graph['styles'].append('--')
 
-                    # Scale the applied variance to within the interval [0, max] for the generated
-                    # graph. The lower bound is always 0 for the fordyca project, so I rely on that
-                    # here.
-                    var = var_df[graph['temporal_var']][target_df['clock'] - 1].values
-                    var = m * (var - var.min()) / (var.max() - var.min())
+    def _add_temporal_variance_col(self, target_df, var_df, graph, col):
+        # It is possible that different sets of columns within same .csv are used to
+        # generate graphs that should have the *same* variance graph on them, so we need
+        # to delete old column so the scaling works out correctly.
+        if col in target_df.columns:
+            target_df = target_df.drop([col], axis=1)
 
-                    target_df.insert(1, graph['temporal_var'], var)
-                    target_df.to_csv(os.path.join(self.cmdopts["ouput_root"],
-                                                  graph['src_stem']) + ".csv", sep=';',
-                                     index=False)
-                if has_var:
-                    graph['cols'].append(graph['temporal_var'])
-                    graph['legend'].append('Temporal Variance (scaled)')
-                    if 'styles' in graph:
-                        graph['styles'].append('--')
+        # Find the maximum value among all the rows of all the columns that will be
+        # included in the graph. This is used for scaling the variance so it looks nice
+        # on the generated graphs.
+        m = 0
+        for c in target_df[graph['cols']]:
+            m = max(m, target_df[c].max())
+
+        # Scale the applied variance to within the interval [0, max] for the generated
+        # graph. The lower bound is always 0 for the fordyca project, so I rely on that
+        # here.
+        var = var_df[col][target_df['clock'] - 1].values
+        var = m * (var - var.min()) / (var.max() - var.min())
+
+        # Only include variance if it is non-zero for at least some of the time, and is an actual #
+        # (can be NaN if it is a type of variance we want to include on plots in general, but that
+        # is not enabled for the current experiment)
+        if not np.any(var) or any(np.isnan(var)):
+            return False
+
+        target_df.insert(1, col, var)
+        target_df.to_csv(os.path.join(self.cmdopts["output_root"],
+                                      graph['src_stem']) + ".csv", sep=';',
+                         index=False)
+        return True

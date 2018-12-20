@@ -29,9 +29,11 @@ kMinBMAmp = 100
 kBMAmpDelta = 100
 kMaxBMAmp = 1000
 
-kMinBCAmp = 0.1
-kBCAmpDelta = 0.1
-kMaxBCAmp = 0.9
+# Max amplitudie is only 1/2 of the 0.9 desired maximum because all square waveforms also have an
+# offset.
+kMinBCAmp = 0.05
+kBCAmpDelta = 0.05
+kMaxBCAmp = 0.45
 
 kHZ = [x for x in range(kMinHz, kMaxHz + kHzDelta, kHzDelta)]
 kBMAmps = [x for x in range(kMinBMAmp, kMaxBMAmp + kBMAmpDelta, kBMAmpDelta)]
@@ -99,7 +101,7 @@ def Factory(criteria_str):
                      "Square",
                      1 / (2 * attr["waveform_param"]),
                      amp,
-                     amp,
+                     0,
                      0) for amp in amps]
 
         if "StepU" == attr["waveform_type"]:

@@ -50,7 +50,7 @@ class PipelineStage4:
             "generator": self.args.generator,
             "envc_cs_method": self.args.envc_cs_method,
             "with_hists": self.args.with_hists,
-            "plot_applied_variances": self.args.plot_applied_variances,
+            "plot_applied_vc": self.args.plot_applied_vc,
             "perf_measures": self.args.perf_measures
         }
 

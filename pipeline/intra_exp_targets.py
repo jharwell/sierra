@@ -46,9 +46,10 @@ class Linegraphs:
 
     ylabel: The label of the Y-axis of the graph.
 
-    temporal_var: The name of the column within the temporal variance .csv that should be
-                  included on the graph. Can be 'None'/omitted if no variance should be plotted
-                  in addition to the columns in the .csv.
+    temporal_var: List of names of columns within the temporal variance .csv that should be included
+                  on the graph. Can be omitted if no variance should be plotted in addition to the
+                  columns in the .csv.
+
     """
 
     kTemporalVarSwarmMotionThrottle = 'swarm_motion_throttle'
@@ -169,7 +170,8 @@ class Linegraphs:
                 'title': 'Blocks Collected (interval)',
                 'xlabel': 'Interval',
                 'ylabel': '# Blocks',
-                'temporal_var': Linegraphs.kTemporalVarEnvBlockManip,
+                'temporal_var': [Linegraphs.kTemporalVarEnvBlockManip,
+                                 Linegraphs.kTemporalVarSwarmMotionThrottle],
                 'styles': ['-', '-', '-']
 
             },
@@ -181,7 +183,8 @@ class Linegraphs:
                 'legend': ['All Blocks', '# Cube Blocks', '# Ramp Blocks'],
                 'xlabel': 'Interval',
                 'ylabel': '# Blocks',
-                'temporal_var': Linegraphs.kTemporalVarEnvBlockManip,
+                'temporal_var': [Linegraphs.kTemporalVarEnvBlockManip,
+                                 Linegraphs.kTemporalVarSwarmMotionThrottle],
                 'styles': ['-', '-', '-']
             },
             {
@@ -240,7 +243,7 @@ class Linegraphs:
                            'Average # Cache Drops (interval)'],
                 'xlabel': 'Interval',
                 'ylabel': '# Pickups/Drops',
-                'temporal_var': Linegraphs.kTemporalVarEnvBlockManip,
+                'temporal_var': [Linegraphs.kTemporalVarEnvBlockManip],
                 'styles': ['-', '-', '-']
             },
             {
@@ -255,7 +258,7 @@ class Linegraphs:
                            'Average Cache Drop Penalty (interval)'],
                 'xlabel': 'Interval',
                 'ylabel': 'Penalty',
-                'temporal_var': Linegraphs.kTemporalVarEnvBlockManip,
+                'temporal_var': [Linegraphs.kTemporalVarEnvBlockManip],
                 'styles': ['-', '-', '-']
             },
         ]
@@ -331,7 +334,7 @@ class Linegraphs:
                            'Average # Pickups (Cumulative)', 'Average # Drops (Cumulative)'],
                 'xlabel': 'Interval',
                 'ylabel': 'Count',
-                'temporal_var': Linegraphs.kTemporalVarEnvCacheUsage
+                'temporal_var': [Linegraphs.kTemporalVarEnvCacheUsage]
             },
             {
                 'src_stem': 'cache-utilization',
@@ -350,7 +353,7 @@ class Linegraphs:
                 'legend': ['Average # Blocks (Interval)', 'Average # Blocks (Cumulative)'],
                 'xlabel': 'Interval',
                 'ylabel': 'Count',
-                'temporal_var': Linegraphs.kTemporalVarEnvCacheUsage
+                'temporal_var': [Linegraphs.kTemporalVarEnvCacheUsage]
             },
         ]
         cache_lifecycle = [

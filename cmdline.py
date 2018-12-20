@@ -254,11 +254,11 @@ class Cmdline:
 
                             """,
                             default="all")
-        stage4.add_argument("--plot-applied-variances",
+        stage4.add_argument("--plot-applied-vc",
                             help="""
 
                             If TRUE, then the plot of the temporal variances that were applied to the swarm during
-                            simulation will be included on relevant graphs.
+                            simulation will be included on relevant graphs if they are non-zero.
 
                             """,
                             action="store_true")
