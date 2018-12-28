@@ -43,6 +43,7 @@ class GeneratorCreator:
             "with_robot_rab": args.with_robot_rab,
             "with_robot_leds": args.with_robot_leds,
             "with_robot_battery": args.with_robot_battery,
+            "with_visualizations": args.with_visualizations
         }
         if args.batch_criteria is not None:
             criteria = __import__("variables.{0}".format(

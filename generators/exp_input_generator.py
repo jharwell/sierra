@@ -98,19 +98,40 @@ class ExpInputGenerator:
         if os.path.exists(self.commands_fpath):
             os.remove(self.commands_fpath)
 
-        # Remove visualization elements
-        self._remove_xml_elements(xml_luigi, [(".", "./visualization"),
-                                              ("./loop_functions", "./visualization")])
+        # Setup simulation visualizations
+        self._init_visualization_defs(xml_luigi)
 
-        # Set # cores for each simulation to use
-        xml_luigi.attribute_change(".//system",
-                                   "threads",
-                                   str(self.sim_opts["n_threads"]))
-        xml_luigi.attribute_change(".//loop_functions/convergence",
-                                   "n_threads",
-                                   str(self.sim_opts["n_threads"]))
+        # Setup threading
+        self._init_threading_defs(xml_luigi)
 
-        # Enable/disable sensors/actuators, which are computationally expensive in large swarms
+        # Setup robot sensors/actuators
+        self._init_sa_defs(xml_luigi)
+
+        # Setup simulation time parameters
+        self._init_time_defs(xml_luigi)
+
+        return xml_luigi
+
+    def _init_time_defs(self, xml_luigi):
+        """
+        Setup simulation time parameters and write them to the pickle file for retrieval during
+        graph generation later.
+        """
+        setup = __import__("variables.{0}".format(
+            self.sim_opts["tsetup"].split(".")[0]), fromlist=["*"])
+        tsetup_inst = getattr(setup, "Factory")(self.sim_opts["tsetup"])()
+        for a in tsetup_inst.gen_attr_changelist()[0]:
+            xml_luigi.attribute_change(a[0], a[1], a[2])
+
+        # Write time setup  info to file for later retrieval
+        with open(self.exp_def_fpath, 'ab') as f:
+            pickle.dump(tsetup_inst.gen_attr_changelist()[0], f)
+
+    def _init_sa_defs(self, xml_luigi):
+        """
+        Disable selected sensors/actuators, which are computationally expensive in large swarms, but
+        not that costly if the # robots is small.
+        """
         if not self.sim_opts["with_robot_rab"]:
             xml_luigi.tag_remove(".//media", "range_and_bearing")
             xml_luigi.tag_remove(".//actuators", "range_and_bearing")
@@ -123,17 +144,28 @@ class ExpInputGenerator:
             xml_luigi.tag_remove(".//sensors", "battery")
             xml_luigi.tag_remove(".//entity/foot-bot", "battery")
 
-        # Setup simulation time parameters
-        setup = __import__("variables.{0}".format(
-            self.sim_opts["tsetup"].split(".")[0]), fromlist=["*"])
-        tsetup_inst = getattr(setup, "Factory")(self.sim_opts["tsetup"])()
-        for a in tsetup_inst.gen_attr_changelist()[0]:
-            xml_luigi.attribute_change(a[0], a[1], a[2])
+    def _init_threading_defs(self, xml_luigi):
+        """
+        Set the # of cores for a simulation to use, which may be less than the total # available on
+        the system.
+        """
+        xml_luigi.attribute_change(".//system",
+                                   "threads",
+                                   str(self.sim_opts["n_threads"]))
+        xml_luigi.attribute_change(".//loop_functions/convergence",
+                                   "n_threads",
+                                   str(self.sim_opts["n_threads"]))
 
-        # Write time setup  info to file for later retrieval
-        with open(self.exp_def_fpath, 'ab') as f:
-            pickle.dump(tsetup_inst.gen_attr_changelist()[0], f)
-        return xml_luigi
+    def _init_visualization_defs(self, xml_luigi):
+        """
+        Remove visualization elements from input file, if configured to do so. It may be desired to
+        leave them in if generating frames/video.
+        """
+        if self.sim_opts["with_visualizations"] == "none" or self.sim_opts["with_visualizations"] == "argos":
+            self._remove_xml_elements(xml_luigi, [("./loop_functions", "./visualization")])
+
+        if self.sim_opts["with_visualizations"] == "none" or self.sim_opts["with_visualizations"] == "fordyca":
+            self._remove_xml_elements(xml_luigi, [(".", "./visualization")])
 
     def _create_all_sim_inputs(self, random_seeds, xml_luigi):
         """Generate and the input files for all simulation runs."""

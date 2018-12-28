@@ -203,6 +203,16 @@ class Cmdline:
                             action="store_true",
                             default=False)
 
+        stage1.add_argument("--with-visualizations",
+                            help="""
+
+                            Specify that the ARGoS Qt/OpenGL visualization subtree and/or the FORDYCA visualization
+                            subtree(s) should be left in the input .argos file. By default they are stripped out.
+
+                            """,
+                            choices=["none", "argos", "fordyca", "all"],
+                            default="none")
+
         stage2 = parser.add_argument_group('stage2 (Running experiments)')
         stage2.add_argument("--no-msi",
                             help="""
