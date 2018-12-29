@@ -21,13 +21,19 @@ import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
 from graphs.bar_graph import BarGraph
 import perf_measures.utils as pm_utils
-
+import copy
 intra_scenario_measures = [
     {
-        'src_stem': 'pm-scalability-comp',
-        'dest_stem': 'cc-pm-scalability-comp',
-        'title': 'Swarm Scalability (Comparitive)',
-        'ylabel': 'Scalability Value'
+        'src_stem': 'pm-pp-comp-positive',
+        'dest_stem': 'cc-pm-pp-comp-positive',
+        'title': 'Swarm Projective Performance Comparison (positive)',
+        'ylabel': 'Observed-Projected Ratio'
+    },
+    {
+        'src_stem': 'pm-pp-comp-negative',
+        'dest_stem': 'cc-pm-pp-comp-negative',
+        'title': 'Swarm Projective Performance Comparison (Negative)',
+        'ylabel': 'Observed-Projected Ratio'
     },
     {
         'src_stem': 'pm-scalability-fl',
@@ -52,6 +58,18 @@ intra_scenario_measures = [
         'dest_stem': 'cc-pm-blocks-collected',
         'title': 'Swarm Total Blocks Collected',
         'ylabel': '# Blocks'
+    },
+    {
+        'src_stem': 'pm-karpflatt',
+        'dest_stem': 'cc-pm-karpflatt',
+        'title': 'Swarm Karp-Flatt Metric',
+        'ylabel': ''
+    },
+    {
+        'src_stem': 'pm-reactivity',
+        'dest_stem': 'cc-pm-reactivity',
+        'title': 'Swarm Reactivity',
+        'ylabel': ''
     },
 ]
 
@@ -85,14 +103,14 @@ class ControllerComp:
     Compares controllers on different criteria across/within different scenarios.
     """
 
-    def __init__(self, sierra_root, controllers, batch_criteria):
-        self.sierra_root = sierra_root
+    def __init__(self, controllers, cmdopts):
+        self.cmdopts = cmdopts
         self.controllers = controllers
-        self.batch_criteria = batch_criteria
-        self.cc_graph_root = os.path.join(sierra_root, "cc-graphs")
-        self.cc_csv_root = os.path.join(sierra_root, "cc-csvs")
-        self.sc_graph_root = os.path.join(sierra_root, "sc-graphs")
-        self.sc_csv_root = os.path.join(sierra_root, "sc-csvs")
+
+        self.cc_graph_root = os.path.join(self.cmdopts['sierra_root'], "cc-graphs")
+        self.cc_csv_root = os.path.join(self.cmdopts['sierra_root'], "cc-csvs")
+        self.sc_graph_root = os.path.join(self.cmdopts['sierra_root'], "sc-graphs")
+        self.sc_csv_root = os.path.join(self.cmdopts['sierra_root'], "sc-csvs")
 
     def generate(self):
         self.generate_intra_scenario_graphs()
@@ -116,23 +134,23 @@ class ControllerComp:
     def _generate_inter_scenario_graph(self, src_stem, dest_stem, title):
         # We can do this because we have already checked that all controllers executed the same set
         # of batch experiments
-        scenarios = pm_utils.sort_scenarios(self.batch_criteria,
-                                            os.listdir(os.path.join(self.sierra_root,
+        scenarios = pm_utils.sort_scenarios(self.cmdopts['criteria_category'],
+                                            os.listdir(os.path.join(self.cmdopts['sierra_root'],
                                                                     self.controllers[0])))
 
         swarm_sizes = []
         df = pd.DataFrame(columns=self.controllers, index=scenarios)
 
         for s in scenarios:
-            generation_root = os.path.join(self.sierra_root,
-                                           self.controllers[0],
-                                           s,
-                                           "exp-inputs")
-            swarm_sizes = pm_utils.calc_swarm_sizes(self.batch_criteria,
-                                                    generation_root,
-                                                    len(os.listdir(generation_root)))
+            cmdopts = copy.deepcopy(self.cmdopts)
+            cmdopts['generation_root'] = os.path.join(self.cmdopts['sierra_root'],
+                                                      self.controllers[0],
+                                                      s,
+                                                      "exp-inputs")
+            cmdopts['n_exp'] = len(os.listdir(cmdopts['generation_root']))
+            swarm_sizes = pm_utils.batch_swarm_sizes(cmdopts)
             for c in self.controllers:
-                csv_ipath = os.path.join(self.sierra_root,
+                csv_ipath = os.path.join(self.cmdopts['sierra_root'],
                                          c,
                                          s,
                                          "exp-outputs/collated-csvs",
@@ -143,7 +161,8 @@ class ControllerComp:
                                  src_stem + "-wue.csv")
         df.to_csv(csv_opath, sep=';', index=False)
 
-        scenarios = pm_utils.prettify_scenario_labels(self.batch_criteria, scenarios)
+        scenarios = pm_utils.prettify_scenario_labels(self.cmdopts['criteria_category'], scenarios)
+
         BarGraph(input_fpath=csv_opath,
                  output_fpath=os.path.join(self.sc_graph_root,
                                            dest_stem + '-wue.png'),
@@ -167,17 +186,18 @@ class ControllerComp:
 
         # We can do this because we have already checked that all controllers executed the same set
         # of batch experiments
-        scenarios = os.listdir(os.path.join(self.sierra_root, self.controllers[0]))
+        scenarios = os.listdir(os.path.join(self.cmdopts['sierra_root'], self.controllers[0]))
 
         for s in scenarios:
             df = pd.DataFrame()
             for c in self.controllers:
-                csv_ipath = os.path.join(self.sierra_root,
+                csv_ipath = os.path.join(self.cmdopts['sierra_root'],
                                          c,
                                          s,
                                          "exp-outputs/collated-csvs",
                                          src_stem + ".csv")
                 df = df.append(pd.read_csv(csv_ipath, sep=';'))
+
                 csv_opath = os.path.join(self.cc_csv_root, 'cc-' +
                                          src_stem + "-" + s + ".csv")
                 df.to_csv(csv_opath, sep=';', index=False)
@@ -187,18 +207,19 @@ class ControllerComp:
                                      src_stem + "-" + s + ".csv")
 
             # All exp have same # experiments, so we can do this safely.
-            batch_generation_root = os.path.join(self.sierra_root,
+            batch_generation_root = os.path.join(self.cmdopts['sierra_root'],
                                                  self.controllers[0],
                                                  s,
                                                  "exp-inputs")
+            cmdopts = copy.deepcopy(self.cmdopts)
+            cmdopts['generation_root'] = batch_generation_root
+            cmdopts['n_exp'] = len(df.columns)
             BatchRangedGraph(inputy_fpath=csv_opath,
                              output_fpath=os.path.join(self.cc_graph_root,
-                                                       dest_stem) + s + ".png",
+                                                       dest_stem) + '-' + s + ".png",
                              title=title,
-                             xlabel=pm_utils.batch_criteria_xlabel(self.batch_criteria),
+                             xlabel=pm_utils.batch_criteria_xlabel(cmdopts),
                              ylabel=ylabel,
-                             xvals=pm_utils.batch_criteria_xvals(self.batch_criteria,
-                                                                 batch_generation_root,
-                                                                 len(df.columns)),
+                             xvals=pm_utils.batch_criteria_xvals(cmdopts),
                              legend=self.controllers,
                              polynomial_fit=-1).generate()

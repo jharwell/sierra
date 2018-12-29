@@ -39,40 +39,28 @@ class PipelineStage4:
      experiment, and across experiments for batches.
     """
 
-    def __init__(self, args):
-        self.args = args
-        self.cmdopts = {
-            "output_root": self.args.output_root,
-            "graph_root": self.args.graph_root,
-            "generation_root": self.args.generation_root,
-            "criteria_category": self.args.batch_criteria.split('.')[0],
-            "criteria_def": self.args.batch_criteria.split('.')[1],
-            "generator": self.args.generator,
-            "envc_cs_method": self.args.envc_cs_method,
-            "with_hists": self.args.with_hists,
-            "plot_applied_vc": self.args.plot_applied_vc,
-            "perf_measures": self.args.perf_measures
-        }
+    def __init__(self, cmdopts):
+        self.cmdopts = cmdopts
 
     def run(self):
-        if self.args.exp_graphs == 'all' or self.args.exp_graphs == 'intra':
+        if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'intra':
             self._gen_intra_graphs()
 
         # Collation must be after intra-experiment graph generation, so that all .csv files to be
         # collated have been generated/modified according to parameters.
-        CSVCollator(self.args.output_root,
-                    Linegraphs.targets('depth2' in self.args.generator))()
-        if self.args.exp_graphs == 'all' or self.args.exp_graphs == 'inter':
+        CSVCollator(self.cmdopts['output_root'],
+                    Linegraphs.targets('depth2' in self.cmdopts['generator']))()
+        if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'inter':
             self._gen_inter_graphs()
 
     def _gen_inter_graphs(self):
-        if self.args.batch_criteria is not None:
+        if self.cmdopts['criteria_category'] is not None:
             print("- Stage4: Generating inter-experiment graphs...")
             InterExpGraphGenerator(self.cmdopts)()
             print("- Stage4: Inter-experiment graph generation complete")
 
     def _gen_intra_graphs(self):
-        if self.args.batch_criteria is not None:
+        if self.cmdopts['criteria_category'] is not None:
 
             intra_exp = BatchedIntraExpGraphGenerator(self.cmdopts)
         else:

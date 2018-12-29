@@ -248,7 +248,7 @@ class Cmdline:
                             """,
                             default='all')
         stage4.add_argument("--perf-measures",
-                            choices=["sc", "so", "bc", "all"],
+                            choices=["sc", "so", "sp", "sr", "all"],
                             help="""
 
                             Specify which performance measure graphs should be generated. Only active if
@@ -260,6 +260,7 @@ class Cmdline:
                             sc: Generate comparison plots of scalability.
                             so: Generate comparison plots of self-organization.
                             sp: Generate comparison plots of swarm performance (blocks collected).
+                            sr: Generate comparison plots of swarm reactivity.
                             all: Generate all inter-experiment graphs.
 
                             """,
@@ -282,9 +283,25 @@ class Cmdline:
         stage4.add_argument("--envc-cs-method",
                             help="""
 
-                            Environmental Conditions Curve Similar Method. Specify the method to use to calculate the
+                            Environmental conditions curve similarity method. Specify the method to use to calculate the
                             similarity between curves of applied variance (non-ideal conditions) and ideal conditions
                             (exp0). Only applies for temporal_variance batch criteria. Valid values are:
+
+                            pcm:          Partial Curve Mapping (Witowski2012)
+                            area_between: Area between the two curves (Jekel2018)
+                            frechet:      Frechet distance (Frechet1906)
+                            dtw:          Dynamic Time Warping (Berndt1994)
+                            curve_length: Arc-length distance along the curve from the origin of (applied - ideal)
+                                          curve (Andrade-campos2009).
+                            """,
+                            choices=["pcm", "area_between", "frechet", "dtw", "curve_length"],
+                            default="pcm")
+        stage4.add_argument("--reactivity-cs-method",
+                            help="""
+
+                            Reactivity calculatation curve similarity method. Specify the method to use to calculate the
+                            similarity between the curve of applied variance for a simulation and the corrsponding
+                            performance curve.
 
                             pcm:          Partial Curve Mapping (Witowski2012)
                             area_between: Area between the two curves (Jekel2018)

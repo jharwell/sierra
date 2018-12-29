@@ -29,13 +29,14 @@ class PipelineStage2:
     the provided set of hosts on MSI (or on a single personal computer for testing).
     """
 
-    def __init__(self, args):
-        self.args = args
+    def __init__(self, cmdopts):
+        self.cmdopts = cmdopts
 
     def run(self):
-        if self.args.batch_criteria is not None:
-            runner = BatchedExpRunner(self.args.generation_root, self.args.batch_exp_num)
+        if self.cmdopts['criteria_category'] is not None:
+            runner = BatchedExpRunner(
+                self.cmdopts['generation_root'], self.cmdopts['batch_exp_num'])
         else:
-            runner = ExpRunner(self.args.generation_root, False)
+            runner = ExpRunner(self.cmdopts['generation_root'], False)
 
-        runner.run(no_msi=self.args.no_msi)
+        runner.run(no_msi=self.cmdopts['no_msi'])

@@ -26,24 +26,24 @@ class PipelineStage1:
     a template suitable for input into ARGoS that contain user-specified modifications.
     """
 
-    def __init__(self, args, input_generator):
-        self.args = args
+    def __init__(self, cmdopts, input_generator):
+        self.cmdopts = cmdopts
         self.input_generator = input_generator
 
     def run(self):
-        if self.args.batch_criteria is not None:
-            print("- Stage1: Generating input files for batched experiment '{0}' in {1}...".format(self.args.generator,
-                                                                                                   self.args.generation_root))
+        if self.cmdopts['criteria_category'] is not None:
+            print("- Stage1: Generating input files for batched experiment '{0}' in {1}...".format(self.cmdopts['generator'],
+                                                                                                   self.cmdopts['generation_root']))
 
-            print("-- Using '{0}'".format(self.args.time_setup))
+            print("-- Using '{0}'".format(self.cmdopts['time_setup']))
             self.input_generator.generate()
             print("- Stage1: {0} Input files generated in {1} experiments.".format(
-                sum([len(files) for r, d, files in os.walk(self.args.generation_root)]),
-                sum([len(d) for r, d, files in os.walk(self.args.generation_root)]) - 1))
+                sum([len(files) for r, d, files in os.walk(self.cmdopts['generation_root'])]),
+                sum([len(d) for r, d, files in os.walk(self.cmdopts['generation_root'])]) - 1))
         else:
-            print("- Stage1: Generating input files for experiment '{0}' in {1}...".format(self.args.generator,
-                                                                                           self.args.generation_root))
+            print("- Stage1: Generating input files for experiment '{0}' in {1}...".format(self.cmdopts['generator'],
+                                                                                           self.cmdopts['generation_root']))
             print("-- Using '{0}'".format(self.args.time_setup))
             self.input_generator.generate()
             print("- Stage1: {0} Input files generated for experiment.".format(
-                sum([len(files) for r, d, files in os.walk(self.args.generation_root)])))
+                sum([len(files) for r, d, files in os.walk(self.cmdopts['generation_root'])])))

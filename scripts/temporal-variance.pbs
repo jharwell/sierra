@@ -20,6 +20,7 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 cd $HOME/git/sierra
 NSIMS=4
 WAVEFORMS=(StepU StepD)
+SWARM_SIZES=(16 32 64 128 256)
 OUTPUT_ROOT=$HOME/exp
 BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \
@@ -28,28 +29,33 @@ BASE_CMD="python3 sierra.py \
                   --n-physics-engines=4\
                   --n-threads=4\
                   --no-msi\
-                  --time-setup=time_setup.T5000"
+                  --time-setup=time_setup.T5000 \
+                  --plot-applied-vc\
+                  --envc-cs-method=dtw\
+                  --reactivity-cs-method=dtw"
 
 # CRW (does not change # blocks/block manifest from template)
 for w in "${WAVEFORMS[@]}"
 do
-    rm -rf $OUTPUT_ROOT/depth0.CRW/temporal-variance-BM${w}12500Z32
-    $BASE_CMD --generator=depth0.CRW.SS12x6 \
-              --batch-criteria=temporal_variance.BM${w}12500Z32
+    for s in "${SWARM_SIZES[@]}"
+             do
+                 $BASE_CMD --generator=depth0.CRW.SS12x6 \
+                           --batch-criteria=temporal_variance.BM${w}12500Z${s}
 
-    rm -rf $OUTPUT_ROOT/depth0.CRW/temporal-variance-BC${w}12500Z32
-    $BASE_CMD --generator=depth0.CRW.SS12x6 \
-              --batch-criteria=temporal_variance.BC${w}12500Z32
+                 $BASE_CMD --generator=depth0.CRW.SS12x6 \
+                           --batch-criteria=temporal_variance.BC${w}12500Z${s}
+    done
 done
 
-# CRW (does not change # blocks/block manifest from template)
+# Stateful (does not change # blocks/block manifest from template)
 for w in "${WAVEFORMS[@]}"
 do
-    rm -rf $OUTPUT_ROOT/depth0.Stateful/temporal-variance-BM${w}12500Z32
-    $BASE_CMD --generator=depth0.Stateful.SS12x6 \
-              --batch-criteria=temporal_variance.BM${w}12500Z32
+    for s in "${SWARM_SIZES[@]}"
+    do
+        $BASE_CMD --generator=depth0.Stateful.SS12x6 \
+                  --batch-criteria=temporal_variance.BM${w}12500Z${s}
 
-    rm -rf $OUTPUT_ROOT/depth0.Stateful/temporal-variance-BC${w}12500Z32
-    $BASE_CMD --generator=depth0.Stateful.SS12x6 \
-              --batch-criteria=temporal_variance.BC${w}12500Z32
+        $BASE_CMD --generator=depth0.Stateful.SS12x6 \
+                  --batch-criteria=temporal_variance.BC${w}12500Z${s}
+    done
 done

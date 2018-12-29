@@ -43,25 +43,49 @@ class ExpPipeline:
 
     def __init__(self, args, input_generator):
         self.args = args
+        self.cmdopts = {
+            "output_root": self.args.output_root,
+            "graph_root": self.args.graph_root,
+            "sierra_root": self.args.sierra_root,
+            "generation_root": self.args.generation_root,
+            "generator": self.args.generator,
+            "envc_cs_method": self.args.envc_cs_method,
+            "with_hists": self.args.with_hists,
+            "plot_applied_vc": self.args.plot_applied_vc,
+            "perf_measures": self.args.perf_measures,
+            "reactivity_cs_method": self.args.reactivity_cs_method,
+            "exp_graphs": self.args.exp_graphs,
+            "template_config_file": self.args.template_config_file,
+            "time_setup": self.args.time_setup,
+            "batch_exp_num": self.args.batch_exp_num,
+            "no_msi": self.args.no_msi
+        }
+        if self.args.batch_criteria is None:
+            self.cmdopts['criteria_category'] = None
+            self.cmdopts['criteria_def'] = None
+        else:
+            self.cmdopts["criteria_category"] = self.args.batch_criteria.split('.')[0]
+            self.cmdopts["criteria_def"] = self.args.batch_criteria.split('.')[1]
+
         self.input_generator = input_generator
 
     def generate_inputs(self):
-        PipelineStage1(self.args, self.input_generator).run()
+        PipelineStage1(self.cmdopts, self.input_generator).run()
 
     def run_experiments(self):
-        PipelineStage2(self.args).run()
+        PipelineStage2(self.cmdopts).run()
 
     def average_results(self):
-        PipelineStage3(self.args).run()
+        PipelineStage3(self.cmdopts).run()
 
     def generate_graphs(self):
-        PipelineStage4(self.args).run()
+        PipelineStage4(self.cmdopts).run()
 
     def compare_controllers(self):
         if self.args.comp_controllers is not "all":
-            PipelineStage5(self.args, self.args.comp_controllers).run()
+            PipelineStage5(self.cmdopts, self.args.comp_controllers).run()
         else:
-            PipelineStage5(self.args, None).run()
+            PipelineStage5(self.cmdopts, None).run()
 
     def run(self):
 

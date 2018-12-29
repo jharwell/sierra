@@ -27,34 +27,38 @@ kCAInCumCSV = "ca-in-cum-avg.csv"
 kBlocksGatheredCumCSV = "blocks-collected-cum.csv"
 
 
-def prettify_scenario_labels(batch_criteria, scenarios):
+def prettify_scenario_labels(criteria_category, scenarios):
     """
-    batch_criteria(str): String of batch criteria passed on command line.
+    criteria_category(str): String of batch criteria passed on command line.
     scenarios(list): SORTED list of directories in sierra root representing the scenarios
     that each controller was tested on.
 
     Returns a sorted list of prettified labels suitable for scenario comparison graphs.
 
     """
-    if "swarm_size" in batch_criteria:
+    if "swarm_size" in criteria_category:
         return [s[-4:] for s in scenarios]
-    elif "swarm_density" in batch_criteria:
+    elif "swarm_density" in criteria_category:
         return [s[-5:-2].replace('p', '.') for s in scenarios]
+    elif 'temporal_variance' in criteria_category:
+        return scenarios
 
 
-def sort_scenarios(batch_criteria, scenarios):
+def sort_scenarios(criteria_category, scenarios):
     """
-    batch_criteria(str): String of batch criteria passed on command line.
+    criteria_category(str): String of batch criteria category passed on command line.
     scenarios(list):  List of directories in sierra root representing the scenarios
     that each controller was tested on.
 
     Returns a sorted list of scenarios.
 
     """
-    if "swarm_size" in batch_criteria:
+    if "swarm_size" in criteria_category:
         return scenarios  # No sorting needed
-    elif "swarm_density" in batch_criteria:
+    elif "swarm_density" in criteria_category:
         return sorted(scenarios, key=lambda s: float(s[-5:-2].replace('p', '.')))
+    elif 'temporal_variance' in criteria_category:
+        return scenarios
 
 
 def batch_swarm_sizes(cmdopts):
@@ -110,7 +114,7 @@ def batch_criteria_xvals(cmdopts):
             densities.append(n_robots / (int(x) * int(y)))
         return densities
     elif "temporal_variance" in cmdopts["criteria_category"]:
-        return [vcs.compute_vcs(cmdopts, x, cmdopts["n_exp"] - 1) for x in range(0, cmdopts["n_exp"])]
+        return [vcs.compute_envc_cs(cmdopts, x, cmdopts["n_exp"] - 1) for x in range(0, cmdopts["n_exp"])]
 
 
 def batch_criteria_xlabel(cmdopts):
@@ -140,6 +144,11 @@ def unpickle_exp_def(exp_def_fpath):
     except EOFError:
         pass
     return exp_def
+
+
+def n_exp(cmdopts):
+    return len([i for i in os.listdir(cmdopts["generation_root"]) if
+                os.path.isdir(os.path.join(cmdopts["generation_root"], i))])
 
 
 class ProjectivePerformance:

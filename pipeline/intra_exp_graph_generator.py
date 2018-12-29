@@ -78,8 +78,8 @@ class IntraExpGraphGenerator:
             for graph in graph_set:
 
                 for key in graph.keys():
-                    # The 'temporal_var' is optional, so we only want to modify graph generation for
-                    # those graphs that have requested it
+                    # The 'temporal_var' key is optional, so we only want to modify graph generation
+                    # for those graphs that have requested it.
                     if 'temporal_var' != key:
                         continue
 
@@ -88,43 +88,51 @@ class IntraExpGraphGenerator:
                                             sep=';')
 
                     for col in graph['temporal_var']:
-                        added = self._add_temporal_variance_col(target_df, var_df, graph, col)
-                        if not added:
-                            continue
+                        added = self._add_temporal_variance_cols(target_df, var_df, graph, col)
 
-                        graph['cols'].append(col)
-                        graph['legend'].append('Applied Variance(scaled {0})'.format(col))
+                        graph['cols'].extend([a for a in added for c in graph['cols'] if c in a])
+
+                        graph['legend'].extend(
+                            ['Applied Variance (scaled {0})'.format(x) for x in added])
                         if 'styles' in graph:
-                            graph['styles'].append('--')
+                            graph['styles'].extend(['--' for x in range(0, len(added))])
 
-    def _add_temporal_variance_col(self, target_df, var_df, graph, col):
-        # It is possible that different sets of columns within same .csv are used to
-        # generate graphs that should have the *same* variance graph on them, so we need
-        # to delete old column so the scaling works out correctly.
-        if col in target_df.columns:
-            target_df = target_df.drop([col], axis=1)
+    def _add_temporal_variance_cols(self, target_df, var_df, graph, col):
+        added = []
 
-        # Find the maximum value among all the rows of all the columns that will be
-        # included in the graph. This is used for scaling the variance so it looks nice
-        # on the generated graphs.
-        m = 0
-        for c in target_df[graph['cols']]:
-            m = max(m, target_df[c].max())
+        # Need a copy because we modify columns as we iterate over it.
+        #
+        # We need to be sure that we don't generate variance columns for clock (duh), but also check
+        # that we don't generate variance columns for columns that are themselves the result of a
+        # previous invocation of this function (can happen if there are multiple types of temporal
+        # variance included on a single plot).
+        orig_cols = [c for c in target_df.columns if c not in 'clock' and col not in c]
 
-        # Scale the applied variance to within the interval [0, max] for the generated
-        # graph. The lower bound is always 0 for the fordyca project, so I rely on that
-        # here.
-        var = var_df[col][target_df['clock'] - 1].values
-        var = m * (var - var.min()) / (var.max() - var.min())
+        for c in orig_cols:
+            m = target_df[c].max()
 
-        # Only include variance if it is non-zero for at least some of the time, and is an actual #
-        # (can be NaN if it is a type of variance we want to include on plots in general, but that
-        # is not enabled for the current experiment)
-        if not np.any(var) or any(np.isnan(var)):
-            return False
+            # Scale the applied variance to within the interval [0, max] for the generated
+            # graph. The lower bound is always 0 for the fordyca project, so I rely on that
+            # here.
+            var = var_df[col][target_df['clock'] - 1].values
+            var = m * (var - var.min()) / (var.max() - var.min())
 
-        target_df.insert(1, col, var)
+            # Only include variance if it is non-zero for at least some of the time, and is an
+            # actual # (can be NaN if it is a type of variance we want to include on plots in
+            # general, but that is not enabled for the current experiment)
+            if not np.any(var) or any(np.isnan(var)):
+                continue
+
+            new_col = c + "_" + col
+            added.append(new_col)
+
+            # Can happen if we run graph generation more than once on the same experiment
+            if new_col in target_df.columns:
+                continue
+
+            target_df.insert(1, new_col, var)
+
         target_df.to_csv(os.path.join(self.cmdopts["output_root"],
                                       graph['src_stem']) + ".csv", sep=';',
                          index=False)
-        return True
+        return added

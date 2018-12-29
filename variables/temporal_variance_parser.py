@@ -84,7 +84,7 @@ class TemporalVarianceParser():
         for c in ["Sine", "Square", "Constant", "Sawtooth"]:
             index = criteria_str.find(c)
             if -1 != index:
-                ret["waveform_type"] = c[index:len(c)]
+                ret["waveform_type"] = c
 
         # Must be 'StepX'
         if ret["waveform_type"] is None:

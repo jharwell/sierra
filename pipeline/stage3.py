@@ -31,21 +31,21 @@ class PipelineStage3:
 
     """
 
-    def __init__(self, args):
-        self.args = args
+    def __init__(self, cmdopts):
+        self.cmdopts = cmdopts
 
     def run(self):
         template_config_leaf, template_config_ext = os.path.splitext(
-            os.path.basename(self.args.template_config_file))
+            os.path.basename(self.cmdopts['template_config_file']))
 
-        if self.args.batch_criteria is not None:
+        if self.cmdopts['criteria_category'] is not None:
             print(
-                "- Stage3: Averaging batched experiment outputs for '{0}'...".format(self.args.generator))
-            averager = BatchedExpCSVAverager(template_config_leaf, self.args.output_root)
+                "- Stage3: Averaging batched experiment outputs for '{0}'...".format(self.cmdopts['generator']))
+            averager = BatchedExpCSVAverager(template_config_leaf, self.cmdopts['output_root'])
         else:
             print(
-                "- Stage3: Averaging single experiment outputs for '{0}'...".format(self.args.generator))
-            averager = ExpCSVAverager(template_config_leaf, self.args.output_root)
+                "- Stage3: Averaging single experiment outputs for '{0}'...".format(self.cmdopts['generator']))
+            averager = ExpCSVAverager(template_config_leaf, self.cmdopts['output_root'])
 
         averager.average_csvs()
         print("- Stage3: Averaging complete")

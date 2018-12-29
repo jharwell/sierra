@@ -30,17 +30,17 @@ class PipelineStage5:
     performance measures.
 
     Attributes:
-      args(??): Input arguments to sierra
       targets(list): List of controllers (as strings) that should be compared within sierra_root.
     """
 
-    def __init__(self, args, targets):
-        self.args = args
+    def __init__(self, cmdopts, targets):
         self.targets = targets
-        self.cc_graph_root = os.path.join(args.sierra_root, "cc-graphs")
-        self.cc_csv_root = os.path.join(args.sierra_root, "cc-csvs")
-        self.sc_graph_root = os.path.join(args.sierra_root, "sc-graphs")
-        self.sc_csv_root = os.path.join(args.sierra_root, "sc-csvs")
+        self.cmdopts = cmdopts
+
+        self.cc_graph_root = os.path.join(self.cmdopts['sierra_root'], "cc-graphs")
+        self.cc_csv_root = os.path.join(self.cmdopts['sierra_root'], "cc-csvs")
+        self.sc_graph_root = os.path.join(self.cmdopts['sierra_root'], "sc-graphs")
+        self.sc_csv_root = os.path.join(self.cmdopts['sierra_root'], "sc-csvs")
 
         os.makedirs(self.cc_graph_root, exist_ok=True)
         os.makedirs(self.cc_csv_root, exist_ok=True)
@@ -51,24 +51,23 @@ class PipelineStage5:
         # Verify that all controllers have run the same set of experiments before doing the
         # comparison
         if self.targets is None:
-            self.targets = ['depth0.Stateless', 'depth0.Stateful', 'depth1.GreedyPartitioning']
+            self.targets = ['depth0.CRW', 'depth0.Stateful', 'depth1.GreedyPartitioning']
         else:
             self.targets = self.targets.split(',')
         print("- Stage5: Comparing controllers {0}...".format(self.targets))
 
         for t1 in self.targets:
             for t2 in self.targets:
-                for item in os.listdir(os.path.join(self.args.sierra_root, t1)):
-                    path1 = os.path.join(self.args.sierra_root, t1, item,
+                for item in os.listdir(os.path.join(self.cmdopts['sierra_root'], t1)):
+                    path1 = os.path.join(self.cmdopts['sierra_root'], t1, item,
                                          "exp-outputs/collated-csvs")
-                    path2 = os.path.join(self.args.sierra_root, t2, item,
+                    path2 = os.path.join(self.cmdopts['sierra_root'], t2, item,
                                          "exp-outputs/collated-csvs")
                     if os.path.isdir(path1):
                         assert(os.path.exists(path2)), "FATAL: {0} does not exist".format(path2)
                     if os.path.isdir(path2):
                         assert(os.path.exists(path1)), "FATAL: {0} does not exist".format(path1)
 
-        cc.ControllerComp(sierra_root=self.args.sierra_root,
-                          controllers=self.targets,
-                          batch_criteria=self.args.batch_criteria).generate()
+        cc.ControllerComp(controllers=self.targets,
+                          cmdopts=self.cmdopts).generate()
         print("- Stage5: Controller comparison complete")

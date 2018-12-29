@@ -21,9 +21,9 @@ from variables.swarm_size import SwarmSize
 from variables.temporal_variance_parser import TemporalVarianceParser
 import math
 
-kMinHz = 100
-kHzDelta = 100
-kMaxHz = 1000
+kMinHz = 1000
+kHzDelta = 2000
+kMaxHz = 4000
 
 kMinBMAmp = 100
 kBMAmpDelta = 100
@@ -31,13 +31,16 @@ kMaxBMAmp = 1000
 
 # Max amplitudie is only 1/2 of the 0.9 desired maximum because all square waveforms also have an
 # offset.
-kMinBCAmp = 0.05
-kBCAmpDelta = 0.05
-kMaxBCAmp = 0.45
+kMinBCAmp = 0.1
+kBCAmpDelta = 0.1
+kMaxBCAmp = 0.5
 
-kHZ = [x for x in range(kMinHz, kMaxHz + kHzDelta, kHzDelta)]
-kBMAmps = [x for x in range(kMinBMAmp, kMaxBMAmp + kBMAmpDelta, kBMAmpDelta)]
-kBCAmps = [kMinBCAmp + x * kBCAmpDelta for x in range(0, int(kMaxBCAmp / kMinBCAmp))]
+# kHZ = [x for x in range(kMinHz, kMaxHz + kHzDelta, kHzDelta)]
+kHZ = [4000, 8000, 16000, 32000]
+# kBMAmps = [x for x in range(kMinBMAmp, kMaxBMAmp + kBMAmpDelta, kBMAmpDelta)]
+kBMAmps = [100, 200, 400, 800]
+# kBCAmps = [kMinBCAmp + x * kBCAmpDelta for x in range(0, int(kMaxBCAmp / kMinBCAmp))]
+kBCAmps = [0.1, 0.2, 0.4, 0.8]
 
 
 class TemporalVariance(BaseVariable):
@@ -89,7 +92,7 @@ def Factory(criteria_str):
         elif "BM" in criteria_str:
             amps = kBMAmps
 
-        if any(v == attr["waveform_type"] for v in ["Sine, Square, Sawtooth"]):
+        if any(v == attr["waveform_type"] for v in ["Sine", "Square", "Sawtooth"]):
             return [(attr["xml_parent_path"],
                      attr["waveform_type"],
                      1.0 / hz,
