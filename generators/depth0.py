@@ -20,98 +20,70 @@ from generators.exp_input_generator import ExpInputGenerator
 
 
 class BaseGenerator(ExpInputGenerator):
-
     """
-    Generates simulation input common to all depth0 simulations.
-
+    Generates simulation input changes needed for all depth0 controllers.
     """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-    def init_sim_defs(self):
-        """
-        Initialize sim defs common to all depth0 simulations (does nothing for now...)
-        """
-        xml_luigi = super().init_sim_defs()
-
-        return xml_luigi
 
     def generate(self):
         """
-        Generates all changes to the input file for the simulation (does not save).
+        Generates all changes to the input file for the simulation (does not save):
         """
-        xml_luigi = self.init_sim_defs()
-        return xml_luigi
 
-    def generate_and_save(self):
-        """
-        Generates and saves input file for the simulation.
-        """
-        self._create_all_sim_inputs(self._generate_random_seeds(), self.init_sim_defs())
-
-
-class StatefulGenerator(BaseGenerator):
-
-    """
-    Generates simulation inputs common to all stateful foraging experiments.
-
-    """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def init_sim_defs(self):
-        """
-        Initialize sim defs common to all stateful simulations.
-        """
-        xml_luigi = super().init_sim_defs()
-
-        xml_luigi.tag_change(".//controllers", "__template__", "stateful_controller")
+        xml_luigi = super().generate_common_defs()
         xml_luigi.attribute_change(".//loop_functions", "label", "depth0_loop_functions")
-        return xml_luigi
 
-    def generate(self):
-        """
-        Generates all changes to the input file for the simulation (does not save).
-        """
-        xml_luigi = self.init_sim_defs()
         return xml_luigi
-
-    def generate_and_save(self):
-        """
-        Generates and saves input file for the simulation.
-        """
-        self._create_all_sim_inputs(self._generate_random_seeds(), self.init_sim_defs())
 
 
 class CRWGenerator(BaseGenerator):
     """
-    Generates simulation inputs common to all CRW foraging experiments.
+    Generates simulation input changes common needed for all CRW controllers.
     """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def init_sim_defs(self):
+    def generate(self):
         """
-        Initialize sim defs common to all stateless simulations.
+        Generates all changes to the input file for the simulation (does not save).
         """
-        xml_luigi = super().init_sim_defs()
-
+        xml_luigi = super().generate_common_defs()
         xml_luigi.tag_change(".//controllers", "__template__", "crw_controller")
-        xml_luigi.attribute_change(".//loop_functions", "label", "depth0_loop_functions")
         return xml_luigi
+
+
+class DPOGenerator(BaseGenerator):
+
+    """
+    Generates simulation input changes common needed for all DPO controllers.
+
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def generate(self):
+        xml_luigi = super().generate_common_defs()
+        xml_luigi.tag_change(".//controllers", "__template__", "dpo_controller")
+        return xml_luigi
+
+
+class MDPOGenerator(BaseGenerator):
+    """
+    Generates simulation input changes common needed for all MDPO controllers.
+
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def generate(self):
         """
         Generates all changes to the input file for the simulation (does not save).
         """
-        xml_luigi = self.init_sim_defs()
+        xml_luigi = super().generate_common_defs()
+        xml_luigi.tag_change(".//controllers", "__template__", "mdpo_controller")
         return xml_luigi
-
-    def generate_and_save(self):
-        """
-        Generates and saves input file for the simulation.
-        """
-        self._create_all_sim_inputs(self._generate_random_seeds(), self.init_sim_defs())

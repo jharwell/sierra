@@ -86,4 +86,7 @@ class SSGenerator(ExpInputGenerator):
             rms = cache.gen_tag_rmlist()
             if len(rms):
                 [xml_luigi.tag_remove(a) for a in rms[0]]
-        self._create_all_sim_inputs(self._generate_random_seeds(), xml_luigi)
+
+        # Generate simulation input files now that all simulation changes have been made to the
+        # template
+        self.generate_inputs(xml_luigi)

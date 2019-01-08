@@ -81,4 +81,7 @@ class QSGenerator(ExpInputGenerator):
 
         if "depth1" in self.controller:
             print("WARNING: QS incompatible with depth1 controllers--either 0 or > 1 caches are needed for reasonable results.")
-        self._create_all_sim_inputs(self._generate_random_seeds(), xml_luigi)
+
+        # Generate simulation input files now that all simulation changes have been made to the
+        # template
+        self.generate_inputs(xml_luigi)
