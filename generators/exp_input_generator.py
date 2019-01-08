@@ -86,8 +86,18 @@ class ExpInputGenerator:
         self.config_name_format = format_base + self.main_config_extension
         self.output_name_format = format_base + "_output"
 
-    def init_sim_defs(self):
-        """Generates simulation definitions common to all simulations."""
+    def generate_common_defs(self):
+        """
+        Generates simulation definitions common to all simulations:
+
+        - visualizations
+        - threading
+        - robot sensor/actuators
+        - simulation time parameters
+
+        This only generates base definitions, but does not actually generate any modified input
+        files.
+        """
         # create an object that will edit the XML file
         xml_luigi = XMLLuigi(self.template_config_file)
 
@@ -99,20 +109,31 @@ class ExpInputGenerator:
             os.remove(self.commands_fpath)
 
         # Setup simulation visualizations
-        self._init_visualization_defs(xml_luigi)
+        self._generate_visualization_defs(xml_luigi)
 
         # Setup threading
-        self._init_threading_defs(xml_luigi)
+        self._generate_threading_defs(xml_luigi)
 
         # Setup robot sensors/actuators
-        self._init_sa_defs(xml_luigi)
+        self._generate_sa_defs(xml_luigi)
 
         # Setup simulation time parameters
-        self._init_time_defs(xml_luigi)
+        self._generate_time_defs(xml_luigi)
 
         return xml_luigi
 
-    def _init_time_defs(self, xml_luigi):
+    def generate_inputs(self, xml_luigi):
+        """
+        Generates and saves the input files for all simulation runs within the experiment.
+        """
+        random_seeds = self._generate_random_seeds()
+        for exp_num in range(self.sim_opts["n_sims"]):
+            self._create_sim_input_file(random_seeds, xml_luigi, exp_num)
+            self._add_sim_to_command_file(os.path.join(self.generation_root,
+                                                       self.config_name_format.format(
+                                                           self.main_config_name, exp_num)))
+
+    def _generate_time_defs(self, xml_luigi):
         """
         Setup simulation time parameters and write them to the pickle file for retrieval during
         graph generation later.
@@ -127,7 +148,7 @@ class ExpInputGenerator:
         with open(self.exp_def_fpath, 'ab') as f:
             pickle.dump(tsetup_inst.gen_attr_changelist()[0], f)
 
-    def _init_sa_defs(self, xml_luigi):
+    def _generate_sa_defs(self, xml_luigi):
         """
         Disable selected sensors/actuators, which are computationally expensive in large swarms, but
         not that costly if the # robots is small.
@@ -144,7 +165,7 @@ class ExpInputGenerator:
             xml_luigi.tag_remove(".//sensors", "battery")
             xml_luigi.tag_remove(".//entity/foot-bot", "battery")
 
-    def _init_threading_defs(self, xml_luigi):
+    def _generate_threading_defs(self, xml_luigi):
         """
         Set the # of cores for a simulation to use, which may be less than the total # available on
         the system.
@@ -156,44 +177,36 @@ class ExpInputGenerator:
                                    "n_threads",
                                    str(self.sim_opts["n_threads"]))
 
-    def _init_visualization_defs(self, xml_luigi):
+    def _generate_visualization_defs(self, xml_luigi):
         """
         Remove visualization elements from input file, if configured to do so. It may be desired to
         leave them in if generating frames/video.
         """
         if self.sim_opts["with_visualizations"] == "none" or self.sim_opts["with_visualizations"] == "argos":
-            self._remove_xml_elements(xml_luigi, [("./loop_functions", "./visualization")])
+            xml_luigi.tag_remove("./loop_functions", "./visualization")
 
         if self.sim_opts["with_visualizations"] == "none" or self.sim_opts["with_visualizations"] == "fordyca":
-            self._remove_xml_elements(xml_luigi, [(".", "./visualization")])
+            xml_luigi.tag_remove(".", "./visualization")
 
-    def _create_all_sim_inputs(self, random_seeds, xml_luigi):
-        """Generate and the input files for all simulation runs."""
-
-        for exp_num in range(self.sim_opts["n_sims"]):
-            self._create_sim_input_file(random_seeds, xml_luigi, exp_num)
-            self._add_sim_to_command_file(os.path.join(self.generation_root,
-                                                       self.config_name_format.format(
-                                                           self.main_config_name, exp_num)))
-
-    def _create_sim_input_file(self, random_seeds, xml_luigi, exp_num):
-        """Generate and write the input files for a particular simulation run."""
-
-        # create a new name for this experiment's config file
-        new_config_name = self.config_name_format.format(
-            self.main_config_name, exp_num)
+    def _generate_random_defs(self, xml_luigi, random_seeds, exp_num):
+        """
+        Generate random seed definitions for a specific simulation in an experiment during the
+        input generation process. This cannot be done in init_sim_defs() because it is *not* common
+        to all experiments; each experiment has their own random seed.
+        """
 
         # get the random seed for this experiment
         random_seed = random_seeds[exp_num]
 
         # set the random seed in the config file
-        # restriction: the config file must have these fields in order for this function to work
-        # correctly.
         xml_luigi.attribute_change(".//experiment", "random_seed", str(random_seed))
 
-        # set the output directory
-        # restriction: these attributes must exist in the config file
-        # this should throw an error if the attributes don't exist
+    def _generate_output_defs(self, xml_luigi, exp_num):
+        """
+        Generate output definitions for a specific simulation in an experiment during the input
+        generation process. This cannot be done in init_sim_defs(), because it is *not* common to
+        all experiments; each experiment logs/outputs to a unique directory.
+        """
         output_dir = self.output_name_format.format(
             self.main_config_name, exp_num)
         xml_luigi.attribute_change(
@@ -204,23 +217,28 @@ class ExpInputGenerator:
             ".//loop_functions/output/sim", "output_dir", output_dir)
         xml_luigi.attribute_change(
             ".//loop_functions/output/sim", "output_root", self.exp_output_root)
-        save_path = os.path.join(
-            self.generation_root, new_config_name)
+
+    def _create_sim_input_file(self, random_seeds, xml_luigi, exp_num):
+        """
+        Write the input files for a particular simulation run.
+        """
+
+        # create a new name for this experiment's config file
+        new_config_name = self.config_name_format.format(
+            self.main_config_name, exp_num)
+
+        # Setup simulation random seed
+        self._generate_random_defs(xml_luigi, random_seeds, exp_num)
+
+        # Setup simulation logging/output
+        self._generate_output_defs(xml_luigi, exp_num)
+
+        # All done!
+        save_path = os.path.join(self.generation_root, new_config_name)
         xml_luigi.output_filepath = save_path
         open(save_path, 'w').close()  # create an empty file
         # save the config file to the correct place
         xml_luigi.write()
-
-    def _remove_xml_elements(self, xml_luigi, remove_list):
-        """Generates and saves all the XML config files for all the experiments"""
-
-        for item in remove_list:
-            try:
-                xml_luigi.tag_remove(item[0], item[1])
-            except InvalidElementError:
-                # it's okay if this one doesn't exist
-                print("XML elements '{}' not found: not removed.".format(item))
-                pass
 
     def _add_sim_to_command_file(self, xml_fname):
         """Adds the command to run a particular simulation definition to the command file."""

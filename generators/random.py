@@ -75,4 +75,6 @@ class RNGenerator(ExpInputGenerator):
         for a in engines.gen_tag_addlist()[0]:
             xml_luigi.tag_add(a[0], a[1], a[2])
 
-        self._create_all_sim_inputs(self._generate_random_seeds(), xml_luigi)
+        # Generate simulation input files now that all simulation changes have been made to the
+        # template
+        self.generate_inputs(xml_luigi)

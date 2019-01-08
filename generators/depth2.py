@@ -20,100 +20,92 @@ from generators.exp_input_generator import ExpInputGenerator
 
 
 class BaseGenerator(ExpInputGenerator):
-
     """
-    Generates simulation input for base depth2 foraging experiments.
+    Generates simulation input changes needed for all depth2 controllers.
+
     """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def init_sim_defs(self):
+    def generate(self):
         """
-        Initialize sim defs common to all depth2 simulations.
+        Generates all changes to the input file for the simulation (does not save):
         """
-        xml_luigi = super().init_sim_defs()
-
+        xml_luigi = super().generate_common_defs()
         xml_luigi.attribute_change(".//loop_functions", "label", "depth2_loop_functions")
         return xml_luigi
 
-    def generate(self):
-        """
-        Generates all changes to the input file for the simulation (does not save).
-        """
-        xml_luigi = self.init_sim_defs()
-        return xml_luigi
 
-    def generate_and_save(self):
-        """
-        Generates and saves input file for the simulation.
-        """
-        self._create_all_sim_inputs(self._generate_random_seeds(), self.init_sim_defs())
-
-
-class GreedyRecPartGenerator(BaseGenerator):
-
+class GRP_DPOGenerator(BaseGenerator):
     """
-    Generates simulation input common to all  depth2 greedy recursive partitioning controllers.
+    Generates simulation input changes common needed for all GRP_DPO controllers.
     """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def init_sim_defs(self):
-        """
-        Initialize sim defs common to all greedy recursive partitioning controller simulations.
-        """
-        xml_luigi = super().init_sim_defs()
-
-        xml_luigi.tag_change(".//controllers", "__template__", "greedy_recpart_controller")
-        return xml_luigi
-
     def generate(self):
         """
-        Generates all changes to the input file for the simulation (does not save).
+        Generates all changes to the input file for the simulation (does not save):
         """
-        xml_luigi = self.init_sim_defs()
+        xml_luigi = super().init_sim_defs()
+        xml_luigi.tag_change(".//controllers", "__template__", "grp_dpo_controller")
         return xml_luigi
 
-    def generate_and_save(self):
-        """
-        Generates and saves input file for the simulation.
-        """
-        self._create_all_sim_inputs(self._generate_random_seeds(), self.init_sim_defs())
 
-
-class OracularRecPartGenerator(BaseGenerator):
-
+class GRP_MDPOGenerator(BaseGenerator):
     """
-    Generates simulation input common to all depth2 oracular recursive partitioning
-    controllers.Enables the oracle itself in the loop functions, but does not specify what elements
-    of it are to be used; that is left to either manual template configuration or to batch
-    criteria.
-
+    Generates simulation input changes common needed for all GRP_MDPO controllers.
     """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def init_sim_defs(self):
+    def generate(self):
         """
-        Initialize sim defs common to all oracular recursive partitioning controllers.
+        Generates all changes to the input file for the simulation (does not save):
         """
         xml_luigi = super().init_sim_defs()
-
-        xml_luigi.tag_change(".//controllers", "__template__", "oracular_recpart_controller")
+        xml_luigi.tag_change(".//controllers", "__template__", "grp_mdpo_controller")
         return xml_luigi
+
+
+class OGRP_DPOGenerator(BaseGenerator):
+    """
+    Generates simulation input changes common needed for all OGRP_DPO controllers.
+    Enables the oracle itself in the loop functions, but does not specify what elements of it are to
+    be used; that is left to either manual template configuration or to batch criteria.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def generate(self):
         """
-        Generates all changes to the input file for the simulation (does not save).
+        Generates all changes to the input file for the simulation (does not save):
         """
-        xml_luigi = self.init_sim_defs()
+        xml_luigi = super().init_sim_defs()
+        xml_luigi.tag_change(".//controllers", "__template__", "ogrp_dpo_controller")
+        xml_luigi.attribute_change(".//loop_functions/oracle", "enabled", "true")
         return xml_luigi
 
-    def generate_and_save(self):
+
+class OGRP_MDPOGenerator(BaseGenerator):
+    """
+    Generates simulation input changes common needed for all OGRP_MDPO controllers.
+    Enables the oracle itself in the loop functions, but does not specify what elements of it are to
+    be used; that is left to either manual template configuration or to batch criteria.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def generate(self):
         """
-        Generates and saves input file for the simulation.
+        Generates all changes to the input file for the simulation (does not save):
         """
-        self._create_all_sim_inputs(self._generate_random_seeds(), self.init_sim_defs())
+        xml_luigi = super().init_sim_defs()
+        xml_luigi.tag_change(".//controllers", "__template__", "ogrp_mdpo_controller")
+        xml_luigi.attribute_change(".//loop_functions/oracle", "enabled", "true")
+        return xml_luigi
