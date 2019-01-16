@@ -21,7 +21,7 @@ cd $HOME/git/sierra
 NSIMS=4
 WAVEFORMS=(StepU StepD)
 SWARM_SIZES=(16 32 64 128 256)
-OUTPUT_ROOT=$HOME/exp
+OUTPUT_ROOT=$HOME/exp/variance
 BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \
                   --template-config-file=$HOME/git/sierra/templates/temporal-variance.argos \
@@ -32,7 +32,8 @@ BASE_CMD="python3 sierra.py \
                   --time-setup=time_setup.T5000 \
                   --plot-applied-vc\
                   --envc-cs-method=dtw\
-                  --reactivity-cs-method=dtw"
+                  --reactivity-cs-method=dtw\
+                  --adaptability-cs-method=dtw"
 
 # CRW (does not change # blocks/block manifest from template)
 for w in "${WAVEFORMS[@]}"
@@ -47,15 +48,28 @@ do
     done
 done
 
-# Stateful (does not change # blocks/block manifest from template)
+# DPO (does not change # blocks/block manifest from template)
 for w in "${WAVEFORMS[@]}"
 do
     for s in "${SWARM_SIZES[@]}"
     do
-        $BASE_CMD --generator=depth0.Stateful.SS12x6 \
+        $BASE_CMD --generator=depth0.DPO.SS12x6 \
                   --batch-criteria=temporal_variance.BM${w}12500Z${s}
 
-        $BASE_CMD --generator=depth0.Stateful.SS12x6 \
+        $BASE_CMD --generator=depth0.DPO.SS12x6 \
+                  --batch-criteria=temporal_variance.BC${w}12500Z${s}
+    done
+done
+
+# GP_DPO (does not change # blocks/block manifest from template)
+for w in "${WAVEFORMS[@]}"
+do
+    for s in "${SWARM_SIZES[@]}"
+    do
+        $BASE_CMD --generator=depth1.GP_DPO.SS12x6 \
+                  --batch-criteria=temporal_variance.BM${w}12500Z${s}
+
+        $BASE_CMD --generator=depth1.GP_DPO.SS12x6 \
                   --batch-criteria=temporal_variance.BC${w}12500Z${s}
     done
 done

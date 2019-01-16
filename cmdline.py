@@ -248,7 +248,7 @@ class Cmdline:
                             """,
                             default='all')
         stage4.add_argument("--perf-measures",
-                            choices=["sc", "so", "sp", "sr", "all"],
+                            choices=["sc", "so", "sp", "sr", "sa", "all"],
                             help="""
 
                             Specify which performance measure graphs should be generated. Only active if
@@ -261,6 +261,7 @@ class Cmdline:
                             so: Generate comparison plots of self-organization.
                             sp: Generate comparison plots of swarm performance (blocks collected).
                             sr: Generate comparison plots of swarm reactivity.
+                            sa: Generate comparison plots of swarm adaptability.
                             all: Generate all inter-experiment graphs.
 
                             """,
@@ -300,7 +301,23 @@ class Cmdline:
                             help="""
 
                             Reactivity calculatation curve similarity method. Specify the method to use to calculate the
-                            similarity between the curve of applied variance for a simulation and the corrsponding
+                            similarity between the inverted applied variance curve for a simulation and the corrsponding
+                            performance curve.
+
+                            pcm:          Partial Curve Mapping (Witowski2012)
+                            area_between: Area between the two curves (Jekel2018)
+                            frechet:      Frechet distance (Frechet1906)
+                            dtw:          Dynamic Time Warping (Berndt1994)
+                            curve_length: Arc-length distance along the curve from the origin of (applied - ideal)
+                                          curve (Andrade-campos2009).
+                            """,
+                            choices=["pcm", "area_between", "frechet", "dtw", "curve_length"],
+                            default="pcm")
+        stage4.add_argument("--adaptability-cs-method",
+                            help="""
+
+                            Adaptability calculatation curve similarity method. Specify the method to use to calculate
+                            the similarity between the inverted applied variance curve for a simulation and the corrsponding
                             performance curve.
 
                             pcm:          Partial Curve Mapping (Witowski2012)

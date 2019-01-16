@@ -114,7 +114,7 @@ def batch_criteria_xvals(cmdopts):
             densities.append(n_robots / (int(x) * int(y)))
         return densities
     elif "temporal_variance" in cmdopts["criteria_category"]:
-        return [vcs.compute_envc_cs(cmdopts, x, cmdopts["n_exp"] - 1) for x in range(0, cmdopts["n_exp"])]
+        return [vcs.EnvironmentalCS(cmdopts, x)() for x in range(0, cmdopts["n_exp"])]
 
 
 def batch_criteria_xlabel(cmdopts):

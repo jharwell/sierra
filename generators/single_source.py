@@ -41,6 +41,7 @@ class SSGenerator(ExpInputGenerator):
         self.controller = controller
 
     def generate(self, xml_luigi):
+
         arena_dim = self.sim_opts["arena_dim"]
         shape = ev.arena_shape.RectangularArenaTwoByOne(x_range=[arena_dim[0]],
                                                         y_range=[arena_dim[1]])

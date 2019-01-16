@@ -24,6 +24,7 @@ from perf_measures.scalability import InterExpScalability
 from perf_measures.self_organization import InterExpSelfOrganization
 from perf_measures.collection import InterExpBlockCollection
 from perf_measures.reactivity import InterExpReactivity
+from perf_measures.adaptability import InterExpAdaptability
 
 from graphs.ca_graphs import InterExpCAModelEnterGraph
 from pipeline.inter_exp_targets import Linegraphs
@@ -62,6 +63,9 @@ class InterExpGraphGenerator:
 
         if "all" == self.cmdopts["perf_measures"] or "sr" == self.cmdopts["perf_measures"]:
             InterExpReactivity(self.cmdopts).generate()
+
+        if "all" == self.cmdopts["perf_measures"] or "sa" == self.cmdopts["perf_measures"]:
+            InterExpAdaptability(self.cmdopts).generate()
 
             # InterExpCAModelEnterGraph(self.batch_output_root, self.batch_graph_root,
             #                           self.batch_generation_root).generate()

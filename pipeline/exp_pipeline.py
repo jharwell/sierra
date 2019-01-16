@@ -54,6 +54,7 @@ class ExpPipeline:
             "plot_applied_vc": self.args.plot_applied_vc,
             "perf_measures": self.args.perf_measures,
             "reactivity_cs_method": self.args.reactivity_cs_method,
+            "adaptability_cs_method": self.args.adaptability_cs_method,
             "exp_graphs": self.args.exp_graphs,
             "template_config_file": self.args.template_config_file,
             "time_setup": self.args.time_setup,
