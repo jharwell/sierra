@@ -37,12 +37,12 @@
                output_dir="__current_date__"
                />
         </output>
-        <occupancy_grid>
+        <perception>
           <grid resolution="0.2"
                 size="12, 6, 2"/>
           <pheromone rho="0.00001"
                      repeat_deposit="false"/>
-        </occupancy_grid>
+        </perception>
         <task_executive
             update_exec_ests="true"
             update_interface_ests="true"
@@ -118,9 +118,13 @@
                   />
         </block_selection_matrix>
         <cache_selection_matrix
-            cache_prox_dist="1.0"
+            cache_prox_dist="1.6"
+            nest_prox_dist="3.0"
             block_prox_dist="1.0"
-            nest_prox_dist="3.0"/>
+            cluster_prox_dist="1.0"
+            site_xrange="2:10"
+            site_yrange="2.5:3"
+            />
         <sensing
             los_dim="0.4">
           <proximity_sensor angle_range="-1.1:1.1"
@@ -208,13 +212,14 @@
       </metrics>
 
     </output>
-    <convergence>
+<convergence
+        n_threads="0">
       <positional_entropy
           enable="true"
           horizon="0:13.41"
           horizon_delta="1.34"/>
-      <interactivity enable="false"/>
-      <angular_order enable="false"/>
+      <interactivity enable="true"/>
+      <angular_order enable="true"/>
     </convergence>
     <oracle
         enabled="false"
@@ -261,17 +266,18 @@
             type="Null"
             frequency="100"
             amplitude="500"
-            offset="50"
+            offset="10"
             phase="0"/>
       </usage_penalty>
-      <dynamic enable="false"
+      <dynamic enable="true"
                min_dist="0.8"
-               min_blocks="2"/>
+               min_blocks="2"
+               robot_drop_only="true"/>
 
     </caches>
 
     <visualization robot_id="true"
-                   robot_los="false"
+                   robot_los="true"
                    robot_task="true"
                    block_id="false"
                    />

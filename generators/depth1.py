@@ -49,7 +49,7 @@ class GP_DPOGenerator(BaseGenerator):
         """
         Generates all changes to the input file for the simulation (does not save):
         """
-        xml_luigi = super().generate()
+        xml_luigi = super().init_sim_defs()
         xml_luigi.tag_change(".//controllers", "__template__", "gp_dpo_controller")
         return xml_luigi
 
@@ -66,7 +66,7 @@ class GP_MDPOGenerator(BaseGenerator):
         """
         Generates all changes to the input file for the simulation (does not save):
         """
-        xml_luigi = super().generate()
+        xml_luigi = super().generate_common_defs()
         xml_luigi.tag_change(".//controllers", "__template__", "gp_mdpo_controller")
         return xml_luigi
 
@@ -85,7 +85,7 @@ class OGP_DPOGenerator(BaseGenerator):
         """
         Generates all changes to the input file for the simulation (does not save):
         """
-        xml_luigi = super().generate()
+        xml_luigi = super().generate_common_defs()
         xml_luigi.tag_change(".//controllers", "__template__", "ogp_dpo_controller")
         xml_luigi.attribute_change(".//loop_functions/oracle", "enabled", "true")
         return xml_luigi
@@ -105,7 +105,7 @@ class OGP_MDPOGenerator(BaseGenerator):
         """
         Generates all changes to the input file for the simulation (does not save):
         """
-        xml_luigi = super().generate()
+        xml_luigi = super().generate_common_defs()
         xml_luigi.tag_change(".//controllers", "__template__", "ogp_mdpo_controller")
         xml_luigi.attribute_change(".//loop_functions/oracle", "enabled", "true")
         return xml_luigi

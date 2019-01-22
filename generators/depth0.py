@@ -31,7 +31,6 @@ class BaseGenerator(ExpInputGenerator):
         """
         Generates all changes to the input file for the simulation (does not save):
         """
-
         xml_luigi = super().generate_common_defs()
         xml_luigi.attribute_change(".//loop_functions", "label", "depth0_loop_functions")
         return xml_luigi
@@ -49,6 +48,7 @@ class CRWGenerator(BaseGenerator):
         """
         Generates all changes to the input file for the simulation (does not save).
         """
+
         xml_luigi = super().generate()
         xml_luigi.tag_change(".//controllers", "__template__", "crw_controller")
         return xml_luigi
@@ -83,6 +83,7 @@ class MDPOGenerator(BaseGenerator):
         """
         Generates all changes to the input file for the simulation (does not save).
         """
+
         xml_luigi = super().generate()
         xml_luigi.tag_change(".//controllers", "__template__", "mdpo_controller")
         return xml_luigi

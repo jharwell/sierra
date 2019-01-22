@@ -37,12 +37,12 @@
                output_dir="__current_date__"
                />
         </output>
-        <occupancy_grid>
+        <perception>
           <grid resolution="0.2"
                 size="12, 6, 2"/>
           <pheromone rho="0.00001"
                      repeat_deposit="false"/>
-        </occupancy_grid>
+        </perception>
         <task_executive
             update_exec_ests="true"
             update_interface_ests="true"
@@ -118,24 +118,20 @@
                   />
         </block_selection_matrix>
         <cache_selection_matrix
-            cache_prox_dist="1.0"
+            cache_prox_dist="1.6"
+            nest_prox_dist="3.0"
             block_prox_dist="1.0"
-            nest_prox_dist="3.0"/>
+            cluster_prox_dist="1.0"
+            site_xrange="2:10"
+            site_yrange="2.5:3"
+            />
         <sensing
             los_dim="0.4">
           <proximity_sensor angle_range="-1.1:1.1"
                             delta="0.0001" />
         </sensing>
         <actuation>
-          <block_carry_throttle>
-            <waveform
-                type="Null"
-                frequency="100"
-                amplitude="0.4"
-                offset="0.1"
-                phase="0"/>
-          </block_carry_throttle>
-          <steering2D>
+      	          <steering2D>
             <avoidance_force lookahead="0.5"
                              max="8"/>
             <arrival_force slowing_radius="0.2"
@@ -178,35 +174,33 @@
            output_dir="__current_date__"
            />
       <metrics
-        output_dir="metrics"
-        fsm_collision_fname="fsm-collision.csv"
-        fsm_movement_fname="fsm-movement.csv"
-        block_acquisition_fname="block-acquisition.csv"
-        block_transport_fname="block-transport.csv"
-        block_manipulation_fname="block-manipulation.csv"
-        cache_acquisition_fname="cache-acquisition.csv"
-        cache_utilization_fname="cache-utilization.csv"
-        cache_lifecycle_fname="cache-lifecycle.csv"
-        cache_locations_fname="cache-locations.csv"
-        task_execution_generalist_fname="task-execution-generalist.csv"
-        task_execution_collector_fname="task-execution-collector.csv"
-        task_execution_harvester_fname="task-execution-harvester.csv"
-        task_execution_cache_starter_fname="task-execution-cache_starter.csv"
-        task_execution_cache_finisher_fname="task-execution-cache_finisher.csv"
-        task_execution_cache_transferer_fname="task-execution-cache_transferer.csv"
-        task_execution_cache_collector_fname="task-execution-cache_collector.csv"
-        task_tab_generalist_fname="task-tab-generalist.csv"
-        task_tab_collector_fname="task-tab-collector.csv"
-        task_tab_harvester_fname="task-tab-harvester.csv"
-        task_distribution_fname="task-distribution.csv"
-        swarm_convergence_fname="swarm-convergence.csv"
-        perception_world_model_fname="perception-world-model.csv"
-        arena_robot_occupancy_fname="arena-robot-occupancy.csv"
-        loop_temporal_variance_fname="loop-temporal-variance.csv"
-        collect_interval="1000">
-
-      </metrics>
-
+          output_dir="metrics"
+          fsm_collision_fname="fsm-collision.csv"
+          fsm_movement_fname="fsm-movement.csv"
+          block_acquisition_fname="block-acquisition.csv"
+          block_transport_fname="block-transport.csv"
+          block_manipulation_fname="block-manipulation.csv"
+          cache_acquisition_fname="cache-acquisition.csv"
+          cache_utilization_fname="cache-utilization.csv"
+          cache_lifecycle_fname="cache-lifecycle.csv"
+          cache_locations_fname="cache-locations.csv"
+          task_execution_generalist_fname="task-execution-generalist.csv"
+          task_execution_collector_fname="task-execution-collector.csv"
+          task_execution_harvester_fname="task-execution-harvester.csv"
+          task_execution_cache_starter_fname="task-execution-cache_starter.csv"
+          task_execution_cache_finisher_fname="task-execution-cache_finisher.csv"
+          task_execution_cache_transferer_fname="task-execution-cache_transferer.csv"
+          task_execution_cache_collector_fname="task-execution-cache_collector.csv"
+          task_tab_generalist_fname="task-tab-generalist.csv"
+          task_tab_collector_fname="task-tab-collector.csv"
+          task_tab_harvester_fname="task-tab-harvester.csv"
+          task_distribution_fname="task-distribution.csv"
+          perception_world_model_fname="perception-world-model.csv"
+          arena_robot_occupancy_fname="arena-robot-occupancy.csv"
+          swarm_convergence_fname="swarm-convpergence.csv"
+          loop_temporal_variance_fname="loop-temporal-variance.csv"
+          collect_interval="1000">
+          </metrics>
     </output>
     <convergence
         n_threads="0">
@@ -222,18 +216,41 @@
         task_exec_est="false"
         task_interface_est="false"
         />
-    <arena_map>
-      <grid resolution="0.2"
-            size="12, 6, 2"/>
+    <temporal_variance>
       <blocks>
         <manipulation_penalty>
           <waveform
-              type="Null"
-              frequency="0.001"
+              type="Sine"
+              frequency="0.01"
               amplitude="50"
               offset="50"
               phase="0"/>
         </manipulation_penalty>
+        <carry_throttle>
+          <waveform
+              type="Null"
+              frequency="100"
+              amplitude="0.4"
+              offset="0.1"
+              phase="0"/>
+        </carry_throttle>
+      </blocks>
+      <caches>
+        <usage>
+          <waveform
+              type="Null"
+              frequency="100"
+              amplitude="500"
+              offset="10"
+              phase="0"/>
+        </usage>
+      </caches>
+    </temporal_variance>
+
+    <arena_map>
+      <grid resolution="0.2"
+            size="12, 6, 2"/>
+      <blocks>
         <distribution
             arena_resolution="0.2"
             dist_type="single_source">
@@ -243,7 +260,7 @@
               n_clusters="15"
               />
           <manifest
-              n_cube="20"
+              n_cube="10"
               n_ramp="0"
               unit_dim="0.2"
               />
@@ -251,28 +268,18 @@
       </blocks>
       <nest size="1.0, 4.0" center="2, 3" />
     </arena_map>
-    <caches
-        dimension="0.8">
+    <caches dimension="0.8">
       <static enable="true"
               size="2"
-              respawn_scale_factor="0.05">
-      </static>
-      <usage_penalty>
-        <waveform
-            type="Null"
-            frequency="100"
-            amplitude="500"
-            offset="50"
-            phase="0"/>
-      </usage_penalty>
-      <dynamic enable="false"
+              respawn_scale_factor="0.05"/>
+      <dynamic enable="true"
                min_dist="0.8"
-               min_blocks="2"/>
-
+               min_blocks="2"
+               robot_drop_only="true"/>
     </caches>
 
     <visualization robot_id="true"
-                   robot_los="false"
+                   robot_los="true"
                    robot_task="true"
                    block_id="false"
                    />

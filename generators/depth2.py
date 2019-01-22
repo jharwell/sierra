@@ -32,7 +32,7 @@ class BaseGenerator(ExpInputGenerator):
         """
         Generates all changes to the input file for the simulation (does not save):
         """
-        xml_luigi = super().generate()
+        xml_luigi = super().generate_common_defs()
         xml_luigi.attribute_change(".//loop_functions", "label", "depth2_loop_functions")
         return xml_luigi
 
