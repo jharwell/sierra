@@ -71,6 +71,12 @@ intra_scenario_measures = [
         'title': 'Swarm Reactivity',
         'ylabel': ''
     },
+    {
+        'src_stem': 'pm-adaptability',
+        'dest_stem': 'cc-pm-adaptability',
+        'title': 'Swarm Adaptability',
+        'ylabel': ''
+    },
 ]
 
 inter_scenario_measures = [
@@ -94,6 +100,17 @@ inter_scenario_measures = [
         'dest_stem': 'sc-pm-blocks-collected',
         'title': 'Weight Unified Blocks Collected',
     },
+    {
+        'src_stem': 'pm-adaptability',
+        'dest_stem': 'sc-pm-adaptability',
+        'title': 'Weight Unified Adaptability',
+    },
+    {
+        'src_stem': 'pm-reactivity',
+        'dest_stem': 'sc-pm-reactivity',
+        'title': 'Weight Unified Reactivity',
+    },
+
 
 ]
 
@@ -113,7 +130,7 @@ class ControllerComp:
         self.sc_csv_root = os.path.join(self.cmdopts['sierra_root'], "sc-csvs")
 
     def generate(self):
-        self.generate_intra_scenario_graphs()
+        # self.generate_intra_scenario_graphs()
         self.generate_inter_scenario_graphs()
 
     def generate_inter_scenario_graphs(self):
@@ -157,6 +174,7 @@ class ControllerComp:
                                          src_stem + ".csv")
                 df.loc[s, c] = pm_utils.WeightUnifiedEstimate(input_csv_fpath=csv_ipath,
                                                               swarm_sizes=swarm_sizes).calc()
+
         csv_opath = os.path.join(self.sc_csv_root, 'sc-' +
                                  src_stem + "-wue.csv")
         df.to_csv(csv_opath, sep=';', index=False)

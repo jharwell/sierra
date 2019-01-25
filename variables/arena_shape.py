@@ -61,7 +61,7 @@ class RectangularArena(BaseVariable):
                       "position", "0, {0}, 0".format(s[1] / 2.0)),
 
                      (".//arena_map/grid", "size", "{0}, {1}, 2".format(s[0], s[1])),
-                     (".//occupancy_grid/grid", "size", "{0}, {1}, 2".format(s[0], s[1])),
+                     (".//perception/grid", "size", "{0}, {1}, 2".format(s[0], s[1])),
                      (".//convergence/positional_entropy",
                       "horizon",
                       "0:{0}".format(math.sqrt(s[0] ** 2 + s[1] ** 2))),

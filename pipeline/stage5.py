@@ -51,7 +51,7 @@ class PipelineStage5:
         # Verify that all controllers have run the same set of experiments before doing the
         # comparison
         if self.targets is None:
-            self.targets = ['depth0.CRW', 'depth0.Stateful', 'depth1.GreedyPartitioning']
+            self.targets = ['depth0.CRW', 'depth0.DPO', 'depth1.GP_DPO']
         else:
             self.targets = self.targets.split(',')
         print("- Stage5: Comparing controllers {0}...".format(self.targets))

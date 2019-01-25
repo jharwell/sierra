@@ -36,11 +36,11 @@ kBCAmpDelta = 0.1
 kMaxBCAmp = 0.5
 
 # kHZ = [x for x in range(kMinHz, kMaxHz + kHzDelta, kHzDelta)]
-kHZ = [4000, 8000, 16000, 32000]
+kHZ = [0, 4000, 8000, 16000, 32000]
 # kBMAmps = [x for x in range(kMinBMAmp, kMaxBMAmp + kBMAmpDelta, kBMAmpDelta)]
-kBMAmps = [100, 200, 400, 800]
+kBMAmps = [10, 100, 200, 400, 800]
 # kBCAmps = [kMinBCAmp + x * kBCAmpDelta for x in range(0, int(kMaxBCAmp / kMinBCAmp))]
-kBCAmps = [0.1, 0.2, 0.4, 0.8]
+kBCAmps = [0, 0.1, 0.2, 0.4, 0.8]
 
 
 class TemporalVariance(BaseVariable):
@@ -92,28 +92,38 @@ def Factory(criteria_str):
         elif "BM" in criteria_str:
             amps = kBMAmps
 
+        # All variances need to have baseline/ideal conditions for comparison, which is a small
+        # constant penalty
+        variances = [(attr["xml_parent_path"],
+                      "Constant",
+                      0,
+                      amps[0],
+                      0,
+                      0)]
+
         if any(v == attr["waveform_type"] for v in ["Sine", "Square", "Sawtooth"]):
-            return [(attr["xml_parent_path"],
-                     attr["waveform_type"],
-                     1.0 / hz,
-                     amp,
-                     amp,
-                     0) for hz in kHZ for amp in amps]
+            variances.extend([(attr["xml_parent_path"],
+                               attr["waveform_type"],
+                               1.0 / hz,
+                               amp,
+                               amp,
+                               0) for hz in kHZ for amp in amps[1:]])
         elif "StepD" == attr["waveform_type"]:
-            return [(attr["xml_parent_path"],
-                     "Square",
-                     1 / (2 * attr["waveform_param"]),
-                     amp,
-                     0,
-                     0) for amp in amps]
+            variances.extend([(attr["xml_parent_path"],
+                               "Square",
+                               1 / (2 * attr["waveform_param"]),
+                               amp,
+                               0,
+                               0) for amp in amps[1:]])
 
         if "StepU" == attr["waveform_type"]:
-            return [(attr["xml_parent_path"],
-                     "Square",
-                     1 / (2 * attr["waveform_param"]),
-                     amp,
-                     amp,
-                     math.pi) for amp in amps]
+            variances.extend([(attr["xml_parent_path"],
+                               "Square",
+                               1 / (2 * attr["waveform_param"]),
+                               amp,
+                               amp,
+                               math.pi) for amp in amps[1:]])
+        return variances
 
     def __init__(self):
         TemporalVariance.__init__(self, gen_variances(criteria_str), attr["swarm_size"])

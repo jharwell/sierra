@@ -136,7 +136,7 @@ class Cmdline:
                             Specified as a space-separated list after the option.
                             """,
                             type=int,
-                            nargs='?',
+                            nargs='*',
                             default=[1, 2, 3, 4]
                             )
         stage1 = parser.add_argument_group('stage1 (Generating experimental inputs)')
@@ -248,7 +248,6 @@ class Cmdline:
                             """,
                             default='all')
         stage4.add_argument("--perf-measures",
-                            choices=["sc", "so", "sp", "sr", "sa", "all"],
                             help="""
 
                             Specify which performance measure graphs should be generated. Only active if
@@ -265,6 +264,7 @@ class Cmdline:
                             all: Generate all inter-experiment graphs.
 
                             """,
+                            nargs='*',
                             default="all")
         stage4.add_argument("--plot-applied-vc",
                             help="""

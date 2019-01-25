@@ -52,7 +52,7 @@ class ExpPipeline:
             "envc_cs_method": self.args.envc_cs_method,
             "with_hists": self.args.with_hists,
             "plot_applied_vc": self.args.plot_applied_vc,
-            "perf_measures": self.args.perf_measures,
+            "perf_measures": self.args.perf_measures[0].split(','),
             "reactivity_cs_method": self.args.reactivity_cs_method,
             "adaptability_cs_method": self.args.adaptability_cs_method,
             "exp_graphs": self.args.exp_graphs,

@@ -47,24 +47,24 @@ class InterExpGraphGenerator:
         os.makedirs(self.cmdopts["graph_root"], exist_ok=True)
 
     def __call__(self):
-        if "all" == self.cmdopts["perf_measures"]:
+        if "all" in self.cmdopts["perf_measures"]:
             InterExpLinegraphs(self.cmdopts["collate_root"],
                                self.cmdopts["graph_root"],
                                Linegraphs.targets('depth2' in self.cmdopts["generator"])).generate()
 
-        if "all" == self.cmdopts["perf_measures"] or "sp" == self.cmdopts["perf_measures"]:
+        if "all" in self.cmdopts["perf_measures"] or "sp" in self.cmdopts["perf_measures"]:
             InterExpBlockCollection(self.cmdopts).generate()
 
-        if "all" == self.cmdopts["perf_measures"] or "sc" == self.cmdopts["perf_measures"]:
+        if "all" in self.cmdopts["perf_measures"] or "sc" in self.cmdopts["perf_measures"]:
             InterExpScalability(self.cmdopts).generate()
 
-        if "all" == self.cmdopts["perf_measures"] or "so" == self.cmdopts["perf_measures"]:
+        if "all" in self.cmdopts["perf_measures"] or "so" in self.cmdopts["perf_measures"]:
             InterExpSelfOrganization(self.cmdopts).generate()
 
-        if "all" == self.cmdopts["perf_measures"] or "sr" == self.cmdopts["perf_measures"]:
+        if "all" in self.cmdopts["perf_measures"] or "sr" in self.cmdopts["perf_measures"]:
             InterExpReactivity(self.cmdopts).generate()
 
-        if "all" == self.cmdopts["perf_measures"] or "sa" == self.cmdopts["perf_measures"]:
+        if "all" in self.cmdopts["perf_measures"] or "sa" in self.cmdopts["perf_measures"]:
             InterExpAdaptability(self.cmdopts).generate()
 
             # InterExpCAModelEnterGraph(self.batch_output_root, self.batch_graph_root,

@@ -54,13 +54,13 @@ class TemporalVarianceParser():
         ret["variance_type"] = t
 
         if "BC" == t:
-            ret["xml_parent_path"] = ".//actuation/block_carry_throttle"
+            ret["xml_parent_path"] = ".//temporal_variance/blocks/carry_throttle"
             ret["variance_csv_col"] = "swarm_motion_throttle"
         elif "BM" == t:
-            ret["xml_parent_path"] = ".//arena_map/blocks/manipulation_penalty"
+            ret["xml_parent_path"] = ".//temporal_variance/blocks/manipulation_penalty"
             ret["variance_csv_col"] = "env_block_manip"
         elif "CU" == t:
-            ret["xml_parent_path"] = ".//arena_map/caches/static/usage_penalty"
+            ret["xml_parent_path"] = ".//temporal_variance/caches/usage_penalty"
             ret["variance_csv_col"] = "env_cache_usage"
         return ret
 

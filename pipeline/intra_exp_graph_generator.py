@@ -51,8 +51,7 @@ class IntraExpGraphGenerator:
             keys = Linegraphs.depth0_keys()
 
         targets = Linegraphs.filtered_targets(keys)
-        if self.cmdopts["plot_applied_vc"]:
-            self._add_temporal_variances(targets)
+        self._add_temporal_variances(targets)
 
         IntraExpLinegraphs(self.cmdopts["output_root"],
                            self.cmdopts["graph_root"],
@@ -73,7 +72,6 @@ class IntraExpGraphGenerator:
         var_df = pd.read_csv(os.path.join(self.cmdopts["output_root"],
                                           IntraExpLinegraphs.kTemporalVarCSV),
                              sep=';')
-
         for graph_set in targets.values():
             for graph in graph_set:
 
@@ -114,12 +112,14 @@ class IntraExpGraphGenerator:
             # Scale the applied variance to within the interval [0, max] for the generated
             # graph. The lower bound is always 0 for the fordyca project, so I rely on that
             # here.
-            var = var_df[col][target_df['clock'] - 1].values
+            var = var_df[col].reindex(index=target_df['clock'] - 1).values
+
             var = m * (var - var.min()) / (var.max() - var.min())
 
             # Only include variance if it is non-zero for at least some of the time, and is an
             # actual # (can be NaN if it is a type of variance we want to include on plots in
             # general, but that is not enabled for the current experiment)
+
             if not np.any(var) or any(np.isnan(var)):
                 continue
 

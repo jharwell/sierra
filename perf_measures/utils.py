@@ -286,6 +286,8 @@ class WeightUnifiedEstimate:
         1
     -------------  * SUM(scalability experiment i * log(swarm size for experiment i))
     # experiments
+
+    Assumes that the swarm sizes are a power of 2.
     """
 
     def __init__(self, input_csv_fpath, swarm_sizes):
