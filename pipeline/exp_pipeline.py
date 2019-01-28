@@ -59,7 +59,7 @@ class ExpPipeline:
             "template_config_file": self.args.template_config_file,
             "time_setup": self.args.time_setup,
             "batch_exp_num": self.args.batch_exp_num,
-            "no_msi": self.args.no_msi
+            "exec_method": self.args.exec_method
         }
         if self.args.batch_criteria is None:
             self.cmdopts['criteria_category'] = None

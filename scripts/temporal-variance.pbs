@@ -19,16 +19,16 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 
 cd $HOME/git/sierra
 NSIMS=4
-WAVEFORMS=(StepU StepD Sine)
-SWARM_SIZES=(16 32 64 128 256)
+WAVEFORMS=(StepU)
+SWARM_SIZES=(256)
 OUTPUT_ROOT=$HOME/exp/variance
 BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \
                   --template-config-file=$HOME/git/sierra/templates/temporal-variance.argos \
                   --n-sims=$NSIMS\
-                  --n-physics-engines=4\
-                  --n-threads=4\
-                  --no-msi\
+                  --n-physics-engines=16\
+                  --n-threads=16\
+                  --exec-method=local.serial\
                   --time-setup=time_setup.T10000 \
                   --plot-applied-vc\
                   --envc-cs-method=dtw\
@@ -48,34 +48,34 @@ do
     done
 done
 
-# DPO (does not change # blocks/block manifest from template)
-for w in "${WAVEFORMS[@]}"
-do
-    for s in "${SWARM_SIZES[@]}"
-    do
-        $BASE_CMD --generator=depth0.DPO.SS24x12 \
-                  --batch-criteria=temporal_variance.BC${w}25000Z${s}
+# # DPO (does not change # blocks/block manifest from template)
+# for w in "${WAVEFORMS[@]}"
+# do
+#     for s in "${SWARM_SIZES[@]}"
+#     do
+#         $BASE_CMD --generator=depth0.DPO.SS24x12 \
+#                   --batch-criteria=temporal_variance.BC${w}25000Z${s}
 
-        $BASE_CMD --generator=depth0.DPO.SS24x12 \
-                  --batch-criteria=temporal_variance.BM${w}25000Z${s}
-    done
-done
+#         $BASE_CMD --generator=depth0.DPO.SS24x12 \
+#                   --batch-criteria=temporal_variance.BM${w}25000Z${s}
+#     done
+# done
 
-# GP_DPO (does not change # blocks/block manifest from template)
-for w in "${WAVEFORMS[@]}"
-do
-    for s in "${SWARM_SIZES[@]}"
-    do
-        $BASE_CMD --generator=depth1.GP_DPO.SS24x12 \
-                  --batch-criteria=temporal_variance.BC${w}25000Z${s}
+# # GP_DPO (does not change # blocks/block manifest from template)
+# for w in "${WAVEFORMS[@]}"
+# do
+#     for s in "${SWARM_SIZES[@]}"
+#     do
+#         $BASE_CMD --generator=depth1.GP_DPO.SS24x12 \
+#                   --batch-criteria=temporal_variance.BC${w}25000Z${s}
 
-        $BASE_CMD --generator=depth1.GP_DPO.SS24x12 \
-                  --batch-criteria=temporal_variance.BM${w}25000Z${s}
-    done
-done
+#         $BASE_CMD --generator=depth1.GP_DPO.SS24x12 \
+#                   --batch-criteria=temporal_variance.BM${w}25000Z${s}
+#     done
+# done
 
-# Generate comparison graphs (a valid batch criteria still needed to
-# correctly generate graph labels)
-$BASE_CMD --generator=depth1.GP_DPO.SS24x12 \
-          --batch-criteria=temporal_variance.BCStepU25000Z16 \
-          --pipeline 5
+# # Generate comparison graphs (a valid batch criteria still needed to
+# # correctly generate graph labels)
+# $BASE_CMD --generator=depth1.GP_DPO.SS24x12 \
+#           --batch-criteria=temporal_variance.BCStepU25000Z16 \
+#           --pipeline 5

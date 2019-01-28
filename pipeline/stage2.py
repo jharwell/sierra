@@ -39,4 +39,4 @@ class PipelineStage2:
         else:
             runner = ExpRunner(self.cmdopts['generation_root'], False)
 
-        runner.run(no_msi=self.cmdopts['no_msi'])
+        runner.run(exec_method=self.cmdopts['exec_method'])

@@ -39,7 +39,7 @@ class ExpRunner:
         self.exp_generation_root = os.path.abspath(exp_generation_root)
         self.batch = batch
 
-    def run(self, no_msi=False):
+    def run(self, exec_method):
         '''Runs the experiment.'''
         assert os.environ.get(
             "ARGOS_PLUGIN_PATH") is not None, ("ERROR: You must have ARGOS_PLUGIN_PATH defined")
@@ -52,7 +52,7 @@ class ExpRunner:
         start = time.time()
         try:
             # so that it can be run on non-supercomputers
-            if no_msi:
+            if 'local.parallel' == exec_method:
                 p = subprocess.Popen('cd {0} && parallel --joblog /tmp/foo --no-notice < "{1}"'.format(self.exp_generation_root,
                                                                                                        self.exp_generation_root + "/commands.txt"),
                                      shell=True,
@@ -61,7 +61,16 @@ class ExpRunner:
                 if p.returncode != 0:
                     print(stdout, stderr)
                     print("ERROR: Process exited with {0}".format(p.returncode))
-            else:
+            elif 'local.serial' == exec_method:
+                p = subprocess.Popen('cd {0} && parallel --jobs 1 --joblog /tmp/foo --no-notice < "{1}"'.format(self.exp_generation_root,
+                                                                                                                self.exp_generation_root + "/commands.txt"),
+                                     shell=True,
+                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                stdout, stderr = p.communicate()
+                if p.returncode != 0:
+                    print(stdout, stderr)
+                    print("ERROR: Process exited with {0}".format(p.returncode))
+            elif 'hpc.parallel' == exec_method:
                 # running on a supercomputer - specifically MSI
                 subprocess.run('sort -u $PBS_NODEFILE > unique-nodelist.txt && \
                                 parallel --jobs 1 --sshloginfile unique-nodelist.txt --workdir $PWD < "{}"'.format(self.exp_generation_root + '/commands.txt'),

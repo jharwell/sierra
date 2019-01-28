@@ -214,13 +214,24 @@ class Cmdline:
                             default="none")
 
         stage2 = parser.add_argument_group('stage2 (Running experiments)')
-        stage2.add_argument("--no-msi",
+        stage2.add_argument("--exec-method",
                             help="""
 
-                            Include if running on a personal computer (otherwise runs supercomputer commands).
+                            Specify the execution method to use when running experiments.
+
+                            local.parallel: Run the specified # simulations for each experiment simultaneously on the
+                                            local machine using GNU parallel.
+
+                            local.serial: Run the specified # of simulations for each experiment serially on the local
+                                          machine. Useful for large swarms when the full resources of the local machine
+                                          are needed to run simulations at a reasonable rate of speed.
+
+                            hpc.parallel: Use GNU parallel in an HPC environment to run the specified # of simulations
+                                          simultaneously on a computing cluster.
 
                             """,
-                            action="store_true")
+                            choices=["local.parallel", "local.serial", "hpc.parallel"],
+                            default="local.parallel")
         stage2.add_argument("--batch-exp-num",
                             help="""
 
