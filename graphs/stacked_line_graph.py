@@ -50,7 +50,6 @@ class StackedLineGraph:
     def generate(self):
         if not os.path.exists(self.input_csv_fpath):
             return
-
         df = pd.read_csv(self.input_csv_fpath, sep=';')
         if not os.path.exists(self.input_stats_fpath):
             df2 = None

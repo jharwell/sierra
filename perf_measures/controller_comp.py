@@ -130,7 +130,7 @@ class ControllerComp:
         self.sc_csv_root = os.path.join(self.cmdopts['sierra_root'], "sc-csvs")
 
     def generate(self):
-        # self.generate_intra_scenario_graphs()
+        self.generate_intra_scenario_graphs()
         self.generate_inter_scenario_graphs()
 
     def generate_inter_scenario_graphs(self):
@@ -206,6 +206,9 @@ class ControllerComp:
         # of batch experiments
         scenarios = os.listdir(os.path.join(self.cmdopts['sierra_root'], self.controllers[0]))
 
+        # Different scenarios can have different #s of experiments within them, so we need to track
+        # accordingly
+        exp_counts = {}
         for s in scenarios:
             df = pd.DataFrame()
             for c in self.controllers:
@@ -219,19 +222,27 @@ class ControllerComp:
                 csv_opath = os.path.join(self.cc_csv_root, 'cc-' +
                                          src_stem + "-" + s + ".csv")
                 df.to_csv(csv_opath, sep=';', index=False)
+                exp_counts[s] = len(df.columns)
 
         for s in scenarios:
             csv_opath = os.path.join(self.cc_csv_root, 'cc-' +
                                      src_stem + "-" + s + ".csv")
 
-            # All exp have same # experiments, so we can do this safely.
+            # All scenarios are NOT guaranteed to have the same # of experiments, so we need to
+            # overwrite key elements of the cmdopts in order to ensure proper processing
+            cmdopts = copy.deepcopy(self.cmdopts)
             batch_generation_root = os.path.join(self.cmdopts['sierra_root'],
                                                  self.controllers[0],
                                                  s,
                                                  "exp-inputs")
-            cmdopts = copy.deepcopy(self.cmdopts)
+            batch_output_root = os.path.join(self.cmdopts['sierra_root'],
+                                             self.controllers[0],
+                                             s,
+                                             "exp-outputs")
             cmdopts['generation_root'] = batch_generation_root
-            cmdopts['n_exp'] = len(df.columns)
+            cmdopts["n_exp"] = exp_counts[s]
+            cmdopts['output_root'] = batch_output_root
+
             BatchRangedGraph(inputy_fpath=csv_opath,
                              output_fpath=os.path.join(self.cc_graph_root,
                                                        dest_stem) + '-' + s + ".png",

@@ -36,7 +36,7 @@ kBCAmpDelta = 0.1
 kMaxBCAmp = 0.5
 
 # kHZ = [x for x in range(kMinHz, kMaxHz + kHzDelta, kHzDelta)]
-kHZ = [0, 4000, 8000, 16000, 32000]
+kHZ = [0, 8000, 16000, 32000]
 # kBMAmps = [x for x in range(kMinBMAmp, kMaxBMAmp + kBMAmpDelta, kBMAmpDelta)]
 kBMAmps = [10, 100, 200, 400, 800]
 # kBCAmps = [kMinBCAmp + x * kBCAmpDelta for x in range(0, int(kMaxBCAmp / kMinBCAmp))]
@@ -96,7 +96,7 @@ def Factory(criteria_str):
         # constant penalty
         variances = [(attr["xml_parent_path"],
                       "Constant",
-                      0,
+                      kHZ[0],
                       amps[0],
                       0,
                       0)]
@@ -107,7 +107,7 @@ def Factory(criteria_str):
                                1.0 / hz,
                                amp,
                                amp,
-                               0) for hz in kHZ for amp in amps[1:]])
+                               0) for hz in kHZ[1:] for amp in amps[1:]])
         elif "StepD" == attr["waveform_type"]:
             variances.extend([(attr["xml_parent_path"],
                                "Square",

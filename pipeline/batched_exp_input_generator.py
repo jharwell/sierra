@@ -80,6 +80,11 @@ class BatchedExpInputGenerator:
         xml_luigi = XMLLuigi(self.batch_config_template)
         exp_num = 0
 
+        # Apply changes generated from batch criteria to the template input file, and generate the
+        # set of input files for experiment; each file then becomes the "templae" config file for
+        # generating controller/scenario changes.
+        #
+        # Also write changes to pickle file for later retrieval.
         for exp_def in self.batch_criteria:
             exp_generation_root = "{0}/exp{1}".format(self.batch_generation_root, exp_num)
             os.makedirs(exp_generation_root, exist_ok=True)
@@ -89,7 +94,6 @@ class BatchedExpInputGenerator:
             xml_luigi.output_filepath = exp_generation_root + "/" + self.batch_config_leaf
             xml_luigi.write()
 
-            # Write criteria to file for later retrieval
             with open(os.path.join(exp_generation_root, 'exp_def.pkl'), 'ab') as f:
                 pickle.dump(exp_def, f)
             exp_num += 1

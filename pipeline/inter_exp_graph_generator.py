@@ -19,6 +19,7 @@ Copyright 2018 John Harwell, All rights reserved.
 
 import os
 import copy
+import collections
 from pipeline.inter_exp_linegraphs import InterExpLinegraphs
 from perf_measures.scalability import InterExpScalability
 from perf_measures.self_organization import InterExpSelfOrganization
@@ -47,24 +48,29 @@ class InterExpGraphGenerator:
         os.makedirs(self.cmdopts["graph_root"], exist_ok=True)
 
     def __call__(self):
-        if "all" in self.cmdopts["perf_measures"]:
+        if isinstance(self.cmdopts['perf_measures'], list):
+            components = self.cmdopts['perf_measures'][0].split(',')
+        else:
+            components = self.cmdopts['perf_measures']
+
+        if "all" in components:
             InterExpLinegraphs(self.cmdopts["collate_root"],
                                self.cmdopts["graph_root"],
                                Linegraphs.targets('depth2' in self.cmdopts["generator"])).generate()
 
-        if "all" in self.cmdopts["perf_measures"] or "sp" in self.cmdopts["perf_measures"]:
+        if "all" in components or "sp" in components:
             InterExpBlockCollection(self.cmdopts).generate()
 
-        if "all" in self.cmdopts["perf_measures"] or "sc" in self.cmdopts["perf_measures"]:
+        if "all" in components or "sc" in components:
             InterExpScalability(self.cmdopts).generate()
 
-        if "all" in self.cmdopts["perf_measures"] or "so" in self.cmdopts["perf_measures"]:
+        if "all" in components or "so" in components:
             InterExpSelfOrganization(self.cmdopts).generate()
 
-        if "all" in self.cmdopts["perf_measures"] or "sr" in self.cmdopts["perf_measures"]:
+        if "all" in components or "sr" in components:
             InterExpReactivity(self.cmdopts).generate()
 
-        if "all" in self.cmdopts["perf_measures"] or "sa" in self.cmdopts["perf_measures"]:
+        if "all" in components or "sa" in components:
             InterExpAdaptability(self.cmdopts).generate()
 
             # InterExpCAModelEnterGraph(self.batch_output_root, self.batch_graph_root,

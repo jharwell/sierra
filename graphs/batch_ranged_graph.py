@@ -47,13 +47,18 @@ class BatchRangedGraph:
       xlabel(str): X-label for graph.
       ylabel(str): Y-label for graph.
       legend(str): Legend for graph. If None, no legend is shown.
-      polynomial_fit(it): The degree of the polynomial to use for interpolating each row in the
-                          input .csv (the resulting trendline is then plotted). -1 disables
-                          interpolation and plotting.
+      polynomial_fit(int): The degree of the polynomial to use for interpolating each row in the
+                           input .csv (the resulting trendline is then plotted). -1 disables
+                           interpolation and plotting.
+      corr(dict): Dictionary of correlation information to include on the plot. Really only useful
+                  for single-line plots. Valid keys:
+
+                  coeff -> (float) The calculated r^2 value
 
     """
 
-    def __init__(self, inputy_fpath, output_fpath, title, xlabel, ylabel, legend, xvals, polynomial_fit):
+    def __init__(self, inputy_fpath, output_fpath, title, xlabel, ylabel, legend, xvals,
+                 polynomial_fit, corr={}):
 
         self.inputy_csv_fpath = os.path.abspath(inputy_fpath)
         self.output_fpath = os.path.abspath(output_fpath)
@@ -63,6 +68,7 @@ class BatchRangedGraph:
         self.legend = legend
         self.xvals = xvals
         self.polynomial_fit = polynomial_fit
+        self.corr = corr
 
     def generate(self):
         if not os.path.exists(self.inputy_csv_fpath):
@@ -74,6 +80,7 @@ class BatchRangedGraph:
         mark_styles = ['o', '^', 's', 'x']
         colors = ['tab:blue', 'tab:green', 'tab:red', 'tab:brown']
         i = 0
+
         assert len(dfy.values) < kMaxRows, "FATAL: Too many rows {0} >= {1}".format(len(dfy.values),
                                                                                     kMaxRows)
         for i in range(0, len(dfy.values)):
@@ -87,6 +94,9 @@ class BatchRangedGraph:
                 x_new = np.linspace(self.xvals[0], self.xvals[-1], 50)
                 y_new = ffit(x_new)
                 plt.plot(x_new, y_new, line_styles[i])
+
+        if 'coeff' in self.corr:
+            plt.annotate('$R^2 = {:.4f}'.format(self.corr['coeff']))
 
         if self.legend is not None:
             plt.legend(self.legend, fontsize=14, ncol=max(1, int(len(self.legend) / 3.0)))

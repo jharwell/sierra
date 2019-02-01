@@ -233,10 +233,10 @@ class ExpInputGenerator:
         # Setup simulation logging/output
         self._generate_output_defs(xml_luigi, exp_num)
 
-        # All done!
         save_path = os.path.join(self.generation_root, new_config_name)
         xml_luigi.output_filepath = save_path
         open(save_path, 'w').close()  # create an empty file
+
         # save the config file to the correct place
         xml_luigi.write()
 

@@ -346,7 +346,7 @@ class Cmdline:
         stage5.add_argument("--comp-controllers",
                             help="""
 
-                            Comma separated list of bcontrollers to compare within <sierra root>. Specify 'all' to compare all
+                            Comma separated list of controllers to compare within <sierra root>. Specify 'all' to compare all
                             controllers in <sierra root>.
 
                             """,
