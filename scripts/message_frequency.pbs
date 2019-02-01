@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#PBS -l walltime=12:00:00,nodes=50:ppn=8,pmem=1000mb
+#PBS -l walltime=4:00:00,nodes=50:ppn=8,pmem=1000mb
 #PBS -m abe
 #PBS -M whit2267@umn.edu
 
@@ -18,31 +18,19 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 --env ARGOS_PLUGIN_PATH"
 
 cd $HOME/git/sierra
-NSIMS=100
-SENDING=(sLow, sMid, sHigh)
-RECEIVING=(rLow, rMid, rHigh)
-OUTPUT_ROOT=$HOME/exp/variance
+NSIMS=50
+OUTPUT_ROOT=$HOME/exp/communication
 BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \
                   --template-config-file=$HOME/git/sierra/templates/communication.argos \
                   --n-sims=$NSIMS \
-                  --n-physics-engines=16 \
-                  --n-threads=16\
-                  --exec-method=local.serial \
+                  --n-physics-engines=4 \
+                  --n-threads=4\
+                  --exec-method=hpc.parallel \
                   --time-setup=time_setup.T10000 \
-                  --plot-applied-vc \
-                  --envc-cs-method=dtw \
-                  --reactivity-cs-method=dtw \
-                  --adaptability-cs-method=dtw \
-                   --with-robot-rab \
-                   --with-robot-leds \
-                   --with-robot-battery"
+                  --with-robot-rab \
+                  --with-robot-battery \
+                  --generator=depth0.MDPO.SS24x12 \
+                  --batch-criteria=message_frequency.all"
 
-for s in "${SENDING[@]}"
-do
-    for r in "${RECEVING[@]}"
-    do
-        $BASE_CMD --generator=depth0.MDPO.SS24x12 \
-                  --batch-criteria=message_frequency.${s}${r}
-    done
-done
+$BASE_CMD

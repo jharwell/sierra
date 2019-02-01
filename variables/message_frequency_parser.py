@@ -50,6 +50,12 @@ class MessageFrequencyParser():
         """
         ret = {}
 
+        some_index = criteria_str.find("all")
+        if -1 != some_index:
+            ret["sending_type"] = "all"
+            ret["receiving_type"] = "all"
+            return ret
+
         for s in ["sLow", "sMid", "sHigh"]:
             index = criteria_str.find(s)
             if -1 != index:

@@ -38,8 +38,8 @@ class MessageFrequency(BaseVariable):
         Generate list of sets of changes necessary to make to the input file to correctly set up the
         simulation for the specified communication paramaters.
         """
-        return [set([(".//params/communication", "chance_to_send_communication", str(m[0])),
-                     (".//params/communication", "chance_to_recieve_communication", str(m[1]))]) for m in self.message_prob]
+        return [set([(".//params/communication", "prob_send", str(m[0])),
+                     (".//params/communication", "prob_receive", str(m[1]))]) for m in self.message_prob]
 
     def gen_tag_rmlist(self):
         return []
@@ -54,34 +54,27 @@ def Factory(criteria_str):
     attr = MessageFrequencyParser().parse(criteria_str.split(".")[1])
 
     def gen_variances(criteria_str):
-        x_start = 0
-        x_end = 0
-        y_start = 0
-        y_end = 0
-
-        if "sLow" == attr["sending_type"]:
-            x_start = 20
-            x_end = 45
-        elif "sMid" == attr["sending_type"]:
-            x_start = 50
-            x_end = 75
-        elif "sHigh" == attr["sending_type"]:
-            x_start = 80
-            x_end = 105
+        x = 0
+        prob_receive = 0
 
         if "rLow" == attr["receiving_type"]:
-            y_start = 20
-            y_end = 45
+            prob_receive = .30
         elif "rMid" == attr["receiving_type"]:
-            y_start = 50
-            y_end = 75
+            prob_receive = .60
         elif "rHigh" == attr["receiving_type"]:
-            y_start = 80
-            y_end = 105
+            prob_receive = .90
+        elif "all" == attr["receiving_type"]:
+            prob_receive = -1
+
         lst = []
-        for x in range(x_start, x_end, 5):
-            for y in range(y_start, y_end, 5):
-                lst.append((x*0.01,y*0.01))
+        if prob_receive != -1:
+            lst = [(0.6,prob_receive)]
+        else:
+            for y in range(30,100, 30):
+                #for y in range(30, 100, 30):
+                    #lst.append((x*0.01, y*0.01))
+                # 0.6 is selected for prob_send
+                lst.append((0.6, y*0.01))
         return lst
 
 
