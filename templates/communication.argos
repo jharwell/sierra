@@ -18,7 +18,7 @@
   <controllers>
 
     <__template__ id="ffc"
-                                library="libfordyca">
+                               library="libfordyca">
       <actuators>
         <differential_steering implementation="default" />
         <leds implementation="default" medium="leds" />
@@ -131,7 +131,15 @@
                             delta="0.0001" />
         </sensing>
         <actuation>
-      	          <steering2D>
+          <block_carry_throttle>
+            <waveform
+                type="Null"
+                frequency="100"
+                amplitude="0.4"
+                offset="0.1"
+                phase="0"/>
+          </block_carry_throttle>
+          <steering2D>
             <avoidance_force lookahead="0.5"
                              max="8"/>
             <arrival_force slowing_radius="0.2"
@@ -150,7 +158,12 @@
           <differential_drive soft_turn_max="15"
                               max_speed="10.0" />
         </actuation>
-        <visualization robot_id="true"
+        <communication on="true"
+                       mode="utility"
+                       max_message_length="10"
+                       chance_to_send_communication="0.3"
+                       chance_to_recieve_communication="0.9" />
+	<visualization robot_id="true"
                        robot_los="false"
                        robot_task="true"
                        block_id="false"
@@ -164,7 +177,7 @@
   <!-- * Loop functions * -->
   <!-- ****************** -->
   <loop_functions library="libfordyca"
-                  label="depth2_loop_functions">
+                  label="depth0_loop_functions">
     <battery
         power_station_amount="0"
         power_station_size="1"
@@ -174,33 +187,35 @@
            output_dir="__current_date__"
            />
       <metrics
-          output_dir="metrics"
-          fsm_collision_fname="fsm-collision.csv"
-          fsm_movement_fname="fsm-movement.csv"
-          block_acquisition_fname="block-acquisition.csv"
-          block_transport_fname="block-transport.csv"
-          block_manipulation_fname="block-manipulation.csv"
-          cache_acquisition_fname="cache-acquisition.csv"
-          cache_utilization_fname="cache-utilization.csv"
-          cache_lifecycle_fname="cache-lifecycle.csv"
-          cache_locations_fname="cache-locations.csv"
-          task_execution_generalist_fname="task-execution-generalist.csv"
-          task_execution_collector_fname="task-execution-collector.csv"
-          task_execution_harvester_fname="task-execution-harvester.csv"
-          task_execution_cache_starter_fname="task-execution-cache_starter.csv"
-          task_execution_cache_finisher_fname="task-execution-cache_finisher.csv"
-          task_execution_cache_transferer_fname="task-execution-cache_transferer.csv"
-          task_execution_cache_collector_fname="task-execution-cache_collector.csv"
-          task_tab_generalist_fname="task-tab-generalist.csv"
-          task_tab_collector_fname="task-tab-collector.csv"
-          task_tab_harvester_fname="task-tab-harvester.csv"
-          task_distribution_fname="task-distribution.csv"
-          perception_world_model_fname="perception-world-model.csv"
-          arena_robot_occupancy_fname="arena-robot-occupancy.csv"
-          swarm_convergence_fname="swarm-convpergence.csv"
-          loop_temporal_variance_fname="loop-temporal-variance.csv"
-          collect_interval="1000">
-          </metrics>
+        output_dir="metrics"
+        fsm_collision_fname="fsm-collision.csv"
+        fsm_movement_fname="fsm-movement.csv"
+        block_acquisition_fname="block-acquisition.csv"
+        block_transport_fname="block-transport.csv"
+        block_manipulation_fname="block-manipulation.csv"
+        cache_acquisition_fname="cache-acquisition.csv"
+        cache_utilization_fname="cache-utilization.csv"
+        cache_lifecycle_fname="cache-lifecycle.csv"
+        cache_locations_fname="cache-locations.csv"
+        task_execution_generalist_fname="task-execution-generalist.csv"
+        task_execution_collector_fname="task-execution-collector.csv"
+        task_execution_harvester_fname="task-execution-harvester.csv"
+        task_execution_cache_starter_fname="task-execution-cache_starter.csv"
+        task_execution_cache_finisher_fname="task-execution-cache_finisher.csv"
+        task_execution_cache_transferer_fname="task-execution-cache_transferer.csv"
+        task_execution_cache_collector_fname="task-execution-cache_collector.csv"
+        task_tab_generalist_fname="task-tab-generalist.csv"
+        task_tab_collector_fname="task-tab-collector.csv"
+        task_tab_harvester_fname="task-tab-harvester.csv"
+        task_distribution_fname="task-distribution.csv"
+        swarm_convergence_fname="swarm-convergence.csv"
+        perception_world_model_fname="perception-world-model.csv"
+        arena_robot_occupancy_fname="arena-robot-occupancy.csv"
+        loop_temporal_variance_fname="loop-temporal-variance.csv"
+        collect_interval="1000">
+
+      </metrics>
+
     </output>
     <convergence
         n_threads="0">
@@ -211,6 +226,7 @@
       <interactivity enable="false"/>
       <angular_order enable="false"/>
     </convergence>
+
     <oracle
         enabled="false"
         task_exec_est="false"
@@ -220,7 +236,7 @@
       <blocks>
         <manipulation_penalty>
           <waveform
-              type="Null"
+              type="Sine"
               frequency="0.01"
               amplitude="50"
               offset="50"
@@ -236,14 +252,14 @@
         </carry_throttle>
       </blocks>
       <caches>
-        <usage_penalty>
+        <usage>
           <waveform
               type="Null"
               frequency="100"
               amplitude="500"
               offset="10"
               phase="0"/>
-        </usage_penalty>
+        </usage>
       </caches>
     </temporal_variance>
 
@@ -271,16 +287,24 @@
     <caches dimension="0.8">
       <static enable="true"
               size="2"
-              respawn_scale_factor="0.05"/>
+              respawn_scale_factor="0.05">
+      </static>
+      <usage_penalty>
+        <waveform
+            type="Null"
+            frequency="100"
+            amplitude="500"
+            offset="10"
+            phase="0"/>
+      </usage_penalty>
       <dynamic enable="true"
                min_dist="0.8"
                min_blocks="2"
                robot_drop_only="true"/>
-
     </caches>
 
     <visualization robot_id="true"
-                   robot_los="true"
+                   robot_los="false"
                    robot_task="true"
                    block_id="false"
                    />
@@ -296,7 +320,7 @@
            pixels_per_meter="50" />
 
     <box id="wall_north" size="12,0.1,0.5" movable="false">
-      <body position="6,6,0" orientation="0,0,0" />
+      <body position="6,6.1,0" orientation="0,0,0" />
     </box>
     <box id="wall_south" size="12,0.1,0.5" movable="false">
       <body position="6,0,0" orientation="0,0,0" />
@@ -308,11 +332,30 @@
       <body position="0,3,0" orientation="0,0,0" />
     </box>
 
+    <light id="light1"
+           position="2,1.5,1.0"
+           orientation="0,0,0"
+           color="yellow"
+           intensity="10.0"
+           medium="leds" />
+    <light id="light2"
+           position="2,3,1.0"
+           orientation="0,0,0"
+           color="yellow"
+           intensity="10.0"
+           medium="leds" />
+    <light id="light3"
+           position="2,4.5,1.0"
+           orientation="0,0,0"
+           color="yellow"
+           intensity="10.0"
+           medium="leds" />
+
     <distribute>
       <position method="uniform" min="1,1,0" max="10,5,0" />
       <orientation method="uniform" min="0,0,0" max="360,0,0" />
       <entity quantity="16" max_trials="1000">
-        <foot-bot id="fb">
+        <foot-bot id="fb" rab_range="2" rab_data_size="20">
           <controller config="ffc" />
           <battery model= "time_motion"/>
         </foot-bot>
@@ -340,17 +383,27 @@
   <!-- * Visualization * -->
   <!-- ****************** -->
   <visualization>
-    <qt-opengl>
-      <camera>
-        <placement idx="0"
-                   position="5,2.5,6"
-                   look_at="5,2.5,0"
-                   lens_focal_length="20"
-                   up="0,1,0"
-                   />
-      </camera>
-      <user_functions label="stateful_foraging_qt_user_functions" />
-    </qt-opengl>
-  </visualization>
+     <qt-opengl autoplay="false">
+        <frame_grabbing directory="frames"
+                        base_name="frame_"
+                        format="png"
+                        quality="100" />
+       <camera>
+         <placement idx="0"
+                    position="6,3,6"
+                    look_at="6,3,0"
+                    lens_focal_length="20"
+                    up="0,1,0"
+                    />
+         <placement idx="1"
+                    position="6,0,5"
+                    look_at="6,3,0"
+                    lens_focal_length="20"
+                    up="0,1,0"
+                    />
+       </camera>
+       <user_functions label="depth0_qt_user_functions" />
+     </qt-opengl>
+   </visualization>
 
 </argos-configuration>
