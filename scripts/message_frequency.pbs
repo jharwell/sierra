@@ -1,7 +1,7 @@
 #!/bin/bash -l
 #PBS -l walltime=12:00:00,nodes=50:ppn=8,pmem=1000mb
 #PBS -m abe
-#PBS -M harwe006@umn.edu
+#PBS -M whit2267@umn.edu
 
 # Script to get Argos to work
 source /home/gini/shared/swarm/bin/build-env-setup.sh

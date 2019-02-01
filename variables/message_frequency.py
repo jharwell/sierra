@@ -1,5 +1,5 @@
 """
- Copyright 2018 John Harwell, All rights reserved.
+ Copyright 2018 Nathan White, All rights reserved.
 
   This file is part of SIERRA.
 
