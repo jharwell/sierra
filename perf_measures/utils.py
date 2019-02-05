@@ -257,10 +257,13 @@ class FractionalLosses:
 
         plost_n = pd.DataFrame(columns=scale_cols)
         plost_n['exp0'] = blocks.tail(1)['exp0'] * (tlost_n['exp0'])
+
         for c in [c for c in scale_cols if c not in ['exp0']]:
-            plost_n[c] = blocks.tail(1)[c] * \
-                (tlost_n[c] - tlost_n['exp0'] * math.pow(2, int(c[3:]))) / \
-                math.pow(2, int(c[3:]))
+            if blocks.tail(1)[c].values[0] == 0:
+                plost_n[c] = math.inf
+            else:
+                plost_n[c] = blocks.tail(1)[c] * (tlost_n[c] - tlost_n['exp0'] * math.pow(2, int(c[3:]))) / \
+                    math.pow(2, int(c[3:]))
 
         # Finally, calculate fractional losses as:
         #
@@ -272,7 +275,7 @@ class FractionalLosses:
         df = pd.DataFrame(columns=scale_cols)
         for c in scale_cols:
             if (perf_n[c] == 0).any():
-                df[c] = perf_n[c]
+                df[c] = 1.0
             else:
                 df[c] = round(plost_n[c] / perf_n[c], 4)
 
