@@ -35,7 +35,7 @@ class ConstantDensity(BaseVariable):
 
     Attributes:
       target_density(list): The target swarm density.
-      dimensions(): List of (X,Y) dimensions to use.
+      dimensions(list): List of (X,Y) dimensions to use (creates rectangular arenas).
       dist_type(str): The type of block distribution to use. Can be "single_source" or "random".
     """
     kRect2x1Dims = [(x, int(x / 2)) for x in range(12, 72, 12)]
@@ -80,6 +80,9 @@ def Factory(criteria_str):
 
     if "TypeSingleSource" == attr["block_dist_type"]:
         dims = ConstantDensity.kRect2x1Dims
+    else:
+        raise NotImplementedError("Only single-source block distributions currently implemented for\
+                                  constant density experiments ")
 
     def __init__(self):
         ConstantDensity.__init__(self,

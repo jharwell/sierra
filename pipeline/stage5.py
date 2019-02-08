@@ -63,10 +63,10 @@ class PipelineStage5:
                                          "exp-outputs/collated-csvs")
                     path2 = os.path.join(self.cmdopts['sierra_root'], t2, item,
                                          "exp-outputs/collated-csvs")
-                    if os.path.isdir(path1):
-                        assert(os.path.exists(path2)), "FATAL: {0} does not exist".format(path2)
-                    if os.path.isdir(path2):
-                        assert(os.path.exists(path1)), "FATAL: {0} does not exist".format(path1)
+                    if os.path.isdir(path1) and not os.path.exists(path2):
+                        print("WARN: {0} does not exist".format(path2))
+                    if os.path.isdir(path2) and not os.path.exists(path1):
+                        print("WARN: {0} does not exist".format(path1))
 
         cc.ControllerComp(controllers=self.targets,
                           cmdopts=self.cmdopts).generate()

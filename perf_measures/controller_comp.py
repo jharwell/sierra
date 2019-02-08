@@ -172,6 +172,11 @@ class ControllerComp:
                                          s,
                                          "exp-outputs/collated-csvs",
                                          src_stem + ".csv")
+
+                # Some experiments might not generate the necessary performance measure .csvs for
+                # graph generation, which is OK.
+                if not os.path.exists(csv_ipath):
+                    continue
                 df.loc[s, c] = pm_utils.WeightUnifiedEstimate(input_csv_fpath=csv_ipath,
                                                               swarm_sizes=swarm_sizes).calc()
 
@@ -217,6 +222,12 @@ class ControllerComp:
                                          s,
                                          "exp-outputs/collated-csvs",
                                          src_stem + ".csv")
+
+                # Some experiments might not generate the necessary performance measure .csvs for
+                # graph generation, which is OK.
+                if not os.path.exists(csv_ipath):
+                    continue
+
                 df = df.append(pd.read_csv(csv_ipath, sep=';'))
 
                 csv_opath = os.path.join(self.cc_csv_root, 'cc-' +
@@ -225,6 +236,9 @@ class ControllerComp:
                 exp_counts[s] = len(df.columns)
 
         for s in scenarios:
+            if s not in exp_counts:
+                continue
+
             csv_opath = os.path.join(self.cc_csv_root, 'cc-' +
                                      src_stem + "-" + s + ".csv")
 

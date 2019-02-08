@@ -133,22 +133,22 @@
         <actuation>
       	          <steering2D>
             <avoidance_force lookahead="0.5"
-                             max="8"/>
+                             max="4"/>
             <arrival_force slowing_radius="0.2"
                            slowing_speed_min="1.0"
-                           max="8"/>
-            <polar_force max="8"/>
+                           max="4"/>
+            <polar_force max="4"/>
             <wander_force circle_distance="4.0"
                           circle_radius="100.0"
                           max_angle_delta="5"
-                          max="9.0"
+                          max="4.5"
                           interval="1"
                           normal_dist="false"/>
-            <phototaxis_force max="8"/>
+            <phototaxis_force max="4"/>
           </steering2D>
 
           <differential_drive soft_turn_max="15"
-                              max_speed="10.0" />
+                              max_speed="5.0" />
         </actuation>
         <visualization robot_id="true"
                        robot_los="false"

@@ -19,6 +19,8 @@
 from variables.base_variable import BaseVariable
 import math
 
+kWallWidth = 0.1
+
 
 class RectangularArena(BaseVariable):
 
@@ -44,19 +46,41 @@ class RectangularArena(BaseVariable):
         """
         return [set([(".//arena", "size", "{0}, {1}, 2".format(s[0], s[1])),
                      (".//arena", "center", "{0}, {1}, 1".format(s[0] / 2.0, s[1] / 2.0)),
-                     (".//arena/distribute/position", "max", "{0}, {1}, 0".format(s[0] - 2,
-                                                                                  s[1] - 1)),
 
-                     (".//arena/*[@id='wall_north']", "size", "{0}, 0.1, 0.5".format(s[0])),
-                     (".//arena/*[@id='wall_north']/body", "position", "{0}, {1}, 0".format(s[0] / 2.0,
-                                                                                            s[1], 0)),
-                     (".//arena/*[@id='wall_south']", "size", "{0}, 0.1, 0.5".format(s[0])),
+                     # Robots are not allowed to spawn near the edges of the arena in order to avoid
+                     # corner cases
+                     (".//arena/distribute/position", "max", "{0}, {1}, 0".format(s[0] - 2.0,
+                                                                                  s[1] - 2.0)),
+                     (".//arena/distribute/position", "min", "{0}, {1}, 0".format(2.0, 2.0)),
+
+                     (".//arena/*[@id='wall_north']", "size", "{0}, {1}, 0.5".format(s[0],
+                                                                                     kWallWidth)),
+
+                     # North wall needs to have its Y coordinate offset by the width of the wall / 2
+                     # in order to be centered on the boundary for the arena. This is very necessary
+                     # to ensure that the maximum Y coordinate that robots can access is LESS than
+                     # the upper boundary of physics engines incident along the north wall.
+                     (".//arena/*[@id='wall_north']/body",
+                      "position",
+                      "{0}, {1}, 0".format(s[0] / 2.0,
+                                           s[1] -
+                                           kWallWidth / 2.0, 0)),
+                     (".//arena/*[@id='wall_south']", "size", "{0}, {1}, 0.5".format(s[0],
+                                                                                     kWallWidth)),
                      (".//arena/*[@id='wall_south']/body",
                       "position", "{0}, 0, 0 ".format(s[0] / 2.0)),
-                     (".//arena/*[@id='wall_east']", "size", "0.1, {0}, 0.5".format(s[1])),
-                     (".//arena/*[@id='wall_east']/body", "position", "{0}, {1}, 0".format(s[0],
-                                                                                           s[1] / 2.0)),
-                     (".//arena/*[@id='wall_west']", "size", "0.1, {0}, 0.5".format(s[1])),
+
+
+                     # Same thing for the east wall.
+                     (".//arena/*[@id='wall_east']", "size", "{0}, {1}, 0.5".format(kWallWidth,
+                                                                                    s[1] + kWallWidth)),
+                     (".//arena/*[@id='wall_east']/body",
+                      "position",
+                      "{0}, {1}, 0".format(s[0] - kWallWidth / 2.0,
+                                           s[1] / 2.0)),
+
+                     (".//arena/*[@id='wall_west']", "size", "{0}, {1}, 0.5".format(kWallWidth,
+                                                                                    s[1] + kWallWidth)),
                      (".//arena/*[@id='wall_west']/body",
                       "position", "0, {0}, 0".format(s[1] / 2.0)),
 
