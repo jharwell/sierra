@@ -159,6 +159,15 @@ class Cmdline:
 
                             """,
                             default=1)
+        stage1.add_argument("--physics-iter-per-tick",
+                            type=int,
+                            help="""
+
+                            The # of iterations all physics engines should perform per tick
+                            between each time the controller loops are run.
+
+                            """,
+                            default=10)
         stage1.add_argument("--n-sims",
                             help="""
 
@@ -272,6 +281,7 @@ class Cmdline:
                             sp: Generate comparison plots of swarm performance (blocks collected).
                             sr: Generate comparison plots of swarm reactivity.
                             sa: Generate comparison plots of swarm adaptability.
+                            line: Generate comparison linegraphs.
                             all: Generate all inter-experiment graphs.
 
                             """,

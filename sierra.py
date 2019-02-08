@@ -41,12 +41,12 @@ if __name__ == "__main__":
     # Also, add the template file leaf to the root directory path to help track what experiment was
     # run.
     if pair is not None:
-        if args.batch_criteria is not None:
-            controller = pair[0]
-            scenario = args.batch_criteria.split('.')[1]
-        elif "Generator" not in pair[1]:  # They specified scenario dimensions explicitly
+        if "Generator" not in pair[1]:  # They specified scenario dimensions explicitly
             controller = pair[0]
             scenario = pair[1].split('.')[1]
+        elif args.batch_criteria is not None:
+            controller = pair[0]
+            scenario = args.batch_criteria.split('.')[1]
 
         template, ext = os.path.splitext(os.path.basename(args.template_config_file))
 

@@ -31,19 +31,22 @@ class GeneratorCreator:
         if any([[2], [3], [4]]) == args.pipeline:
             return None
 
-            # Running stage 4 or 5
+        # Running stage 4 or 5
         if generator_names is None:
             return None
 
+        # This is the dictionary of all cmdline options used during stage 1. This is here, rather
+        # than in the exp pipeline, because the generator is passed INTO the pipeline.
         sim_opts = {
             "n_sims": args.n_sims,
             "n_threads": args.n_threads,
             "n_physics_engines": args.n_physics_engines,
+            "physics_iter_per_tick": args.physics_iter_per_tick,
             "tsetup": args.time_setup,
             "with_robot_rab": args.with_robot_rab,
             "with_robot_leds": args.with_robot_leds,
             "with_robot_battery": args.with_robot_battery,
-            "with_visualizations": args.with_visualizations
+            "with_visualizations": args.with_visualizations,
         }
         if args.batch_criteria is not None:
             criteria = __import__("variables.{0}".format(

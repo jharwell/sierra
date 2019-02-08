@@ -46,10 +46,10 @@ class StaticCache(BaseVariable):
           during its existence.
         """
         return [set([
-            (".//caches/dynamic", "enable", "false"),
-            (".//caches/static", "enable", "true"),
-            (".//caches/static", "size", "{0}".format(s)),
-            (".//caches", "dimension", "{0}".format(d[0] / 10.0))
+            (".//loop_functions/caches/dynamic", "enable", "false"),
+            (".//loop_functions/caches/static", "enable", "true"),
+            (".//loop_functions/caches/static", "size", "{0}".format(s)),
+            (".//loop_functions/caches", "dimension", "{0}".format(d[0] / 10.0))
         ])
             for d in self.dimension for s in self.sizes]
 

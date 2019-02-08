@@ -28,12 +28,14 @@ class PhysicsEngines(BaseVariable):
 
     Attributes:
       n_engines(int): # of engines. Can be one of [1,4,16].
-      layout(str): Arrangement method. Can be one of [uniform_grid].
+      iter_per_tick(int): # of iterations physics engines should perform per tick.
+      layout(str): Arrangement method. Can be one of: {uniform_grid}.
       dimensions(list): List of (X,Y) tuples of arena sizes.
     """
 
-    def __init__(self, n_engines, layout, dimensions):
+    def __init__(self, n_engines, iter_per_tick, layout, dimensions):
         self.n_engines = n_engines
+        self.iter_per_tick = iter_per_tick
         self.layout = layout
         self.dimensions = dimensions
 
@@ -83,7 +85,8 @@ class PhysicsEngines(BaseVariable):
 
         for i in range(0, self.n_engines):
             name = 'dyn2d' + str(i)
-            adds.append(('.//physics_engines', 'dynamics2d', {'id': name}))
+            adds.append(('.//physics_engines', 'dynamics2d', {'id': name,
+                                                              'iterations': str(self.iter_per_tick)}))
             adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]",
                          "boundaries", {}))
             adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]/boundaries",
@@ -126,7 +129,8 @@ class PhysicsEngines(BaseVariable):
 
         for i in range(0, self.n_engines):
             name = 'dyn2d' + str(i)
-            adds.append(('.//physics_engines', 'dynamics2d', {'id': name}))
+            adds.append(('.//physics_engines', 'dynamics2d', {'id': name,
+                                                              'iterations': str(self.iter_per_tick)}))
             adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]",
                          "boundaries", {}))
             adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]/boundaries",

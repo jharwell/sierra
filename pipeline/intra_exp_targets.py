@@ -127,6 +127,7 @@ class Linegraphs:
                            'Average # Robots Exited Avoidance (cumulative)'],
                 'xlabel': 'Interval',
                 'ylabel': '# Robots',
+                'corr': ['coeff']
             },
             {
                 'src_stem': 'fsm-collision',

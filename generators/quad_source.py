@@ -70,6 +70,7 @@ class QSGenerator(ExpInputGenerator):
         # controller and scenario generation, and the arena dimensions are None for configuring
         # controllers.
         engines = ev.physics_engines.PhysicsEngines(self.sim_opts["]n_physics_engines"],
+                                                    self.sim_opts["physics_iter_per_tick"],
                                                     "uniform_grid",
                                                     arena_dim)
 

@@ -72,6 +72,7 @@ class SSGenerator(ExpInputGenerator):
         # controller and scenario generation, and the arena dimensions are None for configuring
         # controllers.
         engines = ev.physics_engines.PhysicsEngines(self.sim_opts["n_physics_engines"],
+                                                    self.sim_opts["physics_iter_per_tick"],
                                                     "uniform_grid",
                                                     arena_dim)
 
@@ -83,6 +84,7 @@ class SSGenerator(ExpInputGenerator):
 
         if "depth1" in self.controller:
             cache = ev.static_cache.StaticCache([2], [arena_dim])
+
             [xml_luigi.attribute_change(a[0], a[1], a[2]) for a in cache.gen_attr_changelist()[0]]
             rms = cache.gen_tag_rmlist()
             if len(rms):
