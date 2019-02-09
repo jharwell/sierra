@@ -66,7 +66,7 @@ class XMLLuigi:
         try:
             el.attrib[attr] = value
         except AttributeError:
-            print("No attribute '{1}' found in node '{0}'".format(path, attr))
+            print("WARNING: No attribute '{1}' found in node '{0}'".format(path, attr))
             pass
 
     def tag_change(self, path, tag, value):

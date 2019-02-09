@@ -54,8 +54,8 @@ class GeneratorCreator:
             sim_opts["arena_dim"] = None
 
             criteria_generator = getattr(criteria, "Factory")(args.batch_criteria)()
-            print(
-                "- Parse batch criteria into generator '{0}'".format(criteria_generator.__class__.__name__))
+            print("- Parse batch criteria into generator governor '{0}'".format(
+                criteria_generator.__class__.__name__))
             return BatchedExpInputGenerator(batch_config_template=args.template_config_file,
                                             batch_generation_root=args.generation_root,
                                             batch_output_root=args.output_root,

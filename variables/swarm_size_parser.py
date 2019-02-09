@@ -16,15 +16,18 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
+import re
+
 
 class SwarmSizeParser():
     """
     Parses the command line definition of batch criteria. The string must be
     formatted as:
 
-    <increment_type><max size>
+    {increment_type}{max_size}
 
     - increment_type = {Log,Linear}
+    - max_size = Integer
 
     For example:
 
@@ -35,38 +38,20 @@ class SwarmSizeParser():
     def parse(self, criteria_str):
         ret = {}
 
-        ret.update(self.increment_type_parse(criteria_str))
-        ret.update(self.max_size_parse(criteria_str))
-        return ret
+        # Parse increment type
+        res = re.search("^Log|Linear", criteria_str)
+        assert res is not None, \
+            "FATAL: Bad swarm size increment type in criteria '{0}'".format(criteria_str)
+        ret['increment_type'] = res.group(0)
 
-    def increment_type_parse(self, criteria_str):
-        """
-        Parse the temporal variance type out of the batch criteria string. Valid values are:
+        # Parse max size
+        res = re.search("[0-9]+", criteria_str)
+        assert res is not None, \
+            "FATAL: Bad swarm size max in criteria '{0}'".format(criteria_str)
+        ret['max_size'] = int(res.group(0))
 
-        Log - Logarithmic in powers of 2.
-        Linear - 10 linearly spaced sizes from max_size / 10 to max_size
-        """
-        ret = {}
+        # Set linear_increment if needed
+        if ret['increment_type'] == 'Linear':
+            ret['linear_increment'] = int(ret['max_size'] / 10.0)
 
-        for s in ["Log", "Linear"]:
-            index = criteria_str.find(s)
-            if -1 != index:
-                ret["increment_type"] = criteria_str[0:len(s)]
-
-        return ret
-
-    def max_size_parse(self, criteria_str):
-        """
-        Parse the max size from the batch criteria string.
-        """
-        ret = {}
-        ret["linear_increment"] = None
-        ret["max_size"] = None
-
-        t_i = 0
-        while not criteria_str[t_i].isdigit():
-            t_i += 1
-
-        ret["linear_increment"] = int(criteria_str[t_i:]) / 10
-        ret["max_size"] = int(criteria_str[t_i:])
         return ret

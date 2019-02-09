@@ -66,7 +66,7 @@ class ExpPipeline:
             self.cmdopts['criteria_def'] = None
         else:
             self.cmdopts['criteria_category'] = self.args.batch_criteria.split('.')[0]
-            self.cmdopts['criteria_def'] = self.args.batch_criteria.split('.')[1]
+            self.cmdopts['criteria_def'] = '.'.join(self.args.batch_criteria.split('.')[1:])
 
         self.input_generator = input_generator
 

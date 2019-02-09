@@ -28,7 +28,6 @@ def Calculate(n_robots, arena_x, arena_y):
 
 
 class ConstantDensity(BaseVariable):
-
     """
     Defines a range of swarm and arena sizes to test with such that the arena ratio is always the
     same. Does not change the # blocks/block manifest.
@@ -36,9 +35,12 @@ class ConstantDensity(BaseVariable):
     Attributes:
       target_density(list): The target swarm density.
       dimensions(list): List of (X,Y) dimensions to use (creates rectangular arenas).
-      dist_type(str): The type of block distribution to use. Can be "single_source" or "random".
+      dist_type(str): The type of block distribution to use.
     """
-    kRect2x1Dims = [(x, int(x / 2)) for x in range(12, 72, 12)]
+
+    # How many experiments to run for the given density value, in which the arena size is increased
+    # from its initial value according to parsed parameters.
+    kExperimentsPerDensity = 10
 
     def __init__(self, target_density, dimensions, dist_type):
         self.target_density = target_density
@@ -76,19 +78,23 @@ def Factory(criteria_str):
     """
     Creates variance classes from the command line definition of batch criteria.
     """
-    attr = SwarmDensityParser().parse(criteria_str.split(".")[1])
+    attr = SwarmDensityParser().parse(criteria_str)
 
-    if "TypeSingleSource" == attr["block_dist_type"]:
-        dims = ConstantDensity.kRect2x1Dims
+    if "TypeSingleSource" == attr["block_dist_class"]:
+        dims = [(x, int(x / 2)) for x in range(attr['arena_x'],
+                                               attr['arena_x'] +
+                                               ConstantDensity.kExperimentsPerDensity *
+                                               attr['arena_size_inc'],
+                                               attr['arena_size_inc'])]
     else:
-        raise NotImplementedError("Only single-source block distributions currently implemented for\
-                                  constant density experiments ")
+        raise NotImplementedError(
+            "Only single-source block distributions currently implemented for constant density experiments ")
 
     def __init__(self):
         ConstantDensity.__init__(self,
                                  attr["target_density"],
                                  dims,
-                                 attr["block_dist_type"])
+                                 attr["block_dist_class"])
 
     return type(criteria_str,
                 (ConstantDensity,),

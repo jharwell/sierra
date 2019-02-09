@@ -83,7 +83,7 @@ def Factory(criteria_str):
     """
     Creates variance classes from the command line definition of batch criteria.
     """
-    attr = TemporalVarianceParser().parse(criteria_str.split(".")[1])
+    attr = TemporalVarianceParser().parse(criteria_str)
 
     def gen_variances(criteria_str):
 

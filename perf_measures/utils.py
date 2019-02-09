@@ -56,7 +56,7 @@ def sort_scenarios(criteria_category, scenarios):
     if "swarm_size" in criteria_category:
         return scenarios  # No sorting needed
     elif "swarm_density" in criteria_category:
-        return sorted(scenarios, key=lambda s: float(s[-5:-2].replace('p', '.')))
+        return sorted(scenarios, key=lambda s: float(s.split('-')[2].split('.')[0][0:3].replace('p', '.')))
     elif 'temporal_variance' in criteria_category:
         return scenarios
 

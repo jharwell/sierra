@@ -16,62 +16,71 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
+import re
+
 
 class SwarmDensityParser():
     """
     Parses the command line definition of batch criteria. The string must be
     formatted as:
 
-    CD<density><block_dist_type>
+    {density}{block_dist_type}{AxB}.I{Arena Size Increment}
 
-    density = <integer>p<integer> (i.e. 5p0 for 5.0)
-    block_dist_type = {SS}
+    density              = <integer>p<integer> (i.e. 5p0 for 5.0)
+    block_dist_type      = {SS}
+    AxB                  = X by Y arena dimensions of the starting arena size; the starting swarm
+                           size will be computed from this and the desired density.
+    arena size increment = Size in meters that the X and Y dimensions should increase by in between
+                           experiments. Larger values here will result in larger arenas and more
+                           robots being simulated at a given density. Must be an integer
 
     For example:
 
-    CD1p0SS -> Constant density of 1.0, single source block distribution.
+    1p0.SS12x8I16 -> Constant density of 1.0, single source block distribution, starting with a
+                     12x8 arena. Each experiment's arena will increase by 16 in both X and Y.
+
+    Return: Dictionary with the following keys:
+
+      target_density   -> Floating point value of parsed target density
+      block_dist_class -> String representing the name of a block distribution class.
+      arena_size_inc   -> Integer increment for arena size.
+      arena_x          -> Initial arena X size.
+      arena_y          -> Initial arena Y size.
+
     """
 
     def parse(self, criteria_str):
         ret = {}
+        block_dist_dict = {'SS': 'TypeSingleSource'}
 
-        ret.update(self.density_type_parse(criteria_str))
-        ret.update(self.target_density_parse(criteria_str))
-        ret.update(self.block_dist_type_parse(criteria_str))
-        return ret
+        # Parse density
+        res = re.search('[0-9]+p[0-9]+', criteria_str)
+        assert res is not None, \
+            "FATAL: Bad density specification in criteria '{0}'".format(criteria_str)
 
-    def density_type_parse(self, criteria_str):
-        """
-        Parse the density type out of the batch criteria string. Valid values are:
+        characteristic = float(re.search('[0-9]+', criteria_str).group(0))
 
-        CD - Constant Density
-        """
-        ret = {}
-        ret["density_type"] = "CD"
-        return ret
+        mantissa = float("0." + re.search('p[0-9]+', criteria_str).group(0)[1:])
+        ret['target_density'] = characteristic + mantissa
 
-    def target_density_parse(self, criteria_str):
-        """
-        Parse the target density out of the batch criteria string.
-        """
-        ret = {}
-        t_i1 = 2
-        while criteria_str[t_i1].isdigit():
-            t_i1 += 1
-        d1 = int(criteria_str[2:t_i1])
-        t_i2 = t_i1 + 1  # For the 'p'
-        while criteria_str[t_i2].isdigit():
-            t_i2 += 1
-        d2 = int(criteria_str[t_i1 + 1:t_i2])
-        ret["target_density"] = float(int(d1) + d2 / ((t_i2 - (t_i1 + 1)) * 10))
-        return ret
+        # Parse block distribution type
+        res = re.search('SS', criteria_str)
+        assert res is not None, \
+            "FATAL: Bad block distribution type in criteria '{0}'".format(criteria_str)
+        ret['block_dist_class'] = block_dist_dict[res.group(0)]
 
-    def block_dist_type_parse(self, criteria_str):
-        """
-        Parse the block distribution type from the batch criteria string.
-        """
-        ret = {}
-        print(criteria_str[-2:])
-        if "SS" == criteria_str[-2:]:
-            ret["block_dist_type"] = "TypeSingleSource"
+        # Parse arena dimensions
+        res = re.search('[0-9]+x[0-9]+', criteria_str)
+        assert res is not None, \
+            "FATAL: Bad initial narena specification in criteria '{0}'".format(criteria_str)
+        ret['arena_x'] = int(re.search('[0-9]+x', criteria_str).group(0)[:-1])
+        ret['arena_y'] = int(re.search('x[0-9]+', criteria_str).group(0)[1:])
+
+        # Parse arena size increment
+        res = re.search('I[0-9]+', criteria_str)
+        assert res is not None, \
+            "FATAL: Bad arena increment specification in criteria '{0}'".format(criteria_str)
+
+        ret['arena_size_inc'] = int(res.group(0)[1:])
+
         return ret
