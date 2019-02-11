@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#PBS -l walltime=12:00:00,nodes=50:ppn=8,pmem=2500mb
+#PBS -l walltime=4:00:00,nodes=50:ppn=8,pmem=2500mb
 #PBS -m abe
 #PBS -M harwe006@umn.edu
 
@@ -17,20 +17,32 @@ OMP_MAX_ACTIVE_LEVELS --env OMP_NESTED --env OMP_NUM_THREADS --env
 OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 --env ARGOS_PLUGIN_PATH"
 
+################################################################################
+# For IJCAI2019                                                                #
+################################################################################
+# High block: block density = 5.5%, static cache % = 10.0
+#
+# 32x16: 30 blocks, static cache respawn = 3
+# 64x32: 100 blocks, static cache respawn = 10
+# 128x64: 450 blocks, static cache respawn = 45 (last run did not contain this
+#         respawn value)
+#
+# Low block: block density = 1.0%, static cache % = 10.0
+
 cd $HOME/git/sierra
-NSIMS=4
-DIMS=(32x16 64x32)
-OUTPUT_ROOT=$HOME/exp/ideal
+NSIMS=50
+DIMS=(32x16)
+OUTPUT_ROOT=$HOME/exp/ideal-high-block
 BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \
                   --template-config-file=$HOME/git/sierra/templates/ideal.argos \
                   --n-sims=$NSIMS\
-                  --batch-criteria=swarm_size.Log4096\
+                  --batch-criteria=swarm_size.Log1024\
                   --n-physics-engines=4\
-                  --n-threads=4\
-                  --exec-method=local.parallel\
+                  --n-threads=4 \
+                  --exec-method=hpc.parallel\
                   --time-setup=time_setup.T10000\
-                  --perf-measures=sc,so,sp,line"
+                  --perf-measures=sc,so,sp"
 
 # CRW (does not change # blocks/block manifest from template)
 for d in "${DIMS[@]}"
@@ -56,4 +68,4 @@ done
 
 # Generate comparison graphs (a valid batch criteria still needed to
 # correctly generate graph labels)
-$BASE_CMD --generator=depth1.GP_DPO.SS24x12 --pipeline 5
+$BASE_CMD --generator=depth1.GP_DPO.SS128x64 --pipeline 5

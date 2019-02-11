@@ -58,7 +58,6 @@ class CSV:
 
         # self.csv is a row-major array
         # how many rows there are in the CSV
-
         self.height = len(self.csv)
         self.width = len(self.csv[0])
         # check to make sure the array is a perfect rectangle; all rows must have the same amount of

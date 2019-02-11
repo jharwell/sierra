@@ -27,55 +27,64 @@ intra_scenario_measures = [
         'src_stem': 'pm-pp-comp-positive',
         'dest_stem': 'cc-pm-pp-comp-positive',
         'title': 'Swarm Projective Performance Comparison (positive)',
-        'ylabel': 'Observed-Projected Ratio'
+        'ylabel': 'Observed-Projected Ratio',
+        'n_exp_corr': 0
     },
     {
         'src_stem': 'pm-pp-comp-negative',
         'dest_stem': 'cc-pm-pp-comp-negative',
         'title': 'Swarm Projective Performance Comparison (Negative)',
-        'ylabel': 'Observed-Projected Ratio'
+        'ylabel': 'Observed-Projected Ratio',
+        'n_exp_corr': 0
     },
     {
         'src_stem': 'pm-scalability-fl',
         'dest_stem': 'cc-pm-scalability-fl',
         'title': 'Swarm Scalability (Sub-Linear Fractional Losses)',
-        'ylabel': 'Scalability Value'
+        'ylabel': 'Scalability Value',
+        'n_exp_corr': 0
     },
     {
         'src_stem': 'pm-scalability-norm',
         'dest_stem': 'cc-pm-scalability-norm',
         'title': 'Swarm Scalability (Normalized)',
-        'ylabel': 'Scalability Value'
+        'ylabel': 'Scalability Value',
+        'n_exp_corr': 0
     },
     {
         'src_stem': 'pm-self-org',
         'dest_stem': 'cc-pm-self-org',
         'title': 'Swarm Self Organization',
-        'ylabel': 'Self Organization Value'
+        'ylabel': 'Self Organization Value',
+        'n_exp_corr': 1
     },
     {
         'src_stem': 'pm-blocks-collected',
         'dest_stem': 'cc-pm-blocks-collected',
         'title': 'Swarm Total Blocks Collected',
-        'ylabel': '# Blocks'
+        'ylabel': '# Blocks',
+        'n_exp_corr': 0
     },
     {
         'src_stem': 'pm-karpflatt',
         'dest_stem': 'cc-pm-karpflatt',
         'title': 'Swarm Karp-Flatt Metric',
-        'ylabel': ''
+        'ylabel': '',
+        'n_exp_corr': 0
     },
     {
         'src_stem': 'pm-reactivity',
         'dest_stem': 'cc-pm-reactivity',
         'title': 'Swarm Reactivity',
-        'ylabel': ''
+        'ylabel': '',
+        'n_exp_corr': 0
     },
     {
         'src_stem': 'pm-adaptability',
         'dest_stem': 'cc-pm-adaptability',
         'title': 'Swarm Adaptability',
-        'ylabel': ''
+        'ylabel': '',
+        'n_exp_corr': 1
     },
 ]
 
@@ -203,9 +212,10 @@ class ControllerComp:
             self._generate_intra_scenario_graph(src_stem=m['src_stem'],
                                                 dest_stem=m['dest_stem'],
                                                 title=m['title'],
-                                                ylabel=m['ylabel'])
+                                                ylabel=m['ylabel'],
+                                                n_exp_corr=m['n_exp_corr'])
 
-    def _generate_intra_scenario_graph(self, src_stem, dest_stem, title, ylabel):
+    def _generate_intra_scenario_graph(self, src_stem, dest_stem, title, ylabel, n_exp_corr):
 
         # We can do this because we have already checked that all controllers executed the same set
         # of batch experiments
@@ -235,6 +245,10 @@ class ControllerComp:
                 df.to_csv(csv_opath, sep=';', index=False)
                 exp_counts[s] = len(df.columns)
 
+                # For some graphs, the .csv only contains entries for exp >=1, BUT we need to have
+                # the full experiment count in order to get the axis labels to come out right.
+                exp_counts[s] += n_exp_corr
+
         for s in scenarios:
             if s not in exp_counts:
                 continue
@@ -263,6 +277,6 @@ class ControllerComp:
                              title=title,
                              xlabel=pm_utils.batch_criteria_xlabel(cmdopts),
                              ylabel=ylabel,
-                             xvals=pm_utils.batch_criteria_xvals(cmdopts),
+                             xvals=pm_utils.batch_criteria_xvals(cmdopts)[n_exp_corr:],
                              legend=self.controllers,
                              polynomial_fit=-1).generate()

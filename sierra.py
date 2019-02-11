@@ -34,7 +34,8 @@ def scenario_dir_name(batch_criteria, scenario):
     if 'swarm_size' in batch_criteria:
         return scenario
     elif any(b in batch_criteria for b in ['swarm_density', 'temporal_variance']):
-        return '.'.join(args.batch_criteria.split('.')[1:])
+        # dash instead of dot to not confuse programs that rely on file extensions
+        return '-'.join(args.batch_criteria.split('.')[1:])
     else:
         return scenario  # General case
 

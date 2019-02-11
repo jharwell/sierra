@@ -83,7 +83,7 @@ class SSGenerator(ExpInputGenerator):
             xml_luigi.tag_add(a[0], a[1], a[2])
 
         if "depth1" in self.controller:
-            cache = ev.static_cache.StaticCache([2], [arena_dim])
+            cache = ev.static_cache.StaticCache([3], [arena_dim])
 
             [xml_luigi.attribute_change(a[0], a[1], a[2]) for a in cache.gen_attr_changelist()[0]]
             rms = cache.gen_tag_rmlist()

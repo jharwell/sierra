@@ -38,13 +38,20 @@ class BatchedExpRunner:
         """Runs all experiments in the batch."""
         print("- Stage2: Running batched experiment in {0}...".format(self.batch_exp_root))
 
+        experiments = []
         if self.batch_exp_num is not None:
-            path = os.path.join(self.batch_exp_root, "exp" + self.batch_exp_num)
-            ExpRunner(path, True).run(exec_method)
+            min_exp = int(self.batch_exp_num.split(':')[0])
+            max_exp = int(self.batch_exp_num.split(':')[1])
+            assert min_exp <= max_exp, "FATAL: Min batch exp >= max batch exp({0} vs. {1})".format(
+                min_exp, max_exp)
+
+            experiments = [os.path.join(self.batch_exp_root, "exp" + str(i)) for i in range(min_exp,
+                                                                                            max_exp + 1)]
         else:
             # All dirs start with 'exp', so only sort on stuff after that. Running exp in order will
             # make collecting timing data/eyeballing runtimes much easier.
-            for item in sorted(os.listdir(self.batch_exp_root), key=lambda e: int(e[3:])):
-                path = os.path.join(self.batch_exp_root, item)
-                if os.path.isdir(path):
-                    ExpRunner(path, True).run(exec_method)
+            sorted_dirs = sorted(os.listdir(self.batch_exp_root), key=lambda e: int(e[3:]))
+            experiments = [os.path.join(self.batch_exp_root, item) for item in sorted_dirs
+                           if os.path.isdir(os.path.join(self.batch_exp_root, item))]
+        for exp in experiments:
+            ExpRunner(exp, True).run(exec_method)

@@ -18,7 +18,7 @@
   <controllers>
 
     <__template__ id="ffc"
-                                library="libfordyca">
+                  library="libfordyca">
       <actuators>
         <differential_steering implementation="default" />
         <leds implementation="default" medium="leds" />
@@ -68,7 +68,7 @@
               <sigmoid_sel
                   method="pini2011">
                 <sigmoid
-                    reactivity="4"
+                    reactivity="6"
                     offset="1.0"
                     gamma="1.0"/>
               </sigmoid_sel>
@@ -88,13 +88,13 @@
           </subtask_sel>
           <task_exec_estimates
               seed_enabled="true"
-              generalist="2000:4000"
-              collector="1000:2000"
-              harvester="1000:2000"
-              cache_starter="1000:2000"
-              cache_finisher="1000:2000"
-              cache_collector="1000:2000"
-              cache_transferer="1000:2000">
+              generalist="20000:40000"
+              collector="10000:20000"
+              harvester="10000:20000"
+              cache_starter="10000:20000"
+              cache_finisher="10000:20000"
+              cache_collector="10000:20000"
+              cache_transferer="10000:20000">
             <ema alpha="0.8"/>
           </task_exec_estimates>
           <tab_sel>
@@ -133,22 +133,22 @@
         <actuation>
       	          <steering2D>
             <avoidance_force lookahead="0.5"
-                             max="4"/>
+                             max="8"/>
             <arrival_force slowing_radius="0.2"
                            slowing_speed_min="1.0"
-                           max="4"/>
-            <polar_force max="4"/>
+                           max="8"/>
+            <polar_force max="8"/>
             <wander_force circle_distance="4.0"
                           circle_radius="100.0"
                           max_angle_delta="5"
-                          max="4.5"
+                          max="9"
                           interval="1"
                           normal_dist="false"/>
-            <phototaxis_force max="4"/>
+            <phototaxis_force max="8"/>
           </steering2D>
 
           <differential_drive soft_turn_max="15"
-                              max_speed="5.0" />
+                              max_speed="10.0" />
         </actuation>
         <visualization robot_id="true"
                        robot_los="false"
@@ -197,7 +197,7 @@
           task_distribution_fname="task-distribution.csv"
           perception_world_model_fname="perception-world-model.csv"
           arena_robot_occupancy_fname="arena-robot-occupancy.csv"
-          swarm_convergence_fname="swarm-convpergence.csv"
+          swarm_convergence_fname="swarm-convergence.csv"
           loop_temporal_variance_fname="loop-temporal-variance.csv"
           collect_interval="1000">
           </metrics>
@@ -260,8 +260,8 @@
               n_clusters="15"
               />
           <manifest
-              n_cube="25"
-              n_ramp="25"
+              n_cube="15"
+              n_ramp="15"
               unit_dim="0.2"
               />
         </distribution>

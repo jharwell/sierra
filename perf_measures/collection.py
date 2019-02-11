@@ -55,7 +55,6 @@ class InterExpBlockCollection:
         final_collect_count.to_csv(opath, sep=';', index=False)
 
         self.cmdopts["n_exp"] = len(final_collect_count.columns)
-
         BatchRangedGraph(inputy_fpath=opath,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-blocks-collected.png"),

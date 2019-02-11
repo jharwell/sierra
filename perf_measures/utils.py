@@ -236,8 +236,9 @@ class FractionalLosses:
         path = os.path.join(self.batch_output_root, kCAInCumCSV)
         assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
         df = pd.read_csv(path, sep=';')
-        scale_cols = [c for c in df.columns if c not in ['clock']]
-        tlost_n = pd.DataFrame(columns=scale_cols, data=df.tail(1))
+        scale_cols = [c for c in df.columns if c not in ['clock', 'exp0']]
+        all_cols = [c for c in df.columns if c not in ['clock']]
+        tlost_n = pd.DataFrame(columns=all_cols, data=df.tail(1))
 
         # Next get the performance lost per timestep, calculated as:
         #
@@ -258,7 +259,7 @@ class FractionalLosses:
         plost_n = pd.DataFrame(columns=scale_cols)
         plost_n['exp0'] = blocks.tail(1)['exp0'] * (tlost_n['exp0'])
 
-        for c in [c for c in scale_cols if c not in ['exp0']]:
+        for c in [c for c in scale_cols]:
             if blocks.tail(1)[c].values[0] == 0:
                 plost_n[c] = math.inf
             else:
@@ -271,14 +272,18 @@ class FractionalLosses:
         path = os.path.join(self.batch_output_root, kBlocksGatheredCumCSV)
         assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
         perf_n = pd.read_csv(path, sep=';').tail(1)
+        perf_n.tail(1)['exp0'] = 0.0
 
         df = pd.DataFrame(columns=scale_cols)
+
         for c in scale_cols:
             if (perf_n[c] == 0).any():
                 df[c] = 1.0
             else:
                 df[c] = round(plost_n[c] / perf_n[c], 4)
 
+        # By definition, no fractional losses with 1 robot
+        df.insert(0, 'exp0', 0.0)
         return df
 
 

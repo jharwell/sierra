@@ -21,6 +21,7 @@ import copy
 import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
 import perf_measures.utils as pm_utils
+import math
 
 kTargetCumCSV = "blocks-collected-cum.csv"
 
@@ -141,15 +142,17 @@ class FractionalPerformanceLoss:
     def calculate(self):
         df = pm_utils.FractionalLosses(
             self.cmdopts["collate_root"], self.cmdopts["generation_root"]).calc()
+
         for c in df.columns:
-            df[c] = 1.0 - df[c]
+            df[c] = 1.0 - 1.0 / math.exp(1.0 - df[c])
         return df
 
     def generate(self, df):
         path = os.path.join(self.cmdopts["collate_root"], "pm-scalability-fl.csv")
-        df.to_csv(path, sep=';', index=False)
 
+        df.to_csv(path, sep=';', index=False)
         self.cmdopts["n_exp"] = len(df.columns)
+
         BatchRangedGraph(inputy_fpath=path,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-scalability-fl.png"),
@@ -179,9 +182,10 @@ class KarpFlatt:
 
     def calculate(self):
         df = pm_utils.ProjectivePerformance(self.cmdopts, "positive").calculate()
+
         self.cmdopts["n_exp"] = len(df.columns) + 1
 
-        # includes exp0 size which we don't want.
+        # +1 because karp-flatt is only defined for exp >= 1
         sizes = pm_utils.batch_swarm_sizes(self.cmdopts)[1:]
 
         for i in range(0, len(df.columns)):

@@ -72,7 +72,7 @@ class SwarmDensityParser():
         # Parse arena dimensions
         res = re.search('[0-9]+x[0-9]+', criteria_str)
         assert res is not None, \
-            "FATAL: Bad initial narena specification in criteria '{0}'".format(criteria_str)
+            "FATAL: Bad initial arena specification in criteria '{0}'".format(criteria_str)
         ret['arena_x'] = int(re.search('[0-9]+x', criteria_str).group(0)[:-1])
         ret['arena_y'] = int(re.search('x[0-9]+', criteria_str).group(0)[1:])
 

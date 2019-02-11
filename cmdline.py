@@ -241,11 +241,12 @@ class Cmdline:
                             """,
                             choices=["local.parallel", "local.serial", "hpc.parallel"],
                             default="local.parallel")
-        stage2.add_argument("--batch-exp-num",
+        stage2.add_argument("--batch-exp-range",
                             help="""
 
-                            Experiment number from the batch to run (instead of running every experiment from the batch
-                            in sequence, which is the default behavior). Ignored if --batch-criteria is not passed.
+                            Experiment numbers from the batch to run. Ignored if --batch-criteria is
+                            not passed. Specified in the form a:b. If omitted, runs all experiments
+                            in the batch (default behavior).
 
                             """)
 

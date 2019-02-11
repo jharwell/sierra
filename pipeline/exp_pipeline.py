@@ -58,7 +58,7 @@ class ExpPipeline:
             'exp_graphs': self.args.exp_graphs,
             'template_config_file': self.args.template_config_file,
             'time_setup': self.args.time_setup,
-            'batch_exp_num': self.args.batch_exp_num,
+            'batch_exp_range': self.args.batch_exp_range,
             'exec_method': self.args.exec_method
         }
         if self.args.batch_criteria is None:

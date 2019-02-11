@@ -21,6 +21,7 @@ import copy
 import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
 import perf_measures.utils as pm_utils
+import math
 
 
 class InterExpSelfOrganization:
@@ -37,41 +38,22 @@ class InterExpSelfOrganization:
 
     def generate(self):
         """
-        Calculate the self-org metric for a given controller, and generate a ranged_size_graph of
+        Calculate the self-org metric for a given controller, and generate a batched_range_graph of
         the result.
         """
 
         print("-- Self-organization from {0}".format(self.cmdopts["collate_root"]))
-        df = pm_utils.FractionalLosses(self.cmdopts["collate_root"],
+        fl = pm_utils.FractionalLosses(self.cmdopts["collate_root"],
                                        self.cmdopts["generation_root"]).calc()
-        df_new = pd.DataFrame(columns=[c for c in df.columns if c not in ['exp0']])
+        df_new = pd.DataFrame(columns=[c for c in fl.columns if c not in ['exp0']])
 
-        # This is a tricky measure to calculate. It has 4 parts:
-        #
-        # 1. The difference between the performance loss observed at swarm size i and at swarm size
-        #    i/2. If this difference is sub-linear (i.e. double the swarm size does not result in 2x
-        #    the performance losses), then we conclude that self-organization occurred.
-        #
-        # 2. We take the negative inverse of this value in order to (1) be able to easily show that
-        #      super-linear losses occurred (i.e. negative values), (2) magnify small differences
-        #      (as the swarm size is increased logarithmically, even small sublinearities can be
-        #      significant)
-        #
-        # 3. We multiply by log(swarm size) in order to give more weight to values at higher swarm
-        #      sizes, where self organization is more reliably observed as well as more important.
-        #
-        # 4. We divide by the performance loss observed at swarm size i so that approaches with a
-        #    smaller average performance loss (even if they have similar slopes as a function of
-        #    population size as approaches with greater average performance loss) score more
-        #    favorably at higher population sizes.
-        self.cmdopts["n_exp"] = len(df.columns)
+        self.cmdopts["n_exp"] = len(fl.columns)
         swarm_sizes = pm_utils.batch_swarm_sizes(self.cmdopts)
 
-        df_new['exp0'] = df['exp0']
-        for i in range(1, len(df.columns)):
-            exp = -(df['exp' + str(i)] - float(swarm_sizes[i]) /
-                    float(swarm_sizes[i - 1]) * df['exp' + str(i - 1)])
-            df_new['exp' + str(i)] = swarm_sizes[i] / (exp / df['exp' + str(i)])
+        for i in range(1, len(fl.columns)):
+            theta = fl['exp' + str(i)] - \
+                float(swarm_sizes[i]) / float(swarm_sizes[i - 1]) * fl['exp' + str(i - 1)]
+            df_new.loc[0, 'exp' + str(i)] = 1.0 - 1.0 / math.exp(-theta)
 
         path = os.path.join(self.cmdopts["collate_root"], "pm-self-org.csv")
         df_new = df_new.reindex(sorted(df_new.columns, key=lambda t: int(t[3:])), axis=1)
@@ -83,6 +65,6 @@ class InterExpSelfOrganization:
                          title="Swarm Self-Organization Due To Sub-Linear Fractional Performance Losses",
                          xlabel=pm_utils.batch_criteria_xlabel(self.cmdopts),
                          ylabel="",
-                         xvals=pm_utils.batch_criteria_xvals(self.cmdopts),
+                         xvals=pm_utils.batch_criteria_xvals(self.cmdopts)[1:],
                          legend=None,
                          polynomial_fit=-1).generate()
