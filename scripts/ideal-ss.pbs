@@ -3,11 +3,15 @@
 #PBS -m abe
 #PBS -M harwe006@umn.edu
 
-# Script to get Argos to work
+# Initialize modules and environment
 source /home/gini/shared/swarm/bin/build-env-setup.sh
 
-# Set ARGoS library search path
+# Set ARGoS library search path. Must contain both the ARGoS core libraries path
+# AND the fordyca library path.
 export ARGOS_PLUGIN_PATH=$ARGOS_PLUGIN_PATH:$HOME/git/fordyca/build/lib
+
+# Setup logging (maybe compiled out and unneeded, but maybe not)
+export LOG4CXX_CONFIGURATION=$HOME/git/fordyca/log4cxx.xml
 
 # From MSI: transfers all of the loaded modules to the nodes
 export PARALLEL="--workdir . --env PATH --env LD_LIBRARY_PATH --env
@@ -15,8 +19,14 @@ LOADEDMODULES --env _LMFILES_ --env MODULE_VERSION --env MODULEPATH --env
 MODULEVERSION_STACK --env MODULESHOME --env OMP_DYNAMICS --env
 OMP_MAX_ACTIVE_LEVELS --env OMP_NESTED --env OMP_NUM_THREADS --env
 OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
---env ARGOS_PLUGIN_PATH"
+--env ARGOS_PLUGIN_PATH --env LOG4CXX_CONFIGURATION"
 
+################################################################################
+# MSI Runtimes                                                                 #
+################################################################################
+#
+# Log1024,SS32x16: 5 hrs
+#
 ################################################################################
 # For IJCAI2019                                                                #
 ################################################################################
@@ -24,23 +34,26 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 #
 # 32x16: 30 blocks, static cache respawn = 3
 # 64x32: 100 blocks, static cache respawn = 10
-# 128x64: 450 blocks, static cache respawn = 45 (last run did not contain this
-#         respawn value)
 #
-# Low block: block density = 1.0%, static cache % = 10.0
-
+# Low block: block density = 2.75%, static cache % = 10.0
+#
+# 32x16: 15 blocks, static cache respawn = 2
+# 64x32: 60 blocks, static cache respawn = 6
+#
 cd $HOME/git/sierra
-NSIMS=50
-DIMS=(32x16)
-OUTPUT_ROOT=$HOME/exp/ideal-high-block
+NSIMS=4
+DIMS=(64x32)
+OUTPUT_ROOT=$HOME/exp/ideal-low-block
 BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \
                   --template-config-file=$HOME/git/sierra/templates/ideal.argos \
                   --n-sims=$NSIMS\
-                  --batch-criteria=swarm_size.Log1024\
+                  --batch-criteria=swarm_size.Log4096\
                   --n-physics-engines=4\
-                  --n-threads=4 \
-                  --exec-method=hpc.parallel\
+                  --n-threads=4\
+                  --n-blocks=60\
+                  --static-cache-blocks=6\
+                  --exec-method=local.parallel\
                   --time-setup=time_setup.T10000\
                   --perf-measures=sc,so,sp"
 

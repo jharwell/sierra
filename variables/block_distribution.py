@@ -89,8 +89,14 @@ class Quantity(BaseVariable):
         the simulation with the specified # blocks.
         """
         return [set([
-            ("arena_map.blocks.manifest.n_cube", "{0}".format(n / 2.0)),
-            ("arena_map.blocks.manifest.n_ramp", "{0}".format(n / 2.0))]) for n in self.blocks_list]
+            (".//arena_map/blocks/distribution/manifest", "n_cube", "{0}".format(int(n / 2.0))),
+            (".//arena_map/blocks/distribution/manifest", "n_ramp", "{0}".format(int(n / 2.0)))]) for n in self.blocks_list]
+
+    def gen_tag_addlist(self):
+        return []
+
+    def gen_tag_rmlist(self):
+        return []
 
 
 class QuantityLog64(Quantity):

@@ -222,6 +222,26 @@ class Cmdline:
                             choices=["none", "argos", "fordyca", "all"],
                             default="none")
 
+        stage1.add_argument("--n-blocks",
+                            help="""
+
+                            Specify the # blocks that should be used in the simulation (evenly split
+                            between cube and ramp). Can be used to override batch criteria, or to
+                            supplement experiments that do not set it so that manual modification of
+                            input file is unneccesary.
+
+                            """,
+                            type=int,
+                            default=None)
+        stage1.add_argument("--static-cache-blocks",
+                            help="""
+
+                            Specify the # of blocks used when the static cache is respawned (depth1
+                            controllers only).
+
+                            """,
+                            default=None)
+
         stage2 = parser.add_argument_group('stage2 (Running experiments)')
         stage2.add_argument("--exec-method",
                             help="""

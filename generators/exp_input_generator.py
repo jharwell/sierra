@@ -20,7 +20,7 @@ import os
 import random
 import pickle
 from pipeline.xml_luigi import XMLLuigi, InvalidElementError
-from variables import time_setup
+from variables import time_setup, physics_engines, block_distribution
 
 
 class ExpInputGenerator:
@@ -132,6 +132,32 @@ class ExpInputGenerator:
             self._add_sim_to_command_file(os.path.join(self.generation_root,
                                                        self.config_name_format.format(
                                                            self.main_config_name, exp_num)))
+
+    def generate_physics_defs(self, xml_luigi):
+        """Generates definitions for physics engines configuration for the simulation.
+
+        This cannot be done as part of generate_common_defs(), as this class is reused for
+        generators for BOTH controller and scenario, and the arena dimensions are None for
+        configuring controllers.
+
+        """
+        pe = physics_engines.PhysicsEngines(self.sim_opts["n_physics_engines"],
+                                            self.sim_opts["physics_iter_per_tick"],
+                                            "uniform_grid",
+                                            self.sim_opts["arena_dim"])
+        [xml_luigi.tag_remove(a[0], a[1]) for a in pe.gen_tag_rmlist()[0]]
+        [xml_luigi.tag_add(a[0], a[1], a[2]) for a in pe.gen_tag_addlist()[0]]
+
+    def generate_block_count_defs(self, xml_luigi):
+        """
+        Generates definitions for # blocks in the simulation from command line overrides.
+        """
+        bd = block_distribution.Quantity([self.sim_opts['n_blocks']])
+        [xml_luigi.attribute_change(a[0], a[1], a[2]) for a in bd.gen_attr_changelist()[0]]
+        rms = bd.gen_tag_rmlist()
+
+        if len(rms):
+            [xml_luigi.tag_remove(a) for a in rms[0]]
 
     def _generate_time_defs(self, xml_luigi):
         """

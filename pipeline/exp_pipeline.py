@@ -44,11 +44,20 @@ class ExpPipeline:
     def __init__(self, args, input_generator):
         self.args = args
         self.cmdopts = {
+            # general
             'output_root': self.args.output_root,
             'graph_root': self.args.graph_root,
             'sierra_root': self.args.sierra_root,
             'generation_root': self.args.generation_root,
             'generator': self.args.generator,
+            'template_config_file': self.args.template_config_file,
+            'time_setup': self.args.time_setup,
+
+            # stage 2
+            'batch_exp_range': self.args.batch_exp_range,
+            'exec_method': self.args.exec_method,
+
+            # stage 4
             'envc_cs_method': self.args.envc_cs_method,
             'with_hists': self.args.with_hists,
             'plot_applied_vc': self.args.plot_applied_vc,
@@ -56,10 +65,6 @@ class ExpPipeline:
             'reactivity_cs_method': self.args.reactivity_cs_method,
             'adaptability_cs_method': self.args.adaptability_cs_method,
             'exp_graphs': self.args.exp_graphs,
-            'template_config_file': self.args.template_config_file,
-            'time_setup': self.args.time_setup,
-            'batch_exp_range': self.args.batch_exp_range,
-            'exec_method': self.args.exec_method
         }
         if self.args.batch_criteria is None:
             self.cmdopts['criteria_category'] = None
