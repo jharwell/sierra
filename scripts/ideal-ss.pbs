@@ -22,37 +22,41 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 --env ARGOS_PLUGIN_PATH --env LOG4CXX_CONFIGURATION"
 
 ################################################################################
-# MSI Runtimes                                                                 #
+# MSI Runtimes (with margin included)                                          #
 ################################################################################
 #
-# Log1024,SS32x16: 5 hrs
+# {CRW,DPO,GP-DPO},Log1024,SS32x16: 6.5 hrs
+# {CRW,DPO,GP-DPO},Log1024,SS64x32: 6 hrs
 #
 ################################################################################
 # For IJCAI2019                                                                #
 ################################################################################
-# High block: block density = 5.5%, static cache % = 10.0
+# Med block, high speed: block density = 5.0%, static cache % = 10.0, max speed
+# = 10.0
 #
-# 32x16: 30 blocks, static cache respawn = 3
+# 32x16: 25 blocks, static cache respawn = 3
 # 64x32: 100 blocks, static cache respawn = 10
 #
-# Low block: block density = 2.75%, static cache % = 10.0
+# High block, high speed: block density = 10.0%, static cache % = 10.0, max
+# speed = 10.0
 #
-# 32x16: 15 blocks, static cache respawn = 2
-# 64x32: 60 blocks, static cache respawn = 6
-#
+# 32x16: 50 blocks, static cache respawn = 5
+# 64x32: 200 blocks, static cache respawn = 20
+# 96x48: 460 blocks, static cache respawn = 46
+
 cd $HOME/git/sierra
-NSIMS=4
-DIMS=(64x32)
-OUTPUT_ROOT=$HOME/exp/ideal-low-block
+NSIMS=50
+DIMS=(32x16)
+OUTPUT_ROOT=$HOME/exp/ideal-high-block
 BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \
                   --template-config-file=$HOME/git/sierra/templates/ideal.argos \
                   --n-sims=$NSIMS\
-                  --batch-criteria=swarm_size.Log4096\
-                  --n-physics-engines=4\
-                  --n-threads=4\
-                  --n-blocks=60\
-                  --static-cache-blocks=6\
+                  --batch-criteria=swarm_size.Log1024\
+                  --n-physics-engines=8\
+                  --n-threads=8\
+                  --n-blocks=50\
+                  --static-cache-blocks=5\
                   --exec-method=local.parallel\
                   --time-setup=time_setup.T10000\
                   --perf-measures=sc,so,sp"
@@ -63,7 +67,6 @@ do
     rm -rf $OUTPUT_ROOT/depth0.CRW.SS${d}
     $BASE_CMD --generator=depth0.CRW.SS${d}
 done
-
 
 # DPO (does not change # blocks/block manifest from template)
 for d in "${DIMS[@]}"

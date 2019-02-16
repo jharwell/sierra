@@ -51,7 +51,10 @@ class ExpPipeline:
             'generation_root': self.args.generation_root,
             'generator': self.args.generator,
             'template_config_file': self.args.template_config_file,
+
+            # stage 1
             'time_setup': self.args.time_setup,
+            'n_physics_engines': self.args.n_physics_engines,
 
             # stage 2
             'batch_exp_range': self.args.batch_exp_range,

@@ -70,7 +70,7 @@ intra_scenario_measures = [
         'dest_stem': 'cc-pm-karpflatt',
         'title': 'Swarm Karp-Flatt Metric',
         'ylabel': '',
-        'n_exp_corr': 0
+        'n_exp_corr': 1
     },
     {
         'src_stem': 'pm-reactivity',

@@ -42,7 +42,7 @@ class GeneratorCreator:
             "n_threads": args.n_threads,
             "n_physics_engines": args.n_physics_engines,
             "physics_iter_per_tick": args.physics_iter_per_tick,
-            "tsetup": args.time_setup,
+            "time_setup": args.time_setup,
             "with_robot_rab": args.with_robot_rab,
             "with_robot_leds": args.with_robot_leds,
             "with_robot_battery": args.with_robot_battery,

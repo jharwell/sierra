@@ -144,18 +144,20 @@ class Cmdline:
         stage1.add_argument("--time-setup",
                             help="""
 
-                            The simulation time setup to use, which sets duration and metric reporting interval. For
-                            options, see time_setup.py
+                            The simulation time setup to use, which sets duration and metric
+                            reporting interval. For options, see time_setup.py
 
                             """,
                             default="time_setup.T5000")
         stage1.add_argument("--n-physics-engines",
-                            choices=[1, 4, 16],
+                            choices=[1, 4, 8, 16, 24],
                             type=int,
                             help="""
 
-                            The # of physics engines to use during simulation (yay ARGoS!). If n > 1, the engines will
-                            be tiled in a uniform grid within the arena.
+                            The # of physics engines to use during simulation (yay ARGoS!). If n >
+                            1, the engines will be tiled in a uniform grid within the arena (X and Y
+                            spacing may not be the same depending on dimensions and how many engines
+                            are chosen, however).
 
                             """,
                             default=1)

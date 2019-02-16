@@ -165,8 +165,8 @@ class ExpInputGenerator:
         graph generation later.
         """
         setup = __import__("variables.{0}".format(
-            self.sim_opts["tsetup"].split(".")[0]), fromlist=["*"])
-        tsetup_inst = getattr(setup, "Factory")(self.sim_opts["tsetup"])()
+            self.sim_opts["time_setup"].split(".")[0]), fromlist=["*"])
+        tsetup_inst = getattr(setup, "Factory")(self.sim_opts["time_setup"])()
         for a in tsetup_inst.gen_attr_changelist()[0]:
             xml_luigi.attribute_change(a[0], a[1], a[2])
 
