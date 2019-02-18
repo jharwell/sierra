@@ -87,14 +87,11 @@ class ExpPipeline:
     def average_results(self):
         PipelineStage3(self.cmdopts).run()
 
-    def generate_graphs(self):
+    def intra_batch_graphs(self):
         PipelineStage4(self.cmdopts).run()
 
-    def compare_controllers(self):
-        if self.args.comp_controllers is not 'all':
-            PipelineStage5(self.cmdopts, self.args.comp_controllers).run()
-        else:
-            PipelineStage5(self.cmdopts, None).run()
+    def inter_batch_graphs(self):
+        PipelineStage5(self.cmdopts, self.args.inter_batch_controllers).run()
 
     def run(self):
 
@@ -108,8 +105,8 @@ class ExpPipeline:
             self.average_results()
 
         if 4 in self.args.pipeline:
-            self.generate_graphs()
+            self.intra_batch_graphs()
 
         # not part of default pipeline
         if 5 in self.args.pipeline:
-            self.compare_controllers()
+            self.inter_batch_graphs()

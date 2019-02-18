@@ -17,7 +17,7 @@
 """
 
 import os
-import perf_measures.controller_comp as cc
+import pipeline.inter_batch_comparator as ibc
 
 
 class PipelineStage5:
@@ -50,11 +50,8 @@ class PipelineStage5:
     def run(self):
         # Verify that all controllers have run the same set of experiments before doing the
         # comparison
-        if self.targets is None:
-            self.targets = ['depth0.CRW', 'depth0.DPO', 'depth1.GP_DPO']
-        else:
-            self.targets = self.targets.split(',')
-        print("- Stage5: Comparing controllers {0}...".format(self.targets))
+        self.targets = self.targets.split(',')
+        print("- Stage5: Inter-batch controller comparison of {0}...".format(self.targets))
 
         for t1 in self.targets:
             for t2 in self.targets:
@@ -68,6 +65,6 @@ class PipelineStage5:
                     if os.path.isdir(path2) and not os.path.exists(path1):
                         print("WARN: {0} does not exist".format(path1))
 
-        cc.ControllerComp(controllers=self.targets,
-                          cmdopts=self.cmdopts).generate()
-        print("- Stage5: Controller comparison complete")
+        ibc.InterBatchComparator(controllers=self.targets,
+                                 cmdopts=self.cmdopts).generate()
+        print("- Stage5: Inter-batch controller comparison complete")

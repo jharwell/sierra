@@ -22,109 +22,115 @@ from graphs.batch_ranged_graph import BatchRangedGraph
 from graphs.bar_graph import BarGraph
 import perf_measures.utils as pm_utils
 import copy
-intra_scenario_measures = [
-    {
-        'src_stem': 'pm-pp-comp-positive',
-        'dest_stem': 'cc-pm-pp-comp-positive',
-        'title': 'Swarm Projective Performance Comparison (positive)',
-        'ylabel': 'Observed-Projected Ratio',
-        'n_exp_corr': 0
-    },
-    {
-        'src_stem': 'pm-pp-comp-negative',
-        'dest_stem': 'cc-pm-pp-comp-negative',
-        'title': 'Swarm Projective Performance Comparison (Negative)',
-        'ylabel': 'Observed-Projected Ratio',
-        'n_exp_corr': 0
-    },
-    {
-        'src_stem': 'pm-scalability-fl',
-        'dest_stem': 'cc-pm-scalability-fl',
-        'title': 'Swarm Scalability (Sub-Linear Fractional Losses)',
-        'ylabel': 'Scalability Value',
-        'n_exp_corr': 0
-    },
-    {
-        'src_stem': 'pm-scalability-norm',
-        'dest_stem': 'cc-pm-scalability-norm',
-        'title': 'Swarm Scalability (Normalized)',
-        'ylabel': 'Scalability Value',
-        'n_exp_corr': 0
-    },
-    {
-        'src_stem': 'pm-self-org',
-        'dest_stem': 'cc-pm-self-org',
-        'title': 'Swarm Self Organization',
-        'ylabel': 'Self Organization Value',
-        'n_exp_corr': 1
-    },
-    {
-        'src_stem': 'pm-blocks-collected',
-        'dest_stem': 'cc-pm-blocks-collected',
-        'title': 'Swarm Total Blocks Collected',
-        'ylabel': '# Blocks',
-        'n_exp_corr': 0
-    },
-    {
-        'src_stem': 'pm-karpflatt',
-        'dest_stem': 'cc-pm-karpflatt',
-        'title': 'Swarm Karp-Flatt Metric',
-        'ylabel': '',
-        'n_exp_corr': 1
-    },
-    {
-        'src_stem': 'pm-reactivity',
-        'dest_stem': 'cc-pm-reactivity',
-        'title': 'Swarm Reactivity',
-        'ylabel': '',
-        'n_exp_corr': 0
-    },
-    {
-        'src_stem': 'pm-adaptability',
-        'dest_stem': 'cc-pm-adaptability',
-        'title': 'Swarm Adaptability',
-        'ylabel': '',
-        'n_exp_corr': 1
-    },
-]
-
-inter_scenario_measures = [
-    {
-        'src_stem': 'pm-scalability-fl',
-        'dest_stem': 'sc-pm-scalability-fl',
-        'title': 'Weight Unified Swarm Scalability (Sub-Linear Fractional Losses)',
-    },
-    {
-        'src_stem': 'pm-scalability-norm',
-        'dest_stem': 'sc-pm-scalability-norm',
-        'title': 'Weight Unified Swarm Scalability (Normalized)',
-    },
-    {
-        'src_stem': 'pm-self-org',
-        'dest_stem': 'sc-pm-self-org',
-        'title': 'Weight Unified Swarm Self Organization',
-    },
-    {
-        'src_stem': 'pm-blocks-collected',
-        'dest_stem': 'sc-pm-blocks-collected',
-        'title': 'Weight Unified Blocks Collected',
-    },
-    {
-        'src_stem': 'pm-adaptability',
-        'dest_stem': 'sc-pm-adaptability',
-        'title': 'Weight Unified Adaptability',
-    },
-    {
-        'src_stem': 'pm-reactivity',
-        'dest_stem': 'sc-pm-reactivity',
-        'title': 'Weight Unified Reactivity',
-    },
+import perf_measures.vcs
 
 
-]
+def intra_scenario_measures(reactivity_cs_method, adaptability_cs_method):
+    return [
+        {
+            'src_stem': 'pm-pp-comp-positive',
+            'dest_stem': 'cc-pm-pp-comp-positive',
+            'title': 'Swarm Projective Performance Comparison (positive)',
+            'ylabel': 'Observed-Projected Ratio',
+            'n_exp_corr': 0
+        },
+        {
+            'src_stem': 'pm-pp-comp-negative',
+            'dest_stem': 'cc-pm-pp-comp-negative',
+            'title': 'Swarm Projective Performance Comparison (Negative)',
+            'ylabel': 'Observed-Projected Ratio',
+            'n_exp_corr': 0
+        },
+        {
+            'src_stem': 'pm-scalability-fl',
+            'dest_stem': 'cc-pm-scalability-fl',
+            'title': 'Swarm Scalability (Sub-Linear Fractional Losses)',
+            'ylabel': 'Scalability Value',
+            'n_exp_corr': 0
+        },
+        {
+            'src_stem': 'pm-scalability-norm',
+            'dest_stem': 'cc-pm-scalability-norm',
+            'title': 'Swarm Scalability (Normalized)',
+            'ylabel': 'Scalability Value',
+            'n_exp_corr': 0
+        },
+        {
+            'src_stem': 'pm-self-org',
+            'dest_stem': 'cc-pm-self-org',
+            'title': 'Swarm Self Organization',
+            'ylabel': 'Self Organization Value',
+            'n_exp_corr': 1
+        },
+        {
+            'src_stem': 'pm-blocks-collected',
+            'dest_stem': 'cc-pm-blocks-collected',
+            'title': 'Swarm Total Blocks Collected',
+            'ylabel': '# Blocks',
+            'n_exp_corr': 0
+        },
+        {
+            'src_stem': 'pm-karpflatt',
+            'dest_stem': 'cc-pm-karpflatt',
+            'title': 'Swarm Karp-Flatt Metric',
+            'ylabel': 'Karp-Flatt Value',
+            'n_exp_corr': 1
+        },
+        {
+            'src_stem': 'pm-reactivity',
+            'dest_stem': 'cc-pm-reactivity',
+            'title': 'Swarm Reactivity',
+            'ylabel': perf_measures.vcs.method_ylabel(reactivity_cs_method),
+            'n_exp_corr': 0
+        },
+        {
+            'src_stem': 'pm-adaptability',
+            'dest_stem': 'cc-pm-adaptability',
+            'title': 'Swarm Adaptability',
+            'ylabel': perf_measures.vcs.method_ylabel(adaptability_cs_method),
+            'n_exp_corr': 1
+        },
+    ]
 
 
-class ControllerComp:
+def inter_scenario_measures():
+    return [
+        {
+            'src_stem': 'pm-scalability-fl',
+            'dest_stem': 'sc-pm-scalability-fl',
+            'title': 'Weight Unified Swarm Scalability (Sub-Linear Fractional Losses)',
+        },
+        {
+            'src_stem': 'pm-scalability-norm',
+            'dest_stem': 'sc-pm-scalability-norm',
+            'title': 'Weight Unified Swarm Scalability (Normalized)',
+        },
+        {
+            'src_stem': 'pm-self-org',
+            'dest_stem': 'sc-pm-self-org',
+            'title': 'Weight Unified Swarm Self Organization',
+        },
+        {
+            'src_stem': 'pm-blocks-collected',
+            'dest_stem': 'sc-pm-blocks-collected',
+            'title': 'Weight Unified Blocks Collected',
+        },
+        {
+            'src_stem': 'pm-adaptability',
+            'dest_stem': 'sc-pm-adaptability',
+            'title': 'Weight Unified Adaptability',
+        },
+        {
+            'src_stem': 'pm-reactivity',
+            'dest_stem': 'sc-pm-reactivity',
+            'title': 'Weight Unified Reactivity',
+        },
+
+
+    ]
+
+
+class InterBatchComparator:
     """
     Compares controllers on different criteria across/within different scenarios.
     """
@@ -152,7 +158,7 @@ class ControllerComp:
         ACROSS scenarios
         """
 
-        for m in inter_scenario_measures:
+        for m in inter_scenario_measures():
             self._generate_inter_scenario_graph(src_stem=m['src_stem'],
                                                 dest_stem=m['dest_stem'],
                                                 title=m['title'])
@@ -208,7 +214,8 @@ class ControllerComp:
         - Swarm scalability
         - Swarm self-organization
         """
-        for m in intra_scenario_measures:
+        for m in intra_scenario_measures(self.cmdopts['reactivity_cs_method'],
+                                         self.cmdopts['adaptability_cs_method']):
             self._generate_intra_scenario_graph(src_stem=m['src_stem'],
                                                 dest_stem=m['dest_stem'],
                                                 title=m['title'],

@@ -25,8 +25,11 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 # MSI Runtimes (with margin included)                                          #
 ################################################################################
 #
-# {CRW,DPO,GP-DPO},Log1024,SS32x16: 6.5 hrs
+# {CRW,DPO,GP-DPO},Log1024,SS32x16: 6 hrs
 # {CRW,DPO,GP-DPO},Log1024,SS64x32: 6 hrs
+# {CRW,DPO,GP-DPO},Log4096,SS64x32: 18.5 hrs
+# {CRW,DPO,GP-DPO},Log1024,SS96x48: 6.5 hrs
+# {CRW,DPO,GP-DPO},Log4096,SS96x48: 18.5 hrs
 #
 ################################################################################
 # For IJCAI2019                                                                #

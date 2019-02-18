@@ -374,14 +374,14 @@ class Cmdline:
                             choices=["pcm", "area_between", "frechet", "dtw", "curve_length"],
                             default="pcm")
 
-        stage5 = parser.add_argument_group('stage5 (Controller/scenario comparison)')
+        stage5 = parser.add_argument_group('stage5 (Inter-batch controller/scenario comparison)')
 
-        stage5.add_argument("--comp-controllers",
+        stage5.add_argument("--inter-batch-controllers",
                             help="""
 
-                            Comma separated list of controllers to compare within <sierra root>. Specify 'all' to compare all
-                            controllers in <sierra root>.
+                            Comma separated list of controllers to compare within <sierra root>. If
+                            None, then the default set of controllers will be used for comparison.
 
                             """,
-                            default="all")
+                            default='depth0.CRW,depth0.DPO,depth1.GP_DPO')
         return parser

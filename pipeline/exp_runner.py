@@ -49,34 +49,64 @@ class ExpRunner:
         sys.stdout.write('-' + '-' * self.batch +
                          " Running experiment in {0}...".format(self.exp_generation_root))
         sys.stdout.flush()
+
+        # Root directory for the job. Chose the exp input directory rather than the output directory
+        # in order to keep simulation outputs separate from those for the framework used to run the
+        # experiments.
+        jobroot = self.exp_generation_root
+
+        cmdfile = os.path.join(self.exp_generation_root, "commands.txt")
+        joblog = os.path.join(jobroot, "parallel$PBS_JOBID.log")
+
         start = time.time()
         try:
-            # so that it can be run on non-supercomputers
             if 'local.parallel' == exec_method:
-                p = subprocess.Popen('cd {0} && parallel --joblog /tmp/foo --no-notice < "{1}"'.format(self.exp_generation_root,
-                                                                                                       self.exp_generation_root + "/commands.txt"),
-                                     shell=True,
-                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                stdout, stderr = p.communicate()
-                if p.returncode != 0:
-                    print(stdout, stderr)
-                    print("ERROR: Process exited with {0}".format(p.returncode))
+                self._run_local_parallel(jobroot, cmdfile, joblog)
             elif 'local.serial' == exec_method:
-                p = subprocess.Popen('cd {0} && parallel --jobs 1 --joblog /tmp/foo --no-notice < "{1}"'.format(self.exp_generation_root,
-                                                                                                                self.exp_generation_root + "/commands.txt"),
-                                     shell=True,
-                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                stdout, stderr = p.communicate()
-                if p.returncode != 0:
-                    print(stdout, stderr)
-                    print("ERROR: Process exited with {0}".format(p.returncode))
+                self._run_local_serial(jobroot, cmdfile, joblog)
             elif 'hpc.parallel' == exec_method:
-                # running on a supercomputer - specifically MSI
-                subprocess.run('sort -u $PBS_NODEFILE > unique-nodelist.txt && \
-                                parallel --jobs 1 --sshloginfile unique-nodelist.txt --workdir $PWD < "{}"'.format(self.exp_generation_root + '/commands.txt'),
-                               shell=True, check=True)
-        except subprocess.CalledProcessError as e:
+                self._run_hpc_parallel(jobroot, cmdfile, joblog)
+
+        # Catch the exception but do not raise it again so that additional experiments can still be
+        # run if possible
+        except subprocess.CalledProcessError:
             print("ERROR: Experiment failed!")
-            raise e
         elapsed = time.time() - start
         sys.stdout.write("{:.3f}s\n".format(elapsed))
+
+    def _run_local_serial(self, jobroot_path, cmdfile_path, joblog_path):
+        p = subprocess.Popen('cd {0} &&'
+                             'parallel --results {0} --joblog {1} --no-notice < "{2}"'.format(
+                                 jobroot_path,
+                                 joblog_path,
+                                 cmdfile_path),
+                             shell=True,
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = p.communicate()
+        if p.returncode != 0:
+            print(stdout, stderr)
+            print("ERROR: Process exited with {0}".format(p.returncode))
+
+    def _run_local_parallel(self, jobroot_path, cmdfile_path, joblog_path):
+        p = subprocess.Popen('cd {0} &&'
+                             'parallel --jobs 1 --results {0} --joblog {1} --no-notice < "{2}"'.format(
+                                 jobroot_path,
+                                 joblog_path,
+                                 cmdfile_path),
+                             shell=True,
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = p.communicate()
+        if p.returncode != 0:
+            print(stdout, stderr)
+            print("ERROR: Process exited with {0}".format(p.returncode))
+
+    def _run_hpc_parallel(self, jobroot_path, cmdfile_path, joblog_path):
+        nodelist = os.path.join(jobroot_path, "$PBS_JOBID-nodelist.txt")
+
+        subprocess.run('sort -u $PBS_NODEFILE > {0} && '
+                       'parallel --jobs 1 --results {2} --joblog {1} --sshloginfile {0} --workdir {2} < "{3}"'.format(
+                           nodelist,
+                           joblog_path,
+                           jobroot_path,
+                           cmdfile_path),
+                       shell=True, check=True)
