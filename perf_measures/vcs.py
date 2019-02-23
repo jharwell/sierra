@@ -38,23 +38,31 @@ def method_xlabel(method):
         "area_between": "Area Difference For Experiment and Ideal Conditions Variance Curves",
         "frechet": "Experiment Frechet Distance To Ideal Conditions",
         "curve_length": "Curve Length Difference To Ideal Conditions",
-        "dtw": "DTW Distance To Ideal Conditions"
+        "dtw": r'DTW($I_{ec}(t)$,$V_{ec}(t)$)'
     }
     return labels[method]
 
 
-def method_ylabel(method):
+def method_ylabel(method, arg=None):
     """
     Return the Y-label of the method used for calculating the curve similarity.
+
+    method(str): Method name.
+    arg(str): An additional multi-purpose argument to pass to the function
     """
     if method is None:
         return None
+
+    ideal_curve_names = {
+        "adaptability": r'$P_{\Lambda^{*}}(N,\kappa,t)$',
+        "reactivity": r'$P_{R^{*}}(N,\kappa,t)$',
+    }
     labels = {
         "pcm": "PCM Distance Between Variance and Performance Curves",
         "area_between": "Area Between Variance and Performance Curves",
         "frechet": "Frechet Distance Between Variance and Performance Curves",
         "curve_length": "Curve Length Difference Between Variance and Performance Curves",
-        "dtw": "DTW Distance Between Variance and Performance Curves"
+        "dtw": r'DTW(' + ideal_curve_names[arg] + ',' + r'$P(N,\kappa,t)$)'
     }
     return labels[method]
 
@@ -185,7 +193,7 @@ class AdaptabilityCS():
         ideal_data[:, 0] = ideal_df.index.values
         ideal_data[:, 1] = ideal_df[perf_col].values
 
-        return _compute_vcs_raw(exp_data, ideal_data, self.cmdopts["reactivity_cs_method"])
+        return _compute_vcs_raw(exp_data, ideal_data, self.cmdopts["adaptability_cs_method"])
 
 
 class ReactivityCS():

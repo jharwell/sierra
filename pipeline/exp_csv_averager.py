@@ -52,6 +52,7 @@ class ExpCSVAverager:
         pattern = self.output_name_format.format(
             re.escape(self.exp_config_leaf), "\d+")
 
+        print('-- ' + self.exp_output_root + "...")
         for entry in os.scandir(self.exp_output_root):
             # check to make sure the file name matches the regex
             if re.fullmatch(pattern, entry.name):

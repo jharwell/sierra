@@ -25,8 +25,13 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 # MSI Runtimes (with margin included)                                          #
 ################################################################################
 #
+# SS64x32: BCStepU,Log128: 4.5 hrs
+# SS64x32: BCStepU,Log256: 7 hrs
+# SS64x32: BCStepU,Log512: 12.5 hrs
+# SS64x32: BCStepU,Log1024: 20 hrs
+# SS64x32: BCStepU,Log2048: 36.5 hrs
+# SS64x32: BCStepU,Log4096: 73.5 hrs
 #
-
 ################################################################################
 # For IJCAI2019                                                                #
 ################################################################################
@@ -37,7 +42,7 @@ cd $HOME/git/sierra
 NSIMS=50
 WAVEFORMS=(StepD)
 SWARM_SIZES=(16 32 64 128 256 512 1024)
-OUTPUT_ROOT=$HOME/exp/variance
+OUTPUT_ROOT=$HOME/exp/msi/variance
 BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \
                   --template-config-file=$HOME/git/sierra/templates/temporal-variance.argos \
@@ -53,47 +58,47 @@ BASE_CMD="python3 sierra.py \
                   --reactivity-cs-method=dtw\
                   --adaptability-cs-method=dtw"
 
-# CRW (does not change # blocks/block manifest from template)
-for w in "${WAVEFORMS[@]}"
-do
-    for s in "${SWARM_SIZES[@]}"
-    do
-        $BASE_CMD --generator=depth0.CRW.SS64x32 \
-                  --batch-criteria=temporal_variance.BC${w}25000.Z${s}
+# # CRW (does not change # blocks/block manifest from template)
+# for w in "${WAVEFORMS[@]}"
+# do
+#     for s in "${SWARM_SIZES[@]}"
+#     do
+#         $BASE_CMD --generator=depth0.CRW.SS64x32 \
+#                   --batch-criteria=temporal_variance.BC${w}25000.Z${s}
 
-        # $BASE_CMD --generator=depth0.CRW.SS64x32 \
-        #           --batch-criteria=temporal_variance.BM${w}25000.Z${s}
-    done
-done
+#         # $BASE_CMD --generator=depth0.CRW.SS64x32 \
+#         #           --batch-criteria=temporal_variance.BM${w}25000.Z${s}
+#     done
+# done
 
-# DPO (does not change # blocks/block manifest from template)
-for w in "${WAVEFORMS[@]}"
-do
-    for s in "${SWARM_SIZES[@]}"
-    do
-        $BASE_CMD --generator=depth0.DPO.SS64x32 \
-                  --batch-criteria=temporal_variance.BC${w}25000.Z${s}
+# # DPO (does not change # blocks/block manifest from template)
+# for w in "${WAVEFORMS[@]}"
+# do
+#     for s in "${SWARM_SIZES[@]}"
+#     do
+#         $BASE_CMD --generator=depth0.DPO.SS64x32 \
+#                   --batch-criteria=temporal_variance.BC${w}25000.Z${s}
 
-        # $BASE_CMD --generator=depth0.DPO.SS64x32 \
-        #           --batch-criteria=temporal_variance.BM${w}25000.Z${s}
-    done
-done
+#         # $BASE_CMD --generator=depth0.DPO.SS64x32 \
+#         #           --batch-criteria=temporal_variance.BM${w}25000.Z${s}
+#     done
+# done
 
-# GP_DPO (does not change # blocks/block manifest from template)
-for w in "${WAVEFORMS[@]}"
-do
-    for s in "${SWARM_SIZES[@]}"
-    do
-        $BASE_CMD --generator=depth1.GP_DPO.SS64x32 \
-                  --batch-criteria=temporal_variance.BC${w}25000.Z${s}
+# # GP_DPO (does not change # blocks/block manifest from template)
+# for w in "${WAVEFORMS[@]}"
+# do
+#     for s in "${SWARM_SIZES[@]}"
+#     do
+#         $BASE_CMD --generator=depth1.GP_DPO.SS64x32 \
+#                   --batch-criteria=temporal_variance.BC${w}25000.Z${s}
 
-        # $BASE_CMD --generator=depth1.GP_DPO.SS64x32 \
-        #           --batch-criteria=temporal_variance.BM${w}25000.Z${s}
-    done
-done
+#         # $BASE_CMD --generator=depth1.GP_DPO.SS64x32 \
+#         #           --batch-criteria=temporal_variance.BM${w}25000.Z${s}
+#     done
+# done
 
 # Generate comparison graphs (a valid batch criteria still needed to
 # correctly generate graph labels)
 $BASE_CMD --generator=depth1.GP_DPO.SS64x32 \
-          --batch-criteria=temporal_variance.BCStepU25000.Z16 \
+          --batch-criteria=temporal_variance.BCStepU25000.Z16 --inter-batch-controllers=CRW,DPO,GP_DPO\
           --pipeline 5

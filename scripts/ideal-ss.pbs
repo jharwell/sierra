@@ -28,8 +28,11 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 # {CRW,DPO,GP-DPO},Log1024,SS32x16: 6 hrs
 # {CRW,DPO,GP-DPO},Log1024,SS64x32: 6 hrs
 # {CRW,DPO,GP-DPO},Log4096,SS64x32: 18.5 hrs
+#
 # {CRW,DPO,GP-DPO},Log1024,SS96x48: 6.5 hrs
 # {CRW,DPO,GP-DPO},Log4096,SS96x48: 18.5 hrs
+# {CRW,DPO,GP-DPO},Log8192,SS96x48: 36 hrs
+# {CRW,DPO,GP-DPO},Log16384,SS96x48: 75 hrs
 #
 ################################################################################
 # For IJCAI2019                                                                #
@@ -39,6 +42,8 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 #
 # 32x16: 25 blocks, static cache respawn = 3
 # 64x32: 100 blocks, static cache respawn = 10
+# 96x48: 230 blocks, static cache respawn = 23
+# 128x64: 410 blocks, static cache respawn = 41
 #
 # High block, high speed: block density = 10.0%, static cache % = 10.0, max
 # speed = 10.0
@@ -46,37 +51,38 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 # 32x16: 50 blocks, static cache respawn = 5
 # 64x32: 200 blocks, static cache respawn = 20
 # 96x48: 460 blocks, static cache respawn = 46
+# 128x64: 820 blocks, static cache respawn = 82
 
 cd $HOME/git/sierra
 NSIMS=50
-DIMS=(32x16)
-OUTPUT_ROOT=$HOME/exp/ideal-high-block
+DIMS=(96x48)
+OUTPUT_ROOT=$HOME/exp/test
 BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \
                   --template-config-file=$HOME/git/sierra/templates/ideal.argos \
                   --n-sims=$NSIMS\
-                  --batch-criteria=swarm_size.Log1024\
-                  --n-physics-engines=8\
-                  --n-threads=8\
-                  --n-blocks=50\
-                  --static-cache-blocks=5\
+                  --batch-criteria=swarm_size.Log16384\
+                  --n-physics-engines=8 --batch-exp-range=14:14\
+                  --n-threads=8 --pipeline 1\
+                  --n-blocks=460\
+                  --static-cache-blocks=46\
                   --exec-method=local.parallel\
-                  --time-setup=time_setup.T10000\
+                  --time-setup=time_setup.T100\
                   --perf-measures=sc,so,sp"
 
-# CRW (does not change # blocks/block manifest from template)
-for d in "${DIMS[@]}"
-do
-    rm -rf $OUTPUT_ROOT/depth0.CRW.SS${d}
-    $BASE_CMD --generator=depth0.CRW.SS${d}
-done
+# # CRW (does not change # blocks/block manifest from template)
+# for d in "${DIMS[@]}"
+# do
+#     rm -rf $OUTPUT_ROOT/depth0.CRW.SS${d}
+#     $BASE_CMD --generator=depth0.CRW.SS${d}
+# done
 
-# DPO (does not change # blocks/block manifest from template)
-for d in "${DIMS[@]}"
-do
-    rm -rf $OUTPUT_ROOT/stateful.SS${d}
-    $BASE_CMD --generator=depth0.DPO.SS${d}
-done
+# # DPO (does not change # blocks/block manifest from template)
+# for d in "${DIMS[@]}"
+# do
+#     rm -rf $OUTPUT_ROOT/stateful.SS${d}
+#     $BASE_CMD --generator=depth0.DPO.SS${d}
+# done
 
 # GP-DPO (does not change # blocks/block manifest from template)
 for d in "${DIMS[@]}"
@@ -85,6 +91,6 @@ do
     $BASE_CMD --generator=depth1.GP_DPO.SS${d}
 done
 
-# Generate comparison graphs (a valid batch criteria still needed to
-# correctly generate graph labels)
-$BASE_CMD --generator=depth1.GP_DPO.SS128x64 --pipeline 5
+# # Generate comparison graphs (a valid batch criteria still needed to
+# # correctly generate graph labels)
+# $BASE_CMD --generator=depth1.GP_DPO.SS128x64 --pipeline 5

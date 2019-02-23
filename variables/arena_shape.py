@@ -19,7 +19,7 @@
 from variables.base_variable import BaseVariable
 import math
 
-kWallWidth = 0.1
+kWallWidth = 0.4
 
 
 class RectangularArena(BaseVariable):

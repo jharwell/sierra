@@ -79,15 +79,15 @@ def intra_scenario_measures(reactivity_cs_method, adaptability_cs_method):
         {
             'src_stem': 'pm-reactivity',
             'dest_stem': 'cc-pm-reactivity',
-            'title': 'Swarm Reactivity',
-            'ylabel': perf_measures.vcs.method_ylabel(reactivity_cs_method),
+            'title': r'Swarm Reactivity $R(N,\kappa)$',
+            'ylabel': perf_measures.vcs.method_ylabel(reactivity_cs_method, 'reactivity'),
             'n_exp_corr': 0
         },
         {
             'src_stem': 'pm-adaptability',
             'dest_stem': 'cc-pm-adaptability',
-            'title': 'Swarm Adaptability',
-            'ylabel': perf_measures.vcs.method_ylabel(adaptability_cs_method),
+            'title': r'Swarm Adaptability $\Lambda(N,\kappa)$',
+            'ylabel': perf_measures.vcs.method_ylabel(adaptability_cs_method, 'adaptability'),
             'n_exp_corr': 1
         },
     ]
@@ -247,14 +247,16 @@ class InterBatchComparator:
 
                 df = df.append(pd.read_csv(csv_ipath, sep=';'))
 
-                csv_opath = os.path.join(self.cc_csv_root, 'cc-' +
-                                         src_stem + "-" + s + ".csv")
-                df.to_csv(csv_opath, sep=';', index=False)
                 exp_counts[s] = len(df.columns)
 
                 # For some graphs, the .csv only contains entries for exp >=1, BUT we need to have
                 # the full experiment count in order to get the axis labels to come out right.
                 exp_counts[s] += n_exp_corr
+
+            csv_opath = os.path.join(self.cc_csv_root, 'cc-' +
+                                     src_stem + "-" + s + ".csv")
+            df = df.reindex(sorted(df.columns, key=lambda t: int(t[3:])), axis=1)
+            df.to_csv(csv_opath, sep=';', index=False)
 
         for s in scenarios:
             if s not in exp_counts:

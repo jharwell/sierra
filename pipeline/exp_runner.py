@@ -76,7 +76,7 @@ class ExpRunner:
 
     def _run_local_serial(self, jobroot_path, cmdfile_path, joblog_path):
         p = subprocess.Popen('cd {0} &&'
-                             'parallel --results {0} --joblog {1} --no-notice < "{2}"'.format(
+                             'parallel --jobs 1 --results {0} --joblog {1} --no-notice < "{2}"'.format(
                                  jobroot_path,
                                  joblog_path,
                                  cmdfile_path),
@@ -89,7 +89,7 @@ class ExpRunner:
 
     def _run_local_parallel(self, jobroot_path, cmdfile_path, joblog_path):
         p = subprocess.Popen('cd {0} &&'
-                             'parallel --jobs 1 --results {0} --joblog {1} --no-notice < "{2}"'.format(
+                             'parallel --results {0} --joblog {1} --no-notice < "{2}"'.format(
                                  jobroot_path,
                                  joblog_path,
                                  cmdfile_path),

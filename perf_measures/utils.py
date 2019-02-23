@@ -186,18 +186,21 @@ class ProjectivePerformance:
         self.cmdopts["n_exp"] = len(df.columns)
         xvals = batch_criteria_xvals(self.cmdopts)
 
-        for c in scale_cols:
-            exp_num = int(c[3:])
-            v = xvals[exp_num]
+        for exp_num in range(1, len(scale_cols) + 1):
+            exp_col = 'exp' + str(exp_num)
+            exp_prev_col = 'exp' + str(exp_num - 1)
+            similarity = float(xvals[exp_num]) / float(xvals[exp_num - 1])
 
             if "positive" == self.projection_type:
-                df_new[c] = ProjectivePerformance._calc_positive(df.tail(1)[c].values[0],
-                                                                 df.tail(1)['exp0'].values[0],
-                                                                 v)
+                df_new[exp_col] = ProjectivePerformance._calc_positive(df.tail(1)[exp_col].values[0],
+                                                                       df.tail(1)[
+                    exp_prev_col].values[0],
+                    similarity)
             elif "negative" == self.projection_type:
-                df_new[c] = ProjectivePerformance._calc_negative(df.tail(1)[c].values[0],
-                                                                 df.tail(1)['exp0'].values[0],
-                                                                 v)
+                df_new[exp_col] = ProjectivePerformance._calc_negative(df.tail(1)[exp_col].values[0],
+                                                                       df.tail(1)[
+                    exp_prev_col].values[0],
+                    similarity)
         return df_new
 
     def _calc_positive(observed, exp0, similarity):
