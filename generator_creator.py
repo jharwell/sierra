@@ -49,6 +49,7 @@ class GeneratorCreator:
             "with_visualizations": args.with_visualizations,
             'n_blocks': args.n_blocks,
             'static_cache_blocks': args.static_cache_blocks,
+            'exec_method': args.exec_method
         }
         if args.batch_criteria is not None:
             criteria = __import__("variables.{0}".format(

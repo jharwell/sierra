@@ -64,7 +64,7 @@ class ExpRunner:
                 self._run_local_parallel(jobroot, cmdfile, joblog)
             elif 'local.serial' == exec_method:
                 self._run_local_serial(jobroot, cmdfile, joblog)
-            elif 'hpc.parallel' == exec_method:
+            elif 'hpc' in exec_method:
                 self._run_hpc_parallel(jobroot, cmdfile, joblog)
 
         # Catch the exception but do not raise it again so that additional experiments can still be

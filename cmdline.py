@@ -257,11 +257,17 @@ class Cmdline:
                                           machine. Useful for large swarms when the full resources of the local machine
                                           are needed to run simulations at a reasonable rate of speed.
 
-                            hpc.parallel: Use GNU parallel in an HPC environment to run the specified # of simulations
-                                          simultaneously on a computing cluster.
+                            hpc[.cluster_name]: Use GNU parallel in an HPC environment to run the specified # of
+                                                simulations simultaneously on a computing cluster. The [.cluster] is
+                                                optional, and if omitted sierra with attempt to invoke ARGoS via
+                                                "argos3" on the command line. If the cluster name is specified, then
+                                                sierra will attempt to invoke ARGoS via "argos3-cluster_name". For
+                                                example, if "hpc.itasca" is specified, then ARGoS will be invoked via
+                                                "argos3-itasca. This option is provided so that in HPC environments with
+                                                multiple clusters with different architectures ARGoS can be compiled
+                                                natively for each for maximum performance.
 
                             """,
-                            choices=["local.parallel", "local.serial", "hpc.parallel"],
                             default="local.parallel")
         stage2.add_argument("--batch-exp-range",
                             help="""

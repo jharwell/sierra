@@ -268,10 +268,18 @@ class ExpInputGenerator:
 
     def _add_sim_to_command_file(self, xml_fname):
         """Adds the command to run a particular simulation definition to the command file."""
-        # need the double quotes around the path so that it works in both Linux and Windows
+
+        # Specify ARGoS invocation in generated command file per cmdline arguments.
+        parts = self.sim_opts['exec_method'].split('.')
+
+        if 1 == len(parts):
+            argos_cmd = 'argos3'
+        else:
+            argos_cmd = 'argos3-' + parts[1]
+
         with open(self.commands_fpath, "a") as commands_file:
             commands_file.write(
-                'argos3 -c "{}" --log-file /dev/null --logerr-file /dev/null\n'.format(xml_fname))
+                argos_cmd + ' -c "{}" --log-file /dev/null --logerr-file /dev/null\n'.format(xml_fname))
 
     def _generate_random_seeds(self):
         """Generates random seeds for experiments to use."""
