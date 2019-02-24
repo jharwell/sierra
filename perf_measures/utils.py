@@ -73,7 +73,8 @@ def batch_swarm_sizes(cmdopts):
     """
     if any(c in cmdopts["criteria_category"] for c in ["swarm_density",
                                                        "temporal_variance",
-                                                       "swarm_size"]):
+                                                       "swarm_size",
+                                                       "energy_battery"]):
         sizes = []
         for i in range(0, cmdopts["n_exp"]):
 
@@ -81,6 +82,19 @@ def batch_swarm_sizes(cmdopts):
                 cmdopts["generation_root"], "exp" + str(i), "exp_def.pkl"))
             for e in exp_def:
                 if e[0] == ".//arena/distribute/entity" and e[1] == "quantity":
+                    sizes.append(int(e[2]))
+        return sizes
+    else:
+        return None
+
+def batch_energy_battery(cmdopts):
+    if any(c in cmdopts["criteria_category"] for c in ["energy_battery"]):
+        batteries = []
+        for i in range(0, cmdopts["n_exp"]):
+            exp_def = unpickle_exp_def(os.path.join(
+                cmdopts["generation_root"], "exp" + str(i), "exp_def.pkl"))
+            for e in exp_def:
+                if e[0] == ".//params/energy" and e[1] == "EEE":
                     sizes.append(int(e[2]))
         return sizes
     else:
@@ -115,6 +129,8 @@ def batch_criteria_xvals(cmdopts):
         return densities
     elif "temporal_variance" in cmdopts["criteria_category"]:
         return [vcs.EnvironmentalCS(cmdopts, x)() for x in range(0, cmdopts["n_exp"])]
+    elif "energy_battery" in cmdopts["criteria_category"]:
+        return batch_energy_battery(cmdopts)
 
 
 def batch_criteria_xlabel(cmdopts):
@@ -126,6 +142,7 @@ def batch_criteria_xlabel(cmdopts):
         "swarm_size": "Swarm Size",
         "swarm_density": "Swarm Density",
         "temporal_variance": vcs.method_xlabel(cmdopts["envc_cs_method"])
+        "energy_battery": "Energy Battery"
     }
     return labels[cmdopts["criteria_category"]]
 

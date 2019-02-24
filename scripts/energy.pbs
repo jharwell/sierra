@@ -29,14 +29,8 @@ BASE_CMD="python3 sierra.py \
                   --n-threads=8\
                   --exec-method=local.serial \
                   --time-setup=time_setup.T10000 \
-                  --plot-applied-vc \
-                  --envc-cs-method=dtw \
-                  --reactivity-cs-method=dtw \
-                  --adaptability-cs-method=dtw \
-                   --with-robot-rab \
-                   --with-robot-leds \
-                   --with-robot-battery \
-                   --generator=depth0.CRW.SS24x12"
+                  --with-robot-rab \
+                  --generator=depth0.CRW.SS24x12"
 
 $BASE_CMD --batch-criteria=energy_battery.Nullafalselfalsewfalse
 
