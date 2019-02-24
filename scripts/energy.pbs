@@ -1,0 +1,46 @@
+#!/bin/bash -l
+#PBS -l walltime=4:00:00,nodes=50:ppn=8,pmem=1000mb
+#PBS -m abe
+#PBS -M chen4714@umn.edu
+
+# Script to get Argos to work
+source /home/gini/shared/swarm/bin/build-env-setup.sh
+
+# Set ARGoS library search path
+export ARGOS_PLUGIN_PATH=$ARGOS_PLUGIN_PATH:$HOME/git/fordyca/build/lib
+
+# From MSI: transfers all of the loaded modules to the nodes
+export PARALLEL="--workdir . --env PATH --env LD_LIBRARY_PATH --env
+LOADEDMODULES --env _LMFILES_ --env MODULE_VERSION --env MODULEPATH --env
+MODULEVERSION_STACK --env MODULESHOME --env OMP_DYNAMICS --env
+OMP_MAX_ACTIVE_LEVELS --env OMP_NESTED --env OMP_NUM_THREADS --env
+OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
+--env ARGOS_PLUGIN_PATH"
+
+cd $HOME/git/sierra
+NSIMS=50
+EEE=(Null, Ill, Well)
+OUTPUT_ROOT=$HOME/exp/energy
+BASE_CMD="python3 sierra.py \
+                  --sierra-root=$OUTPUT_ROOT \
+                  --template-config-file=$HOME/git/sierra/templates/communication.argos \
+                  --n-sims=$NSIMS \
+                  --n-physics-engines=8 \
+                  --n-threads=8\
+                  --exec-method=local.serial \
+                  --time-setup=time_setup.T10000 \
+                  --plot-applied-vc \
+                  --envc-cs-method=dtw \
+                  --reactivity-cs-method=dtw \
+                  --adaptability-cs-method=dtw \
+                   --with-robot-rab \
+                   --with-robot-leds \
+                   --with-robot-battery \
+                   --generator=depth0.CRW.SS24x12"
+
+$BASE_CMD --batch-criteria=energy_battery.Nullafalselfalsewfalse
+
+for e in "${EEE[@]}"
+do
+    $BASE_CMD --batch-criteria=energy_battery.${e}atruelfalsewfalse
+done
