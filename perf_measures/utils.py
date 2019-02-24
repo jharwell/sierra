@@ -87,18 +87,18 @@ def batch_swarm_sizes(cmdopts):
     else:
         return None
 
-def batch_energy_battery(cmdopts):
-    if any(c in cmdopts["criteria_category"] for c in ["energy_battery"]):
-        batteries = []
-        for i in range(0, cmdopts["n_exp"]):
-            exp_def = unpickle_exp_def(os.path.join(
-                cmdopts["generation_root"], "exp" + str(i), "exp_def.pkl"))
-            for e in exp_def:
-                if e[0] == ".//params/energy" and e[1] == "EEE":
-                    sizes.append(int(e[2]))
-        return sizes
-    else:
-        return None
+# def batch_energy_battery(cmdopts):
+#     if any(c in cmdopts["criteria_category"] for c in ["energy_battery"]):
+#         batteries = []
+#         for i in range(0, cmdopts["n_exp"]):
+#             exp_def = unpickle_exp_def(os.path.join(
+#                 cmdopts["generation_root"], "exp" + str(i), "exp_def.pkl"))
+#             for e in exp_def:
+#                 if e[0] == ".//params/energy" and e[1] == "EEE":
+#                     sizes.append(int(e[2]))
+#         return sizes
+#     else:
+#         return None
 
 
 def batch_criteria_xvals(cmdopts):
@@ -129,8 +129,6 @@ def batch_criteria_xvals(cmdopts):
         return densities
     elif "temporal_variance" in cmdopts["criteria_category"]:
         return [vcs.EnvironmentalCS(cmdopts, x)() for x in range(0, cmdopts["n_exp"])]
-    elif "energy_battery" in cmdopts["criteria_category"]:
-        return batch_energy_battery(cmdopts)
 
 
 def batch_criteria_xlabel(cmdopts):
