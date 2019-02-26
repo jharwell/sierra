@@ -54,7 +54,7 @@ def Factory(criteria_str):
     """
     attr = SwarmSizeParser().parse(criteria_str.split(".")[1])
 
-    def gen_variances(criteria_str):
+    def gen_sizes(criteria_str):
 
         if "Linear" == attr["increment_type"]:
             return [attr["linear_increment"] * x for x in range(1, 11)]
@@ -62,7 +62,7 @@ def Factory(criteria_str):
             return [2 ** x for x in range(0, int(math.log2(attr["max_size"])) + 1)]
 
     def __init__(self):
-        SwarmSize.__init__(self, gen_variances(criteria_str))
+        SwarmSize.__init__(self, gen_sizes(criteria_str))
 
     return type(criteria_str,
                 (SwarmSize,),

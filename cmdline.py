@@ -90,9 +90,9 @@ class Cmdline:
                             Experimental generator to use, which is a combination of controller+scenario
                             configuration.
 
-                            Valid controllers: {depth0.{CRW, Stateful},
-                                                depth1.{GreedyPartitioning, OracularPartitioning},
-                                                depth2.{GreedyRecPart, OracularRecPart}.
+                            Valid controllers: {depth0.{CRW, DPO, MDPO},
+                                                depth1.{GP_DPO, OGP_DPO},
+                                                depth2.{GRP_DPO, OGRP_DPO}.
 
                             Valid scenarios: {RN, SS, DS, QS, PL}, which correspond to {random, single source, dual
                             source, quad source, powerlaw} block distributions.
@@ -331,7 +331,7 @@ class Cmdline:
                             If TRUE, then the set of X values used to generate intra- and inter-batch plots will be
                             placed into the logarithmic (base 2) space. Mainly useful when the batch criteria involves
                             large swarm sizes, so that the plots are more readable.
-                            
+
                             """,
                             default=False)
         stage4.add_argument("--plot-errorbars",
