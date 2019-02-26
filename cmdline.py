@@ -324,6 +324,16 @@ class Cmdline:
 
                             """,
                             action="store_true")
+
+        stage4.add_argument("--plot-log-xaxis",
+                            help="""
+
+                            If TRUE, then the set of X values used to generate intra- and inter-batch plots will be
+                            placed into the logarithmic (base 2) space. Mainly useful when the batch criteria involves
+                            large swarm sizes, so that the plots are more readable.
+                            
+                            """,
+                            default=False)
         stage4.add_argument("--plot-errorbars",
                             help="""
 

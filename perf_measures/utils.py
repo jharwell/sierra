@@ -100,7 +100,7 @@ def batch_criteria_xvals(cmdopts):
                            the batch.
     """
     if "swarm_size" in cmdopts["criteria_category"]:
-        return batch_swarm_sizes(cmdopts)
+        ret = batch_swarm_sizes(cmdopts)
     elif "swarm_density" in cmdopts["criteria_category"]:
         densities = []
         for i in range(0, cmdopts["n_exp"]):
@@ -112,9 +112,14 @@ def batch_criteria_xvals(cmdopts):
                 if e[0] == ".//arena" and e[1] == "size":
                     x, y, z = e[2].split(",")
             densities.append(n_robots / (int(x) * int(y)))
-        return densities
+        ret = densities
     elif "temporal_variance" in cmdopts["criteria_category"]:
-        return [vcs.EnvironmentalCS(cmdopts, x)() for x in range(0, cmdopts["n_exp"])]
+        ret = [vcs.EnvironmentalCS(cmdopts, x)() for x in range(0, cmdopts["n_exp"])]
+
+    if cmdopts['plot_log_xaxis']:
+        return [math.log2(x) for x in ret]
+    else:
+        return ret
 
 
 def batch_criteria_xlabel(cmdopts):

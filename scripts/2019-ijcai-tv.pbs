@@ -27,6 +27,23 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 --env ARGOS_PLUGIN_PATH --env LOG4CXX_CONFIGURATION"
 
 ################################################################################
+# MSI Runtimes (with margin included)                                          #
+################################################################################
+#
+# SS64x32: BCStepU,Log128: 4.5 hrs
+# SS64x32: BCStepU,Log256: 7 hrs
+# SS64x32: BCStepU,Log512: 12.5 hrs
+# SS64x32: BCStepU,Log1024: 20 hrs
+# SS64x32: BCStepU,Log2048: 36.5 hrs
+# SS64x32: BCStepU,Log4096: 73.5 hrs
+#
+################################################################################
+# Non-batch Parameters                                                         #
+################################################################################
+# SS64x32: BC StepD, time=10000, block density = 10.0%, static cache % = 10.0,
+# max speed = 10.0
+
+################################################################################
 # Begin Experiments                                                            #
 ################################################################################
 NSIMS=50

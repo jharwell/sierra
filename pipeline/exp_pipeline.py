@@ -64,6 +64,7 @@ class ExpPipeline:
             'envc_cs_method': self.args.envc_cs_method,
             'with_hists': self.args.with_hists,
             'plot_applied_vc': self.args.plot_applied_vc,
+            'plot_log_xaxis': self.args.plot_log_xaxis,
             'perf_measures': self.args.perf_measures,
             'reactivity_cs_method': self.args.reactivity_cs_method,
             'adaptability_cs_method': self.args.adaptability_cs_method,
