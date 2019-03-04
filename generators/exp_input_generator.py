@@ -272,7 +272,7 @@ class ExpInputGenerator:
         # Specify ARGoS invocation in generated command file per cmdline arguments.
         parts = self.sim_opts['exec_method'].split('.')
 
-        if 1 == len(parts):
+        if 'local' in parts:
             argos_cmd = 'argos3'
         else:
             argos_cmd = 'argos3-' + parts[1]

@@ -41,11 +41,15 @@ class PipelineStage3:
         if self.cmdopts['criteria_category'] is not None:
             print(
                 "- Stage3: Averaging batched experiment outputs for '{0}'...".format(self.cmdopts['generator']))
-            averager = BatchedExpCSVAverager(template_config_leaf, self.cmdopts['output_root'])
+            averager = BatchedExpCSVAverager(template_config_leaf,
+                                             self.cmdopts['output_root'],
+                                             self.cmdopts['no_verify_results'])
         else:
             print(
                 "- Stage3: Averaging single experiment outputs for '{0}'...".format(self.cmdopts['generator']))
-            averager = ExpCSVAverager(template_config_leaf, self.cmdopts['output_root'])
+            averager = ExpCSVAverager(template_config_leaf,
+                                      self.cmdopts['output_root'],
+                                      self.cmdopts['no_verify_results'])
 
         averager.average_csvs()
         print("- Stage3: Averaging complete")

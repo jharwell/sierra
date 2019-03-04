@@ -60,6 +60,9 @@ class ExpPipeline:
             'batch_exp_range': self.args.batch_exp_range,
             'exec_method': self.args.exec_method,
 
+            # stage 3
+            'no_verify_results': self.args.no_verify_results,
+
             # stage 4
             'envc_cs_method': self.args.envc_cs_method,
             'with_hists': self.args.with_hists,

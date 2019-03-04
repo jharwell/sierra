@@ -278,6 +278,17 @@ class Cmdline:
 
                             """)
 
+        stage3 = parser.add_argument_group('stage3 (experiment averaging)')
+        stage3.add_argument('--no-verify-results',
+                            help="""
+
+                            If TRUE, then the verification step will be skipped for the batched experiment, and outputs
+                            will be averaged directly. If not all .csv files for all experiments exist and/or have the
+                            same # of rows, then sierra will crash. Verification can take a long time with large # of
+                            simulations per experiment.
+                            """,
+                            default=False)
+
         stage4 = parser.add_argument_group('stage4 (graph generation)')
 
         stage4.add_argument("--with-hists",
