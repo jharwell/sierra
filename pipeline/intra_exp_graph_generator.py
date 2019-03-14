@@ -21,6 +21,9 @@ import os
 import copy
 import pandas as pd
 import numpy as np
+import typing.String
+import typing
+
 from pipeline.intra_exp_linegraphs import IntraExpLinegraphs
 from pipeline.intra_exp_histograms import IntraExpHistograms
 from pipeline.intra_exp_heatmaps import IntraExpHeatmaps
@@ -88,12 +91,16 @@ class IntraExpGraphGenerator:
                     for col in graph['temporal_var']:
                         added = self._add_temporal_variance_cols(target_df, var_df, graph, col)
 
-                        graph['cols'].extend([a for a in added for c in graph['cols'] if c in a])
+                        # OK to disable static checking here because I *know* the graphs are
+                        # hardcoded before runtime and the selected attributes *are* lists.
+                        graph['cols'].extend(  # pytype: disable=attribute-error
+                            [a for a in added for c in graph['cols'] if c in a])
 
-                        graph['legend'].extend(
+                        graph['legend'].extend(  # pytype: disable=attribute-error
                             ['Applied Variance (scaled {0})'.format(x) for x in added])
                         if 'styles' in graph:
-                            graph['styles'].extend(['--' for x in range(0, len(added))])
+                            graph['styles'].extend(  # pytype: disable=attribute-error
+                                ['--' for x in range(0, len(added))])
 
     def _add_temporal_variance_cols(self, target_df, var_df, graph, col):
         added = []

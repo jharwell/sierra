@@ -19,7 +19,6 @@
 import os
 import re
 import statistics
-from pipeline.csv_class import CSV
 import pandas as pd
 
 

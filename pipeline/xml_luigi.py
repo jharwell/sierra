@@ -63,8 +63,9 @@ class XMLLuigi:
           value(str): The value to set the attribute to.
         """
         el = self.root.find(path)
+
         try:
-            el.attrib[attr] = value
+            el.attrib[attr] = value   # pytype: disable=attribute-error
         except AttributeError:
             print("WARNING: No attribute '{1}' found in node '{0}'".format(path, attr))
             pass
@@ -98,11 +99,12 @@ class XMLLuigi:
                      remove. The element must exist or an error will be raised.
           tag(str): Name of the tag to remove within the enclosing element, in XPath syntax.
         """
-        parent = self.root.find(path)
-        victim = parent.find(tag)
+
         try:
-            parent.remove(victim)
-        except TypeError:
+            parent = self.root.find(path)
+            victim = parent.find(tag)    # pytype: disable=attribute-error
+            parent.remove(victim)   # pytype: disable=attribute-error
+        except (AttributeError, TypeError):
             print("WARNING: No victim '{0}' found in parent '{1}'".format(tag, path))
             pass
 

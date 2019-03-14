@@ -23,7 +23,7 @@ class Linegraphs:
 
     Linegraph inter-experiment targets.
     """
-
+    @staticmethod
     def _depth0_targets():
         collision = [
             {
@@ -388,6 +388,7 @@ class Linegraphs:
                 'convergence': convergence
                 }
 
+    @staticmethod
     def _depth1_targets():
         cache_acq = [
             {'src_stem': 'cache-acquisition',
@@ -1012,6 +1013,7 @@ class Linegraphs:
                 'depth1_task_dist': task_dist,
                 'generalist_tab': generalist_tab}
 
+    @staticmethod
     def _depth2_targets():
         task_exec = [
             {
@@ -1781,6 +1783,7 @@ class Linegraphs:
                 'harvester_tab': harvester_tab,
                 'collector_tab': collector_tab}
 
+    @staticmethod
     def targets(gen_depth2):
         """
         Get a list of dictionaries specifying all the graphs that should be created within a batched

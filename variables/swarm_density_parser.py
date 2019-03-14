@@ -54,13 +54,17 @@ class SwarmDensityParser():
         block_dist_dict = {'SS': 'TypeSingleSource'}
 
         # Parse density
-        res = re.search('[0-9]+p[0-9]+', criteria_str)
+        res = re.search('[0-9]+', criteria_str)
         assert res is not None, \
-            "FATAL: Bad density specification in criteria '{0}'".format(criteria_str)
+            "FATAL: Bad density characteristic specification in criteria '{0}'".format(criteria_str)
 
-        characteristic = float(re.search('[0-9]+', criteria_str).group(0))
+        characteristic = float(res.group(0))
 
-        mantissa = float("0." + re.search('p[0-9]+', criteria_str).group(0)[1:])
+        res = re.search('p[0-9]+', criteria_str)
+        assert res is not None, \
+            "FATAL: Bad density mantissa specification in criteria '{0}'".format(criteria_str)
+        mantissa = float("0." + res.group(0)[1:])
+
         ret['target_density'] = characteristic + mantissa
 
         # Parse block distribution type
@@ -70,11 +74,15 @@ class SwarmDensityParser():
         ret['block_dist_class'] = block_dist_dict[res.group(0)]
 
         # Parse arena dimensions
-        res = re.search('[0-9]+x[0-9]+', criteria_str)
+        res = re.search('[0-9]+', criteria_str)
         assert res is not None, \
-            "FATAL: Bad initial arena specification in criteria '{0}'".format(criteria_str)
-        ret['arena_x'] = int(re.search('[0-9]+x', criteria_str).group(0)[:-1])
-        ret['arena_y'] = int(re.search('x[0-9]+', criteria_str).group(0)[1:])
+            "FATAL: Bad arena X specification in criteria '{0}'".format(criteria_str)
+        ret['arena_x'] = int(res.group(0)[:-1])
+
+        res = re.search('x[0-9]+', criteria_str)
+        assert res is not None, \
+            "FATAL: Bad arena Y specification in criteria '{0}'".format(criteria_str)
+        ret['arena_y'] = int(res.group(0)[1:])
 
         # Parse arena size increment
         res = re.search('I[0-9]+', criteria_str)

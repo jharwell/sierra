@@ -58,9 +58,15 @@ class InterExpCAModelEnterGraph:
         df_new.loc[0] = model
         df_new.loc[1] = df.tail(1)[scale_cols].values[0]
         df_new.to_csv(cum_stem + ".csv", sep=';', index=False)
-        BatchRangedGraph(inputy_fpath=cum_stem + ".csv",
-                         output_fpath=os.path.join(self.batch_graph_root,
-                                                   "model-ca-enter-cum.png"),
-                         title="Analytic Prediction vs Empirical Measurements of CA Entry",
-                         ylabel="# Robots Entering CA",
-                         legend=["Analytic", "Empirical"]).generate()
+
+        # FIXME: Comment out to stop static analysis errors until this the CA modeling is correct
+
+        # BatchRangedGraph(inputy_fpath=cum_stem + ".csv",
+        #                  output_fpath=os.path.join(self.batch_graph_root,
+        #                                            "model-ca-enter-cum.png"),
+        #                  title="Analytic Prediction vs Empirical Measurements of CA Entry",
+        #                  xlabel='',
+        #                  ylabel="# Robots Entering CA",
+        #                  legend=["Analytic", "Empirical"],
+        #                  xvals=[],
+        #                  polynomial_fit=-1).generate()

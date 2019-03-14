@@ -7,44 +7,97 @@ non-MSI machines for testing.
 It is named thusly because it will save you a LITERAL, (not figurative) mountain
 of work.
 
-## Setup
+## Non-MSI Setup
+
+Before trying to use sierra with MSI, you should get it installed and running on
+your local machine, and try a few small scale experiments.
 
 1. Install python dependencies with pip3:
 
-   - pandas
+        pip3 install pandas similaritymeasures fastdtw
+
+   - pandas (used for .csv file manipulation)
    - similaritymeasures (needed for temporal variance graph generation)
    - fastdtw (needed for temporal variance graph generation)
 
-2. Install packages:
+2. Install OS packages:
 
    - GNU parallel (`parallel` on ubuntu)
 
-## Quick start
+## MSI Setup
+
+Prior to executing these steps you should have gotten *CORRECT* results on your
+local machine (you really, really, _really_, don't want to be trying to do
+development/debugging on MSI).
 
 1. Get an MSI account (you will need to talk to Maria Gini, my advisor).
 
-2. Login to MSI and setup the build environment:
+2. On an MSI login node, install the same python dependencies as above, but user
+   local (you obviously don't have admin priveleges on the cluster):
+
+        pip3 install --user pandas similaritymeasures fastdtw
+
+   This is a one time step.
+
+3. On an MSI login node, run the bash script to clone the project:
+
+        /home/gini/shared/swarm/bin/fordyca-clone-all.sh $HOME/git
+
+   The 1st argument is the path (relative or absolute) to the location where you
+   want the project repos to live (they will all be cloned into that level).
+
+   If you need to checkout a particular branch in the repo you can do that after
+   running the script (or copy the script and modify it to do this automatically
+   if you are going to be doing a lot of work on MSI).
+
+4. On an MSI login node, get an interactive job session so you can build fordyca
+   and its dependencies natively to the cluster you will be running on
+   (mesabi/itasca) for maximum speed:
+
+        qsub -I -lwalltime=1:00:00,nodes=1:ppn=8,mem=20gb
+
+   The above command, when it returns, will give you 1 hour of time on an actual
+   compute node. You know you are running/building on a compute node rather than
+   a login node on mesabi/itasca when the hostname is `cnXXXX` rather than
+   `nodeXXXX`.
+
+5. Setup the build environment in your interactive job session:
 
         . /home/gini/shared/swarm/bin/build-env-setup.sh
 
-3. Clone and build the devel branch of the project and all its sub
-   repositories:
+6. In your interactive session run the bash script to build the project (note
+   that you may want to tweak the cmake defines in the script, or use your own
+   script, depending on what types of experiments you are running). If you are
+   not sure if you need to do this, ask!
 
-         /home/gini/shared/swarm/bin/fordyca-clone-all.sh $HOME/git
-         /home/gini/shared/swarm/bin/fordyca-build-default.sh $HOME/git
+        /home/gini/shared/swarm/bin/fordyca-build-default.sh /path/to/project/root
 
    The argument is the root directory where all repositories should be
-   cloned/built. It can be anywhere you have write access to. You may need to
-   copy/update the default build script in order to get it to build your branch.
+   cloned/built. It can be anywhere you have write access to.
 
-4. Copy and modify one of the PBS scripts under `scripts/` file in this repo for
-   your experiment/batch experiment.
+7. That's it! You are all setup to run on MSI.
 
-5. Submit your job on MSI itasca/mesabi with:
+# Running on MSI
+
+1. Copy and modify one of the PBS scripts under `scripts/` in this repo for your
+   experiment/batch experiment.
+
+2. Read the documentation for PBS scripts and MSI job submission a queue on your
+   chosen cluster:
+
+   https://www.msi.umn.edu/content/job-submission-and-scheduling-pbs-scripts
+   https://www.msi.umn.edu/queues
+
+
+3. Have your .pbs script script reviewed before submission (will likely save you
+   a lot of time fighting with the job submission system).
+
+4. Submit your job via:
 
         qsub your-pbs-script.pbs
 
-6. Reap the rewards of research!
+5. Reap the rewards of research!
+
 
 *WARNING: SIERRA DOES NOT DELETE DIRECTORIES FOR YOU. ALWAYS MAKE SURE YOU RUN
 DIFFERENT EXPERIMENTS (BATCH OR NOT) IN DIFFERENT DIRECTORIES OR ODIN'S WRATH
@@ -71,7 +124,7 @@ MAY FALL UPON THEE.*
               5. Generate graphs comparing batched experiments (not part of
               default pipeline).
 
-`scripts/` - Contains `.pbs` scripts to be run on MSI.
+`scripts/` - Contains example `.pbs` scripts to be run on MSI.
 
 `templates/` - Contains template .argos files. Really only necessary to be able
                to change configuration that is not directly controllable via
@@ -89,156 +142,6 @@ MAY FALL UPON THEE.*
 - If you run stages individually, then before stage X will run without crashing,
   you need to run stage X-1.
 
-## How to Add A Controller
+## Contributing
 
-If you have created a new robot controller and you want to be able to use it
-with sierra from the command line you have to:
-
-1. Create a generator for it under `generators/`. For a controller named
-   `FizzBuzz` it must be called `fizzbuzz.py` in order to be able to invoke it
-   via the sierra command line via `fizzbuzz.FizzBuzz`. The generator must
-   derive from `ExpInputGenerator`.
-
-2. Define `generate()`, which should generate simulation definitions without
-   saving the file (non-terminal generator). It will need to call
-   `ExpInputGenerator.generate_common_defs()` in order to also generate the
-   changes common to all simulations (e.g. duration, # threads, etc.).
-
-3. Add an import of `fizzbuzz.py` to `generator_factory.py` so that it can be
-   instantiated via information passed on the command line.
-
-5. Update the help in `cmdline.py` for the `--generator` option to reflect the
-   new class that you have instantiated.
-
-6. Once finished, open a pull request with your new controller.
-
-Usually the set of changes that need to be applied to template input files for a
-specific controller is quite small, and may possibly be just changing the name
-of the controller tag.
-
-## How to Add A Variable For Batch Criteria
-
-If you have a new experimental variable that you have added to the main fordyca
-library, *AND* which is exposed via the input `.argos` file, then you need to do
-the following to get it to work with sierra:
-
-1. Make your variable inherit from `BaseVariable` and place your `.py` file
-   under `variables/`. The "base class" version of your variable should take in
-   parameters, and NOT have any hardcoded values in it anywhere.
-
-2. Define the parser for your variable in order to parse the command line string
-   of the specific configuration of it into a dictionary of attributes that can
-   then be used by the `Factory()` function below.
-
-3. Define the functions for generating changes to be applied to the template
-   input file according to the selected batch criteria.
-
-   In order to change attributes, add/remove tags, you will need to understand
-   the XPath syntax for search in XML files; tutorial is
-   [here](https://docs.python.org/2/library/xml.etree.elementtree.html).
-
-   `get_attr_changelist()` - Given whatever parameters that your variable was
-   passed during initialization (e.g. the boundaries of a range you want to vary
-   it within), produce a list of sets, where each set is all changes that need
-   to be made to the .argos template file in order to set the value of your
-   variable to something. Each change is a tuple with the following elements:
-
-   0. XPath search path for the *parent* of the attribute that you want to
-      modify.
-
-   1. Name of the attribute you want to modify within the parent element.
-
-   2. The new value as a string (integers will throw an exception).
-
-   `gen_tag_rmlist()` - Given whatever parameters that your variable was passed
-   during initialization, generate a list of sets, where each set is all tags
-   that need to be removed from the .argos template file in order to set the
-   value of your variable to something.
-
-   Each change is a tuple with the following elements:
-
-   0. XPath search path for the *parent* of the tag that you want to
-      remove.
-
-   1. Name of the attribute you want to remove within the parent element.
-
-   `gen_tag_addlist()` - Given whatever parameters that your variable was passed
-   during initialization, generate a list of sets, where each set is all tags
-   that need to be added to the .argos template file.
-
-   Each change is a tuple with the following elements:
-
-   0. XPath search path for the *parent* of the tag that you want to
-      add.
-
-   1. Name of the tag you want to add within the parent element.
-
-   2. A dictionary of (attribute, value) pairs to create as children of the
-      tag when creating the tag itself.
-
-   `Factory(criteria_str)` - Given the string of the your batch
-   criteria/variable you have defined that was passed on the command line,
-   creates specific instances of your variable that are derived from your "base"
-   variable class. This is to provide maximum flexibility to those using sierra,
-   so that they can create _any_ kind of instance of your variable, and not just
-   the ones you have made pre-defined classes for.
-
-   This function is a class factory method, and should (1) call the parser for
-   your variable, (2) return a custom instance of your class that is named
-   according to the specific batch criteria string passed on the command line,
-   inherits from the "base" variable class you defined above, and that has an
-   `__init__()` function that calls the `__init__()` function of your base
-   variable class that takes *NO* arguments and populates the arguments to your
-   base variable class `__init__()` according to the dictionary of parsed
-   batch criteria definitions.
-
-   See `variables/swarm_size.py` for a simple example of this.
-
-4. Once finished open a pull request with your new variable.
-
-## How to Add A New Intra-Experiment Graph
-
-Add an entry in the list of linegraphs found in `intra_exp_targets.py` in an
-appropriate category (notice that the categories map back to the
-collectors/generate .csv files in FORDYCA) if:
-
-- The data you want to graph can be represented by a line (i.e. is one
-  dimensional in some way).
-
-- The data you want to graph can be obtained from a single .csv file (multiple
-  columns in the same .csv file can be graph simultaneously).
-
-- The data you want to graph can be represented by a histogram.
-
-Add an entry in the list of heatmaps found in `intra_exp_targets.py` in an
-appropriate category if:
-
-- The data you want to graph is two dimensional (i.e. a spatial representation
-  of the arena is some way).
-
-TEST YOUR GRAPH TO VERIFY IT DOES NOT CRASH. If it does, that likely means that
-the .csv file the graph is build from is not being generated properly in
-FORDYCA.
-
-Once finished, open a pull request with your changes.
-
-## How to Add A New Inter-Experiment Graphs
-
-Add an entry in the list of linegraphs found in `inter_exp_targets.py` in an
-appropriate category (notice that the categories map back to the
-collectors/generate .csv files in FORDYCA) if:
-
-- The data you want to graph can be represented by a line (i.e. is one
-  dimensional in some way).
-
-- The data you want to graph can be obtained from a single column from a single
-  .csv file.
-
-- The data you want to graph requires comparison between multiple experiments in
-  a batch.
-
-TEST YOUR GRAPH TO VERIFY IT DOES NOT CRASH. If it does, that likely means that
-the .csv file the graph is build from is not being generated properly in
-FORDYCA.
-
-Once finished, open a pull request with your changes.
+For contributing to `SIERRA`, see [CONTRIBUTING](docs/CONTRIBUTING.md).

@@ -51,5 +51,5 @@ class PipelineStage3:
                                       self.cmdopts['output_root'],
                                       self.cmdopts['no_verify_results'])
 
-        averager.average_csvs()
+        averager.run()
         print("- Stage3: Averaging complete")

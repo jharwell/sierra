@@ -56,6 +56,7 @@ class Linegraphs:
     kTemporalVarEnvBlockManip = 'env_block_manip'
     kTemporalVarEnvCacheUsage = 'env_cache_usage'
 
+    @staticmethod
     def all_targets():
         """
         Get a list of dictionaries specifying all the linegraphs graphs that COULD be created within
@@ -68,6 +69,7 @@ class Linegraphs:
         d.update(Linegraphs._depth2_targets())
         return d
 
+    @staticmethod
     def filtered_target_keys(valid_keys):
         keys = []
         for k in Linegraphs.all_targets():
@@ -77,6 +79,7 @@ class Linegraphs:
                 print("WARNING: Key {0} not found in targets".format(k))
         return keys
 
+    @staticmethod
     def depth0_keys():
         return ['fsm_collision',
                 'fsm_movement',
@@ -86,6 +89,7 @@ class Linegraphs:
                 'world_model',
                 'convergence']
 
+    @staticmethod
     def depth1_keys():
         return ['cache_util',
                 'cache_lifecycle',
@@ -94,22 +98,26 @@ class Linegraphs:
                 'depth1_task_dist',
                 'generalist_tab']
 
+    @staticmethod
     def depth2_keys():
         return ['depth2_task_exec',
                 'depth2_task_dist',
                 'harvester_tab',
                 'collector_tab']
 
+    @staticmethod
     def all_target_keys():
         """
         Get a list of all the target keys for intra-experiment graph generation.
         """
         return Linegraphs.depth0_keys() + Linegraphs.depth1_keys() + Linegraphs.depth2_keys()
 
+    @staticmethod
     def filtered_targets(keys):
         targets = Linegraphs.all_targets()
         return {k: targets[k] for k in keys}
 
+    @staticmethod
     def _depth0_targets():
         collision = [
             {
@@ -134,8 +142,8 @@ class Linegraphs:
                 'dest_stem': 'fsm-collision-duration',
                 'cols': ['int_avg_avoidance_duration', 'cum_avg_avoidance_duration'],
                 'title': 'Swarm Collision Avoidance Duration',
-                'legend':['Average Avoidance Duration (interval)',
-                          'Average Avoidance Duration (cumulative)'],
+                'legend': ['Average Avoidance Duration (interval)',
+                           'Average Avoidance Duration (cumulative)'],
                 'xlabel': 'Interval',
                 'ylabel': '# Timesteps',
             },
@@ -323,6 +331,7 @@ class Linegraphs:
                 'convergence': convergence
                 }
 
+    @staticmethod
     def _depth1_targets():
         cache_util = [
             {
@@ -622,6 +631,7 @@ class Linegraphs:
                 'depth1_task_dist': task_dist,
                 'generalist_tab': generalist_tab}
 
+    @staticmethod
     def _depth2_targets():
         task_dist = [
             {
@@ -971,6 +981,7 @@ class Linegraphs:
 class Histograms:
     """Histogram intra-experiment targets."""
 
+    @staticmethod
     def all_targets():
         """Get the histogram targets, which are shared with linegraphs."""
         return Linegraphs.filtered_targets(Linegraphs.depth0_keys())
@@ -979,6 +990,7 @@ class Histograms:
 class Heatmaps:
     """Heatmap intra-experiment targets."""
 
+    @staticmethod
     def all_targets():
         arena = [
             {

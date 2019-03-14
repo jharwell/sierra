@@ -38,7 +38,7 @@ class BatchedExpCSVAverager:
         self.batch_config_leaf = batch_config_leaf
         self.no_verify_results = no_verify_results
 
-    def average_csvs(self):
+    def run(self):
         """Average .csv output files for all experiments in the batch."""
         # Ignore the folder for .csv files collated across experiments within a batch
         experiments = [item for item in os.listdir(self.batch_output_root) if item not in [
