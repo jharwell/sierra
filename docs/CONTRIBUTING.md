@@ -35,7 +35,7 @@ Install additional python packages:
         pytype -k .
 
    Fix ANY and ALL errors that arise, as SIERRA should get a clean bill of
-   health from the checker
+   health from the checker.
 
 7. Change status to `Status: Needs Review` and open a pull request, and someone
    will review the commits. If you created unit tests, attach a log/run showing
@@ -152,11 +152,61 @@ the following to get it to work with sierra:
 
 4. Once finished open a pull request with your new variable.
 
+## How to Add A New Intra-Experiment Graph Category
+
+If you add a new intra-experiment graph category, it will not automatically be
+used to generate graphs for existing or new controllers. You will need to modify
+the `controllers.yaml` file to specify which controllers your new category of
+graphs should be generated for.
+
 ## How to Add A New Intra-Experiment Graph
 
-Add an entry in the list of linegraphs found in `intra_exp_targets.py` in an
-appropriate category (notice that the categories map back to the
-collectors/generate .csv files in FORDYCA) if:
+There are two types of intra-experiment graphs: linegraphs and heatmaps, and
+each has their own config file (details of each is below).
+
+TEST YOUR GRAPH TO VERIFY IT DOES NOT CRASH. If it does, that likely means that
+the .csv file the graph is build from is not being generated properly in
+FORDYCA.
+
+### Linegraphs
+
+Each linegraph has the following YAML fields, which are parsed into a python
+dictionary:
+
+- src_stem: The filename (no path) of the .csv within the output directory for a
+            simulation to look for the column(s) to plot, sans the .csv
+            extension.
+
+- dest_stem: The filename (no path) of the graph to be generated
+             (extension/image type is determined elsewhere).
+
+- cols: List of names of columns within the source .csv that should be included
+        on the plot. Must match EXACTLY (i.e. no fuzzy matching). Can be
+        'None'/omitted to plot all columns within the .csv.
+
+- styles: List of matplotlib linestyles to use for each of the plotted lines in
+          the graphs. Can be omitted to use solid lines everywhere. If it is
+          included, then it must specify for ALL columns, not just the
+          non-default ones.
+
+- title: The title the graph should have. LaTeX syntax is supported (uses
+         matplotlib after all).
+
+- legend: List of names of the plotted lines within the graph. Can be
+         'None'/omitted to set the legend for each column to the name of the
+         column in the .csv
+
+- xlabel: The label of the X-axis of the graph.
+
+- ylabel: The label of the Y-axis of the graph.
+
+- temporal_var: List of names of columns within the temporal variance .csv that
+                should be included on the graph. Can be omitted if no variance
+                should be plotted in addition to the columns in the .csv.
+
+To add a linegraph, simply add a new entry to the config file that will be
+parsed by SIERRA in an appropriate category (notice that the categories map back
+to the collectors/generate .csv files in FORDYCA). Linegraphs are appropriate if:
 
 - The data you want to graph can be represented by a line (i.e. is one
   dimensional in some way).
@@ -166,17 +216,24 @@ collectors/generate .csv files in FORDYCA) if:
 
 - The data you want to graph can be represented by a histogram.
 
-Add an entry in the list of heatmaps found in `intra_exp_targets.py` in an
-appropriate category if:
+### Heatmaps
+
+Each linegraph has the following YAML fields, which are parsed into a python
+dictionary:
+
+- src_stem: The filename (no path) of the .csv within the output directory for a
+            simulation to look for the column(s) to plot, sans the .csv
+            extension.
+
+- title: The title the graph should have. LaTeX syntax is supported (uses
+          matplotlib after all).
+
+To add a heatmap, simply add a new entry to the config file that will be
+parsed by SIERRA in an appropriate category (notice that the categories map back
+to the collectors/generate .csv files in FORDYCA). Heatmaps are appropriate if:
 
 - The data you want to graph is two dimensional (i.e. a spatial representation
   of the arena is some way).
-
-TEST YOUR GRAPH TO VERIFY IT DOES NOT CRASH. If it does, that likely means that
-the .csv file the graph is build from is not being generated properly in
-FORDYCA.
-
-Once finished, open a pull request with your changes.
 
 ## How to Add A New Inter-Experiment Graphs
 

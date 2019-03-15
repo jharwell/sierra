@@ -45,16 +45,23 @@ class IntraExpLinegraphs:
     def generate(self):
         print("-- Linegraphs from {0}".format(self.exp_output_root))
 
-        for target_set in [self.targets[x] for x in self.targets.keys()]:
-            for target in target_set:
-                StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root,
-                                                               target['src_stem']),
-                                 output_fpath=os.path.join(
+        # For each category of linegraphs we are generating
+        for category in self.targets:
+            # For each graph in each category
+            for graph in category['graphs']:
+                try:
+                    StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root,
+                                                                   graph['src_stem']),
+                                     output_fpath=os.path.join(
                                      self.exp_graph_root,
-                                     target['dest_stem'] + '.png'),
-                                 cols=target['cols'],
-                                 title=target['title'],
-                                 legend=target['legend'],
-                                 xlabel=target['xlabel'],
-                                 ylabel=target['ylabel'],
-                                 linestyles=target.get('styles', None)).generate()
+                                     graph['dest_stem'] + '.png'),
+                                     cols=graph['cols'],
+                                     title=graph['title'],
+                                     legend=graph['legend'],
+                                     xlabel=graph['xlabel'],
+                                     ylabel=graph['ylabel'],
+                                     linestyles=graph.get('styles', None)).generate()
+                except KeyError:
+                    raise KeyError('Check that the generated {0}.csv file contains the columns {1}'.format(
+                        graph['src_stem'],
+                        graph['cols']))

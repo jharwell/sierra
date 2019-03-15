@@ -1,0 +1,4 @@
+arena:
+  graphs:
+    - src_stem: arena-robot-occupancy
+      title: 'Robot Occupancy Probability'

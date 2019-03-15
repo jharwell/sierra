@@ -41,7 +41,7 @@ class BatchedIntraExpGraphGenerator:
 
         for item in os.listdir(batch_output_root):
 
-            # Roots need to be modified for each experiment for cor
+            # Roots need to be modified for each experiment for correct behavior
             self.cmdopts["generation_root"] = os.path.join(batch_generation_root, item)
             self.cmdopts["output_root"] = os.path.join(batch_output_root, item)
             self.cmdopts["graph_root"] = os.path.join(batch_graph_root, item)

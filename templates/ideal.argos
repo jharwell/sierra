@@ -203,13 +203,15 @@
           </metrics>
     </output>
     <convergence
-        n_threads="0">
+        n_threads="0"
+        epsilon="0.5">
       <positional_entropy
-          enable="false"
+          enable="true"
           horizon="0:13.41"
           horizon_delta="1.34"/>
-      <interactivity enable="false"/>
-      <angular_order enable="false"/>
+      <interactivity enable="true"/>
+      <angular_order enable="true"/>
+      <task_dist_entropy enable="true"/>
     </convergence>
     <oracle
         enabled="false"
@@ -260,7 +262,7 @@
               n_clusters="15"
               />
           <manifest
-              n_cube="60"
+              n_cube="25"
               n_ramp="0"
               unit_dim="0.2"
               />

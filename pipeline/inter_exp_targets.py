@@ -324,14 +324,6 @@ class Linegraphs:
             },
             {
                 'src_stem': 'swarm-convergence',
-                'col': 'int_avg_interact_deg_raw_dt',
-                'dest_stem': 'swarm-convergence-int-deg-raw-dt',
-                'title': "Swarm Convergence: Interaction Degree DT (Raw)",
-                'xlabel': 'Interval',
-                'ylabel': 'Degree'
-            },
-            {
-                'src_stem': 'swarm-convergence',
                 'col': 'int_avg_interact_deg_norm',
                 'dest_stem': 'swarm-convergence-int-deg-norm',
                 'title': "Swarm Convergence: Interaction Degree (Normalized)",
@@ -340,44 +332,85 @@ class Linegraphs:
             },
             {
                 'src_stem': 'swarm-convergence',
-                'col': 'int_avg_interact_deg_norm_dt',
-                'dest_stem': 'swarm-convergence-int-deg-norm-dt',
-                'title': "Swarm Convergence: Interaction Degree DT (Normalized)",
+                'col': 'int_avg_interact_deg_converged',
+                'dest_stem': 'swarm-convergence-int-deg-converged',
+                'title': "Swarm Convergence: Interaction Degree Convergence Status",
                 'xlabel': 'Interval',
-                'ylabel': 'Degree'
+                'ylabel': 'Proportion'
             },
             {
                 'src_stem': 'swarm-convergence',
-                'col': 'int_avg_ang_order',
-                'dest_stem': 'swarm-convergence-ang-order',
-                'title': "Swarm Convergence: Angular Order",
+                'col': 'int_avg_ang_order_raw',
+                'dest_stem': 'swarm-convergence-ang-order-raw',
+                'title': "Swarm Convergence: Angular Order (Raw)",
                 'xlabel': 'Interval',
                 'ylabel': 'Order'
             },
             {
                 'src_stem': 'swarm-convergence',
-                'col': 'int_avg_ang_order_dt',
-                'dest_stem': 'swarm-convergence-ang-order-dt',
-                'title': "Swarm Convergence: Angular Order DT",
+                'col': 'int_avg_ang_order_norm',
+                'dest_stem': 'swarm-convergence-ang-order-norm',
+                'title': "Swarm Convergence: Angular Order (Normalized)",
                 'xlabel': 'Interval',
                 'ylabel': 'Order'
             },
             {
                 'src_stem': 'swarm-convergence',
-                'col': 'int_avg_pos_entropy',
-                'dest_stem': 'swarm-convergence-pos-entropy',
-                'title': "Swarm Convergence: Positional Entropy",
+                'col': 'int_avg_ang_order_converged',
+                'dest_stem': 'swarm-convergence-ang-order-converged',
+                'title': "Swarm Convergence: Angular Order Convergence Status",
+                'xlabel': 'Interval',
+                'ylabel': 'Proportion'
+            },
+            {
+                'src_stem': 'swarm-convergence',
+                'col': 'int_avg_pos_entropy_raw',
+                'dest_stem': 'swarm-convergence-pos-entropy-raw',
+                'title': "Swarm Convergence: Positional Entropy (Raw)",
                 'xlabel': 'Interval',
                 'ylabel': 'Entropy'
             },
             {
                 'src_stem': 'swarm-convergence',
-                'col': 'int_avg_pos_entropy_dt',
-                'dest_stem': 'swarm-convergence-pos-entropy-dt',
-                'title': "Swarm Convergence: Positional Entropy DT",
+                'col': 'int_avg_pos_entropy_norm',
+                'dest_stem': 'swarm-convergence-pos-entropy-normalized',
+                'title': "Swarm Convergence: Positional Entropy (Normalized)",
                 'xlabel': 'Interval',
                 'ylabel': 'Entropy'
             },
+            {
+                'src_stem': 'swarm-convergence',
+                'col': 'int_avg_pos_entropy_converged',
+                'dest_stem': 'swarm-convergence-dpos-dist-entropy-converged',
+                'title': "Swarm Convergence: Positional Entropy Convergence Status",
+                'xlabel': 'Interval',
+                'ylabel': 'Proportion'
+            },
+            {
+                'src_stem': 'swarm-convergence',
+                'col': 'int_avg_task_dist_entropy_raw',
+                'dest_stem': 'swarm-convergence-task-dist-entropy-raw',
+                'title': "Swarm Convergence: Task Distribution Entropy (Raw)",
+                'xlabel': 'Interval',
+                'ylabel': 'Entropy'
+            },
+            {
+                'src_stem': 'swarm-convergence',
+                'col': 'int_avg_task_dist_entropy_norm',
+                'dest_stem': 'swarm-convergence-task-dist-entropy-normalized',
+                'title': "Swarm Convergence: Task Distribution Entropy (Normalized)",
+                'xlabel': 'Interval',
+                'ylabel': 'Entropy'
+            },
+            {
+                'src_stem': 'swarm-convergence',
+                'col': 'int_avg_task_dist_entropy_converged',
+                'dest_stem': 'swarm-convergence-task-dist-entropy-converged',
+                'title': "Swarm Convergence: Task Distribution Entropy Convergence Status",
+                'xlabel': 'Interval',
+                'ylabel': 'Proportion'
+            },
+
         ]
         return {'fsm_collision': collision,
                 'fsm_movement': movement,

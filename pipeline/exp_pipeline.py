@@ -51,6 +51,7 @@ class ExpPipeline:
             'generation_root': self.args.generation_root,
             'generator': self.args.generator,
             'template_config_file': self.args.template_config_file,
+            'config_root': self.args.config_root,
 
             # stage 1
             'time_setup': self.args.time_setup,

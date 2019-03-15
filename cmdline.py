@@ -50,6 +50,19 @@ class Cmdline:
 
                             """,
                             default=os.path.expanduser("~") + "/exp")
+        parser.add_argument("--config-root",
+                            help="""
+
+                            Path to root directory containing all .yaml files used by SIERRA for
+                            configuration. Within this directory, the following files must be
+                            present when running a stage that utilizes them:
+
+                            intra-graphs.yaml - Configuration for intra-experiment graphs
+                            inter-graphs.yaml - Configuration for inter-experiment graphs
+                            controllers.yaml - Configuration for controllers (input file/graph generation)
+
+                            """,
+                            default="config")
         parser.add_argument("--generation-root",
                             metavar="dirpath",
                             help="""
