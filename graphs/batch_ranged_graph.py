@@ -87,7 +87,6 @@ class BatchRangedGraph:
             plt.plot(self.xvals, dfy.values[i], line_styles[i],
                      marker=mark_styles[i],
                      color=colors[i])
-
             if -1 != self.polynomial_fit:
                 coeffs = np.polyfit(self.xvals, dfy.values[i], self.polynomial_fit)
                 ffit = np.poly1d(coeffs)

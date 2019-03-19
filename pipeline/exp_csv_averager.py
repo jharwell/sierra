@@ -1,5 +1,5 @@
 """
- Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
+ Copyright 2019 John Harwell, All rights reserved.
 
   This file is part of SIERRA.
 
@@ -19,7 +19,6 @@
 import os
 import re
 import statistics
-from pipeline.csv_class import CSV
 import pandas as pd
 
 
@@ -33,7 +32,10 @@ class ExpCSVAverager:
       exp_output_root(str): Directory for averaged .csv output (relative to current dir or absolute).
     """
 
-    def __init__(self, exp_config_leaf, exp_output_root):
+    kMetricsFolderName = "metrics"
+    kAveragedOutputFolderName = "averaged-output"
+
+    def __init__(self, exp_config_leaf, no_verify_results, exp_output_root):
         # will get the main name and extension of the config file (without the full absolute path)
         self.template_config_fname, self.template_config_ext = os.path.splitext(
             os.path.basename(exp_config_leaf))
@@ -41,63 +43,106 @@ class ExpCSVAverager:
         self.exp_output_root = os.path.abspath(exp_output_root)
         self.exp_config_leaf = exp_config_leaf
 
+        self.averaged_output_root = os.path.join(self.exp_output_root,
+                                                 ExpCSVAverager.kAveragedOutputFolderName)
+        self.no_verify_results = no_verify_results
+        os.makedirs(self.averaged_output_root, exist_ok=True)
+
         # to be formatted like: self.config_name_format.format(name, experiment_number)
         format_base = "{}_{}"
         self.output_name_format = format_base + "_output"
 
-    def average_csvs(self):
+    def run(self):
+        if not self.no_verify_results:
+            self._verify_exp_csvs()
+        self._average_csvs()
+
+    def _average_csvs(self):
         """Averages the CSV files found in the output save path"""
+
+        print('-- Averaging results in ' + self.exp_output_root + "...")
+
+        # Maps unique .csv stem to the averaged dataframe
         csvs = {}
-        # create a regex that searches for output CSVs regardless of which number experiment they are
+
         pattern = self.output_name_format.format(
             re.escape(self.exp_config_leaf), "\d+")
 
-        for entry in os.scandir(self.exp_output_root):
-            # check to make sure the file name matches the regex
-            if re.fullmatch(pattern, entry.name):
-                # restriction: csv files must be in the "metrics" folder inside the output folder
-                for inner_entry in os.scandir(os.path.join(entry.path, "metrics")):
-                    # get every csv file
-                    if inner_entry.name.endswith(".csv"):
-                        # create a CSV object out of the file
-                        csv = CSV(inner_entry.path, delimiter=";")
-                        if inner_entry.name not in csvs:
-                            csvs[inner_entry.name] = []
-                        csvs[inner_entry.name].append(csv)
+        # check to make sure all directories are simulation runs, skipping the directory within each
+        # experiment that the averaged data is placed in
+        experiments = [e for e in os.listdir(self.exp_output_root) if e not in [
+            ExpCSVAverager.kAveragedOutputFolderName]]
 
-        # average the CSVs based on their name; all the CSV files with the same base name will be
-        # averaged together
+        assert(all(re.match(pattern, exp) for exp in experiments)),\
+            "FATAL: Not all directories in {0} are simulation runs".format(self.exp_output_root)
 
-        averaged_csvs = {key: self._average_csvs(csvs[key]) for key in csvs}
+        for exp in experiments:
+            csv_root = os.path.join(self.exp_output_root, exp, ExpCSVAverager.kMetricsFolderName)
+            # Nothing but .csv files should be in the metrics folder
+            for csv_fname in os.listdir(csv_root):
+                df = pd.read_csv(os.path.join(csv_root, csv_fname), sep=';')
+                if csv_fname not in csvs:
+                    csvs[csv_fname] = []
 
-        # FIXME: Disabled for now until #29 is fixed
-        # stats = {key: self._gen_statistics(csvs[key]) for key in csvs}
+                csvs[csv_fname].append(df)
 
-        csvs_path = os.path.join(self.exp_output_root, "averaged-output")
-        os.makedirs(csvs_path, exist_ok=True)
+            # All CSV files with the same base name will be averaged together
+            for csv_fname in csvs:
+                csv_concat = pd.concat(csvs[csv_fname])
+                by_row_index = csv_concat.groupby(csv_concat.index)
+                csv_averaged = by_row_index.mean()
+                csv_averaged.to_csv(os.path.join(self.averaged_output_root, csv_fname),
+                                    sep=';',
+                                    index=False)
 
-        # save the averaged CSV files
-        for name, value in averaged_csvs.items():
-            value.write(os.path.join(csvs_path, name))
+                # FIXME: Disabled for now until #29 is fixed
+                # stats = {key: self._gen_statistics(csvs[key]) for key in csvs}
 
-        # Save statistics with the same stem as the averaged .csv file, but with the .stats
-        # extension. FIXME: Disabled for now until #29 is fixed.
-        # for key, value in stats.items():
-        #     value.to_csv(os.path.join(csvs_path, key.split('.')
-        #                               [0] + ".stats"), sep=';', index=False)
+                # Save statistics with the same stem as the averaged .csv file, but with the .stats
+                # extension. FIXME: Disabled for now until #29 is fixed.
+                # for key, value in stats.items():
+                #     value.to_csv(os.path.join(csvs_path, key.split('.')
+                #                               [0] + ".stats"), sep=';', index=False)
 
-    def _average_csvs(self, csvs):
-        '''
-        Takes a list of CSV objects and averages them.
-        Returns None if the list is empty
-        '''
-        if not csvs:
-            return None
-        csv_sum = csvs[0]
+    def _verify_exp_csvs(self):
+        """
+        Verify that all experiments in the batch output root all have the same .csv files, and that
+        those .csv files all have the same # of rows and columns
+        """
+        experiments = [exp for exp in os.listdir(self.exp_output_root) if exp not in [
+            ExpCSVAverager.kAveragedOutputFolderName]]
+        print('-- Verifying results in ' + self.exp_output_root + "...")
 
-        for index in range(1, len(csvs)):
-            csv_sum += csvs[index]
-        return csv_sum / len(csvs)
+        for exp1 in experiments:
+            csv_root1 = os.path.join(self.exp_output_root,
+                                     exp1,
+                                     ExpCSVAverager.kMetricsFolderName)
+            for exp2 in experiments:
+                csv_root2 = os.path.join(self.exp_output_root,
+                                         exp2,
+                                         ExpCSVAverager.kMetricsFolderName)
+                for csv in os.listdir(csv_root2):
+                    path1 = os.path.join(csv_root1, csv)
+                    path2 = os.path.join(csv_root2, csv)
+                    assert (os.path.exists(path1) and os.path.exists(path2)),\
+                        "FATAL: Either {0} or {1} does not exist".format(path1, path2)
+
+                    # Verify both dataframes have same # columns, and that column sets are identical
+                    df1 = pd.read_csv(path1, sep=';')
+                    df2 = pd.read_csv(path2, sep=';')
+                    assert (len(df1.columns) == len(df2.columns)), \
+                        "FATAL: Dataframes from {0} and {1} do not have same # columns".format(
+                            path1, path2)
+                    assert(sorted(df1.columns) == sorted(df2.columns)),\
+                        "FATAL: Columns from {0} and {1} not identical".format(path1, path2)
+
+                    # Verify the length of all columns in both dataframes is the same
+                    for c1 in df1.columns:
+                        assert(all(len(df1[c1]) == len(df1[c2])) for c2 in df1.columns),\
+                            "FATAL: Not all columns from {0} have same length".format(path1)
+                        assert(all(len(df1[c1]) == len(df2[c2])) for c2 in df1.columns),\
+                            "FATAL: Not all columns from {0} and {1} have same length".format(path1,
+                                                                                              path1)
 
     def _gen_statistics(self, csvs):
         """Generate statistics across all columns in all .csv files perclock interval."""

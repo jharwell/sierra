@@ -53,7 +53,7 @@ class InterExpGraphGenerator:
         else:
             components = self.cmdopts['perf_measures']
 
-        if "all" in components:
+        if "all" in components or "line" in components:
             InterExpLinegraphs(self.cmdopts["collate_root"],
                                self.cmdopts["graph_root"],
                                Linegraphs.targets('depth2' in self.cmdopts["generator"])).generate()

@@ -16,6 +16,8 @@ Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 
 """
 
+import re
+
 
 class GeneratorPairParser:
     """
@@ -52,8 +54,25 @@ class GeneratorPairParser:
             # Scenario specified via batch criteria, and so the type of scenario is the last 2
             # letters of it.
             if 2 == len(components):
-                key = args.batch_criteria.split('.')[1][-2:]
+                print("- Parse (controller, scenario) generator specifications from cmdline "
+                      "batch criteria '{0}'".format(args.batch_criteria))
+                res = re.search('[a-zA-Z].[0-9]+x[0-9]+', args.batch_criteria)
+                assert res is not None,\
+                    "FATAL: Bad scenario+arena_dim specification in '{0}'".format(
+                        args.batch_criteria)
+
+                key = res.group(0)[:2]
                 scenario = abbrev_dict[key] + "." + key + "Generator"
-            else:  # Scenario explicitly specified
-                scenario = abbrev_dict[components[2][:2]] + "." + components[2]
+            else:  # Scenario specified as part of generator
+                print("- Parse (controller,scenario) generator specifications from cmdline "
+                      "generator '{0}'".format(args.generator))
+
+                res = re.search('[a-zA-Z].[0-9]+x[0-9]+', components[2])
+                assert res is not None,\
+                    "FATAL: Bad scenario+arena_dim specification in '{0}'".format(
+                        components[2])
+
+                key = res.group(0)[:2]
+                scenario = abbrev_dict[key] + "." + components[2]
+
             return (controller, scenario)

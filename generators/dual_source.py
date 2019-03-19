@@ -67,18 +67,8 @@ class DSGenerator(ExpInputGenerator):
         if len(rms):
             [xml_luigi.tag_remove(a) for a in rms[0]]
 
-        # Configure physics engines. Cannot be done in the parent class, as that is for BOTH
-        # controller and scenario generation, and the arena dimensions are None for configuring
-        # controllers.
-        engines = ev.physics_engines.PhysicsEngines(self.sim_opts["n_physics_engines"],
-                                                    "uniform_grid",
-                                                    arena_dim)
-
-        for a in engines.gen_tag_rmlist()[0]:
-            xml_luigi.tag_remove(a[0], a[1])
-
-        for a in engines.gen_tag_addlist()[0]:
-            xml_luigi.tag_add(a[0], a[1], a[2])
+        # Generate and apply physics engines definitions
+        self.generate_physics_defs(xml_luigi)
 
         if "depth1" in self.controller:
             print("WARNING: DS incompatible with depth1 controllers--either 0 or > 1 caches are needed for reasonable results.")

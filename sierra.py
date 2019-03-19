@@ -23,6 +23,23 @@ from generator_pair_parser import GeneratorPairParser
 from generator_creator import GeneratorCreator
 import collections
 
+
+def scenario_dir_name(batch_criteria, scenario):
+    """
+    Select the directory name for the root directory for batch input/output depending on what the
+    batch criteria is. The default is to use the block distribution type + arena size to
+    differentiate between batched experiments, for some batch criteria, those will be the same and
+    so you need to use the batch criteria definition itself to uniquely identify.
+    """
+    if 'swarm_size' in batch_criteria:
+        return scenario
+    elif any(b in batch_criteria for b in ['swarm_density', 'temporal_variance']):
+        # dash instead of dot to not confuse programs that rely on file extensions
+        return '-'.join(args.batch_criteria.split('.')[1:])
+    else:
+        return scenario  # General case
+
+
 if __name__ == "__main__":
     # check python version
     import sys
@@ -34,23 +51,14 @@ if __name__ == "__main__":
 
     pair = GeneratorPairParser()(args)
 
-    # If batch criteria is used, prefer to use it to uniquely determine directory names. Otherwise,
-    # if the user is not using batch criteria, but specified a controller + scenario combination for
-    # the generator (including dimensions), use that to determine directory names.
-    #
-    # Also, add the template file leaf to the root directory path to help track what experiment was
-    # run.
+    # Add the template file leaf to the root directory path to help track what experiment was run.
     if pair is not None:
-        if args.batch_criteria is not None:
-            controller = pair[0]
-            scenario = args.batch_criteria.split('.')[1]
-        elif "Generator" not in pair[1]:  # They specified scenario dimensions explicitly
-            controller = pair[0]
-            scenario = pair[1].split('.')[1]
+        print("- Controller={0}, Scenario={1}".format(pair[0], pair[1]))
 
         template, ext = os.path.splitext(os.path.basename(args.template_config_file))
+        controller = pair[0]
 
-        print("- Controller={0}, Scenario={1}".format(controller, scenario))
+        scenario = scenario_dir_name(args.batch_criteria, pair[1])
         if args.generation_root is None:
             args.generation_root = os.path.join(args.sierra_root,
                                                 controller,

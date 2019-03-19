@@ -17,96 +17,58 @@
 """
 
 
+import re
+
+
 class TemporalVarianceParser():
     """
-    Parses the command line definition of batch criteria. The string must be
-    formatted as:
+    Parses the command line definition of batch criteria. The string must be formatted as:
 
-    <variance_type><waveform_type>[step time]Z<swarm_size>
+    {variance_type}{<waveform_type}[step time].Z{swarm_size}
 
     variance_type = {BC,BM,CU}
     waveform_type = {Sine,Square,Sawtooth,Step{U,D},Constant}
 
     For example:
 
-    BCSineZ16 -> Block carry sinusoidal variance in a swarm of size 16.
-    BCStep50000Z32 -> Block carry step variance at 50000 timesteps in a swarm of size 32.
+    BCSine.Z16 -> Block carry sinusoidal variance in a swarm of size 16.
+    BCStep50000.Z32 -> Block carry step variance at 50000 timesteps in a swarm of size 32.
     """
 
     def parse(self, criteria_str):
         ret = {}
+        xml_parent = {
+            'BC': './/temporal_variance/blocks/carry_throttle',
+            'BM': './/temporal_variance/blocks/manipulation_penalty',
+            'CU': './/temporal_variance/caches/usage_penalty'
+        }
+        variance_col = {
+            'BC': "swarm_motion_throttle",
+            'BM': "env_block_manip",
+            'CU': "env_cache_usage"
+        }
 
-        ret.update(self.variance_type_parse(criteria_str))
-        ret.update(self.waveform_parse(criteria_str))
-        ret.update(self.swarm_size_parse(criteria_str))
-        return ret
+        # Parse variance type
+        res = re.search("BC|BM|BU", criteria_str)
+        assert res is not None, "FATAL: Bad variance type in criteria '{0}'".format(criteria_str)
+        ret['variance_type'] = res.group(0)
+        ret['xml_parent_path'] = xml_parent[ret['variance_type']]
+        ret['variance_csv_col'] = variance_col[ret['variance_type']]
 
-    def variance_type_parse(self, criteria_str):
-        """
-        Parse the temporal variance type out of the batch criteria string. Valid values are:
+        # Parse waveform type
+        res = re.search("Sine|Suare|Sawtooth|Step[UD]|Constant", criteria_str)
+        assert res is not None, "FATAL: Bad waveform type in criteria '{0}'".format(criteria_str)
+        ret['waveform_type'] = res.group(0)
 
-        BC - Block carry
-        BM - Block manipulation
-        CU - Cache Usage (static only for now)
-        """
-        ret = {}
-        t = criteria_str[:2]
-        ret["variance_type"] = t
+        if 'Step' in ret['waveform_type']:
+            res = re.search("Step[UD][0-9]+", criteria_str)
+            assert res is not None, "FATAL: Bad step specification type in criteria '{0}'".format(
+                criteria_str)
+            ret['waveform_param'] = int(res.group(0)[5:])
 
-        if "BC" == t:
-            ret["xml_parent_path"] = ".//temporal_variance/blocks/carry_throttle"
-            ret["variance_csv_col"] = "swarm_motion_throttle"
-        elif "BM" == t:
-            ret["xml_parent_path"] = ".//temporal_variance/blocks/manipulation_penalty"
-            ret["variance_csv_col"] = "env_block_manip"
-        elif "CU" == t:
-            ret["xml_parent_path"] = ".//temporal_variance/caches/usage_penalty"
-            ret["variance_csv_col"] = "env_cache_usage"
-        return ret
+        # Parse swarm size
+        res = re.search("\.Z[0-9]+", criteria_str)
+        assert res is not None, "FATAL: Bad swarm size in criteria '{0}'".format(criteria_str)
+        ret['swarm_size'] = int(res.group(0)[2:])
 
-    def waveform_parse(self, criteria_str):
-        """
-        Parse the waveform type and possible associated param from the batch criteria string. Valid
-        waveform types are:
-
-        - Sine
-        - Square
-        - Constant
-        - Sawtooth
-        - Step{U,D}<TStep>
-
-        Immediately proceeding 'Step' is the timestep on which the variance should suddenly change.
-        """
-        ret = {}
-        ret["waveform_type"] = None
-        ret["waveform_param"] = None
-
-        for c in ["Sine", "Square", "Constant", "Sawtooth"]:
-            index = criteria_str.find(c)
-            if -1 != index:
-                ret["waveform_type"] = c
-
-        # Must be 'StepX'
-        if ret["waveform_type"] is None:
-            if -1 != criteria_str.find("StepU"):
-                ret["waveform_type"] = "StepU"
-                t_start = criteria_str.find("StepU") + len("StepU")
-            else:
-                ret["waveform_type"] = "StepD"
-                t_start = criteria_str.find("StepD") + len("StepD")
-
-            t_i = t_start + 1
-            while criteria_str[t_i].isdigit():
-                t_i += 1
-
-            ret["waveform_param"] = int(criteria_str[t_start:t_i])
-        return ret
-
-    def swarm_size_parse(self, criteria_str):
-        """
-        Parse the swarm size from the batch criteria string. Valid values are positive integers.
-        """
-        ret = {}
-        start = criteria_str.find("Z") + 1
-        ret["swarm_size"] = int(criteria_str[start:])
         return ret

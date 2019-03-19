@@ -50,6 +50,19 @@ class Cmdline:
 
                             """,
                             default=os.path.expanduser("~") + "/exp")
+        parser.add_argument("--config-root",
+                            help="""
+
+                            Path to root directory containing all .yaml files used by SIERRA for
+                            configuration. Within this directory, the following files must be
+                            present when running a stage that utilizes them:
+
+                            intra-graphs.yaml - Configuration for intra-experiment graphs
+                            inter-graphs.yaml - Configuration for inter-experiment graphs
+                            controllers.yaml - Configuration for controllers (input file/graph generation)
+
+                            """,
+                            default="config")
         parser.add_argument("--generation-root",
                             metavar="dirpath",
                             help="""
@@ -90,9 +103,9 @@ class Cmdline:
                             Experimental generator to use, which is a combination of controller+scenario
                             configuration.
 
-                            Valid controllers: {depth0.{CRW, Stateful},
-                                                depth1.{GreedyPartitioning, OracularPartitioning},
-                                                depth2.{GreedyRecPart, OracularRecPart}.
+                            Valid controllers: {depth0.{CRW, DPO, MDPO},
+                                                depth1.{GP_DPO, OGP_DPO},
+                                                depth2.{GRP_DPO, OGRP_DPO}.
 
                             Valid scenarios: {RN, SS, DS, QS, PL}, which correspond to {random, single source, dual
                             source, quad source, powerlaw} block distributions.
@@ -144,21 +157,32 @@ class Cmdline:
         stage1.add_argument("--time-setup",
                             help="""
 
-                            The simulation time setup to use, which sets duration and metric reporting interval. For
-                            options, see time_setup.py
+                            The simulation time setup to use, which sets duration and metric
+                            reporting interval. For options, see time_setup.py
 
                             """,
                             default="time_setup.T5000")
         stage1.add_argument("--n-physics-engines",
-                            choices=[1, 4, 16],
+                            choices=[1, 4, 8, 16, 24],
                             type=int,
                             help="""
 
-                            The # of physics engines to use during simulation (yay ARGoS!). If n > 1, the engines will
-                            be tiled in a uniform grid within the arena.
+                            The # of physics engines to use during simulation (yay ARGoS!). If n >
+                            1, the engines will be tiled in a uniform grid within the arena (X and Y
+                            spacing may not be the same depending on dimensions and how many engines
+                            are chosen, however).
 
                             """,
                             default=1)
+        stage1.add_argument("--physics-iter-per-tick",
+                            type=int,
+                            help="""
+
+                            The # of iterations all physics engines should perform per tick
+                            between each time the controller loops are run.
+
+                            """,
+                            default=10)
         stage1.add_argument("--n-sims",
                             help="""
 
@@ -213,6 +237,26 @@ class Cmdline:
                             choices=["none", "argos", "fordyca", "all"],
                             default="none")
 
+        stage1.add_argument("--n-blocks",
+                            help="""
+
+                            Specify the # blocks that should be used in the simulation (evenly split
+                            between cube and ramp). Can be used to override batch criteria, or to
+                            supplement experiments that do not set it so that manual modification of
+                            input file is unneccesary.
+
+                            """,
+                            type=int,
+                            default=None)
+        stage1.add_argument("--static-cache-blocks",
+                            help="""
+
+                            Specify the # of blocks used when the static cache is respawned (depth1
+                            controllers only).
+
+                            """,
+                            default=None)
+
         stage2 = parser.add_argument_group('stage2 (Running experiments)')
         stage2.add_argument("--exec-method",
                             help="""
@@ -226,19 +270,37 @@ class Cmdline:
                                           machine. Useful for large swarms when the full resources of the local machine
                                           are needed to run simulations at a reasonable rate of speed.
 
-                            hpc.parallel: Use GNU parallel in an HPC environment to run the specified # of simulations
-                                          simultaneously on a computing cluster.
+                            hpc[.cluster_name]: Use GNU parallel in an HPC environment to run the specified # of
+                                                simulations simultaneously on a computing cluster. The [.cluster] is
+                                                optional, and if omitted sierra with attempt to invoke ARGoS via
+                                                "argos3" on the command line. If the cluster name is specified, then
+                                                sierra will attempt to invoke ARGoS via "argos3-cluster_name". For
+                                                example, if "hpc.itasca" is specified, then ARGoS will be invoked via
+                                                "argos3-itasca. This option is provided so that in HPC environments with
+                                                multiple clusters with different architectures ARGoS can be compiled
+                                                natively for each for maximum performance.
 
                             """,
-                            choices=["local.parallel", "local.serial", "hpc.parallel"],
                             default="local.parallel")
-        stage2.add_argument("--batch-exp-num",
+        stage2.add_argument("--batch-exp-range",
                             help="""
 
-                            Experiment number from the batch to run (instead of running every experiment from the batch
-                            in sequence, which is the default behavior). Ignored if --batch-criteria is not passed.
+                            Experiment numbers from the batch to run. Ignored if --batch-criteria is
+                            not passed. Specified in the form a:b. If omitted, runs all experiments
+                            in the batch (default behavior).
 
                             """)
+
+        stage3 = parser.add_argument_group('stage3 (experiment averaging)')
+        stage3.add_argument('--no-verify-results',
+                            help="""
+
+                            If TRUE, then the verification step will be skipped for the batched experiment, and outputs
+                            will be averaged directly. If not all .csv files for all experiments exist and/or have the
+                            same # of rows, then sierra will crash. Verification can take a long time with large # of
+                            simulations per experiment.
+                            """,
+                            default=False)
 
         stage4 = parser.add_argument_group('stage4 (graph generation)')
 
@@ -272,6 +334,7 @@ class Cmdline:
                             sp: Generate comparison plots of swarm performance (blocks collected).
                             sr: Generate comparison plots of swarm reactivity.
                             sa: Generate comparison plots of swarm adaptability.
+                            line: Generate comparison linegraphs.
                             all: Generate all inter-experiment graphs.
 
                             """,
@@ -285,6 +348,16 @@ class Cmdline:
 
                             """,
                             action="store_true")
+
+        stage4.add_argument("--plot-log-xaxis",
+                            help="""
+
+                            If TRUE, then the set of X values used to generate intra- and inter-batch plots will be
+                            placed into the logarithmic (base 2) space. Mainly useful when the batch criteria involves
+                            large swarm sizes, so that the plots are more readable.
+
+                            """,
+                            default=False)
         stage4.add_argument("--plot-errorbars",
                             help="""
 
@@ -341,14 +414,14 @@ class Cmdline:
                             choices=["pcm", "area_between", "frechet", "dtw", "curve_length"],
                             default="pcm")
 
-        stage5 = parser.add_argument_group('stage5 (Controller/scenario comparison)')
+        stage5 = parser.add_argument_group('stage5 (Inter-batch controller/scenario comparison)')
 
-        stage5.add_argument("--comp-controllers",
+        stage5.add_argument("--inter-batch-controllers",
                             help="""
 
-                            Comma separated list of controllers to compare within <sierra root>. Specify 'all' to compare all
-                            controllers in <sierra root>.
+                            Comma separated list of controllers to compare within <sierra root>. If
+                            None, then the default set of controllers will be used for comparison.
 
                             """,
-                            default="all")
+                            default='depth0.CRW,depth0.DPO,depth1.GP_DPO')
         return parser

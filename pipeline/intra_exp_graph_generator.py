@@ -21,10 +21,11 @@ import os
 import copy
 import pandas as pd
 import numpy as np
+import yaml
+
 from pipeline.intra_exp_linegraphs import IntraExpLinegraphs
 from pipeline.intra_exp_histograms import IntraExpHistograms
 from pipeline.intra_exp_heatmaps import IntraExpHeatmaps
-from pipeline.intra_exp_targets import Linegraphs, Histograms, Heatmaps
 
 
 class IntraExpGraphGenerator:
@@ -41,27 +42,41 @@ class IntraExpGraphGenerator:
         self.cmdopts["output_root"] = os.path.join(self.cmdopts["output_root"], 'averaged-output')
 
         os.makedirs(self.cmdopts["graph_root"], exist_ok=True)
+        self.linegraph_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
+                                                            'intra-graphs-line.yaml')))
+        self.hm_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
+                                                     'intra-graphs-hm.yaml')))
+
+        self.controller_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
+                                                             'controllers.yaml')))
 
     def __call__(self):
-        if 'depth2' in self.cmdopts["generator"]:
-            keys = Linegraphs.all_target_keys()
-        elif 'depth1' in self.cmdopts["generator"]:
-            keys = Linegraphs.depth0_keys() + Linegraphs.depth1_keys()
-        else:
-            keys = Linegraphs.depth0_keys()
+        for category in list(self.controller_config.keys()):
+            if category not in self.cmdopts['generator']:
+                continue
+            for controller in self.controller_config[category]['controllers']:
+                if controller['name'] not in self.cmdopts['generator']:
+                    continue
+                keys = controller['graphs']
+                if 'graphs_inherit' in controller:
+                    [keys.extend(l) for l in controller['graphs_inherit']]  # optional
 
-        targets = Linegraphs.filtered_targets(keys)
+        filtered_keys = [k for k in self.linegraph_config if k in keys]
+        targets = [self.linegraph_config[k] for k in filtered_keys]
         self._add_temporal_variances(targets)
 
         IntraExpLinegraphs(self.cmdopts["output_root"],
                            self.cmdopts["graph_root"],
                            targets).generate()
-        if self.cmdopts["with_hists"]:
-            IntraExpHistograms(self.cmdopts["output_root"], self.cmdopts["graph_root"],
-                               Histograms.all_targets()).generate()
+        # if self.cmdopts["with_hists"]:
+        #     IntraExpHistograms(self.cmdopts["output_root"], self.cmdopts["graph_root"],
+        #                        Histograms.all_targets()).generate()
 
-        IntraExpHeatmaps(self.cmdopts["output_root"], self.cmdopts["graph_root"],
-                         Heatmaps.all_targets()).generate()
+        filtered_keys = [k for k in self.hm_config if k in keys]
+        targets = [self.hm_config[k] for k in filtered_keys]
+        IntraExpHeatmaps(self.cmdopts["output_root"],
+                         self.cmdopts["graph_root"],
+                         targets).generate()
 
     def _add_temporal_variances(self, targets):
         """
@@ -72,12 +87,15 @@ class IntraExpGraphGenerator:
         var_df = pd.read_csv(os.path.join(self.cmdopts["output_root"],
                                           IntraExpLinegraphs.kTemporalVarCSV),
                              sep=';')
-        for graph_set in targets.values():
-            for graph in graph_set:
 
+        # For each category of graphs we are generating
+        for category in targets:
+            # For each graph in each category
+            for graph in category['graphs']:
+                # For each individual graph in each graph set
                 for key in graph.keys():
-                    # The 'temporal_var' key is optional, so we only want to modify graph generation
-                    # for those graphs that have requested it.
+                    # The 'temporal_var' key is optional, so we only want to modify graph
+                    # generation for those graphs that have requested it.
                     if 'temporal_var' != key:
                         continue
 
@@ -88,12 +106,16 @@ class IntraExpGraphGenerator:
                     for col in graph['temporal_var']:
                         added = self._add_temporal_variance_cols(target_df, var_df, graph, col)
 
-                        graph['cols'].extend([a for a in added for c in graph['cols'] if c in a])
+                        # OK to disable static checking here because I *know* the graphs are
+                        # hardcoded before runtime and the selected attributes *are* lists.
+                        graph['cols'].extend(  # pytype: disable=attribute-error
+                            [a for a in added for c in graph['cols'] if c in a])
 
-                        graph['legend'].extend(
+                        graph['legend'].extend(  # pytype: disable=attribute-error
                             ['Applied Variance (scaled {0})'.format(x) for x in added])
                         if 'styles' in graph:
-                            graph['styles'].extend(['--' for x in range(0, len(added))])
+                            graph['styles'].extend(  # pytype: disable=attribute-error
+                                ['--' for x in range(0, len(added))])
 
     def _add_temporal_variance_cols(self, target_df, var_df, graph, col):
         added = []

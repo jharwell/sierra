@@ -20,7 +20,7 @@ import os
 import random
 import pickle
 from pipeline.xml_luigi import XMLLuigi, InvalidElementError
-from variables import time_setup
+from variables import time_setup, physics_engines, block_distribution
 
 
 class ExpInputGenerator:
@@ -133,14 +133,40 @@ class ExpInputGenerator:
                                                        self.config_name_format.format(
                                                            self.main_config_name, exp_num)))
 
+    def generate_physics_defs(self, xml_luigi):
+        """Generates definitions for physics engines configuration for the simulation.
+
+        This cannot be done as part of generate_common_defs(), as this class is reused for
+        generators for BOTH controller and scenario, and the arena dimensions are None for
+        configuring controllers.
+
+        """
+        pe = physics_engines.PhysicsEngines(self.sim_opts["n_physics_engines"],
+                                            self.sim_opts["physics_iter_per_tick"],
+                                            "uniform_grid",
+                                            self.sim_opts["arena_dim"])
+        [xml_luigi.tag_remove(a[0], a[1]) for a in pe.gen_tag_rmlist()[0]]
+        [xml_luigi.tag_add(a[0], a[1], a[2]) for a in pe.gen_tag_addlist()[0]]
+
+    def generate_block_count_defs(self, xml_luigi):
+        """
+        Generates definitions for # blocks in the simulation from command line overrides.
+        """
+        bd = block_distribution.Quantity([self.sim_opts['n_blocks']])
+        [xml_luigi.attribute_change(a[0], a[1], a[2]) for a in bd.gen_attr_changelist()[0]]
+        rms = bd.gen_tag_rmlist()
+
+        if len(rms):
+            [xml_luigi.tag_remove(a) for a in rms[0]]
+
     def _generate_time_defs(self, xml_luigi):
         """
         Setup simulation time parameters and write them to the pickle file for retrieval during
         graph generation later.
         """
         setup = __import__("variables.{0}".format(
-            self.sim_opts["tsetup"].split(".")[0]), fromlist=["*"])
-        tsetup_inst = getattr(setup, "Factory")(self.sim_opts["tsetup"])()
+            self.sim_opts["time_setup"].split(".")[0]), fromlist=["*"])
+        tsetup_inst = getattr(setup, "Factory")(self.sim_opts["time_setup"])()
         for a in tsetup_inst.gen_attr_changelist()[0]:
             xml_luigi.attribute_change(a[0], a[1], a[2])
 
@@ -242,10 +268,18 @@ class ExpInputGenerator:
 
     def _add_sim_to_command_file(self, xml_fname):
         """Adds the command to run a particular simulation definition to the command file."""
-        # need the double quotes around the path so that it works in both Linux and Windows
+
+        # Specify ARGoS invocation in generated command file per cmdline arguments.
+        parts = self.sim_opts['exec_method'].split('.')
+
+        if 'local' in parts:
+            argos_cmd = 'argos3'
+        else:
+            argos_cmd = 'argos3-' + parts[1]
+
         with open(self.commands_fpath, "a") as commands_file:
             commands_file.write(
-                'argos3 -c "{}" --log-file /dev/null --logerr-file /dev/null\n'.format(xml_fname))
+                argos_cmd + ' -c "{}" --log-file /dev/null --logerr-file /dev/null\n'.format(xml_fname))
 
     def _generate_random_seeds(self):
         """Generates random seeds for experiments to use."""

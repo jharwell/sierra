@@ -1,0 +1,85 @@
+base_graphs: &base_graphs
+  - fsm_collision
+  - fsm_movement
+  - block_trans
+  - block_acq
+  - block_manip
+  - convergence
+  - arena
+
+depth0:
+  xml:
+    attr_change:
+      - ['.//loop_functions', 'label', 'depth0_loop_functions']
+  controllers:
+    - name: CRW
+      xml:
+        attr_change:
+          - ['.//controllers', '__template__', 'crw_controller']
+
+      graphs: &CRW_graphs
+      graphs_inherit:
+        - *base_graphs
+    - name: &DPO DPO
+      xml:
+        attr_change:
+          - ['.//controllers', '__template__', 'dpo_controller']
+      graphs_inherit:
+        - *base_graphs
+      graphs: &DPO_graphs
+        - world_model
+    - name: &MDPO MDPO
+      xml:
+        attr_change:
+          - ['.//controllers', '__template__', 'mdpo_controller']
+      graphs_inherit:
+        - *base_graphs
+        - *DPO_graphs
+
+depth1:
+  xml:
+    attr_change:
+      - ['.//loop_functions', 'label', 'depth1_loop_functions']
+  controllers:
+    - name: GP_DPO
+      xml:
+          attr_change:
+            - ['.//controllers', '__template__', 'gp_dpo_controller']
+      graphs_inherit:
+        - *base_graphs
+        - *DPO_graphs
+      graphs: &GP_DPO_graphs
+        - cache_util
+        - cache_lifecycle
+        - depth1_task_exec
+        - depth1_task_dist
+        - generalist_tab
+    - name: OGP_DPO
+      xml:
+          attr_change:
+            - ['.//controllers', '__template__', 'ogp_dpo_controller']
+            - ['.//loop_functions/oracle', 'enabled', 'true']
+      graphs_inherit:
+        - *base_graphs
+        - *DPO_graphs
+        - *GP_DPO_graphs
+      graphs:
+depth2:
+  xml:
+    attr_change:
+      - ['.//loop_functions', 'label', 'depth2_loop_functions']
+  controllers:
+    - name: GRP_DPO
+      xml:
+        attr_change:
+          - ['.//controllers', '__template__', 'grp_dpo_controller']
+      graphs_inherit:
+        - *base_graphs
+        - *DPO_graphs
+        - *GP_DPO_graphs
+
+      graphs: &GRP_DPO_graphs
+        - depth2_task_exec
+        - depth2_task_dist
+        - harvester_tab
+        - collector_tab

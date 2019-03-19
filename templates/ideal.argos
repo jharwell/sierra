@@ -18,7 +18,7 @@
   <controllers>
 
     <__template__ id="ffc"
-                                library="libfordyca">
+                  library="libfordyca">
       <actuators>
         <differential_steering implementation="default" />
         <leds implementation="default" medium="leds" />
@@ -68,7 +68,7 @@
               <sigmoid_sel
                   method="pini2011">
                 <sigmoid
-                    reactivity="4"
+                    reactivity="6"
                     offset="1.0"
                     gamma="1.0"/>
               </sigmoid_sel>
@@ -88,13 +88,13 @@
           </subtask_sel>
           <task_exec_estimates
               seed_enabled="true"
-              generalist="2000:4000"
-              collector="1000:2000"
-              harvester="1000:2000"
-              cache_starter="1000:2000"
-              cache_finisher="1000:2000"
-              cache_collector="1000:2000"
-              cache_transferer="1000:2000">
+              generalist="20000:40000"
+              collector="10000:20000"
+              harvester="10000:20000"
+              cache_starter="10000:20000"
+              cache_finisher="10000:20000"
+              cache_collector="10000:20000"
+              cache_transferer="10000:20000">
             <ema alpha="0.8"/>
           </task_exec_estimates>
           <tab_sel>
@@ -141,7 +141,7 @@
             <wander_force circle_distance="4.0"
                           circle_radius="100.0"
                           max_angle_delta="5"
-                          max="9.0"
+                          max="9"
                           interval="1"
                           normal_dist="false"/>
             <phototaxis_force max="8"/>
@@ -197,19 +197,21 @@
           task_distribution_fname="task-distribution.csv"
           perception_world_model_fname="perception-world-model.csv"
           arena_robot_occupancy_fname="arena-robot-occupancy.csv"
-          swarm_convergence_fname="swarm-convpergence.csv"
+          swarm_convergence_fname="swarm-convergence.csv"
           loop_temporal_variance_fname="loop-temporal-variance.csv"
           collect_interval="1000">
           </metrics>
     </output>
     <convergence
-        n_threads="0">
+        n_threads="0"
+        epsilon="0.5">
       <positional_entropy
-          enable="false"
+          enable="true"
           horizon="0:13.41"
           horizon_delta="1.34"/>
-      <interactivity enable="false"/>
-      <angular_order enable="false"/>
+      <interactivity enable="true"/>
+      <angular_order enable="true"/>
+      <task_dist_entropy enable="true"/>
     </convergence>
     <oracle
         enabled="false"
@@ -261,7 +263,7 @@
               />
           <manifest
               n_cube="25"
-              n_ramp="25"
+              n_ramp="0"
               unit_dim="0.2"
               />
         </distribution>

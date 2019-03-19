@@ -31,15 +31,19 @@ class BatchedExpCSVAverager:
 
 
     """
+    kCollatedOutputFolderName = "collated-csvs"
 
-    def __init__(self, batch_config_leaf, batch_output_root):
+    def __init__(self, batch_config_leaf, batch_output_root, no_verify_results):
         self.batch_output_root = os.path.abspath(batch_output_root)
         self.batch_config_leaf = batch_config_leaf
+        self.no_verify_results = no_verify_results
 
-    def average_csvs(self):
+    def run(self):
         """Average .csv output files for all experiments in the batch."""
-
-        for item in os.listdir(self.batch_output_root):
-            path = os.path.join(self.batch_output_root, item)
+        # Ignore the folder for .csv files collated across experiments within a batch
+        experiments = [item for item in os.listdir(self.batch_output_root) if item not in [
+            BatchedExpCSVAverager.kCollatedOutputFolderName]]
+        for exp in experiments:
+            path = os.path.join(self.batch_output_root, exp)
             if os.path.isdir(path):
-                ExpCSVAverager(self.batch_config_leaf, path).average_csvs()
+                ExpCSVAverager(self.batch_config_leaf, self.no_verify_results, path).run()

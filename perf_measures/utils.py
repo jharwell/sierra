@@ -56,7 +56,7 @@ def sort_scenarios(criteria_category, scenarios):
     if "swarm_size" in criteria_category:
         return scenarios  # No sorting needed
     elif "swarm_density" in criteria_category:
-        return sorted(scenarios, key=lambda s: float(s[-5:-2].replace('p', '.')))
+        return sorted(scenarios, key=lambda s: float(s.split('-')[2].split('.')[0][0:3].replace('p', '.')))
     elif 'temporal_variance' in criteria_category:
         return scenarios
 
@@ -100,7 +100,7 @@ def batch_criteria_xvals(cmdopts):
                            the batch.
     """
     if "swarm_size" in cmdopts["criteria_category"]:
-        return batch_swarm_sizes(cmdopts)
+        ret = batch_swarm_sizes(cmdopts)
     elif "swarm_density" in cmdopts["criteria_category"]:
         densities = []
         for i in range(0, cmdopts["n_exp"]):
@@ -112,9 +112,14 @@ def batch_criteria_xvals(cmdopts):
                 if e[0] == ".//arena" and e[1] == "size":
                     x, y, z = e[2].split(",")
             densities.append(n_robots / (int(x) * int(y)))
-        return densities
+        ret = densities
     elif "temporal_variance" in cmdopts["criteria_category"]:
-        return [vcs.EnvironmentalCS(cmdopts, x)() for x in range(0, cmdopts["n_exp"])]
+        ret = [vcs.EnvironmentalCS(cmdopts, x)() for x in range(0, cmdopts["n_exp"])]
+
+    if cmdopts['plot_log_xaxis']:
+        return [math.log2(x) for x in ret]
+    else:
+        return ret
 
 
 def batch_criteria_xlabel(cmdopts):
@@ -186,18 +191,21 @@ class ProjectivePerformance:
         self.cmdopts["n_exp"] = len(df.columns)
         xvals = batch_criteria_xvals(self.cmdopts)
 
-        for c in scale_cols:
-            exp_num = int(c[3:])
-            v = xvals[exp_num]
+        for exp_num in range(1, len(scale_cols) + 1):
+            exp_col = 'exp' + str(exp_num)
+            exp_prev_col = 'exp' + str(exp_num - 1)
+            similarity = float(xvals[exp_num]) / float(xvals[exp_num - 1])
 
             if "positive" == self.projection_type:
-                df_new[c] = ProjectivePerformance._calc_positive(df.tail(1)[c].values[0],
-                                                                 df.tail(1)['exp0'].values[0],
-                                                                 v)
+                df_new[exp_col] = ProjectivePerformance._calc_positive(df.tail(1)[exp_col].values[0],
+                                                                       df.tail(1)[
+                    exp_prev_col].values[0],
+                    similarity)
             elif "negative" == self.projection_type:
-                df_new[c] = ProjectivePerformance._calc_negative(df.tail(1)[c].values[0],
-                                                                 df.tail(1)['exp0'].values[0],
-                                                                 v)
+                df_new[exp_col] = ProjectivePerformance._calc_negative(df.tail(1)[exp_col].values[0],
+                                                                       df.tail(1)[
+                    exp_prev_col].values[0],
+                    similarity)
         return df_new
 
     def _calc_positive(observed, exp0, similarity):
@@ -236,8 +244,9 @@ class FractionalLosses:
         path = os.path.join(self.batch_output_root, kCAInCumCSV)
         assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
         df = pd.read_csv(path, sep=';')
-        scale_cols = [c for c in df.columns if c not in ['clock']]
-        tlost_n = pd.DataFrame(columns=scale_cols, data=df.tail(1))
+        scale_cols = [c for c in df.columns if c not in ['clock', 'exp0']]
+        all_cols = [c for c in df.columns if c not in ['clock']]
+        tlost_n = pd.DataFrame(columns=all_cols, data=df.tail(1))
 
         # Next get the performance lost per timestep, calculated as:
         #
@@ -257,10 +266,13 @@ class FractionalLosses:
 
         plost_n = pd.DataFrame(columns=scale_cols)
         plost_n['exp0'] = blocks.tail(1)['exp0'] * (tlost_n['exp0'])
-        for c in [c for c in scale_cols if c not in ['exp0']]:
-            plost_n[c] = blocks.tail(1)[c] * \
-                (tlost_n[c] - tlost_n['exp0'] * math.pow(2, int(c[3:]))) / \
-                math.pow(2, int(c[3:]))
+
+        for c in [c for c in scale_cols]:
+            if blocks.tail(1)[c].values[0] == 0:
+                plost_n[c] = math.inf
+            else:
+                plost_n[c] = blocks.tail(1)[c] * (tlost_n[c] - tlost_n['exp0'] * math.pow(2, int(c[3:]))) / \
+                    math.pow(2, int(c[3:]))
 
         # Finally, calculate fractional losses as:
         #
@@ -268,14 +280,18 @@ class FractionalLosses:
         path = os.path.join(self.batch_output_root, kBlocksGatheredCumCSV)
         assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
         perf_n = pd.read_csv(path, sep=';').tail(1)
+        perf_n.tail(1)['exp0'] = 0.0
 
         df = pd.DataFrame(columns=scale_cols)
+
         for c in scale_cols:
             if (perf_n[c] == 0).any():
-                df[c] = perf_n[c]
+                df[c] = 1.0
             else:
                 df[c] = round(plost_n[c] / perf_n[c], 4)
 
+        # By definition, no fractional losses with 1 robot
+        df.insert(0, 'exp0', 0.0)
         return df
 
 

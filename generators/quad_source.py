@@ -41,11 +41,12 @@ class QSGenerator(ExpInputGenerator):
         self.controller = controller
 
     def generate(self, xml_luigi):
+        # Generate and apply arena dimensions definitions, and write dimensions to file for later
+        # retrieval.
         arena_dim = self.sim_opts["arena_dim"]
         shape = ev.arena_shape.SquareArena(sqrange=[arena_dim[0]])
         [xml_luigi.attribute_change(a[0], a[1], a[2]) for a in shape.gen_attr_changelist()[0]]
 
-        # Write arena dimensions info to file for later retrieval
         with open(self.exp_def_fpath, 'ab') as f:
             pickle.dump(shape.gen_attr_changelist()[0], f)
 
@@ -53,6 +54,7 @@ class QSGenerator(ExpInputGenerator):
         if len(rms):
             [xml_luigi.tag_remove(a) for a in rms[0]]
 
+        # Generate and apply block distribution type definitions
         source = ev.block_distribution.TypeQuadSource()
         [xml_luigi.attribute_change(a[0], a[1], a[2]) for a in source.gen_attr_changelist()[0]]
 
@@ -60,24 +62,19 @@ class QSGenerator(ExpInputGenerator):
         if len(rms):
             [xml_luigi.tag_remove(a) for a in rms[0]]
 
+        # Generate and apply nest definitions
         nest_pose = ev.nest_pose.NestPose("quad_source", [arena_dim])
         [xml_luigi.attribute_change(a[0], a[1], a[2]) for a in nest_pose.gen_attr_changelist()[0]]
         rms = nest_pose.gen_tag_rmlist()
         if len(rms):
             [xml_luigi.tag_remove(a) for a in rms[0]]
 
-        # Configure physics engines. Cannot be done in the parent class, as that is for BOTH
-        # controller and scenario generation, and the arena dimensions are None for configuring
-        # controllers.
-        engines = ev.physics_engines.PhysicsEngines(self.sim_opts["]n_physics_engines"],
-                                                    "uniform_grid",
-                                                    arena_dim)
+        # Generate and apply physics engines definitions
+        self.generate_physics_defs(xml_luigi)
 
-        for a in engines.gen_tag_rmlist()[0]:
-            xml_luigi.tag_remove(a[0], a[1])
-
-        for a in engines.gen_tag_addlist()[0]:
-            xml_luigi.tag_add(a[0], a[1], a[2])
+        # Generate and apply # blocks definitions if configured
+        if self.sim_opts['n_blocks'] is not None:
+            self.generate_block_count_defs(xml_luigi)
 
         if "depth1" in self.controller:
             print("WARNING: QS incompatible with depth1 controllers--either 0 or > 1 caches are needed for reasonable results.")

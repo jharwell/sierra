@@ -41,15 +41,15 @@ class IntraExpHeatmaps:
 
     def generate(self):
         print("-- Heatmaps from {0}".format(self.exp_output_root))
-        self.depth0_generate_heatmaps()
 
-    def depth0_generate_heatmaps(self):
-        for target_set in [self.targets[x] for x in ['arena']]:
-            for target in target_set:
+        # For each category of linegraphs we are generating
+        for category in self.targets:
+            # For each graph in each category
+            for graph in category['graphs']:
                 Heatmap(input_fpath=os.path.join(self.exp_output_root,
-                                                 target['src_stem'] + '.csv'),
+                                                 graph['src_stem'] + '.csv'),
                         output_fpath=os.path.join(self.exp_graph_root,
-                                                  target['src_stem'] + '-hm.png'),
-                        title=target['title'],
+                                                  graph['src_stem'] + '-hm.png'),
+                        title=graph['title'],
                         xlabel='X',
                         ylabel='Y').generate()

@@ -31,19 +31,25 @@ class GeneratorCreator:
         if any([[2], [3], [4]]) == args.pipeline:
             return None
 
-            # Running stage 4 or 5
+        # Running stage 4 or 5
         if generator_names is None:
             return None
 
+        # This is the dictionary of all cmdline options used during stage 1. This is here, rather
+        # than in the exp pipeline, because the generator is passed INTO the pipeline.
         sim_opts = {
             "n_sims": args.n_sims,
             "n_threads": args.n_threads,
             "n_physics_engines": args.n_physics_engines,
-            "tsetup": args.time_setup,
+            "physics_iter_per_tick": args.physics_iter_per_tick,
+            "time_setup": args.time_setup,
             "with_robot_rab": args.with_robot_rab,
             "with_robot_leds": args.with_robot_leds,
             "with_robot_battery": args.with_robot_battery,
-            "with_visualizations": args.with_visualizations
+            "with_visualizations": args.with_visualizations,
+            'n_blocks': args.n_blocks,
+            'static_cache_blocks': args.static_cache_blocks,
+            'exec_method': args.exec_method
         }
         if args.batch_criteria is not None:
             criteria = __import__("variables.{0}".format(
@@ -51,8 +57,8 @@ class GeneratorCreator:
             sim_opts["arena_dim"] = None
 
             criteria_generator = getattr(criteria, "Factory")(args.batch_criteria)()
-            print(
-                "- Parse batch criteria into generator '{0}'".format(criteria_generator.__class__.__name__))
+            print("- Parse batch criteria into generator governor '{0}'".format(
+                criteria_generator.__class__.__name__))
             return BatchedExpInputGenerator(batch_config_template=args.template_config_file,
                                             batch_generation_root=args.generation_root,
                                             batch_output_root=args.output_root,

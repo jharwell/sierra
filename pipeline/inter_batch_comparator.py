@@ -22,100 +22,115 @@ from graphs.batch_ranged_graph import BatchRangedGraph
 from graphs.bar_graph import BarGraph
 import perf_measures.utils as pm_utils
 import copy
-intra_scenario_measures = [
-    {
-        'src_stem': 'pm-pp-comp-positive',
-        'dest_stem': 'cc-pm-pp-comp-positive',
-        'title': 'Swarm Projective Performance Comparison (positive)',
-        'ylabel': 'Observed-Projected Ratio'
-    },
-    {
-        'src_stem': 'pm-pp-comp-negative',
-        'dest_stem': 'cc-pm-pp-comp-negative',
-        'title': 'Swarm Projective Performance Comparison (Negative)',
-        'ylabel': 'Observed-Projected Ratio'
-    },
-    {
-        'src_stem': 'pm-scalability-fl',
-        'dest_stem': 'cc-pm-scalability-fl',
-        'title': 'Swarm Scalability (Sub-Linear Fractional Losses)',
-        'ylabel': 'Scalability Value'
-    },
-    {
-        'src_stem': 'pm-scalability-norm',
-        'dest_stem': 'cc-pm-scalability-norm',
-        'title': 'Swarm Scalability (Normalized)',
-        'ylabel': 'Scalability Value'
-    },
-    {
-        'src_stem': 'pm-self-org',
-        'dest_stem': 'cc-pm-self-org',
-        'title': 'Swarm Self Organization',
-        'ylabel': 'Self Organization Value'
-    },
-    {
-        'src_stem': 'pm-blocks-collected',
-        'dest_stem': 'cc-pm-blocks-collected',
-        'title': 'Swarm Total Blocks Collected',
-        'ylabel': '# Blocks'
-    },
-    {
-        'src_stem': 'pm-karpflatt',
-        'dest_stem': 'cc-pm-karpflatt',
-        'title': 'Swarm Karp-Flatt Metric',
-        'ylabel': ''
-    },
-    {
-        'src_stem': 'pm-reactivity',
-        'dest_stem': 'cc-pm-reactivity',
-        'title': 'Swarm Reactivity',
-        'ylabel': ''
-    },
-    {
-        'src_stem': 'pm-adaptability',
-        'dest_stem': 'cc-pm-adaptability',
-        'title': 'Swarm Adaptability',
-        'ylabel': ''
-    },
-]
-
-inter_scenario_measures = [
-    {
-        'src_stem': 'pm-scalability-fl',
-        'dest_stem': 'sc-pm-scalability-fl',
-        'title': 'Weight Unified Swarm Scalability (Sub-Linear Fractional Losses)',
-    },
-    {
-        'src_stem': 'pm-scalability-norm',
-        'dest_stem': 'sc-pm-scalability-norm',
-        'title': 'Weight Unified Swarm Scalability (Normalized)',
-    },
-    {
-        'src_stem': 'pm-self-org',
-        'dest_stem': 'sc-pm-self-org',
-        'title': 'Weight Unified Swarm Self Organization',
-    },
-    {
-        'src_stem': 'pm-blocks-collected',
-        'dest_stem': 'sc-pm-blocks-collected',
-        'title': 'Weight Unified Blocks Collected',
-    },
-    {
-        'src_stem': 'pm-adaptability',
-        'dest_stem': 'sc-pm-adaptability',
-        'title': 'Weight Unified Adaptability',
-    },
-    {
-        'src_stem': 'pm-reactivity',
-        'dest_stem': 'sc-pm-reactivity',
-        'title': 'Weight Unified Reactivity',
-    },
+import perf_measures.vcs
 
 
-]
+def intra_scenario_measures(reactivity_cs_method, adaptability_cs_method):
+    return [
+        {
+            'src_stem': 'pm-pp-comp-positive',
+            'dest_stem': 'cc-pm-pp-comp-positive',
+            'title': 'Swarm Projective Performance Comparison (positive)',
+            'ylabel': 'Observed-Projected Ratio',
+            'n_exp_corr': 0
+        },
+        {
+            'src_stem': 'pm-pp-comp-negative',
+            'dest_stem': 'cc-pm-pp-comp-negative',
+            'title': 'Swarm Projective Performance Comparison (Negative)',
+            'ylabel': 'Observed-Projected Ratio',
+            'n_exp_corr': 0
+        },
+        {
+            'src_stem': 'pm-scalability-fl',
+            'dest_stem': 'cc-pm-scalability-fl',
+            'title': 'Swarm Scalability (Sub-Linear Fractional Losses)',
+            'ylabel': 'Scalability Value',
+            'n_exp_corr': 0
+        },
+        {
+            'src_stem': 'pm-scalability-norm',
+            'dest_stem': 'cc-pm-scalability-norm',
+            'title': 'Swarm Scalability (Normalized)',
+            'ylabel': 'Scalability Value',
+            'n_exp_corr': 0
+        },
+        {
+            'src_stem': 'pm-self-org',
+            'dest_stem': 'cc-pm-self-org',
+            'title': 'Swarm Self Organization',
+            'ylabel': 'Self Organization Value',
+            'n_exp_corr': 1
+        },
+        {
+            'src_stem': 'pm-blocks-collected',
+            'dest_stem': 'cc-pm-blocks-collected',
+            'title': 'Swarm Total Blocks Collected',
+            'ylabel': '# Blocks',
+            'n_exp_corr': 0
+        },
+        {
+            'src_stem': 'pm-karpflatt',
+            'dest_stem': 'cc-pm-karpflatt',
+            'title': 'Swarm Karp-Flatt Metric',
+            'ylabel': 'Karp-Flatt Value',
+            'n_exp_corr': 1
+        },
+        {
+            'src_stem': 'pm-reactivity',
+            'dest_stem': 'cc-pm-reactivity',
+            'title': r'Swarm Reactivity $R(N,\kappa)$',
+            'ylabel': perf_measures.vcs.method_ylabel(reactivity_cs_method, 'reactivity'),
+            'n_exp_corr': 0
+        },
+        {
+            'src_stem': 'pm-adaptability',
+            'dest_stem': 'cc-pm-adaptability',
+            'title': r'Swarm Adaptability $\Lambda(N,\kappa)$',
+            'ylabel': perf_measures.vcs.method_ylabel(adaptability_cs_method, 'adaptability'),
+            'n_exp_corr': 1
+        },
+    ]
 
 
-class ControllerComp:
+def inter_scenario_measures():
+    return [
+        {
+            'src_stem': 'pm-scalability-fl',
+            'dest_stem': 'sc-pm-scalability-fl',
+            'title': 'Weight Unified Swarm Scalability (Sub-Linear Fractional Losses)',
+        },
+        {
+            'src_stem': 'pm-scalability-norm',
+            'dest_stem': 'sc-pm-scalability-norm',
+            'title': 'Weight Unified Swarm Scalability (Normalized)',
+        },
+        {
+            'src_stem': 'pm-self-org',
+            'dest_stem': 'sc-pm-self-org',
+            'title': 'Weight Unified Swarm Self Organization',
+        },
+        {
+            'src_stem': 'pm-blocks-collected',
+            'dest_stem': 'sc-pm-blocks-collected',
+            'title': 'Weight Unified Blocks Collected',
+        },
+        {
+            'src_stem': 'pm-adaptability',
+            'dest_stem': 'sc-pm-adaptability',
+            'title': 'Weight Unified Adaptability',
+        },
+        {
+            'src_stem': 'pm-reactivity',
+            'dest_stem': 'sc-pm-reactivity',
+            'title': 'Weight Unified Reactivity',
+        },
+
+
+    ]
+
+
+class InterBatchComparator:
     """
     Compares controllers on different criteria across/within different scenarios.
     """
@@ -143,7 +158,7 @@ class ControllerComp:
         ACROSS scenarios
         """
 
-        for m in inter_scenario_measures:
+        for m in inter_scenario_measures():
             self._generate_inter_scenario_graph(src_stem=m['src_stem'],
                                                 dest_stem=m['dest_stem'],
                                                 title=m['title'])
@@ -172,6 +187,11 @@ class ControllerComp:
                                          s,
                                          "exp-outputs/collated-csvs",
                                          src_stem + ".csv")
+
+                # Some experiments might not generate the necessary performance measure .csvs for
+                # graph generation, which is OK.
+                if not os.path.exists(csv_ipath):
+                    continue
                 df.loc[s, c] = pm_utils.WeightUnifiedEstimate(input_csv_fpath=csv_ipath,
                                                               swarm_sizes=swarm_sizes).calc()
 
@@ -194,13 +214,15 @@ class ControllerComp:
         - Swarm scalability
         - Swarm self-organization
         """
-        for m in intra_scenario_measures:
+        for m in intra_scenario_measures(self.cmdopts['reactivity_cs_method'],
+                                         self.cmdopts['adaptability_cs_method']):
             self._generate_intra_scenario_graph(src_stem=m['src_stem'],
                                                 dest_stem=m['dest_stem'],
                                                 title=m['title'],
-                                                ylabel=m['ylabel'])
+                                                ylabel=m['ylabel'],
+                                                n_exp_corr=m['n_exp_corr'])
 
-    def _generate_intra_scenario_graph(self, src_stem, dest_stem, title, ylabel):
+    def _generate_intra_scenario_graph(self, src_stem, dest_stem, title, ylabel, n_exp_corr):
 
         # We can do this because we have already checked that all controllers executed the same set
         # of batch experiments
@@ -217,14 +239,29 @@ class ControllerComp:
                                          s,
                                          "exp-outputs/collated-csvs",
                                          src_stem + ".csv")
+
+                # Some experiments might not generate the necessary performance measure .csvs for
+                # graph generation, which is OK.
+                if not os.path.exists(csv_ipath):
+                    continue
+
                 df = df.append(pd.read_csv(csv_ipath, sep=';'))
 
-                csv_opath = os.path.join(self.cc_csv_root, 'cc-' +
-                                         src_stem + "-" + s + ".csv")
-                df.to_csv(csv_opath, sep=';', index=False)
                 exp_counts[s] = len(df.columns)
 
+                # For some graphs, the .csv only contains entries for exp >=1, BUT we need to have
+                # the full experiment count in order to get the axis labels to come out right.
+                exp_counts[s] += n_exp_corr
+
+            csv_opath = os.path.join(self.cc_csv_root, 'cc-' +
+                                     src_stem + "-" + s + ".csv")
+            df = df.reindex(sorted(df.columns, key=lambda t: int(t[3:])), axis=1)
+            df.to_csv(csv_opath, sep=';', index=False)
+
         for s in scenarios:
+            if s not in exp_counts:
+                continue
+
             csv_opath = os.path.join(self.cc_csv_root, 'cc-' +
                                      src_stem + "-" + s + ".csv")
 
@@ -249,6 +286,6 @@ class ControllerComp:
                              title=title,
                              xlabel=pm_utils.batch_criteria_xlabel(cmdopts),
                              ylabel=ylabel,
-                             xvals=pm_utils.batch_criteria_xvals(cmdopts),
+                             xvals=pm_utils.batch_criteria_xvals(cmdopts)[n_exp_corr:],
                              legend=self.controllers,
                              polynomial_fit=-1).generate()
