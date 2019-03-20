@@ -43,7 +43,7 @@ def method_xlabel(method):
     return labels[method]
 
 
-def method_ylabel(method, arg=None):
+def method_ylabel(method, arg):
     """
     Return the Y-label of the method used for calculating the curve similarity.
 
@@ -57,6 +57,7 @@ def method_ylabel(method, arg=None):
         "adaptability": r'$P_{\Lambda^{*}}(N,\kappa,t)$',
         "reactivity": r'$P_{R^{*}}(N,\kappa,t)$',
     }
+
     labels = {
         "pcm": "PCM Distance Between Variance and Performance Curves",
         "area_between": "Area Between Variance and Performance Curves",
@@ -103,6 +104,36 @@ class EnvironmentalCS():
         return _compute_vcs_raw(exp_data, ideal_data, self.cmdopts["envc_cs_method"])
 
 
+class DataFrames:
+    @staticmethod
+    def expx_var_df(output_root, exp_num):
+        return pd.read_csv(os.path.join(output_root,
+                                        "exp" + str(exp_num) + "/averaged-output",
+                                        kTemporalVarCSV),
+                           sep=';')
+
+    @staticmethod
+    def expx_perf_df(output_root, exp_num):
+        return pd.read_csv(os.path.join(output_root,
+                                        "exp" + str(exp_num) + "/averaged-output",
+                                        kPerfCSV),
+                           sep=';')
+
+    @staticmethod
+    def exp0_perf_df(output_root):
+        return pd.read_csv(os.path.join(output_root,
+                                        "exp0/averaged-output",
+                                        kPerfCSV),
+                           sep=';')
+
+    @staticmethod
+    def exp0_var_df(output_root):
+        return pd.read_csv(os.path.join(output_root,
+                                        "exp0/averaged-output",
+                                        kTemporalVarCSV),
+                           sep=';')
+
+
 class AdaptabilityCS():
     """
     Compute the adaptability of a controller/algorithm by comparing the observed performance curve
@@ -126,43 +157,22 @@ class AdaptabilityCS():
     def __init__(self, cmdopts, exp_num):
         self.cmdopts = cmdopts
         self.exp_num = exp_num
+        self.perf_csv_col = 'int_collected'
+        self.var_csv_col = TemporalVarianceParser().parse(
+            self.cmdopts["criteria_def"])['variance_csv_col']
 
-    def __call__(self):
-        exp0_perf_df = pd.read_csv(os.path.join(self.cmdopts["output_root"],
-                                                "exp0/averaged-output",
-                                                kPerfCSV),
-                                   sep=';')
-        expx_perf_df = pd.read_csv(os.path.join(self.cmdopts["output_root"],
-                                                "exp" + str(self.exp_num) + "/averaged-output",
-                                                kPerfCSV),
-                                   sep=';')
-        expx_var_df = pd.read_csv(os.path.join(self.cmdopts["output_root"],
-                                               "exp" + str(self.exp_num) + "/averaged-output",
-                                               kTemporalVarCSV),
-                                  sep=';')
+    def calc_waveforms(self):
+        """
+        Calculates the (ideal performance, experimental performance) comparable waveforms for the
+        experiment. Returns NP arrays rather than dataframes, because that is what the curve
+        similarity measure calculator needs as input.
+        """
+        exp0_perf_df = DataFrames.exp0_perf_df(self.cmdopts['output_root'])
+        exp0_var_df = DataFrames.exp0_var_df(self.cmdopts['output_root'])
+        expx_perf_df = DataFrames.expx_perf_df(self.cmdopts['output_root'], self.exp_num)
+        expx_var_df = DataFrames.expx_var_df(self.cmdopts['output_root'], self.exp_num)
 
-        exp0_var_df = pd.read_csv(os.path.join(self.cmdopts["output_root"],
-                                               "exp0/averaged-output",
-                                               kTemporalVarCSV),
-                                  sep=';')
-
-        # IMPORTANT! The simulation clock starts at 1, but indexing starts at 0, so you need to
-        # subtract 1 from the clock to use it as the index when subsampling to avoid getting NaN in
-        # the result.
-        expx_var_df = expx_var_df.reindex(index=expx_perf_df['clock'] - 1, columns=[c for c in expx_var_df.columns
-                                                                                    if c != 'clock'])
-        exp0_var_df = exp0_var_df.reindex(index=expx_perf_df['clock'] - 1, columns=[c for c in exp0_var_df.columns
-                                                                                    if c != 'clock'])
-
-        tv_attr = TemporalVarianceParser().parse(self.cmdopts["criteria_def"])
-
-        var_col = tv_attr["variance_csv_col"]
-        perf_col = "int_collected"
-
-        exp0_var_df = exp0_var_df.reset_index(drop=True)
-        expx_var_df = expx_var_df.reset_index(drop=True)
-
-        ideal_df = pd.DataFrame(index=exp0_var_df.index, columns=[perf_col])
+        ideal_df = pd.DataFrame(index=exp0_var_df.index, columns=[self.perf_csv_col])
 
         # The performance curve of an adaptable system should resist adverse changes in the
         # environment, and should exploit beneficial changes in the environment.
@@ -174,25 +184,28 @@ class AdaptabilityCS():
         # during the ideal conditions experiment, then the performance curve should be observed to
         # increase by an amount proportional to that difference, as the system exploits the drop in
         # penalties.
-        for i in exp0_perf_df[perf_col].index:
-            if exp0_var_df.loc[i, var_col] > expx_var_df.loc[i, var_col]:
-                ideal_df.loc[i, perf_col] = exp0_perf_df.loc[i, perf_col] * \
-                    (exp0_var_df.loc[i, var_col] / expx_var_df.loc[i, var_col])
-            elif exp0_var_df.loc[i, var_col] < expx_var_df.loc[i, var_col]:
-                ideal_df.loc[i, perf_col] = exp0_perf_df.loc[i, perf_col]
+        for i in exp0_perf_df[self.perf_csv_col].index:
+            if exp0_var_df.loc[i, self.var_csv_col] > expx_var_df.loc[i, self.var_csv_col]:
+                ideal_df.loc[i, self.perf_csv_col] = exp0_perf_df.loc[i, self.perf_csv_col] * \
+                    (exp0_var_df.loc[i, self.var_csv_col] / expx_var_df.loc[i, self.var_csv_col])
+            elif exp0_var_df.loc[i, self.var_csv_col] < expx_var_df.loc[i, self.var_csv_col]:
+                ideal_df.loc[i, self.perf_csv_col] = exp0_perf_df.loc[i, self.perf_csv_col]
             else:
-                ideal_df.loc[i, perf_col] = expx_perf_df.loc[i, perf_col]
+                ideal_df.loc[i, self.perf_csv_col] = expx_perf_df.loc[i, self.perf_csv_col]
 
-        xlen = len(exp0_var_df[var_col].values)
+        xlen = len(exp0_var_df[self.var_csv_col].values)
 
         exp_data = np.zeros((xlen, 2))
         exp_data[:, 0] = expx_perf_df["clock"].values
-        exp_data[:, 1] = expx_perf_df[perf_col].values
+        exp_data[:, 1] = expx_perf_df[self.perf_csv_col].values
 
         ideal_data = np.zeros((xlen, 2))
         ideal_data[:, 0] = ideal_df.index.values
-        ideal_data[:, 1] = ideal_df[perf_col].values
+        ideal_data[:, 1] = ideal_df[self.perf_csv_col].values
+        return ideal_data, exp_data
 
+    def __call__(self):
+        ideal_data, exp_data = self.calc_waveforms()
         return _compute_vcs_raw(exp_data, ideal_data, self.cmdopts["adaptability_cs_method"])
 
 
@@ -216,53 +229,43 @@ class ReactivityCS():
     def __init__(self, cmdopts, exp_num):
         self.cmdopts = cmdopts
         self.exp_num = exp_num
+        self.perf_csv_col = 'int_collected'
+        self.var_csv_col = TemporalVarianceParser().parse(
+            self.cmdopts["criteria_def"])['variance_csv_col']
 
-    def __call__(self):
-        exp0_perf_df = pd.read_csv(os.path.join(self.cmdopts["output_root"],
-                                                "exp0/averaged-output",
-                                                kPerfCSV),
-                                   sep=';')
-        expx_perf_df = pd.read_csv(os.path.join(self.cmdopts["output_root"],
-                                                "exp" + str(self.exp_num) + "/averaged-output",
-                                                kPerfCSV),
-                                   sep=';')
-        expx_var_df = pd.read_csv(os.path.join(self.cmdopts["output_root"],
-                                               "exp" + str(self.exp_num) + "/averaged-output",
-                                               kTemporalVarCSV),
-                                  sep=';')
+    def calc_waveforms(self):
+        """
+        Calculates the (ideal performance, experimental performance) comparable waveforms for the
+        experiment. Returns NP arrays rather than dataframes, because that is what the curve
+        similarity measure calculator needs as input.
+        """
+        exp0_perf_df = DataFrames.exp0_perf_df(self.cmdopts['output_root'])
+        exp0_var_df = DataFrames.exp0_var_df(self.cmdopts['output_root'])
+        expx_perf_df = DataFrames.expx_perf_df(self.cmdopts['output_root'], self.exp_num)
+        expx_var_df = DataFrames.expx_var_df(self.cmdopts['output_root'], self.exp_num)
 
-        exp0_var_df = pd.read_csv(os.path.join(self.cmdopts["output_root"],
-                                               "exp0/averaged-output",
-                                               kTemporalVarCSV),
-                                  sep=';')
-
-        # IMPORTANT! The simulation clock starts at 1, but indexing starts at 0, so you need to
-        # subtract 1 from the clock to use it as the index when subsampling to avoid getting NaN in
-        # the result.
-        expx_var_df = expx_var_df.reindex(index=expx_perf_df['clock'] - 1, columns=[c for c in expx_var_df.columns
-                                                                                    if c != 'clock'])
-        exp0_var_df = exp0_var_df.reindex(index=exp0_perf_df['clock'] - 1, columns=[c for c in exp0_var_df.columns
-                                                                                    if c != 'clock'])
+        perf_max = exp0_perf_df[self.perf_csv_col].max()
+        perf_min = exp0_perf_df[self.perf_csv_col].min()
 
         tv_attr = TemporalVarianceParser().parse(self.cmdopts["criteria_def"])
-
-        perf_max = exp0_perf_df['int_collected'].max()
-        perf_min = exp0_perf_df['int_collected'].min()
-
         ideal_perf = _comparable_exp_variance(expx_var_df - exp0_var_df,
                                               tv_attr,
                                               perf_max,
                                               perf_min)
 
-        xlen = len(exp0_var_df[tv_attr["variance_csv_col"]].values)
+        xlen = len(exp0_var_df[self.var_csv_col].values)
         exp_data = np.zeros((xlen, 2))
         exp_data[:, 0] = expx_perf_df["clock"].values
-        exp_data[:, 1] = expx_perf_df['int_collected'].values
+        exp_data[:, 1] = expx_perf_df[self.perf_csv_col].values
 
         ideal_data = np.zeros((xlen, 2))
         ideal_data[:, 0] = expx_var_df.index.values
         ideal_data[:, 1] = ideal_perf
 
+        return ideal_data, exp_data
+
+    def __call__(self):
+        ideal_data, exp_data = self.calc_waveforms()
         return _compute_vcs_raw(exp_data, ideal_data, self.cmdopts["reactivity_cs_method"])
 
 

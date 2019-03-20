@@ -73,9 +73,6 @@ block_trans:
       title: 'Blocks Collected (interval)'
       xlabel: 'Interval'
       ylabel: '# Blocks'
-      temporal_var:
-        - env_block_manip
-        - swarm_motion_throttle
       styles: ['-', '-', '-']
     - src_stem: block-transport
       dest_stem: blocks-collected-cum
@@ -90,9 +87,6 @@ block_trans:
         - '# Ramp Blocks'
       xlabel: 'Interval'
       ylabel: '# Blocks'
-      temporal_var:
-        - env_block_manip
-        - swarm_motion_throttle
       styles: ['-', '-', '-']
     - src_stem: block-transport
       dest_stem: block-transporters-count
@@ -161,8 +155,6 @@ block_manip:
         - 'Average # Cache Drops (interval)'
       xlabel: 'Interval'
       ylabel: '# Pickups/Drops'
-      temporal_var:
-        - env_block_manip
       styles: ['-', '-', '-']
 
     - src_stem: block-manipulation
@@ -180,8 +172,6 @@ block_manip:
         - 'Average Cache Drop Penalty (interval)'
       xlabel: 'Interval'
       ylabel: 'Penalty'
-      temporal_var:
-        - env_block_manip
       styles: ['-', '-', '-']
 
 world_model:
@@ -301,8 +291,6 @@ cache_util:
         - 'Average # Drops (Cumulative)'
       xlabel: 'Interval'
       ylabel: 'Count'
-      temporal_var:
-        - env_cache_usage
 
     - src_stem: cache-utilization
       dest_stem: cache-utilization-cache-counts
@@ -327,9 +315,7 @@ cache_util:
         - 'Average # Blocks (Cumulative)'
       xlabel: 'Interval'
       ylabel: 'Count'
-      temporal_var:
-        - env_cache_usage
-
+      
 cache_lifecycle:
   graphs:
     - src_stem: cache-lifecycle

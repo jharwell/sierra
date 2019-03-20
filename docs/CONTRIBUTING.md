@@ -200,10 +200,6 @@ dictionary:
 
 - ylabel: The label of the Y-axis of the graph.
 
-- temporal_var: List of names of columns within the temporal variance .csv that
-                should be included on the graph. Can be omitted if no variance
-                should be plotted in addition to the columns in the .csv.
-
 To add a linegraph, simply add a new entry to the config file that will be
 parsed by SIERRA in an appropriate category (notice that the categories map back
 to the collectors/generate .csv files in FORDYCA). Linegraphs are appropriate if:

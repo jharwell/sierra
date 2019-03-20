@@ -340,11 +340,11 @@ class Cmdline:
                             """,
                             nargs='*',
                             default="all")
-        stage4.add_argument("--plot-applied-vc",
+        stage4.add_argument("--gen-vc-plots",
                             help="""
 
-                            If TRUE, then the plot of the temporal variances that were applied to the swarm during
-                            simulation will be included on relevant graphs if they are non-zero.
+                            If TRUE, then the plots of ideal vs. observed swarm [reactivity,
+                            adaptability] will be generated for each experiment.
 
                             """,
                             action="store_true")
