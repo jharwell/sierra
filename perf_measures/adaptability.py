@@ -61,7 +61,8 @@ class InterExpAdaptability:
                                                    "pm-adaptability.png"),
                          title="Swarm Adaptability",
                          xlabel=pm_utils.batch_criteria_xlabel(self.cmdopts),
-                         ylabel=vcs.method_ylabel(self.cmdopts["adaptability_cs_method"]),
+                         ylabel=vcs.method_ylabel(self.cmdopts["adaptability_cs_method"],
+                                                  'adaptability'),
                          xvals=pm_utils.batch_criteria_xvals(self.cmdopts)[1:],
                          legend=None,
                          polynomial_fit=-1).generate()

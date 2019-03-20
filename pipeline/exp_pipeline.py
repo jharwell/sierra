@@ -67,7 +67,7 @@ class ExpPipeline:
             # stage 4
             'envc_cs_method': self.args.envc_cs_method,
             'with_hists': self.args.with_hists,
-            'plot_applied_vc': self.args.plot_applied_vc,
+            'gen_vc_plots': self.args.gen_vc_plots,
             'plot_log_xaxis': self.args.plot_log_xaxis,
             'perf_measures': self.args.perf_measures,
             'reactivity_cs_method': self.args.reactivity_cs_method,
