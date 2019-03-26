@@ -22,6 +22,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 class StackedLineGraph:
@@ -56,6 +57,9 @@ class StackedLineGraph:
         else:
             df2 = pd.read_csv(self.input_stats_fpath, sep=';')
 
+        # Set a color map so we are guaranteed to have unique colors regardless of how many lines
+        # there are on the plot.
+        # colormap = plt.get_cmap('plasma')
         if self.cols is None:
             ncols = max(1, int(len(df.columns) / 3.0))
             if self.linestyles is None:

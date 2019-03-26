@@ -2,3 +2,5 @@ arena:
   graphs:
     - src_stem: arena-robot-occupancy
       title: 'Robot Occupancy Probability'
+    - src_stem: cache-locations
+      title: 'Cache Placement Frequency'

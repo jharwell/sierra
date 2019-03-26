@@ -52,6 +52,8 @@ class IntraExpGraphGenerator:
                                                              'controllers.yaml')))
 
     def __call__(self):
+        keys = []
+        extra_graphs = []
         for category in list(self.controller_config.keys()):
             if category not in self.cmdopts['generator']:
                 continue

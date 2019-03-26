@@ -51,6 +51,7 @@ depth1:
       graphs: &GP_DPO_graphs
         - cache_util
         - cache_lifecycle
+        - cache_acq
         - depth1_task_exec
         - depth1_task_dist
         - generalist_tab
@@ -76,10 +77,14 @@ depth2:
       graphs_inherit:
         - *base_graphs
         - *DPO_graphs
-        - *GP_DPO_graphs
 
       graphs: &GRP_DPO_graphs
+        - cache_util
+        - cache_lifecycle
+        - cache_acq
+        - depth1_task_exec
         - depth2_task_exec
         - depth2_task_dist
         - harvester_tab
         - collector_tab
+        - generalist_tab

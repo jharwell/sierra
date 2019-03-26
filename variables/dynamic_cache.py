@@ -19,19 +19,17 @@
 from variables.base_variable import BaseVariable
 
 
-class StaticCache(BaseVariable):
+class DynamicCache(BaseVariable):
 
     """
-    Defines the size and capacity of a static cache with.
+    Defines the size and capacity of a dynamic cache to test with. Only really applicable to single
+    source foraging scenarios, but will work with only types as well.
 
     Attributes:
-      sizes(list): List of the # of blocks the cache should have each time the simulation respawns
-                   it.
       dimension(list): List of the arena (X,Y) dimensions.
     """
 
-    def __init__(self, sizes, dimension):
-        self.sizes = sizes
+    def __init__(self, dimension):
         self.dimension = dimension
 
     def gen_attr_changelist(self):
@@ -41,16 +39,23 @@ class StaticCache(BaseVariable):
 
         - Disables dynamic caches
         - Enables static caches
-        - Sets static cache size (initial # blocks upon creation) and its dimensions in the arena
-          during its existence.
         """
         return [set([
-            (".//loop_functions/caches/dynamic", "enable", "false"),
-            (".//loop_functions/caches/static", "enable", "true"),
-            (".//loop_functions/caches/static", "size", "{0}".format(s)),
-            (".//loop_functions/caches", "dimension", "{0}".format(d[0] / 10.0))
+            (".//loop_functions/caches/dynamic", "enable", "true"),
+            (".//loop_functions/caches/static", "enable", "false"),
+            (".//cache_sel_matrix", "cache_prox_dist", "{0}".format(d[0] * 0.10 * 4)),
+            (".//cache_sel_matrix", "nest_prox_dist", "{0}".format(max(d[0] * 0.25,
+                                                                       d[1] * 0.25))),
+            (".//cache_sel_matrix", "block_prox_dist", "{0}".format(max(d[0] * 0.10,
+                                                                        d[1] * 0.10))),
+            (".//cache_sel_matrix", "cluster_prox_dist", "{0}".format(max(d[0] * 0.10,
+                                                                          d[1] * 0.10))),
+            (".//cache_sel_matrix", "site_xrange", "{0}:{1}".format(2, d[0] - 2)),
+            (".//cache_sel_matrix", "site_yrange", "{0}:{1}".format(2, d[1] - 2)),
+
+            (".//loop_functions/caches", "dimension", "{0}".format(d[0] * 0.10))
         ])
-            for d in self.dimension for s in self.sizes]
+            for d in self.dimension]
 
     def gen_tag_rmlist(self):
         return []

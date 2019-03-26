@@ -127,12 +127,53 @@ class Linegraphs:
 
         block_trans = [
             {
-                'src_stem': 'block-transport',
-                'col': 'int_collected',
-                'dest_stem': 'blocks-collected-int',
-                'title': 'Blocks Collected (interval)',
+                'src_stem': 'block-transport-avg',
+                'col': 'int_avg_collected',
+                'dest_stem': 'blocks-collected-int-avg',
+                'title': 'Average Blocks Collected (interval)',
                 'xlabel': 'Interval',
-                'ylabel': '# Blocks'},
+                'ylabel': '# Blocks'
+            },
+            {
+                'src_stem': 'block-transport',
+                'col': 'int_avg_cube_collected',
+                'dest_stem': 'cube-blocks-collected-int-avg',
+                'title': 'Average Cube Blocks Collected (interval)',
+                'xlabel': 'Interval',
+                'ylabel': '# Blocks'
+            },
+            {
+                'src_stem': 'block-transport',
+                'col': 'int_avg_ramp_collected',
+                'dest_stem': 'ramp-blocks-collected-int-avg',
+                'title': 'Average Ramp Blocks Collected (interval)',
+                'xlabel': 'Interval',
+                'ylabel': '# Blocks'
+            },
+            {
+                'src_stem': 'block-transport-avg',
+                'col': 'cum_avg_collected',
+                'dest_stem': 'blocks-collected-cum-avg',
+                'title': 'Average Blocks Collected (cumulative)',
+                'xlabel': 'Interval',
+                'ylabel': '# Blocks'
+            },
+            {
+                'src_stem': 'block-transport',
+                'col': 'cum_avg_cube_collected',
+                'dest_stem': 'cube-blocks-collected-cum-avg',
+                'title': 'Average Cube Blocks Collected (cumulative)',
+                'xlabel': 'Interval',
+                'ylabel': '# Blocks'
+            },
+            {
+                'src_stem': 'block-transport',
+                'col': 'cum_avg_ramp_collected',
+                'dest_stem': 'ramp-blocks-collected-cum-avg',
+                'title': 'Average Ramp Blocks Collected (cumulative)',
+                'xlabel': 'Interval',
+                'ylabel': '# Blocks'
+            },
             {
                 'src_stem': 'block-transport',
                 'col': 'cum_collected',
@@ -141,79 +182,70 @@ class Linegraphs:
                 'xlabel': 'Interval',
                 'ylabel': '# Blocks'
             },
-            {'src_stem': 'block-transport',
-             'col': 'int_cube_collected',
-             'dest_stem': 'cube-blocks-collected-int',
-             'title': 'Cube Blocks Collected (interval)',
-             'xlabel': 'Interval',
-             'ylabel': '# Blocks'},
-            {'src_stem': 'block-transport',
-             'col': 'int_ramp_collected',
-             'dest_stem': 'ramp-blocks-collected-int',
-             'title': 'Ramp Blocks Collected (interval)',
-             'xlabel': 'Interval',
-             'ylabel': '# Blocks'
-             },
-            {'src_stem': 'block-transport',
-             'col': 'cum_collected',
-             'dest_stem': 'blocks-collected-cum-avg',
-             'title': 'Average Blocks Collected (cumulative)',
-             'xlabel': 'Interval',
-             'ylabel': '# Blocks'
-             },
-            {'src_stem': 'block-transport',
-             'col': 'cum_cube_collected',
-             'dest_stem': 'cube-blocks-collected-cum-avg',
-             'title': 'Average Cube Blocks Collected (cumulative)',
-             'xlabel': 'Interval',
-             'ylabel': '# Blocks'},
-            {'src_stem': 'block-transport',
-             'col': 'cum_ramp_collected',
-             'dest_stem': 'ramp-blocks-collected-cum-avg',
-             'title': 'Average Ramp Blocks Collected (cumulative)',
-             'xlabel': 'Interval',
-             'ylabel': '# Blocks'
-             },
-            {'src_stem': 'block-transport',
-             'col': 'int_avg_transporters',
-             'dest_stem': 'block-transporters-int-avg',
-             'title': 'Average Block Transporters (interval)',
-             'xlabel': 'Interval',
-             'ylabel': '# Robots'
-             },
-            {'src_stem': 'block-transport',
-             'col': 'cum_avg_transporters',
-             'dest_stem': 'block-transporters-cum-avg',
-             'title': 'Average Block Transporters (cumulative)',
-             'xlabel': 'Interval',
-             'ylabel': '# Robots'
-             },
-            {'src_stem': 'block-transport',
-             'col': 'int_avg_transport_time',
-             'dest_stem': 'blocks-transport-time-int-avg',
-             'title': 'Average Block Transport Time (interval)',
-             'xlabel': 'Interval',
-             'ylabel': '# Timesteps'
-             },
-            {'src_stem': 'block-transport',
-             'col': 'cum_avg_transport_time',
-             'dest_stem': 'blocks-transport-time-cum-avg',
-             'title': 'Average Block Transport Time (Cumulative)',
-             'xlabel': 'Interval',
-             'ylabel': '# Timesteps'
-             },
-            {'src_stem': 'block-transport',
-             'col': 'int_avg_initial_wait_time',
-             'dest_stem': 'blocks-initial-wait-time-int-avg',
-             'title': 'Average Block Initial Wait Time (interval)',
-             'xlabel': 'Interval',
-             'ylabel': '# Timesteps'},
-            {'src_stem': 'block-transport',
-             'col': 'cum_avg_initial_wait_time',
-             'dest_stem': 'blocks-initial-wait-time-cum-avg',
-             'title': 'Average Block Initial Wait Time (cumulative)',
-             'xlabel': 'Interval',
-             'ylabel': '# Robots'},
+            {
+                'src_stem': 'block-transport',
+                'col': 'cum_cube_collected',
+                'dest_stem': 'cube-blocks-collected-cum',
+                'title': 'Cube Blocks Collected (cumulative)',
+                'xlabel': 'Interval',
+                'ylabel': '# Blocks'
+            },
+            {
+                'src_stem': 'block-transport',
+                'col': 'cum_ramp_collected',
+                'dest_stem': 'ramp-blocks-collected-cum',
+                'title': 'Ramp Blocks Collected (cumulative)',
+                'xlabel': 'Interval',
+                'ylabel': '# Blocks'
+            },
+            {
+                'src_stem': 'block-transport',
+                'col': 'int_avg_transporters',
+                'dest_stem': 'block-transporters-int-avg',
+                'title': 'Average Block Transporters (interval)',
+                'xlabel': 'Interval',
+                'ylabel': '# Robots'
+            },
+            {
+                'src_stem': 'block-transport',
+                'col': 'cum_avg_transporters',
+                'dest_stem': 'block-transporters-cum-avg',
+                'title': 'Average Block Transporters (cumulative)',
+                'xlabel': 'Interval',
+                'ylabel': '# Robots'
+            },
+            {
+                'src_stem': 'block-transport',
+                'col': 'int_avg_transport_time',
+                'dest_stem': 'blocks-transport-time-int-avg',
+                'title': 'Average Block Transport Time (interval)',
+                'xlabel': 'Interval',
+                'ylabel': '# Timesteps'
+            },
+            {
+                'src_stem': 'block-transport',
+                'col': 'cum_avg_transport_time',
+                'dest_stem': 'blocks-transport-time-cum-avg',
+                'title': 'Average Block Transport Time (Cumulative)',
+                'xlabel': 'Interval',
+                'ylabel': '# Timesteps'
+            },
+            {
+                'src_stem': 'block-transport',
+                'col': 'int_avg_initial_wait_time',
+                'dest_stem': 'blocks-initial-wait-time-int-avg',
+                'title': 'Average Block Initial Wait Time (interval)',
+                'xlabel': 'Interval',
+                'ylabel': '# Timesteps'
+            },
+            {
+                'src_stem': 'block-transport',
+                'col': 'cum_avg_initial_wait_time',
+                'dest_stem': 'blocks-initial-wait-time-cum-avg',
+                'title': 'Average Block Initial Wait Time (cumulative)',
+                'xlabel': 'Interval',
+                'ylabel': '# Robots'
+            },
         ]
         block_acq = [
             {'src_stem': 'block-acquisition',
@@ -503,7 +535,7 @@ class Linegraphs:
             {
                 'src_stem': 'cache-utilization',
                 'dest_stem': 'cache-utilization-cache-counts-int',
-                'col': 'int_unique_caches',
+                'col': 'int_avg_caches',
                 'title': "# Caches in Arena (Interval)",
                 'xlabel': 'Interval',
                 'ylabel': 'Count'
@@ -511,7 +543,7 @@ class Linegraphs:
             {
                 'src_stem': 'cache-utilization',
                 'dest_stem': 'cache-utilization-cache-counts-cum',
-                'col': 'cum_unique_caches',
+                'col': 'cum_avg_caches',
                 'title': "# Caches in Arena (Cumulative)",
                 'xlabel': 'Interval',
                 'ylabel': 'Count'
@@ -1520,7 +1552,7 @@ class Linegraphs:
             {
                 'src_stem': 'task-distribution',
                 'dest_stem': 'task-distribution-tab1-counts-int',
-                'col': 'int_tab1_count',
+                'col': 'int_avg_tab1_count',
                 'title': "Task Distribution TAB1 Counts (Interval)",
                 'xlabel': 'Interval',
                 'ylabel': 'Count'
@@ -1536,7 +1568,7 @@ class Linegraphs:
             {
                 'src_stem': 'task-distribution',
                 'dest_stem': 'task-distribution-tab2-counts-int',
-                'col': 'int_tab2_count',
+                'col': 'int_avg_tab2_count',
                 'title': "Task Distribution TAB2 Counts (Interval)",
                 'xlabel': 'Interval',
                 'ylabel': 'Count'

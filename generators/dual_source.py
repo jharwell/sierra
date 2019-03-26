@@ -71,7 +71,9 @@ class DSGenerator(ExpInputGenerator):
         self.generate_physics_defs(xml_luigi)
 
         if "depth1" in self.controller:
-            print("WARNING: DS incompatible with depth1 controllers--either 0 or > 1 caches are needed for reasonable results.")
+            self.generate_static_cache_defs(xml_luigi, arena_dim)
+        if "depth2" in self.controller:
+            self.generate_dynamic_cache_defs(xml_luigi, arena_dim)
 
         # Generate the input files now that all simulation changes have been made to the template
         self.generate_inputs(xml_luigi)

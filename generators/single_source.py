@@ -75,7 +75,9 @@ class SSGenerator(ExpInputGenerator):
         self.generate_physics_defs(xml_luigi)
 
         if "depth1" in self.controller:
-            self._generate_static_cache_defs(xml_luigi, arena_dim)
+            self.generate_static_cache_defs(xml_luigi, arena_dim)
+        if "depth2" in self.controller:
+            self.generate_dynamic_cache_defs(xml_luigi, arena_dim)
 
         # Generate and apply # blocks definitions if configured
         if self.sim_opts['n_blocks'] is not None:
@@ -84,17 +86,3 @@ class SSGenerator(ExpInputGenerator):
         # Generate simulation input files now that all simulation changes have been made to the
         # template
         self.generate_inputs(xml_luigi)
-
-    def _generate_static_cache_defs(self, xml_luigi, arena_dim):
-        # If they specified how many blocks to use for static cache respawn, use that.
-        # Otherwise use the floor of 2.
-        if self.sim_opts['static_cache_blocks'] is None:
-            cache = ev.static_cache.StaticCache([2], [arena_dim])
-        else:
-            cache = ev.static_cache.StaticCache([self.sim_opts['static_cache_blocks']],
-                                                [arena_dim])
-
-        [xml_luigi.attribute_change(a[0], a[1], a[2]) for a in cache.gen_attr_changelist()[0]]
-        rms = cache.gen_tag_rmlist()
-        if len(rms):
-            [xml_luigi.tag_remove(a) for a in rms[0]]

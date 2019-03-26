@@ -12,11 +12,11 @@ fsm_collision :
         - cum_avg_exited_avoidance
       title: 'Swarm Collision Avoidance'
       legend:
-        - 'Average # Robots Avoiding Collision (interval)'
+        - 'Average # Robots Avoiding Collision (Interval)'
         - 'Average # Robots Avoiding Collision (cumulative)'
-        - 'Average # Robots Entered Avoidance (interval)'
+        - 'Average # Robots Entered Avoidance (Interval)'
         - 'Average # Robots Entered Avoidance (cumulative)'
-        - 'Average # Robots Exited Avoidance (interval)'
+        - 'Average # Robots Exited Avoidance (Interval)'
         - 'Average # Robots Exited Avoidance (cumulative)'
       xlabel: 'Interval'
       ylabel: '# Robots'
@@ -28,7 +28,7 @@ fsm_collision :
         - cum_avg_avoidance_duration
       title: 'Swarm Collision Avoidance Duration'
       legend:
-        - 'Average Avoidance Duration (interval)'
+        - 'Average Avoidance Duration (Interval)'
         - 'Average Avoidance Duration (cumulative)'
       xlabel: 'Interval'
       ylabel: '# Timesteps'
@@ -42,7 +42,7 @@ fsm_movement:
         - cum_avg_distance
       title: 'Average Per-robot Distance Traveled'
       legend:
-        - 'Distance (interval)'
+        - 'Distance (Interval)'
         - 'Distance (cumulative)'
       xlabel: 'Interval'
       ylabel: 'Distance (m)'
@@ -53,7 +53,7 @@ fsm_movement:
         - cum_avg_velocity
       title: 'Average Per-robot Velocity'
       legend:
-        - 'Velocity (interval)'
+        - 'Velocity (Interval)'
         - 'Velocity (cumulative)'
       xlabel: 'Interval'
       ylabel: 'Velocity (m/s)'
@@ -61,19 +61,24 @@ fsm_movement:
 block_trans:
   graphs:
     - src_stem: block-transport
-      dest_stem: blocks-collected-int
+      dest_stem: blocks-collected-avg
       cols:
-        - int_collected
-        - int_cube_collected
-        - int_ramp_collected
+        - int_avg_collected
+        - int_avg_cube_collected
+        - int_avg_ramp_collected
+        - cum_avg_collected
+        - cum_avg_cube_collected
+        - cum_avg_ramp_collected
       legend:
-        - 'All Blocks'
-        - '# Cube Blocks'
-        - '# Ramp Blocks'
-      title: 'Blocks Collected (interval)'
+        - 'All Blocks (Interval)'
+        - '# Cube Blocks (Interval)'
+        - '# Ramp Blocks (Interval)'
+        - 'All Blocks (cumulative)'
+        - '# Cube Blocks (cumulative)'
+        - '# Ramp Blocks (cumulative)'
+      title: 'Average Blocks Collected'
       xlabel: 'Interval'
       ylabel: '# Blocks'
-      styles: ['-', '-', '-']
     - src_stem: block-transport
       dest_stem: blocks-collected-cum
       cols:
@@ -87,7 +92,6 @@ block_trans:
         - '# Ramp Blocks'
       xlabel: 'Interval'
       ylabel: '# Blocks'
-      styles: ['-', '-', '-']
     - src_stem: block-transport
       dest_stem: block-transporters-count
       cols:
@@ -95,7 +99,7 @@ block_trans:
         - cum_avg_transporters
       title: 'Swarm Block Average Transporters'
       legend:
-        - 'Average # Transporters Per Block (interval)'
+        - 'Average # Transporters Per Block (Interval)'
         - 'Average # Transporters Per Block (cumulative)'
       xlabel: 'Interval'
       ylabel: '# Transporters'
@@ -108,9 +112,9 @@ block_trans:
         - cum_avg_initial_wait_time
       title: 'Swarm Block Transport Time'
       legend:
-        - 'Average Transport Time (interval)'
+        - 'Average Transport Time (Interval)'
         - 'Average Transport Time (cumulative)'
-        - 'Average Initial Wait Time (interval)'
+        - 'Average Initial Wait Time (Interval)'
         - 'Average Initial Wait Time (cumulative)'
       xlabel: 'Interval'
       ylabel: '# Timesteps'
@@ -129,12 +133,34 @@ block_acq:
         - cum_avg_exploring_for_goal
       title: 'Swarm Block Acquisition'
       legend:
-        - 'Average # Robots Acquiring Blocks (interval)'
+        - 'Average # Robots Acquiring Blocks (Interval)'
         - 'Average # Robots Acquiring Blocks (cumulative)'
-        - 'Average # Robots Vectoring To Blocks (interval)'
+        - 'Average # Robots Vectoring To Blocks (Interval)'
         - 'Average # Robots Vectoring To Blocks (cumulative)'
-        - 'Average # Robots Exploring For Blocks (interval)'
+        - 'Average # Robots Exploring For Blocks (Interval)'
         - 'Average # Robots Exploring For Blocks (cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Robots'
+
+cache_acq:
+  graphs:
+    - src_stem: cache-acquisition
+      dest_stem: caches-acq-counts
+      cols:
+        - int_avg_acquiring_goal
+        - cum_avg_acquiring_goal
+        - int_avg_vectoring_to_goal
+        - cum_avg_vectoring_to_goal
+        - int_avg_exploring_for_goal
+        - cum_avg_exploring_for_goal
+      title: 'Swarm Cache Acquisition'
+      legend:
+        - 'Average # Robots Acquiring Caches (Interval)'
+        - 'Average # Robots Acquiring Caches (cumulative)'
+        - 'Average # Robots Vectoring To Caches (Interval)'
+        - 'Average # Robots Vectoring To Caches (cumulative)'
+        - 'Average # Robots Exploring For Caches (Interval)'
+        - 'Average # Robots Exploring For Caches (cumulative)'
       xlabel: 'Interval'
       ylabel: '# Robots'
 
@@ -149,14 +175,12 @@ block_manip:
         - int_avg_cache_drop_events
       title: 'Block Manipulation Pickups/Drops'
       legend:
-        - 'Average # Free Pickups (interval)'
-        - 'Average # Free Drops (interval)'
-        - 'Average # Cache Pickups (interval)'
-        - 'Average # Cache Drops (interval)'
+        - 'Average # Free Pickups (Interval)'
+        - 'Average # Free Drops (Interval)'
+        - 'Average # Cache Pickups (Interval)'
+        - 'Average # Cache Drops (Interval)'
       xlabel: 'Interval'
       ylabel: '# Pickups/Drops'
-      styles: ['-', '-', '-']
-
     - src_stem: block-manipulation
       dest_stem: block-manip-penalties
       cols:
@@ -166,13 +190,12 @@ block_manip:
         - int_avg_cache_drop_penalty
       title: 'Block Manipulation Penalties'
       legend:
-        - 'Average Free Pickup Penalty (interval)'
-        - 'Average Free Drop Penalty (interval)'
-        - 'Average Cache Picup Penalty (interval)'
-        - 'Average Cache Drop Penalty (interval)'
+        - 'Average Free Pickup Penalty (Interval)'
+        - 'Average Free Drop Penalty (Interval)'
+        - 'Average Cache Pickup Penalty (Interval)'
+        - 'Average Cache Drop Penalty (Interval)'
       xlabel: 'Interval'
       ylabel: 'Penalty'
-      styles: ['-', '-', '-']
 
 world_model:
   graphs:
@@ -184,9 +207,9 @@ world_model:
         - ST_HAS_CACHE_inaccuracies
       title: 'Swarm Perception Model Inaccuracies'
       legend:
-        - 'ST_EMPTY (interval)'
-        - 'ST_HAS_BLOCK (interval)'
-        - 'ST_HAS_CACHE (interval)'
+        - 'ST_EMPTY (Interval)'
+        - 'ST_HAS_BLOCK (Interval)'
+        - 'ST_HAS_CACHE (Interval)'
       xlabel: 'Interval'
       ylabel: 'Count'
 
@@ -295,9 +318,9 @@ cache_util:
     - src_stem: cache-utilization
       dest_stem: cache-utilization-cache-counts
       cols:
-        - int_unique_caches
-        - cum_unique_caches
-      title: '# Unique Caches in Arena'
+        - int_avg_caches
+        - cum_avg_caches
+      title: '# Caches in Arena'
       legend:
         - '# Caches (Interval)'
         - '# Caches (Cumulative)'
@@ -315,11 +338,11 @@ cache_util:
         - 'Average # Blocks (Cumulative)'
       xlabel: 'Interval'
       ylabel: 'Count'
-      
+
 cache_lifecycle:
   graphs:
     - src_stem: cache-lifecycle
-      dest_stem: cache-lifecyle-int
+      dest_stem: cache-lifecyle-counts
       cols:
         - int_created
         - int_depleted
@@ -329,7 +352,32 @@ cache_lifecycle:
         - '# Depleted'
       xlabel: 'Interval'
       ylabel: 'Count'
-
+    - src_stem: cache-lifecycle
+      dest_stem: cache-lifecyle-avg
+      cols:
+        - int_avg_created
+        - int_avg_depleted
+        - cum_avg_created
+        - cum_avg_depleted
+      title: 'Average # Caches Created/Depleted'
+      legend:
+        - 'Average # Created (Interval)'
+        - 'Average # Depleted (Interval)'
+        - 'Average # Created (Cumulative)'
+        - 'Average # Depleted (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+    - src_stem: cache-lifecycle
+      dest_stem: cache-lifecyle-ages
+      cols:
+        - int_avg_depletion_age
+        - cum_avg_depletion_age
+      title: 'Average Cache Age Upon Depletion'
+      legend:
+        - 'Average Age (Interval)'
+        - 'Average Age (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Age (timesteps)'
 
 cache_acq:
   graphs:
@@ -341,20 +389,20 @@ cache_acq:
         - int_avg_vectoring_to_goal
         - cum_avg_vectoring_to_goal
         - int_avg_exploring_for_goal
-        - cum_avg_exploring_for_goal'
+        - cum_avg_exploring_for_goal
       title: 'Swarm Cache Acquisition'
       legend:
-        - 'Average # Robots Acquiring Caches (interval)'
+        - 'Average # Robots Acquiring Caches (Interval)'
         - 'Average # Robots Acquiring Caches (cumulative)'
-        - 'Average # Robots Vectoring To Caches (interval)'
+        - 'Average # Robots Vectoring To Caches (Interval)'
         - 'Average # Robots Vectoring To Caches (cumulative)'
-        - 'Average # Robots Exploring For Caches (interval)'
+        - 'Average # Robots Exploring For Caches (Interval)'
         - 'Average # Robots Exploring For Caches (cumulative)'
       xlabel: 'Interval'
       ylabel: 'Count'
 
 
-task_exec:
+depth1_task_exec:
   graphs:
     - src_stem: task-execution-collector
       dest_stem: task-execution-collector-times
@@ -362,7 +410,7 @@ task_exec:
         - int_avg_exec_time
         - cum_avg_exec_time
         - int_avg_interface_time
-        - cum_avg_interface_time'
+        - cum_avg_interface_time
       title: 'Collector Execution/Interface Times'
       legend:
         - 'Average Exec Time (Interval)'
@@ -378,7 +426,7 @@ task_exec:
         - int_avg_exec_estimate
         - cum_avg_exec_estimate
         - int_avg_interface_estimate
-        - cum_avg_interface_estimate'
+        - cum_avg_interface_estimate
       title: 'Collector Execution/Interface Estimates'
       legend:
         - 'Average Exec Estimate (Interval)'
@@ -410,7 +458,7 @@ task_exec:
         - int_avg_exec_time
         - cum_avg_exec_time
         - int_avg_interface_time
-        - cum_avg_interface_time'
+        - cum_avg_interface_time
       title: 'Harvester Execution/Interface Times'
       legend:
         - 'Average Exec Time (Interval)'
@@ -426,7 +474,7 @@ task_exec:
         - int_avg_exec_estimate
         - cum_avg_exec_estimate
         - int_avg_interface_estimate
-        - cum_avg_interface_estimate'
+        - cum_avg_interface_estimate
       title: 'Harvester Execution/Interface Estimates'
       legend:
         - 'Average Exec Estimate (Interval)'
@@ -582,7 +630,7 @@ generalist_tab:
       xlabel: 'Interval'
       ylabel: 'Value'
 
-task_dist:
+depth1_task_dist:
   graphs:
     - src_stem: task-distribution
       dest_stem: task-distribution-int-depth-counts
@@ -608,7 +656,7 @@ task_dist:
         - int_avg_task1_count
         - cum_avg_task1_count
         - int_avg_task2_count
-        - cum_avg_task2_count'
+        - cum_avg_task2_count
       title: 'Task Distribution Task Counts'
       legend:
         - 'Average Generalist (Interval)'
@@ -622,7 +670,9 @@ task_dist:
 
     - src_stem: task-distribution
       dest_stem: task-distribution-tab-counts
-      cols: int_avg_tab0_count cum_avg_tab0_count'
+      cols:
+        - int_avg_tab0_count
+        - cum_avg_tab0_count
       title: 'Task Distribution TAB Counts'
       legend:
         - 'TAB0 (Interval)'
@@ -631,7 +681,7 @@ task_dist:
       ylabel: 'Count'
 
 # Depth 2
-task_dist:
+depth2_task_dist:
   graphs:
     - src_stem: task-distribution
       dest_stem: task-distribution-int-depth-counts
@@ -654,49 +704,56 @@ task_dist:
       ylabel: 'Count'
 
     - src_stem: task-distribution
-      dest_stem: task-distribution-task-counts
+      dest_stem: task-distribution-task-counts-int
       cols:
         - int_avg_task0_count
-        - cum_avg_task0_count
         - int_avg_task1_count
-        - cum_avg_task1_count
         - int_avg_task2_count
-        - cum_avg_task2_count
         - int_avg_task3_count
-        - cum_avg_task3_count
         - int_avg_task4_count
-        - cum_avg_task4_count
         - int_avg_task5_count
-        - cum_avg_task5_count
         - int_avg_task6_count
-        - cum_avg_task6_count
-      title: 'Task Distribution Task Counts'
+      title: 'Task Distribution Task Counts (Interval)'
       legend:
-        - 'Average Generalist (Interval)'
-        - 'Average Generalist (Cumulative)'
-        - 'Average Harvester (Interval)'
-        - 'Average Harvester (Cumulative)'
-        - 'Average Collector (Interval)'
-        - 'Average Collector (Cumulative)'
-        - 'Average Cache Starter (Interval)'
-        - 'Average Cache Starter (Cumulative)'
-        - 'Average Cache Finisher (Interval)'
-        - 'Average Cache Finisher (Cumulative)'
-        - 'Average Cache Transferer (Interval)'
-        - 'Average Cache Transferer (Cumulative)'
-        - 'Average Cache Collector (Interval)'
-        - 'Average Cache Collector (Cumulative)'
+        - 'Average Generalist'
+        - 'Average Harvester'
+        - 'Average Collector'
+        - 'Average Cache Starter'
+        - 'Average Cache Finisher'
+        - 'Average Cache Transferer'
+        - 'Average Cache Collector'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+    - src_stem: task-distribution
+      dest_stem: task-distribution-task-counts-cum
+      cols:
+        - cum_avg_task0_count
+        - cum_avg_task1_count
+        - cum_avg_task2_count
+        - cum_avg_task3_count
+        - cum_avg_task4_count
+        - cum_avg_task5_count
+        - cum_avg_task6_count
+      title: 'Task Distribution Task Counts (Cumulative)'
+      legend:
+        - 'Average Generalist'
+        - 'Average Harvester'
+        - 'Average Collector'
+        - 'Average Cache Starter'
+        - 'Average Cache Finisher'
+        - 'Average Cache Transferer'
+        - 'Average Cache Collector'
       xlabel: 'Interval'
       ylabel: 'Count'
 
     - src_stem: task-distribution
       dest_stem: task-distribution-tab-counts
       cols:
-        - int_tab0_count
+        - int_avg_tab0_count
         - cum_avg_tab0_count
-        - int_tab1_count
+        - int_avg_tab1_count
         - cum_avg_tab1_count
-        - int_tab2_count
+        - int_avg_tab2_count
         - cum_avg_tab2_count
       title: 'Task Distribution TAB Counts'
       legend:
@@ -733,7 +790,7 @@ harvester_tab:
         - int_avg_partition_count
         - cum_avg_partition_count
         - int_avg_no_partition_count
-        - cum_avg_no_partition_count'
+        - cum_avg_no_partition_count
       title: 'Average Harvester TAB Partition Counts'
       legend:
         - 'Partition (Interval)'
@@ -859,10 +916,10 @@ collector_tab:
       ylabel: 'Value'
 
 
-task_exec:
+depth2_task_exec:
   graphs:
-    - src_stem: task-execution-cache-starter
-      dest_stem: task-execution-cache-starter-times
+    - src_stem: task-execution-cache_starter
+      dest_stem: task-execution-cache_starter-times
       cols:
         - int_avg_exec_time
         - cum_avg_exec_time
@@ -877,8 +934,8 @@ task_exec:
       xlabel: 'Interval'
       ylabel: 'Time'
 
-    - src_stem: task-execution-cache-starter
-      dest_stem: task-execution-cache-starter-ests
+    - src_stem: task-execution-cache_starter
+      dest_stem: task-execution-cache_starter-ests
       cols:
         - int_avg_exec_estimate
         - cum_avg_exec_estimate
@@ -893,8 +950,8 @@ task_exec:
       xlabel: 'Interval'
       ylabel: 'Time'
 
-    - src_stem: task-execution-cache-starter
-      dest_stem: task-execution-cache-starter-counts
+    - src_stem: task-execution-cache_starter
+      dest_stem: task-execution-cache_starter-counts
       cols:
         - int_avg_abort_count
         - cum_avg_abort_count
@@ -909,8 +966,8 @@ task_exec:
       xlabel: 'Interval'
       ylabel: 'Count'
 
-    - src_stem: task-execution-cache-finisher
-      dest_stem: task-execution-cache-finisher-times
+    - src_stem: task-execution-cache_finisher
+      dest_stem: task-execution-cache_finisher-times
       cols:
         - int_avg_exec_time
         - cum_avg_exec_time
@@ -925,8 +982,8 @@ task_exec:
       xlabel: 'Interval'
       ylabel: 'Time'
 
-    - src_stem: task-execution-cache-finisher
-      dest_stem: task-execution-cache-finisher-ests
+    - src_stem: task-execution-cache_finisher
+      dest_stem: task-execution-cache_finisher-ests
       cols:
         - int_avg_exec_estimate
         - cum_avg_exec_estimate
@@ -941,8 +998,8 @@ task_exec:
       xlabel: 'Interval'
       ylabel: 'Time'
 
-    - src_stem: task-execution-cache-finisher
-      dest_stem: task-execution-cache-finisher-counts
+    - src_stem: task-execution-cache_finisher
+      dest_stem: task-execution-cache_finisher-counts
       cols:
         - int_avg_abort_count
         - cum_avg_abort_count
@@ -957,8 +1014,8 @@ task_exec:
       xlabel: 'Interval'
       ylabel: 'Count'
 
-    - src_stem: task-execution-cache-starter
-      dest_stem: task-execution-cache-transferer-times
+    - src_stem: task-execution-cache_transferer
+      dest_stem: task-execution-cache_transferer-times
       cols:
         - int_avg_exec_time
         - cum_avg_exec_time
@@ -973,8 +1030,8 @@ task_exec:
       xlabel: 'Interval'
       ylabel: 'Time'
 
-    - src_stem: task-execution-cache-transferer
-      dest_stem: task-execution-cache-transferer-ests
+    - src_stem: task-execution-cache_transferer
+      dest_stem: task-execution-cache_transferer-ests
       cols:
         - int_avg_exec_estimate
         - cum_avg_exec_estimate
@@ -990,8 +1047,8 @@ task_exec:
       ylabel: 'Time'
 
 
-    - src_stem: task-execution-cache-transferer
-      dest_stem: task-execution-cache-transferer-counts
+    - src_stem: task-execution-cache_transferer
+      dest_stem: task-execution-cache_transferer-counts
       cols:
         - int_avg_abort_count
         - cum_avg_abort_count
@@ -1006,8 +1063,8 @@ task_exec:
       xlabel: 'Interval'
       ylabel: 'Count'
 
-    - src_stem: task-execution-cache-collector
-      dest_stem: task-execution-cache-collector-times
+    - src_stem: task-execution-cache_collector
+      dest_stem: task-execution-cache_collector-times
       cols:
         - int_avg_exec_time
         - cum_avg_exec_time
@@ -1022,8 +1079,8 @@ task_exec:
       xlabel: 'Interval'
       ylabel: 'Time'
 
-    - src_stem: task-execution-cache-collector
-      dest_stem: task-execution-cache-collector-ests
+    - src_stem: task-execution-cache_collector
+      dest_stem: task-execution-cache_collector-ests
       cols:
         - int_avg_exec_estimate
         - cum_avg_exec_estimate
@@ -1038,8 +1095,8 @@ task_exec:
       xlabel: 'Interval'
       ylabel: 'Time'
 
-    - src_stem: task-execution-cache-collector
-      dest_stem: task-execution-cache-collector-counts
+    - src_stem: task-execution-cache_collector
+      dest_stem: task-execution-cache_collector-counts
       cols:
         - int_avg_abort_count
         - cum_avg_abort_count

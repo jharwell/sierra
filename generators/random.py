@@ -33,9 +33,10 @@ class RNGenerator(ExpInputGenerator):
     """
 
     def __init__(self, template_config_file, generation_root, exp_output_root,
-                 exp_def_fname, sim_opts):
+                 exp_def_fname, sim_opts, controller):
         super().__init__(template_config_file, generation_root, exp_output_root,
                          exp_def_fname, sim_opts)
+        self.controller = controller
 
     def generate(self, xml_luigi):
         # Generate and apply arena dimensions definitions, and write dimensions to file for later
@@ -67,6 +68,11 @@ class RNGenerator(ExpInputGenerator):
 
         # Generate and apply physics engines definitions
         self.generate_physics_defs(xml_luigi)
+
+        if "depth1" in self.controller:
+            self.generate_static_cache_defs(xml_luigi, arena_dim)
+        if "depth2" in self.controller:
+            self.generate_dynamic_cache_defs(xml_luigi, arena_dim)
 
         # Generate and apply # blocks definitions if configured
         if self.sim_opts['n_blocks'] is not None:

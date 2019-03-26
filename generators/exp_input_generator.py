@@ -20,7 +20,7 @@ import os
 import random
 import pickle
 from pipeline.xml_luigi import XMLLuigi, InvalidElementError
-from variables import time_setup, physics_engines, block_distribution
+from variables import time_setup, physics_engines, block_distribution, dynamic_cache, static_cache
 
 
 class ExpInputGenerator:
@@ -147,6 +147,28 @@ class ExpInputGenerator:
                                             self.sim_opts["arena_dim"])
         [xml_luigi.tag_remove(a[0], a[1]) for a in pe.gen_tag_rmlist()[0]]
         [xml_luigi.tag_add(a[0], a[1], a[2]) for a in pe.gen_tag_addlist()[0]]
+
+    def generate_dynamic_cache_defs(self, xml_luigi, arena_dim):
+        cache = dynamic_cache.DynamicCache([arena_dim])
+
+        [xml_luigi.attribute_change(a[0], a[1], a[2]) for a in cache.gen_attr_changelist()[0]]
+        rms = cache.gen_tag_rmlist()
+        if len(rms):
+            [xml_luigi.tag_remove(a) for a in rms[0]]
+
+    def generate_static_cache_defs(self, xml_luigi, arena_dim):
+        # If they specified how many blocks to use for static cache respawn, use that.
+        # Otherwise use the floor of 2.
+        if self.sim_opts['static_cache_blocks'] is None:
+            cache = static_cache.StaticCache([2], [arena_dim])
+        else:
+            cache = static_cache.StaticCache([self.sim_opts['static_cache_blocks']],
+                                             [arena_dim])
+
+        [xml_luigi.attribute_change(a[0], a[1], a[2]) for a in cache.gen_attr_changelist()[0]]
+        rms = cache.gen_tag_rmlist()
+        if len(rms):
+            [xml_luigi.tag_remove(a) for a in rms[0]]
 
     def generate_block_count_defs(self, xml_luigi):
         """
