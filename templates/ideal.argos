@@ -48,7 +48,7 @@
             update_interface_ests="true"
             tab_init_method="max_depth"
             />
-        <task_allocation>
+        <task_alloc>
           <task_abort>
             <src_sigmoid_sel
                 input_src="exec">
@@ -109,7 +109,7 @@
               cache_transferer="1000:2000">
             <ema alpha="0.6"/>
           </task_exec_estimates>
-        </task_allocation>
+        </task_alloc>
         <block_sel_matrix
               nest="2.0, 3">
               <block_priorities
@@ -126,7 +126,7 @@
             site_yrange="2.5:3">
             <pickup_policy
                 policy="time"
-                timestep="10000"
+                timestep="20000"
                 cache_size="3"/>
             </cache_sel_matrix>
         <sensing
@@ -135,7 +135,7 @@
                             delta="0.0001" />
         </sensing>
         <actuation>
-      	          <steering2D>
+      	  <steering2D>
             <avoidance_force lookahead="0.5"
                              max="8"/>
             <arrival_force slowing_radius="0.2"
@@ -181,10 +181,12 @@
           output_dir="metrics"
           fsm_collision_fname="fsm-collision.csv"
           fsm_movement_fname="fsm-movement.csv"
-          block_acquisition_fname="block-acquisition.csv"
+          block_acquisition_counts_fname="block-acq-counts.csv"
+          block_acquisition_locs_fname="block-acq-locs.csv"
           block_transport_fname="block-transport.csv"
           block_manipulation_fname="block-manipulation.csv"
-          cache_acquisition_fname="cache-acquisition.csv"
+          cache_acquisition_counts_fname="cache-acq-counts.csv"
+          cache_acquisition_locs_fname="cache-acq-locs.csv"
           cache_utilization_fname="cache-utilization.csv"
           cache_lifecycle_fname="cache-lifecycle.csv"
           cache_locations_fname="cache-locations.csv"
@@ -199,8 +201,9 @@
           task_tab_collector_fname="task-tab-collector.csv"
           task_tab_harvester_fname="task-tab-harvester.csv"
           task_distribution_fname="task-distribution.csv"
-          perception_world_model_fname="perception-world-model.csv"
-          arena_robot_occupancy_fname="arena-robot-occupancy.csv"
+          perception_mdpo_fname="perception-mdpo.csv"
+          perception_dpo_fname="perception-dpo.csv"
+          arena_robot_locs_fname="arena-robot-locs.csv"
           swarm_convergence_fname="swarm-convergence.csv"
           loop_temporal_variance_fname="loop-temporal-variance.csv"
           collect_interval="1000">

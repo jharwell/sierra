@@ -27,7 +27,7 @@ depth0:
       graphs_inherit:
         - *base_graphs
       graphs: &DPO_graphs
-        - world_model
+        - perception
     - name: &MDPO MDPO
       xml:
         attr_change:

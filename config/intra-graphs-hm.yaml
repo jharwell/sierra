@@ -1,6 +1,10 @@
 arena:
   graphs:
-    - src_stem: arena-robot-occupancy
+    - src_stem: arena-robot-locs
       title: 'Robot Occupancy Probability'
     - src_stem: cache-locations
       title: 'Cache Placement Frequency'
+    - src_stem: cache-acq-locs
+      title: 'Cache Acquisition Locations'
+    - src_stem: block-acq-locs
+      title: 'Block Acquisition Locations'

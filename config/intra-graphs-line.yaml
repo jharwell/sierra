@@ -122,8 +122,8 @@ block_trans:
 
 block_acq:
   graphs:
-    - src_stem: block-acquisition
-      dest_stem: blocks-acq-counts
+    - src_stem: block-acq-counts
+      dest_stem: block-acq-counts
       cols:
         - int_avg_acquiring_goal
         - cum_avg_acquiring_goal
@@ -144,8 +144,8 @@ block_acq:
 
 cache_acq:
   graphs:
-    - src_stem: cache-acquisition
-      dest_stem: caches-acq-counts
+    - src_stem: cache-acq-counts
+      dest_stem: cache-acq-counts
       cols:
         - int_avg_acquiring_goal
         - cum_avg_acquiring_goal
@@ -197,21 +197,57 @@ block_manip:
       xlabel: 'Interval'
       ylabel: 'Penalty'
 
-world_model:
+perception:
   graphs:
-    - src_stem: perception-world-model
-      dest_stem: perception-world-model
+    - src_stem: perception-mdpo
+      dest_stem: perception-mdpo
       cols:
-        - ST_EMPTY_inaccuracies
-        - ST_HAS_BLOCK_inaccuracies
-        - ST_HAS_CACHE_inaccuracies
-      title: 'Swarm Perception Model Inaccuracies'
+        - int_avg_ST_EMPTY_inaccuracies
+        - int_avg_ST_HAS_BLOCK_inaccuracies
+        - int_avg_ST_HAS_CACHE_inaccuracies
+        - cum_avg_ST_EMPTY_inaccuracies
+        - cum_avg_ST_HAS_BLOCK_inaccuracies
+        - cum_avg_ST_HAS_CACHE_inaccuracies
+      title: 'MDPO Perception Model Inaccuracies'
       legend:
-        - 'ST_EMPTY (Interval)'
-        - 'ST_HAS_BLOCK (Interval)'
-        - 'ST_HAS_CACHE (Interval)'
+        - 'Average ST_EMPTY Inaccuracies(Interval)'
+        - 'Average ST_HAS_BLOCK Inaccuracies (Interval)'
+        - 'Average ST_HAS_CACHE Inaccuracies (Interval)'
+        - 'Average ST_EMPTY Inaccuracies (Cumulative)'
+        - 'Average ST_HAS_BLOCK Inaccuracies (Cumulative)'
+        - 'Average ST_HAS_CACHE Inaccuracies (Cumulative)'
       xlabel: 'Interval'
       ylabel: 'Count'
+    - src_stem: perception-dpo
+      dest_stem: perception-dpo-counts
+      cols:
+        - int_avg_known_blocks
+        - int_avg_known_caches
+        - cum_avg_known_blocks
+        - cum_avg_known_caches
+      title: 'DPO Perception Model Tracking Counts'
+      legend:
+        - 'Average known blocks (Interval)'
+        - 'Average known caches (Interval)'
+        - 'Average known blocks (Cumulative)'
+        - 'Average known caches (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+    - src_stem: perception-dpo
+      dest_stem: perception-dpo-densities
+      cols:
+        - int_avg_block_pheromone_density
+        - int_avg_cache_pheromone_density
+        - cum_avg_block_pheromone_density
+        - cum_avg_cache_pheromone_density
+      title: 'DPO Perception Model Pheromone Densities'
+      legend:
+        - 'Average block (Interval)'
+        - 'Average cache (Interval)'
+        - 'Average block (Cumulative)'
+        - 'Average cache (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Density'
 
 convergence:
   graphs:
@@ -381,7 +417,7 @@ cache_lifecycle:
 
 cache_acq:
   graphs:
-    - src_stem: cache-acquisition
+    - src_stem: cache-acq-counts
       dest_stem: caches-acq-counts
       cols:
         - int_avg_acquiring_goal
