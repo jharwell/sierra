@@ -28,10 +28,24 @@ depth0:
         - *base_graphs
       graphs: &DPO_graphs
         - perception
+    - name: &ODPO ODPO
+      xml:
+        attr_change:
+          - ['.//controllers', '__template__', 'odpo_controller']
+      graphs_inherit:
+        - *base_graphs
+        - *DPO_graphs
     - name: &MDPO MDPO
       xml:
         attr_change:
           - ['.//controllers', '__template__', 'mdpo_controller']
+      graphs_inherit:
+        - *base_graphs
+        - *DPO_graphs
+    - name: &OMDPO OMDPO
+      xml:
+        attr_change:
+          - ['.//controllers', '__template__', 'omdpo_controller']
       graphs_inherit:
         - *base_graphs
         - *DPO_graphs
@@ -55,16 +69,31 @@ depth1:
         - depth1_task_exec
         - depth1_task_dist
         - generalist_tab
-    - name: OGP_DPO
+    - name: GP_ODPO
       xml:
           attr_change:
-            - ['.//controllers', '__template__', 'ogp_dpo_controller']
-            - ['.//loop_functions/oracle', 'enabled', 'true']
+            - ['.//controllers', '__template__', 'gp_odpo_controller']
       graphs_inherit:
         - *base_graphs
         - *DPO_graphs
         - *GP_DPO_graphs
-      graphs:
+    - name: GP_MDPO
+      xml:
+          attr_change:
+            - ['.//controllers', '__template__', 'gp_mdpo_controller']
+      graphs_inherit:
+        - *base_graphs
+        - *DPO_graphs
+        - *GP_DPO_graphs
+    - name: GP_OMDPO
+      xml:
+          attr_change:
+            - ['.//controllers', '__template__', 'gp_omdpo_controller']
+      graphs_inherit:
+        - *base_graphs
+        - *DPO_graphs
+        - *GP_DPO_graphs
+
 depth2:
   xml:
     attr_change:
@@ -88,3 +117,27 @@ depth2:
         - harvester_tab
         - collector_tab
         - generalist_tab
+    - name: GRP_ODPO
+      xml:
+          attr_change:
+            - ['.//controllers', '__template__', 'grp_odpo_controller']
+      graphs_inherit:
+        - *base_graphs
+        - *DPO_graphs
+        - *GRP_DPO_graphs
+    - name: GRP_MDPO
+      xml:
+          attr_change:
+            - ['.//controllers', '__template__', 'grp_mdpo_controller']
+      graphs_inherit:
+        - *base_graphs
+        - *DPO_graphs
+        - *GRP_DPO_graphs
+    - name: GRP_OMDPO
+      xml:
+          attr_change:
+            - ['.//controllers', '__template__', 'grp_omdpo_controller']
+      graphs_inherit:
+        - *base_graphs
+        - *DPO_graphs
+        - *GRP_DPO_graphs

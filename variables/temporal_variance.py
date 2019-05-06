@@ -61,7 +61,7 @@ class TemporalVariance(BaseVariable):
     def gen_attr_changelist(self):
         """
         Generate a list of sets of changes necessary to make to the input file to correctly set up
-        the simulation with the specified block priorities.
+        the simulation with the specified temporal variances.
         """
         size_attr = next(iter(SwarmSize([self.swarm_size]).gen_attr_changelist()[0]))
         return [set([

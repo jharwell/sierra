@@ -73,7 +73,8 @@ def batch_swarm_sizes(cmdopts):
     """
     if any(c in cmdopts["criteria_category"] for c in ["swarm_density",
                                                        "temporal_variance",
-                                                       "swarm_size"]):
+                                                       "swarm_size",
+                                                       "oracle"]):
         sizes = []
         for i in range(0, cmdopts["n_exp"]):
 
@@ -115,6 +116,8 @@ def batch_criteria_xvals(cmdopts):
         ret = densities
     elif "temporal_variance" in cmdopts["criteria_category"]:
         ret = [vcs.EnvironmentalCS(cmdopts, x)() for x in range(0, cmdopts["n_exp"])]
+    elif 'oracle' in cmdopts['criteria_category']:
+        ret = [i for i in range(0, cmdopts['n_exp'])]
 
     if cmdopts['plot_log_xaxis']:
         return [math.log2(x) for x in ret]
@@ -130,7 +133,8 @@ def batch_criteria_xlabel(cmdopts):
     labels = {
         "swarm_size": "Swarm Size",
         "swarm_density": "Swarm Density",
-        "temporal_variance": vcs.method_xlabel(cmdopts["envc_cs_method"])
+        "temporal_variance": vcs.method_xlabel(cmdopts["envc_cs_method"]),
+        "oracle": "Oracular Swarms"
     }
     return labels[cmdopts["criteria_category"]]
 

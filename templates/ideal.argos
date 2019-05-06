@@ -181,12 +181,12 @@
           output_dir="metrics"
           fsm_collision_fname="fsm-collision.csv"
           fsm_movement_fname="fsm-movement.csv"
-          block_acquisition_counts_fname="block-acq-counts.csv"
-          block_acquisition_locs_fname="block-acq-locs.csv"
+          block_acq_counts_fname="block-acq-counts.csv"
+          block_acq_locs_fname="block-acq-locs.csv"
           block_transport_fname="block-transport.csv"
           block_manipulation_fname="block-manipulation.csv"
-          cache_acquisition_counts_fname="cache-acq-counts.csv"
-          cache_acquisition_locs_fname="cache-acq-locs.csv"
+          cache_acq_counts_fname="cache-acq-counts.csv"
+          cache_acq_locs_fname="cache-acq-locs.csv"
           cache_utilization_fname="cache-utilization.csv"
           cache_lifecycle_fname="cache-lifecycle.csv"
           cache_locations_fname="cache-locations.csv"
@@ -205,7 +205,7 @@
           perception_dpo_fname="perception-dpo.csv"
           arena_robot_locs_fname="arena-robot-locs.csv"
           swarm_convergence_fname="swarm-convergence.csv"
-          loop_temporal_variance_fname="loop-temporal-variance.csv"
+          temporal_variance_fname="loop-temporal-variance.csv"
           collect_interval="1000">
           </metrics>
     </output>
@@ -220,11 +220,15 @@
       <angular_order enable="false"/>
       <task_dist_entropy enable="false"/>
     </convergence>
-    <oracle
-        enabled="false"
-        task_exec_est="false"
-        task_interface_est="false"
-        />
+    <oracle_manager>
+      <tasking_oracle
+          task_exec_est="false"
+          task_interface_est="false"
+          />
+      <entities_oracle
+          blocks_enabled="false"
+          caches_enabled="false"/>
+      </oracle_manager>
     <temporal_variance>
       <blocks>
         <manipulation_penalty>

@@ -70,6 +70,22 @@ class DPOGenerator(BaseGenerator):
         return xml_luigi
 
 
+class ODPOGenerator(BaseGenerator):
+
+    """
+    Generates simulation input changes common needed for all ODPO controllers.
+
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def generate(self):
+        xml_luigi = super().generate()
+        xml_luigi.tag_change(".//controllers", "__template__", "odpo_controller")
+        return xml_luigi
+
+
 class MDPOGenerator(BaseGenerator):
     """
     Generates simulation input changes common needed for all MDPO controllers.
@@ -86,4 +102,23 @@ class MDPOGenerator(BaseGenerator):
 
         xml_luigi = super().generate()
         xml_luigi.tag_change(".//controllers", "__template__", "mdpo_controller")
+        return xml_luigi
+
+
+class OMDPOGenerator(BaseGenerator):
+    """
+    Generates simulation input changes common needed for all OMDPO controllers.
+
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def generate(self):
+        """
+        Generates all changes to the input file for the simulation (does not save).
+        """
+
+        xml_luigi = super().generate()
+        xml_luigi.tag_change(".//controllers", "__template__", "omdpo_controller")
         return xml_luigi

@@ -71,11 +71,9 @@ class GRP_MDPOGenerator(BaseGenerator):
         return xml_luigi
 
 
-class OGRP_DPOGenerator(BaseGenerator):
+class GRP_ODPOGenerator(BaseGenerator):
     """
-    Generates simulation input changes common needed for all OGRP_DPO controllers.
-    Enables the oracle itself in the loop functions, but does not specify what elements of it are to
-    be used; that is left to either manual template configuration or to batch criteria.
+    Generates simulation input changes common needed for all GRP_oDPO controllers.
     """
 
     def __init__(self, *args, **kwargs):
@@ -86,16 +84,13 @@ class OGRP_DPOGenerator(BaseGenerator):
         Generates all changes to the input file for the simulation (does not save):
         """
         xml_luigi = super().generate()
-        xml_luigi.tag_change(".//controllers", "__template__", "ogrp_dpo_controller")
-        xml_luigi.attribute_change(".//loop_functions/oracle", "enabled", "true")
+        xml_luigi.tag_change(".//controllers", "__template__", "grp_odpo_controller")
         return xml_luigi
 
 
-class OGRP_MDPOGenerator(BaseGenerator):
+class GRP_OMDPOGenerator(BaseGenerator):
     """
-    Generates simulation input changes common needed for all OGRP_MDPO controllers.
-    Enables the oracle itself in the loop functions, but does not specify what elements of it are to
-    be used; that is left to either manual template configuration or to batch criteria.
+    Generates simulation input changes common needed for all GRP_OMDPO controllers.
     """
 
     def __init__(self, *args, **kwargs):
@@ -106,6 +101,5 @@ class OGRP_MDPOGenerator(BaseGenerator):
         Generates all changes to the input file for the simulation (does not save):
         """
         xml_luigi = super().generate()
-        xml_luigi.tag_change(".//controllers", "__template__", "ogrp_mdpo_controller")
-        xml_luigi.attribute_change(".//loop_functions/oracle", "enabled", "true")
+        xml_luigi.tag_change(".//controllers", "__template__", "grp_omdpo_controller")
         return xml_luigi

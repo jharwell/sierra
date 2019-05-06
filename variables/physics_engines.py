@@ -17,7 +17,6 @@
 """
 
 from variables.base_variable import BaseVariable
-import math
 
 
 class PhysicsEngines(BaseVariable):

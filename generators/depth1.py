@@ -71,11 +71,9 @@ class GP_MDPOGenerator(BaseGenerator):
         return xml_luigi
 
 
-class OGP_DPOGenerator(BaseGenerator):
+class GP_ODPOGenerator(BaseGenerator):
     """
-    Generates simulation input changes common needed for all OGP_DPO controllers.
-    Enables the oracle itself in the loop functions, but does not specify what elements of it are to
-    be used; that is left to either manual template configuration or to batch criteria.
+    Generates simulation input changes common needed for all GP_ODPO controllers.
     """
 
     def __init__(self, *args, **kwargs):
@@ -86,16 +84,13 @@ class OGP_DPOGenerator(BaseGenerator):
         Generates all changes to the input file for the simulation (does not save):
         """
         xml_luigi = super().generate()
-        xml_luigi.tag_change(".//controllers", "__template__", "ogp_dpo_controller")
-        xml_luigi.attribute_change(".//loop_functions/oracle", "enabled", "true")
+        xml_luigi.tag_change(".//controllers", "__template__", "gp_odpo_controller")
         return xml_luigi
 
 
-class OGP_MDPOGenerator(BaseGenerator):
+class GP_OMDPOGenerator(BaseGenerator):
     """
-    Generates simulation input changes common needed for all OGP_MDPO controllers.
-    Enables the oracle itself in the loop functions, but does not specify what elements of it are to
-    be used; that is left to either manual template configuration or to batch criteria.
+    Generates simulation input changes common needed for all GP_OMDPO controllers.
     """
 
     def __init__(self, *args, **kwargs):
@@ -106,6 +101,5 @@ class OGP_MDPOGenerator(BaseGenerator):
         Generates all changes to the input file for the simulation (does not save):
         """
         xml_luigi = super().generate()
-        xml_luigi.tag_change(".//controllers", "__template__", "ogp_mdpo_controller")
-        xml_luigi.attribute_change(".//loop_functions/oracle", "enabled", "true")
+        xml_luigi.tag_change(".//controllers", "__template__", "gp_omdpo_controller")
         return xml_luigi

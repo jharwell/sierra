@@ -60,7 +60,9 @@ class IntraExpGraphGenerator:
             for controller in self.controller_config[category]['controllers']:
                 if controller['name'] not in self.cmdopts['generator']:
                     continue
-                keys = controller['graphs']
+
+                # valid to specify no graphs, and only to inherit graphs
+                keys = controller.get('graphs', [])
                 if 'graphs_inherit' in controller:
                     [keys.extend(l) for l in controller['graphs_inherit']]  # optional
                 if self.cmdopts['gen_vc_plots']:  # optional

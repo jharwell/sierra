@@ -49,8 +49,6 @@ class TimeSetup(BaseVariable):
     def gen_tag_addlist(self):
         return []
 
-# Just for testing
-
 
 class TInterval(TimeSetup):
     def __init__(self):
@@ -71,8 +69,3 @@ def Factory(time_str):
     return type(time_str,
                 (TimeSetup,),
                 {"__init__": __init__})
-
-
-class T1000(TimeSetup):
-    def __init__(self):
-        super().__init__(1000, 1000 * kTicksPerSecond / kDataPoints)
