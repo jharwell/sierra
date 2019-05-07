@@ -43,13 +43,15 @@ class PipelineStage3:
                 "- Stage3: Averaging batched experiment outputs for '{0}'...".format(self.cmdopts['generator']))
             averager = BatchedExpCSVAverager(template_config_leaf,
                                              self.cmdopts['output_root'],
-                                             self.cmdopts['no_verify_results'])
+                                             self.cmdopts['no_verify_results'],
+                                             self.cmdopts['gen_stddev'])
         else:
             print(
                 "- Stage3: Averaging single experiment outputs for '{0}'...".format(self.cmdopts['generator']))
             averager = ExpCSVAverager(template_config_leaf,
-                                      self.cmdopts['output_root'],
-                                      self.cmdopts['no_verify_results'])
+                                      self.cmdopts['no_verify_results'],
+                                      self.cmdopts['gen_stddev'],
+                                      self.cmdopts['output_root'])
 
         averager.run()
         print("- Stage3: Averaging complete")

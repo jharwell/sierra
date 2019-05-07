@@ -300,8 +300,17 @@ class Cmdline:
                             same # of rows, then sierra will crash. Verification can take a long time with large # of
                             simulations per experiment.
                             """,
+                            action='store_true',
                             default=False)
+        stage3.add_argument("--gen-stddev",
+                            help="""
 
+                            If TRUE, then the standard deviation will be calculated from averaged
+                            data and error bars will be included on all linegraphs.
+
+                            """,
+                            action="store_true",
+                            default=False)
         stage4 = parser.add_argument_group('stage4 (graph generation)')
 
         stage4.add_argument("--with-hists",
@@ -358,13 +367,7 @@ class Cmdline:
 
                             """,
                             default=False)
-        stage4.add_argument("--plot-errorbars",
-                            help="""
 
-                            If TRUE, then error bars will be included on all linegraphs,
-
-                            """,
-                            action="store_true")
         stage4.add_argument("--envc-cs-method",
                             help="""
 

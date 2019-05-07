@@ -17,7 +17,6 @@ depth0:
         attr_change:
           - ['.//controllers', '__template__', 'crw_controller']
 
-      graphs: &CRW_graphs
       graphs_inherit:
         - *base_graphs
     - name: &DPO DPO

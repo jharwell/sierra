@@ -35,7 +35,7 @@ class ExpCSVAverager:
     kMetricsFolderName = "metrics"
     kAveragedOutputFolderName = "averaged-output"
 
-    def __init__(self, exp_config_leaf, no_verify_results, exp_output_root):
+    def __init__(self, exp_config_leaf, no_verify_results, gen_stddev, exp_output_root):
         # will get the main name and extension of the config file (without the full absolute path)
         self.template_config_fname, self.template_config_ext = os.path.splitext(
             os.path.basename(exp_config_leaf))
@@ -46,6 +46,7 @@ class ExpCSVAverager:
         self.averaged_output_root = os.path.join(self.exp_output_root,
                                                  ExpCSVAverager.kAveragedOutputFolderName)
         self.no_verify_results = no_verify_results
+        self.gen_stddev = gen_stddev
         os.makedirs(self.averaged_output_root, exist_ok=True)
 
         # to be formatted like: self.config_name_format.format(name, experiment_number)
@@ -95,14 +96,13 @@ class ExpCSVAverager:
                                     sep=';',
                                     index=False)
 
-                # FIXME: Disabled for now until #29 is fixed
-                # stats = {key: self._gen_statistics(csvs[key]) for key in csvs}
-
-                # Save statistics with the same stem as the averaged .csv file, but with the .stats
-                # extension. FIXME: Disabled for now until #29 is fixed.
-                # for key, value in stats.items():
-                #     value.to_csv(os.path.join(csvs_path, key.split('.')
-                #                               [0] + ".stats"), sep=';', index=False)
+                # Also write out stddev in order to calculate confidence intervals later
+                if self.gen_stddev:
+                    csv_stddev = by_row_index.std()
+                    csv_stddev_fname = csv_fname.split('.')[0] + '.stddev'
+                    csv_stddev.to_csv(os.path.join(self.averaged_output_root, csv_stddev_fname),
+                                      sep=';',
+                                      index=False)
 
     def _verify_exp_csvs(self):
         """

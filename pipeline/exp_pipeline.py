@@ -63,6 +63,7 @@ class ExpPipeline:
 
             # stage 3
             'no_verify_results': self.args.no_verify_results,
+            'gen_stddev': self.args.gen_stddev,
 
             # stage 4
             'envc_cs_method': self.args.envc_cs_method,

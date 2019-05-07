@@ -19,6 +19,7 @@
 from variables.base_variable import BaseVariable
 from variables.oracle_parser import OracleParser
 import itertools
+from variables.swarm_size import SwarmSize
 
 
 class Oracle(BaseVariable):
@@ -32,16 +33,17 @@ class Oracle(BaseVariable):
       simulation. Each tuple is (oracle name, list(tuple(oracle feature name, oracle feature value))).
     """
 
-    def __init__(self, tuples):
+    def __init__(self, tuples, swarm_size):
         self.tuples = tuples
+        self.swarm_size = swarm_size
 
     def gen_attr_changelist(self):
-        changes = []
-        for t in self.tuples:
-            changes.append(set([(".//oracle_manager/{0}".format(str(t[0])),
-                                 "{0}".format(str(feat[0])),
-                                 "{0}".format(str(feat[1]))) for feat in t[1]]))
-        return changes
+        size_attr = next(iter(SwarmSize([self.swarm_size]).gen_attr_changelist()[0]))
+        return [set([
+            size_attr,
+            (".//oracle_manager/{0}".format(str(t[0])),
+             "{0}".format(str(feat[0])),
+             "{0}".format(str(feat[1])))]) for t in self.tuples for feat in t[1]]
 
     def gen_tag_rmlist(self):
         return []
@@ -68,7 +70,7 @@ def Factory(criteria_str):
             return tuples
 
     def __init__(self):
-        Oracle.__init__(self, gen_tuples(criteria_str))
+        Oracle.__init__(self, gen_tuples(criteria_str), attr['swarm_size'])
 
     return type(criteria_str,
                 (Oracle,),

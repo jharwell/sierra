@@ -31,7 +31,7 @@ class StackedLineGraph:
     respectively, from the specified .csv with the specified graph visuals.
 
     If the necessary .csv file does not exist, the graph is not generated.
-    If the .stats file that goes with the .csv does not exist, then no error bars are printed.
+    If the .stddev file that goes with the .csv does not exist, then no error bars are printed.
 
     """
 
@@ -39,7 +39,7 @@ class StackedLineGraph:
                  linestyles):
 
         self.input_csv_fpath = os.path.abspath(input_stem_fpath) + ".csv"
-        self.input_stats_fpath = os.path.abspath(input_stem_fpath) + ".stats"
+        self.input_stddev_fpath = os.path.abspath(input_stem_fpath) + ".stddev"
         self.output_fpath = output_fpath
         self.cols = cols
         self.title = title
@@ -52,35 +52,17 @@ class StackedLineGraph:
         if not os.path.exists(self.input_csv_fpath):
             return
         df = pd.read_csv(self.input_csv_fpath, sep=';')
-        if not os.path.exists(self.input_stats_fpath):
+        if not os.path.exists(self.input_stddev_fpath):
             df2 = None
         else:
-            df2 = pd.read_csv(self.input_stats_fpath, sep=';')
+            df2 = pd.read_csv(self.input_stddev_fpath, sep=';')
 
-        # Set a color map so we are guaranteed to have unique colors regardless of how many lines
-        # there are on the plot.
-        # colormap = plt.get_cmap('plasma')
         if self.cols is None:
             ncols = max(1, int(len(df.columns) / 3.0))
-            if self.linestyles is None:
-                ax = df.plot()
-            else:
-                for c in df.columns:
-                    ax = df[c].plot(linestyle=self.linestyles[c])
-
+            ax = self._plot_selected_cols(df, df2, df.columns)
         else:
             ncols = max(1, int(len(self.cols) / 3.0))
-            if self.linestyles is None:
-                ax = df[self.cols].plot()
-            else:
-                for c, s in zip(self.cols, self.linestyles):
-                    ax = df[c].plot(linestyle=s)
-
-        # @BUG This makes all lines appear 1 color...
-        # if df2 is not None:
-        #     for c in self.cols:
-        #         plt.errorbar(df.index, df[c], yerr=df2[c],
-        #                      ecolor='gray', lw=2, capsize=5, capthick=2)
+            ax = self._plot_selected_cols(df, df2, self.cols)
 
         # Legend should have ~3 entries per column, in order to maximize real estate on tightly
         # constrained papers.
@@ -100,3 +82,32 @@ class StackedLineGraph:
         fig.set_size_inches(10, 10)
         fig.savefig(self.output_fpath, bbox_inches='tight', dpi=100)
         fig.clf()
+
+    def _plot_selected_cols(self, data_df, stddev_df, cols):
+        """
+        Plots selected columns in a dataframe, (possibly) including:
+
+        - Custom linestyles
+        - errorbars
+        """
+        if self.linestyles is None:
+            ax = data_df[cols].plot()
+            if stddev_df is not None:
+                for c in cols:
+                    self._plot_col_errorbars(data_df, stddev_df, c)
+            return ax
+        else:
+            for c, s in zip(cols, self.linestyles):
+                ax = data_df[c].plot(linestyle=s)
+                if stddev_df is not None:
+                    self._plot_col_errorbars(data_df, stddev_df, c)
+            return ax
+
+    def _plot_col_errorbars(self, data_df, stddev_df, col):
+        """
+        Plot the errorbars for a specific column in a dataframe.
+        """
+        # plt.errorbar(data_df.index, data_df[c], xerr=0.5,
+        #              yerr=2 * stddev_df[c], linestyle = '')
+        plt.fill_between(data_df.index, data_df[col] - 2 * stddev_df[col],
+                         data_df[col] + 2 * stddev_df[col], alpha=0.25)

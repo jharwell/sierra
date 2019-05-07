@@ -16,34 +16,35 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
+import re
+
 
 class OracleParser():
     """
     Parses the command line definition of batch criteria. The string must be formatted as:
 
-    {oracle_name}
+    {oracle_name}.Z{swarm_size}
 
     oracle_name = {entities, tasks}
 
     For example:
 
-    entities -> All permutations of oracular information about entities in the arena.
-    tasks -> All permutations of oracular information about tasks in the arena.
+    entities.Z16 -> All permutations of oracular information about entities in the arena, run with
+    swarms of size 16.
+    tasks.Z8 -> All permutations of oracular information about tasks in the arena, run with swarms
+    of size 8.
     """
 
     def parse(self, criteria_str):
         ret = {}
 
-        ret.update(self.type_parse(criteria_str))
-        return ret
-
-    def type_parse(self, criteria_str):
-        """
-        Parse the oracular information dissemination type.
-        """
-        ret = {}
+        # Parse oracle name
         if 'entities' in criteria_str:
             ret['oracle_name'] = 'entities_oracle'
         elif 'tasking' in criteria_str:
             ret['oracle_name'] = 'tasking_oracle'
+        # Parse swarm size
+        res = re.search("\.Z[0-9]+", criteria_str)
+        assert res is not None, "FATAL: Bad swarm size in criteria '{0}'".format(criteria_str)
+        ret['swarm_size'] = int(res.group(0)[2:])
         return ret
