@@ -39,11 +39,14 @@ class Oracle(BaseVariable):
 
     def gen_attr_changelist(self):
         size_attr = next(iter(SwarmSize([self.swarm_size]).gen_attr_changelist()[0]))
-        return [set([
-            size_attr,
-            (".//oracle_manager/{0}".format(str(t[0])),
-             "{0}".format(str(feat[0])),
-             "{0}".format(str(feat[1])))]) for t in self.tuples for feat in t[1]]
+        changes = []
+        for t in self.tuples:
+            c = [size_attr]
+            c.extend([(".//oracle_manager/{0}".format(str(t[0])),
+                       "{0}".format(str(feat[0])),
+                       "{0}".format(str(feat[1]))) for feat in t[1]])
+            changes.append(set(c))
+        return changes
 
     def gen_tag_rmlist(self):
         return []

@@ -32,6 +32,7 @@ class ExpRunner:
       exp_generation_root(str): Root directory for all generated simulation input files for the
                                 experiment.
       batch(bool): Whether or not the experiment is part of a batch.
+      fn_threads_per_sim(int): # ARGoS threads being used per simulation.
 
     """
 
@@ -39,16 +40,12 @@ class ExpRunner:
         self.exp_generation_root = os.path.abspath(exp_generation_root)
         self.batch = batch
 
-    def run(self, exec_method):
+    def run(self, exec_method, n_jobs):
         '''Runs the experiment.'''
         assert os.environ.get(
             "ARGOS_PLUGIN_PATH") is not None, ("ERROR: You must have ARGOS_PLUGIN_PATH defined")
         assert os.environ.get(
             "LOG4CXX_CONFIGURATION") is not None, ("ERROR: You must LOG4CXX_CONFIGURATION defined")
-
-        sys.stdout.write('-' + '-' * self.batch +
-                         " Running experiment in {0}...".format(self.exp_generation_root))
-        sys.stdout.flush()
 
         # Root directory for the job. Chose the exp input directory rather than the output directory
         # in order to keep simulation outputs separate from those for the framework used to run the
@@ -58,14 +55,18 @@ class ExpRunner:
         cmdfile = os.path.join(self.exp_generation_root, "commands.txt")
         joblog = os.path.join(jobroot, "parallel$PBS_JOBID.log")
 
+        sys.stdout.write('-' + '-' * self.batch +
+                         ' Running experiment in {0}...'.format(self.exp_generation_root))
+        sys.stdout.flush()
+
         start = time.time()
         try:
-            if 'local.parallel' == exec_method:
-                self._run_local_parallel(jobroot, cmdfile, joblog)
-            elif 'local.serial' == exec_method:
-                self._run_local_serial(jobroot, cmdfile, joblog)
+            if 'local' == exec_method:
+                self._run_local(jobroot, cmdfile, joblog, n_jobs)
             elif 'hpc' in exec_method:
                 self._run_hpc_parallel(jobroot, cmdfile, joblog)
+            else:
+                assert False, "Bad exec method '{0}'".format(exec_method)
 
         # Catch the exception but do not raise it again so that additional experiments can still be
         # run if possible
@@ -74,23 +75,11 @@ class ExpRunner:
         elapsed = time.time() - start
         sys.stdout.write("{:.3f}s\n".format(elapsed))
 
-    def _run_local_serial(self, jobroot_path, cmdfile_path, joblog_path):
+    def _run_local(self, jobroot_path, cmdfile_path, joblog_path, n_jobs):
         p = subprocess.Popen('cd {0} &&'
-                             'parallel --jobs 1 --results {0} --joblog {1} --no-notice < "{2}"'.format(
+                             'parallel --resume --jobs {1} --results {0} --joblog {2} --no-notice < "{3}"'.format(
                                  jobroot_path,
-                                 joblog_path,
-                                 cmdfile_path),
-                             shell=True,
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = p.communicate()
-        if p.returncode != 0:
-            print(stdout, stderr)
-            print("ERROR: Process exited with {0}".format(p.returncode))
-
-    def _run_local_parallel(self, jobroot_path, cmdfile_path, joblog_path):
-        p = subprocess.Popen('cd {0} &&'
-                             'parallel --results {0} --joblog {1} --no-notice < "{2}"'.format(
-                                 jobroot_path,
+                                 n_jobs,
                                  joblog_path,
                                  cmdfile_path),
                              shell=True,
@@ -104,7 +93,7 @@ class ExpRunner:
         nodelist = os.path.join(jobroot_path, "$PBS_JOBID-nodelist.txt")
 
         subprocess.run('sort -u $PBS_NODEFILE > {0} && '
-                       'parallel --jobs 1 --results {2} --joblog {1} --sshloginfile {0} --workdir {2} < "{3}"'.format(
+                       'parallel --resume --jobs 1 --results {2} --joblog {1} --sshloginfile {0} --workdir {2} < "{3}"'.format(
                            nodelist,
                            joblog_path,
                            jobroot_path,

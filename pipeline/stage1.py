@@ -38,14 +38,14 @@ class PipelineStage1:
             print("-- Using '{0}'".format(self.cmdopts['time_setup']))
             print("-- Using {0} physics engines".format(self.cmdopts['n_physics_engines']))
             self.input_generator.generate()
-            print("- Stage1: {0} Input files generated in {1} experiments.".format(
+            print("- Stage1: {0} input files generated in {1} experiments.".format(
                 sum([len(files) for r, d, files in os.walk(self.cmdopts['generation_root'])]),
-                sum([len(d) for r, d, files in os.walk(self.cmdopts['generation_root'])]) - 1))
+                sum([len(d) for r, d, files in os.walk(self.cmdopts['generation_root'])])))
         else:
             print("- Stage1: Generating input files for experiment '{0}' in {1}...".format(self.cmdopts['generator'],
                                                                                            self.cmdopts['generation_root']))
             print("-- Using '{0}'".format(self.cmdopts['time_setup']))
             print("-- Using {0} physics engines".format(self.cmdopts['n_physics_engines']))
             self.input_generator.generate()
-            print("- Stage1: {0} Input files generated for experiment.".format(
+            print("- Stage1: {0} input files generated for experiment.".format(
                 sum([len(files) for r, d, files in os.walk(self.cmdopts['generation_root'])])))

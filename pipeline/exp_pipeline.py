@@ -60,6 +60,8 @@ class ExpPipeline:
             # stage 2
             'batch_exp_range': self.args.batch_exp_range,
             'exec_method': self.args.exec_method,
+            'n_threads': self.args.n_threads,
+            'n_sims': self.args.n_sims,
 
             # stage 3
             'no_verify_results': self.args.no_verify_results,

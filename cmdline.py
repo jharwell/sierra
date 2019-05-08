@@ -263,12 +263,9 @@ class Cmdline:
 
                             Specify the execution method to use when running experiments.
 
-                            local.parallel: Run the specified # simulations for each experiment simultaneously on the
-                                            local machine using GNU parallel.
-
-                            local.serial: Run the specified # of simulations for each experiment serially on the local
-                                          machine. Useful for large swarms when the full resources of the local machine
-                                          are needed to run simulations at a reasonable rate of speed.
+                            local: Run the maximum # of simulations simultaneously on the local
+                                   machine using GNU parallel. # of simultaneous simulations is
+                                   determined by # cores on machine / # ARGoS threads.
 
                             hpc[.cluster_name]: Use GNU parallel in an HPC environment to run the specified # of
                                                 simulations simultaneously on a computing cluster. The [.cluster] is
@@ -281,7 +278,7 @@ class Cmdline:
                                                 natively for each for maximum performance.
 
                             """,
-                            default="local.parallel")
+                            default="local")
         stage2.add_argument("--batch-exp-range",
                             help="""
 

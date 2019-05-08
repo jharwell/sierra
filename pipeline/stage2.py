@@ -39,4 +39,6 @@ class PipelineStage2:
         else:
             runner = ExpRunner(self.cmdopts['generation_root'], False)
 
-        runner.run(exec_method=self.cmdopts['exec_method'])
+        runner.run(exec_method=self.cmdopts['exec_method'],
+                   n_threads_per_sim=self.cmdopts['n_threads'],
+                   n_sims=self.cmdopts['n_sims'])

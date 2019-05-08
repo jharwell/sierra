@@ -17,6 +17,7 @@
 """
 
 import os
+import multiprocessing
 from pipeline.exp_runner import ExpRunner
 
 
@@ -34,9 +35,13 @@ class BatchedExpRunner:
         self.batch_exp_root = os.path.abspath(batch_exp_root)
         self.batch_exp_num = batch_exp_num
 
-    def run(self, exec_method):
+    def run(self, exec_method, n_threads_per_sim, n_sims):
         """Runs all experiments in the batch."""
-        print("- Stage2: Running batched experiment in {0}...".format(self.batch_exp_root))
+        n_jobs = min(n_sims, max(1, int(multiprocessing.cpu_count() / float(n_threads_per_sim))))
+        print("- Stage2: Running batched experiment in {0}: ".format(self.batch_exp_root) +
+              "sims_per_exp={0},threads_per_sim={1},n_jobs={2}".format(n_sims,
+                                                                       n_threads_per_sim,
+                                                                       n_jobs))
 
         experiments = []
         if self.batch_exp_num is not None:
@@ -54,4 +59,4 @@ class BatchedExpRunner:
             experiments = [os.path.join(self.batch_exp_root, item) for item in sorted_dirs
                            if os.path.isdir(os.path.join(self.batch_exp_root, item))]
         for exp in experiments:
-            ExpRunner(exp, True).run(exec_method)
+            ExpRunner(exp, True).run(exec_method, n_jobs)
