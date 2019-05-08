@@ -30,6 +30,8 @@
         <footbot_motor_ground implementation="rot_z_only" />
         <range_and_bearing implementation="medium" medium="rab" />
         <battery implementation="default" />
+        <colored_blob_omnidirectional_camera implementation="rot_z_only"
+                                             medium="leds" />
       </sensors>
       <params>
         <output>
@@ -116,6 +118,10 @@
                   cube="1.0"
                   ramp="1.0"
                   />
+              <pickup_policy
+                  policy="Null"
+                  prox_dist="3.0"
+                  />
         </block_sel_matrix>
         <cache_sel_matrix
             cache_prox_dist="3.2"
@@ -125,15 +131,19 @@
             site_xrange="2:10"
             site_yrange="2.5:3">
             <pickup_policy
-                policy="time"
-                timestep="20000"
+                policy="cache_size"
+                timestep="10000"
                 cache_size="3"/>
             </cache_sel_matrix>
         <sensing
-            los_dim="0.4">
+            los_dim="0.8">
           <proximity_sensor angle_range="-1.1:1.1"
                             delta="0.0001" />
         </sensing>
+        <exploration
+            block_strategy="likelihood_search"
+            cache_strategy="utility_search"
+            />
         <actuation>
       	  <steering2D>
             <avoidance_force lookahead="0.5"
@@ -179,14 +189,19 @@
            />
       <metrics
           output_dir="metrics"
-          fsm_collision_fname="fsm-collision.csv"
+          fsm_collision_counts_fname="fsm-collision-counts.csv"
+          fsm_collision_locs_fname="fsm-collision-locs.csv"
           fsm_movement_fname="fsm-movement.csv"
           block_acq_counts_fname="block-acq-counts.csv"
           block_acq_locs_fname="block-acq-locs.csv"
+          block_acq_explore_locs_fname="block-acq-explore-locs.csv"
+          block_acq_vector_locs_fname="block-acq-vector-locs.csv"
           block_transport_fname="block-transport.csv"
           block_manipulation_fname="block-manipulation.csv"
           cache_acq_counts_fname="cache-acq-counts.csv"
           cache_acq_locs_fname="cache-acq-locs.csv"
+          cache_acq_explore_locs_fname="cache-acq-explore-locs.csv"
+          cache_acq_vector_locs_fname="cache-acq-vector-locs.csv"
           cache_utilization_fname="cache-utilization.csv"
           cache_lifecycle_fname="cache-lifecycle.csv"
           cache_locations_fname="cache-locations.csv"
@@ -203,7 +218,7 @@
           task_distribution_fname="task-distribution.csv"
           perception_mdpo_fname="perception-mdpo.csv"
           perception_dpo_fname="perception-dpo.csv"
-          arena_robot_locs_fname="arena-robot-locs.csv"
+          swarm_dist_pos2D_fname="swarm-dist-pos2D.csv"
           swarm_convergence_fname="swarm-convergence.csv"
           temporal_variance_fname="loop-temporal-variance.csv"
           collect_interval="1000">
@@ -226,8 +241,8 @@
           task_interface_est="false"
           />
       <entities_oracle
-          blocks_enabled="false"
-          caches_enabled="false"/>
+          blocks_enabled="true"
+          caches_enabled="true"/>
       </oracle_manager>
     <temporal_variance>
       <blocks>
@@ -273,7 +288,7 @@
               n_clusters="15"
               />
           <manifest
-              n_cube="80"
+              n_cube="20"
               n_ramp="0"
               unit_dim="0.2"
               />
@@ -325,7 +340,7 @@
       <position method="uniform" min="1,1,0" max="10,5,0" />
       <orientation method="uniform" min="0,0,0" max="360,0,0" />
       <entity quantity="16" max_trials="1000">
-        <foot-bot id="fb">
+        <foot-bot id="fb" omnidirectional_camera_aperture="89">
           <controller config="ffc" />
           <battery model= "time_motion"/>
         </foot-bot>

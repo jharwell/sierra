@@ -1,9 +1,6 @@
 # SIERRA (Swarm Robotics Simulation Automation Framework)
 
-<a href="https://scan.coverity.com/projects/swarm-robotics-sierra">
-  <img alt="Coverity Scan Build Status"
-       src="https://scan.coverity.com/projects/17893/badge.svg"/>
-</a>
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 Python/GNU Parallel framework for running large numbers of ARGoS simulations
 in parallel on Minnesota Supercomuting Institute (MSI). Also can run on

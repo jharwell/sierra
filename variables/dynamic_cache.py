@@ -43,7 +43,8 @@ class DynamicCache(BaseVariable):
         return [set([
             (".//loop_functions/caches/dynamic", "enable", "true"),
             (".//loop_functions/caches/static", "enable", "false"),
-            (".//cache_sel_matrix", "cache_prox_dist", "{0}".format(d[0] * 0.10 * 4)),
+            (".//cache_sel_matrix", "cache_prox_dist", "{0}".format(max(d[0] * 0.10 * 4,
+                                                                        d[1] * 0.10 * 4))),
             (".//cache_sel_matrix", "nest_prox_dist", "{0}".format(max(d[0] * 0.25,
                                                                        d[1] * 0.25))),
             (".//cache_sel_matrix", "block_prox_dist", "{0}".format(max(d[0] * 0.10,
@@ -53,7 +54,8 @@ class DynamicCache(BaseVariable):
             (".//cache_sel_matrix", "site_xrange", "{0}:{1}".format(2, d[0] - 2)),
             (".//cache_sel_matrix", "site_yrange", "{0}:{1}".format(2, d[1] - 2)),
 
-            (".//loop_functions/caches", "dimension", "{0}".format(d[0] * 0.10))
+            (".//loop_functions/caches", "dimension", "{0}".format(min(d[0] * 0.10,
+                                                                       d[1] * 0.10)))
         ])
             for d in self.dimension]
 

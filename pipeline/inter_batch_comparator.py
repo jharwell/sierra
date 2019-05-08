@@ -65,14 +65,14 @@ def intra_scenario_measures(reactivity_cs_method, adaptability_cs_method):
         {
             'src_stem': 'pm-blocks-collected',
             'dest_stem': 'cc-pm-blocks-collected',
-            'title': 'Swarm Total Blocks Collected',
-            'ylabel': '# Blocks',
+            'title': 'Swarm Performance',
+            'ylabel': 'Total Blocks Collected',
             'n_exp_corr': 0
         },
         {
             'src_stem': 'pm-karpflatt',
             'dest_stem': 'cc-pm-karpflatt',
-            'title': 'Swarm Karp-Flatt Metric',
+            'title': 'Swarm Scalability (Karp-Flatt)',
             'ylabel': 'Karp-Flatt Value',
             'n_exp_corr': 1
         },
@@ -86,7 +86,7 @@ def intra_scenario_measures(reactivity_cs_method, adaptability_cs_method):
         {
             'src_stem': 'pm-adaptability',
             'dest_stem': 'cc-pm-adaptability',
-            'title': r'Swarm Adaptability $\Lambda(N,\kappa)$',
+            'title': r'Swarm Adaptability $A(N,\kappa)$',
             'ylabel': perf_measures.vcs.method_ylabel(adaptability_cs_method, 'adaptability'),
             'n_exp_corr': 1
         },

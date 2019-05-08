@@ -129,8 +129,10 @@ block_acq:
         - cum_avg_acquiring_goal
         - int_avg_vectoring_to_goal
         - cum_avg_vectoring_to_goal
-        - int_avg_exploring_for_goal
-        - cum_avg_exploring_for_goal
+        - int_avg_true_exploring_for_goal
+        - cum_avg_true_exploring_for_goal
+        - int_avg_false_exploring_for_goal
+        - cum_avg_false_exploring_for_goal
       title: 'Swarm Block Acquisition'
       legend:
         - 'Average # Robots Acquiring Blocks (Interval)'
@@ -139,28 +141,8 @@ block_acq:
         - 'Average # Robots Vectoring To Blocks (cumulative)'
         - 'Average # Robots Exploring For Blocks (Interval)'
         - 'Average # Robots Exploring For Blocks (cumulative)'
-      xlabel: 'Interval'
-      ylabel: '# Robots'
-
-cache_acq:
-  graphs:
-    - src_stem: cache-acq-counts
-      dest_stem: cache-acq-counts
-      cols:
-        - int_avg_acquiring_goal
-        - cum_avg_acquiring_goal
-        - int_avg_vectoring_to_goal
-        - cum_avg_vectoring_to_goal
-        - int_avg_exploring_for_goal
-        - cum_avg_exploring_for_goal
-      title: 'Swarm Cache Acquisition'
-      legend:
-        - 'Average # Robots Acquiring Caches (Interval)'
-        - 'Average # Robots Acquiring Caches (cumulative)'
-        - 'Average # Robots Vectoring To Caches (Interval)'
-        - 'Average # Robots Vectoring To Caches (cumulative)'
-        - 'Average # Robots Exploring For Caches (Interval)'
-        - 'Average # Robots Exploring For Caches (cumulative)'
+        - 'Average # Robots Falsely Exploring For Blocks (Interval)'
+        - 'Average # Robots Falsely Exploring For Blocks (cumulative)'
       xlabel: 'Interval'
       ylabel: '# Robots'
 
@@ -424,8 +406,10 @@ cache_acq:
         - cum_avg_acquiring_goal
         - int_avg_vectoring_to_goal
         - cum_avg_vectoring_to_goal
-        - int_avg_exploring_for_goal
-        - cum_avg_exploring_for_goal
+        - int_avg_true_exploring_for_goal
+        - cum_avg_true_exploring_for_goal
+        - int_avg_false_exploring_for_goal
+        - cum_avg_false_exploring_for_goal
       title: 'Swarm Cache Acquisition'
       legend:
         - 'Average # Robots Acquiring Caches (Interval)'
@@ -434,6 +418,8 @@ cache_acq:
         - 'Average # Robots Vectoring To Caches (cumulative)'
         - 'Average # Robots Exploring For Caches (Interval)'
         - 'Average # Robots Exploring For Caches (cumulative)'
+        - 'Average # Robots Falsely Exploring For Caches (Interval)'
+        - 'Average # Robots Falsely Exploring For Caches (cumulative)'
       xlabel: 'Interval'
       ylabel: 'Count'
 

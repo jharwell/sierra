@@ -42,7 +42,7 @@ class IntraExpHeatmaps:
     def generate(self):
         print("-- Heatmaps from {0}".format(self.exp_output_root))
 
-        # For each category of linegraphs we are generating
+        # For each category of heatmaps we are generating
         for category in self.targets:
             # For each graph in each category
             for graph in category['graphs']:

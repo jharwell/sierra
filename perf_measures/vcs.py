@@ -54,7 +54,7 @@ def method_ylabel(method, arg):
         return None
 
     ideal_curve_names = {
-        "adaptability": r'$P_{\Lambda^{*}}(N,\kappa,t)$',
+        "adaptability": r'$P_{A^{*}}(N,\kappa,t)$',
         "reactivity": r'$P_{R^{*}}(N,\kappa,t)$',
     }
 
