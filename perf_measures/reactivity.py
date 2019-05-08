@@ -51,12 +51,12 @@ class InterExpReactivity:
         for i in range(1, self.cmdopts["n_exp"]):
             df['exp' + str(i)] = vcs.ReactivityCS(self.cmdopts, i)()
 
-        opath = os.path.join(self.cmdopts["collate_root"], "pm-reactivity.csv")
+        stem_opath = os.path.join(self.cmdopts["collate_root"], "pm-reactivity")
 
         # Write .csv to file
-        df.to_csv(opath, sep=';', index=False)
+        df.to_csv(stem_opath + '.csv', sep=';', index=False)
 
-        BatchRangedGraph(inputy_fpath=opath,
+        BatchRangedGraph(inputy_stem_fpath=stem_opath,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-reactivity.png"),
                          title="Swarm Reactivity",

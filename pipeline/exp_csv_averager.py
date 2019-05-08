@@ -98,7 +98,7 @@ class ExpCSVAverager:
 
                 # Also write out stddev in order to calculate confidence intervals later
                 if self.gen_stddev:
-                    csv_stddev = by_row_index.std()
+                    csv_stddev = by_row_index.std().round(2)
                     csv_stddev_fname = csv_fname.split('.')[0] + '.stddev'
                     csv_stddev.to_csv(os.path.join(self.averaged_output_root, csv_stddev_fname),
                                       sep=';',

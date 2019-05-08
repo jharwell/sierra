@@ -41,4 +41,5 @@ class PipelineStage2:
 
         runner.run(exec_method=self.cmdopts['exec_method'],
                    n_threads_per_sim=self.cmdopts['n_threads'],
-                   n_sims=self.cmdopts['n_sims'])
+                   n_sims=self.cmdopts['n_sims'],
+                   exec_resume=self.cmdopts['exec_resume'])

@@ -62,6 +62,7 @@ class ExpPipeline:
             'exec_method': self.args.exec_method,
             'n_threads': self.args.n_threads,
             'n_sims': self.args.n_sims,
+            'exec_resume': self.args.exec_resume,
 
             # stage 3
             'no_verify_results': self.args.no_verify_results,

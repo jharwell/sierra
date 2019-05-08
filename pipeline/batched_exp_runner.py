@@ -35,7 +35,7 @@ class BatchedExpRunner:
         self.batch_exp_root = os.path.abspath(batch_exp_root)
         self.batch_exp_num = batch_exp_num
 
-    def run(self, exec_method, n_threads_per_sim, n_sims):
+    def run(self, exec_method, n_threads_per_sim, n_sims, exec_resume):
         """Runs all experiments in the batch."""
         n_jobs = min(n_sims, max(1, int(multiprocessing.cpu_count() / float(n_threads_per_sim))))
         print("- Stage2: Running batched experiment in {0}: ".format(self.batch_exp_root) +
@@ -59,4 +59,4 @@ class BatchedExpRunner:
             experiments = [os.path.join(self.batch_exp_root, item) for item in sorted_dirs
                            if os.path.isdir(os.path.join(self.batch_exp_root, item))]
         for exp in experiments:
-            ExpRunner(exp, True).run(exec_method, n_jobs)
+            ExpRunner(exp, True).run(exec_method, n_jobs, exec_resume)

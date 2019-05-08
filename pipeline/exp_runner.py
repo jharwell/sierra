@@ -40,7 +40,7 @@ class ExpRunner:
         self.exp_generation_root = os.path.abspath(exp_generation_root)
         self.batch = batch
 
-    def run(self, exec_method, n_jobs):
+    def run(self, exec_method, n_jobs, exec_resume):
         '''Runs the experiment.'''
         assert os.environ.get(
             "ARGOS_PLUGIN_PATH") is not None, ("ERROR: You must have ARGOS_PLUGIN_PATH defined")
@@ -62,9 +62,9 @@ class ExpRunner:
         start = time.time()
         try:
             if 'local' == exec_method:
-                self._run_local(jobroot, cmdfile, joblog, n_jobs)
+                self._run_local(jobroot, cmdfile, joblog, n_jobs, exec_resume)
             elif 'hpc' in exec_method:
-                self._run_hpc_parallel(jobroot, cmdfile, joblog)
+                self._run_hpc_parallel(jobroot, cmdfile, joblog, exec_resume)
             else:
                 assert False, "Bad exec method '{0}'".format(exec_method)
 
@@ -75,10 +75,14 @@ class ExpRunner:
         elapsed = time.time() - start
         sys.stdout.write("{:.3f}s\n".format(elapsed))
 
-    def _run_local(self, jobroot_path, cmdfile_path, joblog_path, n_jobs):
+    def _run_local(self, jobroot_path, cmdfile_path, joblog_path, n_jobs, exec_resume):
+        resume = ''
+        if exec_resume:
+            resume = '--resume'
         p = subprocess.Popen('cd {0} &&'
-                             'parallel --resume --jobs {1} --results {0} --joblog {2} --no-notice < "{3}"'.format(
+                             'parallel {1} --jobs {2} --results {0} --joblog {3} --no-notice < "{4}"'.format(
                                  jobroot_path,
+                                 resume,
                                  n_jobs,
                                  joblog_path,
                                  cmdfile_path),
@@ -89,12 +93,16 @@ class ExpRunner:
             print(stdout, stderr)
             print("ERROR: Process exited with {0}".format(p.returncode))
 
-    def _run_hpc_parallel(self, jobroot_path, cmdfile_path, joblog_path):
+    def _run_hpc_parallel(self, jobroot_path, cmdfile_path, joblog_path, exec_resume):
         nodelist = os.path.join(jobroot_path, "$PBS_JOBID-nodelist.txt")
+        resume = ''
+        if exec_resume:
+            resume = '--resume'
 
         subprocess.run('sort -u $PBS_NODEFILE > {0} && '
-                       'parallel --resume --jobs 1 --results {2} --joblog {1} --sshloginfile {0} --workdir {2} < "{3}"'.format(
+                       'parallel {1} --jobs 1 --results {3} --joblog {2} --sshloginfile {0} --workdir {3} < "{4}"'.format(
                            nodelist,
+                           resume,
                            joblog_path,
                            jobroot_path,
                            cmdfile_path),

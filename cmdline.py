@@ -287,6 +287,15 @@ class Cmdline:
                             in the batch (default behavior).
 
                             """)
+        stage2.add_argument("--exec-resume",
+                            help="""
+
+                            Resume an experiment/batch experiment that was killed/stopped/etc last
+                            time sierra was run.
+
+                            """,
+                            action='store_true',
+                            default=False)
 
         stage3 = parser.add_argument_group('stage3 (experiment averaging)')
         stage3.add_argument('--no-verify-results',

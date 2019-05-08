@@ -23,8 +23,8 @@ import pickle
 import copy
 from perf_measures import vcs
 
-kCAInCumCSV = "ca-in-cum-avg.csv"
-kBlocksGatheredCumCSV = "blocks-collected-cum.csv"
+kCAInCumStem = "ca-in-cum-avg"
+kBlocksGatheredCumStem = "blocks-collected-cum"
 
 
 def prettify_scenario_labels(criteria_category, scenarios):
@@ -186,7 +186,7 @@ class ProjectivePerformance:
         self.projection_type = projection_type
 
     def calculate(self):
-        path = os.path.join(self.cmdopts["collate_root"], kBlocksGatheredCumCSV)
+        path = os.path.join(self.cmdopts["collate_root"], kBlocksGatheredCumStem + '.csv')
         assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
         df = pd.read_csv(path, sep=';')
         scale_cols = [c for c in df.columns if c not in ['clock', 'exp0']]
@@ -245,7 +245,7 @@ class FractionalLosses:
 
         # First calculate the time lost per timestep for a swarm of size N due to collision
         # avoidance interference
-        path = os.path.join(self.batch_output_root, kCAInCumCSV)
+        path = os.path.join(self.batch_output_root, kCAInCumStem + '.csv')
         assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
         df = pd.read_csv(path, sep=';')
         scale_cols = [c for c in df.columns if c not in ['clock', 'exp0']]
@@ -264,7 +264,7 @@ class FractionalLosses:
         # swarm of size N, as opposed to a group of N robots that do not interact with each other,
         # only the arena walls.
         #
-        path = os.path.join(self.batch_output_root, kBlocksGatheredCumCSV)
+        path = os.path.join(self.batch_output_root, kBlocksGatheredCumStem + '.csv')
         assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
         blocks = pd.read_csv(path, sep=';')
 
@@ -281,7 +281,7 @@ class FractionalLosses:
         # Finally, calculate fractional losses as:
         #
         # ( performance lost with N robots / performance with N robots )
-        path = os.path.join(self.batch_output_root, kBlocksGatheredCumCSV)
+        path = os.path.join(self.batch_output_root, kBlocksGatheredCumStem + '.csv')
         assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
         perf_n = pd.read_csv(path, sep=';').tail(1)
         perf_n.tail(1)['exp0'] = 0.0

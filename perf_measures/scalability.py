@@ -23,7 +23,7 @@ from graphs.batch_ranged_graph import BatchRangedGraph
 import perf_measures.utils as pm_utils
 import math
 
-kTargetCumCSV = "blocks-collected-cum.csv"
+kTargetCumStem = "blocks-collected-cum"
 
 
 class Efficiency:
@@ -49,11 +49,47 @@ class Efficiency:
         batch.
 
         Return:
-          Dataframe with the calculated metric in the first and only row for each experiment.
+          (Calculated metric dataframe, stddev dataframe) if stddev was collected, (Calculated
+          metric datafram, None) otherwise.
         """
-        path = os.path.join(self.cmdopts["collate_root"], kTargetCumCSV)
-        assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
-        df = pd.read_csv(path, sep=';')
+        sc_ipath = os.path.join(self.cmdopts["collate_root"], kTargetCumStem + '.csv')
+        stddev_ipath = os.path.join(self.cmdopts["collate_root"], kTargetCumStem + '.stddev')
+
+        # Metric calculation is the same for the actual value of it and the std deviation,
+        if os.path.exists(stddev_ipath):
+            return (self._calculate_metric(sc_ipath, True), self._calculate_metric(stddev_ipath,
+                                                                                   False))
+        else:
+            return (self._calculate_metric(sc_ipath, True), None)
+
+    def generate(self, dfs):
+        """
+        Generate an efficiency graph after calculating the metric.
+        """
+
+        cum_stem = os.path.join(self.cmdopts["collate_root"], "pm-scalability-norm")
+        metric_df = dfs[0]
+        stddev_df = dfs[1]
+        metric_df.to_csv(cum_stem + ".csv", sep=';', index=False)
+        if stddev_df is not None:
+            stddev_df.to_csv(cum_stem + ".stddev", sep=';', index=False)
+
+        self.cmdopts["n_exp"] = len(metric_df.columns)
+
+        BatchRangedGraph(inputy_stem_fpath=cum_stem,
+                         output_fpath=os.path.join(self.cmdopts["graph_root"],
+                                                   "pm-efficiency.png"),
+                         title="Swarm Efficiency (normalized)",
+                         xlabel=pm_utils.batch_criteria_xlabel(self.cmdopts),
+                         ylabel="Efficiency",
+                         xvals=pm_utils.batch_criteria_xvals(self.cmdopts),
+                         legend=None,
+                         polynomial_fit=-1).generate()
+
+    def _calculate_metric(self, ipath, must_exist):
+        assert(not (must_exist and not os.path.exists(ipath))
+               ), "FATAL: {0} does not exist".format(ipath)
+        df = pd.read_csv(ipath, sep=';')
         scale_cols = [c for c in df.columns if c not in ['clock']]
         df_new = pd.DataFrame(columns=scale_cols)
         self.cmdopts["n_exp"] = len(df.columns)
@@ -63,27 +99,7 @@ class Efficiency:
             col = scale_cols[i]
             n_robots = swarm_sizes[i]
             df_new[col] = df.tail(1)[col] / n_robots
-
         return df_new
-
-    def generate(self, df):
-        """
-        Generate an efficiency graph after calculating the metric.
-        """
-
-        cum_stem = os.path.join(self.cmdopts["collate_root"], "pm-scalability-norm")
-        df.to_csv(cum_stem + ".csv", sep=';', index=False)
-        self.cmdopts["n_exp"] = len(df.columns)
-
-        BatchRangedGraph(inputy_fpath=cum_stem + ".csv",
-                         output_fpath=os.path.join(self.cmdopts["graph_root"],
-                                                   "pm-efficiency.png"),
-                         title="Swarm Efficiency (normalized)",
-                         xlabel=pm_utils.batch_criteria_xlabel(self.cmdopts),
-                         ylabel="Efficiency",
-                         xvals=pm_utils.batch_criteria_xvals(self.cmdopts),
-                         legend=None,
-                         polynomial_fit=-1).generate()
 
 
 class ProjectivePerformanceComparison:
@@ -106,7 +122,7 @@ class ProjectivePerformanceComparison:
         df.to_csv(cum_stem + ".csv", sep=';', index=False)
         xvals = pm_utils.batch_criteria_xvals(self.cmdopts)
 
-        BatchRangedGraph(inputy_fpath=cum_stem + ".csv",
+        BatchRangedGraph(inputy_stem_fpath=cum_stem + ".csv",
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-pp-comp-" + self.projection_type + ".png"),
                          title="Swarm Projective Performance Comparison ({0})".format(
@@ -148,12 +164,12 @@ class FractionalPerformanceLoss:
         return df
 
     def generate(self, df):
-        path = os.path.join(self.cmdopts["collate_root"], "pm-scalability-fl.csv")
+        stem_path = os.path.join(self.cmdopts["collate_root"], "pm-scalability-fl")
 
-        df.to_csv(path, sep=';', index=False)
+        df.to_csv(stem_path + '.csv', sep=';', index=False)
         self.cmdopts["n_exp"] = len(df.columns)
 
-        BatchRangedGraph(inputy_fpath=path,
+        BatchRangedGraph(inputy_stem_fpath=stem_path,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-scalability-fl.png"),
                          title="Swarm Scalability: Fractional Performance Loss Due To Inter-robot Interference",
@@ -196,10 +212,10 @@ class KarpFlatt:
         return df
 
     def generate(self, df):
-        path = os.path.join(self.cmdopts["collate_root"], "pm-karpflatt.csv")
-        df.to_csv(path, sep=';', index=False)
+        stem_path = os.path.join(self.cmdopts["collate_root"], "pm-karpflatt")
+        df.to_csv(stem_path, sep=';', index=False)
 
-        BatchRangedGraph(inputy_fpath=path,
+        BatchRangedGraph(inputy_stem_fpath=stem_path,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-karpflatt.png"),
                          title="Swarm Serial Fraction: Karp-Flatt Metric",

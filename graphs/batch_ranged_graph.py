@@ -57,10 +57,11 @@ class BatchRangedGraph:
 
     """
 
-    def __init__(self, inputy_fpath, output_fpath, title, xlabel, ylabel, legend, xvals,
+    def __init__(self, inputy_stem_fpath, output_fpath, title, xlabel, ylabel, legend, xvals,
                  polynomial_fit, corr={}):
 
-        self.inputy_csv_fpath = os.path.abspath(inputy_fpath)
+        self.inputy_csv_fpath = os.path.abspath(inputy_stem_fpath + '.csv')
+        self.inputy_stddev_fpath = os.path.abspath(inputy_stem_fpath + '.stddev')
         self.output_fpath = os.path.abspath(output_fpath)
         self.title = title
         self.xlabel = xlabel
@@ -75,6 +76,11 @@ class BatchRangedGraph:
             return
 
         dfy = pd.read_csv(self.inputy_csv_fpath, sep=';')
+        if os.path.exists(self.inputy_stddev_fpath):
+            dfy_error = pd.read_csv(self.inputy_stddev_fpath, sep=';')
+        else:
+            dfy_error = None
+
         fig, ax = plt.subplots()
         line_styles = [':', '--', '.-', '-']
         mark_styles = ['o', '^', 's', 'x']
@@ -94,6 +100,9 @@ class BatchRangedGraph:
                 y_new = ffit(x_new)
                 plt.plot(x_new, y_new, line_styles[i])
 
+        if dfy_error is not None:
+            self._plot_errorbars(self.xvals, dfy, dfy_error)
+
         if 'coeff' in self.corr:
             plt.annotate('$R^2 = {:.4f}'.format(self.corr['coeff']))
 
@@ -109,3 +118,10 @@ class BatchRangedGraph:
         fig.set_size_inches(10, 10)
         fig.savefig(self.output_fpath, bbox_inches='tight', dpi=100)
         fig.clf()
+
+    def _plot_errorbars(self, xvals, data_df, stddev_df):
+        # plt.errorbar(data_df.index, data_df[c], xerr=0.5,
+        #              yerr=2 * stddev_df[c], linestyle = '')
+        for i in range(0, len(data_df.values)):
+            plt.fill_between(xvals, data_df.values[i] - 2 * stddev_df.values[i],
+                             data_df.values[i] + 2 * stddev_df.values[i], alpha=0.25)

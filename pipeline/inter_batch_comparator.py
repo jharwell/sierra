@@ -231,42 +231,16 @@ class InterBatchComparator:
         # Different scenarios can have different #s of experiments within them, so we need to track
         # accordingly
         exp_counts = {}
-        for s in scenarios:
-            df = pd.DataFrame()
-            for c in self.controllers:
-                csv_ipath = os.path.join(self.cmdopts['sierra_root'],
-                                         c,
-                                         s,
-                                         "exp-outputs/collated-csvs",
-                                         src_stem + ".csv")
-
-                # Some experiments might not generate the necessary performance measure .csvs for
-                # graph generation, which is OK.
-                if not os.path.exists(csv_ipath):
-                    continue
-
-                df = df.append(pd.read_csv(csv_ipath, sep=';'))
-
-                exp_counts[s] = len(df.columns)
-
-                # For some graphs, the .csv only contains entries for exp >=1, BUT we need to have
-                # the full experiment count in order to get the axis labels to come out right.
-                exp_counts[s] += n_exp_corr
-
-            csv_opath = os.path.join(self.cc_csv_root, 'cc-' +
-                                     src_stem + "-" + s + ".csv")
-            df = df.reindex(sorted(df.columns, key=lambda t: int(t[3:])), axis=1)
-            df.to_csv(csv_opath, sep=';', index=False)
+        self._generate_intra_scenario_files(scenarios, src_stem, exp_counts, n_exp_corr)
 
         for s in scenarios:
             if s not in exp_counts:
                 continue
 
-            csv_opath = os.path.join(self.cc_csv_root, 'cc-' +
-                                     src_stem + "-" + s + ".csv")
+            csv_stem_opath = os.path.join(self.cc_csv_root, 'cc-' + src_stem + "-" + s)
 
             # All scenarios are NOT guaranteed to have the same # of experiments, so we need to
-            # overwrite key elements of the cmdopts in order to ensure proper processing
+            # overwrite key elements of the cmdopts in order to ensure proper processing.
             cmdopts = copy.deepcopy(self.cmdopts)
             batch_generation_root = os.path.join(self.cmdopts['sierra_root'],
                                                  self.controllers[0],
@@ -280,7 +254,7 @@ class InterBatchComparator:
             cmdopts["n_exp"] = exp_counts[s]
             cmdopts['output_root'] = batch_output_root
 
-            BatchRangedGraph(inputy_fpath=csv_opath,
+            BatchRangedGraph(inputy_stem_fpath=csv_stem_opath,
                              output_fpath=os.path.join(self.cc_graph_root,
                                                        dest_stem) + '-' + s + ".png",
                              title=title,
@@ -289,3 +263,42 @@ class InterBatchComparator:
                              xvals=pm_utils.batch_criteria_xvals(cmdopts)[n_exp_corr:],
                              legend=self.controllers,
                              polynomial_fit=-1).generate()
+
+    def _generate_intra_scenario_files(self, scenarios, src_stem, exp_counts, n_exp_corr):
+        for s in scenarios:
+            df = pd.DataFrame()
+            stddev_df = pd.DataFrame()
+            for c in self.controllers:
+                csv_ipath = os.path.join(self.cmdopts['sierra_root'],
+                                         c,
+                                         s,
+                                         "exp-outputs/collated-csvs",
+                                         src_stem + ".csv")
+                stddev_ipath = os.path.join(self.cmdopts['sierra_root'],
+                                            c,
+                                            s,
+                                            "exp-outputs/collated-csvs",
+                                            src_stem + ".stddev")
+
+                # Some experiments might not generate the necessary performance measure .csvs for
+                # graph generation, which is OK.
+                if not os.path.exists(csv_ipath):
+                    continue
+
+                df = df.append(pd.read_csv(csv_ipath, sep=';'))
+                if os.path.exists(stddev_ipath):
+                    stddev_df = stddev_df.append(pd.read_csv(stddev_ipath, sep=';'))
+
+                exp_counts[s] = len(df.columns)
+
+                # For some graphs, the .csv only contains entries for exp >=1, BUT we need to have
+                # the full experiment count in order to get the axis labels to come out right.
+                exp_counts[s] += n_exp_corr
+
+            csv_opath_stem = os.path.join(self.cc_csv_root, 'cc-' +
+                                          src_stem + "-" + s)
+            df = df.reindex(sorted(df.columns, key=lambda t: int(t[3:])), axis=1)
+            df.to_csv(csv_opath_stem + '.csv', sep=';', index=False)
+            if not stddev_df.empy:
+                stddev_df = df.reindex(sorted(df.columns, key=lambda t: int(t[3:])), axis=1)
+                stddev_df.to_csv(csv_opath_stem + '.stddev', sep=';', index=False)

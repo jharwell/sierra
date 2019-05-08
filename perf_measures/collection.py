@@ -22,7 +22,7 @@ import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
 import perf_measures.utils as pm_utils
 
-kBlocksGatheredCumCSV = "blocks-collected-cum.csv"
+kBlocksGatheredCumStem = "blocks-collected-cum"
 
 
 class InterExpBlockCollection:
@@ -42,20 +42,18 @@ class InterExpBlockCollection:
         Calculate the blocks collected metric for a given controller, and output a nice graph.
         """
         print("-- Block collection from {0}".format(self.cmdopts["collate_root"]))
+        stddev_ipath = os.path.join(self.cmdopts["collate_root"],
+                                    kBlocksGatheredCumStem + '.stddev')
+        stddev_opath = os.path.join(self.cmdopts["collate_root"], "pm-blocks-collected.stddev")
+        perf_ipath = os.path.join(self.cmdopts["collate_root"], kBlocksGatheredCumStem + '.csv')
+        perf_opath_stem = os.path.join(self.cmdopts["collate_root"], "pm-blocks-collected")
 
-        path = os.path.join(self.cmdopts["collate_root"], kBlocksGatheredCumCSV)
-        assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
-        blocks = pd.read_csv(path, sep=';')
-        scale_cols = [c for c in blocks.columns if c not in ['clock']]
-        final_collect_count = pd.DataFrame(columns=scale_cols)
+        if os.path.exists(stddev_ipath):
+            self._generate_collected_stddev(stddev_ipath, stddev_opath)
+        collected_df = self._generate_collected_csv(perf_ipath, perf_opath_stem + '.csv')
 
-        for c in scale_cols:
-            final_collect_count[c] = blocks.tail(1)[c]
-        opath = os.path.join(self.cmdopts["collate_root"], "pm-blocks-collected.csv")
-        final_collect_count.to_csv(opath, sep=';', index=False)
-
-        self.cmdopts["n_exp"] = len(final_collect_count.columns)
-        BatchRangedGraph(inputy_fpath=opath,
+        self.cmdopts["n_exp"] = len(collected_df.columns)
+        BatchRangedGraph(inputy_stem_fpath=perf_opath_stem,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-blocks-collected.png"),
                          title="Swarm Blocks Collected",
@@ -64,3 +62,27 @@ class InterExpBlockCollection:
                          xvals=pm_utils.batch_criteria_xvals(self.cmdopts),
                          legend=None,
                          polynomial_fit=-1).generate()
+
+    def _generate_collected_stddev(self, ipath, opath):
+        blocks_stddev_df = pd.DataFrame()
+        blocks_stddev_df = pd.read_csv(ipath, sep=';')
+
+        scale_cols = [c for c in blocks_stddev_df.columns if c not in ['clock']]
+        collected_stddev_df = pd.DataFrame(columns=scale_cols)
+
+        for c in scale_cols:
+            collected_stddev_df[c] = blocks_stddev_df.tail(1)[c]
+
+        collected_stddev_df.to_csv(opath, sep=';', index=False)
+
+    def _generate_collected_csv(self, ipath, opath):
+        assert(os.path.exists(ipath)), "FATAL: {0} does not exist".format(ipath)
+        blocks_df = pd.read_csv(ipath, sep=';')
+
+        scale_cols = [c for c in blocks_df.columns if c not in ['clock']]
+        collected_df = pd.DataFrame(columns=scale_cols)
+
+        for c in scale_cols:
+            collected_df[c] = blocks_df.tail(1)[c]
+        collected_df.to_csv(opath, sep=';', index=False)
+        return collected_df
