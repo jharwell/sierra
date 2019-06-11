@@ -1,4 +1,4 @@
-arena:
+HM_arena:
   graphs:
     - src_stem: cache-locations
       title: 'Cache Placement Frequency'
@@ -7,7 +7,7 @@ arena:
     - src_stem: swarm-dist-pos2D
       title: 'Robot Occupancy Density'
 
-swarm:
+HM_swarm:
   graphs:
     - src_stem: cache-acq-locs
       title: 'Cache Acquisition Locations'
@@ -21,4 +21,3 @@ swarm:
       title: 'Block Acquisition Vector Locations'
     - src_stem: block-acq-explore-locs
       title: 'Block Acquisition Exploration Locations'
-

@@ -1,11 +1,12 @@
 base_graphs: &base_graphs
-  - fsm_collision
-  - fsm_movement
-  - block_trans
-  - block_acq
-  - block_manip
-  - convergence
-  - arena
+  - LN_fsm_collision
+  - LN_fsm_movement
+  - LN_block_trans
+  - LN_block_acq
+  - LN_block_manip
+  - LN_convergence
+  - HM_arena
+  - HM_swarm
 
 depth0:
   xml:
@@ -26,7 +27,7 @@ depth0:
       graphs_inherit:
         - *base_graphs
       graphs: &DPO_graphs
-        - perception
+        - LN_perception
     - name: &ODPO ODPO
       xml:
         attr_change:
@@ -62,12 +63,12 @@ depth1:
         - *base_graphs
         - *DPO_graphs
       graphs: &GP_DPO_graphs
-        - cache_util
-        - cache_lifecycle
-        - cache_acq
-        - depth1_task_exec
-        - depth1_task_dist
-        - generalist_tab
+        - LN_cache_util
+        - LN_cache_lifecycle
+        - LN_cache_acq
+        - LN_depth1_task_exec
+        - LN_depth1_task_dist
+        - LN_generalist_tab
     - name: GP_ODPO
       xml:
           attr_change:
@@ -107,15 +108,15 @@ depth2:
         - *DPO_graphs
 
       graphs: &GRP_DPO_graphs
-        - cache_util
-        - cache_lifecycle
-        - cache_acq
-        - depth1_task_exec
-        - depth2_task_exec
-        - depth2_task_dist
-        - harvester_tab
-        - collector_tab
-        - generalist_tab
+        - LN_cache_util
+        - LN_cache_lifecycle
+        - LN_cache_acq
+        - LN_depth1_task_exec
+        - LN_depth2_task_exec
+        - LN_depth2_task_dist
+        - LN_harvester_tab
+        - LN_collector_tab
+        - LN_generalist_tab
     - name: GRP_ODPO
       xml:
           attr_change:

@@ -39,7 +39,11 @@ class PipelineStage2:
         else:
             runner = ExpRunner(self.cmdopts['generation_root'], False)
 
+        if self.cmdopts['with_rendering']:
+            print('- Stage2: Frame grabbing enabled')
+
         runner.run(exec_method=self.cmdopts['exec_method'],
                    n_threads_per_sim=self.cmdopts['n_threads'],
                    n_sims=self.cmdopts['n_sims'],
-                   exec_resume=self.cmdopts['exec_resume'])
+                   exec_resume=self.cmdopts['exec_resume'],
+                   with_rendering=self.cmdopts['with_rendering'])

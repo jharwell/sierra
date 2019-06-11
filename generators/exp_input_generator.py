@@ -19,6 +19,7 @@
 import os
 import random
 import pickle
+import subprocess
 from pipeline.xml_luigi import XMLLuigi, InvalidElementError
 from variables import time_setup, physics_engines, block_distribution, dynamic_cache, static_cache
 
@@ -131,7 +132,13 @@ class ExpInputGenerator:
             self._create_sim_input_file(random_seeds, xml_luigi, exp_num)
             self._add_sim_to_command_file(os.path.join(self.generation_root,
                                                        self.config_name_format.format(
-                                                           self.main_config_name, exp_num)))
+                                                           self.main_config_name, exp_num)),
+                                          exp_num)
+
+            if self.sim_opts['with_rendering']:
+                sim_output_dir = self.output_name_format.format(self.main_config_name, exp_num)
+                frames_fpath = os.path.join(self.exp_output_root, sim_output_dir, "frames")
+                os.makedirs(frames_fpath, exist_ok=True)
 
     def generate_physics_defs(self, xml_luigi):
         """Generates definitions for physics engines configuration for the simulation.
@@ -230,11 +237,8 @@ class ExpInputGenerator:
         Remove visualization elements from input file, if configured to do so. It may be desired to
         leave them in if generating frames/video.
         """
-        if self.sim_opts["with_visualizations"] == "none" or self.sim_opts["with_visualizations"] == "argos":
-            xml_luigi.tag_remove("./loop_functions", "./visualization")
-
-        if self.sim_opts["with_visualizations"] == "none" or self.sim_opts["with_visualizations"] == "fordyca":
-            xml_luigi.tag_remove(".", "./visualization")
+        if not self.sim_opts["with_rendering"]:
+            xml_luigi.tag_remove(".", "./visualization", noprint=True)  # ARGoS visualizations
 
     def _generate_random_defs(self, xml_luigi, random_seeds, exp_num):
         """
@@ -255,16 +259,21 @@ class ExpInputGenerator:
         generation process. This cannot be done in init_sim_defs(), because it is *not* common to
         all experiments; each experiment logs/outputs to a unique directory.
         """
-        output_dir = self.output_name_format.format(
+        sim_output_dir = self.output_name_format.format(
             self.main_config_name, exp_num)
+        frames_fpath = os.path.join(self.exp_output_root, sim_output_dir, "frames")
+
         xml_luigi.attribute_change(
-            ".//controllers/*/params/output/sim", "output_dir", output_dir)
+            ".//controllers/*/params/output", "output_dir", sim_output_dir)
         xml_luigi.attribute_change(
-            ".//controllers/*/params/output/sim", "output_root", self.exp_output_root)
+            ".//controllers/*/params/output", "output_root", self.exp_output_root)
         xml_luigi.attribute_change(
-            ".//loop_functions/output/sim", "output_dir", output_dir)
+            ".//loop_functions/output", "output_dir", sim_output_dir)
         xml_luigi.attribute_change(
-            ".//loop_functions/output/sim", "output_root", self.exp_output_root)
+            ".//loop_functions/output", "output_root", self.exp_output_root)
+        xml_luigi.attribute_change(
+            ".//qt-opengl/frame_grabbing",
+            "directory", frames_fpath, noprint=True)  # probably will not be present
 
     def _create_sim_input_file(self, random_seeds, xml_luigi, exp_num):
         """
@@ -288,10 +297,13 @@ class ExpInputGenerator:
         # save the config file to the correct place
         xml_luigi.write()
 
-    def _add_sim_to_command_file(self, xml_fname):
+    def _add_sim_to_command_file(self, xml_fname, exp_num):
         """Adds the command to run a particular simulation definition to the command file."""
 
-        # Specify ARGoS invocation in generated command file per cmdline arguments.
+        # Specify ARGoS invocation in generated command file per cmdline arguments. An option is
+        # provided to tweak the exact name of the program used to invoke ARGoS so that different
+        # versions compiled for different architectures/machines that exist on the same filesystem
+        # can easily be run.
         parts = self.sim_opts['exec_method'].split('.')
 
         if 'local' in parts:
@@ -299,9 +311,21 @@ class ExpInputGenerator:
         else:
             argos_cmd = 'argos3-' + parts[1]
 
+        # When running ARGoS under Xvfb in order to headlessly render frames, we need to start a
+        # per-instance Xvfb server that we tell ARGoS to use via the DISPLAY environment variable,
+        # which will then be killed when the shell GNU parallel spawns to run each line in the
+        # commands.txt file exits.
+        xvfb_cmd = ""
+        if self.sim_opts['with_rendering']:
+            display_port = random.randint(0, 1000000)
+            xvfb_cmd = "eval 'Xvfb :{0} -screen 0, 1600x1200x24 &' && DISPLAY=:{0} ".format(
+                display_port)
+
         with open(self.commands_fpath, "a") as commands_file:
-            commands_file.write(
-                argos_cmd + ' -c "{}" --log-file /dev/null --logerr-file /dev/null\n'.format(xml_fname))
+            commands_file.write(xvfb_cmd +
+                                argos_cmd +
+                                ' -c "{0}" --log-file /dev/null --logerr-file /dev/null\n'.format(
+                                    xml_fname))
 
     def _generate_random_seeds(self):
         """Generates random seeds for experiments to use."""

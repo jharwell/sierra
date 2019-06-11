@@ -47,8 +47,8 @@ class PipelineStage4:
             self._gen_intra_graphs()
 
         if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'inter':
-            # Collation must be after intra-experiment graph generation, so that all .csv files to be
-            # collated have been generated/modified according to parameters.
+            # Collation must be after intra-experiment graph generation, so that all .csv files to
+            # be collated have been generated/modified according to parameters.
             CSVCollator(self.cmdopts['output_root'],
                         Linegraphs.targets('depth2' in self.cmdopts['generator']))()
             self._gen_inter_graphs()

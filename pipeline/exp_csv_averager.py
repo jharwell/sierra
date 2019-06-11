@@ -18,7 +18,6 @@
 
 import os
 import re
-import statistics
 import pandas as pd
 
 
@@ -121,6 +120,9 @@ class ExpCSVAverager:
                 csv_root2 = os.path.join(self.exp_output_root,
                                          exp2,
                                          ExpCSVAverager.kMetricsFolderName)
+                if not os.path.isdir(csv_root2):
+                    continue
+
                 for csv in os.listdir(csv_root2):
                     path1 = os.path.join(csv_root1, csv)
                     path2 = os.path.join(csv_root2, csv)
@@ -143,23 +145,3 @@ class ExpCSVAverager:
                         assert(all(len(df1[c1]) == len(df2[c2])) for c2 in df1.columns),\
                             "FATAL: Not all columns from {0} and {1} have same length".format(path1,
                                                                                               path1)
-
-    def _gen_statistics(self, csvs):
-        """Generate statistics across all columns in all .csv files perclock interval."""
-        n_cols = csvs[0].width
-        n_rows = csvs[0].height
-
-        # Last column is always ';', which is read as empty, hence the -1
-        df = pd.DataFrame(columns=csvs[0].csv[0][:-1])
-        df['clock'] = [i[0] for i in csvs[0].csv[1:]]
-
-        # First column is clock, which doesn't need to be averaged.
-        # Last column is always ';', which is read as empty, hence the -1
-        for col in range(1, n_cols - 1):
-            # First row is column headers so skip it
-            for row in range(1, n_rows):
-                vals = []
-                for i in range(0, len(csvs)):
-                    vals.append(float(csvs[i].csv[row][col]))
-                df.loc[row - 1, df.columns[col]] = round(statistics.stdev(vals), 4)
-        return df

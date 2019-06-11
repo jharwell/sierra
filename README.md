@@ -120,7 +120,7 @@ MAY FALL UPON THEE.*
 
               1. Generate inputs
               2. Run experiments
-              3. Average results
+              3. Process results of running experiments (averaging, etc.)
               4. Generate graphs within a single experiment and between
                  experiments in a batch.
               5. Generate graphs comparing batched experiments (not part of

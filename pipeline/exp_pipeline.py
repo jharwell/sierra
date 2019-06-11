@@ -63,10 +63,12 @@ class ExpPipeline:
             'n_threads': self.args.n_threads,
             'n_sims': self.args.n_sims,
             'exec_resume': self.args.exec_resume,
+            'with_rendering': self.args.with_rendering,
 
             # stage 3
             'no_verify_results': self.args.no_verify_results,
             'gen_stddev': self.args.gen_stddev,
+            'results_process_tasks': self.args.results_process_tasks,
 
             # stage 4
             'envc_cs_method': self.args.envc_cs_method,

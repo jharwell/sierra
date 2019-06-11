@@ -1,5 +1,5 @@
 # Depth 0
-fsm_collision :
+LN_fsm_collision:
   graphs:
     - src_stem: fsm-collision
       dest_stem: fsm-collision-counts
@@ -33,7 +33,7 @@ fsm_collision :
       xlabel: 'Interval'
       ylabel: '# Timesteps'
 
-fsm_movement:
+LN_fsm_movement:
   graphs:
     - src_stem: fsm-movement
       dest_stem: fsm-movement-distance
@@ -58,7 +58,7 @@ fsm_movement:
       xlabel: 'Interval'
       ylabel: 'Velocity (m/s)'
 
-block_trans:
+LN_block_trans:
   graphs:
     - src_stem: block-transport
       dest_stem: blocks-collected-avg
@@ -120,7 +120,7 @@ block_trans:
       ylabel: '# Timesteps'
 
 
-block_acq:
+LN_block_acq:
   graphs:
     - src_stem: block-acq-counts
       dest_stem: block-acq-counts
@@ -146,7 +146,7 @@ block_acq:
       xlabel: 'Interval'
       ylabel: '# Robots'
 
-block_manip:
+LN_block_manip:
   graphs:
     - src_stem: block-manipulation
       dest_stem: block-manip-events
@@ -179,7 +179,7 @@ block_manip:
       xlabel: 'Interval'
       ylabel: 'Penalty'
 
-perception:
+LN_perception:
   graphs:
     - src_stem: perception-mdpo
       dest_stem: perception-mdpo
@@ -231,7 +231,7 @@ perception:
       xlabel: 'Interval'
       ylabel: 'Density'
 
-convergence:
+LN_convergence:
   graphs:
     - src_stem: swarm-convergence
       dest_stem: swarm-conv-int-deg-raw
@@ -315,7 +315,7 @@ convergence:
       ylabel: 'Value'
 
 # Depth 1
-cache_util:
+LN_cache_util:
   graphs:
     - src_stem: cache-utilization
       dest_stem: cache-utilization-opcounts
@@ -357,7 +357,7 @@ cache_util:
       xlabel: 'Interval'
       ylabel: 'Count'
 
-cache_lifecycle:
+LN_cache_lifecycle:
   graphs:
     - src_stem: cache-lifecycle
       dest_stem: cache-lifecyle-counts
@@ -397,7 +397,7 @@ cache_lifecycle:
       xlabel: 'Interval'
       ylabel: 'Age (timesteps)'
 
-cache_acq:
+LN_cache_acq:
   graphs:
     - src_stem: cache-acq-counts
       dest_stem: caches-acq-counts
@@ -424,7 +424,7 @@ cache_acq:
       ylabel: 'Count'
 
 
-depth1_task_exec:
+LN_depth1_task_exec:
   graphs:
     - src_stem: task-execution-collector
       dest_stem: task-execution-collector-times
@@ -566,7 +566,7 @@ depth1_task_exec:
       xlabel: 'Interval'
       ylabel: 'Time'
 
-generalist_tab:
+LN_generalist_tab:
   graphs:
     - src_stem: task-tab-generalist
       dest_stem: task-tab-generalist-subtask-counts
@@ -652,7 +652,7 @@ generalist_tab:
       xlabel: 'Interval'
       ylabel: 'Value'
 
-depth1_task_dist:
+LN_depth1_task_dist:
   graphs:
     - src_stem: task-distribution
       dest_stem: task-distribution-int-depth-counts
@@ -703,7 +703,7 @@ depth1_task_dist:
       ylabel: 'Count'
 
 # Depth 2
-depth2_task_dist:
+LN_depth2_task_dist:
   graphs:
     - src_stem: task-distribution
       dest_stem: task-distribution-int-depth-counts
@@ -788,7 +788,7 @@ depth2_task_dist:
       xlabel: 'Interval'
       ylabel: 'Count'
 
-harvester_tab:
+LN_harvester_tab:
   graphs:
     - src_stem: task-tab-harvester
       dest_stem: task-tab-harvester-subtask-counts
@@ -863,7 +863,7 @@ harvester_tab:
       ylabel: 'Value'
 
 
-collector_tab:
+LN_collector_tab:
   graphs:
     - src_stem: task-tab-collector
       dest_stem: task-tab-collector-subtask-counts
@@ -938,7 +938,7 @@ collector_tab:
       ylabel: 'Value'
 
 
-depth2_task_exec:
+LN_depth2_task_exec:
   graphs:
     - src_stem: task-execution-cache_starter
       dest_stem: task-execution-cache_starter-times

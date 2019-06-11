@@ -20,6 +20,7 @@ import os
 import subprocess
 import time
 import sys
+import random
 
 
 class ExpRunner:
@@ -79,6 +80,7 @@ class ExpRunner:
         resume = ''
         if exec_resume:
             resume = '--resume'
+
         p = subprocess.Popen('cd {0} &&'
                              'parallel {1} --jobs {2} --results {0} --joblog {3} --no-notice < "{4}"'.format(
                                  jobroot_path,
@@ -93,7 +95,7 @@ class ExpRunner:
             print(stdout, stderr)
             print("ERROR: Process exited with {0}".format(p.returncode))
 
-    def _run_hpc_parallel(self, jobroot_path, cmdfile_path, joblog_path, exec_resume):
+    def _run_hpc_parallel(self, jobroot_path, cmdfile_path, joblog_path, exec_resume, server_display):
         nodelist = os.path.join(jobroot_path, "$PBS_JOBID-nodelist.txt")
         resume = ''
         if exec_resume:

@@ -213,7 +213,7 @@ class KarpFlatt:
 
     def generate(self, df):
         stem_path = os.path.join(self.cmdopts["collate_root"], "pm-karpflatt")
-        df.to_csv(stem_path, sep=';', index=False)
+        df.to_csv(stem_path + ".csv", sep=';', index=False)
 
         BatchRangedGraph(inputy_stem_fpath=stem_path,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],

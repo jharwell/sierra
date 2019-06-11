@@ -18,6 +18,9 @@
 
 from pipeline.exp_csv_averager import ExpCSVAverager
 from pipeline.batched_exp_csv_averager import BatchedExpCSVAverager
+from pipeline.exp_csv_averager import ExpCSVAverager
+from pipeline.batched_exp_video_renderer import BatchedExpVideoRenderer
+from pipeline.exp_video_renderer import ExpVideoRenderer
 import os
 
 
@@ -26,7 +29,7 @@ class PipelineStage3:
     """
     Implements stage 3 of the experimental pipeline:
 
-    Average the .csv results of simulation runs within an experiment/within multiple experiments
+    Process results of simulation runs within an experiment/within multiple experiments
     together.
 
     """
@@ -35,6 +38,28 @@ class PipelineStage3:
         self.cmdopts = cmdopts
 
     def run(self):
+        if 'average' in self.cmdopts['results_process_tasks'] or 'all' in self.cmdopts['results_process_tasks']:
+            self._run_averaging()
+
+        if 'render' in self.cmdopts['results_process_tasks'] or 'all' in self.cmdopts['results_process_tasks']:
+            self._run_rendering()
+
+    def _run_rendering(self):
+        if not self.cmdopts['with_rendering']:
+            return
+        if self.cmdopts['criteria_category'] is not None:
+            print(
+                "- Stage3: Rendering videos for batched experiment '{0}'...".format(self.cmdopts['generator']))
+            renderer = BatchedExpVideoRenderer(self.cmdopts['output_root'])
+        else:
+            print(
+                "- Stage3: Rendering single experiment video in '{0}'...".format(self.cmdopts['generator']))
+            renderer = ExpVideoRenderer(self.cmdopts['output_root'])
+
+        renderer.render()
+        print("- Stage3: Rendering complete")
+
+    def _run_averaging(self):
         template_config_leaf, template_config_ext = os.path.splitext(
             os.path.basename(self.cmdopts['template_config_file']))
 

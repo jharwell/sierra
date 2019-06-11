@@ -227,15 +227,18 @@ class Cmdline:
                             action="store_true",
                             default=False)
 
-        stage1.add_argument("--with-visualizations",
+        stage1.add_argument("--with-rendering",
                             help="""
 
-                            Specify that the ARGoS Qt/OpenGL visualization subtree and/or the FORDYCA visualization
-                            subtree(s) should be left in the input .argos file. By default they are stripped out.
+                            Specify that the ARGoS Qt/OpenGL visualization subtree should be left in
+                            the input .argos file. By default it is stripped out.
 
+                            If TRUE, then any files in the frames/ directory of each simulation will
+                            be rendered into a unique video file with approximately 1600x1200
+                            resolution in the root of their output directory using ffmpeg. This
+                            option assumes that [ffmpeg, Xvfb] programs can be found.
                             """,
-                            choices=["none", "argos", "fordyca", "all"],
-                            default="none")
+                            action='store_true')
 
         stage1.add_argument("--n-blocks",
                             help="""
@@ -296,7 +299,6 @@ class Cmdline:
                             """,
                             action='store_true',
                             default=False)
-
         stage3 = parser.add_argument_group('stage3 (experiment averaging)')
         stage3.add_argument('--no-verify-results',
                             help="""
@@ -317,6 +319,15 @@ class Cmdline:
                             """,
                             action="store_true",
                             default=False)
+        stage3.add_argument("--results-process-tasks",
+                            help="""
+
+                            Specify what tasks should be performed when processing simulation
+                            results before graph generation.
+
+                            """,
+                            choices=['render', 'average', 'all'],
+                            default=['all'])
         stage4 = parser.add_argument_group('stage4 (graph generation)')
 
         stage4.add_argument("--with-hists",

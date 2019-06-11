@@ -57,7 +57,7 @@ class InterExpSelfOrganization:
 
         stem_path = os.path.join(self.cmdopts["collate_root"], "pm-self-org")
         df_new = df_new.reindex(sorted(df_new.columns, key=lambda t: int(t[3:])), axis=1)
-        df_new.to_csv(stem_path, sep=';', index=False)
+        df_new.to_csv(stem_path + ".csv", sep=';', index=False)
 
         BatchRangedGraph(inputy_stem_fpath=stem_path,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],

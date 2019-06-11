@@ -41,7 +41,6 @@ class XMLLuigi:
         self.output_filepath = output_filepath
 
         self.tree = ET.parse(input_filepath)
-        # restriction: assumes the root of the xml file is not going to change
         self.root = self.tree.getroot()
 
     def write(self, filepath=None):
@@ -51,7 +50,7 @@ class XMLLuigi:
 
         self.tree.write(filepath)
 
-    def attribute_change(self, path, attr, value):
+    def attribute_change(self, path, attr, value, noprint=False):
         """
         Change the specified attribute of the *FIRST* element matching the specified path searching
         from the tree root.
@@ -67,8 +66,12 @@ class XMLLuigi:
         try:
             el.attrib[attr] = value   # pytype: disable=attribute-error
         except AttributeError:
-            print("WARNING: No attribute '{1}' found in node '{0}'".format(path, attr))
+            if not noprint:
+                print("WARNING: No attribute '{1}' found in node '{0}'".format(path, attr))
             pass
+
+    def has_attribute(self, path, attr):
+        return self.root.find(path) is not None
 
     def tag_change(self, path, tag, value):
         """
@@ -89,7 +92,7 @@ class XMLLuigi:
                 return
         raise InvalidElementError("No such element '{0}' found in '{1}'".format(tag, path))
 
-    def tag_remove(self, path, tag):
+    def tag_remove(self, path, tag, noprint=False):
         """
         Remove the specified tag of the child element found in the enclosing parent specified by the
         path.
@@ -105,7 +108,8 @@ class XMLLuigi:
             victim = parent.find(tag)    # pytype: disable=attribute-error
             parent.remove(victim)   # pytype: disable=attribute-error
         except (AttributeError, TypeError):
-            print("WARNING: No victim '{0}' found in parent '{1}'".format(tag, path))
+            if not noprint:
+                print("WARNING: No victim '{0}' found in parent '{1}'".format(tag, path))
             pass
 
     def tag_add(self, path, tag, attr={}):

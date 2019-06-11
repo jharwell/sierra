@@ -63,8 +63,7 @@ class RectangularArena(BaseVariable):
                      (".//arena/*[@id='wall_north']/body",
                       "position",
                       "{0}, {1}, 0".format(s[0] / 2.0,
-                                           s[1] -
-                                           kWallWidth / 2.0, 0)),
+                                           s[1] - kWallWidth / 2.0)),
                      (".//arena/*[@id='wall_south']", "size", "{0}, {1}, 0.5".format(s[0],
                                                                                      kWallWidth)),
                      (".//arena/*[@id='wall_south']/body",
@@ -86,12 +85,24 @@ class RectangularArena(BaseVariable):
 
                      (".//arena_map/grid", "size", "{0}, {1}, 2".format(s[0], s[1])),
                      (".//perception/grid", "size", "{0}, {1}, 2".format(s[0], s[1])),
+
                      (".//convergence/positional_entropy",
                       "horizon",
                       "0:{0}".format(math.sqrt(s[0] ** 2 + s[1] ** 2))),
                      (".//convergence/positional_entropy",
                       "horizon_delta",
-                      "{0}".format(math.sqrt(s[0] ** 2 + s[1] ** 2) / 10.0))
+                      "{0}".format(math.sqrt(s[0] ** 2 + s[1] ** 2) / 10.0)),
+
+                     # Finally, set camera positioning. Probably will not be used, but IF rendering
+                     # is enabled we want to have the visualizations come out nicely. I assume a
+                     # single camera is present.
+                     (".//camera/placement",
+                      "position", "{0}, {1}, {2}".format(s[0] / 2.0,
+                                                         s[1] / 2.0,
+                                                         max(s[0], s[1]) * 2.0 / 3.0)),
+                     (".//camera/placement",
+                      "look_at", "{0}, {1}, 0".format(s[0] / 2.0,
+                                                      s[1] / 2.0))
                      ])
                 for s in self.dimensions]
 

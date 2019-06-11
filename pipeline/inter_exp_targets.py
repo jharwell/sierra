@@ -27,7 +27,7 @@ class Linegraphs:
     def _depth0_targets():
         collision = [
             {
-                'src_stem': 'fsm-collision',
+                'src_stem': 'fsm-collision-counts',
                 'col': 'int_avg_in_avoidance',
                 'dest_stem': 'ca-in-int-avg',
                 'title': 'Average Robots in Collision Avoidance (interval)',
@@ -35,14 +35,14 @@ class Linegraphs:
                 'ylabel': '# Robots',
             },
             {
-                'src_stem': 'fsm-collision',
+                'src_stem': 'fsm-collision-counts',
                 'col': 'cum_avg_in_avoidance',
                 'dest_stem': 'ca-in-cum-avg',
                 'title': 'Average Robots in Collision Avoidance (cumulative)',
                 'xlabel': 'Interval',
                 'ylabel': '# Robots'},
             {
-                'src_stem': 'fsm-collision',
+                'src_stem': 'fsm-collision-counts',
                 'col': 'int_avg_entered_avoidance',
                 'dest_stem': 'ca-entered-int-avg',
                 'title': 'Average Robots Entering Collision Avoidance (interval)',
@@ -50,7 +50,7 @@ class Linegraphs:
                 'ylabel': '# Robots'
             },
             {
-                'src_stem': 'fsm-collision',
+                'src_stem': 'fsm-collision-counts',
                 'col': 'cum_avg_entered_avoidance',
                 'dest_stem': 'ca-entered-cum-avg',
                 'title': 'Average Robots Entering Collision Avoidance (cumulative)',
@@ -59,7 +59,7 @@ class Linegraphs:
                 'analytical_model': 'CAModelEnter'
             },
             {
-                'src_stem': 'fsm-collision',
+                'src_stem': 'fsm-collision-counts',
                 'col': 'int_avg_exited_avoidance',
                 'dest_stem': 'ca-exited-int-avg',
                 'title': 'Average Robots Exiting Collision Avoidance (interval)',
@@ -67,7 +67,7 @@ class Linegraphs:
                 'ylabel': '# Robots'
             },
             {
-                'src_stem': 'fsm-collision',
+                'src_stem': 'fsm-collision-counts',
                 'col': 'cum_avg_exited_avoidance',
                 'dest_stem': 'ca-exited-cum-avg',
                 'title': 'Average Robots Exiting Collision Avoidance (cumulative)',
@@ -75,7 +75,7 @@ class Linegraphs:
                 'ylabel': '# Robots'
             },
             {
-                'src_stem': 'fsm-collision',
+                'src_stem': 'fsm-collision-counts',
                 'col': 'int_avg_avoidance_duration',
                 'dest_stem': 'ca-duration-int-avg',
                 'title': 'Average Collision Avoidance Duration (interval)',
@@ -83,7 +83,7 @@ class Linegraphs:
                 'ylabel': '# Robots',
                 'analytical_model': 'CAModelDuration'
             },
-            {'src_stem': 'fsm-collision',
+            {'src_stem': 'fsm-collision-counts',
              'col': 'cum_avg_avoidance_duration',
              'dest_stem': 'ca-duration-cum-avg',
              'title': 'Average Collision Avoidance Duration (cumulative)',

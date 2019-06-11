@@ -25,7 +25,7 @@
         <range_and_bearing implementation="default" />
       </actuators>
       <sensors>
-        <footbot_proximity implementation="default" show_rays="true" />
+        <footbot_proximity implementation="default" show_rays="false" />
         <footbot_light implementation="rot_z_only" show_rays="false" />
         <footbot_motor_ground implementation="rot_z_only" />
         <range_and_bearing implementation="medium" medium="rab" />
@@ -34,11 +34,10 @@
                                              medium="leds" />
       </sensors>
       <params>
-        <output>
-          <sim output_root="output"
-               output_dir="__current_date__"
-               />
-        </output>
+        <output
+            output_root="output"
+            output_dir="__current_date__"
+            />
         <perception>
           <grid resolution="0.2"
                 size="12, 6, 2"/>
@@ -55,7 +54,7 @@
             <src_sigmoid_sel
                 input_src="exec">
               <sigmoid_sel
-                  method="">
+                  method="harwell2018">
                 <sigmoid reactivity="8"
                          offset="3.0"
                          gamma="1.0"/>
@@ -96,7 +95,7 @@
                 <sigmoid
                     reactivity="4.0"
                     offset="1.0"
-                    gamma="1.0"/>
+                    gamma="1.25"/>
               </sigmoid_sel>
             </src_sigmoid_sel>
           </tab_sel>
@@ -119,7 +118,7 @@
                   ramp="1.0"
                   />
               <pickup_policy
-                  policy="Null"
+                  policy="block_proximity"
                   prox_dist="3.0"
                   />
         </block_sel_matrix>
@@ -136,13 +135,13 @@
                 cache_size="3"/>
             </cache_sel_matrix>
         <sensing
-            los_dim="0.8">
+            los_dim="1.2">
           <proximity_sensor angle_range="-1.1:1.1"
                             delta="0.0001" />
         </sensing>
         <exploration
             block_strategy="likelihood_search"
-            cache_strategy="utility_search"
+            cache_strategy="ledtaxis_search"
             />
         <actuation>
       	  <steering2D>
@@ -151,7 +150,6 @@
             <arrival_force slowing_radius="0.2"
                            slowing_speed_min="1.0"
                            max="8"/>
-            <polar_force max="8"/>
             <wander_force circle_distance="4.0"
                           circle_radius="100.0"
                           max_angle_delta="5"
@@ -179,14 +177,8 @@
   <!-- ****************** -->
   <loop_functions library="libfordyca"
                   label="depth2_loop_functions">
-    <battery
-        power_station_amount="0"
-        power_station_size="1"
-        power_station_distrubtion="normal"/>
-    <output>
-      <sim output_root="output"
-           output_dir="__current_date__"
-           />
+    <output output_root="output"
+            output_dir="__current_date__">
       <metrics
           output_dir="metrics"
           fsm_collision_counts_fname="fsm-collision-counts.csv"
@@ -241,7 +233,7 @@
           task_interface_est="false"
           />
       <entities_oracle
-          blocks_enabled="true"
+          blocks_enabled="false"
           caches_enabled="true"/>
       </oracle_manager>
     <temporal_variance>
@@ -296,12 +288,12 @@
       </blocks>
       <nest size="1.0, 4.0" center="2, 3" />
     </arena_map>
-    <caches dimension="0.8">
+    <caches dimension="1.2">
       <static enable="true"
               size="2"
               respawn_scale_factor="0.05"/>
       <dynamic enable="true"
-               min_dist="0.8"
+               min_dist="1.2"
                min_blocks="2"
                robot_drop_only="false"/>
 
@@ -340,7 +332,7 @@
       <position method="uniform" min="1,1,0" max="10,5,0" />
       <orientation method="uniform" min="0,0,0" max="360,0,0" />
       <entity quantity="16" max_trials="1000">
-        <foot-bot id="fb" omnidirectional_camera_aperture="89">
+        <foot-bot id="fb" omnidirectional_camera_aperture="89.5">
           <controller config="ffc" />
           <battery model= "time_motion"/>
         </foot-bot>
@@ -368,16 +360,25 @@
   <!-- * Visualization * -->
   <!-- ****************** -->
   <visualization>
-    <qt-opengl>
+    <qt-opengl autoplay="true">
+             <frame_grabbing directory="frames"
+                       base_name="frame_"
+                       format="png"
+                       quality="100"
+                       headless_grabbing="true"
+                       headless_frame_size="1600x1200"
+                       headless_frame_rate="10"
+                       />
+
       <camera>
         <placement idx="0"
-                   position="5,2.5,6"
-                   look_at="5,2.5,0"
+                   position="6,3,8"
+                   look_at="6,3,0"
                    lens_focal_length="20"
                    up="0,1,0"
                    />
       </camera>
-      <user_functions label="stateful_foraging_qt_user_functions" />
+      <user_functions label="depth0_qt_user_functions" />
     </qt-opengl>
   </visualization>
 
