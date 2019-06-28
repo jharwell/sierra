@@ -45,7 +45,6 @@ BASE_CMD="python3 sierra.py \
 cd $HOME/git/sierra
 
 # GO GO Power Rangers!
-
 for c in "${CONTROLLERS[@]}"
 do
     for dist in "${DIST_TYPES[@]}"

@@ -34,6 +34,11 @@ class BaseGenerator(ExpInputGenerator):
         """
         xml_luigi = super().generate_common_defs()
         xml_luigi.attribute_change(".//loop_functions", "label", "depth2_loop_functions")
+
+        # Only present if rendering is enabled
+        if xml_luigi.has_attribute(".//qt-opengl", "user_functions"):
+            xml_luigi.attribute_change(".//qt-opengl", "user_functions", "depth2_qt_user_functions")
+
         return xml_luigi
 
 

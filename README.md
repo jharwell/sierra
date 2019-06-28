@@ -16,7 +16,7 @@ your local machine, and try a few small scale experiments.
 
 1. Install python dependencies with pip3:
 
-        pip3 install pandas similaritymeasures fastdtw
+        pip3 install pandas similaritymeasures fastdtw matplotlib
 
    - pandas (used for .csv file manipulation)
    - similaritymeasures (needed for temporal variance graph generation)
@@ -37,7 +37,7 @@ development/debugging on MSI).
 2. On an MSI login node, install the same python dependencies as above, but user
    local (you obviously don't have admin priveleges on the cluster):
 
-        pip3 install --user pandas similaritymeasures fastdtw
+        pip3 install --user pandas similaritymeasures fastdtw matplotlib
 
    This is a one time step.
 
@@ -79,7 +79,7 @@ development/debugging on MSI).
 
 7. That's it! You are all setup to run on MSI.
 
-# Running on MSI
+## Running on MSI
 
 1. Copy and modify one of the PBS scripts under `scripts/` in this repo for your
    experiment/batch experiment.
@@ -137,12 +137,15 @@ MAY FALL UPON THEE.*
 `variables/` - Generators for experimental variables to modify template .argos
                files in order to run experiments with a given controller.
 
-## General Usage
+## General Usage Tips
+
+- The best way to figure out what sierra can do is via the `--help`
+  option. Every option is very well documented.
 
 - There are 5 pipeline stages, though only the first 4 will run automatically.
 
-- If you run stages individually, then before stage X will run without crashing,
-  you need to run stage X-1.
+- If you run stages individually, then before stage X will (probably) run
+  without crashing, you need to run stage X-1.
 
 ## Contributing
 
