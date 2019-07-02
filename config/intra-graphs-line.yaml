@@ -1,7 +1,7 @@
 # Depth 0
 LN_fsm_collision:
   graphs:
-    - src_stem: fsm-collision
+    - src_stem: fsm-collision-counts
       dest_stem: fsm-collision-counts
       cols:
         - int_avg_in_avoidance

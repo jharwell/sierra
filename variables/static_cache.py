@@ -48,8 +48,8 @@ class StaticCache(BaseVariable):
             (".//loop_functions/caches/dynamic", "enable", "false"),
             (".//loop_functions/caches/static", "enable", "true"),
             (".//loop_functions/caches/static", "size", "{0}".format(s)),
-            (".//loop_functions/caches", "dimension", "{0}".format(max(d[0] * 0.18,
-                                                                       d[1] * 0.18)))
+            (".//loop_functions/caches", "dimension", "{0}".format(max(d[0] * 0.15,
+                                                                       d[1] * 0.15)))
         ])
             for d in self.dimension for s in self.sizes]
 

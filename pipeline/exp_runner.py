@@ -95,7 +95,7 @@ class ExpRunner:
             print(stdout, stderr)
             print("ERROR: Process exited with {0}".format(p.returncode))
 
-    def _run_hpc_parallel(self, jobroot_path, cmdfile_path, joblog_path, exec_resume, server_display):
+    def _run_hpc_parallel(self, jobroot_path, cmdfile_path, joblog_path, exec_resume):
         nodelist = os.path.join(jobroot_path, "$PBS_JOBID-nodelist.txt")
         resume = ''
         if exec_resume:

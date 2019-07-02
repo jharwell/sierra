@@ -43,7 +43,7 @@ development/debugging on MSI).
 
 3. On an MSI login node, run the bash script to clone the project:
 
-        /home/gini/shared/swarm/bin/fordyca-clone-all.sh $HOME/git
+        /home/gini/shared/swarm/bin/msi-clone-all.sh $HOME/git
 
    The 1st argument is the path (relative or absolute) to the location where you
    want the project repos to live (they will all be cloned into that level).
@@ -65,17 +65,18 @@ development/debugging on MSI).
 
 5. Setup the build environment in your interactive job session:
 
-        . /home/gini/shared/swarm/bin/build-env-setup.sh
+        . /home/gini/shared/swarm/bin/msp-env-setup.sh
 
 6. In your interactive session run the bash script to build the project (note
    that you may want to tweak the cmake defines in the script, or use your own
    script, depending on what types of experiments you are running). If you are
    not sure if you need to do this, ask!
 
-        /home/gini/shared/swarm/bin/fordyca-build-default.sh /path/to/project/root
+        /home/gini/shared/swarm/bin/msi-build-default.sh /path/to/project/root
 
    The argument is the root directory where all repositories should be
-   cloned/built. It can be anywhere you have write access to.
+   cloned/built. It can be anywhere you have write access to. `$HOME/git` is a
+   good choice.
 
 7. That's it! You are all setup to run on MSI.
 
@@ -146,6 +147,10 @@ MAY FALL UPON THEE.*
 
 - If you run stages individually, then before stage X will (probably) run
   without crashing, you need to run stage X-1.
+
+- If you are using a `quad_source` block distribution, the arena should be at
+  least 16x16 (smaller arenas don't leave enough space for caches and often
+  cause segfaults).
 
 ## Contributing
 

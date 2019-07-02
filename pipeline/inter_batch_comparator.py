@@ -299,6 +299,6 @@ class InterBatchComparator:
                                           src_stem + "-" + s)
             df = df.reindex(sorted(df.columns, key=lambda t: int(t[3:])), axis=1)
             df.to_csv(csv_opath_stem + '.csv', sep=';', index=False)
-            if not stddev_df.empy:
+            if not stddev_df.empty:
                 stddev_df = df.reindex(sorted(df.columns, key=lambda t: int(t[3:])), axis=1)
                 stddev_df.to_csv(csv_opath_stem + '.stddev', sep=';', index=False)

@@ -69,9 +69,9 @@
               <sigmoid_sel
                   method="pini2011">
                 <sigmoid
-                    reactivity="6.0"
-                    offset="1.0"
-                    gamma="1.5"/>
+                    reactivity="8.0"
+                    offset="1.25"
+                    gamma="2.5"/>
               </sigmoid_sel>
             </src_sigmoid_sel>
           </task_partition>
@@ -81,9 +81,9 @@
               <sigmoid_sel
                   method="harwell2018">
                 <sigmoid
-                    reactivity="6.0"
+                    reactivity="4.0"
                     offset="1.25"
-                    gamma="1.25"/>
+                    gamma="1.0"/>
               </sigmoid_sel>
             </src_sigmoid_sel>
           </subtask_sel>
@@ -93,9 +93,9 @@
               <sigmoid_sel
                   method="harwell2019">
                 <sigmoid
-                    reactivity="4.0"
+                    reactivity="6.0"
                     offset="1.0"
-                    gamma="1.5"/>
+                    gamma="1.0"/>
               </sigmoid_sel>
             </src_sigmoid_sel>
           </tab_sel>
@@ -104,11 +104,11 @@
               generalist="4000:8000"
               collector="2000:4000"
               harvester="2000:4000"
-              cache_starter="1000:2000"
-              cache_finisher="1000:2000"
-              cache_collector="1000:2000"
-              cache_transferer="1000:2000">
-            <ema alpha="0.6"/>
+              cache_starter="2000:4000"
+              cache_finisher="2000:4000"
+              cache_collector="2000:4000"
+              cache_transferer="2000:4000">
+            <ema alpha="0.4"/>
           </task_exec_estimates>
         </task_alloc>
         <block_sel_matrix
@@ -118,8 +118,8 @@
                   ramp="1.0"
                   />
               <pickup_policy
-                  policy="cluster_proximity"
-                  prox_dist="3.0"
+                  policy="Null"
+                  prox_dist="2.0"
                   />
         </block_sel_matrix>
         <cache_sel_matrix
@@ -130,7 +130,7 @@
             site_xrange="2:10"
             site_yrange="2.5:3">
             <pickup_policy
-                policy="cache_size"
+                policy="Null"
                 timestep="10000"
                 cache_size="3"/>
             </cache_sel_matrix>
@@ -141,7 +141,7 @@
         </sensing>
         <exploration
             block_strategy="likelihood_search"
-            cache_strategy="CRW"
+            cache_strategy="ledtaxis_search"
             />
         <actuation>
       	  <steering2D>
@@ -185,6 +185,7 @@
           block_acq_locs="block-acq-locs.csv"
           block_acq_explore_locs="block-acq-explore-locs.csv"
           block_acq_vector_locs="block-acq-vector-locs.csv"
+          fsm_collision_counts="fsm-collision-counts.csv"
           block_transport="block-transport.csv"
           cache_acq_counts="cache-acq-counts.csv"
           cache_acq_locs="cache-acq-locs.csv"
@@ -224,8 +225,8 @@
           task_interface_est="false"
           />
       <entities_oracle
-          blocks_enabled="false"
-          caches_enabled="true"/>
+          blocks="true"
+          caches="true"/>
       </oracle_manager>
     <temporal_variance>
       <blocks>
@@ -271,7 +272,7 @@
               n_clusters="15"
               />
           <manifest
-              n_cube="40"
+              n_cube="20"
               n_ramp="0"
               unit_dim="0.2"
               />

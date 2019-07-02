@@ -29,20 +29,18 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 ################################################################################
 # Begin Experiments                                                            #
 ################################################################################
-NSIMS=50
-DIMS=(96x48)
+NSIMS=10
+DIMS=(12x6)
 OUTPUT_ROOT=$HOME/exp/test
 BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \
                   --template-config-file=$HOME/git/sierra/templates/ideal.argos \
                   --n-sims=$NSIMS\
-                  --batch-criteria=swarm_size.Log16384\
-                  --n-physics-engines=8 --batch-exp-range=14:14\
-                  --n-threads=8 --pipeline 1\
-                  --n-blocks=460\
-                  --static-cache-blocks=46\
-                  --exec-method=local.parallel\
-                  --time-setup=time_setup.T100\
+                  --batch-criteria=swarm_size.Log32\
+                  --n-physics-engines=1
+                  --n-threads=1
+                  --exec-method=local.loc\
+                  --time-setup=time_setup.T1000\
                   --perf-measures=sc,so,sp"
 
 cd $HOME/git/sierra
@@ -56,9 +54,10 @@ do
     $BASE_CMD --generator=depth0.CRW.SS${d}
     $BASE_CMD --generator=depth0.DPO.SS${d}
     $BASE_CMD --generator=depth1.GP_DPO.SS${d}
+    $BASE_CMD --generator=depth2.GRP_DPO.SS${d}
 done
 
 
 # Generate comparison graphs (a valid batch criteria still needed to
 # correctly generate graph labels)
-$BASE_CMD --generator=depth1.GP_DPO.SS96x48 --pipeline 5
+$BASE_CMD --generator=depth2.GRP_DPO.SS96x48 --pipeline 5
