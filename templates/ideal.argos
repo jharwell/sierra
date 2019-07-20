@@ -118,7 +118,7 @@
                   ramp="1.0"
                   />
               <pickup_policy
-                  policy="Null"
+                  policy="cluster_proximity"
                   prox_dist="2.0"
                   />
         </block_sel_matrix>
@@ -130,14 +130,14 @@
             site_xrange="2:10"
             site_yrange="2.5:3">
             <pickup_policy
-                policy="Null"
+                policy="cache_size"
                 timestep="10000"
                 cache_size="3"/>
             </cache_sel_matrix>
         <sensing
             los_dim="1.2">
           <proximity_sensor angle_range="-1.1:1.1"
-                            delta="0.0001" />
+                            delta="0.1" />
         </sensing>
         <exploration
             block_strategy="likelihood_search"
@@ -159,7 +159,7 @@
             <phototaxis_force max="8"/>
           </steering2D>
 
-          <differential_drive soft_turn_max="15"
+          <differential_drive soft_turn_max="30"
                               max_speed="10.0" />
         </actuation>
         <visualization robot_id="true"

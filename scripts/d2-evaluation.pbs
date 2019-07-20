@@ -10,9 +10,13 @@
 # Initialize modules
 source /home/gini/shared/swarm/bin/build-env-setup.sh
 
+# Add ARGoS libraries to system library search path, since they are in a
+# non-standard location
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SWARM_ROOT/$MSICLUSTER/lib/argos3
+
 # Set ARGoS library search path. Must contain both the ARGoS core libraries path
 # AND the fordyca library path.
-export ARGOS_PLUGIN_PATH=$ARGOS_PLUGIN_PATH:$HOME/git/fordyca/build/lib
+export ARGOS_PLUGIN_PATH=$SWARM_ROOT/$MSICLUSTER/lib/argos3:$HOME/git/fordyca/build/lib
 
 # Setup logging (maybe compiled out and unneeded, but maybe not)
 export LOG4CXX_CONFIGURATION=$HOME/git/fordyca/log4cxx.xml
@@ -29,14 +33,15 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 ################################################################################
 # Begin Experiments                                                            #
 ################################################################################
-DIST_TYPES1=()
+DIST_TYPES1=(SS DS)
 DIST_TYPES2=(QS) # These require square arenas (nest is in the middle)
-CONTROLLERS=(#depth0.CRW\
-             #   depth0.DPO\
-                 depth1.GP_DPO )
-             #    depth1.GP_ODPO)
-             #   depth2.GRP_DPO\
-             #   depth2.GRP_ODPO)
+CONTROLLERS=() #depth0.CRW
+             # depth0.DPO)
+             # depth0.ODPO
+                 # depth1.GP_DPO
+                # depth1.GP_ODPO)
+               # depth2.GRP_DPO\
+               # depth2.GRP_ODPO)
 OUTPUT_ROOT=$HOME/exp/test
 BASE_CMD="python3 sierra.py \
                   --template-config-file=$HOME/git/sierra/templates/ideal.argos \
@@ -77,14 +82,17 @@ done;
 $BASE_CMD --generator=depth1.GP_DPO.SS12x6\
           --batch-criteria=swarm_size.Log64\
           --sierra-root=$OUTPUT_ROOT/b10\
-          --pipeline 5
+          --pipeline 5 \
+          --inter-batch-controllers=depth0.CRW,depth0.DPO,depth0.ODPO,depth1.GP_DPO,depth1.GP_ODPO,depth2.GRP_DPO,depth2.GRP_ODPO
 
 $BASE_CMD --generator=depth1.GP_DPO.SS12x6\
           --batch-criteria=swarm_size.Log64\
           --sierra-root=$OUTPUT_ROOT/b20\
-          --pipeline 5
+          --pipeline 5\
+          --inter-batch-controllers=depth0.CRW,depth0.DPO,depth0.ODPO,depth1.GP_DPO,depth1.GP_ODPO,depth2.GRP_DPO,depth2.GRP_ODPO
 
 $BASE_CMD --generator=depth1.GP_DPO.SS12x6\
           --batch-criteria=swarm_size.Log64\
           --sierra-root=$OUTPUT_ROOT/b40\
-          --pipeline 5
+          --pipeline 5\
+          --inter-batch-controllers=depth0.CRW,depth0.DPO,depth0.ODPO,depth1.GP_DPO,depth1.GP_ODPO,depth2.GRP_DPO,depth2.GRP_ODPO

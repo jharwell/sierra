@@ -10,9 +10,13 @@
 # Initialize modules
 source /home/gini/shared/swarm/bin/build-env-setup.sh
 
+# Add ARGoS libraries to system library search path, since they are in a
+# non-standard location
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SWARM_ROOT/$MSICLUSTER/lib/argos3
+
 # Set ARGoS library search path. Must contain both the ARGoS core libraries path
 # AND the fordyca library path.
-export ARGOS_PLUGIN_PATH=$ARGOS_PLUGIN_PATH:$HOME/git/fordyca/build/lib
+export ARGOS_PLUGIN_PATH=$SWARM_ROOT/$MSICLUSTER/lib/argos3:$HOME/git/fordyca/build/lib
 
 # Setup logging (maybe compiled out and unneeded, but maybe not)
 export LOG4CXX_CONFIGURATION=$HOME/git/fordyca/log4cxx.xml

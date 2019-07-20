@@ -67,6 +67,8 @@ development/debugging on MSI).
 
         . /home/gini/shared/swarm/bin/msp-env-setup.sh
 
+    *ANYTIME you log into an MSI to build/run ANYTHING you MUST source this
+    script otherwise things will not work.*
 6. In your interactive session run the bash script to build the project (note
    that you may want to tweak the cmake defines in the script, or use your own
    script, depending on what types of experiments you are running). If you are
@@ -83,7 +85,9 @@ development/debugging on MSI).
 ## Running on MSI
 
 1. Copy and modify one of the PBS scripts under `scripts/` in this repo for your
-   experiment/batch experiment.
+   experiment/batch experiment. You will probably need to change:
+
+   - `ARGOS_PLUGIN_PATH` to contain where you built fordyca.
 
 2. Read the documentation for PBS scripts and MSI job submission a queue on your
    chosen cluster:
@@ -91,6 +95,9 @@ development/debugging on MSI).
    https://www.msi.umn.edu/content/job-submission-and-scheduling-pbs-scripts
    https://www.msi.umn.edu/queues
 
+   You will probably need to change:
+
+   - The contact email, number of requested nodes, etc. for the PBS script.
 
 3. Have your .pbs script script reviewed before submission (will likely save you
    a lot of time fighting with the job submission system).
@@ -99,12 +106,23 @@ development/debugging on MSI).
 
         qsub your-pbs-script.pbs
 
-5. Reap the rewards of research!
+    Note the job number--it is important to track job progress and to figure out
+    what happened when things go wrong.
+
+5. Reap the rewards of research! You will get an email when your job starts, and
+   when it finishes/crashes. To view the in-progress output of the job, look in
+   the file called `your-pbs-script.pbs.o1234` where `1234` is the job number of
+   your job. MSI will create this file in the directory you submit the job
+   from, and direct your job's stdout to it. To view the stderr for your job,
+   look in the file `your-pbs-script.pbs.e1234` where `1234` is the job number
+   of your job. MSI will create this file in the directory you submit the job
+   from, and direct your job's stderr to it.
 
 
 *WARNING: SIERRA DOES NOT DELETE DIRECTORIES FOR YOU. ALWAYS MAKE SURE YOU RUN
 DIFFERENT EXPERIMENTS (BATCH OR NOT) IN DIFFERENT DIRECTORIES OR ODIN'S WRATH
-MAY FALL UPON THEE.*
+MAY FALL UPON THEE.* ...Dependending on what you are doing of course. Are you
+feeling lucky and want to roll those dice?
 
 ## Directory Structure
 

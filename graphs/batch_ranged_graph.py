@@ -27,8 +27,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import itertools
 
-# Maximum # of rows that the input .csv can have
-kMaxRows = 4
+# Maximum # of rows that the input .csv to guarantee unique colors
+kMaxRows = 8
 
 
 class BatchRangedGraph:
@@ -82,13 +82,16 @@ class BatchRangedGraph:
             dfy_error = None
 
         fig, ax = plt.subplots()
-        line_styles = [':', '--', '.-', '-']
-        mark_styles = ['o', '^', 's', 'x']
-        colors = ['tab:blue', 'tab:green', 'tab:red', 'tab:brown']
+        line_styles = [':', '--', '.-', '-', ':', '--', '.-', '-']
+        mark_styles = ['o', '^', 's', 'x', 'o', '^', 's', 'x']
+        colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red',
+                  'tab:brown', 'tab:pink', 'tab:gray', 'tab:olive']
         i = 0
 
-        assert len(dfy.values) < kMaxRows, "FATAL: Too many rows {0} >= {1}".format(len(dfy.values),
-                                                                                    kMaxRows)
+        assert len(dfy.values) <= kMaxRows, \
+            "FATAL: Too many rows to make unique line styles/colors/markers {0} > {1}".format(
+                len(dfy.values), kMaxRows)
+
         for i in range(0, len(dfy.values)):
             plt.plot(self.xvals, dfy.values[i], line_styles[i],
                      marker=mark_styles[i],
