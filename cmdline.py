@@ -186,11 +186,12 @@ class Cmdline:
         stage1.add_argument("--n-sims",
                             help="""
 
-                            How many should be averaged together to form a single experiment.
+                            How many simulations should be averaged together to form a single
+                            experiment.
 
                             """,
                             type=int,
-                            default=100)
+                            default=1)
         stage1.add_argument("--n-threads",
                             help="""
 
@@ -198,7 +199,7 @@ class Cmdline:
 
                             """,
                             type=int,
-                            default=8)
+                            default=1)
         stage1.add_argument("--with-robot-rab",
                             help="""
 
@@ -230,23 +231,20 @@ class Cmdline:
         stage1.add_argument("--with-rendering",
                             help="""
 
-                            Specify that the ARGoS Qt/OpenGL visualization subtree should be left in
-                            the input .argos file. By default it is stripped out.
+                            Specify that the ARGoS Qt/OpenGL visualization subtree should be left in the input .argos
+                            file. By default it is stripped out.
 
-                            If TRUE, then any files in the frames/ directory of each simulation will
-                            be rendered into a unique video file with approximately 1600x1200
-                            resolution in the root of their output directory using ffmpeg. This
-                            option assumes that [ffmpeg, Xvfb] programs can be found.
-                            """,
+                            If TRUE, then any files in the frames/ directory of each simulation will be rendered into a
+                            unique video file with approximately 1600x1200 resolution in the root of their output
+                            directory using ffmpeg. This option assumes that [ffmpeg, Xvfb] programs can be found.  """,
                             action='store_true')
 
         stage1.add_argument("--n-blocks",
                             help="""
 
-                            Specify the # blocks that should be used in the simulation (evenly split
-                            between cube and ramp). Can be used to override batch criteria, or to
-                            supplement experiments that do not set it so that manual modification of
-                            input file is unneccesary.
+                            Specify the # blocks that should be used in the simulation (evenly split between cube and
+                            ramp). Can be used to override batch criteria, or to supplement experiments that do not set
+                            it so that manual modification of input file is unneccesary.
 
                             """,
                             type=int,
@@ -254,8 +252,7 @@ class Cmdline:
         stage1.add_argument("--static-cache-blocks",
                             help="""
 
-                            Specify the # of blocks used when the static cache is respawned (depth1
-                            controllers only).
+                            Specify the # of blocks used when the static cache is respawned (depth1 controllers only).
 
                             """,
                             default=None)
@@ -266,9 +263,9 @@ class Cmdline:
 
                             Specify the execution method to use when running experiments.
 
-                            local: Run the maximum # of simulations simultaneously on the local
-                                   machine using GNU parallel. # of simultaneous simulations is
-                                   determined by # cores on machine / # ARGoS threads.
+                            local: Run the maximum # of simulations simultaneously on the local machine using GNU
+                                   parallel. # of simultaneous simulations is determined by # cores on machine / # ARGoS
+                                   threads.
 
                             hpc[.cluster_name]: Use GNU parallel in an HPC environment to run the specified # of
                                                 simulations simultaneously on a computing cluster. The [.cluster] is
@@ -285,16 +282,15 @@ class Cmdline:
         stage2.add_argument("--batch-exp-range",
                             help="""
 
-                            Experiment numbers from the batch to run. Ignored if --batch-criteria is
-                            not passed. Specified in the form a:b. If omitted, runs all experiments
-                            in the batch (default behavior).
+                            Experiment numbers from the batch to run. Ignored if --batch-criteria is not
+                            passed. Specified in the form a:b. If omitted, runs all experiments in the batch (default
+                            behavior).
 
                             """)
         stage2.add_argument("--exec-resume",
                             help="""
 
-                            Resume an experiment/batch experiment that was killed/stopped/etc last
-                            time sierra was run.
+                            Resume an experiment/batch experiment that was killed/stopped/etc last time sierra was run.
 
                             """,
                             action='store_true',
@@ -307,14 +303,15 @@ class Cmdline:
                             will be averaged directly. If not all .csv files for all experiments exist and/or have the
                             same # of rows, then sierra will crash. Verification can take a long time with large # of
                             simulations per experiment.
+
                             """,
                             action='store_true',
                             default=False)
         stage3.add_argument("--gen-stddev",
                             help="""
 
-                            If TRUE, then the standard deviation will be calculated from averaged
-                            data and error bars will be included on all linegraphs.
+                            If TRUE, then the standard deviation will be calculated from averaged data and error bars
+                            will be included on all linegraphs.
 
                             """,
                             action="store_true",
@@ -322,8 +319,8 @@ class Cmdline:
         stage3.add_argument("--results-process-tasks",
                             help="""
 
-                            Specify what tasks should be performed when processing simulation
-                            results before graph generation.
+                            Specify what tasks should be performed when processing simulation results before graph
+                            generation.
 
                             """,
                             choices=['render', 'average', 'all'],
@@ -333,7 +330,8 @@ class Cmdline:
         stage4.add_argument("--with-hists",
                             help="""
 
-                            Enable generation of intra-experiment histograms (if that part of the graph generation will be run).
+                            Enable generation of intra-experiment histograms (if that part of the graph generation will
+                            be run).
 
                             """,
                             action="store_true")
@@ -439,9 +437,9 @@ class Cmdline:
         stage5.add_argument("--inter-batch-controllers",
                             help="""
 
-                            Comma separated list of controllers to compare within <sierra root>. If
-                            None, then the default set of controllers will be used for comparison.
+                            Comma separated list of controllers to compare within <sierra root>. If None, then the
+                            default set of controllers will be used for comparison.
 
                             """,
-                            default='depth0.CRW,depth0.DPO,depth1.GP_DPO')
+                            default='depth0.CRW,depth0.DPO,depth1.GP_DPO,depth2.GRP_DPO')
         return parser

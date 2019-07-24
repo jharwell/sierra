@@ -26,6 +26,10 @@ your local machine, and try a few small scale experiments.
 
    - GNU parallel (`parallel` on ubuntu)
 
+*IMPORTANT*: When running sierra, unless you have added the sierra repo to your
+`PYTHONPATH` and/or `sierra.py` to your `PATH`, you will only be able to launch
+sierra from the root of the sierra repo.
+
 ## MSI Setup
 
 Prior to executing these steps you should have gotten *CORRECT* results on your
@@ -68,7 +72,8 @@ development/debugging on MSI).
         . /home/gini/shared/swarm/bin/msp-env-setup.sh
 
     *ANYTIME you log into an MSI to build/run ANYTHING you MUST source this
-    script otherwise things will not work.*
+    script otherwise things will (probably) not work.*
+
 6. In your interactive session run the bash script to build the project (note
    that you may want to tweak the cmake defines in the script, or use your own
    script, depending on what types of experiments you are running). If you are
@@ -84,19 +89,19 @@ development/debugging on MSI).
 
 ## Running on MSI
 
-1. Copy and modify one of the PBS scripts under `scripts/` in this repo for your
-   experiment/batch experiment. You will probably need to change:
-
-   - `ARGOS_PLUGIN_PATH` to contain where you built fordyca.
-
-2. Read the documentation for PBS scripts and MSI job submission a queue on your
+1. Read the documentation for PBS scripts and MSI job submission a queue on your
    chosen cluster:
 
    https://www.msi.umn.edu/content/job-submission-and-scheduling-pbs-scripts
    https://www.msi.umn.edu/queues
 
-   You will probably need to change:
+   Seriously--READ THEM.
 
+2. Copy and modify the `example.pbs` script under `scripts/` in the sierra repo
+   for your experiment/batch experiment. You will need to change:
+
+   - `FORDYCA`: To the location of the where you cloned the fordyca repo
+   - `SIERRA`: To the location of the where you cloned the sierra repo
    - The contact email, number of requested nodes, etc. for the PBS script.
 
 3. Have your .pbs script script reviewed before submission (will likely save you
@@ -122,7 +127,7 @@ development/debugging on MSI).
 *WARNING: SIERRA DOES NOT DELETE DIRECTORIES FOR YOU. ALWAYS MAKE SURE YOU RUN
 DIFFERENT EXPERIMENTS (BATCH OR NOT) IN DIFFERENT DIRECTORIES OR ODIN'S WRATH
 MAY FALL UPON THEE.* ...Dependending on what you are doing of course. Are you
-feeling lucky and want to roll those dice?
+feeling lucky and want to roll the dice?
 
 ## Directory Structure
 
@@ -145,7 +150,11 @@ feeling lucky and want to roll those dice?
               5. Generate graphs comparing batched experiments (not part of
               default pipeline).
 
-`scripts/` - Contains example `.pbs` scripts to be run on MSI.
+`scripts/` - Contains some `.pbs` scripts that can be run on MSI. Scripts become
+             outdated quickly as the code base for this project and its upstream
+             projects changes, so scripts should not be relied upon to work as
+             is. Rather, they should be used to gain insight into how to use
+             sierra and how to craft your own script.
 
 `templates/` - Contains template .argos files. Really only necessary to be able
                to change configuration that is not directly controllable via
@@ -156,10 +165,42 @@ feeling lucky and want to roll those dice?
 `variables/` - Generators for experimental variables to modify template .argos
                files in order to run experiments with a given controller.
 
-## General Usage Tips
+
+## Basic Usage
+
+When using sierra, you need to tell it the following:
+
+- When template input file to use (`--template-config-file`). See `sierra
+  --help` for specifics.
+
+- How many copies of each simulation to run per experiment (`--n-sims`). See
+  `sierra --help` for specifics.
+
+- Where it is running (`--exec-method`). See `sierra --help` for specifics.
+
+- How long simulations should be (`--time-setup`). See `sierra --help` for
+  specifics.
+
+- What controller to run with, what block distribution type to use, and how
+  large the arena should be (`--generator`). See `sierra --help` for specifics.
+
+- What you are investigating; that is, what variable are you interested in
+  varying (`--batch-criteria`). Valid variables are files found in the
+  `variables/` directory, though not *ALL* files in there are valid. Valid ones
+  are:
+
+  - `swarm_size`
+  - `swarm_density`
+  - `temporal_variance`
+
+  Look in the `.py` files for the variable+parsers for each of the above to see
+  how to use them.
+
+## Usage Tips
 
 - The best way to figure out what sierra can do is via the `--help`
-  option. Every option is very well documented.
+  option. Every option is very well documented. The second best way is to look
+  at the scripts under `scripts/`.
 
 - There are 5 pipeline stages, though only the first 4 will run automatically.
 

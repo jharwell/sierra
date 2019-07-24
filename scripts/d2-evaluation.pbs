@@ -6,9 +6,12 @@
 ################################################################################
 # Setup Simulation Environment                                                 #
 ################################################################################
+# Set paths
+FORDYCA=$HOME/git/fordyca
+SIERRA=$HOME/git/sierra
 
 # Initialize modules
-source /home/gini/shared/swarm/bin/build-env-setup.sh
+source /home/gini/shared/swarm/bin/build-env-setup.sh 2>&1 /dev/null
 
 # Add ARGoS libraries to system library search path, since they are in a
 # non-standard location
@@ -16,10 +19,10 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SWARM_ROOT/$MSICLUSTER/lib/argos3
 
 # Set ARGoS library search path. Must contain both the ARGoS core libraries path
 # AND the fordyca library path.
-export ARGOS_PLUGIN_PATH=$SWARM_ROOT/$MSICLUSTER/lib/argos3:$HOME/git/fordyca/build/lib
+export ARGOS_PLUGIN_PATH=$SWARM_ROOT/$MSICLUSTER/lib/argos3:$FORDYCA/build/lib
 
 # Setup logging (maybe compiled out and unneeded, but maybe not)
-export LOG4CXX_CONFIGURATION=$HOME/git/fordyca/log4cxx.xml
+export LOG4CXX_CONFIGURATION=$FORDYCA/log4cxx.xml
 
 # From MSI docs: transfers all of the loaded modules to the compute nodes (not
 # inherited from the master/launch node when using GNU parallel)
@@ -35,16 +38,16 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 ################################################################################
 DIST_TYPES1=(SS DS)
 DIST_TYPES2=(QS) # These require square arenas (nest is in the middle)
-CONTROLLERS=() #depth0.CRW
+CONTROLLERS=( #depth0.CRW
              # depth0.DPO)
              # depth0.ODPO
-                 # depth1.GP_DPO
+                #  depth1.GP_DPO
                 # depth1.GP_ODPO)
-               # depth2.GRP_DPO\
-               # depth2.GRP_ODPO)
+               depth2.GRP_DPO\
+               depth2.GRP_ODPO)
 OUTPUT_ROOT=$HOME/exp/test
 BASE_CMD="python3 sierra.py \
-                  --template-config-file=$HOME/git/sierra/templates/ideal.argos \
+                  --template-config-file=$SIERRA/templates/ideal.argos \
                   --n-sims=16\
                   --n-physics-engines=1\
                   --n-threads=1\
