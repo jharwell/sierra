@@ -19,16 +19,13 @@ Copyright 2018 John Harwell, All rights reserved.
 
 import os
 import copy
-import collections
+import yaml
 from pipeline.inter_exp_linegraphs import InterExpLinegraphs
 from perf_measures.scalability import InterExpScalability
 from perf_measures.self_organization import InterExpSelfOrganization
 from perf_measures.collection import InterExpBlockCollection
 from perf_measures.reactivity import InterExpReactivity
 from perf_measures.adaptability import InterExpAdaptability
-
-from graphs.ca_graphs import InterExpCAModelEnterGraph
-from pipeline.inter_exp_targets import Linegraphs
 
 
 class InterExpGraphGenerator:
@@ -38,13 +35,18 @@ class InterExpGraphGenerator:
     Attributes:
     """
 
-    def __init__(self, cmdopts):
+    def __init__(self, cmdopts, targets):
 
         self.cmdopts = copy.deepcopy(cmdopts)
         self.cmdopts["collate_root"] = os.path.abspath(os.path.join(self.cmdopts["output_root"],
                                                                     'collated-csvs'))
         self.cmdopts["graph_root"] = os.path.abspath(os.path.join(self.cmdopts["graph_root"],
                                                                   'collated-graphs'))
+        self.controller_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
+                                                             'controllers.yaml')))
+        self.linegraph_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
+                                                            'inter-graphs-line.yaml')))
+        self.targets = targets
         os.makedirs(self.cmdopts["graph_root"], exist_ok=True)
 
     def __call__(self):
@@ -56,12 +58,12 @@ class InterExpGraphGenerator:
         if "all" in components or "line" in components:
             InterExpLinegraphs(self.cmdopts["collate_root"],
                                self.cmdopts["graph_root"],
-                               Linegraphs.targets('depth2' in self.cmdopts["generator"])).generate()
+                               self.targets).generate()
 
         if "all" in components or "sp" in components:
             InterExpBlockCollection(self.cmdopts).generate()
 
-        if "all" in components or "sc" in components:
+        if "all" in components or "ss" in components:
             InterExpScalability(self.cmdopts).generate()
 
         if "all" in components or "so" in components:
@@ -72,6 +74,3 @@ class InterExpGraphGenerator:
 
         if "all" in components or "sa" in components:
             InterExpAdaptability(self.cmdopts).generate()
-
-            # InterExpCAModelEnterGraph(self.batch_output_root, self.batch_graph_root,
-            #                           self.batch_generation_root).generate()

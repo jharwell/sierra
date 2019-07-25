@@ -19,8 +19,6 @@ Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 
 import os
 import copy
-import pandas as pd
-import numpy as np
 import yaml
 
 from pipeline.intra_exp_linegraphs import IntraExpLinegraphs
@@ -71,6 +69,8 @@ class IntraExpGraphGenerator:
         filtered_keys = [k for k in self.linegraph_config if k in keys]
         targets = [self.linegraph_config[k] for k in filtered_keys]
         targets.append({'graphs': extra_graphs})
+
+        print("-- Enabled linegraph categories: {0}".format(filtered_keys))
         IntraExpLinegraphs(self.cmdopts["output_root"],
                            self.cmdopts["graph_root"],
                            targets).generate()
@@ -81,6 +81,7 @@ class IntraExpGraphGenerator:
         filtered_keys = [k for k in self.hm_config if k in keys]
         targets = [self.hm_config[k] for k in filtered_keys]
 
+        print("-- Enabled heatmap categories: {0}".format(filtered_keys))
         IntraExpHeatmaps(self.cmdopts["output_root"],
                          self.cmdopts["graph_root"],
                          targets).generate()

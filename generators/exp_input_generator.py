@@ -209,16 +209,16 @@ class ExpInputGenerator:
         not that costly if the # robots is small.
         """
         if not self.sim_opts["with_robot_rab"]:
-            xml_luigi.tag_remove(".//media", "range_and_bearing")
-            xml_luigi.tag_remove(".//actuators", "range_and_bearing")
-            xml_luigi.tag_remove(".//sensors", "range_and_bearing")
+            xml_luigi.tag_remove(".//media", "range_and_bearing", True)
+            xml_luigi.tag_remove(".//actuators", "range_and_bearing", True)
+            xml_luigi.tag_remove(".//sensors", "range_and_bearing", True)
 
         if not self.sim_opts["with_robot_leds"]:
-            xml_luigi.tag_remove(".//actuators", "leds")
+            xml_luigi.tag_remove(".//actuators", "leds", True)
 
         if not self.sim_opts["with_robot_battery"]:
-            xml_luigi.tag_remove(".//sensors", "battery")
-            xml_luigi.tag_remove(".//entity/foot-bot", "battery")
+            xml_luigi.tag_remove(".//sensors", "battery", True)
+            xml_luigi.tag_remove(".//entity/foot-bot", "battery", True)
 
     def _generate_threading_defs(self, xml_luigi):
         """

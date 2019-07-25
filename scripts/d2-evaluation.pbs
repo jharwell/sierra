@@ -38,13 +38,13 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 ################################################################################
 DIST_TYPES1=(SS DS)
 DIST_TYPES2=(QS) # These require square arenas (nest is in the middle)
-CONTROLLERS=( #depth0.CRW
+CONTROLLERS=() #depth0.CRW
              # depth0.DPO)
              # depth0.ODPO
                 #  depth1.GP_DPO
                 # depth1.GP_ODPO)
-               depth2.GRP_DPO\
-               depth2.GRP_ODPO)
+               # depth2.GRP_DPO\
+               # depth2.GRP_ODPO)
 OUTPUT_ROOT=$HOME/exp/test
 BASE_CMD="python3 sierra.py \
                   --template-config-file=$SIERRA/templates/ideal.argos \
@@ -53,7 +53,7 @@ BASE_CMD="python3 sierra.py \
                   --n-threads=1\
                   --exec-method=local\
                   --time-setup=time_setup.T10000\
-                  --perf-measures=sc,so,sp"
+                  --perf-measures=ss,so,sp"
 
 cd $HOME/git/sierra
 

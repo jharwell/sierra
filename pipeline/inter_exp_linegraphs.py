@@ -41,16 +41,18 @@ class InterExpLinegraphs:
 
     def generate(self):
         print("-- Linegraphs from {0}".format(self.csv_root))
-        for target_set in [self.collate_targets[x] for x in self.collate_targets]:
-            for target in target_set:
+        # For each category of linegraphs we are generating
+        for category in self.collate_targets:
+            # For each graph in each category
+            for graph in category['graphs']:
                 StackedLineGraph(input_stem_fpath=os.path.join(self.csv_root,
-                                                               target['dest_stem']),
+                                                               graph['dest_stem']),
                                  output_fpath=os.path.join(
                                      self.graph_root,
-                                     target['dest_stem'] + '.png'),
+                                     graph['dest_stem'] + '.png'),
                                  cols=None,
-                                 title=target['title'],
+                                 title=graph['title'],
                                  legend=None,
-                                 xlabel=target['xlabel'],
-                                 ylabel=target['ylabel'],
+                                 xlabel=graph['xlabel'],
+                                 ylabel=graph['ylabel'],
                                  linestyles=None).generate()

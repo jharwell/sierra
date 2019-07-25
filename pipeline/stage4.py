@@ -20,8 +20,8 @@ from pipeline.intra_exp_graph_generator import IntraExpGraphGenerator
 from pipeline.csv_collator import CSVCollator
 from pipeline.batched_intra_exp_graph_generator import BatchedIntraExpGraphGenerator
 from pipeline.inter_exp_graph_generator import InterExpGraphGenerator
-from pipeline.inter_exp_targets import Linegraphs
-
+import yaml
+import os
 import matplotlib as mpl
 mpl.rcParams['lines.linewidth'] = 3
 mpl.rcParams['lines.markersize'] = 10
@@ -36,11 +36,15 @@ class PipelineStage4:
     Implements stage 4 of the experimental pipeline:
 
     Generate a user-defined set of graphs based on the averaged results for each
-     experiment, and across experiments for batches.
+    experiment, and across experiments for batches.
     """
 
     def __init__(self, cmdopts):
         self.cmdopts = cmdopts
+        self.controller_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
+                                                             'controllers.yaml')))
+        self.linegraph_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
+                                                            'inter-graphs-line.yaml')))
 
     def run(self):
         if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'intra':
@@ -49,14 +53,14 @@ class PipelineStage4:
         if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'inter':
             # Collation must be after intra-experiment graph generation, so that all .csv files to
             # be collated have been generated/modified according to parameters.
-            CSVCollator(self.cmdopts['output_root'],
-                        Linegraphs.targets('depth2' in self.cmdopts['generator']))()
-            self._gen_inter_graphs()
+            targets = self._calc_linegraph_targets()
+            CSVCollator(self.cmdopts['output_root'], targets)()
+            self._gen_inter_graphs(targets)
 
-    def _gen_inter_graphs(self):
+    def _gen_inter_graphs(self, targets):
         if self.cmdopts['criteria_category'] is not None:
             print("- Stage4: Generating inter-experiment graphs...")
-            InterExpGraphGenerator(self.cmdopts)()
+            InterExpGraphGenerator(self.cmdopts, targets)()
             print("- Stage4: Inter-experiment graph generation complete")
 
     def _gen_intra_graphs(self):
@@ -69,3 +73,29 @@ class PipelineStage4:
         print("- Stage4: Generating intra-experiment graphs...")
         intra_exp()
         print("- Stage4: Intra-experiment graph generation complete")
+
+    def _calc_linegraph_targets(self):
+        """
+        Use the parsed controller+inter-exp linegraph config to figure out what .csv files need to
+        be collated/what graphs should be generated.
+        """
+        keys = []
+        extra_graphs = []
+        for category in list(self.controller_config.keys()):
+            if category not in self.cmdopts['generator']:
+                continue
+            for controller in self.controller_config[category]['controllers']:
+                if controller['name'] not in self.cmdopts['generator']:
+                    continue
+
+                # valid to specify no graphs, and only to inherit graphs
+                keys = controller.get('graphs', [])
+                if 'graphs_inherit' in controller:
+                    [keys.extend(l) for l in controller['graphs_inherit']]  # optional
+
+        filtered_keys = [k for k in self.linegraph_config if k in keys]
+        targets = [self.linegraph_config[k] for k in filtered_keys]
+        targets.append({'graphs': extra_graphs})
+
+        print("- Enabled linegraph categories: {0}".format(filtered_keys))
+        return targets

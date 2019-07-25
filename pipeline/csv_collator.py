@@ -42,9 +42,11 @@ class CSVCollator:
     def __call__(self):
         print("- Stage4: Collating inter-experiment .csv files from batch in {0} to {1}...".format(self.batch_output_root,
                                                                                                    self.collate_root))
-        for target_set in self.targets.values():
-            for target in target_set:
-                self._collate_target_files(target)
+        # For each category of graphs we are generating
+        for category in self.targets:
+            # For each graph in each category
+            for graph in category['graphs']:
+                self._collate_target_files(graph)
 
     def _collate_target_files(self, target):
         """

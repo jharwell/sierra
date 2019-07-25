@@ -110,8 +110,8 @@ class Cmdline:
                             Valid scenarios: {RN, SS, DS, QS, PL}, which correspond to {random, single source, dual
                             source, quad source, powerlaw} block distributions.
 
-                            A and B are the scenario dimensions (which can be any non-negative
-                            integer values); the dimensions can be omitted for some batch criteria.
+                            A and B are the scenario X and Y dimensions (which can be any non-negative integer values);
+                            the dimensions can be omitted for some batch criteria.
 
                             Use=stage{1,2,3,4}; can be omitted if only running other stages.
 
@@ -353,11 +353,11 @@ class Cmdline:
                             have to wait when developing a new graph/model for other graphs I'm not currently interested
                             to regenerate.
 
-                            sc: Generate comparison plots of scalability.
-                            so: Generate comparison plots of self-organization.
-                            sp: Generate comparison plots of swarm performance (blocks collected).
-                            sr: Generate comparison plots of swarm reactivity.
-                            sa: Generate comparison plots of swarm adaptability.
+                            ss: Generate comparison plots of Swarm Scalability.
+                            so: Generate comparison plots of Swarm self-Organization.
+                            sp: Generate comparison plots of Swarm Performance (blocks collected).
+                            sr: Generate comparison plots of Swarm Reactivity.
+                            sa: Generate comparison plots of Swarm Adaptability.
                             line: Generate comparison linegraphs.
                             all: Generate all inter-experiment graphs.
 
