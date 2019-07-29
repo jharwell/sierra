@@ -27,11 +27,15 @@ class BatchedExpVideoRenderer:
 
     Attributes:
       batch_exp_root(str): Root directory for the batch experiment.
+      render_cmd_options(str): String of options to pass to ffmpeg between input and output file
+                               specification.
 
     """
 
-    def __init__(self, batch_exp_root):
+    def __init__(self, batch_exp_root, render_cmd_options, render_cmd_ofile):
         self.batch_exp_root = os.path.abspath(batch_exp_root)
+        self.render_cmd_options = render_cmd_options
+        self.render_cmd_ofile = render_cmd_ofile
 
     def render(self):
         """Render videos for all all experiments in the batch."""
@@ -43,4 +47,4 @@ class BatchedExpVideoRenderer:
         experiments = [os.path.join(self.batch_exp_root, item) for item in sorted_dirs
                        if os.path.isdir(os.path.join(self.batch_exp_root, item))]
         for exp in experiments:
-            ExpVideoRenderer(exp).render()
+            ExpVideoRenderer(exp, self.render_cmd_options, self.render_cmd_ofile).render()

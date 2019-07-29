@@ -37,23 +37,10 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 # Begin Experiments                                                            #
 ################################################################################
 DIST_TYPES=(SS)
-CONTROLLERS=(depth0.CRW)
-             # depth0.DPO
+CONTROLLERS=(depth0.CRW
+             depth0.DPO)
              # depth1.GP_DPO)
 OUTPUT_ROOT=$HOME/exp/test
-BASE_CMD="python3 sierra.py \
-                  --template-config-file=$SIERRA/templates/ideal.argos \
-                  --n-sims=1\
-                  --n-physics-engines=16\
-                  --n-threads=16\
-                  --exec-method=local\
-                  --time-setup=time_setup.T100\
-                  --batch-criteria=swarm_size.Log16384\
-                  --n-blocks=460\
-                  --batch-exp-range=14:14\
-                  --sierra-root=$OUTPUT_ROOT/robot-exhibition
-                  --perf-measures=ss,so,sp"
-
 cd $SIERRA
 
 # GO GO Power Rangers!
@@ -61,14 +48,22 @@ for c in "${CONTROLLERS[@]}"
 do
     for dist in "${DIST_TYPES[@]}"
     do
-        $BASE_CMD --generator=${c}.${dist}96x48
+        python3 sierra.py \
+        --template-config-file=$SIERRA/templates/ideal-video-capture.argos \
+        --n-sims=1\
+        --n-physics-engines=16\
+        --n-threads=16\
+        --exec-method=local\
+        --time-setup=time_setup.T10000\
+        --batch-criteria=swarm_size.Log16384\
+        --n-blocks=460\
+        --batch-exp-range=14:14\
+        --sierra-root=$OUTPUT_ROOT/robot-exhibition\
+        --perf-measures=ss,so,sp\
+        --with-rendering --pipeline 3\
+        --render-cmd-options="-r 10 -s:v 800x600 -c:v libx264 -crf 25 -filter:v scale=-2:956 -pix_fmt yuv420p"\
+        --render-cmd-ofile="800x600.mp4"\
+        --results-process-tasks=render\
+        --generator=${c}.${dist}96x48
     done;
 done;
-
-# Generate comparison graphs (a valid batch criteria still needed to correctly
-# generate graph labels)
-$BASE_CMD --generator=depth1.GP_DPO.SS96x48\
-          --batch-criteria=swarm_size.Log16384\
-          --sierra-root=$OUTPUT_ROOT/robot-exhibition\
-          --pipeline 5 \
-          --inter-batch-controllers=depth0.CRW,depth0.DPO,depth1.GP_DPO

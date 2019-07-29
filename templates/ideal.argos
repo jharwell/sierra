@@ -205,7 +205,7 @@
           task_tab_harvester="task-tab-harvester.csv"
           task_distribution="task-distribution.csv"
           perception_dpo="perception-dpo.csv"
-          collect_interval="1000"/>
+          output_interval="1000"/>
     </output>
     <convergence
         n_threads="0"

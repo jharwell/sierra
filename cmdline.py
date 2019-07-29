@@ -235,8 +235,11 @@ class Cmdline:
                             file. By default it is stripped out.
 
                             If TRUE, then any files in the frames/ directory of each simulation will be rendered into a
-                            unique video file with approximately 1600x1200 resolution in the root of their output
-                            directory using ffmpeg. This option assumes that [ffmpeg, Xvfb] programs can be found.  """,
+                            unique video file with directory using ffmpeg (precise command configurable). This option
+                            assumes that [ffmpeg, Xvfb] programs can be found.
+
+                            """,
+
                             action='store_true')
 
         stage1.add_argument("--n-blocks",
@@ -325,6 +328,23 @@ class Cmdline:
                             """,
                             choices=['render', 'average', 'all'],
                             default=['all'])
+        stage3.add_argument("--render-cmd-options",
+                            help="""
+
+                            Specify the ffmpeg options to appear between the specification of the input .png files and
+                            the specification of the output file. The default is suitable for use with ARGoS frame
+                            grabbing set to a frames of 1600x1200 to output a reasonable quality video.
+
+                            """,
+                            default="-r 10 -s:v 800x600 -c:v libx264 -crf 25 -filter:v scale=-2:956 -pix_fmt yuv420p")
+        stage3.add_argument("--render-cmd-ofile",
+                            help="""
+
+                            Specify the output filename and extension for the ffmpeg rendered video.
+
+                            """,
+                            default="video.mp4")
+
         stage4 = parser.add_argument_group('stage4 (graph generation)')
 
         stage4.add_argument("--with-hists",

@@ -209,28 +209,33 @@ class ExpInputGenerator:
         not that costly if the # robots is small.
         """
         if not self.sim_opts["with_robot_rab"]:
-            xml_luigi.tag_remove(".//media", "range_and_bearing", True)
-            xml_luigi.tag_remove(".//actuators", "range_and_bearing", True)
-            xml_luigi.tag_remove(".//sensors", "range_and_bearing", True)
+            xml_luigi.tag_remove(".//media", "range_and_bearing", noprint=True)
+            xml_luigi.tag_remove(".//actuators", "range_and_bearing", noprint=True)
+            xml_luigi.tag_remove(".//sensors", "range_and_bearing", noprint=True)
 
         if not self.sim_opts["with_robot_leds"]:
-            xml_luigi.tag_remove(".//actuators", "leds", True)
+            xml_luigi.tag_remove(".//actuators", "leds", noprint=True)
 
         if not self.sim_opts["with_robot_battery"]:
-            xml_luigi.tag_remove(".//sensors", "battery", True)
-            xml_luigi.tag_remove(".//entity/foot-bot", "battery", True)
+            xml_luigi.tag_remove(".//sensors", "battery", noprint=True)
+            xml_luigi.tag_remove(".//entity/foot-bot", "battery", noprint=True)
 
     def _generate_threading_defs(self, xml_luigi):
         """
         Set the # of cores for a simulation to use, which may be less than the total # available on
         the system.
         """
+
         xml_luigi.attribute_change(".//system",
                                    "threads",
                                    str(self.sim_opts["n_threads"]))
-        xml_luigi.attribute_change(".//loop_functions/convergence",
-                                   "n_threads",
-                                   str(self.sim_opts["n_threads"]))
+
+        # This whole tree can be missing and that's fine
+        if xml_luigi.has_attribute(".//loop_functions/convergence",
+                                   "n_threads"):
+            xml_luigi.attribute_change(".//loop_functions/convergence",
+                                       "n_threads",
+                                       str(self.sim_opts["n_threads"]))
 
     def _generate_visualization_defs(self, xml_luigi):
         """

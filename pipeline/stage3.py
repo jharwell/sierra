@@ -50,11 +50,15 @@ class PipelineStage3:
         if self.cmdopts['criteria_category'] is not None:
             print(
                 "- Stage3: Rendering videos for batched experiment '{0}'...".format(self.cmdopts['generator']))
-            renderer = BatchedExpVideoRenderer(self.cmdopts['output_root'])
+            renderer = BatchedExpVideoRenderer(self.cmdopts['output_root'],
+                                               self.cmdopts['render_cmd_options'],
+                                               self.cmdopts['render_cmd_ofile'])
         else:
             print(
                 "- Stage3: Rendering single experiment video in '{0}'...".format(self.cmdopts['generator']))
-            renderer = ExpVideoRenderer(self.cmdopts['output_root'])
+            renderer = ExpVideoRenderer(self.cmdopts['output_root'],
+                                        self.cmdopts['render_cmd_options'],
+                                        self.cmdopts['render_cmd_ofile'])
 
         renderer.render()
         print("- Stage3: Rendering complete")

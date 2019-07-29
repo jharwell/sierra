@@ -25,34 +25,36 @@ class ExpVideoRenderer:
     Render grabbed frames in ARGoS to a video file via ffmpeg.
 
     Attributes:
-      exp_output_root(str): Root directory of simulation output (relative to current dir or absolute).
+      exp_output_root(str): Root directory of simulation output (relative to current dir or
+                            absolute).
+      render_cmd_options(str): String of options to pass to ffmpeg between input and output file
+                               specification.
+      video_fname(str): Output path for rendered video.
     """
 
     kFramesFolderName = "frames"
 
-    def __init__(self, exp_output_root):
+    def __init__(self, exp_output_root, render_cmd_options, render_cmd_ofile):
         self.exp_output_root = exp_output_root
-        self.video_fname = os.path.join(os.path.abspath(exp_output_root), "video.mp4")
+        self.render_cmd_options = render_cmd_options
+        self.video_fname = render_cmd_ofile
 
     def render(self):
-        print("-- Rendering videos for experiment in {0}...".format(self.exp_output_root))
+        print("-- Rendering video {0}...".format(self.video_fname))
 
+        options = self.render_cmd_options.split(' ')
         # Render videos in parallel--waaayyyy faster
         procs = []
         for d in os.listdir(self.exp_output_root):
             path = os.path.join(self.exp_output_root, d)
             if os.path.isdir(path) and 'averaged-output' not in path:
                 frames_path = os.path.join(path, ExpVideoRenderer.kFramesFolderName)
-                procs.append(subprocess.Popen(["ffmpeg",
-                                               "-y",
-                                               "-r", "10",
-                                               "-i", os.path.join(frames_path, "%*.png"),
-                                               "-s:v", "1600x1200",
-                                               "-c:v", "libx264",
-                                               "-crf", "25",
-                                               "-vf", "scale=-2:956",
-                                               "-pix_fmt", "yuv420p",
-                                               os.path.join(path, "video.mp4")],
-                                              stdout=subprocess.DEVNULL,
-                                              stderr=subprocess.DEVNULL))
-        [p.wait() for p in procs]
+                cmd = ["ffmpeg",
+                       "-y",
+                       "-i", os.path.join(frames_path, "%*.png")]
+                cmd.extend(options)
+                cmd.extend([os.path.join(path, self.video_fname)])
+                procs.append(subprocess.Popen(cmd,
+                                              stderr=subprocess.DEVNULL,
+                                              stdout=subprocess.DEVNULL))
+                [p.wait() for p in procs]
