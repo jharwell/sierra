@@ -55,7 +55,7 @@ class NestPose(BaseVariable):
         elif (self.dist_type == "powerlaw" or self.dist_type == "random" or
               self.dist_type == "quad_source"):
             return [set([
-                (".//arena_map/nest", "size", "{0}, {1}".format(s[0] / 10.0, s[0] / 10.0)),
+                (".//arena_map/nest", "size", "{0}, {1}".format(s[0] * 0.20, s[0] * 0.20)),
                 (".//arena_map/nest", "center", "{0}, {0}".format(s[0] * 0.5)),
                 (".//block_sel_matrix", "nest", "{0}, {0}".format(s[0] * 0.5)),
             ])

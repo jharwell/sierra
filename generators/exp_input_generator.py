@@ -196,6 +196,7 @@ class ExpInputGenerator:
         setup = __import__("variables.{0}".format(
             self.sim_opts["time_setup"].split(".")[0]), fromlist=["*"])
         tsetup_inst = getattr(setup, "Factory")(self.sim_opts["time_setup"])()
+
         for a in tsetup_inst.gen_attr_changelist()[0]:
             xml_luigi.attribute_change(a[0], a[1], a[2])
 
@@ -231,8 +232,7 @@ class ExpInputGenerator:
                                    str(self.sim_opts["n_threads"]))
 
         # This whole tree can be missing and that's fine
-        if xml_luigi.has_attribute(".//loop_functions/convergence",
-                                   "n_threads"):
+        if xml_luigi.has_tag(".//loop_functions/convergence"):
             xml_luigi.attribute_change(".//loop_functions/convergence",
                                        "n_threads",
                                        str(self.sim_opts["n_threads"]))

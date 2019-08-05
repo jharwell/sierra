@@ -37,9 +37,9 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 # Begin Experiments                                                            #
 ################################################################################
 DIST_TYPES=(SS)
-CONTROLLERS=(depth0.CRW
-             depth0.DPO)
-             # depth1.GP_DPO)
+CONTROLLERS=(#depth0.CRW
+             #depth0.DPO)
+             depth1.GP_DPO)
 OUTPUT_ROOT=$HOME/exp/test
 cd $SIERRA
 
@@ -60,9 +60,9 @@ do
         --batch-exp-range=14:14\
         --sierra-root=$OUTPUT_ROOT/robot-exhibition\
         --perf-measures=ss,so,sp\
-        --with-rendering --pipeline 3\
+        --with-rendering\
         --render-cmd-options="-r 10 -s:v 800x600 -c:v libx264 -crf 25 -filter:v scale=-2:956 -pix_fmt yuv420p"\
-        --render-cmd-ofile="800x600.mp4"\
+        --render-cmd-ofile="${dist}-800x600.mp4"\
         --results-process-tasks=render\
         --generator=${c}.${dist}96x48
     done;

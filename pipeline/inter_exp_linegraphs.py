@@ -55,4 +55,5 @@ class InterExpLinegraphs:
                                  legend=None,
                                  xlabel=graph['xlabel'],
                                  ylabel=graph['ylabel'],
-                                 linestyles=None).generate()
+                                 linestyles=None,
+                                 dashes=None).generate()

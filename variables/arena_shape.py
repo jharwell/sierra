@@ -47,23 +47,32 @@ class RectangularArena(BaseVariable):
         return [set([(".//arena", "size", "{0}, {1}, 2".format(s[0], s[1])),
                      (".//arena", "center", "{0}, {1}, 1".format(s[0] / 2.0, s[1] / 2.0)),
 
-                     # Robots are not allowed to spawn near the edges of the arena in order to avoid
-                     # corner cases
-                     (".//arena/distribute/position", "max", "{0}, {1}, 0".format(s[0] - 2.0,
-                                                                                  s[1] - 2.0)),
-                     (".//arena/distribute/position", "min", "{0}, {1}, 0".format(2.0, 2.0)),
+                     # We restrict the places robots can spawn within the arena as follows:
+                     #
+                     # - Subtract width of the walls so that robots do not spawn inside walls (which
+                     #   ARGoS seems to allow?).
+                     # - Subtract a little bit more so robots don't get into weird states by being
+                     #   near arena boundaries on the first timestep.
+                     (".//arena/distribute/position",
+                      "max",
+                      "{0}, {1}, 0".format(s[0] - 2.0 * kWallWidth - 2.0,
+                                           s[1] - 2.0 * kWallWidth - 2.0)),
+                     (".//arena/distribute/position",
+                      "min",
+                      "{0}, {1}, 0".format(2.0 * kWallWidth + 2.0, 2.0 * kWallWidth + 2.0)),
 
                      (".//arena/*[@id='wall_north']", "size", "{0}, {1}, 0.5".format(s[0],
                                                                                      kWallWidth)),
 
                      # North wall needs to have its Y coordinate offset by the width of the wall / 2
-                     # in order to be centered on the boundary for the arena. This is very necessary
-                     # to ensure that the maximum Y coordinate that robots can access is LESS than
-                     # the upper boundary of physics engines incident along the north wall.
+                     # in order to be centered on the boundary for the arena. This is necessary to
+                     # ensure that the maximum Y coordinate that robots can access is LESS than the
+                     # upper boundary of physics engines incident along the north wall.
+                     #
+                     # I think this is a bug in ARGoS.
                      (".//arena/*[@id='wall_north']/body",
-                      "position",
-                      "{0}, {1}, 0".format(s[0] / 2.0,
-                                           s[1] - kWallWidth / 2.0)),
+                      "position", "{0}, {1}, 0".format(s[0] / 2.0,
+                                                       s[1] - kWallWidth / 2.0)),
                      (".//arena/*[@id='wall_south']", "size", "{0}, {1}, 0.5".format(s[0],
                                                                                      kWallWidth)),
                      (".//arena/*[@id='wall_south']/body",

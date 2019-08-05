@@ -35,7 +35,7 @@ class BaseGenerator(ExpInputGenerator):
         xml_luigi.attribute_change(".//loop_functions", "label", "depth0_loop_functions")
 
         # Only present if rendering is enabled
-        if xml_luigi.has_attribute(".//qt-opengl", "user_functions"):
+        if xml_luigi.has_tag(".//qt-opengl"):
             xml_luigi.attribute_change(".//qt-opengl", "user_functions", "depth0_qt_user_functions")
 
         return xml_luigi

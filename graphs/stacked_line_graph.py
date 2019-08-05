@@ -23,6 +23,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
+plt.rcParams["axes.prop_cycle"] = plt.cycler("color", plt.cm.tab20.colors)
 
 
 class StackedLineGraph:
@@ -36,7 +37,7 @@ class StackedLineGraph:
     """
 
     def __init__(self, input_stem_fpath, output_fpath, cols, title, legend, xlabel, ylabel,
-                 linestyles):
+                 linestyles, dashes):
 
         self.input_csv_fpath = os.path.abspath(input_stem_fpath) + ".csv"
         self.input_stddev_fpath = os.path.abspath(input_stem_fpath) + ".stddev"
@@ -47,6 +48,7 @@ class StackedLineGraph:
         self.xlabel = xlabel
         self.ylabel = ylabel
         self.linestyles = linestyles
+        self.dashes = dashes
 
     def generate(self):
         if not os.path.exists(self.input_csv_fpath):
@@ -88,7 +90,8 @@ class StackedLineGraph:
         Plots selected columns in a dataframe, (possibly) including:
 
         - Custom linestyles
-        - errorbars
+        - Custom dash styles
+        - Errorbars
         """
         if self.linestyles is None:
             ax = data_df[cols].plot()
@@ -97,10 +100,16 @@ class StackedLineGraph:
                     self._plot_col_errorbars(data_df, stddev_df, c)
             return ax
         else:
-            for c, s in zip(cols, self.linestyles):
-                ax = data_df[c].plot(linestyle=s)
-                if stddev_df is not None:
-                    self._plot_col_errorbars(data_df, stddev_df, c)
+            if self.dashes is None:
+                for c, s in zip(cols, self.linestyles):
+                    ax = data_df[c].plot(linestyle=s)
+                    if stddev_df is not None:
+                        self._plot_col_errorbars(data_df, stddev_df, c)
+            else:
+                for c, s, d in zip(cols, self.linestyles, self.dashes):
+                    ax = data_df[c].plot(linestyle=s, dashes=d)
+                    if stddev_df is not None:
+                        self._plot_col_errorbars(data_df, stddev_df, c)
             return ax
 
     def _plot_col_errorbars(self, data_df, stddev_df, col):

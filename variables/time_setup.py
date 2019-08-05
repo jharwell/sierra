@@ -41,7 +41,7 @@ class TimeSetup(BaseVariable):
         return [set([
             (".//experiment", "length", "{0}".format(self.sim_duration)),
             (".//experiment", "ticks_per_second", "{0}".format(kTicksPerSecond)),
-            (".//output/metrics", "collect_interval", "{0}".format(self.metric_interval))])]
+            (".//output/metrics", "output_interval", "{0}".format(self.metric_interval))])]
 
     def gen_tag_rmlist(self):
         return []

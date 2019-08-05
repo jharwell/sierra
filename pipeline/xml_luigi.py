@@ -63,14 +63,13 @@ class XMLLuigi:
         """
         el = self.root.find(path)
 
-        try:
+        if self.has_tag(path) and attr in el.attrib:
             el.attrib[attr] = value   # pytype: disable=attribute-error
-        except AttributeError:
+        else:
             if not noprint:
                 print("WARNING: No attribute '{1}' found in node '{0}'".format(path, attr))
-            pass
 
-    def has_attribute(self, path, attr):
+    def has_tag(self, path):
         return self.root.find(path) is not None
 
     def tag_change(self, path, tag, value):

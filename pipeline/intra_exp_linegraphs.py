@@ -19,7 +19,6 @@ Copyright 2018 London John Harwell, All rights reserved.
 
 import os
 from graphs.stacked_line_graph import StackedLineGraph
-import pandas as pd
 
 
 class IntraExpLinegraphs:
@@ -60,7 +59,8 @@ class IntraExpLinegraphs:
                                      legend=graph['legend'],
                                      xlabel=graph['xlabel'],
                                      ylabel=graph['ylabel'],
-                                     linestyles=graph.get('styles', None)).generate()
+                                     linestyles=graph.get('styles', None),
+                                     dashes=graph.get('dashes', None)).generate()
                 except KeyError:
                     raise KeyError('Check that the generated {0}.csv file contains the columns {1}'.format(
                         graph['src_stem'],

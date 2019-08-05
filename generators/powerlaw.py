@@ -49,7 +49,7 @@ class PLGenerator(ExpInputGenerator):
         # We check for attributes before modification because if we are not rendering video, then we
         # get a bunch of spurious warnings about deleted tags/attributes.
         for a in shape.gen_attr_changelist()[0]:
-            if xml_luigi.has_attribute(a[0], a[1]):
+            if xml_luigi.has_tag(a[0]):
                 xml_luigi.attribute_change(a[0], a[1], a[2])
 
         with open(self.exp_def_fpath, 'ab') as f:

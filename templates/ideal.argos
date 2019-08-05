@@ -205,6 +205,7 @@
           task_tab_harvester="task-tab-harvester.csv"
           task_distribution="task-distribution.csv"
           perception_dpo="perception-dpo.csv"
+          loop_temporal_variance="loop-temporal-variance.csv"
           output_interval="1000"/>
     </output>
     <convergence
@@ -271,7 +272,7 @@
               n_clusters="15"
               />
           <manifest
-              n_cube="20"
+              n_cube="40"
               n_ramp="0"
               unit_dim="0.2"
               />

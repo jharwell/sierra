@@ -40,7 +40,7 @@ kHZ = [0, 8000, 16000, 32000]
 # kBMAmps = [x for x in range(kMinBMAmp, kMaxBMAmp + kBMAmpDelta, kBMAmpDelta)]
 kBMAmps = [10, 100, 200, 400, 800]
 # kBCAmps = [kMinBCAmp + x * kBCAmpDelta for x in range(0, int(kMaxBCAmp / kMinBCAmp))]
-kBCAmps = [0, 0.1, 0.2, 0.4, 0.8]
+kBCAmps = [0, 0.05, 0.1, 0.2, 0.4]
 
 
 class TemporalVariance(BaseVariable):

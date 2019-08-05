@@ -80,7 +80,7 @@ class ExpCSVAverager:
             csv_root = os.path.join(self.exp_output_root, exp, ExpCSVAverager.kMetricsFolderName)
             # Nothing but .csv files should be in the metrics folder
             for csv_fname in os.listdir(csv_root):
-                df = pd.read_csv(os.path.join(csv_root, csv_fname), sep=';')
+                df = pd.read_csv(os.path.join(csv_root, csv_fname), index_col=False, sep=';')
                 if csv_fname not in csvs:
                     csvs[csv_fname] = []
 
@@ -94,7 +94,6 @@ class ExpCSVAverager:
                 csv_averaged.to_csv(os.path.join(self.averaged_output_root, csv_fname),
                                     sep=';',
                                     index=False)
-
                 # Also write out stddev in order to calculate confidence intervals later
                 if self.gen_stddev:
                     csv_stddev = by_row_index.std().round(2)

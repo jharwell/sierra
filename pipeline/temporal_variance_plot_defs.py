@@ -24,9 +24,6 @@ import numpy as np
 import yaml
 import re
 
-from pipeline.intra_exp_linegraphs import IntraExpLinegraphs
-from pipeline.intra_exp_histograms import IntraExpHistograms
-from pipeline.intra_exp_heatmaps import IntraExpHeatmaps
 from variables.temporal_variance_parser import TemporalVarianceParser
 import perf_measures.vcs as vcs
 
@@ -42,6 +39,7 @@ class TemporalVariancePlotDefs:
 
     def __init__(self, cmdopts):
         self.cmdopts = copy.deepcopy(cmdopts)
+        self.perf_csv_col = 'cum_avg_collected'
 
     def __call__(self):
         tv_attr = TemporalVarianceParser().parse(self.cmdopts["criteria_def"])
@@ -59,47 +57,77 @@ class TemporalVariancePlotDefs:
         adaptability = vcs.AdaptabilityCS(self.cmdopts, exp_num)
         reactivity = vcs.ReactivityCS(self.cmdopts, exp_num)
 
-        df = pd.DataFrame({'clock': vcs.DataFrames.expx_perf_df(self.cmdopts['output_root'],
-                                                                exp_num)['clock'].values,
-                           'expx_perf': vcs.DataFrames.expx_perf_df(self.cmdopts['output_root'],
-                                                                    exp_num)['int_collected'].values,
-                           'expx_var': vcs.DataFrames.expx_var_df(self.cmdopts['output_root'],
-                                                                  exp_num)[tv_attr['variance_csv_col']].values,
-                           'exp0_perf': vcs.DataFrames.exp0_perf_df(self.cmdopts['output_root'])['int_collected'].values,
-                           'exp0_var': vcs.DataFrames.exp0_var_df(self.cmdopts['output_root'])[tv_attr['variance_csv_col']].values,
-                           'ideal_reactivity': reactivity.calc_waveforms()[0][:, 1],
-                           'ideal_adaptability': adaptability.calc_waveforms()[0][:, 1]})
-        df.to_csv(os.path.join(output_root,
-                               'tv-plots.csv'),
+        expx_perf = vcs.DataFrames.expx_perf_df(self.cmdopts['output_root'],
+                                                exp_num)[self.perf_csv_col].values
+        expx_var = vcs.DataFrames.expx_var_df(self.cmdopts['output_root'],
+                                              exp_num)[tv_attr['variance_csv_col']].values
+        comp_expx_var = self._comparable_exp_variance(expx_var,
+                                                      tv_attr,
+                                                      expx_perf.max(),
+                                                      expx_perf.min())
+
+        df = pd.DataFrame(
+            {
+                'clock': vcs.DataFrames.expx_perf_df(self.cmdopts['output_root'],
+                                                     exp_num)['clock'].values,
+                'expx_perf': vcs.DataFrames.expx_perf_df(self.cmdopts['output_root'], exp_num)[self.perf_csv_col].values,
+                'expx_var': comp_expx_var,
+                'exp0_perf': vcs.DataFrames.exp0_perf_df(self.cmdopts['output_root'])[self.perf_csv_col].values,
+                'exp0_var': vcs.DataFrames.exp0_var_df(self.cmdopts['output_root'])[tv_attr['variance_csv_col']].values,
+                'ideal_reactivity': reactivity.calc_waveforms()[0][:, 1],
+                'ideal_adaptability': adaptability.calc_waveforms()[0][:, 1]
+            }
+        )
+        df.to_csv(os.path.join(output_root, 'tv-plots.csv'),
                   sep=';',
                   index=False)
         tv = [
             {'src_stem': 'tv-plots',
              'dest_stem': 'tv-plots-reactivity',
-             'cols': ['expx_perf', 'expx_var', 'exp0_perf', 'exp0_var', 'ideal_reactivity'],
+             'cols': ['exp0_var', 'expx_var', 'exp0_perf', 'expx_perf', 'ideal_reactivity'],
              'title': 'Observed vs. Ideal Reactivity Curves',
-             'legend': ['Experimental Performance',
-                        'Experimental Applied Variance',
+             'legend': ['Ideal Conditions Applied Variance',
+                        'Experimental Conditions Applied Variance',
                         'Ideal Conditions Performance',
-                        'Ideal Conditions Variance',
+                        'Experimental Performance',
                         'Ideal Reactivity'],
              'xlabel': 'Interval',
-             'ylabel': 'Swarm Performance(# Blocks collected)',
-             'styles': ['-', '--', '-', '--', '-']
+             'ylabel': 'Swarm Performance (# Blocks collected)',
+             'styles': ['-', '-', '-', '--', '-'],
+             'dashes': [(1000, 0), (1000, 0), (1000, 0), (1000, 0), (4, 5)]
              },
             {
                 'src_stem': 'tv-plots',
                 'dest_stem': 'tv-plots-adaptability',
-                'cols': ['expx_perf', 'expx_var', 'exp0_perf', 'exp0_var', 'ideal_adaptability'],
+                'cols': ['exp0_var', 'expx_var', 'exp0_perf', 'expx_perf', 'ideal_adaptability', ],
                 'title': 'Observed vs. Ideal Adaptability Curves',
-                'legend': ['Experimental Performance',
-                           'Experimental Applied Variance',
+                'legend': ['Ideal Conditions Applied Variance',
+                           'Experimental Conditions Applied Variance',
                            'Ideal Conditions Performance',
-                           'Ideal Conditions Applied Variance',
+                           'Experimental Performance',
                            'Ideal Adaptability'],
                 'xlabel': 'Interval',
                 'ylabel': 'Swarm Performance (# Blocks collected)',
-                'styles': ['-', '--', '-', '--', '-']
+                'styles': ['-', '-', '-', '--', '-'],
+                'dashes': [(1000, 0), (1000, 0), (1000, 0), (1000, 0), (4, 5)]
             },
         ]
         return tv
+
+    def _comparable_exp_variance(self, var_df, tv_attr, perf_max, perf_min):
+        """
+        Return the applied variance for an experiment that is directly comparable to the performance
+        curves for the experiment via inversion. Not all curve similarity measures are scaling
+        invariant, so we need to scale the variance waveform to within the min/max bounds of the
+        performance curve we will be comparing against.
+        """
+        # The applied variance needs to be inverted in order to calculate curve similarity, because
+        # the applied variance is a penalty, and as the penalties go UP, performance goes DOWN. Not
+        # inverting the variance would therefore be unlikely to provide any correlation, and any it
+        # did provide would be ridiculously counter intuitive. Inversion makes it comparable to observed
+        # performance curves.
+        #
+        # So, invert the variance waveform by subtracting its y offset, reflecting it about the x-axis,
+        # and then re-adding the y offset.
+        #
+        return (perf_max - perf_min) * (var_df - var_df.min()) / (var_df.max() - var_df.min()) + perf_min

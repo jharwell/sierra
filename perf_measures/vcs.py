@@ -157,7 +157,7 @@ class AdaptabilityCS():
     def __init__(self, cmdopts, exp_num):
         self.cmdopts = cmdopts
         self.exp_num = exp_num
-        self.perf_csv_col = 'int_collected'
+        self.perf_csv_col = 'cum_avg_collected'
         self.var_csv_col = TemporalVarianceParser().parse(
             self.cmdopts["criteria_def"])['variance_csv_col']
 
@@ -229,7 +229,7 @@ class ReactivityCS():
     def __init__(self, cmdopts, exp_num):
         self.cmdopts = cmdopts
         self.exp_num = exp_num
-        self.perf_csv_col = 'int_collected'
+        self.perf_csv_col = 'cum_avg_collected'
         self.var_csv_col = TemporalVarianceParser().parse(
             self.cmdopts["criteria_def"])['variance_csv_col']
 
@@ -244,14 +244,25 @@ class ReactivityCS():
         expx_perf_df = DataFrames.expx_perf_df(self.cmdopts['output_root'], self.exp_num)
         expx_var_df = DataFrames.expx_var_df(self.cmdopts['output_root'], self.exp_num)
 
-        perf_max = exp0_perf_df[self.perf_csv_col].max()
-        perf_min = exp0_perf_df[self.perf_csv_col].min()
+        ideal_df = pd.DataFrame(index=exp0_var_df.index, columns=[self.perf_csv_col])
 
-        tv_attr = TemporalVarianceParser().parse(self.cmdopts["criteria_def"])
-        ideal_perf = _comparable_exp_variance(expx_var_df - exp0_var_df,
-                                              tv_attr,
-                                              perf_max,
-                                              perf_min)
+        # The performance curve of a reactivyt system should respond proportionally to both adverse
+        # and beneficial changes in the environment.
+        #
+        # So, if the penalty imposed during the current experiment at timestep t is less than that
+        # imposed during the ideal conditions experiment, then the performance curve should be
+        # observed to increase by an amount proportional to that difference, as the system reacts
+        # the drop in penalties. Vice versa for an increase penalty in the experiment for a timestep
+        # t vs. the amount imposed during the ideal conditions experiment.
+        for i in exp0_perf_df[self.perf_csv_col].index:
+            if exp0_var_df.loc[i, self.var_csv_col] > expx_var_df.loc[i, self.var_csv_col]:
+                ideal_df.loc[i, self.perf_csv_col] = exp0_perf_df.loc[i, self.perf_csv_col] * \
+                    (exp0_var_df.loc[i, self.var_csv_col] / expx_var_df.loc[i, self.var_csv_col])
+            elif exp0_var_df.loc[i, self.var_csv_col] < expx_var_df.loc[i, self.var_csv_col]:
+                ideal_df.loc[i, self.perf_csv_col] = exp0_perf_df.loc[i, self.perf_csv_col] * \
+                    (exp0_var_df.loc[i, self.var_csv_col] / expx_var_df.loc[i, self.var_csv_col])
+            else:
+                ideal_df.loc[i, self.perf_csv_col] = expx_perf_df.loc[i, self.perf_csv_col]
 
         xlen = len(exp0_var_df[self.var_csv_col].values)
         exp_data = np.zeros((xlen, 2))
@@ -260,39 +271,13 @@ class ReactivityCS():
 
         ideal_data = np.zeros((xlen, 2))
         ideal_data[:, 0] = expx_var_df.index.values
-        ideal_data[:, 1] = ideal_perf
+        ideal_data[:, 1] = ideal_df[self.perf_csv_col].values
 
         return ideal_data, exp_data
 
     def __call__(self):
         ideal_data, exp_data = self.calc_waveforms()
         return _compute_vcs_raw(exp_data, ideal_data, self.cmdopts["reactivity_cs_method"])
-
-
-def _comparable_exp_variance(var_df, tv_attr, perf_max, perf_min):
-    """
-    Return the applied variance for an experiment that is directly comparable to the performance
-    curves for the experiment via inversion. Not all curve similarity measures are scaling
-    invariant, so we need to scale the variance waveform to within the min/max bounds of the
-    performance curve we will be comparing against.
-    """
-    # The applied variance needs to be inverted in order to calculate curve similarity, because
-    # the applied variance is a penalty, and as the penalties go UP, performance goes DOWN. Not
-    # inverting the variance would therefore be unlikely to provide any correlation, and any it
-    # did provide would be ridiculously counter intuitive. Inversion makes it comparable to observed
-    # performance curves.
-    #
-    # So, invert the variance waveform by subtracting its y offset, reflecting it about the x-axis,
-    # and then re-adding the y offset.
-    #
-    xlen = len(var_df[tv_attr["variance_csv_col"]].values)
-    midpoint = sum(var_df[tv_attr["variance_csv_col"]].values) / xlen
-
-    reflected = -(var_df[tv_attr["variance_csv_col"]].values - midpoint) + midpoint
-    r_max = reflected.max()
-    r_min = reflected.min()
-
-    return (perf_max - perf_min) * (reflected - r_min) / (r_max - r_min) + perf_min
 
 
 def _compute_vcs_raw(exp_data, ideal_data, method):
