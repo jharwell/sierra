@@ -11,7 +11,7 @@ FORDYCA=$HOME/git/fordyca
 SIERRA=$HOME/git/sierra
 
 # Initialize modules
-source /home/gini/shared/swarm/bin/build-env-setup.sh > /dev/null 2>&1
+source /home/gini/shared/swarm/bin/msi-env-setup.sh
 
 # Add ARGoS libraries to system library search path, since they are in a
 # non-standard location
