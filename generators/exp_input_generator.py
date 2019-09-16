@@ -313,7 +313,9 @@ class ExpInputGenerator:
         if 'local' in parts:
             argos_cmd = 'argos3'
         else:
-            argos_cmd = 'argos3-' + parts[1]
+            cluster = os.getenv("MSICLUSTER")
+            assert cluster is not None, "FATAL: Attempt to run sierra in non-HPC environment with --exec-method=hpc"
+            argos_cmd = 'argos3-' + cluster
 
         # When running ARGoS under Xvfb in order to headlessly render frames, we need to start a
         # per-instance Xvfb server that we tell ARGoS to use via the DISPLAY environment variable,
