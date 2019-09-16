@@ -19,7 +19,8 @@ Copyright 2018 John Harwell, All rights reserved.
 from pipeline.batched_exp_input_generator import BatchedExpInputGenerator
 from generators.generator_factory import GeneratorPairFactory
 from generators.generator_factory import ScenarioGeneratorFactory
-from variables.temporal_variance_parser import TemporalVarianceParser
+from generators.generator_factory import ControllerGeneratorFactory
+import os
 
 
 class GeneratorCreator:
@@ -50,6 +51,7 @@ class GeneratorCreator:
             'n_blocks': args.n_blocks,
             'static_cache_blocks': args.static_cache_blocks,
             'exec_method': args.exec_method,
+            'config_root': args.config_root
         }
         if args.batch_criteria is not None:
             criteria = __import__("variables.{0}".format(
@@ -72,10 +74,20 @@ class GeneratorCreator:
                 x, y = generator_names[1].split('.')[1][2:].split('x')
                 sim_opts["arena_dim"] = (int(x), int(y))
 
+            # Scenarios come from a canned set, which is why we have to look up their generator
+            # class rather than being able to create the class on the fly as with controllers.
             scenario_name = generator_names[1].split(
                 '.')[0] + "." + generator_names[1].split('.')[1][:2] + "Generator"
 
-            scenario = ScenarioGeneratorFactory(controller='generators.' + generator_names[0] + "Generator",
+            controller = ControllerGeneratorFactory(controller=generator_names[0],
+                                                    config_root=args.config_root,
+                                                    template_config_file=args.template_config_file,
+                                                    generation_root=sim_opts['exp_generation_root'],
+                                                    exp_output_root=sim_opts['exp_output_root'],
+                                                    exp_def_fname="exp_def.pkl",
+                                                    sim_opts=sim_opts)
+
+            scenario = ScenarioGeneratorFactory(controller=generator_names[0],
                                                 scenario='generators.' + scenario_name,
                                                 template_config_file=args.template_config_file,
                                                 generation_root=args.generation_root,
@@ -83,7 +95,7 @@ class GeneratorCreator:
                                                 exp_def_fname="exp_def.pkl",
                                                 sim_opts=sim_opts)
 
-            return GeneratorPairFactory(controller='generators.' + generator_names[0] + "Generator",
+            return GeneratorPairFactory(controller=controller,
                                         scenario=scenario,
                                         template_config_file=args.template_config_file,
                                         generation_root=args.generation_root,

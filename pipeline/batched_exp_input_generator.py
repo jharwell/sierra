@@ -21,6 +21,7 @@ import pickle
 from pipeline.xml_luigi import XMLLuigi
 from generators.generator_factory import GeneratorPairFactory
 from generators.generator_factory import ScenarioGeneratorFactory
+from generators.generator_factory import ControllerGeneratorFactory
 
 
 class BatchedExpInputGenerator:
@@ -124,8 +125,11 @@ class BatchedExpInputGenerator:
             exp_generation_root = "{0}/exp{1}".format(self.batch_generation_root, exp_num)
             exp_output_root = "{0}/exp{1}".format(self.batch_output_root, exp_num)
 
-            controller_name = 'generators.' + self.exp_generator_pair[0] + "Generator"
+            controller_name = self.exp_generator_pair[0]
             scenario_name = 'generators.' + scenario
+
+            # Scenarios come from a canned set, which is why we have to look up their generator
+            # class rather than being able to create the class on the fly as with controllers.
             scenario = ScenarioGeneratorFactory(controller=controller_name,
                                                 scenario=scenario_name,
                                                 template_config_file=os.path.join(exp_generation_root,
@@ -135,11 +139,20 @@ class BatchedExpInputGenerator:
                                                 exp_def_fname="exp_def.pkl",
                                                 sim_opts=self.sim_opts)
 
-            print("-- Created joint generator class '{0}'".format('+'.join([self.exp_generator_pair[0],
+            controller = ControllerGeneratorFactory(controller=controller_name,
+                                                    config_root=self.sim_opts['config_root'],
+                                                    template_config_file=os.path.join(exp_generation_root,
+                                                                                      self.batch_config_leaf),
+                                                    generation_root=exp_generation_root,
+                                                    exp_output_root=exp_output_root,
+                                                    exp_def_fname="exp_def.pkl",
+                                                    sim_opts=self.sim_opts)
+
+            print("-- Created joint generator class '{0}'".format('+'.join([controller.__class__.__name__,
                                                                             scenario.__class__.__name__])))
 
             g = GeneratorPairFactory(scenario=scenario,
-                                     controller=controller_name,
+                                     controller=controller,
                                      template_config_file=os.path.join(exp_generation_root,
                                                                        self.batch_config_leaf),
                                      generation_root=exp_generation_root,

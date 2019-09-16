@@ -20,34 +20,34 @@ import generators.dual_source
 import generators.quad_source
 import generators.powerlaw
 import generators.random
-import generators.depth0
-import generators.depth1
-import generators.depth2
+import yaml
+import os
+from generators.exp_input_generator import ExpInputGenerator
 
 
 def GeneratorPairFactory(controller, scenario, **kwargs):
     """
-    Given a controller(str), and a scenario(generator), construct a joint generator class that can
-    be used for experiment generation.
+    Given a controller(generator), and a scenario(generator), construct a joint generator class that
+    can be used for experiment generation.
 
     """
 
     def __init__(self, **kwargs):
-
-        self.controller = eval(controller)(**kwargs)
+        self.controller = controller
         self.scenario = scenario
 
     def generate(self):
         self.scenario.generate(self.controller.generate())
 
-    return type('+'.join([controller, scenario.__class__.__name__]),
+    return type('+'.join([controller.__class__.__name__, scenario.__class__.__name__]),
                 (object,), {"__init__": __init__, "generate":
                             generate})(**kwargs)
 
 
 def ScenarioGeneratorFactory(scenario, controller, **kwargs):
     """
-    Creates a scenario generator using arbitrary arena dimensions and with an arbitrary controller.
+    Creates a scenario generator using arbitrary arena dimensions and with an arbitrary
+    controller.
 
     scenario(str): The name of scenario to run.
     controller(str): The name of controller to run.
@@ -66,3 +66,47 @@ def ScenarioGeneratorFactory(scenario, controller, **kwargs):
                 (object,), {"__init__": __init__,
                             "generate": generate
                             })(**kwargs)
+
+
+def ControllerGeneratorFactory(controller, config_root, **kwargs):
+    """
+    Creates a controller generator from the cmdline specification that exists in one of
+    the configuration files.
+
+    controller(str): Parsed controller identification string from the cmdline.
+    config_root(str): Path to the YAML configuration root.
+    """
+
+    def __init__(self, **kwargs):
+        ExpInputGenerator.__init__(self, **kwargs)
+        self.config = yaml.load(open(os.path.join(config_root, 'controllers.yaml')))
+        self.category, self.name = controller.split('.')
+
+    def generate(self):
+        """
+        Generates all changes to the input file for the simulation (does not save)
+        """
+        xml_luigi = self.generate_common_defs()
+
+        # Setup loop functions
+        for t in self.config[self.category]['xml']['attr_change']:
+            xml_luigi.attribute_change(t[0],
+                                       t[1],
+                                       t[2],
+                                       kwargs['sim_opts']['with_rendering'] is False)
+
+        # Setup controller
+        exists = False
+        for controller in self.config[self.category]['controllers']:
+            if controller['name'] == self.name:
+                exists = True
+                for t in controller['xml']['attr_change']:
+                    xml_luigi.tag_change(t[0], t[1], t[2])
+
+        assert exists, "FATAL: Non-existent controller {0}".format(self.name)
+        return xml_luigi
+
+    return type(controller,
+                (ExpInputGenerator,), {"__init__": __init__,
+                                       "generate": generate
+                                       })(**kwargs)

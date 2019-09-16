@@ -57,11 +57,11 @@ for d in "${DIMS[@]}"
 do
     $BASE_CMD --generator=depth0.CRW.SS${d}
     $BASE_CMD --generator=depth0.DPO.SS${d}
-    $BASE_CMD --generator=depth1.GP_DPO.SS${d}
-    $BASE_CMD --generator=depth2.GRP_DPO.SS${d}
+    $BASE_CMD --generator=depth1.BITD_DPO.SS${d}
+    $BASE_CMD --generator=depth2.BIRTD_DPO.SS${d}
 done
 
 
 # Generate comparison graphs (a valid batch criteria still needed to
 # correctly generate graph labels)
-$BASE_CMD --generator=depth2.GRP_DPO.SS96x48 --pipeline 5
+$BASE_CMD --generator=depth2.BIRTD_DPO.SS96x48 --pipeline 5

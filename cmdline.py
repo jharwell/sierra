@@ -104,8 +104,8 @@ class Cmdline:
                             configuration.
 
                             Valid controllers: {depth0.{CRW, DPO, MDPO},
-                                                depth1.{GP_DPO, OGP_DPO},
-                                                depth2.{GRP_DPO, OGRP_DPO}.
+                                                depth1.{BITD_DPO, OBITD_DPO},
+                                                depth2.{BIRTD_DPO, OBIRTD_DPO}.
 
                             Valid scenarios: {RN, SS, DS, QS, PL}, which correspond to {random, single source, dual
                             source, quad source, powerlaw} block distributions.
@@ -461,5 +461,5 @@ class Cmdline:
                             default set of controllers will be used for comparison.
 
                             """,
-                            default='depth0.CRW,depth0.DPO,depth1.GP_DPO,depth2.GRP_DPO')
+                            default='depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO')
         return parser

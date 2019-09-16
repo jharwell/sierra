@@ -19,8 +19,8 @@ Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 import os
 from cmdline import Cmdline
 from pipeline.exp_pipeline import ExpPipeline
-from generator_pair_parser import GeneratorPairParser
-from generator_creator import GeneratorCreator
+from generators.generator_pair_parser import GeneratorPairParser
+from generators.generator_creator import GeneratorCreator
 import collections
 
 
@@ -31,6 +31,7 @@ def scenario_dir_name(batch_criteria, scenario):
     differentiate between batched experiments, for some batch criteria, those will be the same and
     so you need to use the batch criteria definition itself to uniquely identify.
     """
+
     if 'swarm_size' in batch_criteria:
         return scenario
     elif any(b in batch_criteria for b in ['swarm_density', 'temporal_variance']):

@@ -41,10 +41,10 @@ DIST_TYPES2=(QS) # These require square arenas (nest is in the middle)
 CONTROLLERS=() #depth0.CRW
              # depth0.DPO)
              # depth0.ODPO
-                #  depth1.GP_DPO
-                # depth1.GP_ODPO)
-               # depth2.GRP_DPO\
-               # depth2.GRP_ODPO)
+                #  depth1.BITD_DPO
+                # depth1.BITD_ODPO)
+               # depth2.BIRTD_DPO\
+               # depth2.BIRTD_ODPO)
 OUTPUT_ROOT=$HOME/exp/test
 BASE_CMD="python3 sierra.py \
                   --template-config-file=$SIERRA/templates/ideal.argos \
@@ -82,20 +82,20 @@ done;
 
 # Generate comparison graphs (a valid batch criteria still needed to correctly
 # generate graph labels)
-$BASE_CMD --generator=depth1.GP_DPO.SS12x6\
+$BASE_CMD --generator=depth1.BITD_DPO.SS12x6\
           --batch-criteria=swarm_size.Log64\
           --sierra-root=$OUTPUT_ROOT/b10\
           --pipeline 5 \
-          --inter-batch-controllers=depth0.CRW,depth0.DPO,depth0.ODPO,depth1.GP_DPO,depth1.GP_ODPO,depth2.GRP_DPO,depth2.GRP_ODPO
+          --inter-batch-controllers=depth0.CRW,depth0.DPO,depth0.ODPO,depth1.BITD_DPO,depth1.BITD_ODPO,depth2.BIRTD_DPO,depth2.BIRTD_ODPO
 
-$BASE_CMD --generator=depth1.GP_DPO.SS12x6\
+$BASE_CMD --generator=depth1.BITD_DPO.SS12x6\
           --batch-criteria=swarm_size.Log64\
           --sierra-root=$OUTPUT_ROOT/b20\
           --pipeline 5\
-          --inter-batch-controllers=depth0.CRW,depth0.DPO,depth0.ODPO,depth1.GP_DPO,depth1.GP_ODPO,depth2.GRP_DPO,depth2.GRP_ODPO
+          --inter-batch-controllers=depth0.CRW,depth0.DPO,depth0.ODPO,depth1.BITD_DPO,depth1.BITD_ODPO,depth2.BIRTD_DPO,depth2.BIRTD_ODPO
 
-$BASE_CMD --generator=depth1.GP_DPO.SS12x6\
+$BASE_CMD --generator=depth1.BITD_DPO.SS12x6\
           --batch-criteria=swarm_size.Log64\
           --sierra-root=$OUTPUT_ROOT/b40\
           --pipeline 5\
-          --inter-batch-controllers=depth0.CRW,depth0.DPO,depth0.ODPO,depth1.GP_DPO,depth1.GP_ODPO,depth2.GRP_DPO,depth2.GRP_ODPO
+          --inter-batch-controllers=depth0.CRW,depth0.DPO,depth0.ODPO,depth1.BITD_DPO,depth1.BITD_ODPO,depth2.BIRTD_DPO,depth2.BIRTD_ODPO

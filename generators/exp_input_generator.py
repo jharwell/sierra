@@ -19,7 +19,6 @@
 import os
 import random
 import pickle
-import subprocess
 from pipeline.xml_luigi import XMLLuigi, InvalidElementError
 from variables import time_setup, physics_engines, block_distribution, dynamic_cache, static_cache
 
