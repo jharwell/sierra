@@ -18,12 +18,11 @@ This file is part of SIERRA.
 
 import os
 import copy
+import yaml
 import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
 import perf_measures.utils as pm_utils
 import math
-
-kTargetCumStem = "blocks-collected-cum"
 
 
 class Efficiency:
@@ -42,6 +41,10 @@ class Efficiency:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
+        self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
+                                                       'main.yaml')))
+        self.blocks_collected_stem = self.main_config['sierra']['perf']['blocks_collected_csv'].split('.')[
+            0]
 
     def calculate(self):
         """
@@ -52,8 +55,10 @@ class Efficiency:
           (Calculated metric dataframe, stddev dataframe) if stddev was collected, (Calculated
           metric datafram, None) otherwise.
         """
-        sc_ipath = os.path.join(self.cmdopts["collate_root"], kTargetCumStem + '.csv')
-        stddev_ipath = os.path.join(self.cmdopts["collate_root"], kTargetCumStem + '.stddev')
+        sc_ipath = os.path.join(self.cmdopts["collate_root"],
+                                self.blocks_collected_stem + '.csv')
+        stddev_ipath = os.path.join(self.cmdopts["collate_root"],
+                                    self.blocks_collected_stem + '.stddev')
 
         # Metric calculation is the same for the actual value of it and the std deviation,
         if os.path.exists(stddev_ipath):

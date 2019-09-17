@@ -32,13 +32,19 @@ class IntraExpGraphGenerator:
     Generates common/basic graphs from averaged output data within a single experiment.
 
     Attributes:
-      cmdopts(dict): Dictionary of commandline arguments used during intra-experiment graph
+        cmdopts(dict): Dictionary of commandline arguments used during intra-experiment graph
                      generation.
     """
 
     def __init__(self, cmdopts):
+        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
+        # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
-        self.cmdopts["output_root"] = os.path.join(self.cmdopts["output_root"], 'averaged-output')
+        self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
+                                                       'main.yaml')))
+
+        self.cmdopts["output_root"] = os.path.join(self.cmdopts["output_root"],
+                                                   self.main_config['sierra']['avg_output_leaf'])
 
         os.makedirs(self.cmdopts["graph_root"], exist_ok=True)
         self.linegraph_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],

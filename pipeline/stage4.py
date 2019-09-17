@@ -45,6 +45,8 @@ class PipelineStage4:
                                                              'controllers.yaml')))
         self.linegraph_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
                                                             'inter-graphs-line.yaml')))
+        self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
+                                                       'main.yaml')))
 
     def run(self):
         if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'intra':
@@ -54,7 +56,7 @@ class PipelineStage4:
             # Collation must be after intra-experiment graph generation, so that all .csv files to
             # be collated have been generated/modified according to parameters.
             targets = self._calc_linegraph_targets()
-            CSVCollator(self.cmdopts['output_root'], targets)()
+            CSVCollator(self.main_config, self.cmdopts['output_root'], targets)()
             self._gen_inter_graphs(targets)
 
     def _gen_inter_graphs(self, targets):

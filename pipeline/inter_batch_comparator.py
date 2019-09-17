@@ -22,6 +22,7 @@ from graphs.batch_ranged_graph import BatchRangedGraph
 from graphs.bar_graph import BarGraph
 import perf_measures.utils as pm_utils
 import copy
+import yaml
 import perf_measures.vcs
 
 
@@ -137,6 +138,8 @@ class InterBatchComparator:
 
     def __init__(self, controllers, cmdopts):
         self.cmdopts = cmdopts
+        self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
+                                                       'main.yaml')))
         self.controllers = controllers
 
         self.cc_graph_root = os.path.join(self.cmdopts['sierra_root'], "cc-graphs")
@@ -185,7 +188,8 @@ class InterBatchComparator:
                 csv_ipath = os.path.join(self.cmdopts['sierra_root'],
                                          c,
                                          s,
-                                         "exp-outputs/collated-csvs",
+                                         'exp-outputs',
+                                         self.main_config['sierra']['collate_csv_leaf'],
                                          src_stem + ".csv")
 
                 # Some experiments might not generate the necessary performance measure .csvs for
@@ -272,12 +276,14 @@ class InterBatchComparator:
                 csv_ipath = os.path.join(self.cmdopts['sierra_root'],
                                          c,
                                          s,
-                                         "exp-outputs/collated-csvs",
+                                         'exp-outputs',
+                                         self.main_config['sierra']['collate_csv_leaf'],
                                          src_stem + ".csv")
                 stddev_ipath = os.path.join(self.cmdopts['sierra_root'],
                                             c,
                                             s,
-                                            "exp-outputs/collated-csvs",
+                                            'exp-outputs',
+                                            self.main_config['sierra']['collate_csv_leaf'],
                                             src_stem + ".stddev")
 
                 # Some experiments might not generate the necessary performance measure .csvs for

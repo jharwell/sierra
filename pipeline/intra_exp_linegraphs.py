@@ -22,8 +22,6 @@ from graphs.stacked_line_graph import StackedLineGraph
 
 
 class IntraExpLinegraphs:
-    kTemporalVarCSV = 'loop-temporal-variance.csv'
-
     """
     Generates linegrahs from averaged output data within a single experiment.
 

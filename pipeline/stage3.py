@@ -22,6 +22,7 @@ from pipeline.exp_csv_averager import ExpCSVAverager
 from pipeline.batched_exp_video_renderer import BatchedExpVideoRenderer
 from pipeline.exp_video_renderer import ExpVideoRenderer
 import os
+import yaml
 
 
 class PipelineStage3:
@@ -36,6 +37,8 @@ class PipelineStage3:
 
     def __init__(self, cmdopts):
         self.cmdopts = cmdopts
+        self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
+                                                       'main.yaml')))
 
     def run(self):
         if 'average' in self.cmdopts['results_process_tasks'] or 'all' in self.cmdopts['results_process_tasks']:
@@ -47,18 +50,20 @@ class PipelineStage3:
     def _run_rendering(self):
         if not self.cmdopts['with_rendering']:
             return
+
+        render_params = {
+            'cmd_opts': self.cmdopts['render_cmd_opts'],
+            'ofile_leaf': self.cmdopts['render_cmd_ofile'],
+            'config': self.main_config
+        }
         if self.cmdopts['criteria_category'] is not None:
             print(
                 "- Stage3: Rendering videos for batched experiment '{0}'...".format(self.cmdopts['generator']))
-            renderer = BatchedExpVideoRenderer(self.cmdopts['output_root'],
-                                               self.cmdopts['render_cmd_options'],
-                                               self.cmdopts['render_cmd_ofile'])
+            renderer = BatchedExpVideoRenderer(render_params, self.cmdopts['output_root'])
         else:
             print(
                 "- Stage3: Rendering single experiment video in '{0}'...".format(self.cmdopts['generator']))
-            renderer = ExpVideoRenderer(self.cmdopts['output_root'],
-                                        self.cmdopts['render_cmd_options'],
-                                        self.cmdopts['render_cmd_ofile'])
+            renderer = ExpVideoRenderer(render_params, self.cmdopts['output_root'])
 
         renderer.render()
         print("- Stage3: Rendering complete")
@@ -66,20 +71,21 @@ class PipelineStage3:
     def _run_averaging(self):
         template_config_leaf, template_config_ext = os.path.splitext(
             os.path.basename(self.cmdopts['template_config_file']))
-
+        avg_params = {
+            'template_config_leaf': template_config_leaf,
+            'no_verify_results': self.cmdopts['no_verify_results'],
+            'gen_stddev': self.cmdopts['gen_stddev'],
+            'config': self.main_config,
+        }
         if self.cmdopts['criteria_category'] is not None:
             print(
                 "- Stage3: Averaging batched experiment outputs for '{0}'...".format(self.cmdopts['generator']))
-            averager = BatchedExpCSVAverager(template_config_leaf,
-                                             self.cmdopts['output_root'],
-                                             self.cmdopts['no_verify_results'],
-                                             self.cmdopts['gen_stddev'])
+            averager = BatchedExpCSVAverager(avg_params,
+                                             self.cmdopts['output_root'])
         else:
             print(
                 "- Stage3: Averaging single experiment outputs for '{0}'...".format(self.cmdopts['generator']))
-            averager = ExpCSVAverager(template_config_leaf,
-                                      self.cmdopts['no_verify_results'],
-                                      self.cmdopts['gen_stddev'],
+            averager = ExpCSVAverager(avg_params,
                                       self.cmdopts['output_root'])
 
         averager.run()

@@ -327,7 +327,7 @@ class Cmdline:
                             """,
                             choices=['render', 'average', 'all'],
                             default=['all'])
-        stage3.add_argument("--render-cmd-options",
+        stage3.add_argument("--render-cmd-opts",
                             help="""
 
                             Specify the ffmpeg options to appear between the specification of the input .png files and

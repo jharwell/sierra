@@ -26,27 +26,34 @@ class ExpCSVAverager:
     Averages a set of .csv output files from a set of simulation runs for a single experiment.
 
     Attributes:
-      exp_config_leaf(str): Leaf (i.e. no preceding path to the template XML configuration file for
-                                the experiment.
-      exp_output_root(str): Directory for averaged .csv output (relative to current dir or absolute).
+      ro_params(dict): Dictionary of read-only configuration for CSV averaging:
+          template_config_leaf(str): Leaf (i.e. no preceding path to the template XML configuration file
+                                for the experiment.
+          no_verify(bool): Should result verification be skipped?
+          gen_stddev(bool): Should standard deviation be generated (and therefore errorbars
+                            plotted)?
+          config(dict): Parsed main YAML configuration
+      exp_output_root(str): Directory for averaged .csv output (relative to current dir or
+                            absolute).
+
     """
 
-    kMetricsFolderName = "metrics"
-    kAveragedOutputFolderName = "averaged-output"
-
-    def __init__(self, exp_config_leaf, no_verify_results, gen_stddev, exp_output_root):
+    def __init__(self, ro_params, exp_output_root):
         # will get the main name and extension of the config file (without the full absolute path)
+        self.template_config_leaf = ro_params['template_config_leaf']
         self.template_config_fname, self.template_config_ext = os.path.splitext(
-            os.path.basename(exp_config_leaf))
+            os.path.basename(self.template_config_leaf))
 
         self.exp_output_root = os.path.abspath(exp_output_root)
-        self.exp_config_leaf = exp_config_leaf
 
-        self.averaged_output_root = os.path.join(self.exp_output_root,
-                                                 ExpCSVAverager.kAveragedOutputFolderName)
-        self.no_verify_results = no_verify_results
-        self.gen_stddev = gen_stddev
-        os.makedirs(self.averaged_output_root, exist_ok=True)
+        self.avgd_output_leaf = ro_params['config']['sierra']['avg_output_leaf']
+        self.avgd_output_root = os.path.join(self.exp_output_root,
+                                             self.avgd_output_leaf)
+        self.metrics_leaf = ro_params['config']['sim']['metrics_leaf']
+
+        self.no_verify_results = ro_params['no_verify_results']
+        self.gen_stddev = ro_params['gen_stddev']
+        os.makedirs(self.avgd_output_root, exist_ok=True)
 
         # to be formatted like: self.config_name_format.format(name, experiment_number)
         format_base = "{}_{}"
@@ -66,18 +73,18 @@ class ExpCSVAverager:
         csvs = {}
 
         pattern = self.output_name_format.format(
-            re.escape(self.exp_config_leaf), "\d+")
+            re.escape(self.template_config_leaf), "\d+")
 
         # check to make sure all directories are simulation runs, skipping the directory within each
         # experiment that the averaged data is placed in
         experiments = [e for e in os.listdir(self.exp_output_root) if e not in [
-            ExpCSVAverager.kAveragedOutputFolderName]]
+            self.avgd_output_leaf]]
 
         assert(all(re.match(pattern, exp) for exp in experiments)),\
             "FATAL: Not all directories in {0} are simulation runs".format(self.exp_output_root)
 
         for exp in experiments:
-            csv_root = os.path.join(self.exp_output_root, exp, ExpCSVAverager.kMetricsFolderName)
+            csv_root = os.path.join(self.exp_output_root, exp, self.metrics_leaf)
             # Nothing but .csv files should be in the metrics folder
             for csv_fname in os.listdir(csv_root):
                 df = pd.read_csv(os.path.join(csv_root, csv_fname), index_col=False, sep=';')
@@ -91,14 +98,14 @@ class ExpCSVAverager:
                 csv_concat = pd.concat(csvs[csv_fname])
                 by_row_index = csv_concat.groupby(csv_concat.index)
                 csv_averaged = by_row_index.mean()
-                csv_averaged.to_csv(os.path.join(self.averaged_output_root, csv_fname),
+                csv_averaged.to_csv(os.path.join(self.avgd_output_root, csv_fname),
                                     sep=';',
                                     index=False)
                 # Also write out stddev in order to calculate confidence intervals later
                 if self.gen_stddev:
                     csv_stddev = by_row_index.std().round(2)
                     csv_stddev_fname = csv_fname.split('.')[0] + '.stddev'
-                    csv_stddev.to_csv(os.path.join(self.averaged_output_root, csv_stddev_fname),
+                    csv_stddev.to_csv(os.path.join(self.avgd_output_root, csv_stddev_fname),
                                       sep=';',
                                       index=False)
 
@@ -108,17 +115,20 @@ class ExpCSVAverager:
         those .csv files all have the same # of rows and columns
         """
         experiments = [exp for exp in os.listdir(self.exp_output_root) if exp not in [
-            ExpCSVAverager.kAveragedOutputFolderName]]
+            self.avgd_output_leaf]]
+
         print('-- Verifying results in ' + self.exp_output_root + "...")
 
         for exp1 in experiments:
             csv_root1 = os.path.join(self.exp_output_root,
                                      exp1,
-                                     ExpCSVAverager.kMetricsFolderName)
+                                     self.metrics_leaf)
+
             for exp2 in experiments:
                 csv_root2 = os.path.join(self.exp_output_root,
                                          exp2,
-                                         ExpCSVAverager.kMetricsFolderName)
+                                         self.metrics_leaf)
+
                 if not os.path.isdir(csv_root2):
                     continue
 

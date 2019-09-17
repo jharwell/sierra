@@ -20,8 +20,6 @@ Copyright 2019, John Harwell, All rights reserved.
 import os
 import copy
 import pandas as pd
-import numpy as np
-import yaml
 import re
 
 from variables.temporal_variance_parser import TemporalVarianceParser

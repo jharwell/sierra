@@ -20,6 +20,7 @@ import fastdtw
 import os
 import pandas as pd
 import numpy as np
+import yaml
 import similaritymeasures as sm
 from variables.temporal_variance_parser import TemporalVarianceParser
 
@@ -80,14 +81,18 @@ class EnvironmentalCS():
     def __init__(self, cmdopts, exp_num):
         self.cmdopts = cmdopts
         self.exp_num = exp_num
+        self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
+                                                       'main.yaml')))
 
     def __call__(self):
         ideal_df = pd.read_csv(os.path.join(self.cmdopts["output_root"],
-                                            "exp0/averaged-output",
+                                            "exp0",
+                                            self.main_config['sierra']['avg_output_leaf'],
                                             kTemporalVarCSV),
                                sep=';')
         exp_df = pd.read_csv(os.path.join(self.cmdopts["output_root"],
-                                          "exp" + str(self.exp_num) + "/averaged-output",
+                                          "exp" + str(self.exp_num),
+                                          self.main_config['sierra']['avg_output_leaf'],
                                           kTemporalVarCSV),
                              sep=';')
         attr = TemporalVarianceParser().parse(self.cmdopts["criteria_def"])
@@ -106,30 +111,34 @@ class EnvironmentalCS():
 
 class DataFrames:
     @staticmethod
-    def expx_var_df(output_root, exp_num):
+    def expx_var_df(output_root, avg_output_leaf, exp_num):
         return pd.read_csv(os.path.join(output_root,
-                                        "exp" + str(exp_num) + "/averaged-output",
+                                        "exp" + str(exp_num),
+                                        avg_output_leaf,
                                         kTemporalVarCSV),
                            sep=';')
 
     @staticmethod
-    def expx_perf_df(output_root, exp_num):
+    def expx_perf_df(output_root, avg_output_leaf, exp_num):
         return pd.read_csv(os.path.join(output_root,
-                                        "exp" + str(exp_num) + "/averaged-output",
+                                        "exp" + str(exp_num),
+                                        avg_output_leaf,
                                         kPerfCSV),
                            sep=';')
 
     @staticmethod
-    def exp0_perf_df(output_root):
+    def exp0_perf_df(output_root, avg_output_leaf,):
         return pd.read_csv(os.path.join(output_root,
-                                        "exp0/averaged-output",
+                                        "exp0",
+                                        avg_output_leaf,
                                         kPerfCSV),
                            sep=';')
 
     @staticmethod
-    def exp0_var_df(output_root):
+    def exp0_var_df(output_root, avg_output_leaf,):
         return pd.read_csv(os.path.join(output_root,
-                                        "exp0/averaged-output",
+                                        "exp0",
+                                        avg_output_leaf,
                                         kTemporalVarCSV),
                            sep=';')
 
@@ -156,6 +165,8 @@ class AdaptabilityCS():
 
     def __init__(self, cmdopts, exp_num):
         self.cmdopts = cmdopts
+        self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'], 'main.yaml')))
+
         self.exp_num = exp_num
         self.perf_csv_col = 'cum_avg_collected'
         self.var_csv_col = TemporalVarianceParser().parse(
@@ -167,10 +178,16 @@ class AdaptabilityCS():
         experiment. Returns NP arrays rather than dataframes, because that is what the curve
         similarity measure calculator needs as input.
         """
-        exp0_perf_df = DataFrames.exp0_perf_df(self.cmdopts['output_root'])
-        exp0_var_df = DataFrames.exp0_var_df(self.cmdopts['output_root'])
-        expx_perf_df = DataFrames.expx_perf_df(self.cmdopts['output_root'], self.exp_num)
-        expx_var_df = DataFrames.expx_var_df(self.cmdopts['output_root'], self.exp_num)
+        exp0_perf_df = DataFrames.exp0_perf_df(self.cmdopts['output_root'],
+                                               self.main_config['sierra']['avg_output_leaf'])
+        exp0_var_df = DataFrames.exp0_var_df(self.cmdopts['output_root'],
+                                             self.main_config['sierra']['avg_output_leaf'])
+        expx_perf_df = DataFrames.expx_perf_df(self.cmdopts['output_root'],
+                                               self.main_config['sierra']['avg_output_leaf'],
+                                               self.exp_num)
+        expx_var_df = DataFrames.expx_var_df(self.cmdopts['output_root'],
+                                             self.main_config['sierra']['avg_output_leaf'],
+                                             self.exp_num)
 
         ideal_df = pd.DataFrame(index=exp0_var_df.index, columns=[self.perf_csv_col])
 
@@ -228,6 +245,9 @@ class ReactivityCS():
 
     def __init__(self, cmdopts, exp_num):
         self.cmdopts = cmdopts
+        self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
+                                                       'main.yaml')))
+
         self.exp_num = exp_num
         self.perf_csv_col = 'cum_avg_collected'
         self.var_csv_col = TemporalVarianceParser().parse(
@@ -239,10 +259,16 @@ class ReactivityCS():
         experiment. Returns NP arrays rather than dataframes, because that is what the curve
         similarity measure calculator needs as input.
         """
-        exp0_perf_df = DataFrames.exp0_perf_df(self.cmdopts['output_root'])
-        exp0_var_df = DataFrames.exp0_var_df(self.cmdopts['output_root'])
-        expx_perf_df = DataFrames.expx_perf_df(self.cmdopts['output_root'], self.exp_num)
-        expx_var_df = DataFrames.expx_var_df(self.cmdopts['output_root'], self.exp_num)
+        exp0_perf_df = DataFrames.exp0_perf_df(self.cmdopts['output_root'],
+                                               self.main_config['sierra']['avg_output_leaf'])
+        exp0_var_df = DataFrames.exp0_var_df(self.cmdopts['output_root'],
+                                             self.main_config['sierra']['avg_output_leaf'])
+        expx_perf_df = DataFrames.expx_perf_df(self.cmdopts['output_root'],
+                                               self.main_config['sierra']['avg_output_leaf'],
+                                               self.exp_num)
+        expx_var_df = DataFrames.expx_var_df(self.cmdopts['output_root'],
+                                             self.main_config['sierra']['avg_output_leaf'],
+                                             self.exp_num)
 
         ideal_df = pd.DataFrame(index=exp0_var_df.index, columns=[self.perf_csv_col])
 

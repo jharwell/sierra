@@ -17,6 +17,7 @@
 """
 
 import os
+import yaml
 from pipeline.exp_csv_averager import ExpCSVAverager
 
 
@@ -26,29 +27,23 @@ class BatchedExpCSVAverager:
     Averages the .csv output files for each experiment in the specified batch directory.
 
     Attributes:
-      batch_config_leaf(str): Leaf name (i.e. no preceding path) of the template config file used during input generation.
+      ro_params(dict): Dictionary of read-only parameters for batch averaging
       batch_output_root(str): Directory for averaged .csv output (relative to current dir or absolu
 
-
     """
-    kCollatedOutputFolderName = "collated-csvs"
 
-    def __init__(self, batch_config_leaf, batch_output_root, no_verify_results,
-                 gen_errorbars):
-        self.batch_output_root = os.path.abspath(batch_output_root)
-        self.batch_config_leaf = batch_config_leaf
-        self.no_verify_results = no_verify_results
-        self.gen_errorbars = gen_errorbars
+    def __init__(self, ro_params, batch_output_root):
+
+        self.ro_params = ro_params
+        self.batch_output_root = batch_output_root
 
     def run(self):
         """Average .csv output files for all experiments in the batch."""
         # Ignore the folder for .csv files collated across experiments within a batch
         experiments = [item for item in os.listdir(self.batch_output_root) if item not in [
-            BatchedExpCSVAverager.kCollatedOutputFolderName]]
+            self.ro_params['config']['sierra']['collate_csv_leaf']]]
         for exp in experiments:
             path = os.path.join(self.batch_output_root, exp)
+
             if os.path.isdir(path):
-                ExpCSVAverager(self.batch_config_leaf,
-                               self.no_verify_results,
-                               self.gen_errorbars,
-                               path).run()
+                ExpCSVAverager(self.ro_params, path).run()

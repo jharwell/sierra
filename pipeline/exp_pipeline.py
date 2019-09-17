@@ -69,7 +69,7 @@ class ExpPipeline:
             'no_verify_results': self.args.no_verify_results,
             'gen_stddev': self.args.gen_stddev,
             'results_process_tasks': self.args.results_process_tasks,
-            'render_cmd_options': self.args.render_cmd_options,
+            'render_cmd_opts': self.args.render_cmd_opts,
             'render_cmd_ofile': self.args.render_cmd_ofile,
 
             # stage 4

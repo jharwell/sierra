@@ -36,12 +36,16 @@ class InterExpGraphGenerator:
     """
 
     def __init__(self, cmdopts, targets):
-
+        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
+        # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
+        self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
+                                                       'main.yaml')))
+
         self.cmdopts["collate_root"] = os.path.abspath(os.path.join(self.cmdopts["output_root"],
-                                                                    'collated-csvs'))
+                                                                    self.main_config['sierra']['collate_csv_leaf']))
         self.cmdopts["graph_root"] = os.path.abspath(os.path.join(self.cmdopts["graph_root"],
-                                                                  'collated-graphs'))
+                                                                  self.main_config['sierra']['collate_graph_leaf']))
         self.controller_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
                                                              'controllers.yaml')))
         self.linegraph_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
@@ -61,7 +65,8 @@ class InterExpGraphGenerator:
                                self.targets).generate()
 
         if "all" in components or "sp" in components:
-            InterExpBlockCollection(self.cmdopts).generate()
+            InterExpBlockCollection(self.cmdopts,
+                                    self.main_config['sierra']['perf']['blocks_collected_csv']).generate()
 
         if "all" in components or "ss" in components:
             InterExpScalability(self.cmdopts).generate()

@@ -18,6 +18,7 @@
 
 import os
 import copy
+import yaml
 from pipeline.intra_exp_graph_generator import IntraExpGraphGenerator
 
 
@@ -27,11 +28,15 @@ class BatchedIntraExpGraphGenerator:
     Generates all intra-experiment graphs from a batch of experiments.
 
     Attributes:
-    cmdopts(dict): Dictionary commandline attributes used during intra-experiment graph generation.
+      cmdopts(dict): Dictionary commandline attributes used during intra-experiment graph generation.
     """
 
     def __init__(self, cmdopts):
+        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
+        # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
+        self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
+                                                       'main.yaml')))
 
     def __call__(self):
         """Generate all intra-experiment graphs for all experiments in the batch."""
@@ -45,5 +50,5 @@ class BatchedIntraExpGraphGenerator:
             self.cmdopts["generation_root"] = os.path.join(batch_generation_root, item)
             self.cmdopts["output_root"] = os.path.join(batch_output_root, item)
             self.cmdopts["graph_root"] = os.path.join(batch_graph_root, item)
-            if os.path.isdir(self.cmdopts["output_root"]) and 'collated-csvs' != item:
+            if os.path.isdir(self.cmdopts["output_root"]) and self.main_config['sierra']['collate_csv_leaf'] != item:
                 IntraExpGraphGenerator(self.cmdopts)()

@@ -33,9 +33,11 @@ class CSVCollator:
 
     """
 
-    def __init__(self, batch_output_root, targets):
+    def __init__(self, main_config, batch_output_root, targets):
+        self.main_config = main_config
         self.batch_output_root = os.path.abspath(batch_output_root)
-        self.collate_root = os.path.join(self.batch_output_root, "collated-csvs")
+        self.collate_root = os.path.join(self.batch_output_root,
+                                         self.main_config['sierra']['collate_csv_leaf'])
         os.makedirs(self.collate_root, exist_ok=True)
         self.targets = targets
 
@@ -63,13 +65,15 @@ class CSVCollator:
             exp_output_root = os.path.join(self.batch_output_root, item)
 
             # So we can re-run graph generation multiple times on the same data
-            if "collated-csvs" == item or "averaged-output" == item:
+            if self.main_config['sierra']['collate_csv_leaf'] == item or self.main_config['sierra']['avg_output_leaf'] == item:
                 continue
 
             if os.path.isdir(exp_output_root):
-                csv_ipath = os.path.join(exp_output_root, "averaged-output",
+                csv_ipath = os.path.join(exp_output_root,
+                                         self.main_config['sierra']['avg_output_leaf'],
                                          target['src_stem'] + '.csv')
-                stddev_ipath = os.path.join(exp_output_root, "averaged-output",
+                stddev_ipath = os.path.join(exp_output_root,
+                                            self.main_config['sierra']['avg_output_leaf'],
                                             target['src_stem'] + '.stddev')
                 if not os.path.exists(csv_ipath):
                     src_exists = False

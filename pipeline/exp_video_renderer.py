@@ -25,35 +25,37 @@ class ExpVideoRenderer:
     Render grabbed frames in ARGoS to a video file via ffmpeg.
 
     Attributes:
+      ro_params(dict): Dictionary of read-only parameters for batch rendering.
+        cmd_opts(str): Cmdline options to pass to ffmpeg.
+        ofile_leaf(str): The name of the video output file (specified releative to simulation output
+                         directory).
+        config(dict): Parsed dictionary of main YAML configuration.
       exp_output_root(str): Root directory of simulation output (relative to current dir or
                             absolute).
-      render_cmd_options(str): String of options to pass to ffmpeg between input and output file
-                               specification.
-      video_fname(str): Output path for rendered video.
     """
 
     kFramesFolderName = "frames"
 
-    def __init__(self, exp_output_root, render_cmd_options, render_cmd_ofile):
+    def __init__(self, ro_params, exp_output_root):
+        self.ro_params = ro_params
         self.exp_output_root = exp_output_root
-        self.render_cmd_options = render_cmd_options
-        self.video_fname = render_cmd_ofile
 
     def render(self):
-        print("-- Rendering video {0}...".format(self.video_fname))
+        print("-- Rendering videos in {0}:leaf={1}...".format(self.exp_output_root,
+                                                              self.ro_params['ofile_leaf']))
 
-        options = self.render_cmd_options.split(' ')
+        opts = self.ro_params['cmd_opts'].split(' ')
         # Render videos in parallel--waaayyyy faster
         procs = []
         for d in os.listdir(self.exp_output_root):
             path = os.path.join(self.exp_output_root, d)
-            if os.path.isdir(path) and 'averaged-output' not in path:
-                frames_path = os.path.join(path, ExpVideoRenderer.kFramesFolderName)
+            if os.path.isdir(path) and self.ro_params['config']['sierra']['avg_output_leaf'] not in path:
+                frames_path = os.path.join(path, self.ro_params['config']['sim']['frames_leaf'])
                 cmd = ["ffmpeg",
                        "-y",
                        "-i", os.path.join(frames_path, "%*.png")]
-                cmd.extend(options)
-                cmd.extend([os.path.join(path, self.video_fname)])
+                cmd.extend(opts)
+                cmd.extend([os.path.join(path, self.ro_params['ofile_leaf'])])
                 procs.append(subprocess.Popen(cmd,
                                               stderr=subprocess.DEVNULL,
                                               stdout=subprocess.DEVNULL))

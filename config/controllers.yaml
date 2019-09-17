@@ -12,7 +12,7 @@ depth0:
   xml:
     attr_change:
       - ['.//loop_functions', 'label', 'depth0_loop_functions']
-      - ['.//qt-opengl', 'user_functions', 'depth0_qt_user_functions']
+      - ['.//qt-opengl/user_functions', 'label', 'depth0_qt_user_functions']
   controllers:
     - name: CRW
       xml:
@@ -55,7 +55,7 @@ depth1:
   xml:
     attr_change:
       - ['.//loop_functions', 'label', 'depth1_loop_functions']
-      - ['.//qt-opengl', 'user_functions', 'depth1_qt_user_functions']
+      - ['.//qt-opengl/user_functions', 'label', 'depth1_qt_user_functions']
   controllers:
     - name: BITD_DPO
       xml:
@@ -100,7 +100,7 @@ depth2:
   xml:
     attr_change:
       - ['.//loop_functions', 'label', 'depth2_loop_functions']
-      - ['.//qt-opengl', 'user_functions', 'depth1_qt_user_functions']
+      - ['.//qt-opengl/user_functions', 'label', 'depth2_qt_user_functions']
 
   controllers:
     - name: BIRTD_DPO

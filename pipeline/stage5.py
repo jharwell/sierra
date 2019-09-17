@@ -17,6 +17,7 @@
 """
 
 import os
+import yaml
 import pipeline.inter_batch_comparator as ibc
 
 
@@ -36,6 +37,8 @@ class PipelineStage5:
     def __init__(self, cmdopts, targets):
         self.targets = targets
         self.cmdopts = cmdopts
+        self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
+                                                       'main.yaml')))
 
         self.cc_graph_root = os.path.join(self.cmdopts['sierra_root'], "cc-graphs")
         self.cc_csv_root = os.path.join(self.cmdopts['sierra_root'], "cc-csvs")
@@ -57,9 +60,11 @@ class PipelineStage5:
             for t2 in self.targets:
                 for item in os.listdir(os.path.join(self.cmdopts['sierra_root'], t1)):
                     path1 = os.path.join(self.cmdopts['sierra_root'], t1, item,
-                                         "exp-outputs/collated-csvs")
+                                         'exp-outputs',
+                                         self.main_config['sierra']['collate_csv_leaf'])
                     path2 = os.path.join(self.cmdopts['sierra_root'], t2, item,
-                                         "exp-outputs/collated-csvs")
+                                         'exp-outputs',
+                                         self.main_config['sierra']['collate_csv_leaf'])
                     if os.path.isdir(path1) and not os.path.exists(path2):
                         print("WARN: {0} does not exist".format(path2))
                     if os.path.isdir(path2) and not os.path.exists(path1):

@@ -26,25 +26,25 @@ class BatchedExpVideoRenderer:
     Render the video for each experiment in the specified batch directory in sequence.
 
     Attributes:
+      ro_params(dict): Dictionary of read-only parameters for batch rendering
       batch_exp_root(str): Root directory for the batch experiment.
-      render_cmd_options(str): String of options to pass to ffmpeg between input and output file
-                               specification.
 
     """
 
-    def __init__(self, batch_exp_root, render_cmd_options, render_cmd_ofile):
+    def __init__(self, ro_params, batch_exp_root):
         self.batch_exp_root = os.path.abspath(batch_exp_root)
-        self.render_cmd_options = render_cmd_options
-        self.render_cmd_ofile = render_cmd_ofile
+        self.cmd_opts = ro_params['cmd_opts']
+        self.ofile_leaf = ro_params['ofile_leaf']
+        self.ro_params = ro_params
 
     def render(self):
         """Render videos for all all experiments in the batch."""
         experiments = []
         # All dirs start with 'exp', so only sort on stuff after that. Running exp in order will
         # make collecting timing data/eyeballing runtimes much easier.
-        sorted_dirs = sorted([d for d in os.listdir(self.batch_exp_root) if 'collated-csvs' not in d],
+        sorted_dirs = sorted([d for d in os.listdir(self.batch_exp_root) if self.ro_params['config']['sierra']['collate_csv_leaf'] not in d],
                              key=lambda e: int(e[3:]))
         experiments = [os.path.join(self.batch_exp_root, item) for item in sorted_dirs
                        if os.path.isdir(os.path.join(self.batch_exp_root, item))]
         for exp in experiments:
-            ExpVideoRenderer(exp, self.render_cmd_options, self.render_cmd_ofile).render()
+            ExpVideoRenderer(self.ro_params, exp).render()

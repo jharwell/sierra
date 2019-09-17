@@ -22,8 +22,6 @@ import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
 import perf_measures.utils as pm_utils
 
-kBlocksGatheredCumStem = "blocks-collected-cum"
-
 
 class InterExpBlockCollection:
     """
@@ -32,10 +30,11 @@ class InterExpBlockCollection:
 
     """
 
-    def __init__(self, cmdopts):
+    def __init__(self, cmdopts, blocks_collected_csv):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
+        self.blocks_collected_stem = blocks_collected_csv.split('.')[0]
 
     def generate(self):
         """
@@ -43,9 +42,9 @@ class InterExpBlockCollection:
         """
         print("-- Block collection from {0}".format(self.cmdopts["collate_root"]))
         stddev_ipath = os.path.join(self.cmdopts["collate_root"],
-                                    kBlocksGatheredCumStem + '.stddev')
+                                    self.blocks_collected_stem + '.stddev')
         stddev_opath = os.path.join(self.cmdopts["collate_root"], "pm-blocks-collected.stddev")
-        perf_ipath = os.path.join(self.cmdopts["collate_root"], kBlocksGatheredCumStem + '.csv')
+        perf_ipath = os.path.join(self.cmdopts["collate_root"], self.blocks_collected_stem + '.csv')
         perf_opath_stem = os.path.join(self.cmdopts["collate_root"], "pm-blocks-collected")
 
         if os.path.exists(stddev_ipath):
