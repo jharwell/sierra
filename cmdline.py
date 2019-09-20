@@ -152,6 +152,19 @@ class Cmdline:
                             nargs='*',
                             default=[1, 2, 3, 4]
                             )
+
+        parser.add_argument("--named-exp-dirs",
+                            help="""
+
+                            If TRUE, then the names of directories within a batch experiment will be
+                            obtained from the batch criteria, rather than named 'expX'. Note that
+                            this optional is NOT compatible with the following batch criteria:
+
+                            - temporal_variance
+                            """,
+                            action='store_true',
+                            default=False)
+
         stage1 = parser.add_argument_group('stage1 (Generating experimental inputs)')
 
         stage1.add_argument("--time-setup",

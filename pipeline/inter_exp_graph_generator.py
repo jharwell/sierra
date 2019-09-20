@@ -72,7 +72,9 @@ class InterExpGraphGenerator:
             InterExpScalability(self.cmdopts).generate()
 
         if "all" in components or "so" in components:
-            InterExpSelfOrganization(self.cmdopts).generate()
+            InterExpSelfOrganization(self.cmdopts,
+                                     self.main_config['sierra']['perf']['blocks_collected_csv'],
+                                     self.main_config['sierra']['perf']['ca_in_csv']).generate()
 
         if "all" in components or "sr" in components:
             InterExpReactivity(self.cmdopts).generate()

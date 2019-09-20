@@ -64,7 +64,7 @@
               </src_sigmoid_sel>
           </task_abort>
           <task_exec_estimates
-              seed_enabled="true"
+              seed_enabled="false"
               generalist="2000:4000"
               collector="1000:2000"
               harvester="1000:2000"

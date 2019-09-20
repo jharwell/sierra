@@ -27,7 +27,7 @@ class TAPolicySetParser():
 
     For example:
 
-    TAPolicy.Z16 -> All possible task allocation policies with swarms of size 16.
+    TAPolicy.All.Z16 -> All possible task allocation policies with swarms of size 16.
     """
 
     def parse(self, criteria_str):

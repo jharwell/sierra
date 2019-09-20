@@ -41,13 +41,15 @@ class TemporalVariancePlotDefs:
 
     def __call__(self):
         tv_attr = TemporalVarianceParser().parse(self.cmdopts["criteria_def"])
+
+        # @BUG This will not work with any batch exp directory naming that is not expX
         res = re.search("exp[0-9]+", self.cmdopts['output_root'])
         assert res is not None, "FATAL: Unexpected experiment output dir name '{0}'".format(
             self.cmdopts['output_root'])
 
         # The output root we have here is our averaged output directory in the output root for the
         # *current* experiment. Since adaptability/reactivity are generally inter-experiment
-        # measures, we need to 'reset' the output root we pass to it the output root for the batched
+        # measures, we need to 'reset' the output root we pass to the output root for the batched
         # experiment.
         output_root = self.cmdopts['output_root']
         self.cmdopts['output_root'] = self.cmdopts['output_root'].split(res.group())[0]

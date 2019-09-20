@@ -219,6 +219,8 @@ When using sierra, you need to tell it the following:
   - `swarm_size`
   - `swarm_density`
   - `temporal_variance`
+  - `oracle`
+  - `ta_policy_set`
 
   Look in the `.py` files for the variable+parsers for each of the above to see
   how to use them.

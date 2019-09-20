@@ -19,145 +19,8 @@ This file is part of SIERRA.
 import os
 import pandas as pd
 import math
-import pickle
 import copy
-from perf_measures import vcs
-
-kCAInCumStem = "ca-in-cum-avg"
-kBlocksGatheredCumStem = "blocks-collected-cum"
-
-
-def prettify_scenario_labels(criteria_category, scenarios):
-    """
-    criteria_category(str): String of batch criteria passed on command line.
-    scenarios(list): SORTED list of directories in sierra root representing the scenarios
-    that each controller was tested on.
-
-    Returns a sorted list of prettified labels suitable for scenario comparison graphs.
-
-    """
-    if "swarm_size" in criteria_category:
-        return [s[-4:] for s in scenarios]
-    elif "swarm_density" in criteria_category:
-        return [s[-5:-2].replace('p', '.') for s in scenarios]
-    elif 'temporal_variance' in criteria_category:
-        return scenarios
-
-
-def sort_scenarios(criteria_category, scenarios):
-    """
-    criteria_category(str): String of batch criteria category passed on command line.
-    scenarios(list):  List of directories in sierra root representing the scenarios
-    that each controller was tested on.
-
-    Returns a sorted list of scenarios.
-
-    """
-    if "swarm_size" in criteria_category:
-        return scenarios  # No sorting needed
-    elif "swarm_density" in criteria_category:
-        return sorted(scenarios, key=lambda s: float(s.split('-')[2].split('.')[0][0:3].replace('p', '.')))
-    elif 'temporal_variance' in criteria_category:
-        return scenarios
-
-
-def batch_swarm_sizes(cmdopts):
-    """
-    Return the list of swarm sizes used during a batched experiment.
-
-    Defined for the following batch criteria:
-
-    - swarm_size
-    - swarm_density
-    - temporal_variance
-    """
-    if any(c in cmdopts["criteria_category"] for c in ["swarm_density",
-                                                       "temporal_variance",
-                                                       "swarm_size",
-                                                       "oracle"]):
-        sizes = []
-        for i in range(0, cmdopts["n_exp"]):
-
-            exp_def = unpickle_exp_def(os.path.join(
-                cmdopts["generation_root"], "exp" + str(i), "exp_def.pkl"))
-            for e in exp_def:
-                if e[0] == ".//arena/distribute/entity" and e[1] == "quantity":
-                    sizes.append(int(e[2]))
-        return sizes
-    else:
-        return None
-
-
-def batch_criteria_xvals(cmdopts):
-    """
-    Return a list of batch criteria-specific values to use as the x values for input into graph
-    generation.
-
-    Defined for the following batch criteria:
-
-    - swarm_size -> # of robots in each experiment in the batch.
-    - swarm_density -> Density [0, inf) of robots in each experiment in the batch.
-    - temporal_variance -> Distance between ideal conditions and the variance for each experiment in
-                           the batch.
-    """
-    if "swarm_size" in cmdopts["criteria_category"]:
-        ret = batch_swarm_sizes(cmdopts)
-    elif "swarm_density" in cmdopts["criteria_category"]:
-        densities = []
-        for i in range(0, cmdopts["n_exp"]):
-            exp_def = unpickle_exp_def(os.path.join(
-                cmdopts["generation_root"], "exp" + str(i), "exp_def.pkl"))
-            for e in exp_def:
-                if e[0] == ".//arena/distribute/entity" and e[1] == "quantity":
-                    n_robots = int(e[2])
-                if e[0] == ".//arena" and e[1] == "size":
-                    x, y, z = e[2].split(",")
-            densities.append(n_robots / (int(x) * int(y)))
-        ret = densities
-    elif "temporal_variance" in cmdopts["criteria_category"]:
-        ret = [vcs.EnvironmentalCS(cmdopts, x)() for x in range(0, cmdopts["n_exp"])]
-    elif 'oracle' in cmdopts['criteria_category']:
-        ret = [i for i in range(0, cmdopts['n_exp'])]
-
-    if cmdopts['plot_log_xaxis']:
-        return [math.log2(x) for x in ret]
-    else:
-        return ret
-
-
-def batch_criteria_xlabel(cmdopts):
-    """
-    Return the X-label that should be used for the graphs of various performance measures across
-    batch criteria.
-    """
-    labels = {
-        "swarm_size": "Swarm Size",
-        "swarm_density": "Swarm Density",
-        "temporal_variance": vcs.method_xlabel(cmdopts["envc_cs_method"]),
-        "oracle": "Oracular Swarms"
-    }
-    return labels[cmdopts["criteria_category"]]
-
-
-def unpickle_exp_def(exp_def_fpath):
-    """
-    Read in all the different sets of parameter changes that were pickled to make
-    crucial parts of the experiment definition easily accessible. I don't know how
-    many there are, so go until you get an exception.
-    """
-    try:
-        with open(exp_def_fpath, 'rb') as f:
-            exp_def = set()
-            while True:
-                exp_def = exp_def | pickle.load(f)
-    except EOFError:
-        pass
-    return exp_def
-
-
-def n_exp(cmdopts):
-    return len([i for i in os.listdir(cmdopts["generation_root"]) if
-                os.path.isdir(os.path.join(cmdopts["generation_root"], i))])
+import batch_utils as butils
 
 
 class ProjectivePerformance:
@@ -179,25 +42,27 @@ class ProjectivePerformance:
     all).
     """
 
-    def __init__(self, cmdopts, projection_type):
+    def __init__(self, cmdopts, blocks_collected_csv, projection_type):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
         self.projection_type = projection_type
+        self.blocks_collected_stem = blocks_collected_csv.split('.')[0]
 
     def calculate(self):
-        path = os.path.join(self.cmdopts["collate_root"], kBlocksGatheredCumStem + '.csv')
+        path = os.path.join(self.cmdopts["collate_root"], self.blocks_collected_stem + '.csv')
         assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
         df = pd.read_csv(path, sep=';')
-        scale_cols = [c for c in df.columns if c not in ['clock', 'exp0']]
+        exp0_dirname = butils.exp_dirname(self.cmdopts, 0)
+        scale_cols = [c for c in df.columns if c not in ['clock', exp0_dirname]]
         df_new = pd.DataFrame(columns=scale_cols, index=[0])
 
         self.cmdopts["n_exp"] = len(df.columns)
-        xvals = batch_criteria_xvals(self.cmdopts)
+        xvals = butils.graph_xvals(self.cmdopts)
 
         for exp_num in range(1, len(scale_cols) + 1):
-            exp_col = 'exp' + str(exp_num)
-            exp_prev_col = 'exp' + str(exp_num - 1)
+            exp_col = butils.exp_dirname(self.cmdopts, exp_num)
+            exp_prev_col = butils.exp_dirname(self.cmdopts, exp_num - 1)
             similarity = float(xvals[exp_num]) / float(xvals[exp_num - 1])
 
             if "positive" == self.projection_type:
@@ -226,10 +91,17 @@ class FractionalLosses:
     powers of 2.
     """
 
-    def __init__(self, batch_output_root, batch_generation_root):
-        self.batch_output_root = batch_output_root
+    def __init__(self, cmdopts, blocks_collected_csv, ca_in_csv):
+        self.cmdopts = cmdopts
+        self.batch_output_root = cmdopts["collate_root"]
+        self.blocks_collected_stem = blocks_collected_csv.split('.')[0]
+        self.ca_in_stem = ca_in_csv.split('.')[0]
 
-        exp_def = unpickle_exp_def(os.path.join(batch_generation_root, "exp0/exp_def.pkl"))
+        # Just need to get # timesteps per simulation which is the same for all
+        # simulations/experiments, so we pick exp0 for simplicity to calculate
+        exp_def = butils.unpickle_exp_def(os.path.join(cmdopts["generation_root"],
+                                                       butils.exp_dirname(cmdopts, 0),
+                                                       "exp_def.pkl"))
 
         # Integers always seem to be pickled as floats, so you can't convert directly without an
         # exception.
@@ -245,10 +117,11 @@ class FractionalLosses:
 
         # First calculate the time lost per timestep for a swarm of size N due to collision
         # avoidance interference
-        path = os.path.join(self.batch_output_root, kCAInCumStem + '.csv')
+        path = os.path.join(self.batch_output_root, self.ca_in_stem + '.csv')
         assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
         df = pd.read_csv(path, sep=';')
-        scale_cols = [c for c in df.columns if c not in ['clock', 'exp0']]
+        exp0_dirname = butils.exp_dirname(self.cmdopts, 0)
+        scale_cols = [c for c in df.columns if c not in ['clock', exp0_dirname]]
         all_cols = [c for c in df.columns if c not in ['clock']]
         tlost_n = pd.DataFrame(columns=all_cols, data=df.tail(1))
 
@@ -264,27 +137,28 @@ class FractionalLosses:
         # swarm of size N, as opposed to a group of N robots that do not interact with each other,
         # only the arena walls.
         #
-        path = os.path.join(self.batch_output_root, kBlocksGatheredCumStem + '.csv')
+        path = os.path.join(self.batch_output_root, self.blocks_collected_stem + '.csv')
         assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
         blocks = pd.read_csv(path, sep=';')
 
         plost_n = pd.DataFrame(columns=scale_cols)
-        plost_n['exp0'] = blocks.tail(1)['exp0'] * (tlost_n['exp0'])
+        plost_n[exp0_dirname] = blocks.tail(1)[exp0_dirname] * (tlost_n[exp0_dirname])
 
         for c in [c for c in scale_cols]:
             if blocks.tail(1)[c].values[0] == 0:
                 plost_n[c] = math.inf
             else:
-                plost_n[c] = blocks.tail(1)[c] * (tlost_n[c] - tlost_n['exp0'] * math.pow(2, int(c[3:]))) / \
-                    math.pow(2, int(c[3:]))
+                plost_n[c] = blocks.tail(1)[c] * \
+                    (tlost_n[c] - tlost_n[exp0_dirname] * math.pow(2, butils.exp_dir2num(self.cmdopts, c)) /
+                     math.pow(2, butils.exp_dir2num(self.cmdopts, c)))
 
         # Finally, calculate fractional losses as:
         #
         # ( performance lost with N robots / performance with N robots )
-        path = os.path.join(self.batch_output_root, kBlocksGatheredCumStem + '.csv')
+        path = os.path.join(self.batch_output_root, self.blocks_collected_stem + '.csv')
         assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
         perf_n = pd.read_csv(path, sep=';').tail(1)
-        perf_n.tail(1)['exp0'] = 0.0
+        perf_n.tail(1)[exp0_dirname] = 0.0
 
         df = pd.DataFrame(columns=scale_cols)
 
@@ -295,7 +169,7 @@ class FractionalLosses:
                 df[c] = round(plost_n[c] / perf_n[c], 4)
 
         # By definition, no fractional losses with 1 robot
-        df.insert(0, 'exp0', 0.0)
+        df.insert(0, exp0_dirname, 0.0)
         return df
 
 

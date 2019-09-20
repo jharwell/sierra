@@ -18,6 +18,7 @@
 
 import os
 import pandas as pd
+import batch_utils as butils
 
 
 class CSVCollator:
@@ -33,9 +34,10 @@ class CSVCollator:
 
     """
 
-    def __init__(self, main_config, batch_output_root, targets):
+    def __init__(self, main_config, cmdopts, targets):
         self.main_config = main_config
-        self.batch_output_root = os.path.abspath(batch_output_root)
+        self.cmdopts = cmdopts
+        self.batch_output_root = os.path.abspath(self.cmdopts['output_root'])
         self.collate_root = os.path.join(self.batch_output_root,
                                          self.main_config['sierra']['collate_csv_leaf'])
         os.makedirs(self.collate_root, exist_ok=True)
@@ -99,17 +101,12 @@ class CSVCollator:
         # Sort columns except clock. They all start with 'exp' so only sort on the numerals
         # after that part.
         if src_exists:
-            new_cols = sorted([c for c in csv_df_new.columns if c not in ['clock']],
-                              key=lambda t: (int(t[3:])))
-            csv_df_new = csv_df_new.reindex(new_cols, axis=1)
-
+            csv_df_new = csv_df_new.reindex(butils.exp_dirnames(self.cmdopts), axis=1)
             csv_df_new.to_csv(os.path.join(self.collate_root,
                                            target['dest_stem'] + '.csv'), sep=';',
                               index=False)
         if src_exists and not stddev_df_new.empty:
-            new_cols = sorted([c for c in stddev_df_new.columns if c not in ['clock']],
-                              key=lambda t: (int(t[3:])))
-            stddev_df_new = stddev_df_new.reindex(new_cols, axis=1)
+            stddev_df_new = stddev_df_new.reindex(butils.exp_dirnames(self.cmdopts), axis=1)
 
             stddev_df_new.to_csv(os.path.join(self.collate_root,
                                               target['dest_stem'] + '.stddev'), sep=';', index=False)

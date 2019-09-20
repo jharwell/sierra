@@ -24,5 +24,5 @@ sierra:
   # calculation. Right now, they are still somewhat tied to fordyca.
   perf:
     blocks_collected_csv: 'blocks-collected-cum.csv'
-    ca_cum_csv: 'ca-in-cum-avg.csv'
+    ca_in_csv: 'ca-in-cum-avg.csv'
     temporal_var_csv: 'loop-temporal-variance.csv'

@@ -52,6 +52,7 @@ class ExpPipeline:
             'generator': self.args.generator,
             'template_config_file': self.args.template_config_file,
             'config_root': self.args.config_root,
+            'named_exp_dirs': self.args.named_exp_dirs,
 
             # stage 1
             'time_setup': self.args.time_setup,

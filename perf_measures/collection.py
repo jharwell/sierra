@@ -20,7 +20,7 @@ import os
 import copy
 import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
-import perf_measures.utils as pm_utils
+import batch_utils as butils
 
 
 class InterExpBlockCollection:
@@ -56,9 +56,9 @@ class InterExpBlockCollection:
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-blocks-collected.png"),
                          title="Swarm Blocks Collected",
-                         xlabel=pm_utils.batch_criteria_xlabel(self.cmdopts),
+                         xlabel=butils.graph_xlabel(self.cmdopts),
                          ylabel="# Blocks",
-                         xvals=pm_utils.batch_criteria_xvals(self.cmdopts),
+                         xvals=butils.graph_xvals(self.cmdopts),
                          legend=None,
                          polynomial_fit=-1).generate()
 

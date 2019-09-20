@@ -56,7 +56,7 @@ class PipelineStage4:
             # Collation must be after intra-experiment graph generation, so that all .csv files to
             # be collated have been generated/modified according to parameters.
             targets = self._calc_linegraph_targets()
-            CSVCollator(self.main_config, self.cmdopts['output_root'], targets)()
+            CSVCollator(self.main_config, self.cmdopts, targets)()
             self._gen_inter_graphs(targets)
 
     def _gen_inter_graphs(self, targets):

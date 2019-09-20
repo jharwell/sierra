@@ -22,6 +22,7 @@ import yaml
 import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
 import perf_measures.utils as pm_utils
+import batch_utils as butils
 import math
 
 
@@ -37,14 +38,11 @@ class Efficiency:
     calculated measure.
     """
 
-    def __init__(self, cmdopts):
+    def __init__(self, cmdopts, blocks_collected_csv):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
-        self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
-                                                       'main.yaml')))
-        self.blocks_collected_stem = self.main_config['sierra']['perf']['blocks_collected_csv'].split('.')[
-            0]
+        self.blocks_collected_stem = blocks_collected_csv.split('.')[0]
 
     def calculate(self):
         """
@@ -55,8 +53,7 @@ class Efficiency:
           (Calculated metric dataframe, stddev dataframe) if stddev was collected, (Calculated
           metric datafram, None) otherwise.
         """
-        sc_ipath = os.path.join(self.cmdopts["collate_root"],
-                                self.blocks_collected_stem + '.csv')
+        sc_ipath = os.path.join(self.cmdopts["collate_root"], self.blocks_collected_stem + '.csv')
         stddev_ipath = os.path.join(self.cmdopts["collate_root"],
                                     self.blocks_collected_stem + '.stddev')
 
@@ -85,9 +82,9 @@ class Efficiency:
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-efficiency.png"),
                          title="Swarm Efficiency (normalized)",
-                         xlabel=pm_utils.batch_criteria_xlabel(self.cmdopts),
+                         xlabel=butils.graph_xlabel(self.cmdopts),
                          ylabel="Efficiency",
-                         xvals=pm_utils.batch_criteria_xvals(self.cmdopts),
+                         xvals=butils.graph_xvals(self.cmdopts),
                          legend=None,
                          polynomial_fit=-1).generate()
 
@@ -98,7 +95,7 @@ class Efficiency:
         scale_cols = [c for c in df.columns if c not in ['clock']]
         df_new = pd.DataFrame(columns=scale_cols)
         self.cmdopts["n_exp"] = len(df.columns)
-        swarm_sizes = pm_utils.batch_swarm_sizes(self.cmdopts)
+        swarm_sizes = butils.swarm_sizes(self.cmdopts)
 
         for i in range(0, len(scale_cols)):
             col = scale_cols[i]
@@ -112,27 +109,30 @@ class ProjectivePerformanceComparison:
     Calculates projective performance for each experiment i > 0 in the batch and productes a graph.
     """
 
-    def __init__(self, cmdopts, projection_type):
+    def __init__(self, cmdopts, blocks_collected_csv, projection_type):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
+        self.blocks_collected_csv = blocks_collected_csv
         self.projection_type = projection_type
 
     def calculate(self):
-        return pm_utils.ProjectivePerformance(self.cmdopts, self.projection_type).calculate()
+        return pm_utils.ProjectivePerformance(self.cmdopts,
+                                              self.blocks_collected_csv,
+                                              self.projection_type).calculate()
 
     def generate(self, df):
         self.cmdopts["n_exp"] = len(df.columns) + 1
         cum_stem = os.path.join(self.cmdopts["collate_root"], "pm-pp-comp-" + self.projection_type)
         df.to_csv(cum_stem + ".csv", sep=';', index=False)
-        xvals = pm_utils.batch_criteria_xvals(self.cmdopts)
+        xvals = butils.graph_xvals(self.cmdopts)
 
         BatchRangedGraph(inputy_stem_fpath=cum_stem + ".csv",
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-pp-comp-" + self.projection_type + ".png"),
                          title="Swarm Projective Performance Comparison ({0})".format(
                              self.projection_type),
-                         xlabel=pm_utils.batch_criteria_xlabel(self.cmdopts),
+                         xlabel=butils.graph_xlabel(self.cmdopts),
                          ylabel="Observed-Projected Ratio",
                          xvals=xvals[1:],
                          legend=None,
@@ -140,13 +140,13 @@ class ProjectivePerformanceComparison:
 
 
 class ProjectivePerformanceComparisonPositive(ProjectivePerformanceComparison):
-    def __init__(self, cmdopts):
-        super().__init__(cmdopts, "positive")
+    def __init__(self, cmdopts, blocks_collected_csv):
+        super().__init__(cmdopts, blocks_collected_csv, "positive")
 
 
 class ProjectivePerformanceComparisonNegative(ProjectivePerformanceComparison):
-    def __init__(self, cmdopts):
-        super().__init__(cmdopts, "negative")
+    def __init__(self, cmdopts, blocks_collected_csv):
+        super().__init__(cmdopts, blocks_collected_csv, "negative")
 
 
 class FractionalPerformanceLoss:
@@ -155,14 +155,17 @@ class FractionalPerformanceLoss:
     to inter-robot interference as swarm size increases. Swarm sizes do not have to be a power of 2.
     """
 
-    def __init__(self, cmdopts):
+    def __init__(self, cmdopts, blocks_collected_csv, ca_in_csv):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
+        self.blocks_collected_csv = blocks_collected_csv
+        self.ca_in_csv = ca_in_csv
 
     def calculate(self):
-        df = pm_utils.FractionalLosses(
-            self.cmdopts["collate_root"], self.cmdopts["generation_root"]).calc()
+        df = pm_utils.FractionalLosses(self.cmdopts,
+                                       self.blocks_collected_csv,
+                                       self.ca_in_csv).calc()
 
         for c in df.columns:
             df[c] = 1.0 - 1.0 / math.exp(1.0 - df[c])
@@ -178,9 +181,9 @@ class FractionalPerformanceLoss:
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-scalability-fl.png"),
                          title="Swarm Scalability: Fractional Performance Loss Due To Inter-robot Interference",
-                         xlabel=pm_utils.batch_criteria_xlabel(self.cmdopts),
+                         xlabel=butils.graph_xlabel(self.cmdopts),
                          ylabel="Scalability Value",
-                         xvals=pm_utils.batch_criteria_xvals(self.cmdopts),
+                         xvals=butils.graph_xvals(self.cmdopts),
                          legend=None,
                          polynomial_fit=-1).generate()
 
@@ -196,18 +199,21 @@ class KarpFlatt:
         1 - 1/N
     """
 
-    def __init__(self, cmdopts):
+    def __init__(self, cmdopts, blocks_collected_csv):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
+        self.blocks_collected_csv = blocks_collected_csv
 
     def calculate(self):
-        df = pm_utils.ProjectivePerformance(self.cmdopts, "positive").calculate()
+        df = pm_utils.ProjectivePerformance(self.cmdopts,
+                                            self.blocks_collected_csv,
+                                            "positive").calculate()
 
         self.cmdopts["n_exp"] = len(df.columns) + 1
 
         # +1 because karp-flatt is only defined for exp >= 1
-        sizes = pm_utils.batch_swarm_sizes(self.cmdopts)[1:]
+        sizes = butils.swarm_sizes(self.cmdopts)[1:]
 
         for i in range(0, len(df.columns)):
             c = df.columns[i]
@@ -224,9 +230,9 @@ class KarpFlatt:
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-karpflatt.png"),
                          title="Swarm Serial Fraction: Karp-Flatt Metric",
-                         xlabel=pm_utils.batch_criteria_xlabel(self.cmdopts),
+                         xlabel=butils.graph_xlabel(self.cmdopts),
                          ylabel="",
-                         xvals=pm_utils.batch_criteria_xvals(self.cmdopts)[1:],
+                         xvals=butils.graph_xvals(self.cmdopts)[1:],
                          legend=None,
                          polynomial_fit=-1).generate()
 
@@ -242,21 +248,26 @@ class InterExpScalability:
 
     def __init__(self, cmdopts):
         self.cmdopts = cmdopts
+        self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
+                                                       'main.yaml')))
 
     def generate(self):
         print("-- Scalability from {0}".format(self.cmdopts["collate_root"]))
 
-        e = Efficiency(self.cmdopts)
+        blocks_collected_csv = self.main_config['sierra']['perf']['blocks_collected_csv']
+        ca_in_csv = self.main_config['sierra']['perf']['ca_in_csv']
+
+        e = Efficiency(self.cmdopts, blocks_collected_csv)
         e.generate(e.calculate())
 
-        p = ProjectivePerformanceComparisonPositive(self.cmdopts)
+        p = ProjectivePerformanceComparisonPositive(self.cmdopts, blocks_collected_csv)
         p.generate(p.calculate())
 
-        p = ProjectivePerformanceComparisonNegative(self.cmdopts)
+        p = ProjectivePerformanceComparisonNegative(self.cmdopts, blocks_collected_csv)
         p.generate(p.calculate())
 
-        f = FractionalPerformanceLoss(self.cmdopts)
+        f = FractionalPerformanceLoss(self.cmdopts, blocks_collected_csv, ca_in_csv)
         f.generate(f.calculate())
 
-        k = KarpFlatt(self.cmdopts)
+        k = KarpFlatt(self.cmdopts, blocks_collected_csv)
         k.generate(k.calculate())

@@ -23,7 +23,7 @@ from variables.swarm_size import SwarmSize
 
 
 class Oracle(BaseVariable):
-    info_types = {'entities': ['caches_enabled', 'blocks_enabled']}
+    kInfoTypes = {'entities': ['caches', 'blocks']}
 
     """
     Defines the type(s) of oracular information to disseminate to controllers during simulation.
@@ -54,6 +54,19 @@ class Oracle(BaseVariable):
     def gen_tag_addlist(self):
         return []
 
+    def gen_exp_dirnames(self, criteria_str):
+        changes = self.gen_attr_changelist()
+        attr = OracleParser().parse(criteria_str)
+        dirs = []
+        for chg in changes:
+            d = ''
+            for t in Oracle.kInfoTypes[attr['oracle_type']]:
+                for path, at, value in chg:
+                    if t in at:
+                        d += '+' * ('' != d) + t + '=' + value
+            dirs.append(d)
+        return dirs
+
 
 def Factory(criteria_str):
     """
@@ -65,10 +78,10 @@ def Factory(criteria_str):
 
         if 'entities' in attr['oracle_name']:
             tuples = []
-            for val in list(itertools.product([False, True], repeat=len(Oracle.info_types['entities']))):
+            for val in list(itertools.product([False, True], repeat=len(Oracle.kInfoTypes['entities']))):
                 tuples.append((attr['oracle_name'],
-                               [(Oracle.info_types['entities'][i], str(val[i]).lower())
-                                   for i in range(0, len(Oracle.info_types['entities']))]
+                               [(Oracle.kInfoTypes['entities'][i], str(val[i]).lower())
+                                   for i in range(0, len(Oracle.kInfoTypes['entities']))]
                                ))
             return tuples
 

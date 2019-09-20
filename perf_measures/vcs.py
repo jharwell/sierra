@@ -23,6 +23,7 @@ import numpy as np
 import yaml
 import similaritymeasures as sm
 from variables.temporal_variance_parser import TemporalVarianceParser
+import batch_utils as butils
 
 kTemporalVarCSV = "loop-temporal-variance.csv"
 kPerfCSV = "block-transport.csv"
@@ -86,12 +87,12 @@ class EnvironmentalCS():
 
     def __call__(self):
         ideal_df = pd.read_csv(os.path.join(self.cmdopts["output_root"],
-                                            "exp0",
+                                            butils.exp_dirname(self.cmdopts, 0),
                                             self.main_config['sierra']['avg_output_leaf'],
                                             kTemporalVarCSV),
                                sep=';')
         exp_df = pd.read_csv(os.path.join(self.cmdopts["output_root"],
-                                          "exp" + str(self.exp_num),
+                                          butils.exp_dirname(self.cmdopts, self.exp_num),
                                           self.main_config['sierra']['avg_output_leaf'],
                                           kTemporalVarCSV),
                              sep=';')
@@ -111,33 +112,33 @@ class EnvironmentalCS():
 
 class DataFrames:
     @staticmethod
-    def expx_var_df(output_root, avg_output_leaf, exp_num):
-        return pd.read_csv(os.path.join(output_root,
-                                        "exp" + str(exp_num),
+    def expx_var_df(cmdopts, avg_output_leaf, exp_num):
+        return pd.read_csv(os.path.join(cmdopts['output_root'],
+                                        butils.exp_dirname(cmdopts, exp_num),
                                         avg_output_leaf,
                                         kTemporalVarCSV),
                            sep=';')
 
     @staticmethod
-    def expx_perf_df(output_root, avg_output_leaf, exp_num):
-        return pd.read_csv(os.path.join(output_root,
-                                        "exp" + str(exp_num),
+    def expx_perf_df(cmdopts, avg_output_leaf, exp_num):
+        return pd.read_csv(os.path.join(cmdopts['output_root'],
+                                        butils.exp_dirname(cmdopts, exp_num),
                                         avg_output_leaf,
                                         kPerfCSV),
                            sep=';')
 
     @staticmethod
-    def exp0_perf_df(output_root, avg_output_leaf,):
-        return pd.read_csv(os.path.join(output_root,
-                                        "exp0",
+    def exp0_perf_df(cmdopts, avg_output_leaf):
+        return pd.read_csv(os.path.join(cmdopts['output_root'],
+                                        butils.exp_dirname(cmdopts, 0),
                                         avg_output_leaf,
                                         kPerfCSV),
                            sep=';')
 
     @staticmethod
-    def exp0_var_df(output_root, avg_output_leaf,):
-        return pd.read_csv(os.path.join(output_root,
-                                        "exp0",
+    def exp0_var_df(cmdopts, avg_output_leaf):
+        return pd.read_csv(os.path.join(cmdopts['output_root'],
+                                        butils.exp_dirname(cmdopts, 0),
                                         avg_output_leaf,
                                         kTemporalVarCSV),
                            sep=';')

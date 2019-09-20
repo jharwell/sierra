@@ -73,6 +73,18 @@ class ConstantDensity(BaseVariable):
     def gen_tag_addlist(self):
         return []
 
+    def gen_exp_dirnames(self, criteria_str):
+        changes = self.gen_attr_changelist()
+        density = criteria_str.split('.')[1]
+        dirs = []
+        for chg in changes:
+            d = ''
+            for path, attr, value in chg:
+                if 'quantity' in attr:
+                    d += density + '+size' + value
+            dirs.append(d)
+        return dirs
+
 
 def Factory(criteria_str):
     """

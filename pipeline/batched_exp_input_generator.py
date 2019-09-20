@@ -22,6 +22,7 @@ from pipeline.xml_luigi import XMLLuigi
 from generators.generator_factory import GeneratorPairFactory
 from generators.generator_factory import ScenarioGeneratorFactory
 from generators.generator_factory import ControllerGeneratorFactory
+import batch_utils as butils
 
 
 class BatchedExpInputGenerator:
@@ -40,14 +41,14 @@ class BatchedExpInputGenerator:
                                   XML configuration file.
       batch_generation_root(str): Root directory for all generated XML input files all experiments
                                   should be stored (relative to current dir or absolute). Each
-                                  experiment will get a directory 'exp<n>' within this root to store
+                                  experiment will get a directory within this root to store
                                   the xml input files for the simulation runs comprising an
-                                  experiment.
+                                  experiment; directory name determined by the batch criteria used.
       batch_output_root(str): Root directory for all experiment outputs (relative to current dir or
                               absolute). Each experiment will get a directory 'exp<n>' in this
                               directory for its outputs.
-      batch_criteria(list): List of lists, where each entry in the inner list is a list of tuples
-                            pairs to be replaced in the main template XML file for each experiment.
+      batch_criteria(list): List of sets, where each entry in the inner list is a list of tuples
+                            of changes to make to the main template XML file for each experiment.
       exp_generator_pair(tuple): Pair of class names to use when creating the new generator
                                  (scenario + controller changes).
     """
@@ -70,68 +71,140 @@ class BatchedExpInputGenerator:
              "batch generation root directory '{}' does not have any spaces in it").format(self.batch_generation_root)
 
         self.batch_output_root = os.path.abspath(batch_output_root)
+        self.exp_generator_pair = exp_generator_pair
         self.batch_criteria = batch_criteria
         self.sim_opts = sim_opts
-        self.exp_generator_pair = exp_generator_pair
+        self.sim_opts['n_exp'] = len(self.batch_criteria)
+        self.sim_opts['generation_root'] = self.batch_generation_root
 
     def generate(self):
-        """Generates and saves all the input files for all experiments"""
+        """
+        Generates and saves all the input files for all experiments in the batch.
+        """
 
         # create experiment input XML templates
         xml_luigi = XMLLuigi(self.batch_config_template)
-        exp_num = 0
+        exp_defs = list(self.batch_criteria)  # Needs to be a list for indexing
 
-        # Apply changes generated from batch criteria to the template input file, and generate the
-        # set of input files for experiment; each file then becomes the "templae" config file for
-        # generating controller/scenario changes.
-        #
-        # Also write changes to pickle file for later retrieval.
-        for exp_def in self.batch_criteria:
-            exp_generation_root = "{0}/exp{1}".format(self.batch_generation_root, exp_num)
-            os.makedirs(exp_generation_root, exist_ok=True)
+        # Cleanup temporary pkl files (we may have crashed last time we ran)
+        self.__cleanup_pkl_files(exp_defs)
 
-            for path, attr, value in exp_def:
-                xml_luigi.attribute_change(path, attr, value)
-            xml_luigi.output_filepath = exp_generation_root + "/" + self.batch_config_leaf
-            xml_luigi.write()
+        # Create temporary pkl files to use during directory creation (needed for extraction of
+        # correct directory naming scheme based on batch criteria)
+        for i in range(0, len(exp_defs)):
+            pkl_path = '/tmp/sierra_pkl{0}.pkl'.format(i)
+            with open(pkl_path, 'ab') as f:
+                pickle.dump(exp_defs[i], f)
 
-            with open(os.path.join(exp_generation_root, 'exp_def.pkl'), 'ab') as f:
-                pickle.dump(exp_def, f)
-            exp_num += 1
+        for i in range(0, len(exp_defs)):
+            self.__scaffold_exp(xml_luigi, exp_defs[i], i)
+
+        exp_dirnames = butils.exp_dirnames(self.sim_opts)
+        assert len(exp_defs) == len(exp_dirnames),\
+            "FATAL: Size of batch criteria({0}) != # exp dirs ({1}): possibly caused by duplicate "\
+            "named exp dirs... ".format(len(exp_defs),
+                                        len(exp_dirnames))
+
+        # Pickle experiment definitions for later retrieval in experiment directories
+        self.__pkl_exp_defs(exp_defs)
+
+        # Cleanup temporary pkl files after experiment directory creation
+        self.__cleanup_pkl_files(exp_defs)
 
         # Create and run generators
-        exp_num = 0
-        for exp_def in self.batch_criteria:
-            self.sim_opts["arena_dim"] = None
-            scenario = None
-            # The scenario dimensions were specified on the command line
-            # Format of '(<decomposition depth>.<controller>.[SS,DS,QS,RN,PL]>'
-            if "Generator" not in self.exp_generator_pair[1]:
-                try:
-                    x, y = self.exp_generator_pair[1].split('.')[1][2:].split('x')
-                except ValueError:
-                    print("FATAL: Scenario dimensions should be specified on cmdline, but they were not")
-                    raise
-                scenario = self.exp_generator_pair[1].split(
-                    '.')[0] + "." + self.exp_generator_pair[1].split('.')[1][:2] + "Generator"
-                self.sim_opts["arena_dim"] = (int(x), int(y))
-            else:  # Scenario dimensions should be obtained from batch criteria
-                for c in exp_def:
-                    if c[0] == ".//arena" and c[1] == "size":
-                        x, y, z = c[2].split(',')
-                        self.sim_opts["arena_dim"] = (int(x), int(y))
-                scenario = self.exp_generator_pair[1]
+        for i in range(0, len(exp_defs)):
+            generator = self.__create_exp_generator(exp_defs[i], i)
+            generator.generate()
 
-            exp_generation_root = "{0}/exp{1}".format(self.batch_generation_root, exp_num)
-            exp_output_root = "{0}/exp{1}".format(self.batch_output_root, exp_num)
+    def __cleanup_pkl_files(self, exp_defs):
+        """
+        Cleanup the temporary .pkl files written as part of experiment scaffolding.
+        """
+        for i in range(0, len(exp_defs)):
+            pkl_path = '/tmp/sierra_pkl{0}.pkl'.format(i)
+            if os.path.exists(pkl_path):
+                os.remove(pkl_path)
 
-            controller_name = self.exp_generator_pair[0]
-            scenario_name = 'generators.' + scenario
+    def __scaffold_exp(self, xml_luigi, exp_def, exp_num):
+        """
+        Scaffold an experiment within the batch:
 
-            # Scenarios come from a canned set, which is why we have to look up their generator
-            # class rather than being able to create the class on the fly as with controllers.
-            scenario = ScenarioGeneratorFactory(controller=controller_name,
-                                                scenario=scenario_name,
+        - Create experiment directories for each experiment in the batch
+        - Write the ARGoS input file for the experiment to the experiment directory after the
+          changes for the batch criteria have been applied. This file becomes the template config
+          file for each experiment to which the scenario+controllers changes are then applied.
+        """
+        exp_dirname = butils.exp_dirname(self.sim_opts, exp_num, True)
+        exp_generation_root = os.path.join(self.batch_generation_root, str(exp_dirname))
+        os.makedirs(exp_generation_root, exist_ok=True)
+
+        for path, attr, value in exp_def:
+            xml_luigi.attribute_change(path, attr, value)
+
+        xml_luigi.output_filepath = os.path.join(exp_generation_root, self.batch_config_leaf)
+        xml_luigi.write()
+
+    def __pkl_exp_defs(self, exp_defs):
+        """
+        Pickle experiment changes to a .pkl file in the experiment root for each experiment in the
+        batch for retrieval in later stages.
+        """
+        for i in range(0, len(exp_defs)):
+            exp_dirname = butils.exp_dirname(self.sim_opts, i, True)
+            with open(os.path.join(self.batch_generation_root,
+                                   exp_dirname,
+                                   'exp_def.pkl'), 'ab') as f:
+                pickle.dump(exp_defs[i], f)
+
+    def __create_exp_generator(self, exp_def, exp_num):
+        """
+        Create the generator for a particular experiment from the batch criteria+controller
+        definitions specified on the command line.
+
+        exp_def(set): Set of XML changes to apply to the template input file for the experiment.
+        exp_num(int): Experiment number in the batch
+        """
+        self.sim_opts["arena_dim"] = None
+        scenario = None
+        # The scenario dimensions were specified on the command line
+        # Format of '(<decomposition depth>.<controller>.[SS,DS,QS,RN,PL]>'
+        if "Generator" not in self.exp_generator_pair[1]:
+            try:
+                x, y = self.exp_generator_pair[1].split('.')[1][2:].split('x')
+            except ValueError:
+                print("FATAL: Scenario dimensions should be specified on cmdline, but they were not")
+                raise
+            scenario = self.exp_generator_pair[1].split(
+                '.')[0] + "." + self.exp_generator_pair[1].split('.')[1][:2] + "Generator"
+            self.sim_opts["arena_dim"] = (int(x), int(y))
+        else:  # Scenario dimensions should be obtained from batch criteria
+            for c in exp_def:
+                if c[0] == ".//arena" and c[1] == "size":
+                    x, y, z = c[2].split(',')
+                    self.sim_opts["arena_dim"] = (int(x), int(y))
+            scenario = self.exp_generator_pair[1]
+
+        exp_generation_root = os.path.join(self.batch_generation_root,
+                                           butils.exp_dirname(self.sim_opts, exp_num))
+        exp_output_root = os.path.join(self.batch_output_root,
+                                       butils.exp_dirname(self.sim_opts, exp_num))
+
+        controller_name = self.exp_generator_pair[0]
+        scenario_name = 'generators.' + scenario
+
+        # Scenarios come from a canned set, which is why we have to look up their generator
+        # class rather than being able to create the class on the fly as with controllers.
+        scenario = ScenarioGeneratorFactory(controller=controller_name,
+                                            scenario=scenario_name,
+                                            template_config_file=os.path.join(exp_generation_root,
+                                                                              self.batch_config_leaf),
+                                            generation_root=exp_generation_root,
+                                            exp_output_root=exp_output_root,
+                                            exp_def_fname="exp_def.pkl",
+                                            sim_opts=self.sim_opts)
+
+        controller = ControllerGeneratorFactory(controller=controller_name,
+                                                config_root=self.sim_opts['config_root'],
                                                 template_config_file=os.path.join(exp_generation_root,
                                                                                   self.batch_config_leaf),
                                                 generation_root=exp_generation_root,
@@ -139,25 +212,14 @@ class BatchedExpInputGenerator:
                                                 exp_def_fname="exp_def.pkl",
                                                 sim_opts=self.sim_opts)
 
-            controller = ControllerGeneratorFactory(controller=controller_name,
-                                                    config_root=self.sim_opts['config_root'],
-                                                    template_config_file=os.path.join(exp_generation_root,
-                                                                                      self.batch_config_leaf),
-                                                    generation_root=exp_generation_root,
-                                                    exp_output_root=exp_output_root,
-                                                    exp_def_fname="exp_def.pkl",
-                                                    sim_opts=self.sim_opts)
+        print("-- Created joint generator class '{0}'".format('+'.join([controller.__class__.__name__,
+                                                                        scenario.__class__.__name__])))
 
-            print("-- Created joint generator class '{0}'".format('+'.join([controller.__class__.__name__,
-                                                                            scenario.__class__.__name__])))
-
-            g = GeneratorPairFactory(scenario=scenario,
-                                     controller=controller,
-                                     template_config_file=os.path.join(exp_generation_root,
-                                                                       self.batch_config_leaf),
-                                     generation_root=exp_generation_root,
-                                     exp_output_root=exp_output_root,
-                                     exp_def_fname="exp_def.pkl",
-                                     sim_opts=self.sim_opts)
-            g.generate()
-            exp_num += 1
+        return GeneratorPairFactory(scenario=scenario,
+                                    controller=controller,
+                                    template_config_file=os.path.join(exp_generation_root,
+                                                                      self.batch_config_leaf),
+                                    generation_root=exp_generation_root,
+                                    exp_output_root=exp_output_root,
+                                    exp_def_fname="exp_def.pkl",
+                                    sim_opts=self.sim_opts)

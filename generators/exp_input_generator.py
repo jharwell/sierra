@@ -109,16 +109,16 @@ class ExpInputGenerator:
             os.remove(self.commands_fpath)
 
         # Setup simulation visualizations
-        self._generate_visualization_defs(xml_luigi)
+        self.__generate_visualization_defs(xml_luigi)
 
         # Setup threading
-        self._generate_threading_defs(xml_luigi)
+        self.__generate_threading_defs(xml_luigi)
 
         # Setup robot sensors/actuators
-        self._generate_sa_defs(xml_luigi)
+        self.__generate_sa_defs(xml_luigi)
 
         # Setup simulation time parameters
-        self._generate_time_defs(xml_luigi)
+        self.__generate_time_defs(xml_luigi)
 
         return xml_luigi
 
@@ -126,13 +126,13 @@ class ExpInputGenerator:
         """
         Generates and saves the input files for all simulation runs within the experiment.
         """
-        random_seeds = self._generate_random_seeds()
+        random_seeds = self.__generate_random_seeds()
         for exp_num in range(self.sim_opts["n_sims"]):
-            self._create_sim_input_file(random_seeds, xml_luigi, exp_num)
-            self._add_sim_to_command_file(os.path.join(self.generation_root,
-                                                       self.config_name_format.format(
-                                                           self.main_config_name, exp_num)),
-                                          exp_num)
+            self.__create_sim_input_file(random_seeds, xml_luigi, exp_num)
+            self.__add_sim_to_command_file(os.path.join(self.generation_root,
+                                                        self.config_name_format.format(
+                                                            self.main_config_name, exp_num)),
+                                           exp_num)
 
             if self.sim_opts['with_rendering']:
                 sim_output_dir = self.output_name_format.format(self.main_config_name, exp_num)
@@ -187,7 +187,7 @@ class ExpInputGenerator:
         if len(rms):
             [xml_luigi.tag_remove(a) for a in rms[0]]
 
-    def _generate_time_defs(self, xml_luigi):
+    def __generate_time_defs(self, xml_luigi):
         """
         Setup simulation time parameters and write them to the pickle file for retrieval during
         graph generation later.
@@ -203,7 +203,7 @@ class ExpInputGenerator:
         with open(self.exp_def_fpath, 'ab') as f:
             pickle.dump(tsetup_inst.gen_attr_changelist()[0], f)
 
-    def _generate_sa_defs(self, xml_luigi):
+    def __generate_sa_defs(self, xml_luigi):
         """
         Disable selected sensors/actuators, which are computationally expensive in large swarms, but
         not that costly if the # robots is small.
@@ -220,7 +220,7 @@ class ExpInputGenerator:
             xml_luigi.tag_remove(".//sensors", "battery", noprint=True)
             xml_luigi.tag_remove(".//entity/foot-bot", "battery", noprint=True)
 
-    def _generate_threading_defs(self, xml_luigi):
+    def __generate_threading_defs(self, xml_luigi):
         """
         Set the # of cores for a simulation to use, which may be less than the total # available on
         the system.
@@ -236,7 +236,7 @@ class ExpInputGenerator:
                                        "n_threads",
                                        str(self.sim_opts["n_threads"]))
 
-    def _generate_visualization_defs(self, xml_luigi):
+    def __generate_visualization_defs(self, xml_luigi):
         """
         Remove visualization elements from input file, if configured to do so. It may be desired to
         leave them in if generating frames/video.
@@ -244,7 +244,7 @@ class ExpInputGenerator:
         if not self.sim_opts["with_rendering"]:
             xml_luigi.tag_remove(".", "./visualization", noprint=True)  # ARGoS visualizations
 
-    def _generate_random_defs(self, xml_luigi, random_seeds, exp_num):
+    def __generate_random_defs(self, xml_luigi, random_seeds, exp_num):
         """
         Generate random seed definitions for a specific simulation in an experiment during the
         input generation process. This cannot be done in init_sim_defs() because it is *not* common
@@ -256,8 +256,12 @@ class ExpInputGenerator:
 
         # set the random seed in the config file
         xml_luigi.attribute_change(".//experiment", "random_seed", str(random_seed))
+        if xml_luigi.has_tag('.//params/rng'):
+            xml_luigi.attribute_change(".//params/rng", "seed", str(random_seed))
+        else:
+            xml_luigi.tag_add(".//params", "rng", {"seed": str(random_seed)})
 
-    def _generate_output_defs(self, xml_luigi, exp_num):
+    def __generate_output_defs(self, xml_luigi, exp_num):
         """
         Generate output definitions for a specific simulation in an experiment during the input
         generation process. This cannot be done in init_sim_defs(), because it is *not* common to
@@ -279,7 +283,7 @@ class ExpInputGenerator:
             ".//qt-opengl/frame_grabbing",
             "directory", frames_fpath, noprint=True)  # probably will not be present
 
-    def _create_sim_input_file(self, random_seeds, xml_luigi, exp_num):
+    def __create_sim_input_file(self, random_seeds, xml_luigi, exp_num):
         """
         Write the input files for a particular simulation run.
         """
@@ -289,10 +293,10 @@ class ExpInputGenerator:
             self.main_config_name, exp_num)
 
         # Setup simulation random seed
-        self._generate_random_defs(xml_luigi, random_seeds, exp_num)
+        self.__generate_random_defs(xml_luigi, random_seeds, exp_num)
 
         # Setup simulation logging/output
-        self._generate_output_defs(xml_luigi, exp_num)
+        self.__generate_output_defs(xml_luigi, exp_num)
 
         save_path = os.path.join(self.generation_root, new_config_name)
         xml_luigi.output_filepath = save_path
@@ -301,7 +305,7 @@ class ExpInputGenerator:
         # save the config file to the correct place
         xml_luigi.write()
 
-    def _add_sim_to_command_file(self, xml_fname, exp_num):
+    def __add_sim_to_command_file(self, xml_fname, exp_num):
         """Adds the command to run a particular simulation definition to the command file."""
 
         # Specify ARGoS invocation in generated command file per cmdline arguments. An option is
@@ -333,7 +337,7 @@ class ExpInputGenerator:
                                 ' -c "{0}" --log-file /dev/null --logerr-file /dev/null\n'.format(
                                     xml_fname))
 
-    def _generate_random_seeds(self):
+    def __generate_random_seeds(self):
         """Generates random seeds for experiments to use."""
         try:
             return random.sample(range(self.random_seed_min, self.random_seed_max + 1), self.sim_opts["n_sims"])

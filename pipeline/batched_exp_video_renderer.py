@@ -40,10 +40,8 @@ class BatchedExpVideoRenderer:
     def render(self):
         """Render videos for all all experiments in the batch."""
         experiments = []
-        # All dirs start with 'exp', so only sort on stuff after that. Running exp in order will
-        # make collecting timing data/eyeballing runtimes much easier.
-        sorted_dirs = sorted([d for d in os.listdir(self.batch_exp_root) if self.ro_params['config']['sierra']['collate_csv_leaf'] not in d],
-                             key=lambda e: int(e[3:]))
+        sorted_dirs = sorted([d for d in os.listdir(self.batch_exp_root)
+                              if self.ro_params['config']['sierra']['collate_csv_leaf'] not in d])
         experiments = [os.path.join(self.batch_exp_root, item) for item in sorted_dirs
                        if os.path.isdir(os.path.join(self.batch_exp_root, item))]
         for exp in experiments:

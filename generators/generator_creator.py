@@ -20,7 +20,6 @@ from pipeline.batched_exp_input_generator import BatchedExpInputGenerator
 from generators.generator_factory import GeneratorPairFactory
 from generators.generator_factory import ScenarioGeneratorFactory
 from generators.generator_factory import ControllerGeneratorFactory
-import os
 
 
 class GeneratorCreator:
@@ -51,11 +50,19 @@ class GeneratorCreator:
             'n_blocks': args.n_blocks,
             'static_cache_blocks': args.static_cache_blocks,
             'exec_method': args.exec_method,
-            'config_root': args.config_root
+            'config_root': args.config_root,
+            'named_exp_dirs': args.named_exp_dirs
         }
+        if args.batch_criteria is None:
+            sim_opts['criteria_category'] = None
+            sim_opts['criteria_def'] = None
+        else:
+            sim_opts['criteria_category'] = args.batch_criteria.split('.')[0]
+            sim_opts['criteria_def'] = '.'.join(args.batch_criteria.split('.')[1:])
+
         if args.batch_criteria is not None:
             criteria = __import__("variables.{0}".format(
-                args.batch_criteria.split(".")[0]), fromlist=["*"])
+                sim_opts['criteria_category']), fromlist=["*"])
             sim_opts["arena_dim"] = None
 
             criteria_generator = getattr(criteria, "Factory")(args.batch_criteria)()

@@ -30,9 +30,9 @@ class OracleParser():
     For example:
 
     entities.Z16 -> All permutations of oracular information about entities in the arena, run with
-    swarms of size 16.
+                    swarms of size 16.
     tasks.Z8 -> All permutations of oracular information about tasks in the arena, run with swarms
-    of size 8.
+                of size 8.
     """
 
     def parse(self, criteria_str):
@@ -40,9 +40,12 @@ class OracleParser():
 
         # Parse oracle name
         if 'entities' in criteria_str:
+            ret['oracle_type'] = 'entities'
             ret['oracle_name'] = 'entities_oracle'
         elif 'tasking' in criteria_str:
+            ret['oracle_type'] = 'tasking'
             ret['oracle_name'] = 'tasking_oracle'
+
         # Parse swarm size
         res = re.search("\.Z[0-9]+", criteria_str)
         assert res is not None, "FATAL: Bad swarm size in criteria '{0}'".format(criteria_str)

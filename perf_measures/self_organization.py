@@ -21,6 +21,7 @@ import copy
 import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
 import perf_measures.utils as pm_utils
+import batch_utils as butils
 import math
 
 
@@ -31,10 +32,12 @@ class InterExpSelfOrganization:
 
     """
 
-    def __init__(self, cmdopts):
+    def __init__(self, cmdopts, blocks_collected_csv, ca_in_csv):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
+        self.blocks_collected_csv = blocks_collected_csv
+        self.ca_in_csv = ca_in_csv
 
     def generate(self):
         """
@@ -43,28 +46,29 @@ class InterExpSelfOrganization:
         """
 
         print("-- Self-organization from {0}".format(self.cmdopts["collate_root"]))
-        fl = pm_utils.FractionalLosses(self.cmdopts["collate_root"],
-                                       self.cmdopts["generation_root"]).calc()
-        df_new = pd.DataFrame(columns=[c for c in fl.columns if c not in ['exp0']])
+        batch_exp_dirnames = butils.exp_dirnames(self.cmdopts)
+        fl = pm_utils.FractionalLosses(self.cmdopts,
+                                       self.blocks_collected_csv,
+                                       self.ca_in_csv).calc()
+        df_new = pd.DataFrame(columns=[c for c in fl.columns if c not in batch_exp_dirnames[0]])
 
         self.cmdopts["n_exp"] = len(fl.columns)
-        swarm_sizes = pm_utils.batch_swarm_sizes(self.cmdopts)
+        swarm_sizes = butils.swarm_sizes(self.cmdopts)
 
         for i in range(1, len(fl.columns)):
-            theta = fl['exp' + str(i)] - \
-                float(swarm_sizes[i]) / float(swarm_sizes[i - 1]) * fl['exp' + str(i - 1)]
-            df_new.loc[0, 'exp' + str(i)] = 1.0 - 1.0 / math.exp(-theta)
+            theta = fl[batch_exp_dirnames[i]] - \
+                float(swarm_sizes[i]) / float(swarm_sizes[i - 1]) * fl[batch_exp_dirnames[i - 1]]
+            df_new.loc[0, batch_exp_dirnames[i]] = 1.0 - 1.0 / math.exp(-theta)
 
         stem_path = os.path.join(self.cmdopts["collate_root"], "pm-self-org")
-        df_new = df_new.reindex(sorted(df_new.columns, key=lambda t: int(t[3:])), axis=1)
         df_new.to_csv(stem_path + ".csv", sep=';', index=False)
 
         BatchRangedGraph(inputy_stem_fpath=stem_path,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-self-org.png"),
                          title="Swarm Self-Organization Due To Sub-Linear Fractional Performance Losses",
-                         xlabel=pm_utils.batch_criteria_xlabel(self.cmdopts),
+                         xlabel=butils.graph_xlabel(self.cmdopts),
                          ylabel="",
-                         xvals=pm_utils.batch_criteria_xvals(self.cmdopts)[1:],
+                         xvals=butils.graph_xvals(self.cmdopts)[1:],
                          legend=None,
                          polynomial_fit=-1).generate()

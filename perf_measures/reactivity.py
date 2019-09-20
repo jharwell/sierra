@@ -21,7 +21,7 @@ import copy
 import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
 from perf_measures import vcs
-import perf_measures.utils as pm_utils
+import batch_utils as butils
 
 
 class InterExpReactivity:
@@ -44,12 +44,12 @@ class InterExpReactivity:
         """
 
         print("-- Reactivity from {0}".format(self.cmdopts["collate_root"]))
-        self.cmdopts["n_exp"] = pm_utils.n_exp(self.cmdopts)
-        df = pd.DataFrame(columns=["exp" + str(i)
-                                   for i in range(1, self.cmdopts["n_exp"])], index=[0])
+        self.cmdopts["n_exp"] = butils.n_exp(self.cmdopts)
+        batch_exp_dirnames = butils.exp_dirnames(self.cmdopts)
+        df = pd.DataFrame(columns=batch_exp_dirnames[1:self.cmdopts["n_exp"]], index=[0])
 
         for i in range(1, self.cmdopts["n_exp"]):
-            df['exp' + str(i)] = vcs.ReactivityCS(self.cmdopts, i)()
+            df[batch_exp_dirnames] = vcs.ReactivityCS(self.cmdopts, i)()
 
         stem_opath = os.path.join(self.cmdopts["collate_root"], "pm-reactivity")
 
@@ -60,9 +60,9 @@ class InterExpReactivity:
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-reactivity.png"),
                          title="Swarm Reactivity",
-                         xlabel=pm_utils.batch_criteria_xlabel(self.cmdopts),
+                         xlabel=butils.graph_xlabel(self.cmdopts),
                          ylabel=vcs.method_ylabel(self.cmdopts["reactivity_cs_method"],
                                                   'reactivity'),
-                         xvals=pm_utils.batch_criteria_xvals(self.cmdopts)[1:],
+                         xvals=butils.graph_xvals(self.cmdopts)[1:],
                          legend=None,
                          polynomial_fit=-1).generate()

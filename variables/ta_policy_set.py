@@ -51,6 +51,18 @@ class TAPolicySet(BaseVariable):
     def gen_tag_addlist(self):
         return []
 
+    def gen_exp_dirnames(self, criteria_str):
+        changes = self.gen_attr_changelist()
+        dirs = []
+        for chg in changes:
+            for path, attr, value in chg:
+                if 'alloc_policy' in attr:
+                    policy = value
+                elif 'quantity' in attr:
+                    size = 'size' + value
+            dirs.append(policy + '+' + size)
+        return dirs
+
 
 def Factory(criteria_str):
     """
@@ -59,7 +71,7 @@ def Factory(criteria_str):
     attr = TAPolicySetParser().parse(criteria_str)
 
     def gen_policies():
-        return ['random', 'stoch_greedy_nbhd', 'strict_greedy_global']
+        return ['random', 'stoch_greedy_nbhd', 'greedy_global']
 
     def __init__(self):
         TAPolicySet.__init__(self, gen_policies(), attr['swarm_size'])

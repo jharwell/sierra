@@ -60,10 +60,6 @@ class DynamicCache(BaseVariable):
             (".//cache_sel_matrix", "block_prox_dist", "{0}".format(max(d[0] * 0.20,
                                                                         d[1] * 0.20))),
 
-            # Set to cache dimensions to ensure caches are created outside of block clusters
-            (".//cache_sel_matrix", "cluster_prox_dist", "{0}".format(max(d[0] * 0.20,
-                                                                          d[1] * 0.20))),
-
             (".//cache_sel_matrix", "site_xrange", "{0}:{1}".format(max(d[0] * 0.20,
                                                                         d[1] * 0.20) / 2.0,
                                                                     d[0] - max(d[0] * 0.20,
