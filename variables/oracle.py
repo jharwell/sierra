@@ -16,13 +16,13 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from variables.base_variable import BaseVariable
+from variables.batch_criteria import BatchCriteria
 from variables.oracle_parser import OracleParser
 import itertools
 from variables.swarm_size import SwarmSize
 
 
-class Oracle(BaseVariable):
+class Oracle(BatchCriteria):
     kInfoTypes = {'entities': ['caches', 'blocks']}
 
     """
@@ -33,7 +33,10 @@ class Oracle(BaseVariable):
       simulation. Each tuple is (oracle name, list(tuple(oracle feature name, oracle feature value))).
     """
 
-    def __init__(self, tuples, swarm_size):
+    def __init__(self, cmdline_str, main_config, batch_generation_root,
+                 tuples, swarm_size):
+        BatchCriteria.__init__(self, cmdline_str, main_config, batch_generation_root)
+
         self.tuples = tuples
         self.swarm_size = swarm_size
 
@@ -48,15 +51,9 @@ class Oracle(BaseVariable):
             changes.append(set(c))
         return changes
 
-    def gen_tag_rmlist(self):
-        return []
-
-    def gen_tag_addlist(self):
-        return []
-
-    def gen_exp_dirnames(self, criteria_str):
+    def gen_exp_dirnames(self, cmdopts):
         changes = self.gen_attr_changelist()
-        attr = OracleParser().parse(criteria_str)
+        attr = OracleParser().parse(self.cmdline_str)
         dirs = []
         for chg in changes:
             d = ''
@@ -65,16 +62,31 @@ class Oracle(BaseVariable):
                     if t in at:
                         d += '+' * ('' != d) + t + '=' + value
             dirs.append(d)
-        return dirs
+        if not cmdopts['named_exp_dirs']:
+            return ['exp' + str(x) for x in range(0, len(dirs))]
+        else:
+            return dirs
+
+    def sc_graph_labels(self, scenarios):
+        return scenarios
+
+    def sc_sort_scenarios(self, scenarios):
+        return scenarios  # No sorting needed
+
+    def graph_xvals(self, cmdopts):
+        return [i for i in range(1, self.n_exp() + 1)]
+
+    def graph_xlabel(self, cmdopts):
+        return "Oracular Swarms"
 
 
-def Factory(criteria_str):
+def Factory(cmdline_str, main_config, batch_generation_root):
     """
     Creates variance classes from the command line definition of batch criteria.
     """
-    attr = OracleParser().parse(criteria_str)
+    attr = OracleParser().parse(cmdline_str)
 
-    def gen_tuples(criteria_str):
+    def gen_tuples(cmdline_str):
 
         if 'entities' in attr['oracle_name']:
             tuples = []
@@ -86,8 +98,9 @@ def Factory(criteria_str):
             return tuples
 
     def __init__(self):
-        Oracle.__init__(self, gen_tuples(criteria_str), attr['swarm_size'])
+        Oracle.__init__(self, cmdline_str, main_config, batch_generation_root,
+                        gen_tuples(cmdline_str), attr['swarm_size'])
 
-    return type(criteria_str,
+    return type(cmdline_str,
                 (Oracle,),
                 {"__init__": __init__})

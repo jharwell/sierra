@@ -21,7 +21,6 @@ import copy
 import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
 import perf_measures.utils as pm_utils
-import batch_utils as butils
 import math
 
 
@@ -39,21 +38,22 @@ class InterExpSelfOrganization:
         self.blocks_collected_csv = blocks_collected_csv
         self.ca_in_csv = ca_in_csv
 
-    def generate(self):
+    def generate(self, batch_criteria):
         """
         Calculate the self-org metric for a given controller, and generate a batched_range_graph of
         the result.
         """
 
         print("-- Self-organization from {0}".format(self.cmdopts["collate_root"]))
-        batch_exp_dirnames = butils.exp_dirnames(self.cmdopts)
+        batch_exp_dirnames = batch_criteria.gen_exp_dirnames(self.cmdopts)
         fl = pm_utils.FractionalLosses(self.cmdopts,
                                        self.blocks_collected_csv,
-                                       self.ca_in_csv).calc()
+                                       self.ca_in_csv,
+                                       batch_criteria).calc(batch_criteria)
         df_new = pd.DataFrame(columns=[c for c in fl.columns if c not in batch_exp_dirnames[0]])
 
         self.cmdopts["n_exp"] = len(fl.columns)
-        swarm_sizes = butils.swarm_sizes(self.cmdopts)
+        swarm_sizes = batch_criteria.swarm_sizes(self.cmdopts)
 
         for i in range(1, len(fl.columns)):
             theta = fl[batch_exp_dirnames[i]] - \
@@ -67,8 +67,8 @@ class InterExpSelfOrganization:
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-self-org.png"),
                          title="Swarm Self-Organization Due To Sub-Linear Fractional Performance Losses",
-                         xlabel=butils.graph_xlabel(self.cmdopts),
+                         xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="",
-                         xvals=butils.graph_xvals(self.cmdopts)[1:],
+                         xvals=batch_criteria.graph_xvals(self.cmdopts)[1:],
                          legend=None,
                          polynomial_fit=-1).generate()

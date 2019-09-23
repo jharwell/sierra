@@ -35,10 +35,12 @@ class InterExpGraphGenerator:
     Attributes:
     """
 
-    def __init__(self, cmdopts, targets):
+    def __init__(self, cmdopts, targets, batch_criteria):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
+        self.batch_criteria = batch_criteria
+
         self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
                                                        'main.yaml')))
 
@@ -66,18 +68,18 @@ class InterExpGraphGenerator:
 
         if "all" in components or "sp" in components:
             InterExpBlockCollection(self.cmdopts,
-                                    self.main_config['sierra']['perf']['blocks_collected_csv']).generate()
+                                    self.main_config['sierra']['perf']['blocks_collected_csv']).generate(self.batch_criteria)
 
         if "all" in components or "ss" in components:
-            InterExpScalability(self.cmdopts).generate()
+            InterExpScalability().generate(self.cmdopts, self.batch_criteria)
 
         if "all" in components or "so" in components:
             InterExpSelfOrganization(self.cmdopts,
                                      self.main_config['sierra']['perf']['blocks_collected_csv'],
-                                     self.main_config['sierra']['perf']['ca_in_csv']).generate()
+                                     self.main_config['sierra']['perf']['ca_in_csv']).generate(self.batch_criteria)
 
         if "all" in components or "sr" in components:
-            InterExpReactivity(self.cmdopts).generate()
+            InterExpReactivity(self.cmdopts).generate(self.batch_criteria)
 
         if "all" in components or "sa" in components:
-            InterExpAdaptability(self.cmdopts).generate()
+            InterExpAdaptability(self.cmdopts).generate(self.batch_criteria)

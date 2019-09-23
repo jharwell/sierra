@@ -27,7 +27,7 @@ class GeneratorCreator:
     Get the joint controller+scenario input generator to use to create experiment/batch inputs.
     """
 
-    def __call__(self, args, generator_names):
+    def __call__(self, args, generator_names, batch_criteria):
         if any([[2], [3], [4]]) == args.pipeline:
             return None
 
@@ -53,26 +53,13 @@ class GeneratorCreator:
             'config_root': args.config_root,
             'named_exp_dirs': args.named_exp_dirs
         }
-        if args.batch_criteria is None:
-            sim_opts['criteria_category'] = None
-            sim_opts['criteria_def'] = None
-        else:
-            sim_opts['criteria_category'] = args.batch_criteria.split('.')[0]
-            sim_opts['criteria_def'] = '.'.join(args.batch_criteria.split('.')[1:])
 
-        if args.batch_criteria is not None:
-            criteria = __import__("variables.{0}".format(
-                sim_opts['criteria_category']), fromlist=["*"])
-            sim_opts["arena_dim"] = None
-
-            criteria_generator = getattr(criteria, "Factory")(args.batch_criteria)()
-            print("- Parse batch criteria into generator governor '{0}'".format(
-                criteria_generator.__class__.__name__))
+        if batch_criteria is not None:
             return BatchedExpInputGenerator(batch_config_template=args.template_config_file,
                                             batch_generation_root=args.generation_root,
                                             batch_output_root=args.output_root,
-                                            exp_generator_pair=generator_names,
-                                            batch_criteria=criteria_generator.gen_attr_changelist(),
+                                            generator_names=generator_names,
+                                            criteria=batch_criteria,
                                             sim_opts=sim_opts)
         else:
             # The scenario dimensions were specified on the command line. Format of:

@@ -16,12 +16,12 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from variables.base_variable import BaseVariable
+from variables.batch_criteria import BatchCriteria
 from variables.swarm_size_parser import SwarmSizeParser
 import math
 
 
-class SwarmSize(BaseVariable):
+class SwarmSize(BatchCriteria):
 
     """
     Defines a range of swarm sizes to test with
@@ -30,7 +30,8 @@ class SwarmSize(BaseVariable):
       size_list(list): List of integer sizes to test with.
     """
 
-    def __init__(self, size_list):
+    def __init__(self, cmdline_str, main_config, batch_generation_root, size_list):
+        BatchCriteria.__init__(self, cmdline_str, main_config, batch_generation_root)
         self.size_list = size_list
 
     def gen_attr_changelist(self):
@@ -41,31 +42,46 @@ class SwarmSize(BaseVariable):
         """
         return [set([(".//arena/distribute/entity", "quantity", str(s))]) for s in self.size_list]
 
-    def gen_tag_rmlist(self):
-        return []
-
-    def gen_tag_addlist(self):
-        return []
-
-    def gen_exp_dirnames(self, criteria_str):
+    def gen_exp_dirnames(self, cmdopts):
         changes = self.gen_attr_changelist()
         dirs = []
         for chg in changes:
             d = ''
             for path, attr, value in chg:
+
                 if 'quantity' in attr:
                     d += 'size' + value
             dirs.append(d)
-        return dirs
+        if not cmdopts['named_exp_dirs']:
+            return ['exp' + str(x) for x in range(0, len(dirs))]
+        else:
+            return dirs
+
+    def sc_graph_labels(self, scenarios):
+        return [s[-4:] for s in scenarios]
+
+    def sc_sort_scenarios(self, scenarios):
+        return scenarios  # No sorting needed
+
+    def graph_xvals(self, cmdopts):
+        ret = self.swarm_sizes(cmdopts)
+
+        if cmdopts['plot_log_xaxis']:
+            return [math.log2(x) for x in ret]
+        else:
+            return ret
+
+    def graph_xlabel(self, cmdopts):
+        return "Swarm Size"
 
 
-def Factory(criteria_str):
+def Factory(cmdline_str, main_config, batch_generation_root):
     """
     Creates swarm size classes from the command line definition of batch criteria.
     """
-    attr = SwarmSizeParser().parse(criteria_str.split(".")[1])
+    attr = SwarmSizeParser().parse(cmdline_str.split(".")[1])
 
-    def gen_sizes(criteria_str):
+    def gen_sizes(cmdline_str):
 
         if "Linear" == attr["increment_type"]:
             return [attr["linear_increment"] * x for x in range(1, 11)]
@@ -73,8 +89,9 @@ def Factory(criteria_str):
             return [2 ** x for x in range(0, int(math.log2(attr["max_size"])) + 1)]
 
     def __init__(self):
-        SwarmSize.__init__(self, gen_sizes(criteria_str))
+        SwarmSize.__init__(self, cmdline_str, main_config, batch_generation_root,
+                           gen_sizes(cmdline_str))
 
-    return type(criteria_str,
+    return type(cmdline_str,
                 (SwarmSize,),
                 {"__init__": __init__})

@@ -32,10 +32,3 @@ class BaseVariable:
         file.
         """
         raise NotImplementedError
-
-    def gen_exp_dirnames(self):
-        """
-        Generate list of strings from the current changelist to use for directory names within a
-        batched experiment.
-        """
-        raise NotImplementedError

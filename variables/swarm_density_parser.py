@@ -93,7 +93,6 @@ class SwarmDensityParser():
         res = re.search('[0-9]+', dist_and_dims)
         assert res is not None, \
             "FATAL: Bad arena X specification in criteria '{0}'".format(criteria_str)
-        print(res.group())
         ret['arena_x'] = int(res.group(0)[:-1])
 
         res = re.search('x[0-9]+', criteria_str)

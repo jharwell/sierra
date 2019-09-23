@@ -55,36 +55,36 @@ BASE_CMD="python3 sierra.py \
 
 cd $HOME/git/sierra
 
-# GO GO Power Rangers!
-for c in "${CONTROLLERS[@]}"
-do
-    for dist in "${DIST_TYPES1[@]}"
-    do
-        for size in "${SIZES[@]}"
-        do
-            $BASE_CMD --generator=${c}.${dist}12x6 --batch-criteria=ta_policy_set.All.Z${size} --n-blocks=10  --sierra-root=$OUTPUT_ROOT/b10-${size}
-            $BASE_CMD --generator=${c}.${dist}12x6 --batch-criteria=ta_policy_set.All.Z${size} --n-blocks=20  --sierra-root=$OUTPUT_ROOT/b20-${size}
-            $BASE_CMD --generator=${c}.${dist}12x6 --batch-criteria=ta_policy_set.All.Z${size} --n-blocks=40  --sierra-root=$OUTPUT_ROOT/b40-${size}
+# # GO GO Power Rangers!
+# for c in "${CONTROLLERS[@]}"
+# do
+#     for dist in "${DIST_TYPES1[@]}"
+#     do
+#         for size in "${SIZES[@]}"
+#         do
+#             $BASE_CMD --generator=${c}.${dist}12x6 --batch-criteria=ta_policy_set.All.Z${size} --n-blocks=10  --sierra-root=$OUTPUT_ROOT/b10-${size}
+#             $BASE_CMD --generator=${c}.${dist}12x6 --batch-criteria=ta_policy_set.All.Z${size} --n-blocks=20  --sierra-root=$OUTPUT_ROOT/b20-${size}
+#             $BASE_CMD --generator=${c}.${dist}12x6 --batch-criteria=ta_policy_set.All.Z${size} --n-blocks=40  --sierra-root=$OUTPUT_ROOT/b40-${size}
 
-            $BASE_CMD --generator=${c}.${dist}24x12 --batch-criteria=ta_policy_set.All.Z${size} --n-blocks=30  --sierra-root=$OUTPUT_ROOT/b30-${size}
-            $BASE_CMD --generator=${c}.${dist}24x12 --batch-criteria=ta_policy_set.All.Z${size} --n-blocks=60  --sierra-root=$OUTPUT_ROOT/b60-${size}
-            $BASE_CMD --generator=${c}.${dist}24x12 --batch-criteria=ta_policy_set.All.Z${size} --n-blocks=120  --sierra-root=$OUTPUT_ROOT/b120-${size}
-        done;
-    done;
-    for dist in "${DIST_TYPES2[@]}"
-    do
-        for size in "${SIZES[@]}"
-        do
-            $BASE_CMD --generator=${c}.${dist}16x16 --batch-criteria=ta_policy_set.All.Z${size} --n-blocks=10  --sierra-root=$OUTPUT_ROOT/b10-${size}
-            $BASE_CMD --generator=${c}.${dist}16x16 --batch-criteria=ta_policy_set.All.Z${size} --n-blocks=20  --sierra-root=$OUTPUT_ROOT/b20-${size}
-            $BASE_CMD --generator=${c}.${dist}16x16 --batch-criteria=ta_policy_set.All.Z${size} --n-blocks=40  --sierra-root=$OUTPUT_ROOT/b40-${size}
+#             $BASE_CMD --generator=${c}.${dist}24x12 --batch-criteria=ta_policy_set.All.Z${size} --n-blocks=30  --sierra-root=$OUTPUT_ROOT/b30-${size}
+#             $BASE_CMD --generator=${c}.${dist}24x12 --batch-criteria=ta_policy_set.All.Z${size} --n-blocks=60  --sierra-root=$OUTPUT_ROOT/b60-${size}
+#             $BASE_CMD --generator=${c}.${dist}24x12 --batch-criteria=ta_policy_set.All.Z${size} --n-blocks=120  --sierra-root=$OUTPUT_ROOT/b120-${size}
+#         done;
+#     done;
+#     for dist in "${DIST_TYPES2[@]}"
+#     do
+#         for size in "${SIZES[@]}"
+#         do
+#             $BASE_CMD --generator=${c}.${dist}16x16 --batch-criteria=ta_policy_set.All.Z${size} --n-blocks=10  --sierra-root=$OUTPUT_ROOT/b10-${size}
+#             $BASE_CMD --generator=${c}.${dist}16x16 --batch-criteria=ta_policy_set.All.Z${size} --n-blocks=20  --sierra-root=$OUTPUT_ROOT/b20-${size}
+#             $BASE_CMD --generator=${c}.${dist}16x16 --batch-criteria=ta_policy_set.All.Z${size} --n-blocks=40  --sierra-root=$OUTPUT_ROOT/b40-${size}
 
-            $BASE_CMD --generator=${c}.${dist}32x32 --batch-criteria=ta_policy_set.All.Z${size} --n-blocks=30  --sierra-root=$OUTPUT_ROOT/b30-${size}
-            $BASE_CMD --generator=${c}.${dist}32x32 --batch-criteria=ta_policy_set.All.Z${size} --n-blocks=60  --sierra-root=$OUTPUT_ROOT/b60-${size}
-            $BASE_CMD --generator=${c}.${dist}32x32 --batch-criteria=ta_policy_set.All.Z${size} --n-blocks=120  --sierra-root=$OUTPUT_ROOT/b120-${size}
-        done;
-    done;
-done;
+#             $BASE_CMD --generator=${c}.${dist}32x32 --batch-criteria=ta_policy_set.All.Z${size} --n-blocks=30  --sierra-root=$OUTPUT_ROOT/b30-${size}
+#             $BASE_CMD --generator=${c}.${dist}32x32 --batch-criteria=ta_policy_set.All.Z${size} --n-blocks=60  --sierra-root=$OUTPUT_ROOT/b60-${size}
+#             $BASE_CMD --generator=${c}.${dist}32x32 --batch-criteria=ta_policy_set.All.Z${size} --n-blocks=120  --sierra-root=$OUTPUT_ROOT/b120-${size}
+#         done;
+#     done;
+# done;
 
 # Generate comparison graphs (a valid batch criteria still needed to correctly
 # generate graph labels)
@@ -94,17 +94,36 @@ do
               --batch-criteria=ta_policy_set.All.Z16\
               --sierra-root=$OUTPUT_ROOT/b10-${size}\
               --pipeline 5 \
-              --inter-batch-controllers=depth0.CRW,depth0.DPO,depth1.BITD_DPO_DPO,depth2.BIRTD_DPO
+              --inter-batch-controllers=depth1.BITD_DPO,depth2.BIRTD_DPO
 
     $BASE_CMD --generator=depth1.BITD_DPO.SS12x6\
               --batch-criteria=ta_policy_set.All.Z16\
               --sierra-root=$OUTPUT_ROOT/b20-${size}\
               --pipeline 5\
-              --inter-batch-controllers=depth0.CRW,depth0.DPO,depth1.BITD_DPO_DPO,depth2.BIRTD_DPO
+              --inter-batch-controllers=depth1.BITD_DPO,depth2.BIRTD_DPO
 
     $BASE_CMD --generator=depth1.BITD_DPO.SS12x6\
               --batch-criteria=ta_policy_set.All.Z16\
               --sierra-root=$OUTPUT_ROOT/b40-${size}\
               --pipeline 5\
-              --inter-batch-controllers=depth0.CRW,depth0.DPO,depth1.BITD_DPO_DPO,depth2.BIRTD_DPO
+              --inter-batch-controllers=depth1.BITD_DPO,depth2.BIRTD_DPO
+
+    $BASE_CMD --generator=depth1.BITD_DPO.SS12x6\
+              --batch-criteria=ta_policy_set.All.Z16\
+              --sierra-root=$OUTPUT_ROOT/b30-${size}\
+              --pipeline 5 \
+              --inter-batch-controllers=depth1.BITD_DPO,depth2.BIRTD_DPO
+
+    $BASE_CMD --generator=depth1.BITD_DPO.SS12x6\
+              --batch-criteria=ta_policy_set.All.Z16\
+              --sierra-root=$OUTPUT_ROOT/b60-${size}\
+              --pipeline 5\
+              --inter-batch-controllers=depth1.BITD_DPO,depth2.BIRTD_DPO
+
+    $BASE_CMD --generator=depth1.BITD_DPO.SS12x6\
+              --batch-criteria=ta_policy_set.All.Z16\
+              --sierra-root=$OUTPUT_ROOT/b120-${size}\
+              --pipeline 5\
+              --inter-batch-controllers=depth1.BITD_DPO,depth2.BIRTD_DPO
+
 done;

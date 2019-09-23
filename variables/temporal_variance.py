@@ -16,10 +16,11 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from variables.base_variable import BaseVariable
+from variables.batch_criteria import BatchCriteria
 from variables.swarm_size import SwarmSize
 from variables.temporal_variance_parser import TemporalVarianceParser
 import math
+from perf_measures import vcs
 
 kMinHz = 1000
 kHzDelta = 2000
@@ -43,7 +44,7 @@ kBMAmps = [10, 100, 200, 400, 800]
 kBCAmps = [0, 0.05, 0.1, 0.2, 0.4]
 
 
-class TemporalVariance(BaseVariable):
+class TemporalVariance(BatchCriteria):
 
     """
     Defines the type(s) of temporal variance to apply during simulation.
@@ -54,7 +55,10 @@ class TemporalVariance(BaseVariable):
       value).
     """
 
-    def __init__(self, variances, swarm_size):
+    def __init__(self, cmdline_str, main_config, batch_generation_root,
+                 variances, swarm_size):
+        BatchCriteria.__init__(self, cmdline_str, main_config, batch_generation_root)
+
         self.variances = variances
         self.swarm_size = swarm_size
 
@@ -72,24 +76,30 @@ class TemporalVariance(BaseVariable):
             ("{0}/waveform".format(v[0]), "offset", str(v[4])),
             ("{0}/waveform".format(v[0]), "phase", str(v[5]))]) for v in self.variances]
 
-    def gen_tag_rmlist(self):
-        return []
+    def sc_graph_labels(self, scenarios):
+        return scenarios
 
-    def gen_tag_addlist(self):
-        return []
+    def sc_sort_scenarios(self, scenarios):
+        return scenarios  # No sorting needed
+
+    def graph_xvals(self, cmdopts):
+        return [vcs.EnvironmentalCS(cmdopts, x)() for x in range(0, self.n_exp())]
+
+    def graph_xlabel(self, cmdopts):
+        return vcs.method_xlabel(cmdopts["envc_cs_method"])
 
 
-def Factory(criteria_str):
+def Factory(cmdline_str, main_config, batch_generation_root):
     """
     Creates variance classes from the command line definition of batch criteria.
     """
-    attr = TemporalVarianceParser().parse(criteria_str)
+    attr = TemporalVarianceParser().parse(cmdline_str)
 
-    def gen_variances(criteria_str):
+    def gen_variances(cmdline_str):
 
-        if "BC" in criteria_str:
+        if "BC" in cmdline_str:
             amps = kBCAmps
-        elif "BM" in criteria_str:
+        elif "BM" in cmdline_str:
             amps = kBMAmps
 
         # All variances need to have baseline/ideal conditions for comparison, which is a small
@@ -126,8 +136,9 @@ def Factory(criteria_str):
         return variances
 
     def __init__(self):
-        TemporalVariance.__init__(self, gen_variances(criteria_str), attr["swarm_size"])
+        TemporalVariance.__init__(self, cmdline_str, main_config, batch_generation_root,
+                                  gen_variances(cmdline_str), attr["swarm_size"])
 
-    return type(criteria_str,
+    return type(cmdline_str,
                 (TemporalVariance,),
                 {"__init__": __init__})

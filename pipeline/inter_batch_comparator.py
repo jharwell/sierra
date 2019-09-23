@@ -20,7 +20,9 @@ import os
 import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
 from graphs.bar_graph import BarGraph
+
 import perf_measures.utils as pm_utils
+import batch_utils as butils
 import copy
 import yaml
 import perf_measures.vcs
@@ -169,9 +171,9 @@ class InterBatchComparator:
     def _generate_inter_scenario_graph(self, src_stem, dest_stem, title):
         # We can do this because we have already checked that all controllers executed the same set
         # of batch experiments
-        scenarios = pm_utils.sort_scenarios(self.cmdopts['criteria_category'],
-                                            os.listdir(os.path.join(self.cmdopts['sierra_root'],
-                                                                    self.controllers[0])))
+        scenarios = butils.sort_scenarios(self.cmdopts['criteria_category'],
+                                          os.listdir(os.path.join(self.cmdopts['sierra_root'],
+                                                                  self.controllers[0])))
 
         swarm_sizes = []
         df = pd.DataFrame(columns=self.controllers, index=scenarios)
@@ -183,7 +185,7 @@ class InterBatchComparator:
                                                       s,
                                                       "exp-inputs")
             cmdopts['n_exp'] = len(os.listdir(cmdopts['generation_root']))
-            swarm_sizes = pm_utils.batch_swarm_sizes(cmdopts)
+            swarm_sizes = butils.swarm_sizes(cmdopts)
             for c in self.controllers:
                 csv_ipath = os.path.join(self.cmdopts['sierra_root'],
                                          c,
@@ -203,7 +205,7 @@ class InterBatchComparator:
                                  src_stem + "-wue.csv")
         df.to_csv(csv_opath, sep=';', index=False)
 
-        scenarios = pm_utils.prettify_scenario_labels(self.cmdopts['criteria_category'], scenarios)
+        scenarios = butils.prettify_scenario_labels(self.cmdopts['criteria_category'], scenarios)
 
         BarGraph(input_fpath=csv_opath,
                  output_fpath=os.path.join(self.sc_graph_root,
@@ -262,9 +264,9 @@ class InterBatchComparator:
                              output_fpath=os.path.join(self.cc_graph_root,
                                                        dest_stem) + '-' + s + ".png",
                              title=title,
-                             xlabel=pm_utils.batch_criteria_xlabel(cmdopts),
+                             xlabel=butils.graph_xlabel(cmdopts),
                              ylabel=ylabel,
-                             xvals=pm_utils.batch_criteria_xvals(cmdopts)[n_exp_corr:],
+                             xvals=butils.graph_xvals(cmdopts)[n_exp_corr:],
                              legend=self.controllers,
                              polynomial_fit=-1).generate()
 
@@ -303,8 +305,6 @@ class InterBatchComparator:
 
             csv_opath_stem = os.path.join(self.cc_csv_root, 'cc-' +
                                           src_stem + "-" + s)
-            df = df.reindex(sorted(df.columns, key=lambda t: int(t[3:])), axis=1)
             df.to_csv(csv_opath_stem + '.csv', sep=';', index=False)
             if not stddev_df.empty:
-                stddev_df = df.reindex(sorted(df.columns, key=lambda t: int(t[3:])), axis=1)
                 stddev_df.to_csv(csv_opath_stem + '.stddev', sep=';', index=False)

@@ -20,7 +20,6 @@ import os
 import copy
 import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
-import batch_utils as butils
 
 
 class InterExpBlockCollection:
@@ -36,7 +35,7 @@ class InterExpBlockCollection:
         self.cmdopts = copy.deepcopy(cmdopts)
         self.blocks_collected_stem = blocks_collected_csv.split('.')[0]
 
-    def generate(self):
+    def generate(self, batch_criteria):
         """
         Calculate the blocks collected metric for a given controller, and output a nice graph.
         """
@@ -56,9 +55,9 @@ class InterExpBlockCollection:
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-blocks-collected.png"),
                          title="Swarm Blocks Collected",
-                         xlabel=butils.graph_xlabel(self.cmdopts),
+                         xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="# Blocks",
-                         xvals=butils.graph_xvals(self.cmdopts),
+                         xvals=batch_criteria.graph_xvals(self.cmdopts),
                          legend=None,
                          polynomial_fit=-1).generate()
 

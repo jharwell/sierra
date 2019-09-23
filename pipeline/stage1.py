@@ -26,12 +26,13 @@ class PipelineStage1:
     a template suitable for input into ARGoS that contain user-specified modifications.
     """
 
-    def __init__(self, cmdopts, input_generator):
+    def __init__(self, cmdopts, input_generator, batch_criteria):
         self.cmdopts = cmdopts
         self.input_generator = input_generator
+        self.batch_criteria = batch_criteria
 
     def run(self):
-        if self.cmdopts['criteria_category'] is not None:
+        if self.batch_criteria is not None:
             print("- Stage1: Generating input files for batched experiment '{0}' in {1}...".format(self.cmdopts['generator'],
                                                                                                    self.cmdopts['generation_root']))
 

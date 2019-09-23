@@ -47,14 +47,13 @@ class BatchedExpInputGenerator:
       batch_output_root(str): Root directory for all experiment outputs (relative to current dir or
                               absolute). Each experiment will get a directory 'exp<n>' in this
                               directory for its outputs.
-      batch_criteria(list): List of sets, where each entry in the inner list is a list of tuples
-                            of changes to make to the main template XML file for each experiment.
-      exp_generator_pair(tuple): Pair of class names to use when creating the new generator
+      criteria(BatchCriteria): BatchCriteria derived object instance created from cmdline definition.
+      generator_names(tuple): Pair of class names to use when creating the new generator
                                  (scenario + controller changes).
     """
 
-    def __init__(self, batch_config_template, batch_generation_root, batch_output_root, batch_criteria,
-                 exp_generator_pair, sim_opts):
+    def __init__(self, batch_config_template, batch_generation_root, batch_output_root, criteria,
+                 generator_names, sim_opts):
         assert os.path.isfile(
             batch_config_template), \
             "The path '{}' (which should point to the main config file) did not point to a file".format(
@@ -71,90 +70,28 @@ class BatchedExpInputGenerator:
              "batch generation root directory '{}' does not have any spaces in it").format(self.batch_generation_root)
 
         self.batch_output_root = os.path.abspath(batch_output_root)
-        self.exp_generator_pair = exp_generator_pair
-        self.batch_criteria = batch_criteria
+        self.generator_names = generator_names
+        self.criteria = criteria
         self.sim_opts = sim_opts
-        self.sim_opts['n_exp'] = len(self.batch_criteria)
-        self.sim_opts['generation_root'] = self.batch_generation_root
 
     def generate(self):
         """
         Generates and saves all the input files for all experiments in the batch.
         """
+        # Scaffold the batched experiment and verify nothing is horrendously wrong
+        self.criteria.scaffold_exps(XMLLuigi(self.batch_config_template),
+                                    self.batch_config_leaf,
+                                    self.sim_opts)
 
-        # create experiment input XML templates
-        xml_luigi = XMLLuigi(self.batch_config_template)
-        exp_defs = list(self.batch_criteria)  # Needs to be a list for indexing
-
-        # Cleanup temporary pkl files (we may have crashed last time we ran)
-        self.__cleanup_pkl_files(exp_defs)
-
-        # Create temporary pkl files to use during directory creation (needed for extraction of
-        # correct directory naming scheme based on batch criteria)
-        for i in range(0, len(exp_defs)):
-            pkl_path = '/tmp/sierra_pkl{0}.pkl'.format(i)
-            with open(pkl_path, 'ab') as f:
-                pickle.dump(exp_defs[i], f)
-
-        for i in range(0, len(exp_defs)):
-            self.__scaffold_exp(xml_luigi, exp_defs[i], i)
-
-        exp_dirnames = butils.exp_dirnames(self.sim_opts)
-        assert len(exp_defs) == len(exp_dirnames),\
-            "FATAL: Size of batch criteria({0}) != # exp dirs ({1}): possibly caused by duplicate "\
-            "named exp dirs... ".format(len(exp_defs),
-                                        len(exp_dirnames))
-
-        # Pickle experiment definitions for later retrieval in experiment directories
-        self.__pkl_exp_defs(exp_defs)
-
-        # Cleanup temporary pkl files after experiment directory creation
-        self.__cleanup_pkl_files(exp_defs)
+        # Pickle experiment definitions in the actual batched experiment directory for later
+        # retrieval
+        self.criteria.pickle_exp_defs(self.sim_opts)
 
         # Create and run generators
+        exp_defs = self.criteria.gen_attr_changelist()
         for i in range(0, len(exp_defs)):
             generator = self.__create_exp_generator(exp_defs[i], i)
             generator.generate()
-
-    def __cleanup_pkl_files(self, exp_defs):
-        """
-        Cleanup the temporary .pkl files written as part of experiment scaffolding.
-        """
-        for i in range(0, len(exp_defs)):
-            pkl_path = '/tmp/sierra_pkl{0}.pkl'.format(i)
-            if os.path.exists(pkl_path):
-                os.remove(pkl_path)
-
-    def __scaffold_exp(self, xml_luigi, exp_def, exp_num):
-        """
-        Scaffold an experiment within the batch:
-
-        - Create experiment directories for each experiment in the batch
-        - Write the ARGoS input file for the experiment to the experiment directory after the
-          changes for the batch criteria have been applied. This file becomes the template config
-          file for each experiment to which the scenario+controllers changes are then applied.
-        """
-        exp_dirname = butils.exp_dirname(self.sim_opts, exp_num, True)
-        exp_generation_root = os.path.join(self.batch_generation_root, str(exp_dirname))
-        os.makedirs(exp_generation_root, exist_ok=True)
-
-        for path, attr, value in exp_def:
-            xml_luigi.attribute_change(path, attr, value)
-
-        xml_luigi.output_filepath = os.path.join(exp_generation_root, self.batch_config_leaf)
-        xml_luigi.write()
-
-    def __pkl_exp_defs(self, exp_defs):
-        """
-        Pickle experiment changes to a .pkl file in the experiment root for each experiment in the
-        batch for retrieval in later stages.
-        """
-        for i in range(0, len(exp_defs)):
-            exp_dirname = butils.exp_dirname(self.sim_opts, i, True)
-            with open(os.path.join(self.batch_generation_root,
-                                   exp_dirname,
-                                   'exp_def.pkl'), 'ab') as f:
-                pickle.dump(exp_defs[i], f)
 
     def __create_exp_generator(self, exp_def, exp_num):
         """
@@ -168,28 +105,28 @@ class BatchedExpInputGenerator:
         scenario = None
         # The scenario dimensions were specified on the command line
         # Format of '(<decomposition depth>.<controller>.[SS,DS,QS,RN,PL]>'
-        if "Generator" not in self.exp_generator_pair[1]:
+        if "Generator" not in self.generator_names[1]:
             try:
-                x, y = self.exp_generator_pair[1].split('.')[1][2:].split('x')
+                x, y = self.generator_names[1].split('.')[1][2:].split('x')
             except ValueError:
                 print("FATAL: Scenario dimensions should be specified on cmdline, but they were not")
                 raise
-            scenario = self.exp_generator_pair[1].split(
-                '.')[0] + "." + self.exp_generator_pair[1].split('.')[1][:2] + "Generator"
+            scenario = self.generator_names[1].split(
+                '.')[0] + "." + self.generator_names[1].split('.')[1][:2] + "Generator"
             self.sim_opts["arena_dim"] = (int(x), int(y))
         else:  # Scenario dimensions should be obtained from batch criteria
             for c in exp_def:
                 if c[0] == ".//arena" and c[1] == "size":
                     x, y, z = c[2].split(',')
                     self.sim_opts["arena_dim"] = (int(x), int(y))
-            scenario = self.exp_generator_pair[1]
+            scenario = self.generator_names[1]
 
         exp_generation_root = os.path.join(self.batch_generation_root,
-                                           butils.exp_dirname(self.sim_opts, exp_num))
+                                           self.criteria.gen_exp_dirnames(self.sim_opts)[exp_num])
         exp_output_root = os.path.join(self.batch_output_root,
-                                       butils.exp_dirname(self.sim_opts, exp_num))
+                                       self.criteria.gen_exp_dirnames(self.sim_opts)[exp_num])
 
-        controller_name = self.exp_generator_pair[0]
+        controller_name = self.generator_names[0]
         scenario_name = 'generators.' + scenario
 
         # Scenarios come from a canned set, which is why we have to look up their generator

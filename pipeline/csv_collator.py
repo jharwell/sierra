@@ -34,9 +34,11 @@ class CSVCollator:
 
     """
 
-    def __init__(self, main_config, cmdopts, targets):
+    def __init__(self, main_config, cmdopts, targets, batch_criteria):
         self.main_config = main_config
         self.cmdopts = cmdopts
+        self.batch_criteria = batch_criteria
+
         self.batch_output_root = os.path.abspath(self.cmdopts['output_root'])
         self.collate_root = os.path.join(self.batch_output_root,
                                          self.main_config['sierra']['collate_csv_leaf'])
@@ -101,12 +103,14 @@ class CSVCollator:
         # Sort columns except clock. They all start with 'exp' so only sort on the numerals
         # after that part.
         if src_exists:
-            csv_df_new = csv_df_new.reindex(butils.exp_dirnames(self.cmdopts), axis=1)
+            csv_df_new = csv_df_new.reindex(self.batch_criteria.gen_exp_dirnames(self.cmdopts),
+                                            axis=1)
             csv_df_new.to_csv(os.path.join(self.collate_root,
                                            target['dest_stem'] + '.csv'), sep=';',
                               index=False)
         if src_exists and not stddev_df_new.empty:
-            stddev_df_new = stddev_df_new.reindex(butils.exp_dirnames(self.cmdopts), axis=1)
+            stddev_df_new = stddev_df_new.reindex(self.batch_criteria.gen_exp_dirnames(self.cmdopts),
+                                                  axis=1)
 
             stddev_df_new.to_csv(os.path.join(self.collate_root,
                                               target['dest_stem'] + '.stddev'), sep=';', index=False)

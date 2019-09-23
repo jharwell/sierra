@@ -49,20 +49,20 @@ class ProjectivePerformance:
         self.projection_type = projection_type
         self.blocks_collected_stem = blocks_collected_csv.split('.')[0]
 
-    def calculate(self):
+    def calculate(self, batch_criteria):
         path = os.path.join(self.cmdopts["collate_root"], self.blocks_collected_stem + '.csv')
         assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
         df = pd.read_csv(path, sep=';')
-        exp0_dirname = butils.exp_dirname(self.cmdopts, 0)
+        exp0_dirname = batch_criteria.gen_exp_dirnames(self.cmdopts)[0]
         scale_cols = [c for c in df.columns if c not in ['clock', exp0_dirname]]
         df_new = pd.DataFrame(columns=scale_cols, index=[0])
 
         self.cmdopts["n_exp"] = len(df.columns)
-        xvals = butils.graph_xvals(self.cmdopts)
+        xvals = batch_criteria.graph_xvals(self.cmdopts)
 
         for exp_num in range(1, len(scale_cols) + 1):
-            exp_col = butils.exp_dirname(self.cmdopts, exp_num)
-            exp_prev_col = butils.exp_dirname(self.cmdopts, exp_num - 1)
+            exp_col = batch_criteria.gen_exp_dirnames(self.cmdopts)[exp_num]
+            exp_prev_col = batch_criteria.gen_exp_dirnames(self.cmdopts)[exp_num - 1]
             similarity = float(xvals[exp_num]) / float(xvals[exp_num - 1])
 
             if "positive" == self.projection_type:
@@ -91,7 +91,7 @@ class FractionalLosses:
     powers of 2.
     """
 
-    def __init__(self, cmdopts, blocks_collected_csv, ca_in_csv):
+    def __init__(self, cmdopts, blocks_collected_csv, ca_in_csv, batch_criteria):
         self.cmdopts = cmdopts
         self.batch_output_root = cmdopts["collate_root"]
         self.blocks_collected_stem = blocks_collected_csv.split('.')[0]
@@ -100,7 +100,8 @@ class FractionalLosses:
         # Just need to get # timesteps per simulation which is the same for all
         # simulations/experiments, so we pick exp0 for simplicity to calculate
         exp_def = butils.unpickle_exp_def(os.path.join(cmdopts["generation_root"],
-                                                       butils.exp_dirname(cmdopts, 0),
+                                                       batch_criteria.gen_exp_dirnames(
+                                                           self.cmdopts)[0],
                                                        "exp_def.pkl"))
 
         # Integers always seem to be pickled as floats, so you can't convert directly without an
@@ -112,7 +113,7 @@ class FractionalLosses:
                 ticks = int(float(e[2]))
         self.duration = length * ticks
 
-    def calc(self):
+    def calc(self, batch_criteria):
         """Returns the calculated fractional performance losses for the experiment."""
 
         # First calculate the time lost per timestep for a swarm of size N due to collision
@@ -120,7 +121,7 @@ class FractionalLosses:
         path = os.path.join(self.batch_output_root, self.ca_in_stem + '.csv')
         assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
         df = pd.read_csv(path, sep=';')
-        exp0_dirname = butils.exp_dirname(self.cmdopts, 0)
+        exp0_dirname = batch_criteria.gen_exp_dirnames(self.cmdopts)[0]
         scale_cols = [c for c in df.columns if c not in ['clock', exp0_dirname]]
         all_cols = [c for c in df.columns if c not in ['clock']]
         tlost_n = pd.DataFrame(columns=all_cols, data=df.tail(1))
@@ -149,8 +150,8 @@ class FractionalLosses:
                 plost_n[c] = math.inf
             else:
                 plost_n[c] = blocks.tail(1)[c] * \
-                    (tlost_n[c] - tlost_n[exp0_dirname] * math.pow(2, butils.exp_dir2num(self.cmdopts, c)) /
-                     math.pow(2, butils.exp_dir2num(self.cmdopts, c)))
+                    (tlost_n[c] - tlost_n[exp0_dirname] * math.pow(2, batch_criteria.exp_dir2num(self.cmdopts, c)) /
+                     math.pow(2, batch_criteria.exp_dir2num(self.cmdopts, c)))
 
         # Finally, calculate fractional losses as:
         #

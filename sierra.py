@@ -21,6 +21,7 @@ from cmdline import Cmdline
 from pipeline.exp_pipeline import ExpPipeline
 from generators.generator_pair_parser import GeneratorPairParser
 from generators.generator_creator import GeneratorCreator
+import variables.batch_criteria as bc
 import collections
 
 
@@ -84,6 +85,14 @@ if __name__ == "__main__":
     if not isinstance(args.pipeline, collections.Iterable):
         args.pipeline = [args.pipeline]
 
-    generator = GeneratorCreator()(args, pair)
-    pipeline = ExpPipeline(args, generator)
+    if args.batch_criteria is not None:
+        criteria = bc.Factory(args)
+    else:
+        criteria = None
+
+    print("- Parse batch criteria into generator governor '{0}'".format(
+        criteria.__class__.__name__))
+
+    generator = GeneratorCreator()(args, pair, criteria)
+    pipeline = ExpPipeline(args, generator, criteria)
     pipeline.run()

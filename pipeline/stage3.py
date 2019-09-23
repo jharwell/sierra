@@ -35,8 +35,9 @@ class PipelineStage3:
 
     """
 
-    def __init__(self, cmdopts):
+    def __init__(self, cmdopts, batch_criteria):
         self.cmdopts = cmdopts
+        self.batch_criteria = batch_criteria
         self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
                                                        'main.yaml')))
 
@@ -56,7 +57,7 @@ class PipelineStage3:
             'ofile_leaf': self.cmdopts['render_cmd_ofile'],
             'config': self.main_config
         }
-        if self.cmdopts['criteria_category'] is not None:
+        if self.batch_criteria is not None:
             print(
                 "- Stage3: Rendering videos for batched experiment '{0}'...".format(self.cmdopts['generator']))
             renderer = BatchedExpVideoRenderer(render_params, self.cmdopts['output_root'])
@@ -77,7 +78,7 @@ class PipelineStage3:
             'gen_stddev': self.cmdopts['gen_stddev'],
             'config': self.main_config,
         }
-        if self.cmdopts['criteria_category'] is not None:
+        if self.batch_criteria is not None:
             print(
                 "- Stage3: Averaging batched experiment outputs for '{0}'...".format(self.cmdopts['generator']))
             averager = BatchedExpCSVAverager(avg_params,

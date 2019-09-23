@@ -21,7 +21,6 @@ import copy
 import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
 from perf_measures import vcs
-import batch_utils as butils
 
 
 class InterExpReactivity:
@@ -37,15 +36,15 @@ class InterExpReactivity:
         # are generated after us.
         self.cmdopts = copy.deepcopy(cmdopts)
 
-    def generate(self):
+    def generate(self, batch_criteria):
         """
         Calculate the reactivity metric for a given controller within a specific scenario, and
         generate a graph of the result.
         """
 
         print("-- Reactivity from {0}".format(self.cmdopts["collate_root"]))
-        self.cmdopts["n_exp"] = butils.n_exp(self.cmdopts)
-        batch_exp_dirnames = butils.exp_dirnames(self.cmdopts)
+        self.cmdopts["n_exp"] = batch_criteria.n_exp()
+        batch_exp_dirnames = batch_criteria.gen_exp_dirnames(self.cmdopts)
         df = pd.DataFrame(columns=batch_exp_dirnames[1:self.cmdopts["n_exp"]], index=[0])
 
         for i in range(1, self.cmdopts["n_exp"]):
@@ -60,9 +59,9 @@ class InterExpReactivity:
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-reactivity.png"),
                          title="Swarm Reactivity",
-                         xlabel=butils.graph_xlabel(self.cmdopts),
+                         xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel=vcs.method_ylabel(self.cmdopts["reactivity_cs_method"],
                                                   'reactivity'),
-                         xvals=butils.graph_xvals(self.cmdopts)[1:],
+                         xvals=batch_criteria.graph_xvals(self.cmdopts)[1:],
                          legend=None,
                          polynomial_fit=-1).generate()

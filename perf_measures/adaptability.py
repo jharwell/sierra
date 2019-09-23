@@ -37,15 +37,15 @@ class InterExpAdaptability:
         # are generated after us.
         self.cmdopts = copy.deepcopy(cmdopts)
 
-    def generate(self):
+    def generate(self, batch_criteria):
         """
         Calculate the adaptability metric for a given controller within a specific scenario, and
         generate a graph of the result.
         """
 
         print("-- Adaptability from {0}".format(self.cmdopts["collate_root"]))
-        self.cmdopts["n_exp"] = butils.n_exp(self.cmdopts)
-        batch_exp_dirnames = butils.exp_dirnames(self.cmdopts)
+        self.cmdopts["n_exp"] = batch_criteria.n_exp()
+        batch_exp_dirnames = batch_criteria.gen_exp_dirnames(self.cmdopts)
         df = pd.DataFrame(columns=batch_exp_dirnames[1:self.cmdopts["n_exp"]], index=[0])
 
         for i in range(1, self.cmdopts["n_exp"]):
@@ -60,9 +60,9 @@ class InterExpAdaptability:
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-adaptability.png"),
                          title="Swarm Adaptability",
-                         xlabel=butils.graph_xlabel(self.cmdopts),
+                         xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel=vcs.method_ylabel(self.cmdopts["adaptability_cs_method"],
                                                   'adaptability'),
-                         xvals=butils.graph_xvals(self.cmdopts)[1:],
+                         xvals=batch_criteria.graph_xvals(self.cmdopts)[1:],
                          legend=None,
                          polynomial_fit=-1).generate()

@@ -21,6 +21,8 @@ from pipeline.stage2 import PipelineStage2
 from pipeline.stage3 import PipelineStage3
 from pipeline.stage4 import PipelineStage4
 from pipeline.stage5 import PipelineStage5
+import os
+import yaml
 
 
 class ExpPipeline:
@@ -41,7 +43,7 @@ class ExpPipeline:
        performance measures.
     """
 
-    def __init__(self, args, input_generator):
+    def __init__(self, args, input_generator, batch_criteria):
         self.args = args
         self.cmdopts = {
             # general
@@ -83,26 +85,22 @@ class ExpPipeline:
             'adaptability_cs_method': self.args.adaptability_cs_method,
             'exp_graphs': self.args.exp_graphs,
         }
-        if self.args.batch_criteria is None:
-            self.cmdopts['criteria_category'] = None
-            self.cmdopts['criteria_def'] = None
-        else:
-            self.cmdopts['criteria_category'] = self.args.batch_criteria.split('.')[0]
-            self.cmdopts['criteria_def'] = '.'.join(self.args.batch_criteria.split('.')[1:])
-
         self.input_generator = input_generator
+        self.batch_criteria = batch_criteria
 
     def generate_inputs(self):
-        PipelineStage1(self.cmdopts, self.input_generator).run()
+        PipelineStage1(self.cmdopts,
+                       self.input_generator,
+                       self.batch_criteria).run()
 
     def run_experiments(self):
-        PipelineStage2(self.cmdopts).run()
+        PipelineStage2(self.cmdopts, self.batch_criteria).run()
 
     def average_results(self):
-        PipelineStage3(self.cmdopts).run()
+        PipelineStage3(self.cmdopts, self.batch_criteria).run()
 
     def intra_batch_graphs(self):
-        PipelineStage4(self.cmdopts).run()
+        PipelineStage4(self.cmdopts, self.batch_criteria).run()
 
     def inter_batch_graphs(self):
         PipelineStage5(self.cmdopts, self.args.inter_batch_controllers).run()

@@ -44,7 +44,7 @@ class Efficiency:
         self.cmdopts = copy.deepcopy(cmdopts)
         self.blocks_collected_stem = blocks_collected_csv.split('.')[0]
 
-    def calculate(self):
+    def calculate(self, batch_criteria):
         """
         Calculate efficiency metric for the givenn controller for each experiment in a
         batch.
@@ -59,12 +59,12 @@ class Efficiency:
 
         # Metric calculation is the same for the actual value of it and the std deviation,
         if os.path.exists(stddev_ipath):
-            return (self._calculate_metric(sc_ipath, True), self._calculate_metric(stddev_ipath,
-                                                                                   False))
+            return (self._calculate_metric(sc_ipath, True, batch_criteria),
+                    self._calculate_metric(stddev_ipath, False, batch_criteria))
         else:
-            return (self._calculate_metric(sc_ipath, True), None)
+            return (self._calculate_metric(sc_ipath, True, batch_criteria), None)
 
-    def generate(self, dfs):
+    def generate(self, dfs, batch_criteria):
         """
         Generate an efficiency graph after calculating the metric.
         """
@@ -82,20 +82,20 @@ class Efficiency:
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-efficiency.png"),
                          title="Swarm Efficiency (normalized)",
-                         xlabel=butils.graph_xlabel(self.cmdopts),
+                         xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="Efficiency",
-                         xvals=butils.graph_xvals(self.cmdopts),
+                         xvals=batch_criteria.graph_xvals(self.cmdopts),
                          legend=None,
                          polynomial_fit=-1).generate()
 
-    def _calculate_metric(self, ipath, must_exist):
+    def _calculate_metric(self, ipath, must_exist, batch_criteria):
         assert(not (must_exist and not os.path.exists(ipath))
                ), "FATAL: {0} does not exist".format(ipath)
         df = pd.read_csv(ipath, sep=';')
         scale_cols = [c for c in df.columns if c not in ['clock']]
         df_new = pd.DataFrame(columns=scale_cols)
         self.cmdopts["n_exp"] = len(df.columns)
-        swarm_sizes = butils.swarm_sizes(self.cmdopts)
+        swarm_sizes = batch_criteria.swarm_sizes(self.cmdopts)
 
         for i in range(0, len(scale_cols)):
             col = scale_cols[i]
@@ -116,23 +116,23 @@ class ProjectivePerformanceComparison:
         self.blocks_collected_csv = blocks_collected_csv
         self.projection_type = projection_type
 
-    def calculate(self):
+    def calculate(self, batch_criteria):
         return pm_utils.ProjectivePerformance(self.cmdopts,
                                               self.blocks_collected_csv,
-                                              self.projection_type).calculate()
+                                              self.projection_type).calculate(batch_criteria)
 
-    def generate(self, df):
+    def generate(self, df, batch_criteria):
         self.cmdopts["n_exp"] = len(df.columns) + 1
         cum_stem = os.path.join(self.cmdopts["collate_root"], "pm-pp-comp-" + self.projection_type)
         df.to_csv(cum_stem + ".csv", sep=';', index=False)
-        xvals = butils.graph_xvals(self.cmdopts)
+        xvals = batch_criteria.graph_xvals(self.cmdopts)
 
         BatchRangedGraph(inputy_stem_fpath=cum_stem + ".csv",
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-pp-comp-" + self.projection_type + ".png"),
                          title="Swarm Projective Performance Comparison ({0})".format(
                              self.projection_type),
-                         xlabel=butils.graph_xlabel(self.cmdopts),
+                         xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="Observed-Projected Ratio",
                          xvals=xvals[1:],
                          legend=None,
@@ -162,16 +162,17 @@ class FractionalPerformanceLoss:
         self.blocks_collected_csv = blocks_collected_csv
         self.ca_in_csv = ca_in_csv
 
-    def calculate(self):
+    def calculate(self, batch_criteria):
         df = pm_utils.FractionalLosses(self.cmdopts,
                                        self.blocks_collected_csv,
-                                       self.ca_in_csv).calc()
+                                       self.ca_in_csv,
+                                       batch_criteria).calc(batch_criteria)
 
         for c in df.columns:
             df[c] = 1.0 - 1.0 / math.exp(1.0 - df[c])
         return df
 
-    def generate(self, df):
+    def generate(self, df, batch_criteria):
         stem_path = os.path.join(self.cmdopts["collate_root"], "pm-scalability-fl")
 
         df.to_csv(stem_path + '.csv', sep=';', index=False)
@@ -181,9 +182,9 @@ class FractionalPerformanceLoss:
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-scalability-fl.png"),
                          title="Swarm Scalability: Fractional Performance Loss Due To Inter-robot Interference",
-                         xlabel=butils.graph_xlabel(self.cmdopts),
+                         xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="Scalability Value",
-                         xvals=butils.graph_xvals(self.cmdopts),
+                         xvals=batch_criteria.graph_xvals(self.cmdopts),
                          legend=None,
                          polynomial_fit=-1).generate()
 
@@ -205,15 +206,15 @@ class KarpFlatt:
         self.cmdopts = copy.deepcopy(cmdopts)
         self.blocks_collected_csv = blocks_collected_csv
 
-    def calculate(self):
+    def calculate(self, batch_criteria):
         df = pm_utils.ProjectivePerformance(self.cmdopts,
                                             self.blocks_collected_csv,
-                                            "positive").calculate()
+                                            "positive").calculate(batch_criteria)
 
         self.cmdopts["n_exp"] = len(df.columns) + 1
 
         # +1 because karp-flatt is only defined for exp >= 1
-        sizes = butils.swarm_sizes(self.cmdopts)[1:]
+        sizes = batch_criteria.swarm_sizes(self.cmdopts)[1:]
 
         for i in range(0, len(df.columns)):
             c = df.columns[i]
@@ -222,7 +223,7 @@ class KarpFlatt:
 
         return df
 
-    def generate(self, df):
+    def generate(self, df, batch_criteria):
         stem_path = os.path.join(self.cmdopts["collate_root"], "pm-karpflatt")
         df.to_csv(stem_path + ".csv", sep=';', index=False)
 
@@ -230,9 +231,9 @@ class KarpFlatt:
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-karpflatt.png"),
                          title="Swarm Serial Fraction: Karp-Flatt Metric",
-                         xlabel=butils.graph_xlabel(self.cmdopts),
+                         xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="",
-                         xvals=butils.graph_xvals(self.cmdopts)[1:],
+                         xvals=batch_criteria.graph_xvals(self.cmdopts)[1:],
                          legend=None,
                          polynomial_fit=-1).generate()
 
@@ -241,33 +242,27 @@ class InterExpScalability:
     """
     Calculates the scalability of the swarm configuration across a batched set of experiments within
     the same scenario from collated .csv data.
-
-    Assumes:
-    - The performance criteria is  # blocks gathered.
     """
 
-    def __init__(self, cmdopts):
-        self.cmdopts = cmdopts
-        self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
-                                                       'main.yaml')))
+    def generate(self, cmdopts, batch_criteria):
+        print("-- Scalability from {0}".format(cmdopts["collate_root"]))
 
-    def generate(self):
-        print("-- Scalability from {0}".format(self.cmdopts["collate_root"]))
+        main_config = yaml.load(open(os.path.join(cmdopts['config_root'], 'main.yaml')))
 
-        blocks_collected_csv = self.main_config['sierra']['perf']['blocks_collected_csv']
-        ca_in_csv = self.main_config['sierra']['perf']['ca_in_csv']
+        blocks_collected_csv = main_config['sierra']['perf']['blocks_collected_csv']
+        ca_in_csv = main_config['sierra']['perf']['ca_in_csv']
 
-        e = Efficiency(self.cmdopts, blocks_collected_csv)
-        e.generate(e.calculate())
+        e = Efficiency(cmdopts, blocks_collected_csv)
+        e.generate(e.calculate(batch_criteria), batch_criteria)
 
-        p = ProjectivePerformanceComparisonPositive(self.cmdopts, blocks_collected_csv)
-        p.generate(p.calculate())
+        p = ProjectivePerformanceComparisonPositive(cmdopts, blocks_collected_csv)
+        p.generate(p.calculate(batch_criteria), batch_criteria)
 
-        p = ProjectivePerformanceComparisonNegative(self.cmdopts, blocks_collected_csv)
-        p.generate(p.calculate())
+        p = ProjectivePerformanceComparisonNegative(cmdopts, blocks_collected_csv)
+        p.generate(p.calculate(batch_criteria), batch_criteria)
 
-        f = FractionalPerformanceLoss(self.cmdopts, blocks_collected_csv, ca_in_csv)
-        f.generate(f.calculate())
+        f = FractionalPerformanceLoss(cmdopts, blocks_collected_csv, ca_in_csv)
+        f.generate(f.calculate(batch_criteria), batch_criteria)
 
-        k = KarpFlatt(self.cmdopts, blocks_collected_csv)
-        k.generate(k.calculate())
+        k = KarpFlatt(cmdopts, blocks_collected_csv)
+        k.generate(k.calculate(batch_criteria), batch_criteria)

@@ -16,10 +16,12 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from variables.base_variable import BaseVariable
+from variables.batch_criteria import BatchCriteria
 from variables.arena_shape import RectangularArena
-from variables.block_distribution import TypeRandom, TypeSingleSource
 from variables.swarm_density_parser import SwarmDensityParser
+import os
+import batch_utils as butils
+from variables.block_distribution import TypeRandom, TypeSingleSource
 
 
 def Calculate(n_robots, arena_x, arena_y):
@@ -27,7 +29,7 @@ def Calculate(n_robots, arena_x, arena_y):
     return int(arena_x) * int(arena_y) / n_robots
 
 
-class ConstantDensity(BaseVariable):
+class ConstantDensity(BatchCriteria):
     """
     Defines a range of swarm and arena sizes to test with such that the arena ratio is always the
     same. Does not change the # blocks/block manifest.
@@ -42,7 +44,9 @@ class ConstantDensity(BaseVariable):
     # from its initial value according to parsed parameters.
     kExperimentsPerDensity = 10
 
-    def __init__(self, target_density, dimensions, dist_type):
+    def __init__(self, cmdline_str, main_config, batch_generation_root,
+                 target_density, dimensions, dist_type):
+        BatchCriteria.__init__(self, cmdline_str, main_config, batch_generation_root)
         self.target_density = target_density
 
         self.changes = RectangularArena(dimensions).gen_attr_changelist()
@@ -67,15 +71,9 @@ class ConstantDensity(BaseVariable):
                     break
         return self.changes
 
-    def gen_tag_rmlist(self):
-        return []
-
-    def gen_tag_addlist(self):
-        return []
-
-    def gen_exp_dirnames(self, criteria_str):
+    def gen_exp_dirnames(self, cmdopts):
         changes = self.gen_attr_changelist()
-        density = criteria_str.split('.')[1]
+        density = self.def_str.split('.')[1]
         dirs = []
         for chg in changes:
             d = ''
@@ -83,14 +81,42 @@ class ConstantDensity(BaseVariable):
                 if 'quantity' in attr:
                     d += density + '+size' + value
             dirs.append(d)
-        return dirs
+        if not cmdopts['named_exp_dirs']:
+            return ['exp' + str(x) for x in range(0, len(dirs))]
+        else:
+            return dirs
+
+    def sc_graph_labels(self, scenarios):
+        return [s[-5:-2].replace('p', '.') for s in scenarios]
+
+    def sc_sort_scenarios(self, scenarios):
+        return sorted(scenarios,
+                      key=lambda s: float(s.split('-')[2].split('.')[0][0:3].replace('p', '.')))
+
+    def graph_xvals(self, cmdopts):
+        densities = []
+        for i in range(0, self.n_exp()):
+            pickle_fpath = os.path.join(self.batch_generation_root,
+                                        self.gen_exp_dirnames(i),
+                                        "exp_def.pkl")
+            exp_def = butils.unpickle_exp_def(pickle_fpath)
+            for e in exp_def:
+                if e[0] == ".//arena/distribute/entity" and e[1] == "quantity":
+                    n_robots = int(e[2])
+                if e[0] == ".//arena" and e[1] == "size":
+                    x, y, z = e[2].split(",")
+            densities.append(n_robots / (int(x) * int(y)))
+        return densities
+
+    def graph_xlabel(self, cmdopts):
+        return "Swarm Density"
 
 
-def Factory(criteria_str):
+def Factory(cmdline_str, main_config, batch_generation_root):
     """
     Creates variance classes from the command line definition of batch criteria.
     """
-    attr = SwarmDensityParser().parse(criteria_str)
+    attr = SwarmDensityParser().parse(cmdline_str)
 
     if "TypeSingleSource" == attr["block_dist_class"]:
         dims = [(x, int(x / 2)) for x in range(attr['arena_x'],
@@ -104,10 +130,13 @@ def Factory(criteria_str):
 
     def __init__(self):
         ConstantDensity.__init__(self,
+                                 cmdline_str,
+                                 main_config,
+                                 batch_generation_root,
                                  attr["target_density"],
                                  dims,
                                  attr["block_dist_class"])
 
-    return type(criteria_str,
+    return type(cmdline_str,
                 (ConstantDensity,),
                 {"__init__": __init__})

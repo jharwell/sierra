@@ -20,7 +20,6 @@ import os
 import multiprocessing
 import subprocess
 from pipeline.exp_runner import ExpRunner
-import batch_utils as butils
 
 
 class BatchedExpRunner:
@@ -33,8 +32,10 @@ class BatchedExpRunner:
 
     """
 
-    def __init__(self, cmdopts):
+    def __init__(self, cmdopts, criteria):
         self.cmdopts = cmdopts
+        self.criteria = criteria
+
         self.batch_exp_root = os.path.abspath(self.cmdopts['generation_root'])
         self.batch_exp_range = self.cmdopts['batch_exp_range']
 
@@ -46,7 +47,8 @@ class BatchedExpRunner:
                                                                        n_threads_per_sim,
                                                                        n_jobs))
 
-        exp_all = [os.path.join(self.batch_exp_root, d) for d in butils.exp_dirnames(self.cmdopts)]
+        exp_all = [os.path.join(self.batch_exp_root, d)
+                   for d in self.criteria.gen_exp_dirnames(self.cmdopts)]
         exp_to_run = []
         if self.batch_exp_range is not None:
             min_exp = int(self.batch_exp_range.split(':')[0])

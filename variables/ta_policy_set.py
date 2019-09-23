@@ -16,12 +16,12 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from variables.base_variable import BaseVariable
+from variables.batch_criteria import BatchCriteria
 from variables.ta_policy_set_parser import TAPolicySetParser
 from variables.swarm_size import SwarmSize
 
 
-class TAPolicySet(BaseVariable):
+class TAPolicySet(BatchCriteria):
     """
     Defines the task allocation policy to use during simulation.
 
@@ -30,7 +30,8 @@ class TAPolicySet(BaseVariable):
       swarm_size(str): Swarm size to use for a specific simulation.
     """
 
-    def __init__(self, policies, swarm_size):
+    def __init__(self, cmdline_str, main_config, batch_generation_root, policies, swarm_size):
+        BatchCriteria.__init__(self, cmdline_str, main_config, batch_generation_root)
         self.policies = policies
         self.swarm_size = swarm_size
 
@@ -45,13 +46,7 @@ class TAPolicySet(BaseVariable):
             changes.append(set(c))
         return changes
 
-    def gen_tag_rmlist(self):
-        return []
-
-    def gen_tag_addlist(self):
-        return []
-
-    def gen_exp_dirnames(self, criteria_str):
+    def gen_exp_dirnames(self, cmdopts):
         changes = self.gen_attr_changelist()
         dirs = []
         for chg in changes:
@@ -61,21 +56,38 @@ class TAPolicySet(BaseVariable):
                 elif 'quantity' in attr:
                     size = 'size' + value
             dirs.append(policy + '+' + size)
-        return dirs
+        if not cmdopts['named_exp_dirs']:
+            return ['exp' + str(x) for x in range(0, len(dirs))]
+        else:
+            return dirs
+
+    def sc_graph_labels(self, scenarios):
+        return [s[-5:-2].replace('p', '.') for s in scenarios]
+
+    def sc_sort_scenarios(self, scenarios):
+        return sorted(scenarios,
+                      key=lambda s: float(s.split('-')[2].split('.')[0][0:3].replace('p', '.')))
+
+    def graph_xvals(self, cmdopts):
+        return [i for i in range(1, self.n_exp() + 1)]
+
+    def graph_xlabel(self, cmdopts):
+        return "Task Allocation Policy"
 
 
-def Factory(criteria_str):
+def Factory(cmdline_str, main_config, batch_generation_root):
     """
-    Creates variance classes from the command line definition of batch criteria.
+    Creates TAPolicySet classes from the command line definition.
     """
-    attr = TAPolicySetParser().parse(criteria_str)
+    attr = TAPolicySetParser().parse(cmdline_str)
 
     def gen_policies():
         return ['random', 'stoch_greedy_nbhd', 'greedy_global']
 
     def __init__(self):
-        TAPolicySet.__init__(self, gen_policies(), attr['swarm_size'])
+        TAPolicySet.__init__(self, cmdline_str, main_config, batch_generation_root,
+                             gen_policies(), attr['swarm_size'])
 
-    return type(criteria_str,
+    return type(cmdline_str,
                 (TAPolicySet,),
                 {"__init__": __init__})
