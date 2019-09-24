@@ -219,7 +219,7 @@
           perception_mdpo="perception-mdpo.csv"
           swarm_dist_pos2D="swarm-dist-pos2D.csv"
           swarm_convergence="swarm-convergence.csv"
-          temporal_variance="temporal-variance.csv"
+          loop_temporal_variance="temporal-variance.csv"
           output_interval="1000">
       </metrics>
     </output>

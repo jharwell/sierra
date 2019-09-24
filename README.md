@@ -208,8 +208,10 @@ When using sierra, you need to tell it the following:
 - How long simulations should be (`--time-setup`). See `sierra --help` for
   specifics.
 
-- What controller to run with, what block distribution type to use, and how
-  large the arena should be (`--generator`). See `sierra --help` for specifics.
+- What controller to run with (`--controller`). See `sierra --help` for specifics.
+
+- What what block distribution type to use, and how large the arena should be
+  (`--scenario`). See `sierra --help` for specifics.
 
 - What you are investigating; that is, what variable are you interested in
   varying (`--batch-criteria`). Valid variables are files found in the

@@ -19,13 +19,14 @@ Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 import os
 from cmdline import Cmdline
 from pipeline.exp_pipeline import ExpPipeline
-from generators.generator_pair_parser import GeneratorPairParser
+from generators.controller_generator_parser import ControllerGeneratorParser
+from generators.scenario_generator_parser import ScenarioGeneratorParser
 from generators.generator_creator import GeneratorCreator
 import variables.batch_criteria as bc
 import collections
 
 
-def scenario_dir_name(batch_criteria, scenario):
+def __scenario_dir_name(batch_criteria, scenario):
     """
     Select the directory name for the root directory for batch input/output depending on what the
     batch criteria is. The default is to use the block distribution type + arena size to
@@ -33,16 +34,14 @@ def scenario_dir_name(batch_criteria, scenario):
     so you need to use the batch criteria definition itself to uniquely identify.
     """
 
-    if 'swarm_size' in batch_criteria:
-        return scenario
-    elif any(b in batch_criteria for b in ['swarm_density', 'temporal_variance']):
+    if any(b in batch_criteria for b in ['swarm_density', 'temporal_variance']):
         # dash instead of dot to not confuse programs that rely on file extensions
-        return '-'.join(args.batch_criteria.split('.')[1:])
+        return scenario + '.' + '-'.join(batch_criteria.split('.')[1:])
     else:
         return scenario  # General case
 
 
-if __name__ == "__main__":
+def __sierra_run():
     # check python version
     import sys
     if sys.version_info < (3, 0):
@@ -51,16 +50,16 @@ if __name__ == "__main__":
 
     args = Cmdline().init().parse_args()
 
-    pair = GeneratorPairParser()(args.generator, args.batch_criteria)
+    controller = ControllerGeneratorParser()(args)
+    scenario = ScenarioGeneratorParser()(args)
 
     # Add the template file leaf to the root directory path to help track what experiment was run.
-    if pair is not None:
-        print("- Controller={0}, Scenario={1}".format(pair[0], pair[1]))
+    if controller is not None and scenario is not None:
+        print("- Controller={0}, Scenario={1}".format(controller, scenario))
 
         template, ext = os.path.splitext(os.path.basename(args.template_config_file))
-        controller = pair[0]
 
-        scenario = scenario_dir_name(args.batch_criteria, pair[1])
+        scenario = __scenario_dir_name(args.batch_criteria, scenario)
         if args.generation_root is None:
             args.generation_root = os.path.join(args.sierra_root,
                                                 controller,
@@ -87,11 +86,15 @@ if __name__ == "__main__":
 
     if args.batch_criteria is not None:
         criteria = bc.Factory(args)
-        print("- Parse batch criteria into generator governor '{0}'".format(
+        print("- Parse batch criteria into generator '{0}'".format(
             criteria.__class__.__name__))
     else:
         criteria = None
 
-    generator = GeneratorCreator()(args, pair, criteria)
-    pipeline = ExpPipeline(args, generator, criteria)
+    joint_generator = GeneratorCreator()(args, controller, scenario, criteria)
+    pipeline = ExpPipeline(args, joint_generator, criteria)
     pipeline.run()
+
+
+if __name__ == "__main__":
+    __sierra_run()

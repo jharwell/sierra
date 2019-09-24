@@ -37,11 +37,11 @@ class Efficiency:
     calculated measure.
     """
 
-    def __init__(self, cmdopts, blocks_collected_csv):
+    def __init__(self, cmdopts, inter_perf_csv):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
-        self.blocks_collected_stem = blocks_collected_csv.split('.')[0]
+        self.inter_perf_stem = inter_perf_csv.split('.')[0]
 
     def calculate(self, batch_criteria):
         """
@@ -52,9 +52,9 @@ class Efficiency:
           (Calculated metric dataframe, stddev dataframe) if stddev was collected, (Calculated
           metric datafram, None) otherwise.
         """
-        sc_ipath = os.path.join(self.cmdopts["collate_root"], self.blocks_collected_stem + '.csv')
+        sc_ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
         stddev_ipath = os.path.join(self.cmdopts["collate_root"],
-                                    self.blocks_collected_stem + '.stddev')
+                                    self.inter_perf_stem + '.stddev')
 
         # Metric calculation is the same for the actual value of it and the std deviation,
         if os.path.exists(stddev_ipath):
@@ -75,8 +75,6 @@ class Efficiency:
         if stddev_df is not None:
             stddev_df.to_csv(cum_stem + ".stddev", sep=';', index=False)
 
-        self.cmdopts["n_exp"] = len(metric_df.columns)
-
         BatchRangedGraph(inputy_stem_fpath=cum_stem,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-efficiency.png"),
@@ -93,7 +91,6 @@ class Efficiency:
         df = pd.read_csv(ipath, sep=';')
         scale_cols = [c for c in df.columns if c not in ['clock']]
         df_new = pd.DataFrame(columns=scale_cols)
-        self.cmdopts["n_exp"] = len(df.columns)
         swarm_sizes = batch_criteria.swarm_sizes(self.cmdopts)
 
         for i in range(0, len(scale_cols)):
@@ -108,20 +105,19 @@ class ProjectivePerformanceComparison:
     Calculates projective performance for each experiment i > 0 in the batch and productes a graph.
     """
 
-    def __init__(self, cmdopts, blocks_collected_csv, projection_type):
+    def __init__(self, cmdopts, inter_perf_csv, projection_type):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
-        self.blocks_collected_csv = blocks_collected_csv
+        self.inter_perf_csv = inter_perf_csv
         self.projection_type = projection_type
 
     def calculate(self, batch_criteria):
         return pm_utils.ProjectivePerformance(self.cmdopts,
-                                              self.blocks_collected_csv,
+                                              self.inter_perf_csv,
                                               self.projection_type).calculate(batch_criteria)
 
     def generate(self, df, batch_criteria):
-        self.cmdopts["n_exp"] = len(df.columns) + 1
         cum_stem = os.path.join(self.cmdopts["collate_root"], "pm-pp-comp-" + self.projection_type)
         df.to_csv(cum_stem + ".csv", sep=';', index=False)
         xvals = batch_criteria.graph_xvals(self.cmdopts)
@@ -139,13 +135,13 @@ class ProjectivePerformanceComparison:
 
 
 class ProjectivePerformanceComparisonPositive(ProjectivePerformanceComparison):
-    def __init__(self, cmdopts, blocks_collected_csv):
-        super().__init__(cmdopts, blocks_collected_csv, "positive")
+    def __init__(self, cmdopts, inter_perf_csv):
+        super().__init__(cmdopts, inter_perf_csv, "positive")
 
 
 class ProjectivePerformanceComparisonNegative(ProjectivePerformanceComparison):
-    def __init__(self, cmdopts, blocks_collected_csv):
-        super().__init__(cmdopts, blocks_collected_csv, "negative")
+    def __init__(self, cmdopts, inter_perf_csv):
+        super().__init__(cmdopts, inter_perf_csv, "negative")
 
 
 class FractionalPerformanceLoss:
@@ -154,16 +150,16 @@ class FractionalPerformanceLoss:
     to inter-robot interference as swarm size increases. Swarm sizes do not have to be a power of 2.
     """
 
-    def __init__(self, cmdopts, blocks_collected_csv, ca_in_csv):
+    def __init__(self, cmdopts, inter_perf_csv, ca_in_csv):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
-        self.blocks_collected_csv = blocks_collected_csv
+        self.inter_perf_csv = inter_perf_csv
         self.ca_in_csv = ca_in_csv
 
     def calculate(self, batch_criteria):
         df = pm_utils.FractionalLosses(self.cmdopts,
-                                       self.blocks_collected_csv,
+                                       self.inter_perf_csv,
                                        self.ca_in_csv,
                                        batch_criteria).calc(batch_criteria)
 
@@ -175,8 +171,6 @@ class FractionalPerformanceLoss:
         stem_path = os.path.join(self.cmdopts["collate_root"], "pm-scalability-fl")
 
         df.to_csv(stem_path + '.csv', sep=';', index=False)
-        self.cmdopts["n_exp"] = len(df.columns)
-
         BatchRangedGraph(inputy_stem_fpath=stem_path,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-scalability-fl.png"),
@@ -199,18 +193,16 @@ class KarpFlatt:
         1 - 1/N
     """
 
-    def __init__(self, cmdopts, blocks_collected_csv):
+    def __init__(self, cmdopts, inter_perf_csv):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
-        self.blocks_collected_csv = blocks_collected_csv
+        self.inter_perf_csv = inter_perf_csv
 
     def calculate(self, batch_criteria):
         df = pm_utils.ProjectivePerformance(self.cmdopts,
-                                            self.blocks_collected_csv,
+                                            self.inter_perf_csv,
                                             "positive").calculate(batch_criteria)
-
-        self.cmdopts["n_exp"] = len(df.columns) + 1
 
         # +1 because karp-flatt is only defined for exp >= 1
         sizes = batch_criteria.swarm_sizes(self.cmdopts)[1:]
@@ -248,20 +240,20 @@ class InterExpScalability:
 
         main_config = yaml.load(open(os.path.join(cmdopts['config_root'], 'main.yaml')))
 
-        blocks_collected_csv = main_config['sierra']['perf']['blocks_collected_csv']
+        inter_perf_csv = main_config['sierra']['perf']['inter_perf_csv']
         ca_in_csv = main_config['sierra']['perf']['ca_in_csv']
 
-        e = Efficiency(cmdopts, blocks_collected_csv)
+        e = Efficiency(cmdopts, inter_perf_csv)
         e.generate(e.calculate(batch_criteria), batch_criteria)
 
-        p = ProjectivePerformanceComparisonPositive(cmdopts, blocks_collected_csv)
+        p = ProjectivePerformanceComparisonPositive(cmdopts, inter_perf_csv)
         p.generate(p.calculate(batch_criteria), batch_criteria)
 
-        p = ProjectivePerformanceComparisonNegative(cmdopts, blocks_collected_csv)
+        p = ProjectivePerformanceComparisonNegative(cmdopts, inter_perf_csv)
         p.generate(p.calculate(batch_criteria), batch_criteria)
 
-        f = FractionalPerformanceLoss(cmdopts, blocks_collected_csv, ca_in_csv)
+        f = FractionalPerformanceLoss(cmdopts, inter_perf_csv, ca_in_csv)
         f.generate(f.calculate(batch_criteria), batch_criteria)
 
-        k = KarpFlatt(cmdopts, blocks_collected_csv)
+        k = KarpFlatt(cmdopts, inter_perf_csv)
         k.generate(k.calculate(batch_criteria), batch_criteria)

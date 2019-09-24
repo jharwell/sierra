@@ -42,22 +42,21 @@ class ProjectivePerformance:
     all).
     """
 
-    def __init__(self, cmdopts, blocks_collected_csv, projection_type):
+    def __init__(self, cmdopts, inter_perf_csv, projection_type):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
         self.projection_type = projection_type
-        self.blocks_collected_stem = blocks_collected_csv.split('.')[0]
+        self.inter_perf_stem = inter_perf_csv.split('.')[0]
 
     def calculate(self, batch_criteria):
-        path = os.path.join(self.cmdopts["collate_root"], self.blocks_collected_stem + '.csv')
+        path = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
         assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
         df = pd.read_csv(path, sep=';')
         exp0_dirname = batch_criteria.gen_exp_dirnames(self.cmdopts)[0]
         scale_cols = [c for c in df.columns if c not in ['clock', exp0_dirname]]
         df_new = pd.DataFrame(columns=scale_cols, index=[0])
 
-        self.cmdopts["n_exp"] = len(df.columns)
         xvals = batch_criteria.graph_xvals(self.cmdopts)
 
         for exp_num in range(1, len(scale_cols) + 1):
@@ -91,10 +90,10 @@ class FractionalLosses:
     powers of 2.
     """
 
-    def __init__(self, cmdopts, blocks_collected_csv, ca_in_csv, batch_criteria):
+    def __init__(self, cmdopts, inter_perf_csv, ca_in_csv, batch_criteria):
         self.cmdopts = cmdopts
         self.batch_output_root = cmdopts["collate_root"]
-        self.blocks_collected_stem = blocks_collected_csv.split('.')[0]
+        self.inter_perf_stem = inter_perf_csv.split('.')[0]
         self.ca_in_stem = ca_in_csv.split('.')[0]
 
         # Just need to get # timesteps per simulation which is the same for all
@@ -138,7 +137,7 @@ class FractionalLosses:
         # swarm of size N, as opposed to a group of N robots that do not interact with each other,
         # only the arena walls.
         #
-        path = os.path.join(self.batch_output_root, self.blocks_collected_stem + '.csv')
+        path = os.path.join(self.batch_output_root, self.inter_perf_stem + '.csv')
         assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
         blocks = pd.read_csv(path, sep=';')
 
@@ -156,7 +155,7 @@ class FractionalLosses:
         # Finally, calculate fractional losses as:
         #
         # ( performance lost with N robots / performance with N robots )
-        path = os.path.join(self.batch_output_root, self.blocks_collected_stem + '.csv')
+        path = os.path.join(self.batch_output_root, self.inter_perf_stem + '.csv')
         assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
         perf_n = pd.read_csv(path, sep=';').tail(1)
         perf_n.tail(1)[exp0_dirname] = 0.0

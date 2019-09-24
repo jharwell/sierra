@@ -50,9 +50,9 @@ class InterExpBlockCollection:
 
         if os.path.exists(stddev_ipath):
             self._generate_collected_stddev(stddev_ipath, stddev_opath)
-        collected_df = self._generate_collected_csv(perf_ipath, perf_opath_stem + '.csv')
 
-        self.cmdopts["n_exp"] = len(collected_df.columns)
+        self._generate_collected_csv(perf_ipath, perf_opath_stem + '.csv')
+
         BatchRangedGraph(inputy_stem_fpath=perf_opath_stem,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-" + self.blocks_collected_stem + ".png"),
@@ -86,4 +86,3 @@ class InterExpBlockCollection:
             collected_df[c] = blocks_df.tail(1)[c]
 
         collected_df.to_csv(opath, sep=';', index=False)
-        return collected_df

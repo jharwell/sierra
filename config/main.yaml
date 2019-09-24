@@ -23,6 +23,7 @@ sierra:
   # perf: Configuration keys are used by sierra for performance metric
   # calculation. Right now, they are still somewhat tied to fordyca.
   perf:
-    blocks_collected_csv: 'blocks-collected-cum.csv'
+    inter_perf_csv: 'blocks-collected-cum.csv'
     ca_in_csv: 'ca-in-cum-avg.csv'
-    temporal_var_csv: 'loop-temporal-variance.csv'
+    temporal_var_csv: 'temporal-variance.csv'
+    intra_perf_csv: 'block-transport.csv'

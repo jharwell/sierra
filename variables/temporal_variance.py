@@ -67,7 +67,10 @@ class TemporalVariance(BatchCriteria):
         Generate a list of sets of changes necessary to make to the input file to correctly set up
         the simulation with the specified temporal variances.
         """
-        size_attr = next(iter(SwarmSize([self.swarm_size]).gen_attr_changelist()[0]))
+        size_attr = next(iter(SwarmSize(self.cmdline_str,
+                                        self.main_config,
+                                        self.batch_generation_root,
+                                        [self.swarm_size]).gen_attr_changelist()[0]))
         return [set([
             size_attr,
             ("{0}/waveform".format(v[0]), "type", str(v[1])),
@@ -83,10 +86,13 @@ class TemporalVariance(BatchCriteria):
         return scenarios  # No sorting needed
 
     def graph_xvals(self, cmdopts):
-        return [vcs.EnvironmentalCS(cmdopts, x)() for x in range(0, self.n_exp())]
+        return [vcs.EnvironmentalCS(cmdopts, x)(self) for x in range(0, self.n_exp())]
 
     def graph_xlabel(self, cmdopts):
         return vcs.method_xlabel(cmdopts["envc_cs_method"])
+
+    def gen_exp_dirnames(self, cmdopts):
+        return ['exp' + str(x) for x in range(0, len(self.gen_attr_changelist()))]
 
 
 def Factory(cmdline_str, main_config, batch_generation_root):

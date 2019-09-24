@@ -25,9 +25,6 @@ import similaritymeasures as sm
 from variables.temporal_variance_parser import TemporalVarianceParser
 import utils
 
-kTemporalVarCSV = "loop-temporal-variance.csv"
-kPerfCSV = "block-transport.csv"
-
 
 def method_xlabel(method):
     """
@@ -85,18 +82,19 @@ class EnvironmentalCS():
         self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
                                                        'main.yaml')))
 
-    def __call__(self):
+    def __call__(self, batch_criteria):
         ideal_df = pd.read_csv(os.path.join(self.cmdopts["output_root"],
-                                            utils.exp_dirname(self.cmdopts, 0),
+                                            batch_criteria.gen_exp_dirnames(self.cmdopts)[0],
                                             self.main_config['sierra']['avg_output_leaf'],
-                                            kTemporalVarCSV),
+                                            self.main_config['sierra']['perf']['temporal_var_csv']),
                                sep=';')
         exp_df = pd.read_csv(os.path.join(self.cmdopts["output_root"],
-                                          utils.exp_dirname(self.cmdopts, self.exp_num),
+                                          batch_criteria.gen_exp_dirnames(
+                                              self.cmdopts)[self.exp_num],
                                           self.main_config['sierra']['avg_output_leaf'],
-                                          kTemporalVarCSV),
+                                          self.main_config['sierra']['perf']['temporal_var_csv']),
                              sep=';')
-        attr = TemporalVarianceParser().parse(self.cmdopts["criteria_def"])
+        attr = TemporalVarianceParser().parse(batch_criteria.cmdline_str)
 
         xlen = len(exp_df[attr["variance_csv_col"]].values)
         exp_data = np.zeros((xlen, 2))
@@ -112,35 +110,35 @@ class EnvironmentalCS():
 
 class DataFrames:
     @staticmethod
-    def expx_var_df(cmdopts, batch_criteria, avg_output_leaf, exp_num):
+    def expx_var_df(cmdopts, batch_criteria, avg_output_leaf, temporal_var_csv, exp_num):
         return pd.read_csv(os.path.join(cmdopts['output_root'],
                                         batch_criteria.gen_exp_dirnames(cmdopts)[exp_num],
                                         avg_output_leaf,
-                                        kTemporalVarCSV),
+                                        temporal_var_csv),
                            sep=';')
 
     @staticmethod
-    def expx_perf_df(cmdopts, batch_criteria, avg_output_leaf, exp_num):
+    def expx_perf_df(cmdopts, batch_criteria, avg_output_leaf, intra_perf_csv, exp_num):
         return pd.read_csv(os.path.join(cmdopts['output_root'],
                                         batch_criteria.gen_exp_dirnames(cmdopts)[exp_num],
                                         avg_output_leaf,
-                                        kPerfCSV),
+                                        intra_perf_csv),
                            sep=';')
 
     @staticmethod
-    def exp0_perf_df(cmdopts, batch_criteria, avg_output_leaf):
+    def exp0_perf_df(cmdopts, batch_criteria, avg_output_leaf, intra_perf_csv):
         return pd.read_csv(os.path.join(cmdopts['output_root'],
                                         batch_criteria.gen_exp_dirnames(cmdopts)[0],
                                         avg_output_leaf,
-                                        kPerfCSV),
+                                        intra_perf_csv),
                            sep=';')
 
     @staticmethod
-    def exp0_var_df(cmdopts, batch_criteria, avg_output_leaf):
+    def exp0_var_df(cmdopts, batch_criteria, avg_output_leaf, temporal_var_csv):
         return pd.read_csv(os.path.join(cmdopts['output_root'],
                                         batch_criteria.gen_exp_dirnames(cmdopts)[0],
                                         avg_output_leaf,
-                                        kTemporalVarCSV),
+                                        temporal_var_csv),
                            sep=';')
 
 
@@ -164,34 +162,39 @@ class AdaptabilityCS():
     exp_num(int): Current experiment number to compute VCS for.
     """
 
-    def __init__(self, cmdopts, exp_num):
+    def __init__(self, cmdopts, batch_criteria, exp_num):
         self.cmdopts = cmdopts
-        self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'], 'main.yaml')))
-
+        self.batch_criteria = batch_criteria
         self.exp_num = exp_num
+
+        self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'], 'main.yaml')))
         self.perf_csv_col = 'cum_avg_collected'
         self.var_csv_col = TemporalVarianceParser().parse(
-            self.cmdopts["criteria_def"])['variance_csv_col']
+            self.batch_criteria.cmdline_str)['variance_csv_col']
 
-    def calc_waveforms(self, batch_criteria):
+    def calc_waveforms(self):
         """
         Calculates the (ideal performance, experimental performance) comparable waveforms for the
         experiment. Returns NP arrays rather than dataframes, because that is what the curve
         similarity measure calculator needs as input.
         """
-        exp0_perf_df = DataFrames.exp0_perf_df(self.cmdopts['output_root'],
-                                               batch_criteria,
-                                               self.main_config['sierra']['avg_output_leaf'])
-        exp0_var_df = DataFrames.exp0_var_df(self.cmdopts['output_root'],
-                                             batch_criteria,
-                                             self.main_config['sierra']['avg_output_leaf'])
-        expx_perf_df = DataFrames.expx_perf_df(self.cmdopts['output_root'],
-                                               batch_criteria,
+        exp0_perf_df = DataFrames.exp0_perf_df(self.cmdopts,
+                                               self.batch_criteria,
                                                self.main_config['sierra']['avg_output_leaf'],
-                                               self.exp_num)
-        expx_var_df = DataFrames.expx_var_df(self.cmdopts['output_root'],
-                                             batch_criteria,
+                                               self.main_config['sierra']['perf']['intra_perf_csv'])
+        exp0_var_df = DataFrames.exp0_var_df(self.cmdopts,
+                                             self.batch_criteria,
                                              self.main_config['sierra']['avg_output_leaf'],
+                                             self.main_config['sierra']['perf']['temporal_var_csv'])
+        expx_perf_df = DataFrames.expx_perf_df(self.cmdopts,
+                                               self.batch_criteria,
+                                               self.main_config['sierra']['avg_output_leaf'],
+                                               self.main_config['sierra']['perf']['intra_perf_csv'],
+                                               self.exp_num)
+        expx_var_df = DataFrames.expx_var_df(self.cmdopts,
+                                             self.batch_criteria,
+                                             self.main_config['sierra']['avg_output_leaf'],
+                                             self.main_config['sierra']['perf']['temporal_var_csv'],
                                              self.exp_num)
 
         ideal_df = pd.DataFrame(index=exp0_var_df.index, columns=[self.perf_csv_col])
@@ -226,8 +229,8 @@ class AdaptabilityCS():
         ideal_data[:, 1] = ideal_df[self.perf_csv_col].values
         return ideal_data, exp_data
 
-    def __call__(self, batch_criteria):
-        ideal_data, exp_data = self.calc_waveforms(batch_criteria)
+    def __call__(self):
+        ideal_data, exp_data = self.calc_waveforms()
         return _compute_vcs_raw(exp_data, ideal_data, self.cmdopts["adaptability_cs_method"])
 
 
@@ -248,7 +251,7 @@ class ReactivityCS():
     exp_num(int): Current experiment number to compute VCS for.
     """
 
-    def __init__(self, cmdopts, exp_num):
+    def __init__(self, cmdopts, batch_criteria, exp_num):
         self.cmdopts = cmdopts
         self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
                                                        'main.yaml')))
@@ -256,27 +259,32 @@ class ReactivityCS():
         self.exp_num = exp_num
         self.perf_csv_col = 'cum_avg_collected'
         self.var_csv_col = TemporalVarianceParser().parse(
-            self.cmdopts["criteria_def"])['variance_csv_col']
+            batch_criteria.cmdline_str)['variance_csv_col']
+        self.batch_criteria = batch_criteria
 
-    def calc_waveforms(self, batch_criteria):
+    def calc_waveforms(self):
         """
         Calculates the (ideal performance, experimental performance) comparable waveforms for the
         experiment. Returns NP arrays rather than dataframes, because that is what the curve
         similarity measure calculator needs as input.
         """
-        exp0_perf_df = DataFrames.exp0_perf_df(self.cmdopts['output_root'],
-                                               batch_criteria,
-                                               self.main_config['sierra']['avg_output_leaf'])
-        exp0_var_df = DataFrames.exp0_var_df(self.cmdopts['output_root'],
-                                             batch_criteria,
-                                             self.main_config['sierra']['avg_output_leaf'])
-        expx_perf_df = DataFrames.expx_perf_df(self.cmdopts['output_root'],
-                                               batch_criteria,
+        exp0_perf_df = DataFrames.exp0_perf_df(self.cmdopts,
+                                               self.batch_criteria,
                                                self.main_config['sierra']['avg_output_leaf'],
-                                               self.exp_num)
-        expx_var_df = DataFrames.expx_var_df(self.cmdopts['output_root'],
-                                             batch_criteria,
+                                               self.main_config['sierra']['perf']['intra_perf_csv'])
+        exp0_var_df = DataFrames.exp0_var_df(self.cmdopts,
+                                             self.batch_criteria,
                                              self.main_config['sierra']['avg_output_leaf'],
+                                             self.main_config['sierra']['perf']['temporal_var_csv'])
+        expx_perf_df = DataFrames.expx_perf_df(self.cmdopts,
+                                               self.batch_criteria,
+                                               self.main_config['sierra']['avg_output_leaf'],
+                                               self.main_config['sierra']['perf']['intra_perf_csv'],
+                                               self.exp_num)
+        expx_var_df = DataFrames.expx_var_df(self.cmdopts,
+                                             self.batch_criteria,
+                                             self.main_config['sierra']['avg_output_leaf'],
+                                             self.main_config['sierra']['perf']['temporal_var_csv'],
                                              self.exp_num)
 
         ideal_df = pd.DataFrame(index=exp0_var_df.index, columns=[self.perf_csv_col])
@@ -310,7 +318,7 @@ class ReactivityCS():
 
         return ideal_data, exp_data
 
-    def __call__(self, batch_criteria):
+    def __call__(self):
         ideal_data, exp_data = self.calc_waveforms()
         return _compute_vcs_raw(exp_data, ideal_data, self.cmdopts["reactivity_cs_method"])
 

@@ -25,5 +25,5 @@ class InterExpHeatmaps:
     Generates heatmaps from collated .csv data within a batched experiment.
     """
 
-    def generate(self, cmdopts, blocks_collected_csv, batch_criteria):
-        PerformanceDensityHeatmap(cmdopts, blocks_collected_csv).generate(batch_criteria)
+    def generate(self, cmdopts, inter_perf_csv, batch_criteria):
+        PerformanceDensityHeatmap(cmdopts, inter_perf_csv).generate(batch_criteria)

@@ -43,12 +43,13 @@ class InterExpReactivity:
         """
 
         print("-- Reactivity from {0}".format(self.cmdopts["collate_root"]))
-        self.cmdopts["n_exp"] = batch_criteria.n_exp()
         batch_exp_dirnames = batch_criteria.gen_exp_dirnames(self.cmdopts)
-        df = pd.DataFrame(columns=batch_exp_dirnames[1:self.cmdopts["n_exp"]], index=[0])
 
-        for i in range(1, self.cmdopts["n_exp"]):
-            df[batch_exp_dirnames] = vcs.ReactivityCS(self.cmdopts, i)(batch_criteria)
+        # Reactivity is only defined for experiments > 0, as exp0 is assumed to be ideal conditions,
+        # so we have to slice
+        df = pd.DataFrame(columns=batch_exp_dirnames[1:], index=[0])
+        for i in range(1, batch_criteria.n_exp()):
+            df[batch_exp_dirnames[1:]] = vcs.ReactivityCS(self.cmdopts, batch_criteria, i)()
 
         stem_opath = os.path.join(self.cmdopts["collate_root"], "pm-reactivity")
 

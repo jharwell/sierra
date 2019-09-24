@@ -31,11 +31,11 @@ class PerformanceDensityHeatmap:
 
     """
 
-    def __init__(self, cmdopts, blocks_collected_csv):
+    def __init__(self, cmdopts, inter_perf_csv):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
-        self.blocks_collected_stem = blocks_collected_csv.split('.')[0]
+        self.inter_perf_stem = inter_perf_csv.split('.')[0]
 
     def generate(self, batch_criteria):
         """
@@ -43,7 +43,7 @@ class PerformanceDensityHeatmap:
         """
         print("-- Performance Density Heatmap from {0}".format(self.cmdopts["collate_root"]))
         perf_ipath = os.path.join(self.cmdopts["collate_root"],
-                                  "pm-" + self.blocks_collected_stem + '.csv')
+                                  "pm-" + self.inter_perf_stem + '.csv')
         perf_opath_stem = os.path.join(self.cmdopts["graph_root"], "pm-density-hm")
 
         perf_df = pd.read_csv(perf_ipath, sep=';')

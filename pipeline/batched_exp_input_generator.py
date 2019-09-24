@@ -17,10 +17,9 @@
 """
 
 import os
+import re
 from pipeline.xml_luigi import XMLLuigi
-from generators.generator_factory import GeneratorPairFactory
-from generators.generator_factory import ScenarioGeneratorFactory
-from generators.generator_factory import ControllerGeneratorFactory
+import generators.generator_factory as gf
 
 
 class BatchedExpInputGenerator:
@@ -46,12 +45,12 @@ class BatchedExpInputGenerator:
                               absolute). Each experiment will get a directory 'exp<n>' in this
                               directory for its outputs.
       criteria(BatchCriteria): BatchCriteria derived object instance created from cmdline definition.
-      generator_names(tuple): Pair of class names to use when creating the new generator
-                                 (scenario + controller changes).
+      controller_name(str): Name of controller generator to use.
+      scenario_name(str): Name of scenario generator to use.
     """
 
     def __init__(self, batch_config_template, batch_generation_root, batch_output_root, criteria,
-                 generator_names, cmdopts):
+                 controller_name, scenario_name, cmdopts):
         assert os.path.isfile(
             batch_config_template), \
             "The path '{}' (which should point to the main config file) did not point to a file".format(
@@ -68,7 +67,8 @@ class BatchedExpInputGenerator:
              "batch generation root directory '{}' does not have any spaces in it").format(self.batch_generation_root)
 
         self.batch_output_root = os.path.abspath(batch_output_root)
-        self.generator_names = generator_names
+        self.controller_name = controller_name
+        self.scenario_name = scenario_name
         self.criteria = criteria
         self.cmdopts = cmdopts
 
@@ -99,57 +99,43 @@ class BatchedExpInputGenerator:
         exp_def(set): Set of XML changes to apply to the template input file for the experiment.
         exp_num(int): Experiment number in the batch
         """
-        self.cmdopts["arena_dim"] = None
-        scenario = None
-        # The scenario dimensions were specified on the command line
-        # Format of '(<decomposition depth>.<controller>.[SS,DS,QS,RN,PL]>'
-        if "Generator" not in self.generator_names[1]:
-            try:
-                x, y = self.generator_names[1].split('.')[1][2:].split('x')
-            except ValueError:
-                print("FATAL: Scenario dimensions should be specified on cmdline, but they were not")
-                raise
-            scenario = self.generator_names[1].split(
-                '.')[0] + "." + self.generator_names[1].split('.')[1][:2] + "Generator"
-            self.cmdopts["arena_dim"] = (int(x), int(y))
-        else:  # Scenario dimensions should be obtained from batch criteria
-            self.cmdopts['arena_dim'] = self.criteria.arena_dims()[exp_num]
-            scenario = self.generator_names[1]
+        res = re.search('[0-9]+x[0-9]+', self.scenario_name)
+        assert res is not None, "FATAL: Arena dimensions not found in scenario specification?"
+        x, y = res.group(0).split('x')
+        self.cmdopts["arena_dim"] = (int(x), int(y))
 
         exp_generation_root = os.path.join(self.batch_generation_root,
                                            self.criteria.gen_exp_dirnames(self.cmdopts)[exp_num])
         exp_output_root = os.path.join(self.batch_output_root,
                                        self.criteria.gen_exp_dirnames(self.cmdopts)[exp_num])
 
-        controller_name = self.generator_names[0]
-        scenario_name = 'generators.' + scenario
+        scenario = gf.ScenarioGeneratorFactory(controller=self.controller_name,
+                                               scenario=self.scenario_name,
+                                               template_config_file=os.path.join(exp_generation_root,
+                                                                                 self.batch_config_leaf),
+                                               generation_root=exp_generation_root,
+                                               exp_output_root=exp_output_root,
+                                               exp_def_fname="exp_def.pkl",
+                                               cmdopts=self.cmdopts)
 
-        scenario = ScenarioGeneratorFactory(controller=controller_name,
-                                            scenario=scenario_name,
-                                            template_config_file=os.path.join(exp_generation_root,
-                                                                              self.batch_config_leaf),
-                                            generation_root=exp_generation_root,
-                                            exp_output_root=exp_output_root,
-                                            exp_def_fname="exp_def.pkl",
-                                            cmdopts=self.cmdopts)
+        controller = gf.ControllerGeneratorFactory(controller=self.controller_name,
+                                                   config_root=self.cmdopts['config_root'],
+                                                   template_config_file=os.path.join(exp_generation_root,
+                                                                                     self.batch_config_leaf),
+                                                   generation_root=exp_generation_root,
+                                                   exp_output_root=exp_output_root,
+                                                   exp_def_fname="exp_def.pkl",
+                                                   cmdopts=self.cmdopts)
 
-        controller = ControllerGeneratorFactory(controller=controller_name,
-                                                config_root=self.cmdopts['config_root'],
-                                                template_config_file=os.path.join(exp_generation_root,
-                                                                                  self.batch_config_leaf),
-                                                generation_root=exp_generation_root,
-                                                exp_output_root=exp_output_root,
-                                                exp_def_fname="exp_def.pkl",
-                                                cmdopts=self.cmdopts)
+        self.cmdopts['joint_generator'] = '+'.join([controller.__class__.__name__,
+                                                    scenario.__class__.__name__])
+        print("-- Created joint generator class '{0}'".format(self.cmdopts['joint_generator']))
 
-        print("-- Created joint generator class '{0}'".format('+'.join([controller.__class__.__name__,
-                                                                        scenario.__class__.__name__])))
-
-        return GeneratorPairFactory(scenario=scenario,
-                                    controller=controller,
-                                    template_config_file=os.path.join(exp_generation_root,
-                                                                      self.batch_config_leaf),
-                                    generation_root=exp_generation_root,
-                                    exp_output_root=exp_output_root,
-                                    exp_def_fname="exp_def.pkl",
-                                    cmdopts=self.cmdopts)
+        return gf.JointGeneratorFactory(scenario=scenario,
+                                        controller=controller,
+                                        template_config_file=os.path.join(exp_generation_root,
+                                                                          self.batch_config_leaf),
+                                        generation_root=exp_generation_root,
+                                        exp_output_root=exp_output_root,
+                                        exp_def_fname="exp_def.pkl",
+                                        cmdopts=self.cmdopts)

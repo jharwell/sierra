@@ -52,4 +52,6 @@ class IntraExpHeatmaps:
                                                   graph['src_stem'] + '-hm.png'),
                         title=graph['title'],
                         xlabel='X',
-                        ylabel='Y').generate()
+                        ylabel='Y',
+                        xtick_labels=None,
+                        ytick_labels=None).generate()

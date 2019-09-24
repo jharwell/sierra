@@ -18,7 +18,6 @@ This file is part of SIERRA.
 
 import pickle
 import os
-from generators.generator_pair_parser import GeneratorPairParser
 
 
 def unpickle_exp_def(exp_def_fpath):
@@ -35,21 +34,6 @@ def unpickle_exp_def(exp_def_fpath):
     except EOFError:
         pass
     return exp_def
-
-
-def get_arena_dims(generator_str, batch_criteria, exp_num):
-    # The scenario dimensions were specified on the command line
-    # Format of '(<decomposition depth>.<controller>.[SS,DS,QS,RN,PL]>'
-    pair = GeneratorPairParser()(generator_str, batch_criteria)
-    if "Generator" not in pair[1]:
-        try:
-            x, y = pair[1].split('.')[1][2:].split('x')
-        except ValueError:
-            print("FATAL: Scenario dimensions should be specified on cmdline, but they were not")
-            raise
-        return (int(x), int(y))
-    else:  # Scenario dimensions should be obtained from batch criteria
-        return batch_criteria.arena_dims()[exp_num]
 
 
 def get_n_blocks(cmdopts, batch_criteria, exp_num):

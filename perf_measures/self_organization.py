@@ -31,11 +31,11 @@ class InterExpSelfOrganization:
 
     """
 
-    def __init__(self, cmdopts, blocks_collected_csv, ca_in_csv):
+    def __init__(self, cmdopts, inter_perf_csv, ca_in_csv):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
-        self.blocks_collected_csv = blocks_collected_csv
+        self.inter_perf_csv = inter_perf_csv
         self.ca_in_csv = ca_in_csv
 
     def generate(self, batch_criteria):
@@ -47,12 +47,11 @@ class InterExpSelfOrganization:
         print("-- Self-organization from {0}".format(self.cmdopts["collate_root"]))
         batch_exp_dirnames = batch_criteria.gen_exp_dirnames(self.cmdopts)
         fl = pm_utils.FractionalLosses(self.cmdopts,
-                                       self.blocks_collected_csv,
+                                       self.inter_perf_csv,
                                        self.ca_in_csv,
                                        batch_criteria).calc(batch_criteria)
         df_new = pd.DataFrame(columns=[c for c in fl.columns if c not in batch_exp_dirnames[0]])
 
-        self.cmdopts["n_exp"] = len(fl.columns)
         swarm_sizes = batch_criteria.swarm_sizes(self.cmdopts)
 
         for i in range(1, len(fl.columns)):

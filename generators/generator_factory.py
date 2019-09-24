@@ -22,10 +22,11 @@ import generators.powerlaw
 import generators.random
 import yaml
 import os
+import re
 from generators.exp_input_generator import ExpInputGenerator
 
 
-def GeneratorPairFactory(controller, scenario, **kwargs):
+def JointGeneratorFactory(controller, scenario, **kwargs):
     """
     Given a controller(generator), and a scenario(generator), construct a joint generator class that
     can be used for experiment generation.
@@ -49,20 +50,28 @@ def ScenarioGeneratorFactory(scenario, controller, **kwargs):
     Creates a scenario generator using arbitrary arena dimensions and with an arbitrary
     controller.
 
-    scenario(str): The name of scenario to run.
-    controller(str): The name of controller to run.
+    scenario(str): The name of scenario to run. Format of <dist type>.AxB
+    controller(str): The name of controller to run. Formatof <depth>.<controller name>
 
     """
+    abbrev_dict = {"SS": "single_source",
+                   "DS": "dual_source",
+                   "QS": "quad_source",
+                   "PL": "powerlaw",
+                   "RN": "random"}
 
     def __init__(self, **kwargs):
-        self.scenario_changes = eval(scenario)(controller=controller,
-                                               **kwargs)
+        res = re.search('[SDQLR][SSSLN]', scenario)
+        assert res is not None
+
+        abbrev = res.group(0)
+        qualified_name = 'generators.' + abbrev_dict[abbrev] + '.' + abbrev + 'Generator'
+        self.scenario_changes = eval(qualified_name)(controller=controller, **kwargs)
 
     def generate(self, xml_luigi):
         return self.scenario_changes.generate(xml_luigi)
 
-    arena_dim = kwargs["cmdopts"]["arena_dim"]
-    return type(scenario + '{0}x{1}'.format(arena_dim[0], arena_dim[1]),
+    return type(scenario,
                 (object,), {"__init__": __init__,
                             "generate": generate
                             })(**kwargs)
@@ -91,9 +100,9 @@ def ControllerGeneratorFactory(controller, config_root, **kwargs):
         # Setup loop functions
         for t in self.config[self.category]['xml']['attr_change']:
             xml_luigi.attr_change(t[0],
-                                       t[1],
-                                       t[2],
-                                       kwargs['cmdopts']['with_rendering'] is False)
+                                  t[1],
+                                  t[2],
+                                  kwargs['cmdopts']['with_rendering'] is False)
 
         # Setup controller
         exists = False

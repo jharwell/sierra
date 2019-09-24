@@ -49,7 +49,6 @@ class Heatmap:
             return
 
         df = pd.read_csv(self.input_csv_fpath, sep=';')
-        print(df)
         fig, ax = plt.subplots()
         plt.imshow(df, cmap='coolwarm')
 

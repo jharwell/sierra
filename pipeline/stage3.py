@@ -59,11 +59,11 @@ class PipelineStage3:
         }
         if self.batch_criteria is not None:
             print(
-                "- Stage3: Rendering videos for batched experiment '{0}'...".format(self.cmdopts['generator']))
+                "- Stage3: Rendering videos for batched experiment in {0}...".format(self.cmdopts['generation_root']))
             renderer = BatchedExpVideoRenderer(render_params, self.cmdopts['output_root'])
         else:
             print(
-                "- Stage3: Rendering single experiment video in '{0}'...".format(self.cmdopts['generator']))
+                "- Stage3: Rendering single experiment video in {0}...".format(self.cmdopts['generation_root']))
             renderer = ExpVideoRenderer(render_params, self.cmdopts['output_root'])
 
         renderer.render()
@@ -80,12 +80,12 @@ class PipelineStage3:
         }
         if self.batch_criteria is not None:
             print(
-                "- Stage3: Averaging batched experiment outputs for '{0}'...".format(self.cmdopts['generator']))
+                "- Stage3: Averaging batched experiment outputs in {0}...".format(self.cmdopts['generation_root']))
             averager = BatchedExpCSVAverager(avg_params,
                                              self.cmdopts['output_root'])
         else:
             print(
-                "- Stage3: Averaging single experiment outputs for '{0}'...".format(self.cmdopts['generator']))
+                "- Stage3: Averaging single experiment outputs in {0}...".format(self.cmdopts['generation_root']))
             averager = ExpCSVAverager(avg_params,
                                       self.cmdopts['output_root'])
 

@@ -33,8 +33,8 @@ class PipelineStage1:
 
     def run(self):
         if self.batch_criteria is not None:
-            print("- Stage1: Generating input files for batched experiment '{0}' in {1}...".format(self.cmdopts['generator'],
-                                                                                                   self.cmdopts['generation_root']))
+            print(
+                "- Stage1: Generating input files for batched experiment in {0}...".format(self.cmdopts['generation_root']))
 
             print("-- Using '{0}'".format(self.cmdopts['time_setup']))
             print("-- Using {0} physics engines".format(self.cmdopts['n_physics_engines']))
@@ -43,8 +43,8 @@ class PipelineStage1:
                 sum([len(files) for r, d, files in os.walk(self.cmdopts['generation_root'])]),
                 sum([len(d) for r, d, files in os.walk(self.cmdopts['generation_root'])])))
         else:
-            print("- Stage1: Generating input files for experiment '{0}' in {1}...".format(self.cmdopts['generator'],
-                                                                                           self.cmdopts['generation_root']))
+            print(
+                "- Stage1: Generating input files for experiment in {0}...".format(self.cmdopts['generation_root']))
             print("-- Using '{0}'".format(self.cmdopts['time_setup']))
             print("-- Using {0} physics engines".format(self.cmdopts['n_physics_engines']))
             self.input_generator.generate()

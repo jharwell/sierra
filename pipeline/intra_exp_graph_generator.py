@@ -59,10 +59,10 @@ class IntraExpGraphGenerator:
         keys = []
         extra_graphs = []
         for category in list(self.controller_config.keys()):
-            if category not in self.cmdopts['generator']:
+            if category not in self.cmdopts['controller']:
                 continue
             for controller in self.controller_config[category]['controllers']:
-                if controller['name'] not in self.cmdopts['generator']:
+                if controller['name'] not in self.cmdopts['controller']:
                     continue
 
                 # valid to specify no graphs, and only to inherit graphs

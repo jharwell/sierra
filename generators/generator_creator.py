@@ -17,9 +17,7 @@ Copyright 2018 John Harwell, All rights reserved.
 """
 
 from pipeline.batched_exp_input_generator import BatchedExpInputGenerator
-from generators.generator_factory import GeneratorPairFactory
-from generators.generator_factory import ScenarioGeneratorFactory
-from generators.generator_factory import ControllerGeneratorFactory
+import generators.generator_factory as gf
 
 
 class GeneratorCreator:
@@ -27,12 +25,12 @@ class GeneratorCreator:
     Get the joint controller+scenario input generator to use to create experiment/batch inputs.
     """
 
-    def __call__(self, args, generator_names, batch_criteria):
+    def __call__(self, args, parsed_controller, parsed_scenario, batch_criteria):
         if any([[2], [3], [4]]) == args.pipeline:
             return None
 
         # Running stage 4 or 5
-        if generator_names is None:
+        if parsed_controller is None and parsed_scenario is None:
             return None
 
         # This is the dictionary of all cmdline options used during stage 1. This is here, rather
@@ -58,41 +56,31 @@ class GeneratorCreator:
             return BatchedExpInputGenerator(batch_config_template=args.template_config_file,
                                             batch_generation_root=args.generation_root,
                                             batch_output_root=args.output_root,
-                                            generator_names=generator_names,
+                                            controller_name=parsed_controller,
+                                            scenario_name=parsed_scenario,
                                             criteria=batch_criteria,
                                             cmdopts=cmdopts)
         else:
-            # The scenario dimensions were specified on the command line. Format of:
-            # 'generators.<scenario>.<dimensions>'
-            if len(generator_names[1].split('.')[1]) > 2:
-                x, y = generator_names[1].split('.')[1][2:].split('x')
-                cmdopts["arena_dim"] = (int(x), int(y))
+            controller = gf.ControllerGeneratorFactory(controller=parsed_controller,
+                                                       config_root=args.config_root,
+                                                       template_config_file=args.template_config_file,
+                                                       generation_root=cmdopts['exp_generation_root'],
+                                                       exp_output_root=cmdopts['exp_output_root'],
+                                                       exp_def_fname="exp_def.pkl",
+                                                       cmdopts=cmdopts)
 
-            # Scenarios come from a canned set, which is why we have to look up their generator
-            # class rather than being able to create the class on the fly as with controllers.
-            scenario_name = generator_names[1].split(
-                '.')[0] + "." + generator_names[1].split('.')[1][:2] + "Generator"
+            scenario = gf.ScenarioGeneratorFactory(controller=parsed_controller,
+                                                   scenario=parsed_scenario,
+                                                   template_config_file=args.template_config_file,
+                                                   generation_root=args.generation_root,
+                                                   exp_output_root=args.output_root,
+                                                   exp_def_fname="exp_def.pkl",
+                                                   cmdopts=cmdopts)
 
-            controller = ControllerGeneratorFactory(controller=generator_names[0],
-                                                    config_root=args.config_root,
-                                                    template_config_file=args.template_config_file,
-                                                    generation_root=cmdopts['exp_generation_root'],
-                                                    exp_output_root=cmdopts['exp_output_root'],
-                                                    exp_def_fname="exp_def.pkl",
-                                                    cmdopts=cmdopts)
-
-            scenario = ScenarioGeneratorFactory(controller=generator_names[0],
-                                                scenario='generators.' + scenario_name,
-                                                template_config_file=args.template_config_file,
-                                                generation_root=args.generation_root,
-                                                exp_output_root=args.output_root,
-                                                exp_def_fname="exp_def.pkl",
-                                                cmdopts=cmdopts)
-
-            return GeneratorPairFactory(controller=controller,
-                                        scenario=scenario,
-                                        template_config_file=args.template_config_file,
-                                        generation_root=args.generation_root,
-                                        exp_output_root=args.output_root,
-                                        exp_def_fname="exp_def.pkl",
-                                        cmdopts=cmdopts)
+            return gf.JointGeneratorFactory(controller=controller,
+                                            scenario=scenario,
+                                            template_config_file=args.template_config_file,
+                                            generation_root=args.generation_root,
+                                            exp_output_root=args.output_root,
+                                            exp_def_fname="exp_def.pkl",
+                                            cmdopts=cmdopts)

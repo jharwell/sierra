@@ -63,12 +63,12 @@ class InterExpGraphGenerator:
             components = self.cmdopts['perf_measures']
 
         InterExpBlockCollection(self.cmdopts,
-                                self.main_config['sierra']['perf']['blocks_collected_csv']).generate(self.batch_criteria)
+                                self.main_config['sierra']['perf']['inter_perf_csv']).generate(self.batch_criteria)
 
-        if "all" in components or "hm" in components:
-            InterExpHeatmaps().generate(self.cmdopts,
-                                        self.main_config['sierra']['perf']['blocks_collected_csv'],
-                                        self.batch_criteria)
+        # if "all" in components or "hm" in components:
+        #     InterExpHeatmaps().generate(self.cmdopts,
+        #                                 self.main_config['sierra']['perf']['inter_perf_csv'],
+        #                                 self.batch_criteria)
 
         if "all" in components or "line" in components:
 
@@ -81,7 +81,7 @@ class InterExpGraphGenerator:
 
         if "all" in components or "so" in components:
             InterExpSelfOrganization(self.cmdopts,
-                                     self.main_config['sierra']['perf']['blocks_collected_csv'],
+                                     self.main_config['sierra']['perf']['inter_perf_csv'],
                                      self.main_config['sierra']['perf']['ca_in_csv']).generate(self.batch_criteria)
 
         if "all" in components or "sr" in components:

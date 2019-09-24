@@ -96,19 +96,30 @@ class Cmdline:
 
                             """)
 
-        parser.add_argument("--generator",
-                            metavar="{depth0, depth1, depth2}.<controller>.<scenario>AxB",
+        parser.add_argument("--controller",
+                            metavar="{depth0, depth1, depth2}.<controller>",
                             help="""
 
-                            Experimental generator to use, which is a combination of controller+scenario
-                            configuration.
+                            Which controller robots will use in the experiment.
 
                             Valid controllers: {depth0.{CRW, DPO, MDPO},
                                                 depth1.{BITD_DPO, OBITD_DPO},
                                                 depth2.{BIRTD_DPO, OBIRTD_DPO}.
 
-                            Valid scenarios: {RN, SS, DS, QS, PL}, which correspond to {random, single source, dual
-                            source, quad source, powerlaw} block distributions.
+                            Use=stage{1,2,3,4}; can be omitted if only running other stages.
+
+                            """)
+
+        parser.add_argument("--scenario",
+                            metavar="<block dist>.AxB",
+                            help="""
+
+                            Which scenario the defined controller should be run in. Scenario=block
+                            distribution type + arena dimensions.
+
+                            Valid block distribution types: {RN, SS, DS, QS, PL}, which correspond
+                            to {random, single source, dual source, quad source, powerlaw} block
+                            distributions.
 
                             A and B are the scenario X and Y dimensions (which can be any non-negative integer values);
                             the dimensions can be omitted for some batch criteria.
