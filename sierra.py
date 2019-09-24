@@ -51,7 +51,7 @@ if __name__ == "__main__":
 
     args = Cmdline().init().parse_args()
 
-    pair = GeneratorPairParser()(args)
+    pair = GeneratorPairParser()(args.generator, args.batch_criteria)
 
     # Add the template file leaf to the root directory path to help track what experiment was run.
     if pair is not None:
@@ -87,11 +87,10 @@ if __name__ == "__main__":
 
     if args.batch_criteria is not None:
         criteria = bc.Factory(args)
+        print("- Parse batch criteria into generator governor '{0}'".format(
+            criteria.__class__.__name__))
     else:
         criteria = None
-
-    print("- Parse batch criteria into generator governor '{0}'".format(
-        criteria.__class__.__name__))
 
     generator = GeneratorCreator()(args, pair, criteria)
     pipeline = ExpPipeline(args, generator, criteria)

@@ -20,7 +20,7 @@ import os
 import pandas as pd
 import math
 import copy
-import batch_utils as butils
+import utils
 
 
 class ProjectivePerformance:
@@ -99,10 +99,10 @@ class FractionalLosses:
 
         # Just need to get # timesteps per simulation which is the same for all
         # simulations/experiments, so we pick exp0 for simplicity to calculate
-        exp_def = butils.unpickle_exp_def(os.path.join(cmdopts["generation_root"],
-                                                       batch_criteria.gen_exp_dirnames(
-                                                           self.cmdopts)[0],
-                                                       "exp_def.pkl"))
+        exp_def = utils.unpickle_exp_def(os.path.join(cmdopts["generation_root"],
+                                                      batch_criteria.gen_exp_dirnames(
+            self.cmdopts)[0],
+            "exp_def.pkl"))
 
         # Integers always seem to be pickled as floats, so you can't convert directly without an
         # exception.

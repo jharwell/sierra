@@ -42,9 +42,11 @@ class InterExpBlockCollection:
         print("-- Block collection from {0}".format(self.cmdopts["collate_root"]))
         stddev_ipath = os.path.join(self.cmdopts["collate_root"],
                                     self.blocks_collected_stem + '.stddev')
-        stddev_opath = os.path.join(self.cmdopts["collate_root"], "pm-blocks-collected.stddev")
+        stddev_opath = os.path.join(self.cmdopts["collate_root"],
+                                    self.blocks_collected_stem + ".stddev")
         perf_ipath = os.path.join(self.cmdopts["collate_root"], self.blocks_collected_stem + '.csv')
-        perf_opath_stem = os.path.join(self.cmdopts["collate_root"], "pm-blocks-collected")
+        perf_opath_stem = os.path.join(self.cmdopts["collate_root"],
+                                       "pm-" + self.blocks_collected_stem)
 
         if os.path.exists(stddev_ipath):
             self._generate_collected_stddev(stddev_ipath, stddev_opath)
@@ -53,7 +55,7 @@ class InterExpBlockCollection:
         self.cmdopts["n_exp"] = len(collected_df.columns)
         BatchRangedGraph(inputy_stem_fpath=perf_opath_stem,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
-                                                   "pm-blocks-collected.png"),
+                                                   "pm-" + self.blocks_collected_stem + ".png"),
                          title="Swarm Blocks Collected",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="# Blocks",
@@ -82,5 +84,6 @@ class InterExpBlockCollection:
 
         for c in scale_cols:
             collected_df[c] = blocks_df.tail(1)[c]
+
         collected_df.to_csv(opath, sep=';', index=False)
         return collected_df

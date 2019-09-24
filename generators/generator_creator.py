@@ -37,7 +37,7 @@ class GeneratorCreator:
 
         # This is the dictionary of all cmdline options used during stage 1. This is here, rather
         # than in the exp pipeline, because the generator is passed INTO the pipeline.
-        sim_opts = {
+        cmdopts = {
             "n_sims": args.n_sims,
             "n_threads": args.n_threads,
             "n_physics_engines": args.n_physics_engines,
@@ -60,13 +60,13 @@ class GeneratorCreator:
                                             batch_output_root=args.output_root,
                                             generator_names=generator_names,
                                             criteria=batch_criteria,
-                                            sim_opts=sim_opts)
+                                            cmdopts=cmdopts)
         else:
             # The scenario dimensions were specified on the command line. Format of:
             # 'generators.<scenario>.<dimensions>'
             if len(generator_names[1].split('.')[1]) > 2:
                 x, y = generator_names[1].split('.')[1][2:].split('x')
-                sim_opts["arena_dim"] = (int(x), int(y))
+                cmdopts["arena_dim"] = (int(x), int(y))
 
             # Scenarios come from a canned set, which is why we have to look up their generator
             # class rather than being able to create the class on the fly as with controllers.
@@ -76,10 +76,10 @@ class GeneratorCreator:
             controller = ControllerGeneratorFactory(controller=generator_names[0],
                                                     config_root=args.config_root,
                                                     template_config_file=args.template_config_file,
-                                                    generation_root=sim_opts['exp_generation_root'],
-                                                    exp_output_root=sim_opts['exp_output_root'],
+                                                    generation_root=cmdopts['exp_generation_root'],
+                                                    exp_output_root=cmdopts['exp_output_root'],
                                                     exp_def_fname="exp_def.pkl",
-                                                    sim_opts=sim_opts)
+                                                    cmdopts=cmdopts)
 
             scenario = ScenarioGeneratorFactory(controller=generator_names[0],
                                                 scenario='generators.' + scenario_name,
@@ -87,7 +87,7 @@ class GeneratorCreator:
                                                 generation_root=args.generation_root,
                                                 exp_output_root=args.output_root,
                                                 exp_def_fname="exp_def.pkl",
-                                                sim_opts=sim_opts)
+                                                cmdopts=cmdopts)
 
             return GeneratorPairFactory(controller=controller,
                                         scenario=scenario,
@@ -95,4 +95,4 @@ class GeneratorCreator:
                                         generation_root=args.generation_root,
                                         exp_output_root=args.output_root,
                                         exp_def_fname="exp_def.pkl",
-                                        sim_opts=sim_opts)
+                                        cmdopts=cmdopts)

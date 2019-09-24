@@ -18,7 +18,6 @@
 
 import os
 import pandas as pd
-import batch_utils as butils
 
 
 class CSVCollator:

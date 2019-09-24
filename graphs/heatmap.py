@@ -19,6 +19,7 @@ Copyright 2018 John Harwell, All rights reserved.
 
 import os
 import pandas as pd
+import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -32,25 +33,36 @@ class Heatmap:
 
     """
 
-    def __init__(self, input_fpath, output_fpath, title, xlabel, ylabel):
+    def __init__(self, input_fpath, output_fpath, title, xlabel, ylabel,
+                 xtick_labels, ytick_labels):
 
         self.input_csv_fpath = os.path.abspath(input_fpath)
         self.output_fpath = os.path.abspath(output_fpath)
         self.title = title
         self.xlabel = xlabel
         self.ylabel = ylabel
+        self.xtick_labels = xtick_labels
+        self.ytick_labels = ytick_labels
 
     def generate(self):
         if not os.path.exists(self.input_csv_fpath):
             return
 
         df = pd.read_csv(self.input_csv_fpath, sep=';')
+        print(df)
         fig, ax = plt.subplots()
-        plt.imshow(df, cmap='coolwarm', interpolation='gaussian')
+        plt.imshow(df, cmap='coolwarm')
 
         plt.xlabel(self.xlabel, fontsize=18)
         plt.ylabel(self.ylabel, fontsize=18)
+        if self.xtick_labels is not None:
+            ax.set_xticks(np.arange(len(self.xtick_labels)))
+            ax.set_xticklabels(self.xtick_labels)
+        if self.ytick_labels is not None:
+            ax.set_yticks(np.arange(len(self.ytick_labels)))
+            ax.set_yticklabels(self.ytick_labels)
         plt.title(self.title, fontsize=24)
+        plt.colorbar(fraction=0.046, pad=0.04)
         ax.tick_params(labelsize=12)
 
         fig = ax.get_figure()

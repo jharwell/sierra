@@ -50,3 +50,7 @@ class PipelineStage1:
             self.input_generator.generate()
             print("- Stage1: {0} input files generated for experiment.".format(
                 sum([len(files) for r, d, files in os.walk(self.cmdopts['generation_root'])])))
+
+        # Computed during input generation and needed later for graph generation; not part of
+        # default cmdopts dict so we grab it here
+        self.cmdopts['arena_dim'] = self.input_generator.cmdopts['arena_dim']

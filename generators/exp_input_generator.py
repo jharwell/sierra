@@ -40,7 +40,7 @@ class ExpInputGenerator:
       exp_output_root(str): Root directory for simulation outputs for this experiment (sort of a
                             scratch directory). Can be relative or absolute.
       exp_def_fname(str): Name of file to use for pickling experiment definitions.
-      sim_opts(dict): Dictionary containing the following keys:
+      cmdopts(dict): Dictionary containing the following keys:
                       n_sims : # of simulations to run in parallel
                       n_threads: # of ARGoS threads to use for each parallel simulation
                       tsetup: Name of class in time_setup.py to use for simulation time setup.
@@ -53,7 +53,7 @@ class ExpInputGenerator:
     """
 
     def __init__(self, template_config_file, generation_root, exp_output_root, exp_def_fname,
-                 sim_opts):
+                 cmdopts):
         assert os.path.isfile(template_config_file), \
             "The path '{}' (which should point to the main config file) did not point to a file".format(
                 template_config_file)
@@ -71,11 +71,11 @@ class ExpInputGenerator:
              "Please make sure the configuration file save path '{}' does not have any spaces in it").format(self.generation_root)
 
         self.exp_output_root = os.path.abspath(exp_output_root)
-        self.sim_opts = sim_opts
+        self.cmdopts = cmdopts
         self.exp_def_fpath = os.path.join(self.generation_root, exp_def_fname)
 
         self.random_seed_min = 1
-        self.random_seed_max = 10 * self.sim_opts["n_sims"]
+        self.random_seed_max = 10 * self.cmdopts["n_sims"]
 
         # where the commands file will be stored
         self.commands_fpath = os.path.abspath(
@@ -127,14 +127,14 @@ class ExpInputGenerator:
         Generates and saves the input files for all simulation runs within the experiment.
         """
         random_seeds = self.__generate_random_seeds()
-        for exp_num in range(self.sim_opts["n_sims"]):
+        for exp_num in range(self.cmdopts["n_sims"]):
             self.__create_sim_input_file(random_seeds, xml_luigi, exp_num)
             self.__add_sim_to_command_file(os.path.join(self.generation_root,
                                                         self.config_name_format.format(
                                                             self.main_config_name, exp_num)),
                                            exp_num)
 
-            if self.sim_opts['with_rendering']:
+            if self.cmdopts['with_rendering']:
                 sim_output_dir = self.output_name_format.format(self.main_config_name, exp_num)
                 frames_fpath = os.path.join(self.exp_output_root, sim_output_dir, "frames")
                 os.makedirs(frames_fpath, exist_ok=True)
@@ -147,17 +147,17 @@ class ExpInputGenerator:
         configuring controllers.
 
         """
-        pe = physics_engines.PhysicsEngines(self.sim_opts["n_physics_engines"],
-                                            self.sim_opts["physics_iter_per_tick"],
+        pe = physics_engines.PhysicsEngines(self.cmdopts["n_physics_engines"],
+                                            self.cmdopts["physics_iter_per_tick"],
                                             "uniform_grid",
-                                            self.sim_opts["arena_dim"])
+                                            self.cmdopts["arena_dim"])
         [xml_luigi.tag_remove(a[0], a[1]) for a in pe.gen_tag_rmlist()[0]]
         [xml_luigi.tag_add(a[0], a[1], a[2]) for a in pe.gen_tag_addlist()[0]]
 
     def generate_dynamic_cache_defs(self, xml_luigi, arena_dim):
         cache = dynamic_cache.DynamicCache([arena_dim])
 
-        [xml_luigi.attribute_change(a[0], a[1], a[2]) for a in cache.gen_attr_changelist()[0]]
+        [xml_luigi.attr_change(a[0], a[1], a[2]) for a in cache.gen_attr_changelist()[0]]
         rms = cache.gen_tag_rmlist()
         if len(rms):
             [xml_luigi.tag_remove(a) for a in rms[0]]
@@ -165,13 +165,13 @@ class ExpInputGenerator:
     def generate_static_cache_defs(self, xml_luigi, arena_dim):
         # If they specified how many blocks to use for static cache respawn, use that.
         # Otherwise use the floor of 2.
-        if self.sim_opts['static_cache_blocks'] is None:
+        if self.cmdopts['static_cache_blocks'] is None:
             cache = static_cache.StaticCache([2], [arena_dim])
         else:
-            cache = static_cache.StaticCache([self.sim_opts['static_cache_blocks']],
+            cache = static_cache.StaticCache([self.cmdopts['static_cache_blocks']],
                                              [arena_dim])
 
-        [xml_luigi.attribute_change(a[0], a[1], a[2]) for a in cache.gen_attr_changelist()[0]]
+        [xml_luigi.attr_change(a[0], a[1], a[2]) for a in cache.gen_attr_changelist()[0]]
         rms = cache.gen_tag_rmlist()
         if len(rms):
             [xml_luigi.tag_remove(a) for a in rms[0]]
@@ -180,12 +180,22 @@ class ExpInputGenerator:
         """
         Generates definitions for # blocks in the simulation from command line overrides.
         """
-        bd = block_distribution.Quantity([self.sim_opts['n_blocks']])
-        [xml_luigi.attribute_change(a[0], a[1], a[2]) for a in bd.gen_attr_changelist()[0]]
+        if self.cmdopts['n_blocks'] is not None:
+            bd = block_distribution.Quantity([self.cmdopts['n_blocks']])
+        else:
+            n_blocks = int(xml_luigi.attr_get('.//manifest', 'n_cube')) + \
+                int(xml_luigi.attr_get('.//manifest', 'n_ramp'))
+            bd = block_distribution.Quantity([n_blocks])
+
+        [xml_luigi.attr_change(a[0], a[1], a[2]) for a in bd.gen_attr_changelist()[0]]
         rms = bd.gen_tag_rmlist()
 
         if len(rms):
             [xml_luigi.tag_remove(a) for a in rms[0]]
+
+        # Write time setup  info to file for later retrieval
+        with open(self.exp_def_fpath, 'ab') as f:
+            pickle.dump(bd.gen_attr_changelist()[0], f)
 
     def __generate_time_defs(self, xml_luigi):
         """
@@ -193,11 +203,11 @@ class ExpInputGenerator:
         graph generation later.
         """
         setup = __import__("variables.{0}".format(
-            self.sim_opts["time_setup"].split(".")[0]), fromlist=["*"])
-        tsetup_inst = getattr(setup, "Factory")(self.sim_opts["time_setup"])()
+            self.cmdopts["time_setup"].split(".")[0]), fromlist=["*"])
+        tsetup_inst = getattr(setup, "Factory")(self.cmdopts["time_setup"])()
 
         for a in tsetup_inst.gen_attr_changelist()[0]:
-            xml_luigi.attribute_change(a[0], a[1], a[2])
+            xml_luigi.attr_change(a[0], a[1], a[2])
 
         # Write time setup  info to file for later retrieval
         with open(self.exp_def_fpath, 'ab') as f:
@@ -208,15 +218,15 @@ class ExpInputGenerator:
         Disable selected sensors/actuators, which are computationally expensive in large swarms, but
         not that costly if the # robots is small.
         """
-        if not self.sim_opts["with_robot_rab"]:
+        if not self.cmdopts["with_robot_rab"]:
             xml_luigi.tag_remove(".//media", "range_and_bearing", noprint=True)
             xml_luigi.tag_remove(".//actuators", "range_and_bearing", noprint=True)
             xml_luigi.tag_remove(".//sensors", "range_and_bearing", noprint=True)
 
-        if not self.sim_opts["with_robot_leds"]:
+        if not self.cmdopts["with_robot_leds"]:
             xml_luigi.tag_remove(".//actuators", "leds", noprint=True)
 
-        if not self.sim_opts["with_robot_battery"]:
+        if not self.cmdopts["with_robot_battery"]:
             xml_luigi.tag_remove(".//sensors", "battery", noprint=True)
             xml_luigi.tag_remove(".//entity/foot-bot", "battery", noprint=True)
 
@@ -226,22 +236,22 @@ class ExpInputGenerator:
         the system.
         """
 
-        xml_luigi.attribute_change(".//system",
-                                   "threads",
-                                   str(self.sim_opts["n_threads"]))
+        xml_luigi.attr_change(".//system",
+                              "threads",
+                              str(self.cmdopts["n_threads"]))
 
         # This whole tree can be missing and that's fine
         if xml_luigi.has_tag(".//loop_functions/convergence"):
-            xml_luigi.attribute_change(".//loop_functions/convergence",
-                                       "n_threads",
-                                       str(self.sim_opts["n_threads"]))
+            xml_luigi.attr_change(".//loop_functions/convergence",
+                                  "n_threads",
+                                  str(self.cmdopts["n_threads"]))
 
     def __generate_visualization_defs(self, xml_luigi):
         """
         Remove visualization elements from input file, if configured to do so. It may be desired to
         leave them in if generating frames/video.
         """
-        if not self.sim_opts["with_rendering"]:
+        if not self.cmdopts["with_rendering"]:
             xml_luigi.tag_remove(".", "./visualization", noprint=True)  # ARGoS visualizations
 
     def __generate_random_defs(self, xml_luigi, random_seeds, exp_num):
@@ -255,9 +265,9 @@ class ExpInputGenerator:
         random_seed = random_seeds[exp_num]
 
         # set the random seed in the config file
-        xml_luigi.attribute_change(".//experiment", "random_seed", str(random_seed))
+        xml_luigi.attr_change(".//experiment", "random_seed", str(random_seed))
         if xml_luigi.has_tag('.//params/rng'):
-            xml_luigi.attribute_change(".//params/rng", "seed", str(random_seed))
+            xml_luigi.attr_change(".//params/rng", "seed", str(random_seed))
         else:
             xml_luigi.tag_add(".//params", "rng", {"seed": str(random_seed)})
 
@@ -271,15 +281,15 @@ class ExpInputGenerator:
             self.main_config_name, exp_num)
         frames_fpath = os.path.join(self.exp_output_root, sim_output_dir, "frames")
 
-        xml_luigi.attribute_change(
+        xml_luigi.attr_change(
             ".//controllers/*/params/output", "output_dir", sim_output_dir)
-        xml_luigi.attribute_change(
+        xml_luigi.attr_change(
             ".//controllers/*/params/output", "output_root", self.exp_output_root)
-        xml_luigi.attribute_change(
+        xml_luigi.attr_change(
             ".//loop_functions/output", "output_dir", sim_output_dir)
-        xml_luigi.attribute_change(
+        xml_luigi.attr_change(
             ".//loop_functions/output", "output_root", self.exp_output_root)
-        xml_luigi.attribute_change(
+        xml_luigi.attr_change(
             ".//qt-opengl/frame_grabbing",
             "directory", frames_fpath, noprint=True)  # probably will not be present
 
@@ -312,7 +322,7 @@ class ExpInputGenerator:
         # provided to tweak the exact name of the program used to invoke ARGoS so that different
         # versions compiled for different architectures/machines that exist on the same filesystem
         # can easily be run.
-        parts = self.sim_opts['exec_method'].split('.')
+        parts = self.cmdopts['exec_method'].split('.')
 
         if 'local' in parts:
             argos_cmd = 'argos3'
@@ -326,7 +336,7 @@ class ExpInputGenerator:
         # which will then be killed when the shell GNU parallel spawns to run each line in the
         # commands.txt file exits.
         xvfb_cmd = ""
-        if self.sim_opts['with_rendering']:
+        if self.cmdopts['with_rendering']:
             display_port = random.randint(0, 1000000)
             xvfb_cmd = "eval 'Xvfb :{0} -screen 0, 1600x1200x24 &' && DISPLAY=:{0} ".format(
                 display_port)
@@ -340,7 +350,7 @@ class ExpInputGenerator:
     def __generate_random_seeds(self):
         """Generates random seeds for experiments to use."""
         try:
-            return random.sample(range(self.random_seed_min, self.random_seed_max + 1), self.sim_opts["n_sims"])
+            return random.sample(range(self.random_seed_min, self.random_seed_max + 1), self.cmdopts["n_sims"])
         except ValueError:
             # create a new error message that clarifies the previous one
             raise ValueError("Too few seeds for the required experiment amount; change the random seed parameters") from None

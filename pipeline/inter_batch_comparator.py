@@ -22,7 +22,7 @@ from graphs.batch_ranged_graph import BatchRangedGraph
 from graphs.bar_graph import BarGraph
 
 import perf_measures.utils as pm_utils
-import batch_utils as butils
+import utils
 import copy
 import yaml
 import perf_measures.vcs
@@ -149,11 +149,11 @@ class InterBatchComparator:
         self.sc_graph_root = os.path.join(self.cmdopts['sierra_root'], "sc-graphs")
         self.sc_csv_root = os.path.join(self.cmdopts['sierra_root'], "sc-csvs")
 
-    def generate(self):
-        self.generate_intra_scenario_graphs()
-        self.generate_inter_scenario_graphs()
+    def generate(self, batch_criteria):
+        self.generate_intra_scenario_graphs(batch_criteria)
+        self.generate_inter_scenario_graphs(batch_criteria)
 
-    def generate_inter_scenario_graphs(self):
+    def generate_inter_scenario_graphs(self, batch_criteria):
         """
         Calculate weight unified estimates of:
 
@@ -166,14 +166,14 @@ class InterBatchComparator:
         for m in inter_scenario_measures():
             self._generate_inter_scenario_graph(src_stem=m['src_stem'],
                                                 dest_stem=m['dest_stem'],
-                                                title=m['title'])
+                                                title=m['title'],
+                                                batch_criteria=batch_criteria)
 
-    def _generate_inter_scenario_graph(self, src_stem, dest_stem, title):
+    def _generate_inter_scenario_graph(self, src_stem, dest_stem, title, batch_criteria):
         # We can do this because we have already checked that all controllers executed the same set
         # of batch experiments
-        scenarios = butils.sort_scenarios(self.cmdopts['criteria_category'],
-                                          os.listdir(os.path.join(self.cmdopts['sierra_root'],
-                                                                  self.controllers[0])))
+        scenarios = batch_criteria.sort_scenarios(os.listdir(os.path.join(self.cmdopts['sierra_root'],
+                                                                          self.controllers[0])))
 
         swarm_sizes = []
         df = pd.DataFrame(columns=self.controllers, index=scenarios)
@@ -185,7 +185,7 @@ class InterBatchComparator:
                                                       s,
                                                       "exp-inputs")
             cmdopts['n_exp'] = len(os.listdir(cmdopts['generation_root']))
-            swarm_sizes = butils.swarm_sizes(cmdopts)
+            swarm_sizes = batch_criteria.swarm_sizes(cmdopts)
             for c in self.controllers:
                 csv_ipath = os.path.join(self.cmdopts['sierra_root'],
                                          c,
@@ -205,7 +205,7 @@ class InterBatchComparator:
                                  src_stem + "-wue.csv")
         df.to_csv(csv_opath, sep=';', index=False)
 
-        scenarios = butils.prettify_scenario_labels(self.cmdopts['criteria_category'], scenarios)
+        scenarios = batch_criteria.sc_graph_labels(scenarios)
 
         BarGraph(input_fpath=csv_opath,
                  output_fpath=os.path.join(self.sc_graph_root,
@@ -213,7 +213,7 @@ class InterBatchComparator:
                  title=title,
                  xlabels=scenarios).generate()
 
-    def generate_intra_scenario_graphs(self):
+    def generate_intra_scenario_graphs(self, batch_criteria):
         """
         Calculate controller comparison metrics WITHIN a scenario:
 
@@ -226,9 +226,10 @@ class InterBatchComparator:
                                                 dest_stem=m['dest_stem'],
                                                 title=m['title'],
                                                 ylabel=m['ylabel'],
-                                                n_exp_corr=m['n_exp_corr'])
+                                                n_exp_corr=m['n_exp_corr'],
+                                                batch_criteria=batch_criteria)
 
-    def _generate_intra_scenario_graph(self, src_stem, dest_stem, title, ylabel, n_exp_corr):
+    def _generate_intra_scenario_graph(self, src_stem, dest_stem, title, ylabel, n_exp_corr, batch_criteria):
 
         # We can do this because we have already checked that all controllers executed the same set
         # of batch experiments
@@ -264,9 +265,9 @@ class InterBatchComparator:
                              output_fpath=os.path.join(self.cc_graph_root,
                                                        dest_stem) + '-' + s + ".png",
                              title=title,
-                             xlabel=butils.graph_xlabel(cmdopts),
+                             xlabel=batch_criteria.graph_xlabel(cmdopts),
                              ylabel=ylabel,
-                             xvals=butils.graph_xvals(cmdopts)[n_exp_corr:],
+                             xvals=batch_criteria.graph_xvals(cmdopts)[n_exp_corr:],
                              legend=self.controllers,
                              polynomial_fit=-1).generate()
 

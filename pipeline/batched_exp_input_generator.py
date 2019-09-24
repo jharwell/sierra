@@ -17,12 +17,10 @@
 """
 
 import os
-import pickle
 from pipeline.xml_luigi import XMLLuigi
 from generators.generator_factory import GeneratorPairFactory
 from generators.generator_factory import ScenarioGeneratorFactory
 from generators.generator_factory import ControllerGeneratorFactory
-import batch_utils as butils
 
 
 class BatchedExpInputGenerator:
@@ -53,7 +51,7 @@ class BatchedExpInputGenerator:
     """
 
     def __init__(self, batch_config_template, batch_generation_root, batch_output_root, criteria,
-                 generator_names, sim_opts):
+                 generator_names, cmdopts):
         assert os.path.isfile(
             batch_config_template), \
             "The path '{}' (which should point to the main config file) did not point to a file".format(
@@ -72,7 +70,7 @@ class BatchedExpInputGenerator:
         self.batch_output_root = os.path.abspath(batch_output_root)
         self.generator_names = generator_names
         self.criteria = criteria
-        self.sim_opts = sim_opts
+        self.cmdopts = cmdopts
 
     def generate(self):
         """
@@ -81,11 +79,11 @@ class BatchedExpInputGenerator:
         # Scaffold the batched experiment and verify nothing is horrendously wrong
         self.criteria.scaffold_exps(XMLLuigi(self.batch_config_template),
                                     self.batch_config_leaf,
-                                    self.sim_opts)
+                                    self.cmdopts)
 
         # Pickle experiment definitions in the actual batched experiment directory for later
         # retrieval
-        self.criteria.pickle_exp_defs(self.sim_opts)
+        self.criteria.pickle_exp_defs(self.cmdopts)
 
         # Create and run generators
         exp_defs = self.criteria.gen_attr_changelist()
@@ -101,7 +99,7 @@ class BatchedExpInputGenerator:
         exp_def(set): Set of XML changes to apply to the template input file for the experiment.
         exp_num(int): Experiment number in the batch
         """
-        self.sim_opts["arena_dim"] = None
+        self.cmdopts["arena_dim"] = None
         scenario = None
         # The scenario dimensions were specified on the command line
         # Format of '(<decomposition depth>.<controller>.[SS,DS,QS,RN,PL]>'
@@ -113,24 +111,19 @@ class BatchedExpInputGenerator:
                 raise
             scenario = self.generator_names[1].split(
                 '.')[0] + "." + self.generator_names[1].split('.')[1][:2] + "Generator"
-            self.sim_opts["arena_dim"] = (int(x), int(y))
+            self.cmdopts["arena_dim"] = (int(x), int(y))
         else:  # Scenario dimensions should be obtained from batch criteria
-            for c in exp_def:
-                if c[0] == ".//arena" and c[1] == "size":
-                    x, y, z = c[2].split(',')
-                    self.sim_opts["arena_dim"] = (int(x), int(y))
+            self.cmdopts['arena_dim'] = self.criteria.arena_dims()[exp_num]
             scenario = self.generator_names[1]
 
         exp_generation_root = os.path.join(self.batch_generation_root,
-                                           self.criteria.gen_exp_dirnames(self.sim_opts)[exp_num])
+                                           self.criteria.gen_exp_dirnames(self.cmdopts)[exp_num])
         exp_output_root = os.path.join(self.batch_output_root,
-                                       self.criteria.gen_exp_dirnames(self.sim_opts)[exp_num])
+                                       self.criteria.gen_exp_dirnames(self.cmdopts)[exp_num])
 
         controller_name = self.generator_names[0]
         scenario_name = 'generators.' + scenario
 
-        # Scenarios come from a canned set, which is why we have to look up their generator
-        # class rather than being able to create the class on the fly as with controllers.
         scenario = ScenarioGeneratorFactory(controller=controller_name,
                                             scenario=scenario_name,
                                             template_config_file=os.path.join(exp_generation_root,
@@ -138,16 +131,16 @@ class BatchedExpInputGenerator:
                                             generation_root=exp_generation_root,
                                             exp_output_root=exp_output_root,
                                             exp_def_fname="exp_def.pkl",
-                                            sim_opts=self.sim_opts)
+                                            cmdopts=self.cmdopts)
 
         controller = ControllerGeneratorFactory(controller=controller_name,
-                                                config_root=self.sim_opts['config_root'],
+                                                config_root=self.cmdopts['config_root'],
                                                 template_config_file=os.path.join(exp_generation_root,
                                                                                   self.batch_config_leaf),
                                                 generation_root=exp_generation_root,
                                                 exp_output_root=exp_output_root,
                                                 exp_def_fname="exp_def.pkl",
-                                                sim_opts=self.sim_opts)
+                                                cmdopts=self.cmdopts)
 
         print("-- Created joint generator class '{0}'".format('+'.join([controller.__class__.__name__,
                                                                         scenario.__class__.__name__])))
@@ -159,4 +152,4 @@ class BatchedExpInputGenerator:
                                     generation_root=exp_generation_root,
                                     exp_output_root=exp_output_root,
                                     exp_def_fname="exp_def.pkl",
-                                    sim_opts=self.sim_opts)
+                                    cmdopts=self.cmdopts)

@@ -61,7 +61,7 @@ def ScenarioGeneratorFactory(scenario, controller, **kwargs):
     def generate(self, xml_luigi):
         return self.scenario_changes.generate(xml_luigi)
 
-    arena_dim = kwargs["sim_opts"]["arena_dim"]
+    arena_dim = kwargs["cmdopts"]["arena_dim"]
     return type(scenario + '{0}x{1}'.format(arena_dim[0], arena_dim[1]),
                 (object,), {"__init__": __init__,
                             "generate": generate
@@ -90,10 +90,10 @@ def ControllerGeneratorFactory(controller, config_root, **kwargs):
 
         # Setup loop functions
         for t in self.config[self.category]['xml']['attr_change']:
-            xml_luigi.attribute_change(t[0],
+            xml_luigi.attr_change(t[0],
                                        t[1],
                                        t[2],
-                                       kwargs['sim_opts']['with_rendering'] is False)
+                                       kwargs['cmdopts']['with_rendering'] is False)
 
         # Setup controller
         exists = False

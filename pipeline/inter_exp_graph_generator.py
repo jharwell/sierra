@@ -23,9 +23,10 @@ import yaml
 from pipeline.inter_exp_linegraphs import InterExpLinegraphs
 from perf_measures.scalability import InterExpScalability
 from perf_measures.self_organization import InterExpSelfOrganization
-from perf_measures.collection import InterExpBlockCollection
+from perf_measures.block_collection import InterExpBlockCollection
 from perf_measures.reactivity import InterExpReactivity
 from perf_measures.adaptability import InterExpAdaptability
+from pipeline.inter_exp_heatmaps import InterExpHeatmaps
 
 
 class InterExpGraphGenerator:
@@ -61,14 +62,19 @@ class InterExpGraphGenerator:
         else:
             components = self.cmdopts['perf_measures']
 
+        InterExpBlockCollection(self.cmdopts,
+                                self.main_config['sierra']['perf']['blocks_collected_csv']).generate(self.batch_criteria)
+
+        if "all" in components or "hm" in components:
+            InterExpHeatmaps().generate(self.cmdopts,
+                                        self.main_config['sierra']['perf']['blocks_collected_csv'],
+                                        self.batch_criteria)
+
         if "all" in components or "line" in components:
+
             InterExpLinegraphs(self.cmdopts["collate_root"],
                                self.cmdopts["graph_root"],
                                self.targets).generate()
-
-        if "all" in components or "sp" in components:
-            InterExpBlockCollection(self.cmdopts,
-                                    self.main_config['sierra']['perf']['blocks_collected_csv']).generate(self.batch_criteria)
 
         if "all" in components or "ss" in components:
             InterExpScalability().generate(self.cmdopts, self.batch_criteria)

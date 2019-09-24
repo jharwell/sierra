@@ -48,7 +48,7 @@ class InterExpReactivity:
         df = pd.DataFrame(columns=batch_exp_dirnames[1:self.cmdopts["n_exp"]], index=[0])
 
         for i in range(1, self.cmdopts["n_exp"]):
-            df[batch_exp_dirnames] = vcs.ReactivityCS(self.cmdopts, i)()
+            df[batch_exp_dirnames] = vcs.ReactivityCS(self.cmdopts, i)(batch_criteria)
 
         stem_opath = os.path.join(self.cmdopts["collate_root"], "pm-reactivity")
 

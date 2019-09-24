@@ -50,7 +50,13 @@ class XMLLuigi:
 
         self.tree.write(filepath)
 
-    def attribute_change(self, path, attr, value, noprint=False):
+    def attr_get(self, path, attr):
+        el = self.root.find(path)
+        if self.has_tag(path) and attr in el.attrib:
+            return el.attrib[attr]
+        return None
+
+    def attr_change(self, path, attr, value, noprint=False):
         """
         Change the specified attribute of the *FIRST* element matching the specified path searching
         from the tree root.

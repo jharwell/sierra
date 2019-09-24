@@ -21,8 +21,6 @@ from pipeline.stage2 import PipelineStage2
 from pipeline.stage3 import PipelineStage3
 from pipeline.stage4 import PipelineStage4
 from pipeline.stage5 import PipelineStage5
-import os
-import yaml
 
 
 class ExpPipeline:
@@ -84,6 +82,7 @@ class ExpPipeline:
             'reactivity_cs_method': self.args.reactivity_cs_method,
             'adaptability_cs_method': self.args.adaptability_cs_method,
             'exp_graphs': self.args.exp_graphs,
+            'n_blocks': self.args.n_blocks
         }
         self.input_generator = input_generator
         self.batch_criteria = batch_criteria

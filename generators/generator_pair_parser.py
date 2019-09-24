@@ -38,34 +38,34 @@ class GeneratorPairParser:
       that case, None is returned for the pair.
     """
 
-    def __call__(self, args):
+    def __call__(self, generator_str, criteria_str):
         abbrev_dict = {"SS": "single_source",
                        "DS": "dual_source",
                        "QS": "quad_source",
                        "PL": "powerlaw",
                        "RN": "random"}
 
-        if args.generator is None:
+        if generator_str is None:
             return None
         else:
-            components = args.generator.split('.')
+            components = generator_str.split('.')
             controller = components[0] + "." + components[1]
 
             # Scenario specified via batch criteria, and so the type of scenario is the last 2
             # letters of it.
             if 2 == len(components):
                 print("- Parse (controller, scenario) generator specifications from cmdline "
-                      "batch criteria '{0}'".format(args.batch_criteria))
-                res = re.search('[a-zA-Z].[0-9]+x[0-9]+', args.batch_criteria)
+                      "batch criteria '{0}'".format(criteria_str))
+                res = re.search('[a-zA-Z].[0-9]+x[0-9]+', criteria_str)
                 assert res is not None,\
                     "FATAL: Bad scenario+arena_dim specification in '{0}'".format(
-                        args.batch_criteria)
+                        criteria_str)
 
                 key = res.group(0)[:2]
                 scenario = abbrev_dict[key] + "." + key + "Generator"
             else:  # Scenario specified as part of generator
                 print("- Parse (controller,scenario) generator specifications from cmdline "
-                      "generator '{0}'".format(args.generator))
+                      "generator '{0}'".format(generator_str))
 
                 res = re.search('[a-zA-Z].[0-9]+x[0-9]+', components[2])
                 assert res is not None,\

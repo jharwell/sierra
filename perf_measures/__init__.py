@@ -1,5 +1,6 @@
 import perf_measures.adaptability
-import perf_measures.collection
+import perf_measures.block_collection
+import perf_measures.heatmaps
 import perf_measures.reactivity
 import perf_measures.scalability
 import perf_measures.self_organization

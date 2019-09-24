@@ -20,7 +20,7 @@ from variables.base_variable import BaseVariable
 import os
 import pickle
 import yaml
-import batch_utils as butils
+import utils
 
 
 class BatchCriteria(BaseVariable):
@@ -56,13 +56,28 @@ class BatchCriteria(BaseVariable):
         """
         sizes = []
         for d in self.gen_exp_dirnames(cmdopts):
-            exp_def = butils.unpickle_exp_def(os.path.join(self.batch_generation_root,
-                                                           d,
-                                                           "exp_def.pkl"))
+            exp_def = utils.unpickle_exp_def(os.path.join(self.batch_generation_root,
+                                                          d,
+                                                          "exp_def.pkl"))
             for e in exp_def:
                 if e[0] == ".//arena/distribute/entity" and e[1] == "quantity":
                     sizes.append(int(e[2]))
         return sizes
+
+    def arena_dims(self):
+        """
+        Return the arena dimensions used for each experiment in the batch. Not applicable to all
+        criteria.
+        """
+        dims = []
+        for exp in self.gen_attr_changelist():
+            print(exp)
+            for c in exp:
+                if c[0] == ".//arena" and c[1] == "size":
+                    x, y, z = c[2].split(',')
+                    dims.append((int(x), int(y)))
+        assert len(dims) > 0, "Scenario dimensions not contained in batch criteria"
+        return dims
 
     def exp_dir2num(self, cmdopts, exp_dir):
         return self.gen_exp_dirnames(cmdopts).index(exp_dir)
@@ -96,7 +111,7 @@ class BatchCriteria(BaseVariable):
                                                str(exp_dirname))
             os.makedirs(exp_generation_root, exist_ok=True)
             for path, attr, value in defs[i]:
-                xml_luigi.attribute_change(path, attr, value)
+                xml_luigi.attr_change(path, attr, value)
 
                 xml_luigi.output_filepath = os.path.join(exp_generation_root,
                                                          batch_config_leaf)

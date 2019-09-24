@@ -22,7 +22,6 @@ import yaml
 import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
 import perf_measures.utils as pm_utils
-import batch_utils as butils
 import math
 
 

@@ -20,13 +20,13 @@ from variables.batch_criteria import BatchCriteria
 from variables.arena_shape import RectangularArena
 from variables.swarm_density_parser import SwarmDensityParser
 import os
-import batch_utils as butils
+import utils
 from variables.block_distribution import TypeRandom, TypeSingleSource
 
 
 def Calculate(n_robots, arena_x, arena_y):
     """Calculate the swarm density \rho, from Hamann2013."""
-    return int(arena_x) * int(arena_y) / n_robots
+    return n_robots / int(arena_x) * int(arena_y)
 
 
 class ConstantDensity(BatchCriteria):
@@ -99,7 +99,7 @@ class ConstantDensity(BatchCriteria):
             pickle_fpath = os.path.join(self.batch_generation_root,
                                         self.gen_exp_dirnames(i),
                                         "exp_def.pkl")
-            exp_def = butils.unpickle_exp_def(pickle_fpath)
+            exp_def = utils.unpickle_exp_def(pickle_fpath)
             for e in exp_def:
                 if e[0] == ".//arena/distribute/entity" and e[1] == "quantity":
                     n_robots = int(e[2])
