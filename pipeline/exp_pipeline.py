@@ -60,7 +60,7 @@ class ExpPipeline:
             'n_physics_engines': self.args.n_physics_engines,
 
             # stage 2
-            'batch_exp_range': self.args.batch_exp_range,
+            'exec_exp_range': self.args.exec_exp_range,
             'exec_method': self.args.exec_method,
             'n_threads': self.args.n_threads,
             'n_sims': self.args.n_sims,
@@ -88,37 +88,37 @@ class ExpPipeline:
         self.input_generator = input_generator
         self.batch_criteria = batch_criteria
 
-    def generate_inputs(self):
-        PipelineStage1(self.cmdopts,
-                       self.input_generator,
-                       self.batch_criteria).run()
-
-    def run_experiments(self):
-        PipelineStage2(self.cmdopts, self.batch_criteria).run()
-
-    def average_results(self):
-        PipelineStage3(self.cmdopts, self.batch_criteria).run()
-
-    def intra_batch_graphs(self):
-        PipelineStage4(self.cmdopts, self.batch_criteria).run()
-
-    def inter_batch_graphs(self):
-        PipelineStage5(self.cmdopts, self.args.inter_batch_controllers).run()
-
     def run(self):
 
         if 1 in self.args.pipeline:
-            self.generate_inputs()
+            self.__generate_inputs()
 
         if 2 in self.args.pipeline:
-            self.run_experiments()
+            self.__run_experiments()
 
         if 3 in self.args.pipeline:
-            self.average_results()
+            self.__process_results()
 
         if 4 in self.args.pipeline:
-            self.intra_batch_graphs()
+            self.__intra_batch_graphs()
 
         # not part of default pipeline
         if 5 in self.args.pipeline:
-            self.inter_batch_graphs()
+            self.__inter_batch_graphs()
+
+    # Private functions
+    def __generate_inputs(self):
+        PipelineStage1().run(self.cmdopts,
+                             self.input_generator)
+
+    def __run_experiments(self):
+        PipelineStage2().run(self.cmdopts, self.batch_criteria)
+
+    def __process_results(self):
+        PipelineStage3(self.cmdopts).run()
+
+    def __intra_batch_graphs(self):
+        PipelineStage4(self.cmdopts).run(self.batch_criteria)
+
+    def __inter_batch_graphs(self):
+        PipelineStage5(self.cmdopts, self.args.inter_batch_controllers).run()

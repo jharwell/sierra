@@ -305,7 +305,7 @@ class Cmdline:
 
                             """,
                             default="local")
-        stage2.add_argument("--batch-exp-range",
+        stage2.add_argument("--exec-exp-range",
                             help="""
 
                             Experiment numbers from the batch to run. Ignored if --batch-criteria is not

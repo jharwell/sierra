@@ -16,12 +16,10 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from pipeline.exp_runner import ExpRunner
 from pipeline.batched_exp_runner import BatchedExpRunner
 
 
 class PipelineStage2:
-
     """
     Implements stage 2 of the experimental pipeline:
 
@@ -29,21 +27,13 @@ class PipelineStage2:
     the provided set of hosts on MSI (or on a single personal computer for testing).
     """
 
-    def __init__(self, cmdopts, batch_criteria):
-        self.cmdopts = cmdopts
-        self.batch_criteria = batch_criteria
-
-    def run(self):
-        if self.batch_criteria is not None:
-            runner = BatchedExpRunner(self.cmdopts, self.batch_criteria)
-        else:
-            runner = ExpRunner(self.cmdopts['generation_root'], False)
-
-        if self.cmdopts['with_rendering']:
+    def run(self, cmdopts, batch_criteria):
+        if cmdopts['with_rendering']:
             print('- Stage2: Frame grabbing enabled')
 
-        runner.run(exec_method=self.cmdopts['exec_method'],
-                   n_threads_per_sim=self.cmdopts['n_threads'],
-                   n_sims=self.cmdopts['n_sims'],
-                   exec_resume=self.cmdopts['exec_resume'],
-                   with_rendering=self.cmdopts['with_rendering'])
+        runner = BatchedExpRunner(cmdopts, batch_criteria)
+        runner.run(exec_method=cmdopts['exec_method'],
+                   n_threads_per_sim=cmdopts['n_threads'],
+                   n_sims=cmdopts['n_sims'],
+                   exec_resume=cmdopts['exec_resume'],
+                   with_rendering=cmdopts['with_rendering'])

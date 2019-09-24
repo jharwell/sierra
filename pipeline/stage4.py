@@ -39,9 +39,8 @@ class PipelineStage4:
     experiment, and across experiments for batches.
     """
 
-    def __init__(self, cmdopts, batch_criteria):
+    def __init__(self, cmdopts):
         self.cmdopts = cmdopts
-        self.batch_criteria = batch_criteria
 
         self.controller_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
                                                              'controllers.yaml')))
@@ -50,34 +49,30 @@ class PipelineStage4:
         self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
                                                        'main.yaml')))
 
-    def run(self):
+    def run(self, batch_criteria):
         if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'intra':
-            self._gen_intra_graphs()
+            self.__gen_intra_graphs()
 
         if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'inter':
             # Collation must be after intra-experiment graph generation, so that all .csv files to
             # be collated have been generated/modified according to parameters.
-            targets = self._calc_linegraph_targets()
-            CSVCollator(self.main_config, self.cmdopts, targets, self.batch_criteria)()
-            self._gen_inter_graphs(targets)
+            targets = self.__calc_linegraph_targets()
+            CSVCollator(self.main_config, self.cmdopts, targets, batch_criteria)()
+            self.__gen_inter_graphs(targets, batch_criteria)
 
-    def _gen_inter_graphs(self, targets):
-        if self.batch_criteria is not None:
-            print("- Stage4: Generating inter-experiment graphs...")
-            InterExpGraphGenerator(self.cmdopts, targets, self.batch_criteria)()
-            print("- Stage4: Inter-experiment graph generation complete")
+    # Private functions
+    def __gen_inter_graphs(self, targets, batch_criteria):
+        print("- Stage4: Generating inter-experiment graphs...")
+        InterExpGraphGenerator(self.cmdopts, targets, batch_criteria)()
+        print("- Stage4: Inter-experiment graph generation complete")
 
-    def _gen_intra_graphs(self):
-        if self.batch_criteria is not None:
-            intra_exp = BatchedIntraExpGraphGenerator(self.cmdopts)
-        else:
-            intra_exp = IntraExpGraphGenerator(self.cmdopts)
+    def __gen_intra_graphs(self):
 
         print("- Stage4: Generating intra-experiment graphs...")
-        intra_exp()
+        BatchedIntraExpGraphGenerator(self.cmdopts)()
         print("- Stage4: Intra-experiment graph generation complete")
 
-    def _calc_linegraph_targets(self):
+    def __calc_linegraph_targets(self):
         """
         Use the parsed controller+inter-exp linegraph config to figure out what .csv files need to
         be collated/what graphs should be generated.

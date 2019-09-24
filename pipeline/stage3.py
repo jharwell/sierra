@@ -16,11 +16,8 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from pipeline.exp_csv_averager import ExpCSVAverager
 from pipeline.batched_exp_csv_averager import BatchedExpCSVAverager
-from pipeline.exp_csv_averager import ExpCSVAverager
 from pipeline.batched_exp_video_renderer import BatchedExpVideoRenderer
-from pipeline.exp_video_renderer import ExpVideoRenderer
 import os
 import yaml
 
@@ -35,20 +32,20 @@ class PipelineStage3:
 
     """
 
-    def __init__(self, cmdopts, batch_criteria):
+    def __init__(self, cmdopts):
         self.cmdopts = cmdopts
-        self.batch_criteria = batch_criteria
         self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
                                                        'main.yaml')))
 
     def run(self):
         if 'average' in self.cmdopts['results_process_tasks'] or 'all' in self.cmdopts['results_process_tasks']:
-            self._run_averaging()
+            self.__run_averaging()
 
         if 'render' in self.cmdopts['results_process_tasks'] or 'all' in self.cmdopts['results_process_tasks']:
-            self._run_rendering()
+            self.__run_rendering()
 
-    def _run_rendering(self):
+    # Private functions
+    def __run_rendering(self):
         if not self.cmdopts['with_rendering']:
             return
 
@@ -57,19 +54,13 @@ class PipelineStage3:
             'ofile_leaf': self.cmdopts['render_cmd_ofile'],
             'config': self.main_config
         }
-        if self.batch_criteria is not None:
-            print(
-                "- Stage3: Rendering videos for batched experiment in {0}...".format(self.cmdopts['generation_root']))
-            renderer = BatchedExpVideoRenderer(render_params, self.cmdopts['output_root'])
-        else:
-            print(
-                "- Stage3: Rendering single experiment video in {0}...".format(self.cmdopts['generation_root']))
-            renderer = ExpVideoRenderer(render_params, self.cmdopts['output_root'])
-
+        print(
+            "- Stage3: Rendering videos for batched experiment in {0}...".format(self.cmdopts['generation_root']))
+        renderer = BatchedExpVideoRenderer(render_params, self.cmdopts['output_root'])
         renderer.render()
         print("- Stage3: Rendering complete")
 
-    def _run_averaging(self):
+    def __run_averaging(self):
         template_config_leaf, template_config_ext = os.path.splitext(
             os.path.basename(self.cmdopts['template_config_file']))
         avg_params = {
@@ -78,16 +69,8 @@ class PipelineStage3:
             'gen_stddev': self.cmdopts['gen_stddev'],
             'config': self.main_config,
         }
-        if self.batch_criteria is not None:
-            print(
-                "- Stage3: Averaging batched experiment outputs in {0}...".format(self.cmdopts['generation_root']))
-            averager = BatchedExpCSVAverager(avg_params,
-                                             self.cmdopts['output_root'])
-        else:
-            print(
-                "- Stage3: Averaging single experiment outputs in {0}...".format(self.cmdopts['generation_root']))
-            averager = ExpCSVAverager(avg_params,
-                                      self.cmdopts['output_root'])
-
+        print(
+            "- Stage3: Averaging batched experiment outputs in {0}...".format(self.cmdopts['generation_root']))
+        averager = BatchedExpCSVAverager(avg_params, self.cmdopts['output_root'])
         averager.run()
         print("- Stage3: Averaging complete")

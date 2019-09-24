@@ -37,7 +37,7 @@ class BatchedExpRunner:
         self.criteria = criteria
 
         self.batch_exp_root = os.path.abspath(self.cmdopts['generation_root'])
-        self.batch_exp_range = self.cmdopts['batch_exp_range']
+        self.exec_exp_range = self.cmdopts['exec_exp_range']
 
     def run(self, exec_method, n_threads_per_sim, n_sims, exec_resume, with_rendering):
         """Runs all experiments in the batch."""
@@ -50,9 +50,9 @@ class BatchedExpRunner:
         exp_all = [os.path.join(self.batch_exp_root, d)
                    for d in self.criteria.gen_exp_dirnames(self.cmdopts)]
         exp_to_run = []
-        if self.batch_exp_range is not None:
-            min_exp = int(self.batch_exp_range.split(':')[0])
-            max_exp = int(self.batch_exp_range.split(':')[1])
+        if self.exec_exp_range is not None:
+            min_exp = int(self.exec_exp_range.split(':')[0])
+            max_exp = int(self.exec_exp_range.split(':')[1])
             assert min_exp <= max_exp, "FATAL: Min batch exp >= max batch exp({0} vs. {1})".format(
                 min_exp, max_exp)
 
