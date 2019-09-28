@@ -16,8 +16,8 @@ This file is part of SIERRA.
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from pipeline.intra_exp_graph_generator import IntraExpGraphGenerator
-from pipeline.csv_collator import CSVCollator
+from pipeline.univar_csv_collator import UnivarCSVCollator
+from pipeline.bivar_csv_collator import BivarCSVCollator
 from pipeline.batched_intra_exp_graph_generator import BatchedIntraExpGraphGenerator
 from pipeline.inter_exp_graph_generator import InterExpGraphGenerator
 import yaml
@@ -26,6 +26,7 @@ import matplotlib as mpl
 mpl.rcParams['lines.linewidth'] = 3
 mpl.rcParams['lines.markersize'] = 10
 mpl.rcParams['figure.max_open_warning'] = 10000
+mpl.rcParams['axes.formatter.limits'] = (-4, 4)
 mpl.use('Agg')
 
 
@@ -57,7 +58,11 @@ class PipelineStage4:
             # Collation must be after intra-experiment graph generation, so that all .csv files to
             # be collated have been generated/modified according to parameters.
             targets = self.__calc_linegraph_targets()
-            CSVCollator(self.main_config, self.cmdopts, targets, batch_criteria)()
+            if batch_criteria.is_univar():
+                UnivarCSVCollator(self.main_config, self.cmdopts, targets, batch_criteria)()
+            else:
+                BivarCSVCollator(self.main_config, self.cmdopts, targets, batch_criteria)()
+
             self.__gen_inter_graphs(targets, batch_criteria)
 
     # Private functions

@@ -21,7 +21,7 @@ import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
 from graphs.bar_graph import BarGraph
 
-import perf_measures.utils as pm_utils
+import perf_measures.common as pm_common
 import utils
 import copy
 import yaml
@@ -198,8 +198,8 @@ class InterBatchComparator:
                 # graph generation, which is OK.
                 if not os.path.exists(csv_ipath):
                     continue
-                df.loc[s, c] = pm_utils.WeightUnifiedEstimate(input_csv_fpath=csv_ipath,
-                                                              swarm_sizes=swarm_sizes).calc()
+                df.loc[s, c] = pm_common.WeightUnifiedEstimate(input_csv_fpath=csv_ipath,
+                                                               swarm_sizes=swarm_sizes).calc()
 
         csv_opath = os.path.join(self.sc_csv_root, 'sc-' +
                                  src_stem + "-wue.csv")

@@ -16,12 +16,12 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from variables.batch_criteria import BatchCriteria
+import variables.batch_criteria as bc
 from variables.swarm_size_parser import SwarmSizeParser
 import math
 
 
-class SwarmSize(BatchCriteria):
+class SwarmSize(bc.UnivarBatchCriteria):
 
     """
     Defines a range of swarm sizes to test with
@@ -31,7 +31,7 @@ class SwarmSize(BatchCriteria):
     """
 
     def __init__(self, cmdline_str, main_config, batch_generation_root, size_list):
-        BatchCriteria.__init__(self, cmdline_str, main_config, batch_generation_root)
+        bc.UnivarBatchCriteria.__init__(self, cmdline_str, main_config, batch_generation_root)
         self.size_list = size_list
 
     def gen_attr_changelist(self):
@@ -63,8 +63,8 @@ class SwarmSize(BatchCriteria):
     def sc_sort_scenarios(self, scenarios):
         return scenarios  # No sorting needed
 
-    def graph_xvals(self, cmdopts):
-        ret = self.swarm_sizes(cmdopts)
+    def graph_xvals(self, cmdopts, exp_dirs=None):
+        ret = self.swarm_sizes(cmdopts, exp_dirs)
 
         if cmdopts['plot_log_xaxis']:
             return [math.log2(x) for x in ret]

@@ -23,7 +23,7 @@ class OracleParser():
     """
     Parses the command line definition of batch criteria. The string must be formatted as:
 
-    {oracle_name}.Z{swarm_size}
+    {oracle_name}[.Z{swarm_size}]
 
     oracle_name = {entities, tasks}
 
@@ -33,6 +33,8 @@ class OracleParser():
                     swarms of size 16.
     tasks.Z8 -> All permutations of oracular information about tasks in the arena, run with swarms
                 of size 8.
+    entities -> All permuntations of oracular information of entities in the arena (swarm size is
+                not modified)
     """
 
     def parse(self, criteria_str):
@@ -48,6 +50,6 @@ class OracleParser():
 
         # Parse swarm size
         res = re.search("\.Z[0-9]+", criteria_str)
-        assert res is not None, "FATAL: Bad swarm size in criteria '{0}'".format(criteria_str)
-        ret['swarm_size'] = int(res.group(0)[2:])
+        if res is not None:
+            ret['swarm_size'] = int(res.group(0)[2:])
         return ret

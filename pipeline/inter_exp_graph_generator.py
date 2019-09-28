@@ -21,12 +21,16 @@ import os
 import copy
 import yaml
 from pipeline.inter_exp_linegraphs import InterExpLinegraphs
-from perf_measures.scalability import InterExpScalability
-from perf_measures.self_organization import InterExpSelfOrganization
-from perf_measures.block_collection import InterExpBlockCollection
-from perf_measures.reactivity import InterExpReactivity
-from perf_measures.adaptability import InterExpAdaptability
-from pipeline.inter_exp_heatmaps import InterExpHeatmaps
+from perf_measures.scalability_univar import ScalabilityUnivar
+from perf_measures.scalability_bivar import ScalabilityBivar
+from perf_measures.self_organization import SelfOrganizationUnivar
+from perf_measures.self_organization import SelfOrganizationBivar
+from perf_measures.block_collection import BlockCollectionUnivar
+from perf_measures.block_collection import BlockCollectionBivar
+from perf_measures.reactivity import ReactivityUnivar
+from perf_measures.reactivity import ReactivityBivar
+from perf_measures.adaptability import AdaptabilityUnivar
+from perf_measures.adaptability import AdaptabilityBivar
 
 
 class InterExpGraphGenerator:
@@ -62,13 +66,42 @@ class InterExpGraphGenerator:
         else:
             components = self.cmdopts['perf_measures']
 
-        InterExpBlockCollection(self.cmdopts,
-                                self.main_config['sierra']['perf']['inter_perf_csv']).generate(self.batch_criteria)
+        if not self.batch_criteria.is_bivar():
+            self.__gen_for_univar_bc(components)
+        else:
+            self.__gen_for_bivar_bc(components)
 
-        # if "all" in components or "hm" in components:
-        #     InterExpHeatmaps().generate(self.cmdopts,
-        #                                 self.main_config['sierra']['perf']['inter_perf_csv'],
-        #                                 self.batch_criteria)
+    # Private functions
+    def __gen_for_univar_bc(self, components):
+        if "all" in components or "sp" in components:
+            BlockCollectionUnivar(self.cmdopts,
+                                  self.main_config['sierra']['perf']['inter_perf_csv']).generate(self.batch_criteria)
+
+        if "all" in components or "line" in components:
+            InterExpLinegraphs(self.cmdopts["collate_root"],
+                               self.cmdopts["graph_root"],
+                               self.targets).generate()
+
+        if "all" in components or "ss" in components:
+            ScalabilityUnivar().generate(self.cmdopts, self.batch_criteria)
+
+        if "all" in components or "so" in components:
+            SelfOrganizationUnivar(self.cmdopts,
+                                   self.main_config['sierra']['perf']['inter_perf_csv'],
+                                   self.main_config['sierra']['perf']['ca_in_csv']).generate(self.batch_criteria)
+
+        if "all" in components or "sr" in components:
+            ReactivityUnivar(self.cmdopts).generate(self.batch_criteria)
+
+        if "all" in components or "sa" in components:
+            AdaptabilityUnivar(self.cmdopts).generate(self.batch_criteria)
+
+    def __gen_for_bivar_bc(self, components):
+        if "all" in components or "sp" in components:
+            BlockCollectionBivar(self.cmdopts,
+                                 self.main_config['sierra']['perf']['inter_perf_csv']).generate(self.batch_criteria)
+        if "all" in components or "ss" in components:
+            ScalabilityBivar().generate(self.cmdopts, self.batch_criteria)
 
         if "all" in components or "line" in components:
 
@@ -76,16 +109,13 @@ class InterExpGraphGenerator:
                                self.cmdopts["graph_root"],
                                self.targets).generate()
 
-        if "all" in components or "ss" in components:
-            InterExpScalability().generate(self.cmdopts, self.batch_criteria)
-
         if "all" in components or "so" in components:
-            InterExpSelfOrganization(self.cmdopts,
-                                     self.main_config['sierra']['perf']['inter_perf_csv'],
-                                     self.main_config['sierra']['perf']['ca_in_csv']).generate(self.batch_criteria)
+            SelfOrganizationBivar(self.cmdopts,
+                                  self.main_config['sierra']['perf']['inter_perf_csv'],
+                                  self.main_config['sierra']['perf']['ca_in_csv']).generate(self.batch_criteria)
 
         if "all" in components or "sr" in components:
-            InterExpReactivity(self.cmdopts).generate(self.batch_criteria)
+            ReactivityBivar(self.cmdopts).generate(self.batch_criteria)
 
         if "all" in components or "sa" in components:
-            InterExpAdaptability(self.cmdopts).generate(self.batch_criteria)
+            AdaptabilityBivar(self.cmdopts).generate(self.batch_criteria)

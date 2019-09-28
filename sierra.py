@@ -17,7 +17,7 @@ Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 """
 
 import os
-from cmdline import Cmdline
+import cmdline as cmd
 from pipeline.exp_pipeline import ExpPipeline
 from generators.controller_generator_parser import ControllerGeneratorParser
 from generators.scenario_generator_parser import ScenarioGeneratorParser
@@ -48,7 +48,8 @@ def __sierra_run():
         # restriction: cannot use Python 2.x to run this code
         raise RuntimeError("Python 3.x should must be used to run this code.")
 
-    args = Cmdline().init().parse_args()
+    args = cmd.Cmdline().init().parse_args()
+    cmd.CmdlineValidator()(args)
 
     controller = ControllerGeneratorParser()(args)
     scenario = ScenarioGeneratorParser()(args)

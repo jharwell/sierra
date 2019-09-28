@@ -21,17 +21,16 @@ import copy
 import yaml
 import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
-import perf_measures.utils as pm_utils
+import perf_measures.common as common
 import math
 
 
-class Efficiency:
+class EfficiencyUnivar:
     """
-    Calculates the per-robot efficiency in the following way for each experiment in a batch:
+    Calculates the per-robot efficiency in the following way for each experiment in a univariate
+    batched experiment:
 
     Performance N robots / N
-
-    Swarm sizes do not have to be powers of 2.
 
     Contains separate functions for returning the calculated measure and generating a graph of the
     calculated measure.
@@ -49,8 +48,8 @@ class Efficiency:
         batch.
 
         Return:
-          (Calculated metric dataframe, stddev dataframe) if stddev was collected, (Calculated
-          metric datafram, None) otherwise.
+          (Calculated metric dataframe, stddev dataframe) if stddev was collected.
+          (Calculated metric datafram, None) otherwise.
         """
         sc_ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
         stddev_ipath = os.path.join(self.cmdopts["collate_root"],
@@ -58,10 +57,10 @@ class Efficiency:
 
         # Metric calculation is the same for the actual value of it and the std deviation,
         if os.path.exists(stddev_ipath):
-            return (self._calculate_metric(sc_ipath, True, batch_criteria),
-                    self._calculate_metric(stddev_ipath, False, batch_criteria))
+            return (self.__calculate_metric(sc_ipath, batch_criteria),
+                    self.__calculate_metric(stddev_ipath, batch_criteria, False))
         else:
-            return (self._calculate_metric(sc_ipath, True, batch_criteria), None)
+            return (self.__calculate_metric(sc_ipath, batch_criteria), None)
 
     def generate(self, dfs, batch_criteria):
         """
@@ -75,6 +74,7 @@ class Efficiency:
         if stddev_df is not None:
             stddev_df.to_csv(cum_stem + ".stddev", sep=';', index=False)
 
+        # print(metric_df)
         BatchRangedGraph(inputy_stem_fpath=cum_stem,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-efficiency.png"),
@@ -85,22 +85,24 @@ class Efficiency:
                          legend=None,
                          polynomial_fit=-1).generate()
 
-    def _calculate_metric(self, ipath, must_exist, batch_criteria):
+    # Private functions
+    def __calculate_metric(self, ipath, batch_criteria, must_exist=True):
         assert(not (must_exist and not os.path.exists(ipath))
                ), "FATAL: {0} does not exist".format(ipath)
-        df = pd.read_csv(ipath, sep=';')
-        scale_cols = [c for c in df.columns if c not in ['clock']]
-        df_new = pd.DataFrame(columns=scale_cols)
+        raw_df = pd.read_csv(ipath, sep=';')
+        eff_df = pd.DataFrame(columns=raw_df.columns
+                              )
         swarm_sizes = batch_criteria.swarm_sizes(self.cmdopts)
 
-        for i in range(0, len(scale_cols)):
-            col = scale_cols[i]
+        for i in range(0, len(eff_df.columns)):
             n_robots = swarm_sizes[i]
-            df_new[col] = df.tail(1)[col] / n_robots
-        return df_new
+            col = eff_df.columns[i]
+            perf_N = raw_df.tail(1)[col]
+            eff_df[col] = perf_N / n_robots
+        return eff_df
 
 
-class ProjectivePerformanceComparison:
+class ProjectivePerformanceComparisonUnivar:
     """
     Calculates projective performance for each experiment i > 0 in the batch and productes a graph.
     """
@@ -113,9 +115,9 @@ class ProjectivePerformanceComparison:
         self.projection_type = projection_type
 
     def calculate(self, batch_criteria):
-        return pm_utils.ProjectivePerformance(self.cmdopts,
-                                              self.inter_perf_csv,
-                                              self.projection_type).calculate(batch_criteria)
+        return common.ProjectivePerformanceCalculatorUnivar(self.cmdopts,
+                                                            self.inter_perf_csv,
+                                                            self.projection_type)(batch_criteria)
 
     def generate(self, df, batch_criteria):
         cum_stem = os.path.join(self.cmdopts["collate_root"], "pm-pp-comp-" + self.projection_type)
@@ -134,17 +136,17 @@ class ProjectivePerformanceComparison:
                          polynomial_fit=-1).generate()
 
 
-class ProjectivePerformanceComparisonPositive(ProjectivePerformanceComparison):
+class ProjectivePerformanceComparisonPositiveUnivar(ProjectivePerformanceComparisonUnivar):
     def __init__(self, cmdopts, inter_perf_csv):
         super().__init__(cmdopts, inter_perf_csv, "positive")
 
 
-class ProjectivePerformanceComparisonNegative(ProjectivePerformanceComparison):
+class ProjectivePerformanceComparisonNegativeUnivar(ProjectivePerformanceComparisonUnivar):
     def __init__(self, cmdopts, inter_perf_csv):
         super().__init__(cmdopts, inter_perf_csv, "negative")
 
 
-class FractionalPerformanceLoss:
+class FractionalPerformanceLossUnivar:
     """
     Calculates the scalability of across an experiment batch using fractions of performance lost due
     to inter-robot interference as swarm size increases. Swarm sizes do not have to be a power of 2.
@@ -158,10 +160,10 @@ class FractionalPerformanceLoss:
         self.ca_in_csv = ca_in_csv
 
     def calculate(self, batch_criteria):
-        df = pm_utils.FractionalLosses(self.cmdopts,
-                                       self.inter_perf_csv,
-                                       self.ca_in_csv,
-                                       batch_criteria).calc(batch_criteria)
+        df = common.FractionalLossesUnivar(self.cmdopts,
+                                           self.inter_perf_csv,
+                                           self.ca_in_csv,
+                                           batch_criteria).calculate(batch_criteria)
 
         for c in df.columns:
             df[c] = 1.0 - 1.0 / math.exp(1.0 - df[c])
@@ -182,7 +184,7 @@ class FractionalPerformanceLoss:
                          polynomial_fit=-1).generate()
 
 
-class KarpFlatt:
+class KarpFlattUnivar:
     """
     Given a swarm exhibiting speedup X with N robots(N > 1), compute the serial fraction Y of the
     swarm's performance. The lower the value of Y, the better the parallelization/scalability,
@@ -200,9 +202,9 @@ class KarpFlatt:
         self.inter_perf_csv = inter_perf_csv
 
     def calculate(self, batch_criteria):
-        df = pm_utils.ProjectivePerformance(self.cmdopts,
-                                            self.inter_perf_csv,
-                                            "positive").calculate(batch_criteria)
+        df = common.ProjectivePerformanceCalculatorUnivar(self.cmdopts,
+                                                          self.inter_perf_csv,
+                                                          "positive")(batch_criteria)
 
         # +1 because karp-flatt is only defined for exp >= 1
         sizes = batch_criteria.swarm_sizes(self.cmdopts)[1:]
@@ -229,31 +231,25 @@ class KarpFlatt:
                          polynomial_fit=-1).generate()
 
 
-class InterExpScalability:
+class ScalabilityUnivar:
     """
-    Calculates the scalability of the swarm configuration across a batched set of experiments within
-    the same scenario from collated .csv data.
+    Calculates the scalability of the swarm configuration across a univariate batched set of
+    experiments within the same scenario from collated .csv datain various ways.
     """
 
     def generate(self, cmdopts, batch_criteria):
-        print("-- Scalability from {0}".format(cmdopts["collate_root"]))
+        print("-- Univariate scalability from {0}".format(cmdopts["collate_root"]))
 
         main_config = yaml.load(open(os.path.join(cmdopts['config_root'], 'main.yaml')))
 
         inter_perf_csv = main_config['sierra']['perf']['inter_perf_csv']
         ca_in_csv = main_config['sierra']['perf']['ca_in_csv']
 
-        e = Efficiency(cmdopts, inter_perf_csv)
+        e = EfficiencyUnivar(cmdopts, inter_perf_csv)
         e.generate(e.calculate(batch_criteria), batch_criteria)
 
-        p = ProjectivePerformanceComparisonPositive(cmdopts, inter_perf_csv)
-        p.generate(p.calculate(batch_criteria), batch_criteria)
-
-        p = ProjectivePerformanceComparisonNegative(cmdopts, inter_perf_csv)
-        p.generate(p.calculate(batch_criteria), batch_criteria)
-
-        f = FractionalPerformanceLoss(cmdopts, inter_perf_csv, ca_in_csv)
+        f = FractionalPerformanceLossUnivar(cmdopts, inter_perf_csv, ca_in_csv)
         f.generate(f.calculate(batch_criteria), batch_criteria)
 
-        k = KarpFlatt(cmdopts, inter_perf_csv)
+        k = KarpFlattUnivar(cmdopts, inter_perf_csv)
         k.generate(k.calculate(batch_criteria), batch_criteria)

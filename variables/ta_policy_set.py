@@ -16,12 +16,12 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from variables.batch_criteria import BatchCriteria
+from variables.batch_criteria import UnivarBatchCriteria
 from variables.ta_policy_set_parser import TAPolicySetParser
 from variables.swarm_size import SwarmSize
 
 
-class TAPolicySet(BatchCriteria):
+class TAPolicySet(UnivarBatchCriteria):
     """
     Defines the task allocation policy to use during simulation.
 
@@ -31,15 +31,22 @@ class TAPolicySet(BatchCriteria):
     """
 
     def __init__(self, cmdline_str, main_config, batch_generation_root, policies, swarm_size):
-        BatchCriteria.__init__(self, cmdline_str, main_config, batch_generation_root)
+        UnivarBatchCriteria.__init__(self, cmdline_str, main_config, batch_generation_root)
         self.policies = policies
         self.swarm_size = swarm_size
 
     def gen_attr_changelist(self):
-        size_attr = next(iter(SwarmSize([self.swarm_size]).gen_attr_changelist()[0]))
+        # Swarm size is optional. It can be (1) controlled via this variable, (2) controlled by
+        # another variable in a bivariate batch criteria, (3) not controlled at all. For (2), (3),
+        # the swarm size can be None.
+        if self.swarm_size is not None:
+            size_attr = [next(iter(SwarmSize([self.swarm_size]).gen_attr_changelist()[0]))]
+        else:
+            size_attr = []
         changes = []
+
         for p in self.policies:
-            c = [size_attr]
+            c = size_attr
             c.extend([(".//task_executive",
                        "alloc_policy",
                        "{0}".format(p))])
@@ -86,7 +93,7 @@ def Factory(cmdline_str, main_config, batch_generation_root):
 
     def __init__(self):
         TAPolicySet.__init__(self, cmdline_str, main_config, batch_generation_root,
-                             gen_policies(), attr['swarm_size'])
+                             gen_policies(), attr.get('swarm_size', None))
 
     return type(cmdline_str,
                 (TAPolicySet,),

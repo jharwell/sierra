@@ -16,13 +16,13 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from variables.batch_criteria import BatchCriteria
+from variables.batch_criteria import UnivarBatchCriteria
 from variables.oracle_parser import OracleParser
 import itertools
 from variables.swarm_size import SwarmSize
 
 
-class Oracle(BatchCriteria):
+class Oracle(UnivarBatchCriteria):
     kInfoTypes = {'entities': ['caches', 'blocks']}
 
     """
@@ -35,34 +35,39 @@ class Oracle(BatchCriteria):
 
     def __init__(self, cmdline_str, main_config, batch_generation_root,
                  tuples, swarm_size):
-        BatchCriteria.__init__(self, cmdline_str, main_config, batch_generation_root)
+        UnivarBatchCriteria.__init__(self, cmdline_str, main_config, batch_generation_root)
 
         self.tuples = tuples
         self.swarm_size = swarm_size
 
     def gen_attr_changelist(self):
-        size_attr = next(iter(SwarmSize([self.swarm_size]).gen_attr_changelist()[0]))
-        changes = []
-        for t in self.tuples:
-            c = [size_attr]
-            c.extend([(".//oracle_manager/{0}".format(str(t[0])),
-                       "{0}".format(str(feat[0])),
-                       "{0}".format(str(feat[1]))) for feat in t[1]])
-            changes.append(set(c))
+        # Swarm size is optional. It can be (1) controlled via this variable, (2) controlled by
+        # another variable in a bivariate batch criteria, (3) not controlled at all. For (2), (3),
+        # the swarm size can be None.
+        changes = [set([(".//oracle_manager/{0}".format(str(t[0])),
+                         "{0}".format(str(feat[0])),
+                         "{0}".format(str(feat[1]))) for feat in t[1]]) for t in self.tuples]
+
+        if self.swarm_size is not None:
+            size_attr = [next(iter(SwarmSize([self.swarm_size]).gen_attr_changelist()[0]))]
+            for c in changes:
+                c.add(size_attr)
+
         return changes
 
-    def gen_exp_dirnames(self, cmdopts):
+    def gen_exp_dirnames(self, cmdopts, always_named=False):
         changes = self.gen_attr_changelist()
         attr = OracleParser().parse(self.cmdline_str)
         dirs = []
+
         for chg in changes:
             d = ''
             for t in Oracle.kInfoTypes[attr['oracle_type']]:
                 for path, at, value in chg:
                     if t in at:
-                        d += '+' * ('' != d) + t + '=' + value
+                        d += '|' * ('' != d) + t + '=' + value
             dirs.append(d)
-        if not cmdopts['named_exp_dirs']:
+        if not cmdopts['named_exp_dirs'] and not always_named:
             return ['exp' + str(x) for x in range(0, len(dirs))]
         else:
             return dirs
@@ -73,11 +78,11 @@ class Oracle(BatchCriteria):
     def sc_sort_scenarios(self, scenarios):
         return scenarios  # No sorting needed
 
-    def graph_xvals(self, cmdopts):
-        return [i for i in range(1, self.n_exp() + 1)]
+    def graph_xvals(self, cmdopts, exp_dirs):
+        return [d for d in self.gen_exp_dirnames(cmdopts, True)]
 
     def graph_xlabel(self, cmdopts):
-        return "Oracular Swarms"
+        return "Oracular Information Type"
 
 
 def Factory(cmdline_str, main_config, batch_generation_root):
@@ -95,11 +100,12 @@ def Factory(cmdline_str, main_config, batch_generation_root):
                                [(Oracle.kInfoTypes['entities'][i], str(val[i]).lower())
                                    for i in range(0, len(Oracle.kInfoTypes['entities']))]
                                ))
+
             return tuples
 
     def __init__(self):
         Oracle.__init__(self, cmdline_str, main_config, batch_generation_root,
-                        gen_tuples(cmdline_str), attr['swarm_size'])
+                        gen_tuples(cmdline_str), attr.get('swarm_size', None))
 
     return type(cmdline_str,
                 (Oracle,),

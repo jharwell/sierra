@@ -52,35 +52,10 @@ class GeneratorCreator:
             'named_exp_dirs': args.named_exp_dirs
         }
 
-        if batch_criteria is not None:
-            return BatchedExpInputGenerator(batch_config_template=args.template_config_file,
-                                            batch_generation_root=args.generation_root,
-                                            batch_output_root=args.output_root,
-                                            controller_name=parsed_controller,
-                                            scenario_name=parsed_scenario,
-                                            criteria=batch_criteria,
-                                            cmdopts=cmdopts)
-        else:
-            controller = gf.ControllerGeneratorFactory(controller=parsed_controller,
-                                                       config_root=args.config_root,
-                                                       template_config_file=args.template_config_file,
-                                                       generation_root=cmdopts['exp_generation_root'],
-                                                       exp_output_root=cmdopts['exp_output_root'],
-                                                       exp_def_fname="exp_def.pkl",
-                                                       cmdopts=cmdopts)
-
-            scenario = gf.ScenarioGeneratorFactory(controller=parsed_controller,
-                                                   scenario=parsed_scenario,
-                                                   template_config_file=args.template_config_file,
-                                                   generation_root=args.generation_root,
-                                                   exp_output_root=args.output_root,
-                                                   exp_def_fname="exp_def.pkl",
-                                                   cmdopts=cmdopts)
-
-            return gf.JointGeneratorFactory(controller=controller,
-                                            scenario=scenario,
-                                            template_config_file=args.template_config_file,
-                                            generation_root=args.generation_root,
-                                            exp_output_root=args.output_root,
-                                            exp_def_fname="exp_def.pkl",
-                                            cmdopts=cmdopts)
+        return BatchedExpInputGenerator(batch_config_template=args.template_config_file,
+                                        batch_generation_root=args.generation_root,
+                                        batch_output_root=args.output_root,
+                                        controller_name=parsed_controller,
+                                        scenario_name=parsed_scenario,
+                                        criteria=batch_criteria,
+                                        cmdopts=cmdopts)

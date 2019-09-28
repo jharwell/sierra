@@ -19,13 +19,16 @@ This file is part of SIERRA.
 import os
 import copy
 import pandas as pd
+import numpy as np
 from graphs.batch_ranged_graph import BatchRangedGraph
+from graphs.heatmap import Heatmap
 
 
-class InterExpBlockCollection:
+class BlockCollectionUnivar:
     """
-    Generates a nice graph from the cumulative blocks collected count of the swarm configuration
-    across a batched set of experiments within the same scenario from collated .csv data.
+    Generates a stacked line graph from the cumulative blocks collected count of the swarm
+    configuration across a univariate batched set of experiments within the same scenario from
+    collated .csv data.
 
     """
 
@@ -36,22 +39,19 @@ class InterExpBlockCollection:
         self.blocks_collected_stem = blocks_collected_csv.split('.')[0]
 
     def generate(self, batch_criteria):
-        """
-        Calculate the blocks collected metric for a given controller, and output a nice graph.
-        """
-        print("-- Block collection from {0}".format(self.cmdopts["collate_root"]))
+        print("-- Univariate block collection from {0}".format(self.cmdopts["collate_root"]))
         stddev_ipath = os.path.join(self.cmdopts["collate_root"],
                                     self.blocks_collected_stem + '.stddev')
         stddev_opath = os.path.join(self.cmdopts["collate_root"],
-                                    self.blocks_collected_stem + ".stddev")
+                                    "pm-" + self.blocks_collected_stem + ".stddev")
         perf_ipath = os.path.join(self.cmdopts["collate_root"], self.blocks_collected_stem + '.csv')
         perf_opath_stem = os.path.join(self.cmdopts["collate_root"],
                                        "pm-" + self.blocks_collected_stem)
 
         if os.path.exists(stddev_ipath):
-            self._generate_collected_stddev(stddev_ipath, stddev_opath)
+            self.__gen_stddev(stddev_ipath, stddev_opath)
 
-        self._generate_collected_csv(perf_ipath, perf_opath_stem + '.csv')
+        self.__gen_csv(perf_ipath, perf_opath_stem + '.csv')
 
         BatchRangedGraph(inputy_stem_fpath=perf_opath_stem,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
@@ -63,26 +63,87 @@ class InterExpBlockCollection:
                          legend=None,
                          polynomial_fit=-1).generate()
 
-    def _generate_collected_stddev(self, ipath, opath):
-        blocks_stddev_df = pd.DataFrame()
-        blocks_stddev_df = pd.read_csv(ipath, sep=';')
+    def __gen_stddev(self, ipath, opath):
+        total_stddev_df = pd.read_csv(ipath, sep=';')
+        cum_stddev_df = pd.DataFrame(columns=total_stddev_df.columns)
 
-        scale_cols = [c for c in blocks_stddev_df.columns if c not in ['clock']]
-        collected_stddev_df = pd.DataFrame(columns=scale_cols)
+        for c in cum_stddev_df.columns:
+            cum_stddev_df[c] = total_stddev_df.tail(1)[c]
 
-        for c in scale_cols:
-            collected_stddev_df[c] = blocks_stddev_df.tail(1)[c]
+        cum_stddev_df.to_csv(opath, sep=';', index=False)
 
-        collected_stddev_df.to_csv(opath, sep=';', index=False)
-
-    def _generate_collected_csv(self, ipath, opath):
+    def __gen_csv(self, ipath, opath):
         assert(os.path.exists(ipath)), "FATAL: {0} does not exist".format(ipath)
-        blocks_df = pd.read_csv(ipath, sep=';')
+        total_df = pd.read_csv(ipath, sep=';')
+        cum_df = pd.DataFrame(columns=total_df.columns)
 
-        scale_cols = [c for c in blocks_df.columns if c not in ['clock']]
-        collected_df = pd.DataFrame(columns=scale_cols)
+        for col in cum_df.columns:
+            cum_df[col] = total_df.tail(1)[col]
 
-        for c in scale_cols:
-            collected_df[c] = blocks_df.tail(1)[c]
+        cum_df.to_csv(opath, sep=';', index=False)
 
-        collected_df.to_csv(opath, sep=';', index=False)
+
+class BlockCollectionBivar:
+    """
+    Generates a 2D heatmap from the cumulative blocks collected count of the swarm configuration
+    across a bivariate batched set of experiments within the same scenario from collated .csv data.
+
+    """
+
+    def __init__(self, cmdopts, blocks_collected_csv):
+        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
+        # are generated after us
+        self.cmdopts = copy.deepcopy(cmdopts)
+        self.blocks_collected_stem = blocks_collected_csv.split('.')[0]
+
+    def generate(self, batch_criteria):
+        print("-- Bivariate block collection from {0}".format(self.cmdopts["collate_root"]))
+        stddev_ipath = os.path.join(self.cmdopts["collate_root"],
+                                    self.blocks_collected_stem + '.stddev')
+        stddev_opath = os.path.join(self.cmdopts["collate_root"],
+                                    self.blocks_collected_stem + ".stddev")
+        perf_ipath = os.path.join(self.cmdopts["collate_root"], self.blocks_collected_stem + '.csv')
+        perf_opath_stem = os.path.join(self.cmdopts["collate_root"],
+                                       "pm-" + self.blocks_collected_stem)
+
+        if os.path.exists(stddev_ipath):
+            self.__gen_stddev(stddev_ipath, stddev_opath)
+
+        self.__gen_csv(perf_ipath, perf_opath_stem + '.csv')
+
+        Heatmap(input_fpath=perf_opath_stem + '.csv',
+                output_fpath=os.path.join(self.cmdopts["graph_root"],
+                                          "pm-" + self.blocks_collected_stem + ".png"),
+                title='Swarm Blocks Collected',
+                xlabel=batch_criteria.graph_ylabel(self.cmdopts),
+                ylabel=batch_criteria.graph_xlabel(self.cmdopts),
+                xtick_labels=batch_criteria.graph_yvals(self.cmdopts),
+                ytick_labels=batch_criteria.graph_xvals(self.cmdopts)).generate()
+
+    def __gen_stddev(self, ipath, opath):
+        total_stddev_df = pd.read_csv(ipath, sep=';')
+        cum_stddev_df = pd.DataFrame(columns=total_stddev_df.columns)
+
+        for c in cum_stddev_df.columns:
+            cum_stddev_df[c] = total_stddev_df.tail(1)[c]
+
+        cum_stddev_df.to_csv(opath, sep=';', index=False)
+
+    def __gen_csv(self, ipath, opath):
+        assert(os.path.exists(ipath)), "FATAL: {0} does not exist".format(ipath)
+        total_df = pd.read_csv(ipath, sep=';')
+        cum_df = pd.DataFrame(columns=total_df.columns,
+                              index=total_df.index)
+
+        for i in range(0, len(cum_df.index)):
+            for col in cum_df.columns:
+                # When collated, the column of data is written as a numpy array to string, so we
+                # have to reparse it as an actual array
+                arr = np.fromstring(total_df.loc[i, col][1:-1], dtype=np.float, sep=' ')
+
+                # We want the CUMULATIVE count of blocks, which will be the last element in this
+                # array. The second index is an artifact of how numpy represents scalars (1 element
+                # arrays).
+                cum_df.loc[i, col] = arr[-1:][0]
+
+        cum_df.to_csv(opath, sep=';', index=False)

@@ -16,7 +16,7 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from variables.batch_criteria import BatchCriteria
+import variables.batch_criteria as bc
 from variables.arena_shape import RectangularArena
 from variables.swarm_density_parser import SwarmDensityParser
 import os
@@ -29,7 +29,7 @@ def Calculate(n_robots, arena_x, arena_y):
     return n_robots / int(arena_x) * int(arena_y)
 
 
-class ConstantDensity(BatchCriteria):
+class ConstantDensity(bc.UnivarBatchCriteria):
     """
     Defines a range of swarm and arena sizes to test with such that the arena ratio is always the
     same. Does not change the # blocks/block manifest.
@@ -46,7 +46,7 @@ class ConstantDensity(BatchCriteria):
 
     def __init__(self, cmdline_str, main_config, batch_generation_root,
                  target_density, dimensions, dist_type):
-        BatchCriteria.__init__(self, cmdline_str, main_config, batch_generation_root)
+        bc.UnivarBatchCriteria.__init__(self, cmdline_str, main_config, batch_generation_root)
         self.target_density = target_density
 
         self.changes = RectangularArena(dimensions).gen_attr_changelist()

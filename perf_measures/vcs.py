@@ -82,15 +82,19 @@ class EnvironmentalCS():
         self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
                                                        'main.yaml')))
 
-    def __call__(self, batch_criteria):
+    def __call__(self, batch_criteria, exp_dirs=None):
+        if exp_dirs is None:
+            dirs = batch_criteria.gen_exp_dirnames(self.cmdopts)
+        else:
+            dirs = exp_dirs
+
         ideal_df = pd.read_csv(os.path.join(self.cmdopts["output_root"],
-                                            batch_criteria.gen_exp_dirnames(self.cmdopts)[0],
+                                            dirs[0],
                                             self.main_config['sierra']['avg_output_leaf'],
                                             self.main_config['sierra']['perf']['temporal_var_csv']),
                                sep=';')
         exp_df = pd.read_csv(os.path.join(self.cmdopts["output_root"],
-                                          batch_criteria.gen_exp_dirnames(
-                                              self.cmdopts)[self.exp_num],
+                                          dirs[self.exp_num],
                                           self.main_config['sierra']['avg_output_leaf'],
                                           self.main_config['sierra']['perf']['temporal_var_csv']),
                              sep=';')
@@ -289,7 +293,7 @@ class ReactivityCS():
 
         ideal_df = pd.DataFrame(index=exp0_var_df.index, columns=[self.perf_csv_col])
 
-        # The performance curve of a reactivyt system should respond proportionally to both adverse
+        # The performance curve of a reactive system should respond proportionally to both adverse
         # and beneficial changes in the environment.
         #
         # So, if the penalty imposed during the current experiment at timestep t is less than that

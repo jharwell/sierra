@@ -1,9 +1,10 @@
-import variables.arena_shape
-import variables.block_distribution
-import variables.nest_pose
-import variables.swarm_density
-import variables.swarm_size
-import variables.temporal_variance
-import variables.static_cache
-import variables.physics_engines
-import variables.temporal_variance_parser
+from . import arena_shape
+from . import block_distribution
+from . import nest_pose
+from . import swarm_density
+from . import swarm_size
+from . import temporal_variance
+from . import static_cache
+from . import physics_engines
+from . import temporal_variance_parser
+from . import batch_criteria

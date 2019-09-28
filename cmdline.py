@@ -68,9 +68,11 @@ class Cmdline:
                             help="""
 
                             Root directory to save generated experiment input files, or the directory which will contain
-                            directories for each experiment's input files, for batch mode. Use=stage{1,2,3}. Will
-                            default to <sierra_root>/<controller>/<scenario>/exp-inputs. You should almost never have to
-                            change this.
+                            directories for each experiment's input files, for batch mode. You should almost never have
+                            to change this from the default.
+
+                            Use=stage{1,2,3}; can be omitted otherwise.
+                            Default=<sierra_root>/<controller>/<scenario>/exp-inputs.
 
                             """)
         parser.add_argument("--output-root",
@@ -78,10 +80,11 @@ class Cmdline:
                             help="""
 
                             Root directory for saving simulation outputs a single experiment, or the root directory
-                            which will contain directories for each experiment's outputs for batch
-                            mode). Use=stage{3,4,5}. Will default to
-                            <sierra_root>/<controller>/<scenario>/exp-outputs. You should almost never have to change
-                            this.
+                            which will contain directories for each experiment's outputs for batch mode). You should
+                            almost never have to change this from the default.
+
+                            Use=stage{3,4,5}; can be omitted otherwise.
+                            Default=<sierra_root>/<controller>/<scenario>/exp-outputs
 
                             """)
         parser.add_argument("--graph-root",
@@ -90,10 +93,10 @@ class Cmdline:
 
                             Root directory for saving generated graph files for a single experiment, or the root
                             directory which will contain directories for each experiment's generated graphs for batch
-                            mode. Use=stage{4,5}. Will default to
-                            <sierra_root>/<controller>/<scenario>/generated-graphs. You should almost never have to
-                            change this.
+                            mode. You should almost never have to change this from the default.
 
+                            Use=stage{4,5}; can be omitted otherwise.
+                            default=<sierra_root>/<controller>/<scenario>/graphs.
                             """)
 
         parser.add_argument("--controller",
@@ -106,7 +109,7 @@ class Cmdline:
                                                 depth1.{BITD_DPO, OBITD_DPO},
                                                 depth2.{BIRTD_DPO, OBIRTD_DPO}.
 
-                            Use=stage{1,2,3,4}; can be omitted if only running other stages.
+                            Use=stage{1,2,3,4}; can be omitted otherwise.
 
                             """)
 
@@ -124,19 +127,30 @@ class Cmdline:
                             A and B are the scenario X and Y dimensions (which can be any non-negative integer values);
                             the dimensions can be omitted for some batch criteria.
 
-                            Use=stage{1,2,3,4}; can be omitted if only running other stages.
+                            Use=stage{1,2,3,4}; can be omitted otherwise.
 
                             """)
 
         parser.add_argument("--batch-criteria",
-                            metavar="<filename>.<class name>",
+                            metavar="[<filename>.<class name>,...]",
                             help="""
 
-                            Name of criteria to use to generate the batched experiments. <filename> must be from the
-                            variables/ directory, and <class name> must be a class within that file. Use=stage{1,2,4};
-                            can be omitted otherwise.
+                            Name of criteria(s) to use to generate the batched experiments. <filename> must be from the
+                            variables/ directory, and <class name> must be a class within that file. Not all classes
+                            within the variables/ directory can be used as top level batch criteria; the ones that can
+                            are:
 
-                            """)
+                            - swarm_size
+                            - swarm_density
+                            - ta_policy_set
+                            - oracle
+                            - temporal_variance
+
+                            Use=stage{1,2,3,4,5}.
+
+                            """,
+                            nargs='+',
+                            default=[])
 
         parser.add_argument("--pipeline",
                             metavar="stages",
@@ -148,7 +162,7 @@ class Cmdline:
                             Stage1: Generate the config files and command file for an experiment/set of experiments.
                             Stage2: Run the experiments on previously generated set of input files for an experiment/set
                                     of experiments. Part of default pipeline.
-                            Stage3: Perform CSV averaging on a previously run experiment/set of experiments. Part of
+                            Stage3: Perform CSpV averaging on a previously run experiment/set of experiments. Part of
                                     default pipeline.
                             Stage4: Perform graph generation on a previous run experiments/set of experiments. Part of
                                     default pipeline.
@@ -184,6 +198,8 @@ class Cmdline:
                             The simulation time setup to use, which sets duration and metric
                             reporting interval. For options, see time_setup.py
 
+                            Use=stage{1}; can be omitted otherwise.
+
                             """,
                             default="time_setup.T5000")
         stage1.add_argument("--n-physics-engines",
@@ -196,6 +212,8 @@ class Cmdline:
                             spacing may not be the same depending on dimensions and how many engines
                             are chosen, however).
 
+                            Use=stage{1}; can be omitted otherwise.
+
                             """,
                             default=1)
         stage1.add_argument("--physics-iter-per-tick",
@@ -205,6 +223,8 @@ class Cmdline:
                             The # of iterations all physics engines should perform per tick
                             between each time the controller loops are run.
 
+                            Use=stage{1}; can be omitted otherwise.
+
                             """,
                             default=10)
         stage1.add_argument("--n-sims",
@@ -213,6 +233,8 @@ class Cmdline:
                             How many simulations should be averaged together to form a single
                             experiment.
 
+                            Use=stage{1}; can be omitted otherwise.
+
                             """,
                             type=int,
                             default=1)
@@ -220,6 +242,8 @@ class Cmdline:
                             help="""
 
                             How many ARGoS simulation threads to use for each simulation in each experiment.
+
+                            Use=stage{1}; can be omitted otherwise.
 
                             """,
                             type=int,
@@ -230,6 +254,8 @@ class Cmdline:
                             Include the Range and Bearing sensor/actuator in the generated input files for robot if
                             TRUE. Otherwise, those tags are removed in the template input file if they exist.
 
+                            Use=stage{1}; can be omitted otherwise.
+
                             """,
                             action="store_true",
                             default=False)
@@ -239,6 +265,8 @@ class Cmdline:
                             Include the robot LED actuator in the generated input files if TRUE. Otherwise, it is
                             removed if it exists.
 
+                            Use=stage{1}; can be omitted otherwise.
+
                             """,
                             action="store_true",
                             default=False)
@@ -247,6 +275,8 @@ class Cmdline:
 
                             Include the robot battery sensor in the generated input files if TRUE. Otherwise, it is
                             removed if it exists.
+
+                            Use=stage{1}; can be omitted otherwise.
 
                             """,
                             action="store_true",
@@ -262,6 +292,7 @@ class Cmdline:
                             unique video file with directory using ffmpeg (precise command configurable). This option
                             assumes that [ffmpeg, Xvfb] programs can be found.
 
+                            Use=stage{1,2,3}; can be omitted otherwise.
                             """,
 
                             action='store_true')
@@ -273,6 +304,7 @@ class Cmdline:
                             ramp). Can be used to override batch criteria, or to supplement experiments that do not set
                             it so that manual modification of input file is unneccesary.
 
+                            Use=stage{1}; can be omitted otherwise.
                             """,
                             type=int,
                             default=None)
@@ -280,6 +312,8 @@ class Cmdline:
                             help="""
 
                             Specify the # of blocks used when the static cache is respawned (depth1 controllers only).
+
+                            Use=stage{1}; can be omitted otherwise.
 
                             """,
                             default=None)
@@ -303,6 +337,8 @@ class Cmdline:
                                  environments with multiple clusters with different architectures
                                  ARGoS can be compiled natively for each for maximum performance.
 
+                            Use=stage{2}; can be omitted otherwise.
+
                             """,
                             default="local")
         stage2.add_argument("--exec-exp-range",
@@ -312,11 +348,15 @@ class Cmdline:
                             passed. Specified in the form a:b. If omitted, runs all experiments in the batch (default
                             behavior).
 
+                            Use=stage{2}; can be omitted otherwise.
+
                             """)
         stage2.add_argument("--exec-resume",
                             help="""
 
                             Resume an experiment/batch experiment that was killed/stopped/etc last time sierra was run.
+
+                            Use=stage{2}; can be omitted otherwise.
 
                             """,
                             action='store_true',
@@ -330,6 +370,8 @@ class Cmdline:
                             same # of rows, then sierra will crash. Verification can take a long time with large # of
                             simulations per experiment.
 
+                            Use=stage{3}; can be omitted otherwise.
+
                             """,
                             action='store_true',
                             default=False)
@@ -337,7 +379,9 @@ class Cmdline:
                             help="""
 
                             If TRUE, then the standard deviation will be calculated from averaged data and error bars
-                            will be included on all linegraphs.
+                            will be included on all linegraphs (if they are generated).
+
+                            Use=stage{3}; can be omitted otherwise.
 
                             """,
                             action="store_true",
@@ -347,6 +391,8 @@ class Cmdline:
 
                             Specify what tasks should be performed when processing simulation results before graph
                             generation.
+
+                            Use=stage{3}; can be omitted otherwise.
 
                             """,
                             choices=['render', 'average', 'all'],
@@ -358,12 +404,16 @@ class Cmdline:
                             the specification of the output file. The default is suitable for use with ARGoS frame
                             grabbing set to a frames of 1600x1200 to output a reasonable quality video.
 
+                            Use=stage{3}; can be omitted otherwise.
+
                             """,
                             default="-r 10 -s:v 800x600 -c:v libx264 -crf 25 -filter:v scale=-2:956 -pix_fmt yuv420p")
         stage3.add_argument("--render-cmd-ofile",
                             help="""
 
                             Specify the output filename and extension for the ffmpeg rendered video.
+
+                            Use=stage{3}; can be omitted otherwise.
 
                             """,
                             default="video.mp4")
@@ -376,6 +426,8 @@ class Cmdline:
                             Enable generation of intra-experiment histograms (if that part of the graph generation will
                             be run).
 
+                            Use=stage{4}; can be omitted otherwise.
+
                             """,
                             action="store_true")
         stage4.add_argument("--exp-graphs",
@@ -384,6 +436,8 @@ class Cmdline:
 
                             Specify which graphs should be generated: Only intra-experiment graphs, only
                             inter-experiment graphs, or both.
+
+                            Use=stage{4}; can be omitted otherwise.
 
                             """,
                             default='all')
@@ -404,6 +458,8 @@ class Cmdline:
                             line: Generate comparison linegraphs.
                             all: Generate all inter-experiment graphs.
 
+                            Use=stage{4}; can be omitted otherwise.
+
                             """,
                             nargs='*',
                             default="all")
@@ -412,6 +468,8 @@ class Cmdline:
 
                             If TRUE, then the plots of ideal vs. observed swarm [reactivity,
                             adaptability] will be generated for each experiment.
+
+                            Use=stage{4}; can be omitted otherwise.
 
                             """,
                             action="store_true")
@@ -423,6 +481,7 @@ class Cmdline:
                             placed into the logarithmic (base 2) space. Mainly useful when the batch criteria involves
                             large swarm sizes, so that the plots are more readable.
 
+                            Use=stage{4}; can be omitted otherwise.
                             """,
                             default=False)
 
@@ -439,6 +498,9 @@ class Cmdline:
                             dtw:          Dynamic Time Warping (Berndt1994)
                             curve_length: Arc-length distance along the curve from the origin of (applied - ideal)
                                           curve (Andrade-campos2009).
+
+                            Use=stage{4}; can be omitted otherwise.
+
                             """,
                             choices=["pcm", "area_between", "frechet", "dtw", "curve_length"],
                             default="pcm")
@@ -455,6 +517,9 @@ class Cmdline:
                             dtw:          Dynamic Time Warping (Berndt1994)
                             curve_length: Arc-length distance along the curve from the origin of (applied - ideal)
                                           curve (Andrade-campos2009).
+
+                            Use=stage{4}; can be omitted otherwise.
+
                             """,
                             choices=["pcm", "area_between", "frechet", "dtw", "curve_length"],
                             default="pcm")
@@ -471,6 +536,9 @@ class Cmdline:
                             dtw:          Dynamic Time Warping (Berndt1994)
                             curve_length: Arc-length distance along the curve from the origin of (applied - ideal)
                                           curve (Andrade-campos2009).
+
+                            Use=stage{4}; can be omitted otherwise.
+
                             """,
                             choices=["pcm", "area_between", "frechet", "dtw", "curve_length"],
                             default="pcm")
@@ -483,6 +551,24 @@ class Cmdline:
                             Comma separated list of controllers to compare within <sierra root>. If None, then the
                             default set of controllers will be used for comparison.
 
+                            Use=stage{5}; can be omitted otherwise.
+
                             """,
                             default='depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO')
         return parser
+
+
+class CmdlineValidator():
+    """
+    Validate the parsed command line arguments to ensure that the pipeline will work properly in all stages, given the
+    options that were passed.
+    """
+
+    def __call__(self, args):
+        assert len(args.batch_criteria) <= 2, "FATAL: Too many batch criteria passed"
+        if 2 == len(args.batch_criteria):
+            assert args.batch_criteria[0] != args.batch_criteria[1],\
+                "FATAL: Duplicate batch criteria passed"
+        if args.gen_stddev is not None:
+            assert 1 == len(args.batch_criteria),\
+                "FATAL: Stddev generation only supported with univariate batch criteria"

@@ -20,14 +20,16 @@ import os
 import copy
 import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
-import perf_measures.utils as pm_utils
+from graphs.heatmap import Heatmap
+import perf_measures.common as common
 import math
+from variables.swarm_size import SwarmSize
 
 
-class InterExpSelfOrganization:
+class SelfOrganizationUnivar:
     """
-    Calculates the self-organization of the swarm configuration across a batched set of experiments
-    within the same scenario from collated .csv data.
+    Calculates the self-organization of the swarm configuration across a univariate batched set of
+    experiments within the same scenario from collated .csv data.
 
     """
 
@@ -39,17 +41,12 @@ class InterExpSelfOrganization:
         self.ca_in_csv = ca_in_csv
 
     def generate(self, batch_criteria):
-        """
-        Calculate the self-org metric for a given controller, and generate a batched_range_graph of
-        the result.
-        """
-
-        print("-- Self-organization from {0}".format(self.cmdopts["collate_root"]))
+        print("-- Univariate self-organization from {0}".format(self.cmdopts["collate_root"]))
         batch_exp_dirnames = batch_criteria.gen_exp_dirnames(self.cmdopts)
-        fl = pm_utils.FractionalLosses(self.cmdopts,
-                                       self.inter_perf_csv,
-                                       self.ca_in_csv,
-                                       batch_criteria).calc(batch_criteria)
+        fl = common.FractionalLossesUnivar(self.cmdopts,
+                                           self.inter_perf_csv,
+                                           self.ca_in_csv,
+                                           batch_criteria).calculate(batch_criteria)
         df_new = pd.DataFrame(columns=[c for c in fl.columns if c not in batch_exp_dirnames[0]])
 
         swarm_sizes = batch_criteria.swarm_sizes(self.cmdopts)
@@ -71,3 +68,87 @@ class InterExpSelfOrganization:
                          xvals=batch_criteria.graph_xvals(self.cmdopts)[1:],
                          legend=None,
                          polynomial_fit=-1).generate()
+
+
+class SelfOrganizationBivar:
+    """
+    Calculates the self-organization of the swarm configuration across a univariate batched set of
+    experiments within the same scenario from collated .csv data as follows:
+
+    Self org = fl (N_i)  - * N_i / N_{i-1} * fl )N_{i-1}
+
+    """
+
+    def __init__(self, cmdopts, inter_perf_csv, ca_in_csv):
+        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
+        # are generated after us
+        self.cmdopts = copy.deepcopy(cmdopts)
+        self.inter_perf_csv = inter_perf_csv
+        self.ca_in_csv = ca_in_csv
+
+    def generate(self, batch_criteria):
+        print("-- Bivariate self-organization from {0}".format(self.cmdopts["collate_root"]))
+        fl = common.FractionalLossesBivar(self.cmdopts,
+                                          self.inter_perf_csv,
+                                          self.ca_in_csv,
+                                          batch_criteria).calculate(batch_criteria)
+        exp0_dir = fl.columns[0]
+        so_df = pd.DataFrame(columns=[c for c in fl.columns if c not in exp0_dir],
+                             index=fl.index)
+
+        # We need to know which of the 2 variables was swarm size, in order to determine the correct
+        # dimension along which to compute the metric, which depends on performance between adjacent
+        # swarm sizes.
+        if isinstance(batch_criteria.criteria1, SwarmSize):
+            so_df = self.__calc_by_row(fl, batch_criteria)
+        else:
+            so_df = self.__calc_by_col(fl, batch_criteria)
+
+        stem_path = os.path.join(self.cmdopts["collate_root"], "pm-self-org")
+        so_df.to_csv(stem_path + ".csv", sep=';', index=False)
+
+        Heatmap(input_fpath=stem_path + '.csv',
+                output_fpath=os.path.join(self.cmdopts["graph_root"], "pm-self-org.png"),
+                title="Swarm Self-Organization Due To Sub-Linear Fractional Performance Losses",
+                xlabel=batch_criteria.graph_ylabel(self.cmdopts),
+                ylabel=batch_criteria.graph_xlabel(self.cmdopts),
+                xtick_labels=batch_criteria.graph_yvals(self.cmdopts),
+                ytick_labels=batch_criteria.graph_xvals(self.cmdopts)).generate()
+
+    def __calc_by_row(self, fl, batch_criteria):
+        swarm_sizes = batch_criteria.swarm_sizes(self.cmdopts)
+        so_df = pd.DataFrame(columns=fl.columns, index=fl.index)
+
+        for i in range(0, len(fl.index)):
+            for j in range(0, len(fl.columns)):
+                # No self org possible with 1 robot
+                if 0 == i:
+                    so_df.iloc[i, j] = 0
+                    continue
+                n_robots_i = swarm_sizes[i][j]
+                n_robots_i1 = swarm_sizes[i - 1][j]
+
+                theta = fl.iloc[i, j] - float(n_robots_i) / float(n_robots_i1) * \
+                    fl.iloc[i - 1, j]
+                so_df.iloc[i, j] = 1.0 - 1.0 / math.exp(-theta)
+
+        return so_df
+
+    def __calc_by_col(self, fl, batch_criteria):
+        swarm_sizes = batch_criteria.swarm_sizes(self.cmdopts)
+        so_df = pd.DataFrame(columns=fl.columns, index=fl.index)
+
+        for i in range(0, len(fl.index)):
+            for j in range(0, len(fl.columns)):
+                # No self org possible with 1 robot
+                if 0 == j:
+                    so_df.iloc[i, j] = 0
+                    continue
+
+                n_robots_j = swarm_sizes[i][j]
+                n_robots_j1 = swarm_sizes[i][j - 1]
+
+                theta = fl.iloc[i, j] - float(n_robots_j) / float(n_robots_j1) * \
+                    fl.iloc[i, j - 1]
+                so_df.iloc[i, j] = 1.0 - 1.0 / math.exp(-theta)
+        return so_df

@@ -23,11 +23,10 @@ from graphs.batch_ranged_graph import BatchRangedGraph
 from perf_measures import vcs
 
 
-class InterExpAdaptability:
+class AdaptabilityUnivar:
     """
-    Calculates the adaptability of the swarm configuration across a batched set of experiments
-    within the same scenario from collated .csv data. Can be generated for any batched experiment,
-    but will only make sense for temporal_variance batch criteria.
+    Calculates the adaptability of the swarm configuration across a univariate batched set of
+    experiments within the same scenario from collated .csv data.
 
     """
 
@@ -42,7 +41,51 @@ class InterExpAdaptability:
         generate a graph of the result.
         """
 
-        print("-- Adaptability from {0}".format(self.cmdopts["collate_root"]))
+        print("-- Univariate adaptability from {0}".format(self.cmdopts["collate_root"]))
+        batch_exp_dirnames = batch_criteria.gen_exp_dirnames(self.cmdopts)
+
+        # Adaptability is only defined for experiments > 0, as exp0 is assumed to be ideal conditions,
+        # so we have to slice
+        df = pd.DataFrame(columns=batch_exp_dirnames[1:batch_criteria.n_exp()], index=[0])
+        for i in range(1, batch_criteria.n_exp()):
+            df[batch_exp_dirnames[i]] = vcs.AdaptabilityCS(self.cmdopts, batch_criteria, i)()
+
+        stem_opath = os.path.join(self.cmdopts["collate_root"], "pm-adaptability")
+
+        # Write .csv to file
+        df.to_csv(stem_opath, sep=';', index=False)
+
+        BatchRangedGraph(inputy_stem_fpath=stem_opath,
+                         output_fpath=os.path.join(self.cmdopts["graph_root"],
+                                                   "pm-adaptability.png"),
+                         title="Swarm Adaptability",
+                         xlabel=batch_criteria.graph_xlabel(self.cmdopts),
+                         ylabel=vcs.method_ylabel(self.cmdopts["adaptability_cs_method"],
+                                                  'adaptability'),
+                         xvals=batch_criteria.graph_xvals(self.cmdopts)[1:],
+                         legend=None,
+                         polynomial_fit=-1).generate()
+
+
+class AdaptabilityBivar:
+    """
+    Calculates the adaptability of the swarm configuration across a bivariate batched set of
+    experiments within the same scenario from collated .csv data.
+
+    """
+
+    def __init__(self, cmdopts):
+        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
+        # are generated after us.
+        self.cmdopts = copy.deepcopy(cmdopts)
+
+    def generate(self, batch_criteria):
+        """
+        Calculate the adaptability metric for a given controller within a specific scenario, and
+        generate a graph of the result.
+        """
+
+        print("-- Bivariate adaptability from {0}".format(self.cmdopts["collate_root"]))
         batch_exp_dirnames = batch_criteria.gen_exp_dirnames(self.cmdopts)
 
         # Adaptability is only defined for experiments > 0, as exp0 is assumed to be ideal conditions,

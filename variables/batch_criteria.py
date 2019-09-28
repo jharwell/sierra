@@ -30,6 +30,9 @@ class BatchCriteria(BaseVariable):
 
     Attributes:
       cmdline_str(str): Unparsed batch criteria string from command line.
+      main_config(dict): Parsed dictionary of main YAML configuration.
+      batch_generation_root(str): Absolute path to the directory where batch experiment directories
+                                  should be created.
     """
 
     def __init__(self, cmdline_str, main_config, batch_generation_root):
@@ -49,21 +52,6 @@ class BatchCriteria(BaseVariable):
     def gen_tag_addlist(self):
         return []
 
-    def swarm_sizes(self, cmdopts):
-        """
-        Return the list of swarm sizes used the batched experiment, in the same order as the
-        directories returned from gen_exp_dirnames().
-        """
-        sizes = []
-        for d in self.gen_exp_dirnames(cmdopts):
-            exp_def = utils.unpickle_exp_def(os.path.join(self.batch_generation_root,
-                                                          d,
-                                                          "exp_def.pkl"))
-            for e in exp_def:
-                if e[0] == ".//arena/distribute/entity" and e[1] == "quantity":
-                    sizes.append(int(e[2]))
-        return sizes
-
     def arena_dims(self):
         """
         Return the arena dimensions used for each experiment in the batch. Not applicable to all
@@ -71,7 +59,6 @@ class BatchCriteria(BaseVariable):
         """
         dims = []
         for exp in self.gen_attr_changelist():
-            print(exp)
             for c in exp:
                 if c[0] == ".//arena" and c[1] == "size":
                     x, y, z = c[2].split(',')
@@ -121,6 +108,18 @@ class BatchCriteria(BaseVariable):
             "named exp dirs... ".format(len(defs),
                                         len(os.listdir(self.batch_generation_root)))
 
+    def is_binary(self):
+        """
+        Returns True if this class is a binary batch criteria instance, and False otherwise.
+        """
+        raise NotImplementedError
+
+    def is_univar(self):
+        """
+        Returns True if this class is a unary batch criteria instance, and False otherwise.
+        """
+        raise NotImplementedError
+
     def gen_exp_dirnames(self, cmdopts):
         """
         Generate list of strings from the current changelist to use for directory names within a
@@ -152,11 +151,25 @@ class BatchCriteria(BaseVariable):
         """
         raise NotImplementedError
 
-    def graph_xvals(self, cmdopts):
+    def graph_xvals(self, cmdopts, exp_dirs=None):
         """
         cmdopts(dict): Dictionary of parsed command line options.
+        exp_dirs(list): If not be None, then these directories will be used to calculate the swarm
+                        sizes, rather than the results of gen_exp_dirnames().
 
-        Return a list of batch criteria-specific values to use as the x values for input into graph
+        Return a list of criteria-specific values to use as the x values for input into graph
+        generation.
+
+        """
+        raise NotImplementedError
+
+    def graph_yvals(self, cmdopts, exp_dirs=None):
+        """
+        cmdopts(dict): Dictionary of parsed command line options.
+        exp_dirs(list): If not be None, then these directories will be used to calculate the swarm
+                        sizes, rather than the results of gen_exp_dirnames().
+
+        Return a list of criteria-specific values to use as the y values for input into graph
         generation.
 
         """
@@ -169,16 +182,182 @@ class BatchCriteria(BaseVariable):
         """
         raise NotImplementedError
 
+    def graph_ylabel(self, cmdopts):
+        """
+        Return the Y-label that should be used for the graphs of various performance measures across
+        batch criteria. Only needed by bivar batch criteria.
+        """
+        raise NotImplementedError
+
+
+class UnivarBatchCriteria(BatchCriteria):
+    def is_bivar(self):
+        return False
+
+    def is_univar(self):
+        return True
+
+    def swarm_sizes(self, cmdopts, exp_dirs=None):
+        """
+        Return the list of swarm sizes used the batched experiment, sorted.
+
+        cmdopts(dict): Dictionary of parsed command line options.
+        exp_dirs(list): If not be None, then these directories will be used to calculate the swarm
+                        sizes, rather than the results of gen_exp_dirnames().
+        """
+        sizes = []
+        if exp_dirs is not None:
+            dirs = exp_dirs
+        else:
+            dirs = self.gen_exp_dirnames(cmdopts)
+
+        for d in dirs:
+            exp_def = utils.unpickle_exp_def(os.path.join(self.batch_generation_root,
+                                                          d,
+                                                          "exp_def.pkl"))
+            for e in exp_def:
+                if e[0] == ".//arena/distribute/entity" and e[1] == "quantity":
+                    sizes.append(int(e[2]))
+        return sizes
+
+
+class BivarBatchCriteria(BatchCriteria):
+    """
+    Combination of the definition of two separate batch criteria.
+
+    """
+
+    def __init__(self, criteria1, criteria2):
+        BatchCriteria.__init__(self,
+                               '+'.join([criteria1.cmdline_str, criteria2.cmdline_str]),
+                               criteria1.main_config,
+                               criteria1.batch_generation_root)
+        self.criteria1 = criteria1
+        self.criteria2 = criteria2
+
+    def gen_attr_changelist(self):
+        list1 = self.criteria1.gen_attr_changelist()
+        list2 = self.criteria2.gen_attr_changelist()
+        ret = []
+        for l1 in list1:
+            for l2 in list2:
+                ret.append(l1 | l2)
+
+        return ret
+
+    def gen_tag_rmlist(self):
+        ret = self.criteria1.gen_tag_rmlist().extend(self.criteria2.gen_tag_rmlist())
+        return ret
+
+    def gen_tag_addlist(self):
+        ret = self.criteria1.gen_tag_addlist().extend(self.criteria2.gen_tag_addlist())
+        return ret
+
+    def gen_exp_dirnames(self, cmdopts):
+        list1 = self.criteria1.gen_exp_dirnames(cmdopts)
+        list2 = self.criteria2.gen_exp_dirnames(cmdopts)
+        ret = []
+        for l1 in list1:
+            for l2 in list2:
+                ret.append('+'.join(['c1-' + l1, 'c2-' + l2]))
+
+        return ret
+
+    def swarm_sizes(self, cmdopts):
+        """
+        Return a 2D array of swarm swarm sizes used the batched experiment, in the same order as the
+        directories returned from gen_exp_dirnames() for each criteria along each axis
+        """
+        dirs = self.gen_exp_dirnames(cmdopts)
+
+        sizes = [[0 for col in self.criteria2.gen_exp_dirnames(
+            cmdopts)] for row in self.criteria1.gen_exp_dirnames(cmdopts)]
+
+        for d in dirs:
+            exp_def = utils.unpickle_exp_def(os.path.join(self.batch_generation_root,
+                                                          d,
+                                                          "exp_def.pkl"))
+            for e in exp_def:
+                if not (e[0] == ".//arena/distribute/entity" and e[1] == "quantity"):
+                    continue
+
+                index = dirs.index(d)
+                i = int(index / len(self.criteria1.gen_attr_changelist()))
+                j = index % len(self.criteria2.gen_attr_changelist())
+                sizes[i][j] = int(e[2])
+
+        return sizes
+
+    def is_bivar(self):
+        return True
+
+    def is_univar(self):
+        return False
+
+    def sc_graph_labels(self, scenarios):
+        raise NotImplementedError
+
+    def sc_sort_scenarios(self, scenarios):
+        raise NotImplementedError
+
+    def graph_xvals(self, cmdopts, exp_dirs=None):
+        dirs = []
+        for c1 in self.criteria1.gen_exp_dirnames(cmdopts):
+            for x in self.gen_exp_dirnames(cmdopts):
+                if c1 in x.split('+')[0]:
+                    dirs.append(x)
+                    break
+
+        assert len(dirs) == len(self.criteria1.gen_exp_dirnames(cmdopts)),\
+            "FATAL: Bad xvals calculation"
+        return self.criteria1.graph_xvals(cmdopts, dirs)
+
+    def graph_yvals(self, cmdopts, exp_dirs=None):
+        dirs = []
+        for c2 in self.criteria2.gen_exp_dirnames(cmdopts):
+            for x in self.gen_exp_dirnames(cmdopts):
+                if c2 in x.split('+')[1]:
+                    dirs.append(x)
+                    break
+
+        assert len(dirs) == len(self.criteria2.gen_exp_dirnames(cmdopts)),\
+            "FATAL: Bad yvals calculation"
+
+        return self.criteria2.graph_xvals(cmdopts, dirs)
+
+    def graph_xlabel(self, cmdopts):
+        return self.criteria1.graph_xlabel(cmdopts)
+
+    def graph_ylabel(self, cmdopts):
+        return self.criteria2.graph_xlabel(cmdopts)
+
 
 def Factory(args):
-    if args.batch_criteria is None:
-        category = None
+    if 1 == len(args.batch_criteria):
+        return __UnivarFactory(args, args.batch_criteria[0])
+    elif 2 == len(args.batch_criteria):
+        assert args.batch_criteria[0] != args.batch_criteria[1],\
+            "FATAL: Duplicate batch criteria passed"
+        return __BivarFactory(args)
     else:
-        category = args.batch_criteria.split('.')[0]
+        assert False, "FATAL: At most 2 batch criterias can be specified on the cmdline"
+
+
+def __UnivarFactory(args, cmdline_str):
+    """
+    Construct a batch criteria object from a single cmdline argument.
+    """
+    category = cmdline_str.split('.')[0]
 
     module = __import__("variables.{0}".format(category), fromlist=["*"])
     main_config = yaml.load(open(os.path.join(args.config_root, 'main.yaml')))
 
-    return getattr(module, "Factory")(args.batch_criteria,
+    return getattr(module, "Factory")(cmdline_str,
                                       main_config,
                                       args.generation_root)()
+
+
+def __BivarFactory(args):
+    criteria0 = __UnivarFactory(args, args.batch_criteria[0])
+    criteria1 = __UnivarFactory(args, args.batch_criteria[1])
+    return BivarBatchCriteria(criteria0, criteria1)

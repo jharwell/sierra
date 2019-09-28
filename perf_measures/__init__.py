@@ -1,8 +1,7 @@
 import perf_measures.adaptability
-import perf_measures.block_collection
-import perf_measures.heatmaps
 import perf_measures.reactivity
-import perf_measures.scalability
+import perf_measures.scalability_univar
+import perf_measures.scalability_bivar
 import perf_measures.self_organization
-import perf_measures.utils
+import perf_measures.common
 import perf_measures.vcs

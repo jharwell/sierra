@@ -89,7 +89,7 @@ LN_fsm_movement:
 
 LN_block_trans:
   graphs:
-    - src_stem: block-transport-avg
+    - src_stem: block-transport
       dest_stem: blocks-collected-int-avg
       col: int_avg_collected
       title: 'Average Blocks Collected (interval)'
@@ -110,7 +110,7 @@ LN_block_trans:
       xlabel: 'Interval'
       ylabel: '# Blocks'
 
-    - src_stem: block-transport-avg
+    - src_stem: block-transport
       dest_stem: blocks-collected-cum-avg
       col: cum_avg_collected
       title: 'Average Blocks Collected (cumulative)'

@@ -24,7 +24,7 @@ class TemporalVarianceParser():
     """
     Parses the command line definition of batch criteria. The string must be formatted as:
 
-    {variance_type}{<waveform_type}[step time].Z{swarm_size}
+    {variance_type}{<waveform_type}[step time][.Z{swarm_size}]
 
     variance_type = {BC,BM,CU}
     waveform_type = {Sine,Square,Sawtooth,Step{U,D},Constant}
@@ -33,6 +33,7 @@ class TemporalVarianceParser():
 
     BCSine.Z16 -> Block carry sinusoidal variance in a swarm of size 16.
     BCStep50000.Z32 -> Block carry step variance at 50000 timesteps in a swarm of size 32.
+    BCStep50000 -> Block carry step variance at 50000 timesteps; swarm size not modified.
     """
 
     def parse(self, criteria_str):
@@ -47,7 +48,6 @@ class TemporalVarianceParser():
             'BM': "env_block_manip",
             'CU': "env_cache_usage"
         }
-
         # Parse variance type
         res = re.search("BC|BM|BU", criteria_str)
         assert res is not None, "FATAL: Bad variance type in criteria '{0}'".format(criteria_str)
@@ -66,9 +66,9 @@ class TemporalVarianceParser():
                 criteria_str)
             ret['waveform_param'] = int(res.group(0)[5:])
 
-        # Parse swarm size
+        # Parse swarm size (optional)
         res = re.search("\.Z[0-9]+", criteria_str)
-        assert res is not None, "FATAL: Bad swarm size in criteria '{0}'".format(criteria_str)
-        ret['swarm_size'] = int(res.group(0)[2:])
+        if res is not None:
+            ret['swarm_size'] = int(res.group(0)[2:])
 
         return ret
