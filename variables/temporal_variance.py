@@ -118,6 +118,9 @@ class TemporalVariance(UnivarBatchCriteria):
     def gen_exp_dirnames(self, cmdopts):
         return ['exp' + str(x) for x in range(0, len(self.gen_attr_changelist()))]
 
+    def pm_query(self, query):
+        return query in ['blocks-collected', 'reactivity', 'adaptability']
+
 
 def Factory(cmdline_str, main_config, batch_generation_root):
     """

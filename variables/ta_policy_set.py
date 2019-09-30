@@ -58,11 +58,15 @@ class TAPolicySet(UnivarBatchCriteria):
         dirs = []
         for chg in changes:
             for path, attr, value in chg:
+                policy = None
+                size = ''
                 if 'alloc_policy' in attr:
                     policy = value
                 elif 'quantity' in attr:
                     size = 'size' + value
-            dirs.append(policy + '+' + size)
+
+            dirs.append(policy + '|' * (size != '') + size)
+
         if not cmdopts['named_exp_dirs']:
             return ['exp' + str(x) for x in range(0, len(dirs))]
         else:
@@ -75,11 +79,14 @@ class TAPolicySet(UnivarBatchCriteria):
         return sorted(scenarios,
                       key=lambda s: float(s.split('-')[2].split('.')[0][0:3].replace('p', '.')))
 
-    def graph_xvals(self, cmdopts):
+    def graph_xvals(self, cmdopts, exp_dirs):
         return [i for i in range(1, self.n_exp() + 1)]
 
     def graph_xlabel(self, cmdopts):
         return "Task Allocation Policy"
+
+    def pm_query(self, query):
+        return query in ['blocks-collected']
 
 
 def Factory(cmdline_str, main_config, batch_generation_root):

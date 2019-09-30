@@ -84,6 +84,9 @@ class Oracle(UnivarBatchCriteria):
     def graph_xlabel(self, cmdopts):
         return "Oracular Information Type"
 
+    def pm_query(self, query):
+        return query in ['blocks-collected']
+
 
 def Factory(cmdline_str, main_config, batch_generation_root):
     """

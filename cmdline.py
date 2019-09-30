@@ -441,28 +441,7 @@ class Cmdline:
 
                             """,
                             default='all')
-        stage4.add_argument("--perf-measures",
-                            help="""
 
-                            Specify which performance measure graphs should be generated. Only active if
-                            inter-experiment graphs are generated. Note that inter-experiment linegraphs are only
-                            generated if 'all' is selected. This is mainly useful for debugging/developing so I don't
-                            have to wait when developing a new graph/model for other graphs I'm not currently interested
-                            to regenerate.
-
-                            ss: Generate comparison plots of Swarm Scalability.
-                            so: Generate comparison plots of Swarm self-Organization.
-                            sp: Generate comparison plots of Swarm Performance (blocks collected).
-                            sr: Generate comparison plots of Swarm Reactivity.
-                            sa: Generate comparison plots of Swarm Adaptability.
-                            line: Generate comparison linegraphs.
-                            all: Generate all inter-experiment graphs.
-
-                            Use=stage{4}; can be omitted otherwise.
-
-                            """,
-                            nargs='*',
-                            default="all")
         stage4.add_argument("--gen-vc-plots",
                             help="""
 
@@ -569,6 +548,6 @@ class CmdlineValidator():
         if 2 == len(args.batch_criteria):
             assert args.batch_criteria[0] != args.batch_criteria[1],\
                 "FATAL: Duplicate batch criteria passed"
-        if args.gen_stddev is not None:
+        if args.gen_stddev:
             assert 1 == len(args.batch_criteria),\
                 "FATAL: Stddev generation only supported with univariate batch criteria"

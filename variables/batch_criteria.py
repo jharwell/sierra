@@ -21,6 +21,7 @@ import os
 import pickle
 import yaml
 import utils
+import math
 
 
 class BatchCriteria(BaseVariable):
@@ -34,6 +35,8 @@ class BatchCriteria(BaseVariable):
       batch_generation_root(str): Absolute path to the directory where batch experiment directories
                                   should be created.
     """
+
+    kPMNames = ['blocks-collected', 'scalability', 'self-org', 'reactivity', 'adaptability']
 
     def __init__(self, cmdline_str, main_config, batch_generation_root):
         self.cmdline_str = cmdline_str
@@ -189,6 +192,13 @@ class BatchCriteria(BaseVariable):
         """
         raise NotImplementedError
 
+    def pm_query(self, pm):
+        """
+        Return True if the specified pm should be generated for the current batch criteria, and
+        false otherwise.
+        """
+        raise NotImplementedError
+
 
 class UnivarBatchCriteria(BatchCriteria):
     def is_bivar(self):
@@ -282,7 +292,7 @@ class BivarBatchCriteria(BatchCriteria):
                     continue
 
                 index = dirs.index(d)
-                i = int(index / len(self.criteria1.gen_attr_changelist()))
+                i = int(index / len(self.criteria2.gen_attr_changelist()))
                 j = index % len(self.criteria2.gen_attr_changelist())
                 sizes[i][j] = int(e[2])
 
@@ -330,6 +340,9 @@ class BivarBatchCriteria(BatchCriteria):
 
     def graph_ylabel(self, cmdopts):
         return self.criteria2.graph_xlabel(cmdopts)
+
+    def pm_query(self, query):
+        return self.criteria1.pm_query(query) or self.criteria2.pm_query(query)
 
 
 def Factory(args):

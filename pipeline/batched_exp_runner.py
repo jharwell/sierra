@@ -50,6 +50,7 @@ class BatchedExpRunner:
         exp_all = [os.path.join(self.batch_exp_root, d)
                    for d in self.criteria.gen_exp_dirnames(self.cmdopts)]
         exp_to_run = []
+
         if self.exec_exp_range is not None:
             min_exp = int(self.exec_exp_range.split(':')[0])
             max_exp = int(self.exec_exp_range.split(':')[1])
@@ -59,8 +60,8 @@ class BatchedExpRunner:
             exp_to_run = exp_all[min_exp: max_exp + 1]
         else:
             # make collecting timing data/eyeballing runtimes much easier.
-
             exp_to_run = exp_all
+
         for exp in exp_to_run:
             ExpRunner(exp, True).run(exec_method, n_jobs, exec_resume)
 

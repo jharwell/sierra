@@ -23,14 +23,10 @@ import yaml
 from pipeline.inter_exp_linegraphs import InterExpLinegraphs
 from perf_measures.scalability_univar import ScalabilityUnivar
 from perf_measures.scalability_bivar import ScalabilityBivar
-from perf_measures.self_organization import SelfOrganizationUnivar
-from perf_measures.self_organization import SelfOrganizationBivar
-from perf_measures.block_collection import BlockCollectionUnivar
-from perf_measures.block_collection import BlockCollectionBivar
-from perf_measures.reactivity import ReactivityUnivar
-from perf_measures.reactivity import ReactivityBivar
-from perf_measures.adaptability import AdaptabilityUnivar
-from perf_measures.adaptability import AdaptabilityBivar
+import perf_measures.self_organization as pmso
+import perf_measures.block_collection as pmbc
+import perf_measures.reactivity as pmr
+import perf_measures.adaptability as pma
 
 
 class InterExpGraphGenerator:
@@ -61,61 +57,51 @@ class InterExpGraphGenerator:
         os.makedirs(self.cmdopts["graph_root"], exist_ok=True)
 
     def __call__(self):
-        if isinstance(self.cmdopts['perf_measures'], list):
-            components = self.cmdopts['perf_measures'][0].split(',')
-        else:
-            components = self.cmdopts['perf_measures']
-
         if not self.batch_criteria.is_bivar():
-            self.__gen_for_univar_bc(components)
+            self.__gen_for_univar_bc()
         else:
-            self.__gen_for_bivar_bc(components)
+            self.__gen_for_bivar_bc()
 
     # Private functions
-    def __gen_for_univar_bc(self, components):
-        if "all" in components or "sp" in components:
-            BlockCollectionUnivar(self.cmdopts,
-                                  self.main_config['sierra']['perf']['inter_perf_csv']).generate(self.batch_criteria)
-
-        if "all" in components or "line" in components:
+    def __gen_for_univar_bc(self):
+        if self.batch_criteria.is_univar():
             InterExpLinegraphs(self.cmdopts["collate_root"],
                                self.cmdopts["graph_root"],
                                self.targets).generate()
 
-        if "all" in components or "ss" in components:
+        if self.batch_criteria.pm_query('blocks_collected'):
+            pmbc.BlockCollectionUnivar(self.cmdopts,
+                                       self.main_config['sierra']['perf']['inter_perf_csv']).generate(self.batch_criteria)
+
+        if self.batch_criteria.pm_query('scalability'):
             ScalabilityUnivar().generate(self.cmdopts, self.batch_criteria)
 
-        if "all" in components or "so" in components:
-            SelfOrganizationUnivar(self.cmdopts,
-                                   self.main_config['sierra']['perf']['inter_perf_csv'],
-                                   self.main_config['sierra']['perf']['ca_in_csv']).generate(self.batch_criteria)
+        if self.batch_criteria.pm_query('self-org'):
+            pmso.SelfOrganizationUnivar(self.cmdopts,
+                                        self.main_config['sierra']['perf']['inter_perf_csv'],
+                                        self.main_config['sierra']['perf']['ca_in_csv']).generate(self.batch_criteria)
 
-        if "all" in components or "sr" in components:
-            ReactivityUnivar(self.cmdopts).generate(self.batch_criteria)
+        if self.batch_criteria.pm_query('reactivity'):
+            pmr.ReactivityUnivar(self.cmdopts).generate(self.batch_criteria)
 
-        if "all" in components or "sa" in components:
-            AdaptabilityUnivar(self.cmdopts).generate(self.batch_criteria)
+        if self.batch_criteria.pm_query('adaptability'):
+            pma.AdaptabilityUnivar(self.cmdopts).generate(self.batch_criteria)
 
-    def __gen_for_bivar_bc(self, components):
-        if "all" in components or "sp" in components:
-            BlockCollectionBivar(self.cmdopts,
-                                 self.main_config['sierra']['perf']['inter_perf_csv']).generate(self.batch_criteria)
-        if "all" in components or "ss" in components:
+    def __gen_for_bivar_bc(self):
+        if self.batch_criteria.pm_query('blocks-collected'):
+            pmbc.BlockCollectionBivar(self.cmdopts,
+                                      self.main_config['sierra']['perf']['inter_perf_csv']).generate(self.batch_criteria)
+
+        if self.batch_criteria.pm_query('scalability'):
             ScalabilityBivar().generate(self.cmdopts, self.batch_criteria)
 
-        if "all" in components or "line" in components:
+        if self.batch_criteria.pm_query('self-org'):
+            pmso.SelfOrganizationBivar(self.cmdopts,
+                                       self.main_config['sierra']['perf']['inter_perf_csv'],
+                                       self.main_config['sierra']['perf']['ca_in_csv']).generate(self.batch_criteria)
 
-            InterExpLinegraphs(self.cmdopts["collate_root"],
-                               self.cmdopts["graph_root"],
-                               self.targets).generate()
+        if self.batch_criteria.pm_query('reactivity'):
+            pmr.ReactivityBivar(self.cmdopts).generate(self.batch_criteria)
 
-        if "all" in components or "so" in components:
-            SelfOrganizationBivar(self.cmdopts,
-                                  self.main_config['sierra']['perf']['inter_perf_csv'],
-                                  self.main_config['sierra']['perf']['ca_in_csv']).generate(self.batch_criteria)
-
-        if "all" in components or "sr" in components:
-            ReactivityBivar(self.cmdopts).generate(self.batch_criteria)
-
-        if "all" in components or "sa" in components:
-            AdaptabilityBivar(self.cmdopts).generate(self.batch_criteria)
+        if self.batch_criteria.pm_query('adaptability'):
+            pma.AdaptabilityBivar(self.cmdopts).generate(self.batch_criteria)

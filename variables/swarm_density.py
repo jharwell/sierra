@@ -111,6 +111,9 @@ class ConstantDensity(bc.UnivarBatchCriteria):
     def graph_xlabel(self, cmdopts):
         return "Swarm Density"
 
+    def pm_query(self, query):
+        return query in ['blocks-collected', 'scalability', 'self-org']
+
 
 def Factory(cmdline_str, main_config, batch_generation_root):
     """

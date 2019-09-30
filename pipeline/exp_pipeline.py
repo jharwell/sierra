@@ -79,7 +79,6 @@ class ExpPipeline:
             'with_hists': self.args.with_hists,
             'gen_vc_plots': self.args.gen_vc_plots,
             'plot_log_xaxis': self.args.plot_log_xaxis,
-            'perf_measures': self.args.perf_measures,
             'reactivity_cs_method': self.args.reactivity_cs_method,
             'adaptability_cs_method': self.args.adaptability_cs_method,
             'exp_graphs': self.args.exp_graphs,

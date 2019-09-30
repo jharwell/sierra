@@ -47,6 +47,5 @@ python3 sierra.py \
         --time-setup=time_setup.T10000\
         --controller=depth0.CRW\
         --scenario=SS.12x6\
-        --batch-criteria=swarm_size.Log64\
-        --n-blocks=20\
-        --perf-measures=ss,so,sp
+        --batch-criteria swarm_size.Log64\
+        --n-blocks=20
