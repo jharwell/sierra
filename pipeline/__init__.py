@@ -1,1 +1,1 @@
-import pipeline.exp_pipeline
+from pipeline.pipeline import Pipeline

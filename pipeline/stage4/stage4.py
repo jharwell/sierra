@@ -16,10 +16,10 @@ This file is part of SIERRA.
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from pipeline.univar_csv_collator import UnivarCSVCollator
-from pipeline.bivar_csv_collator import BivarCSVCollator
-from pipeline.batched_intra_exp_graph_generator import BatchedIntraExpGraphGenerator
-from pipeline.inter_exp_graph_generator import InterExpGraphGenerator
+from .univar_csv_collator import UnivarCSVCollator
+from .bivar_csv_collator import BivarCSVCollator
+from .batched_intra_exp_graph_generator import BatchedIntraExpGraphGenerator
+from .inter_exp_graph_generator import InterExpGraphGenerator
 import yaml
 import os
 import matplotlib as mpl

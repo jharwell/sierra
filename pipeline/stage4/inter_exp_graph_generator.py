@@ -20,7 +20,7 @@ Copyright 2018 John Harwell, All rights reserved.
 import os
 import copy
 import yaml
-from pipeline.inter_exp_linegraphs import InterExpLinegraphs
+from .inter_exp_linegraphs import InterExpLinegraphs
 from perf_measures.scalability_univar import ScalabilityUnivar
 from perf_measures.scalability_bivar import ScalabilityBivar
 import perf_measures.self_organization as pmso

@@ -141,7 +141,7 @@ class Cmdline:
                             are:
 
                             - swarm_size
-                            - swarm_density
+                            - constant_density
                             - ta_policy_set
                             - oracle
                             - temporal_variance

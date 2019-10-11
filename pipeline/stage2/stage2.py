@@ -16,7 +16,7 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from pipeline.batched_exp_runner import BatchedExpRunner
+from .batched_exp_runner import BatchedExpRunner
 
 
 class PipelineStage2:

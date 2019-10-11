@@ -88,7 +88,7 @@ class Oracle(UnivarBatchCriteria):
         return query in ['blocks-collected']
 
 
-def Factory(cmdline_str, main_config, batch_generation_root):
+def Factory(cmdline_str, main_config, batch_generation_root, **kwargs):
     """
     Creates variance classes from the command line definition of batch criteria.
     """

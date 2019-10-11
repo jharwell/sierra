@@ -16,15 +16,14 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from variables.base_variable import BaseVariable
+import variables as ev
 import os
 import pickle
 import yaml
 import utils
-import math
 
 
-class BatchCriteria(BaseVariable):
+class BatchCriteria(ev.base_variable.BaseVariable):
     """
     Defines the list of sets of changes to make to a template input file in order to run a related
     set of of experiments.
@@ -95,10 +94,18 @@ class BatchCriteria(BaseVariable):
 
     def scaffold_exps(self, xml_luigi, batch_config_leaf, cmdopts):
         defs = list(self.gen_attr_changelist())
+        print("- Stage1: Applying batch criteria to {0} experiments".format(len(defs)))
         for i in range(0, len(defs)):
             exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
             exp_generation_root = os.path.join(self.batch_generation_root,
                                                str(exp_dirname))
+
+            print(
+                "-- Applying {0} changes from generator '{1}' for exp{2} in {3}".format(len(defs[i]),
+                                                                                        self.cmdline_str,
+                                                                                        i,
+                                                                                        exp_dirname))
+
             os.makedirs(exp_generation_root, exist_ok=True)
             for path, attr, value in defs[i]:
                 xml_luigi.attr_change(path, attr, value)
@@ -298,6 +305,22 @@ class BivarBatchCriteria(BatchCriteria):
 
         return sizes
 
+    def exp_scenario_name(self, exp_num):
+        """
+        Given the exp number in the batch, compute a valid, parsable scenario name. It is necessary
+        to query this criteria after generating the changnelist in order to create generator classes
+        for each experiment in the batch with the correct name and definition.
+
+        Can only be called if constant density is one of the sub-criteria.
+        """
+        if isinstance(self.criteria1, ev.constant_density.ConstantDensity):
+            return self.criteria1.exp_scenario_name(int(exp_num /
+                                                        len(self.criteria2.gen_attr_changelist())))
+        elif isinstance(self.criteria2, ev.constant_density.ConstantDensity):
+            return self.criteria1.exp_scenario_name(int(exp_num % len(self.criteria2.gen_attr_changelist())))
+        else:
+            assert False, "FATAL: bivariate batch criteria does not contain constant density"
+
     def is_bivar(self):
         return True
 
@@ -367,7 +390,8 @@ def __UnivarFactory(args, cmdline_str):
 
     return getattr(module, "Factory")(cmdline_str,
                                       main_config,
-                                      args.generation_root)()
+                                      args.generation_root,
+                                      scenario=args.scenario)()
 
 
 def __BivarFactory(args):

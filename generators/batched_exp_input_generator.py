@@ -17,9 +17,10 @@
 """
 
 import os
-import re
 from pipeline.xml_luigi import XMLLuigi
 import generators.generator_factory as gf
+import generators.scenario_generator_parser as sgp
+import variables as ev
 
 
 class BatchedExpInputGenerator:
@@ -46,11 +47,11 @@ class BatchedExpInputGenerator:
                               directory for its outputs.
       criteria(BatchCriteria): BatchCriteria derived object instance created from cmdline definition.
       controller_name(str): Name of controller generator to use.
-      scenario_name(str): Name of scenario generator to use.
+      scenario_basename(str): Name of scenario generator to use.
     """
 
     def __init__(self, batch_config_template, batch_generation_root, batch_output_root, criteria,
-                 controller_name, scenario_name, cmdopts):
+                 controller_name, scenario_basename, cmdopts):
         assert os.path.isfile(
             batch_config_template), \
             "The path '{}' (which should point to the main config file) did not point to a file".format(
@@ -63,12 +64,12 @@ class BatchedExpInputGenerator:
 
         self.batch_generation_root = os.path.abspath(batch_generation_root)
         assert self.batch_generation_root.find(" ") == -1, \
-            ("ARGoS (apparently) does not support running configuration files with spaces in the path. Please make sure the " +
+            ("ARGoS (apparently) does not work with input file paths with spaces. Please make sure the " +
              "batch generation root directory '{}' does not have any spaces in it").format(self.batch_generation_root)
 
         self.batch_output_root = os.path.abspath(batch_output_root)
         self.controller_name = controller_name
-        self.scenario_name = scenario_name
+        self.scenario_basename = scenario_basename
         self.criteria = criteria
         self.cmdopts = cmdopts
 
@@ -89,20 +90,37 @@ class BatchedExpInputGenerator:
         exp_defs = self.criteria.gen_attr_changelist()
         for i in range(0, len(exp_defs)):
             generator = self.__create_exp_generator(exp_defs[i], i)
+            print("-- Applying changes from generator '{0}' to exp{1}".format(self.cmdopts['joint_generator'],
+                                                                              i))
+
             generator.generate()
 
     def __create_exp_generator(self, exp_def, exp_num):
         """
-        Create the generator for a particular experiment from the batch criteria+controller
-        definitions specified on the command line.
+        Create the generator for a particular experiment from the scenario+controller definitions
+        specified on the command line.
 
         exp_def(set): Set of XML changes to apply to the template input file for the experiment.
         exp_num(int): Experiment number in the batch
         """
-        res = re.search('[0-9]+x[0-9]+', self.scenario_name)
-        assert res is not None, "FATAL: Arena dimensions not found in scenario specification?"
-        x, y = res.group(0).split('x')
-        self.cmdopts["arena_dim"] = (int(x), int(y))
+        # Need to get per-experiment arena dimensions from batch criteria, as they are different
+        # for each experiment
+        from_bivar_bc1 = (self.criteria.is_bivar() and isinstance(self.criteria.criteria1,
+                                                                  ev.constant_density.ConstantDensity))
+        from_bivar_bc2 = (self.criteria.is_bivar() and isinstance(self.criteria.criteria2,
+                                                                  ev.constant_density.ConstantDensity))
+        from_univar_bc = (self.criteria.is_univar() and isinstance(self.criteria,
+                                                                   ev.constant_density.ConstantDensity))
+        if from_univar_bc:
+            self.cmdopts["arena_dim"] = self.criteria.arena_dims()[exp_num]
+            eff_scenario_name = self.criteria.exp_scenario_name(exp_num)
+        elif from_bivar_bc1 or from_bivar_bc2:
+            self.cmdopts["arena_dim"] = self.criteria.arena_dims()[exp_num]
+            eff_scenario_name = self.criteria.exp_scenario_name(exp_num)
+        else:
+            kw = sgp.ScenarioGeneratorParser.reparse_str(self.scenario_basename)
+            self.cmdopts["arena_dim"] = (kw['arena_x'], kw['arena_y'])
+            eff_scenario_name = self.scenario_basename
 
         exp_generation_root = os.path.join(self.batch_generation_root,
                                            self.criteria.gen_exp_dirnames(self.cmdopts)[exp_num])
@@ -110,7 +128,7 @@ class BatchedExpInputGenerator:
                                        self.criteria.gen_exp_dirnames(self.cmdopts)[exp_num])
 
         scenario = gf.ScenarioGeneratorFactory(controller=self.controller_name,
-                                               scenario=self.scenario_name,
+                                               scenario=eff_scenario_name,
                                                template_config_file=os.path.join(exp_generation_root,
                                                                                  self.batch_config_leaf),
                                                generation_root=exp_generation_root,
@@ -129,9 +147,8 @@ class BatchedExpInputGenerator:
 
         self.cmdopts['joint_generator'] = '+'.join([controller.__class__.__name__,
                                                     scenario.__class__.__name__])
-        print("-- Created joint generator class '{0}'".format(self.cmdopts['joint_generator']))
 
-        return gf.JointGeneratorFactory(scenario=scenario,
+        return gf.BivarGeneratorFactory(scenario=scenario,
                                         controller=controller,
                                         template_config_file=os.path.join(exp_generation_root,
                                                                           self.batch_config_leaf),

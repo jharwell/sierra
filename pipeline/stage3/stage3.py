@@ -16,8 +16,8 @@
   SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
-from pipeline.batched_exp_csv_averager import BatchedExpCSVAverager
-from pipeline.batched_exp_video_renderer import BatchedExpVideoRenderer
+from .batched_exp_csv_averager import BatchedExpCSVAverager
+from .batched_exp_video_renderer import BatchedExpVideoRenderer
 import os
 import yaml
 

@@ -23,7 +23,7 @@ from pipeline.stage4 import PipelineStage4
 from pipeline.stage5 import PipelineStage5
 
 
-class ExpPipeline:
+class Pipeline:
 
     """
     Automation for running ARGoS robotic simulation experiments in parallel

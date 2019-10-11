@@ -37,33 +37,54 @@ class ScenarioGeneratorParser:
       that case, None is returned.
     """
 
-    def __call__(self, args):
-        if args.scenario is None and args.batch_criteria is None:
+    def __init__(self, args):
+        self.args = args
+        self.scenario = None
+
+    def parse_cmdline(self):
+        """
+        Parse the scenario generator from cmdline arguments into a string.
+        """
+        if self.args.scenario is None and self.args.batch_criteria is None:
             return None
 
         # Scenario specified via batch criteria
-        if args.scenario is None:
+        if self.args.scenario is None:
             print(
-                "- Parse scenario generator from cmdline criteria '{0}'".format(args.batch_criteria))
+                "- Parse scenario generator from cmdline criteria '{0}'".format(self.args.batch_criteria))
 
-            res1 = re.search('[a-zA-Z]+', args.batch_criteria)
+            res1 = re.search('[a-zA-Z]+', self.args.batch_criteria)
             assert res1 is not None,\
-                "FATAL: Bad block dist specification in '{0}'".format(args.batch_criteria)
-            res2 = re.search('[0-9]+x[0-9]+', args.batch_criteria)
+                "FATAL: Bad block dist specification in '{0}'".format(self.args.batch_criteria)
+            res2 = re.search('[0-9]+x[0-9]+', self.args.batch_criteria)
             assert res2 is not None,\
-                "FATAL: Bad arena_dim specification in '{0}'".format(args.batch_criteria)
+                "FATAL: Bad arena_dim specification in '{0}'".format(self.args.batch_criteria)
 
-            scenario = res1.group(0) + "." + res2.group(0)
+            self.scenario = res1.group(0) + "." + res2.group(0)
         else:  # Scenario specified on cmdline
             print(
-                "- Parse scenario generator from cmdline specification '{0}'".format(args.scenario))
+                "- Parse scenario generator from cmdline specification '{0}'".format(self.args.scenario))
 
-            res1 = re.search('[a-zA-Z]+', args.scenario)
+            res1 = re.search('[a-zA-Z]+', self.args.scenario)
             assert res1 is not None,\
-                "FATAL: Bad block dist specification in '{0}'".format(args.scenario)
-            res2 = re.search('[0-9]+x[0-9]+', args.scenario)
+                "FATAL: Bad block dist specification in '{0}'".format(self.args.scenario)
+            res2 = re.search('[0-9]+x[0-9]+', self.args.scenario)
             assert res2 is not None,\
-                "FATAL: Bad arena_dim specification in '{0}'".format(args.scenario)
+                "FATAL: Bad arena_dim specification in '{0}'".format(self.args.scenario)
 
-            scenario = res1.group(0) + "." + res2.group(0)
-        return scenario
+            self.scenario = res1.group(0) + "." + res2.group(0)
+        return self.scenario
+
+    def reparse_str(scenario):
+        """
+        Given a string (presumably a result of an earlier cmdline parse), parse it into a dictionary
+        of components: arena_x, arena_y, dist_type
+        """
+        x, y = scenario.split('.')[1].split('x')
+        dist_type = scenario.split('.')[0]
+
+        return {
+            'arena_x': int(x),
+            'arena_y': int(y),
+            'dist_type': dist_type
+        }

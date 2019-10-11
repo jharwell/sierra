@@ -16,8 +16,7 @@ Copyright 2018 John Harwell, All rights reserved.
 
 """
 
-from pipeline.batched_exp_input_generator import BatchedExpInputGenerator
-import generators.generator_factory as gf
+from generators.batched_exp_input_generator import BatchedExpInputGenerator
 
 
 class GeneratorCreator:
@@ -56,6 +55,6 @@ class GeneratorCreator:
                                         batch_generation_root=args.generation_root,
                                         batch_output_root=args.output_root,
                                         controller_name=parsed_controller,
-                                        scenario_name=parsed_scenario,
+                                        scenario_basename=parsed_scenario,
                                         criteria=batch_criteria,
                                         cmdopts=cmdopts)

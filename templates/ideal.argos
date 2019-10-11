@@ -48,10 +48,9 @@
         <task_executive
             update_exec_ests="true"
             update_interface_ests="true"
-            tab_init_policy="max_depth"
-            alloc_policy="stoch_greedy_nbhd"
             />
-        <task_alloc>
+        <task_alloc
+            policy="stoch_greedy_nbhd">
           <task_abort>
             <src_sigmoid_sel
                 input_src="exec">
@@ -75,7 +74,9 @@
             <ema alpha="0.8"/>
           </task_exec_estimates>
 
-          <stoch_greedy_nbhd>
+          <epsilon_greedy epsilon="0.4"/>
+          <stoch_greedy_nbhd
+              tab_init_policy="max_depth">
           <task_partition
               always_partition="false"
               never_partition="false">

@@ -18,10 +18,11 @@
 
 import variables.batch_criteria as bc
 from variables.arena_shape import RectangularArena
-from variables.swarm_density_parser import SwarmDensityParser
+from variables.constant_density_parser import ConstantDensityParser
 import os
 import utils
-from variables.block_distribution import TypeRandom, TypeSingleSource
+from variables.block_distribution import TypeRandom, TypeSingleSource, TypeDualSource, TypeQuadSource
+import generators.scenario_generator_parser as sgp
 
 
 def Calculate(n_robots, arena_x, arena_y):
@@ -31,13 +32,14 @@ def Calculate(n_robots, arena_x, arena_y):
 
 class ConstantDensity(bc.UnivarBatchCriteria):
     """
-    Defines a range of swarm and arena sizes to test with such that the arena ratio is always the
-    same. Does not change the # blocks/block manifest.
+    Defines a range of swarm and arena sizes to test with such that the ratio of swarm size to arena
+    size is always the. Does not change the # blocks/block manifest.
 
     Attributes:
       target_density(list): The target swarm density.
       dimensions(list): List of (X,Y) dimensions to use (creates rectangular arenas).
       dist_type(str): The type of block distribution to use.
+      changes(list): List of sets of changes to apply to generate the specified arena sizes.
     """
 
     # How many experiments to run for the given density value, in which the arena size is increased
@@ -48,11 +50,19 @@ class ConstantDensity(bc.UnivarBatchCriteria):
                  target_density, dimensions, dist_type):
         bc.UnivarBatchCriteria.__init__(self, cmdline_str, main_config, batch_generation_root)
         self.target_density = target_density
-
+        self.dimensions = dimensions
+        self.dist_type = dist_type
         self.changes = RectangularArena(dimensions).gen_attr_changelist()
 
+        dist_types = {
+            'SS': 'TypeSingleSource',
+            'DS': 'TypeDualSource',
+            'QS': 'TypeQuadSource',
+            'RN': 'TypeRandom'
+        }
+
         for changeset in self.changes:
-            for c in eval(dist_type)().gen_attr_changelist():
+            for c in eval(dist_types[self.dist_type])().gen_attr_changelist():
                 changeset = changeset | c
 
     def gen_attr_changelist(self):
@@ -114,22 +124,42 @@ class ConstantDensity(bc.UnivarBatchCriteria):
     def pm_query(self, query):
         return query in ['blocks-collected', 'scalability', 'self-org']
 
+    def exp_scenario_name(self, exp_num):
+        """
+        Given the exp number in the batch, compute a valid, parsable scenario name. It is necessary
+        to query this criteria after generating the changelist in order to create generator classes
+        for each experiment in the batch with the correct name and definition.
 
-def Factory(cmdline_str, main_config, batch_generation_root):
-    """
-    Creates variance classes from the command line definition of batch criteria.
-    """
-    attr = SwarmDensityParser().parse(cmdline_str)
+        Normally controller+scenario are used to look up all necessary changes for the specified
+        arena size, but for this criteria the specified scenario is the base scenario (i.e. the
+        starting arena dimensions), and the correct arena dimensions for a given exp must be found
+        via lookup with THIS function).
+        """
+        dims = map(str, list(self.dimensions[exp_num]))
+        return self.dist_type + '.' + 'x'.join(dims)
 
-    if "TypeSingleSource" == attr["block_dist_class"]:
-        dims = [(x, int(x / 2)) for x in range(attr['arena_x'],
-                                               attr['arena_x'] +
+
+def Factory(cmdline_str, main_config, batch_generation_root, **kwargs):
+    """
+    Creates swarm density classes from the command line definition of batch criteria.
+    """
+    attr = ConstantDensityParser().parse(cmdline_str)
+    kw = sgp.ScenarioGeneratorParser.reparse_str(kwargs['scenario'])
+
+    if "SS" == kw['dist_type'] or "DS" == kw['dist_type']:
+        dims = [(x, int(x / 2)) for x in range(kw['arena_x'],
+                                               kw['arena_x'] +
                                                ConstantDensity.kExperimentsPerDensity *
-                                               attr['arena_size_inc'],
+                                               kw['arena_x'],
                                                attr['arena_size_inc'])]
+    elif "QS" == kw['dist_type'] or "RN" == kw['dist_type']:
+        dims = [(x, x) for x in range(kw['arena_x'],
+                                      kw['arena_x'] + ConstantDensity.kExperimentsPerDensity *
+                                      kw['arena_x'],
+                                      attr['arena_size_inc'])]
     else:
         raise NotImplementedError(
-            "Only single-source block distributions currently implemented for constant density experiments ")
+            "Unsupported block dstribution for constant density experiments: Only SS,DS,QS,RN supported")
 
     def __init__(self):
         ConstantDensity.__init__(self,
@@ -138,7 +168,7 @@ def Factory(cmdline_str, main_config, batch_generation_root):
                                  batch_generation_root,
                                  attr["target_density"],
                                  dims,
-                                 attr["block_dist_class"])
+                                 kw['dist_type'])
 
     return type(cmdline_str,
                 (ConstantDensity,),

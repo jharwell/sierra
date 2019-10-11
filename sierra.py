@@ -18,7 +18,7 @@ Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 
 import os
 import cmdline as cmd
-from pipeline.exp_pipeline import ExpPipeline
+from pipeline.pipeline import Pipeline
 from generators.controller_generator_parser import ControllerGeneratorParser
 from generators.scenario_generator_parser import ScenarioGeneratorParser
 from generators.generator_creator import GeneratorCreator
@@ -26,19 +26,24 @@ import variables.batch_criteria as bc
 import collections
 
 
-def __scenario_dir_name(batch_criteria, scenario):
+def __batch_root_name(batch_criteria, scenario):
     """
-    Select the directory name for the root directory for batch input/output depending on what the
+    Select the directory name for the root directory for batch experiments depending on what the
     batch criteria is. The default is to use the block distribution type + arena size to
     differentiate between batched experiments, for some batch criteria, those will be the same and
     so you need to use the batch criteria definition itself to uniquely identify.
     """
+    assert isinstance(batch_criteria, list), 'Batch criteria not passed as list on cmdline'
 
-    if any(b in batch_criteria for b in ['swarm_density', 'temporal_variance']):
-        # dash instead of dot to not confuse programs that rely on file extensions
-        return scenario + '.' + '-'.join(batch_criteria.split('.')[1:])
-    else:
-        return scenario  # General case
+    problematica = ['temporal_variance', 'constant_density']
+    for p in problematica:
+        for b in batch_criteria:
+            if p in b:
+                # use dash instead of dot in the criteria string to not confuse external programs that rely
+                # on file extensions.
+                return scenario + '+' + b.replace('-', '.')
+
+    return scenario  # General case
 
 
 def __sierra_run():
@@ -52,7 +57,7 @@ def __sierra_run():
     cmd.CmdlineValidator()(args)
 
     controller = ControllerGeneratorParser()(args)
-    scenario = ScenarioGeneratorParser()(args)
+    scenario = ScenarioGeneratorParser(args).parse_cmdline()
 
     # Add the template file leaf to the root directory path to help track what experiment was run.
     if controller is not None and scenario is not None:
@@ -60,7 +65,7 @@ def __sierra_run():
 
         template, ext = os.path.splitext(os.path.basename(args.template_config_file))
 
-        scenario = __scenario_dir_name(args.batch_criteria, scenario)
+        scenario = __batch_root_name(args.batch_criteria, scenario)
         if args.generation_root is None:
             args.generation_root = os.path.join(args.sierra_root,
                                                 controller,
@@ -93,7 +98,7 @@ def __sierra_run():
         criteria = None
 
     joint_generator = GeneratorCreator()(args, controller, scenario, criteria)
-    pipeline = ExpPipeline(args, joint_generator, criteria)
+    pipeline = Pipeline(args, joint_generator, criteria)
     pipeline.run()
 
 

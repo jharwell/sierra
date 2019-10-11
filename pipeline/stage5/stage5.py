@@ -18,7 +18,7 @@
 
 import os
 import yaml
-import pipeline.inter_batch_comparator as ibc
+from .inter_batch_comparator import InterBatchComparator
 
 
 class PipelineStage5:
@@ -70,6 +70,6 @@ class PipelineStage5:
                     if os.path.isdir(path2) and not os.path.exists(path1):
                         print("WARN: {0} does not exist".format(path1))
 
-        ibc.InterBatchComparator(controllers=self.targets,
-                                 cmdopts=self.cmdopts).generate()
+        InterBatchComparator(controllers=self.targets,
+                             cmdopts=self.cmdopts).generate()
         print("- Stage5: Inter-batch controller comparison complete")

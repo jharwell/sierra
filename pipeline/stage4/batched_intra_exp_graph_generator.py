@@ -19,7 +19,7 @@
 import os
 import copy
 import yaml
-from pipeline.intra_exp_graph_generator import IntraExpGraphGenerator
+from .intra_exp_graph_generator import IntraExpGraphGenerator
 
 
 class BatchedIntraExpGraphGenerator:

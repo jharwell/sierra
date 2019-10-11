@@ -17,8 +17,7 @@
 """
 
 import os
-import yaml
-from pipeline.exp_csv_averager import ExpCSVAverager
+from .exp_csv_averager import ExpCSVAverager
 
 
 class BatchedExpCSVAverager:

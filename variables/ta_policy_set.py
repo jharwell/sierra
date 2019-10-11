@@ -40,29 +40,32 @@ class TAPolicySet(UnivarBatchCriteria):
         # another variable in a bivariate batch criteria, (3) not controlled at all. For (2), (3),
         # the swarm size can be None.
         if self.swarm_size is not None:
-            size_attr = [next(iter(SwarmSize([self.swarm_size]).gen_attr_changelist()[0]))]
+            size_attr = [next(iter(SwarmSize(self.cmdline_str,
+                                             self.main_config,
+                                             self.batch_generation_root,
+                                             [self.swarm_size]).gen_attr_changelist()[0]))]
         else:
             size_attr = []
         changes = []
 
         for p in self.policies:
-            c = size_attr
-            c.extend([(".//task_executive",
-                       "alloc_policy",
-                       "{0}".format(p))])
+            c = []
+            c.extend(size_attr)
+            c.extend([(".//task_alloc", "policy", "{0}".format(p))])
+
             changes.append(set(c))
         return changes
 
     def gen_exp_dirnames(self, cmdopts):
         changes = self.gen_attr_changelist()
         dirs = []
-        for chg in changes:
-            for path, attr, value in chg:
-                policy = None
-                size = ''
-                if 'alloc_policy' in attr:
+        for chgset in changes:
+            policy = None
+            size = ''
+            for path, attr, value in chgset:
+                if 'policy' in attr:
                     policy = value
-                elif 'quantity' in attr:
+                if 'quantity' in attr:
                     size = 'size' + value
 
             dirs.append(policy + '|' * (size != '') + size)
@@ -89,14 +92,14 @@ class TAPolicySet(UnivarBatchCriteria):
         return query in ['blocks-collected']
 
 
-def Factory(cmdline_str, main_config, batch_generation_root):
+def Factory(cmdline_str, main_config, batch_generation_root, **kwargs):
     """
     Creates TAPolicySet classes from the command line definition.
     """
     attr = TAPolicySetParser().parse(cmdline_str)
 
     def gen_policies():
-        return ['random', 'stoch_greedy_nbhd', 'greedy_global']
+        return ['random', 'stoch_greedy_nbhd', 'strict_greedy', 'epsilon_greedy']
 
     def __init__(self):
         TAPolicySet.__init__(self, cmdline_str, main_config, batch_generation_root,

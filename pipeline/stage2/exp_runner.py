@@ -31,14 +31,14 @@ class ExpRunner:
     Attributes:
       exp_generation_root(str): Root directory for all generated simulation input files for the
                                 experiment.
-      batch(bool): Whether or not the experiment is part of a batch.
+      exp_num(int): Experiment number in the batch
       fn_threads_per_sim(int): # ARGoS threads being used per simulation.
 
     """
 
-    def __init__(self, exp_generation_root, batch):
+    def __init__(self, exp_generation_root, exp_num):
         self.exp_generation_root = os.path.abspath(exp_generation_root)
-        self.batch = batch
+        self.exp_num = exp_num
 
     def run(self, exec_method, n_jobs, exec_resume):
         '''Runs the experiment.'''
@@ -55,8 +55,8 @@ class ExpRunner:
         cmdfile = os.path.join(self.exp_generation_root, "commands.txt")
         joblog = os.path.join(jobroot, "parallel$PBS_JOBID.log")
 
-        sys.stdout.write('-' + '-' * self.batch +
-                         ' Running experiment in {0}...'.format(self.exp_generation_root))
+        sys.stdout.write('--' + ' Running exp{0} in {1}...'.format(self.exp_num,
+                                                                   self.exp_generation_root))
         sys.stdout.flush()
 
         start = time.time()

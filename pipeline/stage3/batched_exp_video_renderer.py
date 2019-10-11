@@ -17,7 +17,7 @@
 """
 
 import os
-from pipeline.exp_video_renderer import ExpVideoRenderer
+from .exp_video_renderer import ExpVideoRenderer
 
 
 class BatchedExpVideoRenderer:

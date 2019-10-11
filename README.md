@@ -219,7 +219,7 @@ When using sierra, you need to tell it the following:
   are:
 
   - `swarm_size`
-  - `swarm_density`
+  - `constant_density`
   - `temporal_variance`
   - `oracle`
   - `ta_policy_set`

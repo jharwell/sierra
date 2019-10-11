@@ -1,4 +1,5 @@
 import generators.dual_source
 import generators.exp_input_generator
+import generators.batched_exp_input_generator
 import generators.generator_factory
 import generators.single_source

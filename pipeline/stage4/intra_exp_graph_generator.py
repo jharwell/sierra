@@ -21,10 +21,10 @@ import os
 import copy
 import yaml
 
-from pipeline.intra_exp_linegraphs import IntraExpLinegraphs
-from pipeline.intra_exp_histograms import IntraExpHistograms
-from pipeline.intra_exp_heatmaps import IntraExpHeatmaps
-from pipeline.temporal_variance_plot_defs import TemporalVariancePlotDefs
+from .intra_exp_linegraphs import IntraExpLinegraphs
+from .intra_exp_histograms import IntraExpHistograms
+from .intra_exp_heatmaps import IntraExpHeatmaps
+from .temporal_variance_plot_defs import TemporalVariancePlotDefs
 
 
 class IntraExpGraphGenerator:

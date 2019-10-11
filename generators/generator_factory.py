@@ -26,10 +26,10 @@ import re
 from generators.exp_input_generator import ExpInputGenerator
 
 
-def JointGeneratorFactory(controller, scenario, **kwargs):
+def BivarGeneratorFactory(controller, scenario, **kwargs):
     """
-    Given a controller(generator), and a scenario(generator), construct a joint generator class that
-    can be used for experiment generation.
+    Given a controller(generator), and a scenario(generator), construct a bivariate generator class
+    that can be used for experiment generation.
 
     """
 
@@ -66,10 +66,10 @@ def ScenarioGeneratorFactory(scenario, controller, **kwargs):
 
         abbrev = res.group(0)
         qualified_name = 'generators.' + abbrev_dict[abbrev] + '.' + abbrev + 'Generator'
-        self.scenario_changes = eval(qualified_name)(controller=controller, **kwargs)
+        self.scenario_generator = eval(qualified_name)(controller=controller, **kwargs)
 
     def generate(self, xml_luigi):
-        return self.scenario_changes.generate(xml_luigi)
+        return self.scenario_generator.generate(xml_luigi)
 
     return type(scenario,
                 (object,), {"__init__": __init__,
@@ -112,7 +112,7 @@ def ControllerGeneratorFactory(controller, config_root, **kwargs):
                 for t in controller['xml']['attr_change']:
                     xml_luigi.tag_change(t[0], t[1], t[2])
 
-        assert exists, "FATAL: Non-existent controller {0}".format(self.name)
+        assert exists, "FATAL: Controller {0} not found in controller YAML config".format(self.name)
         return xml_luigi
 
     return type(controller,

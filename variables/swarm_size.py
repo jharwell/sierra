@@ -78,7 +78,7 @@ class SwarmSize(bc.UnivarBatchCriteria):
         return query in ['blocks-collected', 'scalability', 'self-org']
 
 
-def Factory(cmdline_str, main_config, batch_generation_root):
+def Factory(cmdline_str, main_config, batch_generation_root, **kwargs):
     """
     Creates swarm size classes from the command line definition of batch criteria.
     """
@@ -92,7 +92,10 @@ def Factory(cmdline_str, main_config, batch_generation_root):
             return [2 ** x for x in range(0, int(math.log2(attr["max_size"])) + 1)]
 
     def __init__(self):
-        SwarmSize.__init__(self, cmdline_str, main_config, batch_generation_root,
+        SwarmSize.__init__(self,
+                           cmdline_str,
+                           main_config,
+                           batch_generation_root,
                            gen_sizes(cmdline_str))
 
     return type(cmdline_str,
