@@ -1,46 +1,63 @@
+# Copyright 2019 John Harwell, All rights reserved.
+#
+#  This file is part of SIERRA.
+#
+#  SIERRA is free software: you can redistribute it and/or modify it under the
+#  terms of the GNU General Public License as published by the Free Software
+#  Foundation, either version 3 of the License, or (at your option) any later
+#  version.
+#
+#  SIERRA is distributed in the hope that it will be useful, but WITHOUT ANY
+#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+#  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License along with
+#  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
- Copyright 2019 John Harwell, All rights reserved.
+Definition:
+    All[.Z{swarm_size}]
 
-  This file is part of SIERRA.
+    swarm_size = The swarm size to use (optional)
 
-  SIERRA is free software: you can redistribute it and/or modify it under the
-  terms of the GNU General Public License as published by the Free Software
-  Foundation, either version 3 of the License, or (at your option) any later
-  version.
-
-  SIERRA is distributed in the hope that it will be useful, but WITHOUT ANY
-  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License along with
-  SIERRA.  If not, see <http://www.gnu.org/licenses/
+Examples:
+    - ``All.Z16``: All possible task allocation policies with swarms of size 16.
+    - ``All``: All possible task allocation policies; swarm size not modified.
 """
 
+
+import re
+import typing as tp
 from variables.batch_criteria import UnivarBatchCriteria
-from variables.ta_policy_set_parser import TAPolicySetParser
 from variables.swarm_size import SwarmSize
 
 
 class TAPolicySet(UnivarBatchCriteria):
     """
-    Defines the task allocation policy to use during simulation.
+    A univariate range specifiying the set of task allocation policies (and possibly swarm size) to
+    use to define the batched experiment. This class is a base class which should (almost) never be
+    used on its own. Instead, the ``Factory()`` function should be used to dynamically create
+    derived classes expressing the user's desired policies and swarm size.
 
     Attributes:
-      policies(list): List of policies to enable for a specific simulation.
-      swarm_size(str): Swarm size to use for a specific simulation.
+        policies: List of policies to enable for a specific simulation.
+        swarm_size: Swarm size to use for a specific simulation.
     """
 
-    def __init__(self, cmdline_str, main_config, batch_generation_root, policies, swarm_size):
-        UnivarBatchCriteria.__init__(self, cmdline_str, main_config, batch_generation_root)
+    def __init__(self, cli_arg: str,
+                 main_config: tp.Dict[str, str],
+                 batch_generation_root: str,
+                 policies: list,
+                 swarm_size: int):
+        UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
         self.policies = policies
         self.swarm_size = swarm_size
 
-    def gen_attr_changelist(self):
+    def gen_attr_changelist(self) -> list:
         # Swarm size is optional. It can be (1) controlled via this variable, (2) controlled by
         # another variable in a bivariate batch criteria, (3) not controlled at all. For (2), (3),
         # the swarm size can be None.
         if self.swarm_size is not None:
-            size_attr = [next(iter(SwarmSize(self.cmdline_str,
+            size_attr = [next(iter(SwarmSize(self.cli_arg,
                                              self.main_config,
                                              self.batch_generation_root,
                                              [self.swarm_size]).gen_attr_changelist()[0]))]
@@ -56,7 +73,7 @@ class TAPolicySet(UnivarBatchCriteria):
             changes.append(set(c))
         return changes
 
-    def gen_exp_dirnames(self, cmdopts):
+    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> tp.List[str]:
         changes = self.gen_attr_changelist()
         dirs = []
         for chgset in changes:
@@ -75,36 +92,67 @@ class TAPolicySet(UnivarBatchCriteria):
         else:
             return dirs
 
-    def sc_graph_labels(self, scenarios):
+    def sc_graph_labels(self, scenarios: tp.List[str]) -> tp.List[str]:
         return [s[-5:-2].replace('p', '.') for s in scenarios]
 
-    def sc_sort_scenarios(self, scenarios):
+    def sc_sort_scenarios(self, scenarios: tp.List[str]) -> tp.List[str]:
         return sorted(scenarios,
                       key=lambda s: float(s.split('-')[2].split('.')[0][0:3].replace('p', '.')))
 
-    def graph_xvals(self, cmdopts, exp_dirs):
+    def graph_xvals(self, cmdopts: tp.Dict[str, str], exp_dirs: tp.List[str]) -> tp.List[float]:
         return [i for i in range(1, self.n_exp() + 1)]
 
-    def graph_xlabel(self, cmdopts):
+    def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
         return "Task Allocation Policy"
 
-    def pm_query(self, query):
+    def pm_query(self, query: str) -> bool:
         return query in ['blocks-collected']
 
 
-def Factory(cmdline_str, main_config, batch_generation_root, **kwargs):
+class TAPolicySetParser():
     """
-    Creates TAPolicySet classes from the command line definition.
+    Enforces the cmdline definition of the criteria described in the module docstring.
     """
-    attr = TAPolicySetParser().parse(cmdline_str)
+
+    def parse(self, criteria_str: str):
+        """
+        Returns:
+            Dictionary with keys:
+                swarm_size: Swarm size to use (optional)
+
+        """
+        ret = {}
+
+        # Parse task allocation policy set
+        assert 'All' in criteria_str, \
+            "FATAL: Bad TAPolicy set in criteria '{0}'. Must be 'All'".format(criteria_str)
+
+        # Parse swarm size
+        res = re.search("\.Z[0-9]+", criteria_str)
+        if res is not None:
+            ret['swarm_size'] = int(res.group(0)[2:])
+
+        return ret
+
+
+def Factory(cli_arg: str,
+            main_config: tp.Dict[str, str],
+            batch_generation_root: str,
+            **kwargs):
+    """
+    Factory to create ``TAPolicySet`` derived classes from the command line definition of batch
+    criteria.
+
+    """
+    attr = TAPolicySetParser().parse(cli_arg)
 
     def gen_policies():
         return ['random', 'stoch_greedy_nbhd', 'strict_greedy', 'epsilon_greedy']
 
     def __init__(self):
-        TAPolicySet.__init__(self, cmdline_str, main_config, batch_generation_root,
+        TAPolicySet.__init__(self, cli_arg, main_config, batch_generation_root,
                              gen_policies(), attr.get('swarm_size', None))
 
-    return type(cmdline_str,
+    return type(cli_arg,
                 (TAPolicySet,),
                 {"__init__": __init__})

@@ -1,21 +1,20 @@
-"""
-Copyright 2019, John Harwell, All rights reserved.
+# Copyright 2019, John Harwell, All rights reserved.
+#
+#  This file is part of SIERRA.
+#
+#  SIERRA is free software: you can redistribute it and/or modify it under the
+#  terms of the GNU General Public License as published by the Free Software
+#  Foundation, either version 3 of the License, or (at your option) any later
+#  version.
+#
+#  SIERRA is distributed in the hope that it will be useful, but WITHOUT ANY
+#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+#  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License along with
+#  SIERRA.  If not, see <http://www.gnu.org/licenses/
+#
 
-  This file is part of SIERRA.
-
-  SIERRA is free software: you can redistribute it and/or modify it under the
-  terms of the GNU General Public License as published by the Free Software
-  Foundation, either version 3 of the License, or (at your option) any later
-  version.
-
-  SIERRA is distributed in the hope that it will be useful, but WITHOUT ANY
-  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License along with
-  SIERRA.  If not, see <http://www.gnu.org/licenses/
-
-"""
 
 import os
 import copy
@@ -39,7 +38,7 @@ class TemporalVariancePlotDefs:
         self.cmdopts = copy.deepcopy(cmdopts)
         self.perf_csv_col = 'cum_avg_collected'
 
-    def __call__(self):
+    def __call__(self, batch_criteria, main_config):
         tv_attr = TemporalVarianceParser().parse(self.cmdopts["criteria_def"])
 
         # @BUG This will not work with any batch exp directory naming that is not expX
@@ -54,12 +53,18 @@ class TemporalVariancePlotDefs:
         output_root = self.cmdopts['output_root']
         self.cmdopts['output_root'] = self.cmdopts['output_root'].split(res.group())[0]
         exp_num = res.group()[3:]
-        adaptability = vcs.AdaptabilityCS(self.cmdopts, exp_num)
-        reactivity = vcs.ReactivityCS(self.cmdopts, exp_num)
+        adaptability = vcs.AdaptabilityCS(self.cmdopts, batch_criteria, exp_num)
+        reactivity = vcs.ReactivityCS(self.cmdopts, batch_criteria, exp_num)
 
         expx_perf = vcs.DataFrames.expx_perf_df(self.cmdopts['output_root'],
+                                                batch_criteria,
+                                                main_config['sierra']['avg_output_leaf'],
+                                                main_config['sierra']['perf']['intra_perf_csv'],
                                                 exp_num)[self.perf_csv_col].values
         expx_var = vcs.DataFrames.expx_var_df(self.cmdopts['output_root'],
+                                              batch_criteria,
+                                              main_config['sierra']['avg_output_leaf'],
+                                              main_config['sierra']['perf']['temporal_var_csv'],
                                               exp_num)[tv_attr['variance_csv_col']].values
         comp_expx_var = self._comparable_exp_variance(expx_var,
                                                       tv_attr,
@@ -69,11 +74,24 @@ class TemporalVariancePlotDefs:
         df = pd.DataFrame(
             {
                 'clock': vcs.DataFrames.expx_perf_df(self.cmdopts['output_root'],
+                                                     batch_criteria,
+                                                     main_config['sierra']['avg_output_leaf'],
+                                                     main_config['sierra']['perf']['intra_perf_csv'],
                                                      exp_num)['clock'].values,
-                'expx_perf': vcs.DataFrames.expx_perf_df(self.cmdopts['output_root'], exp_num)[self.perf_csv_col].values,
+                'expx_perf': vcs.DataFrames.expx_perf_df(self.cmdopts['output_root'],
+                                                         batch_criteria,
+                                                         main_config['sierra']['avg_output_leaf'],
+                                                         main_config['sierra']['perf']['intra_perf_csv'],
+                                                         exp_num)[self.perf_csv_col].values,
                 'expx_var': comp_expx_var,
-                'exp0_perf': vcs.DataFrames.exp0_perf_df(self.cmdopts['output_root'])[self.perf_csv_col].values,
-                'exp0_var': vcs.DataFrames.exp0_var_df(self.cmdopts['output_root'])[tv_attr['variance_csv_col']].values,
+                'exp0_perf': vcs.DataFrames.exp0_perf_df(self.cmdopts['output_root'],
+                                                         batch_criteria,
+                                                         main_config['sierra']['avg_output_leaf'],
+                                                         main_config['sierra']['perf']['intra_perf_csv'])[self.perf_csv_col].values,
+                'exp0_var': vcs.DataFrames.exp0_var_df(self.cmdopts['output_root'],
+                                                       batch_criteria,
+                                                       main_config['sierra']['avg_output_leaf'],
+                                                       main_config['sierra']['perf']['temporal_var_csv'])[tv_attr['variance_csv_col']].values,
                 'ideal_reactivity': reactivity.calc_waveforms()[0][:, 1],
                 'ideal_adaptability': adaptability.calc_waveforms()[0][:, 1]
             }

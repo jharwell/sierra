@@ -1,20 +1,19 @@
-"""
- Copyright 2018 John Harwell, All rights reserved.
+# Copyright 2018 John Harwell, All rights reserved.
+#
+# This file is part of SIERRA.
+#
+#  SIERRA is free software: you can redistribute it and/or modify it under the
+#  terms of the GNU General Public License as published by the Free Software
+#  Foundation, either version 3 of the License, or (at your option) any later
+#  version.
+#
+#  SIERRA is distributed in the hope that it will be useful, but WITHOUT ANY
+#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+#  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License along with
+#  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-This file is part of SIERRA.
-
-  SIERRA is free software: you can redistribute it and/or modify it under the
-  terms of the GNU General Public License as published by the Free Software
-  Foundation, either version 3 of the License, or (at your option) any later
-  version.
-
-  SIERRA is distributed in the hope that it will be useful, but WITHOUT ANY
-  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License along with
-  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
 
 import fastdtw
 import os
@@ -98,7 +97,7 @@ class EnvironmentalCS():
                                           self.main_config['sierra']['avg_output_leaf'],
                                           self.main_config['sierra']['perf']['temporal_var_csv']),
                              sep=';')
-        attr = TemporalVarianceParser().parse(batch_criteria.cmdline_str)
+        attr = TemporalVarianceParser().parse(batch_criteria.cli_arg)
 
         xlen = len(exp_df[attr["variance_csv_col"]].values)
         exp_data = np.zeros((xlen, 2))
@@ -174,7 +173,7 @@ class AdaptabilityCS():
         self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'], 'main.yaml')))
         self.perf_csv_col = 'cum_avg_collected'
         self.var_csv_col = TemporalVarianceParser().parse(
-            self.batch_criteria.cmdline_str)['variance_csv_col']
+            self.batch_criteria.cli_arg)['variance_csv_col']
 
     def calc_waveforms(self):
         """
@@ -263,7 +262,7 @@ class ReactivityCS():
         self.exp_num = exp_num
         self.perf_csv_col = 'cum_avg_collected'
         self.var_csv_col = TemporalVarianceParser().parse(
-            batch_criteria.cmdline_str)['variance_csv_col']
+            batch_criteria.cli_arg)['variance_csv_col']
         self.batch_criteria = batch_criteria
 
     def calc_waveforms(self):

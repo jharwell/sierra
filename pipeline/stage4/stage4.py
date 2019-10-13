@@ -1,20 +1,19 @@
-"""
- Copyright 2018 John Harwell, All rights reserved.
+# Copyright 2018 John Harwell, All rights reserved.
+#
+# This file is part of SIERRA.
+#
+#  SIERRA is free software: you can redistribute it and/or modify it under the
+#  terms of the GNU General Public License as published by the Free Software
+#  Foundation, either version 3 of the License, or (at your option) any later
+#  version.
+#
+#  SIERRA is distributed in the hope that it will be useful, but WITHOUT ANY
+#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+#  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License along with
+#  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-This file is part of SIERRA.
-
-  SIERRA is free software: you can redistribute it and/or modify it under the
-  terms of the GNU General Public License as published by the Free Software
-  Foundation, either version 3 of the License, or (at your option) any later
-  version.
-
-  SIERRA is distributed in the hope that it will be useful, but WITHOUT ANY
-  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License along with
-  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
 
 from .univar_csv_collator import UnivarCSVCollator
 from .bivar_csv_collator import BivarCSVCollator
@@ -52,7 +51,7 @@ class PipelineStage4:
 
     def run(self, batch_criteria):
         if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'intra':
-            self.__gen_intra_graphs()
+            self.__gen_intra_graphs(batch_criteria)
 
         if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'inter':
             # Collation must be after intra-experiment graph generation, so that all .csv files to
@@ -71,10 +70,10 @@ class PipelineStage4:
         InterExpGraphGenerator(self.cmdopts, targets, batch_criteria)()
         print("- Stage4: Inter-experiment graph generation complete")
 
-    def __gen_intra_graphs(self):
+    def __gen_intra_graphs(self, batch_criteria):
 
         print("- Stage4: Generating intra-experiment graphs...")
-        BatchedIntraExpGraphGenerator(self.cmdopts)()
+        BatchedIntraExpGraphGenerator(self.cmdopts)(batch_criteria)
         print("- Stage4: Intra-experiment graph generation complete")
 
     def __calc_linegraph_targets(self):

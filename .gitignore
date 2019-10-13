@@ -102,4 +102,4 @@ ENV/
 .gdb_history
 
 # pytype
-pytype_output
+.pytype

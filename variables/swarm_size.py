@@ -1,48 +1,64 @@
+# Copyright 2018 John Harwell, All rights reserved.
+#
+# This file is part of SIERRA.
+#
+# SIERRA is free software: you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
+#
+# SIERRA is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+# A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
- Copyright 2018 John Harwell, All rights reserved.
+Definition:
+    {increment_type}{max_size}
 
-  This file is part of SIERRA.
+    - increment_type = {Log,Linear}
+    - max_size = Integer
 
-  SIERRA is free software: you can redistribute it and/or modify it under the
-  terms of the GNU General Public License as published by the Free Software
-  Foundation, either version 3 of the License, or (at your option) any later
-  version.
+Examples:
+    - ``Log1024``: Swarm sizes 1...1024 by powers of 2
+    - ``Linear1000``: Swarm sizes 10...1000, step size of 100
 
-  SIERRA is distributed in the hope that it will be useful, but WITHOUT ANY
-  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License along with
-  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 
+import typing as tp
+import re
 import variables.batch_criteria as bc
-from variables.swarm_size_parser import SwarmSizeParser
 import math
 
 
 class SwarmSize(bc.UnivarBatchCriteria):
-
     """
-    Defines a range of swarm sizes to test with
+    A univariate range of swarm sizes to use to define batched experiments. This class is a base
+    class which should (almost) never be used on its own. Instead, the ``Factory()`` function should
+    be used to dynamically create derived classes expressing the user's desired size distribution.
 
     Attributes:
-      size_list(list): List of integer sizes to test with.
+        size_list: List of integer swarm sizes defining the range of the variable for the batched
+                   experiment.
+
     """
 
-    def __init__(self, cmdline_str, main_config, batch_generation_root, size_list):
-        bc.UnivarBatchCriteria.__init__(self, cmdline_str, main_config, batch_generation_root)
+    def __init__(self, cli_arg: str,
+                 main_config: tp.Dict[str, str],
+                 batch_generation_root: str,
+                 size_list: tp.List[str]):
+        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
         self.size_list = size_list
 
-    def gen_attr_changelist(self):
-        """
-        Generate list of sets of swarm sizes. Each entry in the list is a set of changes
-        necessary to make to the input file to correctly set up the simulation with the specified
-        swarm size.
+    def gen_attr_changelist(self) -> list:
+        """Generate list of sets of swarm sizes. Each entry in the list is a set of changes necessary to
+        make to the input file to correctly set up the simulation with the specified swarm size.
+
         """
         return [set([(".//arena/distribute/entity", "quantity", str(s))]) for s in self.size_list]
 
-    def gen_exp_dirnames(self, cmdopts):
+    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> list:
         changes = self.gen_attr_changelist()
         dirs = []
         for chg in changes:
@@ -57,13 +73,13 @@ class SwarmSize(bc.UnivarBatchCriteria):
         else:
             return dirs
 
-    def sc_graph_labels(self, scenarios):
+    def sc_graph_labels(self, scenarios: list) -> tp.List[str]:
         return [s[-4:] for s in scenarios]
 
-    def sc_sort_scenarios(self, scenarios):
+    def sc_sort_scenarios(self, scenarios: list) -> tp.List[str]:
         return scenarios  # No sorting needed
 
-    def graph_xvals(self, cmdopts, exp_dirs=None):
+    def graph_xvals(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[float]:
         ret = self.swarm_sizes(cmdopts, exp_dirs)
 
         if cmdopts['plot_log_xaxis']:
@@ -71,20 +87,57 @@ class SwarmSize(bc.UnivarBatchCriteria):
         else:
             return ret
 
-    def graph_xlabel(self, cmdopts):
+    def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
         return "Swarm Size"
 
-    def pm_query(self, query):
+    def pm_query(self, query: str) -> bool:
         return query in ['blocks-collected', 'scalability', 'self-org']
 
 
-def Factory(cmdline_str, main_config, batch_generation_root, **kwargs):
+class SwarmSizeParser():
     """
-    Creates swarm size classes from the command line definition of batch criteria.
+    Enforces the cmdline definition of the criteria described in the module docstring.
     """
-    attr = SwarmSizeParser().parse(cmdline_str.split(".")[1])
 
-    def gen_sizes(cmdline_str):
+    def parse(self, criteria_str) -> dict:
+        """
+        Returns:
+            Dictionary with keys:
+                increment_type: Log|Linear
+                max_size: Integer maximum swarm size
+                linear_increment: Integer linear increment; only present if `increment_type=Linear`
+
+        """
+        ret = {}
+
+        # Parse increment type
+        res = re.search("^Log|Linear", criteria_str)
+        assert res is not None, \
+            "FATAL: Bad swarm size increment type in criteria '{0}'".format(criteria_str)
+        ret['increment_type'] = res.group(0)
+
+        # Parse max size
+        res = re.search("[0-9]+", criteria_str)
+        assert res is not None, \
+            "FATAL: Bad swarm size max in criteria '{0}'".format(criteria_str)
+        ret['max_size'] = int(res.group(0))
+
+        # Set linear_increment if needed
+        if ret['increment_type'] == 'Linear':
+            ret['linear_increment'] = int(ret['max_size'] / 10.0)
+
+        return ret
+
+
+def Factory(cli_arg: str, main_config: tp.Dict[str, str], batch_generation_root: str, **kwargs):
+    """
+    Factory to create ``SwarmSize`` derived classes from the command line definition of batch
+    criteria.
+
+    """
+    attr = SwarmSizeParser().parse(cli_arg.split(".")[1])
+
+    def gen_sizes(cli_arg):
 
         if "Linear" == attr["increment_type"]:
             return [attr["linear_increment"] * x for x in range(1, 11)]
@@ -93,11 +146,11 @@ def Factory(cmdline_str, main_config, batch_generation_root, **kwargs):
 
     def __init__(self):
         SwarmSize.__init__(self,
-                           cmdline_str,
+                           cli_arg,
                            main_config,
                            batch_generation_root,
-                           gen_sizes(cmdline_str))
+                           gen_sizes(cli_arg))
 
-    return type(cmdline_str,
+    return type(cli_arg,
                 (SwarmSize,),
                 {"__init__": __init__})

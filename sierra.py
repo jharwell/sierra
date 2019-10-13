@@ -1,20 +1,19 @@
-"""
-Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
+# Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
+#
+#  This file is part of SIERRA.
+#
+#  SIERRA is free software: you can redistribute it and/or modify it under the terms of the GNU
+#  General Public License as published by the Free Software Foundation, either version 3 of the
+#  License, or (at your option) any later version.
+#
+#  SIERRA is distributed in the hope that it will be useful, but WITHOUT ANY
+#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+#  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License along with
+#  SIERRA.  If not, see <http://www.gnu.org/licenses/
+#
 
-  This file is part of SIERRA.
-
-  SIERRA is free software: you can redistribute it and/or modify it under the terms of the GNU
-  General Public License as published by the Free Software Foundation, either version 3 of the
-  License, or (at your option) any later version.
-
-  SIERRA is distributed in the hope that it will be useful, but WITHOUT ANY
-  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License along with
-  SIERRA.  If not, see <http://www.gnu.org/licenses/
-
-"""
 
 import os
 import cmdline as cmd
@@ -53,7 +52,7 @@ def __sierra_run():
         # restriction: cannot use Python 2.x to run this code
         raise RuntimeError("Python 3.x should must be used to run this code.")
 
-    args = cmd.Cmdline().init().parse_args()
+    args = cmd.Cmdline().parser.parse_args()
     cmd.CmdlineValidator()(args)
 
     controller = ControllerGeneratorParser()(args)
