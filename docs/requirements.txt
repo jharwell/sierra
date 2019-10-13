@@ -1,0 +1,4 @@
+sphinx-argparse
+sphinxcontrib-napoleon
+m2r
+sphinx-rtd-theme

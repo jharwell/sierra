@@ -1,25 +1,24 @@
-"""
- Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
+# Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
+#
+#  This file is part of SIERRA.
+#
+#  SIERRA is free software: you can redistribute it and/or modify it under the
+#  terms of the GNU General Public License as published by the Free Software
+#  Foundation, either version 3 of the License, or (at your option) any later
+#  version.
+#
+#  SIERRA is distributed in the hope that it will be useful, but WITHOUT ANY
+#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+#  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License along with
+#  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-  This file is part of SIERRA.
-
-  SIERRA is free software: you can redistribute it and/or modify it under the
-  terms of the GNU General Public License as published by the Free Software
-  Foundation, either version 3 of the License, or (at your option) any later
-  version.
-
-  SIERRA is distributed in the hope that it will be useful, but WITHOUT ANY
-  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License along with
-  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
 
 import os
 import random
 import pickle
-from pipeline.xml_luigi import XMLLuigi, InvalidElementError
+from xml_luigi import XMLLuigi, InvalidElementError
 from variables import time_setup, physics_engines, block_distribution, dynamic_cache, static_cache
 
 
@@ -44,7 +43,7 @@ class ExpInputGenerator:
                       n_sims : # of simulations to run in parallel
                       n_threads: # of ARGoS threads to use for each parallel simulation
                       tsetup: Name of class in time_setup.py to use for simulation time setup.
-                      n_physics_engines: # of ARGoS physics engines to use.
+                      physics_n_engines: # of ARGoS physics engines to use.
                       arena_dim: (X,Y) dimensions of the arena.
                       with_robot_rab(bool): Should the range and bearing sensors/actuators be
                                             enabled?
@@ -147,7 +146,7 @@ class ExpInputGenerator:
         configuring controllers.
 
         """
-        pe = physics_engines.PhysicsEngines(self.cmdopts["n_physics_engines"],
+        pe = physics_engines.PhysicsEngines(self.cmdopts["physics_n_engines"],
                                             self.cmdopts["physics_iter_per_tick"],
                                             "uniform_grid",
                                             self.cmdopts["arena_dim"])

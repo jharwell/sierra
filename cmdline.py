@@ -1,20 +1,19 @@
-"""
-Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
+# Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
+#
+#  This file is part of SIERRA.
+#
+#  SIERRA is free software: you can redistribute it and/or modify it under the terms of the GNU
+#  General Public License as published by the Free Software Foundation, either version 3 of the
+#  License, or (at your option) any later version.
+#
+#  SIERRA is distributed in the hope that it will be useful, but WITHOUT ANY
+#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+#  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License along with
+#  SIERRA.  If not, see <http://www.gnu.org/licenses/
+#
 
-  This file is part of SIERRA.
-
-  SIERRA is free software: you can redistribute it and/or modify it under the terms of the GNU
-  General Public License as published by the Free Software Foundation, either version 3 of the
-  License, or (at your option) any later version.
-
-  SIERRA is distributed in the hope that it will be useful, but WITHOUT ANY
-  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License along with
-  SIERRA.  If not, see <http://www.gnu.org/licenses/
-
-"""
 
 import argparse
 import os.path
@@ -25,208 +24,214 @@ class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawTextHelp
 
 
 class Cmdline:
-    def init(self):
+    def __init__(self):
         """
         Defines the command line arguments for sierra. Returns a parser with the definitions.
         """
-        parser = argparse.ArgumentParser(prog='sierra',
-                                         formatter_class=HelpFormatter)
-        parser.add_argument("--template-config-file",
-                            metavar="filepath",
-                            help="""
+        self.parser = argparse.ArgumentParser(prog='sierra',
+                                              formatter_class=HelpFormatter)
+        self.parser.add_argument("--template-config-file",
+                                 metavar="filepath",
+                                 help="""
 
-                            The template configuration file for the experiment. Use=stage[1, 2, 3, 4}; can be omitted if
-                            only running other stages.
+                                 The template ``.argos`` input file for the batched experiment.
 
-                            """)
+                                 Use=stage[1, 2, 3, 4}; can be omitted if only running other stages.
 
-        parser.add_argument("--sierra-root",
-                            metavar="dirpath",
-                            help="""
+                                 """)
 
-                            Root directory for all sierra generated/created files. Subdirectories for controllers,
-                            scenarios, experiment/simulation inputs/outputs will be created in this directory as
-                            needed. Can persist between invocations of sierra.
+        self.parser.add_argument("--sierra-root",
+                                 metavar="dirpath",
+                                 help="""
 
-                            """,
-                            default=os.path.expanduser("~") + "/exp")
-        parser.add_argument("--config-root",
-                            help="""
+                                 Root directory for all sierra generated/created files.
 
-                            Path to root directory containing all .yaml files used by SIERRA for
-                            configuration. Within this directory, the following files must be
-                            present when running a stage that utilizes them:
+                                 Subdirectories for controllers, scenarios, experiment/simulation
+                                 inputs/outputs will be created in this directory as needed. Can persist
+                                 between invocations of sierra.
 
-                            intra-graphs.yaml - Configuration for intra-experiment graphs
-                            inter-graphs.yaml - Configuration for inter-experiment graphs
-                            controllers.yaml - Configuration for controllers (input file/graph generation)
+                                 """,
+                                 default=os.path.expanduser("~") + "/exp")
+        self.parser.add_argument("--config-root",
+                                 help="""
 
-                            """,
-                            default="config")
-        parser.add_argument("--generation-root",
-                            metavar="dirpath",
-                            help="""
+                                 Root directory containing all .yaml files used by sierra for configuration.
 
-                            Root directory to save generated experiment input files, or the directory which will contain
-                            directories for each experiment's input files, for batch mode. You should almost never have
-                            to change this from the default.
+                                 Within this directory, the following files must be present when running a
+                                 stage that utilizes them:
 
-                            Use=stage{1,2,3}; can be omitted otherwise.
-                            Default=<sierra_root>/<controller>/<scenario>/exp-inputs.
+                                 - ``intra-graphs.yaml`` - Configuration for intra-experiment graphs
+                                 - ``inter-graphs.yaml`` - Configuration for inter-experiment graphs
+                                 - ``controllers.yaml`` - Configuration for controllers (input file/graph generation).
 
-                            """)
-        parser.add_argument("--output-root",
-                            metavar="dirpath",
-                            help="""
+                                 """,
+                                 default="config")
+        self.parser.add_argument("--generation-root",
+                                 metavar="dirpath",
+                                 help="""
 
-                            Root directory for saving simulation outputs a single experiment, or the root directory
-                            which will contain directories for each experiment's outputs for batch mode). You should
-                            almost never have to change this from the default.
+                                 Root directory to save the generated input files for each experiment in the
+                                 batch.
 
-                            Use=stage{3,4,5}; can be omitted otherwise.
-                            Default=<sierra_root>/<controller>/<scenario>/exp-outputs
+                                 You should never have to change this from the default.
 
-                            """)
-        parser.add_argument("--graph-root",
-                            metavar="dirpath",
-                            help="""
+                                 Use=stage{1,2,3}; can be omitted otherwise.
 
-                            Root directory for saving generated graph files for a single experiment, or the root
-                            directory which will contain directories for each experiment's generated graphs for batch
-                            mode. You should almost never have to change this from the default.
+                                 Default: ``sierra_root>/<controller>/<scenario>/exp-inputs``
+                                 """)
+        self.parser.add_argument("--output-root",
+                                 metavar="dirpath",
+                                 help="""
 
-                            Use=stage{4,5}; can be omitted otherwise.
-                            default=<sierra_root>/<controller>/<scenario>/graphs.
-                            """)
+                                 Root directory which will contain directories for each experiment's outputs
+                                 for batch mode).
 
-        parser.add_argument("--controller",
-                            metavar="{depth0, depth1, depth2}.<controller>",
-                            help="""
+                                 You should never have to change this from the default.
 
-                            Which controller robots will use in the experiment.
+                                 Use=stage{3,4,5}; can be omitted otherwise.
 
-                            Valid controllers: {depth0.{CRW, DPO, MDPO},
-                                                depth1.{BITD_DPO, OBITD_DPO},
-                                                depth2.{BIRTD_DPO, OBIRTD_DPO}.
+                                 Default: ``<sierra_root>/<controller>/<scenario>/exp-outputs``
+                                 """)
+        self.parser.add_argument("--graph-root",
+                                 metavar="dirpath",
+                                 help="""
 
-                            Use=stage{1,2,3,4}; can be omitted otherwise.
+                                 Root directory in which subdirectories (one for each experiment in the batch)
+                                 will be created, containing the intra-experiment graphs for each experiment.
 
-                            """)
+                                 Inter-experiment graphs are also output in this directory, under ``collated-graphs/``.
 
-        parser.add_argument("--scenario",
-                            metavar="<block dist>.AxB",
-                            help="""
+                                 You should never have to change this from the default.
 
-                            Which scenario the defined controller should be run in. Scenario=block
-                            distribution type + arena dimensions.
+                                 Use=stage{4,5}; can be omitted otherwise.
 
-                            Valid block distribution types: {RN, SS, DS, QS, PL}, which correspond
-                            to {random, single source, dual source, quad source, powerlaw} block
-                            distributions.
+                                 default: ``<sierra_root>/<controller>/<scenario>/graphs``
+                                 """)
 
-                            A and B are the scenario X and Y dimensions (which can be any non-negative integer values);
-                            the dimensions can be omitted for some batch criteria.
+        self.parser.add_argument("--controller",
+                                 metavar="{depth0, depth1, depth2}.<controller>",
+                                 help="""
 
-                            Use=stage{1,2,3,4}; can be omitted otherwise.
+                                 Which controller robots will use in the experiment. All robots use the same
+                                 controller (homogeneous swarms).
 
-                            """)
+                                 Valid controllers:
 
-        parser.add_argument("--batch-criteria",
-                            metavar="[<filename>.<class name>,...]",
-                            help="""
+                                 - depth0.{CRW, DPO, MDPO},
+                                 - depth1.{BITD_DPO, OBITD_DPO},
+                                 - depth2.{BIRTD_DPO, OBIRTD_DPO}
 
-                            Name of criteria(s) to use to generate the batched experiments. <filename> must be from the
-                            variables/ directory, and <class name> must be a class within that file. Not all classes
-                            within the variables/ directory can be used as top level batch criteria; the ones that can
-                            are:
+                                 Use=stage{1,2,3,4}; can be omitted otherwise.
 
-                            - swarm_size
-                            - constant_density
-                            - ta_policy_set
-                            - oracle
-                            - temporal_variance
+                                 """)
 
-                            Use=stage{1,2,3,4,5}.
+        self.parser.add_argument("--scenario",
+                                 metavar="<block dist>.AxB",
+                                 help="""
 
-                            """,
-                            nargs='+',
-                            default=[])
+                                 Which scenario the defined controller should be run in. Scenario=block
+                                 distribution type + arena dimensions.
 
-        parser.add_argument("--pipeline",
-                            metavar="stages",
-                            help="""
+                                 Valid block distribution types:
 
+                                 - ``RN`` - Random
+                                 - ``SS`` - Single source
+                                 - ``DS`` - Dual source
+                                 - ``QS`` - Quad source
+                                 - ``PL`` - Power law
 
-                            Define which stages of the experimental pipeline to run:
+                                 A and B are the scenario X and Y dimensions (which can be any non-negative
+                                 integer values).
 
-                            Stage1: Generate the config files and command file for an experiment/set of experiments.
-                            Stage2: Run the experiments on previously generated set of input files for an experiment/set
-                                    of experiments. Part of default pipeline.
-                            Stage3: Perform CSpV averaging on a previously run experiment/set of experiments. Part of
-                                    default pipeline.
-                            Stage4: Perform graph generation on a previous run experiments/set of experiments. Part of
-                                    default pipeline.
-                            Stage5: Perform graph generation for comparing controllers AFTER graph generation for
-                                    batched experiments has been run. It is assumed that if this option is passed that
-                                    the # experiments/batch criteria is the same for all controllers that will be
-                                    compared. Not part of default pipeline.
+                                 Use=stage{1,2,3,4}; can be omitted otherwise.
 
-                            Specified as a space-separated list after the option.
-                            """,
-                            type=int,
-                            nargs='*',
-                            default=[1, 2, 3, 4]
-                            )
+                                 """)
 
-        parser.add_argument("--named-exp-dirs",
-                            help="""
+        self.parser.add_argument("--batch-criteria",
+                                 metavar="[<category>.<definition>,...]",
+                                 help="""
 
-                            If TRUE, then the names of directories within a batch experiment will be
-                            obtained from the batch criteria, rather than named 'expX'. Note that
-                            this optional is NOT compatible with the following batch criteria:
+                                 Definition of criteria(s) to use to defined the batched experiment.
 
-                            - temporal_variance
-                            """,
-                            action='store_true',
-                            default=False)
+                                 Specified as a list of 0 or 1 space separated strings, each with the following
+                                 general structure:
 
-        stage1 = parser.add_argument_group('stage1 (Generating experimental inputs)')
+                                 ``<category>.<definition>``
+
+                                 ``<category>`` must be a filename from the ``variables/`` directory, and
+                                 ``<definition>`` must be a parsable name (according to the requirements of the criteria
+                                 defined by the parser for ``<category>``).
+
+                                 Not all files within the ``variables/`` directory contain classes which can be used as
+                                 top level batch criteria; the ones that can are:
+
+                                 - swarm_size
+                                 - constant_density
+                                 - ta_policy_set
+                                 - oracle
+                                 - temporal_variance
+
+                                 Use=stage{1,2,3,4,5}.
+
+                                 """,
+                                 nargs='+',
+                                 default=[])
+
+        self.parser.add_argument("--pipeline",
+                                 metavar="stages",
+                                 help="""
+                                 Define which stages of the experimental pipeline to run:
+
+                                 Stage1: Generate the experiment definition from the template input file, batch
+                                 criteria, and other command line options. Part of default pipeline.
+
+                                 Stage2: Run the batched experiment on a previously generated experiment. Part of
+                                 default pipeline.
+
+                                 Stage3: Process experimental results after running the batched experiment. Part of
+                                 default pipeline.
+
+                                 Stage4: Perform graph generation after processing results for a batched
+                                 experiment. Part of default pipeline.
+
+                                 Stage5: Perform graph generation for comparing controllers AFTER graph
+                                 generation for batched experiments has been run. It is assumed that if this
+                                 option is passed that the # experiments/batch criteria is the same for all
+                                 controllers that will be compared. Not part of default pipeline.
+
+                                 """,
+                                 type=int,
+                                 nargs='*',
+                                 default=[1, 2, 3, 4]
+                                 )
+
+        self.parser.add_argument("--named-exp-dirs",
+                                 help="""
+
+                                 When passed, the names of directories within a batch experiment will be obtained from
+                                 the batch criteria, rather than generically as ``expX``, (``X`` is unique non-negative
+                                 integer) for each experiment in the batch.
+
+                                 This option is NOT compatible with the following batch criteria:
+
+                                 * temporal_variance
+                                 """,
+                                 action='store_true',
+                                 default=False)
+
+        stage1 = self.parser.add_argument_group('Stage1: Generating experiments')
 
         stage1.add_argument("--time-setup",
                             help="""
 
-                            The simulation time setup to use, which sets duration and metric
-                            reporting interval. For options, see time_setup.py
+                            The simulation time setup to use, which sets the simulation duration and metric reporting
+                            interval.
 
                             Use=stage{1}; can be omitted otherwise.
 
                             """,
                             default="time_setup.T5000")
-        stage1.add_argument("--n-physics-engines",
-                            choices=[1, 4, 8, 16, 24],
-                            type=int,
-                            help="""
 
-                            The # of physics engines to use during simulation (yay ARGoS!). If n >
-                            1, the engines will be tiled in a uniform grid within the arena (X and Y
-                            spacing may not be the same depending on dimensions and how many engines
-                            are chosen, however).
-
-                            Use=stage{1}; can be omitted otherwise.
-
-                            """,
-                            default=1)
-        stage1.add_argument("--physics-iter-per-tick",
-                            type=int,
-                            help="""
-
-                            The # of iterations all physics engines should perform per tick
-                            between each time the controller loops are run.
-
-                            Use=stage{1}; can be omitted otherwise.
-
-                            """,
-                            default=10)
         stage1.add_argument("--n-sims",
                             help="""
 
@@ -238,7 +243,9 @@ class Cmdline:
                             """,
                             type=int,
                             default=1)
+
         stage1.add_argument("--n-threads",
+                            type=int,
                             help="""
 
                             How many ARGoS simulation threads to use for each simulation in each experiment.
@@ -246,9 +253,50 @@ class Cmdline:
                             Use=stage{1}; can be omitted otherwise.
 
                             """,
-                            type=int,
                             default=1)
-        stage1.add_argument("--with-robot-rab",
+
+        stage1.add_argument("--static-cache-blocks",
+                            help="""
+
+                            Specify the # of blocks used when the static cache is respawned (depth1 controllers only).
+
+                            Use=stage{1}; can be omitted otherwise.
+
+                            """,
+                            default=None)        # Physics engines options
+        physics = self.parser.add_argument_group('Stage1: Physics',
+                                                 'Physics engine options for stage1')
+
+        physics.add_argument("--physics-n-engines",
+                             choices=[1, 4, 8, 16, 24],
+                             type=int,
+                             help="""
+
+                            The # of physics engines to use during simulation (yay ARGoS!). If n > 1, the engines will
+                            be tiled in a uniform grid within the arena (X and Y spacing may not be the same depending
+                            on dimensions and how many engines are chosen, however).
+
+                            Use=stage{1}; can be omitted otherwise.
+
+                            """,
+                             default=1)
+        physics.add_argument("--physics-iter-per-tick",
+                             type=int,
+                             help="""
+
+                            The # of iterations all physics engines should perform per tick
+                            between each time the controller loops are run.
+
+                            Use=stage{1}; can be omitted otherwise.
+
+                            """,
+                             default=10)
+
+        # Robot options
+        robots = self.parser.add_argument_group('Stage1: Robots',
+                                                'Robot options (stage1 only)')
+
+        robots.add_argument("--with-robot-rab",
                             help="""
 
                             Include the Range and Bearing sensor/actuator in the generated input files for robot if
@@ -259,7 +307,8 @@ class Cmdline:
                             """,
                             action="store_true",
                             default=False)
-        stage1.add_argument("--with-robot-leds",
+
+        robots.add_argument("--with-robot-leds",
                             help="""
 
                             Include the robot LED actuator in the generated input files if TRUE. Otherwise, it is
@@ -270,7 +319,8 @@ class Cmdline:
                             """,
                             action="store_true",
                             default=False)
-        stage1.add_argument("--with-robot-battery",
+
+        robots.add_argument("--with-robot-battery",
                             help="""
 
                             Include the robot battery sensor in the generated input files if TRUE. Otherwise, it is
@@ -282,22 +332,7 @@ class Cmdline:
                             action="store_true",
                             default=False)
 
-        stage1.add_argument("--with-rendering",
-                            help="""
-
-                            Specify that the ARGoS Qt/OpenGL visualization subtree should be left in the input .argos
-                            file. By default it is stripped out.
-
-                            If TRUE, then any files in the frames/ directory of each simulation will be rendered into a
-                            unique video file with directory using ffmpeg (precise command configurable). This option
-                            assumes that [ffmpeg, Xvfb] programs can be found.
-
-                            Use=stage{1,2,3}; can be omitted otherwise.
-                            """,
-
-                            action='store_true')
-
-        stage1.add_argument("--n-blocks",
+        robots.add_argument("--n-blocks",
                             help="""
 
                             Specify the # blocks that should be used in the simulation (evenly split between cube and
@@ -308,34 +343,23 @@ class Cmdline:
                             """,
                             type=int,
                             default=None)
-        stage1.add_argument("--static-cache-blocks",
-                            help="""
 
-                            Specify the # of blocks used when the static cache is respawned (depth1 controllers only).
-
-                            Use=stage{1}; can be omitted otherwise.
-
-                            """,
-                            default=None)
-
-        stage2 = parser.add_argument_group('stage2 (Running experiments)')
+        stage2 = self.parser.add_argument_group('Stage2: Running experiments')
         stage2.add_argument("--exec-method",
                             help="""
 
                             Specify the execution method to use when running experiments.
 
-                            local: Run the maximum # of simulations simultaneously on the local machine using GNU
-                                   parallel. # of simultaneous simulations is determined by # cores on machine / # ARGoS
-                                   threads.
+                            ``local` - Run the maximum # of simulations simultaneously on the local machine using GNU
+                            parallel. # of simultaneous simulations is determined by # cores on machine / # ARGoS
+                            threads.
 
-                            hpc: Use GNU parallel in an HPC environment to run the specified # of
-                                 simulations simultaneously on a computing cluster. The $MSICLUSTER
-                                 environment variable will be used to identify the cluster sierra
-                                 was invoked on and select the appropriate ARGoS executable. For
-                                 example, if $MSICLUSTER=itasca, then ARGoS will be invoked via
-                                 'argos3-itasca'. This option is provided so that in HPC
-                                 environments with multiple clusters with different architectures
-                                 ARGoS can be compiled natively for each for maximum performance.
+                            ``hpc`` - Use GNU parallel in an HPC environment to run the specified # of simulations
+                            simultaneously on a computing cluster. The $MSICLUSTER environment variable will be used to
+                            identify the cluster sierra was invoked on and select the appropriate ARGoS executable. For
+                            example, if $MSICLUSTER=itasca, then ARGoS will be invoked via 'argos3-itasca'. This option
+                            is provided so that in HPC environments with multiple clusters with different architectures
+                            ARGoS can be compiled natively for each for maximum performance.
 
                             Use=stage{2}; can be omitted otherwise.
 
@@ -361,7 +385,7 @@ class Cmdline:
                             """,
                             action='store_true',
                             default=False)
-        stage3 = parser.add_argument_group('stage3 (experiment averaging)')
+        stage3 = self.parser.add_argument_group('Stage3: Preprocessing experiment results')
         stage3.add_argument('--no-verify-results',
                             help="""
 
@@ -397,28 +421,47 @@ class Cmdline:
                             """,
                             choices=['render', 'average', 'all'],
                             default=['all'])
-        stage3.add_argument("--render-cmd-opts",
-                            help="""
 
-                            Specify the ffmpeg options to appear between the specification of the input .png files and
-                            the specification of the output file. The default is suitable for use with ARGoS frame
-                            grabbing set to a frames of 1600x1200 to output a reasonable quality video.
+        # Rendering options
+        rendering = self.parser.add_argument_group(
+            'Stage3: Rendering', 'Rendering options for stage3')
+        rendering.add_argument("--with-rendering",
+                               help="""
 
-                            Use=stage{3}; can be omitted otherwise.
+                               Specify that the ARGoS Qt/OpenGL visualization subtree should be left in the input .argos
+                               file. By default it is stripped out.
 
-                            """,
-                            default="-r 10 -s:v 800x600 -c:v libx264 -crf 25 -filter:v scale=-2:956 -pix_fmt yuv420p")
-        stage3.add_argument("--render-cmd-ofile",
-                            help="""
+                               If TRUE, then any files in the frames/ directory of each simulation will be rendered into
+                               a unique video file with directory using ffmpeg (precise command configurable). This
+                               option assumes that [ffmpeg, Xvfb] programs can be found.
 
-                            Specify the output filename and extension for the ffmpeg rendered video.
+                               Use=stage{1,2,3}; can be omitted otherwise.
+                               """,
+                               action='store_true')
 
-                            Use=stage{3}; can be omitted otherwise.
+        rendering.add_argument("--render-cmd-opts",
+                               help="""
 
-                            """,
-                            default="video.mp4")
+                               Specify the ffmpeg options to appear between the specification of the input .png files
+                               and the specification of the output file. The default is suitable for use with ARGoS
+                               frame grabbing set to a frames of 1600x1200 to output a reasonable quality video.
 
-        stage4 = parser.add_argument_group('stage4 (graph generation)')
+                               Use=stage{3}; can be omitted otherwise.
+
+                               """,
+                               default="-r 10 -s:v 800x600 -c:v libx264 -crf 25 -filter:v scale=-2:956 -pix_fmt yuv420p")
+
+        rendering.add_argument("--render-cmd-ofile",
+                               help="""
+
+                               Specify the output filename and extension for the ffmpeg rendered video.
+
+                               Use=stage{3}; can be omitted otherwise.
+
+                               """,
+                               default="video.mp4")
+
+        stage4 = self.parser.add_argument_group('Stage4: Generating graphs')
 
         stage4.add_argument("--with-hists",
                             help="""
@@ -442,17 +485,6 @@ class Cmdline:
                             """,
                             default='all')
 
-        stage4.add_argument("--gen-vc-plots",
-                            help="""
-
-                            If TRUE, then the plots of ideal vs. observed swarm [reactivity,
-                            adaptability] will be generated for each experiment.
-
-                            Use=stage{4}; can be omitted otherwise.
-
-                            """,
-                            action="store_true")
-
         stage4.add_argument("--plot-log-xaxis",
                             help="""
 
@@ -464,65 +496,82 @@ class Cmdline:
                             """,
                             default=False)
 
-        stage4.add_argument("--envc-cs-method",
-                            help="""
+        # Variance curve similarity options
+        vcs = self.parser.add_argument_group('Stage4: VCS',
+                                             'Variance Curve Similarity options for stage4')
 
-                            Environmental conditions curve similarity method. Specify the method to use to calculate the
-                            similarity between curves of applied variance (non-ideal conditions) and ideal conditions
-                            (exp0). Only applies for temporal_variance batch criteria. Valid values are:
+        vcs.add_argument("--gen-vc-plots",
+                         help="""
 
-                            pcm:          Partial Curve Mapping (Witowski2012)
-                            area_between: Area between the two curves (Jekel2018)
-                            frechet:      Frechet distance (Frechet1906)
-                            dtw:          Dynamic Time Warping (Berndt1994)
-                            curve_length: Arc-length distance along the curve from the origin of (applied - ideal)
-                                          curve (Andrade-campos2009).
+                          If TRUE, then the plots of ideal vs. observed swarm [reactivity,
+                          adaptability] will be generated for each experiment.
 
-                            Use=stage{4}; can be omitted otherwise.
+                          Use=stage{4}; can be omitted otherwise.
 
-                            """,
-                            choices=["pcm", "area_between", "frechet", "dtw", "curve_length"],
-                            default="pcm")
-        stage4.add_argument("--reactivity-cs-method",
-                            help="""
+                          """,
+                         action="store_true")
 
-                            Reactivity calculatation curve similarity method. Specify the method to use to calculate the
-                            similarity between the inverted applied variance curve for a simulation and the corrsponding
-                            performance curve.
+        vcs.add_argument("--envc-cs-method",
+                         help="""
 
-                            pcm:          Partial Curve Mapping (Witowski2012)
-                            area_between: Area between the two curves (Jekel2018)
-                            frechet:      Frechet distance (Frechet1906)
-                            dtw:          Dynamic Time Warping (Berndt1994)
-                            curve_length: Arc-length distance along the curve from the origin of (applied - ideal)
-                                          curve (Andrade-campos2009).
+                         Environmental conditions curve similarity method. Specify the method to use to calculate the
+                         similarity between curves of applied variance (non-ideal conditions) and ideal conditions
+                         (exp0). Only applies for temporal_variance batch criteria. Valid values are:
 
-                            Use=stage{4}; can be omitted otherwise.
+                         pcm:          Partial Curve Mapping (Witowski2012)
+                         area_between: Area between the two curves (Jekel2018)
+                         frechet:      Frechet distance (Frechet1906)
+                         dtw:          Dynamic Time Warping (Berndt1994)
+                         curve_length: Arc-length distance along the curve from the origin of (applied - ideal)
+                                       curve (Andrade-campos2009).
 
-                            """,
-                            choices=["pcm", "area_between", "frechet", "dtw", "curve_length"],
-                            default="pcm")
-        stage4.add_argument("--adaptability-cs-method",
-                            help="""
+                         Use=stage{4}; can be omitted otherwise.
 
-                            Adaptability calculatation curve similarity method. Specify the method to use to calculate
-                            the similarity between the inverted applied variance curve for a simulation and the corrsponding
-                            performance curve.
+                         """,
+                         choices=["pcm", "area_between", "frechet", "dtw", "curve_length"],
+                         default="pcm")
 
-                            pcm:          Partial Curve Mapping (Witowski2012)
-                            area_between: Area between the two curves (Jekel2018)
-                            frechet:      Frechet distance (Frechet1906)
-                            dtw:          Dynamic Time Warping (Berndt1994)
-                            curve_length: Arc-length distance along the curve from the origin of (applied - ideal)
-                                          curve (Andrade-campos2009).
+        vcs.add_argument("--reactivity-cs-method",
+                         help="""
 
-                            Use=stage{4}; can be omitted otherwise.
+                         Reactivity calculatation curve similarity method. Specify the method to use to calculate the
+                         similarity between the inverted applied variance curve for a simulation and the corrsponding
+                         performance curve.
 
-                            """,
-                            choices=["pcm", "area_between", "frechet", "dtw", "curve_length"],
-                            default="pcm")
+                         pcm:          Partial Curve Mapping (Witowski2012)
+                         area_between: Area between the two curves (Jekel2018)
+                         frechet:      Frechet distance (Frechet1906)
+                         dtw:          Dynamic Time Warping (Berndt1994)
+                         curve_length: Arc-length distance along the curve from the origin of (applied - ideal)
+                                       curve (Andrade-campos2009).
 
-        stage5 = parser.add_argument_group('stage5 (Inter-batch controller/scenario comparison)')
+                         Use=stage{4}; can be omitted otherwise.
+
+                         """,
+                         choices=["pcm", "area_between", "frechet", "dtw", "curve_length"],
+                         default="pcm")
+        vcs.add_argument("--adaptability-cs-method",
+                         help="""
+
+                         Adaptability calculatation curve similarity method. Specify the method to use to calculate the
+                         similarity between the inverted applied variance curve for a simulation and the corrsponding
+                         performance curve.
+
+                         pcm:          Partial Curve Mapping (Witowski2012)
+                         area_between: Area between the two curves (Jekel2018)
+                         frechet:      Frechet distance (Frechet1906)
+                         dtw:          Dynamic Time Warping (Berndt1994)
+                         curve_length: Arc-length distance along the curve from the origin of (applied - ideal)
+                                       curve (Andrade-campos2009).
+
+                         Use=stage{4}; can be omitted otherwise.
+
+                         """,
+                         choices=["pcm", "area_between", "frechet", "dtw", "curve_length"],
+                         default="pcm")
+
+        stage5 = self.parser.add_argument_group('stage5',
+                                                'General stage5 options')
 
         stage5.add_argument("--inter-batch-controllers",
                             help="""
@@ -534,7 +583,6 @@ class Cmdline:
 
                             """,
                             default='depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO')
-        return parser
 
 
 class CmdlineValidator():
@@ -551,3 +599,7 @@ class CmdlineValidator():
         if args.gen_stddev:
             assert 1 == len(args.batch_criteria),\
                 "FATAL: Stddev generation only supported with univariate batch criteria"
+
+
+def sphinx_argparse_object():
+    return Cmdline().parser

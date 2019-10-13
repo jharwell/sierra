@@ -1,20 +1,18 @@
-"""
- Copyright 2018 Nathan White, All rights reserved.
-
-  This file is part of SIERRA.
-
-  SIERRA is free software: you can redistribute it and/or modify it under the
-  terms of the GNU General Public License as published by the Free Software
-  Foundation, either version 3 of the License, or (at your option) any later
-  version.
-
-  SIERRA is distributed in the hope that it will be useful, but WITHOUT ANY
-  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License along with
-  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
+# Copyright 2018 Nathan White, All rights reserved.
+#
+#  This file is part of SIERRA.
+#
+#  SIERRA is free software: you can redistribute it and/or modify it under the
+#  terms of the GNU General Public License as published by the Free Software
+#  Foundation, either version 3 of the License, or (at your option) any later
+#  version.
+#
+#  SIERRA is distributed in the hope that it will be useful, but WITHOUT ANY
+#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+#  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License along with
+#  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 from variables.base_variable import BaseVariable
 from variables.message_frequency_parser import MessageFrequencyParser
@@ -46,6 +44,7 @@ class MessageFrequency(BaseVariable):
 
     def gen_tag_addlist(self):
         return []
+
 
 def Factory(criteria_str):
     """
@@ -81,9 +80,8 @@ def Factory(criteria_str):
         lst = []
         for x in range(x_start, x_end, 5):
             for y in range(y_start, y_end, 5):
-                lst.append((x*0.01,y*0.01))
+                lst.append((x*0.01, y*0.01))
         return lst
-
 
     def __init__(self):
         MessageFrequency.__init__(self, gen_variances(criteria_str))
