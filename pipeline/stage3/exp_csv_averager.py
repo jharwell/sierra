@@ -26,7 +26,7 @@ class ExpCSVAverager:
 
     Attributes:
       ro_params(dict): Dictionary of read-only configuration for CSV averaging:
-          template_config_leaf(str): Leaf (i.e. no preceding path to the template XML configuration file
+          template_input_leaf(str): Leaf (i.e. no preceding path to the template XML configuration file
                                 for the experiment.
           no_verify(bool): Should result verification be skipped?
           gen_stddev(bool): Should standard deviation be generated (and therefore errorbars
@@ -39,9 +39,9 @@ class ExpCSVAverager:
 
     def __init__(self, ro_params, exp_output_root):
         # will get the main name and extension of the config file (without the full absolute path)
-        self.template_config_leaf = ro_params['template_config_leaf']
-        self.template_config_fname, self.template_config_ext = os.path.splitext(
-            os.path.basename(self.template_config_leaf))
+        self.template_input_leaf = ro_params['template_input_leaf']
+        self.template_input_fname, self.template_input_ext = os.path.splitext(
+            os.path.basename(self.template_input_leaf))
 
         self.exp_output_root = os.path.abspath(exp_output_root)
 
@@ -54,7 +54,7 @@ class ExpCSVAverager:
         self.gen_stddev = ro_params['gen_stddev']
         os.makedirs(self.avgd_output_root, exist_ok=True)
 
-        # to be formatted like: self.config_name_format.format(name, experiment_number)
+        # to be formatted like: self.input_name_format.format(name, experiment_number)
         format_base = "{}_{}"
         self.output_name_format = format_base + "_output"
 
@@ -72,7 +72,7 @@ class ExpCSVAverager:
         csvs = {}
 
         pattern = self.output_name_format.format(
-            re.escape(self.template_config_leaf), "\d+")
+            re.escape(self.template_input_leaf), "\d+")
 
         # check to make sure all directories are simulation runs, skipping the directory within each
         # experiment that the averaged data is placed in

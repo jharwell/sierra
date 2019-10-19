@@ -32,7 +32,7 @@ class ExpInputGenerator:
        a *single* experiment.
 
     Attributes:
-      template_config_path(str): Path(relative to current dir or absolute) to the template XML
+      template_input_file(str): Path(relative to current dir or absolute) to the template XML
                                  configuration file.
       generation_root(str): Where generated XML input files for ARGoS for this experiment should be
                             stored(relative to current dir or absolute).
@@ -51,16 +51,16 @@ class ExpInputGenerator:
                       with_robot_battery(bool): Should the battery sensor be enabled?
     """
 
-    def __init__(self, template_config_file, generation_root, exp_output_root, exp_def_fname,
+    def __init__(self, template_input_file, generation_root, exp_output_root, exp_def_fname,
                  cmdopts):
-        assert os.path.isfile(template_config_file), \
+        assert os.path.isfile(template_input_file), \
             "The path '{}' (which should point to the main config file) did not point to a file".format(
-                template_config_file)
-        self.template_config_file = os.path.abspath(template_config_file)
+                template_input_file)
+        self.template_input_file = os.path.abspath(template_input_file)
 
         # will get the main name and extension of the config file (without the full absolute path)
         self.main_config_name, self.main_config_extension = os.path.splitext(
-            os.path.basename(self.template_config_file))
+            os.path.basename(self.template_input_file))
 
         # where the generated config and command files should be stored
         self.generation_root = os.path.abspath(generation_root)
@@ -98,7 +98,7 @@ class ExpInputGenerator:
         files.
         """
         # create an object that will edit the XML file
-        xml_luigi = XMLLuigi(self.template_config_file)
+        xml_luigi = XMLLuigi(self.template_input_file)
 
         # make the save path
         os.makedirs(self.generation_root, exist_ok=True)

@@ -79,13 +79,16 @@ class SwarmSize(bc.UnivarBatchCriteria):
     def sc_sort_scenarios(self, scenarios: list) -> tp.List[str]:
         return scenarios  # No sorting needed
 
-    def graph_xvals(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[float]:
+    def graph_xticks(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[float]:
         ret = self.swarm_sizes(cmdopts, exp_dirs)
 
         if cmdopts['plot_log_xaxis']:
             return [math.log2(x) for x in ret]
         else:
             return ret
+
+    def graph_xticklabels(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[float]:
+        return self.graph_xticklabels(cmdopts, exp_dirs)
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
         return "Swarm Size"

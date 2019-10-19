@@ -62,7 +62,7 @@ def __sierra_run():
     if controller is not None and scenario is not None:
         print("- Controller={0}, Scenario={1}".format(controller, scenario))
 
-        template, ext = os.path.splitext(os.path.basename(args.template_config_file))
+        template, ext = os.path.splitext(os.path.basename(args.template_input_file))
 
         scenario = __batch_root_name(args.batch_criteria, scenario)
         if args.generation_root is None:

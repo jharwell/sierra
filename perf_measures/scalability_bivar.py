@@ -78,8 +78,8 @@ class EfficiencyBivar:
                 title='Swarm Efficiency (Normalized)',
                 xlabel=batch_criteria.graph_ylabel(self.cmdopts),
                 ylabel=batch_criteria.graph_xlabel(self.cmdopts),
-                xtick_labels=batch_criteria.graph_yvals(self.cmdopts),
-                ytick_labels=batch_criteria.graph_xvals(self.cmdopts)).generate()
+                xtick_labels=batch_criteria.graph_yticks(self.cmdopts),
+                ytick_labels=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
     # Private functions
     def __calculate_metric(self, ipath, batch_criteria, must_exist=True):
@@ -136,8 +136,8 @@ class FractionalPerformanceLossBivar:
                 title="Swarm Scalability: Fractional Performance Loss Due To Inter-robot Interference",
                 xlabel=batch_criteria.graph_ylabel(self.cmdopts),
                 ylabel=batch_criteria.graph_xlabel(self.cmdopts),
-                xtick_labels=batch_criteria.graph_yvals(self.cmdopts),
-                ytick_labels=batch_criteria.graph_xvals(self.cmdopts)).generate()
+                xtick_labels=batch_criteria.graph_yticks(self.cmdopts),
+                ytick_labels=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
 
 class KarpFlattBivar:
@@ -163,13 +163,23 @@ class KarpFlattBivar:
                                                          self.inter_perf_csv,
                                                          "positive")(batch_criteria)
 
-        # +1 because karp-flatt is only defined for exp >= 1
         sizes = batch_criteria.swarm_sizes(self.cmdopts)
+        xfactor = 0
+        yfactor = 0
 
-        for i in range(0, len(df.index)):
-            for j in range(0, len(df.columns)):
+        # Swarm size is along rows (X), so the first column by definition has perfect scalability
+        if isinstance(batch_criteria.criteria1, ss.SwarmSize):
+            df.iloc[:, 0] = 0.0
+            yfactor = 1
+
+        # Swarm size is along rows (Y), so the first row by definition has perfect scalability
+        else:
+            df.iloc[0, :] = 0.0
+            xfactor = 1
+
+        for i in range(0 + xfactor, len(df.index)):
+            for j in range(0 + yfactor, len(df.columns)):
                 x = df.iloc[i, j]
-                n = sizes[i][j]
 
                 # We need to know which of the 2 variables was swarm size, in order to determine
                 # the correct dimension along which to compute the metric, which depends on
@@ -191,8 +201,8 @@ class KarpFlattBivar:
                 title="Swarm Serial Fraction: Karp-Flatt Metric",
                 xlabel=batch_criteria.graph_ylabel(self.cmdopts),
                 ylabel=batch_criteria.graph_xlabel(self.cmdopts),
-                xtick_labels=batch_criteria.graph_yvals(self.cmdopts),
-                ytick_labels=batch_criteria.graph_xvals(self.cmdopts)[1:]).generate()
+                xtick_labels=batch_criteria.graph_yticks(self.cmdopts),
+                ytick_labels=batch_criteria.graph_xticks(self.cmdopts)[1:]).generate()
 
 
 class ScalabilityBivar:

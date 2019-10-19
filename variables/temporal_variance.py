@@ -116,7 +116,7 @@ class TemporalVariance(UnivarBatchCriteria):
     def sc_sort_scenarios(self, scenarios: tp.List[str]) -> tp.List[str]:
         return scenarios  # No sorting needed
 
-    def graph_xvals(self, cmdopts: tp.Dict[str, str], exp_dirs: tp.List[str] = None) -> tp.List[float]:
+    def graph_xticks(self, cmdopts: tp.Dict[str, str], exp_dirs: tp.List[str] = None) -> tp.List[float]:
         # If exp_dirs is passed, then we have been handed a subset of the total # of directories in
         # the batch exp root, and so n_exp() will return more experiments than we actually
         # have. This behavior is needed to correct extract x/y values for bivar experiments.
@@ -130,6 +130,9 @@ class TemporalVariance(UnivarBatchCriteria):
         ret = [0]
         ret.extend([vcs.EnvironmentalCS(cmdopts, x)(self, exp_dirs) for x in range(1, m)])
         return ret
+
+    def graph_xticklabels(self, cmdopts: tp.Dict[str, str], exp_dirs: tp.List[str] = None) -> tp.List[float]:
+        return self.graph_xticks(cmdopts, exp_dirs)
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
         return vcs.method_xlabel(cmdopts["envc_cs_method"])

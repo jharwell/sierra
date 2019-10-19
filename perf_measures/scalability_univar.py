@@ -73,14 +73,13 @@ class EfficiencyUnivar:
         if stddev_df is not None:
             stddev_df.to_csv(cum_stem + ".stddev", sep=';', index=False)
 
-        # print(metric_df)
         BatchRangedGraph(inputy_stem_fpath=cum_stem,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-efficiency.png"),
                          title="Swarm Efficiency (normalized)",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="Efficiency",
-                         xvals=batch_criteria.graph_xvals(self.cmdopts),
+                         xvals=batch_criteria.graph_xticks(self.cmdopts),
                          legend=None,
                          polynomial_fit=-1).generate()
 
@@ -121,7 +120,7 @@ class ProjectivePerformanceComparisonUnivar:
     def generate(self, df, batch_criteria):
         cum_stem = os.path.join(self.cmdopts["collate_root"], "pm-pp-comp-" + self.projection_type)
         df.to_csv(cum_stem + ".csv", sep=';', index=False)
-        xvals = batch_criteria.graph_xvals(self.cmdopts)
+        xvals = batch_criteria.graph_xticks(self.cmdopts)
 
         BatchRangedGraph(inputy_stem_fpath=cum_stem + ".csv",
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
@@ -178,7 +177,7 @@ class FractionalPerformanceLossUnivar:
                          title="Swarm Scalability: Fractional Performance Loss Due To Inter-robot Interference",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="Scalability Value",
-                         xvals=batch_criteria.graph_xvals(self.cmdopts),
+                         xvals=batch_criteria.graph_xticks(self.cmdopts),
                          legend=None,
                          polynomial_fit=-1).generate()
 
@@ -205,10 +204,12 @@ class KarpFlattUnivar:
                                                           self.inter_perf_csv,
                                                           "positive")(batch_criteria)
 
-        # +1 because karp-flatt is only defined for exp >= 1
-        sizes = batch_criteria.swarm_sizes(self.cmdopts)[1:]
+        sizes = batch_criteria.swarm_sizes(self.cmdopts)
 
-        for i in range(0, len(df.columns)):
+        # Perfect scalability with only 1 robot
+        df[df.columns[0]] = 0.0
+
+        for i in range(1, len(df.columns)):
             c = df.columns[i]
             s = sizes[i]
             df[c] = (1.0 / df[c] - 1.0 / s) / (1 - 1.0 / s)
@@ -225,7 +226,7 @@ class KarpFlattUnivar:
                          title="Swarm Serial Fraction: Karp-Flatt Metric",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="",
-                         xvals=batch_criteria.graph_xvals(self.cmdopts)[1:],
+                         xvals=batch_criteria.graph_xticks(self.cmdopts)[1:],
                          legend=None,
                          polynomial_fit=-1).generate()
 

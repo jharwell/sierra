@@ -58,7 +58,7 @@ class ProjectivePerformanceCalculatorUnivar:
         scale_cols = [c for c in perf_df.columns if c not in [exp0_dir]]
         proj_df = pd.DataFrame(columns=scale_cols, index=[0])
 
-        xvals = batch_criteria.graph_xvals(self.cmdopts)
+        xvals = batch_criteria.graph_xticks(self.cmdopts)
 
         for exp_num in range(1, len(scale_cols) + 1):
             exp_col = exp_dirs[exp_num]
@@ -126,7 +126,7 @@ class ProjectivePerformanceCalculatorBivar:
 
     def __project_vals_col(self, perf_df, batch_criteria):
         proj_df = pd.DataFrame(columns=perf_df.columns[1:], index=perf_df.index)
-        yvals = batch_criteria.graph_yvals(self.cmdopts)
+        yvals = batch_criteria.graph_yticks(self.cmdopts)
 
         for i in range(0, len(proj_df.index)):
             for j in range(0, len(proj_df.columns)):
@@ -146,7 +146,7 @@ class ProjectivePerformanceCalculatorBivar:
 
     def __project_vals_row(self, perf_df, batch_criteria):
         proj_df = pd.DataFrame(columns=perf_df.columns, index=perf_df.index[1:])
-        xvals = batch_criteria.graph_xvals(self.cmdopts)
+        xvals = batch_criteria.graph_xticks(self.cmdopts)
 
         for i in range(0, len(proj_df.index)):
             for j in range(0, len(proj_df.columns)):

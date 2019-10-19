@@ -42,6 +42,7 @@ class TAPolicySet(UnivarBatchCriteria):
         policies: List of policies to enable for a specific simulation.
         swarm_size: Swarm size to use for a specific simulation.
     """
+    kPolicies = ['random', 'stoch_greedy_nbhd', 'strict_greedy', 'epsilon_greedy']
 
     def __init__(self, cli_arg: str,
                  main_config: tp.Dict[str, str],
@@ -99,8 +100,16 @@ class TAPolicySet(UnivarBatchCriteria):
         return sorted(scenarios,
                       key=lambda s: float(s.split('-')[2].split('.')[0][0:3].replace('p', '.')))
 
-    def graph_xvals(self, cmdopts: tp.Dict[str, str], exp_dirs: tp.List[str]) -> tp.List[float]:
-        return [i for i in range(1, self.n_exp() + 1)]
+    def graph_xticks(self, cmdopts: tp.Dict[str, str], exp_dirs: tp.List[str]) -> tp.List[float]:
+        if exp_dirs is not None:
+            dirs = exp_dirs
+        else:
+            dirs = self.gen_exp_dirnames(cmdopts)
+
+        return [i for i in range(1, len(dirs) + 1)]
+
+    def graph_xticklabels(self, cmdopts: tp.Dict[str, str], exp_dirs) -> tp.List[float]:
+        return [' '.join(map(lambda x: x.capitalize(), policy.split('_'))) for policy in TAPolicySet.kPolicies]
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
         return "Task Allocation Policy"
@@ -146,12 +155,9 @@ def Factory(cli_arg: str,
     """
     attr = TAPolicySetParser().parse(cli_arg)
 
-    def gen_policies():
-        return ['random', 'stoch_greedy_nbhd', 'strict_greedy', 'epsilon_greedy']
-
     def __init__(self):
         TAPolicySet.__init__(self, cli_arg, main_config, batch_generation_root,
-                             gen_policies(), attr.get('swarm_size', None))
+                             TAPolicySet.kPolicies, attr.get('swarm_size', None))
 
     return type(cli_arg,
                 (TAPolicySet,),

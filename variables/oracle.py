@@ -101,8 +101,11 @@ class Oracle(UnivarBatchCriteria):
     def sc_sort_scenarios(self, scenarios: str) -> tp.List[str]:
         return scenarios  # No sorting needed
 
-    def graph_xvals(self, cmdopts: tp.Dict[str, str], exp_dirs: tp.List[str]) -> str:
+    def graph_xticks(self, cmdopts: tp.Dict[str, str], exp_dirs: tp.List[str]) -> str:
         return [d for d in self.gen_exp_dirnames(cmdopts, True)]
+
+    def graph_xticklabels(self, cmdopts: tp.Dict[str, str], exp_dirs: tp.List[str] = None) -> tp.List[float]:
+        raise NotImplementedError
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
         return "Oracular Information Type"

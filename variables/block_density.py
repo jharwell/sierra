@@ -96,25 +96,32 @@ class BlockConstantDensity(cd.ConstantDensity):
         else:
             return dirs
 
-    def graph_xvals(self, cmdopts: tp.Dict[str, str]) -> tp.List[float]:
-        densities = []
-        for i in range(0, self.n_exp()):
+    def graph_xticks(self, cmdopts: tp.Dict[str, str], exp_dirs) -> tp.List[float]:
+        if exp_dirs is not None:
+            dirs = exp_dirs
+        else:
+            dirs = self.gen_exp_dirnames(cmdopts)
+
+        areas = []
+        for i in range(0, len(dirs)):
             pickle_fpath = os.path.join(self.batch_generation_root,
-                                        self.gen_exp_dirnames(i),
+                                        dirs[i],
                                         "exp_def.pkl")
             exp_def = utils.unpickle_exp_def(pickle_fpath)
-            n_blocks = 0
             for e in exp_def:
-                if e[1] == "n_cube" or e[1] == "n_ramp":
-                    n_blocks += int(e[2])
                 if e[0] == ".//arena" and e[1] == "size":
                     x, y, z = e[2].split(",")
-            densities.append(n_blocks / (int(x) * int(y)))
+                    areas.append(int(x) * int(y))
+        return areas
 
-        return densities
+    def graph_xticklabels(self, cmdopts: tp.Dict[str, str], exp_dirs) -> tp.List[float]:
+        return [str(x) + r' $m^2$' for x in self.graph_xticks(cmdopts, exp_dirs)]
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
-        return "Block Density"
+        return r"Arena Area ($m^2$)".format(self.target_density)
+
+    def pm_query(self, query) -> bool:
+        return query in ['blocks-collected']
 
 
 def Factory(cli_arg: str, main_config:
@@ -144,8 +151,6 @@ def Factory(cli_arg: str, main_config:
     else:
         raise NotImplementedError(
             "Unsupported block dstribution for constant density experiments: Only SS,DS,QS,RN supported")
-
-    print(dims)
 
     def __init__(self):
         BlockConstantDensity.__init__(self,

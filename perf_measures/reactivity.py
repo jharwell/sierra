@@ -49,7 +49,6 @@ class ReactivityUnivar:
         for i in range(1, batch_criteria.n_exp()):
             df[batch_exp_dirnames[1:]] = vcs.ReactivityCS(self.cmdopts, batch_criteria, i)()
 
-        print(df)
         stem_opath = os.path.join(self.cmdopts["collate_root"], "pm-reactivity")
 
         # Write .csv to file
@@ -62,7 +61,7 @@ class ReactivityUnivar:
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel=vcs.method_ylabel(self.cmdopts["reactivity_cs_method"],
                                                   'reactivity'),
-                         xvals=batch_criteria.graph_xvals(self.cmdopts)[1:],
+                         xvals=batch_criteria.graph_xticks(self.cmdopts)[1:],
                          legend=None,
                          polynomial_fit=-1).generate()
 

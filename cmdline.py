@@ -30,7 +30,7 @@ class Cmdline:
         """
         self.parser = argparse.ArgumentParser(prog='sierra',
                                               formatter_class=HelpFormatter)
-        self.parser.add_argument("--template-config-file",
+        self.parser.add_argument("--template-input-file",
                                  metavar="filepath",
                                  help="""
 
@@ -573,16 +573,27 @@ class Cmdline:
 
         stage5 = self.parser.add_argument_group('Stage5', 'General stage5 options')
 
-        stage5.add_argument("--inter-batch-controllers",
+        stage5.add_argument("--controller-comp-list",
                             help="""
 
                             Comma separated list of controllers to compare within ``<sierra root>``. If None, then the
                             default set of controllers will be used for comparison.
 
+                            The first controller in this list will be used for normalization comparison plots, if
+                            ``--normalize-comparisons`` is passed
+
                             Use=stage{5}; can be omitted otherwise.
 
                             """,
                             default='depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO')
+
+        stage5.add_argument("--normalize-comparisons",
+                            help="""
+
+                            Specify that controller comparisons should be normalized against the controller of primary interest
+
+                            """,
+                            action='store_true')
 
 
 class CmdlineValidator():

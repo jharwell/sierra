@@ -17,46 +17,80 @@
 
 import os
 import yaml
-from .inter_batch_comparator import InterBatchComparator
+import typing as tp
+from .univar_comparator import UnivarComparator
+from .bivar_comparator import BivarComparator
 
 
 class PipelineStage5:
 
     """
 
-    Implements stage 5 of the experimental pipeline:
-
-    Compare controllers that have been tested with the same batch criteria across different
-    performance measures.
+    Implements stage 5 of the experimental pipeline: comparing controllers that have been tested
+    with the same batch criteria using different performance measures across scenarios and within
+    the same scenario
 
     Attributes:
-      targets(list): List of controllers (as strings) that should be compared within sierra_root.
+        controllers: List of controllers to compare.
+        norm_comp: Should comparisons be normalized against a controller of primary interest?
+        cmdopts: Dictionary of parsed cmdline parameters.
+        main_config Dictionary of parsed main YAML configuration.
+        stage5_config: Dictionary of parsed stage5 YAML configuration.
+        output_roots: Dictionary containing output directories for intra- and inter-scenario graph
+                      generation.
     """
 
-    def __init__(self, cmdopts, targets):
-        self.targets = targets
+    def __init__(self, cmdopts: tp.Dict[str, str]):
+        self.controllers = cmdopts['controller_comp_list']
+        self.norm_comp = cmdopts['normalize_comparisons']
         self.cmdopts = cmdopts
         self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
                                                        'main.yaml')))
+        self.stage5_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
+                                                         'stage5.yaml')))
+        self.output_roots = {
+            'cc_graphs': os.path.join(self.cmdopts['sierra_root'], "cc-graphs"),
+            'cc_csvs': os.path.join(self.cmdopts['sierra_root'], "cc-csvs"),
+            'sc_graphs': os.path.join(self.cmdopts['sierra_root'], "sc-graphs"),
+            'sc_csvs': os.path.join(self.cmdopts['sierra_root'], "sc-csvs")
+        }
 
-        self.cc_graph_root = os.path.join(self.cmdopts['sierra_root'], "cc-graphs")
-        self.cc_csv_root = os.path.join(self.cmdopts['sierra_root'], "cc-csvs")
-        self.sc_graph_root = os.path.join(self.cmdopts['sierra_root'], "sc-graphs")
-        self.sc_csv_root = os.path.join(self.cmdopts['sierra_root'], "sc-csvs")
+        for v in self.output_roots.values():
+            os.makedirs(v, exist_ok=True)
 
-        os.makedirs(self.cc_graph_root, exist_ok=True)
-        os.makedirs(self.cc_csv_root, exist_ok=True)
-        os.makedirs(self.sc_graph_root, exist_ok=True)
-        os.makedirs(self.sc_csv_root, exist_ok=True)
+    def run(self, batch_criteria):
 
-    def run(self):
-        # Verify that all controllers have run the same set of experiments before doing the
-        # comparison
-        self.targets = self.targets.split(',')
-        print("- Stage5: Inter-batch controller comparison of {0}...".format(self.targets))
+        self.controllers = self.controllers.split(',')
+        self.__verify_controllers(self.controllers)
 
-        for t1 in self.targets:
-            for t2 in self.targets:
+        print("- Stage5: Inter-batch controller comparison of {0}...".format(self.controllers))
+
+        if batch_criteria.is_univar():
+            UnivarComparator()(controllers=self.controllers,
+                               graph_config=self.stage5_config,
+                               batch_criteria=batch_criteria,
+                               output_roots=self.output_roots,
+                               cmdopts=self.cmdopts,
+                               main_config=self.main_config,
+                               norm_comp=self.norm_comp)
+        else:
+            BivarComparator()(controllers=self.controllers,
+                              graph_config=self.stage5_config,
+                              batch_criteria=batch_criteria,
+                              output_roots=self.output_roots,
+                              cmdopts=self.cmdopts,
+                              main_config=self.main_config,
+                              norm_comp=self.norm_comp)
+        print("- Stage5: Inter-batch controller comparison complete")
+
+    def __verify_controllers(self, controllers):
+        """
+        Verify that all controllers have run the same set of experiments before doing the
+        comparison. If they have not, it is not `necessarily` an error, but probably should be
+        looked at, so it is only a warning, not fatal.
+        """
+        for t1 in controllers:
+            for t2 in controllers:
                 for item in os.listdir(os.path.join(self.cmdopts['sierra_root'], t1)):
                     path1 = os.path.join(self.cmdopts['sierra_root'], t1, item,
                                          'exp-outputs',
@@ -68,7 +102,3 @@ class PipelineStage5:
                         print("WARN: {0} does not exist".format(path2))
                     if os.path.isdir(path2) and not os.path.exists(path1):
                         print("WARN: {0} does not exist".format(path1))
-
-        InterBatchComparator(controllers=self.targets,
-                             cmdopts=self.cmdopts).generate()
-        print("- Stage5: Inter-batch controller comparison complete")

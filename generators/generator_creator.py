@@ -50,7 +50,7 @@ class GeneratorCreator:
             'named_exp_dirs': args.named_exp_dirs
         }
 
-        return BatchedExpInputGenerator(batch_config_template=args.template_config_file,
+        return BatchedExpInputGenerator(batch_config_template=args.template_input_file,
                                         batch_generation_root=args.generation_root,
                                         batch_output_root=args.output_root,
                                         controller_name=parsed_controller,

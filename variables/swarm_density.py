@@ -98,23 +98,32 @@ class SwarmConstantDensity(cd.ConstantDensity):
         else:
             return dirs
 
-    def graph_xvals(self, cmdopts: tp.Dict[str, str]) -> tp.List[float]:
-        densities = []
-        for i in range(0, self.n_exp()):
+    def graph_xticks(self, cmdopts: tp.Dict[str, str], exp_dirs) -> tp.List[float]:
+        areas = []
+        if exp_dirs is not None:
+            dirs = exp_dirs
+        else:
+            dirs = self.gen_exp_dirnames(cmdopts)
+
+        for i in range(0, len(dirs)):
             pickle_fpath = os.path.join(self.batch_generation_root,
-                                        self.gen_exp_dirnames(i),
+                                        dirs[i],
                                         "exp_def.pkl")
             exp_def = utils.unpickle_exp_def(pickle_fpath)
             for e in exp_def:
-                if e[0] == ".//arena/distribute/entity" and e[1] == "quantity":
-                    n_robots = int(e[2])
                 if e[0] == ".//arena" and e[1] == "size":
                     x, y, z = e[2].split(",")
-            densities.append(n_robots / (int(x) * int(y)))
-        return densities
+            areas.append((int(x) * int(y)))
+        return areas
+
+    def graph_xticklabels(self, cmdopts: tp.Dict[str, str], exp_dirs) -> tp.List[float]:
+        return [str(x) + r' $m^2$' for x in self.graph_xticks(cmdopts, exp_dirs)]
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
         return "Swarm Density"
+
+    def pm_query(self, query) -> bool:
+        return query in ['blocks-collected', 'scalability', 'self-org']
 
 
 def Factory(cli_arg: str, main_config:

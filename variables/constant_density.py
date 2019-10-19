@@ -70,9 +70,6 @@ class ConstantDensity(bc.UnivarBatchCriteria):
         return sorted(scenarios,
                       key=lambda s: float(s.split('-')[2].split('.')[0][0: 3].replace('p', '.')))
 
-    def pm_query(self, query) -> bool:
-        return query in ['blocks-collected', 'scalability', 'self-org']
-
     def exp_scenario_name(self, exp_num: int) -> str:
         """
         Given the exp number in the batch, compute a valid, parsable scenario name. It is necessary

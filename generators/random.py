@@ -31,9 +31,9 @@ class RNGenerator(ExpInputGenerator):
     - # blocks unspecified
     """
 
-    def __init__(self, template_config_file, generation_root, exp_output_root,
+    def __init__(self, template_input_file, generation_root, exp_output_root,
                  exp_def_fname, cmdopts, controller):
-        super().__init__(template_config_file, generation_root, exp_output_root,
+        super().__init__(template_input_file, generation_root, exp_output_root,
                          exp_def_fname, cmdopts)
         self.controller = controller
 

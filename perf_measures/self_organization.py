@@ -64,7 +64,7 @@ class SelfOrganizationUnivar:
                          title="Swarm Self-Organization Due To Sub-Linear Fractional Performance Losses",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="",
-                         xvals=batch_criteria.graph_xvals(self.cmdopts)[1:],
+                         xvals=batch_criteria.graph_xticks(self.cmdopts)[1:],
                          legend=None,
                          polynomial_fit=-1).generate()
 
@@ -111,8 +111,8 @@ class SelfOrganizationBivar:
                 title="Swarm Self-Organization Due To Sub-Linear Fractional Performance Losses",
                 xlabel=batch_criteria.graph_ylabel(self.cmdopts),
                 ylabel=batch_criteria.graph_xlabel(self.cmdopts),
-                xtick_labels=batch_criteria.graph_yvals(self.cmdopts),
-                ytick_labels=batch_criteria.graph_xvals(self.cmdopts)).generate()
+                xtick_labels=batch_criteria.graph_yticks(self.cmdopts),
+                ytick_labels=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
     def __calc_by_row(self, fl, batch_criteria):
         swarm_sizes = batch_criteria.swarm_sizes(self.cmdopts)

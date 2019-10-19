@@ -60,10 +60,10 @@ class PipelineStage3:
         print("- Stage3: Rendering complete")
 
     def __run_averaging(self):
-        template_config_leaf, template_config_ext = os.path.splitext(
-            os.path.basename(self.cmdopts['template_config_file']))
+        template_input_leaf, template_input_ext = os.path.splitext(
+            os.path.basename(self.cmdopts['template_input_file']))
         avg_params = {
-            'template_config_leaf': template_config_leaf,
+            'template_input_leaf': template_input_leaf,
             'no_verify_results': self.cmdopts['no_verify_results'],
             'gen_stddev': self.cmdopts['gen_stddev'],
             'config': self.main_config,

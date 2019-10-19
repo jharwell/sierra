@@ -179,32 +179,59 @@ class BatchCriteria(ev.base_variable.BaseVariable):
         """
         raise NotImplementedError
 
-    def graph_xvals(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[float]:
+    def graph_xticks(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[float]:
         """
 
         Arguments:
             cmdopts: Dictionary of parsed command line options.
-            exp_dirs: If not be None, then this list of directories directories will be used to
-                      calculate the swarm sizes, rather than the results of gen_exp_dirnames().
+            exp_dirs: If not None, then this list of directories directories will be used to
+                      calculate the ticks, rather than the results of gen_exp_dirnames().
 
         Returns:
-            A list of criteria-specific values to use as the x values for input into graph
+            A list of values to use as the X axis tick values for graph generation.
+
+        """
+        raise NotImplementedError
+
+    def graph_yticks(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[float]:
+        """
+
+        Arguments:
+            cmdopts: Dictionary of parsed command line options.
+            exp_dirs: If not None, then these directories will be used to calculate the ticks,
+                      rather than the results of gen_exp_dirnames().
+
+        Returns:
+            A list of criteria-specific values to use as the Y axis tick values for graph
             generation.
 
         """
         raise NotImplementedError
 
-    def graph_yvals(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[float]:
+    def graph_yticklabels(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[str]:
         """
 
         Arguments:
             cmdopts: Dictionary of parsed command line options.
-            exp_dirs: If not be None, then these directories will be used to calculate the swarm
-                      sizes, rather than the results of gen_exp_dirnames().
+            exp_dirs: If not None, then these directories will be used to calculate the labels,
+                      rather than the results of gen_exp_dirnames().
 
         Returns:
-            A list of criteria-specific values to use as the y values for input into graph
-            generation.
+            A list of values to use as the Y axis tick labels for graph generation.
+
+        """
+        raise NotImplementedError
+
+    def graph_xticklabels(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[str]:
+        """
+
+        Arguments:
+            cmdopts: Dictionary of parsed command line options.
+            exp_dirs: If not None, then these directories will be used to calculate the labels,
+                      rather than the results of gen_exp_dirnames().
+
+        Returns:
+            A list of values to use as the X axis tick labels for graph generation.
 
         """
         raise NotImplementedError
@@ -371,7 +398,7 @@ class BivarBatchCriteria(BatchCriteria):
     def sc_sort_scenarios(self, scenarios):
         raise NotImplementedError
 
-    def graph_xvals(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[float]:
+    def graph_xticks(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[float]:
         dirs = []
         for c1 in self.criteria1.gen_exp_dirnames(cmdopts):
             for x in self.gen_exp_dirnames(cmdopts):
@@ -381,9 +408,9 @@ class BivarBatchCriteria(BatchCriteria):
 
         assert len(dirs) == len(self.criteria1.gen_exp_dirnames(cmdopts)),\
             "FATAL: Bad xvals calculation"
-        return self.criteria1.graph_xvals(cmdopts, dirs)
+        return self.criteria1.graph_xticks(cmdopts, dirs)
 
-    def graph_yvals(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[float]:
+    def graph_yticks(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[float]:
         dirs = []
         for c2 in self.criteria2.gen_exp_dirnames(cmdopts):
             for x in self.gen_exp_dirnames(cmdopts):
@@ -394,7 +421,31 @@ class BivarBatchCriteria(BatchCriteria):
         assert len(dirs) == len(self.criteria2.gen_exp_dirnames(cmdopts)),\
             "FATAL: Bad yvals calculation"
 
-        return self.criteria2.graph_xvals(cmdopts, dirs)
+        return self.criteria2.graph_xticks(cmdopts, dirs)
+
+    def graph_xticklabels(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[float]:
+        dirs = []
+        for c1 in self.criteria1.gen_exp_dirnames(cmdopts):
+            for x in self.gen_exp_dirnames(cmdopts):
+                if c1 in x.split('+')[0]:
+                    dirs.append(x)
+                    break
+
+        assert len(dirs) == len(self.criteria1.gen_exp_dirnames(cmdopts)),\
+            "FATAL: Bad xvals calculation"
+        return self.criteria1.graph_xticklabels(cmdopts, dirs)
+
+    def graph_yticklabels(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[float]:
+        dirs = []
+        for c2 in self.criteria2.gen_exp_dirnames(cmdopts):
+            for y in self.gen_exp_dirnames(cmdopts):
+                if c2 in y.split('+')[0]:
+                    dirs.append(y)
+                    break
+
+        assert len(dirs) == len(self.criteria1.gen_exp_dirnames(cmdopts)),\
+            "FATAL: Bad xvals calculation"
+        return self.criteria2.graph_xticklabels(cmdopts, dirs)
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
         return self.criteria1.graph_xlabel(cmdopts)
@@ -404,6 +455,11 @@ class BivarBatchCriteria(BatchCriteria):
 
     def pm_query(self, query: str) -> bool:
         return self.criteria1.pm_query(query) or self.criteria2.pm_query(query)
+
+    def set_batch_generation_root(self, root: str):
+        self.batch_generation_root = root
+        self.criteria1.batch_generation_root = root
+        self.criteria2.batch_generation_root = root
 
 
 def Factory(args):
