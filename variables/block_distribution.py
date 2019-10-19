@@ -95,28 +95,3 @@ class Quantity(BaseVariable):
 
     def gen_tag_rmlist(self):
         return []
-
-
-class QuantityLog64(Quantity):
-    def __init__(self):
-        super().__init__([2 ** x for x in range(0, 7)])
-
-
-class QuantityLog128(Quantity):
-    def __init__(self):
-        super().__init__([2 ** x for x in range(0, 8)])
-
-
-class QuantityLog256(Quantity):
-    def __init__(self):
-        super().__init__([2 ** x for x in range(0, 9)])
-
-
-class QuantityLog512(Quantity):
-    def __init__(self):
-        super().__init__([2 ** x for x in range(0, 10)])
-
-
-class QuantityLog1024(Quantity):
-    def __init__(self):
-        super().__init__([2 ** x for x in range(0, 11)])

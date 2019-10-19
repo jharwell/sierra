@@ -31,6 +31,7 @@ class PipelineStage1:
         print("-- Using '{0}'".format(cmdopts['time_setup']))
         print("-- Using {0} physics engines".format(cmdopts['physics_n_engines']))
         input_generator.generate()
+
         print("- Stage1: {0} input files generated in {1} experiments.".format(
             sum([len(files) for r, d, files in os.walk(cmdopts['generation_root'])]),
             sum([len(d) for r, d, files in os.walk(cmdopts['generation_root'])])))

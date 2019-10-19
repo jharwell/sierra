@@ -99,11 +99,11 @@ class BatchCriteria(ev.base_variable.BaseVariable):
                       cmdopts: tp.Dict[str, str]):
         defs = list(self.gen_attr_changelist())
         print("- Stage1: Applying batch criteria to {0} experiments".format(len(defs)))
+
         for i in range(0, len(defs)):
             exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
             exp_generation_root = os.path.join(self.batch_generation_root,
                                                str(exp_dirname))
-
             print(
                 "-- Applying {0} changes from generator '{1}' for exp{2} in {3}".format(len(defs[i]),
                                                                                         self.cli_arg,
@@ -117,10 +117,12 @@ class BatchCriteria(ev.base_variable.BaseVariable):
                 xml_luigi.output_filepath = os.path.join(exp_generation_root,
                                                          batch_config_leaf)
                 xml_luigi.write()
+
         assert len(defs) == len(os.listdir(self.batch_generation_root)),\
-            "FATAL: Size of batch criteria({0}) != # exp dirs ({1}): possibly caused by duplicate "\
-            "named exp dirs... ".format(len(defs),
-                                        len(os.listdir(self.batch_generation_root)))
+            "FATAL: Size of batch criteria({0}) != # exp dirs ({1}): possibly caused by:\n"\
+            "(1) Duplicate named exp dirs from switching batch criteria\n"\
+            "(2) Trying share the same batched experiment root between different batch criteria\n".format(len(defs),
+                                                                                                          len(os.listdir(self.batch_generation_root)))
 
     def is_bivar(self) -> bool:
         """
@@ -353,7 +355,7 @@ class BivarBatchCriteria(BatchCriteria):
             return self.criteria1.exp_scenario_name(int(exp_num /
                                                         len(self.criteria2.gen_attr_changelist())))
         elif isinstance(self.criteria2, ev.constant_density.ConstantDensity):
-            return self.criteria1.exp_scenario_name(int(exp_num % len(self.criteria2.gen_attr_changelist())))
+            return self.criteria2.exp_scenario_name(int(exp_num % len(self.criteria2.gen_attr_changelist())))
         else:
             assert False, "FATAL: bivariate batch criteria does not contain constant density"
 

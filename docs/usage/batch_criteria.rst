@@ -17,7 +17,7 @@ second on the Y, and the quantity of interest on the Z.
 Currently valid batch criteria in Sierra are:
 
   - `swarm_size`
-  - `constant_density`
+  - `swarm_density`
   - `temporal_variance`
   - `oracle`
   - `ta_policy_set`
@@ -39,10 +39,18 @@ Swarm Size
     :inherited-members:
     :show-inheritance:
 
-Constant Density
+Swarm Density
 ----------------------------
 
-.. automodule:: variables.constant_density
+.. automodule:: variables.swarm_density
+    :members:
+    :inherited-members:
+    :show-inheritance:
+
+Block Density
+----------------------------
+
+.. automodule:: variables.block_density
     :members:
     :inherited-members:
     :show-inheritance:
