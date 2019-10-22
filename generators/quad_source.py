@@ -43,6 +43,9 @@ class QSGenerator(ExpInputGenerator):
         # Generate and apply arena dimensions definitions, and write dimensions to file for later
         # retrieval.
         arena_dim = self.cmdopts["arena_dim"]
+        assert arena_dim[0] == arena_dim[1],\
+            "FATAL: Quad source distribution requires a square arena: xdim={0},ydim={1}".format(arena_dim[0],
+                                                                                                arena_dim[1])
         shape = ev.arena_shape.SquareArena(sqrange=[arena_dim[0]])
 
         # We check for attributes before modification because if we are not rendering video, then we
