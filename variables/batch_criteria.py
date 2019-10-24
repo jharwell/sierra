@@ -462,18 +462,23 @@ class BivarBatchCriteria(BatchCriteria):
         self.criteria2.batch_generation_root = root
 
 
-def Factory(args):
+def Factory(args, cmdopts, scenario: str = None):
+    if scenario is None:
+        scenario = args.scenario
+
     if 1 == len(args.batch_criteria):
-        return __UnivarFactory(args, args.batch_criteria[0])
+        ret = __UnivarFactory(args, cmdopts, args.batch_criteria[0], scenario)
     elif 2 == len(args.batch_criteria):
         assert args.batch_criteria[0] != args.batch_criteria[1],\
             "FATAL: Duplicate batch criteria passed"
-        return __BivarFactory(args)
+        ret = __BivarFactory(args, cmdopts, scenario)
     else:
-        assert False, "FATAL: At most 2 batch criterias can be specified on the cmdline"
+        assert False, "FATAL: 1 or 2 batch criterias must be specified on the cmdline"
+
+    return ret
 
 
-def __UnivarFactory(args, cli_arg: str):
+def __UnivarFactory(args, cmdopts, cli_arg: str, scenario):
     """
     Construct a batch criteria object from a single cmdline argument.
     """
@@ -482,13 +487,22 @@ def __UnivarFactory(args, cli_arg: str):
     module = __import__("variables.{0}".format(category), fromlist=["*"])
     main_config = yaml.load(open(os.path.join(args.config_root, 'main.yaml')))
 
-    return getattr(module, "Factory")(cli_arg,
-                                      main_config,
-                                      args.generation_root,
-                                      scenario=args.scenario)()
+    ret = getattr(module, "Factory")(cli_arg,
+                                     main_config,
+                                     cmdopts['generation_root'],
+                                     scenario=scenario)()
+    print("- Create univariate batch criteria '{0}'".format(
+        ret.__class__.__name__))
+    return ret
 
 
-def __BivarFactory(args):
-    criteria0 = __UnivarFactory(args, args.batch_criteria[0])
-    criteria1 = __UnivarFactory(args, args.batch_criteria[1])
-    return BivarBatchCriteria(criteria0, criteria1)
+def __BivarFactory(args, cmdopts, scenario):
+    criteria1 = __UnivarFactory(args, cmdopts, args.batch_criteria[0], scenario)
+    criteria2 = __UnivarFactory(args, cmdopts, args.batch_criteria[1], scenario)
+    ret = BivarBatchCriteria(criteria1, criteria2)
+
+    print("- Create BivariateBatchCriteria from {1},{2}".format(
+        ret.__class__.__name__,
+        ret.criteria1.__class__.__name__,
+        ret.criteria2.__class__.__name__))
+    return ret

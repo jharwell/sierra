@@ -19,13 +19,13 @@
 import os
 import copy
 import yaml
-from .inter_exp_linegraphs import InterExpLinegraphs
 from perf_measures.scalability_univar import ScalabilityUnivar
 from perf_measures.scalability_bivar import ScalabilityBivar
 import perf_measures.self_organization as pmso
 import perf_measures.block_collection as pmbc
 import perf_measures.reactivity as pmr
 import perf_measures.adaptability as pma
+from .inter_exp_linegraphs import InterExpLinegraphs
 
 
 class InterExpGraphGenerator:
@@ -44,10 +44,12 @@ class InterExpGraphGenerator:
         self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
                                                        'main.yaml')))
 
+        collate_csv_leaf = self.main_config['sierra']['collate_csv_leaf']
+        collate_graph_leaf = self.main_config['sierra']['collate_graph_leaf']
         self.cmdopts["collate_root"] = os.path.abspath(os.path.join(self.cmdopts["output_root"],
-                                                                    self.main_config['sierra']['collate_csv_leaf']))
+                                                                    collate_csv_leaf))
         self.cmdopts["graph_root"] = os.path.abspath(os.path.join(self.cmdopts["graph_root"],
-                                                                  self.main_config['sierra']['collate_graph_leaf']))
+                                                                  collate_graph_leaf))
         self.controller_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
                                                              'controllers.yaml')))
         self.linegraph_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],

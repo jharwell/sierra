@@ -23,7 +23,7 @@ class GeneratorCreator:
     Get the joint controller+scenario input generator to use to create experiment/batch inputs.
     """
 
-    def __call__(self, args, parsed_controller, parsed_scenario, batch_criteria):
+    def __call__(self, args, parsed_controller, parsed_scenario, batch_criteria, cmdopts):
         if any([[2], [3], [4]]) == args.pipeline:
             return None
 
@@ -33,7 +33,7 @@ class GeneratorCreator:
 
         # This is the dictionary of all cmdline options used during stage 1. This is here, rather
         # than in the exp pipeline, because the generator is passed INTO the pipeline.
-        cmdopts = {
+        cmdopts_new = {
             "n_sims": args.n_sims,
             "n_threads": args.n_threads,
             "physics_n_engines": args.physics_n_engines,
@@ -49,10 +49,9 @@ class GeneratorCreator:
             'config_root': args.config_root,
             'named_exp_dirs': args.named_exp_dirs
         }
+        cmdopts.update(cmdopts_new)
 
         return BatchedExpInputGenerator(batch_config_template=args.template_input_file,
-                                        batch_generation_root=args.generation_root,
-                                        batch_output_root=args.output_root,
                                         controller_name=parsed_controller,
                                         scenario_basename=parsed_scenario,
                                         criteria=batch_criteria,

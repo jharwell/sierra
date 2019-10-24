@@ -23,11 +23,13 @@ class BivarComparator:
     Compares controllers on different criteria across/within different scenarios.
     """
 
-    def __call__(self, controllers, graph_config, batch_criteria, output_roots, cmdopts,
+    def __call__(self, controllers, graph_config, output_roots, cmdopts, cli_args,
                  main_config, norm_comp):
         BivarIntraScenarioComparator(controllers,
                                      graph_config['intra_scenario']['graphs'],
                                      output_roots['cc_csvs'],
                                      output_roots['cc_graphs'],
                                      cmdopts,
-                                     main_config, norm_comp)(batch_criteria)
+                                     cli_args,
+                                     main_config,
+                                     norm_comp)()

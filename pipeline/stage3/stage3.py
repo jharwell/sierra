@@ -15,10 +15,10 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 
-from .batched_exp_csv_averager import BatchedExpCSVAverager
-from .batched_exp_video_renderer import BatchedExpVideoRenderer
 import os
 import yaml
+from .batched_exp_csv_averager import BatchedExpCSVAverager
+from .batched_exp_video_renderer import BatchedExpVideoRenderer
 
 
 class PipelineStage3:
@@ -37,10 +37,11 @@ class PipelineStage3:
                                                        'main.yaml')))
 
     def run(self):
-        if 'average' in self.cmdopts['results_process_tasks'] or 'all' in self.cmdopts['results_process_tasks']:
+        tasks = self.cmdopts['results_process_tasks']
+        if 'average' in tasks or 'all' in tasks:
             self.__run_averaging()
 
-        if 'render' in self.cmdopts['results_process_tasks'] or 'all' in self.cmdopts['results_process_tasks']:
+        if 'render' in tasks or 'all' in tasks:
             self.__run_rendering()
 
     # Private functions
@@ -60,7 +61,7 @@ class PipelineStage3:
         print("- Stage3: Rendering complete")
 
     def __run_averaging(self):
-        template_input_leaf, template_input_ext = os.path.splitext(
+        template_input_leaf, _ = os.path.splitext(
             os.path.basename(self.cmdopts['template_input_file']))
         avg_params = {
             'template_input_leaf': template_input_leaf,

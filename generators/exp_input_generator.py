@@ -158,7 +158,7 @@ class ExpInputGenerator:
 
         [xml_luigi.attr_change(a[0], a[1], a[2]) for a in cache.gen_attr_changelist()[0]]
         rms = cache.gen_tag_rmlist()
-        if len(rms):
+        if rms:  # non-empty
             [xml_luigi.tag_remove(a) for a in rms[0]]
 
     def generate_static_cache_defs(self, xml_luigi, arena_dim):

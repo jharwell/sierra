@@ -44,22 +44,10 @@ class ScenarioGeneratorParser:
         """
         Parse the scenario generator from cmdline arguments into a string.
         """
-        if self.args.scenario is None and self.args.batch_criteria is None:
+        # Stage 5
+        if self.args.scenario is None:
             return None
 
-        # Scenario specified via batch criteria
-        if self.args.scenario is None:
-            print(
-                "- Parse scenario generator from cmdline criteria '{0}'".format(self.args.batch_criteria))
-
-            res1 = re.search('[a-zA-Z]+', self.args.batch_criteria)
-            assert res1 is not None,\
-                "FATAL: Bad block dist specification in '{0}'".format(self.args.batch_criteria)
-            res2 = re.search('[0-9]+x[0-9]+', self.args.batch_criteria)
-            assert res2 is not None,\
-                "FATAL: Bad arena_dim specification in '{0}'".format(self.args.batch_criteria)
-
-            self.scenario = res1.group(0) + "." + res2.group(0)
         else:  # Scenario specified on cmdline
             print(
                 "- Parse scenario generator from cmdline specification '{0}'".format(self.args.scenario))

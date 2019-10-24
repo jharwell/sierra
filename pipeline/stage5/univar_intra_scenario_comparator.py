@@ -16,11 +16,12 @@
 
 
 import os
+import copy
 import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
-import copy
 import variables.batch_criteria as bc
 import typing as tp
+import pipeline.root_dirpath_generator as rdg
 
 
 class UnivarIntraScenarioComparator:
@@ -30,21 +31,26 @@ class UnivarIntraScenarioComparator:
     scenario is controlled via a config file.
     """
 
-    def __init__(self, controllers: tp.List[str],
+    def __init__(self,
+                 controllers: tp.List[str],
                  graphs: dict,
-                 cc_graph_root: str,
                  cc_csv_root: str,
-                 main_config: dict,
-                 cmdopts: tp.Dict[str, str]):
-        self.cmdopts = cmdopts
-        self.main_config = main_config
+                 cc_graph_root: str,
+                 cmdopts: tp.Dict[str, str],
+                 cli_args,
+                 main_config,
+                 norm_comp):
         self.controllers = controllers
         self.graphs = graphs
-
         self.cc_graph_root = cc_graph_root
         self.cc_csv_root = cc_csv_root
 
-    def __call__(self, batch_criteria: bc.UnivarBatchCriteria):
+        self.cmdopts = cmdopts
+        self.cli_args = cli_args
+        self.main_config = main_config
+        self.norm_comp = norm_comp
+
+    def __call__(self):
         # Obtain the list of scenarios to use. We can just take the scenario list of the first
         # controllers, because we have already checked that all controllers executed the same set
         # scenarios
@@ -52,22 +58,42 @@ class UnivarIntraScenarioComparator:
 
         # For each controller comparison graph we are interested in, generate it using data from all
         # scenarios
+        cmdopts = copy.deepcopy(self.cmdopts)
         for graph in self.graphs:
             for s in scenarios:
-                self.__gen_csv(scenario=s,
-                               src_stem=graph['src_stem'],
-                               dest_stem=graph['dest_stem'])
+                for controller in self.controllers:
+                    # We need to generate the root directory paths for each batched experiment
+                    # (which # lives inside of the scenario dir), because they are all
+                    # different. We need generate these paths for EACH controller, because the
+                    # controller is part of the batch root.
+                    paths = rdg.regen_from_exp(self.cli_args.sierra_root,
+                                               self.cli_args.batch_criteria,
+                                               s,
+                                               controller)
+                    cmdopts.update(paths)
+                    # For each scenario, we have to create the batch criteria for it, because they
+                    # are all different.
+                    criteria = bc.Factory(self.cli_args,
+                                          cmdopts,
+                                          rdg.parse_batch_root(s)[1])
 
-                self.__gen_graph(batch_criteria=batch_criteria,
-                                 src_stem=graph['src_stem'],
+                    self.__gen_csv(cmdopts=cmdopts,
+                                   scenario=s,
+                                   controller=controller,
+                                   src_stem=graph['src_stem'],
+                                   dest_stem=graph['dest_stem'])
+
+                self.__gen_graph(scenario=s,
+                                 batch_criteria=criteria,
+                                 cmdopts=cmdopts,
                                  dest_stem=graph['dest_stem'],
                                  title=graph['title'],
-                                 ylabel=graph['label'])
+                                 label=graph['label'])
 
     def __gen_graph(self,
                     scenario: str,
                     batch_criteria: bc.UnivarBatchCriteria,
-                    src_stem: str,
+                    cmdopts: tp.Dict[str, str],
                     dest_stem: str,
                     title: str,
                     label: str):
@@ -77,20 +103,6 @@ class UnivarIntraScenarioComparator:
         ``cc-csvs/``.
         """
         csv_stem_opath = os.path.join(self.cc_csv_root, dest_stem + "-" + scenario)
-
-        # All scenarios are NOT guaranteed to have the same # of experiments, so we need to
-        # overwrite key elements of the cmdopts in order to ensure proper processing.
-        cmdopts = copy.deepcopy(self.cmdopts)
-        batch_generation_root = os.path.join(self.cmdopts['sierra_root'],
-                                             self.controllers[0],
-                                             scenario,
-                                             "exp-inputs")
-        batch_output_root = os.path.join(self.cmdopts['sierra_root'],
-                                         self.controllers[0],
-                                         scenario,
-                                         "exp-outputs")
-        cmdopts['generation_root'] = batch_generation_root
-        cmdopts['output_root'] = batch_output_root
 
         BatchRangedGraph(inputy_stem_fpath=csv_stem_opath,
                          output_fpath=os.path.join(self.cc_graph_root,
@@ -102,40 +114,41 @@ class UnivarIntraScenarioComparator:
                          legend=self.controllers,
                          polynomial_fit=-1).generate()
 
-    def __gen_csv(self, scenario: str,
+    def __gen_csv(self,
+                  cmdopts: tp.Dict[str, str],
+                  scenario: str,
+                  controller: str,
                   src_stem: str,
                   dest_stem: str):
         """
-        Generates a set of .csv files for use in intra-scenario graph generation (1 per
-        controller).
-
+        Help function for generating a set of .csv files for use in intra-scenario graph generation
+        (1 per controller).
         """
 
         df = pd.DataFrame()
         stddev_df = pd.DataFrame()
 
-        for c in self.controllers:
-            csv_ipath = os.path.join(self.cmdopts['sierra_root'],
-                                     c,
-                                     scenario,
-                                     'exp-outputs',
-                                     self.main_config['sierra']['collate_csv_leaf'],
-                                     src_stem + ".csv")
-            stddev_ipath = os.path.join(self.cmdopts['sierra_root'],
-                                        c,
-                                        scenario,
-                                        'exp-outputs',
-                                        self.main_config['sierra']['collate_csv_leaf'],
-                                        src_stem + ".stddev")
+        csv_ipath = os.path.join(cmdopts['sierra_root'],
+                                 controller,
+                                 scenario,
+                                 'exp-outputs',
+                                 self.main_config['sierra']['collate_csv_leaf'],
+                                 src_stem + ".csv")
+        stddev_ipath = os.path.join(cmdopts['sierra_root'],
+                                    controller,
+                                    scenario,
+                                    'exp-outputs',
+                                    self.main_config['sierra']['collate_csv_leaf'],
+                                    src_stem + ".stddev")
 
-            # Some experiments might not generate the necessary performance measure .csvs for
-            # graph generation, which is OK.
-            if not os.path.exists(csv_ipath):
-                continue
+        # Some experiments might not generate the necessary performance measure .csvs for
+        # graph generation, which is OK.
+        if not os.path.exists(csv_ipath):
+            return
 
-            df = df.append(pd.read_csv(csv_ipath, sep=';'))
-            if os.path.exists(stddev_ipath):
-                stddev_df = stddev_df.append(pd.read_csv(stddev_ipath, sep=';'))
+        df = df.append(pd.read_csv(csv_ipath, sep=';'))
+        if os.path.exists(stddev_ipath):
+            stddev_df = stddev_df.append(pd.read_csv(stddev_ipath, sep=';'))
 
         csv_opath_stem = os.path.join(self.cc_csv_root, dest_stem + "-" + scenario)
 

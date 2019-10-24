@@ -49,15 +49,15 @@ class BatchedExpInputGenerator:
       scenario_basename(str): Name of scenario generator to use.
     """
 
-    def __init__(self, batch_config_template, batch_generation_root, batch_output_root, criteria,
-                 controller_name, scenario_basename, cmdopts):
+    def __init__(self, batch_config_template, criteria, controller_name, scenario_basename, cmdopts):
         if batch_config_template is not None:
             assert os.path.isfile(
                 batch_config_template), \
                 "The path '{}' (which should point to the main config file) did not point to a file".format(
-                batch_config_template)
+                    batch_config_template)
             self.batch_config_template = os.path.abspath(batch_config_template)
-            # will get the main name and extension of the config file (without the full absolute path)
+            # will get the main name and extension of the config file (without the full absolute
+            # path)
             self.batch_config_leaf, self.batch_config_extension = os.path.splitext(
                 os.path.basename(self.batch_config_template))
         else:
@@ -65,21 +65,12 @@ class BatchedExpInputGenerator:
             self.batch_config_leaf = None
             self.batch_config_extension = None
 
-        # Can be None for stage 5, because no generation is going to happen
-        if batch_generation_root is not None:
-            self.batch_generation_root = os.path.abspath(batch_generation_root)
-            assert self.batch_generation_root.find(" ") == -1, \
-                ("ARGoS (apparently) does not work with input file paths with spaces. Please make sure the " +
-                 "batch generation root directory '{}' does not have any spaces in it").format(self.batch_generation_root)
+        self.batch_generation_root = os.path.abspath(cmdopts['generation_root'])
+        assert self.batch_generation_root.find(" ") == -1, \
+            ("ARGoS (apparently) does not work with input file paths with spaces. Please make sure the " +
+             "batch generation root directory '{}' does not have any spaces in it").format(self.batch_generation_root)
 
-        else:
-            self.batch_generation_root = None
-
-        # Can be None for stage 5, because no simulation output is going to be generation
-        if batch_output_root is not None:
-            self.batch_output_root = os.path.abspath(batch_output_root)
-        else:
-            self.batch_output_root = None
+        self.batch_output_root = os.path.abspath(cmdopts['output_root'])
 
         self.controller_name = controller_name
         self.scenario_basename = scenario_basename

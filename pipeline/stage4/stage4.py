@@ -15,13 +15,13 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 
+import os
+import yaml
+import matplotlib as mpl
 from .univar_csv_collator import UnivarCSVCollator
 from .bivar_csv_collator import BivarCSVCollator
 from .batched_intra_exp_graph_generator import BatchedIntraExpGraphGenerator
 from .inter_exp_graph_generator import InterExpGraphGenerator
-import yaml
-import os
-import matplotlib as mpl
 mpl.rcParams['lines.linewidth'] = 3
 mpl.rcParams['lines.markersize'] = 10
 mpl.rcParams['figure.max_open_warning'] = 10000

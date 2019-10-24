@@ -40,14 +40,11 @@ class Pipeline:
        performance measures.
     """
 
-    def __init__(self, args, input_generator, batch_criteria):
+    def __init__(self, args, input_generator, batch_criteria, cmdopts):
         self.args = args
         self.cmdopts = {
             # general
-            'output_root': self.args.output_root,
-            'graph_root': self.args.graph_root,
             'sierra_root': self.args.sierra_root,
-            'generation_root': self.args.generation_root,
             'controller': self.args.controller,
             'scenario': self.args.scenario,
             'template_input_file': self.args.template_input_file,
@@ -75,7 +72,6 @@ class Pipeline:
 
             # stage 4
             'envc_cs_method': self.args.envc_cs_method,
-            'with_hists': self.args.with_hists,
             'gen_vc_plots': self.args.gen_vc_plots,
             'plot_log_xaxis': self.args.plot_log_xaxis,
             'reactivity_cs_method': self.args.reactivity_cs_method,
@@ -87,11 +83,17 @@ class Pipeline:
             'controller_comp_list': self.args.controller_comp_list,
             'normalize_comparisons': self.args.normalize_comparisons
         }
+        if cmdopts is not None:
+            self.cmdopts.update(cmdopts)
+
         self.input_generator = input_generator
         self.batch_criteria = batch_criteria
 
     def run(self):
+        """
+        Run pipeline stages as configured.
 
+        """
         if 1 in self.args.pipeline:
             PipelineStage1().run(self.cmdopts,
                                  self.input_generator)
@@ -107,4 +109,4 @@ class Pipeline:
 
         # not part of default pipeline
         if 5 in self.args.pipeline:
-            PipelineStage5(self.cmdopts).run(self.batch_criteria)
+            PipelineStage5(self.cmdopts).run(self.args)

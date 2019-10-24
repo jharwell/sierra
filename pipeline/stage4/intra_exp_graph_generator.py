@@ -21,7 +21,6 @@ import copy
 import yaml
 
 from .intra_exp_linegraphs import IntraExpLinegraphs
-from .intra_exp_histograms import IntraExpHistograms
 from .intra_exp_heatmaps import IntraExpHeatmaps
 from .temporal_variance_plot_defs import TemporalVariancePlotDefs
 
@@ -80,9 +79,6 @@ class IntraExpGraphGenerator:
         IntraExpLinegraphs(self.cmdopts["output_root"],
                            self.cmdopts["graph_root"],
                            targets).generate()
-        # if self.cmdopts["with_hists"]:
-        #     IntraExpHistograms(self.cmdopts["output_root"], self.cmdopts["graph_root"],
-        #                        Histograms.all_targets()).generate()
 
         filtered_keys = [k for k in self.hm_config if k in keys]
         targets = [self.hm_config[k] for k in filtered_keys]

@@ -66,15 +66,11 @@ class BivarCSVCollator:
         for i in range(0, len(exp_dirs)):
             csv_src_exists[i] = self.__collate_exp_csv_data(exp_dirs[i],
                                                             target,
-                                                            data_df_new,
-                                                            xlabels,
-                                                            ylabels)
+                                                            data_df_new)
 
             stddev_src_exists[i] = self.__collate_exp_csv_stddev(exp_dirs[i],
                                                                  target,
-                                                                 stddev_df_new,
-                                                                 xlabels,
-                                                                 ylabels)
+                                                                 stddev_df_new)
 
         if all([v for v in csv_src_exists]):
             data_df_new.to_csv(os.path.join(self.collate_root,
@@ -91,7 +87,7 @@ class BivarCSVCollator:
                                  sep=';',
                                  index=False)
 
-    def __collate_exp_csv_data(self, exp_dir, target, collated_df, xlabels, ylabels):
+    def __collate_exp_csv_data(self, exp_dir, target, collated_df):
         exp_output_root = os.path.join(self.batch_output_root, exp_dir)
         csv_ipath = os.path.join(exp_output_root,
                                  self.main_config['sierra']['avg_output_leaf'],
@@ -108,7 +104,7 @@ class BivarCSVCollator:
         collated_df.loc[xlabel, ylabel] = data_df[target['col']].to_numpy()
         return True
 
-    def __collate_exp_csv_stddev(self, exp_dir, target, collated_df, xlabels, ylabels):
+    def __collate_exp_csv_stddev(self, exp_dir, target, collated_df):
         exp_output_root = os.path.join(self.batch_output_root, exp_dir)
         stddev_ipath = os.path.join(exp_output_root,
                                     self.main_config['sierra']['avg_output_leaf'],

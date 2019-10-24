@@ -28,35 +28,3 @@ intra_scenario:
       dest_stem: cc-pm-karpflatt
       title: 'Swarm Scalability (Karp-Flatt)'
       label: 'Karp-Flatt Value'
-
-# Inter-scenario
-inter_scenario:
-  graphs:
-    - src_stem: pm-scalability-fl
-      dest_stem: sc-pm-scalability-fl
-      title: 'Swarm Scalability (Karp-Flatt)'
-
-
-    - src_stem: pm-scalability-norm
-      dest_stem: sc-pm-scalability-norm
-      title: 'Swarm Scalability (Normalized)'
-
-
-    - src_stem: pm-self-org
-      dest_stem: sc-pm-self-org
-      title: 'Swarm Self Organization'
-
-
-    - src_stem: pm-blocks-collected-cum
-      dest_stem: sc-pm-blocks-collected-cum
-      title: 'Swarm Performance'
-
-
-    - src_stem: pm-adaptability
-      dest_stem: sc-pm-adaptability
-      title: 'Swarm Adaptability'
-
-
-    - src_stem: pm-reactivity
-      dest_stem: sc-pm-reactivity
-      title: 'Swarm Reactivity'

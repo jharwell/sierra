@@ -25,14 +25,13 @@ class IntraExpHeatmaps:
     Generates heatmaps from averaged output data within a single experiment.
 
     Attributes:
-      exp_output_root(str): Root directory (relative to current dir or absolute) for experiment outputs.
-      exp_graph_root(str): Root directory (relative to current dir or absolute) of where the
-                           generated graphs should be saved for the experiment.
-      targets(list): Dictionary of lists of dictionaries specifying what graphs should be
-                     generated.
+        exp_output_root: Absolute path to root directory for experiment simulation outputs.
+        exp_output_root: Absolute path to root directory for experiment graph outputs.
+        targets: Dictionary of lists of dictionaries specifying what graphs should be
+                 generated.
     """
 
-    def __init__(self, exp_output_root, exp_graph_root, targets):
+    def __init__(self, exp_output_root: str, exp_graph_root: str, targets: list):
 
         self.exp_output_root = exp_output_root
         self.exp_graph_root = exp_graph_root

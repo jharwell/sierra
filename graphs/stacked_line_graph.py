@@ -21,7 +21,6 @@ import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import numpy as np
 plt.rcParams["axes.prop_cycle"] = plt.cycler("color", plt.cm.tab20.colors)
 
 

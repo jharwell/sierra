@@ -61,9 +61,9 @@ class ExpRunner:
         start = time.time()
         try:
             if 'local' == exec_method:
-                self._run_local(jobroot, cmdfile, joblog, n_jobs, exec_resume)
+                ExpRunner.__run_local(jobroot, cmdfile, joblog, n_jobs, exec_resume)
             elif 'hpc' in exec_method:
-                self._run_hpc_parallel(jobroot, cmdfile, joblog, exec_resume)
+                ExpRunner.__run_hpc_parallel(jobroot, cmdfile, joblog, exec_resume)
             else:
                 assert False, "Bad exec method '{0}'".format(exec_method)
 
@@ -74,7 +74,8 @@ class ExpRunner:
         elapsed = time.time() - start
         sys.stdout.write("{:.3f}s\n".format(elapsed))
 
-    def _run_local(self, jobroot_path, cmdfile_path, joblog_path, n_jobs, exec_resume):
+    @staticmethod
+    def __run_local(jobroot_path, cmdfile_path, joblog_path, n_jobs, exec_resume):
         resume = ''
         if exec_resume:
             resume = '--resume'
@@ -93,7 +94,8 @@ class ExpRunner:
             print(stdout, stderr)
             print("ERROR: Process exited with {0}".format(p.returncode))
 
-    def _run_hpc_parallel(self, jobroot_path, cmdfile_path, joblog_path, exec_resume):
+    @staticmethod
+    def __run_hpc_parallel(jobroot_path, cmdfile_path, joblog_path, exec_resume):
         nodelist = os.path.join(jobroot_path, "$PBS_JOBID-nodelist.txt")
         resume = ''
         if exec_resume:

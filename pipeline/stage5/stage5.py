@@ -16,8 +16,8 @@
 
 
 import os
-import yaml
 import typing as tp
+import yaml
 from .univar_comparator import UnivarComparator
 from .bivar_comparator import BivarComparator
 
@@ -58,27 +58,27 @@ class PipelineStage5:
         for v in self.output_roots.values():
             os.makedirs(v, exist_ok=True)
 
-    def run(self, batch_criteria):
+    def run(self, cli_args):
 
         self.controllers = self.controllers.split(',')
         self.__verify_controllers(self.controllers)
 
         print("- Stage5: Inter-batch controller comparison of {0}...".format(self.controllers))
 
-        if batch_criteria.is_univar():
+        if cli_args.bc_univar:
             UnivarComparator()(controllers=self.controllers,
                                graph_config=self.stage5_config,
-                               batch_criteria=batch_criteria,
                                output_roots=self.output_roots,
                                cmdopts=self.cmdopts,
+                               cli_args=cli_args,
                                main_config=self.main_config,
                                norm_comp=self.norm_comp)
         else:
             BivarComparator()(controllers=self.controllers,
                               graph_config=self.stage5_config,
-                              batch_criteria=batch_criteria,
                               output_roots=self.output_roots,
                               cmdopts=self.cmdopts,
+                              cli_args=cli_args,
                               main_config=self.main_config,
                               norm_comp=self.norm_comp)
         print("- Stage5: Inter-batch controller comparison complete")

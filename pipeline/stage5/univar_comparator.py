@@ -16,7 +16,6 @@
 
 
 from .univar_intra_scenario_comparator import UnivarIntraScenarioComparator
-from .univar_inter_scenario_comparator import UnivarInterScenarioComparator
 
 
 class UnivarComparator:
@@ -24,16 +23,13 @@ class UnivarComparator:
     Compares controllers on different criteria across/within different scenarios.
     """
 
-    def __call__(self, controllers, graph_config, batch_criteria, output_roots, cmdopts, main_config):
+    def __call__(self, controllers, graph_config, output_roots, cmdopts, cli_args,
+                 main_config, norm_comp):
         UnivarIntraScenarioComparator(controllers,
                                       graph_config['intra_scenario']['graphs'],
                                       output_roots['cc_csvs'],
                                       output_roots['cc_graphs'],
                                       cmdopts,
-                                      main_config)(batch_criteria)
-        UnivarInterScenarioComparator(controllers,
-                                      graph_config['intra_scenario']['graphs'],
-                                      output_roots['sc_csvs'],
-                                      output_roots['sc_graphs'],
-                                      cmdopts,
-                                      main_config)(batch_criteria)
+                                      cli_args,
+                                      main_config,
+                                      norm_comp)()

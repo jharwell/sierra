@@ -14,14 +14,14 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
+import yaml
+import os
+import re
 import generators.single_source
 import generators.dual_source
 import generators.quad_source
 import generators.powerlaw
 import generators.random
-import yaml
-import os
-import re
 from generators.exp_input_generator import ExpInputGenerator
 
 

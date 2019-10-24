@@ -66,47 +66,6 @@ class Cmdline:
 
                                  """,
                                  default="config")
-        self.parser.add_argument("--generation-root",
-                                 metavar="dirpath",
-                                 help="""
-
-                                 Root directory to save the generated input files for each experiment in the
-                                 batch.
-
-                                 You should never have to change this from the default.
-
-                                 Use=stage{1,2,3}; can be omitted otherwise.
-
-                                 Default: ``sierra_root>/<controller>/<scenario>/exp-inputs``
-                                 """)
-        self.parser.add_argument("--output-root",
-                                 metavar="dirpath",
-                                 help="""
-
-                                 Root directory which will contain directories for each experiment's outputs
-                                 for batch mode).
-
-                                 You should never have to change this from the default.
-
-                                 Use=stage{3,4,5}; can be omitted otherwise.
-
-                                 Default: ``<sierra_root>/<controller>/<scenario>/exp-outputs``
-                                 """)
-        self.parser.add_argument("--graph-root",
-                                 metavar="dirpath",
-                                 help="""
-
-                                 Root directory in which subdirectories (one for each experiment in the batch)
-                                 will be created, containing the intra-experiment graphs for each experiment.
-
-                                 Inter-experiment graphs are also output in this directory, under ``collated-graphs/``.
-
-                                 You should never have to change this from the default.
-
-                                 Use=stage{4,5}; can be omitted otherwise.
-
-                                 default: ``<sierra_root>/<controller>/<scenario>/graphs``
-                                 """)
 
         self.parser.add_argument("--controller",
                                  metavar="{depth0, depth1, depth2}.<controller>",
@@ -464,16 +423,6 @@ class Cmdline:
 
         stage4 = self.parser.add_argument_group('Stage4: Generating graphs')
 
-        stage4.add_argument("--with-hists",
-                            help="""
-
-                            Enable generation of intra-experiment histograms (if that part of the graph generation will
-                            be run).
-
-                            Use=stage{4}; can be omitted otherwise.
-
-                            """,
-                            action="store_true")
         stage4.add_argument("--exp-graphs",
                             choices=['intra', 'inter', 'all'],
                             help="""
@@ -580,7 +529,7 @@ class Cmdline:
                             default set of controllers will be used for comparison.
 
                             The first controller in this list will be used for normalization comparison plots, if
-                            ``--normalize-comparisons`` is passed
+                            ``--normalize-comparisons`` is passed.
 
                             Use=stage{5}; can be omitted otherwise.
 
@@ -591,6 +540,30 @@ class Cmdline:
                             help="""
 
                             Specify that controller comparisons should be normalized against the controller of primary interest
+
+                            """,
+                            action='store_true')
+
+        stage5.add_argument("--bc-univar",
+                            help="""
+
+                            Specify that the batch criteria is univariate. This cannot be deduced from the command line
+                            ``--batch-criteria`` argument in all cases because we are comparing controllers `across`
+                            scenarios, and each scenario (potentially) has a different batch criteria definition, which
+                            will result in (potentially) erroneous comparisons if we don't re-generate the batch
+                            criteria for each scenaro we compare controllers within.
+
+                            """,
+                            action='store_true')
+
+        stage5.add_argument("--bc-bivar",
+                            help="""
+
+                            Specify that the batch criteria is bivariate. This cannot be deduced from the command line
+                            ``--batch-criteria`` argument in all cases because we are comparing controllers `across`
+                            scenarios, and each scenario (potentially) has a different batch criteria definition, which
+                            will result in (potentially) erroneous comparisons if we don't re-generate the batch
+                            criteria for each scenaro we compare controllers in.
 
                             """,
                             action='store_true')
@@ -610,6 +583,9 @@ class CmdlineValidator():
         if args.gen_stddev:
             assert 1 == len(args.batch_criteria),\
                 "FATAL: Stddev generation only supported with univariate batch criteria"
+
+        assert isinstance(args.batch_criteria, list),\
+            'FATAL Batch criteria not passed as list on cmdline'
 
 
 def sphinx_argparse_object():

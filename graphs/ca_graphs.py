@@ -17,7 +17,6 @@
 
 import os
 import pandas as pd
-from graphs.batch_ranged_graph import BatchRangedGraph
 from models.collision_avoidance import CAModelEnter
 
 kTargetCumCSV = "entered-avoidance-cum-avg.csv"

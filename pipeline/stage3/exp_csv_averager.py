@@ -72,7 +72,7 @@ class ExpCSVAverager:
         csvs = {}
 
         pattern = self.output_name_format.format(
-            re.escape(self.template_input_leaf), "\d+")
+            re.escape(self.template_input_leaf), r'\d+')
 
         # check to make sure all directories are simulation runs, skipping the directory within each
         # experiment that the averaged data is placed in
@@ -152,4 +152,4 @@ class ExpCSVAverager:
                             "FATAL: Not all columns from {0} have same length".format(path1)
                         assert(all(len(df1[c1]) == len(df2[c2])) for c2 in df1.columns),\
                             "FATAL: Not all columns from {0} and {1} have same length".format(path1,
-                                                                                              path1)
+                                                                                              path2)

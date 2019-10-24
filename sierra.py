@@ -14,8 +14,6 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
 
-
-import os
 import cmdline as cmd
 from pipeline.pipeline import Pipeline
 from generators.controller_generator_parser import ControllerGeneratorParser
@@ -23,82 +21,43 @@ from generators.scenario_generator_parser import ScenarioGeneratorParser
 from generators.generator_creator import GeneratorCreator
 import variables.batch_criteria as bc
 import collections
+import pipeline.root_dirpath_generator as rdg
 
 
-def __batch_root_name(batch_criteria, scenario):
-    """
-    Select the directory name for the root directory for batch experiments depending on what the
-    batch criteria is. The default is to use the block distribution type + arena size to
-    differentiate between batched experiments, for some batch criteria, those will be the same and
-    so you need to use the batch criteria definition itself to uniquely identify.
-    """
-    assert isinstance(batch_criteria, list), 'Batch criteria not passed as list on cmdline'
+def __sierra_run_default(args):
+    controller = ControllerGeneratorParser()(args)
+    scenario = ScenarioGeneratorParser(args).parse_cmdline()
 
-    problematica = ['temporal_variance', 'constant_density']
-    for p in problematica:
-        for b in batch_criteria:
-            if p in b:
-                # use dash instead of dot in the criteria string to not confuse external programs that rely
-                # on file extensions.
-                return scenario + '+' + b.replace('-', '.')
+    # Add the template file leaf to the root directory path to help track what experiment was run.
+    print("- Controller={0}, Scenario={1}".format(controller, scenario))
+    cmdopts = rdg.from_cmdline(args)
 
-    return scenario  # General case
+    criteria = bc.Factory(args, cmdopts)
+    joint_generator = GeneratorCreator()(args, controller, scenario, criteria, cmdopts)
+    pipeline = Pipeline(args, joint_generator, criteria, cmdopts)
+    pipeline.run()
 
 
 def __sierra_run():
     # check python version
     import sys
     if sys.version_info < (3, 0):
-        # restriction: cannot use Python 2.x to run this code
         raise RuntimeError("Python 3.x should must be used to run this code.")
 
     args = cmd.Cmdline().parser.parse_args()
     cmd.CmdlineValidator()(args)
 
-    controller = ControllerGeneratorParser()(args)
-    scenario = ScenarioGeneratorParser(args).parse_cmdline()
-
-    # Add the template file leaf to the root directory path to help track what experiment was run.
-    if controller is not None and scenario is not None:
-        print("- Controller={0}, Scenario={1}".format(controller, scenario))
-
-        template, ext = os.path.splitext(os.path.basename(args.template_input_file))
-
-        scenario = __batch_root_name(args.batch_criteria, scenario)
-        if args.generation_root is None:
-            args.generation_root = os.path.join(args.sierra_root,
-                                                controller,
-                                                template + '-' + scenario,
-                                                "exp-inputs")
-
-        if args.output_root is None:
-            args.output_root = os.path.join(args.sierra_root,
-                                            controller,
-                                            template + '-' + scenario,
-                                            "exp-outputs")
-
-        if args.graph_root is None:
-            args.graph_root = os.path.join(args.sierra_root,
-                                           controller,
-                                           template + '-' + scenario,
-                                           "graphs")
-
     # If only 1 pipeline stage is passed, then the list of stages to run is parsed as a non-iterable
-    # integer, which causes the generator to fail to be created sometimes, which is a problem. So
-    # make it iterable in that case as well.
+    # integer, which can causes the generator to fail to be created. So make it iterable in that
+    # case as well.
     if not isinstance(args.pipeline, collections.Iterable):
         args.pipeline = [args.pipeline]
 
-    if args.batch_criteria is not None:
-        criteria = bc.Factory(args)
-        print("- Parse batch criteria into generator '{0}'".format(
-            criteria.__class__.__name__))
+    if 5 not in args.pipeline:
+        __sierra_run_default(args)
     else:
-        criteria = None
-
-    joint_generator = GeneratorCreator()(args, controller, scenario, criteria)
-    pipeline = Pipeline(args, joint_generator, criteria)
-    pipeline.run()
+        pipeline = Pipeline(args, None, None, None)
+        pipeline.run()
 
 
 if __name__ == "__main__":

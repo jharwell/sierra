@@ -16,11 +16,12 @@
 
 
 import os
-import pandas as pd
-from graphs.stacked_surface_graph import StackedSurfaceGraph
 import copy
 import typing as tp
+import pandas as pd
+from graphs.stacked_surface_graph import StackedSurfaceGraph
 import variables.batch_criteria as bc
+import pipeline.root_dirpath_generator as rdg
 
 
 class BivarIntraScenarioComparator:
@@ -36,34 +37,55 @@ class BivarIntraScenarioComparator:
                  cc_csv_root: str,
                  cc_graph_root: str,
                  cmdopts: tp.Dict[str, str],
+                 cli_args: dict,
                  main_config: dict,
                  norm_comp: bool):
         self.cmdopts = cmdopts
+        self.cli_args = cli_args
         self.main_config = main_config
         self.controllers = controllers
         self.graphs = graphs
         self.norm_comp = norm_comp
-
         self.cc_csv_root = cc_csv_root
         self.cc_graph_root = cc_graph_root
 
-    def __call__(self, batch_criteria: bc.UnivarBatchCriteria):
+    def __call__(self):
         # Obtain the list of scenarios to use. We can just take the scenario list of the first
         # controllers, because we have already checked that all controllers executed the same set
-        # scenarios
+        # scenarios.
         scenarios = os.listdir(os.path.join(self.cmdopts['sierra_root'], self.controllers[0]))
 
+        cmdopts = copy.deepcopy(self.cmdopts)
         # For each controller comparison graph we are interested in, generate it using data from all
         # scenarios
         for graph in self.graphs:
             for s in scenarios:
-                self.__gen_csvs(scenario=s,
-                                src_stem=graph['src_stem'],
-                                dest_stem=graph['dest_stem'])
+                for controller in self.controllers:
+                    # We need to generate the root directory paths for each batched experiment
+                    # (which # lives inside of the scenario dir), because they are all
+                    # different. We need generate these paths for EACH controller, because the
+                    # controller is part of the batch root.
+                    paths = rdg.regen_from_exp(self.cli_args.sierra_root,
+                                               self.cli_args.batch_criteria,
+                                               s,
+                                               controller)
+                    cmdopts.update(paths)
+
+                    # For each scenario, we have to create the batch criteria for it, because they
+                    # are all different.
+                    criteria = bc.Factory(self.cli_args,
+                                          cmdopts,
+                                          rdg.parse_batch_root(s)[1])
+
+                    self.__gen_csv(cmdopts=cmdopts,
+                                   controller=controller,
+                                   scenario=s,
+                                   src_stem=graph['src_stem'],
+                                   dest_stem=graph['dest_stem'])
 
                 self.__gen_graph(scenario=s,
-                                 batch_criteria=batch_criteria,
-                                 src_stem=graph['src_stem'],
+                                 batch_criteria=criteria,
+                                 cmdopts=cmdopts,
                                  dest_stem=graph['dest_stem'],
                                  title=graph['title'],
                                  zlabel=graph['label'])
@@ -71,7 +93,7 @@ class BivarIntraScenarioComparator:
     def __gen_graph(self,
                     scenario: str,
                     batch_criteria: bc.UnivarBatchCriteria,
-                    src_stem: str,
+                    cmdopts: tp.Dict[str, str],
                     dest_stem: str,
                     title: str,
                     zlabel: str):
@@ -81,22 +103,6 @@ class BivarIntraScenarioComparator:
         ``cc-csvs/``.
         """
         csv_stem_opath = os.path.join(self.cc_csv_root, dest_stem + "-" + scenario)
-
-        # All scenarios are NOT guaranteed to have the same # of experiments, so we need to
-        # overwrite key elements of the cmdopts in order to ensure proper processing.
-        cmdopts = copy.deepcopy(self.cmdopts)
-        batch_generation_root = os.path.join(self.cmdopts['sierra_root'],
-                                             self.controllers[0],
-                                             scenario,
-                                             "exp-inputs")
-        batch_output_root = os.path.join(self.cmdopts['sierra_root'],
-                                         self.controllers[0],
-                                         scenario,
-                                         "exp-outputs")
-        batch_criteria.set_batch_generation_root(batch_generation_root)
-
-        cmdopts['generation_root'] = batch_generation_root
-        cmdopts['output_root'] = batch_output_root
 
         StackedSurfaceGraph(input_stem_pattern=csv_stem_opath,
                             output_fpath=os.path.join(self.cc_graph_root,
@@ -108,37 +114,39 @@ class BivarIntraScenarioComparator:
                             legend=self.controllers,
                             norm_comp=self.norm_comp).generate()
 
-    def __gen_csvs(self,
-                   scenario: str,
-                   src_stem: str,
-                   dest_stem: str):
+    def __gen_csv(self,
+                  cmdopts: tp.Dict[str, str],
+                  scenario: str,
+                  controller: str,
+                  src_stem: str,
+                  dest_stem: str):
         """
-        Generates a set of .csv files for use in intra-scenario graph generation (1 per
-        controller). Because each ``.csv`` file corresponding to performance measures are 2D arrays,
-        and we are generating :meth:`StackedSurfaceGraph`s, we actually just copy and rename the
-        performance measure ``.csv`` files for each controllers into ``cc-csvs``.
+        Helper function for generating a set of .csv files for use in intra-scenario graph
+        generation (1 per controller). Because each ``.csv`` file corresponding to performance
+        measures are 2D arrays, and we are generating :meth:`StackedSurfaceGraph`s, we actually just
+        copy and rename the performance measure ``.csv`` files for each controllers into
+        ``cc-csvs``.
 
         :meth:`StackedSurfaceGraph` expects an ``_[0-9]+.csv`` pattern for each 2D surfaces to graph
         in order to disambiguate which files belong to which controller without having the
         controller name in the filepath (contains dots), so we do that here.
 
         """
-        for c in self.controllers:
-            csv_ipath = os.path.join(self.cmdopts['sierra_root'],
-                                     c,
-                                     scenario,
-                                     'exp-outputs',
-                                     self.main_config['sierra']['collate_csv_leaf'],
-                                     src_stem + ".csv")
+        csv_ipath = os.path.join(cmdopts['sierra_root'],
+                                 controller,
+                                 scenario,
+                                 'exp-outputs',
+                                 self.main_config['sierra']['collate_csv_leaf'],
+                                 src_stem + ".csv")
 
-            # Some experiments might not generate the necessary performance measure .csvs for
-            # graph generation, which is OK.
-            if not os.path.exists(csv_ipath):
-                continue
+        # Some experiments might not generate the necessary performance measure .csvs for
+        # graph generation, which is OK.
+        if not os.path.exists(csv_ipath):
+            return
 
-            df = pd.read_csv(csv_ipath, sep=';')
+        df = pd.read_csv(csv_ipath, sep=';')
 
-            csv_opath_stem = os.path.join(self.cc_csv_root,
-                                          dest_stem + "-" + scenario + '_' + str(self.controllers.index(c)))
+        leaf = dest_stem + "-" + scenario + '_' + str(self.controllers.index(controller))
+        csv_opath_stem = os.path.join(self.cc_csv_root, leaf)
 
-            df.to_csv(csv_opath_stem + '.csv', sep=';', index=False)
+        df.to_csv(csv_opath_stem + '.csv', sep=';', index=False)
