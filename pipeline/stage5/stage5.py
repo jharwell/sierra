@@ -51,8 +51,6 @@ class PipelineStage5:
         self.output_roots = {
             'cc_graphs': os.path.join(self.cmdopts['sierra_root'], "cc-graphs"),
             'cc_csvs': os.path.join(self.cmdopts['sierra_root'], "cc-csvs"),
-            'sc_graphs': os.path.join(self.cmdopts['sierra_root'], "sc-graphs"),
-            'sc_csvs': os.path.join(self.cmdopts['sierra_root'], "sc-csvs")
         }
 
         for v in self.output_roots.values():

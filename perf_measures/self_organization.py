@@ -46,9 +46,11 @@ class SelfOrganizationUnivar:
                                            self.inter_perf_csv,
                                            self.ca_in_csv,
                                            batch_criteria).calculate(batch_criteria)
-        df_new = pd.DataFrame(columns=[c for c in fl.columns if c not in batch_exp_dirnames[0]])
-
+        df_new = pd.DataFrame(columns=fl.columns)
         swarm_sizes = batch_criteria.swarm_sizes(self.cmdopts)
+
+        # Perfect self organization with 1 robot.
+        df_new[df_new.columns[0]] = 1.0
 
         for i in range(1, len(fl.columns)):
             theta = fl[batch_exp_dirnames[i]] - \

@@ -41,6 +41,9 @@ class DSGenerator(ExpInputGenerator):
 
     def generate(self, xml_luigi):
         arena_dim = self.cmdopts["arena_dim"]
+        assert arena_dim[0] == 2 * arena_dim[1],\
+            "FATAL: Dual source distribution requires a 2x1 arena: xdim={0},ydim={1}".format(arena_dim[0],
+                                                                                             arena_dim[1])
         shape = ev.arena_shape.RectangularArenaTwoByOne(x_range=[arena_dim[0]],
                                                         y_range=[arena_dim[1]])
 

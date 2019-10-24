@@ -209,7 +209,7 @@ class KarpFlattUnivar:
         # Perfect scalability with only 1 robot
         df[df.columns[0]] = 0.0
 
-        for i in range(1, len(df.columns)):
+        for i in range(1, len(df.columns) + 1):
             c = df.columns[i]
             s = sizes[i]
             df[c] = (1.0 / df[c] - 1.0 / s) / (1 - 1.0 / s)
