@@ -20,8 +20,9 @@ your local machine, and try a few small scale experiments.
    - GNU parallel (``parallel`` on ubuntu)
 
 .. IMPORTANT:: When running sierra, unless you have added the sierra repo to
-your ``PYTHONPATH`` and/or ``sierra.py`` to your ``PATH``, you will only be able
-to launch it from the root of the sierra repo.
+               your ``PYTHONPATH`` and/or ``sierra.py`` to your ``PATH``, you
+               will only be able to launch it from the root of the sierra repo.
 
 .. IMPORTANT:: Do not try to run sierra with a debug build of FORDYCA. It
-probably won't work and will be obnoxiously/irritatingly slow if it does.
+               probably won't work and will be obnoxiously/irritatingly slow if
+               it does.

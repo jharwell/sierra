@@ -485,7 +485,8 @@ def __UnivarFactory(args, cmdopts, cli_arg: str, scenario):
     category = cli_arg.split('.')[0]
 
     module = __import__("variables.{0}".format(category), fromlist=["*"])
-    main_config = yaml.load(open(os.path.join(args.config_root, 'main.yaml')))
+    main_config = yaml.load(open(os.path.join(args.config_root, 'main.yaml')),
+                            yaml.FullLoader)
 
     ret = getattr(module, "Factory")(cli_arg,
                                      main_config,

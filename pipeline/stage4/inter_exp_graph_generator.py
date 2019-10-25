@@ -35,14 +35,12 @@ class InterExpGraphGenerator:
     Attributes:
     """
 
-    def __init__(self, cmdopts, targets, batch_criteria):
+    def __init__(self, main_config, cmdopts, targets, batch_criteria):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
         self.batch_criteria = batch_criteria
-
-        self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
-                                                       'main.yaml')))
+        self.main_config = main_config
 
         collate_csv_leaf = self.main_config['sierra']['collate_csv_leaf']
         collate_graph_leaf = self.main_config['sierra']['collate_graph_leaf']
@@ -50,10 +48,6 @@ class InterExpGraphGenerator:
                                                                     collate_csv_leaf))
         self.cmdopts["graph_root"] = os.path.abspath(os.path.join(self.cmdopts["graph_root"],
                                                                   collate_graph_leaf))
-        self.controller_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
-                                                             'controllers.yaml')))
-        self.linegraph_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
-                                                            'inter-graphs-line.yaml')))
         self.targets = targets
         os.makedirs(self.cmdopts["graph_root"], exist_ok=True)
 
@@ -75,7 +69,10 @@ class InterExpGraphGenerator:
                                        self.main_config['sierra']['perf']['inter_perf_csv']).generate(self.batch_criteria)
 
         if self.batch_criteria.pm_query('scalability'):
-            ScalabilityUnivar().generate(self.cmdopts, self.batch_criteria)
+            ScalabilityUnivar().generate(self.main_config['sierra']['perf']['inter_perf_csv'],
+                                         self.main_config['sierra']['perf']['ca_in_csv'],
+                                         self.cmdopts,
+                                         self.batch_criteria)
 
         if self.batch_criteria.pm_query('self-org'):
             pmso.SelfOrganizationUnivar(self.cmdopts,

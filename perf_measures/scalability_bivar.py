@@ -141,14 +141,13 @@ class FractionalPerformanceLossBivar:
 
 
 class KarpFlattBivar:
-    """
+    r"""
     Given a swarm exhibiting speedup X with N robots(N > 1), compute the serial fraction Y of the
     swarm's performance. The lower the value of Y, the better the parallelization/scalability,
     suggesting that the addition of more robots will bring additional performance improvements:
 
-    Y = 1/X - 1/N
-        ---------
-        1 - 1/N
+    .. math::
+        Y = \frac{\frac{1}{X} - \frac{1}{N}}{1 - \frac{1}{N}}
     """
 
     def __init__(self, cmdopts, inter_perf_csv):

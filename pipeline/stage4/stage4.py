@@ -43,11 +43,14 @@ class PipelineStage4:
         self.cmdopts = cmdopts
 
         self.controller_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
-                                                             'controllers.yaml')))
+                                                             'controllers.yaml')),
+                                           yaml.FullLoader)
         self.linegraph_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
-                                                            'inter-graphs-line.yaml')))
+                                                            'inter-graphs-line.yaml')),
+                                          yaml.FullLoader)
         self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
-                                                       'main.yaml')))
+                                                       'main.yaml')),
+                                     yaml.FullLoader)
 
     def run(self, batch_criteria):
         if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'intra':
@@ -67,13 +70,13 @@ class PipelineStage4:
     # Private functions
     def __gen_inter_graphs(self, targets, batch_criteria):
         print("- Stage4: Generating inter-experiment graphs...")
-        InterExpGraphGenerator(self.cmdopts, targets, batch_criteria)()
+        InterExpGraphGenerator(self.main_config, self.cmdopts, targets, batch_criteria)()
         print("- Stage4: Inter-experiment graph generation complete")
 
     def __gen_intra_graphs(self, batch_criteria):
 
         print("- Stage4: Generating intra-experiment graphs...")
-        BatchedIntraExpGraphGenerator(self.cmdopts)(batch_criteria)
+        BatchedIntraExpGraphGenerator(self.main_config, self.cmdopts)(batch_criteria)
         print("- Stage4: Intra-experiment graph generation complete")
 
     def __calc_linegraph_targets(self):

@@ -13,6 +13,7 @@ Welcome to Sierra's documentation!
    setup/index.rst
    usage/index.rst
    contributing/index.rst
+   api/modules.rst
 
 Indices and tables
 ==================

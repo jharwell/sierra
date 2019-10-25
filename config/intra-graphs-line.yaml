@@ -20,7 +20,6 @@ LN_fsm_collision:
         - 'Average # Robots Exited Avoidance (cumulative)'
       xlabel: 'Interval'
       ylabel: '# Robots'
-      corr: ['coeff']
     - src_stem: fsm-collision
       dest_stem: fsm-collision-duration
       cols:

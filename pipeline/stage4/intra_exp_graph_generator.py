@@ -34,24 +34,26 @@ class IntraExpGraphGenerator:
                      generation.
     """
 
-    def __init__(self, cmdopts):
+    def __init__(self, main_config, cmdopts):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
-        self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
-                                                       'main.yaml')))
+        self.main_config = main_config
 
         self.cmdopts["output_root"] = os.path.join(self.cmdopts["output_root"],
                                                    self.main_config['sierra']['avg_output_leaf'])
 
         os.makedirs(self.cmdopts["graph_root"], exist_ok=True)
         self.linegraph_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
-                                                            'intra-graphs-line.yaml')))
+                                                            'intra-graphs-line.yaml')),
+                                          yaml.FullLoader)
         self.hm_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
-                                                     'intra-graphs-hm.yaml')))
+                                                     'intra-graphs-hm.yaml')),
+                                   yaml.FullLoader)
 
         self.controller_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
-                                                             'controllers.yaml')))
+                                                             'controllers.yaml')),
+                                           yaml.FullLoader)
 
     def __call__(self, batch_criteria):
         keys = []
@@ -76,6 +78,7 @@ class IntraExpGraphGenerator:
         targets.append({'graphs': extra_graphs})
 
         print("-- Enabled linegraph categories: {0}".format(filtered_keys))
+
         IntraExpLinegraphs(self.cmdopts["output_root"],
                            self.cmdopts["graph_root"],
                            targets).generate()

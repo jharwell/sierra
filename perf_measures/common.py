@@ -25,12 +25,11 @@ from variables.swarm_size import SwarmSize
 
 
 class ProjectivePerformanceCalculatorUnivar:
-    """
+    r"""
     Calculates the following measure for each experiment in a univariate batched experiment:
 
-    Performance(exp i)
-    --------------------
-    Distance(exp i, exp i-1) * Performance(exp i)
+    .. math::
+        \frac{Performance(exp i)}{Distance(exp i, exp i-1) * Performance(exp i)}
 
     Domain: [0, inf)
 
@@ -86,13 +85,12 @@ class ProjectivePerformanceCalculatorUnivar:
 
 
 class ProjectivePerformanceCalculatorBivar:
-    """
+    r"""
     Calculates the following measure for each experiment in a bivariate batched experiment. One of
     the variables must be swarm size.
 
-    Performance(exp i)
-    --------------------
-    Distance(exp i, exp i-1) * Performance(exp i)
+    .. math::
+        \frac{Performance(exp i)}{Distance(exp i, exp i-1) * Performance(exp i)}
 
     Domain: [0, inf)
 

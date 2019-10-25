@@ -17,47 +17,47 @@
 
 
 import os
+import numpy as np
+import matplotlib.pyplot as plt
 import pandas as pd
 import matplotlib as mpl
+import typing as tp
 mpl.rcParams['lines.linewidth'] = 3
 mpl.rcParams['lines.markersize'] = 10
 mpl.use('Agg')
-import numpy as np
-import matplotlib.pyplot as plt
-import itertools
-
-# Maximum # of rows that the input .csv to guarantee unique colors
-kMaxRows = 8
 
 
 class BatchRangedGraph:
     """
-    Generates a graph of some performance metric vs some batch criteria (swarm size, swarm density,
-    etc.). Only valid for batched experiments.
+    Generates a linegraph of some performance metric across the range of a univariate batch criteria
+    (hence the name).
 
     If the necessary .csv file does not exist, the graph is not generated.
 
     Attributes:
-      inputy_csv_fpath(str): The absolute/relative path to the csv file containing the y values to
-                             be graphed.
-      output_fpath(str): The absolute/relative path to the output image file to save generated graph
-                         to.
-      title(str): Graph title.
-      xlabel(str): X-label for graph.
-      ylabel(str): Y-label for graph.
-      legend(str): Legend for graph. If None, no legend is shown.
-      polynomial_fit(int): The degree of the polynomial to use for interpolating each row in the
-                           input .csv (the resulting trendline is then plotted). -1 disables
-                           interpolation and plotting.
-      corr(dict): Dictionary of correlation information to include on the plot. Really only useful
-                  for single-line plots. Valid keys:
-
-                  coeff -> (float) The calculated r^2 value
-
+        inputy_csv_fpath: The absolute/relative path to the csv file containing the y values to
+                           be graphed.
+        output_fpath: The absolute/relative path to the output image file to save generated graph
+                       to.
+        title: Graph title.
+        xlabel: X-label for graph.
+        ylabel: Y-label for graph.
+        legend: Legend for graph. If None, no legend is shown.
+        polynomial_fit: The degree of the polynomial to use for interpolating each row in the
+                        input .csv (the resulting trendline is then plotted). -1 disables
+                        interpolation and plotting.
     """
+    # Maximum # of rows that the input .csv to guarantee unique colors
+    kMaxRows = 8
 
-    def __init__(self, inputy_stem_fpath, output_fpath, title, xlabel, ylabel, legend, xvals,
-                 polynomial_fit, corr={}):
+    def __init__(self,
+                 inputy_stem_fpath: str,
+                 output_fpath: str,
+                 title: str, xlabel:
+                 str, ylabel: str,
+                 legend: str,
+                 xvals: tp.List[float],
+                 polynomial_fit: int):
 
         self.inputy_csv_fpath = os.path.abspath(inputy_stem_fpath + '.csv')
         self.inputy_stddev_fpath = os.path.abspath(inputy_stem_fpath + '.stddev')
@@ -68,17 +68,12 @@ class BatchRangedGraph:
         self.legend = legend
         self.xvals = xvals
         self.polynomial_fit = polynomial_fit
-        self.corr = corr
 
     def generate(self):
         if not os.path.exists(self.inputy_csv_fpath):
             return
 
         dfy = pd.read_csv(self.inputy_csv_fpath, sep=';')
-        if os.path.exists(self.inputy_stddev_fpath):
-            dfy_error = pd.read_csv(self.inputy_stddev_fpath, sep=';')
-        else:
-            dfy_error = None
 
         fig, ax = plt.subplots()
         line_styles = [':', '--', '.-', '-', ':', '--', '.-', '-']
@@ -87,9 +82,9 @@ class BatchRangedGraph:
                   'tab:brown', 'tab:pink', 'tab:gray', 'tab:olive']
         i = 0
 
-        assert len(dfy.values) <= kMaxRows, \
+        assert len(dfy.values) <= BatchRangedGraph.kMaxRows, \
             "FATAL: Too many rows to make unique line styles/colors/markers {0} > {1}".format(
-                len(dfy.values), kMaxRows)
+                len(dfy.values), BatchRangedGraph.kMaxRows)
 
         for i in range(0, len(dfy.values)):
             plt.plot(self.xvals, dfy.values[i], line_styles[i],
@@ -102,11 +97,8 @@ class BatchRangedGraph:
                 y_new = ffit(x_new)
                 plt.plot(x_new, y_new, line_styles[i])
 
-        if dfy_error is not None:
-            self._plot_errorbars(self.xvals, dfy, dfy_error)
-
-        if 'coeff' in self.corr:
-            plt.annotate('$R^2 = {:.4f}'.format(self.corr['coeff']))
+        # Plot error bars
+        self.__plot_errorbars(self.xvals, dfy)
 
         if self.legend is not None:
             plt.legend(self.legend, fontsize=14, ncol=max(1, int(len(self.legend) / 3.0)))
@@ -121,7 +113,18 @@ class BatchRangedGraph:
         fig.savefig(self.output_fpath, bbox_inches='tight', dpi=100)
         fig.clf()
 
-    def _plot_errorbars(self, xvals, data_df, stddev_df):
+    def __plot_errorbars(self, xvals, data_df):
+        """
+        Plot errorbars for all lines on the graph, using a shaded region rather than strict error
+        bars--looks much nicer.
+
+        If the necessary ``.stddev`` file does not exist, no errorbars are plotted.
+        """
+        if not os.path.exists(self.inputy_stddev_fpath):
+            return
+
+        stddev_df = pd.read_csv(self.inputy_stddev_fpath, sep=';')
+
         # plt.errorbar(data_df.index, data_df[c], xerr=0.5,
         #              yerr=2 * stddev_df[c], linestyle = '')
         for i in range(0, len(data_df.values)):

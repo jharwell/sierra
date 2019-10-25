@@ -10,5 +10,5 @@ Setup
    :maxdepth: 2
    :caption: Contents:
 
-  nonmsi_setup.rst
-  msi_setup.rst
+   nonmsi_setup.rst
+   msi_setup.rst

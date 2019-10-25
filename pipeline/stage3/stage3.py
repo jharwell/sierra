@@ -34,7 +34,8 @@ class PipelineStage3:
     def __init__(self, cmdopts):
         self.cmdopts = cmdopts
         self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
-                                                       'main.yaml')))
+                                                       'main.yaml')),
+                                     yaml.FullLoader)
 
     def run(self):
         tasks = self.cmdopts['results_process_tasks']

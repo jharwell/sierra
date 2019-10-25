@@ -46,11 +46,11 @@ class SelfOrganizationUnivar:
                                            self.inter_perf_csv,
                                            self.ca_in_csv,
                                            batch_criteria).calculate(batch_criteria)
-        df_new = pd.DataFrame(columns=fl.columns)
+        df_new = pd.DataFrame(columns=batch_exp_dirnames, index=[0])
         swarm_sizes = batch_criteria.swarm_sizes(self.cmdopts)
 
-        # Perfect self organization with 1 robot.
-        df_new[df_new.columns[0]] = 1.0
+        # No self organization with 1 robot.
+        df_new[df_new.columns[0]] = 0.0
 
         for i in range(1, len(fl.columns)):
             theta = fl[batch_exp_dirnames[i]] - \
@@ -66,7 +66,7 @@ class SelfOrganizationUnivar:
                          title="Swarm Self-Organization Due To Sub-Linear Fractional Performance Losses",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="",
-                         xvals=batch_criteria.graph_xticks(self.cmdopts)[1:],
+                         xvals=batch_criteria.graph_xticks(self.cmdopts),
                          legend=None,
                          polynomial_fit=-1).generate()
 

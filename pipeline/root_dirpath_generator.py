@@ -45,9 +45,11 @@ def from_cmdline(args):
     """
     template_stem, _ = os.path.splitext(os.path.basename(args.template_input_file))
 
+    # Remove all '-' from the template input file stem so we know the only '-' that are in it are
+    # ones that we put there.
     return regen_from_exp(args.sierra_root,
                           args.batch_criteria,
-                          template_stem + '-' + args.scenario,
+                          template_stem.replace('-', '') + '-' + args.scenario,
                           args.controller)
 
 
@@ -55,10 +57,9 @@ def parse_batch_root(root: str):
     """
     Parse a batch root into (template input file basename, scenario) components.
     """
-    # Was previously created with a '-' between the scenario and the batch_criteria in
-    # __gen_batch_root().
     template_basename = ''.join(root.split('-')[:-1])
     scenario = ''.join(root.split('-')[1:])
+
     return (template_basename, scenario)
 
 

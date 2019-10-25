@@ -10,11 +10,10 @@ Usage
    :maxdepth: 2
    :caption: Contents:
 
-  msi.rst
-  directories.rst
-  cli.rst
-  batch_criteria.rst
-  controllers.rst
+   msi.rst
+   directories.rst
+   cli.rst
+   batch_criteria.rst
 
 General Usage
 -------------
@@ -59,11 +58,12 @@ Usage Tips
   dimension`` (X **AND** Y dimensions) is always a rational number. That is,
 
   - 24 engines in a ``12x12`` arena will be fine, because ``12/24=0.5``, which
-  can be represented reasonably well in floating point.
+    can be represented reasonably well in floating point.
 
   - 24 engines in a ``16x16`` arena will not be fine, because
-  ``16/24=0.666667``, which will very likely result in rounding errors and ARGoS
-  being unable to initialize the space because it can't place arena walls.
+    ``16/24=0.666667``, which will very likely result in rounding errors and
+    ARGoS being unable to initialize the space because it can't place arena
+    walls.
 
   This is enforced by SIERRA.
 

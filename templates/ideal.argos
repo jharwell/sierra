@@ -17,7 +17,7 @@
   <!-- *************** -->
   <controllers>
 
-    <__template__ id="ffc"
+    <__controller__ id="ffc"
                   library="libfordyca">
       <actuators>
         <differential_steering implementation="default" />
@@ -50,7 +50,7 @@
             update_interface_ests="true"
             />
         <task_alloc
-            policy="stoch_greedy_nbhd">
+            policy="stoch_nbhd1">
           <task_abort>
             <src_sigmoid_sel
                 input_src="exec">
@@ -74,8 +74,10 @@
             <ema alpha="0.8"/>
           </task_exec_estimates>
 
-          <epsilon_greedy epsilon="0.4"/>
-          <stoch_greedy_nbhd
+          <epsilon_greedy epsilon="0.4"
+                          regret_bound="linear"/>
+          <ucb1 gamma="1000"/>
+          <stoch_nbhd1
               tab_init_policy="max_depth">
             <task_partition
                 always_partition="false"
@@ -115,7 +117,7 @@
                 </sigmoid_sel>
               </src_sigmoid_sel>
             </tab_sel>
-          </stoch_greedy_nbhd>
+          </stoch_nbhd1>
         </task_alloc>
         <block_sel_matrix
             nest="2.0, 3">
@@ -179,7 +181,7 @@
                       max_speed="10.0" />
         </actuation_subsystem2D>
       </params>
-    </__template__>
+    </__controller__>
 
   </controllers>
 
@@ -241,8 +243,8 @@
           task_interface_est="false"
           />
       <entities_oracle
-          blocks="true"
-          caches="true"/>
+          blocks="false"
+          caches="false"/>
     </oracle_manager>
     <temporal_variance>
       <blocks>

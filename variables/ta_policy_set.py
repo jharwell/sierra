@@ -42,7 +42,7 @@ class TAPolicySet(UnivarBatchCriteria):
         policies: List of policies to enable for a specific simulation.
         swarm_size: Swarm size to use for a specific simulation.
     """
-    kPolicies = ['random', 'stoch_greedy_nbhd', 'strict_greedy', 'epsilon_greedy']
+    kPolicies = ['random', 'stoch_nbhd1', 'strict_greedy', 'epsilon_greedy', 'UCB1']
 
     def __init__(self, cli_arg: str,
                  main_config: tp.Dict[str, str],

@@ -13,7 +13,9 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
-
+"""
+Command line parsing and validation classes.
+"""
 
 import argparse
 import os.path
@@ -24,10 +26,11 @@ class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawTextHelp
 
 
 class Cmdline:
+    """
+    Defines the command line arguments for SIERRA using :class:`argparse`
+    """
+
     def __init__(self):
-        """
-        Defines the command line arguments for sierra. Returns a parser with the definitions.
-        """
         self.parser = argparse.ArgumentParser(prog='sierra',
                                               formatter_class=HelpFormatter)
         self.parser.add_argument("--template-input-file",
@@ -589,4 +592,7 @@ class CmdlineValidator():
 
 
 def sphinx_argparse_object():
+    """
+    Return a handle to the argparse object for SIERRA in order for sphinx to autogenerate nice documentation from it.
+    """
     return Cmdline().parser

@@ -183,14 +183,17 @@ class FractionalPerformanceLossUnivar:
 
 
 class KarpFlattUnivar:
-    """
+    r"""
     Given a swarm exhibiting speedup X with N robots(N > 1), compute the serial fraction Y of the
     swarm's performance. The lower the value of Y, the better the parallelization/scalability,
     suggesting that the addition of more robots will bring additional performance improvements:
 
-    Y = 1/X - 1/N
-        ---------
-        1 - 1/N
+    .. math::
+        Y = \frac{\frac{1}{X} - \frac{1}{N}}{1 - \frac{1}{N}}
+
+    Defined for swarms with N >=1 robots. For N=1, we obtain a Karp-Flatt value of 1.0 using
+    L'Hospital's rule and taking the derivative with respect to N (1 - 1/N is giving the problem
+    after all).
     """
 
     def __init__(self, cmdopts, inter_perf_csv):
@@ -200,16 +203,21 @@ class KarpFlattUnivar:
         self.inter_perf_csv = inter_perf_csv
 
     def calculate(self, batch_criteria):
-        df = common.ProjectivePerformanceCalculatorUnivar(self.cmdopts,
-                                                          self.inter_perf_csv,
-                                                          "positive")(batch_criteria)
-
+        # Projective performance does not cover exp0, so we have to get the right column name from
+        # the performance .csv again so we can add it to the Karp-Flatt dataframe.
+        path = os.path.join(self.cmdopts["collate_root"], self.inter_perf_csv)
+        columns = pd.read_csv(path, sep=';').columns
+        projection = common.ProjectivePerformanceCalculatorUnivar(self.cmdopts,
+                                                                  self.inter_perf_csv,
+                                                                  "positive")(batch_criteria)
+        df = pd.DataFrame(columns=columns, index=[0])
         sizes = batch_criteria.swarm_sizes(self.cmdopts)
 
-        # Perfect scalability with only 1 robot
-        df[df.columns[0]] = 0.0
+        # Perfect scalability with only 1 robot, from L'Hospital's rule
+        df[df.columns[0]] = 1.0
+        df[projection.columns] = projection[projection.columns]
 
-        for i in range(1, len(df.columns) + 1):
+        for i in range(1, len(df.columns)):
             c = df.columns[i]
             s = sizes[i]
             df[c] = (1.0 / df[c] - 1.0 / s) / (1 - 1.0 / s)
@@ -226,7 +234,7 @@ class KarpFlattUnivar:
                          title="Swarm Serial Fraction: Karp-Flatt Metric",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="",
-                         xvals=batch_criteria.graph_xticks(self.cmdopts)[1:],
+                         xvals=batch_criteria.graph_xticks(self.cmdopts),
                          legend=None,
                          polynomial_fit=-1).generate()
 
@@ -237,13 +245,8 @@ class ScalabilityUnivar:
     experiments within the same scenario from collated .csv datain various ways.
     """
 
-    def generate(self, cmdopts, batch_criteria):
+    def generate(self, inter_perf_csv, ca_in_csv, cmdopts, batch_criteria):
         print("-- Univariate scalability from {0}".format(cmdopts["collate_root"]))
-
-        main_config = yaml.load(open(os.path.join(cmdopts['config_root'], 'main.yaml')))
-
-        inter_perf_csv = main_config['sierra']['perf']['inter_perf_csv']
-        ca_in_csv = main_config['sierra']['perf']['ca_in_csv']
 
         e = EfficiencyUnivar(cmdopts, inter_perf_csv)
         e.generate(e.calculate(batch_criteria), batch_criteria)

@@ -17,7 +17,7 @@
   <!-- *************** -->
   <controllers>
 
-    <__template__ id="ffc"
+    <__controller__ id="ffc"
                                 library="libfordyca">
       <actuators>
         <differential_steering implementation="default" />
@@ -156,7 +156,7 @@
                        block_id="false"
                        />
       </params>
-    </__template__>
+    </__controller__>
 
   </controllers>
 

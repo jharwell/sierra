@@ -13,6 +13,9 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
+"""
+Main module/entry point for SIERRA, the helpful command line swarm-robotic automation tool.
+"""
 
 import cmdline as cmd
 from pipeline.pipeline import Pipeline

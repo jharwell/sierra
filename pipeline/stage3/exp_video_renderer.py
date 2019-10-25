@@ -24,13 +24,13 @@ class ExpVideoRenderer:
     Render grabbed frames in ARGoS to a video file via ffmpeg.
 
     Attributes:
-      ro_params(dict): Dictionary of read-only parameters for batch rendering.
+        ro_params(dict): Dictionary of read-only parameters for batch rendering.
         cmd_opts(str): Cmdline options to pass to ffmpeg.
         ofile_leaf(str): The name of the video output file (specified releative to simulation output
                          directory).
         config(dict): Parsed dictionary of main YAML configuration.
-      exp_output_root(str): Root directory of simulation output (relative to current dir or
-                            absolute).
+        exp_output_root(str): Root directory of simulation output (relative to current dir or
+                              absolute).
     """
 
     kFramesFolderName = "frames"

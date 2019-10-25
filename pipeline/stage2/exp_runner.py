@@ -69,8 +69,9 @@ class ExpRunner:
 
         # Catch the exception but do not raise it again so that additional experiments can still be
         # run if possible
-        except subprocess.CalledProcessError:
-            print("ERROR: Experiment failed!")
+        except subprocess.CalledProcessError as e:
+            print("ERROR: Experiment failed! return code={0}".format(e.returncode))
+            print(e.output)
         elapsed = time.time() - start
         sys.stdout.write("{:.3f}s\n".format(elapsed))
 
@@ -80,19 +81,14 @@ class ExpRunner:
         if exec_resume:
             resume = '--resume'
 
-        p = subprocess.Popen('cd {0} &&'
-                             'parallel {1} --jobs {2} --results {0} --joblog {3} --no-notice < "{4}"'.format(
-                                 jobroot_path,
-                                 resume,
-                                 n_jobs,
-                                 joblog_path,
-                                 cmdfile_path),
-                             shell=True,
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = p.communicate()
-        if p.returncode != 0:
-            print(stdout, stderr)
-            print("ERROR: Process exited with {0}".format(p.returncode))
+        cmd = 'cd {0} &&' \
+            'parallel {1} --jobs {2} --results {0} --joblog {3} --no-notice < "{4}"'.format(
+                jobroot_path,
+                resume,
+                n_jobs,
+                joblog_path,
+                cmdfile_path)
+        subprocess.run(cmd, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     @staticmethod
     def __run_hpc_parallel(jobroot_path, cmdfile_path, joblog_path, exec_resume):
@@ -101,11 +97,12 @@ class ExpRunner:
         if exec_resume:
             resume = '--resume'
 
-        subprocess.run('sort -u $PBS_NODEFILE > {0} && '
-                       'parallel {1} --jobs 1 --results {3} --joblog {2} --sshloginfile {0} --workdir {3} < "{4}"'.format(
-                           nodelist,
-                           resume,
-                           joblog_path,
-                           jobroot_path,
-                           cmdfile_path),
-                       shell=True, check=True)
+        cmd = 'sort - u $PBS_NODEFILE > {0} && ' \
+            'parallel {1} --jobs 1 --results {3} --joblog {2} --sshloginfile {0} --workdir {3} < "{4}"'.format(
+                nodelist,
+                resume,
+                joblog_path,
+                jobroot_path,
+                cmdfile_path)
+
+        subprocess.run(cmd, shell=True, check=True)

@@ -87,7 +87,8 @@ def ControllerGeneratorFactory(controller, config_root, **kwargs):
 
     def __init__(self, **kwargs):
         ExpInputGenerator.__init__(self, **kwargs)
-        self.config = yaml.load(open(os.path.join(config_root, 'controllers.yaml')))
+        self.config = yaml.load(open(os.path.join(config_root, 'controllers.yaml')),
+                                yaml.FullLoader)
         self.category, self.name = controller.split('.')
 
     def generate(self):

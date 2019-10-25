@@ -17,14 +17,14 @@ depth0:
     - name: CRW
       xml:
         attr_change:
-          - ['.//controllers', '__template__', 'crw_controller']
+          - ['.//controllers', '__controller__', 'crw_controller']
 
       graphs_inherit:
         - *base_graphs
     - name: &DPO DPO
       xml:
         attr_change:
-          - ['.//controllers', '__template__', 'dpo_controller']
+          - ['.//controllers', '__controller__', 'dpo_controller']
       graphs_inherit:
         - *base_graphs
       graphs: &DPO_graphs
@@ -32,21 +32,21 @@ depth0:
     - name: &ODPO ODPO
       xml:
         attr_change:
-          - ['.//controllers', '__template__', 'odpo_controller']
+          - ['.//controllers', '__controller__', 'odpo_controller']
       graphs_inherit:
         - *base_graphs
         - *DPO_graphs
     - name: &MDPO MDPO
       xml:
         attr_change:
-          - ['.//controllers', '__template__', 'mdpo_controller']
+          - ['.//controllers', '__controller__', 'mdpo_controller']
       graphs_inherit:
         - *base_graphs
         - *DPO_graphs
     - name: &OMDPO OMDPO
       xml:
         attr_change:
-          - ['.//controllers', '__template__', 'omdpo_controller']
+          - ['.//controllers', '__controller__', 'omdpo_controller']
       graphs_inherit:
         - *base_graphs
         - *DPO_graphs
@@ -60,7 +60,7 @@ depth1:
     - name: BITD_DPO
       xml:
           attr_change:
-            - ['.//controllers', '__template__', 'bitd_dpo_controller']
+            - ['.//controllers', '__controller__', 'bitd_dpo_controller']
       graphs_inherit:
         - *base_graphs
         - *DPO_graphs
@@ -74,7 +74,7 @@ depth1:
     - name: BITD_ODPO
       xml:
           attr_change:
-            - ['.//controllers', '__template__', 'bitd_odpo_controller']
+            - ['.//controllers', '__controller__', 'bitd_odpo_controller']
       graphs_inherit:
         - *base_graphs
         - *DPO_graphs
@@ -82,7 +82,7 @@ depth1:
     - name: BITD_MDPO
       xml:
           attr_change:
-            - ['.//controllers', '__template__', 'bitd_mdpo_controller']
+            - ['.//controllers', '__controller__', 'bitd_mdpo_controller']
       graphs_inherit:
         - *base_graphs
         - *DPO_graphs
@@ -90,7 +90,7 @@ depth1:
     - name: BITD_OMDPO
       xml:
           attr_change:
-            - ['.//controllers', '__template__', 'bitd_omdpo_controller']
+            - ['.//controllers', '__controller__', 'bitd_omdpo_controller']
       graphs_inherit:
         - *base_graphs
         - *DPO_graphs
@@ -106,7 +106,7 @@ depth2:
     - name: BIRTD_DPO
       xml:
         attr_change:
-          - ['.//controllers', '__template__', 'birtd_dpo_controller']
+          - ['.//controllers', '__controller__', 'birtd_dpo_controller']
       graphs_inherit:
         - *base_graphs
         - *DPO_graphs
@@ -124,7 +124,7 @@ depth2:
     - name: BIRTD_ODPO
       xml:
           attr_change:
-            - ['.//controllers', '__template__', 'birtd_odpo_controller']
+            - ['.//controllers', '__controller__', 'birtd_odpo_controller']
       graphs_inherit:
         - *base_graphs
         - *DPO_graphs
@@ -132,7 +132,7 @@ depth2:
     - name: BIRTD_MDPO
       xml:
           attr_change:
-            - ['.//controllers', '__template__', 'birtd_mdpo_controller']
+            - ['.//controllers', '__controller__', 'birtd_mdpo_controller']
       graphs_inherit:
         - *base_graphs
         - *DPO_graphs
@@ -140,7 +140,7 @@ depth2:
     - name: BIRTD_OMDPO
       xml:
           attr_change:
-            - ['.//controllers', '__template__', 'birtd_omdpo_controller']
+            - ['.//controllers', '__controller__', 'birtd_omdpo_controller']
       graphs_inherit:
         - *base_graphs
         - *DPO_graphs

@@ -25,16 +25,15 @@ class ExpCSVAverager:
     Averages a set of .csv output files from a set of simulation runs for a single experiment.
 
     Attributes:
-      ro_params(dict): Dictionary of read-only configuration for CSV averaging:
-          template_input_leaf(str): Leaf (i.e. no preceding path to the template XML configuration file
-                                for the experiment.
-          no_verify(bool): Should result verification be skipped?
-          gen_stddev(bool): Should standard deviation be generated (and therefore errorbars
-                            plotted)?
-          config(dict): Parsed main YAML configuration
-      exp_output_root(str): Directory for averaged .csv output (relative to current dir or
-                            absolute).
-
+        ro_params(dict): Dictionary of read-only configuration for CSV averaging:
+        template_input_leaf(str): Leaf (i.e. no preceding path to the template XML configuration file
+                                  for the experiment.
+        no_verify(bool): Should result verification be skipped?
+        gen_stddev(bool): Should standard deviation be generated (and therefore errorbars
+                          plotted)?
+        config(dict): Parsed main YAML configuration
+         exp_output_root(str): Directory for averaged .csv output (relative to current dir or
+                               absolute).
     """
 
     def __init__(self, ro_params, exp_output_root):

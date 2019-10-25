@@ -45,7 +45,7 @@ class IntraExpLinegraphs:
             # For each graph in each category
             for graph in category['graphs']:
                 output_fpath = os.path.join(self.exp_graph_root,
-                                            graph['dest_stem'] + '.png'),
+                                            graph['dest_stem'] + '.png')
                 try:
                     StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root,
                                                                    graph['src_stem']),
