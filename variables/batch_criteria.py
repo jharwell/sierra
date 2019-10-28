@@ -21,6 +21,7 @@ import pickle
 import yaml
 import utils
 import xml_luigi
+import logging
 
 
 class BatchCriteria(ev.base_variable.BaseVariable):
@@ -98,17 +99,16 @@ class BatchCriteria(ev.base_variable.BaseVariable):
                       batch_config_leaf: str,
                       cmdopts: tp.Dict[str, str]):
         defs = list(self.gen_attr_changelist())
-        print("- Stage1: Applying batch criteria to {0} experiments".format(len(defs)))
+        logging.info("Stage1: Applying batch criteria to {0} experiments".format(len(defs)))
 
         for i in range(0, len(defs)):
             exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
             exp_generation_root = os.path.join(self.batch_generation_root,
                                                str(exp_dirname))
-            print(
-                "-- Applying {0} changes from generator '{1}' for exp{2} in {3}".format(len(defs[i]),
-                                                                                        self.cli_arg,
-                                                                                        i,
-                                                                                        exp_dirname))
+            logging.debug("Applying {0} changes from generator '{1}' for exp{2} in {3}".format(len(defs[i]),
+                                                                                               self.cli_arg,
+                                                                                               i,
+                                                                                               exp_dirname))
 
             os.makedirs(exp_generation_root, exist_ok=True)
             for path, attr, value in defs[i]:
@@ -492,7 +492,7 @@ def __UnivarFactory(args, cmdopts, cli_arg: str, scenario):
                                      main_config,
                                      cmdopts['generation_root'],
                                      scenario=scenario)()
-    print("- Create univariate batch criteria '{0}'".format(
+    logging.info("Create univariate batch criteria '{0}'".format(
         ret.__class__.__name__))
     return ret
 
@@ -502,7 +502,7 @@ def __BivarFactory(args, cmdopts, scenario):
     criteria2 = __UnivarFactory(args, cmdopts, args.batch_criteria[1], scenario)
     ret = BivarBatchCriteria(criteria1, criteria2)
 
-    print("- Create BivariateBatchCriteria from {1},{2}".format(
+    logging.info("Create BivariateBatchCriteria from {1},{2}".format(
         ret.__class__.__name__,
         ret.criteria1.__class__.__name__,
         ret.criteria2.__class__.__name__))

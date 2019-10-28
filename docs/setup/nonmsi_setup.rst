@@ -8,7 +8,7 @@ your local machine, and try a few small scale experiments.
 
 #. Install python dependencies with ``pip3``::
 
-     pip3 install pandas similaritymeasures fastdtw matplotlib pyyaml
+     pip3 install pandas similaritymeasures fastdtw matplotlib pyyaml coloredlogs
 
    - pandas (used for .csv file manipulation)
    - similaritymeasures (needed for temporal variance graph generation)

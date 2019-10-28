@@ -53,10 +53,11 @@ class BatchRangedGraph:
     def __init__(self,
                  inputy_stem_fpath: str,
                  output_fpath: str,
-                 title: str, xlabel:
-                 str, ylabel: str,
-                 legend: str,
+                 title: str,
+                 xlabel: str,
+                 ylabel: str,
                  xvals: tp.List[float],
+                 legend: str,
                  polynomial_fit: int):
 
         self.inputy_csv_fpath = os.path.abspath(inputy_stem_fpath + '.csv')

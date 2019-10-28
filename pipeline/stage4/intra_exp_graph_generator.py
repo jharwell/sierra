@@ -19,6 +19,7 @@
 import os
 import copy
 import yaml
+import logging
 
 from .intra_exp_linegraphs import IntraExpLinegraphs
 from .intra_exp_heatmaps import IntraExpHeatmaps
@@ -77,7 +78,7 @@ class IntraExpGraphGenerator:
         targets = [self.linegraph_config[k] for k in filtered_keys]
         targets.append({'graphs': extra_graphs})
 
-        print("-- Enabled linegraph categories: {0}".format(filtered_keys))
+        logging.debug("Enabled linegraph categories: {0}".format(filtered_keys))
 
         IntraExpLinegraphs(self.cmdopts["output_root"],
                            self.cmdopts["graph_root"],
@@ -86,7 +87,7 @@ class IntraExpGraphGenerator:
         filtered_keys = [k for k in self.hm_config if k in keys]
         targets = [self.hm_config[k] for k in filtered_keys]
 
-        print("-- Enabled heatmap categories: {0}".format(filtered_keys))
+        logging.debug("Enabled heatmap categories: {0}".format(filtered_keys))
         IntraExpHeatmaps(self.cmdopts["output_root"],
                          self.cmdopts["graph_root"],
                          targets).generate()

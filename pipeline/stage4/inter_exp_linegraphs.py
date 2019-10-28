@@ -17,6 +17,7 @@
 
 
 import os
+import logging
 from graphs.stacked_line_graph import StackedLineGraph
 
 
@@ -39,7 +40,7 @@ class InterExpLinegraphs:
         self.collate_targets = collate_targets
 
     def generate(self):
-        print("-- Linegraphs from {0}".format(self.csv_root))
+        logging.info("Linegraphs from {0}".format(self.csv_root))
         # For each category of linegraphs we are generating
         for category in self.collate_targets:
             # For each graph in each category

@@ -43,7 +43,7 @@ MSI.
    clusters), install the same python dependencies as above, but user
    local (you obviously don't have admin priveleges on the cluster)::
 
-     pip3 install --user pandas similaritymeasures fastdtw matplotlib pyyaml
+     pip3 install --user pandas similaritymeasures fastdtw matplotlib pyyaml coloredlogs
 
    This is a one time step. Must be done on a login node, as compute nodes do
    not have internet access.

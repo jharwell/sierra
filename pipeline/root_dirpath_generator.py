@@ -15,7 +15,7 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Functions for Generating the directory paths for the root directories for a single batched
+Functions for generating the directory paths for the root directories for a single batched
 experiment.
 
 - The batch experiment root. ALL files (inputs and outputs) are written to this directory, which
@@ -35,6 +35,7 @@ experiment.
   into. Named ``<batch experiment root>/graphs``.
 """
 import os
+import logging
 import typing as tp
 
 
@@ -78,7 +79,7 @@ def regen_from_exp(sierra_root: str,
                             scenario,
                             controller,
                             template_basename)
-    print('-- Generated batch root {0}'.format(root))
+    logging.info('Generated batch root {0}'.format(root))
     return {
         'generation_root': os.path.join(root, "exp-inputs"),
         'output_root': os.path.join(root, "exp-outputs"),

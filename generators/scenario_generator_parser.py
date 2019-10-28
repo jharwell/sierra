@@ -16,6 +16,7 @@
 
 
 import re
+import logging
 
 
 class ScenarioGeneratorParser:
@@ -49,8 +50,8 @@ class ScenarioGeneratorParser:
             return None
 
         else:  # Scenario specified on cmdline
-            print(
-                "- Parse scenario generator from cmdline specification '{0}'".format(self.args.scenario))
+            logging.info("Parse scenario generator from cmdline specification '{0}'".format(
+                self.args.scenario))
 
             res1 = re.search('[a-zA-Z]+', self.args.scenario)
             assert res1 is not None,\

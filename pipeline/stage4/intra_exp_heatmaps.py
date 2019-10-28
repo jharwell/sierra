@@ -17,6 +17,7 @@
 
 
 import os
+import logging
 from graphs.heatmap import Heatmap
 
 
@@ -38,7 +39,7 @@ class IntraExpHeatmaps:
         self.targets = targets
 
     def generate(self):
-        print("-- Heatmaps from {0}".format(self.exp_output_root))
+        logging.info("Heatmaps from {0}".format(self.exp_output_root))
 
         # For each category of heatmaps we are generating
         for category in self.targets:

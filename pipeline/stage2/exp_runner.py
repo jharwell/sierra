@@ -19,32 +19,39 @@ import os
 import subprocess
 import time
 import sys
+import logging
 
 
 class ExpRunner:
-
     """
-    Runs the specified  # of simulations in parallel using GNU Parallel on
-    the provided set of hosts on MSI (or on a single personal computer for testing).
+    Runs the specified  # of simulations in parallel using GNU Parallel on a provided set of hosts
+    in an HPC environment, or on the current local machine.
 
     Attributes:
-      exp_generation_root(str): Root directory for all generated simulation input files for the
-                                experiment.
-      exp_num(int): Experiment number in the batch
+        exp_generation_root: Absolute path to the root directory for all generated simulation
+                             input files for the experiment (i.e. an experiment directory
+                             within the batch experiment root).
+        exp_num: Experiment number in the batch.
 
     """
 
-    def __init__(self, exp_generation_root, exp_num, hpc_env):
+    def __init__(self, exp_generation_root: str, exp_num: int, hpc_env: str):
         self.exp_generation_root = os.path.abspath(exp_generation_root)
         self.exp_num = exp_num
         self.hpc_env = hpc_env
 
-    def run(self, exec_method, n_jobs, exec_resume):
-        '''Runs the experiment.'''
-        assert os.environ.get(
-            "ARGOS_PLUGIN_PATH") is not None, ("ERROR: You must have ARGOS_PLUGIN_PATH defined")
-        assert os.environ.get(
-            "LOG4CXX_CONFIGURATION") is not None, ("ERROR: You must LOG4CXX_CONFIGURATION defined")
+    def run(self, exec_method: str, n_jobs: int, exec_resume: bool):
+        """
+        Runs the simulations for a single experiment in parallel.
+
+        Arguments:
+            exec_method: Should the experiments be run in an HPC environment on on the local
+                         machine?
+            n_jobs: If running on a local machine, how many concurrent jobs are allowed? (Don't want
+                    to oversubscribe the machine)
+            exec_resume: Is this run of SIERRA resuming a previous run that failed/did not finish?
+
+        """
 
         # Root directory for the job. Chose the exp input directory rather than the output directory
         # in order to keep simulation outputs separate from those for the framework used to run the
@@ -71,8 +78,8 @@ class ExpRunner:
         # Catch the exception but do not raise it again so that additional experiments can still be
         # run if possible
         except subprocess.CalledProcessError as e:
-            print("ERROR: Experiment failed! return code={0}".format(e.returncode))
-            print(e.output)
+            logging.error("Experiment failed! return code={0}".format(e.returncode))
+            logging.error(e.output)
 
         elapsed = time.time() - start
         sys.stdout.write("{:.3f}s\n".format(elapsed))
@@ -94,7 +101,9 @@ class ExpRunner:
 
     @staticmethod
     def __run_hpc_MSI(jobroot_path, cmdfile_path, joblog_path, exec_resume):
-        nodelist = os.path.join(jobroot_path, "$PBS_JOBID-nodelist.txt")
+        jobid = os.environ['PBS_JOBID']
+        nodelist = os.path.join(jobroot_path, "{0}-nodelist.txt".format(jobid))
+
         resume = ''
         if exec_resume:
             resume = '--resume'

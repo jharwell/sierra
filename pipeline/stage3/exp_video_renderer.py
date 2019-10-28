@@ -17,6 +17,7 @@
 
 import os
 import subprocess
+import logging
 
 
 class ExpVideoRenderer:
@@ -40,8 +41,8 @@ class ExpVideoRenderer:
         self.exp_output_root = exp_output_root
 
     def render(self):
-        print("-- Rendering videos in {0}:leaf={1}...".format(self.exp_output_root,
-                                                              self.ro_params['ofile_leaf']))
+        logging.info("Rendering videos in {0}:leaf={1}...".format(self.exp_output_root,
+                                                                  self.ro_params['ofile_leaf']))
 
         opts = self.ro_params['cmd_opts'].split(' ')
         # Render videos in parallel--waaayyyy faster

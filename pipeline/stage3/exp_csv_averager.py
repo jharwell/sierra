@@ -18,6 +18,7 @@
 import os
 import re
 import pandas as pd
+import logging
 
 
 class ExpCSVAverager:
@@ -65,7 +66,7 @@ class ExpCSVAverager:
     def _average_csvs(self):
         """Averages the CSV files found in the output save path"""
 
-        print('-- Averaging results in ' + self.exp_output_root + "...")
+        logging.info('Averaging results in ' + self.exp_output_root + "...")
 
         # Maps unique .csv stem to the averaged dataframe
         csvs = {}
@@ -115,7 +116,7 @@ class ExpCSVAverager:
         experiments = [exp for exp in os.listdir(self.exp_output_root) if exp not in [
             self.avgd_output_leaf]]
 
-        print('-- Verifying results in ' + self.exp_output_root + "...")
+        logging.info('Verifying results in ' + self.exp_output_root + "...")
 
         for exp1 in experiments:
             csv_root1 = os.path.join(self.exp_output_root,

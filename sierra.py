@@ -25,6 +25,8 @@ from generators.generator_creator import GeneratorCreator
 import variables.batch_criteria as bc
 import collections
 import pipeline.root_dirpath_generator as rdg
+import coloredlogs
+import logging
 
 
 def __sierra_run_default(args):
@@ -32,7 +34,7 @@ def __sierra_run_default(args):
     scenario = ScenarioGeneratorParser(args).parse_cmdline()
 
     # Add the template file leaf to the root directory path to help track what experiment was run.
-    print("- Controller={0}, Scenario={1}".format(controller, scenario))
+    logging.info("Controller={0}, Scenario={1}".format(controller, scenario))
     cmdopts = rdg.from_cmdline(args)
 
     criteria = bc.Factory(args, cmdopts)
@@ -46,6 +48,9 @@ def __sierra_run():
     import sys
     if sys.version_info < (3, 0):
         raise RuntimeError("Python 3.x should must be used to run this code.")
+
+    # Get nice colored logging output!
+    coloredlogs.install(fmt='%(asctime)s %(levelname)s - %(message)s')
 
     args = cmd.Cmdline().parser.parse_args()
     args = cmd.HPCEnvInheritor(args.hpc_env)(args)

@@ -623,7 +623,6 @@ class HPCEnvInheritor():
             assert k in os.environ, \
                 "FATAL: Attempt to run sierra in non-MSI environment: '{0}' not found".format(k)
 
-        print(args.n_threads)
         if 'MSI' == self.env_type:
             if args.physics_n_engines is None:
                 args.physics_n_engines = int(os.environ['PBS_NUM_PPN'])

@@ -17,6 +17,7 @@
 
 import os
 import pandas as pd
+import logging
 
 
 class BivarCSVCollator:
@@ -43,8 +44,8 @@ class BivarCSVCollator:
         self.targets = targets
 
     def __call__(self):
-        print("- Stage4: Collating bivar inter-experiment .csv files from batch in {0} to {1}...".format(self.batch_output_root,
-                                                                                                         self.collate_root))
+        logging.info("Stage4: Collating bivar inter-experiment .csv files from batch in {0} to {1}...".format(self.batch_output_root,
+                                                                                                              self.collate_root))
         # For each category of graphs we are generating
         for category in self.targets:
             # For each graph in each category
@@ -78,8 +79,8 @@ class BivarCSVCollator:
                                sep=';',
                                index=False)
         elif any([v for v in csv_src_exists]):
-            print("-- WARNING: Not all experiments in {0} produced '{1}.csv'".format(self.batch_output_root,
-                                                                                     target['src_stem']))
+            logging.warning("Not all experiments in {0} produced '{1}.csv'".format(self.batch_output_root,
+                                                                                   target['src_stem']))
 
         if all([v for v in csv_src_exists]) and not stddev_df_new.empty:
             stddev_df_new.to_csv(os.path.join(self.collate_root,

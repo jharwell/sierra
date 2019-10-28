@@ -17,6 +17,7 @@
 
 
 import os
+import logging
 from graphs.stacked_line_graph import StackedLineGraph
 
 
@@ -38,7 +39,7 @@ class IntraExpLinegraphs:
         self.targets = targets
 
     def generate(self):
-        print("-- Linegraphs from {0}".format(self.exp_output_root))
+        logging.info("Linegraphs from {0}".format(self.exp_output_root))
 
         # For each category of linegraphs we are generating
         for category in self.targets:

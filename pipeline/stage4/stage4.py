@@ -18,6 +18,7 @@
 import os
 import yaml
 import matplotlib as mpl
+import logging
 from .univar_csv_collator import UnivarCSVCollator
 from .bivar_csv_collator import BivarCSVCollator
 from .batched_intra_exp_graph_generator import BatchedIntraExpGraphGenerator
@@ -69,15 +70,15 @@ class PipelineStage4:
 
     # Private functions
     def __gen_inter_graphs(self, targets, batch_criteria):
-        print("- Stage4: Generating inter-experiment graphs...")
+        logging.info("Stage4: Generating inter-experiment graphs...")
         InterExpGraphGenerator(self.main_config, self.cmdopts, targets, batch_criteria)()
-        print("- Stage4: Inter-experiment graph generation complete")
+        logging.info("Stage4: Inter-experiment graph generation complete")
 
     def __gen_intra_graphs(self, batch_criteria):
 
-        print("- Stage4: Generating intra-experiment graphs...")
+        logging.info("Stage4: Generating intra-experiment graphs...")
         BatchedIntraExpGraphGenerator(self.main_config, self.cmdopts)(batch_criteria)
-        print("- Stage4: Intra-experiment graph generation complete")
+        logging.info("Stage4: Intra-experiment graph generation complete")
 
     def __calc_linegraph_targets(self):
         """
@@ -102,5 +103,5 @@ class PipelineStage4:
         targets = [self.linegraph_config[k] for k in filtered_keys]
         targets.append({'graphs': extra_graphs})
 
-        print("- Enabled linegraph categories: {0}".format(filtered_keys))
+        logging.debug("Enabled linegraph categories: {0}".format(filtered_keys))
         return targets

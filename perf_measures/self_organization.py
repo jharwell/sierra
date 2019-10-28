@@ -18,6 +18,7 @@
 import os
 import copy
 import pandas as pd
+import logging
 from graphs.batch_ranged_graph import BatchRangedGraph
 from graphs.heatmap import Heatmap
 import perf_measures.common as common
@@ -40,7 +41,7 @@ class SelfOrganizationUnivar:
         self.ca_in_csv = ca_in_csv
 
     def generate(self, batch_criteria):
-        print("-- Univariate self-organization from {0}".format(self.cmdopts["collate_root"]))
+        logging.info("Univariate self-organization from {0}".format(self.cmdopts["collate_root"]))
         batch_exp_dirnames = batch_criteria.gen_exp_dirnames(self.cmdopts)
         fl = common.FractionalLossesUnivar(self.cmdopts,
                                            self.inter_perf_csv,
@@ -88,7 +89,7 @@ class SelfOrganizationBivar:
         self.ca_in_csv = ca_in_csv
 
     def generate(self, batch_criteria):
-        print("-- Bivariate self-organization from {0}".format(self.cmdopts["collate_root"]))
+        logging.info("Bivariate self-organization from {0}".format(self.cmdopts["collate_root"]))
         fl = common.FractionalLossesBivar(self.cmdopts,
                                           self.inter_perf_csv,
                                           self.ca_in_csv,

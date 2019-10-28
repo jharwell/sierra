@@ -17,6 +17,7 @@
 
 import os
 import copy
+import logging
 import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
 from perf_measures import vcs
@@ -40,7 +41,7 @@ class AdaptabilityUnivar:
         generate a graph of the result.
         """
 
-        print("-- Univariate adaptability from {0}".format(self.cmdopts["collate_root"]))
+        logging.info("Univariate adaptability from {0}".format(self.cmdopts["collate_root"]))
         batch_exp_dirnames = batch_criteria.gen_exp_dirnames(self.cmdopts)
 
         # Adaptability is only defined for experiments > 0, as exp0 is assumed to be ideal conditions,

@@ -16,23 +16,26 @@
 
 
 import os
+import logging
 
 
 class PipelineStage1:
-
     """
-    Implements stage 1 of the experimental pipeline: Generate a set of XML configuration files from
+    Implements stage 1 of the pipeline: Generate a set of XML configuration files from
     a template suitable for input into ARGoS that contain user-specified modifications.
     """
 
     def run(self, cmdopts, input_generator):
-        print(
-            "- Stage1: Generating input files for batched experiment in {0}...".format(cmdopts['generation_root']))
-        print("-- Using '{0}'".format(cmdopts['time_setup']))
-        print("-- Using {0} physics engines".format(cmdopts['physics_n_engines']))
+        """
+        Run stage 1 of the experiment pipeline.
+        """
+        logging.info("Stage1: Generating input files for batched experiment in {0}...".format(
+            cmdopts['generation_root']))
+        logging.debug("Using '{0}'".format(cmdopts['time_setup']))
+        logging.debug("Using {0} physics engines".format(cmdopts['physics_n_engines']))
         input_generator.generate()
 
-        print("- Stage1: {0} input files generated in {1} experiments.".format(
+        logging.info("Stage1: {0} input files generated in {1} experiments.".format(
             sum([len(files) for r, d, files in os.walk(cmdopts['generation_root'])]),
             sum([len(d) for r, d, files in os.walk(cmdopts['generation_root'])])))
 

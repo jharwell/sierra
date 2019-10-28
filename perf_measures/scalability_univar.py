@@ -17,7 +17,7 @@
 
 import os
 import copy
-import yaml
+import logging
 import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
 import perf_measures.common as common
@@ -246,7 +246,7 @@ class ScalabilityUnivar:
     """
 
     def generate(self, inter_perf_csv, ca_in_csv, cmdopts, batch_criteria):
-        print("-- Univariate scalability from {0}".format(cmdopts["collate_root"]))
+        logging.info("Univariate scalability from {0}".format(cmdopts["collate_root"]))
 
         e = EfficiencyUnivar(cmdopts, inter_perf_csv)
         e.generate(e.calculate(batch_criteria), batch_criteria)

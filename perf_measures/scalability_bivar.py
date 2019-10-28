@@ -18,6 +18,7 @@
 import os
 import copy
 import yaml
+import logging
 import pandas as pd
 import numpy as np
 from graphs.heatmap import Heatmap
@@ -211,7 +212,7 @@ class ScalabilityBivar:
     """
 
     def generate(self, cmdopts, batch_criteria):
-        print("-- Bivariate scalability from {0}".format(cmdopts["collate_root"]))
+        logging.info("Bivariate scalability from {0}".format(cmdopts["collate_root"]))
 
         main_config = yaml.load(open(os.path.join(cmdopts['config_root'], 'main.yaml')))
 

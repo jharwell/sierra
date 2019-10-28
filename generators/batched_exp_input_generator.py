@@ -20,6 +20,7 @@ from xml_luigi import XMLLuigi
 import generators.generator_factory as gf
 import generators.scenario_generator_parser as sgp
 import variables as ev
+import logging
 
 
 class BatchedExpInputGenerator:
@@ -94,8 +95,8 @@ class BatchedExpInputGenerator:
         exp_defs = self.criteria.gen_attr_changelist()
         for i in range(0, len(exp_defs)):
             generator = self.__create_exp_generator(exp_defs[i], i)
-            print("-- Applying changes from generator '{0}' to exp{1}".format(self.cmdopts['joint_generator'],
-                                                                              i))
+            logging.debug("Applying changes from generator '{0}' to exp{1}".format(self.cmdopts['joint_generator'],
+                                                                                   i))
 
             generator.generate()
 

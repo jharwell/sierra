@@ -1131,3 +1131,45 @@ LN_depth2_task_exec:
         - 'Average Completion Count (Cumulative)'
       xlabel: 'Interval'
       ylabel: 'Count'
+
+LN_cache_sites:
+  graphs:
+    - src_stem: cache-site-selection
+      dest_stem: cache-site-selection-counts-int
+      cols:
+        - int_n_successes
+        - int_n_fails
+        - int_nlopt_stopval
+        - int_nlopt_ftol
+        - int_nlopt_xtol
+        - int_nlopt_maxeval
+      title: 'Cache Site Selection NLopt Stats'
+      legend:
+        - 'Success Count (Interval)'
+        - 'Fail Count (Interval)'
+        - 'NLopt STOPVAL_REACHED Count (Interval)'
+        - 'NLopt FTOL_REACHED Count (Interval)'
+        - 'NLopt XTOL_REACHED Count (Interval)'
+        - 'NLopt MAXEVAL_REACHED Count (Interval)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: cache-site-selection
+      dest_stem: cache-site-selection-counts-cum
+      cols:
+        - cum_n_successes
+        - cum_n_fails
+        - cum_nlopt_stopval
+        - cum_nlopt_ftol
+        - cum_nlopt_xtol
+        - cum_nlopt_maxeval
+      title: 'Cache Site Selection NLopt Stats'
+      legend:
+        - 'Success Count (Cumulative)'
+        - 'Fail Count (Cumulative)'
+        - 'NLopt STOPVAL_REACHED Count (Cumulative)'
+        - 'NLopt FTOL_REACHED Count (Cumulative)'
+        - 'NLopt XTOL_REACHED Count (Cumulative)'
+        - 'NLopt MAXEVAL_REACHED Count (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Count'

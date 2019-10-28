@@ -19,6 +19,7 @@ import os
 import copy
 import pandas as pd
 import numpy as np
+import logging
 from graphs.batch_ranged_graph import BatchRangedGraph
 from graphs.heatmap import Heatmap
 
@@ -38,7 +39,7 @@ class BlockCollectionUnivar:
         self.blocks_collected_stem = blocks_collected_csv.split('.')[0]
 
     def generate(self, batch_criteria):
-        print("-- Univariate block collection from {0}".format(self.cmdopts["collate_root"]))
+        logging.info("Univariate block collection from {0}".format(self.cmdopts["collate_root"]))
         stddev_ipath = os.path.join(self.cmdopts["collate_root"],
                                     self.blocks_collected_stem + '.stddev')
         stddev_opath = os.path.join(self.cmdopts["collate_root"],
@@ -96,7 +97,7 @@ class BlockCollectionBivar:
         self.blocks_collected_stem = blocks_collected_csv.split('.')[0]
 
     def generate(self, batch_criteria):
-        print("-- Bivariate block collection from {0}".format(self.cmdopts["collate_root"]))
+        logging.info("Bivariate block collection from {0}".format(self.cmdopts["collate_root"]))
         stddev_ipath = os.path.join(self.cmdopts["collate_root"],
                                     self.blocks_collected_stem + '.stddev')
         stddev_opath = os.path.join(self.cmdopts["collate_root"],
