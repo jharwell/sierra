@@ -31,13 +31,13 @@ class ExpRunner:
       exp_generation_root(str): Root directory for all generated simulation input files for the
                                 experiment.
       exp_num(int): Experiment number in the batch
-      fn_threads_per_sim(int): # ARGoS threads being used per simulation.
 
     """
 
-    def __init__(self, exp_generation_root, exp_num):
+    def __init__(self, exp_generation_root, exp_num, hpc_env):
         self.exp_generation_root = os.path.abspath(exp_generation_root)
         self.exp_num = exp_num
+        self.hpc_env = hpc_env
 
     def run(self, exec_method, n_jobs, exec_resume):
         '''Runs the experiment.'''
@@ -62,16 +62,18 @@ class ExpRunner:
         try:
             if 'local' == exec_method:
                 ExpRunner.__run_local(jobroot, cmdfile, joblog, n_jobs, exec_resume)
-            elif 'hpc' in exec_method:
-                ExpRunner.__run_hpc_parallel(jobroot, cmdfile, joblog, exec_resume)
+            elif 'hpc' in exec_method and self.hpc_env == 'MSI':
+                ExpRunner.__run_hpc_MSI(jobroot, cmdfile, joblog, exec_resume)
             else:
-                assert False, "Bad exec method '{0}'".format(exec_method)
+                assert False, "Bad exec method '{0}' or HPC env {1}".format(exec_method,
+                                                                            self.hpc_env)
 
         # Catch the exception but do not raise it again so that additional experiments can still be
         # run if possible
         except subprocess.CalledProcessError as e:
             print("ERROR: Experiment failed! return code={0}".format(e.returncode))
             print(e.output)
+
         elapsed = time.time() - start
         sys.stdout.write("{:.3f}s\n".format(elapsed))
 
@@ -91,13 +93,13 @@ class ExpRunner:
         subprocess.run(cmd, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     @staticmethod
-    def __run_hpc_parallel(jobroot_path, cmdfile_path, joblog_path, exec_resume):
+    def __run_hpc_MSI(jobroot_path, cmdfile_path, joblog_path, exec_resume):
         nodelist = os.path.join(jobroot_path, "$PBS_JOBID-nodelist.txt")
         resume = ''
         if exec_resume:
             resume = '--resume'
 
-        cmd = 'sort - u $PBS_NODEFILE > {0} && ' \
+        cmd = 'sort -u $PBS_NODEFILE > {0} && ' \
             'parallel {1} --jobs 1 --results {3} --joblog {2} --sshloginfile {0} --workdir {3} < "{4}"'.format(
                 nodelist,
                 resume,

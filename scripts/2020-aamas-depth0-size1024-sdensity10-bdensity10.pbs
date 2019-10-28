@@ -48,11 +48,9 @@ BLOCK_COUNTS=(820 820 920 820 820 920)
 
 OUTPUT_ROOT=$HOME/exp/2020-aamas-depth0
 BASE_CMD="python3 sierra.py \
-                  --template-input-file=$SIERRA/templates/2020-aamas-depth0-ideal.argos \
-                  --n-sims=50\
-                  --physics-n-engines=8 \
-                  --n-threads=8
+                  --template-input-file=$SIERRA/templates/2020-aamas-depth0-ideal.argos\
                   --exec-method=hpc\
+                  --hpc-env=MSI \
                   --time-setup=time_setup.T10000"
 
 cd $HOME/git/sierra

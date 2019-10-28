@@ -61,7 +61,9 @@ class BatchedExpRunner:
             exp_to_run = exp_all
 
         for exp in exp_to_run:
-            ExpRunner(exp, exp_all.index(exp)).run(exec_method, n_jobs, exec_resume)
+            ExpRunner(exp, exp_all.index(exp), self.cmdopts['hpc_env']).run(exec_method,
+                                                                            n_jobs,
+                                                                            exec_resume)
 
         # Cleanup Xvfb processes which were started in the background
         if with_rendering:

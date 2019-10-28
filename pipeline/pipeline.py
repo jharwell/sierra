@@ -62,6 +62,7 @@ class Pipeline:
             'n_sims': self.args.n_sims,
             'exec_resume': self.args.exec_resume,
             'with_rendering': self.args.with_rendering,
+            'hpc_env': self.args.hpc_env,
 
             # stage 3
             'no_verify_results': self.args.no_verify_results,

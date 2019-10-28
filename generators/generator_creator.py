@@ -47,7 +47,8 @@ class GeneratorCreator:
             'static_cache_blocks': args.static_cache_blocks,
             'exec_method': args.exec_method,
             'config_root': args.config_root,
-            'named_exp_dirs': args.named_exp_dirs
+            'named_exp_dirs': args.named_exp_dirs,
+            'hpc_env': args.hpc_env
         }
         cmdopts.update(cmdopts_new)
 

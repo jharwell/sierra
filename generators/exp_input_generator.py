@@ -321,14 +321,11 @@ class ExpInputGenerator:
         # provided to tweak the exact name of the program used to invoke ARGoS so that different
         # versions compiled for different architectures/machines that exist on the same filesystem
         # can easily be run.
-        parts = self.cmdopts['exec_method'].split('.')
-
-        if 'local' in parts:
+        if 'local' in self.cmdopts['exec_method']:
             argos_cmd = 'argos3'
         else:
-            cluster = os.getenv("MSICLUSTER")
-            assert cluster is not None, "FATAL: Attempt to run sierra in non-HPC environment with --exec-method=hpc"
-            argos_cmd = 'argos3-' + cluster
+            if 'MSI' == self.cmdopts['hpc_env']:
+                argos_cmd = 'argos3-' + os.environ['MSICLUSTER']
 
         # When running ARGoS under Xvfb in order to headlessly render frames, we need to start a
         # per-instance Xvfb server that we tell ARGoS to use via the DISPLAY environment variable,

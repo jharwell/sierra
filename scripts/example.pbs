@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#PBS -l walltime=4:00:00,nodes=50:ppn=8,pmem=2500mb
+#PBS -l walltime=4:00:00,nodes=4:ppn=8,pmem=2500mb
 #PBS -m abe
 #PBS -M harwe006@umn.edu
 
@@ -42,8 +42,8 @@ cd $SIERRA
 python3 sierra.py \
         --sierra-root=$OUTPUT_ROOT\
         --template-config-file=$SIERRA/templates/ideal.argos \
-        --n-sims=4\
-        --exec-method=local\
+        --n-sims=$PBS_NUM_NODES\
+        --exec-method=hpc\
         --time-setup=time_setup.T10000\
         --controller=depth0.CRW\
         --scenario=SS.12x6\

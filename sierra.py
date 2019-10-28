@@ -48,6 +48,7 @@ def __sierra_run():
         raise RuntimeError("Python 3.x should must be used to run this code.")
 
     args = cmd.Cmdline().parser.parse_args()
+    args = cmd.HPCEnvInheritor(args.hpc_env)(args)
     cmd.CmdlineValidator()(args)
 
     # If only 1 pipeline stage is passed, then the list of stages to run is parsed as a non-iterable

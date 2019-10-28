@@ -116,8 +116,8 @@ class BlockCollectionBivar:
                 title='Swarm Blocks Collected',
                 xlabel=batch_criteria.graph_ylabel(self.cmdopts),
                 ylabel=batch_criteria.graph_xlabel(self.cmdopts),
-                xtick_labels=batch_criteria.graph_yticks(self.cmdopts),
-                ytick_labels=batch_criteria.graph_xticks(self.cmdopts)).generate()
+                xtick_labels=batch_criteria.graph_yticklabels(self.cmdopts),
+                ytick_labels=batch_criteria.graph_xticklabels(self.cmdopts)).generate()
 
     def __gen_stddev(self, ipath, opath):
         total_stddev_df = pd.read_csv(ipath, sep=';')

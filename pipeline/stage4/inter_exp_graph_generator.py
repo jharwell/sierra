@@ -59,12 +59,11 @@ class InterExpGraphGenerator:
 
     # Private functions
     def __gen_for_univar_bc(self):
-        if self.batch_criteria.is_univar():
-            InterExpLinegraphs(self.cmdopts["collate_root"],
-                               self.cmdopts["graph_root"],
-                               self.targets).generate()
+        InterExpLinegraphs(self.cmdopts["collate_root"],
+                           self.cmdopts["graph_root"],
+                           self.targets).generate()
 
-        if self.batch_criteria.pm_query('blocks_collected'):
+        if self.batch_criteria.pm_query('blocks-collected'):
             pmbc.BlockCollectionUnivar(self.cmdopts,
                                        self.main_config['sierra']['perf']['inter_perf_csv']).generate(self.batch_criteria)
 

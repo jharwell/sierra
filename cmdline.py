@@ -18,7 +18,7 @@ Command line parsing and validation classes.
 """
 
 import argparse
-import os.path
+import os
 
 
 class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawTextHelpFormatter):
@@ -176,10 +176,28 @@ class Cmdline:
 
                                  This option is NOT compatible with the following batch criteria:
 
-                                 * temporal_variance
+                                 - temporal_variance
                                  """,
                                  action='store_true',
                                  default=False)
+
+        self.parser.add_argument("--hpc-env",
+                                 help="""
+
+                                 The value of this argument determines if the ``--n-threads``, --physics-n-engines``,
+                                 and ``--n-sims`` options will be inherited from the specified HPC
+                                 environment. Otherwise, they must be specified on the cmdline.
+
+                                 Value values:
+
+                                 - MSI - The following PBS environment variables are used to infer the # threads, #
+                                 physics engines, and # simulations to run, respectively: ``PBS_NUM_PPN``,
+                                 ``PBS_NUM_PPN``, ``PBS_NUM_NODES``. ``MSICLUSTER`` is used to determine the names of
+                                 ARGoS executables, ``PBS_NODEFILE`` and ``PBS_JOBID`` are used to launch simulations.
+
+                                 """,
+                                 choices=['MSI', None],
+                                 default=None)
 
         stage1 = self.parser.add_argument_group('Stage1: Generating experiments')
 
@@ -195,16 +213,19 @@ class Cmdline:
                             default="time_setup.T5000")
 
         stage1.add_argument("--n-sims",
+                            type=int,
                             help="""
 
-                            How many simulations should be averaged together to form a single
-                            experiment.
+                            How many simulations should be averaged together to form a single experiment.
+
+                            If ``--exec-method=hpc`` then the value of this option will be inherited from the HPC
+                            environment specified by ``--hpc-env`` (can still be override on cmdline).
+
+                            If ``exec-method=local`` then this option is required.
 
                             Use=stage{1}; can be omitted otherwise.
 
-                            """,
-                            type=int,
-                            default=1)
+                            """)
 
         stage1.add_argument("--n-threads",
                             type=int,
@@ -212,10 +233,14 @@ class Cmdline:
 
                             How many ARGoS simulation threads to use for each simulation in each experiment.
 
+                            If ``--exec-method=hpc`` then the value of this option will be inherited from the HPC
+                            environment specified by ``--hpc-env`` (can still be override on cmdline).
+
+                            If ``exec-method=local`` then this option is required.
+
                             Use=stage{1}; can be omitted otherwise.
 
-                            """,
-                            default=1)
+                            """)
 
         stage1.add_argument("--static-cache-blocks",
                             help="""
@@ -238,10 +263,14 @@ class Cmdline:
                             be tiled in a uniform grid within the arena (X and Y spacing may not be the same depending
                             on dimensions and how many engines are chosen, however).
 
+                            If ``--exec-method=hpc`` then the value of this option will be inherited from the HPC
+                            environment specified by ``--hpc-env`` (can still be override on cmdline).
+
+                            If ``exec-method=local`` then this option is required.
+
                             Use=stage{1}; can be omitted otherwise.
 
-                            """,
-                             default=1)
+                             """)
         physics.add_argument("--physics-iter-per-tick",
                              type=int,
                              help="""
@@ -571,6 +600,43 @@ class Cmdline:
                             """,
                             action='store_true')
 
+    def __environ_or_required(key, default=None):
+        if os.environ.get(key):
+            return {'default': os.environ.get(key)}
+        elif default is not None:
+            return {'default': default}
+        else:
+            return {'required': True}
+
+
+class HPCEnvInheritor():
+    def __init__(self, env_type):
+        self.env_type = env_type
+
+    def __call__(self, args):
+        if self.env_type is None:
+            return args
+
+        keys = ['MSICLUSTER', 'PBS_NUM_PPN', 'PBS_NUM_NODES']
+
+        for k in keys:
+            assert k in os.environ, \
+                "FATAL: Attempt to run sierra in non-MSI environment: '{0}' not found".format(k)
+
+        print(args.n_threads)
+        if 'MSI' == self.env_type:
+            if args.physics_n_engines is None:
+                args.physics_n_engines = int(os.environ['PBS_NUM_PPN'])
+            if args.n_threads is None:
+                args.n_threads = int(os.environ['PBS_NUM_PPN'])
+            if args.n_sims is None:
+                args.n_sims = int(os.environ['PBS_NUM_NODES'])
+        else:
+            assert False,\
+                "FATAL: Bad HPC environment inheritance specification {0}".format(self.env_type)
+
+        return args
+
 
 class CmdlineValidator():
     """
@@ -583,12 +649,18 @@ class CmdlineValidator():
         if 2 == len(args.batch_criteria):
             assert args.batch_criteria[0] != args.batch_criteria[1],\
                 "FATAL: Duplicate batch criteria passed"
+
         if args.gen_stddev:
             assert 1 == len(args.batch_criteria),\
                 "FATAL: Stddev generation only supported with univariate batch criteria"
 
         assert isinstance(args.batch_criteria, list),\
             'FATAL Batch criteria not passed as list on cmdline'
+
+        if 'local' == args.exec_method and 2 in args.pipeline:
+            assert args.physics_n_engines is not None, '--physics-n-engines is required for --exec-method=local'
+            assert args.n_threads is not None, '--n-threads is required for --exec-method=local'
+            assert args.n_sims is not None, '--n-sims is required for --exec-method=local'
 
 
 def sphinx_argparse_object():

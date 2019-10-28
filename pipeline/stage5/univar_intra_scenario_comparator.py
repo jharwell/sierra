@@ -125,9 +125,6 @@ class UnivarIntraScenarioComparator:
         (1 per controller).
         """
 
-        df = pd.DataFrame()
-        stddev_df = pd.DataFrame()
-
         csv_ipath = os.path.join(cmdopts['sierra_root'],
                                  controller,
                                  scenario,
@@ -140,19 +137,26 @@ class UnivarIntraScenarioComparator:
                                     'exp-outputs',
                                     self.main_config['sierra']['collate_csv_leaf'],
                                     src_stem + ".stddev")
+        csv_opath_stem = os.path.join(self.cc_csv_root, dest_stem + "-" + scenario)
 
         # Some experiments might not generate the necessary performance measure .csvs for
         # graph generation, which is OK.
         if not os.path.exists(csv_ipath):
             return
 
-        df = df.append(pd.read_csv(csv_ipath, sep=';'))
+        if os.path.exists(csv_opath_stem + '.csv'):
+            cum_df = pd.read_csv(csv_opath_stem + '.csv', sep=';')
+        else:
+            cum_df = pd.DataFrame()
+
+        cum_df = cum_df.append(pd.read_csv(csv_ipath, sep=';'))
+        cum_df.to_csv(csv_opath_stem + '.csv', sep=';', index=False)
+
+        if os.path.exists(csv_opath_stem + '.stddev'):
+            cum_stddev_df = pd.read_csv(csv_opath_stem + '.stddev', sep=';')
+        else:
+            cum_stddev_df = pd.DataFrame()
+
         if os.path.exists(stddev_ipath):
-            stddev_df = stddev_df.append(pd.read_csv(stddev_ipath, sep=';'))
-
-        csv_opath_stem = os.path.join(self.cc_csv_root, dest_stem + "-" + scenario)
-
-        df.to_csv(csv_opath_stem + '.csv', sep=';', index=False)
-
-        if not stddev_df.empty:
-            stddev_df.to_csv(csv_opath_stem + '.stddev', sep=';', index=False)
+            cum_stddev_df = cum_stddev_df.append(pd.read_csv(stddev_ipath, sep=';'))
+            cum_stddev_df.to_csv(csv_opath_stem + '.stddev', sep=';', index=False)
