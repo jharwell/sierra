@@ -34,9 +34,9 @@ class PLGenerator(ExpInputGenerator):
       dimension(int): dimensions of the square arena.
     """
 
-    def __init__(self, template_input_file, generation_root, exp_output_root,
+    def __init__(self, template_input_file, exp_generation_root, exp_output_root,
                  exp_def_fname, cmdopts, controller):
-        super().__init__(template_input_file, generation_root, exp_output_root,
+        super().__init__(template_input_file, exp_generation_root, exp_output_root,
                          exp_def_fname, cmdopts)
 
     def generate(self, xml_luigi):

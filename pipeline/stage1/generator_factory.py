@@ -25,9 +25,9 @@ import generators.random
 from generators.exp_input_generator import ExpInputGenerator
 
 
-def BivarGeneratorFactory(controller, scenario, **kwargs):
+def JointGeneratorFactory(controller, scenario, **kwargs):
     """
-    Given a controller(generator), and a scenario(generator), construct a bivariate generator class
+    Given a controller(generator), and a scenario(generator), construct a joint generator class
     that can be used for experiment generation.
 
     """

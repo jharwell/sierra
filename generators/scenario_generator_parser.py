@@ -24,17 +24,15 @@ class ScenarioGeneratorParser:
     Parse the scenario specification from cmdline arguments; used later to
     create generator classes to make modifications to template input files.
 
-    Format for pair is <scenario>.AxB
+    Format for pair is <scenario>.AxB[xC]
 
-    <scenario> can be one of [SS,DS,QS,PL,RN]. A and B are the scenario dimensions.
+    <scenario> can be one of [SS,DS,QS,PL,RN]. A,B,C are the scenario dimensions.
 
-    The scenario is optional: if it is omitted then the batch criteria is used to obtain the
-    scenario specification.
+    The Z dimension (C) is optional. If it is omitted, 1.0 is used.
 
     Return:
-      Parsed scenario specification, unless missing from the command line altogether; this can occur
-      if the user is only running stage [4,5], and is not an error. In
-      that case, None is returned.
+        Parsed scenario specification, unless missing from the command line altogether; this can occur
+        if the user is only running stage [4,5], and is not an error. In that case, None is returned.
     """
 
     def __init__(self, args):
@@ -56,7 +54,11 @@ class ScenarioGeneratorParser:
             res1 = re.search('[a-zA-Z]+', self.args.scenario)
             assert res1 is not None,\
                 "FATAL: Bad block dist specification in '{0}'".format(self.args.scenario)
-            res2 = re.search('[0-9]+x[0-9]+', self.args.scenario)
+            res2 = re.search('[0-9]+x[0-9]+x[0-9]+', self.args.scenario)
+
+            if res2 is None:  # 2D simulation
+                res2 = re.search('[0-9]+x[0-9]+', self.args.scenario)
+
             assert res2 is not None,\
                 "FATAL: Bad arena_dim specification in '{0}'".format(self.args.scenario)
 
@@ -68,11 +70,20 @@ class ScenarioGeneratorParser:
         Given a string (presumably a result of an earlier cmdline parse), parse it into a dictionary
         of components: arena_x, arena_y, dist_type
         """
-        x, y = scenario.split('.')[1].split('x')
+        # Try parsing a 3D scenario dimension specification, and if that does not work, then it must
+        # be a 2D scenario specification.
+        try:
+            x, y, z = scenario.split('.')[1].split('x')
+
+        except ValueError:
+            x, y = scenario.split('.')[1].split('x')
+            z = 1.0
+
         dist_type = scenario.split('.')[0]
 
         return {
             'arena_x': int(x),
             'arena_y': int(y),
+            'arena_z': int(z),
             'dist_type': dist_type
         }

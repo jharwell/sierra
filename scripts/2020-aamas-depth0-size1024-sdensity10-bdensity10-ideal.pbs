@@ -53,7 +53,7 @@ BASE_CMD="python3 sierra.py \
                   --hpc-env=MSI \
                   --time-setup=time_setup.T10000"
 
-cd $HOME/git/sierra
+cd $SIERRA
 
 echo "Running with controller=${CONTROLLERS[$PBS_ARRAYID]},scenario=${SCENARIOS[$PBS_ARRAYID]},block count=${BLOCK_COUNTS[$PBS_ARRAYID]}"
 

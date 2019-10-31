@@ -17,6 +17,7 @@
 
 import os
 import logging
+from .batched_exp_input_generator import BatchedExpInputGenerator
 
 
 class PipelineStage1:
@@ -25,20 +26,30 @@ class PipelineStage1:
     a template suitable for input into ARGoS that contain user-specified modifications.
     """
 
-    def run(self, cmdopts, input_generator):
+    def __init__(self, controller, scenario, batch_criteria, cmdopts):
+        self.generator = BatchedExpInputGenerator(batch_config_template=cmdopts['template_input_file'],
+                                                  controller_name=controller,
+                                                  scenario_basename=scenario,
+                                                  criteria=batch_criteria,
+                                                  cmdopts=cmdopts)
+
+        self.cmdopts = cmdopts
+
+    def run(self):
         """
         Run stage 1 of the experiment pipeline.
         """
+
         logging.info("Stage1: Generating input files for batched experiment in {0}...".format(
-            cmdopts['generation_root']))
-        logging.debug("Using '{0}'".format(cmdopts['time_setup']))
-        logging.debug("Using {0} physics engines".format(cmdopts['physics_n_engines']))
-        input_generator.generate()
+            self.cmdopts['generation_root']))
+        logging.debug("Using '{0}'".format(self.cmdopts['time_setup']))
+        logging.debug("Using {0} physics engines".format(self.cmdopts['physics_n_engines']))
+        self.generator.generate()
 
         logging.info("Stage1: {0} input files generated in {1} experiments.".format(
-            sum([len(files) for r, d, files in os.walk(cmdopts['generation_root'])]),
-            sum([len(d) for r, d, files in os.walk(cmdopts['generation_root'])])))
+            sum([len(files) for r, d, files in os.walk(self.cmdopts['generation_root'])]),
+            sum([len(d) for r, d, files in os.walk(self.cmdopts['generation_root'])])))
 
         # Computed during input generation and needed later for graph generation; not part of
         # default cmdopts dict so we grab it here
-        cmdopts['arena_dim'] = input_generator.cmdopts['arena_dim']
+        self.cmdopts['arena_dim'] = self.generator.cmdopts['arena_dim']

@@ -1,6 +1,14 @@
 perf\_measures package
 ======================
 
+Module contents
+---------------
+
+.. automodule:: perf_measures
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Submodules
 ----------
 
@@ -64,15 +72,6 @@ perf\_measures.vcs module
 -------------------------
 
 .. automodule:: perf_measures.vcs
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: perf_measures
    :members:
    :undoc-members:
    :show-inheritance:

@@ -30,10 +30,10 @@ class RectangularArena(BaseVariable):
     this file should be used instead.
 
     Attributes:
-        dimensions: List of (X, Y) tuples of arena size.
+        dimensions: List of (X, Y, Z) tuples of arena size.
     """
 
-    def __init__(self, dimensions: tp.List[tuple]):
+    def __init__(self, dimensions: tp.List[tp.Tuple[int, int, int]]):
         self.dimensions = dimensions
 
     def gen_attr_changelist(self) -> list:
@@ -48,8 +48,11 @@ class RectangularArena(BaseVariable):
                      #
                      # - Subtract width of the walls so that robots do not spawn inside walls (which
                      #   ARGoS seems to allow?).
+                     #
                      # - Subtract a little bit more so robots don't get into weird states by being
                      #   near arena boundaries on the first timestep.
+                     #
+                     # - All robots start on the ground with Z=0.
                      (".//arena/distribute/position",
                       "max",
                       "{0}, {1}, 0".format(s[0] - 2.0 * kWallWidth - 2.0,

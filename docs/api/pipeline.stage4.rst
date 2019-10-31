@@ -1,6 +1,14 @@
 pipeline.stage4 package
 =======================
 
+Module contents
+---------------
+
+.. automodule:: pipeline.stage4
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Submodules
 ----------
 
@@ -80,15 +88,6 @@ pipeline.stage4.univar\_csv\_collator module
 --------------------------------------------
 
 .. automodule:: pipeline.stage4.univar_csv_collator
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: pipeline.stage4
    :members:
    :undoc-members:
    :show-inheritance:

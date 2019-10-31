@@ -1,6 +1,14 @@
 variables package
 =================
 
+Module contents
+---------------
+
+.. automodule:: variables
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Submodules
 ----------
 
@@ -80,15 +88,6 @@ variables.time\_setup\_parser module
 ------------------------------------
 
 .. automodule:: variables.time_setup_parser
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: variables
    :members:
    :undoc-members:
    :show-inheritance:

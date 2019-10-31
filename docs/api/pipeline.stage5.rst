@@ -1,6 +1,14 @@
 pipeline.stage5 package
 =======================
 
+Module contents
+---------------
+
+.. automodule:: pipeline.stage5
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Submodules
 ----------
 
@@ -40,15 +48,6 @@ pipeline.stage5.univar\_intra\_scenario\_comparator module
 ----------------------------------------------------------
 
 .. automodule:: pipeline.stage5.univar_intra_scenario_comparator
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: pipeline.stage5
    :members:
    :undoc-members:
    :show-inheritance:

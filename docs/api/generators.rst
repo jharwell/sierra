@@ -1,16 +1,16 @@
 generators package
 ==================
 
-Submodules
-----------
+Module contents
+---------------
 
-generators.batched\_exp\_input\_generator module
-------------------------------------------------
-
-.. automodule:: generators.batched_exp_input_generator
+.. automodule:: generators
    :members:
    :undoc-members:
    :show-inheritance:
+
+Submodules
+----------
 
 generators.controller\_generator\_parser module
 -----------------------------------------------
@@ -32,22 +32,6 @@ generators.exp\_input\_generator module
 ---------------------------------------
 
 .. automodule:: generators.exp_input_generator
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-generators.generator\_creator module
-------------------------------------
-
-.. automodule:: generators.generator_creator
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-generators.generator\_factory module
-------------------------------------
-
-.. automodule:: generators.generator_factory
    :members:
    :undoc-members:
    :show-inheritance:
@@ -88,15 +72,6 @@ generators.single\_source module
 --------------------------------
 
 .. automodule:: generators.single_source
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: generators
    :members:
    :undoc-members:
    :show-inheritance:

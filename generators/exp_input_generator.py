@@ -18,7 +18,8 @@
 import os
 import random
 import pickle
-from xml_luigi import XMLLuigi, InvalidElementError
+import typing as tp
+from xml_luigi import XMLLuigi
 from variables import time_setup, physics_engines, block_distribution, dynamic_cache, static_cache
 
 
@@ -27,62 +28,59 @@ class ExpInputGenerator:
     """
     Base class for generating:
 
-    1. A set of ARGoS simulation input files from a template for a *single* experiment.
-    2. A command file with commands to run each simulation suitable for input into GNU Parallel for
-       a *single* experiment.
+    - A set of ARGoS simulation input files from a template for a *single* experiment (i.e. a set
+      inputs for a set of simulation runs which will eventually be averaged together).
+
+    - A command file with commands to run each simulation suitable for input into GNU Parallel for
+      a *single* experiment.
 
     Attributes:
-      template_input_file(str): Path(relative to current dir or absolute) to the template XML
-                                 configuration file.
-      generation_root(str): Where generated XML input files for ARGoS for this experiment should be
-                            stored(relative to current dir or absolute).
-      exp_output_root(str): Root directory for simulation outputs for this experiment (sort of a
-                            scratch directory). Can be relative or absolute.
-      exp_def_fname(str): Name of file to use for pickling experiment definitions.
-      cmdopts(dict): Dictionary containing the following keys:
-                      n_sims : # of simulations to run in parallel
-                      n_threads: # of ARGoS threads to use for each parallel simulation
-                      tsetup: Name of class in time_setup.py to use for simulation time setup.
-                      physics_n_engines: # of ARGoS physics engines to use.
-                      arena_dim: (X,Y) dimensions of the arena.
-                      with_robot_rab(bool): Should the range and bearing sensors/actuators be
-                                            enabled?
-                      with_robot_leds(bool): Should the LED actuators be enabled?
-                      with_robot_battery(bool): Should the battery sensor be enabled?
+        template_input_file: Path(relative to current dir or absolute) to the template XML
+                             configuration file.
+        generation_root: Absolute path to experiment directory where generated XML input files for
+                         ARGoS for this experiment should be written.
+        exp_output_root: Absolute path to root directory for simulation outputs for this experiment
+                         (sort of a scratch directory).
+        exp_def_fname: Name of file to use for pickling experiment definitions.
+        cmdopts: Dictionary containing parsed cmdline options.
     """
 
-    def __init__(self, template_input_file, generation_root, exp_output_root, exp_def_fname,
-                 cmdopts):
+    def __init__(self,
+                 template_input_file: str,
+                 exp_generation_root: str,
+                 exp_output_root: str,
+                 exp_def_fname: str,
+                 cmdopts: tp.Dict[str, str]):
         assert os.path.isfile(template_input_file), \
             "The path '{}' (which should point to the main config file) did not point to a file".format(
                 template_input_file)
         self.template_input_file = os.path.abspath(template_input_file)
 
         # will get the main name and extension of the config file (without the full absolute path)
-        self.main_config_name, self.main_config_extension = os.path.splitext(
+        self.main_input_name, self.main_input_extension = os.path.splitext(
             os.path.basename(self.template_input_file))
 
         # where the generated config and command files should be stored
-        self.generation_root = os.path.abspath(generation_root)
+        self.exp_generation_root = os.path.abspath(exp_generation_root)
 
-        assert self.generation_root.find(" ") == -1, \
+        assert self.exp_generation_root.find(" ") == -1, \
             ("ARGoS (apparently) does not support running configuration files with spaces in the " +
-             "Please make sure the configuration file save path '{}' does not have any spaces in it").format(self.generation_root)
+             "Please make sure the configuration file save path '{}' does not have any spaces in it").format(self.exp_generation_root)
 
         self.exp_output_root = os.path.abspath(exp_output_root)
         self.cmdopts = cmdopts
-        self.exp_def_fpath = os.path.join(self.generation_root, exp_def_fname)
+        self.exp_def_fpath = os.path.join(self.exp_generation_root, exp_def_fname)
 
         self.random_seed_min = 1
         self.random_seed_max = 10 * self.cmdopts["n_sims"]
 
         # where the commands file will be stored
         self.commands_fpath = os.path.abspath(
-            os.path.join(self.generation_root, "commands.txt"))
+            os.path.join(self.exp_generation_root, "commands.txt"))
 
         # to be formatted like: self.config_name_format.format(name, experiment_number)
         format_base = "{}_{}"
-        self.config_name_format = format_base + self.main_config_extension
+        self.config_name_format = format_base + self.main_input_extension
         self.output_name_format = format_base + "_output"
 
     def generate_common_defs(self):
@@ -101,7 +99,7 @@ class ExpInputGenerator:
         xml_luigi = XMLLuigi(self.template_input_file)
 
         # make the save path
-        os.makedirs(self.generation_root, exist_ok=True)
+        os.makedirs(self.exp_generation_root, exist_ok=True)
 
         # Clear out commands_path if it already exists
         if os.path.exists(self.commands_fpath):
@@ -121,35 +119,35 @@ class ExpInputGenerator:
 
         return xml_luigi
 
-    def generate_inputs(self, xml_luigi):
+    def generate_inputs(self, xml_luigi: XMLLuigi):
         """
         Generates and saves the input files for all simulation runs within the experiment.
         """
         random_seeds = self.__generate_random_seeds()
         for exp_num in range(self.cmdopts["n_sims"]):
             self.__create_sim_input_file(random_seeds, xml_luigi, exp_num)
-            self.__add_sim_to_command_file(os.path.join(self.generation_root,
+            self.__add_sim_to_command_file(os.path.join(self.exp_generation_root,
                                                         self.config_name_format.format(
-                                                            self.main_config_name, exp_num)),
+                                                            self.main_input_name, exp_num)),
                                            exp_num)
 
             if self.cmdopts['with_rendering']:
-                sim_output_dir = self.output_name_format.format(self.main_config_name, exp_num)
+                sim_output_dir = self.output_name_format.format(self.main_input_name, exp_num)
                 frames_fpath = os.path.join(self.exp_output_root, sim_output_dir, "frames")
                 os.makedirs(frames_fpath, exist_ok=True)
 
-    def generate_physics_defs(self, xml_luigi):
-        """Generates definitions for physics engines configuration for the simulation.
+    def generate_physics_defs(self, xml_luigi: XMLLuigi):
+        """
+        Generates definitions for physics engines configuration for the simulation.
 
         This cannot be done as part of generate_common_defs(), as this class is reused for
         generators for BOTH controller and scenario, and the arena dimensions are None for
         configuring controllers.
 
         """
-        pe = physics_engines.PhysicsEngines(self.cmdopts["physics_n_engines"],
-                                            self.cmdopts["physics_iter_per_tick"],
-                                            "uniform_grid",
-                                            self.cmdopts["arena_dim"])
+        # This will need to change when I get to the point of mixing 2D and 3D physics engines
+        pe = physics_engines.Factory(self.cmdopts, self.cmdopts['arena_dim'])
+
         [xml_luigi.tag_remove(a[0], a[1]) for a in pe.gen_tag_rmlist()[0]]
         [xml_luigi.tag_add(a[0], a[1], a[2]) for a in pe.gen_tag_addlist()[0]]
 
@@ -175,7 +173,7 @@ class ExpInputGenerator:
         if len(rms):
             [xml_luigi.tag_remove(a) for a in rms[0]]
 
-    def generate_block_count_defs(self, xml_luigi):
+    def generate_block_count_defs(self, xml_luigi: XMLLuigi):
         """
         Generates definitions for # blocks in the simulation from command line overrides.
         """
@@ -196,7 +194,7 @@ class ExpInputGenerator:
         with open(self.exp_def_fpath, 'ab') as f:
             pickle.dump(bd.gen_attr_changelist()[0], f)
 
-    def __generate_time_defs(self, xml_luigi):
+    def __generate_time_defs(self, xml_luigi: XMLLuigi):
         """
         Setup simulation time parameters and write them to the pickle file for retrieval during
         graph generation later.
@@ -212,7 +210,7 @@ class ExpInputGenerator:
         with open(self.exp_def_fpath, 'ab') as f:
             pickle.dump(tsetup_inst.gen_attr_changelist()[0], f)
 
-    def __generate_sa_defs(self, xml_luigi):
+    def __generate_sa_defs(self, xml_luigi: XMLLuigi):
         """
         Disable selected sensors/actuators, which are computationally expensive in large swarms, but
         not that costly if the # robots is small.
@@ -229,7 +227,7 @@ class ExpInputGenerator:
             xml_luigi.tag_remove(".//sensors", "battery", noprint=True)
             xml_luigi.tag_remove(".//entity/foot-bot", "battery", noprint=True)
 
-    def __generate_threading_defs(self, xml_luigi):
+    def __generate_threading_defs(self, xml_luigi: XMLLuigi):
         """
         Set the # of cores for a simulation to use, which may be less than the total # available on
         the system.
@@ -245,7 +243,7 @@ class ExpInputGenerator:
                                   "n_threads",
                                   str(self.cmdopts["n_threads"]))
 
-    def __generate_visualization_defs(self, xml_luigi):
+    def __generate_visualization_defs(self, xml_luigi: XMLLuigi):
         """
         Remove visualization elements from input file, if configured to do so. It may be desired to
         leave them in if generating frames/video.
@@ -277,7 +275,7 @@ class ExpInputGenerator:
         all experiments; each experiment logs/outputs to a unique directory.
         """
         sim_output_dir = self.output_name_format.format(
-            self.main_config_name, exp_num)
+            self.main_input_name, exp_num)
         frames_fpath = os.path.join(self.exp_output_root, sim_output_dir, "frames")
 
         xml_luigi.attr_change(
@@ -299,7 +297,7 @@ class ExpInputGenerator:
 
         # create a new name for this experiment's config file
         new_config_name = self.config_name_format.format(
-            self.main_config_name, exp_num)
+            self.main_input_name, exp_num)
 
         # Setup simulation random seed
         self.__generate_random_defs(xml_luigi, random_seeds, exp_num)
@@ -307,7 +305,7 @@ class ExpInputGenerator:
         # Setup simulation logging/output
         self.__generate_output_defs(xml_luigi, exp_num)
 
-        save_path = os.path.join(self.generation_root, new_config_name)
+        save_path = os.path.join(self.exp_generation_root, new_config_name)
         xml_luigi.output_filepath = save_path
         open(save_path, 'w').close()  # create an empty file
 

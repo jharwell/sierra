@@ -17,7 +17,7 @@
 
 import os
 from xml_luigi import XMLLuigi
-import generators.generator_factory as gf
+from pipeline.stage1 import generator_factory as gf
 import generators.scenario_generator_parser as sgp
 import variables as ev
 import logging
@@ -100,13 +100,14 @@ class BatchedExpInputGenerator:
 
             generator.generate()
 
-    def __create_exp_generator(self, exp_def, exp_num):
+    def __create_exp_generator(self, exp_def: set, exp_num: int):
         """
         Create the generator for a particular experiment from the scenario+controller definitions
         specified on the command line.
 
-        exp_def(set): Set of XML changes to apply to the template input file for the experiment.
-        exp_num(int): Experiment number in the batch
+        Arguments:
+            exp_def: Set of XML changes to apply to the template input file for the experiment.
+            exp_num: Experiment number in the batch
         """
         # Need to get per-experiment arena dimensions from batch criteria, as they are different
         # for each experiment
@@ -119,12 +120,19 @@ class BatchedExpInputGenerator:
         if from_univar_bc:
             self.cmdopts["arena_dim"] = self.criteria.arena_dims()[exp_num]
             eff_scenario_name = self.criteria.exp_scenario_name(exp_num)
+            logging.debug("Obtained scenario dimensions univariate batch criteria".format(
+                self.cmdopts['arena_dim']))
         elif from_bivar_bc1 or from_bivar_bc2:
             self.cmdopts["arena_dim"] = self.criteria.arena_dims()[exp_num]
+            logging.debug("Obtained scenario dimensions bivariate batch criteria".format(
+                self.cmdopts['arena_dim']))
             eff_scenario_name = self.criteria.exp_scenario_name(exp_num)
-        else:
+        else:  # Defaultc case: scenario dimensions read from cmdline
             kw = sgp.ScenarioGeneratorParser.reparse_str(self.scenario_basename)
-            self.cmdopts["arena_dim"] = (kw['arena_x'], kw['arena_y'])
+            self.cmdopts["arena_dim"] = (kw['arena_x'], kw['arena_y'], kw['arena_z'])
+            logging.debug("Read scenario dimensions {0} from cmdline spec".format(
+                self.cmdopts['arena_dim']))
+
             eff_scenario_name = self.scenario_basename
 
         exp_generation_root = os.path.join(self.batch_generation_root,
@@ -136,7 +144,7 @@ class BatchedExpInputGenerator:
                                                scenario=eff_scenario_name,
                                                template_input_file=os.path.join(exp_generation_root,
                                                                                 self.batch_config_leaf),
-                                               generation_root=exp_generation_root,
+                                               exp_generation_root=exp_generation_root,
                                                exp_output_root=exp_output_root,
                                                exp_def_fname="exp_def.pkl",
                                                cmdopts=self.cmdopts)
@@ -145,7 +153,7 @@ class BatchedExpInputGenerator:
                                                    config_root=self.cmdopts['config_root'],
                                                    template_input_file=os.path.join(exp_generation_root,
                                                                                     self.batch_config_leaf),
-                                                   generation_root=exp_generation_root,
+                                                   exp_generation_root=exp_generation_root,
                                                    exp_output_root=exp_output_root,
                                                    exp_def_fname="exp_def.pkl",
                                                    cmdopts=self.cmdopts)
@@ -153,11 +161,11 @@ class BatchedExpInputGenerator:
         self.cmdopts['joint_generator'] = '+'.join([controller.__class__.__name__,
                                                     scenario.__class__.__name__])
 
-        return gf.BivarGeneratorFactory(scenario=scenario,
+        return gf.JointGeneratorFactory(scenario=scenario,
                                         controller=controller,
                                         template_input_file=os.path.join(exp_generation_root,
                                                                          self.batch_config_leaf),
-                                        generation_root=exp_generation_root,
+                                        exp_generation_root=exp_generation_root,
                                         exp_output_root=exp_output_root,
                                         exp_def_fname="exp_def.pkl",
                                         cmdopts=self.cmdopts)

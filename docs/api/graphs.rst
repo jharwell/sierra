@@ -1,6 +1,15 @@
 graphs package
 ==============
 
+
+Module contents
+---------------
+
+.. automodule:: graphs
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Submodules
 ----------
 
@@ -48,15 +57,6 @@ graphs.stacked\_surface\_graph module
 -------------------------------------
 
 .. automodule:: graphs.stacked_surface_graph
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: graphs
    :members:
    :undoc-members:
    :show-inheritance:

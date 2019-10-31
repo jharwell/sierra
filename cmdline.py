@@ -88,7 +88,7 @@ class Cmdline:
                                  """)
 
         self.parser.add_argument("--scenario",
-                                 metavar="<block dist>.AxB",
+                                 metavar="<block dist>.AxB[xC]",
                                  help="""
 
                                  Which scenario the defined controller should be run in. Scenario=block
@@ -102,8 +102,9 @@ class Cmdline:
                                  - ``QS`` - Quad source
                                  - ``PL`` - Power law
 
-                                 A and B are the scenario X and Y dimensions (which can be any non-negative
-                                 integer values).
+                                 A,B,C are the scenario X,Y,Z dimensions respectively (which can be any postive integer
+                                 values). The X,Y dimensions are required, the Z dimension is optional and defaults to
+                                 1.0 if omitted.
 
                                  Use=stage{1,2,3,4}; can be omitted otherwise.
 
@@ -250,9 +251,20 @@ class Cmdline:
                             Use=stage{1}; can be omitted otherwise.
 
                             """,
-                            default=None)        # Physics engines options
+                            default=None)
+
+        # Physics engines options
         physics = self.parser.add_argument_group('Stage1: Physics',
                                                  'Physics engine options for stage1')
+
+        physics.add_argument("--physics-engine-type",
+                             choices=['dynamics2d', 'dynamics3d', 'pointmass3d'],
+                             help="""
+
+                             Specify the type of physics engine to use, choosing one of the types that ARGoS supports.
+
+                             """,
+                             default='dynamics2d')
 
         physics.add_argument("--physics-n-engines",
                              choices=[1, 4, 8, 16, 24],
@@ -261,10 +273,11 @@ class Cmdline:
 
                             The # of physics engines to use during simulation (yay ARGoS!). If n > 1, the engines will
                             be tiled in a uniform grid within the arena (X and Y spacing may not be the same depending
-                            on dimensions and how many engines are chosen, however).
+                            on dimensions and how many engines are chosen, however), extending upward in Z to the height
+                            specified by ``--scenario``.
 
                             If ``--exec-method=hpc`` then the value of this option will be inherited from the HPC
-                            environment specified by ``--hpc-env`` (can still be override on cmdline).
+                            environment specified by ``--hpc-env`` (can still be overriden on cmdline).
 
                             If ``exec-method=local`` then this option is required.
 

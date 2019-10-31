@@ -21,8 +21,6 @@ import cmdline as cmd
 from pipeline.pipeline import Pipeline
 from generators.controller_generator_parser import ControllerGeneratorParser
 from generators.scenario_generator_parser import ScenarioGeneratorParser
-from generators.generator_creator import GeneratorCreator
-import variables.batch_criteria as bc
 import collections
 import pipeline.root_dirpath_generator as rdg
 import coloredlogs
@@ -36,10 +34,7 @@ def __sierra_run_default(args):
     # Add the template file leaf to the root directory path to help track what experiment was run.
     logging.info("Controller={0}, Scenario={1}".format(controller, scenario))
     cmdopts = rdg.from_cmdline(args)
-
-    criteria = bc.Factory(args, cmdopts)
-    joint_generator = GeneratorCreator()(args, controller, scenario, criteria, cmdopts)
-    pipeline = Pipeline(args, joint_generator, criteria, cmdopts)
+    pipeline = Pipeline(args, controller, scenario, cmdopts)
     pipeline.run()
 
 
@@ -57,7 +52,7 @@ def __sierra_run():
     cmd.CmdlineValidator()(args)
 
     # If only 1 pipeline stage is passed, then the list of stages to run is parsed as a non-iterable
-    # integer, which can causes the generator to fail to be created. So make it iterable in that
+    # integer, which can cause the generator to fail to be created. So make it iterable in that
     # case as well.
     if not isinstance(args.pipeline, collections.Iterable):
         args.pipeline = [args.pipeline]
