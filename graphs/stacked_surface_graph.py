@@ -69,6 +69,7 @@ class StackedSurfaceGraph:
         if not dfs:  # empty list
             return
 
+        plt.figure(figsize=(10, 10))
         ax = plt.axes(projection='3d')
         x = np.arange(len(dfs[0].columns))
         y = dfs[0].index
@@ -140,4 +141,5 @@ class StackedSurfaceGraph:
             ax.view_init(elev=None, azim=angle)
             components = self.output_fpath.split('.')
             path = ''.join(components[0:-2]) + '_' + str(angle) + '.' + components[-1]
-            fig.savefig(path, bbox_inches='tight', dpi=100)
+
+            fig.savefig(path, bbox_inches='tight', dpi=100, pad_inches=0)

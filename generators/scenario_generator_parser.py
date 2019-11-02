@@ -47,24 +47,25 @@ class ScenarioGeneratorParser:
         if self.args.scenario is None:
             return None
 
-        else:  # Scenario specified on cmdline
-            logging.info("Parse scenario generator from cmdline specification '{0}'".format(
-                self.args.scenario))
+        # Scenario specified on cmdline
+        logging.info("Parse scenario generator from cmdline specification '{0}'".format(
+            self.args.scenario))
 
-            res1 = re.search('[a-zA-Z]+', self.args.scenario)
-            assert res1 is not None,\
-                "FATAL: Bad block dist specification in '{0}'".format(self.args.scenario)
-            res2 = re.search('[0-9]+x[0-9]+x[0-9]+', self.args.scenario)
+        res1 = re.search('[a-zA-Z]+', self.args.scenario)
+        assert res1 is not None,\
+            "FATAL: Bad block dist specification in '{0}'".format(self.args.scenario)
+        res2 = re.search('[0-9]+x[0-9]+x[0-9]+', self.args.scenario)
 
-            if res2 is None:  # 2D simulation
-                res2 = re.search('[0-9]+x[0-9]+', self.args.scenario)
+        if res2 is None:  # 2D simulation
+            res2 = re.search('[0-9]+x[0-9]+', self.args.scenario)
 
-            assert res2 is not None,\
-                "FATAL: Bad arena_dim specification in '{0}'".format(self.args.scenario)
+        assert res2 is not None,\
+            "FATAL: Bad arena_dim specification in '{0}'".format(self.args.scenario)
 
-            self.scenario = res1.group(0) + "." + res2.group(0)
+        self.scenario = res1.group(0) + "." + res2.group(0)
         return self.scenario
 
+    @staticmethod
     def reparse_str(scenario):
         """
         Given a string (presumably a result of an earlier cmdline parse), parse it into a dictionary

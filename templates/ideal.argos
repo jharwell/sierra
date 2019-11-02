@@ -71,7 +71,7 @@
               cache_finisher="1000:2000"
               cache_collector="1000:2000"
               cache_transferer="1000:2000">
-            <ema alpha="0.8"/>
+            <ema alpha="0.5"/>
           </task_exec_estimates>
 
           <epsilon_greedy epsilon="0.4"
@@ -240,8 +240,8 @@
     </convergence>
     <oracle_manager>
       <tasking_oracle
-          task_exec_est="false"
-          task_interface_est="false"
+          task_exec_ests="true"
+          task_interface_ests="true"
           />
       <entities_oracle
           blocks="false"
@@ -291,7 +291,7 @@
               n_clusters="15"
               />
           <manifest
-              n_cube="40"
+              n_cube="20"
               n_ramp="0"
               unit_dim="0.2"
               />

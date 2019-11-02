@@ -17,8 +17,10 @@
 
 import os
 import copy
+import logging
 import typing as tp
 import pandas as pd
+
 from graphs.stacked_surface_graph import StackedSurfaceGraph
 import variables.batch_criteria as bc
 import pipeline.root_dirpath_generator as rdg
@@ -53,7 +55,8 @@ class BivarIntraScenarioComparator:
         # Obtain the list of scenarios to use. We can just take the scenario list of the first
         # controllers, because we have already checked that all controllers executed the same set
         # scenarios.
-        scenarios = os.listdir(os.path.join(self.cmdopts['sierra_root'], self.controllers[0]))
+        dirs = os.listdir(os.path.join(self.cmdopts['sierra_root'], self.controllers[0]))
+        scenarios = [rdg.parse_batch_root(d)[1] for d in dirs]
 
         cmdopts = copy.deepcopy(self.cmdopts)
         # For each controller comparison graph we are interested in, generate it using data from all
@@ -61,13 +64,20 @@ class BivarIntraScenarioComparator:
         for graph in self.graphs:
             for s in scenarios:
                 for controller in self.controllers:
+                    dirs = [d for d in os.listdir(os.path.join(self.cmdopts['sierra_root'],
+                                                               controller)) if s in d]
+
+                    if 0 == len(dirs):
+                        logging.warning("No graph generated")
+                        continue
+
                     # We need to generate the root directory paths for each batched experiment
                     # (which # lives inside of the scenario dir), because they are all
                     # different. We need generate these paths for EACH controller, because the
                     # controller is part of the batch root.
                     paths = rdg.regen_from_exp(self.cli_args.sierra_root,
                                                self.cli_args.batch_criteria,
-                                               s,
+                                               dirs[0],
                                                controller)
                     cmdopts.update(paths)
 
@@ -75,15 +85,15 @@ class BivarIntraScenarioComparator:
                     # are all different.
                     criteria = bc.Factory(self.cli_args,
                                           cmdopts,
-                                          rdg.parse_batch_root(s)[1])
+                                          dirs[0])
 
                     self.__gen_csv(cmdopts=cmdopts,
                                    controller=controller,
-                                   scenario=s,
+                                   batch_root=dirs[0],
                                    src_stem=graph['src_stem'],
                                    dest_stem=graph['dest_stem'])
 
-                self.__gen_graph(scenario=s,
+                self.__gen_graph(scenario=rdg.parse_batch_root(dirs[0])[1],
                                  batch_criteria=criteria,
                                  cmdopts=cmdopts,
                                  dest_stem=graph['dest_stem'],
@@ -103,20 +113,19 @@ class BivarIntraScenarioComparator:
         ``cc-csvs/``.
         """
         csv_stem_opath = os.path.join(self.cc_csv_root, dest_stem + "-" + scenario)
-
         StackedSurfaceGraph(input_stem_pattern=csv_stem_opath,
                             output_fpath=os.path.join(self.cc_graph_root,
                                                       dest_stem) + '-' + scenario + ".png",
                             title=title,
                             zlabel=zlabel,
-                            xtick_labels=batch_criteria.graph_xticklabels(cmdopts),
-                            ytick_labels=batch_criteria.graph_yticklabels(cmdopts),
+                            xtick_labels=batch_criteria.graph_yticklabels(cmdopts),
+                            ytick_labels=batch_criteria.graph_xticklabels(cmdopts),
                             legend=self.controllers,
                             norm_comp=self.norm_comp).generate()
 
     def __gen_csv(self,
                   cmdopts: tp.Dict[str, str],
-                  scenario: str,
+                  batch_root: str,
                   controller: str,
                   src_stem: str,
                   dest_stem: str):
@@ -134,7 +143,7 @@ class BivarIntraScenarioComparator:
         """
         csv_ipath = os.path.join(cmdopts['sierra_root'],
                                  controller,
-                                 scenario,
+                                 batch_root,
                                  'exp-outputs',
                                  self.main_config['sierra']['collate_csv_leaf'],
                                  src_stem + ".csv")
@@ -146,7 +155,8 @@ class BivarIntraScenarioComparator:
 
         df = pd.read_csv(csv_ipath, sep=';')
 
+        scenario = rdg.parse_batch_root(batch_root)[1]
         leaf = dest_stem + "-" + scenario + '_' + str(self.controllers.index(controller))
-        csv_opath_stem = os.path.join(self.cc_csv_root, leaf)
 
+        csv_opath_stem = os.path.join(self.cc_csv_root, leaf)
         df.to_csv(csv_opath_stem + '.csv', sep=';', index=False)

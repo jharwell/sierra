@@ -17,7 +17,8 @@
 
 import os
 import logging
-from .batched_exp_input_generator import BatchedExpInputGenerator
+from generators.exp_generator import BatchedExpDefGenerator
+from generators.exp_creator import BatchedExpCreator
 
 
 class PipelineStage1:
@@ -27,11 +28,16 @@ class PipelineStage1:
     """
 
     def __init__(self, controller, scenario, batch_criteria, cmdopts):
-        self.generator = BatchedExpInputGenerator(batch_config_template=cmdopts['template_input_file'],
-                                                  controller_name=controller,
-                                                  scenario_basename=scenario,
-                                                  criteria=batch_criteria,
-                                                  cmdopts=cmdopts)
+        self.generator = BatchedExpDefGenerator(batch_config_template=cmdopts['template_input_file'],
+                                                controller_name=controller,
+                                                scenario_basename=scenario,
+                                                criteria=batch_criteria,
+                                                cmdopts=cmdopts)
+        self.creator = BatchedExpCreator(batch_config_template=cmdopts['template_input_file'],
+                                         batch_generation_root=cmdopts['generation_root'],
+                                         batch_output_root=cmdopts['output_root'],
+                                         criteria=batch_criteria,
+                                         cmdopts=cmdopts)
 
         self.cmdopts = cmdopts
 
@@ -44,7 +50,7 @@ class PipelineStage1:
             self.cmdopts['generation_root']))
         logging.debug("Using '{0}'".format(self.cmdopts['time_setup']))
         logging.debug("Using {0} physics engines".format(self.cmdopts['physics_n_engines']))
-        self.generator.generate()
+        self.creator.create(self.generator)
 
         logging.info("Stage1: {0} input files generated in {1} experiments.".format(
             sum([len(files) for r, d, files in os.walk(self.cmdopts['generation_root'])]),
@@ -52,4 +58,4 @@ class PipelineStage1:
 
         # Computed during input generation and needed later for graph generation; not part of
         # default cmdopts dict so we grab it here
-        self.cmdopts['arena_dim'] = self.generator.cmdopts['arena_dim']
+        # self.cmdopts['arena_dim'] = self.generator.cmdopts['arena_dim']

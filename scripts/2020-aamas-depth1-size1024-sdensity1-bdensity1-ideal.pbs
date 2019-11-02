@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#PBS -l walltime=16:00:00,nodes=20:ppn=8,pmem=2500mb
+#PBS -l walltime=12:00:00,nodes=20:ppn=8,pmem=2500mb
 #PBS -m abe
 #PBS -M harwe006@umn.edu
 
@@ -38,20 +38,20 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 ################################################################################
 CONTROLLERS=(depth1.BITD_DPO depth1.BITD_DPO depth1.BITD_DPO)
 
-# ~10% swarm density with 1024 robots
-SCENARIOS=(SS.128x64 DS.128x64 QS.96x96)
+# ~1% swarm density with 1024 robots
+SCENARIOS=(SS.450x225 DS.450x225 QS.320x320)
 
-# ~10% block density in each scenario
-BLOCK_COUNTS=(820 820 920 820 820 920)
+# ~1% block density in each scenario
+BLOCK_COUNTS=(1000 1000 1000 1000 1000 1000)
 
-OUTPUT_ROOT=$HOME/exp/2020-aamas-depth1-ideal
+OUTPUT_ROOT=$HOME/exp/2020-aamas-depth1-density1
 BASE_CMD="python3 sierra.py \
-                  --template-input-file=$SIERRA/templates/2020-aamas-depth1-ideal.argos \
+                  --template-input-file=$SIERRA/templates/2020-aamas-depth1-ideal.argos\
                   --exec-method=hpc\
                   --hpc-env=MSI \
                   --time-setup=time_setup.T10000"
 
-cd $HOME/git/sierra
+cd $SIERRA
 
 echo "Running with controller=${CONTROLLERS[$PBS_ARRAYID]},scenario=${SCENARIOS[$PBS_ARRAYID]},block count=${BLOCK_COUNTS[$PBS_ARRAYID]}"
 

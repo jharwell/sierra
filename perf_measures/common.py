@@ -217,24 +217,11 @@ class FractionalLossesUnivar(FractionalLosses):
         assert(os.path.exists(perf_path)), "FATAL: {0} does not exist".format(perf_path)
         perf_df = pd.read_csv(perf_path, sep=';')
 
-        exp0_dir = perf_df.columns[0]
-        scale_cols = [c for c in ca_in_df.columns if c not in [exp0_dir]]
-
-        # Calculate plost for all swarm sizes
-        plost_n = self.__calc_plost_n(ca_in_df, perf_df, batch_criteria)
-
-        # Calculate fractional losses for al swarm sizes
-        fl_df = self.__calc_fl(perf_df, plost_n, scale_cols)
+        exp0_dirname = batch_criteria.gen_exp_dirnames(self.cmdopts)[0]
+        scale_cols = [c for c in ca_in_df.columns if c not in [exp0_dirname]]
 
         # First calculate the time lost per timestep for a swarm of size N due to collision
         # avoidance interference
-        path = os.path.join(self.batch_output_root, self.ca_in_stem + '.csv')
-        assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
-        df = pd.read_csv(path, sep=';')
-        exp0_dirname = batch_criteria.gen_exp_dirnames(self.cmdopts)[0]
-        scale_cols = [c for c in df.columns if c not in [exp0_dirname]]
-
-        # Calculate plost for all swarm sizes
         plost_n = self.__calc_plost_n(ca_in_df, perf_df, batch_criteria)
 
         # Calculate fractional losses for all swarm sizes

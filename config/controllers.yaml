@@ -5,6 +5,7 @@ base_graphs: &base_graphs
   - LN_block_acq
   - LN_block_manip
   - LN_convergence
+  - LN_perception
   - HM_arena
   - HM_swarm
 

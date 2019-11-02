@@ -137,7 +137,7 @@
             site_xrange="2:10"
             site_yrange="2.5:3">
           <pickup_policy
-              policy="Null"
+              policy="cache_size"
               timestep="20000"
               cache_size="3"/>
         </cache_sel_matrix>
@@ -213,12 +213,9 @@
     </output>
     <oracle_manager>
       <tasking_oracle
-          task_exec_est="true"
-          task_interface_est="true"
+          task_exec_ests="true"
+          task_interface_ests="true"
           />
-      <entities_oracle
-          blocks="true"
-          caches="true"/>
     </oracle_manager>
     <arena_map>
       <grid resolution="0.2"

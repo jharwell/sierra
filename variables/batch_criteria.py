@@ -105,18 +105,17 @@ class BatchCriteria(ev.base_variable.BaseVariable):
             exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
             exp_generation_root = os.path.join(self.batch_generation_root,
                                                str(exp_dirname))
-            logging.debug("Applying {0} changes from generator '{1}' for exp{2} in {3}".format(len(defs[i]),
-                                                                                               self.cli_arg,
-                                                                                               i,
-                                                                                               exp_dirname))
+            logging.debug("Applying {0} changes from batch criteria generator '{1}' for exp{2} in {3}".format(len(defs[i]),
+                                                                                                              self.cli_arg,
+                                                                                                              i,
+                                                                                                              exp_dirname))
 
             os.makedirs(exp_generation_root, exist_ok=True)
             for path, attr, value in defs[i]:
                 xml_luigi.attr_change(path, attr, value)
 
-                xml_luigi.output_filepath = os.path.join(exp_generation_root,
-                                                         batch_config_leaf)
-                xml_luigi.write()
+            xml_luigi.write(os.path.join(exp_generation_root,
+                                         batch_config_leaf))
 
         assert len(defs) == len(os.listdir(self.batch_generation_root)),\
             "FATAL: Size of batch criteria({0}) != # exp dirs ({1}): possibly caused by:\n"\
@@ -443,7 +442,7 @@ class BivarBatchCriteria(BatchCriteria):
                     dirs.append(y)
                     break
 
-        assert len(dirs) == len(self.criteria1.gen_exp_dirnames(cmdopts)),\
+        assert len(dirs) == len(self.criteria2.gen_exp_dirnames(cmdopts)),\
             "FATAL: Bad xvals calculation"
         return self.criteria2.graph_xticklabels(cmdopts, dirs)
 

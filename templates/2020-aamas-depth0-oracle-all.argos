@@ -18,7 +18,7 @@
   <controllers>
 
     <__controller__ id="ffc"
-                  library="libfordyca">
+                    library="libfordyca">
       <actuators>
         <differential_steering implementation="default" />
         <leds implementation="default" medium="leds" />
@@ -45,80 +45,6 @@
           <pheromone rho="0.00001"
                      repeat_deposit="false"/>
         </perception>
-        <task_executive
-            update_exec_ests="true"
-            update_interface_ests="true"
-            />
-        <task_alloc
-            policy="stoch_nbhd1">
-          <task_abort>
-            <src_sigmoid_sel
-                input_src="exec">
-              <sigmoid_sel
-                  method="harwell2018">
-                <sigmoid reactivity="8"
-                         offset="3.0"
-                         gamma="1.0"/>
-              </sigmoid_sel>
-              </src_sigmoid_sel>
-          </task_abort>
-          <task_exec_estimates
-              seed_enabled="true"
-              generalist="2000:4000"
-              collector="1000:2000"
-              harvester="1000:2000"
-              cache_starter="1000:2000"
-              cache_finisher="1000:2000"
-              cache_collector="1000:2000"
-              cache_transferer="1000:2000">
-            <ema alpha="0.5"/>
-          </task_exec_estimates>
-
-          <epsilon_greedy epsilon="0.11"
-                          regret_bound="linear"/>
-          <ucb1 gamma="1000"/>
-          <stoch_nbhd1
-              tab_init_policy="max_depth">
-            <task_partition
-                always_partition="false"
-                never_partition="false">
-              <src_sigmoid_sel
-                  input_src="exec">
-                <sigmoid_sel
-                    method="pini2011">
-                  <sigmoid
-                      reactivity="8.0"
-                      offset="1.25"
-                      gamma="1.25"/>
-                </sigmoid_sel>
-              </src_sigmoid_sel>
-            </task_partition>
-            <subtask_sel>
-              <src_sigmoid_sel
-                  input_src="exec">
-                <sigmoid_sel
-                    method="harwell2018">
-                  <sigmoid
-                      reactivity="4.0"
-                      offset="1.25"
-                      gamma="1.0"/>
-                </sigmoid_sel>
-              </src_sigmoid_sel>
-            </subtask_sel>
-            <tab_sel>
-              <src_sigmoid_sel
-                  input_src="exec">
-                <sigmoid_sel
-                    method="harwell2019">
-                  <sigmoid
-                      reactivity="6.0"
-                      offset="1.0"
-                      gamma="1.0"/>
-                </sigmoid_sel>
-              </src_sigmoid_sel>
-            </tab_sel>
-          </stoch_nbhd1>
-        </task_alloc>
         <block_sel_matrix
             nest="2.0, 3">
           <block_priorities
@@ -130,20 +56,8 @@
               prox_dist="2.0"
               />
         </block_sel_matrix>
-        <cache_sel_matrix
-            cache_prox_dist="3.2"
-            nest_prox_dist="3.0"
-            block_prox_dist="1.0"
-            site_xrange="2:10"
-            site_yrange="2.5:3">
-          <pickup_policy
-              policy="cache_size"
-              timestep="20000"
-              cache_size="3"/>
-        </cache_sel_matrix>
         <exploration
-            block_strategy="CRW"
-            cache_strategy="ledtaxis_search"/>
+            block_strategy="CRW"/>
         <sensing_subsystem2D>
           <!-- -5pi/6 : 5pi/6 -->
           <proximity_sensor fov="-2.61:2.61"
@@ -156,9 +70,6 @@
             <!-- BLOCK: Blocks are black. -->
             <block range="-0.05:0.05"
                    consensus="4"/>
-            <!-- CACHE: Caches are dark gray. -->
-            <cache range="0.3:0.5"
-                   consensus="3"/>
           </ground_sensor>
         </sensing_subsystem2D>
         <actuation_subsystem2D>
@@ -189,7 +100,7 @@
   <!-- * Loop functions * -->
   <!-- ****************** -->
   <loop_functions library="libfordyca"
-                  label="depth2_loop_functions">
+                  label="depth0_loop_functions">
     <output output_root="output"
             output_dir="__current_date__">
       <metrics
@@ -197,29 +108,14 @@
           block_acq_counts="block-acq-counts.csv"
           fsm_collision_counts="fsm-collision-counts.csv"
           block_transport="block-transport.csv"
-          cache_acq_counts="cache-acq-counts.csv"
-          cache_utilization="cache-utilization.csv"
-          cache_lifecycle="cache-lifecycle.csv"
-          cache_locations="cache-locations.csv"
-          cache_site_selection="cache-site-selection.csv"
-          task_execution_generalist="task-execution-generalist.csv"
-          task_execution_collector="task-execution-collector.csv"
-          task_execution_harvester="task-execution-harvester.csv"
-          task_tab_generalist="task-tab-generalist.csv"
-          task_distribution="task-distribution.csv"
           perception_dpo="perception-dpo.csv"
           perception_mdpo="perception-mdpo.csv"
           output_interval="1000">
       </metrics>
     </output>
     <oracle_manager>
-      <tasking_oracle
-          task_exec_est="false"
-          task_interface_est="false"
-          />
       <entities_oracle
-          blocks="false"
-          caches="false"/>
+          blocks="true"/>
     </oracle_manager>
     <arena_map>
       <grid resolution="0.2"
@@ -237,22 +133,11 @@
       </blocks>
       <nest size="1.0, 4.0" center="2, 3" />
     </arena_map>
-    <caches dimension="1.2">
-      <static enable="true"
-              size="2"
-              respawn_scale_factor="0.05"/>
-      <dynamic enable="true"
-               min_dist="1.2"
-               min_blocks="2"
-               robot_drop_only="false"/>
-
-    </caches>
 
     <visualization robot_id="true"
                    robot_los="true"
                    robot_task="true"
-                   block_id="false"
-                   />
+                   block_id="false"/>
   </loop_functions>
 
   <!-- *********************** -->

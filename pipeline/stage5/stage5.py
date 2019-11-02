@@ -21,6 +21,7 @@ import yaml
 import logging
 from .univar_comparator import UnivarComparator
 from .bivar_comparator import BivarComparator
+import pipeline.root_dirpath_generator as rdg
 
 
 class PipelineStage5:
@@ -91,13 +92,14 @@ class PipelineStage5:
         for t1 in controllers:
             for t2 in controllers:
                 for item in os.listdir(os.path.join(self.cmdopts['sierra_root'], t1)):
+                    _, scenario = rdg.parse_batch_root(item)
                     path1 = os.path.join(self.cmdopts['sierra_root'], t1, item,
                                          'exp-outputs',
                                          self.main_config['sierra']['collate_csv_leaf'])
                     path2 = os.path.join(self.cmdopts['sierra_root'], t2, item,
                                          'exp-outputs',
                                          self.main_config['sierra']['collate_csv_leaf'])
-                    if os.path.isdir(path1) and not os.path.exists(path2):
-                        print("WARN: {0} does not exist".format(path2))
-                    if os.path.isdir(path2) and not os.path.exists(path1):
-                        print("WARN: {0} does not exist".format(path1))
+                    if scenario in path1 and scenario not in path2:
+                        logging.warning("{0} does not exist in {1}".format(scenario, path2))
+                    if scenario in path2 and scenario not in path2:
+                        logging.warning("{0} does not exist in {1}".format(scenario, path1))

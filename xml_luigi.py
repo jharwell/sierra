@@ -16,6 +16,7 @@
 
 
 import xml.etree.ElementTree as ET
+import logging
 
 
 class InvalidElementError(RuntimeError):
@@ -72,7 +73,7 @@ class XMLLuigi:
             el.attrib[attr] = value   # pytype: disable=attribute-error
         else:
             if not noprint:
-                print("WARNING: No attribute '{1}' found in node '{0}'".format(path, attr))
+                logging.warning("No attribute '{1}' found in node '{0}'".format(path, attr))
 
     def has_tag(self, path):
         return self.root.find(path) is not None
@@ -113,7 +114,7 @@ class XMLLuigi:
             parent.remove(victim)   # pytype: disable=attribute-error
         except (AttributeError, TypeError):
             if not noprint:
-                print("WARNING: No victim '{0}' found in parent '{1}'".format(tag, path))
+                logging.warning("No victim '{0}' found in parent '{1}'".format(tag, path))
             pass
 
     def tag_add(self, path, tag, attr={}):

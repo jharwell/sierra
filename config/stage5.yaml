@@ -13,8 +13,8 @@ intra_scenario:
       label: 'Scalability Value'
 
 
-    - src_stem: pm-self-org
-      dest_stem: cc-pm-self-org
+    - src_stem: pm-self-org-fl
+      dest_stem: cc-pm-self-org-fl
       title: 'Swarm Self Organization'
       label: 'Self Organization Value'
 

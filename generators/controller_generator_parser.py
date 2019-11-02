@@ -31,5 +31,5 @@ class ControllerGeneratorParser:
     def __call__(self, args):
         if args.controller is None:
             return None
-        else:
-            return args.controller
+
+        return args.controller

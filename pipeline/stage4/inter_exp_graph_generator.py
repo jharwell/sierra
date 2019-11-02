@@ -74,9 +74,9 @@ class InterExpGraphGenerator:
                                          self.batch_criteria)
 
         if self.batch_criteria.pm_query('self-org'):
-            pmso.SelfOrganizationUnivar(self.cmdopts,
-                                        self.main_config['sierra']['perf']['inter_perf_csv'],
-                                        self.main_config['sierra']['perf']['ca_in_csv']).generate(self.batch_criteria)
+            pmso.SelfOrganizationFLUnivar(self.cmdopts,
+                                          self.main_config['sierra']['perf']['inter_perf_csv'],
+                                          self.main_config['sierra']['perf']['ca_in_csv']).generate(self.batch_criteria)
 
         if self.batch_criteria.pm_query('reactivity'):
             pmr.ReactivityUnivar(self.cmdopts).generate(self.batch_criteria)
@@ -93,9 +93,9 @@ class InterExpGraphGenerator:
             ScalabilityBivar().generate(self.cmdopts, self.batch_criteria)
 
         if self.batch_criteria.pm_query('self-org'):
-            pmso.SelfOrganizationBivar(self.cmdopts,
-                                       self.main_config['sierra']['perf']['inter_perf_csv'],
-                                       self.main_config['sierra']['perf']['ca_in_csv']).generate(self.batch_criteria)
+            pmso.SelfOrganizationFLBivar(self.cmdopts,
+                                         self.main_config['sierra']['perf']['inter_perf_csv'],
+                                         self.main_config['sierra']['perf']['ca_in_csv']).generate(self.batch_criteria)
 
         if self.batch_criteria.pm_query('reactivity'):
             pmr.ReactivityBivar(self.cmdopts).generate(self.batch_criteria)

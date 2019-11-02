@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#PBS -l walltime=12:00:00,nodes=50:ppn=8,pmem=2500mb
+#PBS -l walltime=16:00:00,nodes=20:ppn=8,pmem=2500mb
 #PBS -m abe
 #PBS -M harwe006@umn.edu
 
@@ -44,7 +44,7 @@ SCENARIOS=(SS.128x64 DS.128x64 QS.96x96)
 # ~10% block density in each scenario
 BLOCK_COUNTS=(820 820 920 820 820 920)
 
-OUTPUT_ROOT=$HOME/exp/2020-aamas-depth2
+OUTPUT_ROOT=$HOME/exp/2020-aamas-depth2-ideal
 BASE_CMD="python3 sierra.py \
                   --template-input-file=$SIERRA/templates/2020-aamas-depth2-ideal.argos \
                   --exec-method=hpc\

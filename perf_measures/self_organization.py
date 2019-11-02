@@ -26,10 +26,11 @@ import math
 from variables.swarm_size import SwarmSize
 
 
-class SelfOrganizationUnivar:
+class SelfOrganizationFLUnivar:
     """
     Calculates the self-organization of the swarm configuration across a univariate batched set of
-    experiments within the same scenario from collated .csv data.
+    experiments within the same scenario from collated .csv data using fractional performance
+    losses due to inter-robot interference.
 
     """
 
@@ -41,7 +42,8 @@ class SelfOrganizationUnivar:
         self.ca_in_csv = ca_in_csv
 
     def generate(self, batch_criteria):
-        logging.info("Univariate self-organization from {0}".format(self.cmdopts["collate_root"]))
+        logging.info(
+            "Univariate FL self-organization from {0}".format(self.cmdopts["collate_root"]))
         batch_exp_dirnames = batch_criteria.gen_exp_dirnames(self.cmdopts)
         fl = common.FractionalLossesUnivar(self.cmdopts,
                                            self.inter_perf_csv,
@@ -58,12 +60,12 @@ class SelfOrganizationUnivar:
                 float(swarm_sizes[i]) / float(swarm_sizes[i - 1]) * fl[batch_exp_dirnames[i - 1]]
             df_new.loc[0, batch_exp_dirnames[i]] = 1.0 - 1.0 / math.exp(-theta)
 
-        stem_path = os.path.join(self.cmdopts["collate_root"], "pm-self-org")
+        stem_path = os.path.join(self.cmdopts["collate_root"], "pm-self-org-fl")
         df_new.to_csv(stem_path + ".csv", sep=';', index=False)
 
         BatchRangedGraph(inputy_stem_fpath=stem_path,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
-                                                   "pm-self-org.png"),
+                                                   "pm-self-org-fl.png"),
                          title="Swarm Self-Organization Due To Sub-Linear Fractional Performance Losses",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="",
@@ -72,12 +74,11 @@ class SelfOrganizationUnivar:
                          polynomial_fit=-1).generate()
 
 
-class SelfOrganizationBivar:
+class SelfOrganizationFLBivar:
     """
-    Calculates the self-organization of the swarm configuration across a univariate batched set of
-    experiments within the same scenario from collated .csv data as follows:
-
-    Self org = fl (N_i)  - * N_i / N_{i-1} * fl )N_{i-1}
+    Calculates the self-organization of the swarm configuration across a bivariate batched set of
+    experiments within the same scenario from collated .csv data using fractional performance
+    losses due to inter-robot interference.
 
     """
 
@@ -89,7 +90,7 @@ class SelfOrganizationBivar:
         self.ca_in_csv = ca_in_csv
 
     def generate(self, batch_criteria):
-        logging.info("Bivariate self-organization from {0}".format(self.cmdopts["collate_root"]))
+        logging.info("Bivariate FL self-organization from {0}".format(self.cmdopts["collate_root"]))
         fl = common.FractionalLossesBivar(self.cmdopts,
                                           self.inter_perf_csv,
                                           self.ca_in_csv,
@@ -106,11 +107,11 @@ class SelfOrganizationBivar:
         else:
             so_df = self.__calc_by_col(fl, batch_criteria)
 
-        stem_path = os.path.join(self.cmdopts["collate_root"], "pm-self-org")
+        stem_path = os.path.join(self.cmdopts["collate_root"], "pm-self-org-fl")
         so_df.to_csv(stem_path + ".csv", sep=';', index=False)
 
         Heatmap(input_fpath=stem_path + '.csv',
-                output_fpath=os.path.join(self.cmdopts["graph_root"], "pm-self-org.png"),
+                output_fpath=os.path.join(self.cmdopts["graph_root"], "pm-self-org-fl.png"),
                 title="Swarm Self-Organization Due To Sub-Linear Fractional Performance Losses",
                 xlabel=batch_criteria.graph_ylabel(self.cmdopts),
                 ylabel=batch_criteria.graph_xlabel(self.cmdopts),

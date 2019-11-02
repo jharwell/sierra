@@ -90,7 +90,9 @@ class Pipeline:
         if cmdopts is not None:
             self.cmdopts.update(cmdopts)
 
-        self.batch_criteria = bc.Factory(args, self.cmdopts)
+        if 5 not in self.args.pipeline:
+            self.batch_criteria = bc.Factory(args, self.cmdopts)
+
         self.controller = controller
         self.scenario = scenario
 
