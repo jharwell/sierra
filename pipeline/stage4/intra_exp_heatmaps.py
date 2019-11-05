@@ -50,7 +50,7 @@ class IntraExpHeatmaps:
                         output_fpath=os.path.join(self.exp_graph_root,
                                                   graph['src_stem'] + '-hm.png'),
                         title=graph['title'],
-                        xlabel='X',
-                        ylabel='Y',
+                        xlabel='Y',
+                        ylabel='X',
                         xtick_labels=None,
                         ytick_labels=None).generate()

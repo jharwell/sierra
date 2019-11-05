@@ -79,9 +79,7 @@ class EfficiencyUnivar:
                          title="Swarm Efficiency (normalized)",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="Efficiency",
-                         xvals=batch_criteria.graph_xticks(self.cmdopts),
-                         legend=None,
-                         polynomial_fit=-1).generate()
+                         xvals=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
     # Private functions
     def __calculate_metric(self, ipath, batch_criteria, must_exist=True):
@@ -129,9 +127,7 @@ class ProjectivePerformanceComparisonUnivar:
                              self.projection_type),
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="Observed-Projected Ratio",
-                         xvals=xvals[1:],
-                         legend=None,
-                         polynomial_fit=-1).generate()
+                         xvals=xvals[1:]).generate()
 
 
 class ProjectivePerformanceComparisonPositiveUnivar(ProjectivePerformanceComparisonUnivar):
@@ -177,9 +173,7 @@ class FractionalPerformanceLossUnivar:
                          title="Swarm Scalability: Fractional Performance Loss Due To Inter-robot Interference",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="Scalability Value",
-                         xvals=batch_criteria.graph_xticks(self.cmdopts),
-                         legend=None,
-                         polynomial_fit=-1).generate()
+                         xvals=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
 
 class KarpFlattUnivar:
@@ -234,9 +228,7 @@ class KarpFlattUnivar:
                          title="Swarm Serial Fraction: Karp-Flatt Metric",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="",
-                         xvals=batch_criteria.graph_xticks(self.cmdopts),
-                         legend=None,
-                         polynomial_fit=-1).generate()
+                         xvals=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
 
 class ScalabilityUnivar:

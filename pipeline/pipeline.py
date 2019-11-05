@@ -84,7 +84,8 @@ class Pipeline:
             'exp_graphs': self.args.exp_graphs,
 
             # stage 5
-            'controller_comp_list': self.args.controller_comp_list,
+            'controllers_list': self.args.controllers_list,
+            'controllers_legend': self.args.controllers_legend,
             'normalize_comparisons': self.args.normalize_comparisons
         }
         if cmdopts is not None:

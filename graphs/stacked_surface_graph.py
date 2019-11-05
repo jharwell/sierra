@@ -24,7 +24,6 @@ import numpy as np
 import glob
 import re
 import matplotlib.pyplot as plt
-import typing as tp
 from mpl_toolkits.mplot3d import Axes3D
 matplotlib.use('Agg')
 
@@ -41,24 +40,18 @@ class StackedSurfaceGraph:
 
     """
 
-    def __init__(self,
-                 input_stem_pattern: str,
-                 output_fpath: str,
-                 title: str,
-                 legend: str,
-                 zlabel: str,
-                 xtick_labels: tp.List[str],
-                 ytick_labels: tp.List[str],
-                 norm_comp: bool):
+    def __init__(self, **kwargs):
 
-        self.input_stem_pattern = os.path.abspath(input_stem_pattern)
-        self.output_fpath = output_fpath
-        self.title = title
-        self.legend = legend
-        self.zlabel = zlabel
-        self.xtick_labels = xtick_labels
-        self.ytick_labels = ytick_labels
-        self.norm_comp = norm_comp
+        self.input_stem_pattern = os.path.abspath(kwargs['input_stem_pattern'])
+        self.output_fpath = kwargs['output_fpath']
+        self.title = kwargs['title']
+        self.legend = kwargs['legend']
+        self.xlabel = kwargs['xlabel']
+        self.ylabel = kwargs['ylabel']
+        self.zlabel = kwargs['zlabel']
+        self.xtick_labels = kwargs['xtick_labels']
+        self.ytick_labels = kwargs['ytick_labels']
+        self.norm_comp = kwargs['norm_comp']
 
     def generate(self):
         dfs = []
@@ -81,7 +74,13 @@ class StackedSurfaceGraph:
         colors = plt.cm.Pastel1(np.arange(len(dfs)))
 
         ax.set_title(self.title, fontsize=24)
+        ax.xaxis._axinfo['label']['space_factor'] = 2.8
+        ax.yaxis._axinfo['label']['space_factor'] = 2.8
         ax.set_zlabel('\n' + self.zlabel, fontsize=18)
+        max_xlen = max([len(str(l)) for l in self.xtick_labels])
+        max_ylen = max([len(str(l)) for l in self.ytick_labels])
+        ax.set_xlabel('\n' * max_xlen + self.xlabel, fontsize=18)
+        ax.set_ylabel('\n' * max_ylen + self.ylabel, fontsize=18)
 
         for i in range(0, len(dfs)):
             if self.norm_comp:

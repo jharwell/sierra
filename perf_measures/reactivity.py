@@ -62,9 +62,7 @@ class ReactivityUnivar:
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel=vcs.method_ylabel(self.cmdopts["reactivity_cs_method"],
                                                   'reactivity'),
-                         xvals=batch_criteria.graph_xticks(self.cmdopts)[1:],
-                         legend=None,
-                         polynomial_fit=-1).generate()
+                         xvals=batch_criteria.graph_xticks(self.cmdopts)[1:]).generate()
 
 
 class ReactivityBivar:

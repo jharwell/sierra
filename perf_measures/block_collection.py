@@ -59,9 +59,7 @@ class BlockCollectionUnivar:
                          title="Swarm Blocks Collected",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="# Blocks",
-                         xvals=batch_criteria.graph_xticks(self.cmdopts),
-                         legend=None,
-                         polynomial_fit=-1).generate()
+                         xvals=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
     def __gen_stddev(self, ipath, opath):
         total_stddev_df = pd.read_csv(ipath, sep=';')

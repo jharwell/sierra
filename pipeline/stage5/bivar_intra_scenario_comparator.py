@@ -35,23 +35,23 @@ class BivarIntraScenarioComparator:
 
     def __init__(self,
                  controllers: tp.List[str],
-                 graphs: dict,
                  cc_csv_root: str,
                  cc_graph_root: str,
                  cmdopts: tp.Dict[str, str],
                  cli_args: dict,
                  main_config: dict,
-                 norm_comp: bool):
+                 ):
+        self.controllers = controllers
         self.cmdopts = cmdopts
         self.cli_args = cli_args
         self.main_config = main_config
-        self.controllers = controllers
-        self.graphs = graphs
-        self.norm_comp = norm_comp
         self.cc_csv_root = cc_csv_root
         self.cc_graph_root = cc_graph_root
 
-    def __call__(self):
+    def __call__(self,
+                 graphs: dict,
+                 legend: tp.List[str],
+                 norm_comp: bool):
         # Obtain the list of scenarios to use. We can just take the scenario list of the first
         # controllers, because we have already checked that all controllers executed the same set
         # scenarios.
@@ -61,7 +61,7 @@ class BivarIntraScenarioComparator:
         cmdopts = copy.deepcopy(self.cmdopts)
         # For each controller comparison graph we are interested in, generate it using data from all
         # scenarios
-        for graph in self.graphs:
+        for graph in graphs:
             for s in scenarios:
                 for controller in self.controllers:
                     dirs = [d for d in os.listdir(os.path.join(self.cmdopts['sierra_root'],
@@ -98,7 +98,17 @@ class BivarIntraScenarioComparator:
                                  cmdopts=cmdopts,
                                  dest_stem=graph['dest_stem'],
                                  title=graph['title'],
-                                 zlabel=graph['label'])
+                                 zlabel=graph['label'],
+                                 legend=legend,
+                                 norm_comp=norm_comp)
+
+    def __gen_graph_title(self, title: str, norm_comp: bool):
+        """
+        If we are normalizing comparisons, put that on the graph title.
+        """
+        if norm_comp:
+            return title + ' (Normalized)'
+        return title
 
     def __gen_graph(self,
                     scenario: str,
@@ -106,22 +116,26 @@ class BivarIntraScenarioComparator:
                     cmdopts: tp.Dict[str, str],
                     dest_stem: str,
                     title: str,
-                    zlabel: str):
+                    zlabel: str,
+                    legend: tp.List[str],
+                    norm_comp: bool):
         """
-        Generates a :meth:`StackedSurfaceGraph` comparing the specified controllers within the
-        specified scenario after input files have been gathered from each controllers into
-        ``cc-csvs/``.
+        Generates a :class:`~graphs.stacked_surface_graph.StackedSurfaceGraph` comparing the
+        specified controllers within thespecified scenario after input files have been gathered from
+        each controllers into ``cc-csvs/``.
         """
         csv_stem_opath = os.path.join(self.cc_csv_root, dest_stem + "-" + scenario)
         StackedSurfaceGraph(input_stem_pattern=csv_stem_opath,
                             output_fpath=os.path.join(self.cc_graph_root,
                                                       dest_stem) + '-' + scenario + ".png",
-                            title=title,
+                            title=self.__gen_graph_title(title, norm_comp),
+                            ylabel=batch_criteria.graph_xlabel(cmdopts),
+                            xlabel=batch_criteria.graph_ylabel(cmdopts),
                             zlabel=zlabel,
                             xtick_labels=batch_criteria.graph_yticklabels(cmdopts),
                             ytick_labels=batch_criteria.graph_xticklabels(cmdopts),
-                            legend=self.controllers,
-                            norm_comp=self.norm_comp).generate()
+                            legend=legend,
+                            norm_comp=norm_comp).generate()
 
     def __gen_csv(self,
                   cmdopts: tp.Dict[str, str],

@@ -33,24 +33,23 @@ class UnivarIntraScenarioComparator:
 
     def __init__(self,
                  controllers: tp.List[str],
-                 graphs: dict,
                  cc_csv_root: str,
                  cc_graph_root: str,
                  cmdopts: tp.Dict[str, str],
                  cli_args,
-                 main_config,
-                 norm_comp):
+                 main_config):
         self.controllers = controllers
-        self.graphs = graphs
         self.cc_graph_root = cc_graph_root
         self.cc_csv_root = cc_csv_root
 
         self.cmdopts = cmdopts
         self.cli_args = cli_args
         self.main_config = main_config
-        self.norm_comp = norm_comp
 
-    def __call__(self):
+    def __call__(self,
+                 graphs: dict,
+                 legend: tp.List[str],
+                 norm_comp: bool):
         # Obtain the list of scenarios to use. We can just take the scenario list of the first
         # controllers, because we have already checked that all controllers executed the same set
         # scenarios
@@ -59,7 +58,7 @@ class UnivarIntraScenarioComparator:
         # For each controller comparison graph we are interested in, generate it using data from all
         # scenarios
         cmdopts = copy.deepcopy(self.cmdopts)
-        for graph in self.graphs:
+        for graph in graphs:
             for s in scenarios:
                 for controller in self.controllers:
                     # We need to generate the root directory paths for each batched experiment
@@ -88,7 +87,8 @@ class UnivarIntraScenarioComparator:
                                  cmdopts=cmdopts,
                                  dest_stem=graph['dest_stem'],
                                  title=graph['title'],
-                                 label=graph['label'])
+                                 label=graph['label'],
+                                 legend=legend)
 
     def __gen_graph(self,
                     scenario: str,
@@ -96,7 +96,8 @@ class UnivarIntraScenarioComparator:
                     cmdopts: tp.Dict[str, str],
                     dest_stem: str,
                     title: str,
-                    label: str):
+                    label: str,
+                    legend: tp.List[str]):
         """
         Generates a :meth:`BatchRangeGraph` comparing the specified controllers within the
         specified scenario after input files have been gathered from each controllers into
@@ -111,8 +112,7 @@ class UnivarIntraScenarioComparator:
                          xlabel=batch_criteria.graph_xlabel(cmdopts),
                          ylabel=label,
                          xvals=batch_criteria.graph_xticks(cmdopts),
-                         legend=self.controllers,
-                         polynomial_fit=-1).generate()
+                         legend=legend).generate()
 
     def __gen_csv(self,
                   cmdopts: tp.Dict[str, str],

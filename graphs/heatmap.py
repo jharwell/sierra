@@ -31,16 +31,15 @@ class Heatmap:
 
     """
 
-    def __init__(self, input_fpath, output_fpath, title, xlabel, ylabel,
-                 xtick_labels, ytick_labels):
+    def __init__(self, **kwargs):
+        self.input_csv_fpath = os.path.abspath(kwargs['input_fpath'])
+        self.output_fpath = os.path.abspath(kwargs['output_fpath'])
+        self.title = '\n'.join(textwrap.wrap(kwargs['title'], 40))
+        self.xlabel = kwargs['xlabel']
+        self.ylabel = kwargs['ylabel']
 
-        self.input_csv_fpath = os.path.abspath(input_fpath)
-        self.output_fpath = os.path.abspath(output_fpath)
-        self.title = '\n'.join(textwrap.wrap(title, 40))
-        self.xlabel = xlabel
-        self.ylabel = ylabel
-        self.xtick_labels = xtick_labels
-        self.ytick_labels = ytick_labels
+        self.xtick_labels = kwargs.get('xtick_labels', None)
+        self.ytick_labels = kwargs.get('ytick_labels', None)
 
     def generate(self):
         if not os.path.exists(self.input_csv_fpath):
@@ -48,10 +47,22 @@ class Heatmap:
 
         df = pd.read_csv(self.input_csv_fpath, sep=';')
         fig, ax = plt.subplots()
-        plt.imshow(df, cmap='coolwarm', interpolation='nearest')
+        plt.imshow(df, cmap='pcoolwarm', interpolation='nearest')
 
         plt.xlabel(self.xlabel, fontsize=18)
         plt.ylabel(self.ylabel, fontsize=18)
+        self.__plot_ticks(ax)
+
+        plt.title(self.title, fontsize=24)
+        plt.colorbar(fraction=0.046, pad=0.04)
+        ax.tick_params(labelsize=12)
+
+        fig = ax.get_figure()
+        fig.set_size_inches(10, 10)
+        fig.savefig(self.output_fpath, bbox_inches='tight', dpi=100)
+        fig.clf()
+
+    def __plot_ticks(self, ax):
         if self.xtick_labels is not None:
             ax.set_xticks(np.arange(len(self.xtick_labels)))
             ax.set_xticklabels(self.xtick_labels, rotation='vertical')
@@ -73,12 +84,3 @@ class Heatmap:
                 y_format = ax.get_yaxis().get_major_formatter()
                 if any([len(str(y)) > 5 for y in y_format.seq]):
                     y_format.seq = ["{:2.2e}".format(float(s)) for s in y_format.seq]
-
-        plt.title(self.title, fontsize=24)
-        plt.colorbar(fraction=0.046, pad=0.04)
-        ax.tick_params(labelsize=12)
-
-        fig = ax.get_figure()
-        fig.set_size_inches(10, 10)
-        fig.savefig(self.output_fpath, bbox_inches='tight', dpi=100)
-        fig.clf()
