@@ -28,10 +28,18 @@ generators.dual\_source module
    :undoc-members:
    :show-inheritance:
 
-generators.exp\_input\_generator module
+generators.exp\_generator
 ---------------------------------------
 
-.. automodule:: generators.exp_input_generator
+.. automodule:: generators.exp_generator
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+generators.exp\_creator
+---------------------------------------
+
+.. automodule:: generators.exp_creator
    :members:
    :undoc-members:
    :show-inheritance:

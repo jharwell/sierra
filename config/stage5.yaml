@@ -1,9 +1,9 @@
 # Intra-scenario
 intra_scenario:
   graphs:
-    - src_stem: pm-scalability-fl
-      dest_stem: cc-pm-scalability-fl
-      title: 'Swarm Scalability (Sub-Linear Fractional Losses)'
+    - src_stem: pm-scalability-fm
+      dest_stem: cc-pm-scalability-fm
+      title: 'Swarm Scalability (Fractional Performance Maintenance)'
       label: 'Scalability Value'
 
 

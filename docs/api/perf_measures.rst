@@ -44,18 +44,10 @@ perf\_measures.reactivity module
    :undoc-members:
    :show-inheritance:
 
-perf\_measures.scalability\_bivar module
+perf\_measures.scalability module
 ----------------------------------------
 
-.. automodule:: perf_measures.scalability_bivar
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-perf\_measures.scalability\_univar module
------------------------------------------
-
-.. automodule:: perf_measures.scalability_univar
+.. automodule:: perf_measures.scalability
    :members:
    :undoc-members:
    :show-inheritance:

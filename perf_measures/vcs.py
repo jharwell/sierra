@@ -326,15 +326,17 @@ class ReactivityCS():
 
 
 def _compute_vcs_raw(exp_data, ideal_data, method):
-    if "pcm" == method:
+    if method == "pcm":
         return sm.pcm(exp_data, ideal_data)
-    elif "area_between" == method:
+    elif method == "area_between":
         return sm.area_between_two_curves(exp_data, ideal_data)
-    elif "frechet" == method:
+    elif method == "frechet":
         return sm.frechet_dist(exp_data, ideal_data)
-    elif "dtw" == method:
+    elif method == "dtw":
         # Don't use the sm version--waaayyyy too slow
-        dist, path = fastdtw.fastdtw(exp_data, ideal_data)
+        dist, _ = fastdtw.fastdtw(exp_data, ideal_data)
         return dist
-    elif "curve_length" == method:
+    elif method == "curve_length":
         return sm.curve_length_measure(exp_data, ideal_data)
+    else:
+        return None

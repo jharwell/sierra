@@ -72,7 +72,10 @@ class Oracle(UnivarBatchCriteria):
                          "{0}".format(str(feat[1]))) for feat in t[1]]) for t in self.tuples]
 
         if self.swarm_size is not None:
-            size_attr = [next(iter(SwarmSize([self.swarm_size]).gen_attr_changelist()[0]))]
+            size_attr = [next(iter(SwarmSize(self.cli_arg,
+                                             self.main_config,
+                                             self.batch_generation_root,
+                                             [self.swarm_size]).gen_attr_changelist()[0]))]
             for c in changes:
                 c.add(size_attr)
 

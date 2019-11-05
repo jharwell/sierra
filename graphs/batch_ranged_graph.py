@@ -21,7 +21,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import matplotlib as mpl
-import typing as tp
 mpl.rcParams['lines.linewidth'] = 3
 mpl.rcParams['lines.markersize'] = 10
 mpl.use('Agg')
@@ -50,25 +49,17 @@ class BatchRangedGraph:
     # Maximum # of rows that the input .csv to guarantee unique colors
     kMaxRows = 8
 
-    def __init__(self,
-                 inputy_stem_fpath: str,
-                 output_fpath: str,
-                 title: str,
-                 xlabel: str,
-                 ylabel: str,
-                 xvals: tp.List[float],
-                 legend: str,
-                 polynomial_fit: int):
+    def __init__(self, **kwargs):
+        self.inputy_csv_fpath = os.path.abspath(kwargs['inputy_stem_fpath'] + '.csv')
+        self.inputy_stddev_fpath = os.path.abspath(kwargs['inputy_stem_fpath'] + '.stddev')
+        self.output_fpath = os.path.abspath(kwargs['output_fpath'])
+        self.title = kwargs['title']
+        self.xlabel = kwargs['xlabel']
+        self.ylabel = kwargs['ylabel']
+        self.xvals = kwargs['xvals']
 
-        self.inputy_csv_fpath = os.path.abspath(inputy_stem_fpath + '.csv')
-        self.inputy_stddev_fpath = os.path.abspath(inputy_stem_fpath + '.stddev')
-        self.output_fpath = os.path.abspath(output_fpath)
-        self.title = title
-        self.xlabel = xlabel
-        self.ylabel = ylabel
-        self.legend = legend
-        self.xvals = xvals
-        self.polynomial_fit = polynomial_fit
+        self.legend = kwargs.get('legend', None)
+        self.polynomial_fit = kwargs.get('polynomial_fit', -1)
 
     def generate(self):
         if not os.path.exists(self.inputy_csv_fpath):

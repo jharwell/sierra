@@ -14,6 +14,10 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
+"""
+Wrapper around :py:class:`xml.etree.ElementTree` which contains a small set of functionality for
+manipulating XML files.
+"""
 
 import xml.etree.ElementTree as ET
 import logging
@@ -25,15 +29,18 @@ class InvalidElementError(RuntimeError):
 
 
 class XMLLuigi:
-    def __init__(self, input_filepath, output_filepath=None):
-        """
-         A class to help edit (add, remove, modify tags/attributes) and save xml files.
+    """
+    A class to help edit and save xml files.
 
-         Parameters:
-             input_filepath: The location of the xml file to process.
-             output_filepath (optional): Where the object should save changes it has made to the xml
-                                         file. (Defaults to overwriting the input file.)
-        """
+    Functionality includes single tag removal/addition, single attribute change/add/remove.
+
+    Attributes:
+        input_filepath: The location of the xml file to process.
+        output_filepath (optional): Where the object should save changes it has made to the xml
+                                    file. (Defaults to overwriting the input file.)
+    """
+
+    def __init__(self, input_filepath, output_filepath=None):
         if output_filepath is None:
             output_filepath = input_filepath
 
@@ -73,7 +80,7 @@ class XMLLuigi:
             el.attrib[attr] = value   # pytype: disable=attribute-error
         else:
             if not noprint:
-                logging.warning("No attribute '{1}' found in node '{0}'".format(path, attr))
+                logging.warning("No attribute '%s' found in node '%s'", attr, path)
 
     def has_tag(self, path):
         return self.root.find(path) is not None
@@ -114,7 +121,7 @@ class XMLLuigi:
             parent.remove(victim)   # pytype: disable=attribute-error
         except (AttributeError, TypeError):
             if not noprint:
-                logging.warning("No victim '{0}' found in parent '{1}'".format(tag, path))
+                logging.warning("No victim '%s' found in parent '%s'", tag, path)
             pass
 
     def tag_add(self, path, tag, attr={}):

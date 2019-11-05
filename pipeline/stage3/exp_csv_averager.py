@@ -17,8 +17,37 @@
 
 import os
 import re
-import pandas as pd
 import logging
+import typing as tp
+import pandas as pd
+
+
+class BatchedExpCSVAverager:
+
+    """
+    Averages the .csv output files for each experiment in the specified batch directory.
+
+    Attributes:
+      ro_params(dict): Dictionary of read-only parameters for batch averaging
+      batch_output_root(str): Directory for averaged .csv output (relative to current dir or absolu
+
+    """
+
+    def __init__(self, ro_params, batch_output_root):
+
+        self.ro_params = ro_params
+        self.batch_output_root = batch_output_root
+
+    def run(self):
+        """Average .csv output files for all experiments in the batch."""
+        # Ignore the folder for .csv files collated across experiments within a batch
+        experiments = [item for item in os.listdir(self.batch_output_root) if item not in [
+            self.ro_params['config']['sierra']['collate_csv_leaf']]]
+        for exp in experiments:
+            path = os.path.join(self.batch_output_root, exp)
+
+            if os.path.isdir(path):
+                ExpCSVAverager(self.ro_params, path).run()
 
 
 class ExpCSVAverager:
@@ -26,32 +55,31 @@ class ExpCSVAverager:
     Averages a set of .csv output files from a set of simulation runs for a single experiment.
 
     Attributes:
-        ro_params(dict): Dictionary of read-only configuration for CSV averaging:
-        template_input_leaf(str): Leaf (i.e. no preceding path to the template XML configuration file
+        main_config: Parsed dictionary of main YAML configuration.
+        template_input_leaf: Leaf (i.e. no preceding path to the template XML configuration file
                                   for the experiment.
-        no_verify(bool): Should result verification be skipped?
-        gen_stddev(bool): Should standard deviation be generated (and therefore errorbars
-                          plotted)?
-        config(dict): Parsed main YAML configuration
-         exp_output_root(str): Directory for averaged .csv output (relative to current dir or
-                               absolute).
+        no_verify: Should result verification be skipped?
+        gen_stddev: Should standard deviation be generated (and therefore errorbars
+                    plotted)?
+         exp_output_root: Directory for averaged .csv output (relative to current dir or
+                          absolute).
     """
 
-    def __init__(self, ro_params, exp_output_root):
+    def __init__(self, main_config: tp.Dict[str, str], exp_output_root: str):
         # will get the main name and extension of the config file (without the full absolute path)
-        self.template_input_leaf = ro_params['template_input_leaf']
+        self.template_input_leaf = main_config['template_input_leaf']
         self.template_input_fname, self.template_input_ext = os.path.splitext(
             os.path.basename(self.template_input_leaf))
 
         self.exp_output_root = os.path.abspath(exp_output_root)
 
-        self.avgd_output_leaf = ro_params['config']['sierra']['avg_output_leaf']
+        self.avgd_output_leaf = main_config['config']['sierra']['avg_output_leaf']
         self.avgd_output_root = os.path.join(self.exp_output_root,
                                              self.avgd_output_leaf)
-        self.metrics_leaf = ro_params['config']['sim']['metrics_leaf']
+        self.metrics_leaf = main_config['config']['sim']['metrics_leaf']
 
-        self.no_verify_results = ro_params['no_verify_results']
-        self.gen_stddev = ro_params['gen_stddev']
+        self.no_verify_results = main_config['no_verify_results']
+        self.gen_stddev = main_config['gen_stddev']
         os.makedirs(self.avgd_output_root, exist_ok=True)
 
         # to be formatted like: self.input_name_format.format(name, experiment_number)
@@ -61,12 +89,12 @@ class ExpCSVAverager:
     def run(self):
         if not self.no_verify_results:
             self._verify_exp_csvs()
-        self._average_csvs()
+        self.__average_csvs()
 
-    def _average_csvs(self):
+    def __average_csvs(self):
         """Averages the CSV files found in the output save path"""
 
-        logging.info('Averaging results in ' + self.exp_output_root + "...")
+        logging.info('Averaging results in %s...', self.exp_output_root)
 
         # Maps unique .csv stem to the averaged dataframe
         csvs = {}
@@ -116,7 +144,7 @@ class ExpCSVAverager:
         experiments = [exp for exp in os.listdir(self.exp_output_root) if exp not in [
             self.avgd_output_leaf]]
 
-        logging.info('Verifying results in ' + self.exp_output_root + "...")
+        logging.info('Verifying results in %s...', self.exp_output_root)
 
         for exp1 in experiments:
             csv_root1 = os.path.join(self.exp_output_root,

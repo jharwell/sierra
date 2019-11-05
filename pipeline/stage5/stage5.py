@@ -13,74 +13,94 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-
+"""
+Contains main class implementing stage 5 of the experimental pipeline.
+"""
 
 import os
 import typing as tp
 import yaml
 import logging
-from .univar_comparator import UnivarComparator
-from .bivar_comparator import BivarComparator
+from pipeline.stage5 import intra_scenario_comparator as isc
 import pipeline.root_dirpath_generator as rdg
 
 
 class PipelineStage5:
-
     """
-
-    Implements stage 5 of the experimental pipeline: comparing controllers that have been tested
-    with the same batch criteria using different performance measures across scenarios and within
-    the same scenario
+    Implements stage5 of the experimental pipeline: comparing controllers that have been tested with
+    the same batch criteria using different performance measures within the same scenario, according
+    to YAML configuration. This stage is idempotent.
 
     Attributes:
-        controllers: List of controllers to compare.
-        norm_comp: Should comparisons be normalized against a controller of primary interest?
         cmdopts: Dictionary of parsed cmdline parameters.
-        main_config Dictionary of parsed main YAML configuration.
+        controllers: List of controllers to compare.
+        main_config: Dictionary of parsed main YAML configuration.
         stage5_config: Dictionary of parsed stage5 YAML configuration.
         output_roots: Dictionary containing output directories for intra- and inter-scenario graph
                       generation.
     """
 
     def __init__(self, cmdopts: tp.Dict[str, str]):
-        self.controllers = cmdopts['controller_comp_list']
-        self.norm_comp = cmdopts['normalize_comparisons']
         self.cmdopts = cmdopts
         self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
-                                                       'main.yaml')))
+                                                       'main.yaml')),
+                                     yaml.FullLoader)
         self.stage5_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
-                                                         'stage5.yaml')))
+                                                         'stage5.yaml')),
+                                       yaml.FullLoader)
+        self.controllers = self.cmdopts['controllers_list'].split(',')
+
+        # We add the controller list to the directory path for the .csv and graph directories so
+        # that multiple runs of stage5 with different controllers do not overwrite each other
+        # (i.e. make stage5 idempotent).
         self.output_roots = {
-            'cc_graphs': os.path.join(self.cmdopts['sierra_root'], "cc-graphs"),
-            'cc_csvs': os.path.join(self.cmdopts['sierra_root'], "cc-csvs"),
+            'cc_graphs': os.path.join(self.cmdopts['sierra_root'],
+                                      '+'.join(self.controllers) + "-cc-graphs"),
+            'cc_csvs': os.path.join(self.cmdopts['sierra_root'],
+                                    '+'.join(self.controllers) + "-cc-csvs"),
         }
 
+    def run(self, cli_args):
+        """
+        Runs :class:`UnivarIntraScenarioComparator` or :class:`BivarIntraScenarioComparator` as
+        appropriate, depending on which type of :class:`~variables.batch_criteria.BatchCriteria` was
+        selected on the cmdline.
+        """
+        # Create directories for controller .csv files and graphs
         for v in self.output_roots.values():
             os.makedirs(v, exist_ok=True)
 
-    def run(self, cli_args):
+        # Use nice controller names on graph legends if configured
+        if self.cmdopts['controllers_legend'] is not None:
+            legend = self.cmdopts['controllers_legend'].split(',')
+        else:
+            legend = self.controllers
 
-        self.controllers = self.controllers.split(',')
         self.__verify_controllers(self.controllers)
 
-        logging.info("Stage5: Inter-batch controller comparison of {0}...".format(self.controllers))
+        logging.info("Stage5: Inter-batch controller comparison of %s...", self.controllers)
 
         if cli_args.bc_univar:
-            UnivarComparator()(controllers=self.controllers,
-                               graph_config=self.stage5_config,
-                               output_roots=self.output_roots,
-                               cmdopts=self.cmdopts,
-                               cli_args=cli_args,
-                               main_config=self.main_config,
-                               norm_comp=self.norm_comp)
+            comparator = isc.UnivarIntraScenarioComparator(
+                self.controllers,
+                self.output_roots['cc_csvs'],
+                self.output_roots['cc_graphs'],
+                self.cmdopts,
+                cli_args,
+                self.main_config)
         else:
-            BivarComparator()(controllers=self.controllers,
-                              graph_config=self.stage5_config,
-                              output_roots=self.output_roots,
-                              cmdopts=self.cmdopts,
-                              cli_args=cli_args,
-                              main_config=self.main_config,
-                              norm_comp=self.norm_comp)
+            comparator = isc.BivarIntraScenarioComparator(
+                self.controllers,
+                self.output_roots['cc_csvs'],
+                self.output_roots['cc_graphs'],
+                self.cmdopts,
+                cli_args,
+                self.main_config)
+
+        comparator(graphs=self.stage5_config['intra_scenario']['graphs'],
+                   legend=legend,
+                   comp_type=self.cmdopts['comparison_type'])
+
         logging.info("Stage5: Inter-batch controller comparison complete")
 
     def __verify_controllers(self, controllers):
@@ -100,6 +120,6 @@ class PipelineStage5:
                                          'exp-outputs',
                                          self.main_config['sierra']['collate_csv_leaf'])
                     if scenario in path1 and scenario not in path2:
-                        logging.warning("{0} does not exist in {1}".format(scenario, path2))
+                        logging.warning("%s does not exist in %s", scenario, path2)
                     if scenario in path2 and scenario not in path2:
-                        logging.warning("{0} does not exist in {1}".format(scenario, path1))
+                        logging.warning("%s does not exist in %s", scenario, path1)

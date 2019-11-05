@@ -15,6 +15,10 @@ Welcome to Sierra's documentation!
    contributing/index.rst
    api/modules.rst
 
+SIERRA has been used for results generation on the following papers:
+
+- :xref:`Harwell2019`
+
 Indices and tables
 ==================
 

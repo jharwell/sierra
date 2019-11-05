@@ -1,1 +1,3 @@
-from graphs import stacked_line_graph
+"""
+Adaptors built on top of matplotlib to auto-generate graphs from averaged and collated ``.csv`` data.
+"""

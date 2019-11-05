@@ -34,19 +34,19 @@ class StackedLineGraph:
 
     """
 
-    def __init__(self, input_stem_fpath, output_fpath, cols, title, legend, xlabel, ylabel,
-                 linestyles, dashes):
+    def __init__(self, **kwargs):
 
-        self.input_csv_fpath = os.path.abspath(input_stem_fpath) + ".csv"
-        self.input_stddev_fpath = os.path.abspath(input_stem_fpath) + ".stddev"
-        self.output_fpath = output_fpath
-        self.cols = cols
-        self.title = title
-        self.legend = legend
-        self.xlabel = xlabel
-        self.ylabel = ylabel
-        self.linestyles = linestyles
-        self.dashes = dashes
+        self.input_csv_fpath = os.path.abspath(kwargs['input_stem_fpath']) + ".csv"
+        self.input_stddev_fpath = os.path.abspath(kwargs['input_stem_fpath']) + ".stddev"
+        self.output_fpath = kwargs['output_fpath']
+        self.title = kwargs['title']
+        self.xlabel = kwargs['xlabel']
+        self.ylabel = kwargs['ylabel']
+
+        self.linestyles = kwargs.get('linestyles', None)
+        self.dashes = kwargs.get('dashes', None)
+        self.legend = kwargs.get('legend', None)
+        self.cols = kwargs.get('cols', None)
 
     def generate(self):
         if not os.path.exists(self.input_csv_fpath):

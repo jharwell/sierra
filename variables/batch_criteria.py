@@ -14,14 +14,16 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-import typing as tp
-import variables as ev
 import os
 import pickle
+import logging
+import typing as tp
+
 import yaml
+
 import utils
 import xml_luigi
-import logging
+import variables as ev
 
 
 class BatchCriteria(ev.base_variable.BaseVariable):
@@ -66,7 +68,7 @@ class BatchCriteria(ev.base_variable.BaseVariable):
             for c in exp:
                 if c[0] == ".//arena" and c[1] == "size":
                     x, y, z = c[2].split(',')
-                    dims.append((int(x), int(y)))
+                    dims.append((int(x), int(y), int(z)))
         assert len(dims) > 0, "Scenario dimensions not contained in batch criteria"
         return dims
 
@@ -95,27 +97,28 @@ class BatchCriteria(ev.base_variable.BaseVariable):
                 pickle.dump(defs[i], f)
 
     def scaffold_exps(self,
-                      xml_luigi: xml_luigi.XMLLuigi,
+                      exp_def: xml_luigi.XMLLuigi,
                       batch_config_leaf: str,
                       cmdopts: tp.Dict[str, str]):
         defs = list(self.gen_attr_changelist())
-        logging.info("Stage1: Applying batch criteria to {0} experiments".format(len(defs)))
+        logging.info("Stage1: Applying batch criteria to %s experiments", len(defs))
 
         for i in range(0, len(defs)):
             exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
             exp_generation_root = os.path.join(self.batch_generation_root,
                                                str(exp_dirname))
-            logging.debug("Applying {0} changes from batch criteria generator '{1}' for exp{2} in {3}".format(len(defs[i]),
-                                                                                                              self.cli_arg,
-                                                                                                              i,
-                                                                                                              exp_dirname))
+            logging.debug("Applying %s changes from batch criteria generator '%s' for exp%s in %s",
+                          len(defs[i]),
+                          self.cli_arg,
+                          i,
+                          exp_dirname)
 
             os.makedirs(exp_generation_root, exist_ok=True)
             for path, attr, value in defs[i]:
-                xml_luigi.attr_change(path, attr, value)
+                exp_def.attr_change(path, attr, value)
 
-            xml_luigi.write(os.path.join(exp_generation_root,
-                                         batch_config_leaf))
+            exp_def.write(os.path.join(exp_generation_root,
+                                       batch_config_leaf))
 
         assert len(defs) == len(os.listdir(self.batch_generation_root)),\
             "FATAL: Size of batch criteria({0}) != # exp dirs ({1}): possibly caused by:\n"\
@@ -140,8 +143,9 @@ class BatchCriteria(ev.base_variable.BaseVariable):
         raise NotImplementedError
 
     def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> tp.List[str]:
-        """Generate list of strings from the current changelist to use for directory names within a batched
-        experiment.
+        """
+        Generate list of strings from the current changelist to use for directory names within a
+        batched experiment.
 
         Returns:
             List of directory names for current experiment
@@ -334,15 +338,25 @@ class BivarBatchCriteria(BatchCriteria):
         ret = self.criteria1.gen_tag_addlist().extend(self.criteria2.gen_tag_addlist())
         return ret
 
-    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> tp.List[str]:
+    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str], what: str = 'all') -> tp.List[str]:
+        """
+        Generates a SORTED list of strings for all X/Y axis directories for the bivariate
+        experiments, or both X and Y.
+        """
         list1 = self.criteria1.gen_exp_dirnames(cmdopts)
         list2 = self.criteria2.gen_exp_dirnames(cmdopts)
         ret = []
-        for l1 in list1:
-            for l2 in list2:
-                ret.append('+'.join(['c1-' + l1, 'c2-' + l2]))
 
-        return ret
+        if what == 'x':
+            return ['c1-' + x for x in list1]
+        elif what == 'y':
+            return ['c2-' + y for y in list2]
+        else:
+            for l1 in list1:
+                for l2 in list2:
+                    ret.append('+'.join(['c1-' + l1, 'c2-' + l2]))
+
+            return ret
 
     def swarm_sizes(self, cmdopts: tp.Dict[str, str]) -> tp.List[int]:
         """Generate a 2D array of swarm swarm sizes used the batched experiment, in the same order as the
@@ -431,19 +445,19 @@ class BivarBatchCriteria(BatchCriteria):
                     break
 
         assert len(dirs) == len(self.criteria1.gen_exp_dirnames(cmdopts)),\
-            "FATAL: Bad xvals calculation"
+            "FATAL: Bad xticks calculation"
         return self.criteria1.graph_xticklabels(cmdopts, dirs)
 
     def graph_yticklabels(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[float]:
         dirs = []
         for c2 in self.criteria2.gen_exp_dirnames(cmdopts):
             for y in self.gen_exp_dirnames(cmdopts):
-                if c2 in y.split('+')[0]:
+                if c2 in y.split('+')[1]:
                     dirs.append(y)
                     break
 
         assert len(dirs) == len(self.criteria2.gen_exp_dirnames(cmdopts)),\
-            "FATAL: Bad xvals calculation"
+            "FATAL: Bad yticks calculation"
         return self.criteria2.graph_xticklabels(cmdopts, dirs)
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
@@ -491,8 +505,8 @@ def __UnivarFactory(args, cmdopts, cli_arg: str, scenario):
                                      main_config,
                                      cmdopts['generation_root'],
                                      scenario=scenario)()
-    logging.info("Create univariate batch criteria '{0}'".format(
-        ret.__class__.__name__))
+    logging.info("Create univariate batch criteria '%s'",
+                 ret.__class__.__name__)
     return ret
 
 
@@ -501,8 +515,7 @@ def __BivarFactory(args, cmdopts, scenario):
     criteria2 = __UnivarFactory(args, cmdopts, args.batch_criteria[1], scenario)
     ret = BivarBatchCriteria(criteria1, criteria2)
 
-    logging.info("Create BivariateBatchCriteria from {1},{2}".format(
-        ret.__class__.__name__,
-        ret.criteria1.__class__.__name__,
-        ret.criteria2.__class__.__name__))
+    logging.info("Create BivariateBatchCriteria from %s,%s",
+                 ret.criteria1.__class__.__name__,
+                 ret.criteria2.__class__.__name__)
     return ret

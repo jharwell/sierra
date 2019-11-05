@@ -134,7 +134,7 @@ class ExpCreator:
 
     def from_def(self, exp_def: XMLLuigi):
         """
-        Given a :class:`XMLLuigi` object containing all changes that should be made to all
+        Given a :class:`~xml_luigi.XMLLuigi` object containing all changes that should be made to all
         simulations in the experiment, use :class:`SimDefUniqueGenerator` to create addition changes
         unique to each simulation and then write out files to the filesystem.
         """
@@ -226,9 +226,10 @@ class BatchedExpCreator:
                                simulation runs comprising an experiment; directory name determined by
                                the batch criteria used.
         batch_output_root: Root directory for all experiment outputs (relative to current dir or
-                                absolute). Each experiment will get a directory 'exp<n>' in this
-                                directory for its outputs.
-        criteria: :class:`BatchCriteria` derived object instance created from cmdline definition.
+                           absolute). Each experiment will get a directory 'exp<n>' in this
+                           directory for its outputs.
+        criteria: :class:`~variables.batch_criteria.BatchCriteria` derived object instance created
+                  from cmdline definition. 
     """
 
     def __init__(self,

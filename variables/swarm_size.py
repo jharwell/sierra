@@ -44,7 +44,8 @@ class SwarmSize(bc.UnivarBatchCriteria):
 
     """
 
-    def __init__(self, cli_arg: str,
+    def __init__(self,
+                 cli_arg: str,
                  main_config: tp.Dict[str, str],
                  batch_generation_root: str,
                  size_list: tp.List[str]):

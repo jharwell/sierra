@@ -46,15 +46,15 @@ class PipelineStage1:
         Run stage 1 of the experiment pipeline.
         """
 
-        logging.info("Stage1: Generating input files for batched experiment in {0}...".format(
-            self.cmdopts['generation_root']))
-        logging.debug("Using '{0}'".format(self.cmdopts['time_setup']))
-        logging.debug("Using {0} physics engines".format(self.cmdopts['physics_n_engines']))
+        logging.info("Stage1: Generating input files for batched experiment in %s...",
+                     self.cmdopts['generation_root'])
+        logging.debug("Using '%s'", self.cmdopts['time_setup'])
+        logging.debug("Using %s physics engines", self.cmdopts['physics_n_engines'])
         self.creator.create(self.generator)
 
-        logging.info("Stage1: {0} input files generated in {1} experiments.".format(
-            sum([len(files) for r, d, files in os.walk(self.cmdopts['generation_root'])]),
-            sum([len(d) for r, d, files in os.walk(self.cmdopts['generation_root'])])))
+        logging.info("Stage1: %d input files generated in %d experiments.",
+                     sum([len(files) for r, d, files in os.walk(self.cmdopts['generation_root'])]),
+                     sum([len(d) for r, d, files in os.walk(self.cmdopts['generation_root'])]))
 
         # Computed during input generation and needed later for graph generation; not part of
         # default cmdopts dict so we grab it here

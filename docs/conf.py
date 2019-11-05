@@ -20,7 +20,7 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
-
+sys.path.append(os.path.abspath('_ext'))
 
 # -- General configuration ------------------------------------------------
 
@@ -40,6 +40,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.ifconfig',
               'sphinx.ext.viewcode',
               'sphinxarg.ext',
+              'xref',
               'sphinx_rtd_theme',
               'sphinxcontrib.napoleon',
               'sphinx.ext.autosummary']
@@ -89,6 +90,10 @@ pygments_style = 'sphinx'
 todo_include_todos = True
 
 autosummary_generate = True
+
+xref_links = {
+    "Harwell2019": ("Harwell2019", "https://www.ijcai.org/proceedings/2019/0048.pdf")
+}
 
 # -- Options for HTML output ----------------------------------------------
 

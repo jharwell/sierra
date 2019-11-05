@@ -78,7 +78,7 @@ class ExpRunner:
         # Catch the exception but do not raise it again so that additional experiments can still be
         # run if possible
         except subprocess.CalledProcessError as e:
-            logging.error("Experiment failed! return code={0}".format(e.returncode))
+            logging.error("Experiment failed! return code=%s", e.returncode)
             logging.error(e.output)
 
         elapsed = time.time() - start

@@ -16,28 +16,37 @@
 
 
 import os
+import typing as tp
 import copy
-import yaml
+from variables import batch_criteria as bc
 from .intra_exp_graph_generator import IntraExpGraphGenerator
 
 
 class BatchedIntraExpGraphGenerator:
-
     """
-    Generates all intra-experiment graphs from a batch of experiments.
+    Generates all intra-experiment graphs for all experiments in the batch. Does not generate
+    inter-experiment graphs (see :class:`~pipeline.stage4.InterExpGraphGenerator`).
 
     Attributes:
-      cmdopts(dict): Dictionary commandline attributes used during intra-experiment graph generation.
+        cmdopts: Dictionary of parsed cmdline options.
+        main_config: Dictionary of parsed main YAML configuration.
     """
 
-    def __init__(self, main_config, cmdopts):
+    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, str]):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
         self.main_config = main_config
 
-    def __call__(self, batch_criteria):
-        """Generate all intra-experiment graphs for all experiments in the batch."""
+    def __call__(self,
+                 controller_config: dict,
+                 intra_LN_config: dict,
+                 intra_HM_config: dict,
+                 batch_criteria: bc.BatchCriteria):
+        """
+        Generate all intra-experiment graphs for all experiments in the batch by creating and
+        calling :class:`~pipeline.stage4.IntraExpGraphGenerator` for each experiment in the batch.
+        """
         batch_output_root = self.cmdopts["output_root"]
         batch_graph_root = self.cmdopts["graph_root"]
         batch_generation_root = self.cmdopts['generation_root']
@@ -50,4 +59,8 @@ class BatchedIntraExpGraphGenerator:
             self.cmdopts["graph_root"] = os.path.join(batch_graph_root, item)
 
             if os.path.isdir(self.cmdopts["output_root"]) and self.main_config['sierra']['collate_csv_leaf'] != item:
-                IntraExpGraphGenerator(self.main_config, self.cmdopts)(batch_criteria)
+                IntraExpGraphGenerator(self.main_config,
+                                       controller_config,
+                                       intra_LN_config,
+                                       intra_HM_config,
+                                       self.cmdopts)(batch_criteria)

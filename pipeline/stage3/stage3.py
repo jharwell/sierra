@@ -18,8 +18,8 @@
 import os
 import yaml
 import logging
-from .batched_exp_csv_averager import BatchedExpCSVAverager
-from .batched_exp_video_renderer import BatchedExpVideoRenderer
+from .exp_csv_averager import BatchedExpCSVAverager
+from .exp_video_renderer import BatchedExpVideoRenderer
 
 
 class PipelineStage3:
@@ -56,8 +56,8 @@ class PipelineStage3:
             'ofile_leaf': self.cmdopts['render_cmd_ofile'],
             'config': self.main_config
         }
-        logging.info("Stage3: Rendering videos for batched experiment in {0}...".format(
-            self.cmdopts['generation_root']))
+        logging.info("Stage3: Rendering videos for batched experiment in %s...",
+                     self.cmdopts['generation_root'])
         renderer = BatchedExpVideoRenderer(render_params, self.cmdopts['output_root'])
         renderer.render()
         logging.info("Stage3: Rendering complete")
@@ -71,8 +71,8 @@ class PipelineStage3:
             'gen_stddev': self.cmdopts['gen_stddev'],
             'config': self.main_config,
         }
-        logging.info("Stage3: Averaging batched experiment outputs in {0}...".format(
-            self.cmdopts['generation_root']))
+        logging.info("Stage3: Averaging batched experiment outputs in %s...",
+                     self.cmdopts['generation_root'])
         averager = BatchedExpCSVAverager(avg_params, self.cmdopts['output_root'])
         averager.run()
         logging.info("Stage3: Averaging complete")

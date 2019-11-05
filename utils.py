@@ -14,10 +14,12 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
+"""
+Misc. functions used in mutiple places but that don't really fit anywhere.
+"""
 
 import pickle
 import os
-import typing as tp
 
 
 def unpickle_exp_def(exp_def_fpath):
@@ -41,8 +43,8 @@ def get_n_blocks(cmdopts, batch_criteria, exp_num):
         return cmdopts['n_blocks']
     exp_def = unpickle_exp_def(os.path.join(cmdopts["generation_root"],
                                             batch_criteria.gen_exp_dirnames(
-        cmdopts)[exp_num],
-        "exp_def.pkl"))
+                                                cmdopts)[exp_num],
+                                            "exp_def.pkl"))
 
     count = 0
     for path, attr, value in exp_def:

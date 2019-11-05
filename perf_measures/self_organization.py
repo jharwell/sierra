@@ -17,21 +17,23 @@
 
 import os
 import copy
-import pandas as pd
+import math
 import logging
+import pandas as pd
+
 from graphs.batch_ranged_graph import BatchRangedGraph
 from graphs.heatmap import Heatmap
 import perf_measures.common as common
-import math
 from variables.swarm_size import SwarmSize
 
 
 class SelfOrganizationFLUnivar:
     """
     Calculates the self-organization of the swarm configuration across a univariate batched set of
-    experiments within the same scenario from collated .csv data using fractional performance
+    experiments within the same scenario from collated ``.csv`` data using fractional performance
     losses due to inter-robot interference.
 
+    Only valid if the batch criteria was :class:`~variables.swarm_size.SwarmSize` derived.
     """
 
     def __init__(self, cmdopts, inter_perf_csv, ca_in_csv):
@@ -42,8 +44,12 @@ class SelfOrganizationFLUnivar:
         self.ca_in_csv = ca_in_csv
 
     def generate(self, batch_criteria):
-        logging.info(
-            "Univariate FL self-organization from {0}".format(self.cmdopts["collate_root"]))
+        """
+        Generates a :class:`~graphs.batch_ranged_graph.BatchRangedGraph` across swarm sizes of self
+        organization using :class:`perf_measures.common.FractionalLossesUnivar`, using the method
+        defined in :xref:`Harwell2019`.
+        """
+        logging.info("Univariate FL self-organization from %s", self.cmdopts["collate_root"])
         batch_exp_dirnames = batch_criteria.gen_exp_dirnames(self.cmdopts)
         fl = common.FractionalLossesUnivar(self.cmdopts,
                                            self.inter_perf_csv,
@@ -56,9 +62,10 @@ class SelfOrganizationFLUnivar:
         df_new[df_new.columns[0]] = 0.0
 
         for i in range(1, len(fl.columns)):
-            theta = fl[batch_exp_dirnames[i]] - \
-                float(swarm_sizes[i]) / float(swarm_sizes[i - 1]) * fl[batch_exp_dirnames[i - 1]]
-            df_new.loc[0, batch_exp_dirnames[i]] = 1.0 - 1.0 / math.exp(-theta)
+            df_new.loc[0, batch_exp_dirnames[i]] = calc_harwell2019(fl[batch_exp_dirnames[i]],
+                                                                    fl[batch_exp_dirnames[i - 1]],
+                                                                    swarm_sizes[i],
+                                                                    swarm_sizes[i - 1])
 
         stem_path = os.path.join(self.cmdopts["collate_root"], "pm-self-org-fl")
         df_new.to_csv(stem_path + ".csv", sep=';', index=False)
@@ -69,16 +76,16 @@ class SelfOrganizationFLUnivar:
                          title="Swarm Self-Organization Due To Sub-Linear Fractional Performance Losses",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="",
-                         xvals=batch_criteria.graph_xticks(self.cmdopts),
-                         legend=None,
-                         polynomial_fit=-1).generate()
+                         xvals=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
 
 class SelfOrganizationFLBivar:
     """
     Calculates the self-organization of the swarm configuration across a bivariate batched set of
-    experiments within the same scenario from collated .csv data using fractional performance
+    experiments within the same scenario from collated ``.csv`` data using fractional performance
     losses due to inter-robot interference.
+
+    Only valid if one of the batch criteria was :class:`~variables.swarm_size.SwarmSize` derived.
 
     """
 
@@ -90,7 +97,17 @@ class SelfOrganizationFLBivar:
         self.ca_in_csv = ca_in_csv
 
     def generate(self, batch_criteria):
-        logging.info("Bivariate FL self-organization from {0}".format(self.cmdopts["collate_root"]))
+        """
+        Generates a :class:`~graphs.heatmap.Heatmap` across swarm sizes of self organization from
+        :class:`~perf_measures.common.FractionalLossesBivar` data.
+
+        The Harwell2019 method is only defined for one dimensional data, and we are dealing with 2D
+        ``.csv`` files, so we project down the rows/across the columns as appropriate, depending on
+        which axis in the ``.csv`` the :class:`~variables.swarm_size.SwarmSize` derived batch
+        criteria is on.
+        """
+
+        logging.info("Bivariate FL self-organization from %s", self.cmdopts["collate_root"])
         fl = common.FractionalLossesBivar(self.cmdopts,
                                           self.inter_perf_csv,
                                           self.ca_in_csv,
@@ -125,15 +142,13 @@ class SelfOrganizationFLBivar:
         for i in range(0, len(fl.index)):
             for j in range(0, len(fl.columns)):
                 # No self org possible with 1 robot
-                if 0 == i:
+                if i == 0:
                     so_df.iloc[i, j] = 0
                     continue
-                n_robots_i = swarm_sizes[i][j]
-                n_robots_i1 = swarm_sizes[i - 1][j]
-
-                theta = fl.iloc[i, j] - float(n_robots_i) / float(n_robots_i1) * \
-                    fl.iloc[i - 1, j]
-                so_df.iloc[i, j] = 1.0 - 1.0 / math.exp(-theta)
+                so_df.iloc[i, j] = calc_harwell2019(fl.iloc[i, j],
+                                                    fl.iloc[i - 1, j],
+                                                    swarm_sizes[i][j],
+                                                    swarm_sizes[i - 1][j])
 
         return so_df
 
@@ -144,14 +159,35 @@ class SelfOrganizationFLBivar:
         for i in range(0, len(fl.index)):
             for j in range(0, len(fl.columns)):
                 # No self org possible with 1 robot
-                if 0 == j:
+                if j == 0:
                     so_df.iloc[i, j] = 0
                     continue
 
-                n_robots_j = swarm_sizes[i][j]
-                n_robots_j1 = swarm_sizes[i][j - 1]
-
-                theta = fl.iloc[i, j] - float(n_robots_j) / float(n_robots_j1) * \
-                    fl.iloc[i, j - 1]
-                so_df.iloc[i, j] = 1.0 - 1.0 / math.exp(-theta)
+                so_df.iloc[i, j] = calc_harwell2019(fl.iloc[i, j],
+                                                    fl.iloc[i, j - 1],
+                                                    swarm_sizes[i][j],
+                                                    swarm_sizes[i][j - 1])
         return so_df
+
+
+def calc_harwell2019(fl_x: float, fl_x1: float, n_robots_x: int, n_robots_x1: int):
+    r"""
+    Calculates the self organization for a particular swarm size N, given fractional performance
+    losses for :math:`m_i` and a smaller swarm size :math:`m_{i-1}`. Equation taken from
+    :xref:`Harwell2019`.
+
+    .. math::
+       \begin{equation}
+       Z(m_i,\kappa) = \sum_{t\in{T}}1 - \frac{1}{1 + e^{-\theta_Z(m_i,\kappa,t)}}
+       \end{equation}
+
+    where
+
+    .. math::
+       \begin{equation}
+       \theta_Z(m_i,\kappa,t) = P_{lost}(m_i,\kappa,t) - \frac{m_i}{m_{i-1}}{P_{lost}(m_{i-1},\kappa,t)}
+       \end{equation}
+
+    """
+    theta = fl_x - float(n_robots_x) / float(n_robots_x1) * fl_x1
+    return 1.0 - 1.0 / (1 + math.exp(-theta))

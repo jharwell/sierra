@@ -41,8 +41,8 @@ class DynamicCache(BaseVariable):
         return [set([
             (".//loop_functions/caches/dynamic", "enable", "true"),
             (".//loop_functions/caches/static", "enable", "false"),
-            (".//loop_functions/caches/dynamic", "min_dist", "{0}".format(d[0] * 0.20,
-                                                                          d[1] * 0.20)),
+            (".//loop_functions/caches/dynamic", "min_dist", "{0}".format(min(d[0] * 0.20,
+                                                                              d[1] * 0.20))),
 
             (".//loop_functions/caches", "dimension", "{0}".format(max(d[0] * 0.20,
                                                                        d[1] * 0.20))),

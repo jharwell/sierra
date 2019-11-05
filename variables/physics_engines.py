@@ -21,8 +21,9 @@ without overlap.
 
 """
 
-from variables.base_variable import BaseVariable
 import typing as tp
+
+from variables.base_variable import BaseVariable
 
 
 class PhysicsEngines(BaseVariable):
@@ -33,11 +34,11 @@ class PhysicsEngines(BaseVariable):
         engine_type: The type of physics engine to use (one supported by ARGoS).
         n_engines: # of engines. Can be one of [1,4,8,16,24].
         iter_per_tick: # of iterations physics engines should perform per tick.
-        layout: Engine arrangement method. Can be one of: {uniform_grid2D}.
+        layout: Engine arrangement method. Can be one of:
 
                 - ``uniform_grid2D``: Arrange the engines in a uniform 2D grid that extends up to
-                the maximum height in Z. For 2D engines, this is the maximum height of objects that
-                can be present in the arena (I think).
+                  the maximum height in Z. For 2D engines, this is the maximum height of objects
+                  that can be present in the arena (I think).
 
         extents: List of (X,Y,Z) tuples of extents onto which physics engines should be mapped.
     """

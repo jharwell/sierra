@@ -14,32 +14,38 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
+"""
+Measures for swarm performance in foraging tasks via block collection in univariate and bivariate
+batched experiments.
+"""
 
 import os
 import copy
-import pandas as pd
-import numpy as np
 import logging
+import typing as tp
+import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
 from graphs.heatmap import Heatmap
+import perf_measures.common
+import variables.batch_criteria as bc
 
 
 class BlockCollectionUnivar:
     """
-    Generates a stacked line graph from the cumulative blocks collected count of the swarm
-    configuration across a univariate batched set of experiments within the same scenario from
-    collated .csv data.
+    Generates a :class:`~graphs.stacked_line_graph.StackedLineGraph` from the cumulative blocks
+    collected count of the swarm configuration across a univariate batched set of experiments within
+    the same scenario from collated ``.csv`` data.
 
     """
 
-    def __init__(self, cmdopts, blocks_collected_csv):
+    def __init__(self, cmdopts: tp.Dict[str, str], blocks_collected_csv: str):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
         self.blocks_collected_stem = blocks_collected_csv.split('.')[0]
 
-    def generate(self, batch_criteria):
-        logging.info("Univariate block collection from {0}".format(self.cmdopts["collate_root"]))
+    def generate(self, batch_criteria: bc.BatchCriteria):
+        logging.info("Univariate block collection from %s", self.cmdopts["collate_root"])
         stddev_ipath = os.path.join(self.cmdopts["collate_root"],
                                     self.blocks_collected_stem + '.stddev')
         stddev_opath = os.path.join(self.cmdopts["collate_root"],
@@ -59,11 +65,9 @@ class BlockCollectionUnivar:
                          title="Swarm Blocks Collected",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="# Blocks",
-                         xvals=batch_criteria.graph_xticks(self.cmdopts),
-                         legend=None,
-                         polynomial_fit=-1).generate()
+                         xvals=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
-    def __gen_stddev(self, ipath, opath):
+    def __gen_stddev(self, ipath: str, opath: str):
         total_stddev_df = pd.read_csv(ipath, sep=';')
         cum_stddev_df = pd.DataFrame(columns=total_stddev_df.columns)
 
@@ -85,19 +89,20 @@ class BlockCollectionUnivar:
 
 class BlockCollectionBivar:
     """
-    Generates a 2D heatmap from the cumulative blocks collected count of the swarm configuration
-    across a bivariate batched set of experiments within the same scenario from collated .csv data.
+    Generates a :class:`graphs.heatmap.Heatmap` from the cumulative blocks collected count of the
+    swarm configuration across a bivariate batched set of experiments within the same scenario from
+    collated ``.csv`` data.
 
     """
 
-    def __init__(self, cmdopts, blocks_collected_csv):
+    def __init__(self, cmdopts: tp.Dict[str, str], blocks_collected_csv: str):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
         self.blocks_collected_stem = blocks_collected_csv.split('.')[0]
 
-    def generate(self, batch_criteria):
-        logging.info("Bivariate block collection from {0}".format(self.cmdopts["collate_root"]))
+    def generate(self, batch_criteria: bc.BatchCriteria):
+        logging.info("Bivariate block collection from %s", self.cmdopts["collate_root"])
         stddev_ipath = os.path.join(self.cmdopts["collate_root"],
                                     self.blocks_collected_stem + '.stddev')
         stddev_opath = os.path.join(self.cmdopts["collate_root"],
@@ -120,7 +125,7 @@ class BlockCollectionBivar:
                 xtick_labels=batch_criteria.graph_yticklabels(self.cmdopts),
                 ytick_labels=batch_criteria.graph_xticklabels(self.cmdopts)).generate()
 
-    def __gen_stddev(self, ipath, opath):
+    def __gen_stddev(self, ipath: str, opath: str):
         total_stddev_df = pd.read_csv(ipath, sep=';')
         cum_stddev_df = pd.DataFrame(columns=total_stddev_df.columns)
 
@@ -129,21 +134,17 @@ class BlockCollectionBivar:
 
         cum_stddev_df.to_csv(opath, sep=';', index=False)
 
-    def __gen_csv(self, ipath, opath):
+    def __gen_csv(self, ipath: str, opath: str):
         assert(os.path.exists(ipath)), "FATAL: {0} does not exist".format(ipath)
         total_df = pd.read_csv(ipath, sep=';')
         cum_df = pd.DataFrame(columns=total_df.columns,
                               index=total_df.index)
 
         for i in range(0, len(cum_df.index)):
-            for col in cum_df.columns:
-                # When collated, the column of data is written as a numpy array to string, so we
-                # have to reparse it as an actual array
-                arr = np.fromstring(total_df.loc[i, col][1:-1], dtype=np.float, sep=' ')
-
-                # We want the CUMULATIVE count of blocks, which will be the last element in this
-                # array. The second index is an artifact of how numpy represents scalars (1 element
-                # arrays).
-                cum_df.loc[i, col] = arr[-1:][0]
+            for j in range(0, len(cum_df.columns)):
+                cum_df.iloc[i, j] = perf_measures.common.csv_3D_value_iloc(total_df,
+                                                                           i,
+                                                                           j,
+                                                                           slice(-1, None))
 
         cum_df.to_csv(opath, sep=';', index=False)
