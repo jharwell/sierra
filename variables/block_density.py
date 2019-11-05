@@ -118,7 +118,7 @@ class BlockConstantDensity(cd.ConstantDensity):
         return [str(x) + r' $m^2$' for x in self.graph_xticks(cmdopts, exp_dirs)]
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
-        return r"Arena Area ($m^2$)".format(self.target_density)
+        return r"Block Density ({0}\%)".format(self.target_density)
 
     def pm_query(self, query) -> bool:
         return query in ['blocks-collected']
@@ -150,7 +150,7 @@ def Factory(cli_arg: str, main_config:
                                       attr['arena_size_inc'])]
     else:
         raise NotImplementedError(
-            "Unsupported block dstribution for constant density experiments: Only SS,DS,QS,RN supported")
+            "Unsupported block dstribution '{0}': Only SS,DS,QS,RN supported".format(kw['dist_type']))
 
     def __init__(self):
         BlockConstantDensity.__init__(self,

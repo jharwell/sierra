@@ -180,9 +180,10 @@ class BatchedExpDefGenerator:
                            absolute). Each experiment will get a directory 'exp<n>' in this
                            directory for its outputs.
 
-        criteria: :class:`BatchCriteria` derived object instance created from cmdline definition.
-                  controller_name: Name of controller generator to use.  scenario_basename: Name of
-                  scenario generator to use.
+        criteria: :class:`~variables.batch_criteria.BatchCriteria` derived object instance created
+                  from cmdline definition.
+        controller_name: Name of controller generator to use.
+        scenario_basename: Name of scenario generator to use.
 
     """
 

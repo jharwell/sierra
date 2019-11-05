@@ -66,7 +66,7 @@ class BatchCriteria(ev.base_variable.BaseVariable):
             for c in exp:
                 if c[0] == ".//arena" and c[1] == "size":
                     x, y, z = c[2].split(',')
-                    dims.append((int(x), int(y)))
+                    dims.append((int(x), int(y), int(z)))
         assert len(dims) > 0, "Scenario dimensions not contained in batch criteria"
         return dims
 
@@ -140,8 +140,9 @@ class BatchCriteria(ev.base_variable.BaseVariable):
         raise NotImplementedError
 
     def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> tp.List[str]:
-        """Generate list of strings from the current changelist to use for directory names within a batched
-        experiment.
+        """
+        Generate list of strings from the current changelist to use for directory names within a
+        batched experiment.
 
         Returns:
             List of directory names for current experiment
@@ -334,15 +335,25 @@ class BivarBatchCriteria(BatchCriteria):
         ret = self.criteria1.gen_tag_addlist().extend(self.criteria2.gen_tag_addlist())
         return ret
 
-    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> tp.List[str]:
+    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str], what: str = 'all') -> tp.List[str]:
+        """
+        Generates a SORTED list of strings for all X/Y axis directories for the bivariate
+        experiments, or both X and Y.
+        """
         list1 = self.criteria1.gen_exp_dirnames(cmdopts)
         list2 = self.criteria2.gen_exp_dirnames(cmdopts)
         ret = []
-        for l1 in list1:
-            for l2 in list2:
-                ret.append('+'.join(['c1-' + l1, 'c2-' + l2]))
 
-        return ret
+        if 'x' == what:
+            return ['c1-' + x for x in list1]
+        elif 'y' == what:
+            return ['c2-' + y for y in list2]
+        else:
+            for l1 in list1:
+                for l2 in list2:
+                    ret.append('+'.join(['c1-' + l1, 'c2-' + l2]))
+
+            return ret
 
     def swarm_sizes(self, cmdopts: tp.Dict[str, str]) -> tp.List[int]:
         """Generate a 2D array of swarm swarm sizes used the batched experiment, in the same order as the
@@ -501,7 +512,7 @@ def __BivarFactory(args, cmdopts, scenario):
     criteria2 = __UnivarFactory(args, cmdopts, args.batch_criteria[1], scenario)
     ret = BivarBatchCriteria(criteria1, criteria2)
 
-    logging.info("Create BivariateBatchCriteria from {1},{2}".format(
+    logging.info("Create BivariateBatchCriteria {0} from {1},{2}".format(
         ret.__class__.__name__,
         ret.criteria1.__class__.__name__,
         ret.criteria2.__class__.__name__))

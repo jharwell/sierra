@@ -211,13 +211,8 @@ class ScalabilityBivar:
     experiments within the same scenario from collated .csv data in various ways.
     """
 
-    def generate(self, cmdopts, batch_criteria):
-        logging.info("Bivariate scalability from {0}".format(cmdopts["collate_root"]))
-
-        main_config = yaml.load(open(os.path.join(cmdopts['config_root'], 'main.yaml')))
-
-        inter_perf_csv = main_config['sierra']['perf']['inter_perf_csv']
-        ca_in_csv = main_config['sierra']['perf']['ca_in_csv']
+    def generate(self, inter_perf_csv, ca_in_csv, cmdopts, batch_criteria):
+        logging.info("Bivariate scalability from %s", cmdopts["collate_root"])
 
         e = EfficiencyBivar(cmdopts, inter_perf_csv)
         e.generate(e.calculate(batch_criteria), batch_criteria)

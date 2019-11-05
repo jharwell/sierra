@@ -22,6 +22,7 @@ import numpy as np
 import logging
 from graphs.batch_ranged_graph import BatchRangedGraph
 from graphs.heatmap import Heatmap
+import perf_measures.common
 
 
 class BlockCollectionUnivar:
@@ -39,7 +40,7 @@ class BlockCollectionUnivar:
         self.blocks_collected_stem = blocks_collected_csv.split('.')[0]
 
     def generate(self, batch_criteria):
-        logging.info("Univariate block collection from {0}".format(self.cmdopts["collate_root"]))
+        logging.info("Univariate block collection from %s", self.cmdopts["collate_root"])
         stddev_ipath = os.path.join(self.cmdopts["collate_root"],
                                     self.blocks_collected_stem + '.stddev')
         stddev_opath = os.path.join(self.cmdopts["collate_root"],
@@ -59,9 +60,7 @@ class BlockCollectionUnivar:
                          title="Swarm Blocks Collected",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="# Blocks",
-                         xvals=batch_criteria.graph_xticks(self.cmdopts),
-                         legend=None,
-                         polynomial_fit=-1).generate()
+                         xvals=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
     def __gen_stddev(self, ipath, opath):
         total_stddev_df = pd.read_csv(ipath, sep=';')
@@ -97,7 +96,7 @@ class BlockCollectionBivar:
         self.blocks_collected_stem = blocks_collected_csv.split('.')[0]
 
     def generate(self, batch_criteria):
-        logging.info("Bivariate block collection from {0}".format(self.cmdopts["collate_root"]))
+        logging.info("Bivariate block collection from %s", self.cmdopts["collate_root"])
         stddev_ipath = os.path.join(self.cmdopts["collate_root"],
                                     self.blocks_collected_stem + '.stddev')
         stddev_opath = os.path.join(self.cmdopts["collate_root"],
@@ -136,14 +135,10 @@ class BlockCollectionBivar:
                               index=total_df.index)
 
         for i in range(0, len(cum_df.index)):
-            for col in cum_df.columns:
-                # When collated, the column of data is written as a numpy array to string, so we
-                # have to reparse it as an actual array
-                arr = np.fromstring(total_df.loc[i, col][1:-1], dtype=np.float, sep=' ')
-
-                # We want the CUMULATIVE count of blocks, which will be the last element in this
-                # array. The second index is an artifact of how numpy represents scalars (1 element
-                # arrays).
-                cum_df.loc[i, col] = arr[-1:][0]
+            for j in range(0, len(cum_df.columns)):
+                cum_df.iloc[i, j] = perf_measures.common._csv_3D_value_iloc(total_df,
+                                                                            i,
+                                                                            j,
+                                                                            slice(-1, None))
 
         cum_df.to_csv(opath, sep=';', index=False)

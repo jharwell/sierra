@@ -13,12 +13,42 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-
+"""
+Class for averaging ``.csv`` files as part of stage 3 of the experimental pipeline.
+"""
 
 import os
 import re
-import pandas as pd
 import logging
+import pandas as pd
+
+
+class BatchedExpCSVAverager:
+
+    """
+    Averages the .csv output files for each experiment in the specified batch directory.
+
+    Attributes:
+      ro_params(dict): Dictionary of read-only parameters for batch averaging
+      batch_output_root(str): Directory for averaged .csv output (relative to current dir or absolu
+
+    """
+
+    def __init__(self, ro_params, batch_output_root):
+
+        self.ro_params = ro_params
+        self.batch_output_root = batch_output_root
+
+    def run(self):
+        """Average .csv output files for all experiments in the batch."""
+        # Ignore the folder for .csv files collated across experiments within a batch
+        experiments = [item for item in os.listdir(self.batch_output_root) if item not in [
+            self.ro_params['config']['sierra']['collate_csv_leaf']]]
+        for exp in experiments:
+            path = os.path.join(self.batch_output_root, exp)
+
+            if os.path.isdir(path):
+                ExpCSVAverager(self.ro_params, path).run()
 
 
 class ExpCSVAverager:
@@ -66,7 +96,7 @@ class ExpCSVAverager:
     def _average_csvs(self):
         """Averages the CSV files found in the output save path"""
 
-        logging.info('Averaging results in ' + self.exp_output_root + "...")
+        logging.info('Averaging results in %s...', self.exp_output_root)
 
         # Maps unique .csv stem to the averaged dataframe
         csvs = {}
@@ -116,7 +146,7 @@ class ExpCSVAverager:
         experiments = [exp for exp in os.listdir(self.exp_output_root) if exp not in [
             self.avgd_output_leaf]]
 
-        logging.info('Verifying results in ' + self.exp_output_root + "...")
+        logging.info('Verifying results in %s...', self.exp_output_root)
 
         for exp1 in experiments:
             csv_root1 = os.path.join(self.exp_output_root,

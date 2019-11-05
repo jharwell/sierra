@@ -79,7 +79,7 @@ def regen_from_exp(sierra_root: str,
                             scenario,
                             controller,
                             template_basename)
-    logging.info('Generated batch root {0}'.format(root))
+    logging.info('Generated batch root %s', root)
     return {
         'generation_root': os.path.join(root, "exp-inputs"),
         'output_root': os.path.join(root, "exp-outputs"),

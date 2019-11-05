@@ -13,13 +13,21 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
+"""
+Contains main class implementing stage 3 of the experimental pipeline: ``.csv`` averaging of
+simulation results and (optionally) video rendering.
 
+Video rendering, if it is performed, is done here rather than in stage 4, because it deals with
+"raw" simulation outptuts, where everything in stage 4 deals with averaged/collated data (well, I
+guess you `could` average simulation saved frames, and generate a video from it, but it wouldn't
+make much sense to do so).
+"""
 
 import os
-import yaml
 import logging
-from .batched_exp_csv_averager import BatchedExpCSVAverager
-from .batched_exp_video_renderer import BatchedExpVideoRenderer
+import yaml
+from .exp_csv_averager import BatchedExpCSVAverager
+from .exp_video_renderer import BatchedExpVideoRenderer
 
 
 class PipelineStage3:
@@ -56,8 +64,8 @@ class PipelineStage3:
             'ofile_leaf': self.cmdopts['render_cmd_ofile'],
             'config': self.main_config
         }
-        logging.info("Stage3: Rendering videos for batched experiment in {0}...".format(
-            self.cmdopts['generation_root']))
+        logging.info("Stage3: Rendering videos for batched experiment in %s...",
+                     self.cmdopts['generation_root'])
         renderer = BatchedExpVideoRenderer(render_params, self.cmdopts['output_root'])
         renderer.render()
         logging.info("Stage3: Rendering complete")
@@ -71,8 +79,8 @@ class PipelineStage3:
             'gen_stddev': self.cmdopts['gen_stddev'],
             'config': self.main_config,
         }
-        logging.info("Stage3: Averaging batched experiment outputs in {0}...".format(
-            self.cmdopts['generation_root']))
+        logging.info("Stage3: Averaging batched experiment outputs in %s...",
+                     self.cmdopts['generation_root'])
         averager = BatchedExpCSVAverager(avg_params, self.cmdopts['output_root'])
         averager.run()
         logging.info("Stage3: Averaging complete")

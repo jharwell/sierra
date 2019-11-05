@@ -14,11 +14,15 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
+"""
+Contains main class implementing stage 2 of the experimental pipeline: running experiments (locally
+or on HPC resources).
+"""
 
-from .batched_exp_runner import BatchedExpRunner
 import logging
 import typing as tp
 import variables.batch_criteria as bc
+from .exp_runner import BatchedExpRunner
 
 
 class PipelineStage2:

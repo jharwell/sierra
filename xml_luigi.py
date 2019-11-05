@@ -73,7 +73,7 @@ class XMLLuigi:
             el.attrib[attr] = value   # pytype: disable=attribute-error
         else:
             if not noprint:
-                logging.warning("No attribute '{1}' found in node '{0}'".format(path, attr))
+                logging.warning("No attribute '%s' found in node '%s'", attr, path)
 
     def has_tag(self, path):
         return self.root.find(path) is not None
@@ -114,7 +114,7 @@ class XMLLuigi:
             parent.remove(victim)   # pytype: disable=attribute-error
         except (AttributeError, TypeError):
             if not noprint:
-                logging.warning("No victim '{0}' found in parent '{1}'".format(tag, path))
+                logging.warning("No victim '%s' found in parent '%s'", tag, path)
             pass
 
     def tag_add(self, path, tag, attr={}):

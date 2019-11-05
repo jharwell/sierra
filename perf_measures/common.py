@@ -77,9 +77,11 @@ class ProjectivePerformanceCalculatorUnivar:
                                                                                          similarity)
         return proj_df
 
+    @staticmethod
     def __calc_positive(observed, exp0, similarity):
         return observed / (exp0 * similarity)
 
+    @staticmethod
     def __calc_negative(observed, exp0, similarity):
         return observed / (exp0 * (1.0 - similarity))
 
@@ -163,9 +165,11 @@ class ProjectivePerformanceCalculatorBivar:
 
         return proj_df
 
+    @staticmethod
     def __calc_positive(obs, prev_obs, similarity):
         return obs / (prev_obs * similarity)
 
+    @staticmethod
     def __calc_negative(obs, prev_obs, similarity):
         return obs / (prev_obs * (1.0 - similarity))
 
@@ -187,16 +191,16 @@ class FractionalLosses:
         # simulations/experiments, so we pick exp0 for simplicity to calculate
         exp_def = utils.unpickle_exp_def(os.path.join(cmdopts["generation_root"],
                                                       batch_criteria.gen_exp_dirnames(
-            self.cmdopts)[0],
-            "exp_def.pkl"))
+                                                          self.cmdopts)[0],
+                                                      "exp_def.pkl"))
 
         # Integers always seem to be pickled as floats, so you can't convert directly without an
         # exception.
-        for e in exp_def:
-            if './/experiment' == e[0] and 'length' == e[1]:
-                length = int(float(e[2]))
-            elif './/experiment' == e[0] and 'ticks_per_second' == e[1]:
-                ticks = int(float(e[2]))
+        for path, attr, value in exp_def:
+            if './/experiment' == path and 'length' == attr:
+                length = int(float(value))
+            elif './/experiment' == path and 'ticks_per_second' == attr:
+                ticks = int(float(value))
         self.duration = length * ticks
 
 
@@ -222,16 +226,17 @@ class FractionalLossesUnivar(FractionalLosses):
 
         # First calculate the time lost per timestep for a swarm of size N due to collision
         # avoidance interference
-        plost_n = self.__calc_plost_n(ca_in_df, perf_df, batch_criteria)
+        plost_n = FractionalLossesUnivar.__calc_plost_n(ca_in_df, perf_df, batch_criteria)
 
         # Calculate fractional losses for all swarm sizes
-        fl_df = self.__calc_fl(perf_df, plost_n, scale_cols)
+        fl_df = FractionalLossesUnivar.__calc_fl(perf_df, plost_n, scale_cols)
 
         # By definition, no fractional losses with 1 robot
         fl_df.insert(0, exp0_dirname, 0.0)
         return fl_df
 
-    def __calc_plost_n(self, ca_in_df, perf_df, batch_criteria):
+    @staticmethod
+    def __calc_plost_n(ca_in_df, perf_df, batch_criteria):
         """
         Calculated as follows for all swarm sizes N in the batch:
 
@@ -259,6 +264,7 @@ class FractionalLossesUnivar(FractionalLosses):
                                                    ca_in_df.tail(1)[exp0_dir] * n_robots) / n_robots
         return plost_n
 
+    @staticmethod
     def __calc_fl(self, perf_df, plost_n, scale_cols):
         """
         Calculate fractional losses as:

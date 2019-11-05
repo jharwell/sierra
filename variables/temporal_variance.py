@@ -191,7 +191,7 @@ class TemporalVarianceParser():
             ret['waveform_param'] = int(res.group(0)[5:])
 
         # Parse swarm size (optional)
-        res = re.search("\.Z[0-9]+", criteria_str)
+        res = re.search(r".Z[0-9]+", criteria_str)
         if res is not None:
             ret['swarm_size'] = int(res.group(0)[2:])
 
