@@ -589,17 +589,42 @@ class Cmdline:
                             help="""
 
                             Comma separated list of names to use on the legend for the generated intra-scenario
-                            controller comparison graphs, specified in the sameorder as the `--controllers-list`.
+                            controller comparison graphs (if applicable), specified in the same order as the
+                            `--controllers-list`. 
 
                             Use=stage{5}; can be omitted otherwise. If omitted, the raw controller names will be used.
                             """)
-        stage5.add_argument("--normalize-comparisons",
+        stage5.add_argument("--comparison-type",
+                            choices=['raw', 'scale3D', 'scale2D', 'diff3D', 'diff2D'],
                             help="""
 
-                            Specify that controller comparisons should be normalized against the controller of primary interest
+                            Specify how controller comparisons should be performed (currently only used for bivariate
+                            controller comparisons). Options are:
+
+                            - ``raw`` - Output raw performance measures. This results in a set single stacked 3D surface plots
+                              comparing all controllers (identical plots, but view from different angles). Uses
+                              ``--controllers-legend`` if passed for legend.
+
+                            - ``scale3D`` - Scale controller performance measures against those of the controller
+                              of primary interest by dividing. This results in a set single stacked 3D surface plots
+                              comparing all controllers (identical plots, but view from different angles). Uses
+                              ``--controllers-legend`` if passed for legend.
+
+                            - ``scale2D`` - Scale controller performance measures against those of the controller
+                              of primary interest by dividing. This results in a set of 2D heatmaps, one for each
+                              controller paired against the primary controller of interest.
+
+                            - ``diff3D`` - Subtract the performance measure of the controller of primary interest from
+                              each controller (including the primary). This results in a set single stacked 3D surface plots
+                              comparing all controllers (identical plots, but view from different angles), in which the
+                              controller of primary interest forms an (X,Y) plane at Z=0. Uses
+                              ``--controllers-legend`` if passed for legend.
+
+                            - ``diff2D`` - Subtract the performance measure of the controller of primary interest
+                              against all other controllers, pairwise, outputting one 2D heatmap per comparison.
 
                             """,
-                            action='store_true')
+                            default='raw')
 
         stage5.add_argument("--bc-univar",
                             help="""

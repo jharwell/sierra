@@ -34,9 +34,8 @@ class PipelineStage5:
 
     Attributes:
         controllers: List of controllers to compare.
-        norm_comp: Should comparisons be normalized against a controller of primary interest?
         cmdopts: Dictionary of parsed cmdline parameters.
-        main_config Dictionary of parsed main YAML configuration.
+        main_config: Dictionary of parsed main YAML configuration.
         stage5_config: Dictionary of parsed stage5 YAML configuration.
         output_roots: Dictionary containing output directories for intra- and inter-scenario graph
                       generation.
@@ -50,28 +49,30 @@ class PipelineStage5:
         self.stage5_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
                                                          'stage5.yaml')),
                                        yaml.FullLoader)
+        self.controllers = self.cmdopts['controllers_list'].split(',')
         self.output_roots = {
-            'cc_graphs': os.path.join(self.cmdopts['sierra_root'], "cc-graphs"),
-            'cc_csvs': os.path.join(self.cmdopts['sierra_root'], "cc-csvs"),
+            'cc_graphs': os.path.join(self.cmdopts['sierra_root'],
+                                      '+'.join(self.controllers) + "-cc-graphs"),
+            'cc_csvs': os.path.join(self.cmdopts['sierra_root'],
+                                    '+'.join(self.controllers) + "-cc-csvs"),
         }
-
+        print(self.output_roots)
         for v in self.output_roots.values():
             os.makedirs(v, exist_ok=True)
 
     def run(self, cli_args):
-        controllers = self.cmdopts['controllers_list'].split(',')
         if self.cmdopts['controllers_legend'] is not None:
             legend = self.cmdopts['controllers_legend'].split(',')
         else:
-            legend = controllers
+            legend = self.controllers
 
-        self.__verify_controllers(controllers)
+        self.__verify_controllers(self.controllers)
 
-        logging.info("Stage5: Inter-batch controller comparison of {0}...".format(controllers))
+        logging.info("Stage5: Inter-batch controller comparison of {0}...".format(self.controllers))
 
         if cli_args.bc_univar:
             comparator = UnivarIntraScenarioComparator(
-                controllers,
+                self.controllers,
                 self.output_roots['cc_csvs'],
                 self.output_roots['cc_graphs'],
                 self.cmdopts,
@@ -79,7 +80,7 @@ class PipelineStage5:
                 self.main_config)
         else:
             comparator = BivarIntraScenarioComparator(
-                controllers,
+                self.controllers,
                 self.output_roots['cc_csvs'],
                 self.output_roots['cc_graphs'],
                 self.cmdopts,
@@ -88,7 +89,7 @@ class PipelineStage5:
 
         comparator(graphs=self.stage5_config['intra_scenario']['graphs'],
                    legend=legend,
-                   norm_comp=self.cmdopts['normalize_comparisons'])
+                   comp_type=self.cmdopts['comparison_type'])
 
         logging.info("Stage5: Inter-batch controller comparison complete")
 

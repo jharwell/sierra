@@ -40,6 +40,7 @@ class Heatmap:
 
         self.xtick_labels = kwargs.get('xtick_labels', None)
         self.ytick_labels = kwargs.get('ytick_labels', None)
+        self.colorbar_label = kwargs.get('zlabel', None)
 
     def generate(self):
         if not os.path.exists(self.input_csv_fpath):
@@ -47,14 +48,16 @@ class Heatmap:
 
         df = pd.read_csv(self.input_csv_fpath, sep=';')
         fig, ax = plt.subplots()
-        plt.imshow(df, cmap='coolwarm', interpolation='nearest')
+        plt.imshow(df, cmap='seismic', interpolation='sinc')
 
         plt.xlabel(self.xlabel, fontsize=18)
         plt.ylabel(self.ylabel, fontsize=18)
         self.__plot_ticks(ax)
 
         plt.title(self.title, fontsize=24)
-        plt.colorbar(fraction=0.046, pad=0.04)
+        bar = plt.colorbar(fraction=0.046, pad=0.04)
+        if self.colorbar_label is not None:
+            bar.ax.set_ylabel(self.colorbar_label)
         ax.tick_params(labelsize=12)
 
         fig = ax.get_figure()

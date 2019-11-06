@@ -51,7 +51,7 @@ class StackedSurfaceGraph:
         self.zlabel = kwargs['zlabel']
         self.xtick_labels = kwargs['xtick_labels']
         self.ytick_labels = kwargs['ytick_labels']
-        self.norm_comp = kwargs['norm_comp']
+        self.comp_type = kwargs['comp_type']
 
     def generate(self):
         dfs = []
@@ -86,12 +86,15 @@ class StackedSurfaceGraph:
         ax.set_xlabel('\n' * max_xlen + self.xlabel, fontsize=18)
         ax.set_ylabel('\n' * max_ylen + self.ylabel, fontsize=18)
 
-        for i in range(0, len(dfs)):
-            if self.norm_comp:
-                ax.plot_surface(X, Y, dfs[i] / dfs[0], cmap=colors[i],
-                                alpha=0.75)
-            else:
-                ax.plot_surface(X, Y, dfs[i], cmap=colors[i], alpha=0.75)
+        ax.plot_surface(X, Y, dfs[0], cmap=colors[0])
+        for i in range(1, len(dfs)):
+            if 'raw' == self.comp_type:
+                plot_df = dfs[i]
+            elif 'scale3D' == self.comp_type:
+                plot_df = dfs[i] / dfs[0]
+            elif 'diff3D':
+                plot_df = dfs[i] - dfs[0]
+            ax.plot_surface(X, Y, plot_df, cmap=colors[i], alpha=0.5)
 
         self.__plot_ticks(ax, x, y)
         self.__plot_legend(ax, legend_cmap_handles, legend_handler_map)
@@ -142,9 +145,13 @@ class StackedSurfaceGraph:
         """
         for angle in range(0, 360, 60):
             ax.view_init(elev=None, azim=angle)
-            components = self.output_fpath.split('.')
-            path = ''.join(components[0:-2]) + '_' + str(angle) + '.' + components[-1]
-            fig.savefig(path, bbox_inches='tight', dpi=100, pad_inches=0)
+            # The path we are passed may contain dots from the controller same, so we extract the
+            # leaf of that for manipulation to add the angle of the view right before the file
+            # extension.
+            path, leaf = os.path.split(self.output_fpath)
+            leaf = leaf.split('.')
+            leaf = ''.join(leaf[0:-2]) + '_' + str(angle) + '.' + leaf[-1]
+            fig.savefig(os.path.join(path, leaf), bbox_inches='tight', dpi=100, pad_inches=0)
 
 
 class HandlerColormap(mpl.legend_handler.HandlerBase):

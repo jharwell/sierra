@@ -18,10 +18,13 @@
 import os
 import copy
 import logging
+import glob
+import re
 import typing as tp
 import pandas as pd
 
 from graphs.stacked_surface_graph import StackedSurfaceGraph
+from graphs.heatmap import Heatmap
 import variables.batch_criteria as bc
 import pipeline.root_dirpath_generator as rdg
 
@@ -39,8 +42,7 @@ class BivarIntraScenarioComparator:
                  cc_graph_root: str,
                  cmdopts: tp.Dict[str, str],
                  cli_args: dict,
-                 main_config: dict,
-                 ):
+                 main_config: dict):
         self.controllers = controllers
         self.cmdopts = cmdopts
         self.cli_args = cli_args
@@ -51,7 +53,7 @@ class BivarIntraScenarioComparator:
     def __call__(self,
                  graphs: dict,
                  legend: tp.List[str],
-                 norm_comp: bool):
+                 comp_type: str):
         # Obtain the list of scenarios to use. We can just take the scenario list of the first
         # controllers, because we have already checked that all controllers executed the same set
         # scenarios.
@@ -93,49 +95,99 @@ class BivarIntraScenarioComparator:
                                    src_stem=graph['src_stem'],
                                    dest_stem=graph['dest_stem'])
 
-                self.__gen_graph(scenario=rdg.parse_batch_root(dirs[0])[1],
-                                 batch_criteria=criteria,
-                                 cmdopts=cmdopts,
-                                 dest_stem=graph['dest_stem'],
-                                 title=graph['title'],
-                                 zlabel=graph['label'],
-                                 legend=legend,
-                                 norm_comp=norm_comp)
+                if '2D' in comp_type:
+                    self.__gen_heatmaps(scenario=rdg.parse_batch_root(dirs[0])[1],
+                                        batch_criteria=criteria,
+                                        cmdopts=cmdopts,
+                                        dest_stem=graph['dest_stem'],
+                                        title=graph['title'],
+                                        label=graph['label'],
+                                        comp_type=comp_type)
+                else:
+                    self.__gen_graph3D(scenario=rdg.parse_batch_root(dirs[0])[1],
+                                       batch_criteria=criteria,
+                                       cmdopts=cmdopts,
+                                       dest_stem=graph['dest_stem'],
+                                       title=graph['title'],
+                                       zlabel=graph['label'],
+                                       legend=legend,
+                                       comp_type=comp_type)
 
-    def __gen_graph_title(self, title: str, norm_comp: bool):
+    def __gen_heatmaps(self,
+                       scenario: str,
+                       batch_criteria: bc.UnivarBatchCriteria,
+                       cmdopts: tp.Dict[str, str],
+                       dest_stem: str,
+                       title: str,
+                       label: str,
+                       comp_type: str):
         """
-        If we are normalizing comparisons, put that on the graph title.
+        Generates a :class:`~graphs.heatmap.Heatmap` comparing the specified controllers within the
+        specified scenario after input files have been gathered from each controller into
+        :attribute:`self.cc_csv_root`.
         """
-        if norm_comp:
-            return title + ' (Normalized)'
-        return title
 
-    def __gen_graph(self,
-                    scenario: str,
-                    batch_criteria: bc.UnivarBatchCriteria,
-                    cmdopts: tp.Dict[str, str],
-                    dest_stem: str,
-                    title: str,
-                    zlabel: str,
-                    legend: tp.List[str],
-                    norm_comp: bool):
+        csv_stem_root = os.path.join(self.cc_csv_root, dest_stem + "-" + scenario)
+        paths = [f for f in glob.glob(
+            csv_stem_root + '*.csv') if re.search('_[0-9]+', f)]
+        ref_df = pd.read_csv(paths[0], sep=';')
+
+        for i in range(1, len(paths)):
+            df = pd.read_csv(paths[i], sep=';')
+            if 'scale2D' == comp_type:
+                plot_df = df / ref_df
+            elif 'diff2D' == comp_type:
+                plot_df = df - ref_df
+            opath_stem = csv_stem_root + "_{0}{1}".format(0, i)
+            plot_df.to_csv(opath_stem + ".csv", sep=';', index=False)
+
+            Heatmap(input_fpath=opath_stem + ".csv",
+                    output_fpath=os.path.join(self.cc_graph_root,
+                                              dest_stem) + '-' + scenario + "_{0}{1}".format(0, i) + ".png",
+                    title=title,
+                    zlabel=self.__gen_zaxis_label(label, comp_type),
+                    ylabel=batch_criteria.graph_xlabel(cmdopts),
+                    xlabel=batch_criteria.graph_ylabel(cmdopts),
+                    xtick_labels=batch_criteria.graph_yticklabels(cmdopts),
+                    ytick_labels=batch_criteria.graph_xticklabels(cmdopts)).generate()
+
+    def __gen_zaxis_label(self, label: str, comp_type: str):
+        """
+        If we are doing something other than raw controller comparisons, put that on the graph
+        Z axis title.
+        """
+        if 'scale' in comp_type:
+            return label + ' (Scaled)'
+        elif 'diff'in comp_type == comp_type:
+            return label + ' (Difference Comparison)'
+        return label
+
+    def __gen_graph3D(self,
+                      scenario: str,
+                      batch_criteria: bc.UnivarBatchCriteria,
+                      cmdopts: tp.Dict[str, str],
+                      dest_stem: str,
+                      title: str,
+                      zlabel: str,
+                      legend: tp.List[str],
+                      comp_type: str):
         """
         Generates a :class:`~graphs.stacked_surface_graph.StackedSurfaceGraph` comparing the
         specified controllers within thespecified scenario after input files have been gathered from
-        each controllers into ``cc-csvs/``.
+        each controllers into :attribute:`self.cc_csv_root`.
         """
-        csv_stem_opath = os.path.join(self.cc_csv_root, dest_stem + "-" + scenario)
-        StackedSurfaceGraph(input_stem_pattern=csv_stem_opath,
+        csv_stem_root = os.path.join(self.cc_csv_root, dest_stem + "-" + scenario)
+        StackedSurfaceGraph(input_stem_pattern=csv_stem_root,
                             output_fpath=os.path.join(self.cc_graph_root,
                                                       dest_stem) + '-' + scenario + ".png",
-                            title=self.__gen_graph_title(title, norm_comp),
+                            title=title,
                             ylabel=batch_criteria.graph_xlabel(cmdopts),
                             xlabel=batch_criteria.graph_ylabel(cmdopts),
-                            zlabel=zlabel,
+                            zlabel=self.__gen_zaxis_label(zlabel, comp_type),
                             xtick_labels=batch_criteria.graph_yticklabels(cmdopts),
                             ytick_labels=batch_criteria.graph_xticklabels(cmdopts),
                             legend=legend,
-                            norm_comp=norm_comp).generate()
+                            comp_type=comp_type).generate()
 
     def __gen_csv(self,
                   cmdopts: tp.Dict[str, str],
@@ -146,13 +198,15 @@ class BivarIntraScenarioComparator:
         """
         Helper function for generating a set of .csv files for use in intra-scenario graph
         generation (1 per controller). Because each ``.csv`` file corresponding to performance
-        measures are 2D arrays, and we are generating :meth:`StackedSurfaceGraph`s, we actually just
-        copy and rename the performance measure ``.csv`` files for each controllers into
-        ``cc-csvs``.
+        measures are 2D arrays, we actually just copy and rename the performance measure ``.csv``
+        files for each controllers into :attribute:`self.cc_csv_root`.
 
-        :meth:`StackedSurfaceGraph` expects an ``_[0-9]+.csv`` pattern for each 2D surfaces to graph
-        in order to disambiguate which files belong to which controller without having the
-        controller name in the filepath (contains dots), so we do that here.
+        :class:`~graphs.stacked_surface_graph.StackedSurfaceGraph` expects an ``_[0-9]+.csv``
+        pattern for each 2D surfaces to graph in order to disambiguate which files belong to which
+        controller without having the controller name in the filepath (contains dots), so we do that
+        here. :class:`~graphs.heatmap.Heatmap` does not require that, but for the heatmap set we
+        generate it IS helpful to have an easy way to differentiate primary vs. other controllers,
+        so we do it unconditionally here to handle both cases.
 
         """
         csv_ipath = os.path.join(cmdopts['sierra_root'],

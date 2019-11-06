@@ -89,7 +89,6 @@ class EfficiencyUnivar:
         eff_df = pd.DataFrame(columns=raw_df.columns
                               )
         swarm_sizes = batch_criteria.swarm_sizes(self.cmdopts)
-
         for i in range(0, len(eff_df.columns)):
             n_robots = swarm_sizes[i]
             col = eff_df.columns[i]

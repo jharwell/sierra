@@ -86,7 +86,7 @@ class Pipeline:
             # stage 5
             'controllers_list': self.args.controllers_list,
             'controllers_legend': self.args.controllers_legend,
-            'normalize_comparisons': self.args.normalize_comparisons
+            'comparison_type': self.args.comparison_type
         }
         if cmdopts is not None:
             self.cmdopts.update(cmdopts)
