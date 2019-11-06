@@ -22,6 +22,7 @@ import numpy as np
 import logging
 from graphs.batch_ranged_graph import BatchRangedGraph
 from graphs.heatmap import Heatmap
+import perf_measures.common
 
 
 class BlockCollectionUnivar:
@@ -134,14 +135,10 @@ class BlockCollectionBivar:
                               index=total_df.index)
 
         for i in range(0, len(cum_df.index)):
-            for col in cum_df.columns:
-                # When collated, the column of data is written as a numpy array to string, so we
-                # have to reparse it as an actual array
-                arr = np.fromstring(total_df.loc[i, col][1:-1], dtype=np.float, sep=' ')
-
-                # We want the CUMULATIVE count of blocks, which will be the last element in this
-                # array. The second index is an artifact of how numpy represents scalars (1 element
-                # arrays).
-                cum_df.loc[i, col] = arr[-1:][0]
+            for j in range(0, len(cum_df.columns)):
+                cum_df.iloc[i, j] = perf_measures.common._csv_3D_value_iloc(total_df,
+                                                                            i,
+                                                                            j,
+                                                                            slice(-1, None))
 
         cum_df.to_csv(opath, sep=';', index=False)

@@ -54,10 +54,9 @@ class BivarCSVCollator:
 
     def __collate_target_files(self, target):
 
-        xlabels = sorted(list(set([d.split('+')[0]
-                                   for d in self.batch_criteria.gen_exp_dirnames(self.cmdopts)])))
-        ylabels = sorted(list(set([d.split('+')[1]
-                                   for d in self.batch_criteria.gen_exp_dirnames(self.cmdopts)])))
+        xlabels = self.batch_criteria.gen_exp_dirnames(self.cmdopts, 'x')
+        ylabels = self.batch_criteria.gen_exp_dirnames(self.cmdopts, 'y')
+
         data_df_new = pd.DataFrame(columns=ylabels, index=xlabels)
         stddev_df_new = pd.DataFrame()
         exp_dirs = self.batch_criteria.gen_exp_dirnames(self.cmdopts)

@@ -25,7 +25,7 @@ class ConstantDensity(bc.UnivarBatchCriteria):
     """
     A univariate range specifiying the density (ratio of SOMETHING to arena size) to hold constant
     as arena size is increased. This class is a base class which should NEVER be used on its
-    own. n
+    own.
 
     Attributes:
       target_density: The target density.

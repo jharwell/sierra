@@ -45,7 +45,7 @@ def __sierra_run():
         raise RuntimeError("Python 3.x should must be used to run this code.")
 
     # Get nice colored logging output!
-    coloredlogs.install(fmt='%(asctime)s %(levelname)s - %(message)s', level=logging.INFO)
+    coloredlogs.install(fmt='%(asctime)s %(levelname)s - %(message)s', level=logging.DEBUG)
 
     args = cmd.Cmdline().parser.parse_args()
     args = cmd.HPCEnvInheritor(args.hpc_env)(args)

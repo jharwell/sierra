@@ -18,14 +18,13 @@
 
 import os
 import pandas as pd
-import matplotlib
-import matplotlib.patches
+import matplotlib as mpl
 import numpy as np
 import glob
 import re
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-matplotlib.use('Agg')
+mpl.use('Agg')
 
 
 class StackedSurfaceGraph:
@@ -39,6 +38,7 @@ class StackedSurfaceGraph:
     If no ``.csv`` files matching the pattern are found, the graph is not generated.
 
     """
+    kMaxSurfaces = 4
 
     def __init__(self, **kwargs):
 
@@ -61,17 +61,21 @@ class StackedSurfaceGraph:
 
         if not dfs:  # empty list
             return
-
+        assert len(dfs) <= 4, "FATAL: Too many surfaces to plot: {0} > {1}".format(len(dfs),
+                                                                                   StackedSurfaceGraph.kMaxSurfaces)
         plt.figure(figsize=(10, 10))
         ax = plt.axes(projection='3d')
         x = np.arange(len(dfs[0].columns))
         y = dfs[0].index
         X, Y = np.meshgrid(x, y)
-        proxies = []
 
-        # This gives give quantitatively different colors (i.e. colors 0 and 1 are waayyyy different
-        # rather than very similar), which is necessary for overlapping surfaces to look nice.
-        colors = plt.cm.Pastel1(np.arange(len(dfs)))
+        # Use non-quantitative colormaps in order to get really nice looking surfaces that change
+        # color with Z value. From
+        # https://stackoverflow.com/questions/55501860/how-to-put-multiple-colormap-patches-in-a-matplotlib-legend
+        colors = [plt.cm.Greens, plt.cm.Reds, plt.cm.Purples, plt.cm.Oranges]
+        legend_cmap_handles = [mpl.patches.Rectangle((0, 0), 1, 1) for _ in colors]
+        legend_handler_map = dict(zip(legend_cmap_handles,
+                                      [HandlerColormap(c, num_stripes=8) for c in colors]))
 
         ax.set_title(self.title, fontsize=24)
         ax.xaxis._axinfo['label']['space_factor'] = 2.8
@@ -84,15 +88,13 @@ class StackedSurfaceGraph:
 
         for i in range(0, len(dfs)):
             if self.norm_comp:
-                ax.plot_surface(X, Y, dfs[i] / dfs[0], alpha=0.75, color=colors[i])
+                ax.plot_surface(X, Y, dfs[i] / dfs[0], cmap=colors[i],
+                                alpha=0.75)
             else:
-                ax.plot_surface(X, Y, dfs[i], alpha=0.75, color=colors[i])
-
-            # Legends aren't directly support in 3D plots, so we have to use proxy artists
-            proxies.append(matplotlib.patches.Patch(color=colors[i], label=self.legend[i]))
+                ax.plot_surface(X, Y, dfs[i], cmap=colors[i], alpha=0.75)
 
         self.__plot_ticks(ax, x, y)
-        self.__plot_legend(ax, proxies)
+        self.__plot_legend(ax, legend_cmap_handles, legend_handler_map)
 
         fig = ax.get_figure()
         fig.set_size_inches(10, 10)
@@ -121,10 +123,12 @@ class StackedSurfaceGraph:
             if any([len(str(y)) > 5 for y in y_format.seq]):
                 y_format.seq = ["{:2.2e}".format(float(s)) for s in y_format.seq]
 
-    def __plot_legend(self, ax, proxy_artists):
+    def __plot_legend(self, ax, cmap_handles, handler_map):
         # Legend should have ~3 entries per column, in order to maximize real estate on tightly
         # constrained papers.
-        ax.legend(handles=proxy_artists,
+        ax.legend(handles=cmap_handles,
+                  handler_map=handler_map,
+                  labels=self.legend,
                   loc=9,
                   bbox_to_anchor=(0.5, -0.1),
                   ncol=len(self.legend),
@@ -140,5 +144,23 @@ class StackedSurfaceGraph:
             ax.view_init(elev=None, azim=angle)
             components = self.output_fpath.split('.')
             path = ''.join(components[0:-2]) + '_' + str(angle) + '.' + components[-1]
-
             fig.savefig(path, bbox_inches='tight', dpi=100, pad_inches=0)
+
+
+class HandlerColormap(mpl.legend_handler.HandlerBase):
+    def __init__(self, cmap, num_stripes=8, **kw):
+        super().__init__(**kw)
+        self.cmap = cmap
+        self.num_stripes = num_stripes
+
+    def create_artists(self, legend, orig_handle,
+                       xdescent, ydescent, width, height, fontsize, trans):
+        stripes = []
+        for i in range(self.num_stripes):
+            s = mpl.patches.Rectangle([xdescent + i * width / self.num_stripes, ydescent],
+                                      width / self.num_stripes,
+                                      height,
+                                      fc=self.cmap((2 * i + 1) / (2 * self.num_stripes)),
+                                      transform=trans)
+            stripes.append(s)
+        return stripes

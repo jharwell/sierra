@@ -31,6 +31,7 @@ Examples:
 import typing as tp
 import os
 import utils
+import logging
 import variables.constant_density as cd
 import generators.scenario_generator_parser as sgp
 
@@ -76,8 +77,8 @@ class SwarmConstantDensity(cd.ConstantDensity):
                     x, y, z = c[2].split(',')
                     # ARGoS won't start if there are 0 robots, so you always need to put at least
                     # 1.
-                    n_robots = max(1, (int(x) * int(y)) * (self.target_density / 100.0))
-                    changeset.add((".//arena/distribute/entity", "quantity", str(int(n_robots))))
+                    n_robots = int(max(1, (int(x) * int(y)) * (self.target_density / 100.0)))
+                    changeset.add((".//arena/distribute/entity", "quantity", str(n_robots)))
                     break
         return self.changes
 

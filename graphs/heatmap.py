@@ -47,7 +47,7 @@ class Heatmap:
 
         df = pd.read_csv(self.input_csv_fpath, sep=';')
         fig, ax = plt.subplots()
-        plt.imshow(df, cmap='pcoolwarm', interpolation='nearest')
+        plt.imshow(df, cmap='coolwarm', interpolation='nearest')
 
         plt.xlabel(self.xlabel, fontsize=18)
         plt.ylabel(self.ylabel, fontsize=18)

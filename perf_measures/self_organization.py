@@ -104,7 +104,99 @@ class SelfOrganizationFLBivar:
         The Harwell2019 method is only defined for one dimensional data, and we are dealing with 2D
         ``.csv`` files, so we project down the rows/across the columns as appropriate, depending on
         which axis in the ``.csv`` the :class:`~variables.swarm_size.SwarmSize` derived batch
-        criteria is on. 
+        criteria is on.
+        """
+
+        logging.info("Bivariate FL self-organization from {0}".format(self.cmdopts["collate_root"]))
+        fl = common.FractionalLossesBivar(self.cmdopts,
+                                          self.inter_perf_csv,
+                                          self.ca_in_csv,
+                                          batch_criteria).calculate(batch_criteria)
+        exp0_dir = fl.columns[0]
+        so_df = pd.DataFrame(columns=[c for c in fl.columns if c not in exp0_dir],
+                             index=fl.index)
+
+        # We need to know which of the 2 variables was swarm size, in order to determine the correct
+        # dimension along which to compute the metric, which depends on performance between adjacent
+        # swarm sizes.
+        if isinstance(batch_criteria.criteria1, SwarmSize):
+            so_df = self.__calc_by_row(fl, batch_criteria)
+        else:
+            so_df = self.__calc_by_col(fl, batch_criteria)
+
+        stem_path = os.path.join(self.cmdopts["collate_root"], "pm-self-org-fl")
+        so_df.to_csv(stem_path + ".csv", sep=';', index=False)
+
+        Heatmap(input_fpath=stem_path + '.csv',
+                output_fpath=os.path.join(self.cmdopts["graph_root"], "pm-self-org-fl.png"),
+                title="Swarm Self-Organization Due To Sub-Linear Fractional Performance Losses",
+                xlabel=batch_criteria.graph_ylabel(self.cmdopts),
+                ylabel=batch_criteria.graph_xlabel(self.cmdopts),
+                xtick_labels=batch_criteria.graph_yticks(self.cmdopts),
+                ytick_labels=batch_criteria.graph_xticks(self.cmdopts)).generate()
+
+    def __calc_by_row(self, fl, batch_criteria):
+        swarm_sizes = batch_criteria.swarm_sizes(self.cmdopts)
+        so_df = pd.DataFrame(columns=fl.columns, index=fl.index)
+
+        for i in range(0, len(fl.index)):
+            for j in range(0, len(fl.columns)):
+                # No self org possible with 1 robot
+                if 0 == i:
+                    so_df.iloc[i, j] = 0
+                    continue
+                so_df.iloc[i, j] = calc_harwell2019(fl.iloc[i, j],
+                                                    fl.iloc[i - 1, j],
+                                                    swarm_sizes[i][j],
+                                                    swarm_sizes[i - 1][j])
+
+        return so_df
+
+    def __calc_by_col(self, fl, batch_criteria):
+        swarm_sizes = batch_criteria.swarm_sizes(self.cmdopts)
+        so_df = pd.DataFrame(columns=fl.columns, index=fl.index)
+
+        for i in range(0, len(fl.index)):
+            for j in range(0, len(fl.columns)):
+                # No self org possible with 1 robot
+                if 0 == j:
+                    so_df.iloc[i, j] = 0
+                    continue
+
+                so_df.iloc[i, j] = calc_harwell2019(fl.iloc[i, j],
+                                                    fl.iloc[i, j - 1],
+                                                    swarm_sizes[i][j],
+                                                    swarm_sizes[i][j - 1])
+        return so_df
+
+
+class SelfOrganizationTABivar:
+    """
+    Calculates the self-organization of the swarm configuration across a bivariate batched set of
+    experiments within the same scenario from collated .csv data using distance from performance
+    with random task allocation.
+
+    Only valid if one of the batch criteria was :class:`~variables.swarm_size.SwarmSize` derived,
+    and the other was :class:`~variables.ta_policy_set.TAPolicySet` derived.
+
+    """
+
+    def __init__(self, cmdopts, inter_perf_csv):
+        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
+        # are generated after us
+        self.cmdopts = copy.deepcopy(cmdopts)
+        self.inter_perf_csv = inter_perf_csv
+
+    def generate(self, batch_criteria):
+        """
+        Generates a :class:`~graphs.heatmap.Heatmap` across task allocation policies of self
+        organization from :class:`~Fractional` data, using the method defined in
+        Harwell2020.
+
+        The Harwell2019 method is only defined for one dimensional data, and we are dealing with 2D
+        ``.csv`` files, so we project down the rows/across the columns as appropriate, depending on
+        which axis in the ``.csv`` the :class:`~variables.swarm_size.SwarmSize` derived batch
+        criteria is on.
         """
 
         logging.info("Bivariate FL self-organization from {0}".format(self.cmdopts["collate_root"]))
@@ -173,7 +265,7 @@ class SelfOrganizationFLBivar:
 def calc_harwell2019(fl_x: float, fl_x1: float, n_robots_x: int, n_robots_x1: int):
     r"""
     Calculates the self organization for a particular swarm size N, given fractional performance
-    losses for N and a smaller swarm size. Measure taken from Harwell2019.
+    losses for $\m_i$ and a smaller swarm size $m_{i-1}$. Equation taken from Harwell2019.
 
     .. math::
         \begin{equation}
