@@ -25,21 +25,21 @@ from variables.swarm_size import SwarmSize
 
 
 class ProjectivePerformanceCalculatorUnivar:
-    r"""
-    Calculates the following measure for each experiment in a univariate batched experiment:
 
-    .. math::
-        \frac{Performance(exp i)}{Distance(exp i, exp i-1) * Performance(exp i)}
+    # Calculates the following measure for each experiment in a univariate batched experiment:
+    #
+    # .. math::
+    #     \frac{Performance(exp i)}{Distance(exp i, exp i-1) * Performance(exp i)}
+    #
+    # Domain: [0, inf)
+    #
+    # If things are X amount better/worse (in terms of increasing/decreasing the swarm's potential for
+    # performance) than they were for exp0 (baseline for comparison), then we *should* see a
+    # corresponding increase/decrease in the level of observed performance.
+    #
+    # Only valid for exp i, i > 0 (you are comparing with a projected performance value of exp0 after
+    # all).
 
-    Domain: [0, inf)
-
-    If things are X amount better/worse (in terms of increasing/decreasing the swarm's potential for
-    performance) than they were for exp0 (baseline for comparison), then we *should* see a
-    corresponding increase/decrease in the level of observed performance.
-
-    Only valid for exp i, i > 0 (you are comparing with a projected performance value of exp0 after
-    all).
-    """
 
     def __init__(self, cmdopts, inter_perf_csv, projection_type):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -85,22 +85,22 @@ class ProjectivePerformanceCalculatorUnivar:
 
 
 class ProjectivePerformanceCalculatorBivar:
-    r"""
-    Calculates the following measure for each experiment in a bivariate batched experiment. One of
-    the variables must be swarm size.
 
-    .. math::
-        \frac{Performance(exp i)}{Distance(exp i, exp i-1) * Performance(exp i)}
+    # Calculates the following measure for each experiment in a bivariate batched experiment. One of
+    # the variables must be swarm size.
+    #
+    # .. math::
+    #     \frac{Performance(exp i)}{Distance(exp i, exp i-1) * Performance(exp i)}
+    #
+    # Domain: [0, inf)
+    #
+    # If things are X amount better/worse (in terms of increasing/decreasing the swarm's potential for
+    # performance) than they were for exp0 (baseline for comparison), then we *should* see a
+    # corresponding increase/decrease in the level of observed performance.
+    #
+    # Only valid for exp i, i > 0 (you are comparing with a projected performance value of exp0 after
+    # all).
 
-    Domain: [0, inf)
-
-    If things are X amount better/worse (in terms of increasing/decreasing the swarm's potential for
-    performance) than they were for exp0 (baseline for comparison), then we *should* see a
-    corresponding increase/decrease in the level of observed performance.
-
-    Only valid for exp i, i > 0 (you are comparing with a projected performance value of exp0 after
-    all).
-    """
 
     def __init__(self, cmdopts, inter_perf_csv, projection_type):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -171,11 +171,11 @@ class ProjectivePerformanceCalculatorBivar:
 
 
 class FractionalLosses:
-    """
-    Calculates the fractional performance losses of a swarm across a range of swarm sizes (i.e. how
-    much performance is maintained as the swarm size increases) in a batched
-    experiment. The swarm sizes are assumed to be powers of 2.
-    """
+
+    # Calculates the fractional performance losses of a swarm across a range of swarm sizes (i.e. how
+    # much performance is maintained as the swarm size increases) in a batched
+    # experiment. The swarm sizes are assumed to be powers of 2.
+
 
     def __init__(self, cmdopts, inter_perf_csv, ca_in_csv, batch_criteria):
         self.cmdopts = cmdopts
@@ -201,61 +201,76 @@ class FractionalLosses:
 
 
 class FractionalLossesUnivar(FractionalLosses):
-    """
-    Calculates the percentage of performance which is lost with N interacting robots vs. N
-    independently acting robots which do not interfer with each other. Does not require  the
-    variable to be swarm size, but the metric will (probably) not be of much value if that is not
-    the case.
-    """
+
+    # Calculates the percentage of performance which is lost with N interacting robots vs. N
+    # independently acting robots which do not interfer with each other. Does not require  the
+    # variable to be swarm size, but the metric will (probably) not be of much value if that is not
+    # the case.
+
 
     def calculate(self, batch_criteria):
         ca_in_path = os.path.join(self.batch_output_root, self.ca_in_stem + '.csv')
         assert(os.path.exists(ca_in_path)), "FATAL: {0} does not exist".format(ca_in_path)
         ca_in_df = pd.read_csv(ca_in_path, sep=';')
 
+        calc_stddev = True
+        ca_in_path_stddev = os.path.join(self.batch_output_root, self.ca_in_stem + '.stddev')
+        ca_in_df_stddev = None
+        if (os.path.exists(ca_in_path_stddev)):
+            ca_in_df_stddev = pd.read_csv(ca_in_path_stddev, sep=';')
+        else:
+            calc_stddev = False
+
         perf_path = os.path.join(self.batch_output_root, self.inter_perf_stem + '.csv')
         assert(os.path.exists(perf_path)), "FATAL: {0} does not exist".format(perf_path)
         perf_df = pd.read_csv(perf_path, sep=';')
 
-        exp0_dir = perf_df.columns[0]
-        scale_cols = [c for c in ca_in_df.columns if c not in [exp0_dir]]
+        perf_path_stddev = os.path.join(self.batch_output_root, self.inter_perf_stem + '.stddev')
+        perf_df_stddev = None
+        if (os.path.exists(perf_path_stddev) and calc_stddev):
+            perf_df_stddev = pd.read_csv(perf_path_stddev, sep=';')
+        else:
+            calc_stddev = False
+
+        exp0_dirname = batch_criteria.gen_exp_dirnames(self.cmdopts)[0]
+        scale_cols = [c for c in ca_in_df.columns if c not in [exp0_dirname]]
+
+        scale_cols_stddev = None
+        if calc_stddev:
+            scale_cols_stddev = [c for c in ca_in_df_stddev.columns if c not in [exp0_dirname]]
 
         # Calculate plost for all swarm sizes
         plost_n = self.__calc_plost_n(ca_in_df, perf_df, batch_criteria)
+        plost_n_stddev = None
+        if calc_stddev:
+            plost_n_stddev = self.__calc_plost_n(ca_in_df_stddev, perf_df_stddev, batch_criteria)
+        #print(scale_cols_stddev, exp0_dirname)
 
         # Calculate fractional losses for al swarm sizes
-        fl_df = self.__calc_fl(perf_df, plost_n, scale_cols)
+        fl_df = self.__calc_fl(perf_df, plost_n, scale_cols_stddev)
+        fl_df_stddev = None
+        if calc_stddev:
+            fl_df_stddev = self.__calc_fl(perf_df_stddev, plost_n_stddev, scale_cols_stddev)
 
-        # First calculate the time lost per timestep for a swarm of size N due to collision
-        # avoidance interference
-        path = os.path.join(self.batch_output_root, self.ca_in_stem + '.csv')
-        assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
-        df = pd.read_csv(path, sep=';')
-        exp0_dirname = batch_criteria.gen_exp_dirnames(self.cmdopts)[0]
-        scale_cols = [c for c in df.columns if c not in [exp0_dirname]]
-
-        # Calculate plost for all swarm sizes
-        plost_n = self.__calc_plost_n(ca_in_df, perf_df, batch_criteria)
-
-        # Calculate fractional losses for all swarm sizes
-        fl_df = self.__calc_fl(perf_df, plost_n, scale_cols)
-
-        # By definition, no fractional losses with 1 robot
+        # By definition, no fractional losses with 1 robot, or any stddev
+        #print("CA IN DF:", ca_in_df)
+        #print("CA IN STDDEV DF:", ca_in_df_stddev)
         fl_df.insert(0, exp0_dirname, 0.0)
-        return fl_df
+        fl_df_stddev.insert(0, exp0_dirname, 0.0)
+        return fl_df, fl_df_stddev, calc_stddev
 
     def __calc_plost_n(self, ca_in_df, perf_df, batch_criteria):
-        """
-        Calculated as follows for all swarm sizes N in the batch:
 
-        cum blocks gathered * tlost_1 (for exp0)
+        # Calculated as follows for all swarm sizes N in the batch:
+        #
+        # cum blocks gathered * tlost_1 (for exp0)
+        #
+        # cum blocks gathered * (tlost_N - N * tlost_1) / N (else)
+        #
+        # This gives how much MORE performance was lost in the entire simulation as a result of a
+        # swarm of size N, as opposed to a group of N robots that do not interact with each other,
+        # only the arena walls.
 
-        cum blocks gathered * (tlost_N - N * tlost_1) / N (else)
-
-        This gives how much MORE performance was lost in the entire simulation as a result of a
-        swarm of size N, as opposed to a group of N robots that do not interact with each other,
-        only the arena walls.
-        """
         plost_n = pd.DataFrame(columns=perf_df.columns)
         exp0_dir = perf_df.columns[0]
         scale_cols = [c for c in ca_in_df.columns if c not in [exp0_dir]]
@@ -273,29 +288,32 @@ class FractionalLossesUnivar(FractionalLosses):
         return plost_n
 
     def __calc_fl(self, perf_df, plost_n, scale_cols):
-        """
-        Calculate fractional losses as:
 
-        (performance lost with N robots / performance with N robots )
+        # Calculate fractional losses as:
+        #
+        # (performance lost with N robots / performance with N robots )
 
-        """
-        fl_df = pd.DataFrame(columns=scale_cols)
+
+        fl_df = pd.DataFrame(columns=scale_cols,index=[0])
         for c in scale_cols:
-            if (perf_df.tail(1)[c] == 0).any():
-                fl_df[c] = 1.0
-            else:
-                fl_df[c] = round(plost_n[c] / perf_df.tail(1)[c], 4)
+            # print("COL:", c)
+            # print((perf_df.tail(1)[c] == 0.0).any())
 
+            if (perf_df.tail(1)[c] == 0.0).any(axis=None):
+                fl_df.loc[0,c] = 1.0
+            else:
+                fl_df.loc[0,c] = (plost_n[c] / perf_df.tail(1)[c]).values[0]
+            #print(fl_df)
         return fl_df
 
 
 class FractionalLossesBivar(FractionalLosses):
-    """
-    Calculates the percentage of performance which is lost with N interacting robots vs. N
-    independently acting robots which do not interfer with each other. Does not require one of the
-    variables to be swarm size, but the metric will (probably) not be of much value if that is not
-    the case.
-    """
+
+    # Calculates the percentage of performance which is lost with N interacting robots vs. N
+    # independently acting robots which do not interfer with each other. Does not require one of the
+    # variables to be swarm size, but the metric will (probably) not be of much value if that is not
+    # the case.
+
 
     def calculate(self, batch_criteria):
         ca_in_path = os.path.join(self.batch_output_root, self.ca_in_stem + '.csv')
@@ -315,17 +333,17 @@ class FractionalLossesBivar(FractionalLosses):
         return fl_df
 
     def __calc_plost_n(self, ca_in_df, perf_df, batch_criteria):
-        """
-        Calculated as follows for all swarm sizes N in the batch:
 
-        cum blocks gathered * tlost_1 (for exp0)
+        # Calculated as follows for all swarm sizes N in the batch:
+        #
+        # cum blocks gathered * tlost_1 (for exp0)
+        #
+        # cum blocks gathered * (tlost_N - N * tlost_1) / N (else)
+        #
+        # This gives how much MORE performance was lost in the entire simulation as a result of a
+        # swarm of size N, as opposed to a group of N robots that do not interact with each other,
+        # only the arena walls.
 
-        cum blocks gathered * (tlost_N - N * tlost_1) / N (else)
-
-        This gives how much MORE performance was lost in the entire simulation as a result of a
-        swarm of size N, as opposed to a group of N robots that do not interact with each other,
-        only the arena walls.
-        """
         plost_n = pd.DataFrame(columns=perf_df.columns, index=perf_df.index)
         exp0_dir = perf_df.columns[0]
 
@@ -374,12 +392,12 @@ class FractionalLossesBivar(FractionalLosses):
         return plost_n
 
     def __calc_fl(self, perf_df, plost_n):
-        """
-        Calculate fractional losses as:
 
-        (performance lost with N robots / performance with N robots )
+        # Calculate fractional losses as:
+        #
+        # (performance lost with N robots / performance with N robots )
 
-        """
+
         fl_df = pd.DataFrame(columns=perf_df.columns, index=perf_df.index)
         exp0_dir = perf_df.columns[0]
 

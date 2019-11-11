@@ -59,9 +59,9 @@ class InterExpGraphGenerator:
 
     # Private functions
     def __gen_for_univar_bc(self):
-        InterExpLinegraphs(self.cmdopts["collate_root"],
-                           self.cmdopts["graph_root"],
-                           self.targets).generate()
+        # InterExpLinegraphs(self.cmdopts["collate_root"],
+        #                    self.cmdopts["graph_root"],
+        #                    self.targets).generate()
 
         if self.batch_criteria.pm_query('blocks-collected'):
             pmbc.BlockCollectionUnivar(self.cmdopts,

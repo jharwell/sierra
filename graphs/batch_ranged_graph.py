@@ -72,9 +72,8 @@ class BatchRangedGraph:
     def generate(self):
         if not os.path.exists(self.inputy_csv_fpath):
             return
-
+        #print("GRAPH:", self.inputy_csv_fpath)
         dfy = pd.read_csv(self.inputy_csv_fpath, sep=';')
-
         fig, ax = plt.subplots()
         line_styles = [':', '--', '.-', '-', ':', '--', '.-', '-']
         mark_styles = ['o', '^', 's', 'x', 'o', '^', 's', 'x']
@@ -98,7 +97,7 @@ class BatchRangedGraph:
                 plt.plot(x_new, y_new, line_styles[i])
 
         # Plot error bars
-        self.__plot_errorbars(self.xvals, dfy)
+        self.__plot_errorbars(self.xvals, dfy, colors)
 
         if self.legend is not None:
             plt.legend(self.legend, fontsize=14, ncol=max(1, int(len(self.legend) / 3.0)))
@@ -113,7 +112,7 @@ class BatchRangedGraph:
         fig.savefig(self.output_fpath, bbox_inches='tight', dpi=100)
         fig.clf()
 
-    def __plot_errorbars(self, xvals, data_df):
+    def __plot_errorbars(self, xvals, data_df, cols):
         """
         Plot errorbars for all lines on the graph, using a shaded region rather than strict error
         bars--looks much nicer.
@@ -124,9 +123,10 @@ class BatchRangedGraph:
             return
 
         stddev_df = pd.read_csv(self.inputy_stddev_fpath, sep=';')
-
+        #print("XVALS:", xvals)
+    #    print("STDDEV DF:", stddev_df)
         # plt.errorbar(data_df.index, data_df[c], xerr=0.5,
         #              yerr=2 * stddev_df[c], linestyle = '')
         for i in range(0, len(data_df.values)):
             plt.fill_between(xvals, data_df.values[i] - 2 * stddev_df.values[i],
-                             data_df.values[i] + 2 * stddev_df.values[i], alpha=0.25)
+                             data_df.values[i] + 2 * stddev_df.values[i], alpha=0.25, color=cols[i])

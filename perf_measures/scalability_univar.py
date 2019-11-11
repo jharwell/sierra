@@ -158,7 +158,7 @@ class FractionalPerformanceLossUnivar:
         self.ca_in_csv = ca_in_csv
 
     def calculate(self, batch_criteria):
-        df = common.FractionalLossesUnivar(self.cmdopts,
+        df, dfstddev, calc = common.FractionalLossesUnivar(self.cmdopts,
                                            self.inter_perf_csv,
                                            self.ca_in_csv,
                                            batch_criteria).calculate(batch_criteria)
