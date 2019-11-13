@@ -15,8 +15,8 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 
-import fastdtw
 import os
+import fastdtw
 import pandas as pd
 import numpy as np
 import yaml

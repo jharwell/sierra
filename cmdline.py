@@ -403,14 +403,14 @@ class Cmdline:
                             action='store_true',
                             default=False)
         stage3 = self.parser.add_argument_group('Stage3: Preprocessing experiment results')
-        stage3.add_argument('--no-verify-results',
+        stage3.add_argument('--exp-no-verify',
                             help="""
 
                             If TRUE, then the verification step will be skipped for the batched experiment, and outputs
-                            will be averaged directly. If not all .csv files for all experiments exist and/or have the
-                            # of rows, then sierra will (probably) crash during stage4. Verification can take a
-                            same
-                            long time with large # of simulations per experiment.
+                            will be averaged directly. If not all ``.csv`` files exist for all experiments and have the
+                            # of rows, then SIERRA might crash during stage4, and NaNs will probably show up in
+                            performance measure calculations. Use at your own risk. Verification can take a long time
+                            if the # simulations for each experiment in the batch is large.
 
                             Use=stage{3}; can be omitted otherwise.
 

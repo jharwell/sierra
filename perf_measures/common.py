@@ -16,11 +16,11 @@
 
 
 import os
-import pandas as pd
 import math
 import copy
-import utils
 import numpy as np
+import pandas as pd
+import utils
 from variables.swarm_size import SwarmSize
 
 
@@ -67,11 +67,11 @@ class ProjectivePerformanceCalculatorUnivar:
             obs_prev = perf_df.tail(1)[exp_prev_col].values[0]
             similarity = float(xvals[exp_num]) / float(xvals[exp_num - 1])
 
-            if "positive" == self.projection_type:
+            if self.projection_type == 'positive':
                 proj_df[exp_col] = ProjectivePerformanceCalculatorUnivar.__calc_positive(obs,
                                                                                          obs_prev,
                                                                                          similarity)
-            elif "negative" == self.projection_type:
+            elif self.projection_type == 'negative':
                 proj_df[exp_col] = ProjectivePerformanceCalculatorUnivar.__calc_negative(obs,
                                                                                          obs_prev,
                                                                                          similarity)
@@ -131,14 +131,14 @@ class ProjectivePerformanceCalculatorBivar:
         for i in range(0, len(proj_df.index)):
             for j in range(0, len(proj_df.columns)):
                 similarity = float(yvals[j]) / float(yvals[j - 1])
-                obs = _csv_3D_value_iloc(perf_df, i, j, slice(-1, None))
-                prev_obs = _csv_3D_value_iloc(perf_df, i, j - 1, slice(-1, None))
+                obs = csv_3D_value_iloc(perf_df, i, j, slice(-1, None))
+                prev_obs = csv_3D_value_iloc(perf_df, i, j - 1, slice(-1, None))
 
-                if "positive" == self.projection_type:
+                if self.projection_type == 'positive':
                     proj_df.iloc[i, j] = ProjectivePerformanceCalculatorBivar.__calc_positive(obs,
                                                                                               prev_obs,
                                                                                               similarity)
-                elif "negative" == self.projection_type:
+                elif self.projection_type == 'negative':
                     proj_df.iloc[i, j] = ProjectivePerformanceCalculatorBivar.__calc_negative(obs,
                                                                                               prev_obs,
                                                                                               similarity)
@@ -151,14 +151,14 @@ class ProjectivePerformanceCalculatorBivar:
         for i in range(0, len(proj_df.index)):
             for j in range(0, len(proj_df.columns)):
                 similarity = float(xvals[i]) / float(xvals[i - 1])
-                obs = _csv_3D_value_iloc(perf_df, i, j, slice(-1, None))
-                prev_obs = _csv_3D_value_iloc(perf_df, i - 1, j, slice(-1, None))
+                obs = csv_3D_value_iloc(perf_df, i, j, slice(-1, None))
+                prev_obs = csv_3D_value_iloc(perf_df, i - 1, j, slice(-1, None))
 
-                if "positive" == self.projection_type:
+                if self.projection_type == 'positive':
                     proj_df.iloc[i, j] = ProjectivePerformanceCalculatorBivar.__calc_positive(obs,
                                                                                               prev_obs,
                                                                                               similarity)
-                elif "negative" == self.projection_type:
+                elif self.projection_type == 'negative':
                     proj_df.iloc[i, j] = ProjectivePerformanceCalculatorBivar.__calc_negative(obs,
                                                                                               prev_obs,
                                                                                               similarity)
@@ -197,9 +197,9 @@ class FractionalLosses:
         # Integers always seem to be pickled as floats, so you can't convert directly without an
         # exception.
         for path, attr, value in exp_def:
-            if './/experiment' == path and 'length' == attr:
+            if path == './/experiment' and attr == 'length':
                 length = int(float(value))
-            elif './/experiment' == path and 'ticks_per_second' == attr:
+            elif path == './/experiment'and attr == 'ticks_per_second':
                 ticks = int(float(value))
         self.duration = length * ticks
 
@@ -265,7 +265,7 @@ class FractionalLossesUnivar(FractionalLosses):
         return plost_n
 
     @staticmethod
-    def __calc_fl(self, perf_df, plost_n, scale_cols):
+    def __calc_fl(perf_df, plost_n, scale_cols):
         """
         Calculate fractional losses as:
 
@@ -323,14 +323,14 @@ class FractionalLossesBivar(FractionalLosses):
         exp0_dir = perf_df.columns[0]
 
         # Calc for exp(0,0)
-        t_lost0 = _csv_3D_value_loc(ca_in_df,
-                                    0,  # exp0 = 1 robot
-                                    exp0_dir,
-                                    slice(-1, None))  # Last in temporal seq = cum avg
-        perf0 = _csv_3D_value_loc(perf_df,
-                                  0,  # exp0 = 1 robot
-                                  exp0_dir,
-                                  slice(-1, None))  # Last in temporal seq = cum count
+        t_lost0 = csv_3D_value_loc(ca_in_df,
+                                   0,  # exp0 = 1 robot
+                                   exp0_dir,
+                                   slice(-1, None))  # Last in temporal seq = cum avg
+        perf0 = csv_3D_value_loc(perf_df,
+                                 0,  # exp0 = 1 robot
+                                 exp0_dir,
+                                 slice(-1, None))  # Last in temporal seq = cum count
 
         plost_n.iloc[0, 0] = float(perf0) * float(t_lost0)
 
@@ -340,19 +340,19 @@ class FractionalLossesBivar(FractionalLosses):
                 if i == 0 and plost_n.columns[j] == exp0_dir:  # exp(0,0)
                     continue
 
-                n_blocks = _csv_3D_value_iloc(perf_df,
-                                              i,
-                                              j,
-                                              slice(-1, None))
+                n_blocks = csv_3D_value_iloc(perf_df,
+                                             i,
+                                             j,
+                                             slice(-1, None))
 
                 if 0 == n_blocks:
                     plost_n.iloc[i, j] = math.inf
                 else:
-                    t_lostN = _csv_3D_value_iloc(ca_in_df,
-                                                 # Last row = N robots
-                                                 len(ca_in_df.index) - 1,
-                                                 j,
-                                                 slice(-1, None))  # Last in temporal seq = cum avg
+                    t_lostN = csv_3D_value_iloc(ca_in_df,
+                                                # Last row = N robots
+                                                len(ca_in_df.index) - 1,
+                                                j,
+                                                slice(-1, None))  # Last in temporal seq = cum avg
 
                     # We need to know which of the 2 variables was swarm size, in order to determine
                     # the correct dimension along which to compute the metric, which depends on
@@ -382,7 +382,7 @@ class FractionalLossesBivar(FractionalLosses):
                     fl_df.loc[i, c] = 0.0  # By definition, no fractional losses in exp(0,0)
                     continue
 
-                perf_N = _csv_3D_value_loc(perf_df, i, c, slice(-1, None))
+                perf_N = csv_3D_value_loc(perf_df, i, c, slice(-1, None))
                 if 0 == perf_N:
                     fl_df.loc[i, c] = 1.0
                 else:
@@ -390,7 +390,7 @@ class FractionalLossesBivar(FractionalLosses):
         return fl_df
 
 
-def _csv_3D_value_loc(df, xslice, ycol, zslice):
+def csv_3D_value_loc(df, xslice, ycol, zslice):
     # When collated, the column of data is written as a numpy array to string, so we
     # have to reparse it as an actual array
     arr = np.fromstring(df.loc[xslice, ycol][1:-1], dtype=np.float, sep=' ')
@@ -398,7 +398,7 @@ def _csv_3D_value_loc(df, xslice, ycol, zslice):
     return arr[zslice][0]
 
 
-def _csv_3D_value_iloc(df, xslice, yslice, zslice):
+def csv_3D_value_iloc(df, xslice, yslice, zslice):
     # When collated, the column of data is written as a numpy array to string, so we
     # have to reparse it as an actual array
     arr = np.fromstring(df.iloc[xslice, yslice][1:-1], dtype=np.float, sep=' ')

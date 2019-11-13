@@ -18,7 +18,6 @@
 import os
 import copy
 import pandas as pd
-import numpy as np
 import logging
 from graphs.batch_ranged_graph import BatchRangedGraph
 from graphs.heatmap import Heatmap

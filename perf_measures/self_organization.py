@@ -17,12 +17,12 @@
 
 import os
 import copy
-import pandas as pd
+import math
 import logging
+import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
 from graphs.heatmap import Heatmap
 import perf_measures.common as common
-import math
 from variables.swarm_size import SwarmSize
 
 

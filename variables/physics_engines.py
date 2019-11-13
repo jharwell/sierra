@@ -21,8 +21,8 @@ without overlap.
 
 """
 
-from variables.base_variable import BaseVariable
 import typing as tp
+from variables.base_variable import BaseVariable
 
 
 class PhysicsEngines(BaseVariable):
@@ -55,7 +55,7 @@ class PhysicsEngines(BaseVariable):
         self.layout = layout
         self.extents = extents
 
-        assert 'uniform_grid2D' == self.layout,\
+        assert self.layout == 'uniform_grid2D',\
             "FATAL: Only uniform_grid2D physics engine layout currently supported"
 
     def gen_attr_changelist(self):
@@ -72,18 +72,18 @@ class PhysicsEngines(BaseVariable):
         return [set([(".", "./physics_engines")])]
 
     def gen_tag_addlist(self):
-        if 1 == self.n_engines:
+        if self.n_engines == 1:
             return [self.__gen1_engines(s) for s in self.extents]
-        elif 4 == self.n_engines:
+        elif self.n_engines == 4:
             return [self.__gen4_engines(s) for s in self.extents]
-        elif 8 == self.n_engines:
+        elif self.n_engines == 8:
             return [self.__gen8_engines(s) for s in self.extents]
-        elif 16 == self.n_engines:
+        elif self.n_engines == 16:
             return [self.__gen16_engines(s) for s in self.extents]
-        elif 24 == self.n_engines:
+        elif self.n_engines == 24:
             return [self.__gen24_engines(s) for s in self.extents]
-        else:
-            raise RuntimeError
+
+        raise RuntimeError
 
     def __gen_engines(self,
                       dims: tp.Tuple[int, int, int],
@@ -105,19 +105,20 @@ class PhysicsEngines(BaseVariable):
         """
         adds = [('.', 'physics_engines', {})]
 
-        size_x = self.extents[0] / n_engines_x
-        size_y = self.extents[1] / n_engines_y
-        size_z = self.extents[2]
+        size_x = dims[0] / n_engines_x
+        size_y = dims[1] / n_engines_y
+        size_z = dims[2]
 
-        if 'dynamics3d' == self.engine_type:
+        if self.engine_type == 'dynamics3d':
             name_stem = 'dyn3d'
         else:
             name_stem = 'dyn2d'
 
         for i in range(0, self.n_engines):
             name = name_stem + str(i)
-            adds.append(('.//physics_engines', self.engine_type, {'id': name,
-                                                                  'iterations': str(self.iter_per_tick)}))
+            adds.append(('.//physics_engines',
+                         self.engine_type, {'id': name,
+                                            'iterations': str(self.iter_per_tick)}))
             adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]",
                          "boundaries", {}))
             adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]/boundaries",
@@ -165,7 +166,7 @@ class PhysicsEngines(BaseVariable):
 
         """
 
-        if 'dynamics3d' == self.engine_type:
+        if self.engine_type == 'dynamics3d':
             name = 'dyn3d'
         else:
             name = 'dyn2d'
@@ -255,18 +256,8 @@ class PhysicsEngines2D(PhysicsEngines):
     Specialization of :class:`PhysicsEngines` for 2D.
     """
 
-    def __init__(self,
-                 engine_type,
-                 n_engines: int,
-                 iter_per_tick: int,
-                 layout: str,
-                 extents: tp.List[tp.Tuple[int, int, int]]):
-        PhysicsEngines.__init__(self,
-                                engine_type,
-                                n_engines,
-                                iter_per_tick,
-                                layout,
-                                extents)
+    def __init__(self, *args):
+        PhysicsEngines.__init__(self, *args)
 
 
 class PhysicsEngines3D(PhysicsEngines):
@@ -274,18 +265,8 @@ class PhysicsEngines3D(PhysicsEngines):
     Specialization of :class:`PhysicsEngines` for 3D.
     """
 
-    def __init__(self,
-                 engine_type,
-                 n_engines: int,
-                 iter_per_tick: int,
-                 layout: str,
-                 extents: tp.List[tp.Tuple[int, int, int]]):
-        PhysicsEngines.__init__(self,
-                                engine_type,
-                                n_engines,
-                                iter_per_tick,
-                                layout,
-                                extents)
+    def __init__(self, *args):
+        PhysicsEngines.__init__(self, *args)
 
 
 def Factory(cmdopts: tp.Dict[str, str],

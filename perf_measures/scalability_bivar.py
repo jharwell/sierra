@@ -17,13 +17,12 @@
 
 import os
 import copy
-import yaml
 import logging
+import math
 import pandas as pd
 import numpy as np
 from graphs.heatmap import Heatmap
 import perf_measures.common as common
-import math
 
 
 class EfficiencyBivar:

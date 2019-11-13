@@ -75,7 +75,7 @@ class PipelineStage3:
             os.path.basename(self.cmdopts['template_input_file']))
         avg_params = {
             'template_input_leaf': template_input_leaf,
-            'no_verify_results': self.cmdopts['no_verify_results'],
+            'exp_no_verify': self.cmdopts['exp_no_verify'],
             'gen_stddev': self.cmdopts['gen_stddev'],
             'config': self.main_config,
         }
