@@ -14,8 +14,15 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
+"""
+Contains main class implementing stage 2 of the experimental pipeline: running experiments (locally
+or on HPC resources).
+"""
 
-from .batched_exp_runner import BatchedExpRunner
+import logging
+import typing as tp
+import variables.batch_criteria as bc
+from .exp_runner import BatchedExpRunner
 
 
 class PipelineStage2:
@@ -23,12 +30,12 @@ class PipelineStage2:
     Implements stage 2 of the experimental pipeline:
 
     Runs all experiments in the generation root in parallel using GNU Parallel on
-    the provided set of hosts on MSI (or on a single personal computer for testing).
+    the provided set of hosts in an HPC environment, or on the local machine.
     """
 
-    def run(self, cmdopts, batch_criteria):
+    def run(self, cmdopts: tp.Dict[str, str], batch_criteria: bc.BatchCriteria):
         if cmdopts['with_rendering']:
-            print('- Stage2: Frame grabbing enabled')
+            logging.info('Stage2: Frame grabbing enabled')
 
         runner = BatchedExpRunner(cmdopts, batch_criteria)
         runner.run(exec_method=cmdopts['exec_method'],

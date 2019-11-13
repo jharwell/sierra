@@ -14,28 +14,49 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
+"""
+2D and 3D physics engine classes mapping a volumetric extent (does not have to be the whole arena)
+to a set of physics engines arranged in some fashion within the volumetric extent to cover it
+without overlap.
+
+"""
 
 from variables.base_variable import BaseVariable
+import typing as tp
 
 
 class PhysicsEngines(BaseVariable):
-
     """
-    Defines the # of physics engines that a simulation will employ, and how they will be arranged
-    within an arena. Assumes that all entities in simulation are ground robots.
+    Base physics engine class doing most of the work.
 
     Attributes:
-      n_engines(int): # of engines. Can be one of [1,4,16].
-      iter_per_tick(int): # of iterations physics engines should perform per tick.
-      layout(str): Arrangement method. Can be one of: {uniform_grid}.
-      dimensions(list): List of (X,Y) tuples of arena sizes.
+        engine_type: The type of physics engine to use (one supported by ARGoS).
+        n_engines: # of engines. Can be one of [1,4,8,16,24].
+        iter_per_tick: # of iterations physics engines should perform per tick.
+        layout: Engine arrangement method. Can be one of:
+
+                - ``uniform_grid2D``: Arrange the engines in a uniform 2D grid that extends up to
+                  the maximum height in Z. For 2D engines, this is the maximum height of objects
+                  that can be present in the arena (I think).
+
+        extents: List of (X,Y,Z) tuples of extents onto which physics engines should be mapped.
     """
 
-    def __init__(self, n_engines, iter_per_tick, layout, dimensions):
+    def __init__(self,
+                 engine_type: str,
+                 n_engines: int,
+                 iter_per_tick: int,
+                 layout: str,
+                 extents: tp.List[tp.Tuple[int, int, int]]):
+
+        self.engine_type = engine_type
         self.n_engines = n_engines
         self.iter_per_tick = iter_per_tick
         self.layout = layout
-        self.dimensions = dimensions
+        self.extents = extents
+
+        assert 'uniform_grid2D' == self.layout,\
+            "FATAL: Only uniform_grid2D physics engine layout currently supported"
 
     def gen_attr_changelist(self):
         """
@@ -51,109 +72,58 @@ class PhysicsEngines(BaseVariable):
         return [set([(".", "./physics_engines")])]
 
     def gen_tag_addlist(self):
-        """
-        Add definitions for each of the physics engines the user has indicated that they want to
-        use.
-        """
         if 1 == self.n_engines:
-            return [self._gen1_engines(s) for s in self.dimensions]
+            return [self.__gen1_engines(s) for s in self.extents]
         elif 4 == self.n_engines:
-            return [self._gen4_engines(s) for s in self.dimensions]
+            return [self.__gen4_engines(s) for s in self.extents]
         elif 8 == self.n_engines:
-            return [self._gen8_engines(s) for s in self.dimensions]
+            return [self.__gen8_engines(s) for s in self.extents]
         elif 16 == self.n_engines:
-            return [self._gen16_engines(s) for s in self.dimensions]
+            return [self.__gen16_engines(s) for s in self.extents]
         elif 24 == self.n_engines:
-            return [self._gen24_engines(s) for s in self.dimensions]
+            return [self.__gen24_engines(s) for s in self.extents]
         else:
             raise RuntimeError
 
-    def _gen1_engines(self, dims):
+    def __gen_engines(self,
+                      dims: tp.Tuple[int, int, int],
+                      n_engines_x: int,
+                      n_engines_y: int,
+                      forward_engines: tp.List[int]):
         """
-        Generate definitions for physics engines for the specified pair of (X,Y) dimensions if the #
-        requested engines was 1.
-        """
-        return [('.', 'physics_engines', {}),
-                (".//physics_engines", 'dynamics2d', {'id': 'dyn2d'})]
+        Generate definitions for the specified # of 3D physics engines for the specified pair of
+        (X,Y) arena extents.
 
-    def _gen4_engines(self, dims):
-        """
-        Generate definitions for 4 physics engines for the specified pair of (X,Y) dimensions. The
-        layout is:
-
-         3 2
-         0 1
-        """
-        return self._gen_engines(dims,
-                                 n_engines_x=2,
-                                 n_engines_y=2,
-                                 forward_engines=[0, 1])
-
-    def _gen8_engines(self, dims):
-        """
-        Generate definitions for 8 physics engines for the specified pair of (X,Y) dimensions. The
-        layout is:
-
-        7 6 5 4
-        0 1 2 3
-        """
-        return self._gen_engines(dims,
-                                 n_engines_x=4,
-                                 n_engines_y=2,
-                                 forward_engines=[0, 1, 2, 3])
-
-    def _gen16_engines(self, dims):
-        """
-        Generate definitions for 16 physics engines for the specified pair of (X,Y) dimensions. The
-        layout is:
-
-        15 14 13 12
-        8  9  10 11
-        7  6  5  4
-        0  1  2  3
-        """
-        return self._gen_engines(dims,
-                                 n_engines_x=4,
-                                 n_engines_y=4,
-                                 forward_engines=[0, 1, 2, 3, 8, 9, 10, 11])
-
-    def _gen24_engines(self, dims):
-        """
-        Generate definitions for 24 physics engines for the specified pair of (X,Y). The layout is:
-
-        23  22 21  20 19 18
-        12  13 14  15 16 17
-        11  10  9  8  7  6
-        0   1   2  3  4  5
-        """
-        return self._gen_engines(dims,
-                                 n_engines_x=6,
-                                 n_engines_y=4,
-                                 forward_engines=[0, 1, 2, 3, 4, 5, 12, 13, 14, 15, 16, 17])
-
-    def _gen_engines(self, dims, n_engines_x, n_engines_y, forward_engines):
-        """
-        Generate definitions for physics engines for the specified pair of (X,Y) dimensions.
-
+        dims: The arena extents.
         n_engines_x: # engines in the x direction.
         n_engines_y: # engines in the y direction.
         forward_engines: IDs of engines that are placed in increasing order in X when layed out
                          L->R.
+
+        Volume is *NOT* divided equally among engines, but rather each of the engines is extended up
+        to some maximum height in Z, forming a set of "silos".
         """
         adds = [('.', 'physics_engines', {})]
-        size_x = self.dimensions[0] / n_engines_x
-        size_y = self.dimensions[1] / n_engines_y
+
+        size_x = self.extents[0] / n_engines_x
+        size_y = self.extents[1] / n_engines_y
+        size_z = self.extents[2]
+
+        if 'dynamics3d' == self.engine_type:
+            name_stem = 'dyn3d'
+        else:
+            name_stem = 'dyn2d'
 
         for i in range(0, self.n_engines):
-            name = 'dyn2d' + str(i)
-            adds.append(('.//physics_engines', 'dynamics2d', {'id': name,
-                                                              'iterations': str(self.iter_per_tick)}))
+            name = name_stem + str(i)
+            adds.append(('.//physics_engines', self.engine_type, {'id': name,
+                                                                  'iterations': str(self.iter_per_tick)}))
             adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]",
                          "boundaries", {}))
             adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]/boundaries",
-                         "top", {'height': '1'}))
+                         "top", {'height': str(size_z)}))
             adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]/boundaries",
-                         "bottom", {'height': '0'}))
+                         "bottom", {'height': '0.0'}))
             adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]/boundaries",
                          "sides", {}))
 
@@ -187,3 +157,154 @@ class PhysicsEngines(BaseVariable):
             adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]/boundaries/sides",
                          "vertex", {"point": "{0}, {1}".format(ul_x, ul_y)}))
         return adds
+
+    def __gen1_engines(self, dims: tp.Tuple[int, int]):
+        """
+        Generate definitions for 1 2D or 3D physics engine for the specified pair of (X,Y) arena
+        extents.
+
+        """
+
+        if 'dynamics3d' == self.engine_type:
+            name = 'dyn3d'
+        else:
+            name = 'dyn2d'
+
+        return [('.', 'physics_engines', {}),
+                (".//physics_engines", self.engine_type, {'id': name})]
+
+    def __gen4_engines(self, dims: tp.Tuple[int, int]):
+        """
+        Generate definitions for 4 2D or 3D physics engine for the specified pair of (X,Y) arena
+        extents.
+
+        The 2D layout is:
+
+         3 2
+         0 1
+
+        Volume is *NOT* divided equally among engines, but rather each of the engines is extended up
+        to some maximum height in Z, forming a set of "silos".
+        """
+        return self.__gen_engines(dims,
+                                  n_engines_x=2,
+                                  n_engines_y=2,
+                                  forward_engines=[0, 1])
+
+    def __gen8_engines(self, dims: tp.Tuple[int, int]):
+        """
+        Generate definitions for 8 2D or 3D physics engine for the specified pair of (X,Y) arena
+        extents with a uniform grid layout.
+
+        The 2D layout is:
+
+        7 6 5 4
+        0 1 2 3
+
+        Volume is *NOT* divided equally among engines, but rather each of the engines is extended up
+        to some maximum height in Z, forming a set of "silos".
+        """
+        return self.__gen_engines(dims,
+                                  n_engines_x=4,
+                                  n_engines_y=2,
+                                  forward_engines=[0, 1, 2, 3])
+
+    def __gen16_engines(self, dims: tp.Tuple[int, int]):
+        """
+        Generate definitions for 16 2D or 3D physics engine for the specified pair of (X,Y) arena
+        extents with a uniform grid layout.
+
+        The 2D layout is:
+
+        15 14 13 12
+        8  9  10 11
+        7  6  5  4
+        0  1  2  3
+
+        Volume is *NOT* divided equally among engines, but rather each of the engines is extended up
+        to some maximum height in Z, forming a set of "silos".
+        """
+        return self.__gen_engines(dims,
+                                  n_engines_x=4,
+                                  n_engines_y=4,
+                                  forward_engines=[0, 1, 2, 3, 8, 9, 10, 11])
+
+    def __gen24_engines(self, dims: tp.Tuple[int, int]):
+        """
+        Generate definitions for 16 2D or 3D physics engine for the specified pair of (X,Y) arena
+        extents with a uniform grid layout.
+
+        The 2D layout is:
+
+        23  22 21  20 19 18
+        12  13 14  15 16 17
+        11  10  9  8  7  6
+        0   1   2  3  4  5
+
+        Volume is *NOT* divided equally among engines, but rather each of the engines is extended up
+        to some maximum height in Z, forming a set of "silos".
+        """
+        return self.__gen_engines(dims,
+                                  n_engines_x=6,
+                                  n_engines_y=4,
+                                  forward_engines=[0, 1, 2, 3, 4, 5, 12, 13, 14, 15, 16, 17])
+
+
+class PhysicsEngines2D(PhysicsEngines):
+    """
+    Specialization of :class:`PhysicsEngines` for 2D.
+    """
+
+    def __init__(self,
+                 engine_type,
+                 n_engines: int,
+                 iter_per_tick: int,
+                 layout: str,
+                 extents: tp.List[tp.Tuple[int, int, int]]):
+        PhysicsEngines.__init__(self,
+                                engine_type,
+                                n_engines,
+                                iter_per_tick,
+                                layout,
+                                extents)
+
+
+class PhysicsEngines3D(PhysicsEngines):
+    """
+    Specialization of :class:`PhysicsEngines` for 3D.
+    """
+
+    def __init__(self,
+                 engine_type,
+                 n_engines: int,
+                 iter_per_tick: int,
+                 layout: str,
+                 extents: tp.List[tp.Tuple[int, int, int]]):
+        PhysicsEngines.__init__(self,
+                                engine_type,
+                                n_engines,
+                                iter_per_tick,
+                                layout,
+                                extents)
+
+
+def Factory(cmdopts: tp.Dict[str, str],
+            extents: tp.List[tp.Tuple[int, int, int]]):
+    """
+    Create a physics engine mapping onto an arena extent for 2D and 3D.
+    """
+    # Right now the 2D and 3D variants are the same, but that is unlikely to remain so in the
+    # future, so we employ a factory function to make implementation of diverging functionality
+    # easier later.
+    if '2d' in cmdopts['physics_engine_type']:
+        return PhysicsEngines2D(cmdopts['physics_engine_type'],
+                                cmdopts['physics_n_engines'],
+                                cmdopts['physics_iter_per_tick'],
+                                'uniform_grid2D',
+                                extents)
+    else:
+        return PhysicsEngines3D(cmdopts['physics_engine_type'],
+                                cmdopts['physics_n_engines'],
+                                cmdopts['physics_iter_per_tick'],
+                                'uniform_grid2D',
+                                extents)

@@ -18,6 +18,7 @@
 import os
 import copy
 import pandas as pd
+import logging
 from graphs.batch_ranged_graph import BatchRangedGraph
 from perf_measures import vcs
 
@@ -40,7 +41,7 @@ class ReactivityUnivar:
         generate a graph of the result.
         """
 
-        print("-- Univariate reactivity from {0}".format(self.cmdopts["collate_root"]))
+        logging.info("Univariate reactivity from %s", self.cmdopts["collate_root"])
         batch_exp_dirnames = batch_criteria.gen_exp_dirnames(self.cmdopts)
 
         # Reactivity is only defined for experiments > 0, as exp0 is assumed to be ideal conditions,
@@ -61,9 +62,7 @@ class ReactivityUnivar:
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel=vcs.method_ylabel(self.cmdopts["reactivity_cs_method"],
                                                   'reactivity'),
-                         xvals=batch_criteria.graph_xticks(self.cmdopts)[1:],
-                         legend=None,
-                         polynomial_fit=-1).generate()
+                         xvals=batch_criteria.graph_xticks(self.cmdopts)[1:]).generate()
 
 
 class ReactivityBivar:
@@ -73,5 +72,8 @@ class ReactivityBivar:
 
     """
 
-    def __init__(self):
+    def __init__(self, cmdopts):
+        raise NotImplementedError
+
+    def generate(self, batch_criteria):
         raise NotImplementedError

@@ -109,7 +109,7 @@ class TAPolicySet(UnivarBatchCriteria):
         return [i for i in range(1, len(dirs) + 1)]
 
     def graph_xticklabels(self, cmdopts: tp.Dict[str, str], exp_dirs) -> tp.List[float]:
-        return [' '.join(map(lambda x: x.capitalize(), policy.split('_'))) for policy in TAPolicySet.kPolicies]
+        return ['Random', 'STOCH-N1', 'MATOPT', r'$\epsilon$-greedy', 'UCB1']
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
         return "Task Allocation Policy"

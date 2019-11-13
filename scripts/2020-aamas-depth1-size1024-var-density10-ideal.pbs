@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#PBS -l walltime=12:00:00,nodes=50:ppn=8,pmem=2500mb
+#PBS -l walltime=16:00:00,nodes=20:ppn=8,pmem=2500mb
 #PBS -m abe
 #PBS -M harwe006@umn.edu
 
@@ -36,19 +36,17 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 ################################################################################
 # Begin Experiments                                                            #
 ################################################################################
-CONTROLLERS=(depth0.CRW depth0.CRW depth0.CRW
-             depth0.DPO depth0.DPO depth0.DPO)
+CONTROLLERS=(depth1.BITD_DPO depth1.BITD_DPO depth1.BITD_DPO)
 
 # ~10% swarm density with 1024 robots
-SCENARIOS=(SS.128x64 DS.128x64 QS.96x96
-           SS.128x64 DS.128x64 QS.96x96)
+SCENARIOS=(SS.128x64 DS.128x64 QS.96x96)
 
 # ~10% block density in each scenario
 BLOCK_COUNTS=(820 820 920 820 820 920)
 
-OUTPUT_ROOT=$HOME/exp/2020-aamas-depth0
+OUTPUT_ROOT=$HOME/exp/2020-aamas-depth1-ideal
 BASE_CMD="python3 sierra.py \
-                  --template-input-file=$SIERRA/templates/2020-aamas-depth0-ideal.argos\
+                  --template-input-file=$SIERRA/templates/2020-aamas-depth1-ideal.argos \
                   --exec-method=hpc\
                   --hpc-env=MSI \
                   --time-setup=time_setup.T10000"

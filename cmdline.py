@@ -88,7 +88,7 @@ class Cmdline:
                                  """)
 
         self.parser.add_argument("--scenario",
-                                 metavar="<block dist>.AxB",
+                                 metavar="<block dist>.AxB[xC]",
                                  help="""
 
                                  Which scenario the defined controller should be run in. Scenario=block
@@ -102,8 +102,9 @@ class Cmdline:
                                  - ``QS`` - Quad source
                                  - ``PL`` - Power law
 
-                                 A and B are the scenario X and Y dimensions (which can be any non-negative
-                                 integer values).
+                                 A,B,C are the scenario X,Y,Z dimensions respectively (which can be any postive integer
+                                 values). The X,Y dimensions are required, the Z dimension is optional and defaults to
+                                 1.0 if omitted.
 
                                  Use=stage{1,2,3,4}; can be omitted otherwise.
 
@@ -199,6 +200,15 @@ class Cmdline:
                                  choices=['MSI', None],
                                  default=None)
 
+        self.parser.add_argument("--log-level",
+                                 choices=["INFO", "DEBUG"],
+                                 help="""
+
+                                 The level of logging to use when running SIERRA.
+
+                                 """,
+                                 default="INFO")
+
         stage1 = self.parser.add_argument_group('Stage1: Generating experiments')
 
         stage1.add_argument("--time-setup",
@@ -245,26 +255,40 @@ class Cmdline:
         stage1.add_argument("--static-cache-blocks",
                             help="""
 
-                            Specify the # of blocks used when the static cache is respawned (depth1 controllers only).
+                            # of blocks used when the static cache is respawned (depth1 controllers only).
+                            Specify the
 
                             Use=stage{1}; can be omitted otherwise.
 
                             """,
-                            default=None)        # Physics engines options
+                            default=None)
+
+        # Physics engines options
         physics = self.parser.add_argument_group('Stage1: Physics',
                                                  'Physics engine options for stage1')
+
+        physics.add_argument("--physics-engine-type",
+                             choices=['dynamics2d', 'dynamics3d', 'pointmass3d'],
+                             help="""
+
+                             Specify the type of physics engine to use, choosing one of the types that ARGoS supports.
+
+                             """,
+                             default='dynamics2d')
 
         physics.add_argument("--physics-n-engines",
                              choices=[1, 4, 8, 16, 24],
                              type=int,
                              help="""
 
-                            The # of physics engines to use during simulation (yay ARGoS!). If n > 1, the engines will
+                            # of physics engines to use during simulation (yay ARGoS!). If n > 1, the engines will
+                            The
                             be tiled in a uniform grid within the arena (X and Y spacing may not be the same depending
-                            on dimensions and how many engines are chosen, however).
+                            on dimensions and how many engines are chosen, however), extending upward in Z to the height
+                            specified by ``--scenario``.
 
                             If ``--exec-method=hpc`` then the value of this option will be inherited from the HPC
-                            environment specified by ``--hpc-env`` (can still be override on cmdline).
+                            environment specified by ``--hpc-env`` (can still be overriden on cmdline).
 
                             If ``exec-method=local`` then this option is required.
 
@@ -326,7 +350,8 @@ class Cmdline:
         robots.add_argument("--n-blocks",
                             help="""
 
-                            Specify the # blocks that should be used in the simulation (evenly split between cube and
+                            # blocks that should be used in the simulation (evenly split between cube and
+                            Specify the
                             ramp). Can be used to override batch criteria, or to supplement experiments that do not set
                             it so that manual modification of input file is unneccesary.
 
@@ -383,7 +408,8 @@ class Cmdline:
 
                             If TRUE, then the verification step will be skipped for the batched experiment, and outputs
                             will be averaged directly. If not all .csv files for all experiments exist and/or have the
-                            same # of rows, then sierra will (probably) crash during stage4. Verification can take a
+                            # of rows, then sierra will (probably) crash during stage4. Verification can take a
+                            same
                             long time with large # of simulations per experiment.
 
                             Use=stage{3}; can be omitted otherwise.
@@ -554,7 +580,7 @@ class Cmdline:
 
         stage5 = self.parser.add_argument_group('Stage5', 'General stage5 options')
 
-        stage5.add_argument("--controller-comp-list",
+        stage5.add_argument("--controllers-list",
                             help="""
 
                             Comma separated list of controllers to compare within ``<sierra root>``. If None, then the
@@ -568,13 +594,46 @@ class Cmdline:
                             """,
                             default='depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO')
 
-        stage5.add_argument("--normalize-comparisons",
+        stage5.add_argument("--controllers-legend",
                             help="""
 
-                            Specify that controller comparisons should be normalized against the controller of primary interest
+                            Comma separated list of names to use on the legend for the generated intra-scenario
+                            controller comparison graphs (if applicable), specified in the same order as the
+                            `--controllers-list`.
+
+                            Use=stage{5}; can be omitted otherwise. If omitted, the raw controller names will be used.
+                            """)
+        stage5.add_argument("--comparison-type",
+                            choices=['raw', 'scale3D', 'scale2D', 'diff3D', 'diff2D'],
+                            help="""
+
+                            Specify how controller comparisons should be performed (currently only used for bivariate
+                            controller comparisons). Options are:
+
+                            - ``raw`` - Output raw performance measures. This results in a set single stacked 3D surface plots
+                              comparing all controllers (identical plots, but view from different angles). Uses
+                              ``--controllers-legend`` if passed for legend.
+
+                            - ``scale3D`` - Scale controller performance measures against those of the controller
+                              of primary interest by dividing. This results in a set single stacked 3D surface plots
+                              comparing all controllers (identical plots, but view from different angles). Uses
+                              ``--controllers-legend`` if passed for legend.
+
+                            - ``scale2D`` - Scale controller performance measures against those of the controller
+                              of primary interest by dividing. This results in a set of 2D heatmaps, one for each
+                              controller paired against the primary controller of interest.
+
+                            - ``diff3D`` - Subtract the performance measure of the controller of primary interest from
+                              each controller (including the primary). This results in a set single stacked 3D surface plots
+                              comparing all controllers (identical plots, but view from different angles), in which the
+                              controller of primary interest forms an (X,Y) plane at Z=0. Uses
+                              ``--controllers-legend`` if passed for legend.
+
+                            - ``diff2D`` - Subtract the performance measure of the controller of primary interest
+                              against all other controllers, pairwise, outputting one 2D heatmap per comparison.
 
                             """,
-                            action='store_true')
+                            default='raw')
 
         stage5.add_argument("--bc-univar",
                             help="""
@@ -623,7 +682,6 @@ class HPCEnvInheritor():
             assert k in os.environ, \
                 "FATAL: Attempt to run sierra in non-MSI environment: '{0}' not found".format(k)
 
-        print(args.n_threads)
         if 'MSI' == self.env_type:
             if args.physics_n_engines is None:
                 args.physics_n_engines = int(os.environ['PBS_NUM_PPN'])
@@ -657,10 +715,14 @@ class CmdlineValidator():
         assert isinstance(args.batch_criteria, list),\
             'FATAL Batch criteria not passed as list on cmdline'
 
-        if 'local' == args.exec_method and 2 in args.pipeline:
+        if 'local' == args.exec_method and any([1, 2]) in args.pipeline:
             assert args.physics_n_engines is not None, '--physics-n-engines is required for --exec-method=local'
             assert args.n_threads is not None, '--n-threads is required for --exec-method=local'
             assert args.n_sims is not None, '--n-sims is required for --exec-method=local'
+
+        if 5 in args.pipeline:
+            assert args.bc_univar or args.bc_bivar,\
+                '--bc-univar or --bc-bivar is required for stage 5'
 
 
 def sphinx_argparse_object():

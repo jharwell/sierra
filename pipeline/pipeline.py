@@ -13,8 +13,20 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
+"""
+Container module for the 5 pipeline stages implemented by SIERRA:
 
-
+#. Generate a set of XML configuration files from a template suitable for
+   input into ARGoS that contain user-specified modifications.
+#. Run the specified  # of experiments in parallel using GNU Parallel on
+   the provided set of hosts on MSI (or on a single personal computer for testing).
+#. Average the .csv results of the simulation runs together.
+#. Generate a user-defined set of graphs based on the averaged results for each
+   experiment, and possibly across experiments for batches.
+#. Compare controllers that have been tested with the same experiment batch across different
+   performance measures.
+"""
+import variables.batch_criteria as bc
 from pipeline.stage1 import PipelineStage1
 from pipeline.stage2 import PipelineStage2
 from pipeline.stage3 import PipelineStage3
@@ -23,24 +35,9 @@ from pipeline.stage5 import PipelineStage5
 
 
 class Pipeline:
+    "Implements SIERRA's 5 stage pipeline."
 
-    """
-    Automation for running ARGoS robotic simulation experiments in parallel
-
-    Implements the following pipeline for single OR batched experiments:
-
-    1. Generate a set of XML configuration files from a template suitable for
-       input into ARGoS that contain user-specified modifications.
-    2. Run the specified  # of experiments in parallel using GNU Parallel on
-       the provided set of hosts on MSI (or on a single personal computer for testing).
-    3. Average the .csv results of the simulation runs together.
-    4. Generate a user-defined set of graphs based on the averaged results for each
-       experiment, and possibly across experiments for batches.
-    5. Compare controllers that have been tested with the same experiment batch across different
-       performance measures.
-    """
-
-    def __init__(self, args, input_generator, batch_criteria, cmdopts):
+    def __init__(self, args, controller, scenario, cmdopts):
         self.args = args
         self.cmdopts = {
             # general
@@ -50,19 +47,26 @@ class Pipeline:
             'template_input_file': self.args.template_input_file,
             'config_root': self.args.config_root,
             'named_exp_dirs': self.args.named_exp_dirs,
+            'hpc_env': args.hpc_env,
+            'with_rendering': self.args.with_rendering,
+            "n_sims": args.n_sims,
+            "n_threads": args.n_threads,
+            'n_blocks': args.n_blocks,
 
             # stage 1
             'time_setup': self.args.time_setup,
             'physics_n_engines': self.args.physics_n_engines,
+            "physics_engine_type": self.args.physics_engine_type,
+            "physics_iter_per_tick": self.args.physics_iter_per_tick,
+            "with_robot_rab": self.args.with_robot_rab,
+            "with_robot_leds": self.args.with_robot_leds,
+            "with_robot_battery": self.args.with_robot_battery,
+            'static_cache_blocks': self.args.static_cache_blocks,
 
             # stage 2
             'exec_exp_range': self.args.exec_exp_range,
             'exec_method': self.args.exec_method,
-            'n_threads': self.args.n_threads,
-            'n_sims': self.args.n_sims,
             'exec_resume': self.args.exec_resume,
-            'with_rendering': self.args.with_rendering,
-            'hpc_env': self.args.hpc_env,
 
             # stage 3
             'no_verify_results': self.args.no_verify_results,
@@ -78,26 +82,30 @@ class Pipeline:
             'reactivity_cs_method': self.args.reactivity_cs_method,
             'adaptability_cs_method': self.args.adaptability_cs_method,
             'exp_graphs': self.args.exp_graphs,
-            'n_blocks': self.args.n_blocks,
 
             # stage 5
-            'controller_comp_list': self.args.controller_comp_list,
-            'normalize_comparisons': self.args.normalize_comparisons
+            'controllers_list': self.args.controllers_list,
+            'controllers_legend': self.args.controllers_legend,
+            'comparison_type': self.args.comparison_type
         }
         if cmdopts is not None:
             self.cmdopts.update(cmdopts)
 
-        self.input_generator = input_generator
-        self.batch_criteria = batch_criteria
+        if 5 not in self.args.pipeline:
+            self.batch_criteria = bc.Factory(args, self.cmdopts)
+
+        self.controller = controller
+        self.scenario = scenario
 
     def run(self):
         """
         Run pipeline stages as configured.
-
         """
         if 1 in self.args.pipeline:
-            PipelineStage1().run(self.cmdopts,
-                                 self.input_generator)
+            PipelineStage1(self.controller,
+                           self.scenario,
+                           self.batch_criteria,
+                           self.cmdopts).run()
 
         if 2 in self.args.pipeline:
             PipelineStage2().run(self.cmdopts, self.batch_criteria)

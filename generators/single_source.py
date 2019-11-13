@@ -15,82 +15,52 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 
-from generators.exp_input_generator import ExpInputGenerator
+from generators.base_scenario_generator import BaseScenarioGenerator
 import variables as ev
-import pickle
 
 
-class SSGenerator(ExpInputGenerator):
+class SSGenerator(BaseScenarioGenerator):
     """
-    Modifies simulation input file template for single source foraging:
+    Generates XML changes for single source foraging.
+
+    This includes:
 
     - Rectangular 2x1 arena
     - Single source block distribution
-    - # blocks unspecified
-    - # robots unspecified
 
-    Attributes:
-      controller(str): The controller used for the experiment.
+    Changes are *NOT* generated for the following:
+
+    - # robots
+
     """
 
-    def __init__(self, template_input_file, generation_root, exp_output_root,
-                 exp_def_fname, cmdopts, controller):
-        super().__init__(template_input_file, generation_root, exp_output_root,
-                         exp_def_fname, cmdopts)
-        self.controller = controller
+    def __init__(self, *args, **kwargs):
+        BaseScenarioGenerator.__init__(self, *args, **kwargs)
 
-    def generate(self, xml_luigi):
-
-        # Generate and apply arena dimensions definitions, and write dimensions to file for later
-        # retrieval.
+    def generate(self):
+        exp_def = self.common_defs.generate()
         arena_dim = self.cmdopts["arena_dim"]
 
         assert arena_dim[0] == 2 * arena_dim[1],\
-            "FATAL: Single source distribution requires a 2x1 arena: xdim={0},ydim={1}".format(arena_dim[0],
-                                                                                               arena_dim[1])
+            "FATAL: SS distribution requires a 2x1 arena: xdim={0},ydim={1}".format(arena_dim[0],
+                                                                                    arena_dim[1])
 
-        shape = ev.arena_shape.RectangularArenaTwoByOne(x_range=[arena_dim[0]],
-                                                        y_range=[arena_dim[1]])
-
-        # We check for attributes before modification because if we are not rendering video, then we
-        # get a bunch of spurious warnings about deleted tags/attributes.
-        for a in shape.gen_attr_changelist()[0]:
-            if xml_luigi.has_tag(a[0]):
-                xml_luigi.attr_change(a[0], a[1], a[2])
-
-        with open(self.exp_def_fpath, 'ab') as f:
-            pickle.dump(shape.gen_attr_changelist()[0], f)
-
-        rms = shape.gen_tag_rmlist()
-        if len(rms):
-            [xml_luigi.tag_remove(a) for a in rms[0]]
+        self.generate_arena_shape(exp_def,
+                                  ev.arena_shape.RectangularArenaTwoByOne(x_range=[arena_dim[0]],
+                                                                          y_range=[arena_dim[1]]))
 
         # Generate and apply block distribution type definitions
-        source = ev.block_distribution.TypeSingleSource()
-        [xml_luigi.attr_change(a[0], a[1], a[2]) for a in source.gen_attr_changelist()[0]]
-
-        rms = source.gen_tag_rmlist()
-        if len(rms):
-            [xml_luigi.tag_remove(a) for a in rms[0]]
+        BaseScenarioGenerator.generate_block_dist(exp_def, ev.block_distribution.TypeSingleSource())
 
         # Generate and apply nest definitions
-        nest_pose = ev.nest_pose.NestPose("single_source", [arena_dim])
-        [xml_luigi.attr_change(a[0], a[1], a[2]) for a in nest_pose.gen_attr_changelist()[0]]
-        rms = nest_pose.gen_tag_rmlist()
-        if len(rms):
-            [xml_luigi.tag_remove(a) for a in rms[0]]
-
-        # Generate and apply physics engines definitions
-        self.generate_physics_defs(xml_luigi)
+        BaseScenarioGenerator.generate_nest_pose(exp_def, arena_dim, "single_source")
 
         if "depth1" in self.controller:
-            self.generate_static_cache_defs(xml_luigi, arena_dim)
+            self.generate_static_cache(exp_def, arena_dim)
         if "depth2" in self.controller:
-            self.generate_dynamic_cache_defs(xml_luigi, arena_dim)
+            BaseScenarioGenerator.generate_dynamic_cache(exp_def, arena_dim)
 
         # Generate and apply # blocks definitions
-        self.generate_block_count_defs(xml_luigi)
+        self.generate_block_count(exp_def)
 
-        # Generate simulation input files now that all simulation changes have been made to the
-        # template
-        self.generate_inputs(xml_luigi)
+        return exp_def

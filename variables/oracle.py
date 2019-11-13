@@ -33,8 +33,8 @@ Examples:
 
 import typing as tp
 import re
-from variables.batch_criteria import UnivarBatchCriteria
 import itertools
+from variables.batch_criteria import UnivarBatchCriteria
 from variables.swarm_size import SwarmSize
 
 
@@ -72,7 +72,10 @@ class Oracle(UnivarBatchCriteria):
                          "{0}".format(str(feat[1]))) for feat in t[1]]) for t in self.tuples]
 
         if self.swarm_size is not None:
-            size_attr = [next(iter(SwarmSize([self.swarm_size]).gen_attr_changelist()[0]))]
+            size_attr = [next(iter(SwarmSize(self.cli_arg,
+                                             self.main_config,
+                                             self.batch_generation_root,
+                                             [self.swarm_size]).gen_attr_changelist()[0]))]
             for c in changes:
                 c.add(size_attr)
 
@@ -110,8 +113,8 @@ class Oracle(UnivarBatchCriteria):
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
         return "Oracular Information Type"
 
-    def pm_query(self, query: str) -> bool:
-        return query in ['blocks-collected']
+    def pm_query(self, pm: str) -> bool:
+        return pm in ['blocks-collected']
 
 
 class OracleParser():

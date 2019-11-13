@@ -44,7 +44,8 @@ class SwarmSize(bc.UnivarBatchCriteria):
 
     """
 
-    def __init__(self, cli_arg: str,
+    def __init__(self,
+                 cli_arg: str,
                  main_config: tp.Dict[str, str],
                  batch_generation_root: str,
                  size_list: tp.List[str]):
@@ -88,7 +89,7 @@ class SwarmSize(bc.UnivarBatchCriteria):
             return ret
 
     def graph_xticklabels(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[float]:
-        return self.graph_xticklabels(cmdopts, exp_dirs)
+        return self.graph_xticks(cmdopts, exp_dirs)
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
         return "Swarm Size"

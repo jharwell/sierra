@@ -137,7 +137,7 @@
             site_xrange="2:10"
             site_yrange="2.5:3">
           <pickup_policy
-              policy="Null"
+              policy="cache_size"
               timestep="20000"
               cache_size="3"/>
         </cache_sel_matrix>
@@ -201,6 +201,7 @@
           cache_utilization="cache-utilization.csv"
           cache_lifecycle="cache-lifecycle.csv"
           cache_locations="cache-locations.csv"
+          cache_site_selection="cache-site-selection.csv"
           task_execution_generalist="task-execution-generalist.csv"
           task_execution_collector="task-execution-collector.csv"
           task_execution_harvester="task-execution-harvester.csv"

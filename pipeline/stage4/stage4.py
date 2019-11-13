@@ -14,13 +14,17 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
+"""
+Contains main class implementing stage 4 of the experimental pipeline: graph generation.
+"""
 
 import os
+import logging
 import yaml
 import matplotlib as mpl
-from .univar_csv_collator import UnivarCSVCollator
-from .bivar_csv_collator import BivarCSVCollator
-from .batched_intra_exp_graph_generator import BatchedIntraExpGraphGenerator
+from .csv_collator import UnivarCSVCollator
+from .csv_collator import BivarCSVCollator
+from .intra_exp_graph_generator import BatchedIntraExpGraphGenerator
 from .inter_exp_graph_generator import InterExpGraphGenerator
 mpl.rcParams['lines.linewidth'] = 3
 mpl.rcParams['lines.markersize'] = 10
@@ -30,62 +34,107 @@ mpl.use('Agg')
 
 
 class PipelineStage4:
-
     """
+    Implements stage 4 of the experimental pipeline: generating graphs within single experiment
+    (intra-experiment) and across experiments in a batch (inter-experiment). Graph generation
+    controlled via YAML config files.
 
-    Implements stage 4 of the experimental pipeline:
+    Attributes:
+        cmdopts: Dictionary of parsed cmdline options.
 
-    Generate a user-defined set of graphs based on the averaged results for each
-    experiment, and across experiments for batches.
+        controller_config: YAML configuration file found in
+                           ``<config_root>/controllers.yaml``. Contains configuration for what
+                           categories of graphs should be generated for what controllers, for all
+                           categories of graphs in both inter- and intra-experiment graph
+                           generation.
+
+        inter_LN_config: YAML configuration file found in ``<config_root>/inter-graphs-line.yaml``
+                         Contains configuration for categories of linegraphs that can potentially be
+                         generated for all controllers `across` experiments in a batch. Which
+                         linegraphs are actually generated for a given controller is controlled by
+                         ``<config_root>/controllers.yaml``.
+
+        intra_LN_config: YAML configuration file found in ``<config_root>/intra-graphs-line.yaml``
+                         Contains configuration for categories of linegraphs that can potentially be
+                         generated for all controllers `within` each experiment in a batch. Which
+                         linegraphs are actually generated for a given controller in each experiment
+                         is controlled by ``<config_root>/controllers.yaml``.
+
+        intra_HM_config: YAML configuration file found in ``<config_root>/intra-graphs-hm.yaml``
+                         Contains configuration for categories of heatmaps that can potentially be
+                         generated for all controllers `within` each experiment in a batch. Which
+                         heatmaps are actually generated for a given controller in each experiment
+                         is controlled by ``<config_root>/controllers.yaml``.
     """
 
     def __init__(self, cmdopts):
         self.cmdopts = cmdopts
 
-        self.controller_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
-                                                             'controllers.yaml')),
-                                           yaml.FullLoader)
-        self.linegraph_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
-                                                            'inter-graphs-line.yaml')),
-                                          yaml.FullLoader)
         self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
                                                        'main.yaml')),
                                      yaml.FullLoader)
+        self.controller_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
+                                                             'controllers.yaml')),
+                                           yaml.FullLoader)
+        self.inter_LN_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
+                                                           'inter-graphs-line.yaml')),
+                                         yaml.FullLoader)
+        self.intra_LN_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
+                                                           'intra-graphs-line.yaml')),
+                                         yaml.FullLoader)
+        self.intra_HM_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
+                                                           'intra-graphs-hm.yaml')),
+                                         yaml.FullLoader)
 
     def run(self, batch_criteria):
+        """
+        Runs intra-experiment graph generation, ``.csv`` collation for inter-experiment graph
+        generation, and inter-experiment graph generation, as configured on the cmdline.
+
+        Intra-experiment graph generation: if intra-experiment graphs should be generated,
+        according to cmdline configuration, the following is run:
+
+        #. :class:`pipeline.stage4.BatchedIntraExpGraphGenerator` to generate graphs for each
+           experiment in the batch.
+
+        Inter-experiment graph generation: if inter-experiment graphs should be generated according
+        to cmdline configuration, the following is run:
+
+        #. :class:`~pipeline.stage4.UnivarCSVCollator` or :class:`~pipeline.stage4.BivarCSVCollator`
+           as appropriate (depending on which type of
+           :class:`~variables.batch_criteria.BatchCriteria` was specified on the cmdline).
+
+        #. :class:`~pipeline.stage4.InterExpGraphGenerator` to perform graph generation from
+           collated ``.csv`` files.
+        """
         if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'intra':
-            self.__gen_intra_graphs(batch_criteria)
+            logging.info("Stage4: Generating intra-experiment graphs...")
+            BatchedIntraExpGraphGenerator(self.cmdopts)(self.main_config,
+                                                        self.controller_config,
+                                                        self.intra_LN_config,
+                                                        self.intra_HM_config,
+                                                        batch_criteria)
+            logging.info("Stage4: Intra-experiment graph generation complete")
 
         if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'inter':
             # Collation must be after intra-experiment graph generation, so that all .csv files to
             # be collated have been generated/modified according to parameters.
-            targets = self.__calc_linegraph_targets()
+            targets = self.__calc_inter_LN_targets()
             if batch_criteria.is_univar():
-                UnivarCSVCollator(self.main_config, self.cmdopts, targets, batch_criteria)()
+                UnivarCSVCollator(self.main_config, self.cmdopts)(batch_criteria, targets)
             else:
-                BivarCSVCollator(self.main_config, self.cmdopts, targets, batch_criteria)()
+                BivarCSVCollator(self.main_config, self.cmdopts)(batch_criteria, targets)
 
-            self.__gen_inter_graphs(targets, batch_criteria)
+            logging.info("Stage4: Generating inter-experiment graphs...")
+            InterExpGraphGenerator(self.main_config, self.cmdopts, targets)(batch_criteria)
+            logging.info("Stage4: Inter-experiment graph generation complete")
 
-    # Private functions
-    def __gen_inter_graphs(self, targets, batch_criteria):
-        print("- Stage4: Generating inter-experiment graphs...")
-        InterExpGraphGenerator(self.main_config, self.cmdopts, targets, batch_criteria)()
-        print("- Stage4: Inter-experiment graph generation complete")
-
-    def __gen_intra_graphs(self, batch_criteria):
-
-        print("- Stage4: Generating intra-experiment graphs...")
-        BatchedIntraExpGraphGenerator(self.main_config, self.cmdopts)(batch_criteria)
-        print("- Stage4: Intra-experiment graph generation complete")
-
-    def __calc_linegraph_targets(self):
+    def __calc_inter_LN_targets(self):
         """
-        Use the parsed controller+inter-exp linegraph config to figure out what .csv files need to
-        be collated/what graphs should be generated.
+        Use YAML configuration for controllers and inter-experiment graphs to what ``.csv`` files
+        need to be collated/what graphs should be generated.
         """
         keys = []
-        extra_graphs = []
         for category in list(self.controller_config.keys()):
             if category not in self.cmdopts['controller']:
                 continue
@@ -98,9 +147,8 @@ class PipelineStage4:
                 if 'graphs_inherit' in controller:
                     [keys.extend(l) for l in controller['graphs_inherit']]  # optional
 
-        filtered_keys = [k for k in self.linegraph_config if k in keys]
-        targets = [self.linegraph_config[k] for k in filtered_keys]
-        targets.append({'graphs': extra_graphs})
+        filtered_keys = [k for k in self.inter_LN_config if k in keys]
+        targets = [self.inter_LN_config[k] for k in filtered_keys]
 
-        print("- Enabled linegraph categories: {0}".format(filtered_keys))
+        logging.debug("Enabled linegraph categories: %s", filtered_keys)
         return targets

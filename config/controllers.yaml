@@ -5,6 +5,7 @@ base_graphs: &base_graphs
   - LN_block_acq
   - LN_block_manip
   - LN_convergence
+  - LN_perception
   - HM_arena
   - HM_swarm
 
@@ -115,12 +116,14 @@ depth2:
         - LN_cache_util
         - LN_cache_lifecycle
         - LN_cache_acq
+        - LN_cache_sites
         - LN_depth1_task_exec
         - LN_depth2_task_exec
         - LN_depth2_task_dist
         - LN_harvester_tab
         - LN_collector_tab
         - LN_generalist_tab
+
     - name: BIRTD_ODPO
       xml:
           attr_change:

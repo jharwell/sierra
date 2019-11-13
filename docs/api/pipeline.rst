@@ -1,6 +1,14 @@
 pipeline package
 ================
 
+Module contents
+---------------
+
+.. automodule:: pipeline
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Subpackages
 -----------
 
@@ -27,15 +35,6 @@ pipeline.root\_dirpath\_generator module
 ----------------------------------------
 
 .. automodule:: pipeline.root_dirpath_generator
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: pipeline
    :members:
    :undoc-members:
    :show-inheritance:

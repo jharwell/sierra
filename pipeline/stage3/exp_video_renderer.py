@@ -17,6 +17,35 @@
 
 import os
 import subprocess
+import logging
+
+
+class BatchedExpVideoRenderer:
+
+    """
+    Render the video for each experiment in the specified batch directory in sequence.
+
+    Attributes:
+      ro_params(dict): Dictionary of read-only parameters for batch rendering
+      batch_exp_root(str): Root directory for the batch experiment.
+
+    """
+
+    def __init__(self, ro_params, batch_exp_root):
+        self.batch_exp_root = os.path.abspath(batch_exp_root)
+        self.cmd_opts = ro_params['cmd_opts']
+        self.ofile_leaf = ro_params['ofile_leaf']
+        self.ro_params = ro_params
+
+    def render(self):
+        """Render videos for all all experiments in the batch."""
+        experiments = []
+        sorted_dirs = sorted([d for d in os.listdir(self.batch_exp_root)
+                              if self.ro_params['config']['sierra']['collate_csv_leaf'] not in d])
+        experiments = [os.path.join(self.batch_exp_root, item) for item in sorted_dirs
+                       if os.path.isdir(os.path.join(self.batch_exp_root, item))]
+        for exp in experiments:
+            ExpVideoRenderer(self.ro_params, exp).render()
 
 
 class ExpVideoRenderer:
@@ -40,8 +69,8 @@ class ExpVideoRenderer:
         self.exp_output_root = exp_output_root
 
     def render(self):
-        print("-- Rendering videos in {0}:leaf={1}...".format(self.exp_output_root,
-                                                              self.ro_params['ofile_leaf']))
+        logging.info("Rendering videos in {0}:leaf={1}...".format(self.exp_output_root,
+                                                                  self.ro_params['ofile_leaf']))
 
         opts = self.ro_params['cmd_opts'].split(' ')
         # Render videos in parallel--waaayyyy faster

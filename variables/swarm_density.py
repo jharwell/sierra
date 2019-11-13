@@ -76,8 +76,8 @@ class SwarmConstantDensity(cd.ConstantDensity):
                     x, y, z = c[2].split(',')
                     # ARGoS won't start if there are 0 robots, so you always need to put at least
                     # 1.
-                    n_robots = max(1, (int(x) * int(y)) * (self.target_density / 100.0))
-                    changeset.add((".//arena/distribute/entity", "quantity", str(int(n_robots))))
+                    n_robots = int(max(1, (int(x) * int(y)) * (self.target_density / 100.0)))
+                    changeset.add((".//arena/distribute/entity", "quantity", str(n_robots)))
                     break
         return self.changes
 
@@ -110,9 +110,9 @@ class SwarmConstantDensity(cd.ConstantDensity):
                                         dirs[i],
                                         "exp_def.pkl")
             exp_def = utils.unpickle_exp_def(pickle_fpath)
-            for e in exp_def:
-                if e[0] == ".//arena" and e[1] == "size":
-                    x, y, z = e[2].split(",")
+            for path, attr, value in exp_def:
+                if path == ".//arena" and attr == "size":
+                    x, y, z = value.split(",")
             areas.append((int(x) * int(y)))
         return areas
 
@@ -120,7 +120,7 @@ class SwarmConstantDensity(cd.ConstantDensity):
         return [str(x) + r' $m^2$' for x in self.graph_xticks(cmdopts, exp_dirs)]
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
-        return "Swarm Density"
+        return r"Swarm Density ({0}\%)".format(self.target_density)
 
     def pm_query(self, query) -> bool:
         return query in ['blocks-collected', 'scalability', 'self-org']
@@ -151,7 +151,7 @@ def Factory(cli_arg: str, main_config:
                                       attr['arena_size_inc'])]
     else:
         raise NotImplementedError(
-            "Unsupported block dstribution for constant density experiments: Only SS,DS,QS,RN supported")
+            "Unsupported block dstribution '{0}': Only SS,DS,QS,RN supported".format(kw['dist_type']))
 
     def __init__(self):
         SwarmConstantDensity.__init__(self,

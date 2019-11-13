@@ -1,6 +1,14 @@
 pipeline.stage1 package
 =======================
 
+Module contents
+---------------
+
+.. automodule:: pipeline.stage1
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Submodules
 ----------
 
@@ -12,11 +20,3 @@ pipeline.stage1.stage1 module
    :undoc-members:
    :show-inheritance:
 
-
-Module contents
----------------
-
-.. automodule:: pipeline.stage1
-   :members:
-   :undoc-members:
-   :show-inheritance:

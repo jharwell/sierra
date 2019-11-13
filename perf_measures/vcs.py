@@ -22,7 +22,6 @@ import numpy as np
 import yaml
 import similaritymeasures as sm
 from variables.temporal_variance_parser import TemporalVarianceParser
-import utils
 
 
 def method_xlabel(method):

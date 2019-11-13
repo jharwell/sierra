@@ -77,9 +77,11 @@ class ProjectivePerformanceCalculatorUnivar:
                                                                                          similarity)
         return proj_df
 
+    @staticmethod
     def __calc_positive(observed, exp0, similarity):
         return observed / (exp0 * similarity)
 
+    @staticmethod
     def __calc_negative(observed, exp0, similarity):
         return observed / (exp0 * (1.0 - similarity))
 
@@ -163,9 +165,11 @@ class ProjectivePerformanceCalculatorBivar:
 
         return proj_df
 
+    @staticmethod
     def __calc_positive(obs, prev_obs, similarity):
         return obs / (prev_obs * similarity)
 
+    @staticmethod
     def __calc_negative(obs, prev_obs, similarity):
         return obs / (prev_obs * (1.0 - similarity))
 
@@ -187,16 +191,16 @@ class FractionalLosses:
         # simulations/experiments, so we pick exp0 for simplicity to calculate
         exp_def = utils.unpickle_exp_def(os.path.join(cmdopts["generation_root"],
                                                       batch_criteria.gen_exp_dirnames(
-            self.cmdopts)[0],
-            "exp_def.pkl"))
+                                                          self.cmdopts)[0],
+                                                      "exp_def.pkl"))
 
         # Integers always seem to be pickled as floats, so you can't convert directly without an
         # exception.
-        for e in exp_def:
-            if './/experiment' == e[0] and 'length' == e[1]:
-                length = int(float(e[2]))
-            elif './/experiment' == e[0] and 'ticks_per_second' == e[1]:
-                ticks = int(float(e[2]))
+        for path, attr, value in exp_def:
+            if './/experiment' == path and 'length' == attr:
+                length = int(float(value))
+            elif './/experiment' == path and 'ticks_per_second' == attr:
+                ticks = int(float(value))
         self.duration = length * ticks
 
 
@@ -222,6 +226,7 @@ class FractionalLossesUnivar(FractionalLosses):
             calc_stddev = False
 
         perf_path = os.path.join(self.batch_output_root, self.inter_perf_stem + '.csv')
+        #print(perf_path)
         assert(os.path.exists(perf_path)), "FATAL: {0} does not exist".format(perf_path)
         perf_df = pd.read_csv(perf_path, sep=';')
 
@@ -235,31 +240,34 @@ class FractionalLossesUnivar(FractionalLosses):
         exp0_dirname = batch_criteria.gen_exp_dirnames(self.cmdopts)[0]
         scale_cols = [c for c in ca_in_df.columns if c not in [exp0_dirname]]
 
-        scale_cols_stddev = None
-        if calc_stddev:
-            scale_cols_stddev = [c for c in ca_in_df_stddev.columns if c not in [exp0_dirname]]
 
         # Calculate plost for all swarm sizes
-        plost_n = self.__calc_plost_n(ca_in_df, perf_df, batch_criteria)
+        plost_n = FractionalLossesUnivar.__calc_plost_n(ca_in_df, perf_df, batch_criteria)
         plost_n_stddev = None
         if calc_stddev:
-            plost_n_stddev = self.__calc_plost_n(ca_in_df_stddev, perf_df_stddev, batch_criteria)
+            plost_n_stddev = FractionalLossesUnivar.__calc_plost_n(ca_in_df_stddev, perf_df_stddev, batch_criteria)
         #print(scale_cols_stddev, exp0_dirname)
 
         # Calculate fractional losses for al swarm sizes
-        fl_df = self.__calc_fl(perf_df, plost_n, scale_cols_stddev)
+        fl_df = FractionalLossesUnivar.__calc_fl(perf_df, plost_n, scale_cols)
         fl_df_stddev = None
         if calc_stddev:
-            fl_df_stddev = self.__calc_fl(perf_df_stddev, plost_n_stddev, scale_cols_stddev)
+            fl_df_stddev = FractionalLossesUnivar.__calc_fl(perf_df_stddev, plost_n_stddev, scale_cols)
 
         # By definition, no fractional losses with 1 robot, or any stddev
         #print("CA IN DF:", ca_in_df)
         #print("CA IN STDDEV DF:", ca_in_df_stddev)
         fl_df.insert(0, exp0_dirname, 0.0)
         fl_df_stddev.insert(0, exp0_dirname, 0.0)
+        #print(fl_df,fl_df_stddev)
         return fl_df, fl_df_stddev, calc_stddev
 
-    def __calc_plost_n(self, ca_in_df, perf_df, batch_criteria):
+    @staticmethod
+    def __calc_plost_n(ca_in_df, perf_df, batch_criteria):
+
+    #    Calculated as follows for all swarm sizes N in the batch:
+
+        #cum blocks gathered * tlost_1 (for exp0)
 
         # Calculated as follows for all swarm sizes N in the batch:
         #
@@ -287,7 +295,8 @@ class FractionalLossesUnivar(FractionalLosses):
                                                    ca_in_df.tail(1)[exp0_dir] * n_robots) / n_robots
         return plost_n
 
-    def __calc_fl(self, perf_df, plost_n, scale_cols):
+    @staticmethod
+    def __calc_fl(perf_df, plost_n, scale_cols):
 
         # Calculate fractional losses as:
         #
@@ -298,11 +307,15 @@ class FractionalLossesUnivar(FractionalLosses):
         for c in scale_cols:
             # print("COL:", c)
             # print((perf_df.tail(1)[c] == 0.0).any())
-
-            if (perf_df.tail(1)[c] == 0.0).any(axis=None):
+            #fl_df.loc[0,c] = 1.0
+            if (perf_df.tail(1)[c] == 0).any(axis=None):
                 fl_df.loc[0,c] = 1.0
             else:
-                fl_df.loc[0,c] = (plost_n[c] / perf_df.tail(1)[c]).values[0]
+                val = (plost_n[c] / perf_df.tail(1)[c]).values[0]
+            #    if val != 0:
+                fl_df.loc[0,c] = val
+                #print(val)
+                #print("CULPRIT:",perf_df)
             #print(fl_df)
         return fl_df
 

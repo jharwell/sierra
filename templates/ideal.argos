@@ -71,7 +71,7 @@
               cache_finisher="1000:2000"
               cache_collector="1000:2000"
               cache_transferer="1000:2000">
-            <ema alpha="0.8"/>
+            <ema alpha="0.5"/>
           </task_exec_estimates>
 
           <epsilon_greedy epsilon="0.4"
@@ -207,6 +207,7 @@
           cache_utilization="cache-utilization.csv"
           cache_lifecycle="cache-lifecycle.csv"
           cache_locations="cache-locations.csv"
+          cache_site_selection="cache-site-selection.csv"
           task_execution_generalist="task-execution-generalist.csv"
           task_execution_collector="task-execution-collector.csv"
           task_execution_harvester="task-execution-harvester.csv"
@@ -239,12 +240,12 @@
     </convergence>
     <oracle_manager>
       <tasking_oracle
-          task_exec_est="false"
-          task_interface_est="false"
+          task_exec_ests="true"
+          task_interface_ests="true"
           />
       <entities_oracle
-          blocks="false"
-          caches="false"/>
+          blocks="true"
+          caches="true"/>
     </oracle_manager>
     <temporal_variance>
       <blocks>
@@ -290,7 +291,7 @@
               n_clusters="15"
               />
           <manifest
-              n_cube="40"
+              n_cube="20"
               n_ramp="0"
               unit_dim="0.2"
               />
@@ -339,7 +340,7 @@
     </box>
 
     <distribute>
-      <position method="uniform" min="1,1,0" max="10,5,0" />
+      <position method="uniform" min="1,1,0.5" max="10,5,0.5" />
       <orientation method="uniform" min="0,0,0" max="360,0,0" />
       <entity quantity="16" max_trials="1000">
         <foot-bot id="fb" omnidirectional_camera_aperture="89.5">

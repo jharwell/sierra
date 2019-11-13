@@ -21,10 +21,10 @@ import cmdline as cmd
 from pipeline.pipeline import Pipeline
 from generators.controller_generator_parser import ControllerGeneratorParser
 from generators.scenario_generator_parser import ScenarioGeneratorParser
-from generators.generator_creator import GeneratorCreator
-import variables.batch_criteria as bc
 import collections
 import pipeline.root_dirpath_generator as rdg
+import coloredlogs
+import logging
 
 
 def __sierra_run_default(args):
@@ -32,12 +32,9 @@ def __sierra_run_default(args):
     scenario = ScenarioGeneratorParser(args).parse_cmdline()
 
     # Add the template file leaf to the root directory path to help track what experiment was run.
-    print("- Controller={0}, Scenario={1}".format(controller, scenario))
+    logging.info("Controller=%s, Scenario=%s", controller, scenario)
     cmdopts = rdg.from_cmdline(args)
-
-    criteria = bc.Factory(args, cmdopts)
-    joint_generator = GeneratorCreator()(args, controller, scenario, criteria, cmdopts)
-    pipeline = Pipeline(args, joint_generator, criteria, cmdopts)
+    pipeline = Pipeline(args, controller, scenario, cmdopts)
     pipeline.run()
 
 
@@ -51,8 +48,12 @@ def __sierra_run():
     args = cmd.HPCEnvInheritor(args.hpc_env)(args)
     cmd.CmdlineValidator()(args)
 
+    # Get nice colored logging output!
+    coloredlogs.install(fmt='%(asctime)s %(levelname)s - %(message)s',
+                        level=eval("logging." + args.log_level))
+
     # If only 1 pipeline stage is passed, then the list of stages to run is parsed as a non-iterable
-    # integer, which can causes the generator to fail to be created. So make it iterable in that
+    # integer, which can cause the generator to fail to be created. So make it iterable in that
     # case as well.
     if not isinstance(args.pipeline, collections.Iterable):
         args.pipeline = [args.pipeline]

@@ -20,9 +20,11 @@ General Usage
 
 When using sierra, you need to tell it the following (at a minimum):
 
-- What template input file to use: ``--template-config-file``.
+- What template input file to use: ``--template-input-file``.
 
 - How many copies of each simulation to run per experiment: ``--n-sims``.
+
+- How many threads to use per simulation: ``--n-threads``.
 
 - Where it is running/how to run experiments: ``--exec-method``.
 

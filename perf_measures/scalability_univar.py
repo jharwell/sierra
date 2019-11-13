@@ -17,7 +17,7 @@
 
 import os
 import copy
-import yaml
+import logging
 import pandas as pd
 from graphs.batch_ranged_graph import BatchRangedGraph
 import perf_measures.common as common
@@ -79,9 +79,7 @@ class EfficiencyUnivar:
                          title="Swarm Efficiency (normalized)",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="Efficiency",
-                         xvals=batch_criteria.graph_xticks(self.cmdopts),
-                         legend=None,
-                         polynomial_fit=-1).generate()
+                         xvals=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
     # Private functions
     def __calculate_metric(self, ipath, batch_criteria, must_exist=True):
@@ -91,7 +89,6 @@ class EfficiencyUnivar:
         eff_df = pd.DataFrame(columns=raw_df.columns
                               )
         swarm_sizes = batch_criteria.swarm_sizes(self.cmdopts)
-
         for i in range(0, len(eff_df.columns)):
             n_robots = swarm_sizes[i]
             col = eff_df.columns[i]
@@ -129,9 +126,7 @@ class ProjectivePerformanceComparisonUnivar:
                              self.projection_type),
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="Observed-Projected Ratio",
-                         xvals=xvals[1:],
-                         legend=None,
-                         polynomial_fit=-1).generate()
+                         xvals=xvals[1:]).generate()
 
 
 class ProjectivePerformanceComparisonPositiveUnivar(ProjectivePerformanceComparisonUnivar):
@@ -177,9 +172,7 @@ class FractionalPerformanceLossUnivar:
                          title="Swarm Scalability: Fractional Performance Loss Due To Inter-robot Interference",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="Scalability Value",
-                         xvals=batch_criteria.graph_xticks(self.cmdopts),
-                         legend=None,
-                         polynomial_fit=-1).generate()
+                         xvals=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
 
 class KarpFlattUnivar:
@@ -234,9 +227,7 @@ class KarpFlattUnivar:
                          title="Swarm Serial Fraction: Karp-Flatt Metric",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="",
-                         xvals=batch_criteria.graph_xticks(self.cmdopts),
-                         legend=None,
-                         polynomial_fit=-1).generate()
+                         xvals=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
 
 class ScalabilityUnivar:
@@ -246,7 +237,7 @@ class ScalabilityUnivar:
     """
 
     def generate(self, inter_perf_csv, ca_in_csv, cmdopts, batch_criteria):
-        print("-- Univariate scalability from {0}".format(cmdopts["collate_root"]))
+        logging.info("Univariate scalability from %s", cmdopts["collate_root"])
 
         e = EfficiencyUnivar(cmdopts, inter_perf_csv)
         e.generate(e.calculate(batch_criteria), batch_criteria)
