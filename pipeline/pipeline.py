@@ -69,7 +69,7 @@ class Pipeline:
             'exec_resume': self.args.exec_resume,
 
             # stage 3
-            'no_verify_results': self.args.no_verify_results,
+            'exp_no_verify': self.args.exp_no_verify,
             'gen_stddev': self.args.gen_stddev,
             'results_process_tasks': self.args.results_process_tasks,
             'render_cmd_opts': self.args.render_cmd_opts,

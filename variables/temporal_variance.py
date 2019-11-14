@@ -29,11 +29,11 @@ Examples:
     - ``BCStep50000``: Block carry step variance at 50000 timesteps; swarm size not modified.
 """
 
-from variables.batch_criteria import UnivarBatchCriteria
-from variables.swarm_size import SwarmSize
 import math
 import re
 import typing as tp
+from variables.batch_criteria import UnivarBatchCriteria
+from variables.swarm_size import SwarmSize
 from perf_measures import vcs
 
 kMinHz = 1000

@@ -80,7 +80,7 @@ class ExpCSVAverager:
                                              self.avgd_output_leaf)
         self.metrics_leaf = ro_params['config']['sim']['metrics_leaf']
 
-        self.no_verify_results = ro_params['no_verify_results']
+        self.exp_no_verify = ro_params['exp_no_verify']
         self.gen_stddev = ro_params['gen_stddev']
         os.makedirs(self.avgd_output_root, exist_ok=True)
 
@@ -89,7 +89,7 @@ class ExpCSVAverager:
         self.output_name_format = format_base + "_output"
 
     def run(self):
-        if not self.no_verify_results:
+        if not self.exp_no_verify:
             self._verify_exp_csvs()
         self._average_csvs()
 
@@ -175,11 +175,15 @@ class ExpCSVAverager:
                             path1, path2)
                     assert(sorted(df1.columns) == sorted(df2.columns)),\
                         "FATAL: Columns from {0} and {1} not identical".format(path1, path2)
-
-                    # Verify the length of all columns in both dataframes is the same
-                    for c1 in df1.columns:
-                        assert(all(len(df1[c1]) == len(df1[c2])) for c2 in df1.columns),\
-                            "FATAL: Not all columns from {0} have same length".format(path1)
-                        assert(all(len(df1[c1]) == len(df2[c2])) for c2 in df1.columns),\
-                            "FATAL: Not all columns from {0} and {1} have same length".format(path1,
-                                                                                              path2)
+                    assert(len(df1.index) == len(df2.index)),\
+                        "FATAL: Length of indexes in {0} and {1} not the same: {2} vs. {3}".format(path1,
+                                                                                                   path2,
+                                                                                                   len(df1.index),
+                                                                                                   len(df2.index))
+                    # Verify that there are no NaNs in the dataframe. NaNs will occur when .csv
+                    # files do not have the same # rows in each column, which Pandas (un)helpfully
+                    # fills in with NaNs. So we count them, and error out if there are ANY.
+                    assert not df1.isnull().any().any(),\
+                        "FATAL: Empty cells or NaNs found in {0}".format(path1)
+                    assert not df2.isnull().any().any(),\
+                        "FATAL: Empty cells or NaNs found in {0}".format(path2)

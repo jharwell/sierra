@@ -142,7 +142,7 @@ class OracleParser():
             ret['oracle_name'] = 'tasking_oracle'
 
         # Parse swarm size
-        res = re.search("\.Z[0-9]+", criteria_str)
+        res = re.search(r".Z[0-9]+", criteria_str)
         if res is not None:
             ret['swarm_size'] = int(res.group(0)[2:])
         return ret
