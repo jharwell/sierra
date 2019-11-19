@@ -13,6 +13,7 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
+
 """
 Classes for handling univariate and bivariate controller comparisons within a set of scenarios for
 stage5 of the experimental pipeline.

@@ -14,6 +14,7 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
+
 """
 Classes for generating graphs across experiments in a batch.
 """
@@ -136,7 +137,7 @@ class UnivarPerfMeasuresGenerator:
             pmbc.BlockCollectionUnivar(self.cmdopts,
                                        self.main_config['sierra']['perf']['inter_perf_csv']).generate(batch_criteria)
             if batch_criteria.pm_query('scalability'):
-                pms.ScalabilityUnivar().generate(self.main_config['sierra']['perf']['inter_perf_csv'],
+                pms.ScalabilityUnivarGenerator()(self.main_config['sierra']['perf']['inter_perf_csv'],
                                                  self.main_config['sierra']['perf']['ca_in_csv'],
                                                  self.cmdopts,
                                                  batch_criteria)
@@ -176,7 +177,7 @@ class BivarPerfMeasuresGenerator:
                                       self.main_config['sierra']['perf']['inter_perf_csv']).generate(batch_criteria)
 
         if batch_criteria.pm_query('scalability'):
-            pms.ScalabilityBivar().generate(self.main_config['sierra']['perf']['inter_perf_csv'],
+            pms.ScalabilityBivarGenerator()(self.main_config['sierra']['perf']['inter_perf_csv'],
                                             self.main_config['sierra']['perf']['ca_in_csv'],
                                             self.cmdopts,
                                             batch_criteria)

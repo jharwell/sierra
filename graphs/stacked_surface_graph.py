@@ -21,6 +21,7 @@ import glob
 import re
 import pandas as pd
 import numpy as np
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -78,8 +79,6 @@ class StackedSurfaceGraph:
                                       [HandlerColormap(c, num_stripes=8) for c in colors]))
 
         ax.set_title(self.title, fontsize=24)
-        ax.xaxis._axinfo['label']['space_factor'] = 2.8
-        ax.yaxis._axinfo['label']['space_factor'] = 2.8
         ax.set_zlabel('\n' + self.zlabel, fontsize=18)
         max_xlen = max([len(str(l)) for l in self.xtick_labels])
         max_ylen = max([len(str(l)) for l in self.ytick_labels])
@@ -88,11 +87,11 @@ class StackedSurfaceGraph:
 
         ax.plot_surface(X, Y, dfs[0], cmap=colors[0])
         for i in range(1, len(dfs)):
-            if 'raw' == self.comp_type:
+            if self.comp_type == 'raw':
                 plot_df = dfs[i]
-            elif 'scale3D' == self.comp_type:
+            elif self.comp_type == 'scale3D':
                 plot_df = dfs[i] / dfs[0]
-            elif 'diff3D':
+            elif self.comp_type == 'diff3D':
                 plot_df = dfs[i] - dfs[0]
             ax.plot_surface(X, Y, plot_df, cmap=colors[i], alpha=0.5)
 
@@ -160,8 +159,15 @@ class HandlerColormap(mpl.legend_handler.HandlerBase):
         self.cmap = cmap
         self.num_stripes = num_stripes
 
-    def create_artists(self, legend, orig_handle,
-                       xdescent, ydescent, width, height, fontsize, trans):
+    def create_artists(self,
+                       legend,
+                       orig_handle,
+                       xdescent,
+                       ydescent,
+                       width,
+                       height,
+                       fontsize,
+                       trans):
         stripes = []
         for i in range(self.num_stripes):
             s = mpl.patches.Rectangle([xdescent + i * width / self.num_stripes, ydescent],

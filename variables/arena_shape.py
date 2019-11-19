@@ -14,9 +14,9 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
+import math
 import typing as tp
 from variables.base_variable import BaseVariable
-import math
 
 kWallWidth = 0.4
 

@@ -29,12 +29,11 @@ from .temporal_variance_plot_defs import TemporalVariancePlotDefs
 
 
 class BatchedIntraExpGraphGenerator:
-
     """
     Generates all intra-experiment graphs from a batch of experiments.
 
     Attributes:
-        cmdopts: Dictionary of parsed cmdline attributes
+        cmdopts: Dictionary of parsed cmdline attributes.
     """
 
     def __init__(self, cmdopts: tp.Dict[str, str]):

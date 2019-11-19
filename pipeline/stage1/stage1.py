@@ -14,6 +14,10 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
+"""
+Contains main class implementing stage  of the experimental pipeline.
+"""
+
 
 import os
 import logging
@@ -23,8 +27,11 @@ from generators.exp_creator import BatchedExpCreator
 
 class PipelineStage1:
     """
-    Implements stage 1 of the pipeline: Generate a set of XML configuration files from
-    a template suitable for input into ARGoS that contain user-specified modifications.
+    Implements stage 1 of the pipeline.
+
+    Generates a set of XML configuration files from a template suitable for input into ARGoS that
+    contain user-specified modifications. This stage is idempotent.
+
     """
 
     def __init__(self, controller, scenario, batch_criteria, cmdopts):

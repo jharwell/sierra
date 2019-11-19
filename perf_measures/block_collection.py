@@ -55,9 +55,9 @@ class BlockCollectionUnivar:
                                        "pm-" + self.blocks_collected_stem)
 
         if os.path.exists(stddev_ipath):
-            self.__gen_stddev(stddev_ipath, stddev_opath)
+            BlockCollectionUnivar.__gen_stddev(stddev_ipath, stddev_opath)
 
-        self.__gen_csv(perf_ipath, perf_opath_stem + '.csv')
+        BlockCollectionUnivar.__gen_csv(perf_ipath, perf_opath_stem + '.csv')
 
         BatchRangedGraph(inputy_stem_fpath=perf_opath_stem,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
@@ -67,7 +67,8 @@ class BlockCollectionUnivar:
                          ylabel="# Blocks",
                          xvals=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
-    def __gen_stddev(self, ipath: str, opath: str):
+    @staticmethod
+    def __gen_stddev(ipath: str, opath: str):
         total_stddev_df = pd.read_csv(ipath, sep=';')
         cum_stddev_df = pd.DataFrame(columns=total_stddev_df.columns)
 
@@ -76,7 +77,8 @@ class BlockCollectionUnivar:
 
         cum_stddev_df.to_csv(opath, sep=';', index=False)
 
-    def __gen_csv(self, ipath, opath):
+    @staticmethod
+    def __gen_csv(ipath: str, opath: str):
         assert(os.path.exists(ipath)), "FATAL: {0} does not exist".format(ipath)
         total_df = pd.read_csv(ipath, sep=';')
         cum_df = pd.DataFrame(columns=total_df.columns)
@@ -112,9 +114,9 @@ class BlockCollectionBivar:
                                        "pm-" + self.blocks_collected_stem)
 
         if os.path.exists(stddev_ipath):
-            self.__gen_stddev(stddev_ipath, stddev_opath)
+            BlockCollectionBivar.__gen_stddev(stddev_ipath, stddev_opath)
 
-        self.__gen_csv(perf_ipath, perf_opath_stem + '.csv')
+        BlockCollectionBivar.__gen_csv(perf_ipath, perf_opath_stem + '.csv')
 
         Heatmap(input_fpath=perf_opath_stem + '.csv',
                 output_fpath=os.path.join(self.cmdopts["graph_root"],
@@ -125,7 +127,8 @@ class BlockCollectionBivar:
                 xtick_labels=batch_criteria.graph_yticklabels(self.cmdopts),
                 ytick_labels=batch_criteria.graph_xticklabels(self.cmdopts)).generate()
 
-    def __gen_stddev(self, ipath: str, opath: str):
+    @staticmethod
+    def __gen_stddev(ipath: str, opath: str):
         total_stddev_df = pd.read_csv(ipath, sep=';')
         cum_stddev_df = pd.DataFrame(columns=total_stddev_df.columns)
 
@@ -134,7 +137,8 @@ class BlockCollectionBivar:
 
         cum_stddev_df.to_csv(opath, sep=';', index=False)
 
-    def __gen_csv(self, ipath: str, opath: str):
+    @staticmethod
+    def __gen_csv(ipath: str, opath: str):
         assert(os.path.exists(ipath)), "FATAL: {0} does not exist".format(ipath)
         total_df = pd.read_csv(ipath, sep=';')
         cum_df = pd.DataFrame(columns=total_df.columns,

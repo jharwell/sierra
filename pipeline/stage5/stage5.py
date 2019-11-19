@@ -13,14 +13,16 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
+
 """
 Contains main class implementing stage 5 of the experimental pipeline.
 """
 
 import os
 import typing as tp
-import yaml
 import logging
+import yaml
+
 from pipeline.stage5 import intra_scenario_comparator as isc
 import pipeline.root_dirpath_generator as rdg
 

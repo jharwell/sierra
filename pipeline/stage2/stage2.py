@@ -14,19 +14,23 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
+"""
+Contains main class implementing stage 2 of the experimental pipeline.
+"""
 
-from .batched_exp_runner import BatchedExpRunner
 import logging
 import typing as tp
 import variables.batch_criteria as bc
+from .exp_runner import BatchedExpRunner
 
 
 class PipelineStage2:
     """
-    Implements stage 2 of the experimental pipeline:
+    Implements stage 2 of the experimental pipeline.
 
     Runs all experiments in the generation root in parallel using GNU Parallel on
-    the provided set of hosts in an HPC environment, or on the local machine.
+    the provided set of hosts in an HPC environment, or on the local machine. This stage is *NOT*
+    idempotent, for obvious reasons.
     """
 
     def run(self, cmdopts: tp.Dict[str, str], batch_criteria: bc.BatchCriteria):

@@ -14,76 +14,70 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
+"""
+Classes for rendering frames captured by ARGoS during simulation.
+"""
 
 import os
 import subprocess
 import logging
+import typing as tp
 
 
 class BatchedExpVideoRenderer:
-
     """
     Render the video for each experiment in the specified batch directory in sequence.
-
-    Attributes:
-      ro_params(dict): Dictionary of read-only parameters for batch rendering
-      batch_exp_root(str): Root directory for the batch experiment.
-
     """
 
-    def __init__(self, ro_params, batch_exp_root):
-        self.batch_exp_root = os.path.abspath(batch_exp_root)
-        self.cmd_opts = ro_params['cmd_opts']
-        self.ofile_leaf = ro_params['ofile_leaf']
-        self.ro_params = ro_params
-
-    def render(self):
-        """Render videos for all all experiments in the batch."""
+    def __call__(self, main_config: dict, render_opts: tp.Dict[str, str], batch_exp_root: str):
+        """
+        Arguments:
+            main_config: Parsed dictionary of main YAML configuration.
+            render_opts: Dictionary of render options.
+            batch_exp_root: Root directory for the batch experiment.
+        """
         experiments = []
-        sorted_dirs = sorted([d for d in os.listdir(self.batch_exp_root)
-                              if self.ro_params['config']['sierra']['collate_csv_leaf'] not in d])
-        experiments = [os.path.join(self.batch_exp_root, item) for item in sorted_dirs
-                       if os.path.isdir(os.path.join(self.batch_exp_root, item))]
+        sorted_dirs = sorted([d for d in os.listdir(batch_exp_root)
+                              if main_config['config']['sierra']['collate_csv_leaf'] not in d])
+        experiments = [os.path.join(batch_exp_root, item) for item in sorted_dirs
+                       if os.path.isdir(os.path.join(batch_exp_root, item))]
         for exp in experiments:
-            ExpVideoRenderer(self.ro_params, exp).render()
+            ExpVideoRenderer(main_config, render_opts, exp)()
 
 
 class ExpVideoRenderer:
     """
-    Render grabbed frames in ARGoS to a video file via ffmpeg.
+    Render grabbed frames in ARGoS to a video file via ffmpeg for each simulation in the experiment
+    in parallel (for speed).
 
-    Attributes:
-        ro_params(dict): Dictionary of read-only parameters for batch rendering.
-        cmd_opts(str): Cmdline options to pass to ffmpeg.
-        ofile_leaf(str): The name of the video output file (specified releative to simulation output
-                         directory).
-        config(dict): Parsed dictionary of main YAML configuration.
-        exp_output_root(str): Root directory of simulation output (relative to current dir or
-                              absolute).
+    Arguments:
+        main_config: Parsed dictionary of main YAML configuration.
+        render_opts: Dictionary of render options.
+        exp_output_root: Absolute path to directory of simulation output for the experiment.
     """
 
-    kFramesFolderName = "frames"
+    def __call__(self, main_config: dict, render_opts: tp.Dict[str, str], exp_output_root: str):
+        logging.info("Rendering videos in %s:leaf=%s...", exp_output_root,
+                     main_config['ofile_leaf'])
 
-    def __init__(self, ro_params, exp_output_root):
-        self.ro_params = ro_params
-        self.exp_output_root = exp_output_root
-
-    def render(self):
-        logging.info("Rendering videos in {0}:leaf={1}...".format(self.exp_output_root,
-                                                                  self.ro_params['ofile_leaf']))
-
-        opts = self.ro_params['cmd_opts'].split(' ')
+        opts = render_opts['cmd_opts'].split(' ')
         # Render videos in parallel--waaayyyy faster
         procs = []
-        for d in os.listdir(self.exp_output_root):
-            path = os.path.join(self.exp_output_root, d)
-            if os.path.isdir(path) and self.ro_params['config']['sierra']['avg_output_leaf'] not in path:
-                frames_path = os.path.join(path, self.ro_params['config']['sim']['frames_leaf'])
+        for d in os.listdir(exp_output_root):
+            path = os.path.join(exp_output_root, d)
+
+            if not os.path.isdir(path):
+                logging.warning("Path %s does not exist", path)
+                continue
+
+            if main_config['config']['sierra']['avg_output_leaf'] not in path:
+                frames_path = os.path.join(path, main_config['config']['sim']['frames_leaf'])
                 cmd = ["ffmpeg",
                        "-y",
-                       "-i", os.path.join(frames_path, "%*.png")]
+                       "-i",
+                       os.path.join(frames_path, "%*.png")]
                 cmd.extend(opts)
-                cmd.extend([os.path.join(path, self.ro_params['ofile_leaf'])])
+                cmd.extend([os.path.join(path, render_opts['ofile_leaf'])])
                 procs.append(subprocess.Popen(cmd,
                                               stderr=subprocess.DEVNULL,
                                               stdout=subprocess.DEVNULL))

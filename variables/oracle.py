@@ -113,8 +113,8 @@ class Oracle(UnivarBatchCriteria):
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
         return "Oracular Information Type"
 
-    def pm_query(self, query: str) -> bool:
-        return query in ['blocks-collected']
+    def pm_query(self, pm: str) -> bool:
+        return pm in ['blocks-collected']
 
 
 class OracleParser():

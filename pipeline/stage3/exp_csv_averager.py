@@ -14,6 +14,10 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
+"""
+Classes for averaging (1) all simulations within an experiment, (2) all experiments in a batched
+experiment.
+"""
 
 import os
 import re
@@ -23,31 +27,27 @@ import pandas as pd
 
 
 class BatchedExpCSVAverager:
-
     """
-    Averages the .csv output files for each experiment in the specified batch directory.
-
-    Attributes:
-      ro_params(dict): Dictionary of read-only parameters for batch averaging
-      batch_output_root(str): Directory for averaged .csv output (relative to current dir or absolu
-
+    Averages the .csv output files for each experiment in the specified batch directory in sequence.
     """
 
-    def __init__(self, ro_params, batch_output_root):
+    def __call__(self, main_config: dict, avg_opts: tp.Dict[str, str], batch_output_root: str):
+        """
+        Arguments:
+            main_config: Parsed dictionary of main YAML configuration.
+            avg_opts: Dictionary of parameters for batch averaging.
+            batch_output_root: Directory for averaged .csv output (relative to current dir or
+                               absolute).
+        """
 
-        self.ro_params = ro_params
-        self.batch_output_root = batch_output_root
-
-    def run(self):
-        """Average .csv output files for all experiments in the batch."""
         # Ignore the folder for .csv files collated across experiments within a batch
-        experiments = [item for item in os.listdir(self.batch_output_root) if item not in [
-            self.ro_params['config']['sierra']['collate_csv_leaf']]]
+        experiments = [item for item in os.listdir(batch_output_root) if item not in [
+            avg_opts['config']['sierra']['collate_csv_leaf']]]
         for exp in experiments:
-            path = os.path.join(self.batch_output_root, exp)
+            path = os.path.join(batch_output_root, exp)
 
             if os.path.isdir(path):
-                ExpCSVAverager(self.ro_params, path).run()
+                ExpCSVAverager(main_config, avg_opts, path)()
 
 
 class ExpCSVAverager:
@@ -56,20 +56,21 @@ class ExpCSVAverager:
 
     Attributes:
         main_config: Parsed dictionary of main YAML configuration.
-        template_input_leaf: Leaf (i.e. no preceding path to the template XML configuration file
+        template_input_leaf: Leaf(i.e. no preceding path to the template XML configuration file
                                   for the experiment.
         no_verify: Should result verification be skipped?
-        gen_stddev: Should standard deviation be generated (and therefore errorbars
+        gen_stddev: Should standard deviation be generated(and therefore errorbars
                     plotted)?
-         exp_output_root: Directory for averaged .csv output (relative to current dir or
-                          absolute).
+        exp_output_root: Directory for averaged .csv output(relative to current dir or
+                         absolute).
     """
 
-    def __init__(self, main_config: tp.Dict[str, str], exp_output_root: str):
+    def __init__(self, main_config: dict, avg_opts: tp.Dict[str, str], exp_output_root: str):
+        self.avg_opts = avg_opts
+
         # will get the main name and extension of the config file (without the full absolute path)
-        self.template_input_leaf = main_config['template_input_leaf']
-        self.template_input_fname, self.template_input_ext = os.path.splitext(
-            os.path.basename(self.template_input_leaf))
+        self.template_input_fname, _ = os.path.splitext(
+            os.path.basename(self.avg_opts['template_input_leaf']))
 
         self.exp_output_root = os.path.abspath(exp_output_root)
 
@@ -78,17 +79,15 @@ class ExpCSVAverager:
                                              self.avgd_output_leaf)
         self.metrics_leaf = main_config['config']['sim']['metrics_leaf']
 
-        self.no_verify_results = main_config['no_verify_results']
-        self.gen_stddev = main_config['gen_stddev']
         os.makedirs(self.avgd_output_root, exist_ok=True)
 
         # to be formatted like: self.input_name_format.format(name, experiment_number)
         format_base = "{}_{}"
         self.output_name_format = format_base + "_output"
 
-    def run(self):
-        if not self.no_verify_results:
-            self._verify_exp_csvs()
+    def __call__(self):
+        if not self.avg_opts['no_verify_results']:
+            self.__verify_exp()
         self.__average_csvs()
 
     def __average_csvs(self):
@@ -100,7 +99,7 @@ class ExpCSVAverager:
         csvs = {}
 
         pattern = self.output_name_format.format(
-            re.escape(self.template_input_leaf), r'\d+')
+            re.escape(self.avg_opts['template_input_leaf']), r'\d+')
 
         # check to make sure all directories are simulation runs, skipping the directory within each
         # experiment that the averaged data is placed in
@@ -129,17 +128,22 @@ class ExpCSVAverager:
                                     sep=';',
                                     index=False)
                 # Also write out stddev in order to calculate confidence intervals later
-                if self.gen_stddev:
+                if self.avg_opts['gen_stddev']:
                     csv_stddev = by_row_index.std().round(2)
                     csv_stddev_fname = csv_fname.split('.')[0] + '.stddev'
                     csv_stddev.to_csv(os.path.join(self.avgd_output_root, csv_stddev_fname),
                                       sep=';',
                                       index=False)
 
-    def _verify_exp_csvs(self):
+    def __verify_exp(self):
         """
-        Verify that all experiments in the batch output root all have the same .csv files, and that
-        those .csv files all have the same # of rows and columns
+        Verify the integrity of all simulations in an experiment.
+
+        Specifically:
+
+        - All simulations produced all ``.csv`` files
+        - All simulation ``.csv`` files have the same # rows/columns
+        - No simulation ``.csv``files contain NaNs.
         """
         experiments = [exp for exp in os.listdir(self.exp_output_root) if exp not in [
             self.avgd_output_leaf]]

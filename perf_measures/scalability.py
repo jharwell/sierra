@@ -24,7 +24,6 @@ import logging
 import math
 import typing as tp
 
-import yaml
 import pandas as pd
 
 from graphs.batch_ranged_graph import BatchRangedGraph
@@ -227,13 +226,13 @@ class KarpFlattBivar:
                 ytick_labels=batch_criteria.graph_xticks(self.cmdopts)[1:]).generate()
 
 
-class ScalabilityBivar:
+class ScalabilityBivarGenerator:
     """
     Calculates the scalability of the swarm configuration across a bivariate batched set of
     experiments within the same scenario from collated .csv data in various ways.
     """
 
-    def generate(self, inter_perf_csv, ca_in_csv, cmdopts, batch_criteria):
+    def __call__(self, inter_perf_csv, ca_in_csv, cmdopts, batch_criteria):
         logging.info("Bivariate scalability from %s", cmdopts["collate_root"])
 
         e = EfficiencyBivar(cmdopts, inter_perf_csv)
@@ -466,13 +465,13 @@ class KarpFlattUnivar:
                          xvals=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
 
-class ScalabilityUnivar:
+class ScalabilityUnivarGenerator:
     """
     Calculates the scalability of the swarm configuration across a univariate batched set of
     experiments within the same scenario from collated .csv datain various ways.
     """
 
-    def generate(self, inter_perf_csv, ca_in_csv, cmdopts, batch_criteria):
+    def __call__(self, inter_perf_csv, ca_in_csv, cmdopts, batch_criteria):
         logging.info("Univariate scalability from %s", cmdopts["collate_root"])
 
         e = EfficiencyUnivar(cmdopts, inter_perf_csv)

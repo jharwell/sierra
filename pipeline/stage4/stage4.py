@@ -25,7 +25,7 @@ import matplotlib as mpl
 
 from .csv_collator import UnivarCSVCollator
 from .csv_collator import BivarCSVCollator
-from .batched_intra_exp_graph_generator import BatchedIntraExpGraphGenerator
+from .intra_exp_graph_generator import BatchedIntraExpGraphGenerator
 from .inter_exp_graph_generator import InterExpGraphGenerator
 mpl.rcParams['lines.linewidth'] = 3
 mpl.rcParams['lines.markersize'] = 10
@@ -36,9 +36,11 @@ mpl.use('Agg')
 
 class PipelineStage4:
     """
-    Implements stage 4 of the experimental pipeline: generating graphs within single experiment
-    (intra-experiment) and across experiments in a batch (inter-experiment). Graph generation
-    controlled via YAML config files.
+    Implements stage 4 of the experimental pipeline.
+
+    Generates graphs within single experiment (intra-experiment) and across experiments in a batch
+    (inter-experiment). Graph generation controlled via YAML config files. This stage is
+    idempotent.
 
     Attributes:
         cmdopts: Dictionary of parsed cmdline options.
@@ -66,6 +68,7 @@ class PipelineStage4:
                          generated for all controllers `within` each experiment in a batch. Which
                          heatmaps are actually generated for a given controller in each experiment
                          is controlled by ``<config_root>/controllers.yaml``.
+
     """
 
     def __init__(self, cmdopts):
@@ -110,8 +113,8 @@ class PipelineStage4:
         """
         if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'intra':
             logging.info("Stage4: Generating intra-experiment graphs...")
-            BatchedIntraExpGraphGenerator(self.main_config,
-                                          self.cmdopts)(self.controller_config,
+            BatchedIntraExpGraphGenerator(self.cmdopts)(self.main_config,
+                                                        self.controller_config,
                                                         self.intra_LN_config,
                                                         self.intra_HM_config,
                                                         batch_criteria)

@@ -66,8 +66,7 @@ class DynamicCache(BaseVariable):
                                                                         d[1] * 0.20) / 2.0,
                                                                     d[1] - max(d[0] * 0.20,
                                                                                d[1] * 0.20) / 2.0)),
-        ])
-            for d in self.dimension]
+        ]) for d in self.dimension]
 
     def gen_tag_rmlist(self):
         return []
