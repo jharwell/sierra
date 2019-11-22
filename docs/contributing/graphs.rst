@@ -55,9 +55,7 @@ to the collectors/generate .csv files in FORDYCA). Linegraphs are appropriate if
   dimensional in some way).
 
 - The data you want to graph can be obtained from a single .csv file (multiple
-  columns in the same .csv file can be graph simultaneously).
-
-- The data you want to graph can be represented by a histogram.
+  columns in the same .csv file can be graphed simultaneously).
 
 Heatmaps
 --------

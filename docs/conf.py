@@ -92,7 +92,12 @@ todo_include_todos = True
 autosummary_generate = True
 
 xref_links = {
-    "Harwell2019": ("Harwell2019", "https://www.ijcai.org/proceedings/2019/0048.pdf")
+    "Harwell2019": ("Swarm Engineering Through Quantitative Measurement in a 10,000 Robot Swarm",
+                    "https://www.ijcai.org/proceedings/2019/0048.pdf"),
+    "White2019": ("Socially Inspired Communication in Swarm Robotics",
+                  "https://arxiv.org/abs/1906.01108"),
+    "Chen2019": ("Maximizing Energy Efficiency in Swarm Robotics",
+                 "https://arxiv.org/abs/1906.01957")
 }
 
 # -- Options for HTML output ----------------------------------------------

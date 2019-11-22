@@ -18,6 +18,8 @@ Welcome to Sierra's documentation!
 SIERRA has been used for results generation on the following papers:
 
 - :xref:`Harwell2019`
+- :xref:`White2019`
+- :xref:`Chen2019`
 
 Indices and tables
 ==================

@@ -35,7 +35,7 @@ For the static analysis step:
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Full Docs:
 
    variable.rst
    graphs.rst

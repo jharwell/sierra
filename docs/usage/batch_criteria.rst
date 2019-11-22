@@ -1,3 +1,5 @@
+.. _ln-batch-criteria:
+
 Batch Criteria
 ==============
 
@@ -21,7 +23,12 @@ Currently valid batch criteria in Sierra are:
   - `temporal_variance`
   - `oracle`
   - `ta_policy_set`
+  - `block_density`
 
+
+You *should* be able to combine any two of the criteria above, or use them
+independently. I have not tried all combinations, so YMMV. If you do find an
+issue, please let me know.
 
 Base Classes
 ----------------------------
@@ -29,7 +36,6 @@ Base Classes
     :members:
     :inherited-members:
     :show-inheritance:
-
 
 Swarm Size
 ----------------------------
