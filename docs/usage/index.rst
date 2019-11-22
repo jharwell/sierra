@@ -1,49 +1,61 @@
-.. Sierra documentation master file, created by
+.. SIERRA documentation master file, created by
    sphinx-quickstart on Sat Oct 12 17:39:54 2019.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Usage
-=====
+How To Use SIERRA
+=================
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+The following steps outline things to do to get up and running with SIERRA, once
+you have completed the setup steps (either :ref:`ln-msi-setup` or
+:ref:`ln-nonmsi-setup`).
 
-   msi.rst
-   directories.rst
-   cli.rst
-   batch_criteria.rst
+#. Decide what variable you are interested in investigating by consulting
+   :ref:`ln-batch-criteria`.
 
-General Usage
--------------
+#. Determine how to invoke SIERRA. At a minimum you need to tell it the
+   following:
 
-When using sierra, you need to tell it the following (at a minimum):
+   - What template input file to use: ``--template-input-file``.
 
-- What template input file to use: ``--template-input-file``.
+   - How many copies of each simulation to run per experiment: ``--n-sims``.
 
-- How many copies of each simulation to run per experiment: ``--n-sims``.
+   - How many threads to use per simulation: ``--n-threads``.
 
-- How many threads to use per simulation: ``--n-threads``.
+   - Where it is running/how to run experiments: ``--exec-method``.
 
-- Where it is running/how to run experiments: ``--exec-method``.
+   - How long simulations should be: ``--time-setup``.
 
-- How long simulations should be: ``--time-setup``.
+   - What controller to run: ``--controller``.
 
-- What controller to run: ``--controller``.
+   - What what block distribution type to use, and how large the arena should be:
+     ``--scenario``.
 
-- What what block distribution type to use, and how large the arena should be:
-  ``--scenario``.
+   - What you are investigating; that is, what variable are you interested in
+     varying: ``--batch-criteria``.
 
-- What you are investigating; that is, what variable are you interested in
-  varying: ``--batch-criteria``.
+   If you try to invoke SIERRA with an (obviously) incorrect combination of
+   command line options, it will refuse to do anything. For less obviously
+   incorrect combinations, it will (hopefull) stop when an assert fails before
+   doing anything substantial.
 
-Head over to the :ref:`ln-cli` docs to see what these options mean.
+   Full documentation of all command line options it accepts is in
+   :ref:`ln-cli`, and there are many useful options that SIERRA accepts, so
+   skimming the CLI docs is **very** worthwhile.
 
-Usage Tips
-----------
+#. Learn SIERRA's runtime :ref:`ln-runtime-exp-tree`. When running, SIERRA will
+   create a (rather) large directory structure for you, which can be mystifying
+   at first. Reading the docs is worthwhile to understand what the structure
+   means, and to gain intuition into where to look for things inputs/outputs
+   etc. without having to search exhaustively through the filesystem.
 
-- The best way to figure out what sierra can do is by reading the :ref:`ln-cli`
+#. If running SIERRA on MSI, learn how to submit jobs by reading
+   :ref:`ln-msi-runtime`.
+
+General Usage Tips
+------------------
+
+- The best way to figure out what SIERRA can do is by reading the :ref:`ln-cli`
   docs. Every option is very well documented. The second best way is to look at
   the scripts under ``scripts/``.
 
@@ -69,8 +81,18 @@ Usage Tips
 
   This is enforced by SIERRA.
 
-- For ``SS,DS`` distributions a rectangular 2x1 arena is required (if you try to
-  run with anything else, you will get an error).
+- For ``SS,DS`` distributions a rectangular 2x1 arena is required. That is, an
+  arena where the X dimension is twice the Y dimension. If you try to run with
+  anything else, you will get an error.
 
 - For ``QS,PL,RN`` distributions a square arena is required (if you try to run
   with anything else, you will get an error).
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Full Usage Docs:
+
+   batch_criteria.rst
+   cli.rst
+   directories.rst
+   msi.rst

@@ -14,7 +14,8 @@ your local machine, and try a few small scale experiments.
    - similaritymeasures (needed for temporal variance graph generation)
    - fastdtw (needed for temporal variance graph generation)
    - pyyaml (needed for .yaml configuration file parsing)
-
+   - coloredlogs (for nice colored logging)
+   
 #. Install OS packages:
 
    - GNU parallel (``parallel`` on ubuntu)

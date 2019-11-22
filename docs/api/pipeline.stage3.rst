@@ -12,24 +12,8 @@ Module contents
 Submodules
 ----------
 
-pipeline.stage3.batched\_exp\_csv\_averager module
---------------------------------------------------
-
-.. automodule:: pipeline.stage3.batched_exp_csv_averager
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-pipeline.stage3.batched\_exp\_video\_renderer module
-----------------------------------------------------
-
-.. automodule:: pipeline.stage3.batched_exp_video_renderer
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 pipeline.stage3.exp\_csv\_averager module
------------------------------------------
+--------------------------------------------------
 
 .. automodule:: pipeline.stage3.exp_csv_averager
    :members:
@@ -37,12 +21,13 @@ pipeline.stage3.exp\_csv\_averager module
    :show-inheritance:
 
 pipeline.stage3.exp\_video\_renderer module
--------------------------------------------
+----------------------------------------------------
 
 .. automodule:: pipeline.stage3.exp_video_renderer
    :members:
    :undoc-members:
    :show-inheritance:
+
 
 pipeline.stage3.stage3 module
 -----------------------------
@@ -51,4 +36,3 @@ pipeline.stage3.stage3 module
    :members:
    :undoc-members:
    :show-inheritance:
-

@@ -12,16 +12,8 @@ Module contents
 Submodules
 ----------
 
-pipeline.stage2.batched\_exp\_runner module
--------------------------------------------
-
-.. automodule:: pipeline.stage2.batched_exp_runner
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 pipeline.stage2.exp\_runner module
-----------------------------------
+-------------------------------------------
 
 .. automodule:: pipeline.stage2.exp_runner
    :members:
