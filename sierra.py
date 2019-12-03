@@ -17,14 +17,16 @@
 Main module/entry point for SIERRA, the helpful command line swarm-robotic automation tool.
 """
 
-import cmdline as cmd
-from pipeline.pipeline import Pipeline
-from generators.controller_generator_parser import ControllerGeneratorParser
-from generators.scenario_generator_parser import ScenarioGeneratorParser
-import collections
-import pipeline.root_dirpath_generator as rdg
-import coloredlogs
 import logging
+import sys
+import collections
+import coloredlogs
+
+import core.cmdline as cmd
+from core.pipeline.pipeline import Pipeline
+from core.generators.controller_generator_parser import ControllerGeneratorParser
+from core.generators.scenario_generator_parser import ScenarioGeneratorParser
+import core.pipeline.root_dirpath_generator as rdg
 
 
 def __sierra_run_default(args):
@@ -40,17 +42,23 @@ def __sierra_run_default(args):
 
 def __sierra_run():
     # check python version
-    import sys
     if sys.version_info < (3, 0):
-        raise RuntimeError("Python 3.x should must be used to run this code.")
+        raise RuntimeError("Python 3.x must be used to run this code.")
 
-    args = cmd.Cmdline().parser.parse_args()
-    args = cmd.HPCEnvInheritor(args.hpc_env)(args)
-    cmd.CmdlineValidator()(args)
+    bootstrap_args, other_args = cmd.BootstrapCmdline().parser.parse_known_args()
 
     # Get nice colored logging output!
     coloredlogs.install(fmt='%(asctime)s %(levelname)s - %(message)s',
-                        level=eval("logging." + args.log_level))
+                        level=eval("logging." + bootstrap_args.log_level))
+
+    logging.info("Loading project plugin '%s'", bootstrap_args.plugin)
+    module = __import__("plugins.{0}.cmdline".format(bootstrap_args.plugin),
+                        fromlist=["*"])
+    args = module.Cmdline().parser.parse_args(other_args)
+    args = cmd.HPCEnvInheritor(args.hpc_env)(args)
+    args.__dict__['plugin'] = bootstrap_args.plugin
+
+    module.CmdlineValidator()(args)
 
     # If only 1 pipeline stage is passed, then the list of stages to run is parsed as a non-iterable
     # integer, which can cause the generator to fail to be created. So make it iterable in that

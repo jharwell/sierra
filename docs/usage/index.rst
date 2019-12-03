@@ -16,6 +16,8 @@ you have completed the setup steps (either :ref:`ln-msi-setup` or
 #. Determine how to invoke SIERRA. At a minimum you need to tell it the
    following:
 
+   - What project plugin to load: ``--plugin``
+
    - What template input file to use: ``--template-input-file``.
 
    - How many copies of each simulation to run per experiment: ``--n-sims``.

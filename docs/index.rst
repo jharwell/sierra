@@ -13,7 +13,7 @@ Welcome to SIERRA's documentation!
    setup/index.rst
    usage/index.rst
    contributing/index.rst
-   api/modules.rst
+   api/api.rst
 
 SIERRA has been used for results generation in the following papers:
 

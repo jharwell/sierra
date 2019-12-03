@@ -16,7 +16,11 @@ Bivariate batch criteria have two deminsions, and so the graphs produced by the
 are (usually) heatmaps with the variable of the criteria on the X axis, the
 second on the Y, and the quantity of interest on the Z.
 
-Currently valid batch criteria in SIERRA are:
+Core Batch Criteria
+-------------------
+
+The SIERRA core defines the following batch criteria (additional criteria can be
+defined by the selected plugin):
 
   - `swarm_size`
   - `swarm_density`
@@ -27,60 +31,57 @@ Currently valid batch criteria in SIERRA are:
 
 
 You *should* be able to combine any two of the criteria above, or use them
-independently. I have not tried all combinations, so YMMV. If you do find an
-issue, please let me know.
+independently. I have not tried all combinations, so YMMV.
 
 Base Classes
-----------------------------
-.. automodule:: variables.batch_criteria
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: core.variables.batch_criteria
     :members:
     :inherited-members:
     :show-inheritance:
 
 Swarm Size
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: variables.swarm_size
+.. automodule:: core.variables.swarm_size
     :members:
-    :inherited-members:
-    :show-inheritance:
 
 Swarm Density
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: variables.swarm_density
+.. automodule:: core.variables.swarm_density
     :members:
-    :inherited-members:
-    :show-inheritance:
 
 Block Density
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: variables.block_density
+.. automodule:: core.variables.block_density
     :members:
-    :inherited-members:
-    :show-inheritance:
 
 Temporal Variance
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: variables.temporal_variance
+.. automodule:: core.variables.temporal_variance
     :members:
-    :inherited-members:
-    :show-inheritance:
 
 Oracle
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: variables.oracle
+.. automodule:: core.variables.oracle
     :members:
-    :inherited-members:
-    :show-inheritance:
 
 Task Allocation Policy
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: variables.ta_policy_set
+.. automodule:: core.variables.ta_policy_set
     :members:
-    :inherited-members:
-    :show-inheritance:
+
+FORDYCA Plugin Batch Criteria
+-----------------------------
+
+None for the moment.
+
+SILICON Plugin Batch Criteria
+-----------------------------
+
+None for the moment.
