@@ -105,9 +105,9 @@ class BlockConstantDensity(cd.ConstantDensity):
             dirs = self.gen_exp_dirnames(cmdopts)
 
         areas = []
-        for i in range(0, len(dirs)):
+        for d in dirs:
             pickle_fpath = os.path.join(self.batch_generation_root,
-                                        dirs[i],
+                                        d,
                                         "exp_def.pkl")
             exp_def = core.utils.unpickle_exp_def(pickle_fpath)
             for e in exp_def:

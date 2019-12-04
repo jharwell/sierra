@@ -144,9 +144,9 @@ def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_generation_root:
 
     def gen_sizes(cli_arg):
 
-        if "Linear" == attr["increment_type"]:
+        if attr["increment_type"] == "Linear":
             return [attr["linear_increment"] * x for x in range(1, 11)]
-        if "Log" == attr["increment_type"]:
+        elif attr["increment_type"] == "Log":
             return [2 ** x for x in range(0, int(math.log2(attr["max_size"])) + 1)]
 
     def __init__(self):

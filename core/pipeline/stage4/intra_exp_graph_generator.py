@@ -117,8 +117,8 @@ class IntraExpGraphGenerator:
 
     def __calc_intra_targets(self, batch_criteria):
         """
-        Use YAML configuration for controllers and intra-experiment graphs to what graphs should be
-        generated.
+        Use YAML configuration for controller the controller and intra-experiment graphs to
+        calculate what graphs should be generated.
         """
         keys = []
         extra_graphs = []

@@ -14,10 +14,10 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
 """
-Command line parsing and validation classes.
+Command line parsing and validation for the :xref:`FORDYCA` project.
 """
 
-import argparse
+import typing as tp
 
 import core.cmdline
 
@@ -44,6 +44,8 @@ class Cmdline(core.cmdline.CoreCmdline):
                                  - depth1.{BITD_DPO, OBITD_DPO},
                                  - depth2.{BIRTD_DPO, OBIRTD_DPO}
 
+                                 Head over to the :xref:`FORDYCA` docs for the descriptions of these controllers.
+
                                  Use=stage{1,2,3,4}; can be omitted otherwise.
 
                                  """)
@@ -59,6 +61,18 @@ class Cmdline(core.cmdline.CoreCmdline):
 
                                  """,
                                  default=None)
+
+    @staticmethod
+    def cmdopts_update(cli_args, cmdopts: tp.Dict[str, str]):
+        """
+        Updates the core cmdopts dictionary with (key,value) pairs from the FORDYCA-specific cmdline options.
+        """
+        # Stage1
+        updates = {
+            'controller': cli_args.controller,
+            'static_cache_blocks': cli_args.static_cache_blocks
+        }
+        cmdopts.update(updates)
 
 
 class CmdlineValidator(core.cmdline.CoreCmdlineValidator):

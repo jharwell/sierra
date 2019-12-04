@@ -14,5 +14,5 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
-Extensions/configuration specific to the `FORDYCA <https://fordyca.readthedocs.io>`_ project.
+Extensions/configuration specific to the :xref:`FORDYCA` project.
 """

@@ -51,7 +51,7 @@ def __sierra_run():
     coloredlogs.install(fmt='%(asctime)s %(levelname)s - %(message)s',
                         level=eval("logging." + bootstrap_args.log_level))
 
-    logging.info("Loading project plugin '%s'", bootstrap_args.plugin)
+    logging.info("Loading cmdline extensions from plugin '%s'", bootstrap_args.plugin)
     module = __import__("plugins.{0}.cmdline".format(bootstrap_args.plugin),
                         fromlist=["*"])
     args = module.Cmdline().parser.parse_args(other_args)

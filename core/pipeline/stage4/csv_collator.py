@@ -61,12 +61,12 @@ class UnivarCSVCollator:
         csv_src_exists = [False for d in exp_dirs]
         stddev_src_exists = [False for d in exp_dirs]
 
-        for i in range(0, len(exp_dirs)):
-            csv_src_exists[i] = self.__collate_exp_csv_data(exp_dirs[i],
+        for i, diri in enumerate(exp_dirs):
+            csv_src_exists[i] = self.__collate_exp_csv_data(diri,
                                                             target,
                                                             data_df_new)
 
-            stddev_src_exists[i] = self.__collate_exp_csv_stddev(exp_dirs[i],
+            stddev_src_exists[i] = self.__collate_exp_csv_stddev(diri,
                                                                  target,
                                                                  stddev_df_new)
 
@@ -162,12 +162,12 @@ class BivarCSVCollator:
         csv_src_exists = [False for d in exp_dirs]
         stddev_src_exists = [False for d in exp_dirs]
 
-        for i in range(0, len(exp_dirs)):
-            csv_src_exists[i] = self.__collate_exp_csv_data(exp_dirs[i],
+        for i, diri in enumerate(exp_dirs):
+            csv_src_exists[i] = self.__collate_exp_csv_data(diri,
                                                             target,
                                                             data_df_new)
 
-            stddev_src_exists[i] = self.__collate_exp_csv_stddev(exp_dirs[i],
+            stddev_src_exists[i] = self.__collate_exp_csv_stddev(diri,
                                                                  target,
                                                                  stddev_df_new)
 

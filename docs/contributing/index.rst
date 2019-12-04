@@ -39,3 +39,4 @@ For the static analysis step:
 
    variable.rst
    graphs.rst
+   plugins.rst

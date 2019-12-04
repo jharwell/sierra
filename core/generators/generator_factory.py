@@ -16,6 +16,7 @@
 
 import os
 import re
+import logging
 import yaml
 
 from core.xml_luigi import XMLLuigi
@@ -51,8 +52,12 @@ def ScenarioGeneratorfactory(scenario, controller, **kwargs):
         res = re.search('[SDQLR][SSSLN]', scenario)
         abbrev = res.group(0)
         cmdopts = kwargs['cmdopts']
-        module = __import__('plugins.{0}.generators.scenario_generators'.format(cmdopts['plugin']),
-                            fromlist=["*"])
+        try:
+            path = 'plugins.{0}.generators.scenario_generators'.format(cmdopts['plugin'])
+            module = __import__(path, fromlist=["*"])
+        except ModuleNotFoundError:
+            logging.exception("module %s must exist!", path)
+            raise
 
         self.scenario_generator = getattr(module,
                                           abbrev + 'Generator')(controller=controller,

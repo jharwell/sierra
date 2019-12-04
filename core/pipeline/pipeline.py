@@ -26,7 +26,9 @@ Container module for the 5 pipeline stages implemented by SIERRA:
 #. Compare controllers that have been tested with the same experiment batch across different
    performance measures.
 """
+
 import os
+import logging
 import yaml
 
 import core.variables.batch_criteria as bc
@@ -45,7 +47,6 @@ class Pipeline:
         self.cmdopts = {
             # general
             'sierra_root': self.args.sierra_root,
-            'controller': self.args.controller,
             'scenario': self.args.scenario,
             'template_input_file': self.args.template_input_file,
             'plugin': self.args.plugin,
@@ -64,7 +65,6 @@ class Pipeline:
             "with_robot_rab": self.args.with_robot_rab,
             "with_robot_leds": self.args.with_robot_leds,
             "with_robot_battery": self.args.with_robot_battery,
-            'static_cache_blocks': self.args.static_cache_blocks,
 
             # stage 2
             'exec_exp_range': self.args.exec_exp_range,
@@ -91,16 +91,27 @@ class Pipeline:
             'controllers_legend': self.args.controllers_legend,
             'comparison_type': self.args.comparison_type
         }
+
         if cmdopts is not None:
             self.cmdopts.update(cmdopts)
+            module = __import__("plugins.{0}.cmdline".format(self.cmdopts['plugin']),
+                                fromlist=["*"])
+            logging.debug("Updating cmdopts for cmdline extensions from plugin '%s'",
+                          self.cmdopts['plugin'])
+            module.Cmdline.cmdopts_update(self.args, self.cmdopts)
 
-        self.cmdopts['config_root'] = os.path.join('plugins',
-                                                   self.cmdopts['plugin'],
-                                                   'config')
+        self.cmdopts['core_config_root'] = os.path.join('core', 'config')
+        self.cmdopts['plugin_config_root'] = os.path.join('plugins',
+                                                          self.cmdopts['plugin'],
+                                                          'config')
 
-        self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
-                                                       'main.yaml')),
-                                     yaml.FullLoader)
+        try:
+            self.main_config = yaml.load(open(os.path.join(self.cmdopts['plugin_config_root'],
+                                                           'main.yaml')),
+                                         yaml.FullLoader)
+        except FileNotFoundError:
+            logging.exception("%s/main.yaml must exist!", self.cmdopts['plugin_config_root'])
+            raise
 
         if 5 not in self.args.pipeline:
             self.batch_criteria = bc.factory(self.main_config, self.cmdopts, self.args)

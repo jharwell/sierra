@@ -97,7 +97,9 @@ xref_links = {
     "White2019": ("Socially Inspired Communication in Swarm Robotics",
                   "https://arxiv.org/abs/1906.01108"),
     "Chen2019": ("Maximizing Energy Efficiency in Swarm Robotics",
-                 "https://arxiv.org/abs/1906.01957")
+                 "https://arxiv.org/abs/1906.01957"),
+    "FORDYCA": ("FORDYCA", "https://fordyca.readthedocs.io"),
+    "SILICON": ("SILICON", "https://silicon.readthedocs.io")
 }
 
 # -- Options for HTML output ----------------------------------------------

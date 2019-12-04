@@ -185,7 +185,7 @@ class ExpCreator:
         if 'local' in self.cmdopts['exec_method']:
             argos_cmd = 'argos3'
         else:
-            if 'MSI' == self.cmdopts['hpc_env']:
+            if self.cmdopts['hpc_env'] == 'MSI':
                 argos_cmd = 'argos3-' + os.environ['MSICLUSTER']
 
         # When running ARGoS under Xvfb in order to headlessly render frames, we need to start a
@@ -230,7 +230,7 @@ class BatchedExpCreator:
                            absolute). Each experiment will get a directory 'exp<n>' in this
                            directory for its outputs.
         criteria: :class:`~variables.batch_criteria.BatchCriteria` derived object instance created
-                  from cmdline definition. 
+                  from cmdline definition.
     """
 
     def __init__(self,
@@ -268,8 +268,8 @@ class BatchedExpCreator:
         # files are in place)
         defs = generator.generate_defs()
 
-        for i in range(len(defs)):
-            logging.debug("Applying generated scenario+controller changes to exp{0}".format(i))
+        for i, defi in enumerate(defs):
+            logging.debug("Applying generated scenario+controller changes to exp%s", i)
             exp_output_root = os.path.join(self.batch_output_root,
                                            self.criteria.gen_exp_dirnames(self.cmdopts)[i])
             exp_generation_root = os.path.join(self.batch_generation_root,
@@ -278,4 +278,4 @@ class BatchedExpCreator:
             ExpCreator(self.batch_config_template,
                        exp_generation_root,
                        exp_output_root,
-                       self.cmdopts).from_def(defs[i])
+                       self.cmdopts).from_def(defi)

@@ -49,6 +49,7 @@ def from_cmdline(args):
     # Remove all '-' from the template input file stem so we know the only '-' that are in it are
     # ones that we put there.
     return regen_from_exp(args.sierra_root,
+                          args.plugin,
                           args.batch_criteria,
                           template_stem.replace('-', '') + '-' + args.scenario,
                           args.controller)
@@ -65,6 +66,7 @@ def parse_batch_root(root: str):
 
 
 def regen_from_exp(sierra_root: str,
+                   plugin: str,
                    batch_criteria: tp.List[str],
                    batch_root: str,
                    controller: str):
@@ -75,6 +77,7 @@ def regen_from_exp(sierra_root: str,
     """
     template_basename, scenario = parse_batch_root(batch_root)
     root = __gen_batch_root(sierra_root,
+                            plugin,
                             batch_criteria,
                             scenario,
                             controller,
@@ -88,6 +91,7 @@ def regen_from_exp(sierra_root: str,
 
 
 def __gen_batch_root(sierra_root: str,
+                     plugin: str,
                      batch_criteria: tp.List[str],
                      scenario: str,
                      controller: str,
@@ -109,5 +113,6 @@ def __gen_batch_root(sierra_root: str,
                 scenario = scenario + '+' + b.replace('-', '')
 
     return os.path.join(sierra_root,
+                        plugin,
                         controller,
                         template_basename + '-' + scenario)

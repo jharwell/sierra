@@ -2,22 +2,8 @@ HM_arena:
   graphs:
     - src_stem: cache-locations
       title: 'Cache Placement Frequency'
-    - src_stem: fsm-collision-locs
-      title: 'Robot Collision Density'
-    - src_stem: swarm-dist-pos2D
-      title: 'Robot Occupancy Density'
 
 HM_swarm:
   graphs:
     - src_stem: cache-acq-locs
       title: 'Cache Acquisition Locations'
-    - src_stem: cache-acq-vector-locs
-      title: 'Cache Acquisition Vector Locations'
-    - src_stem: cache-acq-explore-locs
-      title: 'Cache Acquisition Exploration Locations'
-    - src_stem: block-acq-locs
-      title: 'Block Acquisition Locations'
-    - src_stem: block-acq-vector-locs
-      title: 'Block Acquisition Vector Locations'
-    - src_stem: block-acq-explore-locs
-      title: 'Block Acquisition Exploration Locations'

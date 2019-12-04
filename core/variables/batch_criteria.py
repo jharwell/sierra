@@ -89,11 +89,11 @@ class BatchCriteria(base_variable.BaseVariable):
 
     def pickle_exp_defs(self, cmdopts: tp.Dict[str, str]):
         defs = list(self.gen_attr_changelist())
-        for i in range(0, len(defs)):
+        for i, exp_def in enumerate(defs):
             exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
             pkl_path = os.path.join(self.batch_generation_root, exp_dirname, 'exp_def.pkl')
             with open(pkl_path, 'ab') as f:
-                pickle.dump(defs[i], f)
+                pickle.dump(exp_def, f)
 
     def scaffold_exps(self,
                       exp_def: core.xml_luigi.XMLLuigi,
@@ -102,7 +102,7 @@ class BatchCriteria(base_variable.BaseVariable):
         defs = list(self.gen_attr_changelist())
         logging.info("Stage1: Applying batch criteria to %s experiments", len(defs))
 
-        for i in range(0, len(defs)):
+        for i, defi in enumerate(defs):
             exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
             exp_generation_root = os.path.join(self.batch_generation_root,
                                                str(exp_dirname))
@@ -113,7 +113,7 @@ class BatchCriteria(base_variable.BaseVariable):
                           exp_dirname)
 
             os.makedirs(exp_generation_root, exist_ok=True)
-            for path, attr, value in defs[i]:
+            for path, attr, value in defi:
                 exp_def.attr_change(path, attr, value)
 
             exp_def.write(os.path.join(exp_generation_root,

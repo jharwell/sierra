@@ -82,7 +82,7 @@ When SIERRA runs, it creates a directory structure under whatever was passed as
 ``--sierra-root``. For the purposes of explanation, I will use the following
 partial SIERRA option set to explain the experiment tree::
 
-  --sierra-root=~/exp --controller=CATEGORY.my_controller --scenario=SS.12x6 --batch-criteria=swarm_size.Log8 --n-sims=4 --template-input-file=~/my-template.argos
+  --sierra-root=~/exp --controller=CATEGORY.my_controller --scenario=SS.12x6 --batch-criteria=swarm_size.Log8 --n-sims=4 --template-input-file=~/my-template.argos --plugin=fordyca
 
 
 This invocation will cause SIERRA to create the following directory structure as
@@ -91,96 +91,100 @@ it runs stages 1-4:
 - ``~/exp`` - This is the root of the directory structure (``--sierra-root``),
   and is **NOT** deleted on subsequent runs.
 
-  - ``CATEGORY.my_controller`` - Each controller gets their own directory in the
-    SIERRA root, which is **NOT** deleted on subsequent runs.
+  - ``fordyca`` - Each plugin gets their own directory, so you can disambiguate
+    otherwise identical SIERRA invocations and don't overwrite the directories
+    for a previously used plugin on subsequent runs.
 
-    - ``mytemplate-SS.12x6`` - The directory for the batched experiment is named
-      from a combination of the template input file used
-      (``--template-input-file``) and the scenario (``--scenario``).
+    - ``CATEGORY.my_controller`` - Each controller gets their own directory in the
+      SIERRA root, which is **NOT** deleted on subsequent runs.
 
-      - ``exp-inputs`` - Root directory for experimental inputs; each experiment
-        gets their own directory in here. Directory name is hardcoded (for now).
+      - ``mytemplate-SS.12x6`` - The directory for the batched experiment is named
+        from a combination of the template input file used
+        (``--template-input-file``) and the scenario (``--scenario``).
 
-        - ``exp0`` - Within the input directory for each experiment in the batch
-          (there are 4 such directories in this example), there will be an input
-          file for each simulation in the experiment, as well as a
-          ``commands.txt`` used by GNU parallel to run them all in parallel. The
-          leaf of the ``--template-input-file``, sans extension, has the
-          simulation # appended to it (e.g. ``my-template_0`` is the input file
-          for simulation 0).
+        - ``exp-inputs`` - Root directory for experimental inputs; each experiment
+          gets their own directory in here. Directory name is hardcoded (for now).
 
-            - ``commands.txt``
+          - ``exp0`` - Within the input directory for each experiment in the batch
+            (there are 4 such directories in this example), there will be an input
+            file for each simulation in the experiment, as well as a
+            ``commands.txt`` used by GNU parallel to run them all in parallel. The
+            leaf of the ``--template-input-file``, sans extension, has the
+            simulation # appended to it (e.g. ``my-template_0`` is the input file
+            for simulation 0).
+
+              - ``commands.txt``
+              - ``my-template_0``
+              - ``my-template_1``
+              - ``my-template_2``
+              - ``my-template_3``
+
+          - ``exp1``
+
             - ``my-template_0``
             - ``my-template_1``
             - ``my-template_2``
             - ``my-template_3``
 
-        - ``exp1``
+          - ``exp2``
 
-          - ``my-template_0``
-          - ``my-template_1``
-          - ``my-template_2``
-          - ``my-template_3``
+            - ``...``
 
-        - ``exp2``
+          - ``exp3``
 
-          - ``...``
+            - ``...``
 
-        - ``exp3``
+        - ``exp-outputs`` - Root directory for experimental outputs; each
+          experiment gets their own directory in here (just like for experiment
+          inputs). Directory name is hardcoded (for now).
 
-          - ``...``
+          - ``exp0`` - Within the output directory for each experiment in the
+            batch (there are 4 such directories in this example), there will be a
+            `directory` (rather than a file, as was the case for inputs) for each
+            simulation's output, including metrics, grabbed, frames, etc., as
+            configured in the XML input file.
 
-      - ``exp-outputs`` - Root directory for experimental outputs; each
-        experiment gets their own directory in here (just like for experiment
-        inputs). Directory name is hardcoded (for now).
+            - ``my-template_0``
+            - ``my-template_1``
+            - ``my-template_2``
+            - ``my-template_3``
+            - ``averaged-output`` - During stage3, the results for all simulations
+              in the experiment are averaged together and placed into this
+              directory. Directory name is controlled by the main YAML
+              configuration.
 
-        - ``exp0`` - Within the output directory for each experiment in the
-          batch (there are 4 such directories in this example), there will be a
-          `directory` (rather than a file, as was the case for inputs) for each
-          simulation's output, including metrics, grabbed, frames, etc., as
-          configured in the XML input file.
+          - ``exp1``
 
-          - ``my-template_0``
-          - ``my-template_1``
-          - ``my-template_2``
-          - ``my-template_3``
-          - ``averaged-output`` - During stage3, the results for all simulations
-            in the experiment are averaged together and placed into this
-            directory. Directory name is controlled by the main YAML
-            configuration.
+            - ``my-template_0``
+            - ``my-template_1``
+            - ``my-template_2``
+            - ``my-template_3``
+            - ``averaged-output``
 
-        - ``exp1``
+          - ``exp2``
 
-          - ``my-template_0``
-          - ``my-template_1``
-          - ``my-template_2``
-          - ``my-template_3``
-          - ``averaged-output``
+            - ``...``
 
-        - ``exp2``
+          - ``exp3``
 
-          - ``...``
+            - ``...``
 
-        - ``exp3``
+          - ``collated-csvs`` - During stage4, for graphs which are generated
+            across experiments in the batch (as opposed to within a single
+            experiment), SIERRA will draw specific columns from .csv files under
+            ``averaged-output`` (one from the averaged .csv computed for), and
+            collate them under here for graph generation of `inter`\-experiment
+            graphs.
 
-          - ``...``
+        - ``graphs`` - During stage4, all generated graphs are output under this
+          directory. Each experiment in the batch gets their own directory for
+          `intra`\-experiment graphs.
 
-        - ``collated-csvs`` - During stage4, for graphs which are generated
-          across experiments in the batch (as opposed to within a single
-          experiment), SIERRA will draw specific columns from .csv files under
-          ``averaged-output`` (one from the averaged .csv computed for), and
-          collate them under here for graph generation of `inter`\-experiment
-          graphs.
-
-      - ``graphs`` - During stage4, all generated graphs are output under this
-        directory. Each experiment in the batch gets their own directory for
-        `intra`\-experiment graphs.
-
-        - ``exp0``
-        - ``exp1``
-        - ``exp2``
-        - ``exp3``
-        - ``collated-graphs`` - Graphs which are generated across experiments in
-          the batch from collated .csv data, rather than from the averaged
-          results within each experiment, are output here. Directory name is
-          controlled by the main YAML configuration.
+          - ``exp0``
+          - ``exp1``
+          - ``exp2``
+          - ``exp3``
+          - ``collated-graphs`` - Graphs which are generated across experiments in
+            the batch from collated .csv data, rather than from the averaged
+            results within each experiment, are output here. Directory name is
+            controlled by the main YAML configuration.

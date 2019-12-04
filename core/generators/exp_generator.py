@@ -89,7 +89,7 @@ class ExpDefCommonGenerator:
 
         """
         # This will need to change when I get to the point of mixing 2D and 3D physics engines
-        pe = physics_engines.factory(self.cmdopts, self.cmdopts['arena_dim'])
+        pe = physics_engines.factory(self.cmdopts, [self.cmdopts['arena_dim']])
 
         [xml_luigi.tag_remove(a[0], a[1]) for a in pe.gen_tag_rmlist()[0]]
         [xml_luigi.tag_add(a[0], a[1], a[2]) for a in pe.gen_tag_addlist()[0]]
@@ -249,18 +249,18 @@ class BatchedExpDefGenerator:
         if from_univar_bc:
             self.cmdopts["arena_dim"] = self.criteria.arena_dims()[exp_num]
             eff_scenario_name = self.criteria.exp_scenario_name(exp_num)
-            logging.debug("Obtained scenario dimensions '{0}' from univariate batch criteria".format(
-                self.cmdopts['arena_dim']))
+            logging.debug("Obtained scenario dimensions '%s' from univariate batch criteria",
+                          self.cmdopts['arena_dim'])
         elif from_bivar_bc1 or from_bivar_bc2:
             self.cmdopts["arena_dim"] = self.criteria.arena_dims()[exp_num]
-            logging.debug("Obtained scenario dimensions '{0}' bivariate batch criteria".format(
-                self.cmdopts['arena_dim']))
+            logging.debug("Obtained scenario dimensions '%s' bivariate batch criteria",
+                          self.cmdopts['arena_dim'])
             eff_scenario_name = self.criteria.exp_scenario_name(exp_num)
         else:  # Defaultc case: scenario dimensions read from cmdline
             kw = sgp.ScenarioGeneratorParser.reparse_str(self.scenario_basename)
             self.cmdopts["arena_dim"] = (kw['arena_x'], kw['arena_y'], kw['arena_z'])
-            logging.debug("Read scenario dimensions {0} from cmdline spec".format(
-                self.cmdopts['arena_dim']))
+            logging.debug("Read scenario dimensions %s from cmdline spec",
+                          self.cmdopts['arena_dim'])
 
             eff_scenario_name = self.scenario_basename
 
@@ -276,7 +276,7 @@ class BatchedExpDefGenerator:
                                                cmdopts=self.cmdopts)
 
         controller = gf.ControllerGeneratorfactory(controller=self.controller_name,
-                                                   config_root=self.cmdopts['config_root'],
+                                                   config_root=self.cmdopts['plugin_config_root'],
                                                    cmdopts=self.cmdopts)
 
         self.cmdopts['joint_generator'] = '+'.join([controller.__class__.__name__,

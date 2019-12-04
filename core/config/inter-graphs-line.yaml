@@ -1,0 +1,263 @@
+LN_fsm_collision:
+  graphs:
+    - src_stem: fsm-collision-counts
+      dest_stem: ca-in-int-avg
+      col: int_avg_in_avoidance
+      title: 'Average Robots in Collision Avoidance (interval)'
+      xlabel: 'Interval'
+      ylabel: '# Robots'
+
+    - src_stem: fsm-collision-counts
+      dest_stem: ca-in-cum-avg
+      col: cum_avg_in_avoidance
+      title: 'Average Robots in Collision Avoidance (cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Robots'
+
+    - src_stem: fsm-collision-counts
+      dest_stem: ca-entered-int-avg
+      col: int_avg_entered_avoidance
+      title: 'Average Robots Entering Collision Avoidance (interval)'
+      xlabel: 'Interval'
+      ylabel: '# Robots'
+
+    - src_stem: fsm-collision-counts
+      dest_stem: ca-entered-cum-avg
+      col: cum_avg_entered_avoidance
+      title: 'Average Robots Entering Collision Avoidance (cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Robots'
+
+    - src_stem: fsm-collision-counts
+      dest_stem: ca-exited-int-avg
+      col: int_avg_exited_avoidance
+      title: 'Average Robots Exiting Collision Avoidance (interval)'
+      xlabel: 'Interval'
+      ylabel: '# Robots'
+
+    - src_stem: fsm-collision-counts
+      dest_stem: ca-exited-cum-avg
+      col: cum_avg_exited_avoidance
+      title: 'Average Robots Exiting Collision Avoidance (cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Robots'
+
+    - src_stem: fsm-collision-counts
+      dest_stem: ca-duration-int-avg
+      col: int_avg_avoidance_duration
+      title: 'Average Collision Avoidance Duration (interval)'
+      xlabel: 'Interval'
+      ylabel: '# Robots'
+
+    - src_stem: fsm-collision-counts
+      dest_stem: ca-duration-cum-avg
+      col: cum_avg_avoidance_duration
+      title: 'Average Collision Avoidance Duration (cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Robots'
+
+LN_fsm_movement:
+  graphs:
+    - src_stem: fsm-movement
+      dest_stem: distance-int-avg
+      col: int_avg_distance
+      title: 'Per-robot Distance Traveled (interval)'
+      xlabel: 'Interval'
+      ylabel: Distance (m)
+
+    - src_stem: fsm-movement
+      dest_stem: distance-cum-avg
+      col: cum_avg_distance
+      title: 'Per-robot Distance Traveled (cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Distance (m)'
+
+    - src_stem: fsm-movement
+      dest_stem: velocity-int-avg
+      col: int_avg_velocity
+      title: 'Per-robot Velocity (interval)'
+      xlabel: 'Interval'
+      ylabel: 'Velocity (m/s)'
+
+    - src_stem: fsm-movement
+      dest_stem: velocity-cum-avg
+      col: cum_avg_velocity
+      title: 'Per-robot Velocity (cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Velocity (m/s)'
+
+LN_block_acq:
+  graphs:
+    - src_stem: block-acquisition
+      dest_stem: block-acquisition-int-avg
+      col: int_avg_acquiring_goal
+      title: 'Average Robots Acquiring Blocks (interval)'
+      xlabel: 'Interval'
+      ylabel: '# Robots'
+
+    - src_stem: block-acquisition
+      col: int_avg_vectoring_to_goal
+      dest_stem: block-acquisition-vectoring-int-avg
+      title: 'Average Robots Vectoring To Blocks (interval)'
+      xlabel: 'Interval'
+      ylabel: '# Robots'
+
+    - src_stem: block-acquisition
+      col: int_avg_exploring_for_goal
+      dest_stem: block-acquisition-exploring-int-avg
+      title: 'Average Robots Exploring For Blocks (interval)'
+      xlabel: 'Interval'
+      ylabel: '# Robots'
+
+    - src_stem: block-acquisition
+      col: cum_avg_acquiring_goal
+      dest_stem: block-acquisition-cum-avg
+      title: 'Average Robots Acquiring Blocks (cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Robots'
+
+    - src_stem: block-acquisition
+      col: cum_avg_vectoring_to_goal
+      dest_stem: block-acquisition-vectoring-cum-avg
+      title: 'Average Robots Vectoring To Blocks (cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Robots'
+
+    - src_stem: block-acquisition
+      col: cum_avg_exploring_for_goal
+      dest_stem: block-acquisition-exploring-cum-avg
+      title: 'Average Robots Exploring For Blocks (cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Robots'
+
+LN_block_manip:
+  graphs:
+    - src_stem: block-manipulation
+      dest_stem: free-pickup-events-int-avg
+      col: int_avg_free_pickup_events
+      title: 'Average Free Block Pickup Events (interval)'
+      xlabel: 'Interval'
+      ylabel: '# Pickups'
+
+    - src_stem: block-manipulation
+      dest_stem: free-drop-events-int-avg
+      col: int_avg_free_drop_events
+      title: 'Average Free Block Drop Events (interval)'
+      xlabel: 'Interval'
+      ylabel: '# Drops'
+
+    - src_stem: block-manipulation
+      dest_stem: free-pickup-penalty-int-avg
+      col: int_avg_free_pickup_penalty
+      title: 'Average Free Block Pickup Penalty (interval)'
+      xlabel: 'Interval'
+      ylabel: '# Timesteps'
+
+    - src_stem: block-manipulation
+      dest_stem: free-drop-penalty-int-avg
+      col: int_avg_free_drop_penalty
+      title: 'Average Free Block Drop Penalty (interval)'
+      xlabel: 'Interval'
+      ylabel: '# Timesteps'
+
+LN_perception:
+  graphs:
+    - src_stem: perception-world-model
+      dest_stem: world-model-empty-int
+      col: ST_EMPTY_inaccuracies
+      title: 'Average ST_EMPTY Inaccuracies (interval)'
+      xlabel: 'Interval'
+      ylabel: '# Inaccuracies'
+
+    - src_stem: perception-world-model
+      dest_stem: world-model-block-int
+      col: ST_HAS_BLOCK_inaccuracies
+      title: 'Average ST_HAS_BLOCK Inaccuracies (interval)'
+      xlabel: 'Interval'
+      ylabel: '# Inaccuracies'
+
+LN_convergence:
+  graphs:
+   - src_stem: swarm-convergence
+     dest_stem: swarm-convergence-int-deg-raw
+     col: int_avg_interact_deg_raw
+     title: 'Swarm Convergence Interaction Degree (Raw)'
+     xlabel: 'Interval'
+     ylabel: 'Degree'
+
+   - src_stem: swarm-convergence
+     dest_stem: swarm-convergence-int-deg-norm
+     col: int_avg_interact_deg_norm
+     title: 'Swarm Convergence Interaction Degree (Normalized)'
+     xlabel: 'Interval'
+     ylabel: 'Degree'
+
+   - src_stem: swarm-convergence
+     dest_stem: swarm-convergence-int-deg-converged
+     col: int_avg_interact_deg_converged
+     title: 'Swarm Convergence Interaction Degree Convergence Status'
+     xlabel: 'Interval'
+     ylabel: 'Proportion'
+
+   - src_stem: swarm-convergence
+     dest_stem: swarm-convergence-ang-order-raw
+     col: int_avg_ang_order_raw
+     title: 'Swarm Convergence Angular Order (Raw)'
+     xlabel: 'Interval'
+     ylabel: 'Order'
+
+   - src_stem: swarm-convergence
+     dest_stem: swarm-convergence-ang-order-norm
+     col: int_avg_ang_order_norm
+     title: 'Swarm Convergence Angular Order (Normalized)'
+     xlabel: 'Interval'
+     ylabel: 'Order'
+
+   - src_stem: swarm-convergence
+     dest_stem: swarm-convergence-ang-order-converged
+     col: int_avg_ang_order_converged
+     title: 'Swarm Convergence Angular Order Convergence Status'
+     xlabel: 'Interval'
+     ylabel: 'Proportion'
+
+   - src_stem: swarm-convergence
+     dest_stem: swarm-convergence-pos-entropy-raw
+     col: int_avg_pos_entropy_raw
+     title: 'Swarm Convergence Positional Entropy (Raw)'
+     xlabel: 'Interval'
+     ylabel: 'Entropy'
+
+   - src_stem: swarm-convergence
+     dest_stem: swarm-convergence-pos-entropy-normalized
+     col: int_avg_pos_entropy_norm
+     title: 'Swarm Convergence Positional Entropy (Normalized)'
+     xlabel: 'Interval'
+     ylabel: 'Entropy'
+
+   - src_stem: swarm-convergence
+     dest_stem: swarm-convergence-dpos-dist-entropy-converged
+     col: int_avg_pos_entropy_converged
+     title: 'Swarm Convergence Positional Entropy Convergence Status'
+     xlabel: 'Interval'
+     ylabel: 'Proportion'
+
+   - src_stem: swarm-convergence
+     dest_stem: swarm-convergence-task-dist-entropy-raw
+     col: int_avg_task_dist_entropy_raw
+     title: 'Swarm Convergence Task Distribution Entropy (Raw)'
+     xlabel: 'Interval'
+     ylabel: 'Entropy'
+
+   - src_stem: swarm-convergence
+     dest_stem: swarm-convergence-task-dist-entropy-normalized
+     col: int_avg_task_dist_entropy_norm
+     title: 'Swarm Convergence Task Distribution Entropy (Normalized)'
+     xlabel: 'Interval'
+     ylabel: 'Entropy'
+
+   - src_stem: swarm-convergence
+     dest_stem: swarm-convergence-task-dist-entropy-converged
+     col: int_avg_task_dist_entropy_converged
+     title: 'Swarm Convergence Task Distribution Entropy Convergence Status'
+     xlabel: 'Interval'
+     ylabel: 'Proportion'

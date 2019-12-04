@@ -39,7 +39,7 @@ class TemporalVariancePlotDefs:
         self.perf_csv_col = 'cum_avg_collected'
 
     def __call__(self, batch_criteria, main_config):
-        tv_attr = TemporalVarianceParser().parse(self.cmdopts["criteria_def"])
+        tv_attr = TemporalVarianceParser()(self.cmdopts["criteria_def"])
 
         # @BUG This will not work with any batch exp directory naming that is not expX
         res = re.search("exp[0-9]+", self.cmdopts['output_root'])

@@ -56,7 +56,7 @@ class PhysicsEngines(BaseVariable):
         self.layout = layout
         self.extents = extents
 
-        assert 'uniform_grid2D' == self.layout,\
+        assert self.layout == 'uniform_grid2D',\
             "FATAL: Only uniform_grid2D physics engine layout currently supported"
 
     def gen_attr_changelist(self):
@@ -67,24 +67,24 @@ class PhysicsEngines(BaseVariable):
 
     def gen_tag_rmlist(self):
         """
-        Always remove the physics_engines tag if it exists so we are starting from a clean slate
-        each time. Obviously you *must* call this function BEFORE adding new definitions.
+        Always remove the ``<physics_engines>`` tag if it exists so we are starting from a clean
+        slate each time. Obviously you *must* call this function BEFORE adding new definitions.
         """
         return [set([(".", "./physics_engines")])]
 
     def gen_tag_addlist(self):
-        if 1 == self.n_engines:
+        if self.n_engines == 1:
             return [self.__gen1_engines(s) for s in self.extents]
-        elif 4 == self.n_engines:
+        elif self.n_engines == 4:
             return [self.__gen4_engines(s) for s in self.extents]
-        elif 8 == self.n_engines:
+        elif self.n_engines == 8:
             return [self.__gen8_engines(s) for s in self.extents]
-        elif 16 == self.n_engines:
+        elif self.n_engines == 16:
             return [self.__gen16_engines(s) for s in self.extents]
-        elif 24 == self.n_engines:
+        elif self.n_engines == 24:
             return [self.__gen24_engines(s) for s in self.extents]
         else:
-            raise RuntimeError
+            raise RuntimeError("Bad # of physics engines specified: {0}".format(self.n_engines))
 
     def __gen_engines(self,
                       dims: tp.Tuple[int, int, int],
@@ -92,71 +92,95 @@ class PhysicsEngines(BaseVariable):
                       n_engines_y: int,
                       forward_engines: tp.List[int]):
         """
-        Generate definitions for the specified # of 3D physics engines for the specified pair of
-        (X,Y) arena extents.
-
-        dims: The arena extents.
-        n_engines_x: # engines in the x direction.
-        n_engines_y: # engines in the y direction.
-        forward_engines: IDs of engines that are placed in increasing order in X when layed out
-                         L->R.
-
-        Volume is *NOT* divided equally among engines, but rather each of the engines is extended up
-        to some maximum height in Z, forming a set of "silos".
+        Generate definitions for the specified # of 2D/3D physics engines for the specified arena
+        extent.
         """
         adds = [('.', 'physics_engines', {})]
 
-        size_x = self.extents[0] / n_engines_x
-        size_y = self.extents[1] / n_engines_y
-        size_z = self.extents[2]
+        for i in range(0, self.n_engines):
+            adds.extend(self.__gen_single_engine(i,
+                                                 dims,
+                                                 n_engines_x,
+                                                 n_engines_y,
+                                                 forward_engines))
 
-        if 'dynamics3d' == self.engine_type:
+        return adds
+
+    def __gen_single_engine(self,
+                            engine_id: int,
+                            extent: tp.Tuple[int],
+                            n_engines_x: int,
+                            n_engines_y: int,
+                            forward_engines: tp.List[int]):
+        """
+        Generate definitions for a specific 2D/3D engine as a member of the mapping of the specified
+        arena extent to one or more engines.
+
+        Volume is *NOT* divided equally among engines, but rather each of the engines is extended up
+        to some maximum height in Z, forming a set of "silos".
+
+        Arguments:
+            engine_id: Numerical UUID for the engine.
+            extent: The mapped extent for the physics engines.
+            n_engines_x: # engines in the x direction.
+            n_engines_y: # engines in the y direction.
+            forward_engines: IDs of engines that are placed in increasing order in X when layed out
+                             L->R.
+        """
+
+        adds = []
+
+        size_x = extent[0] / n_engines_x
+        size_y = extent[1] / n_engines_y
+        size_z = extent[2]
+
+        if self.engine_type == 'dynamics3d':
             name_stem = 'dyn3d'
         else:
             name_stem = 'dyn2d'
 
-        for i in range(0, self.n_engines):
-            name = name_stem + str(i)
-            adds.append(('.//physics_engines', self.engine_type, {'id': name,
-                                                                  'iterations': str(self.iter_per_tick)}))
-            adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]",
-                         "boundaries", {}))
-            adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]/boundaries",
-                         "top", {'height': str(size_z)}))
-            adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]/boundaries",
-                         "bottom", {'height': '0.0'}))
-            adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]/boundaries",
-                         "sides", {}))
+        name = name_stem + str(engine_id)
 
-            # Engine lower X coord increasing as engine id increases
-            if i in forward_engines:
-                ll_x = size_x * (i % n_engines_x)
-                lr_x = size_x * ((i % n_engines_x) + 1)
+        adds.append(('.//physics_engines', self.engine_type, {'id': name,
+                                                              'iterations': str(self.iter_per_tick)}))
+        adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]",
+                     "boundaries", {}))
+        adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]/boundaries",
+                     "top", {'height': str(size_z)}))
+        adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]/boundaries",
+                     "bottom", {'height': '0.0'}))
+        adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]/boundaries",
+                     "sides", {}))
 
-            else:  # Engine lower X coord increasing as engine id DECREASES
-                ll_x = size_x * (n_engines_x - (i % n_engines_x) - 1)
-                lr_x = size_x * ((n_engines_x - (i % n_engines_x) - 1) + 1)
+        # Engine lower X coord increasing as engine id increases
+        if engine_id in forward_engines:
+            ll_x = size_x * (engine_id % n_engines_x)
+            lr_x = size_x * ((engine_id % n_engines_x) + 1)
 
-            ur_x = lr_x
-            ul_x = ll_x
+        else:  # Engine lower X coord increasing as engine id DECREASES
+            ll_x = size_x * (n_engines_x - (engine_id % n_engines_x) - 1)
+            lr_x = size_x * ((n_engines_x - (engine_id % n_engines_x) - 1) + 1)
 
-            # We use the max of # engines in X/Y to get the nice numbering/layout of engines.
-            ll_y = size_y * (int(i / max(n_engines_x, n_engines_y)))
-            ul_y = size_y * (int(i / max(n_engines_x, n_engines_y)) + 1)
+        ur_x = lr_x
+        ul_x = ll_x
 
-            lr_y = ll_y
-            ur_y = ul_y
+        # We use the max of # engines in X/Y to get the nice numbering/layout of engines.
+        ll_y = size_y * (int(engine_id / max(n_engines_x, n_engines_y)))
+        ul_y = size_y * (int(engine_id / max(n_engines_x, n_engines_y)) + 1)
 
-            adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]/boundaries/sides",
-                         "vertex", {"point": "{0}, {1}".format(ll_x, ll_y)}))
-            adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]/boundaries/sides",
-                         "vertex", {"point": "{0}, {1}".format(lr_x, lr_y)}))
+        lr_y = ll_y
+        ur_y = ul_y
 
-            adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]/boundaries/sides",
-                         "vertex", {"point": "{0}, {1}".format(ur_x, ur_y)}))
+        adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]/boundaries/sides",
+                     "vertex", {"point": "{0}, {1}".format(ll_x, ll_y)}))
+        adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]/boundaries/sides",
+                     "vertex", {"point": "{0}, {1}".format(lr_x, lr_y)}))
 
-            adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]/boundaries/sides",
-                         "vertex", {"point": "{0}, {1}".format(ul_x, ul_y)}))
+        adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]/boundaries/sides",
+                     "vertex", {"point": "{0}, {1}".format(ur_x, ur_y)}))
+
+        adds.append((".//physics_engines/*[@id='{0}'".format(name) + "]/boundaries/sides",
+                     "vertex", {"point": "{0}, {1}".format(ul_x, ul_y)}))
         return adds
 
     def __gen1_engines(self, dims: tp.Tuple[int, int]):
@@ -166,7 +190,7 @@ class PhysicsEngines(BaseVariable):
 
         """
 
-        if 'dynamics3d' == self.engine_type:
+        if self.engine_type == 'dynamics3d':
             name = 'dyn3d'
         else:
             name = 'dyn2d'

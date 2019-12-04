@@ -43,19 +43,6 @@ class BootstrapCmdline:
 
                                  Specify which plugin to load (really what project you want to use SIERRA with).
 
-                                 The specified option is added to the path ``plugins/<option>``, and the plugin
-                                 directory tree must have the following structure:
-
-                                 - ``config/`` - Plugin YAML configuration root. within this directory, the following
-                                                 files must be present when running a stage that utilizes them:
-
-                                   - ``main.yaml`` - Main SIERRA configuration file.
-                                   - ``intra-graphs-line.yaml`` - Configuration for intra-experiment linegraphs.
-                                   - ``intra-graphs-line.yaml`` - Configuration for intra-experiment heatmaps.
-                                   - ``inter-graphs.yaml`` - Configuration for inter-experiment graphs.
-                                   - ``controllers.yaml`` - Configuration for controllers (input file/graph generation).
-                                   - ``stage5.yaml`` - Configuration for stage5 controller comparisons.
-
                                  Use=stage[1,2,3,4,5].
                                  """)
         self.parser.add_argument("--log-level",
