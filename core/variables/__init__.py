@@ -23,6 +23,6 @@ from core.variables import nest_pose
 from core.variables import swarm_density
 from core.variables import block_density
 from core.variables import swarm_size
-from core.variables import temporal_variance
+from core.variables import flexibility
 from core.variables import physics_engines
 from core.variables import batch_criteria

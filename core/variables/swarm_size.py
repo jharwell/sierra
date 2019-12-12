@@ -75,12 +75,6 @@ class SwarmSize(bc.UnivarBatchCriteria):
         else:
             return dirs
 
-    def sc_graph_labels(self, scenarios: list) -> tp.List[str]:
-        return [s[-4:] for s in scenarios]
-
-    def sc_sort_scenarios(self, scenarios: list) -> tp.List[str]:
-        return scenarios  # No sorting needed
-
     def graph_xticks(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[float]:
         ret = self.swarm_sizes(cmdopts, exp_dirs)
 

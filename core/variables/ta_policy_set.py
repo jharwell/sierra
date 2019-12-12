@@ -94,13 +94,6 @@ class TAPolicySet(UnivarBatchCriteria):
         else:
             return dirs
 
-    def sc_graph_labels(self, scenarios: tp.List[str]) -> tp.List[str]:
-        return [s[-5:-2].replace('p', '.') for s in scenarios]
-
-    def sc_sort_scenarios(self, scenarios: tp.List[str]) -> tp.List[str]:
-        return sorted(scenarios,
-                      key=lambda s: float(s.split('-')[2].split('.')[0][0:3].replace('p', '.')))
-
     def graph_xticks(self, cmdopts: tp.Dict[str, str], exp_dirs: tp.List[str]) -> tp.List[float]:
         if exp_dirs is not None:
             dirs = exp_dirs

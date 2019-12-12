@@ -17,6 +17,7 @@
 import os
 import pickle
 import logging
+import copy
 import typing as tp
 
 import core.utils
@@ -96,34 +97,61 @@ class BatchCriteria(base_variable.BaseVariable):
                 pickle.dump(exp_def, f)
 
     def scaffold_exps(self,
-                      exp_def: core.xml_luigi.XMLLuigi,
+                      xml_luigi: core.xml_luigi.XMLLuigi,
                       batch_config_leaf: str,
                       cmdopts: tp.Dict[str, str]):
-        defs = list(self.gen_attr_changelist())
-        logging.info("Stage1: Applying batch criteria to %s experiments", len(defs))
 
-        for i, defi in enumerate(defs):
+        defs1 = list(self.gen_attr_changelist())
+        defs2 = list(self.gen_tag_addlist())
+        assert len(defs1) == 0 or len(defs2) == 0, \
+            "FATAL: Batch criteria defines both attribute changes and tag additions"
+
+        for i, defi in enumerate(defs1):
             exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
             exp_generation_root = os.path.join(self.batch_generation_root,
                                                str(exp_dirname))
-            logging.debug("Applying %s changes from batch criteria generator '%s' for exp%s in %s",
-                          len(defs[i]),
-                          self.cli_arg,
-                          i,
-                          exp_dirname)
+            logging.info("Applying %s changes from batch criteria generator '%s' for exp%s in %s",
+                         len(defi),
+                         self.cli_arg,
+                         i,
+                         exp_dirname)
 
             os.makedirs(exp_generation_root, exist_ok=True)
             for path, attr, value in defi:
-                exp_def.attr_change(path, attr, value)
+                xml_luigi.attr_change(path, attr, value)
 
-            exp_def.write(os.path.join(exp_generation_root,
-                                       batch_config_leaf))
+            xml_luigi.write(os.path.join(exp_generation_root,
+                                         batch_config_leaf))
 
-        assert len(defs) == len(os.listdir(self.batch_generation_root)),\
-            "FATAL: Size of batch criteria({0}) != # exp dirs ({1}): possibly caused by:\n"\
-            "(1) Duplicate named exp dirs from switching batch criteria\n"\
-            "(2) Trying share the same batched experiment root between different batch criteria\n".format(len(defs),
-                                                                                                          len(os.listdir(self.batch_generation_root)))
+        for i, defi in enumerate(defs2):
+            # Because we are INSERTING and not MODIFYING tags, we have to copy the experimental
+            # definition to avoid accumulating the added tags across experiments within the batch...
+            xml_luigii = copy.deepcopy(xml_luigi)
+            exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
+            exp_generation_root = os.path.join(self.batch_generation_root,
+                                               str(exp_dirname))
+
+            logging.info("Adding %s new tags from batch criteria '%s' for exp%s in %s",
+                         len(defi),
+                         self.cli_arg,
+                         i,
+                         exp_dirname)
+
+            os.makedirs(exp_generation_root, exist_ok=True)
+
+            for path, attr, value in defi:
+                xml_luigii.tag_add(path, attr, value)
+            xml_luigii.write(os.path.join(exp_generation_root,
+                                          batch_config_leaf))
+
+        n_exps = len(defs1) + len(defs2)
+        n_exp_dirs = len(os.listdir(self.batch_generation_root))
+        assert n_exps == n_exp_dirs,\
+            "FATAL: Size of batched experiment ({0}) != # exp dirs ({1}): possibly caused by:\n"\
+            "(1) Changing batch criteria without changing the generation root ({2})\n"\
+            "(2) Sharing {2} between different batch criteria\n".format(n_exps,
+                                                                        n_exp_dirs,
+                                                                        self.batch_generation_root)
 
     def is_bivar(self) -> bool:
         """
@@ -149,35 +177,6 @@ class BatchCriteria(base_variable.BaseVariable):
         Returns:
             List of directory names for current experiment
 
-        """
-        raise NotImplementedError
-
-    def sc_graph_labels(self, scenarios: tp.List[str]) -> tp.List[str]:
-        """Generate scenario comparison graph labels.Directory names are determined by controller used,
-        batch criteria used, or both, so disambiguation is needed on a per-criteria basis.
-
-        Arguments:
-            scenarios: List of directories in sierra root representing the scenarios
-                       that each controller was tested on.
-
-        Returns:
-            A sorted list of prettified labels suitable for scenario comparison graphs from the
-            directory names used for each scenario.
-
-        """
-        raise NotImplementedError
-
-    def sc_sort_scenarios(self, scenarios: tp.List[str]):
-        """
-
-        Arguments:
-            scenarios:  List of directories in sierra root representing the scenarios
-                        that each controller was tested on. Directory names are determined by
-                        controller used, batch criteria used, or both, so disambiguation is needed
-                        on a per-criteria basis.
-
-        Returns:
-            A sorted list of scenarios.
         """
         raise NotImplementedError
 

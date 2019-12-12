@@ -89,6 +89,7 @@ class UnivarCSVCollator:
         csv_ipath = os.path.join(exp_output_root,
                                  self.main_config['sierra']['avg_output_leaf'],
                                  target['src_stem'] + '.csv')
+
         if not os.path.exists(csv_ipath):
             return False
 
@@ -161,7 +162,7 @@ class BivarCSVCollator:
         exp_dirs = batch_criteria.gen_exp_dirnames(self.cmdopts)
         csv_src_exists = [False for d in exp_dirs]
         stddev_src_exists = [False for d in exp_dirs]
-
+        print(exp_dirs)
         for i, diri in enumerate(exp_dirs):
             csv_src_exists[i] = self.__collate_exp_csv_data(diri,
                                                             target,

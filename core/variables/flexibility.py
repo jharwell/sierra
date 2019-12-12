@@ -1,4 +1,4 @@
-# Copyright 2018 John Harwell, All rights reserved.
+# Copyright 2019 John Harwell, All rights reserved.
 #
 #  This file is part of SIERRA.
 #
@@ -38,7 +38,7 @@ section is shown below.
 
    sierra:
      ...
-     temporal_variance:
+     flexibility:
        # The range of Hz to use for generated waveforms. Applies to Sine, Sawtooth, Square
        # waves. There is no limit for the length of the list.
        hz:
@@ -87,10 +87,10 @@ import typing as tp
 from core.variables.batch_criteria import UnivarBatchCriteria
 from core.variables.swarm_size import SwarmSize
 from core.perf_measures import vcs
-from core.variables.temporal_variance_parser import TemporalVarianceParser
+from core.variables.flexibility_parser import FlexibilityParser
 
 
-class TemporalVariance(UnivarBatchCriteria):
+class Flexibility(UnivarBatchCriteria):
     """
     A univariate range specifiying the set of temporal variances (and possibly swarm size) to
     use to define the batched experiment. This class is a base class which should (almost) never be
@@ -147,12 +147,6 @@ class TemporalVariance(UnivarBatchCriteria):
                 ("{0}/waveform".format(v[0]), "offset", str(v[4])),
                 ("{0}/waveform".format(v[0]), "phase", str(v[5]))]) for v in self.variances]
 
-    def sc_graph_labels(self, scenarios: tp.List[str]) -> tp.List[str]:
-        return scenarios
-
-    def sc_sort_scenarios(self, scenarios: tp.List[str]) -> tp.List[str]:
-        return scenarios  # No sorting needed
-
     def graph_xticks(self,
                      cmdopts: tp.Dict[str, str],
                      exp_dirs: tp.List[str] = None) -> tp.List[float]:
@@ -188,16 +182,16 @@ class TemporalVariance(UnivarBatchCriteria):
 
 def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwargs):
     """
-    Factory to create :class:`TemporalVariance` derived classes from the command line definition of
+    Factory to create :class:`Flexibility` derived classes from the command line definition of
     batch criteria.
 
     """
-    attr = TemporalVarianceParser()(cli_arg)
+    attr = FlexibilityParser()(cli_arg)
 
     def gen_variances(attr: tp.Dict[str, str]):
 
-        amps = main_config['sierra']['temporal_variance'][attr['variance_type'] + '_amp']
-        hzs = main_config['sierra']['temporal_variance']['hz']
+        amps = main_config['sierra']['flexibility'][attr['variance_type'] + '_amp']
+        hzs = main_config['sierra']['flexibility']['hz']
 
         # All variances need to have baseline/ideal conditions for comparison, which is a small
         # constant penalty
@@ -233,13 +227,13 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
         return variances
 
     def __init__(self):
-        TemporalVariance.__init__(self,
-                                  cli_arg,
-                                  main_config,
-                                  batch_generation_root,
-                                  gen_variances(attr),
-                                  attr.get("swarm_size", None))
+        Flexibility.__init__(self,
+                             cli_arg,
+                             main_config,
+                             batch_generation_root,
+                             gen_variances(attr),
+                             attr.get("swarm_size", None))
 
     return type(cli_arg,
-                (TemporalVariance,),
+                (Flexibility,),
                 {"__init__": __init__})

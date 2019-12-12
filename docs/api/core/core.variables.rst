@@ -19,7 +19,7 @@ core.variables
       swarm_density
       swarm_size
       ta_policy_set
-      temporal_variance
+      flexibility
       time_setup
 
 .. automodule:: core.variables.arena_shape

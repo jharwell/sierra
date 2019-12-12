@@ -22,13 +22,13 @@ Core Batch Criteria
 The SIERRA core defines the following batch criteria (additional criteria can be
 defined by the selected plugin):
 
-  - `swarm_size`
-  - `swarm_density`
-  - `temporal_variance`
-  - `oracle`
-  - `ta_policy_set`
-  - `block_density`
-
+  - ``swarm_size``
+  - ``swarm_density``
+  - ``block_density``
+  - ``flexibility``
+  - ``oracle``
+  - ``ta_policy_set``
+  - ``saa_noise``
 
 You *should* be able to combine any two of the criteria above, or use them
 independently. I have not tried all combinations, so YMMV.
@@ -58,10 +58,10 @@ Block Density
 .. automodule:: core.variables.block_density
     :members:
 
-Temporal Variance
+Flexibility
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: core.variables.temporal_variance
+.. automodule:: core.variables.flexibility
     :members:
 
 Oracle
@@ -74,6 +74,12 @@ Task Allocation Policy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: core.variables.ta_policy_set
+    :members:
+
+Sensor and Actuator Noise
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: core.variables.saa_noise
     :members:
 
 FORDYCA Plugin Batch Criteria

@@ -65,13 +65,6 @@ class ConstantDensity(bc.UnivarBatchCriteria):
             for c in dist.gen_attr_changelist():
                 changeset = changeset | c
 
-    def sc_graph_labels(self, scenarios: tp.List[str]) -> tp.List[str]:
-        return [s[-5: -2].replace('p', '.') for s in scenarios]
-
-    def sc_sort_scenarios(self, scenarios: tp.List[str]) -> tp.List[str]:
-        return sorted(scenarios,
-                      key=lambda s: float(s.split('-')[2].split('.')[0][0: 3].replace('p', '.')))
-
     def exp_scenario_name(self, exp_num: int) -> str:
         """
         Given the exp number in the batch, compute a valid, parsable scenario name. It is necessary

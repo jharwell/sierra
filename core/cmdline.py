@@ -160,13 +160,7 @@ class CoreCmdline:
                                  defined by the parser for ``<category>``).
 
                                  Not all files within the ``variables/`` directory contain classes which can be used as
-                                 top level batch criteria; the ones that can are:
-
-                                 - swarm_size
-                                 - constant_density
-                                 - ta_policy_set
-                                 - oracle
-                                 - temporal_variance
+                                 top level batch criteria; see the docs for the ones that can:
 
                                  Use=stage{1,2,3,4,5}.
 
@@ -211,7 +205,7 @@ class CoreCmdline:
 
                                  This option is NOT compatible with the following batch criteria:
 
-                                 - temporal_variance
+                                 - flexibility
 
                                  """,
                                  action='store_true',
@@ -545,7 +539,7 @@ class CoreCmdline:
                          help="""
 
                           Generate plots of ideal vs. observed swarm [reactivity, adaptability] for each experiment in
-                          the batch.
+                          the batch. Only applicable to ``flexibility`` batch criteria.
 
                           Use=stage{4}; can be omitted otherwise.
 
@@ -557,7 +551,7 @@ class CoreCmdline:
 
                          Environmental conditions curve similarity method. Specify the method to use to calculate the
                          similarity between curves of applied variance (non-ideal conditions) and ideal conditions
-                         (exp0). Only applies for ``temporal_variance`` batch criteria. Valid values:
+                         (exp0). Only applicable to ``flexibility`` batch criteria. Valid values:
 
                          - ``pcm`` - Partial Curve Mapping (Witowski2012)
                          - ``area_between`` - Area between the two curves (Jekel2018)
@@ -577,7 +571,7 @@ class CoreCmdline:
 
                          Reactivity calculatation curve similarity method. Specify the method to use to calculate the
                          similarity between the inverted applied variance curve for a simulation and the corrsponding
-                         performance curve.
+                         performance curve. Only applicable to ``flexibility`` batch criteria.
 
                          - ``pcm`` - Partial Curve Mapping (Witowski2012)
                          - ``area_between`` - Area between the two curves (Jekel2018)
@@ -596,7 +590,7 @@ class CoreCmdline:
 
                          Adaptability calculatation curve similarity method. Specify the method to use to calculate the
                          similarity between the inverted applied variance curve for a simulation and the corrsponding
-                         performance curve.
+                         performance curve. Only applicable to ``flexibility`` batch criteria.
 
                          - ``pcm`` - Partial Curve Mapping (Witowski2012)
                          - ``area_between`` - Area between the two curves (Jekel2018)

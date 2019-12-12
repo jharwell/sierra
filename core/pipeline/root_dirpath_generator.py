@@ -104,7 +104,7 @@ def __gen_batch_root(sierra_root: str,
     cases.
     """
 
-    problematica = ['temporal_variance', 'constant_density']
+    problematica = ['flexibility', 'constant_density']
     for p in problematica:
         for b in batch_criteria:
             if p in b:

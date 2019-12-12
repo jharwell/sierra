@@ -7,6 +7,112 @@ LN_perception:
       xlabel: 'Interval'
       ylabel: '# Inaccuracies'
 
+LN_block_trans:
+  graphs:
+    - src_stem: block-transport
+      dest_stem: blocks-transported-int-avg
+      col: int_avg_transported
+      title: 'Average Blocks Transported (interval)'
+      xlabel: 'Interval'
+      ylabel: '# Blocks'
+
+    - src_stem: block-transport
+      dest_stem: cube-blocks-transported-int-avg
+      col: int_avg_cube_transported
+      title: 'Average Cube Blocks Transported (interval)'
+      xlabel: 'Interval'
+      ylabel: '# Blocks'
+
+    - src_stem: block-transport
+      dest_stem: ramp-blocks-transported-int-avg
+      col: int_avg_ramp_transported
+      title: 'Average Ramp Blocks Transported (interval)'
+      xlabel: 'Interval'
+      ylabel: '# Blocks'
+
+    - src_stem: block-transport
+      dest_stem: blocks-transported-cum-avg
+      col: cum_avg_transported
+      title: 'Average Blocks Transported (cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Blocks'
+
+    - src_stem: block-transport
+      dest_stem: cube-blocks-transported-cum-avg
+      col: cum_avg_cube_transported
+      title: 'Average Cube Blocks Transported (cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Blocks'
+
+    - src_stem: block-transport
+      dest_stem: ramp-blocks-transported-cum-avg
+      col: cum_avg_ramp_transported
+      title: 'Average Ramp Blocks Transported (cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Blocks'
+
+    - src_stem: block-transport
+      dest_stem: blocks-transported-cum
+      col: cum_transported
+      title: 'Blocks Transported (cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Blocks'
+
+    - src_stem: block-transport
+      dest_stem: cube-blocks-transported-cum
+      col: cum_cube_transported
+      title: 'Cube Blocks Transported (cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Blocks'
+
+    - src_stem: block-transport
+      dest_stem: ramp-blocks-transported-cum
+      col: cum_ramp_transported
+      title: 'Ramp Blocks Transported (cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Blocks'
+
+    - src_stem: block-transport
+      dest_stem: block-transporters-int-avg
+      col: int_avg_transporters
+      title: 'Average Block Transporters (interval)'
+      xlabel: 'Interval'
+      ylabel: '# Robots'
+
+    - src_stem: block-transport
+      dest_stem: block-transporters-cum-avg
+      col: cum_avg_transporters
+      title: 'Average Block Transporters (cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Robots'
+
+    - src_stem: block-transport
+      dest_stem: blocks-transport-time-int-avg
+      col: int_avg_transport_time
+      title: 'Average Block Transport Time (interval)'
+      xlabel: 'Interval'
+      ylabel: '# Timesteps'
+
+    - src_stem: block-transport
+      dest_stem: blocks-transport-time-cum-avg
+      col: cum_avg_transport_time
+      title: 'Average Block Transport Time (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Timesteps'
+
+    - src_stem: block-transport
+      dest_stem: blocks-initial-wait-time-int-avg
+      col: int_avg_initial_wait_time
+      title: 'Average Block Initial Wait Time (interval)'
+      xlabel: 'Interval'
+      ylabel: '# Timesteps'
+    - src_stem: block-transport
+      dest_stem: blocks-initial-wait-time-cum-avg
+      col: cum_avg_initial_wait_time
+      title: 'Average Block Initial Wait Time (cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Robots'
+
 # Depth1
 LN_cache_acq:
   graphs:

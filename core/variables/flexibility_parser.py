@@ -19,9 +19,9 @@ import re
 import typing as tp
 
 
-class TemporalVarianceParser():
+class FlexibilityParser():
     """
-    Enforces the cmdline definition of the :class:`TemporalVariance` batch criteria.
+    Enforces the cmdline definition of the :class:`Flexibility` batch criteria.
 
     This is its own file due to an otherwise circular import dependence between it and vcs.
 

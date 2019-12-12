@@ -23,7 +23,7 @@ import numpy as np
 import yaml
 import similaritymeasures as sm
 
-from core.variables.temporal_variance_parser import TemporalVarianceParser
+from core.variables.flexibility_parser import FlexibilityParser
 
 
 def method_xlabel(method):
@@ -79,7 +79,7 @@ class EnvironmentalCS():
     def __init__(self, cmdopts, exp_num):
         self.cmdopts = cmdopts
         self.exp_num = exp_num
-        self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
+        self.main_config = yaml.load(open(os.path.join(self.cmdopts['plugin_config_root'],
                                                        'main.yaml')))
 
     def __call__(self, batch_criteria, exp_dirs=None):
@@ -98,7 +98,7 @@ class EnvironmentalCS():
                                           self.main_config['sierra']['avg_output_leaf'],
                                           self.main_config['sierra']['perf']['temporal_var_csv']),
                              sep=';')
-        attr = TemporalVarianceParser()(batch_criteria.cli_arg)
+        attr = FlexibilityParser()(batch_criteria.cli_arg)
 
         xlen = len(exp_df[attr["variance_csv_col"]].values)
         exp_data = np.zeros((xlen, 2))
@@ -171,9 +171,10 @@ class AdaptabilityCS():
         self.batch_criteria = batch_criteria
         self.exp_num = exp_num
 
-        self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'], 'main.yaml')))
+        self.main_config = yaml.load(
+            open(os.path.join(self.cmdopts['plugin_config_root'], 'main.yaml')))
         self.perf_csv_col = 'cum_avg_collected'
-        self.var_csv_col = TemporalVarianceParser()(self.batch_criteria.cli_arg)['variance_csv_col']
+        self.var_csv_col = FlexibilityParser()(self.batch_criteria.cli_arg)['variance_csv_col']
 
     def calc_waveforms(self):
         """
@@ -256,12 +257,12 @@ class ReactivityCS():
 
     def __init__(self, cmdopts, batch_criteria, exp_num):
         self.cmdopts = cmdopts
-        self.main_config = yaml.load(open(os.path.join(self.cmdopts['config_root'],
+        self.main_config = yaml.load(open(os.path.join(self.cmdopts['plugin_config_root'],
                                                        'main.yaml')))
 
         self.exp_num = exp_num
         self.perf_csv_col = 'cum_avg_collected'
-        self.var_csv_col = TemporalVarianceParser()(batch_criteria.cli_arg)['variance_csv_col']
+        self.var_csv_col = FlexibilityParser()(batch_criteria.cli_arg)['variance_csv_col']
         self.batch_criteria = batch_criteria
 
     def calc_waveforms(self):

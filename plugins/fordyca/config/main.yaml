@@ -1,35 +1,19 @@
-# sim: Configuration keys specific to the simulation (not part of sierra)
 sim:
-  # metrics_leaf: The directory with the simulation working directory where
-  # metrics are stored.
   metrics_leaf: 'metrics'
-
-  # frames_leaf: The directory within the simulation working directory where
-  # frames are stored
   frames_leaf: 'frames'
 
-# sierra: Configuration keys are used by sierra to generate, run, and process
-# simulation results
 sierra:
-  # Directory within the batch experiment root to hold collated .csvs
   collate_csv_leaf: 'collated-csvs'
-
-  # Directory within the batch experiment root to hold collated graphs
   collate_graph_leaf: 'collated-graphs'
-
-  # Directory with each experiment's directory for holding averaged .csvs
   avg_output_leaf: 'averaged-output'
 
-  # perf: Configuration keys are used by sierra for performance metric
-  # calculation.
   perf:
-    inter_perf_csv: 'blocks-collected-cum.csv'
+    inter_perf_csv: 'blocks-transported-cum.csv'
     ca_in_csv: 'ca-in-cum-avg.csv'
     temporal_var_csv: 'temporal-variance.csv'
     intra_perf_csv: 'block-transport.csv'
 
-  # temporal_variance: How to affect the simulation in temporally varying ways.
-  temporal_variance:
+  flexibility:
     hz:
       - 0
       - 8000
@@ -47,3 +31,22 @@ sierra:
       - 0.1
       - 0.2
       - 0.4
+
+  robustness:
+    sensors:
+      light:
+        model: gaussian
+        mean_range: [0.0, 0.0]
+        stddev_range: [0.0, 0.1]
+      proximity:
+        model: gaussian
+        mean_range: [0.0, 0.0]
+        stddev_range: [0.0, 0.1]
+      ground:
+        model: gaussian
+        mean_range: [0.0, 0.0]
+        stddev_range: [0.0, 0.1]
+      steering:
+        model: gaussian
+        mean_range: [0.0, 0.0]
+        stddev_range: [0.0, 0.1]

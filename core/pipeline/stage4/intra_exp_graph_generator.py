@@ -25,7 +25,7 @@ import typing as tp
 
 from core.graphs.stacked_line_graph import StackedLineGraph
 from core.graphs.heatmap import Heatmap
-from core.pipeline.stage4.temporal_variance_plot_defs import TemporalVariancePlotDefs
+from core.pipeline.stage4.flexibility_plot_defs import FlexibilityPlotDefs
 
 
 class BatchedIntraExpGraphGenerator:

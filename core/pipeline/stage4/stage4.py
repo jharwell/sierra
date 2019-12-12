@@ -100,29 +100,36 @@ class PipelineStage4:
         plugin_intra_HM = os.path.join(self.cmdopts['plugin_config_root'],
                                        'intra-graphs-hm.yaml')
         if os.path.exists(plugin_intra_LN):
-            logging.info("Loading additional intra-experiment linegraph config for plugin '%s'",
+            logging.info("Stage4: Loading additional intra-experiment linegraph config for plugin '%s'",
                          self.cmdopts['plugin'])
             plugin_dict = yaml.load(open(plugin_intra_LN), yaml.FullLoader)
             for category in plugin_dict:
                 if category not in self.intra_LN_config:
-                    graphs = self.intra_LN_config.get(category, [])
-                    graphs.extend.extend(plugin_dict[category])
+                    self.intra_LN_config.update({category: plugin_dict[category]})
+                else:
+                    self.intra_LN_config[category]['graphs'].extend(plugin_dict[category]['graphs'])
+
+                self.intra_LN_config.update({category: plugin_dict[category]})
 
         if os.path.exists(plugin_intra_HM):
-            logging.info("Loading additional intra-experiment heatmap config for plugin '%s'",
+            logging.info("Stage4: Loading additional intra-experiment heatmap config for plugin '%s'",
                          self.cmdopts['plugin'])
             plugin_dict = yaml.load(open(plugin_intra_HM), yaml.FullLoader)
             for category in plugin_dict:
-                graphs = self.intra_HM_config.get(category, [])
-                graphs.extend.extend(plugin_dict[category])
+                if category not in self.intra_HM_config:
+                    self.intra_HM_config.update({category: plugin_dict[category]})
+                else:
+                    self.intra_HM_config[category]['graphs'].extend(plugin_dict[category]['graphs'])
 
         if os.path.exists(plugin_inter_LN):
-            logging.info("Loading additional inter-experiment linegraph config for plugin '%s'",
+            logging.info("Stage4: Loading additional inter-experiment linegraph config for plugin '%s'",
                          self.cmdopts['plugin'])
             plugin_dict = yaml.load(open(plugin_inter_LN), yaml.FullLoader)
             for category in plugin_dict:
-                graphs = self.inter_LN_config.get(category, [])
-                graphs.extend.extend(plugin_dict[category])
+                if category not in self.inter_LN_config:
+                    self.inter_LN_config.update({category: plugin_dict[category]})
+                else:
+                    self.inter_LN_config[category]['graphs'].extend(plugin_dict[category]['graphs'])
 
     def run(self, batch_criteria):
         """

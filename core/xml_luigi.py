@@ -40,7 +40,7 @@ class XMLLuigi:
                                     file. (Defaults to overwriting the input file.)
     """
 
-    def __init__(self, input_filepath, output_filepath=None):
+    def __init__(self, input_filepath: str, output_filepath: str = None):
         if output_filepath is None:
             output_filepath = input_filepath
 
@@ -57,22 +57,22 @@ class XMLLuigi:
 
         self.tree.write(filepath)
 
-    def attr_get(self, path, attr):
+    def attr_get(self, path: str, attr: str):
         el = self.root.find(path)
         if self.has_tag(path) and attr in el.attrib:
             return el.attrib[attr]
         return None
 
-    def attr_change(self, path, attr, value, noprint=False):
+    def attr_change(self, path: str, attr: str, value: str, noprint: bool = False):
         """
         Change the specified attribute of the *FIRST* element matching the specified path searching
         from the tree root.
 
-        Parameters:
-          path(str): An XPath expression that for the element containing the attribute to
-                     change. The element must exist or an error will be raised.
-          attr(str): Name of the attribute to change within the enclosing element.
-          value(str): The value to set the attribute to.
+        Arguments:
+          path: An XPath expression that for the element containing the attribute to
+                change. The element must exist or an error will be raised.
+          attr: Name of the attribute to change within the enclosing element.
+          value: The value to set the attribute to.
         """
         el = self.root.find(path)
 
@@ -82,19 +82,19 @@ class XMLLuigi:
             if not noprint:
                 logging.warning("No attribute '%s' found in node '%s'", attr, path)
 
-    def has_tag(self, path):
+    def has_tag(self, path: str):
         return self.root.find(path) is not None
 
-    def tag_change(self, path, tag, value):
+    def tag_change(self, path: str, tag: str, value: str):
         """
         Change the specified tag of the element matching the specified path searching
         from the tree root.
 
-        Parameters:
-          path(str): An XPath expression that for the element containing the tag to
-                     change. The element must exist or an error will be raised.
-          attr(str): Name of the tag to change within the enclosing element.
-          value(str): The value to set the tag to.
+        Arguments:
+          path: An XPath expression that for the element containing the tag to
+                change. The element must exist or an error will be raised.
+          attr: Name of the tag to change within the enclosing element.
+          value: The value to set the tag to.
         """
 
         el = self.root.find(path)
@@ -104,15 +104,15 @@ class XMLLuigi:
                 return
         raise InvalidElementError("No such element '{0}' found in '{1}'".format(tag, path))
 
-    def tag_remove(self, path, tag, noprint=False):
+    def tag_remove(self, path: str, tag: str, noprint: bool = False):
         """
         Remove the specified tag of the child element found in the enclosing parent specified by the
         path.
 
-        Parameters:
-          path(str): An XPath expression that for the element containing the tag to
-                     remove. The element must exist or an error will be raised.
-          tag(str): Name of the tag to remove within the enclosing element, in XPath syntax.
+        Arguments:
+          path: An XPath expression that for the element containing the tag to
+                remove. The element must exist or an error will be raised.
+          tag: Name of the tag to remove within the enclosing element, in XPath syntax.
         """
 
         try:

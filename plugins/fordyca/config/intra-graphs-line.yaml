@@ -83,6 +83,67 @@ LN_perception:
       xlabel: 'Interval'
       ylabel: 'Density'
 
+LN_block_trans:
+  graphs:
+    - src_stem: block-transport
+      dest_stem: blocks-transported-avg
+      cols:
+        - int_avg_transported
+        - int_avg_cube_transported
+        - int_avg_ramp_transported
+        - cum_avg_transported
+        - cum_avg_cube_transported
+        - cum_avg_ramp_transported
+      legend:
+        - 'All Blocks (Interval)'
+        - '# Cube Blocks (Interval)'
+        - '# Ramp Blocks (Interval)'
+        - 'All Blocks (cumulative)'
+        - '# Cube Blocks (cumulative)'
+        - '# Ramp Blocks (cumulative)'
+      title: 'Average Blocks Transported'
+      xlabel: 'Interval'
+      ylabel: '# Blocks'
+    - src_stem: block-transport
+      dest_stem: blocks-transported-cum
+      cols:
+        - cum_transported
+        - cum_cube_transported
+        - cum_ramp_transported
+      title: 'Blocks Transported (cumulative)'
+      legend:
+        - 'All Blocks'
+        - '# Cube Blocks'
+        - '# Ramp Blocks'
+      xlabel: 'Interval'
+      ylabel: '# Blocks'
+    - src_stem: block-transport
+      dest_stem: block-transporters-count
+      cols:
+        - int_avg_transporters
+        - cum_avg_transporters
+      title: 'Swarm Block Average Transporters'
+      legend:
+        - 'Average # Transporters Per Block (Interval)'
+        - 'Average # Transporters Per Block (cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Transporters'
+    - src_stem: block-transport
+      dest_stem: block-transporters-time
+      cols:
+        - int_avg_transport_time
+        - cum_avg_transport_time
+        - int_avg_initial_wait_time
+        - cum_avg_initial_wait_time
+      title: 'Swarm Block Transport Time'
+      legend:
+        - 'Average Transport Time (Interval)'
+        - 'Average Transport Time (cumulative)'
+        - 'Average Initial Wait Time (Interval)'
+        - 'Average Initial Wait Time (cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Timesteps'
+
 # Depth 1
 LN_cache_util:
   graphs:

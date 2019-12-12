@@ -28,8 +28,8 @@ sierra:
     temporal_var_csv: 'temporal-variance.csv'
     intra_perf_csv: 'block-transport.csv'
 
-  # temporal_variance: How to affect the simulation in temporally varying ways.
-  temporal_variance:
+  # flexibility: How to affect the simulation in temporally varying ways.
+  flexibility:
     hz:
       - 0
       - 8000

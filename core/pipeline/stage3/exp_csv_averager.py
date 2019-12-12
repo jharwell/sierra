@@ -110,6 +110,7 @@ class ExpCSVAverager:
             "FATAL: Not all directories in {0} are simulation runs".format(self.exp_output_root)
 
         for exp in experiments:
+
             csv_root = os.path.join(self.exp_output_root, exp, self.metrics_leaf)
             # Nothing but .csv files should be in the metrics folder
             for csv_fname in os.listdir(csv_root):

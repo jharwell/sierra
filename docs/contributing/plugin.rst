@@ -1,5 +1,5 @@
 How to Add A New Plugin (I mean project)
-=======================================
+========================================
 
 The argument to the cmdline option ``--plugin`` is added to the path
 ``plugins/<option>``, and the plugin directory tree must have the following
