@@ -24,7 +24,7 @@ import pandas as pd
 from core.graphs.batch_ranged_graph import BatchRangedGraph
 from core.graphs.heatmap import Heatmap
 from core.perf_measures import common
-from core.variables.swarm_size import SwarmSize
+from core.variables.population import Population
 
 
 class SelfOrganizationFLUnivar:
@@ -33,7 +33,7 @@ class SelfOrganizationFLUnivar:
     experiments within the same scenario from collated ``.csv`` data using fractional performance
     losses due to inter-robot interference.
 
-    Only valid if the batch criteria was :class:`~variables.swarm_size.SwarmSize` derived.
+    Only valid if the batch criteria was :class:`~variables.population.Population` derived.
     """
 
     def __init__(self, cmdopts, inter_perf_csv, ca_in_csv):
@@ -56,7 +56,7 @@ class SelfOrganizationFLUnivar:
                                            self.ca_in_csv,
                                            batch_criteria).calculate(batch_criteria)
         df_new = pd.DataFrame(columns=batch_exp_dirnames, index=[0])
-        swarm_sizes = batch_criteria.swarm_sizes(self.cmdopts)
+        populations = batch_criteria.populations(self.cmdopts)
 
         # No self organization with 1 robot.
         df_new[df_new.columns[0]] = 0.0
@@ -64,8 +64,8 @@ class SelfOrganizationFLUnivar:
         for i in range(1, len(fl.columns)):
             df_new.loc[0, batch_exp_dirnames[i]] = calc_harwell2019(fl[batch_exp_dirnames[i]],
                                                                     fl[batch_exp_dirnames[i - 1]],
-                                                                    swarm_sizes[i],
-                                                                    swarm_sizes[i - 1])
+                                                                    populations[i],
+                                                                    populations[i - 1])
 
         stem_path = os.path.join(self.cmdopts["collate_root"], "pm-self-org-fl")
         df_new.to_csv(stem_path + ".csv", sep=';', index=False)
@@ -85,7 +85,7 @@ class SelfOrganizationFLBivar:
     experiments within the same scenario from collated ``.csv`` data using fractional performance
     losses due to inter-robot interference.
 
-    Only valid if one of the batch criteria was :class:`~variables.swarm_size.SwarmSize` derived.
+    Only valid if one of the batch criteria was :class:`~variables.population.Population` derived.
 
     """
 
@@ -103,7 +103,7 @@ class SelfOrganizationFLBivar:
 
         The Harwell2019 method is only defined for one dimensional data, and we are dealing with 2D
         ``.csv`` files, so we project down the rows/across the columns as appropriate, depending on
-        which axis in the ``.csv`` the :class:`~variables.swarm_size.SwarmSize` derived batch
+        which axis in the ``.csv`` the :class:`~variables.population.Population` derived batch
         criteria is on.
         """
 
@@ -119,7 +119,7 @@ class SelfOrganizationFLBivar:
         # We need to know which of the 2 variables was swarm size, in order to determine the correct
         # dimension along which to compute the metric, which depends on performance between adjacent
         # swarm sizes.
-        if isinstance(batch_criteria.criteria1, SwarmSize):
+        if isinstance(batch_criteria.criteria1, Population):
             so_df = self.__calc_by_row(fl, batch_criteria)
         else:
             so_df = self.__calc_by_col(fl, batch_criteria)
@@ -136,7 +136,7 @@ class SelfOrganizationFLBivar:
                 ytick_labels=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
     def __calc_by_row(self, fl, batch_criteria):
-        swarm_sizes = batch_criteria.swarm_sizes(self.cmdopts)
+        populations = batch_criteria.populations(self.cmdopts)
         so_df = pd.DataFrame(columns=fl.columns, index=fl.index)
 
         for i in range(0, len(fl.index)):
@@ -147,13 +147,13 @@ class SelfOrganizationFLBivar:
                     continue
                 so_df.iloc[i, j] = calc_harwell2019(fl.iloc[i, j],
                                                     fl.iloc[i - 1, j],
-                                                    swarm_sizes[i][j],
-                                                    swarm_sizes[i - 1][j])
+                                                    populations[i][j],
+                                                    populations[i - 1][j])
 
         return so_df
 
     def __calc_by_col(self, fl, batch_criteria):
-        swarm_sizes = batch_criteria.swarm_sizes(self.cmdopts)
+        populations = batch_criteria.populations(self.cmdopts)
         so_df = pd.DataFrame(columns=fl.columns, index=fl.index)
 
         for i in range(0, len(fl.index)):
@@ -165,8 +165,8 @@ class SelfOrganizationFLBivar:
 
                 so_df.iloc[i, j] = calc_harwell2019(fl.iloc[i, j],
                                                     fl.iloc[i, j - 1],
-                                                    swarm_sizes[i][j],
-                                                    swarm_sizes[i][j - 1])
+                                                    populations[i][j],
+                                                    populations[i][j - 1])
         return so_df
 
 

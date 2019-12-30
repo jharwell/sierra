@@ -30,7 +30,7 @@ from core.graphs.batch_ranged_graph import BatchRangedGraph
 from core.graphs.heatmap import Heatmap
 from core.perf_measures import common
 from core.variables import batch_criteria as bc
-from core.variables import swarm_size as ss
+from core.variables import population as ss
 
 
 class EfficiencyBivar:
@@ -97,14 +97,14 @@ class EfficiencyBivar:
         raw_df = pd.read_csv(ipath, sep=';')
         eff_df = pd.DataFrame(columns=raw_df.columns,
                               index=raw_df.index)
-        swarm_sizes = batch_criteria.swarm_sizes(self.cmdopts)
+        populations = batch_criteria.populations(self.cmdopts)
 
         for i in range(0, len(eff_df.index)):
             for j in range(0, len(eff_df.columns)):
                 eff_df.iloc[i, j] = common.csv_3D_value_iloc(raw_df,
                                                              i,
                                                              j,
-                                                             slice(-1, None)) / swarm_sizes[i][j]
+                                                             slice(-1, None)) / populations[i][j]
         return eff_df
 
 
@@ -184,12 +184,12 @@ class KarpFlattBivar:
                                                          self.inter_perf_csv,
                                                          "positive")(batch_criteria)
 
-        sizes = batch_criteria.swarm_sizes(self.cmdopts)
+        sizes = batch_criteria.populations(self.cmdopts)
         xfactor = 0
         yfactor = 0
 
         # Swarm size is along rows (X), so the first column by definition has perfect scalability
-        if isinstance(batch_criteria.criteria1, ss.SwarmSize):
+        if isinstance(batch_criteria.criteria1, ss.Population):
             df.iloc[:, 0] = 0.0
             yfactor = 1
 
@@ -205,7 +205,7 @@ class KarpFlattBivar:
                 # We need to know which of the 2 variables was swarm size, in order to determine
                 # the correct dimension along which to compute the metric, which depends on
                 # performance between adjacent swarm sizes.
-                if isinstance(batch_criteria.criteria1, ss.SwarmSize):
+                if isinstance(batch_criteria.criteria1, ss.Population):
                     n = sizes[i + 1][j]
                 else:
                     n = sizes[i][j + 1]
@@ -309,10 +309,10 @@ class EfficiencyUnivar:
         raw_df = pd.read_csv(ipath, sep=';')
         eff_df = pd.DataFrame(columns=raw_df.columns
                               )
-        swarm_sizes = batch_criteria.swarm_sizes(self.cmdopts)
+        populations = batch_criteria.populations(self.cmdopts)
 
         for i in range(0, len(eff_df.columns)):
-            n_robots = swarm_sizes[i]
+            n_robots = populations[i]
             col = eff_df.columns[i]
             perf_N = raw_df.tail(1)[col]
             eff_df[col] = perf_N / n_robots
@@ -439,7 +439,7 @@ class KarpFlattUnivar:
                                                                   self.inter_perf_csv,
                                                                   "positive")(batch_criteria)
         df = pd.DataFrame(columns=columns, index=[0])
-        sizes = batch_criteria.swarm_sizes(self.cmdopts)
+        sizes = batch_criteria.populations(self.cmdopts)
 
         # Perfect scalability with only 1 robot, from L'Hospital's rule
         df[df.columns[0]] = 1.0

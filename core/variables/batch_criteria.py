@@ -107,6 +107,7 @@ class BatchCriteria(base_variable.BaseVariable):
             "FATAL: Batch criteria defines both attribute changes and tag additions"
 
         for i, defi in enumerate(defs1):
+            print(defi)
             exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
             exp_generation_root = os.path.join(self.batch_generation_root,
                                                str(exp_dirname))
@@ -277,7 +278,7 @@ class UnivarBatchCriteria(BatchCriteria):
     def is_univar(self) -> bool:
         return True
 
-    def swarm_sizes(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[int]:
+    def populations(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[int]:
         """
         Arguments:
             cmdopts: Dictionary of parsed command line options.
@@ -356,7 +357,7 @@ class BivarBatchCriteria(BatchCriteria):
 
             return ret
 
-    def swarm_sizes(self, cmdopts: tp.Dict[str, str]) -> tp.List[int]:
+    def populations(self, cmdopts: tp.Dict[str, str]) -> tp.List[int]:
         """Generate a 2D array of swarm swarm sizes used the batched experiment, in the same order as the
         directories returned from `gen_exp_dirnames()` for each criteria along each axis.
 

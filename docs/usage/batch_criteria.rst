@@ -22,7 +22,7 @@ Core Batch Criteria
 The SIERRA core defines the following batch criteria (additional criteria can be
 defined by the selected plugin):
 
-  - ``swarm_size``
+  - ``population``
   - ``swarm_density``
   - ``block_density``
   - ``flexibility``
@@ -40,10 +40,10 @@ Base Classes
     :inherited-members:
     :show-inheritance:
 
-Swarm Size
+Swarm Population
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: core.variables.swarm_size
+.. automodule:: core.variables.population
     :members:
 
 Swarm Density

@@ -15,15 +15,15 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 Definition:
-    {variance_type}{waveform_type}[step_time][.Z{swarm_size}]
+    {variance_type}{waveform_type}[step_time][.Z{population}]
 
-    variance_type = {BC,BM}
+    variance_type - {BC,BM}
 
-    waveform_type = {Sine,Square,Sawtooth,Step{U,D},Constant}
+    waveform_type - {Sine,Square,Sawtooth,Step{U,D},Constant}
 
-    step_time = Timestep the step function should switch (optional)
+    step_time - Timestep the step function should switch (optional)
 
-    swarm_size = The swarm size to use (optional)
+    population - The static swarm size to use (optional)
 
 Examples:
     - ``BCSine.Z16``: Block carry sinusoidal variance in a swarm of size 16.
@@ -85,7 +85,7 @@ import math
 import typing as tp
 
 from core.variables.batch_criteria import UnivarBatchCriteria
-from core.variables.swarm_size import SwarmSize
+from core.variables.population import Population
 from core.perf_measures import vcs
 from core.variables.flexibility_parser import FlexibilityParser
 
@@ -112,11 +112,11 @@ class Flexibility(UnivarBatchCriteria):
                  main_config: tp.Dict[str, str],
                  batch_generation_root: str,
                  variances: list,
-                 swarm_size: int):
+                 population: int):
         UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
 
         self.variances = variances
-        self.swarm_size = swarm_size
+        self.population = population
 
     def gen_attr_changelist(self) -> list:
         """
@@ -127,11 +127,11 @@ class Flexibility(UnivarBatchCriteria):
         # another variable in a bivariate batch criteria, (3) not controlled at all. For (2), (3),
         # the swarm size can be None.
 
-        if self.swarm_size is not None:
-            size_attr = next(iter(SwarmSize(self.cli_arg,
+        if self.population is not None:
+            size_attr = next(iter(Population(self.cli_arg,
                                             self.main_config,
                                             self.batch_generation_root,
-                                            [self.swarm_size]).gen_attr_changelist()[0]))
+                                            [self.population]).gen_attr_changelist()[0]))
             return [set([
                 size_attr,
                 ("{0}/waveform".format(v[0]), "type", str(v[1])),
@@ -232,7 +232,7 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
                              main_config,
                              batch_generation_root,
                              gen_variances(attr),
-                             attr.get("swarm_size", None))
+                             attr.get("population", None))
 
     return type(cli_arg,
                 (Flexibility,),

@@ -36,7 +36,7 @@ class FlexibilityParser():
                 - variance_csv_col: Column within configured .csv containing the variance
                 - waveform_type: Sine|Square|Sawtooth|StepU|StepD|Constant
                 - waveform_param: Waveform specific parameter(s) (optional)
-                - swarm_size: Swarm size to use (optional)
+                - population: Swarm size to use (optional)
 
         """
         ret = {}
@@ -69,6 +69,6 @@ class FlexibilityParser():
         # Parse swarm size (optional)
         res = re.search(r"\.Z[0-9]+", criteria_str)
         if res is not None:
-            ret['swarm_size'] = int(res.group(0)[2:])
+            ret['population'] = int(res.group(0)[2:])
 
         return ret

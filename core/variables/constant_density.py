@@ -101,7 +101,7 @@ class ConstantDensityParser():
 
         # Parse type
         t = cli_arg.split('.')[1][:2]
-        assert "CD" == t, "FATAL: Only constant density supported"
+        assert t == "CD", "FATAL: Only constant density supported"
 
         # Parse density
         density = cli_arg.split('.')[1]

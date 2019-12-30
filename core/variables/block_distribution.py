@@ -23,10 +23,10 @@ class Type(BaseVariable):
     Defines the type of distribution of objects in the arena.
 
     Attributes:
-      dist_type(str): [single_source, dual_source, quad_source, powerlaw, random].
+        dist_type: [single_source, dual_source, quad_source, powerlaw, random].
     """
 
-    def __init__(self, dist_type):
+    def __init__(self, dist_type: str):
         self.dist_type = dist_type
 
     def gen_attr_changelist(self):

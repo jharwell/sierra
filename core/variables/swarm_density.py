@@ -18,15 +18,16 @@
 Definition:
     CD{density}.I{Arena Size Increment}
 
-    density              = <integer>p<integer> (i.e. 5p0 for 5.0)
+    - density - <integer>p<integer> (i.e. 5p0 for 5.0)
 
-    Arena Size Increment = Size in meters that the X and Y dimensions should increase by in between
-                           experiments. Larger values here will result in larger arenas and more
-                           robots being simulated at a given density. Must be an integer.
+    - Arena Size Increment - Size in meters that the X and Y dimensions should increase by in
+                             between experiments. Larger values here will result in larger arenas
+                             and more robots being simulated at a given density. Must be an integer.
 
 Examples:
     - ``CD1p0.I16``: Constant density of 1.0. Arena dimensions will increase by 16 in both X and Y
                      for each experiment in the batch.
+
 """
 
 import typing as tp

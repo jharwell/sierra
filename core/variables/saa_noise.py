@@ -15,15 +15,15 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 Definition:
-    {category}.C{cardinality}[.Z{swarm_size}]
+    {category}.C{cardinality}[.Z{population}]
 
-    category = {Sensors,Actuators,SAA}
+    category - {sensors,actuators,saa}
 
-    cardinality = The # of different noise levels to test with between the min and max specified in
+    cardinality - The # of different noise levels to test with between the min and max specified in
                   the config file for each sensor/actuator which defines the cardinality of the
                   batched experiment.
 
-    swarm_size = The swarm size to use (optional).
+    population - The static swarm size to use (optional).
 
 Examples:
     - ``sensors.C4.Z16``: 4 levels of noise applied to all sensors in a swarm of size 16.
@@ -76,7 +76,7 @@ import typing as tp
 import numpy as np
 
 from core.variables.batch_criteria import UnivarBatchCriteria
-from core.variables.swarm_size import SwarmSize
+from core.variables.population import Population
 
 
 class SAANoise(UnivarBatchCriteria):
@@ -101,12 +101,12 @@ class SAANoise(UnivarBatchCriteria):
                  main_config: tp.Dict[str, str],
                  batch_generation_root: str,
                  variances: list,
-                 swarm_size: int,
+                 population: int,
                  noise_type: str):
         UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
 
         self.variances = variances
-        self.swarm_size = swarm_size
+        self.population = population
         self.noise_type = noise_type
 
     def gen_tag_addlist(self) -> list:
@@ -122,11 +122,11 @@ class SAANoise(UnivarBatchCriteria):
         # another variable in a bivariate batch criteria, (3) not controlled at all. For (2), (3),
         # the swarm size can be None.
 
-        if self.swarm_size is not None:
-            size_attr = next(iter(SwarmSize(self.cli_arg,
+        if self.population is not None:
+            size_attr = next(iter(Population(self.cli_arg,
                                             self.main_config,
                                             self.batch_generation_root,
-                                            [self.swarm_size]).gen_attr_changelist()[0]))
+                                            [self.population]).gen_attr_changelist()[0]))
             changes = [{(v2[0], v2[1], v2[2]) for v2 in v1} for v1 in self.variances]
             for c in changes:
                 c.add(size_attr)
@@ -177,7 +177,7 @@ class SAANoiseParser():
             Dictionary with the following keys:
                 - noise_type: Sensors|Actuators|All
                 - cardinality: Cardinality of the set of noise ranges
-                - swarm_size: Swarm size to use (optional)
+                - population: Swarm size to use (optional)
 
         """
         ret = {}
@@ -196,7 +196,7 @@ class SAANoiseParser():
         # Parse swarm size (optional)
         res = re.search(r"\.Z[0-9]+", criteria_str)
         if res is not None:
-            ret['swarm_size'] = int(res.group(0)[2:])
+            ret['population'] = int(res.group(0)[2:])
 
         return ret
 
@@ -285,7 +285,7 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
                           main_config,
                           batch_generation_root,
                           gen_variances(attr),
-                          attr.get("swarm_size", None),
+                          attr.get("population", None),
                           attr['noise_type'])
 
     return type(cli_arg,

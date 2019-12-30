@@ -25,14 +25,14 @@ import pandas as pd
 import numpy as np
 
 import core.utils
-from core.variables.swarm_size import SwarmSize
+from core.variables.population import Population
 from core.variables import batch_criteria as bc
 
 
 class ProjectivePerformanceCalculatorUnivar:
     r"""
     Calculates the following measure for each experiment in a univariate batched experiment. The
-    batch criteria must be derived from :class:`~variables.swarm_size.SwarmSize`, or this measure
+    batch criteria must be derived from :class:`~variables.population.Population`, or this measure
     will (probably) not have much meaning.
 
     .. math::
@@ -96,7 +96,7 @@ class ProjectivePerformanceCalculatorUnivar:
 class ProjectivePerformanceCalculatorBivar:
     r"""
     Calculates the following measure for each experiment in a bivariate batched experiment. One of
-    the variables must be derived from :class:`~variables.swarm_size.SwarmSize`.
+    the variables must be derived from :class:`~variables.population.Population`.
 
     .. math::
         \frac{Performance(exp_i)}{Distance(exp_i, exp_{i-1}) * Performance(exp_i)}
@@ -126,7 +126,7 @@ class ProjectivePerformanceCalculatorBivar:
         # We need to know which of the 2 variables was swarm size, in order to determine
         # the correct dimension along which to compute the metric, which depends on
         # performance between adjacent swarm sizes.
-        if isinstance(batch_criteria.criteria1, SwarmSize):
+        if isinstance(batch_criteria.criteria1, Population):
             return self.__project_vals_row(perf_df, batch_criteria)
         else:
             return self.__project_vals_col(perf_df, batch_criteria)
@@ -280,12 +280,12 @@ class FractionalLossesUnivar(FractionalLosses):
         plost_n = pd.DataFrame(columns=perf_df.columns, index=[0])
         exp0_dir = perf_df.columns[0]
         scale_cols = [c for c in ca_in_df.columns if c not in [exp0_dir]]
-        swarm_sizes = batch_criteria.swarm_sizes(self.cmdopts)
+        populations = batch_criteria.populations(self.cmdopts)
         plost_n[exp0_dir] = perf_df.tail(1)[exp0_dir] * (ca_in_df.tail(1)[exp0_dir])
 
         perf_taili = perf_df.index[-1]
         for c in scale_cols:
-            n_robots = swarm_sizes[list(plost_n.columns).index(c)]
+            n_robots = populations[list(plost_n.columns).index(c)]
 
             if perf_df.loc[perf_taili, c] == 0:
                 plost_n.loc[0, c] = math.inf
@@ -358,7 +358,7 @@ class FractionalLossesBivar(FractionalLosses):
         """
         plost_n = pd.DataFrame(columns=perf_df.columns, index=perf_df.index)
         exp0_dir = perf_df.columns[0]
-        swarm_sizes = batch_criteria.swarm_sizes(self.cmdopts)
+        populations = batch_criteria.populations(self.cmdopts)
 
         # Calc for exp(0,0)
         t_lost0 = csv_3D_value_loc(ca_in_df,
@@ -395,10 +395,10 @@ class FractionalLossesBivar(FractionalLosses):
                     # We need to know which of the 2 variables was swarm size, in order to determine
                     # the correct dimension along which to compute the metric, which depends on
                     # performance between adjacent swarm sizes.
-                    if isinstance(batch_criteria.criteria1, SwarmSize):
-                        n_robots = swarm_sizes[i]
+                    if isinstance(batch_criteria.criteria1, Population):
+                        n_robots = populations[i]
                     else:
-                        n_robots = swarm_sizes[j]
+                        n_robots = populations[j]
 
                     plost_n.iloc[i, j] = n_blocks * \
                         (t_lostN - t_lost0 * float(n_robots)) / float(n_robots)

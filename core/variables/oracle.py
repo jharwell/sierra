@@ -16,19 +16,22 @@
 
 """
 Definition:
-    {oracle_name}[.Z{swarm_size}]
+    {oracle_name}[.Z{population}]
 
-    oracle_name = {entities, tasks}
-    swarm_size = Size of the swarm to use (optional)
+    oracle_name - {entities, tasks}
+    population - Static size of the swarm to use (optional)
 
 Examples:
-    - ``entities.Z16``: All permutations of oracular information about entities in the arena, run with
-      swarms of size 16.
-    - ``tasks.Z8``: All permutations of oracular information about tasks in the arena, run with swarms
-      of size 8.
-    - ``entities``: All permuntations of oracular information of entities in the arena (swarm size is
-      not modified).
-    """
+    - ``entities.Z16``: All permutations of oracular information about entities in the arena, run
+      with swarms of size 16.
+
+    - ``tasks.Z8``: All permutations of oracular information about tasks in the arena, run with
+      swarms of size 8.
+
+    - ``entities``: All permuntations of oracular information of entities in the arena (swarm size
+      is not modified).
+
+"""
 
 
 import typing as tp
@@ -36,7 +39,7 @@ import re
 import itertools
 
 from core.variables.batch_criteria import UnivarBatchCriteria
-from core.variables.swarm_size import SwarmSize
+from core.variables.population import Population
 
 
 class Oracle(UnivarBatchCriteria):
@@ -50,7 +53,7 @@ class Oracle(UnivarBatchCriteria):
         tuples: List of tuples of types of oracular information to enable for a specific.
         simulation. Each tuple is (oracle name, list(tuple(oracle feature name, oracle
         feature value))).
-        swarm_size: Swarm size to set for the swarm (can be ``None``).
+        population: Swarm size to set for the swarm (can be ``None``).
     """
     kInfoTypes = {'entities': ['caches', 'blocks']}
 
@@ -58,11 +61,11 @@ class Oracle(UnivarBatchCriteria):
                  main_config: tp.Dict[str, str],
                  batch_generation_root: str,
                  tuples: tp.List[tuple],
-                 swarm_size: int):
+                 population: int):
         UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
 
         self.tuples = tuples
-        self.swarm_size = swarm_size
+        self.population = population
 
     def gen_attr_changelist(self) -> list:
         # Swarm size is optional. It can be (1) controlled via this variable, (2) controlled by
@@ -72,11 +75,11 @@ class Oracle(UnivarBatchCriteria):
                          "{0}".format(str(feat[0])),
                          "{0}".format(str(feat[1]))) for feat in t[1]]) for t in self.tuples]
 
-        if self.swarm_size is not None:
-            size_attr = [next(iter(SwarmSize(self.cli_arg,
+        if self.population is not None:
+            size_attr = [next(iter(Population(self.cli_arg,
                                              self.main_config,
                                              self.batch_generation_root,
-                                             [self.swarm_size]).gen_attr_changelist()[0]))]
+                                             [self.population]).gen_attr_changelist()[0]))]
             for c in changes:
                 c.add(size_attr)
 
@@ -123,7 +126,7 @@ class OracleParser():
             Dictionary with keys:
                 oracle_type: entities|tasking
                 oracle_name: entities_oracle|tasking_oracle
-                swarm_size: Size of swarm to use (optional)
+                population: Size of swarm to use (optional)
 
         """
         ret = {}
@@ -139,7 +142,7 @@ class OracleParser():
         # Parse swarm size
         res = re.search(r"\.Z[0-9]+", criteria_str)
         if res is not None:
-            ret['swarm_size'] = int(res.group(0)[2:])
+            ret['population'] = int(res.group(0)[2:])
         return ret
 
 
@@ -170,7 +173,7 @@ def factory(cli_arg: str,
 
     def __init__(self):
         Oracle.__init__(self, cli_arg, main_config, batch_generation_root,
-                        gen_tuples(cli_arg), attr.get('swarm_size', None))
+                        gen_tuples(cli_arg), attr.get('population', None))
 
     return type(cli_arg,
                 (Oracle,),

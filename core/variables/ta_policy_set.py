@@ -15,9 +15,9 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 Definition:
-    All[.Z{swarm_size}]
+    All[.Z{population}]
 
-    swarm_size = The swarm size to use (optional)
+    population - The swarm size to use (optional)
 
 Examples:
     - ``All.Z16``: All possible task allocation policies with swarms of size 16.
@@ -29,7 +29,7 @@ import re
 import typing as tp
 
 from core.variables.batch_criteria import UnivarBatchCriteria
-from core.variables.swarm_size import SwarmSize
+from core.variables.population import Population
 
 
 class TAPolicySet(UnivarBatchCriteria):
@@ -41,7 +41,7 @@ class TAPolicySet(UnivarBatchCriteria):
 
     Attributes:
         policies: List of policies to enable for a specific simulation.
-        swarm_size: Swarm size to use for a specific simulation.
+        population: Swarm size to use for a specific simulation.
     """
     kPolicies = ['random', 'stoch_nbhd1', 'strict_greedy', 'epsilon_greedy', 'UCB1']
 
@@ -49,20 +49,20 @@ class TAPolicySet(UnivarBatchCriteria):
                  main_config: tp.Dict[str, str],
                  batch_generation_root: str,
                  policies: list,
-                 swarm_size: int):
+                 population: int):
         UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
         self.policies = policies
-        self.swarm_size = swarm_size
+        self.population = population
 
     def gen_attr_changelist(self) -> list:
         # Swarm size is optional. It can be (1) controlled via this variable, (2) controlled by
         # another variable in a bivariate batch criteria, (3) not controlled at all. For (2), (3),
         # the swarm size can be None.
-        if self.swarm_size is not None:
-            size_attr = [next(iter(SwarmSize(self.cli_arg,
+        if self.population is not None:
+            size_attr = [next(iter(Population(self.cli_arg,
                                              self.main_config,
                                              self.batch_generation_root,
-                                             [self.swarm_size]).gen_attr_changelist()[0]))]
+                                             [self.population]).gen_attr_changelist()[0]))]
         else:
             size_attr = []
         changes = []
@@ -121,7 +121,7 @@ class TAPolicySetParser():
         """
         Returns:
             Dictionary with keys:
-                swarm_size: Swarm size to use (optional)
+                population: Swarm size to use (optional)
 
         """
         ret = {}
@@ -133,7 +133,7 @@ class TAPolicySetParser():
         # Parse swarm size
         res = re.search("\.Z[0-9]+", criteria_str)
         if res is not None:
-            ret['swarm_size'] = int(res.group(0)[2:])
+            ret['population'] = int(res.group(0)[2:])
 
         return ret
 
@@ -151,7 +151,7 @@ def factory(cli_arg: str,
 
     def __init__(self):
         TAPolicySet.__init__(self, cli_arg, main_config, batch_generation_root,
-                             TAPolicySet.kPolicies, attr.get('swarm_size', None))
+                             TAPolicySet.kPolicies, attr.get('population', None))
 
     return type(cli_arg,
                 (TAPolicySet,),
