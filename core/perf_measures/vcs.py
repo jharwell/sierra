@@ -16,17 +16,18 @@
 
 
 import os
+import typing as tp
 
 import fastdtw
 import pandas as pd
 import numpy as np
-import yaml
 import similaritymeasures as sm
 
+from core.variables.batch_criteria import BatchCriteria
 from core.variables.flexibility_parser import FlexibilityParser
 
 
-def method_xlabel(method):
+def method_xlabel(method: str):
     """
     Return the X-label of the method used for calculating the curve similarity.
     """
@@ -42,12 +43,12 @@ def method_xlabel(method):
     return labels[method]
 
 
-def method_ylabel(method, arg):
+def method_ylabel(method: str, arg):
     """
     Return the Y-label of the method used for calculating the curve similarity.
 
-    method(str): Method name.
-    arg(str): An additional multi-purpose argument to pass to the function
+    method: Method name.
+    arg: An additional multi-purpose argument to pass to the function
     """
     if method is None:
         return None
@@ -72,17 +73,18 @@ class EnvironmentalCS():
     Compute the Variance Curve Similarity (VCS) measure between the ideal conditions of exp0 and the
     specified experiment.
 
-    cmdopts(dict): Dictionary of parsed commandline options.
-    exp_num(int): Current experiment number to compute VCS for.
+    Attributes:
+        main_config: Parsed dictionary of main YAML configuration.
+        cmdopts: Dictionary of parsed commandline options.
+        exp_num: Current experiment number to compute VCS for.
     """
 
-    def __init__(self, cmdopts, exp_num):
+    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, str], exp_num: int):
         self.cmdopts = cmdopts
         self.exp_num = exp_num
-        self.main_config = yaml.load(open(os.path.join(self.cmdopts['plugin_config_root'],
-                                                       'main.yaml')))
+        self.main_config = main_config
 
-    def __call__(self, batch_criteria, exp_dirs=None):
+    def __call__(self, batch_criteria: BatchCriteria, exp_dirs: tp.List[str] = None):
         if exp_dirs is None:
             dirs = batch_criteria.gen_exp_dirnames(self.cmdopts)
         else:
@@ -91,12 +93,12 @@ class EnvironmentalCS():
         ideal_df = pd.read_csv(os.path.join(self.cmdopts["output_root"],
                                             dirs[0],
                                             self.main_config['sierra']['avg_output_leaf'],
-                                            self.main_config['sierra']['perf']['temporal_var_csv']),
+                                            self.main_config['sierra']['perf']['tv_flexibility_csv']),
                                sep=';')
         exp_df = pd.read_csv(os.path.join(self.cmdopts["output_root"],
                                           dirs[self.exp_num],
                                           self.main_config['sierra']['avg_output_leaf'],
-                                          self.main_config['sierra']['perf']['temporal_var_csv']),
+                                          self.main_config['sierra']['perf']['tv_flexibility_csv']),
                              sep=';')
         attr = FlexibilityParser()(batch_criteria.cli_arg)
 
@@ -114,15 +116,23 @@ class EnvironmentalCS():
 
 class DataFrames:
     @staticmethod
-    def expx_var_df(cmdopts, batch_criteria, avg_output_leaf, temporal_var_csv, exp_num):
+    def expx_var_df(cmdopts: tp.Dict[str, str],
+                    batch_criteria: BatchCriteria,
+                    avg_output_leaf: str,
+                    tv_flexibility_csv: str,
+                    exp_num: int):
         return pd.read_csv(os.path.join(cmdopts['output_root'],
                                         batch_criteria.gen_exp_dirnames(cmdopts)[exp_num],
                                         avg_output_leaf,
-                                        temporal_var_csv),
+                                        tv_flexibility_csv),
                            sep=';')
 
     @staticmethod
-    def expx_perf_df(cmdopts, batch_criteria, avg_output_leaf, intra_perf_csv, exp_num):
+    def expx_perf_df(cmdopts: tp.Dict[str, str],
+                     batch_criteria: BatchCriteria,
+                     avg_output_leaf: str,
+                     intra_perf_csv: str,
+                     exp_num: int):
         return pd.read_csv(os.path.join(cmdopts['output_root'],
                                         batch_criteria.gen_exp_dirnames(cmdopts)[exp_num],
                                         avg_output_leaf,
@@ -130,7 +140,10 @@ class DataFrames:
                            sep=';')
 
     @staticmethod
-    def exp0_perf_df(cmdopts, batch_criteria, avg_output_leaf, intra_perf_csv):
+    def exp0_perf_df(cmdopts: tp.Dict[str, str],
+                     batch_criteria: BatchCriteria,
+                     avg_output_leaf: str,
+                     intra_perf_csv: str):
         return pd.read_csv(os.path.join(cmdopts['output_root'],
                                         batch_criteria.gen_exp_dirnames(cmdopts)[0],
                                         avg_output_leaf,
@@ -138,11 +151,14 @@ class DataFrames:
                            sep=';')
 
     @staticmethod
-    def exp0_var_df(cmdopts, batch_criteria, avg_output_leaf, temporal_var_csv):
+    def exp0_var_df(cmdopts: tp.Dict[str, str],
+                    batch_criteria: BatchCriteria,
+                    avg_output_leaf: str,
+                    tv_flexibility_csv: str):
         return pd.read_csv(os.path.join(cmdopts['output_root'],
                                         batch_criteria.gen_exp_dirnames(cmdopts)[0],
                                         avg_output_leaf,
-                                        temporal_var_csv),
+                                        tv_flexibility_csv),
                            sep=';')
 
 
@@ -150,7 +166,9 @@ class AdaptabilityCS():
     """
     Compute the adaptability of a controller/algorithm by comparing the observed performance curve
     for the current experiment, the performance curve for exp0, and the applied variance curve for
-    the experiment. An algorithm that is maximally adaptive will have a performance curve that:
+    the experiment.
+
+    An algorithm that is maximally adaptive will have a performance curve that:
 
     - Tracks the inverse of the applied variance very closely if the value of the applied variance
       at a time t is BELOW the value at time t for exp0. In that case we should see a proportional
@@ -162,18 +180,24 @@ class AdaptabilityCS():
 
     Assumes exp0 is "ideal" conditions.
 
-    cmdopts(dict): Dictionary of parsed commandline options.
-    exp_num(int): Current experiment number to compute VCS for.
+    Attributes:
+        main_config: Parsed dictionary of main YAML configuration.
+        cmdopts: Dictionary of parsed commandline options.
+        batch_criteria: The batch criteria for the experiment.
+        exp_num: Current experiment number to compute VCS for.
     """
 
-    def __init__(self, cmdopts, batch_criteria, exp_num):
+    def __init__(self,
+                 main_config: dict,
+                 cmdopts: tp.Dict[str, str],
+                 batch_criteria: BatchCriteria,
+                 exp_num: int):
         self.cmdopts = cmdopts
         self.batch_criteria = batch_criteria
         self.exp_num = exp_num
+        self.main_config = main_config
 
-        self.main_config = yaml.load(
-            open(os.path.join(self.cmdopts['plugin_config_root'], 'main.yaml')))
-        self.perf_csv_col = 'cum_avg_collected'
+        self.perf_csv_col = main_config['sierra']['perf']['intra_perf_col']
         self.var_csv_col = FlexibilityParser()(self.batch_criteria.cli_arg)['variance_csv_col']
 
     def calc_waveforms(self):
@@ -189,7 +213,7 @@ class AdaptabilityCS():
         exp0_var_df = DataFrames.exp0_var_df(self.cmdopts,
                                              self.batch_criteria,
                                              self.main_config['sierra']['avg_output_leaf'],
-                                             self.main_config['sierra']['perf']['temporal_var_csv'])
+                                             self.main_config['sierra']['perf']['tv_flexibility_csv'])
         expx_perf_df = DataFrames.expx_perf_df(self.cmdopts,
                                                self.batch_criteria,
                                                self.main_config['sierra']['avg_output_leaf'],
@@ -198,7 +222,7 @@ class AdaptabilityCS():
         expx_var_df = DataFrames.expx_var_df(self.cmdopts,
                                              self.batch_criteria,
                                              self.main_config['sierra']['avg_output_leaf'],
-                                             self.main_config['sierra']['perf']['temporal_var_csv'],
+                                             self.main_config['sierra']['perf']['tv_flexibility_csv'],
                                              self.exp_num)
 
         ideal_df = pd.DataFrame(index=exp0_var_df.index, columns=[self.perf_csv_col])
@@ -251,17 +275,22 @@ class ReactivityCS():
 
     Assumes exp0 is "ideal" conditions.
 
-    cmdopts(dict): Dictionary of parsed commandline options.
-    exp_num(int): Current experiment number to compute VCS for.
+    Attributes:
+        main_config: Parsed dictionary of main YAML configuration.
+        cmdopts: Dictionary of parsed commandline options.
+        exp_num: Current experiment number to compute VCS for.
     """
 
-    def __init__(self, cmdopts, batch_criteria, exp_num):
+    def __init__(self,
+                 main_config: dict,
+                 cmdopts: tp.Dict[str, str],
+                 batch_criteria: BatchCriteria,
+                 exp_num: int):
         self.cmdopts = cmdopts
-        self.main_config = yaml.load(open(os.path.join(self.cmdopts['plugin_config_root'],
-                                                       'main.yaml')))
+        self.main_config = main_config
 
         self.exp_num = exp_num
-        self.perf_csv_col = 'cum_avg_collected'
+        self.perf_csv_col = self.main_config['sierra']['perf']['intra_perf_col']
         self.var_csv_col = FlexibilityParser()(batch_criteria.cli_arg)['variance_csv_col']
         self.batch_criteria = batch_criteria
 
@@ -278,7 +307,7 @@ class ReactivityCS():
         exp0_var_df = DataFrames.exp0_var_df(self.cmdopts,
                                              self.batch_criteria,
                                              self.main_config['sierra']['avg_output_leaf'],
-                                             self.main_config['sierra']['perf']['temporal_var_csv'])
+                                             self.main_config['sierra']['perf']['tv_flexibility_csv'])
         expx_perf_df = DataFrames.expx_perf_df(self.cmdopts,
                                                self.batch_criteria,
                                                self.main_config['sierra']['avg_output_leaf'],
@@ -287,7 +316,7 @@ class ReactivityCS():
         expx_var_df = DataFrames.expx_var_df(self.cmdopts,
                                              self.batch_criteria,
                                              self.main_config['sierra']['avg_output_leaf'],
-                                             self.main_config['sierra']['perf']['temporal_var_csv'],
+                                             self.main_config['sierra']['perf']['tv_flexibility_csv'],
                                              self.exp_num)
 
         ideal_df = pd.DataFrame(index=exp0_var_df.index, columns=[self.perf_csv_col])

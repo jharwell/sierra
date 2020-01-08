@@ -18,10 +18,12 @@
 
 import os
 import textwrap
+import logging
 
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import mpl_toolkits.axes_grid1
 
 
 class Heatmap:
@@ -45,28 +47,43 @@ class Heatmap:
 
     def generate(self):
         if not os.path.exists(self.input_csv_fpath):
+            logging.debug("Not generating heatmap: %s does not exist", self.input_csv_fpath)
             return
 
+        # Read .csv and create raw heatmap from default configuration
         df = pd.read_csv(self.input_csv_fpath, sep=';')
         fig, ax = plt.subplots()
-        plt.imshow(df, cmap='seismic', interpolation='sinc')
+        plt.imshow(df, cmap='seismic', interpolation='none')
 
+        # Add labels
         plt.xlabel(self.xlabel, fontsize=18)
         plt.ylabel(self.ylabel, fontsize=18)
+
+        # Add X,Y ticks
         self.__plot_ticks(ax)
 
+        # Add graph title
         plt.title(self.title, fontsize=24)
-        bar = plt.colorbar(fraction=0.046, pad=0.04)
-        if self.colorbar_label is not None:
-            bar.ax.set_ylabel(self.colorbar_label)
-        ax.tick_params(labelsize=12)
 
+        # Add colorbar
+        self.__plot_colorbar(ax)
+
+        # Output figure
         fig = ax.get_figure()
         fig.set_size_inches(10, 10)
         fig.savefig(self.output_fpath, bbox_inches='tight', dpi=100)
         fig.clf()
 
+    def __plot_colorbar(self, ax):
+        divider = mpl_toolkits.axes_grid1.make_axes_locatable(ax)
+        cax = divider.append_axes('right', size='5%', pad=0.05)
+        bar = plt.colorbar(cax=cax)
+        if self.colorbar_label is not None:
+            bar.ax.set_ylabel(self.colorbar_label)
+
     def __plot_ticks(self, ax):
+        ax.tick_params(labelsize=12)
+
         if self.xtick_labels is not None:
             ax.set_xticks(np.arange(len(self.xtick_labels)))
             ax.set_xticklabels(self.xtick_labels, rotation='vertical')

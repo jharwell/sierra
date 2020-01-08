@@ -130,10 +130,10 @@ class SelfOrganizationFLBivar:
         Heatmap(input_fpath=stem_path + '.csv',
                 output_fpath=os.path.join(self.cmdopts["graph_root"], "pm-self-org-fl.png"),
                 title="Swarm Self-Organization Due To Sub-Linear Fractional Performance Losses",
-                xlabel=batch_criteria.graph_ylabel(self.cmdopts),
-                ylabel=batch_criteria.graph_xlabel(self.cmdopts),
-                xtick_labels=batch_criteria.graph_yticks(self.cmdopts),
-                ytick_labels=batch_criteria.graph_xticks(self.cmdopts)).generate()
+                xlabel=batch_criteria.graph_xlabel(self.cmdopts),
+                ylabel=batch_criteria.graph_ylabel(self.cmdopts),
+                xtick_labels=batch_criteria.graph_xticks(self.cmdopts),
+                ytick_labels=batch_criteria.graph_yticks(self.cmdopts)).generate()
 
     def __calc_by_row(self, fl, batch_criteria):
         populations = batch_criteria.populations(self.cmdopts)

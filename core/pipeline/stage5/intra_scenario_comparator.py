@@ -181,10 +181,10 @@ class BivarIntraScenarioComparator:
                                               dest_stem) + '-' + scenario + "_{0}{1}".format(0, i) + ".png",
                     title=title,
                     zlabel=self.__gen_zaxis_label(label, comp_type),
+                    xlabel=batch_criteria.graph_xlabel(cmdopts),
                     ylabel=batch_criteria.graph_xlabel(cmdopts),
-                    xlabel=batch_criteria.graph_ylabel(cmdopts),
-                    xtick_labels=batch_criteria.graph_yticklabels(cmdopts),
-                    ytick_labels=batch_criteria.graph_xticklabels(cmdopts)).generate()
+                    xtick_labels=batch_criteria.graph_xticklabels(cmdopts),
+                    ytick_labels=batch_criteria.graph_yticklabels(cmdopts)).generate()
 
     def __gen_zaxis_label(self, label: str, comp_type: str):
         """

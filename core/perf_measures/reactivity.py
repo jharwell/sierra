@@ -18,10 +18,13 @@
 import os
 import copy
 import logging
+import typing as tp
+
 import pandas as pd
 
 from core.graphs.batch_ranged_graph import BatchRangedGraph
 from core.perf_measures import vcs
+from core.variables.batch_criteria import BatchCriteria
 
 
 class ReactivityUnivar:
@@ -31,12 +34,12 @@ class ReactivityUnivar:
 
     """
 
-    def __init__(self, cmdopts):
+    def __init__(self, cmdopts: tp.Dict[str, str]):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us.
         self.cmdopts = copy.deepcopy(cmdopts)
 
-    def generate(self, batch_criteria):
+    def generate(self, main_config: dict, batch_criteria: BatchCriteria):
         """
         Calculate the reactivity metric for a given controller within a specific scenario, and
         generate a graph of the result.
@@ -49,7 +52,10 @@ class ReactivityUnivar:
         # so we have to slice
         df = pd.DataFrame(columns=batch_exp_dirnames[1:], index=[0])
         for i in range(1, batch_criteria.n_exp()):
-            df[batch_exp_dirnames[1:]] = vcs.ReactivityCS(self.cmdopts, batch_criteria, i)()
+            df[batch_exp_dirnames[1:]] = vcs.ReactivityCS(main_config,
+                                                          self.cmdopts,
+                                                          batch_criteria,
+                                                          i)()
 
         stem_opath = os.path.join(self.cmdopts["collate_root"], "pm-reactivity")
 

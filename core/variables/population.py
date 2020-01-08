@@ -99,7 +99,6 @@ class Population(bc.UnivarBatchCriteria):
         else:
             # If birth dynamics enabled, always start with swarm size of 1. Ideally would be 0, but
             # ARGoS won't start with 0 robots.
-            print(self.dynamics)
             if any(['birth_mu' in b[0] for b in self.dynamics]):
                 changes = [set([(".//arena/distribute/entity", "quantity", str(1)),
                                 (".//population_dynamics", "max_size", str(s))])

@@ -129,9 +129,11 @@ class Flexibility(UnivarBatchCriteria):
 
         if self.population is not None:
             size_attr = next(iter(Population(self.cli_arg,
-                                            self.main_config,
-                                            self.batch_generation_root,
-                                            [self.population]).gen_attr_changelist()[0]))
+                                             self.main_config,
+                                             self.batch_generation_root,
+                                             [self.population],
+                                             'static',
+                                             []).gen_attr_changelist()[0]))
             return [set([
                 size_attr,
                 ("{0}/waveform".format(v[0]), "type", str(v[1])),
@@ -162,7 +164,8 @@ class Flexibility(UnivarBatchCriteria):
         # zeroth element is the distance to ideal conditions for exp0, which is by definition ideal
         # conditions, so the distance is 0.
         ret = [0]
-        ret.extend([vcs.EnvironmentalCS(cmdopts, x)(self, exp_dirs) for x in range(1, m)])
+        ret.extend([vcs.EnvironmentalCS(self.main_config, cmdopts, x)(self, exp_dirs)
+                    for x in range(1, m)])
         return ret
 
     def graph_xticklabels(self,

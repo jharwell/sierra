@@ -306,7 +306,7 @@ class RNGenerator(BaseScenarioGenerator):
         exp_def = self.common_defs.generate()
         arena_dim = self.cmdopts["arena_dim"]
 
-        assert arena_dim[0] == 2 * arena_dim[1],\
+        assert arena_dim[0] == arena_dim[1],\
             "FATAL: RN distribution requires a square arena: xdim={0},ydim={1}".format(arena_dim[0],
                                                                                        arena_dim[1])
 

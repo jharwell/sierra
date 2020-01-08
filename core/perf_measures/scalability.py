@@ -83,10 +83,10 @@ class EfficiencyBivar:
         Heatmap(input_fpath=cum_stem + '.csv',
                 output_fpath=os.path.join(self.cmdopts["graph_root"], "pm-efficiency.png"),
                 title='Swarm Efficiency (Normalized)',
-                xlabel=batch_criteria.graph_ylabel(self.cmdopts),
-                ylabel=batch_criteria.graph_xlabel(self.cmdopts),
-                xtick_labels=batch_criteria.graph_yticks(self.cmdopts),
-                ytick_labels=batch_criteria.graph_xticks(self.cmdopts)).generate()
+                xlabel=batch_criteria.graph_xlabel(self.cmdopts),
+                ylabel=batch_criteria.graph_ylabel(self.cmdopts),
+                xtick_labels=batch_criteria.graph_xticks(self.cmdopts),
+                ytick_labels=batch_criteria.graph_yticks(self.cmdopts)).generate()
 
     def __calculate_metric(self,
                            ipath: str,
@@ -150,10 +150,10 @@ class FractionalMaintenanceBivar:
         Heatmap(input_fpath=stem_path + '.csv',
                 output_fpath=os.path.join(self.cmdopts["graph_root"], "pm-scalability-fm.png"),
                 title="Swarm Scalability: Fractional Performance Maintenance In The Presence Of Inter-robot Interference",
-                xlabel=batch_criteria.graph_ylabel(self.cmdopts),
-                ylabel=batch_criteria.graph_xlabel(self.cmdopts),
-                xtick_labels=batch_criteria.graph_yticks(self.cmdopts),
-                ytick_labels=batch_criteria.graph_xticks(self.cmdopts)).generate()
+                xlabel=batch_criteria.graph_xlabel(self.cmdopts),
+                ylabel=batch_criteria.graph_ylabel(self.cmdopts),
+                xtick_labels=batch_criteria.graph_xticks(self.cmdopts),
+                ytick_labels=batch_criteria.graph_yticks(self.cmdopts)).generate()
 
 
 class KarpFlattBivar:
@@ -220,10 +220,10 @@ class KarpFlattBivar:
         Heatmap(input_fpath=stem_path + '.csv',
                 output_fpath=os.path.join(self.cmdopts["graph_root"], "pm-karpflatt.png"),
                 title="Swarm Serial Fraction: Karp-Flatt Metric",
-                xlabel=batch_criteria.graph_ylabel(self.cmdopts),
-                ylabel=batch_criteria.graph_xlabel(self.cmdopts),
-                xtick_labels=batch_criteria.graph_yticks(self.cmdopts),
-                ytick_labels=batch_criteria.graph_xticks(self.cmdopts)[1:]).generate()
+                xlabel=batch_criteria.graph_xlabel(self.cmdopts),
+                ylabel=batch_criteria.graph_ylabel(self.cmdopts),
+                xtick_labels=batch_criteria.graph_xticks(self.cmdopts),
+                ytick_labels=batch_criteria.graph_yticks(self.cmdopts)[1:]).generate()
 
 
 class ScalabilityBivarGenerator:

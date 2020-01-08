@@ -10,8 +10,9 @@ sierra:
   perf:
     inter_perf_csv: 'blocks-transported-cum.csv'
     ca_in_csv: 'ca-in-cum-avg.csv'
-    temporal_var_csv: 'temporal-variance.csv'
+    tv_flexibility_csv: 'tv-environment.csv'
     intra_perf_csv: 'block-transport.csv'
+    intra_perf_col: 'cum_avg_transported'
 
   flexibility:
     hz:

@@ -17,6 +17,8 @@
 
 
 import os
+import logging
+
 import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
@@ -50,21 +52,27 @@ class StackedLineGraph:
 
     def generate(self):
         if not os.path.exists(self.input_csv_fpath):
+            logging.debug("Not generating stacked line graph: %s does not exist",
+                          self.input_csv_fpath)
             return
+
+        # Read .csv and scaffold graph
         df = pd.read_csv(self.input_csv_fpath, sep=';')
         if not os.path.exists(self.input_stddev_fpath):
             df2 = None
         else:
             df2 = pd.read_csv(self.input_stddev_fpath, sep=';')
 
+        # Plot specified columns from dataframe
         if self.cols is None:
             ncols = max(1, int(len(df.columns) / 3.0))
             ax = self._plot_selected_cols(df, df2, df.columns)
         else:
             ncols = max(1, int(len(self.cols) / 3.0))
             ax = self._plot_selected_cols(df, df2, self.cols)
+        ax.tick_params(labelsize=12)
 
-        # Legend should have ~3 entries per column, in order to maximize real estate on tightly
+        # Add legend. Should have ~3 entries per column, in order to maximize real estate on tightly
         # constrained papers.
         if self.legend is not None:
             lines, labels = ax.get_legend_handles_labels()
@@ -73,11 +81,14 @@ class StackedLineGraph:
         else:
             ax.legend(loc=9, bbox_to_anchor=(0.5, -0.1), ncol=ncols, fontsize=14)
 
+        # Add title
         ax.set_title(self.title, fontsize=24)
+
+        # Add X,Y labels
         ax.set_xlabel(self.xlabel, fontsize=18)
         ax.set_ylabel(self.ylabel, fontsize=18)
-        ax.tick_params(labelsize=12)
 
+        # Output figure
         fig = ax.get_figure()
         fig.set_size_inches(10, 10)
         fig.savefig(self.output_fpath, bbox_inches='tight', dpi=100)

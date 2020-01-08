@@ -41,8 +41,8 @@ class FlexibilityParser():
         """
         ret = {}
         xml_parent = {
-            'BC': './/temporal_variance/blocks/carry_throttle',
-            'BM': './/temporal_variance/blocks/manipulation_penalty',
+            'BC': './/env_dynamics/blocks/carry_throttle',
+            'BM': './/env_dynamics/blocks/manipulation_penalty',
         }
         variance_col = {
             'BC': "swarm_motion_throttle",

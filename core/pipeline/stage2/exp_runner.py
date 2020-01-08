@@ -22,6 +22,7 @@ import sys
 import logging
 import multiprocessing
 import typing as tp
+import datetime
 
 from core.variables import batch_criteria as bc
 
@@ -71,10 +72,8 @@ class BatchedExpRunner:
                             are finished.
         """
         n_jobs = min(n_sims, max(1, int(multiprocessing.cpu_count() / float(n_threads_per_sim))))
-        logging.info("Stage2: Running batched experiment in {0}: ".format(self.batch_exp_root) +
-                     "sims_per_exp={0},threads_per_sim={1},n_jobs={2}".format(n_sims,
-                                                                              n_threads_per_sim,
-                                                                              n_jobs))
+        s = "Stage2: Running batched experiment in %s: sims_per_exp=%s,threads_per_sim=%s,n_jobs=%s"
+        logging.info(s, self.batch_exp_root, n_sims, n_threads_per_sim, n_jobs)
 
         exp_all = [os.path.join(self.batch_exp_root, d)
                    for d in self.criteria.gen_exp_dirnames(self.cmdopts)]
@@ -145,8 +144,7 @@ class ExpRunner:
         cmdfile = os.path.join(self.exp_generation_root, "commands.txt")
         joblog = os.path.join(jobroot, "parallel$PBS_JOBID.log")
 
-        sys.stdout.write('--' + ' Running exp{0} in {1}...'.format(self.exp_num,
-                                                                   self.exp_generation_root))
+        logging.info('Running exp%s in %s...', self.exp_num, self.exp_generation_root)
         sys.stdout.flush()
 
         start = time.time()
@@ -165,8 +163,9 @@ class ExpRunner:
             logging.error("Experiment failed! return code=%s", e.returncode)
             logging.error(e.output)
 
-        elapsed = time.time() - start
-        sys.stdout.write("{:.3f}s\n".format(elapsed))
+        elapsed = int(time.time() - start)
+        sec = datetime.timedelta(seconds=elapsed)
+        logging.info('Exp%s elapsed time: %s', self.exp_num, str(sec))
 
     @staticmethod
     def __run_local(jobroot_path, cmdfile_path, joblog_path, n_jobs, exec_resume):

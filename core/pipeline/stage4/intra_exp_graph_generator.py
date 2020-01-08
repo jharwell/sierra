@@ -25,7 +25,7 @@ import typing as tp
 
 from core.graphs.stacked_line_graph import StackedLineGraph
 from core.graphs.heatmap import Heatmap
-from core.pipeline.stage4.flexibility_plot_defs import FlexibilityPlotDefs
+from core.pipeline.stage4.flexibility_plots import FlexibilityPlotsCSVGenerator, FlexibilityPlotsDefinitionsGenerator
 
 
 class BatchedIntraExpGraphGenerator:
@@ -105,6 +105,10 @@ class IntraExpGraphGenerator:
         #. :class:`~pipeline.stage4.intra_exp_graph_generator.HeatmapsGenerator` to generate
            heatmaps for each experiment in the batch.
         """
+        if self.cmdopts['gen_vc_plots']:
+            logging.info('Flexibility plots from %s', self.cmdopts['output_root'])
+            FlexibilityPlotsCSVGenerator(self.main_config, self.cmdopts)(batch_criteria)
+
         LN_targets, HM_targets = self.__calc_intra_targets(batch_criteria)
 
         LinegraphsGenerator(self.cmdopts["output_root"],
@@ -134,8 +138,7 @@ class IntraExpGraphGenerator:
                 if 'graphs_inherit' in controller:
                     [keys.extend(l) for l in controller['graphs_inherit']]  # optional
                 if self.cmdopts['gen_vc_plots']:  # optional
-                    extra_graphs = TemporalVariancePlotDefs(self.cmdopts)(batch_criteria,
-                                                                          self.main_config)
+                    extra_graphs = FlexibilityPlotsDefinitionsGenerator()()
 
         LN_keys = [k for k in self.LN_config if k in keys]
         logging.debug("Enabled linegraph categories: %s", LN_keys)
@@ -179,20 +182,20 @@ class HeatmapsGenerator:
                         output_fpath=os.path.join(self.exp_graph_root,
                                                   graph['src_stem'] + '-hm.png'),
                         title=graph['title'],
-                        xlabel='Y',
-                        ylabel='X',
+                        xlabel='X',
+                        ylabel='Y',
                         xtick_labels=None,
                         ytick_labels=None).generate()
 
 
 class LinegraphsGenerator:
     """
-    Generates linegrahs from averaged output data within a single experiment.
+    Generates linegraphs from averaged output data within a single experiment.
 
     Attributes:
         exp_output_root: Absolute path to experiment simulation output directory.
-        exp_graph_root: Absolutae path to experiment graph output directory.
-        targets: Dictionary of lists of dictiaries specifying what graphs should be
+        exp_graph_root: Absolute path to experiment graph output directory.
+        targets: Dictionary of lists of dictionaries specifying what graphs should be
                  generated.
     """
 

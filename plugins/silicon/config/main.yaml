@@ -25,7 +25,7 @@ sierra:
   perf:
     inter_perf_csv: 'blocks-collected-cum.csv'
     ca_in_csv: 'ca-in-cum-avg.csv'
-    temporal_var_csv: 'temporal-variance.csv'
+    tv_flexibility_csv: 'tv-flexibility.csv'
     intra_perf_csv: 'block-transport.csv'
 
   # flexibility: How to affect the simulation in temporally varying ways.

@@ -123,8 +123,8 @@ class BlockCollectionBivar:
                 output_fpath=os.path.join(self.cmdopts["graph_root"],
                                           "pm-" + self.blocks_collected_stem + ".png"),
                 title='Swarm Blocks Collected',
-                xlabel=batch_criteria.graph_ylabel(self.cmdopts),
-                ylabel=batch_criteria.graph_xlabel(self.cmdopts),
+                xlabel=batch_criteria.graph_xlabel(self.cmdopts),
+                ylabel=batch_criteria.graph_ylabel(self.cmdopts),
                 xtick_labels=batch_criteria.graph_yticklabels(self.cmdopts),
                 ytick_labels=batch_criteria.graph_xticklabels(self.cmdopts)).generate()
 

@@ -19,9 +19,10 @@
 import os
 import glob
 import re
+import logging
+
 import pandas as pd
 import numpy as np
-
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -55,15 +56,17 @@ class StackedSurfaceGraph:
         self.comp_type = kwargs['comp_type']
 
     def generate(self):
-        dfs = []
-
         dfs = [pd.read_csv(f, sep=';') for f in glob.glob(
             self.input_stem_pattern + '*.csv') if re.search('_[0-9]+', f)]
 
         if not dfs:  # empty list
+            logging.debug("Not generating stacked surface graph: %s did not match any .csv files",
+                          self.input_stem_pattern)
             return
+
         assert len(dfs) <= 4, "FATAL: Too many surfaces to plot: {0} > {1}".format(len(dfs),
                                                                                    StackedSurfaceGraph.kMaxSurfaces)
+        # Scaffold graph
         plt.figure(figsize=(10, 10))
         ax = plt.axes(projection='3d')
         x = np.arange(len(dfs[0].columns))
@@ -78,13 +81,28 @@ class StackedSurfaceGraph:
         legend_handler_map = dict(zip(legend_cmap_handles,
                                       [HandlerColormap(c, num_stripes=8) for c in colors]))
 
-        ax.set_title(self.title, fontsize=24)
-        ax.set_zlabel('\n' + self.zlabel, fontsize=18)
-        max_xlen = max([len(str(l)) for l in self.xtick_labels])
-        max_ylen = max([len(str(l)) for l in self.ytick_labels])
-        ax.set_xlabel('\n' * max_xlen + self.xlabel, fontsize=18)
-        ax.set_ylabel('\n' * max_ylen + self.ylabel, fontsize=18)
+        # Plot surfaces
+        self.__plot_surfaces(X, Y, ax, colors, dfs)
 
+        # Add title
+        ax.set_title(self.title, fontsize=24)
+
+        # Add X,Y,Z labels
+        self.__plot_labels(ax)
+
+        # Add X,Y ticks
+        self.__plot_ticks(ax, x, y)
+
+        # Add legend
+        self.__plot_legend(ax, legend_cmap_handles, legend_handler_map)
+
+        # Output figures
+        fig = ax.get_figure()
+        fig.set_size_inches(10, 10)
+        self.__save_figs(fig, ax)
+        fig.clf()
+
+    def __plot_surfaces(self, X, Y, ax, colors, dfs):
         ax.plot_surface(X, Y, dfs[0], cmap=colors[0])
         for i in range(1, len(dfs)):
             if self.comp_type == 'raw':
@@ -94,14 +112,6 @@ class StackedSurfaceGraph:
             elif self.comp_type == 'diff3D':
                 plot_df = dfs[i] - dfs[0]
             ax.plot_surface(X, Y, plot_df, cmap=colors[i], alpha=0.5)
-
-        self.__plot_ticks(ax, x, y)
-        self.__plot_legend(ax, legend_cmap_handles, legend_handler_map)
-
-        fig = ax.get_figure()
-        fig.set_size_inches(10, 10)
-        self.__save_figs(fig, ax)
-        fig.clf()
 
     def __plot_ticks(self, ax, xvals, yvals):
         """
@@ -135,6 +145,13 @@ class StackedSurfaceGraph:
                   bbox_to_anchor=(0.5, -0.1),
                   ncol=len(self.legend),
                   fontsize=14)
+
+    def __plot_labels(self, ax):
+        max_xlen = max([len(str(l)) for l in self.xtick_labels])
+        max_ylen = max([len(str(l)) for l in self.ytick_labels])
+        ax.set_xlabel('\n' * max_xlen + self.xlabel, fontsize=18)
+        ax.set_ylabel('\n' * max_ylen + self.ylabel, fontsize=18)
+        ax.set_zlabel('\n' + self.zlabel, fontsize=18)
 
     def __save_figs(self, fig, ax):
         """

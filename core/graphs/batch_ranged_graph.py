@@ -17,6 +17,8 @@
 
 
 import os
+import logging
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -63,20 +65,48 @@ class BatchRangedGraph:
 
     def generate(self):
         if not os.path.exists(self.inputy_csv_fpath):
+            logging.debug("Not generating batch ranged graph: %s does not exist",
+                          self.inputy_csv_fpath)
             return
 
+        # Read .csv and scaffold graph
         dfy = pd.read_csv(self.inputy_csv_fpath, sep=';')
-
         fig, ax = plt.subplots()
+        ax.tick_params(labelsize=12)
+
+        assert len(dfy.values) <= BatchRangedGraph.kMaxRows, \
+            "FATAL: Too many rows to make unique line styles/colors/markers {0} > {1}".format(
+                len(dfy.values), BatchRangedGraph.kMaxRows)
+
+        # Plot lines
+        self.__plot_lines(dfy)
+
+        # Add error bars according to configuration
+        self.__plot_errorbars(self.xvals, dfy)
+
+        # Add legend
+        if self.legend is not None:
+            plt.legend(self.legend, fontsize=14, ncol=max(1, int(len(self.legend) / 3.0)))
+
+        # Add X,Y labels
+        plt.ylabel(self.ylabel, fontsize=18)
+        plt.xlabel(self.xlabel, fontsize=18)
+
+        # Add title
+        plt.title(self.title, fontsize=24)
+
+        # Output figure
+        fig = ax.get_figure()
+        fig.set_size_inches(10, 10)
+        fig.savefig(self.output_fpath, bbox_inches='tight', dpi=100)
+        fig.clf()
+
+    def __plot_lines(self, dfy):
         line_styles = [':', '--', '.-', '-', ':', '--', '.-', '-']
         mark_styles = ['o', '^', 's', 'x', 'o', '^', 's', 'x']
         colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red',
                   'tab:brown', 'tab:pink', 'tab:gray', 'tab:olive']
         i = 0
-
-        assert len(dfy.values) <= BatchRangedGraph.kMaxRows, \
-            "FATAL: Too many rows to make unique line styles/colors/markers {0} > {1}".format(
-                len(dfy.values), BatchRangedGraph.kMaxRows)
 
         for i in range(0, len(dfy.values)):
             plt.plot(self.xvals, dfy.values[i], line_styles[i],
@@ -88,22 +118,6 @@ class BatchRangedGraph:
                 x_new = np.linspace(self.xvals[0], self.xvals[-1], 50)
                 y_new = ffit(x_new)
                 plt.plot(x_new, y_new, line_styles[i])
-
-        # Plot error bars
-        self.__plot_errorbars(self.xvals, dfy)
-
-        if self.legend is not None:
-            plt.legend(self.legend, fontsize=14, ncol=max(1, int(len(self.legend) / 3.0)))
-
-        plt.ylabel(self.ylabel, fontsize=18)
-        plt.xlabel(self.xlabel, fontsize=18)
-        plt.title(self.title, fontsize=24)
-        ax.tick_params(labelsize=12)
-
-        fig = ax.get_figure()
-        fig.set_size_inches(10, 10)
-        fig.savefig(self.output_fpath, bbox_inches='tight', dpi=100)
-        fig.clf()
 
     def __plot_errorbars(self, xvals, data_df):
         """

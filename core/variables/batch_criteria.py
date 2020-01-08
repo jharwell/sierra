@@ -107,7 +107,6 @@ class BatchCriteria(base_variable.BaseVariable):
             "FATAL: Batch criteria defines both attribute changes and tag additions"
 
         for i, defi in enumerate(defs1):
-            print(defi)
             exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
             exp_generation_root = os.path.join(self.batch_generation_root,
                                                str(exp_dirname))

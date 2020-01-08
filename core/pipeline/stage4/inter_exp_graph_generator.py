@@ -148,10 +148,10 @@ class UnivarPerfMeasuresGenerator:
                                               self.main_config['sierra']['perf']['ca_in_csv']).generate(batch_criteria)
 
             if batch_criteria.pm_query('reactivity'):
-                pmr.ReactivityUnivar(self.cmdopts).generate(batch_criteria)
+                pmr.ReactivityUnivar(self.cmdopts).generate(self.main_config, batch_criteria)
 
             if batch_criteria.pm_query('adaptability'):
-                pma.AdaptabilityUnivar(self.cmdopts).generate(batch_criteria)
+                pma.AdaptabilityUnivar(self.cmdopts).generate(self.main_config, batch_criteria)
 
 
 class BivarPerfMeasuresGenerator:
@@ -188,7 +188,8 @@ class BivarPerfMeasuresGenerator:
                                          self.main_config['sierra']['perf']['ca_in_csv']).generate(batch_criteria)
 
         if batch_criteria.pm_query('reactivity'):
-            pmr.ReactivityBivar(self.cmdopts).generate(batch_criteria)
+            pmr.ReactivityBivar(self.cmdopts).generate(self.main_config, batch_criteria)
 
         if batch_criteria.pm_query('adaptability'):
-            pma.AdaptabilityBivar(self.cmdopts).generate(batch_criteria)
+            pma.AdaptabilityBivar(self.main_config, self.cmdopts).generate(self.main_config,
+                                                                           batch_criteria)
