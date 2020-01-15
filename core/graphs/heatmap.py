@@ -44,6 +44,7 @@ class Heatmap:
         self.xtick_labels = kwargs.get('xtick_labels', None)
         self.ytick_labels = kwargs.get('ytick_labels', None)
         self.colorbar_label = kwargs.get('zlabel', None)
+        self.interpolation = kwargs.get('interpolation', 'nearest')
 
     def generate(self):
         if not os.path.exists(self.input_csv_fpath):
@@ -53,7 +54,7 @@ class Heatmap:
         # Read .csv and create raw heatmap from default configuration
         df = pd.read_csv(self.input_csv_fpath, sep=';')
         fig, ax = plt.subplots()
-        plt.imshow(df, cmap='seismic', interpolation='none')
+        plt.imshow(df, cmap='seismic', interpolation=self.interpolation)
 
         # Add labels
         plt.xlabel(self.xlabel, fontsize=18)
