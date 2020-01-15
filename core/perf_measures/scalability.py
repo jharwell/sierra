@@ -85,8 +85,8 @@ class EfficiencyBivar:
                 title='Swarm Efficiency (Normalized)',
                 xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                 ylabel=batch_criteria.graph_ylabel(self.cmdopts),
-                xtick_labels=batch_criteria.graph_xticks(self.cmdopts),
-                ytick_labels=batch_criteria.graph_yticks(self.cmdopts)).generate()
+                xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
+                ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)).generate()
 
     def __calculate_metric(self,
                            ipath: str,
@@ -152,8 +152,8 @@ class FractionalMaintenanceBivar:
                 title="Swarm Scalability: Fractional Performance Maintenance In The Presence Of Inter-robot Interference",
                 xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                 ylabel=batch_criteria.graph_ylabel(self.cmdopts),
-                xtick_labels=batch_criteria.graph_xticks(self.cmdopts),
-                ytick_labels=batch_criteria.graph_yticks(self.cmdopts)).generate()
+                xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
+                ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)).generate()
 
 
 class KarpFlattBivar:
@@ -222,8 +222,8 @@ class KarpFlattBivar:
                 title="Swarm Serial Fraction: Karp-Flatt Metric",
                 xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                 ylabel=batch_criteria.graph_ylabel(self.cmdopts),
-                xtick_labels=batch_criteria.graph_xticks(self.cmdopts),
-                ytick_labels=batch_criteria.graph_yticks(self.cmdopts)[1:]).generate()
+                xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
+                ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)[1:]).generate()
 
 
 class ScalabilityBivarGenerator:
@@ -390,7 +390,6 @@ class FractionalMaintenanceUnivar:
                                            self.ca_in_csv,
                                            batch_criteria).calculate(batch_criteria)
 
-        print(df)
         for c in df.columns:
             df[c] = 1.0 - 1.0 / math.exp(1.0 - df[c])
         return df

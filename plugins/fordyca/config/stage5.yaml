@@ -18,9 +18,8 @@ intra_scenario:
       title: 'Swarm Self Organization'
       label: 'Self Organization Value'
 
-
-    - src_stem: pm-blocks-collected-cum
-      dest_stem: cc-pm-blocks-collected-cum
+    - src_stem: pm-blocks-transported-cum
+      dest_stem: cc-pm-blocks-transported-cum
       title: 'Swarm Performance'
       label: 'Total Blocks Collected'
 

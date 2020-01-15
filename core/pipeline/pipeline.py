@@ -89,7 +89,8 @@ class Pipeline:
             # stage 5
             'controllers_list': self.args.controllers_list,
             'controllers_legend': self.args.controllers_legend,
-            'comparison_type': self.args.comparison_type
+            'comparison_type': self.args.comparison_type,
+            'transpose_graphs': self.args.transpose_graphs,
         }
 
         if cmdopts is not None:

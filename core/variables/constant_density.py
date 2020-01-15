@@ -18,7 +18,6 @@ import re
 import typing as tp
 from core.variables import batch_criteria as bc
 from core.variables.arena_shape import RectangularArena
-from core.variables import block_distribution
 
 
 class ConstantDensity(bc.UnivarBatchCriteria):
@@ -28,10 +27,10 @@ class ConstantDensity(bc.UnivarBatchCriteria):
     own.
 
     Attributes:
-      target_density: The target density.
-      dimensions: List of (X,Y) dimensions to use (creates rectangular arenas).
-      dist_type: The type of block distribution to use.
-      changes: List of sets of changes to apply to generate the specified arena sizes.
+        target_density: The target density.
+        dimensions: List of (X,Y) dimensions to use (creates rectangular arenas).
+        dist_type: The type of block distribution to use.
+        changes: List of sets of changes to apply to generate the specified arena sizes.
 
     """
 
@@ -58,8 +57,8 @@ class ConstantDensity(bc.UnivarBatchCriteria):
             'QS': 'TypeQuadSource',
             'RN': 'TypeRandom'
         }
-        dist = __import__("block_distribution.{0}".format(
-            dist_types[self.dist_type]), fromlist=["*"])()
+        module = __import__("core.variables.block_distribution", fromlist=["*"])
+        dist = getattr(module, dist_types[self.dist_type])()
 
         for changeset in self.changes:
             for c in dist.gen_attr_changelist():

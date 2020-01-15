@@ -162,7 +162,7 @@ class BivarCSVCollator:
         exp_dirs = batch_criteria.gen_exp_dirnames(self.cmdopts)
         csv_src_exists = [False for d in exp_dirs]
         stddev_src_exists = [False for d in exp_dirs]
-        print(exp_dirs)
+
         for i, diri in enumerate(exp_dirs):
             csv_src_exists[i] = self.__collate_exp_csv_data(diri,
                                                             target,

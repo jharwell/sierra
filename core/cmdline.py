@@ -619,33 +619,36 @@ class CoreCmdline:
                                  Use=stage{5}; can be omitted otherwise. If omitted, the raw controller names will be used.
                                  """)
         self.stage5.add_argument("--comparison-type",
-                                 choices=['raw', 'scale3D', 'scale2D', 'diff3D', 'diff2D'],
+                                 choices=['raw2D', 'raw3D', 'scale2D',
+                                          'scale3D', 'diff2D', 'diff3D'],
                                  help="""
 
-                                 Specify how controller comparisons should be performed (currently only used for
-                                 bivariate controller comparisons). Options are:
+                                 Specify how controller comparisons should be performed (currently
+                                 only used for bivariate controller comparisons). Options are:
 
-                                 - ``raw`` - Output raw performance measures. This results in a set single stacked 3D
-                                   surface plots comparing all controllers (identical plots, but view from different
-                                   angles). Uses ``--controllers-legend`` if passed for legend.
+                                 - ``raw2D`` - Output raw 2D performance measures as a set of dual heatmaps comparing
+                                   all controllers against the controller of primary interest (one per pair).
 
-                                 - ``scale3D`` - Scale controller performance measures against those of the controller
-                                   of primary interest by dividing. This results in a set single stacked 3D surface
+                                 - ``diff2D`` - Subtract the performance measure of the controller of primary interest
+                                   against all other controllers, pairwise, outputting one 2D heatmap per comparison.
+
+                                 - ``scale2D`` - Scale controller performance measures against those of the controller
+                                   of primary interest by dividing, outputting one 2D heatmap per comparison.
+
+                                 - ``raw3D`` - Output raw 3D performance measures as a single) single stacked 3D surface
                                    plots comparing all controllers (identical plots, but view from different
                                    angles). Uses ``--controllers-legend`` if passed for legend.
 
-                                 - ``scale2D`` - Scale controller performance measures against those of the controller
-                                   of primary interest by dividing. This results in a set of 2D heatmaps, one for each
-                                   controller paired against the primary controller of interest.
+                                 - ``scale3D`` - Scale controller performance measures against those of the controller
+                                   of primary interest by dividing. This results in a single stacked 3D surface plots
+                                   comparing all controllers (identical plots, but view from different angles). Uses
+                                   ``--controllers-legend`` if passed for legend.
 
                                  - ``diff3D`` - Subtract the performance measure of the controller of primary interest
                                    from each controller (including the primary). This results in a set single stacked 3D
                                    surface plots comparing all controllers (identical plots, but view from different
                                    angles), in which the controller of primary interest forms an (X,Y) plane at
                                    Z=0. Uses ``--controllers-legend`` if passed for legend.
-
-                                 - ``diff2D`` - Subtract the performance measure of the controller of primary interest
-                                   against all other controllers, pairwise, outputting one 2D heatmap per comparison.
 
                                  """,
                                  default='raw')
@@ -674,14 +677,27 @@ class CoreCmdline:
                                  """,
                                  action='store_true')
 
+        self.stage5.add_argument("--transpose-graphs",
+                                 help="""
+
+                                 Transpose the X,Y axes in generated graphs. Useful as a general way to tweak graphs for
+                                 best use of space within a paper. Currently affects the following graphs:
+
+                                 - :class:`~core.graphs.heatmap.Heatmap`
+
+                                 Ignored for other graph types.
+                                 Use=stage{5}; can be omitted otherwise.
+                                 """,
+                                 action='store_true')
+
         self.stage5.add_argument("--controllers-list",
                                  help="""
 
                                  Comma separated list of controllers to compare within ``<sierra root>``. If None, then the
                                  default set of controllers will be used for comparison.
 
-                                 The first controller in this list will be used for normalization comparison plots, if
-                                 ``--normalize-comparisons`` is passed.
+                                 The first controller in this list will be used for as the controller of primary
+                                 interest if ``--comparison-type`` is passed.
 
                                  Use=stage{5}; can be omitted otherwise.
 

@@ -29,7 +29,7 @@ import pandas as pd
 
 from core.graphs.batch_ranged_graph import BatchRangedGraph
 from core.graphs.stacked_surface_graph import StackedSurfaceGraph
-from core.graphs.heatmap import Heatmap
+from core.graphs.heatmap import Heatmap, DualHeatmap
 from core.variables import batch_criteria as bc
 import core.pipeline.root_dirpath_generator as rdg
 
@@ -75,7 +75,9 @@ class BivarIntraScenarioComparator:
         # Obtain the list of scenarios to use. We can just take the scenario list of the first
         # controllers, because we have already checked that all controllers executed the same set
         # scenarios.
-        dirs = os.listdir(os.path.join(self.cmdopts['sierra_root'], self.controllers[0]))
+        dirs = os.listdir(os.path.join(self.cmdopts['sierra_root'],
+                                       self.cmdopts['plugin'],
+                                       self.controllers[0]))
         scenario_dirs = [rdg.parse_batch_root(d)[1] for d in dirs]
 
         cmdopts = copy.deepcopy(self.cmdopts)
@@ -97,9 +99,9 @@ class BivarIntraScenarioComparator:
         """
         for controller in self.controllers:
             dirs = [d for d in os.listdir(os.path.join(self.cmdopts['sierra_root'],
+                                                       self.cmdopts['plugin'],
                                                        controller)) if scenario_dir in d]
-
-            if 0 == len(dirs):
+            if len(dirs) == 0:
                 logging.warning("Controller %s was not run on scenario %s",
                                 controller,
                                 scenario_dir)
@@ -111,6 +113,7 @@ class BivarIntraScenarioComparator:
             # different. We need generate these paths for EACH controller, because the
             # controller is part of the batch root.
             paths = rdg.regen_from_exp(self.cli_args.sierra_root,
+                                       self.cli_args.plugin,
                                        self.cli_args.batch_criteria,
                                        dirs[0],
                                        controller)
@@ -118,10 +121,7 @@ class BivarIntraScenarioComparator:
 
             # For each scenario, we have to create the batch criteria for it, because they
             # are all different.
-
-            criteria = bc.factory(self.cli_args,
-                                  cmdopts,
-                                  scenario)
+            criteria = bc.factory(self.main_config, cmdopts, self.cli_args, scenario)
 
             self.__gen_csv(cmdopts=cmdopts,
                            controller=controller,
@@ -129,23 +129,25 @@ class BivarIntraScenarioComparator:
                            src_stem=graph['src_stem'],
                            dest_stem=graph['dest_stem'])
 
-            if '2D' in comp_type:
-                self.__gen_heatmaps(scenario=scenario,
-                                    batch_criteria=criteria,
-                                    cmdopts=cmdopts,
-                                    dest_stem=graph['dest_stem'],
-                                    title=graph['title'],
-                                    label=graph['label'],
-                                    comp_type=comp_type)
-            else:
-                self.__gen_graph3D(scenario=scenario,
-                                   batch_criteria=criteria,
-                                   cmdopts=cmdopts,
-                                   dest_stem=graph['dest_stem'],
-                                   title=graph['title'],
-                                   zlabel=graph['label'],
-                                   legend=legend,
-                                   comp_type=comp_type)
+        if '2D' in comp_type:
+            self.__gen_heatmaps(scenario=scenario,
+                                batch_criteria=criteria,
+                                cmdopts=cmdopts,
+                                dest_stem=graph['dest_stem'],
+                                title=graph['title'],
+                                label=graph['label'],
+                                legend=legend,
+                                comp_type=comp_type)
+
+        if '3D' in comp_type:
+            self.__gen_graph3D(scenario=scenario,
+                               batch_criteria=criteria,
+                               cmdopts=cmdopts,
+                               dest_stem=graph['dest_stem'],
+                               title=graph['title'],
+                               zlabel=graph['label'],
+                               legend=legend,
+                               comp_type=comp_type)
 
     def __gen_heatmaps(self,
                        scenario: str,
@@ -154,11 +156,39 @@ class BivarIntraScenarioComparator:
                        dest_stem: str,
                        title: str,
                        label: str,
+                       legend: tp.List[str],
                        comp_type: str):
+        if comp_type in ['scale2D', 'diff2D']:
+            self.__gen_paired_heatmaps(scenario,
+                                       batch_criteria,
+                                       cmdopts,
+                                       dest_stem,
+                                       title,
+                                       label,
+                                       comp_type)
+        elif comp_type in ['raw2D']:
+            self.__gen_dual_heatmaps(scenario,
+                                     batch_criteria,
+                                     cmdopts,
+                                     dest_stem,
+                                     title,
+                                     label,
+                                     legend,
+                                     comp_type)
+
+    def __gen_paired_heatmaps(self,
+                              scenario: str,
+                              batch_criteria: bc.UnivarBatchCriteria,
+                              cmdopts: tp.Dict[str, str],
+                              dest_stem: str,
+                              title: str,
+                              label: str,
+                              comp_type: str):
         """
-        Generates a :class:`~graphs.heatmap.Heatmap` comparing the specified controllers within the
-        specified scenario after input files have been gathered from each controller into
-        :attribute:`self.cc_csv_root`.
+        Generates a set of :class:`~core.graphs.heatmap.Heatmap` graphs a controller of primary
+        interest against all other controllers (one graph per pairing), after input files have been
+        gathered from each controller into :attribute:`self.cc_csv_root`. Only valid if the
+        comparison type is ``scale2D`` or ``diff2D``.
         """
 
         csv_stem_root = os.path.join(self.cc_csv_root, dest_stem + "-" + scenario)
@@ -169,9 +199,10 @@ class BivarIntraScenarioComparator:
 
         for i in range(1, len(paths)):
             df = pd.read_csv(paths[i], sep=';')
-            if 'scale2D' == comp_type:
+
+            if comp_type == 'scale2D':
                 plot_df = df / ref_df
-            elif 'diff2D' == comp_type:
+            elif comp_type == 'diff2D':
                 plot_df = df - ref_df
             opath_stem = csv_stem_root + "_{0}{1}".format(0, i)
             plot_df.to_csv(opath_stem + ".csv", sep=';', index=False)
@@ -180,22 +211,44 @@ class BivarIntraScenarioComparator:
                     output_fpath=os.path.join(self.cc_graph_root,
                                               dest_stem) + '-' + scenario + "_{0}{1}".format(0, i) + ".png",
                     title=title,
+                    transpose=self.cmdopts['transpose_graphs'],
                     zlabel=self.__gen_zaxis_label(label, comp_type),
                     xlabel=batch_criteria.graph_xlabel(cmdopts),
-                    ylabel=batch_criteria.graph_xlabel(cmdopts),
+                    ylabel=batch_criteria.graph_ylabel(cmdopts),
                     xtick_labels=batch_criteria.graph_xticklabels(cmdopts),
                     ytick_labels=batch_criteria.graph_yticklabels(cmdopts)).generate()
 
-    def __gen_zaxis_label(self, label: str, comp_type: str):
+    def __gen_dual_heatmaps(self,
+                            scenario: str,
+                            batch_criteria: bc.UnivarBatchCriteria,
+                            cmdopts: tp.Dict[str, str],
+                            dest_stem: str,
+                            title: str,
+                            label: str,
+                            legend: tp.List[str],
+                            comp_type: str):
         """
-        If we are doing something other than raw controller comparisons, put that on the graph
-        Z axis title.
+        Generates a set of :class:`~core.graphs.heatmap.DualHeatmap` graphs containing all pairs of
+        (primary controller, other), one per graph, within the specified scenario after input files
+        have been gathered from each controller into :attribute:`self.cc_csv_root`. Only valid if
+        the comparison type is ``raw``.
         """
-        if 'scale' in comp_type:
-            return label + ' (Scaled)'
-        elif 'diff'in comp_type == comp_type:
-            return label + ' (Difference Comparison)'
-        return label
+
+        csv_stem_root = os.path.join(self.cc_csv_root, dest_stem + "-" + scenario)
+        paths = [f for f in glob.glob(
+            csv_stem_root + '*.csv') if re.search('_[0-9]+', f)]
+
+        for i in range(0, len(paths)):
+            DualHeatmap(input_stem_pattern=csv_stem_root,
+                        output_fpath=os.path.join(self.cc_graph_root,
+                                                  dest_stem) + '-' + scenario + ".png",
+                        title=title,
+                        zlabel=self.__gen_zaxis_label(label, comp_type),
+                        xlabel=batch_criteria.graph_xlabel(cmdopts),
+                        ylabel=batch_criteria.graph_ylabel(cmdopts),
+                        legend=legend,
+                        xtick_labels=batch_criteria.graph_xticklabels(cmdopts),
+                        ytick_labels=batch_criteria.graph_yticklabels(cmdopts)).generate()
 
     def __gen_graph3D(self,
                       scenario: str,
@@ -224,6 +277,17 @@ class BivarIntraScenarioComparator:
                             legend=legend,
                             comp_type=comp_type).generate()
 
+    def __gen_zaxis_label(self, label: str, comp_type: str):
+        """
+        If we are doing something other than raw controller comparisons, put that on the graph
+        Z axis title.
+        """
+        if 'scale' in comp_type:
+            return label + ' (Scaled)'
+        elif 'diff'in comp_type == comp_type:
+            return label + ' (Difference Comparison)'
+        return label
+
     def __gen_csv(self,
                   cmdopts: tp.Dict[str, str],
                   batch_root: str,
@@ -245,6 +309,7 @@ class BivarIntraScenarioComparator:
 
         """
         csv_ipath = os.path.join(cmdopts['sierra_root'],
+                                 cmdopts['plugin'],
                                  controller,
                                  batch_root,
                                  'exp-outputs',
@@ -308,7 +373,9 @@ class UnivarIntraScenarioComparator:
         # Obtain the list of scenarios to use. We can just take the scenario list of the first
         # controllers, because we have already checked that all controllers executed the same set
         # scenarios
-        scenarios = os.listdir(os.path.join(self.cmdopts['sierra_root'], self.controllers[0]))
+        scenarios = os.listdir(os.path.join(self.cmdopts['sierra_root'],
+                                            self.cmdopts['plugin'],
+                                            self.controllers[0]))
 
         # For each controller comparison graph we are interested in, generate it using data from all
         # scenarios
@@ -328,15 +395,14 @@ class UnivarIntraScenarioComparator:
             # different. We need generate these paths for EACH controller, because the
             # controller is part of the batch root.
             paths = rdg.regen_from_exp(self.cli_args.sierra_root,
+                                       self.cli_args.plugin,
                                        self.cli_args.batch_criteria,
                                        scenario,
                                        controller)
             cmdopts.update(paths)
             # For each scenario, we have to create the batch criteria for it, because they
             # are all different.
-            criteria = bc.factory(self.cli_args,
-                                  cmdopts,
-                                  rdg.parse_batch_root(scenario)[1])
+            criteria = bc.factory(self.main_config, cmdopts, self.cli_args, scenario)
 
             self.__gen_csv(cmdopts=cmdopts,
                            scenario=scenario,
@@ -388,12 +454,14 @@ class UnivarIntraScenarioComparator:
         """
 
         csv_ipath = os.path.join(cmdopts['sierra_root'],
+                                 cmdopts['plugin'],
                                  controller,
                                  scenario,
                                  'exp-outputs',
                                  self.main_config['sierra']['collate_csv_leaf'],
                                  src_stem + ".csv")
         stddev_ipath = os.path.join(cmdopts['sierra_root'],
+                                    cmdopts['plugin'],
                                     controller,
                                     scenario,
                                     'exp-outputs',

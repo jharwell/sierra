@@ -123,7 +123,7 @@ class SwarmConstantDensity(cd.ConstantDensity):
         return [str(int(self.target_density / 100.0 * x)) for x in self.graph_xticks(cmdopts, exp_dirs)]
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
-        return r"Swarm Density ({0}\%)".format(self.target_density)
+        return r"Swarm Size"
 
     def pm_query(self, query) -> bool:
         return query in ['blocks-collected', 'scalability', 'self-org']

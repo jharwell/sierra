@@ -132,8 +132,8 @@ class SelfOrganizationFLBivar:
                 title="Swarm Self-Organization Due To Sub-Linear Fractional Performance Losses",
                 xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                 ylabel=batch_criteria.graph_ylabel(self.cmdopts),
-                xtick_labels=batch_criteria.graph_xticks(self.cmdopts),
-                ytick_labels=batch_criteria.graph_yticks(self.cmdopts)).generate()
+                xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
+                ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)).generate()
 
     def __calc_by_row(self, fl, batch_criteria):
         populations = batch_criteria.populations(self.cmdopts)

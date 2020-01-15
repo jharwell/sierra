@@ -396,9 +396,9 @@ class FractionalLossesBivar(FractionalLosses):
                     # the correct dimension along which to compute the metric, which depends on
                     # performance between adjacent swarm sizes.
                     if isinstance(batch_criteria.criteria1, Population):
-                        n_robots = populations[i]
+                        n_robots = populations[i][0]
                     else:
-                        n_robots = populations[j]
+                        n_robots = populations[0][j]
 
                     plost_n.iloc[i, j] = n_blocks * \
                         (t_lostN - t_lost0 * float(n_robots)) / float(n_robots)

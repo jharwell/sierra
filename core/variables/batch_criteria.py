@@ -494,7 +494,6 @@ def __Univarfactory(main_config: dict, cmdopts: tp.Dict[str, str], cli_arg: str,
     Construct a batch criteria object from a single cmdline argument.
     """
     category = cli_arg.split('.')[0]
-
     module = __import__("core.variables.{0}".format(category), fromlist=["*"])
     ret = getattr(module, "factory")(cli_arg,
                                      main_config,

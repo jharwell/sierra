@@ -66,6 +66,6 @@ class PipelineStage3:
             'gen_stddev': cmdopts['gen_stddev'],
         }
         logging.info("Stage3: Averaging batched experiment outputs in %s...",
-                     cmdopts['generation_root'])
+                     cmdopts['output_root'])
         BatchedExpCSVAverager()(main_config, avg_params, cmdopts['output_root'])
         logging.info("Stage3: Averaging complete")

@@ -183,9 +183,7 @@ class HeatmapsGenerator:
                                                   graph['src_stem'] + '-hm.png'),
                         title=graph['title'],
                         xlabel='X',
-                        ylabel='Y',
-                        xtick_labels=None,
-                        ytick_labels=None).generate()
+                        ylabel='Y').generate()
 
 
 class LinegraphsGenerator:

@@ -64,8 +64,10 @@ class StackedSurfaceGraph:
                           self.input_stem_pattern)
             return
 
-        assert len(dfs) <= 4, "FATAL: Too many surfaces to plot: {0} > {1}".format(len(dfs),
-                                                                                   StackedSurfaceGraph.kMaxSurfaces)
+        assert len(dfs) <= StackedSurfaceGraph.kMaxSurfaces,\
+            "FATAL: Too many surfaces to plot: {0} > {1}".format(len(dfs),
+                                                                 StackedSurfaceGraph.kMaxSurfaces)
+
         # Scaffold graph
         plt.figure(figsize=(10, 10))
         ax = plt.axes(projection='3d')
