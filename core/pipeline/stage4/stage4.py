@@ -86,7 +86,7 @@ class PipelineStage4:
         self.inter_LN_config = yaml.load(open(os.path.join(self.cmdopts['core_config_root'],
                                                            'inter-graphs-line.yaml')),
                                          yaml.FullLoader)
-        self.intra_LN_config = yaml.load(open(os.path.join(self.cmdopts['plugin_config_root'],
+        self.intra_LN_config = yaml.load(open(os.path.join(self.cmdopts['core_config_root'],
                                                            'intra-graphs-line.yaml')),
                                          yaml.FullLoader)
         self.intra_HM_config = yaml.load(open(os.path.join(self.cmdopts['core_config_root'],
@@ -103,6 +103,7 @@ class PipelineStage4:
             logging.info("Stage4: Loading additional intra-experiment linegraph config for plugin '%s'",
                          self.cmdopts['plugin'])
             plugin_dict = yaml.load(open(plugin_intra_LN), yaml.FullLoader)
+
             for category in plugin_dict:
                 if category not in self.intra_LN_config:
                     self.intra_LN_config.update({category: plugin_dict[category]})

@@ -226,3 +226,55 @@ LN_convergence:
         - 'Convergence Status'
       xlabel: 'Interval'
       ylabel: 'Value'
+
+LN_population:
+  graphs:
+    - src_stem: tv-population
+      dest_stem: tv-population-size
+      cols:
+        - int_avg_swarm_population
+        - cum_avg_swarm_population
+        - swarm_max_population
+      title: 'Swarm Population'
+      legend:
+        - 'Average Swarm Population (Interval)'
+        - 'Average Swarm Population (Cumulative)'
+        - 'Swarm Max Population'
+      xlabel: 'Interval'
+      ylabel: '# Robots'
+
+    - src_stem: tv-population
+      dest_stem: tv-population-birth-queue
+      cols:
+        - int_avg_birth_queue_size
+        - cum_avg_birth_queue_size
+      title: 'Swarm Population Birth Queue'
+      legend:
+        - 'Average Queue Size (Interval)'
+        - 'Average Queue Size (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Robots'
+
+    - src_stem: tv-population
+      dest_stem: tv-population-death-queue
+      cols:
+        - int_avg_death_queue_size
+        - cum_avg_death_queue_size
+      title: 'Swarm Population Death Queue'
+      legend:
+        - 'Average Queue Size (Interval)'
+        - 'Average Queue Size (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Robots'
+
+    - src_stem: tv-population
+      dest_stem: tv-population-repair-queue
+      cols:
+        - int_avg_repair_queue_size
+        - cum_avg_repair_queue_size
+      title: 'Swarm Population Repair Queue'
+      legend:
+        - 'Average Queue Size (Interval)'
+        - 'Average Queue Size (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Robots'

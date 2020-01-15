@@ -200,15 +200,9 @@
       <metrics
           output_dir="metrics"
           block_acq_counts="block-acq-counts.csv"
-          block_acq_locs="block-acq-locs.csv"
-          block_acq_explore_locs="block-acq-explore-locs.csv"
-          block_acq_vector_locs="block-acq-vector-locs.csv"
           block_transport="block-transport.csv"
           block_manipulation="block-manipulation.csv"
           cache_acq_counts="cache-acq-counts.csv"
-          cache_acq_locs="cache-acq-locs.csv"
-          cache_acq_explore_locs="cache-acq-explore-locs.csv"
-          cache_acq_vector_locs="cache-acq-vector-locs.csv"
           cache_utilization="cache-utilization.csv"
           cache_lifecycle="cache-lifecycle.csv"
           cache_locations="cache-locations.csv"
@@ -226,7 +220,6 @@
           task_distribution="task-distribution.csv"
           perception_dpo="perception-dpo.csv"
           perception_mdpo="perception-mdpo.csv"
-          swarm_dist_pos2D="swarm-dist-pos2D.csv"
           swarm_convergence="swarm-convergence.csv"
           tv_environment="tv-environment.csv"
           tv_population="tv-population.csv"
@@ -277,7 +270,7 @@
         </caches>
       </env_dynamics>
       <population_dynamics
-          birth_lambda="1.0"
+          birth_mu="1.0"
           death_lambda="0.0"
           malfunction_lambda="0.0"
           max_size="16"

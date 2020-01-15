@@ -110,7 +110,7 @@ class Population(bc.UnivarBatchCriteria):
 
             dynamics = {(".//temporal_variance/population_dynamics",
                          d[0],
-                         d[1]) for d in self.dynamics}
+                         str('%3.9f' % d[1])) for d in self.dynamics}
 
             for c in changes:
                 c |= dynamics
@@ -163,7 +163,6 @@ class PopulationParser():
         ret['dynamics_type'] = res.group(0)
 
         # Parse increment type
-        print(criteria_str)
         res = re.search("Log|Linear", criteria_str)
         assert res is not None, \
             "FATAL: Bad size increment specification in criteria '{0}'".format(criteria_str)
@@ -192,7 +191,6 @@ class PopulationParser():
                 characteristic = float(res.group(0))
 
                 # Parser mantissa
-                print(spec)
                 res = re.search('p[0-9]+', spec)
                 assert res is not None, \
                     "FATAL: Bad lambda mantissa specification in criteria '{0}'".format(
