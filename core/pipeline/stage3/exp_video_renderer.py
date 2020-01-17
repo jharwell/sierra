@@ -81,4 +81,4 @@ class ExpVideoRenderer:
                 procs.append(subprocess.Popen(cmd,
                                               stderr=subprocess.DEVNULL,
                                               stdout=subprocess.DEVNULL))
-                [p.wait() for p in procs]
+        [p.wait() for p in procs]

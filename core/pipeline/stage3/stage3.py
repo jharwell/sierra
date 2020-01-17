@@ -22,6 +22,8 @@ Contains main class implementing stage 3 of the experimental pipeline.
 import os
 import logging
 import typing as tp
+import time
+import datetime
 
 from core.pipeline.stage3.exp_csv_averager import BatchedExpCSVAverager
 from core.pipeline.stage3.exp_video_renderer import BatchedExpVideoRenderer
@@ -54,8 +56,11 @@ class PipelineStage3:
         }
         logging.info("Stage3: Rendering videos for batched experiment in %s...",
                      cmdopts['generation_root'])
+        start = time.time()
         BatchedExpVideoRenderer()(main_config, render_opts, cmdopts['output_root'])
-        logging.info("Stage3: Rendering complete")
+        elapsed = int(time.time() - start)
+        sec = datetime.timedelta(seconds=elapsed)
+        logging.info("Stage3: Rendering complete in %s", str(sec))
 
     def __run_averaging(self, main_config, cmdopts):
         template_input_leaf, _ = os.path.splitext(
@@ -67,5 +72,8 @@ class PipelineStage3:
         }
         logging.info("Stage3: Averaging batched experiment outputs in %s...",
                      cmdopts['output_root'])
+        start = time.time()
         BatchedExpCSVAverager()(main_config, avg_params, cmdopts['output_root'])
-        logging.info("Stage3: Averaging complete")
+        elapsed = int(time.time() - start)
+        sec = datetime.timedelta(seconds=elapsed)
+        logging.info("Stage3: Averaging complete in %s", str(sec))

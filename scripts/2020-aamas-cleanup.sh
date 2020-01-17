@@ -19,19 +19,19 @@ BASE_CMD="python3 sierra.py \
                   --plugin=fordyca\
                   --batch-criteria swarm_density.CD10p0.I12 ta_policy_set.All \
                   --sierra-root=$OUTPUT_ROOT --exp-graphs=inter --no-verify-results\
-                  --pipeline 4 --physics-n-engines=8 --n-sims=20 --n-threads=8"
+                  --pipeline 3 --physics-n-engines=8 --n-sims=20 --n-threads=8"
 
 cd $SIERRA
 
-# for c in "${CONTROLLERS[@]}"
-# do
-#     for s in "${SCENARIOS[@]}"
-#     do
-#         $BASE_CMD\
-#             --controller=${c}\
-#             --scenario=${s}
-#     done
-# done
+for c in "${CONTROLLERS[@]}"
+do
+    for s in "${SCENARIOS[@]}"
+    do
+        $BASE_CMD\
+            --controller=${c}\
+            --scenario=${s}
+    done
+done
 
 CONTROLLERS=(depth2.BIRTD_DPO)
 SCENARIOS=(SS.36x18 DS.36x18)

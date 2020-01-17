@@ -179,8 +179,8 @@ class CoreCmdline:
                                  Stage2: Run the batched experiment on a previously generated experiment. Part of
                                  default pipeline.
 
-                                 Stage3: Process experimental results after running the batched experiment. Part of
-                                 default pipeline.
+                                 Stage3: Process experimental results after running the batched experiment; some parts
+                                 of this can be done in parallel. Part of default pipeline.
 
                                  Stage4: Perform graph generation after processing results for a batched
                                  experiment. Part of default pipeline.

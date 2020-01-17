@@ -22,7 +22,9 @@ experiment.
 import os
 import re
 import logging
+import multiprocessing as mp
 import typing as tp
+
 import pandas as pd
 
 
@@ -43,11 +45,26 @@ class BatchedExpCSVAverager:
         # Ignore the folder for .csv files collated across experiments within a batch
         experiments = [item for item in os.listdir(batch_output_root) if item not in [
             main_config['sierra']['collate_csv_leaf']]]
+
+        q = mp.JoinableQueue()
+
         for exp in experiments:
             path = os.path.join(batch_output_root, exp)
-
             if os.path.isdir(path):
-                ExpCSVAverager(main_config, avg_opts, path)()
+                q.put(path)
+
+        for i in range(0, mp.cpu_count()):
+            p = mp.Process(target=BatchedExpCSVAverager.__thread_worker,
+                           args=(q, main_config, avg_opts))
+            p.start()
+
+        q.join()
+
+    def __thread_worker(q: mp.Queue, main_config: dict, avg_opts: tp.Dict[str, str]):
+        while True:
+            path = q.get()
+            ExpCSVAverager(main_config, avg_opts, path)()
+            q.task_done()
 
 
 class ExpCSVAverager:
