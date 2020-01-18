@@ -21,6 +21,9 @@ Contains main class implementing stage 4 of the experimental pipeline.
 import os
 import logging
 import typing as tp
+import time
+import datetime
+
 import yaml
 import matplotlib as mpl
 
@@ -155,12 +158,15 @@ class PipelineStage4:
         """
         if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'intra':
             logging.info("Stage4: Generating intra-experiment graphs...")
+            start = time.time()
             BatchedIntraExpGraphGenerator(self.cmdopts)(self.main_config,
                                                         self.controller_config,
                                                         self.intra_LN_config,
                                                         self.intra_HM_config,
                                                         batch_criteria)
-            logging.info("Stage4: Intra-experiment graph generation complete")
+            elapsed = int(time.time() - start)
+            sec = datetime.timedelta(seconds=elapsed)
+            logging.info("Stage4: Intra-experiment graph generation complete: %s", str(sec))
 
         if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'inter':
             # Collation must be after intra-experiment graph generation, so that all .csv files to
@@ -172,8 +178,11 @@ class PipelineStage4:
                 BivarCSVCollator(self.main_config, self.cmdopts)(batch_criteria, targets)
 
             logging.info("Stage4: Generating inter-experiment graphs...")
+            start = time.time()
             InterExpGraphGenerator(self.main_config, self.cmdopts, targets)(batch_criteria)
-            logging.info("Stage4: Inter-experiment graph generation complete")
+            elapsed = int(time.time() - start)
+            sec = datetime.timedelta(seconds=elapsed)
+            logging.info("Stage4: Inter-experiment graph generation complete: %s", str(sec))
 
     def __calc_inter_LN_targets(self):
         """

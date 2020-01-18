@@ -18,8 +18,8 @@ BASE_CMD="python3 sierra.py \
                   --time-setup=time_setup.T10000 \
                   --plugin=fordyca\
                   --batch-criteria swarm_density.CD10p0.I12 ta_policy_set.All \
-                  --sierra-root=$OUTPUT_ROOT --exp-graphs=inter --no-verify-results\
-                  --pipeline 3 --physics-n-engines=8 --n-sims=20 --n-threads=8"
+                  --sierra-root=$OUTPUT_ROOT --exp-graphs=intra --no-verify-results\
+                  --pipeline 4 --physics-n-engines=8 --n-sims=20 --n-threads=8"
 
 cd $SIERRA
 

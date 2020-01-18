@@ -60,6 +60,7 @@ class BatchedExpCSVAverager:
 
         q.join()
 
+    @staticmethod
     def __thread_worker(q: mp.Queue, main_config: dict, avg_opts: tp.Dict[str, str]):
         while True:
             path = q.get()
