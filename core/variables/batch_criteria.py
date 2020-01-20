@@ -102,7 +102,12 @@ class BatchCriteria(base_variable.BaseVariable):
                       cmdopts: tp.Dict[str, str]):
 
         defs1 = list(self.gen_attr_changelist())
-        defs2 = list(self.gen_tag_addlist())
+        defs2 = self.gen_tag_addlist()
+        if defs2 is None:
+            defs2 = []
+        else:
+            defs2 = list(defs2)
+
         assert len(defs1) == 0 or len(defs2) == 0, \
             "FATAL: Batch criteria defines both attribute changes and tag additions"
 

@@ -38,9 +38,4 @@ class PipelineStage2:
         if cmdopts['with_rendering']:
             logging.info('Stage2: Frame grabbing enabled')
 
-        runner = BatchedExpRunner(cmdopts, batch_criteria)
-        runner.run(exec_method=cmdopts['exec_method'],
-                   n_threads_per_sim=cmdopts['n_threads'],
-                   n_sims=cmdopts['n_sims'],
-                   exec_resume=cmdopts['exec_resume'],
-                   with_rendering=cmdopts['with_rendering'])
+        BatchedExpRunner(cmdopts, batch_criteria)()

@@ -70,6 +70,7 @@ class Pipeline:
             'exec_exp_range': self.args.exec_exp_range,
             'exec_method': self.args.exec_method,
             'exec_resume': self.args.exec_resume,
+            'n_jobs_per_node': self.args.n_jobs_per_node,
 
             # stage 3
             'no_verify_results': self.args.no_verify_results,

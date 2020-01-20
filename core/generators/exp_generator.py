@@ -226,6 +226,8 @@ class BatchedExpDefGenerator:
         """
         change_defs = self.criteria.gen_attr_changelist()
         add_defs = self.criteria.gen_tag_addlist()
+        if add_defs is None:
+            add_defs = []
         assert len(change_defs) == 0 or len(add_defs) == 0, \
             "FATAL: Experiment defines both XML additions and XML changes"
 

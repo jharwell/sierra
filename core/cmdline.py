@@ -19,6 +19,7 @@ Core command line parsing and validation classes.
 
 import argparse
 import os
+import multiprocessing
 
 
 class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawTextHelpFormatter):
@@ -215,7 +216,7 @@ class CoreCmdline:
                                  help="""
 
                                  The value of this argument determines if the ``--n-threads``, --physics-n-engines``,
-                                 and ``--n-sims`` options will be inherited from the specified HPC
+                                 and ``--n-sims`` options will be computed/inherited from the specified HPC
                                  environment. Otherwise, they must be specified on the cmdline.
 
                                  Value values:
@@ -223,8 +224,10 @@ class CoreCmdline:
                                  - ``MSI`` - The following PBS environment variables are used to infer the # threads, #
                                    physics engines, and # simulations to run, respectively: ``PBS_NUM_PPN``,
                                    ``PBS_NUM_PPN``, ``PBS_NUM_NODES``. ``MSICLUSTER`` is used to determine the names of
-                                   ARGoS executables, ``PBS_NODEFILE`` and ``PBS_JOBID`` are used to configure
-                                   simulation launches.
+                                   ARGoS executables, so that in HPC environments with multiple clusters with different
+                                   architectures ARGoS can be compiled natively for each for maximum
+                                   performance.``PBS_NODEFILE`` and ``PBS_JOBID`` are used to configure simulation
+                                   launches.
 
                                  """,
                                  choices=['MSI', None],
@@ -257,10 +260,9 @@ class CoreCmdline:
 
                                  How many simulations should be averaged together to form a single experiment.
 
-                                 If ``--exec-method=hpc`` then the value of this option will be inherited from the HPC
-                                 environment specified by ``--hpc-env`` (can still be override on cmdline).
-
-                                 If ``exec-method=local`` then this option is required.
+                                 If ``--exec-method=hpc`` then the value of this option will be used to determine
+                                 # jobs/HPC node, # physics engines/simulation, and # threads/simulation.
+                                 the
 
                                  Use=stage{1}; can be omitted otherwise.
 
@@ -272,8 +274,9 @@ class CoreCmdline:
 
                                  How many ARGoS simulation threads to use for each simulation in each experiment.
 
-                                 If ``--exec-method=hpc`` then the value of this option will be inherited from the HPC
-                                 environment specified by ``--hpc-env`` (can still be override on cmdline)self.
+                                 If ``--exec-method=hpc`` then the value of this option will be set to the value of
+                                 `--physics-n-engines`, per the findings of the original ARGoS paper, and the cmdline
+                                 value (if any) is ignored.
 
                                  If ``exec-method=local`` then this option is required.
 
@@ -304,10 +307,8 @@ class CoreCmdline:
                              dimensions and how many engines are chosen, however), extending upward in Z to the height
                              specified by ``--scenario``.
 
-                             If ``--exec-method=hpc`` then the value of this option will be inherited from the HPC
-                             environment specified by ``--hpc-env`` (can still be overriden on cmdline).
-
-                             If ``exec-method=local`` then this option is required.
+                             If ``--exec-method=hpc`` then the value of this option will be computed from the HPC
+                             environment, and the cmdlin value (if any) will be ignored.
 
                              Use=stage{1}; can be omitted otherwise.
                              """)
@@ -381,6 +382,7 @@ class CoreCmdline:
         Define cmdline arguments for stage 2.
         """
         self.stage2.add_argument("--exec-method",
+                                 choices=['local', 'hpc'],
                                  help="""
 
                                  Specify the execution method to use when running experiments.
@@ -392,12 +394,8 @@ class CoreCmdline:
                                    / # ARGoS threads.
 
                                  - ``hpc`` - Use GNU parallel in an HPC environment to run the specified # of
-                                   simulations simultaneously on a computing cluster. The ``$MSICLUSTER`` environment
-                                   variable will be used to identify the cluster sierra was invoked on and select the
-                                   appropriate ARGoS executable. For example, if ``$MSICLUSTER=itasca``, then ARGoS will
-                                   be invoked via ``argos3-itasca``. This option is provided so that in HPC environments
-                                   with multiple clusters with different architectures ARGoS can be compiled natively
-                                   for each for maximum performance.
+                                   simulations simultaneously on a computing cluster. See ``--hpc-env`` for supported
+                                   HPC environments.
 
                                  Use=stage{2}; can be omitted otherwise.
 
@@ -703,22 +701,19 @@ class CoreCmdline:
 
                                  """)
 
-    @staticmethod
-    def __environ_or_required(key, default=None):
-        if os.environ.get(key):
-            return {'default': os.environ.get(key)}
-        elif default is not None:
-            return {'default': default}
-        else:
-            return {'required': True}
-
 
 class HPCEnvInheritor():
     def __init__(self, env_type):
         self.env_type = env_type
+        self.environs = ['mesabi', 'mangi']
 
     def __call__(self, args):
+        # non-MSI
         if self.env_type is None:
+            args.__dict__['n_jobs_per_node'] = min(args.n_sims,
+                                                   max(1,
+                                                       int(multiprocessing.cpu_count() / float(args.n_threads))))
+
             return args
 
         keys = ['MSICLUSTER', 'PBS_NUM_PPN', 'PBS_NUM_NODES']
@@ -728,16 +723,21 @@ class HPCEnvInheritor():
                 "FATAL: Attempt to run sierra in non-MSI environment: '{0}' not found".format(k)
 
         if self.env_type == 'MSI':
-            if args.physics_n_engines is None:
-                args.physics_n_engines = int(os.environ['PBS_NUM_PPN'])
-            if args.n_threads is None:
-                args.n_threads = int(os.environ['PBS_NUM_PPN'])
-            if args.n_sims is None:
-                args.n_sims = int(os.environ['PBS_NUM_NODES'])
-        else:
-            assert False,\
-                "FATAL: Bad HPC environment inheritance specification {0}".format(self.env_type)
+            assert os.environ['MSICLUSTER'] in self.environs, \
+                "FATAL: Unknown MSI cluster '{0}'".format(os.environ['MSICLUSTER'])
+            assert args.n_sims >= int(os.environ['PBS_NUM_NODES']), \
+                "FATAL: Too few simulations requested: {0} < {1}".format(args.n_sims,
+                                                                         os.environ['PBS_NUM_NODES'])
+            assert args.n_sims % int(os.environ['PBS_NUM_NODES']) == 0,\
+                "FATAL: # simulations ({0}) not a multiple of # nodes ({1})".format(args.n_sims,
+                                                                                    os.environ['PBS_NUM_NODES'])
 
+            # For HPC, we want to use the the maximum # of simultaneous jobs per node such that
+            # there is no thread oversubscription. We also always want to allocate each physics
+            # engine its own thread for maximum performance, per the original ARGoS paper.
+            args.__dict__['n_jobs_per_node'] = int(args.n_sims / int(os.environ['PBS_NUM_NODES']))
+            args.physics_n_engines = int(int(os.environ['PBS_NUM_PPN']) / args.n_jobs_per_node)
+            args.n_threads = args.physics_n_engines
         return args
 
 
@@ -761,13 +761,13 @@ class CoreCmdlineValidator():
         assert isinstance(args.batch_criteria, list),\
             'FATAL Batch criteria not passed as list on cmdline'
 
+        assert args.n_sims is not None, '--n-sims is required'
+
         if args.exec_method == 'local' and any([1, 2]) in args.pipeline:
-            assert args.physics_n_engines is not None, \
+            assert args.physics_n_engines is not None,\
                 '--physics-n-engines is required for --exec-method=local'
-            assert args.n_threads is not None, \
+            assert args.n_threads is not None,\
                 '--n-threads is required for --exec-method=local'
-            assert args.n_sims is not None, \
-                '--n-sims is required for --exec-method=local'
 
         if 5 in args.pipeline:
             assert args.bc_univar or args.bc_bivar,\
