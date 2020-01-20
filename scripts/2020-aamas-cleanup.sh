@@ -10,7 +10,7 @@ SIERRA=$HOME/git/sierra
 # Begin Experiments                                                            #
 ################################################################################
 CONTROLLERS=(depth1.BITD_DPO)
-SCENARIOS=(SS.36x18 DS.36x18)
+SCENARIOS=(SS.12x6 DS.12x6)
 
 OUTPUT_ROOT=$HOME/exp/msi/2020-aamas-constant-density10
 BASE_CMD="python3 sierra.py \
@@ -34,7 +34,7 @@ do
 done
 
 CONTROLLERS=(depth2.BIRTD_DPO)
-SCENARIOS=(SS.36x18 DS.36x18)
+SCENARIOS=(SS.12x6 DS.12x6)
 
 BASE_CMD="python3 sierra.py \
                   --template-input-file=$SIERRA/templates/2020-aamas-depth2-ideal.argos\

@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#PBS -l walltime=16:00:00,nodes=20:ppn=8,pmem=2500mb
+#PBS -l walltime=16:00:00,nodes=32:ppn=24,pmem=2500mb
 #PBS -m abe
 #PBS -M harwe006@umn.edu
 
@@ -13,13 +13,9 @@ SIERRA=$HOME/git/sierra
 # Initialize modules
 source /home/gini/shared/swarm/bin/msi-env-setup.sh
 
-# Add ARGoS libraries to system library search path, since they are in a
-# non-standard location
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SWARM_ROOT/$MSICLUSTER/lib/argos3
-
 # Set ARGoS library search path. Must contain both the ARGoS core libraries path
 # AND the fordyca library path.
-export ARGOS_PLUGIN_PATH=$SWARM_ROOT/$MSICLUSTER/lib/argos3:$FORDYCA/build/lib
+export ARGOS_PLUGIN_PATH=$ARGOS_PLUGIN_PATH:$FORDYCA/build/lib
 
 # Setup logging (maybe compiled out and unneeded, but maybe not)
 export LOG4CXX_CONFIGURATION=$FORDYCA/log4cxx.xml
@@ -36,15 +32,17 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 ################################################################################
 # Begin Experiments                                                            #
 ################################################################################
-CONTROLLERS=(depth2.BIRTD_ODPO depth2.BIRTD_ODPO depth2.BIRTD_ODPO)
-SCENARIOS=(SS.36x18 DS.36x18 QS.36x36)
-BLOCK_COUNTS=(1000 1000 1000)
+CONTROLLERS=(depth2.BIRTD_ODPO depth2.BIRTD_ODPO)
+SCENARIOS=(SS.12x6 DS.12x6)
+BLOCK_COUNTS=(1000 1000)
 
 OUTPUT_ROOT=$HOME/exp/2020-aamas-depth2-constant-density10-oracle-tasks
 BASE_CMD="python3 sierra.py \
+                  --plugin=fordyca\
                   --template-input-file=$SIERRA/templates/2020-aamas-depth2-oracle-tasks.argos\
                   --exec-method=hpc\
                   --hpc-env=MSI \
+                  --n-sims=96\
                   --time-setup=time_setup.T10000"
 
 cd $SIERRA

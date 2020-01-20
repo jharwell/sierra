@@ -20,6 +20,8 @@ Contains main class implementing stage 2 of the experimental pipeline.
 
 import logging
 import typing as tp
+import time
+import datetime
 
 from core.variables import batch_criteria as bc
 from core.pipeline.stage2.exp_runner import BatchedExpRunner
@@ -38,9 +40,8 @@ class PipelineStage2:
         if cmdopts['with_rendering']:
             logging.info('Stage2: Frame grabbing enabled')
 
-        runner = BatchedExpRunner(cmdopts, batch_criteria)
-        runner.run(exec_method=cmdopts['exec_method'],
-                   n_threads_per_sim=cmdopts['n_threads'],
-                   n_sims=cmdopts['n_sims'],
-                   exec_resume=cmdopts['exec_resume'],
-                   with_rendering=cmdopts['with_rendering'])
+        start = time.time()
+        BatchedExpRunner(cmdopts, batch_criteria)()
+        elapsed = int(time.time() - start)
+        sec = datetime.timedelta(seconds=elapsed)
+        logging.info("Stage2: Execution complete in %s", str(sec))

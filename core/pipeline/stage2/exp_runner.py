@@ -48,12 +48,7 @@ class BatchedExpRunner:
         self.batch_exp_root = os.path.abspath(self.cmdopts['generation_root'])
         self.exec_exp_range = self.cmdopts['exec_exp_range']
 
-    def run(self,
-            exec_method: str,
-            n_threads_per_sim: int,
-            n_sims: int,
-            exec_resume: bool,
-            with_rendering: bool):
+    def __call__(self):
         """
         Runs experiments in the batch according to configuration.
 
@@ -71,7 +66,13 @@ class BatchedExpRunner:
                             Xvfb processes that get run for each simulation after all experiments
                             are finished.
         """
-        n_jobs = min(n_sims, max(1, int(multiprocessing.cpu_count() / float(n_threads_per_sim))))
+        exec_method = self.cmdopts['exec_method']
+        n_threads_per_sim = self.cmdopts['n_threads']
+        n_sims = self.cmdopts['n_sims']
+        exec_resume = self.cmdopts['exec_resume']
+        with_rendering = self.cmdopts['with_rendering']
+        n_jobs = self.cmdopts['n_jobs_per_node']
+
         s = "Stage2: Running batched experiment in %s: sims_per_exp=%s,threads_per_sim=%s,n_jobs=%s"
         logging.info(s, self.batch_exp_root, n_sims, n_threads_per_sim, n_jobs)
 
@@ -96,9 +97,9 @@ class BatchedExpRunner:
             "LOG4CXX_CONFIGURATION") is not None, ("FATAL: You must LOG4CXX_CONFIGURATION defined")
 
         for exp in exp_to_run:
-            ExpRunner(exp, exp_all.index(exp), self.cmdopts['hpc_env']).run(exec_method,
-                                                                            n_jobs,
-                                                                            exec_resume)
+            ExpRunner(exp, exp_all.index(exp), self.cmdopts['hpc_env'])(exec_method,
+                                                                        n_jobs,
+                                                                        exec_resume)
 
         # Cleanup Xvfb processes which were started in the background
         if with_rendering:
@@ -123,15 +124,15 @@ class ExpRunner:
         self.exp_num = exp_num
         self.hpc_env = hpc_env
 
-    def run(self, exec_method: str, n_jobs: int, exec_resume: bool):
+    def __call__(self, exec_method: str, n_jobs: int, exec_resume: bool):
         """
         Runs the simulations for a single experiment in parallel.
 
         Arguments:
             exec_method: Should the experiments be run in an HPC environment on on the local
                          machine?
-            n_jobs: If running on a local machine, how many concurrent jobs are allowed? (Don't want
-                    to oversubscribe the machine)
+            n_jobs: How many concurrent jobs are allowed? (Don't want
+                    to oversubscribe the machine).
             exec_resume: Is this run of SIERRA resuming a previous run that failed/did not finish?
 
         """
@@ -151,11 +152,8 @@ class ExpRunner:
         try:
             if exec_method == 'local':
                 ExpRunner.__run_local(jobroot, cmdfile, joblog, n_jobs, exec_resume)
-            elif 'hpc' in exec_method and self.hpc_env == 'MSI':
-                ExpRunner.__run_hpc_MSI(jobroot, cmdfile, joblog, exec_resume)
-            else:
-                assert False, "Bad exec method '{0}' or HPC env {1}".format(exec_method,
-                                                                            self.hpc_env)
+            elif 'hpc' in exec_method:
+                ExpRunner.__run_hpc_MSI(jobroot, cmdfile, joblog, n_jobs, exec_resume)
 
         # Catch the exception but do not raise it again so that additional experiments can still be
         # run if possible
@@ -183,7 +181,7 @@ class ExpRunner:
         subprocess.run(cmd, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     @staticmethod
-    def __run_hpc_MSI(jobroot_path, cmdfile_path, joblog_path, exec_resume):
+    def __run_hpc_MSI(jobroot_path, cmdfile_path, joblog_path, n_jobs, exec_resume):
         jobid = os.environ['PBS_JOBID']
         nodelist = os.path.join(jobroot_path, "{0}-nodelist.txt".format(jobid))
 
@@ -192,8 +190,9 @@ class ExpRunner:
             resume = '--resume'
 
         cmd = 'sort -u $PBS_NODEFILE > {0} && ' \
-            'parallel {1} --jobs 1 --results {3} --joblog {2} --sshloginfile {0} --workdir {3} < "{4}"'.format(
+            'parallel {2} --jobs {1} --results {4} --joblog {3} --sshloginfile {0} --workdir {4} < "{5}"'.format(
                 nodelist,
+                n_jobs,
                 resume,
                 joblog_path,
                 jobroot_path,

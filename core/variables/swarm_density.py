@@ -82,6 +82,7 @@ class SwarmConstantDensity(cd.ConstantDensity):
                     n_robots = int(max(1, (int(x) * int(y)) * (self.target_density / 100.0)))
                     changeset.add((".//arena/distribute/entity", "quantity", str(n_robots)))
                     break
+
         return self.changes
 
     def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> tp.List[str]:
