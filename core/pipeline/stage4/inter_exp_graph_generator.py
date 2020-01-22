@@ -29,6 +29,7 @@ import core.perf_measures.self_organization as pmso
 import core.perf_measures.block_collection as pmbc
 import core.perf_measures.reactivity as pmr
 import core.perf_measures.adaptability as pma
+import core.perf_measures.robustness as pmb
 from core.graphs.stacked_line_graph import StackedLineGraph
 from core.variables import batch_criteria as bc
 
@@ -133,7 +134,7 @@ class UnivarPerfMeasuresGenerator:
         self.main_config = main_config
 
     def __call__(self, batch_criteria):
-        if batch_criteria.pm_query('blocks-collected'):
+        if batch_criteria.pm_query('blocks-transported'):
             pmbc.BlockCollectionUnivar(self.cmdopts,
                                        self.main_config['sierra']['perf']['inter_perf_csv']).generate(batch_criteria)
             if batch_criteria.pm_query('scalability'):
@@ -152,6 +153,10 @@ class UnivarPerfMeasuresGenerator:
 
             if batch_criteria.pm_query('adaptability'):
                 pma.AdaptabilityUnivar(self.cmdopts).generate(self.main_config, batch_criteria)
+
+            if batch_criteria.pm_query('robustness'):
+                pmb.RobustnessSAAUnivar(self.cmdopts).generate(self.main_config, batch_criteria)
+                # pmb.RobustnessSizeUnivar(self.cmdopts).generate(self.main_config, batch_criteria)
 
 
 class BivarPerfMeasuresGenerator:
@@ -172,7 +177,7 @@ class BivarPerfMeasuresGenerator:
         self.main_config = main_config
 
     def __call__(self, batch_criteria):
-        if batch_criteria.pm_query('blocks-collected'):
+        if batch_criteria.pm_query('blocks-transported'):
             pmbc.BlockCollectionBivar(self.cmdopts,
                                       self.main_config['sierra']['perf']['inter_perf_csv']).generate(batch_criteria)
 
@@ -193,3 +198,9 @@ class BivarPerfMeasuresGenerator:
         if batch_criteria.pm_query('adaptability'):
             pma.AdaptabilityBivar(self.main_config, self.cmdopts).generate(self.main_config,
                                                                            batch_criteria)
+
+        if batch_criteria.pm_query('robustness'):
+            pmb.RobustnessSAABivar(self.cmdopts,
+                                   self.main_config['sierra']['perf']['inter_perf_csv']).generate(self.main_config,
+                                                                                                  batch_criteria)
+            # pmb.RobustnessSizeBivar(self.cmdopts).generate(self.main_config, batch_criteria)

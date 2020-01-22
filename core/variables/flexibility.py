@@ -180,7 +180,7 @@ class Flexibility(UnivarBatchCriteria):
         return ['exp' + str(x) for x in range(0, len(self.gen_attr_changelist()))]
 
     def pm_query(self, pm: str) -> bool:
-        return pm in ['blocks-collected', 'reactivity', 'adaptability']
+        return pm in ['blocks-transported', 'reactivity', 'adaptability']
 
 
 def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwargs):

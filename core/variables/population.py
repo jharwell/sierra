@@ -114,6 +114,7 @@ class Population(bc.UnivarBatchCriteria):
 
             for c in changes:
                 c |= dynamics
+
             return changes
 
     def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> list:
@@ -145,7 +146,7 @@ class Population(bc.UnivarBatchCriteria):
         return "Swarm Size"
 
     def pm_query(self, pm: str) -> bool:
-        return pm in ['blocks-collected', 'scalability', 'self-org']
+        return pm in ['blocks-transported', 'scalability', 'self-org']
 
 
 class PopulationParser():

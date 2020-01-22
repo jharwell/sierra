@@ -544,12 +544,12 @@ class CoreCmdline:
                           """,
                          action="store_true")
 
-        vcs.add_argument("--envc-cs-method",
+        vcs.add_argument("--rperf-cs-method",
                          help="""
 
-                         Environmental conditions curve similarity method. Specify the method to use to calculate the
-                         similarity between curves of applied variance (non-ideal conditions) and ideal conditions
-                         (exp0). Only applicable to ``flexibility`` batch criteria. Valid values:
+                         Raw Performance curve similarity method. Specify the method to use to calculate the similarity
+                         between raw performance curves from non-ideal conditions and ideal conditions (exp0). Only
+                         applicable to ``saa_noise`` batch criteria. Value values:
 
                          - ``pcm`` - Partial Curve Mapping (Witowski2012)
                          - ``area_between`` - Area between the two curves (Jekel2018)
@@ -562,7 +562,27 @@ class CoreCmdline:
 
                          """,
                          choices=["pcm", "area_between", "frechet", "dtw", "curve_length"],
-                         default="pcm")
+                         default="dtw")
+        vcs.add_argument("--envc-cs-method",
+                         help="""
+
+                         Environmental conditions curve similarity method. Specify the method to use to calculate the
+                         similarity between curves of applied variance (non-ideal conditions) and ideal conditions
+                         (exp0). Only applicable to ``flexibility`` batch criteria, and only used to calculate axis tick
+                         values on displayed graphs for that criteria. Valid values:
+
+                         - ``pcm`` - Partial Curve Mapping (Witowski2012)
+                         - ``area_between`` - Area between the two curves (Jekel2018)
+                         - ``frechet`` -Frechet distance (Frechet1906)
+                         - ``dtw`` - Dynamic Time Warping (Berndt1994)
+                         - ``curve_length`` - Arc-length distance along the curve from the origin of (applied - ideal)
+                           curve (Andrade-campos2009).
+
+                         Use=stage{4}; can be omitted otherwise.
+
+                         """,
+                         choices=["pcm", "area_between", "frechet", "dtw", "curve_length"],
+                         default="dtw")
 
         vcs.add_argument("--reactivity-cs-method",
                          help="""
@@ -582,7 +602,7 @@ class CoreCmdline:
 
                          """,
                          choices=["pcm", "area_between", "frechet", "dtw", "curve_length"],
-                         default="pcm")
+                         default="dtw")
         vcs.add_argument("--adaptability-cs-method",
                          help="""
 
@@ -601,7 +621,7 @@ class CoreCmdline:
 
                          """,
                          choices=["pcm", "area_between", "frechet", "dtw", "curve_length"],
-                         default="pcm")
+                         default="dtw")
 
     def init_stage5(self):
         """

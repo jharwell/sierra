@@ -36,14 +36,18 @@ sierra:
   robustness:
     sensors:
       light:
-        model: uniform
-        range: [0.0, 0.1]
+        model: gaussian
+        mean_range: [0.0, 0.0]
+        stddev_range: [0.0, 0.1]
       proximity:
-        model: uniform
-        range: [0.0, 0.1]
+        model: gaussian
+        mean_range: [0.0, 0.0]
+        stddev_range: [0.0, 0.1]
       ground:
-        model: uniform
-        range: [0.0, 0.1]
+        model: gaussian
+        mean_range: [0.0, 0.0]
+        stddev_range: [0.0, 0.1]
       steering:
-        model: uniform
-        range: [0.0, 0.1]
+        model: gaussian
+        mean_range: [0.0, 0.0]
+        stddev_range: [0.0, 0.1]

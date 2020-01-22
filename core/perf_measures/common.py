@@ -393,15 +393,16 @@ class FractionalLossesBivar(FractionalLosses):
                                                 slice(-1, None))  # Last in temporal seq = cum avg
 
                     # We need to know which of the 2 variables was swarm size, in order to determine
-                    # the correct dimension along which to compute the metric, which depends on
+                    # the correct axis along which to compute the metric, which depends on
                     # performance between adjacent swarm sizes.
                     if isinstance(batch_criteria.criteria1, Population):
-                        n_robots = populations[i][0]
+                        n_robots = populations[i][0]  # same population in all columns
                     else:
-                        n_robots = populations[0][j]
+                        n_robots = populations[0][j]  # same population in all rows
 
                     plost_n.iloc[i, j] = n_blocks * \
                         (t_lostN - t_lost0 * float(n_robots)) / float(n_robots)
+
         return plost_n
 
     @staticmethod

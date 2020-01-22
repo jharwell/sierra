@@ -59,7 +59,7 @@ LN_fsm_movement:
 LN_block_trans:
   graphs:
     - src_stem: block-transport
-      dest_stem: blocks-collected-avg
+      dest_stem: blocks-transported-avg
       cols:
         - int_avg_transported
         - int_avg_cube_transported

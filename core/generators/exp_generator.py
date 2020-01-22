@@ -225,15 +225,10 @@ class BatchedExpDefGenerator:
         which can used to create the batched experiment.
         """
         change_defs = self.criteria.gen_attr_changelist()
-        add_defs = self.criteria.gen_tag_addlist()
-        if add_defs is None:
-            add_defs = []
-        assert len(change_defs) == 0 or len(add_defs) == 0, \
-            "FATAL: Experiment defines both XML additions and XML changes"
 
         # Create and run generators
         defs = []
-        for i in range(0, len(change_defs) + len(add_defs)):
+        for i in range(0, len(change_defs)):
             generator = self.__create_exp_generator(i)
             defs.append(generator.generate())
             logging.debug("Generating scenario+controller changes from generator '%s' for exp%s",

@@ -24,6 +24,7 @@ import re
 import logging
 import multiprocessing as mp
 import typing as tp
+import queue
 
 import pandas as pd
 
@@ -63,9 +64,13 @@ class BatchedExpCSVAverager:
     @staticmethod
     def __thread_worker(q: mp.Queue, main_config: dict, avg_opts: tp.Dict[str, str]):
         while True:
-            path = q.get()
-            ExpCSVAverager(main_config, avg_opts, path)()
-            q.task_done()
+            # Wait for 3 seconds after the queue is empty before bailing
+            try:
+                path = q.get(False, 3)
+                ExpCSVAverager(main_config, avg_opts, path)()
+                q.task_done()
+            except queue.Empty:
+                break
 
 
 class ExpCSVAverager:

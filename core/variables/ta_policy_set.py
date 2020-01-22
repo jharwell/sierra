@@ -60,9 +60,9 @@ class TAPolicySet(UnivarBatchCriteria):
         # the swarm size can be None.
         if self.population is not None:
             size_attr = [next(iter(Population(self.cli_arg,
-                                             self.main_config,
-                                             self.batch_generation_root,
-                                             [self.population]).gen_attr_changelist()[0]))]
+                                              self.main_config,
+                                              self.batch_generation_root,
+                                              [self.population]).gen_attr_changelist()[0]))]
         else:
             size_attr = []
         changes = []
@@ -109,7 +109,7 @@ class TAPolicySet(UnivarBatchCriteria):
         return "Task Allocation Policy"
 
     def pm_query(self, query: str) -> bool:
-        return query in ['blocks-collected']
+        return query in ['blocks-transported']
 
 
 class TAPolicySetParser():

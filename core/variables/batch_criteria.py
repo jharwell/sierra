@@ -38,7 +38,7 @@ class BatchCriteria(base_variable.BaseVariable):
 
     """
 
-    kPMNames = ['blocks-collected', 'scalability', 'self-org', 'reactivity', 'adaptability']
+    kPMNames = ['blocks-transported', 'scalability', 'self-org', 'reactivity', 'adaptability']
 
     def __init__(self, cli_arg: str, main_config: tp.Dict[str, str], batch_generation_root: str):
         self.cli_arg = cli_arg
@@ -81,13 +81,6 @@ class BatchCriteria(base_variable.BaseVariable):
                 self.main_config['sierra']['collate_csv_leaf']]
         return len(exps)
 
-    def cleanup_pkl_files(self, batch_root: str):
-        defs = list(self.gen_attr_changelist())
-        for i in range(0, len(defs)):
-            pkl_path = os.path.join(batch_root, 'batch_pkl{0}'.format(i))
-            if os.path.exists(pkl_path):
-                os.remove(pkl_path)
-
     def pickle_exp_defs(self, cmdopts: tp.Dict[str, str]):
         defs = list(self.gen_attr_changelist())
         for i, exp_def in enumerate(defs):
@@ -100,26 +93,33 @@ class BatchCriteria(base_variable.BaseVariable):
                       xml_luigi: core.xml_luigi.XMLLuigi,
                       batch_config_leaf: str,
                       cmdopts: tp.Dict[str, str]):
+        """
+        Scaffold a batched experiment by taking the raw template input file and applying the XML
+        attribute changes to it, and saving the result in the experiment input directory in each
+        experiment in the batch.
 
-        defs1 = list(self.gen_attr_changelist())
-        defs2 = self.gen_tag_addlist()
-        if defs2 is None:
-            defs2 = []
-        else:
-            defs2 = list(defs2)
+        Note that batch criteria which use XML tag additions are NOT valid, because those
+        necessarily have a dictionary of attr,value pairs for the new tag to add, and these cannot
+        be pickled for successful retrieval later.
 
-        assert len(defs1) == 0 or len(defs2) == 0, \
-            "FATAL: Batch criteria defines both attribute changes and tag additions"
+        """
+        assert len(self.gen_tag_addlist()) == 0, "FATAL: Batch criteria cannot add XML tags"
+        chg_defs = list(self.gen_attr_changelist())
 
-        for i, defi in enumerate(defs1):
+        n_exps = len(chg_defs)
+        logging.info("Scaffolding experiments from batch criteria '%s' by modifying %s XML tags",
+                     self.cli_arg,
+                     len(chg_defs[0]))
+
+        for i, defi in enumerate(chg_defs):
             exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
             exp_generation_root = os.path.join(self.batch_generation_root,
                                                str(exp_dirname))
-            logging.info("Applying %s changes from batch criteria generator '%s' for exp%s in %s",
-                         len(defi),
-                         self.cli_arg,
-                         i,
-                         exp_dirname)
+            logging.debug("Applying %s XML attribute changes from batch criteria generator '%s' for exp%s in %s",
+                          len(defi),
+                          self.cli_arg,
+                          i,
+                          exp_dirname)
 
             os.makedirs(exp_generation_root, exist_ok=True)
             for path, attr, value in defi:
@@ -128,28 +128,6 @@ class BatchCriteria(base_variable.BaseVariable):
             xml_luigi.write(os.path.join(exp_generation_root,
                                          batch_config_leaf))
 
-        for i, defi in enumerate(defs2):
-            # Because we are INSERTING and not MODIFYING tags, we have to copy the experimental
-            # definition to avoid accumulating the added tags across experiments within the batch...
-            xml_luigii = copy.deepcopy(xml_luigi)
-            exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
-            exp_generation_root = os.path.join(self.batch_generation_root,
-                                               str(exp_dirname))
-
-            logging.info("Adding %s new tags from batch criteria '%s' for exp%s in %s",
-                         len(defi),
-                         self.cli_arg,
-                         i,
-                         exp_dirname)
-
-            os.makedirs(exp_generation_root, exist_ok=True)
-
-            for path, attr, value in defi:
-                xml_luigii.tag_add(path, attr, value)
-            xml_luigii.write(os.path.join(exp_generation_root,
-                                          batch_config_leaf))
-
-        n_exps = len(defs1) + len(defs2)
         n_exp_dirs = len(os.listdir(self.batch_generation_root))
         assert n_exps == n_exp_dirs,\
             "FATAL: Size of batched experiment ({0}) != # exp dirs ({1}): possibly caused by:\n"\
@@ -327,6 +305,7 @@ class BivarBatchCriteria(BatchCriteria):
         list1 = self.criteria1.gen_attr_changelist()
         list2 = self.criteria2.gen_attr_changelist()
         ret = []
+
         for l1 in list1:
             for l2 in list2:
                 ret.append(l1 | l2)
@@ -334,11 +313,8 @@ class BivarBatchCriteria(BatchCriteria):
         return ret
 
     def gen_tag_rmlist(self) -> list:
-        ret = self.criteria1.gen_tag_rmlist().extend(self.criteria2.gen_tag_rmlist())
-        return ret
-
-    def gen_tag_addlist(self) -> list:
-        ret = self.criteria1.gen_tag_addlist().extend(self.criteria2.gen_tag_addlist())
+        ret = self.criteria1.gen_tag_rmlist()
+        ret.extend(self.criteria2.gen_tag_rmlist())
         return ret
 
     def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str], what: str = 'all') -> tp.List[str]:
@@ -362,14 +338,21 @@ class BivarBatchCriteria(BatchCriteria):
             return ret
 
     def populations(self, cmdopts: tp.Dict[str, str]) -> tp.List[int]:
-        """Generate a 2D array of swarm swarm sizes used the batched experiment, in the same order as the
-        directories returned from `gen_exp_dirnames()` for each criteria along each axis.
+        """
+        Generate a 2D array of swarm swarm sizes used the batched experiment, in the same order as
+        the directories returned from `gen_exp_dirnames()` for each criteria along each axis.
 
         """
         dirs = self.gen_exp_dirnames(cmdopts)
 
         sizes = [[0 for col in self.criteria2.gen_exp_dirnames(
             cmdopts)] for row in self.criteria1.gen_exp_dirnames(cmdopts)]
+
+        n_chgs = len(self.criteria2.gen_attr_changelist())
+        n_adds = len(self.criteria2.gen_tag_addlist())
+
+        assert n_chgs == 0 or n_adds == 0, \
+            "FATAL: Criteria defines both XML attribute changes and XML tag additions"
 
         for d in dirs:
             exp_def = core.utils.unpickle_exp_def(os.path.join(self.batch_generation_root,
@@ -378,10 +361,9 @@ class BivarBatchCriteria(BatchCriteria):
             for e in exp_def:
                 if not (e[0] == ".//arena/distribute/entity" and e[1] == "quantity"):
                     continue
-
                 index = dirs.index(d)
-                i = int(index / len(self.criteria2.gen_attr_changelist()))
-                j = index % len(self.criteria2.gen_attr_changelist())
+                i = int(index / (n_chgs + n_adds))
+                j = index % (n_chgs + n_adds)
                 sizes[i][j] = int(e[2])
 
         return sizes

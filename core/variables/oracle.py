@@ -77,9 +77,9 @@ class Oracle(UnivarBatchCriteria):
 
         if self.population is not None:
             size_attr = [next(iter(Population(self.cli_arg,
-                                             self.main_config,
-                                             self.batch_generation_root,
-                                             [self.population]).gen_attr_changelist()[0]))]
+                                              self.main_config,
+                                              self.batch_generation_root,
+                                              [self.population]).gen_attr_changelist()[0]))]
             for c in changes:
                 c.add(size_attr)
 
@@ -112,7 +112,7 @@ class Oracle(UnivarBatchCriteria):
         return "Oracular Information Type"
 
     def pm_query(self, pm: str) -> bool:
-        return pm in ['blocks-collected']
+        return pm in ['blocks-transported']
 
 
 class OracleParser():

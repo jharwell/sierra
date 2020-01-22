@@ -85,6 +85,7 @@ class Pipeline:
             'plot_log_xaxis': self.args.plot_log_xaxis,
             'reactivity_cs_method': self.args.reactivity_cs_method,
             'adaptability_cs_method': self.args.adaptability_cs_method,
+            'rperf_cs_method': self.args.rperf_cs_method,
             'exp_graphs': self.args.exp_graphs,
 
             # stage 5

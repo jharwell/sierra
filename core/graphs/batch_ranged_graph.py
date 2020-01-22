@@ -60,6 +60,7 @@ class BatchRangedGraph:
         self.ylabel = kwargs['ylabel']
         self.xvals = kwargs['xvals']
 
+        self.xtick_labels = kwargs.get('xtick_labels', None)
         self.legend = kwargs.get('legend', None)
         self.polynomial_fit = kwargs.get('polynomial_fit', -1)
 
@@ -91,6 +92,9 @@ class BatchRangedGraph:
         # Add X,Y labels
         plt.ylabel(self.ylabel, fontsize=18)
         plt.xlabel(self.xlabel, fontsize=18)
+
+        # Add ticks
+        self.__plot_ticks(ax)
 
         # Add title
         plt.title(self.title, fontsize=24)
@@ -131,8 +135,12 @@ class BatchRangedGraph:
 
         stddev_df = pd.read_csv(self.inputy_stddev_fpath, sep=';')
 
-        # plt.errorbar(data_df.index, data_df[c], xerr=0.5,
-        #              yerr=2 * stddev_df[c], linestyle = '')
         for i in range(0, len(data_df.values)):
             plt.fill_between(xvals, data_df.values[i] - 2 * stddev_df.values[i],
                              data_df.values[i] + 2 * stddev_df.values[i], alpha=0.25)
+
+    def __plot_ticks(self, ax):
+        # For ordered, qualitative data
+        if self.xtick_labels is not None:
+            ax.set_xticks(self.xvals)
+            ax.set_xticklabels(self.xtick_labels, rotation='vertical')

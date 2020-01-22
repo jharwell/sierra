@@ -127,7 +127,7 @@ class SwarmConstantDensity(cd.ConstantDensity):
         return r"Swarm Size"
 
     def pm_query(self, query) -> bool:
-        return query in ['blocks-collected', 'scalability', 'self-org']
+        return query in ['blocks-transported', 'scalability', 'self-org']
 
 
 def factory(cli_arg: str, main_config:

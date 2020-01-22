@@ -124,7 +124,7 @@ class BlockConstantDensity(cd.ConstantDensity):
         return r"Block Density ({0}\%)".format(self.target_density)
 
     def pm_query(self, pm) -> bool:
-        return pm in ['blocks-collected']
+        return pm in ['blocks-transported']
 
 
 def factory(cli_arg: str, main_config:

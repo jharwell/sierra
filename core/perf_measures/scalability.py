@@ -54,7 +54,7 @@ class EfficiencyBivar:
 
     def calculate(self, batch_criteria: bc.BatchCriteria):
         """
-        Calculate efficiency metric for the givenn controller for each experiment in a
+        Calculate efficiency metric for the given controller for each experiment in a
         batch.
 
         Return:
@@ -98,7 +98,6 @@ class EfficiencyBivar:
         eff_df = pd.DataFrame(columns=raw_df.columns,
                               index=raw_df.index)
         populations = batch_criteria.populations(self.cmdopts)
-
         for i in range(0, len(eff_df.index)):
             for j in range(0, len(eff_df.columns)):
                 eff_df.iloc[i, j] = common.csv_3D_value_iloc(raw_df,

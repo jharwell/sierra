@@ -75,7 +75,6 @@ class XMLLuigi:
           value: The value to set the attribute to.
         """
         el = self.root.find(path)
-
         if self.has_tag(path) and attr in el.attrib:
             el.attrib[attr] = value   # pytype: disable=attribute-error
         else:
@@ -96,7 +95,6 @@ class XMLLuigi:
           attr: Name of the tag to change within the enclosing element.
           value: The value to set the tag to.
         """
-
         el = self.root.find(path)
         for child in el:
             if child.tag == tag:

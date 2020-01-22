@@ -72,11 +72,14 @@ will be generated for it.
 """
 
 import re
+import os
+
 import typing as tp
 import numpy as np
 
 from core.variables.batch_criteria import UnivarBatchCriteria
 from core.variables.population import Population
+import core.utils
 
 
 class SAANoise(UnivarBatchCriteria):
@@ -109,47 +112,71 @@ class SAANoise(UnivarBatchCriteria):
         self.population = population
         self.noise_type = noise_type
 
-    def gen_tag_addlist(self) -> list:
+    def gen_attr_changelist(self) -> list:
         """
         Generate a list of sets of changes necessary to make to the input file to correctly set up
         the simulation with the specified noise ranges.
-
-        We use additions, rather than changes, here under the assumption that the attributes will
-        probably not already be present in the input file as part of the usual development cycle.
-
         """
         # Swarm size is optional. It can be (1) controlled via this variable, (2) controlled by
         # another variable in a bivariate batch criteria, (3) not controlled at all. For (2), (3),
         # the swarm size can be None.
-
         if self.population is not None:
             size_attr = next(iter(Population(self.cli_arg,
-                                            self.main_config,
-                                            self.batch_generation_root,
-                                            [self.population]).gen_attr_changelist()[0]))
+                                             self.main_config,
+                                             self.batch_generation_root,
+                                             [self.population],
+                                             'static',
+                                             []).gen_attr_changelist()[0]))
             changes = [{(v2[0], v2[1], v2[2]) for v2 in v1} for v1 in self.variances]
             for c in changes:
                 c.add(size_attr)
             return changes
         else:
-            return [[v2 for v2 in v1] for v1 in self.variances]
+            return [{v2 for v2 in v1} for v1 in self.variances]
 
     def graph_xticks(self,
                      cmdopts: tp.Dict[str, str],
-                     exp_dirs: tp.List[str]=None) -> tp.List[float]:
+                     exp_dirs: tp.List[str] = None) -> tp.List[float]:
 
         # If exp_dirs is passed, then we have been handed a subset of the total # of directories in
         # the batch exp root, and so n_exp() will return more experiments than we actually
-        # have. This behavior is needed to correct extract x/y values for bivar experiments.
+        # have. This behavior is needed to correctly extract x/y values for bivariate experiments.
         if exp_dirs is not None:
-            return [x for x in range(0, len(exp_dirs))]
+            if self.__uniform_sources():
+                return [self.__avg_uniform_level_from_dir(d) for d in exp_dirs]
+            elif self.__gaussian_sources():
+                # order by mean
+                return [self.__avg_gaussian_level_from_dir(d)[0] for d in exp_dirs]
+            else:
+                return [x for x in range(0, len(exp_dirs))]
         else:
-            return [x for x in range(0, self.n_exp())]
+            if self.__uniform_sources():
+                return [self.__avg_uniform_level_from_chglist(v) for v in self.variances]
+            elif self.__gaussian_sources():
+                # order by mean
+                return [self.__avg_gaussian_level_from_chglist(v)[0] for v in self.variances]
+            else:
+                return [x for x in range(0, self.n_exp())]
 
     def graph_xticklabels(self,
                           cmdopts: tp.Dict[str, str],
-                          exp_dirs: tp.List[str]=None) -> tp.List[float]:
-        return self.graph_xticks(cmdopts, exp_dirs)
+                          exp_dirs: tp.List[str] = None) -> tp.List[float]:
+        if exp_dirs is not None:
+            if self.__uniform_sources():
+                return ["U(-{0},{0})".format(l) for l in self.graph_xticks(cmdopts, exp_dirs)]
+            elif self.__gaussian_sources():
+                levels = [self.__avg_gaussian_level_from_dir(d) for d in exp_dirs]
+                return ["G({0},{1})".format(mean, stddev) for mean, stddev in levels]
+            else:
+                return [x for x in range(0, len(exp_dirs))]
+        else:
+            if self.__uniform_sources():
+                return [self.__avg_uniform_level_from_chglist(v) for v in self.variances]
+            elif self.__gaussian_sources():
+                levels = [self.__avg_gaussian_level_from_chglist(v) for v in self.variances]
+                return ["G({0},{1})".format(mean, stddev) for mean, stddev in levels]
+            else:
+                return [x for x in range(0, self.n_exp())]
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
         labels = {
@@ -160,10 +187,102 @@ class SAANoise(UnivarBatchCriteria):
         return labels[self.noise_type]
 
     def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> tp.List[str]:
-        return ['exp' + str(x) for x in range(0, len(self.gen_tag_addlist()))]
+        return ['exp' + str(x) for x in range(0, len(self.gen_attr_changelist()))]
 
     def pm_query(self, pm: str) -> bool:
-        return pm in ['blocks-collected']
+        return pm in ['blocks-transported', 'robustness']
+
+    def __uniform_sources(self):
+        """
+        Return TRUE if all noise sources are uniform.
+        """
+        for v in self.variances:
+            for parent, attr, value in v:
+                if attr == 'model' and value != 'uniform':
+                    return False
+        return True
+
+    def __gaussian_sources(self):
+        """
+        Return TRUE if all noise sources are gaussian.
+        """
+        for v in self.variances:
+            for parent, attr, value in v:
+                if attr == 'model' and value != 'gaussian':
+                    return False
+        return True
+
+    def __avg_uniform_level_from_chglist(self, changelist) -> float:
+        """
+        Return the average level used for all uniform noise sources for the specified changelist
+        corresponding to a particular experiment by reading the XML attribute changelist. Only valid
+        if :method:`__uniform_sources` returns `True`.
+        """
+        accum = 0.0
+        for source in changelist:
+            parent, attr, value = source
+            if attr == 'level':
+                accum += float(value)
+        return accum / len(changelist)
+
+    def __avg_uniform_level_from_dir(self, expdir: str):
+        """
+        Return the average level used for all uniform noise sources within the specified experiment
+        by reading the pickle file; this is only needed for bivariate batch criteria in order to get
+        graph ticks/tick labels to come out right. Only valid if :method:`__uniform_sources` returns
+        `True`.
+
+        """
+        accum = 0.0
+        exp_def = core.utils.unpickle_exp_def(os.path.join(self.batch_generation_root,
+                                                           expdir,
+                                                           'exp_def.pkl'))
+        count = 0
+        for parent, attr, value in exp_def:
+            if 'noise' in parent and attr == 'level':
+                accum += float(value)
+                count += 1
+        return accum / count
+
+    def __avg_gaussian_level_from_chglist(self, changelist) -> float:
+        """
+        Return the average (mean, stddev) used for all Gaussian noise sources for the specified
+        changelist corresponding to a particular experiment by reading the XML attribute
+        changelist. Only valid if :method:`__guassian_sources` returns `True`.
+
+        """
+        mean_accum = 0.0
+        stddev_accum = 0.0
+        for source in changelist:
+            parent, attr, value = source
+            if attr == 'mean':
+                mean_accum += float(value)
+            elif attr == 'stddev':
+                stddev_accum += float(value)
+        return (mean_accum / len(changelist), stddev_accum / len(changelist))
+
+    def __avg_gaussian_level_from_dir(self, expdir: str):
+        """
+        Return the average (mean, stddev) used for all gaussian Noise sources within a specific
+        experiment by reading the pickle file; this is only needed for bivariate batch criteria in
+        order to get graph ticks/tick labels to come out right. Only valid if
+        :method:`__gaussian_sources` returns `True`.
+
+        """
+        mean_accum = 0.0
+        stddev_accum = 0.0
+        count = 0
+        exp_def = core.utils.unpickle_exp_def(os.path.join(self.batch_generation_root,
+                                                           expdir,
+                                                           'exp_def.pkl'))
+        for parent, attr, value in exp_def:
+            if 'noise' in parent and attr == 'mean':
+                mean_accum += float(value)
+                count += 1
+            if 'noise' in parent and attr == 'stddev':
+                stddev_accum += float(value)
+                count += 1
+        return (mean_accum / count, stddev_accum / count)
 
 
 class SAANoiseParser():
@@ -241,6 +360,7 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
         #
         # I couldn't find a more elegant way of doing this.
         by_src = []
+        n_levels = 0
         for src, config in sources.items():
             for nt in noise_types:
                 # Cannot always add noise to the sensor AND actuator models for the same device (eg
@@ -252,10 +372,9 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
                     levels = [x for x in np.linspace(config['range'][0],
                                                      config['range'][1],
                                                      num=attr['cardinality'] + 1)]
-                    by_src.append([(xml_parents[nt][src],
-                                    'noise',
-                                    {'model': config['model'],
-                                     'level': str(l)}) for l in levels])
+                    by_src.extend([set([(xml_parents[nt][src] + "/noise", 'model', config['model']),
+                                        (xml_parents[nt][src] + "/noise", 'level', str(l))]) for l in levels])
+                    n_levels = len(levels)
                 elif config['model'] == 'gaussian':
                     stddev_levels = [x for x in np.linspace(config['stddev_range'][0],
                                                             config['stddev_range'][1],
@@ -263,19 +382,22 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
                     mean_levels = [x for x in np.linspace(config['mean_range'][0],
                                                           config['mean_range'][1],
                                                           num=attr['cardinality'] + 1)]
-                    by_src.append([(xml_parents[nt][src],
-                                    'noise',
-                                    {'model': config['model'],
-                                     'stddev': str(l1),
-                                     'mean': str(l2)}) for l1, l2 in zip(stddev_levels, mean_levels)])
+                    by_src.extend([set([(xml_parents[nt][src] + '/noise', 'model', config['model']),
+                                        (xml_parents[nt][src] + '/noise', 'mean', str(l1)),
+                                        (xml_parents[nt][src] + '/noise', 'stddev', str(l2))])
+                                   for l1, l2 in zip(mean_levels, stddev_levels)])
+                    n_levels = len(mean_levels)
                 else:
-                    assert False, \
-                        "FATAL: bad noise model '{0}'".format(config['model'])
+                    assert False, "FATAL: bad noise model '{0}'".format(config['model'])
 
         # Invert!
         by_exp = []
-        for i in range(0, len(by_src[0])):
-            by_exp.append([v[i] for v in by_src])
+        for i in range(0, n_levels):
+            # This the magic line. It takes every "level"-th element, since that is the # of
+            # experiments that this criteria defines, starting with i=0...n_levels. So if there are
+            # 10 levels, then the first set added to the return list would be i={0,10,20,...}, the
+            # second would be i={1,11,21,...}, etc.
+            by_exp.append({chg for s in by_src[i::n_levels] for chg in s})
 
         return by_exp
 
