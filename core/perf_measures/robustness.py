@@ -26,7 +26,9 @@ from core.graphs.batch_ranged_graph import BatchRangedGraph
 from core.perf_measures import vcs
 from core.variables.batch_criteria import BatchCriteria
 from core.graphs.heatmap import Heatmap
+from core.graphs.scatterplot2D import Scatterplot2D
 import core.variables.saa_noise as saan
+import core.perf_measures.common as common
 
 
 class RobustnessSAAUnivar:
@@ -62,6 +64,7 @@ class RobustnessSAAUnivar:
         for i in range(1, batch_criteria.n_exp()):
             df[batch_exp_dirnames[i]] = vcs.RawPerfCS(main_config,
                                                       self.cmdopts,
+                                                      0,
                                                       i)(batch_criteria)
 
         stem_opath = os.path.join(self.cmdopts["collate_root"], "pm-robustness-saa")
@@ -96,12 +99,57 @@ class RobustnessSAABivar:
 
     def generate(self, main_config: dict, batch_criteria: BatchCriteria):
         """
+        Generate (1) a :class:`~core.graphs.heatmap.Heatmap` of the robustness vs. the other one,
+        (2) a :class:`~core.graphs.scatterplot2D.Scatterplot2D` of the robustness vs. performance.
+        """
+        csv_ipath = self.__gen_heatmap(main_config, batch_criteria)
+        self.__gen_scatterplot(csv_ipath)
+
+    def __gen_scatterplot(self, rob_ipath: str):
+        """
+        Generate a :class:`~core.graphs.scatterplot2D.Scatterplot2D` graph of robustness
+        vs. performance AFTER the main robustness `.csv` has generated in :method:`__gen_heatmap()`
+        """
+        perf_ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
+        opath = os.path.join(self.cmdopts['collate_root'],
+                             'pm-robustness-saa-vs-perf.csv')
+        perf_df = pd.read_csv(perf_ipath, sep=';')
+        rob_df = pd.read_csv(rob_ipath, sep=';')
+        scatter_df = pd.DataFrame(columns=['perf', 'robustness-saa'])
+
+        # The inter-perf csv has temporal sequences at each (i,j) location, so we need to reduce
+        # each of those to a single scalar: the cumulate measure of performance.
+        for i in range(0, len(perf_df.index)):
+            for j in range(0, len(perf_df.columns)):
+                n_blocks = common.csv_3D_value_iloc(perf_df,
+                                                    i,
+                                                    j,
+                                                    slice(-1, None))
+                perf_df.iloc[i, j] = n_blocks
+
+        scatter_df['perf'] = perf_df.values.flatten()
+        scatter_df['robustness-saa'] = rob_df.values.flatten()
+        scatter_df.to_csv(opath, sep=';', index=False)
+
+        Scatterplot2D(input_csv_fpath=opath,
+                      output_fpath=os.path.join(self.cmdopts["graph_root"],
+                                                "pm-robustness-saa-vs-perf.png"),
+                      title='Swarm Robustness (SAA) vs. Performance',
+                      xcol='robustness-saa',
+                      ycol='perf',
+                      regression=self.cmdopts['plot_regression_lines'],
+                      xlabel='Robustness Value',
+                      ylabel='# Blocks Collected').generate()
+
+    def __gen_heatmap(self, main_config: dict, batch_criteria: BatchCriteria):
+        """
         Generate a robustness graph for a given controller in a given scenario by computing the
         value of the robustness metric for each experiment within the batch, and plot
-        a heatmap of the robustness variable vs. the other one.
+        a :class:`~core.graphs.heatmap.Heatmap` of the robustness variable vs. the other one.
 
+        Returns:
+           The path to the `.csv` file used to generate the heatmap.
         """
-
         ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
         raw_df = pd.read_csv(ipath, sep=';')
         df = pd.DataFrame(columns=raw_df.columns, index=raw_df.index)
@@ -125,15 +173,17 @@ class RobustnessSAABivar:
                 # We need to know which of the 2 variables was SAA noise, in order to determine the
                 # correct dimension along which to compute the metric.
                 if isinstance(batch_criteria.criteria1, saan.SAANoise):
-                    val = vcs.RawPerfCS(main_config, self.cmdopts, i / j, i)(batch_criteria)
-                else:
                     val = vcs.RawPerfCS(main_config,
                                         self.cmdopts,
+                                        j,  # exp0 in first row with i=0
+                                        i * len(df.columns) + j)(batch_criteria)
+                else:
+                    val = vcs.RawPerfCS(main_config,
+                                        self.cmdopts,  # exp0 in first col with j=0
                                         i * len(df.columns),
                                         i * len(df.columns) + j)(batch_criteria)
 
                 df.iloc[i, j] = val
-
         opath_stem = os.path.join(self.cmdopts["collate_root"], "pm-robustness-saa")
 
         df.to_csv(opath_stem + ".csv", sep=';', index=False)
@@ -145,3 +195,4 @@ class RobustnessSAABivar:
                 ylabel=batch_criteria.graph_ylabel(self.cmdopts),
                 xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
                 ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)).generate()
+        return opath_stem + '.csv'

@@ -529,6 +529,17 @@ class CoreCmdline:
                                  """,
                                  default=False)
 
+        self.stage4.add_argument("--plot-regression-lines",
+                                 help="""
+
+                                 For all 2D generated scatterplots, plot a linear regression line and the equation of
+                                 the line to the legend. Currently, this option affects the graphs generated when the
+                                 following batch criteria are used:
+
+                                 - ``saa_noise`` (bivariate)
+
+                                 """)
+
         # Variance curve similarity options
         vcs = self.parser.add_argument_group('Stage4: VCS',
                                              'Variance Curve Similarity options for stage4')

@@ -87,6 +87,7 @@ class Pipeline:
             'adaptability_cs_method': self.args.adaptability_cs_method,
             'rperf_cs_method': self.args.rperf_cs_method,
             'exp_graphs': self.args.exp_graphs,
+            'plot_regression_lines': self.args.plot_regression_lines,
 
             # stage 5
             'controllers_list': self.args.controllers_list,

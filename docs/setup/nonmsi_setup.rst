@@ -8,14 +8,15 @@ your local machine, and try a few small scale experiments.
 
 #. Install python dependencies with ``pip3``::
 
-     pip3 install pandas similaritymeasures fastdtw matplotlib pyyaml coloredlogs
+     pip3 install pandas similaritymeasures fastdtw matplotlib pyyaml coloredlogs sympy
 
    - pandas (used for .csv file manipulation)
    - similaritymeasures (needed for temporal variance graph generation)
    - fastdtw (needed for temporal variance graph generation)
    - pyyaml (needed for .yaml configuration file parsing)
    - coloredlogs (for nice colored logging)
-   
+   - sympy (for graph label generation)
+
 #. Install OS packages:
 
    - GNU parallel (``parallel`` on ubuntu)
