@@ -30,7 +30,7 @@ from core.graphs.batch_ranged_graph import BatchRangedGraph
 from core.graphs.heatmap import Heatmap
 from core.perf_measures import common
 from core.variables import batch_criteria as bc
-from core.variables import population as ss
+from core.variables import population_size as ps
 
 
 class EfficiencyBivar:
@@ -188,7 +188,7 @@ class KarpFlattBivar:
         yfactor = 0
 
         # Swarm size is along rows (X), so the first column by definition has perfect scalability
-        if isinstance(batch_criteria.criteria1, ss.Population):
+        if isinstance(batch_criteria.criteria1, ps.PopulationSize):
             df.iloc[:, 0] = 0.0
             yfactor = 1
 
@@ -204,7 +204,7 @@ class KarpFlattBivar:
                 # We need to know which of the 2 variables was swarm size, in order to determine
                 # the correct dimension along which to compute the metric, which depends on
                 # performance between adjacent swarm sizes.
-                if isinstance(batch_criteria.criteria1, ss.Population):
+                if isinstance(batch_criteria.criteria1, ps.PopulationSize):
                     n = sizes[i + 1][j]
                 else:
                     n = sizes[i][j + 1]

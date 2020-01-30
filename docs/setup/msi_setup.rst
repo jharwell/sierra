@@ -36,7 +36,9 @@ MSI.
      . /home/gini/shared/swarm/bin/msi-env-setup.sh
 
    **ANYTIME you log into an MSI node (login or compute) to build/run ANYTHING
-   you MUST source this script otherwise things will (probably) not work.**
+   you MUST source this script otherwise things will (probably) not work. This
+   includes if you ran the script on a login node and then started an
+   interactive session (the environment is NOT inherited).**
 
 
 #. On an MSI login node (can be any type, as the filesystem is shared across all

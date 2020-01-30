@@ -244,37 +244,33 @@ LN_population:
       ylabel: '# Robots'
 
     - src_stem: tv-population
-      dest_stem: tv-population-birth-queue
+      dest_stem: tv-population-rates
       cols:
-        - int_avg_birth_queue_size
-        - cum_avg_birth_queue_size
-      title: 'Swarm Population Birth Queue'
+        - int_avg_birth_rate
+        - cum_avg_birth_rate
+        - int_avg_death_rate
+        - cum_avg_death_rate
+      title: 'Swarm Population Rates'
       legend:
-        - 'Average Queue Size (Interval)'
-        - 'Average Queue Size (Cumulative)'
+        - 'Average Swarm Birth Rate (Interval)'
+        - 'Average Swarm Birth Rate (Cumulative)'
+        - 'Average Swarm Death Rate (Interval)'
+        - 'Average Swarm Death Rate (Cumulative)'
       xlabel: 'Interval'
-      ylabel: '# Robots'
+      ylabel: 'Events/timestep'
 
     - src_stem: tv-population
-      dest_stem: tv-population-death-queue
+      dest_stem: tv-population-intervals
       cols:
-        - int_avg_death_queue_size
-        - cum_avg_death_queue_size
-      title: 'Swarm Population Death Queue'
+        - int_avg_birth_interval
+        - cum_avg_birth_interval
+        - int_avg_death_interval
+        - cum_avg_death_interval
+      title: 'Swarm Population Event Intervals'
       legend:
-        - 'Average Queue Size (Interval)'
-        - 'Average Queue Size (Cumulative)'
+        - 'Average Birth Interval (Interval)'
+        - 'Average Birth Interval (Cumulative)'
+        - 'Average Death Interval (Interval)'
+        - 'Average Death Interval (Cumulative)'
       xlabel: 'Interval'
-      ylabel: '# Robots'
-
-    - src_stem: tv-population
-      dest_stem: tv-population-repair-queue
-      cols:
-        - int_avg_repair_queue_size
-        - cum_avg_repair_queue_size
-      title: 'Swarm Population Repair Queue'
-      legend:
-        - 'Average Queue Size (Interval)'
-        - 'Average Queue Size (Cumulative)'
-      xlabel: 'Interval'
-      ylabel: '# Robots'
+      ylabel: 'Timestep'

@@ -85,7 +85,7 @@ import math
 import typing as tp
 
 from core.variables.batch_criteria import UnivarBatchCriteria
-from core.variables.population import Population
+from core.variables.population_size import PopulationSize
 from core.perf_measures import vcs
 from core.variables.flexibility_parser import FlexibilityParser
 
@@ -128,12 +128,10 @@ class Flexibility(UnivarBatchCriteria):
         # the swarm size can be None.
 
         if self.population is not None:
-            size_attr = next(iter(Population(self.cli_arg,
-                                             self.main_config,
-                                             self.batch_generation_root,
-                                             [self.population],
-                                             'static',
-                                             []).gen_attr_changelist()[0]))
+            size_attr = next(iter(PopulationSize(self.cli_arg,
+                                                 self.main_config,
+                                                 self.batch_generation_root,
+                                                 [self.population]).gen_attr_changelist()[0]))
             return [set([
                 size_attr,
                 ("{0}/waveform".format(v[0]), "type", str(v[1])),

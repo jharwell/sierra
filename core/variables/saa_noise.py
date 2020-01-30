@@ -20,8 +20,8 @@ Definition:
     category - {sensors,actuators,saa}
 
     cardinality - The # of different noise levels to test with between the min and max specified in
-                  the config file for each sensor/actuator which defines the cardinality of the
-                  batched experiment.
+    the config file for each sensor/actuator which defines the cardinality of the batched
+    experiment.
 
     population - The static swarm size to use (optional).
 
@@ -78,7 +78,7 @@ import typing as tp
 import numpy as np
 
 from core.variables.batch_criteria import UnivarBatchCriteria
-from core.variables.population import Population
+from core.variables.population_size import PopulationSize
 import core.utils
 
 
@@ -121,12 +121,10 @@ class SAANoise(UnivarBatchCriteria):
         # another variable in a bivariate batch criteria, (3) not controlled at all. For (2), (3),
         # the swarm size can be None.
         if self.population is not None:
-            size_attr = next(iter(Population(self.cli_arg,
-                                             self.main_config,
-                                             self.batch_generation_root,
-                                             [self.population],
-                                             'static',
-                                             []).gen_attr_changelist()[0]))
+            size_attr = next(iter(PopulationSize(self.cli_arg,
+                                                 self.main_config,
+                                                 self.batch_generation_root,
+                                                 [self.population]).gen_attr_changelist()[0]))
             changes = [{(v2[0], v2[1], v2[2]) for v2 in v1} for v1 in self.variances]
             for c in changes:
                 c.add(size_attr)

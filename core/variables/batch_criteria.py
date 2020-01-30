@@ -17,7 +17,6 @@
 import os
 import pickle
 import logging
-import copy
 import typing as tp
 
 import core.utils

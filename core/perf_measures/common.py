@@ -25,15 +25,15 @@ import pandas as pd
 import numpy as np
 
 import core.utils
-from core.variables.population import Population
+from core.variables.population_size import PopulationSize
 from core.variables import batch_criteria as bc
 
 
 class ProjectivePerformanceCalculatorUnivar:
     r"""
     Calculates the following measure for each experiment in a univariate batched experiment. The
-    batch criteria must be derived from :class:`~variables.population.Population`, or this measure
-    will (probably) not have much meaning.
+    batch criteria must be derived from :class:`~variables.population_size.PopulationSize`, or this
+    measure will (probably) not have much meaning.
 
     .. math::
         \frac{Performance(exp_i)}{Distance(exp_, exp{i}) * Performance(exp_{i})}
@@ -46,6 +46,7 @@ class ProjectivePerformanceCalculatorUnivar:
 
     Only valid for exp i, i > 0 (you are comparing with a projected performance value of exp0 after
     all).
+
     """
 
     def __init__(self, cmdopts: tp.Dict[str, str], inter_perf_csv: str, projection_type: str):
@@ -96,7 +97,7 @@ class ProjectivePerformanceCalculatorUnivar:
 class ProjectivePerformanceCalculatorBivar:
     r"""
     Calculates the following measure for each experiment in a bivariate batched experiment. One of
-    the variables must be derived from :class:`~variables.population.Population`.
+    the variables must be derived from :class:`~variables.population_size.PopulationSize`.
 
     .. math::
         \frac{Performance(exp_i)}{Distance(exp_i, exp_{i-1}) * Performance(exp_i)}
@@ -126,7 +127,7 @@ class ProjectivePerformanceCalculatorBivar:
         # We need to know which of the 2 variables was swarm size, in order to determine
         # the correct dimension along which to compute the metric, which depends on
         # performance between adjacent swarm sizes.
-        if isinstance(batch_criteria.criteria1, Population):
+        if isinstance(batch_criteria.criteria1, PopulationSize):
             return self.__project_vals_row(perf_df, batch_criteria)
         else:
             return self.__project_vals_col(perf_df, batch_criteria)
@@ -395,7 +396,7 @@ class FractionalLossesBivar(FractionalLosses):
                     # We need to know which of the 2 variables was swarm size, in order to determine
                     # the correct axis along which to compute the metric, which depends on
                     # performance between adjacent swarm sizes.
-                    if isinstance(batch_criteria.criteria1, Population):
+                    if isinstance(batch_criteria.criteria1, PopulationSize):
                         n_robots = populations[i][0]  # same population in all columns
                     else:
                         n_robots = populations[0][j]  # same population in all rows

@@ -94,9 +94,6 @@
             <ema alpha="0.5"/>
           </task_exec_estimates>
 
-          <epsilon_greedy epsilon="0.4"
-                          regret_bound="linear"/>
-          <ucb1 gamma="1000"/>
           <stoch_nbhd1
               tab_init_policy="max_depth">
             <task_partition
@@ -141,13 +138,9 @@
         </task_alloc>
         <block_sel_matrix
             nest="2.0, 3">
-          <block_priorities
-              cube="1.0"
-              ramp="1.0"
-              />
           <pickup_policy
               policy="cluster_proximity"
-              prox_dist="2.0"
+              prox_dist="3.0"
               />
         </block_sel_matrix>
         <cache_sel_matrix
@@ -157,7 +150,7 @@
             site_xrange="2:10"
             site_yrange="2.5:3">
           <pickup_policy
-              policy="Null"
+              policy="cache_size"
               timestep="20000"
               cache_size="3"/>
         </cache_sel_matrix>
@@ -215,15 +208,9 @@
       <metrics
           output_dir="metrics"
           block_acq_counts="block-acq-counts.csv"
-          block_acq_locs="block-acq-locs.csv"
-          block_acq_explore_locs="block-acq-explore-locs.csv"
-          block_acq_vector_locs="block-acq-vector-locs.csv"
           fsm_collision_counts="fsm-collision-counts.csv"
           block_transport="block-transport.csv"
           cache_acq_counts="cache-acq-counts.csv"
-          cache_acq_locs="cache-acq-locs.csv"
-          cache_acq_explore_locs="cache-acq-explore-locs.csv"
-          cache_acq_vector_locs="cache-acq-vector-locs.csv"
           cache_utilization="cache-utilization.csv"
           cache_lifecycle="cache-lifecycle.csv"
           cache_locations="cache-locations.csv"
@@ -241,64 +228,9 @@
           task_distribution="task-distribution.csv"
           perception_dpo="perception-dpo.csv"
           perception_mdpo="perception-mdpo.csv"
-          swarm_dist_pos2D="swarm-dist-pos2D.csv"
-          swarm_convergence="swarm-convergence.csv"
-          tv_population="tv-population"
-          tv_environment="tv-environment"
           output_interval="1000">
       </metrics>
     </output>
-    <convergence
-        n_threads="0"
-        epsilon="0.5">
-      <positional_entropy
-          enable="false"
-          horizon="0:13.41"
-          horizon_delta="1.34"/>
-      <interactivity enable="false"/>
-      <angular_order enable="false"/>
-      <task_dist_entropy enable="false"/>
-    </convergence>
-    <oracle_manager>
-      <tasking_oracle
-          task_exec_ests="true"
-          task_interface_ests="true"
-          />
-      <entities_oracle
-          blocks="true"
-          caches="true"/>
-    </oracle_manager>
-    <temporal_variance>
-      <blocks>
-        <manipulation_penalty>
-          <waveform
-              type="Null"
-              frequency="0.01"
-              amplitude="50"
-              offset="50"
-              phase="0"/>
-        </manipulation_penalty>
-        <carry_throttle>
-          <waveform
-              type="Null"
-              frequency="100"
-              amplitude="0.4"
-              offset="0.1"
-              phase="0"/>
-        </carry_throttle>
-      </blocks>
-      <caches>
-        <usage_penalty>
-          <waveform
-              type="Null"
-              frequency="100"
-              amplitude="500"
-              offset="10"
-              phase="0"/>
-        </usage_penalty>
-      </caches>
-    </temporal_variance>
-
     <arena_map>
       <grid resolution="0.2"
             size="12, 6, 2"/>
@@ -306,11 +238,6 @@
         <distribution
             arena_resolution="0.2"
             dist_type="single_source">
-          <powerlaw
-              pwr_min="0"
-              pwr_max="3"
-              n_clusters="15"
-              />
           <manifest
               n_cube="20"
               n_ramp="0"
@@ -330,12 +257,6 @@
                robot_drop_only="false"/>
 
     </caches>
-
-    <visualization robot_id="true"
-                   robot_los="true"
-                   robot_task="true"
-                   block_id="false"
-                   />
   </loop_functions>
 
   <!-- *********************** -->

@@ -197,21 +197,6 @@ class CoreCmdline:
                                  default=[1, 2, 3, 4]
                                  )
 
-        self.parser.add_argument("--named-exp-dirs",
-                                 help="""
-
-                                 When passed, the names of directories within a batch experiment will be obtained from
-                                 the batch criteria, rather than generically as ``expX``, (``X`` is unique non-negative
-                                 integer) for each experiment in the batch.
-
-                                 This option is NOT compatible with the following batch criteria:
-
-                                 - flexibility
-
-                                 """,
-                                 action='store_true',
-                                 default=False)
-
         self.parser.add_argument("--hpc-env",
                                  help="""
 
@@ -262,7 +247,7 @@ class CoreCmdline:
 
                                  If ``--exec-method=hpc`` then the value of this option will be used to determine
                                  # jobs/HPC node, # physics engines/simulation, and # threads/simulation.
-                                 the
+
 
                                  Use=stage{1}; can be omitted otherwise.
 
@@ -386,8 +371,6 @@ class CoreCmdline:
                                  help="""
 
                                  Specify the execution method to use when running experiments.
-
-                                 Valid values:
 
                                  - ``local`` - Run the maximum # of simulations simultaneously on the local machine
                                    using GNU parallel. # of simultaneous simulations is determined by # cores on machine
@@ -741,6 +724,8 @@ class HPCEnvInheritor():
     def __call__(self, args):
         # non-MSI
         if self.env_type is None:
+            assert args.n_threads is not None,\
+                '--n-threads is required for non-MSI environments'
             args.__dict__['n_jobs_per_node'] = min(args.n_sims,
                                                    max(1,
                                                        int(multiprocessing.cpu_count() / float(args.n_threads))))

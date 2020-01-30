@@ -24,7 +24,7 @@ import pandas as pd
 from core.graphs.batch_ranged_graph import BatchRangedGraph
 from core.graphs.heatmap import Heatmap
 from core.perf_measures import common
-from core.variables.population import Population
+from core.variables.population_size import PopulationSize
 
 
 class SelfOrganizationFLUnivar:
@@ -33,7 +33,7 @@ class SelfOrganizationFLUnivar:
     experiments within the same scenario from collated ``.csv`` data using fractional performance
     losses due to inter-robot interference.
 
-    Only valid if the batch criteria was :class:`~variables.population.Population` derived.
+    Only valid if the batch criteria was :class:`~variables.population_size.PopulationSize` derived.
     """
 
     def __init__(self, cmdopts, inter_perf_csv, ca_in_csv):
@@ -85,7 +85,8 @@ class SelfOrganizationFLBivar:
     experiments within the same scenario from collated ``.csv`` data using fractional performance
     losses due to inter-robot interference.
 
-    Only valid if one of the batch criteria was :class:`~variables.population.Population` derived.
+    Only valid if one of the batch criteria was :class:`~variables.population_size.PopulationSize`
+    derived.
 
     """
 
@@ -119,7 +120,7 @@ class SelfOrganizationFLBivar:
         # We need to know which of the 2 variables was swarm size, in order to determine the correct
         # dimension along which to compute the metric, which depends on performance between adjacent
         # swarm sizes.
-        if isinstance(batch_criteria.criteria1, Population):
+        if isinstance(batch_criteria.criteria1, PopulationSize):
             so_df = self.__calc_by_row(fl, batch_criteria)
         else:
             so_df = self.__calc_by_col(fl, batch_criteria)

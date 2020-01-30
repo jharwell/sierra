@@ -85,19 +85,7 @@ class BlockConstantDensity(cd.ConstantDensity):
 
     def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> tp.List[str]:
         changes = self.gen_attr_changelist()
-        density = self.def_str.split('.')[1]
-        dirs = []
-        for chg in changes:
-            n_blocks = 0
-            for path, attr, value in chg:
-                if 'n_cube' in attr or 'n_ramp' in attr:
-                    n_blocks += int(value)
-
-            dirs.append(density + '+bc' + str(n_blocks))
-        if not cmdopts['named_exp_dirs']:
-            return ['exp' + str(x) for x in range(0, len(dirs))]
-        else:
-            return dirs
+        return ['exp' + str(x) for x in range(0, len(changes))]
 
     def graph_xticks(self, cmdopts: tp.Dict[str, str], exp_dirs) -> tp.List[float]:
         if exp_dirs is not None:

@@ -29,7 +29,7 @@ import re
 import typing as tp
 
 from core.variables.batch_criteria import UnivarBatchCriteria
-from core.variables.population import Population
+from core.variables.population_size import PopulationSize
 
 
 class TAPolicySet(UnivarBatchCriteria):
@@ -59,10 +59,10 @@ class TAPolicySet(UnivarBatchCriteria):
         # another variable in a bivariate batch criteria, (3) not controlled at all. For (2), (3),
         # the swarm size can be None.
         if self.population is not None:
-            size_attr = [next(iter(Population(self.cli_arg,
-                                              self.main_config,
-                                              self.batch_generation_root,
-                                              [self.population]).gen_attr_changelist()[0]))]
+            size_attr = [next(iter(PopulationSize(self.cli_arg,
+                                                  self.main_config,
+                                                  self.batch_generation_root,
+                                                  [self.population]).gen_attr_changelist()[0]))]
         else:
             size_attr = []
         changes = []
@@ -77,22 +77,7 @@ class TAPolicySet(UnivarBatchCriteria):
 
     def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> tp.List[str]:
         changes = self.gen_attr_changelist()
-        dirs = []
-        for chgset in changes:
-            policy = None
-            size = ''
-            for path, attr, value in chgset:
-                if 'policy' in attr:
-                    policy = value
-                if 'quantity' in attr:
-                    size = 'size' + value
-
-            dirs.append(policy + '|' * (size != '') + size)
-
-        if not cmdopts['named_exp_dirs']:
-            return ['exp' + str(x) for x in range(0, len(dirs))]
-        else:
-            return dirs
+        return ['exp' + str(x) for x in range(0, len(changes))]
 
     def graph_xticks(self, cmdopts: tp.Dict[str, str], exp_dirs: tp.List[str]) -> tp.List[float]:
         if exp_dirs is not None:

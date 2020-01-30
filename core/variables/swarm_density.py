@@ -87,20 +87,7 @@ class SwarmConstantDensity(cd.ConstantDensity):
 
     def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> tp.List[str]:
         changes = self.gen_attr_changelist()
-        density = self.def_str.split('.')[0]
-        dirs = []
-
-        for chg in changes:
-            d = ''
-            for path, attr, value in chg:
-                if 'quantity' in attr:
-                    d += density + '+size' + value
-            dirs.append(d)
-
-        if not cmdopts['named_exp_dirs']:
-            return ['exp' + str(x) for x in range(0, len(dirs))]
-        else:
-            return dirs
+        return ['exp' + str(x) for x in range(0, len(changes))]
 
     def graph_xticks(self, cmdopts: tp.Dict[str, str], exp_dirs) -> tp.List[float]:
         areas = []

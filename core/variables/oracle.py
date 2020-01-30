@@ -39,7 +39,7 @@ import re
 import itertools
 
 from core.variables.batch_criteria import UnivarBatchCriteria
-from core.variables.population import Population
+from core.variables.population_size import PopulationSize
 
 
 class Oracle(UnivarBatchCriteria):
@@ -76,34 +76,21 @@ class Oracle(UnivarBatchCriteria):
                          "{0}".format(str(feat[1]))) for feat in t[1]]) for t in self.tuples]
 
         if self.population is not None:
-            size_attr = [next(iter(Population(self.cli_arg,
-                                              self.main_config,
-                                              self.batch_generation_root,
-                                              [self.population]).gen_attr_changelist()[0]))]
+            size_attr = [next(iter(PopulationSize(self.cli_arg,
+                                                  self.main_config,
+                                                  self.batch_generation_root,
+                                                  [self.population]).gen_attr_changelist()[0]))]
             for c in changes:
                 c.add(size_attr)
 
         return changes
 
-    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str], always_named: bool = False) -> tp.List[str]:
+    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> tp.List[str]:
         changes = self.gen_attr_changelist()
-        attr = OracleParser()(self.cli_arg)
-        dirs = []
-
-        for chg in changes:
-            d = ''
-            for t in Oracle.kInfoTypes[attr['oracle_type']]:
-                for path, at, value in chg:
-                    if t in at:
-                        d += '|' * (d != '') + t + '=' + value
-            dirs.append(d)
-        if not cmdopts['named_exp_dirs'] and not always_named:
-            return ['exp' + str(x) for x in range(0, len(dirs))]
-        else:
-            return dirs
+        return ['exp' + str(x) for x in range(0, len(changes))]
 
     def graph_xticks(self, cmdopts: tp.Dict[str, str], exp_dirs: tp.List[str]) -> str:
-        return [d for d in self.gen_exp_dirnames(cmdopts, True)]
+        return [d for d in self.gen_exp_dirnames(cmdopts)]
 
     def graph_xticklabels(self, cmdopts: tp.Dict[str, str], exp_dirs: tp.List[str] = None) -> tp.List[float]:
         raise NotImplementedError
@@ -151,13 +138,12 @@ def factory(cli_arg: str,
             batch_generation_root: str,
             **kwargs):
     """
-    factory to create ``Oracle`` derived classes from the command line definition of batch
-    criteria.
+    Factory to create ``Oracle`` derived classes from the command line definition.
 
     """
     attr = OracleParser()(cli_arg)
 
-    def gen_tuples(cli_arg):
+    def gen_tuples():
 
         if 'entities' in attr['oracle_name']:
             tuples = []
@@ -172,8 +158,12 @@ def factory(cli_arg: str,
             return None
 
     def __init__(self):
-        Oracle.__init__(self, cli_arg, main_config, batch_generation_root,
-                        gen_tuples(cli_arg), attr.get('population', None))
+        Oracle.__init__(self,
+                        cli_arg,
+                        main_config,
+                        batch_generation_root,
+                        gen_tuples(),
+                        attr.get('population', None))
 
     return type(cli_arg,
                 (Oracle,),

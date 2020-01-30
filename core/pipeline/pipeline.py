@@ -50,7 +50,6 @@ class Pipeline:
             'scenario': self.args.scenario,
             'template_input_file': self.args.template_input_file,
             'plugin': self.args.plugin,
-            'named_exp_dirs': self.args.named_exp_dirs,
             'hpc_env': args.hpc_env,
             'with_rendering': self.args.with_rendering,
             "n_sims": args.n_sims,

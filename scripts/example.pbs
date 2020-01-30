@@ -37,12 +37,15 @@ OUTPUT_ROOT=$HOME/exp
 cd $SIERRA
 python3 sierra.py \
         --sierra-root=$OUTPUT_ROOT\
-        --template-config-file=$SIERRA/templates/ideal.argos \
+        --template-input-file=$SIERRA/templates/ideal.argos \
         --n-sims=4\
+        --plugin=fordyca\
         --exec-method=hpc\
-        --hpc-env=MSI
+        --hpc-env=MSI\
+        --n-threads=1\
+        --physics-n-engines=1\
         --time-setup=time_setup.T10000\
         --controller=depth0.CRW\
         --scenario=SS.12x6\
-        --batch-criteria swarm_size.static.Log64\
+        --batch-criteria population.static.Log64\
         --n-blocks=20
