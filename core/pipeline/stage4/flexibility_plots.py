@@ -14,7 +14,10 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
-
+"""
+Utility classes for generating definitions and ``.csv`` files for per-experiment flexibility plots
+by hooking into the intra-experiment graph generation.
+"""
 
 import os
 import copy
@@ -50,7 +53,6 @@ class FlexibilityPlotsCSVGenerator:
     def __call__(self, batch_criteria: BatchCriteria):
         tv_attr = FlexibilityParser()(batch_criteria.def_str)
 
-        # @BUG This will not work with any batch exp directory naming that is not expX
         res = re.search("exp[0-9]+", self.cmdopts['output_root'])
         assert res is not None, "FATAL: Unexpected experiment output dir name '{0}'".format(
             self.cmdopts['output_root'])
@@ -105,7 +107,7 @@ class FlexibilityPlotsCSVGenerator:
                 'ideal_adaptability': adaptability.calc_waveforms()[0][:, 1]
             }
         )
-        df.to_csv(os.path.join(output_root, 'tv-plots.csv'), sep=';', index=False)
+        df.to_csv(os.path.join(output_root, 'flexibility-plots.csv'), sep=';', index=False)
 
     def _comparable_exp_variance(self, var_df, tv_attr, perf_max, perf_min):
         """
@@ -134,8 +136,8 @@ class FlexibilityPlotsDefinitionsGenerator():
 
     def __call__(self):
         return [
-            {'src_stem': 'tv-plots',
-             'dest_stem': 'tv-plots-reactivity',
+            {'src_stem': 'flexibility-plots',
+             'dest_stem': 'flexibility-plots-reactivity',
              'cols': ['exp0_var', 'expx_var', 'exp0_perf', 'expx_perf', 'ideal_reactivity'],
              'title': 'Observed vs. Ideal Reactivity Curves',
              'legend': ['Ideal Conditions Applied Variance',
@@ -149,8 +151,8 @@ class FlexibilityPlotsDefinitionsGenerator():
              'dashes': [(1000, 0), (1000, 0), (1000, 0), (1000, 0), (4, 5)]
              },
             {
-                'src_stem': 'tv-plots',
-                'dest_stem': 'tv-plots-adaptability',
+                'src_stem': 'flexibility-plots',
+                'dest_stem': 'flexibility-plots-adaptability',
                 'cols': ['exp0_var', 'expx_var', 'exp0_perf', 'expx_perf', 'ideal_adaptability', ],
                 'title': 'Observed vs. Ideal Adaptability Curves',
                 'legend': ['Ideal Conditions Applied Variance',

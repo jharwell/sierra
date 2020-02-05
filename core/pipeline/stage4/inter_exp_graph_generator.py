@@ -154,9 +154,11 @@ class UnivarPerfMeasuresGenerator:
             if batch_criteria.pm_query('adaptability'):
                 pma.AdaptabilityUnivar(self.cmdopts).generate(self.main_config, batch_criteria)
 
-            if batch_criteria.pm_query('robustness'):
+            if batch_criteria.pm_query('robustness-saa'):
                 pmb.RobustnessSAAUnivar(self.cmdopts).generate(self.main_config, batch_criteria)
-                # pmb.RobustnessSizeUnivar(self.cmdopts).generate(self.main_config, batch_criteria)
+
+            if batch_criteria.pm_query('robustness-size'):
+                pmb.RobustnessSizeUnivar(self.cmdopts).generate(self.main_config, batch_criteria)
 
 
 class BivarPerfMeasuresGenerator:
@@ -199,8 +201,10 @@ class BivarPerfMeasuresGenerator:
             pma.AdaptabilityBivar(self.main_config, self.cmdopts).generate(self.main_config,
                                                                            batch_criteria)
 
-        if batch_criteria.pm_query('robustness'):
+        if batch_criteria.pm_query('robustness-saa'):
             pmb.RobustnessSAABivar(self.cmdopts,
                                    self.main_config['sierra']['perf']['inter_perf_csv']).generate(self.main_config,
                                                                                                   batch_criteria)
-            # pmb.RobustnessSizeBivar(self.cmdopts).generate(self.main_config, batch_criteria)
+        if batch_criteria.pm_query('robustness-size'):
+            pmb.RobustnessSizeBivar(self.cmdopts,
+                                    self.main_config['sierra']['perf']['inter_perf_csv']).generate(batch_criteria)

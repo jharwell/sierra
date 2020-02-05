@@ -93,6 +93,7 @@ class Pipeline:
             'controllers_legend': self.args.controllers_legend,
             'comparison_type': self.args.comparison_type,
             'transpose_graphs': self.args.transpose_graphs,
+            'bc_undefined_exp0': self.args.bc_undefined_exp0
         }
 
         if cmdopts is not None:

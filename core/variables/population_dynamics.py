@@ -13,7 +13,8 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # SIERRA.  If not, see <http://www.gnu.org/licenses/
-r"""Definition:
+r"""
+Definition:
     C{cardinality}.F{Factor}[.{dynamics_type}{prob}[...]]
 
     - cardinality - The # of different values of each of the specified dynamics types to to test
@@ -79,8 +80,10 @@ Examples:
 import typing as tp
 import re
 import math
+import os
 
 from core.variables import batch_criteria as bc
+import core.utils
 
 
 class PopulationDynamics(bc.UnivarBatchCriteria):
@@ -110,6 +113,8 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
         """
         Generate list of sets of changes for population dynamics.
         """
+        # Note the # of decimal places used--these rates can get pretty small, and we do NOT want to
+        # round/truncate unecessarily, because that can change behavior in statistical equilibrium.
         dynamics = [{(".//temporal_variance/population_dynamics",
                       t[0],
                       str('%3.9f' % t[1])) for t in d} for d in self.dynamics]
@@ -119,22 +124,75 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
-    def graph_xticks(self, cmdopts: tp.Dict[str, str], exp_dirs: list=None) -> tp.List[float]:
-        ret = self.populations(cmdopts, exp_dirs)
+    def graph_xticks(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[float]:
+        if exp_dirs is None:
+            exp_dirs = self.gen_exp_dirnames(cmdopts)
+
+        ticks = []
+        for d in exp_dirs:
+
+            exp_def = core.utils.unpickle_exp_def(os.path.join(self.batch_generation_root,
+                                                               d,
+                                                               'exp_def.pkl'))
+            explen, expticks = PopulationDynamics.extract_explen(exp_def)
+            dlambda, bmu, mlambda, rmu = PopulationDynamics.extract_rate_params(exp_def)
+            s = dlambda + mlambda - (bmu + rmu)
+            w = 1.0 / s if s > 0.0 else (explen * expticks)
+            ticks.append(round(w / (explen * expticks), 4))
 
         if cmdopts['plot_log_xaxis']:
-            return [math.log2(x) for x in ret]
+            return [math.log2(x) for x in ticks]
         else:
-            return ret
+            return ticks
 
-    def graph_xticklabels(self, cmdopts: tp.Dict[str, str], exp_dirs: list=None) -> tp.List[float]:
+    def graph_xticklabels(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[float]:
         return self.graph_xticks(cmdopts, exp_dirs)
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
-        return "Swarm Population Dynamics"
+        return "Average Fraction of Time Robots Allocated To Task"
 
     def pm_query(self, pm: str) -> bool:
-        return pm in ['blocks-transported']
+        return pm in ['blocks-transported', 'robustness-size']
+
+    @staticmethod
+    def extract_rate_params(exp_def):
+        """
+        Extract and return the (death, birth, malfunction, and repair) rate parameters for use in
+        calculating queueing theoretic limits for the specified experiment. If any of them were not
+        used in the batched experiment, they will have value 0.0.
+
+        """
+        # OK to have these not defined for a particular batched experiment
+        repair_mu = 0.0
+        malfunction_lambda = 0.0
+        birth_mu = 0.0
+        death_lambda = 0.0
+
+        for _, attr, value in exp_def:
+            if 'death_lambda' in attr:
+                death_lambda = float(value)
+            if 'birth_mu' in attr:
+                birth_mu = float(value)
+            if 'malfunction_lambda' in attr:
+                malfunction_lambda = float(value)
+            if 'repair_mu' in attr:
+                repair_mu = float(value)
+
+        return (death_lambda, birth_mu, malfunction_lambda, repair_mu)
+
+    @staticmethod
+    def extract_explen(exp_def):
+        """
+        Extract and return the (experiment length in seconds, ticks per second) for the specified
+        experiment for use in calculating queueing theoretic limits.
+        """
+        for path, attr, value in exp_def:
+            if 'experiment' in path:
+                if 'length' in attr:
+                    explen = int(value)
+                if 'ticks_per_second' in attr:
+                    expticks = int(value)
+        return (explen, expticks)
 
 
 class PopulationDynamicsParser():
@@ -201,8 +259,11 @@ def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_generation_root:
     attr = PopulationDynamicsParser()(cli_arg)
 
     def gen_dynamics():
-        return [{(d[0], d[1] + d[1] * x * float(attr['factor']))
-                 for d in attr['dynamics']} for x in range(0, attr['cardinality'])]
+        # ideal conditions = no dynamics
+        dynamics = [{(d[0], 0.0) for d in attr['dynamics']}]
+        dynamics.extend([{(d[0], d[1] + d[1] * x * float(attr['factor']))
+                          for d in attr['dynamics']} for x in range(0, attr['cardinality'])])
+        return dynamics
 
     def __init__(self):
         PopulationDynamics.__init__(self,

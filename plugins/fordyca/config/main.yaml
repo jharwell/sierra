@@ -13,6 +13,7 @@ sierra:
     tv_flexibility_csv: 'tv-environment.csv'
     intra_perf_csv: 'block-transport.csv'
     intra_perf_col: 'cum_avg_transported'
+    tv_population_csv: 'tv-population.csv'
 
   flexibility:
     hz:
@@ -37,13 +38,13 @@ sierra:
     sensors:
       light:
         model: uniform
-        range: [0.0, 0.1]
+        range: [0.0, 0.25]
       proximity:
         model: uniform
-        range: [0.0, 0.1]
+        range: [0.0, 0.25]
       ground:
         model: uniform
-        range: [0.0, 0.1]
+        range: [0.0, 0.25]
       steering:
         model: uniform
-        range: [0.0, 0.1]
+        range: [0.0, 0.25]

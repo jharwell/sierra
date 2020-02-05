@@ -220,7 +220,7 @@
           birth_mu="1.0"
           death_lambda="0.0"
           malfunction_lambda="0.0"
-          max_size="16"
+          max_size="128"
           repair_mu="0.0"/>
     </temporal_variance>
 
@@ -275,7 +275,7 @@
     <distribute>
       <position method="uniform" min="1,1,0" max="10,5,0" />
       <orientation method="uniform" min="0,0,0" max="360,0,0" />
-      <entity quantity="16" max_trials="1000">
+      <entity quantity="128" max_trials="1000">
         <foot-bot id="fb">
           <controller config="ffc" />
           <battery model= "time_motion"/>

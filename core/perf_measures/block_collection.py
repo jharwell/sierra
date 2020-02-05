@@ -66,7 +66,7 @@ class BlockCollectionUnivar:
                          title="Swarm Blocks Collected",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="# Blocks",
-                         xvals=batch_criteria.graph_xticks(self.cmdopts)).generate()
+                         xticks=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
     @staticmethod
     def __gen_stddev(ipath: str, opath: str):

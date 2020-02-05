@@ -369,7 +369,7 @@ class UnivarIntraScenarioComparator:
     def __call__(self,
                  graphs: dict,
                  legend: tp.List[str],
-                 norm_comp: bool):
+                 comp_type: str):
         # Obtain the list of scenarios to use. We can just take the scenario list of the first
         # controllers, because we have already checked that all controllers executed the same set
         # scenarios
@@ -427,19 +427,18 @@ class UnivarIntraScenarioComparator:
                     label: str,
                     legend: tp.List[str]):
         """
-        Generates a :meth:`BatchRangeGraph` comparing the specified controllers within the
+        Generates a :class:`BatchRangeGraph` comparing the specified controllers within the
         specified scenario after input files have been gathered from each controllers into
         ``cc-csvs/``.
         """
         csv_stem_opath = os.path.join(self.cc_csv_root, dest_stem + "-" + scenario)
-
         BatchRangedGraph(inputy_stem_fpath=csv_stem_opath,
                          output_fpath=os.path.join(self.cc_graph_root,
                                                    dest_stem) + '-' + scenario + ".png",
                          title=title,
                          xlabel=batch_criteria.graph_xlabel(cmdopts),
                          ylabel=label,
-                         xvals=batch_criteria.graph_xticks(cmdopts),
+                         xticks=batch_criteria.graph_xticks(cmdopts)[cmdopts['bc_undefined_exp0']:],
                          legend=legend).generate()
 
     def __gen_csv(self,
@@ -479,7 +478,9 @@ class UnivarIntraScenarioComparator:
         else:
             cum_df = pd.DataFrame()
 
-        cum_df = cum_df.append(pd.read_csv(csv_ipath, sep=';'))
+        t = pd.read_csv(csv_ipath, sep=';')
+        cum_df = cum_df.append(t[list(t.columns)[cmdopts['bc_undefined_exp0']:]])
+
         cum_df.to_csv(csv_opath_stem + '.csv', sep=';', index=False)
 
         if os.path.exists(csv_opath_stem + '.stddev'):

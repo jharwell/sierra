@@ -161,10 +161,10 @@ class SAANoise(UnivarBatchCriteria):
                           exp_dirs: tp.List[str] = None) -> tp.List[float]:
         if exp_dirs is not None:
             if self.__uniform_sources():
-                return ["U(-{0},{0})".format(l) for l in self.graph_xticks(cmdopts, exp_dirs)]
+                return ["U(-{0},{0})".format(round(l, 2)) for l in self.graph_xticks(cmdopts, exp_dirs)]
             elif self.__gaussian_sources():
                 levels = [self.__avg_gaussian_level_from_dir(d) for d in exp_dirs]
-                return ["G({0},{1})".format(mean, stddev) for mean, stddev in levels]
+                return ["G({0},{1})".format(round(mean, 2), round(stddev)) for mean, stddev in levels]
             else:
                 return [x for x in range(0, len(exp_dirs))]
         else:
@@ -172,7 +172,7 @@ class SAANoise(UnivarBatchCriteria):
                 return [self.__avg_uniform_level_from_chglist(v) for v in self.variances]
             elif self.__gaussian_sources():
                 levels = [self.__avg_gaussian_level_from_chglist(v) for v in self.variances]
-                return ["G({0},{1})".format(mean, stddev) for mean, stddev in levels]
+                return ["G({0},{1})".format(round(mean), round(stddev)) for mean, stddev in levels]
             else:
                 return [x for x in range(0, self.n_exp())]
 
@@ -188,7 +188,7 @@ class SAANoise(UnivarBatchCriteria):
         return ['exp' + str(x) for x in range(0, len(self.gen_attr_changelist()))]
 
     def pm_query(self, pm: str) -> bool:
-        return pm in ['blocks-transported', 'robustness']
+        return pm in ['blocks-transported', 'robustness-saa']
 
     def __uniform_sources(self):
         """
@@ -217,11 +217,13 @@ class SAANoise(UnivarBatchCriteria):
         if :method:`__uniform_sources` returns `True`.
         """
         accum = 0.0
+        count = 0
         for source in changelist:
             parent, attr, value = source
             if attr == 'level':
                 accum += float(value)
-        return accum / len(changelist)
+                count += 1
+        return accum / count
 
     def __avg_uniform_level_from_dir(self, expdir: str):
         """
@@ -251,13 +253,16 @@ class SAANoise(UnivarBatchCriteria):
         """
         mean_accum = 0.0
         stddev_accum = 0.0
+        count = 0
         for source in changelist:
             parent, attr, value = source
             if attr == 'mean':
                 mean_accum += float(value)
+                count += 1
             elif attr == 'stddev':
                 stddev_accum += float(value)
-        return (mean_accum / len(changelist), stddev_accum / len(changelist))
+                count += 1
+        return (mean_accum / count, stddev_accum / count)
 
     def __avg_gaussian_level_from_dir(self, expdir: str):
         """

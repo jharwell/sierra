@@ -64,12 +64,12 @@ class PopulationSize(bc.UnivarBatchCriteria):
 
         Note that we also modify the maximum size allowed by population dynamics, even though that
         is not the active variable here, because this is the best place to do it, even if it is not
-        the greatest logical fit. We give it a value of 2N, where N is the initial quantity of
+        the greatest logical fit. We give it a value of 4N, where N is the initial quantity of
         robots for the simulation, in order to provide buffer so that the queueing theoretic
         predictions of long-run population size are accurate.
         """
         return [set([(".//arena/distribute/entity", "quantity", str(s)),
-                     (".//population_dynamics", "max_size", str(2 * s))]) for s in self.size_list]
+                     (".//population_dynamics", "max_size", str(4 * s))]) for s in self.size_list]
 
     def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> list:
         changes = self.gen_attr_changelist()

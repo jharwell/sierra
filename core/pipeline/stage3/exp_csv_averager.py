@@ -165,8 +165,8 @@ class ExpCSVAverager:
 
         Specifically:
 
-        - All simulations produced all ``.csv`` files
-        - All simulation ``.csv`` files have the same # rows/columns
+        - All simulations produced all ``.csv`` files.
+        - All simulation ``.csv`` files have the same # rows/columns.
         - No simulation ``.csv``files contain NaNs.
         """
         experiments = [exp for exp in os.listdir(self.exp_output_root) if exp not in [

@@ -58,9 +58,9 @@ class BatchRangedGraph:
         self.title = kwargs['title']
         self.xlabel = kwargs['xlabel']
         self.ylabel = kwargs['ylabel']
-        self.xvals = kwargs['xvals']
 
         self.xtick_labels = kwargs.get('xtick_labels', None)
+        self.xticks = kwargs['xticks']
         self.legend = kwargs.get('legend', None)
         self.polynomial_fit = kwargs.get('polynomial_fit', -1)
 
@@ -83,7 +83,7 @@ class BatchRangedGraph:
         self.__plot_lines(dfy)
 
         # Add error bars according to configuration
-        self.__plot_errorbars(self.xvals, dfy)
+        self.__plot_errorbars(self.xticks, dfy)
 
         # Add legend
         if self.legend is not None:
@@ -111,19 +111,19 @@ class BatchRangedGraph:
         colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red',
                   'tab:brown', 'tab:pink', 'tab:gray', 'tab:olive']
         i = 0
-
         for i in range(0, len(dfy.values)):
-            plt.plot(self.xvals, dfy.values[i], line_styles[i],
+            plt.plot(self.xticks, dfy.values[i], line_styles[i],
                      marker=mark_styles[i],
                      color=colors[i])
+
             if -1 != self.polynomial_fit:
-                coeffs = np.polyfit(self.xvals, dfy.values[i], self.polynomial_fit)
+                coeffs = np.polyfit(self.xticks, dfy.values[i], self.polynomial_fit)
                 ffit = np.poly1d(coeffs)
-                x_new = np.linspace(self.xvals[0], self.xvals[-1], 50)
+                x_new = np.linspace(self.xticks[0], self.xticks[-1], 50)
                 y_new = ffit(x_new)
                 plt.plot(x_new, y_new, line_styles[i])
 
-    def __plot_errorbars(self, xvals, data_df):
+    def __plot_errorbars(self, xticks, data_df):
         """
         Plot errorbars for all lines on the graph, using a shaded region rather than strict error
         bars--looks much nicer.
@@ -136,11 +136,11 @@ class BatchRangedGraph:
         stddev_df = pd.read_csv(self.inputy_stddev_fpath, sep=';')
 
         for i in range(0, len(data_df.values)):
-            plt.fill_between(xvals, data_df.values[i] - 2 * stddev_df.values[i],
+            plt.fill_between(xticks, data_df.values[i] - 2 * stddev_df.values[i],
                              data_df.values[i] + 2 * stddev_df.values[i], alpha=0.25)
 
     def __plot_ticks(self, ax):
         # For ordered, qualitative data
         if self.xtick_labels is not None:
-            ax.set_xticks(self.xvals)
+            ax.set_xticks(self.xticks)
             ax.set_xticklabels(self.xtick_labels, rotation='vertical')

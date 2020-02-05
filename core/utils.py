@@ -36,19 +36,3 @@ def unpickle_exp_def(exp_def_fpath):
     except EOFError:
         pass
     return exp_def
-
-
-def get_n_blocks(cmdopts, batch_criteria, exp_num):
-    if cmdopts['n_blocks'] is not None:
-        return cmdopts['n_blocks']
-    exp_def = unpickle_exp_def(os.path.join(cmdopts["generation_root"],
-                                            batch_criteria.gen_exp_dirnames(
-                                                cmdopts)[exp_num],
-                                            "exp_def.pkl"))
-
-    count = 0
-    for path, attr, value in exp_def:
-        if 'manifest' in path:
-            if 'cube' in attr or 'ramp' in attr:
-                count += int(value)
-    return count

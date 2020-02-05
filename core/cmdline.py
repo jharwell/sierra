@@ -631,12 +631,17 @@ class CoreCmdline:
                                  Use=stage{5}; can be omitted otherwise. If omitted, the raw controller names will be used.
                                  """)
         self.stage5.add_argument("--comparison-type",
-                                 choices=['raw2D', 'raw3D', 'scale2D',
+                                 choices=['raw1D', 'raw2D', 'raw3D', 'scale2D',
                                           'scale3D', 'diff2D', 'diff3D'],
                                  help="""
 
-                                 Specify how controller comparisons should be performed (currently
-                                 only used for bivariate controller comparisons). Options are:
+                                 Specify how controller comparisons should be performed.
+
+                                 If the batch criteria is univariate, the options are:
+
+                                 - ``raw1D`` - Output raw 1D performance measures using linegraphs.
+
+                                 If the batch criteria is bivariate, the options are:
 
                                  - ``raw2D`` - Output raw 2D performance measures as a set of dual heatmaps comparing
                                    all controllers against the controller of primary interest (one per pair).
@@ -647,7 +652,7 @@ class CoreCmdline:
                                  - ``scale2D`` - Scale controller performance measures against those of the controller
                                    of primary interest by dividing, outputting one 2D heatmap per comparison.
 
-                                 - ``raw3D`` - Output raw 3D performance measures as a single) single stacked 3D surface
+                                 - ``raw3D`` - Output raw 3D performance measures as a single, stacked 3D surface
                                    plots comparing all controllers (identical plots, but view from different
                                    angles). Uses ``--controllers-legend`` if passed for legend.
 
@@ -663,7 +668,7 @@ class CoreCmdline:
                                    Z=0. Uses ``--controllers-legend`` if passed for legend.
 
                                  """,
-                                 default='raw')
+                                 default='raw1D')
 
         self.stage5.add_argument("--bc-univar",
                                  help="""
@@ -715,6 +720,17 @@ class CoreCmdline:
 
                                  """)
 
+        self.stage5.add_argument("--bc-undefined-exp0",
+                                 help="""
+
+                                 Specify that the batch criteria used is not defined for exp0. This is needed in stage
+                                 5, but not for stage 4, because there is no general way to know if the batch criteria
+                                 used is valid for exp0 or not (well you could put it in the batch criteria definition,
+                                 but that has a code smell). Only affects graph generation for univariate batch
+                                 criteria.
+                                 """,
+                                 action='store_true')
+
 
 class HPCEnvInheritor():
     def __init__(self, env_type):
@@ -724,11 +740,12 @@ class HPCEnvInheritor():
     def __call__(self, args):
         # non-MSI
         if self.env_type is None:
-            assert args.n_threads is not None,\
-                '--n-threads is required for non-MSI environments'
-            args.__dict__['n_jobs_per_node'] = min(args.n_sims,
-                                                   max(1,
-                                                       int(multiprocessing.cpu_count() / float(args.n_threads))))
+            if any([1, 2]) in args.pipeline:
+                args.__dict__['n_jobs_per_node'] = min(args.n_sims,
+                                                       max(1,
+                                                           int(multiprocessing.cpu_count() / float(args.n_threads))))
+            else:
+                args.__dict__['n_jobs_per_node'] = 0
 
             return args
 
@@ -777,13 +794,13 @@ class CoreCmdlineValidator():
         assert isinstance(args.batch_criteria, list),\
             'FATAL Batch criteria not passed as list on cmdline'
 
-        assert args.n_sims is not None, '--n-sims is required'
-
-        if args.exec_method == 'local' and any([1, 2]) in args.pipeline:
-            assert args.physics_n_engines is not None,\
-                '--physics-n-engines is required for --exec-method=local'
-            assert args.n_threads is not None,\
-                '--n-threads is required for --exec-method=local'
+        if any([1, 2]) in args.pipeline:
+            assert args.n_sims is not None, '--n-sims is required'
+            if args.exec_method == 'local':
+                assert args.physics_n_engines is not None,\
+                    '--physics-n-engines is required for --exec-method=local'
+                assert args.n_threads is not None,\
+                    '--n-threads is required for --exec-method=local'
 
         if 5 in args.pipeline:
             assert args.bc_univar or args.bc_bivar,\

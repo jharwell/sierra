@@ -140,7 +140,7 @@
             nest="2.0, 3">
           <pickup_policy
               policy="cluster_proximity"
-              prox_dist="3.0"
+              prox_dist="2.0"
               />
         </block_sel_matrix>
         <cache_sel_matrix
@@ -284,7 +284,7 @@
     <distribute>
       <position method="uniform" min="1,1,0.5" max="10,5,0.5" />
       <orientation method="uniform" min="0,0,0" max="360,0,0" />
-      <entity quantity="16" max_trials="1000">
+      <entity quantity="128" max_trials="1000">
         <foot-bot id="fb" omnidirectional_camera_aperture="89.5">
           <controller config="ffc" />
           <battery model= "time_motion"/>

@@ -63,7 +63,7 @@ class XMLLuigi:
             return el.attrib[attr]
         return None
 
-    def attr_change(self, path: str, attr: str, value: str, noprint: bool = False):
+    def attr_change(self, path: str, attr: str, value: str, noprint: bool=False):
         """
         Change the specified attribute of the *FIRST* element matching the specified path searching
         from the tree root.
@@ -102,7 +102,7 @@ class XMLLuigi:
                 return
         raise InvalidElementError("No such element '{0}' found in '{1}'".format(tag, path))
 
-    def tag_remove(self, path: str, tag: str, noprint: bool = False):
+    def tag_remove(self, path: str, tag: str, noprint: bool=False):
         """
         Remove the specified tag of the child element found in the enclosing parent specified by the
         path.
