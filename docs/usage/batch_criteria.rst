@@ -40,10 +40,16 @@ Base Classes
     :inherited-members:
     :show-inheritance:
 
-Swarm Population
+Swarm Population Size
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: core.variables.population
+.. automodule:: core.variables.population_size
+    :members:
+
+Swarm Population Dynamics
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: core.variables.population_dynamics
     :members:
 
 Swarm Density

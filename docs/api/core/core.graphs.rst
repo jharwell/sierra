@@ -8,16 +8,10 @@ core.graphs
 
    .. autosummary::
 
-      bar_graph
       batch_ranged_graph
       heatmap
       stacked_line_graph
       stacked_surface_graph
-
-Bar Graph
----------
-.. automodule:: core.graphs.bar_graph
-   :members:
 
 Batch Ranged Graph
 ------------------

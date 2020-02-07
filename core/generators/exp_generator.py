@@ -70,6 +70,9 @@ class ExpDefCommonGenerator:
         # create an object that will edit the XML file
         xml_luigi = XMLLuigi(self.template_input_file)
 
+        # Setup library
+        self.__generate_library(xml_luigi)
+
         # Setup simulation visualizations
         self.__generate_visualization(xml_luigi)
 
@@ -154,6 +157,23 @@ class ExpDefCommonGenerator:
             xml_luigi.attr_change(".//loop_functions/convergence",
                                   "n_threads",
                                   str(self.cmdopts["n_threads"]))
+
+    def __generate_library(self, xml_luigi: XMLLuigi):
+        """
+        Generates XML changes to set the library that controllers and loop functions are sourced
+        from to the name of the plugin passed on the cmdline. The ``__controller__`` tag is changed
+        during stage 1, but since this function is called as part of common def generation, it
+        happens BEFORE that, and so this is OK. If, for some reason that assumption becomes invalid,
+        a warning will be issued about a non-existent XML path, so it won't be a silent error.
+
+        Does not write generated changes to the simulation definition pickle file.
+        """
+        xml_luigi.attr_change(".//loop_functions",
+                              "library",
+                              "lib" + self.cmdopts['plugin'])
+        xml_luigi.attr_change(".//__controller__",
+                              "library",
+                              "lib" + self.cmdopts['plugin'])
 
     def __generate_visualization(self, xml_luigi: XMLLuigi):
         """

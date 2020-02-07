@@ -18,7 +18,7 @@
   <controllers>
 
     <__controller__ id="ffc"
-                  library="libfordyca">
+                  library="foo">
       <actuators>
         <differential_steering implementation="default" />
         <leds implementation="default" medium="leds" />
@@ -188,7 +188,7 @@
   <!-- ****************** -->
   <!-- * Loop functions * -->
   <!-- ****************** -->
-  <loop_functions library="libfordyca"
+  <loop_functions library="foo"
                   label="depth2_loop_functions">
     <output output_root="output"
             output_dir="__current_date__">
