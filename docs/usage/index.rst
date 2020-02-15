@@ -21,7 +21,7 @@ you have completed the setup steps (either :ref:`ln-msi-setup` or
      - Compute the name of the library SIERRA will tell ARGoS to search for on
      ``ARGOS_PLUGIN_PATH`` when looking for controller and loop function
      definitions. For example if you pass ``--plugin=foobar``, then ARGoS will
-     search for ``libfoobar.so``on ``ARGOS_PLUGIN_PATH``.
+     search for ``libfoobar.so`` on ``ARGOS_PLUGIN_PATH``.
 
      - Figure out the plugin directory to load graph and simulation processing
        configuration from.
@@ -42,7 +42,7 @@ you have completed the setup steps (either :ref:`ln-msi-setup` or
      ``--scenario``.
 
    - What you are investigating; that is, what variable are you interested in
-     varying: ``--batch-criteria``.
+     varying: ``--batch-criteria`` (you read :ref:`ln-batch-criteria`, right?).
 
    If you try to invoke SIERRA with an (obviously) incorrect combination of
    command line options, it will refuse to do anything. For less obviously

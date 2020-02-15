@@ -68,6 +68,9 @@ will be generated for it.
          steering:
            model: uniform
            range: [0.0, 0.1]
+         position:
+           model: uniform
+           range: [0.0, 0.1]
 
 """
 
@@ -169,7 +172,8 @@ class SAANoise(UnivarBatchCriteria):
                 return [x for x in range(0, len(exp_dirs))]
         else:
             if self.__uniform_sources():
-                return [self.__avg_uniform_level_from_chglist(v) for v in self.variances]
+                levels = [self.__avg_uniform_level_from_chglist(v) for v in self.variances]
+                return ["U(-{0},{0})".format(round(l, 2)) for l in levels]
             elif self.__gaussian_sources():
                 levels = [self.__avg_gaussian_level_from_chglist(v) for v in self.variances]
                 return ["G({0},{1})".format(round(mean), round(stddev)) for mean, stddev in levels]
@@ -339,6 +343,7 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
                 'proximity': './/sensors/footbot_proximity',
                 'ground': './/sensors/footbot_motor_ground',
                 'steering': './/sensors/differential_steering',
+                'position': './/sensors/positioning',
             }
 
         }

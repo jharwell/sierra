@@ -432,13 +432,16 @@ class UnivarIntraScenarioComparator:
         ``cc-csvs/``.
         """
         csv_stem_opath = os.path.join(self.cc_csv_root, dest_stem + "-" + scenario)
+        xticks = batch_criteria.graph_xticks(cmdopts)
+        xtick_labels = batch_criteria.graph_xticklabels(cmdopts)
         BatchRangedGraph(inputy_stem_fpath=csv_stem_opath,
                          output_fpath=os.path.join(self.cc_graph_root,
                                                    dest_stem) + '-' + scenario + ".png",
                          title=title,
                          xlabel=batch_criteria.graph_xlabel(cmdopts),
                          ylabel=label,
-                         xticks=batch_criteria.graph_xticks(cmdopts)[cmdopts['bc_undefined_exp0']:],
+                         xtick_labels=xtick_labels[cmdopts['bc_undefined_exp0']:],
+                         xticks=xticks[cmdopts['bc_undefined_exp0']:],
                          legend=legend).generate()
 
     def __gen_csv(self,
@@ -489,5 +492,6 @@ class UnivarIntraScenarioComparator:
             cum_stddev_df = pd.DataFrame()
 
         if os.path.exists(stddev_ipath):
-            cum_stddev_df = cum_stddev_df.append(pd.read_csv(stddev_ipath, sep=';'))
+            t = pd.read_csv(stddev_ipath, sep=';')
+            cum_stddev_df = cum_stddev_df.append(t[list(t.columns)[cmdopts['bc_undefined_exp0']:]])
             cum_stddev_df.to_csv(csv_opath_stem + '.stddev', sep=';', index=False)

@@ -25,6 +25,7 @@
         <range_and_bearing implementation="default" />
       </actuators>
       <sensors>
+        <positioning implementation="default"/>
         <differential_steering implementation="default" />
         <footbot_proximity implementation="default" show_rays="true" />
         <footbot_light implementation="rot_z_only" show_rays="false" />
@@ -177,7 +178,7 @@
             <phototaxis_force max="8"/>
           </force_calculator>
 
-          <diff_drive soft_turn_max="15"
+          <diff_drive soft_turn_max="45"
                       max_speed="10.0" />
         </actuation_subsystem2D>
       </params>
@@ -205,10 +206,15 @@
           task_execution_generalist="task-execution-generalist.csv"
           task_execution_collector="task-execution-collector.csv"
           task_execution_harvester="task-execution-harvester.csv"
+          task_execution_cache_starter="task-execution-cache-starter.csv"
+          task_execution_cache_finisher="task-execution-cache-finisher.csv"
+          task_execution_cache_transferer="task-execution-cache-transferer.csv"
+          task_execution_cache_collector="task-execution-cache-collector.csv"
           task_tab_generalist="task-tab-generalist.csv"
+          task_tab_collector="task-tab-collector.csv"
+          task_tab_harvester="task-tab-harvester.csv"
           task_distribution="task-distribution.csv"
           perception_dpo="perception-dpo.csv"
-          perception_mdpo="perception-mdpo.csv"
           output_interval="1000">
       </metrics>
     </output>

@@ -80,6 +80,7 @@ class SwarmConstantDensity(cd.ConstantDensity):
                     # ARGoS won't start if there are 0 robots, so you always need to put at least
                     # 1.
                     n_robots = int(max(1, (int(x) * int(y)) * (self.target_density / 100.0)))
+                    print((n_robots))
                     changeset.add((".//arena/distribute/entity", "quantity", str(n_robots)))
                     break
 

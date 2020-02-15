@@ -54,7 +54,7 @@ class BatchedExpCSVAverager:
             if os.path.isdir(path):
                 q.put(path)
 
-        for i in range(0, mp.cpu_count()):
+        for i in range(0, min(mp.cpu_count(), len(experiments))):
             p = mp.Process(target=BatchedExpCSVAverager.__thread_worker,
                            args=(q, main_config, avg_opts))
             p.start()

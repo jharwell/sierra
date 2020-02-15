@@ -76,7 +76,7 @@ class SelfOrganizationFLUnivar:
                          title="Swarm Self-Organization Due To Sub-Linear Fractional Performance Losses",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="",
-                         xvals=batch_criteria.graph_xticks(self.cmdopts)).generate()
+                         xticks=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
 
 class SelfOrganizationFLBivar:

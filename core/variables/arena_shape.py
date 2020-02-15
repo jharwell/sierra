@@ -64,22 +64,20 @@ class RectangularArena(BaseVariable):
                      (".//arena/*[@id='wall_north']", "size", "{0}, {1}, 0.5".format(s[0],
                                                                                      kWallWidth)),
 
-                     # North wall needs to have its Y coordinate offset by the width of the wall / 2
-                     # in order to be centered on the boundary for the arena. This is necessary to
-                     # ensure that the maximum Y coordinate that robots can access is LESS than the
-                     # upper boundary of physics engines incident along the north wall.
-                     #
-                     # I think this is a bug in ARGoS.
                      (".//arena/*[@id='wall_north']/body",
-                      "position", "{0}, {1}, 0".format(s[0] / 2.0,
-                                                       s[1] - kWallWidth / 2.0)),
+                      "position", "{0}, {1}, 0".format(s[0] / 2.0, s[1])),
                      (".//arena/*[@id='wall_south']", "size", "{0}, {1}, 0.5".format(s[0],
                                                                                      kWallWidth)),
                      (".//arena/*[@id='wall_south']/body",
                       "position", "{0}, 0, 0 ".format(s[0] / 2.0)),
 
 
-                     # Same thing for the east wall.
+                     # East wall needs to have its X coordinate offset by the width of the wall / 2
+                     # in order to be centered on the boundary for the arena. This is necessary to
+                     # ensure that the maximum X coordinate that robots can access is LESS than the
+                     # upper boundary of physics engines incident along the east wall.
+                     #
+                     # I think this is a bug in ARGoS.
                      (".//arena/*[@id='wall_east']", "size", "{0}, {1}, 0.5".format(kWallWidth,
                                                                                     s[1] + kWallWidth)),
                      (".//arena/*[@id='wall_east']/body",

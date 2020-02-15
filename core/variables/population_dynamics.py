@@ -43,7 +43,7 @@ Definition:
         ``R`` dynamics must also be specified, and vice versa. Together they specify the dynamics of
         the swarm as robots temporarily fail, and removed from simulation, and then later are
         re-introduced after they have been repaired (a queue with :math:`\lambda_{m}` arrival rate
-        and :math:`\mu_{r}` repair rate). Can be specified along with ``B|D`.
+        and :math:`\mu_{r}` repair rate). Can be specified along with ``B|D``.
 
 
     The specified :math:`\lambda` or :math:`\mu` are the rate parameters of the exponential
@@ -130,7 +130,6 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
 
         ticks = []
         for d in exp_dirs:
-
             exp_def = core.utils.unpickle_exp_def(os.path.join(self.batch_generation_root,
                                                                d,
                                                                'exp_def.pkl'))

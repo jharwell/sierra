@@ -38,13 +38,16 @@ sierra:
     sensors:
       light:
         model: uniform
-        range: [0.0, 0.25]
+        range: [0.0, 0.10]
       proximity:
         model: uniform
-        range: [0.0, 0.25]
+        range: [0.0, 0.10]
       ground:
         model: uniform
-        range: [0.0, 0.25]
+        range: [0.0, 0.10]
       steering:
         model: uniform
-        range: [0.0, 0.25]
+        range: [0.0, 0.10]
+      position:
+        model: uniform
+        range: [0.0, 0.10]

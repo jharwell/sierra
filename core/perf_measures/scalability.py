@@ -297,7 +297,7 @@ class EfficiencyUnivar:
                          title="Swarm Efficiency (normalized)",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="Efficiency",
-                         xvals=batch_criteria.graph_xticks(self.cmdopts)).generate()
+                         xticks=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
     def __calculate_metric(self,
                            ipath: str,
@@ -338,7 +338,7 @@ class ProjectivePerformanceComparisonUnivar:
     def generate(self, df: pd.DataFrame, batch_criteria: bc.BatchCriteria):
         cum_stem = os.path.join(self.cmdopts["collate_root"], "pm-pp-comp-" + self.projection_type)
         df.to_csv(cum_stem + ".csv", sep=';', index=False)
-        xvals = batch_criteria.graph_xticks(self.cmdopts)
+        xticks = batch_criteria.graph_xticks(self.cmdopts)
 
         BatchRangedGraph(inputy_stem_fpath=cum_stem + ".csv",
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
@@ -347,7 +347,7 @@ class ProjectivePerformanceComparisonUnivar:
                              self.projection_type),
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="Observed-Projected Ratio",
-                         xvals=xvals[1:]).generate()
+                         xticks=xticks[1:]).generate()
 
 
 class ProjectivePerformanceComparisonPositiveUnivar(ProjectivePerformanceComparisonUnivar):
@@ -403,7 +403,7 @@ class FractionalMaintenanceUnivar:
                          title="Swarm Scalability: Fractional Performance Maintenance In The Presence Of Inter-robot Interference",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="Scalability Value",
-                         xvals=batch_criteria.graph_xticks(self.cmdopts)).generate()
+                         xticks=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
 
 class KarpFlattUnivar:
@@ -460,7 +460,7 @@ class KarpFlattUnivar:
                          title="Swarm Serial Fraction: Karp-Flatt Metric",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="",
-                         xvals=batch_criteria.graph_xticks(self.cmdopts)).generate()
+                         xticks=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
 
 class ScalabilityUnivarGenerator:

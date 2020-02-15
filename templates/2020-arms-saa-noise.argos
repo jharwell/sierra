@@ -25,6 +25,12 @@
         <range_and_bearing implementation="default" />
       </actuators>
       <sensors>
+        <positioning implementation="default">
+          <noise model='none'
+                 level='0.0'
+                 mean='0.0'
+                 stddev='0.0'/>
+          </positioning>
         <differential_steering implementation="default">
           <noise model='none'
                  level='0.0'

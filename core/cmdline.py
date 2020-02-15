@@ -740,7 +740,7 @@ class HPCEnvInheritor():
     def __call__(self, args):
         # non-MSI
         if self.env_type is None:
-            if any([1, 2]) in args.pipeline:
+            if any(s in args.pipeline for s in [1, 2]):
                 args.__dict__['n_jobs_per_node'] = min(args.n_sims,
                                                        max(1,
                                                            int(multiprocessing.cpu_count() / float(args.n_threads))))
@@ -752,13 +752,13 @@ class HPCEnvInheritor():
         keys = ['MSICLUSTER', 'PBS_NUM_PPN', 'PBS_NUM_NODES']
 
         for k in keys:
-            assert k in os.environ, \
+            assert k in os.environ,\
                 "FATAL: Attempt to run sierra in non-MSI environment: '{0}' not found".format(k)
 
         if self.env_type == 'MSI':
-            assert os.environ['MSICLUSTER'] in self.environs, \
+            assert os.environ['MSICLUSTER'] in self.environs,\
                 "FATAL: Unknown MSI cluster '{0}'".format(os.environ['MSICLUSTER'])
-            assert args.n_sims >= int(os.environ['PBS_NUM_NODES']), \
+            assert args.n_sims >= int(os.environ['PBS_NUM_NODES']),\
                 "FATAL: Too few simulations requested: {0} < {1}".format(args.n_sims,
                                                                          os.environ['PBS_NUM_NODES'])
             assert args.n_sims % int(os.environ['PBS_NUM_NODES']) == 0,\
@@ -768,8 +768,9 @@ class HPCEnvInheritor():
             # For HPC, we want to use the the maximum # of simultaneous jobs per node such that
             # there is no thread oversubscription. We also always want to allocate each physics
             # engine its own thread for maximum performance, per the original ARGoS paper.
-            args.__dict__['n_jobs_per_node'] = int(args.n_sims / int(os.environ['PBS_NUM_NODES']))
-            args.physics_n_engines = int(int(os.environ['PBS_NUM_PPN']) / args.n_jobs_per_node)
+            args.__dict__['n_jobs_per_node'] = int(
+                float(args.n_sims) / int(os.environ['PBS_NUM_NODES']))
+            args.physics_n_engines = int(float(os.environ['PBS_NUM_PPN']) / args.n_jobs_per_node)
             args.n_threads = args.physics_n_engines
         return args
 

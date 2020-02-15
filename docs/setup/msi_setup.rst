@@ -94,3 +94,31 @@ MSI.
    - https://www.msi.umn.edu/queues
 
    Seriously--**READ THEM**.
+
+#. Now that you have read the MSI docs, look at ``scripts/example.pbs`` as a
+   starting point for how to run sierra on MSI from within a PBS script. Copy
+   and modify the example script as needed.
+
+   PBS parameters you **DO** need to change:
+
+     - The email (I don't want to get emails about **YOUR** jobs)
+
+   PBS parameters you **MIGHT** need to change:
+
+     - The number of requested nodes
+
+   Other things you **MIGHT** need to change:
+
+     - The location of the FORDYCA and SIERRA repos in the script, if you did
+       not clone them to the same location.
+
+   Once you are ready, have someone look at your script to give it a basic
+   sanity check, and then submit it via::
+
+     qsub your-new-script.pbs
+
+   .. IMPORTANT:: The stdout and stderr files from your script will be created
+                  in the directory you run the ``qsub`` command from. Make sure
+                  you have write permission to the directory you submit from,
+                  otherwise, you will probably get a cryptic error from the PBS
+                  job scheduler.

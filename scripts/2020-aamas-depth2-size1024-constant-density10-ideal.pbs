@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#PBS -l walltime=16:00:00,nodes=32:ppn=24,pmem=2500mb
+#PBS -l walltime=24:00:00,nodes=32:ppn=24,pmem=2500mb
 #PBS -m abe
 #PBS -M harwe006@umn.edu
 
@@ -32,9 +32,9 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 ################################################################################
 # Begin Experiments                                                            #
 ################################################################################
-CONTROLLERS=(depth2.BIRTD_DPO depth2.BIRTD_DPO)
-SCENARIOS=(SS.12x6 DS.12x6)
-BLOCK_COUNTS=(1000 1000)
+CONTROLLERS=(depth2.BIRTD_DPO)
+SCENARIOS=(DS.36x18)
+BLOCK_COUNTS=(1000)
 
 OUTPUT_ROOT=$HOME/exp/2020-aamas-depth2-constant-density10-ideal
 BASE_CMD="python3 sierra.py \
@@ -43,11 +43,15 @@ BASE_CMD="python3 sierra.py \
                   --exec-method=hpc\
                   --hpc-env=MSI \
                   --n-sims=96\
+                  --pipeline 1 2\
                   --time-setup=time_setup.T10000"
 
 cd $SIERRA
 
 echo "Running with controller=${CONTROLLERS[$PBS_ARRAYID]},scenario=${SCENARIOS[$PBS_ARRAYID]},block count=${BLOCK_COUNTS[$PBS_ARRAYID]}"
+
+# Create core dump files if we crash
+ulimit -c unlimited
 
 $BASE_CMD\
     --controller=${CONTROLLERS[$PBS_ARRAYID]}\
