@@ -14,8 +14,11 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
+import typing as tp
 
 from core.variables.base_variable import BaseVariable
+
+from core.utils import ArenaExtent as ArenaExtent
 
 
 class NestPose(BaseVariable):
@@ -24,14 +27,14 @@ class NestPose(BaseVariable):
     Defines the position/size of the nest based on block distribution type.
 
     Attributes:
-      dist_type(str): The block distribution type. Valid values are [single_source, dual_source,
-                                                                    quad_source, random, powerlaw].
-      dimensions(list): List (X,Y) dimensions to generate nest poses for.
+      dist_type: The block distribution type. Valid values are [single_source, dual_source,
+                                                                quad_source, random, powerlaw].
+      extents: List of arena extents to generation nest poses for.
     """
 
-    def __init__(self, dist_type, dimensions):
+    def __init__(self, dist_type: str, extents: tp.List[ArenaExtent]):
         self.dist_type = dist_type
-        self.dimensions = dimensions
+        self.extents = extents
 
     def gen_attr_changelist(self):
         """
@@ -41,24 +44,24 @@ class NestPose(BaseVariable):
         """
         if self.dist_type == "single_source":
             return [set([
-                (".//arena_map/nest", "size", "{0}, {1}".format(s[0] * 0.1, s[1] * 0.8)),
-                (".//arena_map/nest", "center", "{0}, {1}".format(s[0] * 0.1, s[1] / 2.0)),
-                (".//block_sel_matrix", "nest", "{0}, {1}".format(s[0] * 0.1, s[1] / 2.0)),
-            ]) for s in self.dimensions]
+                (".//arena_map/nest", "size", "{0}, {1}".format(s.xmax * 0.1, s.ymax * 0.8)),
+                (".//arena_map/nest", "center", "{0}, {1}".format(s.xmax * 0.1, s.ymax / 2.0)),
+                (".//block_sel_matrix", "nest", "{0}, {1}".format(s.xmax * 0.1, s.ymax / 2.0)),
+            ]) for s in self.extents]
         elif self.dist_type == "dual_source":
             return [set([
-                (".//arena_map/nest", "size", "{0}, {1}".format(s[0] * 0.1, s[1] * 0.8)),
-                (".//arena_map/nest", "center", "{0}, {1}".format(s[0] * 0.5, s[1] * 0.5)),
-                (".//block_sel_matrix", "nest", "{0}, {1}".format(s[0] * 0.5, s[1] * 0.5)),
-            ]) for s in self.dimensions]
+                (".//arena_map/nest", "size", "{0}, {1}".format(s.xmax * 0.1, s.ymax * 0.8)),
+                (".//arena_map/nest", "center", "{0}, {1}".format(s.xmax * 0.5, s.ymax * 0.5)),
+                (".//block_sel_matrix", "nest", "{0}, {1}".format(s.xmax * 0.5, s.ymax * 0.5)),
+            ]) for s in self.extents]
         elif (self.dist_type == "powerlaw" or self.dist_type == "random" or
               self.dist_type == "quad_source"):
             return [set([
-                (".//arena_map/nest", "size", "{0}, {1}".format(s[0] * 0.20, s[0] * 0.20)),
-                (".//arena_map/nest", "center", "{0}, {0}".format(s[0] * 0.5)),
-                (".//block_sel_matrix", "nest", "{0}, {0}".format(s[0] * 0.5)),
+                (".//arena_map/nest", "size", "{0}, {1}".format(s.xmax * 0.20, s.xmax * 0.20)),
+                (".//arena_map/nest", "center", "{0}, {0}".format(s.xmax * 0.5)),
+                (".//block_sel_matrix", "nest", "{0}, {0}".format(s.xmax * 0.5)),
             ])
-                for s in self.dimensions]
+                for s in self.extents]
         else:
             # Eventually, I might want to have definitions for the other block distribution types
             raise NotImplementedError

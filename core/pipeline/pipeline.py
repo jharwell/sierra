@@ -59,7 +59,8 @@ class Pipeline:
             # stage 1
             'time_setup': self.args.time_setup,
             'physics_n_engines': self.args.physics_n_engines,
-            "physics_engine_type": self.args.physics_engine_type,
+            "physics_engine_type2D": self.args.physics_engine_type2D,
+            "physics_engine_type3D": self.args.physics_engine_type3D,
             "physics_iter_per_tick": self.args.physics_iter_per_tick,
             "with_robot_rab": self.args.with_robot_rab,
             "with_robot_leds": self.args.with_robot_leds,

@@ -178,7 +178,7 @@
             <phototaxis_force max="8"/>
           </force_calculator>
 
-          <diff_drive soft_turn_max="45"
+          <diff_drive soft_turn_max="15"
                       max_speed="10.0" />
         </actuation_subsystem2D>
       </params>

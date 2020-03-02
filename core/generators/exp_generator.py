@@ -26,7 +26,6 @@ import typing as tp
 import logging
 
 from core.xml_luigi import XMLLuigi
-from core.variables import physics_engines
 from core.variables import batch_criteria as bc
 from core.variables import constant_density
 import core.generators.generator_factory as gf
@@ -45,7 +44,6 @@ class ExpDefCommonGenerator:
       - simulation time parameters
       - Disabling sensors and actuators
       - Simulation length
-      - Physics
 
     Attributes:
         template_input_file: Path(relative to current dir or absolute) to the template XML
@@ -85,23 +83,7 @@ class ExpDefCommonGenerator:
         # Setup simulation time parameters
         self.__generate_time(xml_luigi, self.exp_def_fpath)
 
-        # Setup physics
-        self.__generate_physics(xml_luigi)
-
         return xml_luigi
-
-    def __generate_physics(self, xml_luigi: XMLLuigi):
-        """
-        Generates XML changes for the specified physics engines configuration for the
-        simulation.
-
-        Does not write generated changes to the simulation definition pickle file.
-        """
-        # This will need to change when I get to the point of mixing 2D and 3D physics engines
-        pe = physics_engines.factory(self.cmdopts, [self.cmdopts['arena_dim']])
-
-        [xml_luigi.tag_remove(a[0], a[1]) for a in pe.gen_tag_rmlist()[0]]
-        [xml_luigi.tag_add(a[0], a[1], a[2]) for a in pe.gen_tag_addlist()[0]]
 
     def __generate_sa(self, xml_luigi: XMLLuigi):
         """

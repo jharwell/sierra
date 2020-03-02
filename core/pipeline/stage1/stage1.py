@@ -56,13 +56,8 @@ class PipelineStage1:
         logging.info("Stage1: Generating input files for batched experiment in %s...",
                      self.cmdopts['generation_root'])
         logging.debug("Using '%s'", self.cmdopts['time_setup'])
-        logging.debug("Using %s physics engines", self.cmdopts['physics_n_engines'])
         self.creator.create(self.generator)
 
         logging.info("Stage1: %d input files generated in %d experiments.",
                      sum([len(files) for r, d, files in os.walk(self.cmdopts['generation_root'])]),
                      sum([len(d) for r, d, files in os.walk(self.cmdopts['generation_root'])]))
-
-        # Computed during input generation and needed later for graph generation; not part of
-        # default cmdopts dict so we grab it here
-        # self.cmdopts['arena_dim'] = self.generator.cmdopts['arena_dim']

@@ -15,10 +15,14 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 import pickle
+import logging
 import typing as tp
+
 from core.variables import block_distribution, nest_pose, arena_shape
 from core.xml_luigi import XMLLuigi
 from core.generators import exp_generator
+from core.variables import physics_engines
+from core.utils import ArenaExtent as ArenaExtent
 
 
 class BaseScenarioGenerator():
@@ -46,35 +50,33 @@ class BaseScenarioGenerator():
                                                                **kwargs)
 
     @staticmethod
-    def generate_block_dist(xml_luigi: XMLLuigi, block_dist: block_distribution.Type):
+    def generate_block_dist(exp_def: XMLLuigi, block_dist: block_distribution.Type):
         """
         Generate XML changes for the specified block distribution.
 
         Does not write generated changes to the simulation definition pickle file.
         """
-        [xml_luigi.attr_change(a[0], a[1], a[2]) for a in block_dist.gen_attr_changelist()[0]]
+        [exp_def.attr_change(a[0], a[1], a[2]) for a in block_dist.gen_attr_changelist()[0]]
 
         rms = block_dist.gen_tag_rmlist()
         if rms:  # non-empty
-            [xml_luigi.tag_remove(a) for a in rms[0]]
+            [exp_def.tag_remove(a) for a in rms[0]]
 
     @staticmethod
-    def generate_nest_pose(xml_luigi: XMLLuigi,
-                           arena_dim: tp.Tuple[int, int, int],
-                           dist_type: str):
+    def generate_nest_pose(exp_def: XMLLuigi, extent: ArenaExtent, dist_type: str):
         """
         Generate XML changes for the specified arena dimensions and block distribution type to
         properly place the nest.
 
         Does not write generated changes to the simulation definition pickle file.
         """
-        np = nest_pose.NestPose(dist_type, [arena_dim])
-        [xml_luigi.attr_change(a[0], a[1], a[2]) for a in np.gen_attr_changelist()[0]]
+        np = nest_pose.NestPose(dist_type, [extent])
+        [exp_def.attr_change(a[0], a[1], a[2]) for a in np.gen_attr_changelist()[0]]
         rms = np.gen_tag_rmlist()
         if rms:  # non-empty
-            [xml_luigi.tag_remove(a) for a in rms[0]]
+            [exp_def.tag_remove(a) for a in rms[0]]
 
-    def generate_arena_shape(self, xml_luigi: XMLLuigi, shape: arena_shape.RectangularArena):
+    def generate_arena_shape(self, exp_def: XMLLuigi, shape: arena_shape.RectangularArena):
         """
         Generate XML changes for the specified arena shape.
 
@@ -83,17 +85,17 @@ class BaseScenarioGenerator():
         # We check for attributes before modification because if we are not rendering video, then we
         # get a bunch of spurious warnings about deleted tags/attributes.
         for a in shape.gen_attr_changelist()[0]:
-            if xml_luigi.has_tag(a[0]):
-                xml_luigi.attr_change(a[0], a[1], a[2])
+            if exp_def.has_tag(a[0]):
+                exp_def.attr_change(a[0], a[1], a[2])
 
         with open(self.exp_def_fpath, 'ab') as f:
             pickle.dump(shape.gen_attr_changelist()[0], f)
 
         rms = shape.gen_tag_rmlist()
         if rms:  # non-empty
-            [xml_luigi.tag_remove(a) for a in rms[0]]
+            [exp_def.tag_remove(a) for a in rms[0]]
 
-    def generate_block_count(self, xml_luigi: XMLLuigi):
+    def generate_block_count(self, exp_def: XMLLuigi):
         """
         Generates XML changes for # blocks in the simulation. If specified on the cmdline, that
         quantity is used. Otherwise, the # blocks specified in the manifest in the template input
@@ -104,19 +106,49 @@ class BaseScenarioGenerator():
         if self.cmdopts['n_blocks'] is not None:
             n_blocks = self.cmdopts['n_blocks']
         else:
-            n_blocks = int(xml_luigi.attr_get('.//manifest', 'n_cube')) + \
-                int(xml_luigi.attr_get('.//manifest', 'n_ramp'))
+            n_blocks = int(exp_def.attr_get('.//manifest', 'n_cube')) + \
+                int(exp_def.attr_get('.//manifest', 'n_ramp'))
 
         bd = block_distribution.Quantity([n_blocks])
 
-        [xml_luigi.attr_change(a[0], a[1], a[2]) for a in bd.gen_attr_changelist()[0]]
+        [exp_def.attr_change(a[0], a[1], a[2]) for a in bd.gen_attr_changelist()[0]]
         rms = bd.gen_tag_rmlist()
 
         if rms:  # non-empty
-            [xml_luigi.tag_remove(a) for a in rms[0]]
+            [exp_def.tag_remove(a) for a in rms[0]]
 
         with open(self.exp_def_fpath, 'ab') as f:
             pickle.dump(bd.gen_attr_changelist()[0], f)
+
+    @staticmethod
+    def generate_physics(exp_def: XMLLuigi,
+                         cmdopts: tp.Dict[str, str],
+                         engine_type: str,
+                         n_engines: int,
+                         extents: tp.List[ArenaExtent],
+                         remove_defs: bool = True):
+        """
+        Generates XML changes for the specified physics engines configuration for the
+        simulation.
+
+        Physics engine definition removal is optional, because when mixing 2D/3D engine definitions,
+        you only want to remove the existing definitions BEFORE you have adding first of the mixed
+        definitions. Doing so every time results in only the LAST of the mixed definitions being
+        present in the input file.
+
+        Does not write generated changes to the simulation definition pickle file.
+        """
+        # Valid to have 0 engines here if 2D/3D were mixed but only 1 engine was specified for the
+        # whole simulation.
+        if n_engines == 0:
+            logging.warning("0 engines of type %s specified", engine_type)
+            return
+
+        pe = physics_engines.factory(engine_type, n_engines, cmdopts, extents)
+
+        if remove_defs:
+            [exp_def.tag_remove(a[0], a[1]) for a in pe.gen_tag_rmlist()[0]]
+        [exp_def.tag_add(a[0], a[1], a[2]) for a in pe.gen_tag_addlist()[0]]
 
 
 class SSGenerator(BaseScenarioGenerator):
@@ -153,7 +185,7 @@ class SSGenerator(BaseScenarioGenerator):
         super().generate_block_dist(exp_def, block_distribution.TypeSingleSource())
 
         # Generate and apply nest definitions
-        super().generate_nest_pose(exp_def, arena_dim, "single_source")
+        super().generate_nest_pose(exp_def, ArenaExtent(dims=arena_dim), "single_source")
 
         # Generate and apply # blocks definitions
         self.generate_block_count(exp_def)
@@ -195,7 +227,7 @@ class DSGenerator(BaseScenarioGenerator):
         super().generate_block_dist(exp_def, block_distribution.TypeDualSource())
 
         # Generate and apply nest definitions
-        super().generate_nest_pose(exp_def, arena_dim, "dual_source")
+        super().generate_nest_pose(exp_def, ArenaExtent(dims=arena_dim), "dual_source")
 
         # Generate and apply # blocks definitions
         self.generate_block_count(exp_def)
@@ -236,7 +268,7 @@ class QSGenerator(BaseScenarioGenerator):
         super().generate_block_dist(exp_def, source)
 
         # Generate and apply nest definitions
-        super().generate_nest_pose(exp_def, arena_dim, "quad_source")
+        super().generate_nest_pose(exp_def, ArenaExtent(dims=arena_dim), "quad_source")
 
         # Generate and apply # blocks definitions
         self.generate_block_count(exp_def)
@@ -276,7 +308,7 @@ class PLGenerator(BaseScenarioGenerator):
         super().generate_block_dist(exp_def, block_distribution.TypePowerLaw())
 
         # Generate and apply nest definitions
-        super().generate_nest_pose(exp_def, arena_dim, "powerlaw")
+        super().generate_nest_pose(exp_def, ArenaExtent(dims=arena_dim), "powerlaw")
 
         # Generate and apply # blocks definitions
         self.generate_block_count(exp_def)
@@ -316,7 +348,7 @@ class RNGenerator(BaseScenarioGenerator):
         super().generate_block_dist(exp_def, block_distribution.TypeRandom())
 
         # Generate and apply nest definitions
-        super().generate_nest_pose(exp_def, arena_dim, "random")
+        super().generate_nest_pose(exp_def, ArenaExtent(dims=arena_dim), "random")
 
         # Generate and apply # blocks definitions
         self.generate_block_count(exp_def)

@@ -15,11 +15,27 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Miscellaneous functions used in mutiple places but that don't really fit anywhere.
+Miscellaneous classes/functions used in mutiple places but that don't really fit anywhere.
 """
 
 import pickle
-import os
+import typing as tp
+
+
+class ArenaExtent():
+    def __init__(self,
+                 dims: tp.Tuple[int, int, int],
+                 offset: tp.Tuple[int, int, int] = (0.0, 0.0, 0.0)):
+        self.offset = offset
+        self.dims = dims
+
+        self.xmin = offset[0]
+        self.ymin = offset[1]
+        self.zmin = offset[2]
+
+        self.xmax = offset[0] + dims[0]
+        self.ymax = offset[1] + dims[1]
+        self.zmax = offset[2] + dims[2]
 
 
 def unpickle_exp_def(exp_def_fpath):

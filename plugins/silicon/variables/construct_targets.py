@@ -198,7 +198,7 @@ class RampConstructTarget(BaseConstructTarget):
         adds.append(('.//{0}/construct_targets'.format(xml_parent),
                      'ramp',
                      {'id': target_name,
-                      'bounding_box': "{0}:{1}:{2}".format(bb[0], bb[1], bb[2]),
+                      'bounding_box': "{0},{1},{2}".format(bb[0], bb[1], bb[2]),
                       'anchor': "{0}:{1}".format(anchor[0], anchor[1]),
                       'orientation': orientation}))
         adds.append((".//{0}/construct_targets/*[@id='{1}'".format(xml_parent, target_name) + "]",
@@ -215,7 +215,7 @@ class RampConstructTarget(BaseConstructTarget):
                                                                        target_name) + "]/ramp_blocks",
                          "ramp_block",
                          {'id': str(i),
-                          'loc': '{0}:{1}:{2}'.format(block[0],
+                          'loc': '{0},{1},{2}'.format(block[0],
                                                       block[1],
                                                       block[2])}))
         # Next, construct the list of cube blocks
@@ -225,7 +225,7 @@ class RampConstructTarget(BaseConstructTarget):
                                                                        target_name) + "]/cube_blocks",
                          "cube_block",
                          {'id': str(i),
-                          'loc': '{0}:{1}:{2}'.format(block[0],
+                          'loc': '{0},{1},{2}'.format(block[0],
                                                       block[1],
                                                       block[2])}))
         return adds
@@ -311,8 +311,8 @@ class RectprismConstructTarget(BaseConstructTarget):
         adds.append(('.//{0}/construct_targets'.format(xml_parent),
                      'rectprism',
                      {'id': target_name,
-                      'bounding_box': "{0}:{1}:{2}".format(bb[0], bb[1], bb[2]),
-                      'anchor': "{0}:{1}".format(anchor[0], anchor[1]),
+                      'bounding_box': "{0},{1},{2}".format(bb[0], bb[1], bb[2]),
+                      'anchor': "{0},{1}".format(anchor[0], anchor[1]),
                       'orientation': orientation}))
         adds.append((".//{0}/construct_targets/*[@id='{1}'".format(xml_parent, target_name) + "]",
                      "cube_blocks",
@@ -325,7 +325,7 @@ class RectprismConstructTarget(BaseConstructTarget):
                                                                        target_name) + "]/cube_blocks",
                          "cube_block",
                          {'id': 'block' + str(i),
-                          'loc': '{0}:{1}:{2}'.format(block[0],
+                          'loc': '{0},{1},{2}'.format(block[0],
                                                       block[1],
                                                       block[2])}))
         return adds

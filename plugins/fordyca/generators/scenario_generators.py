@@ -17,6 +17,7 @@
 
 import core.generators.scenario_generator as sg
 import plugins.fordyca.generators.common as gc
+from core.utils import ArenaExtent as ArenaExtent
 
 
 class SSGenerator(sg.SSGenerator):
@@ -40,10 +41,15 @@ class SSGenerator(sg.SSGenerator):
         arena_dim = self.cmdopts['arena_dim']
 
         if "depth1" in self.controller:
-            gc.generate_static_cache(exp_def, arena_dim, self.cmdopts)
+            gc.generate_static_cache(exp_def, ArenaExtent(dims=arena_dim), self.cmdopts)
         if "depth2" in self.controller:
-            gc.generate_dynamic_cache(exp_def, arena_dim)
+            gc.generate_dynamic_cache(exp_def, ArenaExtent(dims=arena_dim))
 
+        self.generate_physics(exp_def,
+                              self.cmdopts,
+                              self.cmdopts['physics_engine_type2D'],
+                              self.cmdopts['physics_n_engines'],
+                              [ArenaExtent(dims=arena_dim)])
         return exp_def
 
 
@@ -68,9 +74,15 @@ class DSGenerator(sg.DSGenerator):
         arena_dim = self.cmdopts['arena_dim']
 
         if "depth1" in self.controller:
-            gc.generate_static_cache(exp_def, arena_dim, self.cmdopts)
+            gc.generate_static_cache(exp_def, ArenaExtent(dims=arena_dim), self.cmdopts)
         if "depth2" in self.controller:
-            gc.generate_dynamic_cache(exp_def, arena_dim)
+            gc.generate_dynamic_cache(exp_def, ArenaExtent(dims=arena_dim))
+
+        self.generate_physics(exp_def,
+                              self.cmdopts,
+                              self.cmdopts['physics_engine_type2D'],
+                              self.cmdopts['physics_n_engines'],
+                              [ArenaExtent(dims=arena_dim)])
 
         return exp_def
 
@@ -96,9 +108,15 @@ class QSGenerator(sg.QSGenerator):
         arena_dim = self.cmdopts['arena_dim']
 
         if "depth1" in self.controller:
-            gc.generate_static_cache(exp_def, arena_dim, self.cmdopts)
+            gc.generate_static_cache(exp_def, ArenaExtent(dims=arena_dim), self.cmdopts)
         if "depth2" in self.controller:
-            gc.generate_dynamic_cache(exp_def, arena_dim)
+            gc.generate_dynamic_cache(exp_def, ArenaExtent(dims=arena_dim))
+
+        self.generate_physics(exp_def,
+                              self.cmdopts,
+                              self.cmdopts['physics_engine_type2D'],
+                              self.cmdopts['physics_n_engines'],
+                              [ArenaExtent(dims=arena_dim)])
 
         return exp_def
 
@@ -124,10 +142,15 @@ class RNGenerator(sg.RNGenerator):
         arena_dim = self.cmdopts['arena_dim']
 
         if "depth1" in self.controller:
-            gc.generate_static_cache(exp_def, arena_dim, self.cmdopts)
+            gc.generate_static_cache(exp_def, ArenaExtent(dims=arena_dim), self.cmdopts)
         if "depth2" in self.controller:
-            gc.generate_dynamic_cache(exp_def, arena_dim)
+            gc.generate_dynamic_cache(exp_def, ArenaExtent(dims=arena_dim))
 
+        self.generate_physics(exp_def,
+                              self.cmdopts,
+                              self.cmdopts['physics_engine_type2D'],
+                              self.cmdopts['physics_n_engines'],
+                              [ArenaExtent(dims=arena_dim)])
         return exp_def
 
 
@@ -152,8 +175,14 @@ class PLGenerator(sg.PLGenerator):
         arena_dim = self.cmdopts['arena_dim']
 
         if "depth1" in self.controller:
-            gc.generate_static_cache(exp_def, arena_dim, self.cmdopts)
+            gc.generate_static_cache(exp_def, ArenaExtent(dims=arena_dim), self.cmdopts)
         if "depth2" in self.controller:
-            gc.generate_dynamic_cache(exp_def, arena_dim)
+            gc.generate_dynamic_cache(exp_def, ArenaExtent(dims=arena_dim))
+
+        self.generate_physics(exp_def,
+                              self.cmdopts,
+                              self.cmdopts['physics_engine_type2D'],
+                              self.cmdopts['physics_n_engines'],
+                              [ArenaExtent(dims=arena_dim)])
 
         return exp_def

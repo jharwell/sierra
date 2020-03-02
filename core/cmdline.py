@@ -273,15 +273,25 @@ class CoreCmdline:
         physics = self.parser.add_argument_group('Stage1: Physics',
                                                  'Physics engine options for stage1')
 
-        physics.add_argument("--physics-engine-type",
-                             choices=['dynamics2d', 'dynamics3d', 'pointmass3d'],
+        physics.add_argument("--physics-engine-type2D",
+                             choices=['dynamics2d'],
                              help="""
 
-                             Specify the type of physics engine to use, choosing one of the types that ARGoS supports.
+                             Specify the type of 2D physics engines used for managing arena extents, choosing one of the
+                             types that ARGoS supports.
 
                              """,
                              default='dynamics2d')
 
+        physics.add_argument("--physics-engine-type3D",
+                             choices=['dynamics3d', 'pointmass3d'],
+                             help="""
+
+                             Specify the type of 3D physics physics engine used for managing arena extents, choosing one
+                             of the types that ARGoS supports.
+
+                             """,
+                             default='dynamics3d')
         physics.add_argument("--physics-n-engines",
                              choices=[1, 4, 8, 16, 24],
                              type=int,
@@ -291,6 +301,12 @@ class CoreCmdline:
                              tiled in a uniform grid within the arena (X and Y spacing may not be the same depending on
                              dimensions and how many engines are chosen, however), extending upward in Z to the height
                              specified by ``--scenario``.
+
+                             If 2D and 3D physics engines are mixed, then half of the specified # of engines will be
+                             allocated among all arena extents cumulatively managed by each type of engine. For example,
+                             if 4 engines are used, with 1/3 of the arena managed by 2D engines and 2/3 by 3D, then 2
+                             2D engines will manage 1/3 of the arena, and 2 3D engines will manage the other 2/3 of the
+                             arena.
 
                              If ``--exec-method=hpc`` then the value of this option will be computed from the HPC
                              environment, and the cmdlin value (if any) will be ignored.

@@ -770,8 +770,8 @@ LN_collector_tab:
 
 LN_depth2_task_exec:
   graphs:
-    - src_stem: task-execution-cache_starter
-      dest_stem: task-execution-cache_starter-times
+    - src_stem: task-execution-cache-starter
+      dest_stem: task-execution-cache-starter-times
       cols:
         - int_avg_exec_time
         - cum_avg_exec_time
@@ -786,8 +786,8 @@ LN_depth2_task_exec:
       xlabel: 'Interval'
       ylabel: 'Time'
 
-    - src_stem: task-execution-cache_starter
-      dest_stem: task-execution-cache_starter-ests
+    - src_stem: task-execution-cache-starter
+      dest_stem: task-execution-cache-starter-ests
       cols:
         - int_avg_exec_estimate
         - cum_avg_exec_estimate
@@ -802,8 +802,8 @@ LN_depth2_task_exec:
       xlabel: 'Interval'
       ylabel: 'Time'
 
-    - src_stem: task-execution-cache_starter
-      dest_stem: task-execution-cache_starter-counts
+    - src_stem: task-execution-cache-starter
+      dest_stem: task-execution-cache-starter-counts
       cols:
         - int_avg_abort_count
         - cum_avg_abort_count
@@ -818,8 +818,8 @@ LN_depth2_task_exec:
       xlabel: 'Interval'
       ylabel: 'Count'
 
-    - src_stem: task-execution-cache_finisher
-      dest_stem: task-execution-cache_finisher-times
+    - src_stem: task-execution-cache-finisher
+      dest_stem: task-execution-cache-finisher-times
       cols:
         - int_avg_exec_time
         - cum_avg_exec_time
@@ -834,8 +834,8 @@ LN_depth2_task_exec:
       xlabel: 'Interval'
       ylabel: 'Time'
 
-    - src_stem: task-execution-cache_finisher
-      dest_stem: task-execution-cache_finisher-ests
+    - src_stem: task-execution-cache-finisher
+      dest_stem: task-execution-cache-finisher-ests
       cols:
         - int_avg_exec_estimate
         - cum_avg_exec_estimate
@@ -850,8 +850,8 @@ LN_depth2_task_exec:
       xlabel: 'Interval'
       ylabel: 'Time'
 
-    - src_stem: task-execution-cache_finisher
-      dest_stem: task-execution-cache_finisher-counts
+    - src_stem: task-execution-cache-finisher
+      dest_stem: task-execution-cache-finisher-counts
       cols:
         - int_avg_abort_count
         - cum_avg_abort_count
@@ -866,8 +866,8 @@ LN_depth2_task_exec:
       xlabel: 'Interval'
       ylabel: 'Count'
 
-    - src_stem: task-execution-cache_transferer
-      dest_stem: task-execution-cache_transferer-times
+    - src_stem: task-execution-cache-transferer
+      dest_stem: task-execution-cache-transferer-times
       cols:
         - int_avg_exec_time
         - cum_avg_exec_time
@@ -882,8 +882,8 @@ LN_depth2_task_exec:
       xlabel: 'Interval'
       ylabel: 'Time'
 
-    - src_stem: task-execution-cache_transferer
-      dest_stem: task-execution-cache_transferer-ests
+    - src_stem: task-execution-cache-transferer
+      dest_stem: task-execution-cache-transferer-ests
       cols:
         - int_avg_exec_estimate
         - cum_avg_exec_estimate
@@ -899,8 +899,8 @@ LN_depth2_task_exec:
       ylabel: 'Time'
 
 
-    - src_stem: task-execution-cache_transferer
-      dest_stem: task-execution-cache_transferer-counts
+    - src_stem: task-execution-cache-transferer
+      dest_stem: task-execution-cache-transferer-counts
       cols:
         - int_avg_abort_count
         - cum_avg_abort_count
@@ -915,8 +915,8 @@ LN_depth2_task_exec:
       xlabel: 'Interval'
       ylabel: 'Count'
 
-    - src_stem: task-execution-cache_collector
-      dest_stem: task-execution-cache_collector-times
+    - src_stem: task-execution-cache-collector
+      dest_stem: task-execution-cache-collector-times
       cols:
         - int_avg_exec_time
         - cum_avg_exec_time
@@ -931,8 +931,8 @@ LN_depth2_task_exec:
       xlabel: 'Interval'
       ylabel: 'Time'
 
-    - src_stem: task-execution-cache_collector
-      dest_stem: task-execution-cache_collector-ests
+    - src_stem: task-execution-cache-collector
+      dest_stem: task-execution-cache-collector-ests
       cols:
         - int_avg_exec_estimate
         - cum_avg_exec_estimate
@@ -947,8 +947,8 @@ LN_depth2_task_exec:
       xlabel: 'Interval'
       ylabel: 'Time'
 
-    - src_stem: task-execution-cache_collector
-      dest_stem: task-execution-cache_collector-counts
+    - src_stem: task-execution-cache-collector
+      dest_stem: task-execution-cache-collector-counts
       cols:
         - int_avg_abort_count
         - cum_avg_abort_count

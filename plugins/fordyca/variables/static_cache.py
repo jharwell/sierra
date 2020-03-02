@@ -15,7 +15,10 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 
+import typing as tp
+
 from core.variables.base_variable import BaseVariable
+from core.utils import ArenaExtent as ArenaExtent
 
 
 class StaticCache(BaseVariable):
@@ -24,14 +27,14 @@ class StaticCache(BaseVariable):
     Defines the size and capacity of a static cache with.
 
     Attributes:
-      sizes(list): List of the # of blocks the cache should have each time the simulation respawns
-                   it.
-      dimension(list): List of the arena (X,Y) dimensions.
+        sizes: List of the # of blocks the cache should have each time the simulation respawns
+               it.
+        extents: List of the extents within the arena to generate definitions for.
     """
 
-    def __init__(self, sizes, dimension):
+    def __init__(self, sizes: tp.List[int], extents: tp.List[ArenaExtent]):
         self.sizes = sizes
-        self.dimension = dimension
+        self.extents = extents
 
     def gen_attr_changelist(self):
         """
@@ -47,10 +50,10 @@ class StaticCache(BaseVariable):
             (".//loop_functions/caches/dynamic", "enable", "false"),
             (".//loop_functions/caches/static", "enable", "true"),
             (".//loop_functions/caches/static", "size", "{0}".format(s)),
-            (".//loop_functions/caches", "dimension", "{0}".format(max(d[0] * 0.15,
-                                                                       d[1] * 0.15)))
+            (".//loop_functions/caches", "dimension", "{0}".format(max(e.xmax * 0.15,
+                                                                       e.ymax * 0.15)))
         ])
-            for d in self.dimension for s in self.sizes]
+            for e in self.extents for s in self.sizes]
 
     def gen_tag_rmlist(self):
         return []

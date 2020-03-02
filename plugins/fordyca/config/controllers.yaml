@@ -133,6 +133,7 @@ depth2:
         - *base_graphs
         - *DPO_graphs
         - *BIRTD_DPO_graphs
+
     - name: BIRTD_MDPO
       xml:
           attr_change:
@@ -141,6 +142,7 @@ depth2:
         - *base_graphs
         - *DPO_graphs
         - *BIRTD_DPO_graphs
+
     - name: BIRTD_OMDPO
       xml:
           attr_change:

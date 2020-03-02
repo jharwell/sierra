@@ -10,4 +10,7 @@ non-MSI machines for testing.
 It is named thusly because it will save you a LITERAL, (not figurative) mountain
 of work.
 
-Docs are [here](https://sierra.readthedocs.io/en/latest/), and the're so shiny!
+Project documentation is [here](https://sierra.readthedocs.io/en/latest/).
+
+# License
+This project is licensed under GPL 3.0. See [LICENSE](LICENSE.md).

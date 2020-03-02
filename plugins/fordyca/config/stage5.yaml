@@ -16,15 +16,15 @@ intra_scenario:
       title: 'Swarm Self Organization'
       label: 'Self Organization Value'
 
-    - src_stem: pm-robustness-size
-      dest_stem: cc-pm-robustness-size
-      title: 'Swarm Robustness (Population Size)'
-      label: 'Robustness Value'
+    # - src_stem: pm-robustness-size
+    #   dest_stem: cc-pm-robustness-size
+    #   title: 'Swarm Robustness (Population Size)'
+    #   label: 'Robustness Value'
 
-    - src_stem: pm-robustness-saa
-      dest_stem: cc-pm-robustness-saa
-      title: 'Swarm Robustness (SAA Noise)'
-      label: 'Robustness Value'
+    # - src_stem: pm-robustness-saa
+    #   dest_stem: cc-pm-robustness-saa
+    #   title: 'Swarm Robustness (SAA Noise)'
+    #   label: 'Robustness Value'
 
     - src_stem: pm-blocks-transported-cum
       dest_stem: cc-pm-blocks-transported-cum

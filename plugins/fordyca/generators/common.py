@@ -20,17 +20,18 @@ Extensions to :class:`core.generators.BaseScenarioGenerator` common to all FORDY
 
 import typing as tp
 
+from core.utils import ArenaExtent as ArenaExtent
 from plugins.fordyca.variables import dynamic_cache, static_cache
 from core.xml_luigi import XMLLuigi
 
 
-def generate_dynamic_cache(xml_luigi: XMLLuigi, arena_dim: tp.Tuple[int, int, int]):
+def generate_dynamic_cache(xml_luigi: XMLLuigi, extent: ArenaExtent):
     """
     Generate XML changes for dynamic cache usage (depth2 simulations only).
 
     Does not write generated changes to the simulation definition pickle file.
     """
-    cache = dynamic_cache.DynamicCache([arena_dim])
+    cache = dynamic_cache.DynamicCache([extent])
 
     [xml_luigi.attr_change(a[0], a[1], a[2]) for a in cache.gen_attr_changelist()[0]]
     rms = cache.gen_tag_rmlist()
@@ -39,7 +40,7 @@ def generate_dynamic_cache(xml_luigi: XMLLuigi, arena_dim: tp.Tuple[int, int, in
 
 
 def generate_static_cache(xml_luigi: XMLLuigi,
-                          arena_dim: tp.Tuple[int, int, int],
+                          extent: ArenaExtent,
                           cmdopts: tp.Dict[str, str]):
     """
     Generate XML changes for static cache usage (depth1 simulations only).
@@ -50,10 +51,10 @@ def generate_static_cache(xml_luigi: XMLLuigi,
     # If they specified how many blocks to use for static cache respawn, use that.
     # Otherwise use the floor of 2.
     if cmdopts['static_cache_blocks'] is None:
-        cache = static_cache.StaticCache([2], [arena_dim])
+        cache = static_cache.StaticCache([2], [extent])
     else:
         cache = static_cache.StaticCache([cmdopts['static_cache_blocks']],
-                                         [arena_dim])
+                                         [extent])
 
     [xml_luigi.attr_change(a[0], a[1], a[2]) for a in cache.gen_attr_changelist()[0]]
     rms = cache.gen_tag_rmlist()

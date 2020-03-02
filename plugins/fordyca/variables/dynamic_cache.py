@@ -14,7 +14,10 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
+import typing as tp
+
 from core.variables.base_variable import BaseVariable
+from core.utils import ArenaExtent as ArenaExtent
 
 
 class DynamicCache(BaseVariable):
@@ -24,11 +27,11 @@ class DynamicCache(BaseVariable):
     source foraging scenarios, but will work with only types as well.
 
     Attributes:
-      dimension(list): List of the arena (X,Y) dimensions.
+        extents: List of the extents within the arena to generate definitions for.
     """
 
-    def __init__(self, dimension):
-        self.dimension = dimension
+    def __init__(self, extents: tp.List[ArenaExtent]):
+        self.extents = extents
 
     def gen_attr_changelist(self):
         """
@@ -41,32 +44,32 @@ class DynamicCache(BaseVariable):
         return [set([
             (".//loop_functions/caches/dynamic", "enable", "true"),
             (".//loop_functions/caches/static", "enable", "false"),
-            (".//loop_functions/caches/dynamic", "min_dist", "{0}".format(min(d[0] * 0.20,
-                                                                              d[1] * 0.20))),
+            (".//loop_functions/caches/dynamic", "min_dist", "{0}".format(min(e.xmax * 0.20,
+                                                                              e.ymax * 0.20))),
 
-            (".//loop_functions/caches", "dimension", "{0}".format(max(d[0] * 0.20,
-                                                                       d[1] * 0.20))),
+            (".//loop_functions/caches", "dimension", "{0}".format(max(e.xmax * 0.20,
+                                                                       e.ymax * 0.20))),
 
             # Set to dimensions of cache to ensure that caches will not be created such that they
             # overlap
-            (".//cache_sel_matrix", "cache_prox_dist", "{0}".format(max(d[0] * 0.20,
-                                                                        d[1] * 0.20))),
+            (".//cache_sel_matrix", "cache_prox_dist", "{0}".format(max(e.xmax * 0.20,
+                                                                        e.ymax * 0.20))),
 
-            (".//cache_sel_matrix", "nest_prox_dist", "{0}".format(max(d[0] * 0.25,
-                                                                       d[1] * 0.25))),
+            (".//cache_sel_matrix", "nest_prox_dist", "{0}".format(max(e.xmax * 0.25,
+                                                                       e.ymax * 0.25))),
 
-            (".//cache_sel_matrix", "block_prox_dist", "{0}".format(max(d[0] * 0.20,
-                                                                        d[1] * 0.20))),
+            (".//cache_sel_matrix", "block_prox_dist", "{0}".format(max(e.xmax * 0.20,
+                                                                        e.ymax * 0.20))),
 
-            (".//cache_sel_matrix", "site_xrange", "{0}:{1}".format(max(d[0] * 0.20,
-                                                                        d[1] * 0.20) / 2.0,
-                                                                    d[0] - max(d[0] * 0.20,
-                                                                               d[1] * 0.20) / 2.0)),
-            (".//cache_sel_matrix", "site_yrange", "{0}:{1}".format(max(d[0] * 0.20,
-                                                                        d[1] * 0.20) / 2.0,
-                                                                    d[1] - max(d[0] * 0.20,
-                                                                               d[1] * 0.20) / 2.0)),
-        ]) for d in self.dimension]
+            (".//cache_sel_matrix", "site_xrange", "{0}:{1}".format(max(e.xmax * 0.20,
+                                                                        e.ymax * 0.20) / 2.0,
+                                                                    e.xmax - max(e.xmax * 0.20,
+                                                                                 e.ymax * 0.20) / 2.0)),
+            (".//cache_sel_matrix", "site_yrange", "{0}:{1}".format(max(e.xmax * 0.20,
+                                                                        e.ymax * 0.20) / 2.0,
+                                                                    e.ymax - max(e.xmax * 0.20,
+                                                                                 e.ymax * 0.20) / 2.0)),
+        ]) for e in self.extents]
 
     def gen_tag_rmlist(self):
         return []

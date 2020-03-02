@@ -1,4 +1,4 @@
-# Copyright 2018 John Harwell, All rights reserved.
+# Copyright 2020 John Harwell, All rights reserved.
 #
 #  This file is part of SIERRA.
 #
@@ -16,6 +16,7 @@
 
 
 import core.generators.scenario_generator as sg
+import plugins.silicon.generators.common as gc
 import plugins.silicon.variables.construct_targets as ct
 
 
@@ -39,11 +40,16 @@ class SSGenerator(sg.SSGenerator):
         exp_def = super().generate()
 
         # Construction targets
+        max_z = 0.0
         for t in self.cmdopts['construct_targets']:
             target = ct.factory(self.cmdopts, t, self.cmdopts['construct_targets'].index(t))
+            max_z = max(max_z, target.structure['bb'][2])
             [exp_def.tag_remove(a[0], a[1]) for a in target.gen_tag_rmlist()[0]]
             [exp_def.tag_add(a[0], a[1], a[2])
              for addset in target.gen_tag_addlist() for a in addset]
+
+        # Mixed 2D/3D physics
+        gc.generate_mixed_physics(exp_def, self.cmdopts, max_z, 'single_source')
 
         return exp_def
 
@@ -68,11 +74,16 @@ class DSGenerator(sg.DSGenerator):
         exp_def = super().generate()
 
         # Construction targets
+        max_z = 0.0
         for t in self.cmdopts['construct_targets']:
             target = ct.factory(self.cmdopts, t, self.cmdopts['construct_targets'].index(t))
+            max_z = max(max_z, target.structure['bb'][2])
             [exp_def.tag_remove(a[0], a[1]) for a in target.gen_tag_rmlist()[0]]
             [exp_def.tag_add(a[0], a[1], a[2])
              for addset in target.gen_tag_addlist() for a in addset]
+
+        # Mixed 2D/3D physics
+        gc.generate_mixed_physics(exp_def, self.cmdopts, max_z, 'dual_source')
 
         return exp_def
 
@@ -96,12 +107,17 @@ class QSGenerator(sg.QSGenerator):
 
         exp_def = super().generate()
 
-# Construction targets
+        # Construction targets
+        max_z = 0.0
         for t in self.cmdopts['construct_targets']:
             target = ct.factory(self.cmdopts, t, self.cmdopts['construct_targets'].index(t))
+            max_z = max(max_z, target.structure['bb'][2])
             [exp_def.tag_remove(a[0], a[1]) for a in target.gen_tag_rmlist()[0]]
             [exp_def.tag_add(a[0], a[1], a[2])
              for addset in target.gen_tag_addlist() for a in addset]
+
+        # Mixed 2D/3D physics
+        gc.generate_mixed_physics(exp_def, self.cmdopts, max_z, 'quad_source')
 
         return exp_def
 
@@ -126,11 +142,16 @@ class RNGenerator(sg.RNGenerator):
         exp_def = super().generate()
 
         # Construction targets
+        max_z = 0.0
         for t in self.cmdopts['construct_targets']:
             target = ct.factory(self.cmdopts, t, self.cmdopts['construct_targets'].index(t))
+            max_z = max(max_z, target.structure['bb'][2])
             [exp_def.tag_remove(a[0], a[1]) for a in target.gen_tag_rmlist()[0]]
             [exp_def.tag_add(a[0], a[1], a[2])
              for addset in target.gen_tag_addlist() for a in addset]
+
+        # Mixed 2D/3D physics
+        gc.generate_mixed_physics(exp_def, self.cmdopts, max_z, 'random')
 
         return exp_def
 
@@ -155,10 +176,15 @@ class PLGenerator(sg.PLGenerator):
         exp_def = super().generate()
 
         # Construction targets
+        max_z = 0.0
         for t in self.cmdopts['construct_targets']:
             target = ct.factory(self.cmdopts, t, self.cmdopts['construct_targets'].index(t))
+            max_z = max(max_z, target.structure['bb'][2])
             [exp_def.tag_remove(a[0], a[1]) for a in target.gen_tag_rmlist()[0]]
             [exp_def.tag_add(a[0], a[1], a[2])
              for addset in target.gen_tag_addlist() for a in addset]
+
+        # Mixed 2D/3D physics
+        gc.generate_mixed_physics(exp_def, self.cmdopts, max_z, 'powerlaw')
 
         return exp_def
