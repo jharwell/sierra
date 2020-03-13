@@ -83,7 +83,7 @@ class CoreCmdline:
     """
 
     def __init__(self, scaffold_only: bool = False):
-        self.parser = argparse.ArgumentParser(prog='sierra',
+        self.parser = argparse.ArgumentParser(prog='SIERRA',
                                               formatter_class=HelpFormatter)
         self.stage1 = self.parser.add_argument_group(
             'Stage1: General options for generating experiments')
@@ -113,21 +113,25 @@ class CoreCmdline:
                                  metavar="dirpath",
                                  help="""
 
-                                 Root directory for all sierra generated/created files.
+                                 Root directory for all SIERRA generated/created files.
 
                                  Subdirectories for controllers, scenarios, experiment/simulation
                                  inputs/outputs will be created in this directory as needed. Can persist
-                                 between invocations of sierra.
+                                 between invocations of SIERRA.
 
                                  """,
-                                 default=os.path.expanduser("~") + "/exp")
+                                 default="<home directory>/exp")
 
         self.parser.add_argument("--scenario",
                                  metavar="<block dist>.AxB[xC]",
                                  help="""
 
-                                 Which scenario the defined controller should be run in. Scenario=block
-                                 distribution type + arena dimensions.
+                                 Which scenario the swarm comprised of robots running the controller specified via
+                                 ``--controller`` should be run in.
+
+                                 A scenario is defined as: block distribution type + arena dimensions. This is somewhat
+                                 tied to foraging and other similar applications for the moment, but this may be
+                                 modified in a future version of SIERRA.
 
                                  Valid block distribution types:
 
@@ -137,9 +141,9 @@ class CoreCmdline:
                                  - ``QS`` - Quad source
                                  - ``PL`` - Power law
 
-                                 A,B,C are the scenario X,Y,Z dimensions respectively (which can be any postive integer
+                                 A,B,C are the scenario X,Y,Z dimensions respectively (which can be any postive INTEGER
                                  values). The X,Y dimensions are required, the Z dimension is optional and defaults to
-                                 1.0 if omitted.
+                                 1 if omitted.
 
                                  Use=stage{1,2,3,4}; can be omitted otherwise.
 
@@ -149,19 +153,20 @@ class CoreCmdline:
                                  metavar="[<category>.<definition>,...]",
                                  help="""
 
-                                 Definition of criteria(s) to use to defined the batched experiment.
+                                 Definition of criteria(s) to use to define the experiment.
 
                                  Specified as a list of 0 or 1 space separated strings, each with the following
                                  general structure:
 
                                  ``<category>.<definition>``
 
-                                 ``<category>`` must be a filename from the ``variables/`` directory, and
+                                 ``<category>`` must be a filename from the ``core/variables/`` directory, and
                                  ``<definition>`` must be a parsable name (according to the requirements of the criteria
                                  defined by the parser for ``<category>``).
 
-                                 Not all files within the ``variables/`` directory contain classes which can be used as
-                                 top level batch criteria; see the docs for the ones that can:
+                                 Not all files within the ``core/variables/`` directory contain classes which can be
+                                 used as top level batch criteria; see the :ref:`ln-batch-criteria` docs for the ones
+                                 that can.
 
                                  Use=stage{1,2,3,4,5}.
 
@@ -186,10 +191,12 @@ class CoreCmdline:
                                  Stage4: Perform graph generation after processing results for a batched
                                  experiment. Part of default pipeline.
 
-                                 Stage5: Perform graph generation for comparing controllers AFTER graph
-                                 generation for batched experiments has been run. It is assumed that if this
-                                 option is passed that the # experiments/batch criteria is the same for all
-                                 controllers that will be compared. Not part of default pipeline.
+                                 Stage5: Perform graph generation for comparing controllers AFTER graph generation for
+                                 batched experiments has been run. Not part of default pipeline.
+
+                                 *Important note!* It is assumed that if this option is passed that the # experiments
+                                 and batch criteria are the same for all controllers that will be compared. If this is
+                                 not true then weird things may or may not happen.
 
                                  """,
                                  type=int,
@@ -200,7 +207,7 @@ class CoreCmdline:
         self.parser.add_argument("--hpc-env",
                                  help="""
 
-                                 The value of this argument determines if the ``--n-threads``, --physics-n-engines``,
+                                 The value of this argument determines if the ``--n-threads``, ``--physics-n-engines``,
                                  and ``--n-sims`` options will be computed/inherited from the specified HPC
                                  environment. Otherwise, they must be specified on the cmdline.
 
@@ -231,8 +238,10 @@ class CoreCmdline:
         self.stage1.add_argument("--time-setup",
                                  help="""
 
-                                 The simulation time setup to use, which sets the simulation duration and metric reporting
-                                 interval.
+                                 Defines simulation length, ticks per second. From this SIERRA computes:
+
+                                 - The output interval for each ``.csv`` of one-dimensional data generated during
+                                   simulation.
 
                                  Use=stage{1}; can be omitted otherwise.
 
@@ -243,11 +252,11 @@ class CoreCmdline:
                                  type=int,
                                  help="""
 
-                                 How many simulations should be averaged together to form a single experiment.
+                                 The # of simulations that will be run and their results averaged to form the
+                                 result of a single experiment within a batch.
 
                                  If ``--exec-method=hpc`` then the value of this option will be used to determine
                                  # jobs/HPC node, # physics engines/simulation, and # threads/simulation.
-
 
                                  Use=stage{1}; can be omitted otherwise.
 
@@ -257,7 +266,7 @@ class CoreCmdline:
                                  type=int,
                                  help="""
 
-                                 How many ARGoS simulation threads to use for each simulation in each experiment.
+                                The # of ARGoS threads that will be used in each simulation.
 
                                  If ``--exec-method=hpc`` then the value of this option will be set to the value of
                                  `--physics-n-engines`, per the findings of the original ARGoS paper, and the cmdline
@@ -277,18 +286,22 @@ class CoreCmdline:
                              choices=['dynamics2d'],
                              help="""
 
-                             Specify the type of 2D physics engines used for managing arena extents, choosing one of the
-                             types that ARGoS supports.
+                             The type of 2D physics engine to use for managing spatial extents within the arena,
+                             choosing one of the types that ARGoS supports. The precise 2D areas (if any) within the
+                             arena which the will be controlled by 2D physics engines is defined on a per `--plugin`
+                             basis.
 
                              """,
                              default='dynamics2d')
 
         physics.add_argument("--physics-engine-type3D",
-                             choices=['dynamics3d', 'pointmass3d'],
+                             choices=['dynamics3d'],
                              help="""
 
-                             Specify the type of 3D physics physics engine used for managing arena extents, choosing one
-                             of the types that ARGoS supports.
+                             The type of 3D physics engine to use for managing 3D volumetric extents within the arena,
+                             choosing one of the types that ARGoS supports. The precise 3D volumes (if any) within the
+                             arena which the will be controlled by 3D physics engines is defined on a per `--plugin`
+                             basis.
 
                              """,
                              default='dynamics3d')
@@ -297,10 +310,11 @@ class CoreCmdline:
                              type=int,
                              help="""
 
-                             # of physics engines to use during simulation (yay ARGoS!). If n > 1, the engines will be
-                             tiled in a uniform grid within the arena (X and Y spacing may not be the same depending on
-                             dimensions and how many engines are chosen, however), extending upward in Z to the height
-                             specified by ``--scenario``.
+                             Defines the # of physics engines to use during simulation (yay ARGoS!). If N > 1, the
+                             engines will be tiled in a uniform grid within the arena (X and Y spacing may not be the
+                             same depending on dimensions and how many engines are chosen, however), extending upward in
+                             Z to the height specified by ``--scenario`` (i.e., forming a set of "silos" rather that
+                             equal volumetric extents).
 
                              If 2D and 3D physics engines are mixed, then half of the specified # of engines will be
                              allocated among all arena extents cumulatively managed by each type of engine. For example,
@@ -309,7 +323,7 @@ class CoreCmdline:
                              arena.
 
                              If ``--exec-method=hpc`` then the value of this option will be computed from the HPC
-                             environment, and the cmdlin value (if any) will be ignored.
+                             environment, and the cmdline value (if any) will be ignored.
 
                              Use=stage{1}; can be omitted otherwise.
                              """)
@@ -318,7 +332,8 @@ class CoreCmdline:
                              help="""
 
                              The # of iterations all physics engines should perform per tick each time the
-                             controller loops are run.
+                             controller loops are run (the # of ticks per second for controller control loops is set via
+                             ``--time-setup``).
 
                              Use=stage{1}; can be omitted otherwise.
 
@@ -332,8 +347,13 @@ class CoreCmdline:
         robots.add_argument("--with-robot-rab",
                             help="""
 
-                            Include the Range and Bearing sensor/actuator in the generated input files for the
-                            footbot. Otherwise, those tags are removed in the template input file if they exist.
+                            If passed, do not remove the Range and Bearing (RAB) sensor, actuator, and medium XML
+                            definitions from ``--template-input-file`` before generating experimental inputs. Otherwise,
+                            the following XML tags are removed if they exist:
+
+                            - ``.//media/range_and_bearing``
+                            - `.//actuators/range_and_bearing`
+                            - `.//sensors/range_and_bearing`
 
                             Use=stage{1}; can be omitted otherwise.
 
@@ -344,8 +364,13 @@ class CoreCmdline:
         robots.add_argument("--with-robot-leds",
                             help="""
 
-                            Include the footbot robot LED actuator in the generated input files. Otherwise, it is
-                            removed if it exists.
+                            If passed, do not remove the robot LED actuator XML definitions from the
+                            ``--template-input-file`` before generating experimental inputs. Otherwise, the following
+                            XML tags are removed if they exist:
+
+                            - `.//actuators/leds`
+
+                            Note that the `.//media/led` tag is not removed regardless if this option is passed or not.
 
                             Use=stage{1}; can be omitted otherwise.
 
@@ -356,8 +381,12 @@ class CoreCmdline:
         robots.add_argument("--with-robot-battery",
                             help="""
 
-                            Include the robot battery sensor in the generated input files. Otherwise, it is removed if
-                            it exists.
+                            If passed, do not remove the robot battery sensor XML definitions from
+                            ``--template-input-file`` before generating experimental inputs. Otherwise, the following
+                            XML tags are removed if they exist:
+
+                            - `.//entity/*/battery`
+                            - `.//sensors/battery`
 
                             Use=stage{1}; can be omitted otherwise.
 
@@ -368,10 +397,12 @@ class CoreCmdline:
         robots.add_argument("--n-blocks",
                             help="""
 
-                            # blocks that should be used in the simulation (evenly split between cube and
-                            Specify the
-                            ramp). Can be used to override batch criteria, or to supplement experiments that do not set
-                            it so that manual modification of input file is unneccesary.
+                            The # blocks that should be used in the simulation (evenly split between cube and ramp). Can
+                            be used to override batch criteria, or to supplement experiments that do not set it so that
+                            manual modification of input file is unneccesary.
+
+                            This option is strongly tied to foraging, and will likely be moved out of core SIERRA
+                            functionality in a future version.
 
                             Use=stage{1}; can be omitted otherwise.
                             """,
@@ -389,8 +420,14 @@ class CoreCmdline:
                                  Specify the execution method to use when running experiments.
 
                                  - ``local`` - Run the maximum # of simulations simultaneously on the local machine
-                                   using GNU parallel. # of simultaneous simulations is determined by # cores on machine
-                                   / # ARGoS threads.
+                                   using GNU parallel. # of simultaneous simulations is determined by:
+
+                                   # cores on machine
+                                   ------------------
+                                   # ARGoS threads
+
+                                   If more simulations are requested than can be run in parallel, SIERRA will start
+                                   additional simulations as currently running simulations finish.
 
                                  - ``hpc`` - Use GNU parallel in an HPC environment to run the specified # of
                                    simulations simultaneously on a computing cluster. See ``--hpc-env`` for supported
@@ -403,9 +440,12 @@ class CoreCmdline:
         self.stage2.add_argument("--exec-exp-range",
                                  help="""
 
-                                 Experiment numbers from the batch to run. Specified in the form
+                                 Set the experiment numbers from the batch to run (0 based). Specified in the form
                                  ``min_exp_num:max_exp_num``. If omitted, runs all experiments in the batch (default
                                  behavior).
+
+                                 This is useful to re-run part of a batched experiment in HPC environments if SIERRA
+                                 gets killed before it finishes running all experiments in the batch.
 
                                  Use=stage{2}; can be omitted otherwise.
 
@@ -413,7 +453,7 @@ class CoreCmdline:
         self.stage2.add_argument("--exec-resume",
                                  help="""
 
-                                 Resume a batched experiment that was killed/stopped/etc last time sierra was run.
+                                 Resume a batched experiment that was killed/stopped/etc last time SIERRA was run.
 
                                  Use=stage{2}; can be omitted otherwise.
 
@@ -428,9 +468,9 @@ class CoreCmdline:
         self.stage3.add_argument('--no-verify-results',
                                  help="""
 
-                                 If TRUE, then the verification step will be skipped for the batched experiment, and
-                                 outputs will be averaged directly. If not all .csv files for all experiments exist
-                                 and/or have the # of rows, then sierra will (probably) crash during
+                                 If passed, then the verification step will be skipped during experimental results
+                                 processing, and outputs will be averaged directly. If not all ``.csv`` files for all
+                                 experiments exist and/or have the # of rows, then SIERRA will (probably) crash during
                                  stage4. Verification can take a same long time with large # of simulations per
                                  experiment.
 
@@ -442,75 +482,36 @@ class CoreCmdline:
         self.stage3.add_argument("--gen-stddev",
                                  help="""
 
-                                 Calculate standard deviation calculated from averaged data and include error bars on all
-                                 generated intra-experiment linegraphs.
+                                 If passed, then the standard deviation will be calculated from averaged data and error
+                                 bars will be included on *some* generated intra-experiment linegraphs during stage 4.
 
                                  Use=stage{3}; can be omitted otherwise.
 
                                  """,
                                  action="store_true",
                                  default=False)
-        self.stage3.add_argument("--results-process-tasks",
-                                 help="""
-
-                                 Specify what tasks should be performed when processing simulation results before graph
-                                 generation.
-
-                                 Use=stage{3}; can be omitted otherwise.
-
-                                 """,
-                                 choices=['render', 'average', 'all'],
-                                 default=['all'])
-        # Rendering options
-        rendering = self.parser.add_argument_group(
-            'Stage3: Rendering', 'Rendering options for stage3')
-
-        rendering.add_argument("--with-rendering",
-                               help="""
-
-                               Specify that the ARGoS Qt/OpenGL visualization subtree should be left in the input ``.argos``
-                               file. By default it is stripped out.
-
-                               Any files in the ``frames/`` directory of each simulation will be rendered into a unique
-                               video file with directory using ffmpeg (precise command configurable). This option
-                               assumes that [ffmpeg, Xvfb] programs can be found.
-
-                               Use=stage{1,2,3}; can be omitted otherwise.
-                               """,
-                               action='store_true')
-
-        rendering.add_argument("--render-cmd-opts",
-                               help="""
-
-                               Specify the ffmpeg options to appear between the specification of the input .png files
-                               and the specification of the output file. The default is suitable for use with ARGoS
-                               frame grabbing set to a frames of 1600x1200 to output a reasonable quality video.
-
-                               Use=stage{3}; can be omitted otherwise.
-
-                               """,
-                               default="-r 10 -s:v 800x600 -c:v libx264 -crf 25 -filter:v scale=-2:956 -pix_fmt yuv420p")
-
-        rendering.add_argument("--render-cmd-ofile",
-                               help="""
-
-                               Specify the output filename and extension for the ffmpeg rendered video.
-
-                               Use=stage{3}; can be omitted otherwise.
-
-                               """,
-                               default="video.mp4")
 
     def init_stage4(self):
         """
         Define cmdline arguments for stage 4.
         """
         self.stage4.add_argument("--exp-graphs",
-                                 choices=['intra', 'inter', 'all'],
+                                 choices=['intra', 'inter', 'all', 'none'],
                                  help="""
 
-                                 Specify which graphs should be generated: Only intra-experiment graphs, only
-                                 inter-experiment graphs, or both.
+                                 Specify which types of graphs should be generated from experimental results:
+
+                                 - ``intra`` - Generate intra-experiment graphs from the results of a single experiment
+                                   within a batch, for each experiment in the batch (this can take a long time with
+                                   large batched experiments).
+
+                                 - ``inter`` - Generate inter-experiment graphs _across_ the results of all experiments
+                                   in a batch. These are very fast to generate, regardless of batch experiment size.
+
+                                 - ``all`` - Generate all types of graphs.
+
+                                 - ``none`` - Skip graph generation; provided to skip graph generation if video outputs
+                                   are desired instead.
 
                                  Use=stage{4}; can be omitted otherwise.
 
@@ -532,8 +533,8 @@ class CoreCmdline:
                                  help="""
 
                                  For all 2D generated scatterplots, plot a linear regression line and the equation of
-                                 the line to the legend. Currently, this option affects the graphs generated when the
-                                 following batch criteria are used:
+                                 the line to the legend. Currently, this option affects the graphs generated when one of
+                                 the following batch criteria are used:
 
                                  - ``saa_noise`` (bivariate)
 
@@ -547,7 +548,9 @@ class CoreCmdline:
                          help="""
 
                           Generate plots of ideal vs. observed swarm [reactivity, adaptability] for each experiment in
-                          the batch. Only applicable to ``flexibility`` batch criteria.
+                          the batch. Only generated when one of the following batch criteria are used:
+
+                         - ``flexibility``
 
                           Use=stage{4}; can be omitted otherwise.
 
@@ -559,7 +562,11 @@ class CoreCmdline:
 
                          Raw Performance curve similarity method. Specify the method to use to calculate the similarity
                          between raw performance curves from non-ideal conditions and ideal conditions (exp0). Only
-                         applicable to ``saa_noise`` batch criteria. Value values:
+                         applicable if one of the following batch criteria are used:
+
+                         - ``saa_noise``
+
+                         Valid values:
 
                          - ``pcm`` - Partial Curve Mapping (Witowski2012)
                          - ``area_between`` - Area between the two curves (Jekel2018)
@@ -578,8 +585,11 @@ class CoreCmdline:
 
                          Environmental conditions curve similarity method. Specify the method to use to calculate the
                          similarity between curves of applied variance (non-ideal conditions) and ideal conditions
-                         (exp0). Only applicable to ``flexibility`` batch criteria, and only used to calculate axis tick
-                         values on displayed graphs for that criteria. Valid values:
+                         (exp0). Only applicable if one of the following batch criteria is used:
+
+                         - ``flexibility``
+
+                         Valid values:
 
                          - ``pcm`` - Partial Curve Mapping (Witowski2012)
                          - ``area_between`` - Area between the two curves (Jekel2018)
@@ -599,7 +609,11 @@ class CoreCmdline:
 
                          Reactivity calculatation curve similarity method. Specify the method to use to calculate the
                          similarity between the inverted applied variance curve for a simulation and the corrsponding
-                         performance curve. Only applicable to ``flexibility`` batch criteria.
+                         performance curve. Only applicable if one of the following batch criteria is used:
+
+                         - ``flexibility``
+
+                         Valid values:
 
                          - ``pcm`` - Partial Curve Mapping (Witowski2012)
                          - ``area_between`` - Area between the two curves (Jekel2018)
@@ -613,12 +627,17 @@ class CoreCmdline:
                          """,
                          choices=["pcm", "area_between", "frechet", "dtw", "curve_length"],
                          default="dtw")
+
         vcs.add_argument("--adaptability-cs-method",
                          help="""
 
                          Adaptability calculatation curve similarity method. Specify the method to use to calculate the
                          similarity between the inverted applied variance curve for a simulation and the corrsponding
-                         performance curve. Only applicable to ``flexibility`` batch criteria.
+                         performance curve. Only applicable if one of the following batch criteria is used:
+
+                         - ``flexibility``
+
+                         Valid values:
 
                          - ``pcm`` - Partial Curve Mapping (Witowski2012)
                          - ``area_between`` - Area between the two curves (Jekel2018)
@@ -632,6 +651,85 @@ class CoreCmdline:
                          """,
                          choices=["pcm", "area_between", "frechet", "dtw", "curve_length"],
                          default="dtw")
+
+        # Rendering options
+        rendering = self.parser.add_argument_group(
+            'Stage4: Rendering', 'Rendering options for stage4')
+
+        rendering.add_argument("--argos-rendering",
+                               help="""
+
+                               If passed, the ARGoS Qt/OpenGL visualization subtree should is not removed from
+                               ``--template-input-file`` before generating experimental inputs. Otherwise, it is removed
+                               if it exists.
+
+                               Any files in the "frames" directory of each simulation (directory path set on a per
+                               ``--plugin`` basis) will be rendered into a unique video file with directory using ffmpeg
+                               (precise command configurable), and output to a ``videos/argos.mp4`` in the output
+                               directory of each simulation.
+
+                               This option assumes that [ffmpeg, Xvfb] programs can be found.
+
+                               Use=stage{1,4}; can be omitted otherwise.
+                               """,
+                               action='store_true')
+
+        rendering.add_argument("--render-cmd-opts",
+                               help="""
+
+                               Specify the ffmpeg options to appear between the specification of the input ``.png``
+                               files and the specification of the output file. The default is suitable for use with
+                               ARGoS frame grabbing set to a frames of 1600x1200 to output a reasonable quality video.
+
+                               Use=stage{4}; can be omitted otherwise.
+
+                               """,
+                               default="-r 10 -s:v 800x600 -c:v libx264 -crf 25 -filter:v scale=-2:956 -pix_fmt yuv420p")
+
+        rendering.add_argument("--plugin-imagizing",
+                               help="""
+
+                               Plugins can generate ``.csv`` files residing in subdirectories within the the
+                               ``<metrics_leaf>`` directory (directory path set on a per ``--plugin`` basis) for each
+                               ARGoS simulation, in addition to generating ``.csv`` files residing directly in the
+                               ``<metrics_leaf>`` directory. If this option is passed, then the ``.csv`` files residing
+                               each subdirectory under the ``<metrics_leaf>`` directory(no recursive nesting is allowed)
+                               in each simulation are treated as snapshots of 2D or 3D data over time, and will be
+                               averaged together across simulations and then turn into image files suitable for video
+                               rendering in stage 4. The following restrictions apply:
+
+                               - A common stem with a unique numeric ID is required for each ``.csv`` must be present
+                                 for each ``.csv``.
+
+                               - The directory name within ``<metrics_leaf>`` must be the same as the stem for each
+                                 ``.csv`` file in that directory. For example, if the directory name was
+                                 ``swarm-distribution`` under ``<metrics_leaf>`` then all ``.csv`` files within that
+                                 directory must be named according to
+                                 ``swarm-distribution/swarm-distributionXXXXX.csv``, where XXXXX is any length numeric
+                                 prefix (possibly preceded by an underscore or dash).
+
+                               *Important note!*: Averaging the image ``.csv`` files and generating the images for each
+                               experiment does not happen automatically as part of stage 3 because it can take a LONG
+                               time and is idempotent.
+
+                               Use=stage{3,4}; can be omitted otherwise.
+
+                               """,
+                               action='store_true')
+        rendering.add_argument("--plugin-rendering",
+                               help="""
+
+                               Specify that the imagized ``.csv`` files previously created should be used to generate a
+                               set of a videos in ``<experiment root>/videos/<metric_dir_name>.mp4``. This does not
+                               happen automatically every time as part of stage 4 because it can take a LONG time and is
+                               idempotent.
+
+                               This option assumes that [ffmpeg] programs can be found.
+
+                               Use=stage{4}; can be omitted otherwise.
+
+                               """,
+                               action='store_true')
 
     def init_stage5(self):
         """
@@ -719,6 +817,7 @@ class CoreCmdline:
                                  - :class:`~core.graphs.heatmap.Heatmap`
 
                                  Ignored for other graph types.
+
                                  Use=stage{5}; can be omitted otherwise.
                                  """,
                                  action='store_true')
@@ -726,8 +825,7 @@ class CoreCmdline:
         self.stage5.add_argument("--controllers-list",
                                  help="""
 
-                                 Comma separated list of controllers to compare within ``<sierra root>``. If None, then the
-                                 default set of controllers will be used for comparison.
+                                 Comma separated list of controllers to compare within ``<sierra root>``.
 
                                  The first controller in this list will be used for as the controller of primary
                                  interest if ``--comparison-type`` is passed.
@@ -769,7 +867,7 @@ class HPCEnvInheritor():
 
         for k in keys:
             assert k in os.environ,\
-                "FATAL: Attempt to run sierra in non-MSI environment: '{0}' not found".format(k)
+                "FATAL: Attempt to run SIERRA in non-MSI environment: '{0}' not found".format(k)
 
         if self.env_type == 'MSI':
             assert os.environ['MSICLUSTER'] in self.environs,\

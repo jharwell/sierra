@@ -160,7 +160,7 @@ class ExpCreator:
             open(save_path, 'w').close()  # create an empty file
             exp_def.write(save_path)
 
-            if self.cmdopts['with_rendering']:
+            if self.cmdopts['argos_rendering']:
                 frames_fpath = os.path.join(self.exp_output_root, sim_output_dir, "frames")
                 os.makedirs(frames_fpath, exist_ok=True)
 
@@ -198,7 +198,7 @@ class ExpCreator:
         # which will then be killed when the shell GNU parallel spawns to run each line in the
         # commands.txt file exits.
         xvfb_cmd = ""
-        if self.cmdopts['with_rendering']:
+        if self.cmdopts['argos_rendering']:
             display_port = random.randint(0, 1000000)
             xvfb_cmd = "eval 'Xvfb :{0} -screen 0, 1600x1200x24 &' && DISPLAY=:{0} ".format(
                 display_port)

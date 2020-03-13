@@ -15,3 +15,4 @@ API Reference
    :toctree: plugins
 
    plugins.fordyca
+   plugins.silicon

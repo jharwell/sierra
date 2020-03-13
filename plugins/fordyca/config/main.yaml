@@ -6,6 +6,7 @@ sierra:
   collate_csv_leaf: 'collated-csvs'
   collate_graph_leaf: 'collated-graphs'
   avg_output_leaf: 'averaged-output'
+  plugin_frames_leaf: 'plugin-frames'
 
   perf:
     inter_perf_csv: 'blocks-transported-cum.csv'

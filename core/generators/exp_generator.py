@@ -102,7 +102,7 @@ class ExpDefCommonGenerator:
 
         if not self.cmdopts["with_robot_battery"]:
             xml_luigi.tag_remove(".//sensors", "battery", noprint=True)
-            xml_luigi.tag_remove(".//entity/foot-bot", "battery", noprint=True)
+            xml_luigi.tag_remove(".//entity/*", "battery", noprint=True)
 
     def __generate_time(self, xml_luigi: XMLLuigi, exp_def_fpath: str):
         """
@@ -165,7 +165,7 @@ class ExpDefCommonGenerator:
 
         Does not write generated changes to the simulation definition pickle file.
         """
-        if not self.cmdopts["with_rendering"]:
+        if not self.cmdopts["argos_rendering"]:
             xml_luigi.tag_remove(".", "./visualization", noprint=True)  # ARGoS visualizations
 
 

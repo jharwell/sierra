@@ -92,14 +92,16 @@ todo_include_todos = True
 autosummary_generate = True
 
 xref_links = {
+    "Harwell2020": ("Demystifying Emergent Intelligence and Its Effect on Performance in Large Swarms",
+                    "https://www.ifaamas.org/Proceedings/aamas2020/pdfs/XXX.pdf"),
     "Harwell2019": ("Swarm Engineering Through Quantitative Measurement in a 10,000 Robot Swarm",
                     "https://www.ijcai.org/proceedings/2019/0048.pdf"),
     "White2019": ("Socially Inspired Communication in Swarm Robotics",
                   "https://arxiv.org/abs/1906.01108"),
     "Chen2019": ("Maximizing Energy Efficiency in Swarm Robotics",
                  "https://arxiv.org/abs/1906.01957"),
-    "FORDYCA": ("FORDYCA", "https://fordyca.readthedocs.io"),
-    "SILICON": ("SILICON", "https://silicon.readthedocs.io")
+    "FORDYCA": ("FORDYCA", "https://swarm-robotics-fordyca.readthedocs.io"),
+    "SILICON": ("SILICON", "https://swarm-robotics-silicon.readthedocs.io")
 }
 
 # -- Options for HTML output ----------------------------------------------

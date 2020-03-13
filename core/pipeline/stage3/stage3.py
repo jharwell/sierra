@@ -24,9 +24,10 @@ import logging
 import typing as tp
 import time
 import datetime
+import yaml
 
 from core.pipeline.stage3.exp_csv_averager import BatchedExpCSVAverager
-from core.pipeline.stage3.exp_video_renderer import BatchedExpVideoRenderer
+from core.pipeline.stage3.exp_imagizer import BatchedExpImagizer
 
 
 class PipelineStage3:
@@ -34,34 +35,39 @@ class PipelineStage3:
     Implements stage 3 of the experimental pipeline.
 
     Processes results of simulation runs within an experiment/within multiple experiments
-    together. This stage is idempotent.
+    together, according to configuration. Currently this includes:
+
+    - Averaging simulation results.
+    - Generating image files from plugin metric collection for later use in video rendering in stage
+      4.
+
+    This stage is idempotent.
     """
 
     def run(self, main_config: dict, cmdopts: tp.Dict[str, str]):
-        tasks = cmdopts['results_process_tasks']
-        if 'average' in tasks or 'all' in tasks:
-            self.__run_averaging(main_config, cmdopts)
+        self.__run_averaging(main_config, cmdopts)
 
-        if 'render' in tasks or 'all' in tasks:
-            self.__run_rendering(main_config, cmdopts)
+        if cmdopts['plugin_imagizing']:
+            intra_HM_config = yaml.load(open(os.path.join(cmdopts['core_config_root'],
+                                                          'intra-graphs-hm.yaml')),
+                                        yaml.FullLoader)
+
+            plugin_intra_HM = os.path.join(cmdopts['plugin_config_root'],
+                                           'intra-graphs-hm.yaml')
+
+            if os.path.exists(plugin_intra_HM):
+                logging.info("Stage3: Loading additional intra-experiment heatmap config for plugin '%s'",
+                             cmdopts['plugin'])
+                plugin_dict = yaml.load(open(plugin_intra_HM), yaml.FullLoader)
+                for category in plugin_dict:
+                    if category not in intra_HM_config:
+                        intra_HM_config.update({category: plugin_dict[category]})
+                    else:
+                        intra_HM_config[category]['graphs'].extend(plugin_dict[category]['graphs'])
+
+            self.__run_imagizing(main_config, intra_HM_config, cmdopts)
 
     # Private functions
-    def __run_rendering(self, main_config, cmdopts):
-        if not cmdopts['with_rendering']:
-            return
-
-        render_opts = {
-            'cmd_opts': cmdopts['render_cmd_opts'],
-            'ofile_leaf': cmdopts['render_cmd_ofile'],
-        }
-        logging.info("Stage3: Rendering videos for batched experiment in %s...",
-                     cmdopts['generation_root'])
-        start = time.time()
-        BatchedExpVideoRenderer()(main_config, render_opts, cmdopts['output_root'])
-        elapsed = int(time.time() - start)
-        sec = datetime.timedelta(seconds=elapsed)
-        logging.info("Stage3: Rendering complete in %s", str(sec))
-
     def __run_averaging(self, main_config, cmdopts):
         template_input_leaf, _ = os.path.splitext(
             os.path.basename(cmdopts['template_input_file']))
@@ -69,6 +75,7 @@ class PipelineStage3:
             'template_input_leaf': template_input_leaf,
             'no_verify_results': cmdopts['no_verify_results'],
             'gen_stddev': cmdopts['gen_stddev'],
+            'plugin_imagizing': cmdopts['plugin_imagizing']
         }
         logging.info("Stage3: Averaging batched experiment outputs in %s...",
                      cmdopts['output_root'])
@@ -77,3 +84,13 @@ class PipelineStage3:
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         logging.info("Stage3: Averaging complete in %s", str(sec))
+
+    def __run_imagizing(self, main_config: dict, intra_HM_config: dict, cmdopts: dict):
+        logging.info("Stage3: Imagizing .csvs...")
+        start = time.time()
+        BatchedExpImagizer()(main_config,
+                             intra_HM_config,
+                             cmdopts['output_root'])
+        elapsed = int(time.time() - start)
+        sec = datetime.timedelta(seconds=elapsed)
+        logging.info("Stage3: Imagizing complete: %s", str(sec))
