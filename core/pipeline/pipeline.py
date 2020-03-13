@@ -51,10 +51,11 @@ class Pipeline:
             'template_input_file': self.args.template_input_file,
             'plugin': self.args.plugin,
             'hpc_env': args.hpc_env,
-            'with_rendering': self.args.with_rendering,
+            'argos_rendering': self.args.argos_rendering,
             "n_sims": args.n_sims,
             "n_threads": args.n_threads,
             'n_blocks': args.n_blocks,
+            'plugin_imagizing': self.args.plugin_imagizing,
 
             # stage 1
             'time_setup': self.args.time_setup,
@@ -75,9 +76,7 @@ class Pipeline:
             # stage 3
             'no_verify_results': self.args.no_verify_results,
             'gen_stddev': self.args.gen_stddev,
-            'results_process_tasks': self.args.results_process_tasks,
             'render_cmd_opts': self.args.render_cmd_opts,
-            'render_cmd_ofile': self.args.render_cmd_ofile,
 
             # stage 4
             'envc_cs_method': self.args.envc_cs_method,
@@ -87,6 +86,7 @@ class Pipeline:
             'adaptability_cs_method': self.args.adaptability_cs_method,
             'rperf_cs_method': self.args.rperf_cs_method,
             'exp_graphs': self.args.exp_graphs,
+            'plugin_rendering': self.args.plugin_rendering,
             'plot_regression_lines': self.args.plot_regression_lines,
 
             # stage 5

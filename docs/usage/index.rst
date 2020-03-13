@@ -19,9 +19,9 @@ you have completed the setup steps (either :ref:`ln-msi-setup` or
    - What project plugin to load: ``--plugin``. This is used to:
 
      - Compute the name of the library SIERRA will tell ARGoS to search for on
-     ``ARGOS_PLUGIN_PATH`` when looking for controller and loop function
-     definitions. For example if you pass ``--plugin=foobar``, then ARGoS will
-     search for ``libfoobar.so`` on ``ARGOS_PLUGIN_PATH``.
+       ``ARGOS_PLUGIN_PATH`` when looking for controller and loop function
+       definitions. For example if you pass ``--plugin=foobar``, then ARGoS will
+       search for ``libfoobar.so`` on ``ARGOS_PLUGIN_PATH``.
 
      - Figure out the plugin directory to load graph and simulation processing
        configuration from.

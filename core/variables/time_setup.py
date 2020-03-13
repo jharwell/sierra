@@ -33,9 +33,15 @@ import typing as tp
 from core.variables.base_variable import BaseVariable
 
 """
-Default # datapoints in each .csv.
+Default # datapoints in each .csv of one-dimensional data.
 """
-kDATA_POINTS = 50
+k1D_DATA_POINTS = 50
+
+"""
+Default divisor for the output interval for  each .csv of two- or three-dimensional data, as
+compared to the output interval for 1D data.
+"""
+kND_DATA_DIVISOR = 10
 
 """
 Default # times each controller will be run per second in simulation.
@@ -49,7 +55,7 @@ class TimeSetup(BaseVariable):
 
     Attributes:
         sim_duration: The simulation duration in seconds, NOT timesteps.
-        metric_interval: Interval for metric collection.
+        metric_interval: Base interval for metric collection.
     """
 
     def __init__(self, sim_duration: int, metric_interval: int):
@@ -60,7 +66,11 @@ class TimeSetup(BaseVariable):
         return [set([
             (".//experiment", "length", "{0}".format(self.sim_duration)),
             (".//experiment", "ticks_per_second", "{0}".format(kTICKS_PER_SECOND)),
-            (".//output/metrics", "output_interval", "{0}".format(self.metric_interval))])]
+            (".//output/metrics/append", "output_interval", "{0}".format(self.metric_interval)),
+            (".//output/metrics/truncate", "output_interval", "{0}".format(self.metric_interval)),
+            (".//output/metrics/create", "output_interval",
+             "{0}".format(max(1, self.metric_interval / kND_DATA_DIVISOR)))
+        ])]
 
     def gen_tag_rmlist(self):
         return []
@@ -71,7 +81,7 @@ class TimeSetup(BaseVariable):
 
 class TInterval(TimeSetup):
     def __init__(self):
-        super().__init__(1000 / kTICKS_PER_SECOND, 1000 / kDATA_POINTS)
+        super().__init__(1000 / kTICKS_PER_SECOND, 1000 / k1D_DATA_POINTS)
 
 
 class TimeSetupParser():
@@ -108,7 +118,7 @@ class TimeSetupParser():
         if "N" in time_str:
             ret["n_datapoints"] = int(time_str.split("N")[1])
         else:
-            ret["n_datapoints"] = kDATA_POINTS
+            ret["n_datapoints"] = k1D_DATA_POINTS
         return ret
 
 

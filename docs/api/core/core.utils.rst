@@ -8,5 +8,4 @@ core.utils
 
    .. autosummary::
 
-      get_n_blocks
       unpickle_exp_def

@@ -31,6 +31,8 @@ from core.pipeline.stage4.csv_collator import UnivarCSVCollator
 from core.pipeline.stage4.csv_collator import BivarCSVCollator
 from core.pipeline.stage4.intra_exp_graph_generator import BatchedIntraExpGraphGenerator
 from core.pipeline.stage4.inter_exp_graph_generator import InterExpGraphGenerator
+from core.pipeline.stage4.exp_video_renderer import BatchedExpVideoRenderer
+
 mpl.rcParams['lines.linewidth'] = 3
 mpl.rcParams['lines.markersize'] = 10
 mpl.rcParams['figure.max_open_warning'] = 10000
@@ -42,9 +44,15 @@ class PipelineStage4:
     """
     Implements stage 4 of the experimental pipeline.
 
-    Generates graphs within single experiment (intra-experiment) and across experiments in a batch
-    (inter-experiment). Graph generation controlled via YAML config files. This stage is
-    idempotent.
+    Generates end-result experimental deliverables within single experiment (intra-experiment) and
+    across experiments in a batch (inter-experiment) according to configuration. Currently this
+    includes:
+
+    - Graph generation controlled via YAML config files.
+    - Video rendering controlled via YAML config files.
+
+
+    This stage is idempotent.
 
     Attributes:
         cmdopts: Dictionary of parsed cmdline options.
@@ -137,13 +145,18 @@ class PipelineStage4:
 
     def run(self, batch_criteria):
         """
-        Runs intra-experiment graph generation, ``.csv`` collation for inter-experiment graph
+        Runs simulation deliverable generation, ``.csv`` collation for inter-experiment graph
         generation, and inter-experiment graph generation, as configured on the cmdline.
+
+        Video generation: If images have previously been created, then the following is run:
+
+        #. :class:`~pipeline.stage4.BatchedExpVideoRenderer` to videos for each experiment in the
+        batch.
 
         Intra-experiment graph generation: if intra-experiment graphs should be generated,
         according to cmdline configuration, the following is run:
 
-        #. :class:`pipeline.stage4.BatchedIntraExpGraphGenerator` to generate graphs for each
+        #. :class:`~pipeline.stage4.BatchedIntraExpGraphGenerator` to generate graphs for each
            experiment in the batch.
 
         Inter-experiment graph generation: if inter-experiment graphs should be generated according
@@ -156,33 +169,16 @@ class PipelineStage4:
         #. :class:`~pipeline.stage4.InterExpGraphGenerator` to perform graph generation from
            collated ``.csv`` files.
         """
+        if self.cmdopts['plugin_rendering'] or self.cmdopts['argos_rendering']:
+            self.__run_rendering()
+
         if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'intra':
-            logging.info("Stage4: Generating intra-experiment graphs...")
-            start = time.time()
-            BatchedIntraExpGraphGenerator(self.cmdopts)(self.main_config,
-                                                        self.controller_config,
-                                                        self.intra_LN_config,
-                                                        self.intra_HM_config,
-                                                        batch_criteria)
-            elapsed = int(time.time() - start)
-            sec = datetime.timedelta(seconds=elapsed)
-            logging.info("Stage4: Intra-experiment graph generation complete: %s", str(sec))
+            self.__run_intra_graph_generation(batch_criteria)
 
+        # Collation must be after intra-experiment graph generation, so that all .csv files to
+        # be collated have been generated/modified according to parameters.
         if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'inter':
-            # Collation must be after intra-experiment graph generation, so that all .csv files to
-            # be collated have been generated/modified according to parameters.
-            targets = self.__calc_inter_LN_targets()
-            if batch_criteria.is_univar():
-                UnivarCSVCollator(self.main_config, self.cmdopts)(batch_criteria, targets)
-            else:
-                BivarCSVCollator(self.main_config, self.cmdopts)(batch_criteria, targets)
-
-            logging.info("Stage4: Generating inter-experiment graphs...")
-            start = time.time()
-            InterExpGraphGenerator(self.main_config, self.cmdopts, targets)(batch_criteria)
-            elapsed = int(time.time() - start)
-            sec = datetime.timedelta(seconds=elapsed)
-            logging.info("Stage4: Inter-experiment graph generation complete: %s", str(sec))
+            self.__run_inter_graph_generation(batch_criteria)
 
     def __calc_inter_LN_targets(self):
         """
@@ -209,3 +205,51 @@ class PipelineStage4:
 
         logging.debug("Enabled linegraph categories: %s", filtered_keys)
         return targets
+
+    def __run_rendering(self):
+        """
+        Render captured ARGoS frames and/or frames created by imagizing in stage 3 into videos.
+        """
+        render_opts = {
+            'cmd_opts': self.cmdopts['render_cmd_opts'],
+            'argos_rendering': self.cmdopts['argos_rendering'],
+            'plugin_rendering': self.cmdopts['plugin_rendering']
+        }
+        logging.info("Stage4: Rendering videos...")
+        start = time.time()
+        BatchedExpVideoRenderer()(self.main_config, render_opts, self.cmdopts['output_root'])
+        elapsed = int(time.time() - start)
+        sec = datetime.timedelta(seconds=elapsed)
+        logging.info("Stage4: Rendering complete in %s", str(sec))
+
+    def __run_intra_graph_generation(self, batch_criteria):
+        """
+        Generate intra-experiment graphs (duh).
+        """
+        logging.info("Stage4: Generating intra-experiment graphs...")
+        start = time.time()
+        BatchedIntraExpGraphGenerator(self.cmdopts)(self.main_config,
+                                                    self.controller_config,
+                                                    self.intra_LN_config,
+                                                    self.intra_HM_config,
+                                                    batch_criteria)
+        elapsed = int(time.time() - start)
+        sec = datetime.timedelta(seconds=elapsed)
+        logging.info("Stage4: Intra-experiment graph generation complete: %s", str(sec))
+
+    def __run_inter_graph_generation(self, batch_criteria):
+        """
+        Generate inter-experiment graphs (duh).
+        """
+        targets = self.__calc_inter_LN_targets()
+        if batch_criteria.is_univar():
+            UnivarCSVCollator(self.main_config, self.cmdopts)(batch_criteria, targets)
+        else:
+            BivarCSVCollator(self.main_config, self.cmdopts)(batch_criteria, targets)
+
+        logging.info("Stage4: Generating inter-experiment graphs...")
+        start = time.time()
+        InterExpGraphGenerator(self.main_config, self.cmdopts, targets)(batch_criteria)
+        elapsed = int(time.time() - start)
+        sec = datetime.timedelta(seconds=elapsed)
+        logging.info("Stage4: Inter-experiment graph generation complete: %s", str(sec))

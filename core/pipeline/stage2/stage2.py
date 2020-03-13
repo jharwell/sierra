@@ -37,8 +37,8 @@ class PipelineStage2:
     """
 
     def run(self, cmdopts: tp.Dict[str, str], batch_criteria: bc.BatchCriteria):
-        if cmdopts['with_rendering']:
-            logging.info('Stage2: Frame grabbing enabled')
+        if cmdopts['argos_rendering']:
+            logging.info('Stage2: ARGoS frame grabbing enabled')
 
         start = time.time()
         BatchedExpRunner(cmdopts, batch_criteria)()

@@ -17,6 +17,7 @@ Welcome to SIERRA's documentation!
 
 SIERRA has been used for results generation in the following papers:
 
+- :xref:`Harwell2020`
 - :xref:`Harwell2019`
 - :xref:`White2019`
 - :xref:`Chen2019`
@@ -24,11 +25,12 @@ SIERRA has been used for results generation in the following papers:
 Projects Using SIERRA
 ---------------------
 
-- `FORDYCA <https://fordyca.readthedocs.io>`_
+- `FORDYCA <https://swarm-robotics-fordyca.readthedocs.io>`_
+- `SILICON <https://swarm-robotics-cosm.readthedocs.io>`_
 
 Other Projects: (in descending probability of interest)
 -------------------------------------------------------
 
-- `COSM <https://cosm.readthedocs.io>`_
-- `RCPPSW <https://rcppsw.readthedocs.io>`_
-- `RCSW <https://rcsw.readthedocs.io>`_
+- `COSM <https://swarm-robotics-cosm.readthedocs.io>`_
+- `RCPPSW <https://swarm-robotics-rcppsw.readthedocs.io>`_
+- `RCSW <https://swarm-robotics-rcsw.readthedocs.io>`_

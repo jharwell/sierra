@@ -102,7 +102,6 @@ class StackedSurfaceGraph:
         fig = ax.get_figure()
         fig.set_size_inches(10, 10)
         self.__save_figs(fig, ax)
-        fig.clf()
 
     def __plot_surfaces(self, X, Y, ax, colors, dfs):
         ax.plot_surface(X, Y, dfs[0], cmap=colors[0])
@@ -170,6 +169,7 @@ class StackedSurfaceGraph:
             leaf = leaf.split('.')
             leaf = ''.join(leaf[0:-2]) + '_' + str(angle) + '.' + leaf[-1]
             fig.savefig(os.path.join(path, leaf), bbox_inches='tight', dpi=100, pad_inches=0)
+            plt.close(fig)  # Prevent memory accumulation (fig.clf() does not close everything)
 
 
 class HandlerColormap(mpl.legend_handler.HandlerBase):

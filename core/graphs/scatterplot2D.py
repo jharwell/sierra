@@ -72,7 +72,7 @@ class Scatterplot2D:
         fig = ax.get_figure()
         fig.set_size_inches(10, 10)
         fig.savefig(self.output_fpath, bbox_inches='tight', dpi=100)
-        fig.clf()
+        plt.close(fig)  # Prevent memory accumulation (fig.clf() does not close everything)
 
     def __plot_regression(self, df):
         # slope, intercept, r_value, p_value, std_err = stats.linregress(df.loc[:, self.xcol],

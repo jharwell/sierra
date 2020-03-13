@@ -75,18 +75,6 @@ class Cmdline(core.cmdline.CoreCmdline):
                                """,
                                nargs='*',
                                default=None)
-        construct.add_argument("--construct-n-subtargets",
-                               type=int,
-                               choices=[1, 2, 4],
-                               help="""
-
-                               Specify how many subtargets each construction target will be broken into. Effectively
-                               creates N structures out of the target, incident/joined along the active face. This
-                               allows for more fine grained task allocation decisions to be made by the swarm.
-
-                               Using=stage{1}; can be omitted otherwise.
-                               """,
-                               default=1)
         construct.add_argument("--construct-orientation",
                                choices=['X', 'Y'],
                                help="""
@@ -102,13 +90,14 @@ class Cmdline(core.cmdline.CoreCmdline):
     @staticmethod
     def cmdopts_update(cli_args, cmdopts: tp.Dict[str, str]):
         """
-        Updates the core cmdopts dictionary with (key,value) pairs from the SILICON-specific cmdline options.
+        Updates the core cmdopts dictionary with (key,value) pairs from the SILICON-specific cmdline
+        options.
+
         """
         # Stage1
         updates = {
             'controller': cli_args.controller,
             'construct_targets': cli_args.construct_targets,
-            'construct_n_subtargets': cli_args.construct_n_subtargets,
             'construct_orientation': cli_args.construct_orientation
         }
         cmdopts.update(updates)
@@ -120,6 +109,8 @@ class CmdlineValidator(core.cmdline.CoreCmdlineValidator):
 
 def sphinx_cmdline():
     """
-    Return a handle to the FORDYCA cmdline extensions to autogenerate nice documentation from it.
+    Return a handle to the :xref:`SILICON` cmdline extensions to autogenerate nice documentation
+    from it.
+
     """
     return Cmdline(True).parser

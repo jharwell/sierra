@@ -17,7 +17,7 @@ core.variables
       oracle
       physics_engines
       swarm_density
-      swarm_size
+      population_size
       ta_policy_set
       flexibility
       time_setup

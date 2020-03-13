@@ -54,7 +54,7 @@ class BatchedExpCSVAverager:
             if os.path.isdir(path):
                 q.put(path)
 
-        for i in range(0, min(mp.cpu_count(), len(experiments))):
+        for i in range(0, mp.cpu_count()):
             p = mp.Process(target=BatchedExpCSVAverager.__thread_worker,
                            args=(q, main_config, avg_opts))
             p.start()
@@ -66,7 +66,7 @@ class BatchedExpCSVAverager:
         while True:
             # Wait for 3 seconds after the queue is empty before bailing
             try:
-                path = q.get(False, 3)
+                path = q.get(True, 3)
                 ExpCSVAverager(main_config, avg_opts, path)()
                 q.task_done()
             except queue.Empty:
@@ -101,6 +101,10 @@ class ExpCSVAverager:
         self.avgd_output_root = os.path.join(self.exp_output_root,
                                              self.avgd_output_leaf)
         self.metrics_leaf = main_config['sim']['metrics_leaf']
+        self.plugin_frames_leaf = main_config['sierra']['plugin_frames_leaf']
+        self.argos_frames_leaf = main_config['sim']['frames_leaf']
+        self.videos_leaf = 'videos'
+        self.plugin_imagize = avg_opts['plugin_imagizing']
 
         os.makedirs(self.avgd_output_root, exist_ok=True)
 
@@ -118,7 +122,7 @@ class ExpCSVAverager:
 
         logging.info('Averaging results in %s...', self.exp_output_root)
 
-        # Maps unique .csv stem to the averaged dataframe
+        # Maps (unique .csv stem, optional parent dir) to the averaged dataframe
         csvs = {}
 
         pattern = self.output_name_format.format(
@@ -126,38 +130,62 @@ class ExpCSVAverager:
 
         # check to make sure all directories are simulation runs, skipping the directory within each
         # experiment that the averaged data is placed in
-        experiments = [e for e in os.listdir(self.exp_output_root) if e not in [
-            self.avgd_output_leaf]]
+        simulations = [e for e in os.listdir(self.exp_output_root) if e not in [
+            self.avgd_output_leaf, self.plugin_frames_leaf, self.argos_frames_leaf, self. videos_leaf]]
 
-        assert(all(re.match(pattern, exp) for exp in experiments)),\
+        assert(all(re.match(pattern, s) for s in simulations)),\
             "FATAL: Not all directories in {0} are simulation runs".format(self.exp_output_root)
 
-        for exp in experiments:
+        csvs = {}
+        for sim in simulations:
+            self.__gather_csvs_from_sim(sim, csvs)
 
-            csv_root = os.path.join(self.exp_output_root, exp, self.metrics_leaf)
-            # Nothing but .csv files should be in the metrics folder
-            for csv_fname in os.listdir(csv_root):
-                df = pd.read_csv(os.path.join(csv_root, csv_fname), index_col=False, sep=';')
-                if csv_fname not in csvs:
-                    csvs[csv_fname] = []
+        self.__average_csvs_within_exp(csvs)
 
-                csvs[csv_fname].append(df)
+    def __gather_csvs_from_sim(self, sim: str, csvs: dict):
+        csv_root = os.path.join(self.exp_output_root, sim, self.metrics_leaf)
 
-            # All CSV files with the same base name will be averaged together
-            for csv_fname in csvs:
-                csv_concat = pd.concat(csvs[csv_fname])
-                by_row_index = csv_concat.groupby(csv_concat.index)
-                csv_averaged = by_row_index.mean()
-                csv_averaged.to_csv(os.path.join(self.avgd_output_root, csv_fname),
-                                    sep=';',
-                                    index=False)
-                # Also write out stddev in order to calculate confidence intervals later
-                if self.avg_opts['gen_stddev']:
-                    csv_stddev = by_row_index.std().round(2)
-                    csv_stddev_fname = csv_fname.split('.')[0] + '.stddev'
-                    csv_stddev.to_csv(os.path.join(self.avgd_output_root, csv_stddev_fname),
-                                      sep=';',
-                                      index=False)
+        # The metrics folder should contain nothing but .csv files and directories. For all
+        # directories it contains, they each should contain nothing but .csv files (these are
+        # for video rendering later).
+        for item in os.listdir(csv_root):
+            item_path = os.path.join(csv_root, item)
+            if os.path.isfile(item_path):
+                df = pd.read_csv(item_path, index_col=False, sep=';')
+                if (item, '') not in csvs:
+                    csvs[(item, '')] = []
+
+                csvs[(item, '')].append(df)
+            else:
+                # This takes FOREVER, so only do it if we absolutely need to
+                if not self.plugin_imagize:
+                    continue
+                for csv_fname in os.listdir(item_path):
+                    csv_path = os.path.join(item_path, csv_fname)
+                    df = pd.read_csv(csv_path, index_col=False, sep=';')
+                    if (csv_fname, item) not in csvs:
+                        csvs[(csv_fname, item)] = []
+                    csvs[(csv_fname, item)].append(df)
+
+    def __average_csvs_within_exp(self, csvs: dict):
+        # All CSV files with the same base name will be averaged together
+        for csv_fname in csvs:
+            csv_concat = pd.concat(csvs[csv_fname])
+            by_row_index = csv_concat.groupby(csv_concat.index)
+            csv_averaged = by_row_index.mean()
+            if csv_fname[1] != '':
+                os.makedirs(os.path.join(self.avgd_output_root, csv_fname[1]), exist_ok=True)
+
+            csv_averaged.to_csv(os.path.join(self.avgd_output_root, csv_fname[1], csv_fname[0]),
+                                sep=';',
+                                index=False)
+            # Also write out stddev in order to calculate confidence intervals later
+            if self.avg_opts['gen_stddev']:
+                csv_stddev = by_row_index.std().round(2)
+                csv_stddev_fname = csv_fname.split('.')[0] + '.stddev'
+                csv_stddev.to_csv(os.path.join(self.avgd_output_root, csv_stddev_fname),
+                                  sep=';',
+                                  index=False)
 
     def __verify_exp(self):
         """
@@ -190,6 +218,13 @@ class ExpCSVAverager:
                 for csv in os.listdir(csv_root2):
                     path1 = os.path.join(csv_root1, csv)
                     path2 = os.path.join(csv_root2, csv)
+
+                    # .csvs for rendering that we don't verify (for now...)
+                    if os.path.isdir(path1) or os.path.isdir(path2):
+                        logging.warning("Skipping verification metrics for rendering in %s",
+                                        path1)
+                        continue
+
                     assert (os.path.exists(path1) and os.path.exists(path2)),\
                         "FATAL: Either {0} or {1} does not exist".format(path1, path2)
 

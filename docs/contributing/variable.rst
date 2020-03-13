@@ -86,6 +86,6 @@ the following to get it to work with sierra as a batch criteria:
    ``__init__()`` function that calls the ``__init__()`` function of your base
    variable
 
-   See ``variables/swarm_size.py`` for a simple example of this.
+   See ``variables/population_size.py`` for a simple example of this.
 
 #. Once finished open a pull request with your new variable.

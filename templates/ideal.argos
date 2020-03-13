@@ -194,38 +194,43 @@
     <output output_root="output"
             output_dir="__current_date__">
       <metrics
-          output_dir="metrics"
-          block_acq_counts="block-acq-counts.csv"
-          block_acq_locs="block-acq-locs.csv"
-          block_acq_explore_locs="block-acq-explore-locs.csv"
-          block_acq_vector_locs="block-acq-vector-locs.csv"
-          fsm_collision_counts="fsm-collision-counts.csv"
-          block_transport="block-transport.csv"
-          cache_acq_counts="cache-acq-counts.csv"
-          cache_acq_locs="cache-acq-locs.csv"
-          cache_acq_explore_locs="cache-acq-explore-locs.csv"
-          cache_acq_vector_locs="cache-acq-vector-locs.csv"
-          cache_utilization="cache-utilization.csv"
-          cache_lifecycle="cache-lifecycle.csv"
-          cache_locations="cache-locations.csv"
-          cache_site_selection="cache-site-selection.csv"
-          task_execution_generalist="task-execution-generalist.csv"
-          task_execution_collector="task-execution-collector.csv"
-          task_execution_harvester="task-execution-harvester.csv"
-          task_execution_cache_starter="task-execution-cache_starter.csv"
-          task_execution_cache_finisher="task-execution-cache_finisher.csv"
-          task_execution_cache_transferer="task-execution-cache_transferer.csv"
-          task_execution_cache_collector="task-execution-cache_collector.csv"
-          task_tab_generalist="task-tab-generalist.csv"
-          task_tab_collector="task-tab-collector.csv"
-          task_tab_harvester="task-tab-harvester.csv"
-          task_distribution="task-distribution.csv"
-          perception_dpo="perception-dpo.csv"
-          perception_mdpo="perception-mdpo.csv"
-          swarm_dist_pos2D="swarm-dist-pos2D.csv"
-          swarm_convergence="swarm-convergence.csv"
-          loop_temporal_variance="temporal-variance.csv"
-          output_interval="1000">
+          output_dir="metrics">
+        <append
+            output_interval="1000"
+            block_acq_counts="block-acq-counts"
+            fsm_collision_counts="fsm-collision-counts"
+            block_transport="block-transport"
+            block_manipulation="block-manipulation"
+            cache_acq_counts="cache-acq-counts"
+            cache_utilization="cache-utilization"
+            cache_lifecycle="cache-lifecycle"
+            cache_site_selection="cache-site-selection"
+            task_execution_generalist="task-execution-generalist"
+            task_execution_collector="task-execution-collector"
+            task_execution_harvester="task-execution-harvester"
+            task_execution_cache_starter="task-execution-cache_starter"
+            task_execution_cache_finisher="task-execution-cache_finisher"
+            task_execution_cache_transferer="task-execution-cache_transferer"
+            task_execution_cache_collector="task-execution-cache_collector"
+            task_tab_generalist="task-tab-generalist"
+            task_tab_collector="task-tab-collector"
+            task_tab_harvester="task-tab-harvester"
+            task_distribution="task-distribution"
+            perception_dpo="perception-dpo"
+            perception_mdpo="perception-mdpo"
+            swarm_convergence="swarm-convergence"
+            tv_population="tv-population"
+            tv_environment="tv-environment"/>
+
+        <create output_interval="10"
+                block_acq_locs="block-acq-locs"
+                fsm_collision_locs="fsm-collision-locs"
+                block_acq_explore_locs="block-acq-explore-locs"
+                cache_acq_locs="cache-acq-locs"
+                cache_acq_explore_locs="cache-acq-explore-locs"
+                cache_acq_vector_locs="cache-acq-vector-locs"
+                cache_locations="cache-locations"
+                swarm_dist2D_pos="swarm-dist-pos2D"/>
       </metrics>
     </output>
     <convergence
@@ -292,7 +297,7 @@
               n_clusters="15"
               />
           <manifest
-              n_cube="20"
+              n_cube="40"
               n_ramp="0"
               unit_dim="0.2"
               />
@@ -367,4 +372,28 @@
     <range_and_bearing id="rab" />
     <led id="leds"/>
   </media>
+
+  <visualization>
+    <qt-opengl autoplay="true">
+             <frame_grabbing directory="frames"
+                       base_name="frame_"
+                       format="png"
+                       quality="100"
+                       headless_grabbing="true"
+                       headless_frame_size="1600x1200"
+                       headless_frame_rate="50"
+                       />
+
+      <camera>
+        <placement idx="0"
+                   position="6,3,8"
+                   look_at="6,3,0"
+                   lens_focal_length="20"
+                   up="0,1,0"
+                   />
+      </camera>
+      <user_functions label="depth0_qt_user_functions" />
+    </qt-opengl>
+  </visualization>
+
 </argos-configuration>

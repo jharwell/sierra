@@ -92,7 +92,7 @@ def ControllerGeneratorfactory(controller, config_root, cmdopts):
             exp_def.attr_change(t[0],
                                 t[1],
                                 t[2],
-                                cmdopts['with_rendering'] is False)
+                                cmdopts['argos_rendering'] is False)
 
         # Setup controller
         exists = False

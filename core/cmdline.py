@@ -450,67 +450,18 @@ class CoreCmdline:
                                  """,
                                  action="store_true",
                                  default=False)
-        self.stage3.add_argument("--results-process-tasks",
-                                 help="""
-
-                                 Specify what tasks should be performed when processing simulation results before graph
-                                 generation.
-
-                                 Use=stage{3}; can be omitted otherwise.
-
-                                 """,
-                                 choices=['render', 'average', 'all'],
-                                 default=['all'])
-        # Rendering options
-        rendering = self.parser.add_argument_group(
-            'Stage3: Rendering', 'Rendering options for stage3')
-
-        rendering.add_argument("--with-rendering",
-                               help="""
-
-                               Specify that the ARGoS Qt/OpenGL visualization subtree should be left in the input ``.argos``
-                               file. By default it is stripped out.
-
-                               Any files in the ``frames/`` directory of each simulation will be rendered into a unique
-                               video file with directory using ffmpeg (precise command configurable). This option
-                               assumes that [ffmpeg, Xvfb] programs can be found.
-
-                               Use=stage{1,2,3}; can be omitted otherwise.
-                               """,
-                               action='store_true')
-
-        rendering.add_argument("--render-cmd-opts",
-                               help="""
-
-                               Specify the ffmpeg options to appear between the specification of the input .png files
-                               and the specification of the output file. The default is suitable for use with ARGoS
-                               frame grabbing set to a frames of 1600x1200 to output a reasonable quality video.
-
-                               Use=stage{3}; can be omitted otherwise.
-
-                               """,
-                               default="-r 10 -s:v 800x600 -c:v libx264 -crf 25 -filter:v scale=-2:956 -pix_fmt yuv420p")
-
-        rendering.add_argument("--render-cmd-ofile",
-                               help="""
-
-                               Specify the output filename and extension for the ffmpeg rendered video.
-
-                               Use=stage{3}; can be omitted otherwise.
-
-                               """,
-                               default="video.mp4")
 
     def init_stage4(self):
         """
         Define cmdline arguments for stage 4.
         """
         self.stage4.add_argument("--exp-graphs",
-                                 choices=['intra', 'inter', 'all'],
+                                 choices=['intra', 'inter', 'all', 'none'],
                                  help="""
 
                                  Specify which graphs should be generated: Only intra-experiment graphs, only
-                                 inter-experiment graphs, or both.
+                                 inter-experiment graphs, both, or none. The 'none' option is provided to skip graph
+                                 generation if video outputs are desired instead.
 
                                  Use=stage{4}; can be omitted otherwise.
 
@@ -632,6 +583,83 @@ class CoreCmdline:
                          """,
                          choices=["pcm", "area_between", "frechet", "dtw", "curve_length"],
                          default="dtw")
+
+        # Rendering options
+        rendering = self.parser.add_argument_group(
+            'Stage4: Rendering', 'Rendering options for stage4')
+
+        rendering.add_argument("--argos-rendering",
+                               help="""
+
+                               Specify that the ARGoS Qt/OpenGL visualization subtree should be left in the input ``.argos``
+                               file. By default it is stripped out.
+
+                               Any files in the ``frames/`` directory of each simulation will be rendered into a unique
+                               video file with directory using ffmpeg (precise command configurable), and output to a
+                               ``videos/argos.mp4`` in the output directory of each simulation.
+
+                               This option assumes that [ffmpeg, Xvfb] programs can be found.
+
+                               Use=stage{1,4}; can be omitted otherwise.
+                               """,
+                               action='store_true')
+
+        rendering.add_argument("--render-cmd-opts",
+                               help="""
+
+                               Specify the ffmpeg options to appear between the specification of the input .png files
+                               and the specification of the output file. The default is suitable for use with ARGoS
+                               frame grabbing set to a frames of 1600x1200 to output a reasonable quality video, as well
+                               as with the image files generated from metrics collected by plugins.
+
+                               Use=stage{4}; can be omitted otherwise.
+
+                               """,
+                               default="-r 10 -s:v 800x600 -c:v libx264 -crf 25 -filter:v scale=-2:956 -pix_fmt yuv420p")
+
+        rendering.add_argument("--plugin-imagizing",
+                               help="""
+
+                               Plugins can generate ``.csv`` files residing in directories within the ``<metrics_leaf>``
+                               directory for each ARGoS simulation (rather than directly in the ``<metrics_leaf>``
+                               directory). If this option is passed, then the ``.csv`` files residing each subdirectory
+                               under ``<metrics_leaf>`` (no recursive nesting is allowed) in each simulation are treated
+                               as snapshots of 2D or 3D data over time, and will be averaged together across simulations
+                               and then turn into image files suitable for video rendering in stage 4. The following
+                               restrictions apply:
+
+                               - A common stem with a unique numeric ID is required for each ``.csv`` must be present
+                                 for each ``.csv``.
+
+                               - The directory name within ``<metrics_leaf>`` must be the same as the stem for each
+                                 ``.csv`` file in that directory. For example, if the directory name was
+                                 ``swarm-distribution`` under ``<metrics_leaf>`` then all ``.csv`` files within that
+                                 directory must be named according to
+                                 ``swarm-distribution/swarm-distributionXXXXX.csv``, where XXXXX is any length numeric
+                                 prefix (possibly preceded by an underscore or dash).
+
+                               Averaging the image ``.csv`` files and generating the images for each experiment does not
+                               happen automatically as part of stage 3 because it can take a LONG time and is
+                               idempotent.
+
+                               Use=stage{3,4}; can be omitted otherwise.
+
+                               """,
+                               action='store_true')
+        rendering.add_argument("--plugin-rendering",
+                               help="""
+
+                               Specify that the imagized ``.csv`` files previously created should be used to generate a
+                               set of a videos in ``<experiment root>/videos/<metric_dir_name>.mp4``. This does not
+                               happen automatically every time as part of stage 4 because it can take a LONG time and is
+                               idempotent.
+
+                               This option assumes that ffmpeg program can be found.
+
+                               Use=stage{4}; can be omitted otherwise.
+
+                               """,
+                               action='store_true')
 
     def init_stage5(self):
         """

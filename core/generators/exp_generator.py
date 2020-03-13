@@ -165,7 +165,7 @@ class ExpDefCommonGenerator:
 
         Does not write generated changes to the simulation definition pickle file.
         """
-        if not self.cmdopts["with_rendering"]:
+        if not self.cmdopts["argos_rendering"]:
             xml_luigi.tag_remove(".", "./visualization", noprint=True)  # ARGoS visualizations
 
 

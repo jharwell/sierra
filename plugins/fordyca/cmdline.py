@@ -81,6 +81,8 @@ class CmdlineValidator(core.cmdline.CoreCmdlineValidator):
 
 def sphinx_cmdline():
     """
-    Return a handle to the FORDYCA cmdline extensions to autogenerate nice documentation from it.
+    Return a handle to the :xref:`FORDYCA` cmdline extensions to autogenerate nice documentation
+    from it.
+
     """
     return Cmdline(True).parser

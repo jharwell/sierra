@@ -17,6 +17,25 @@
 """
 Construction target classes for defining the volumetric extent of one or more structures to be built
 during simulation.
+
+Definition:
+    class.AxBxC@D,E
+
+    - class - {ramp|rectprism}. ``ramp`` is a sloped structure that robots can drive
+      up. ``rectprism`` is a rectangular prism which robots cannot (yet) drive up.
+
+    - AxBxC - The X,Y,Z dimensions of the bounding box for the chosen structure (this defines its
+              size).
+
+    - D,E - The X,Y location in the arena of the anchor/origin of the structure (lower left corner
+      of structure by convention).
+
+Examples:
+    - ``ramp.8x8x4@4,4``: A square ramp structure 4 units tall anchored on its lower left corner at
+      4,4.
+
+Note that this variable does NOT currently allow specification of the structure orientation.
+
 """
 
 import re
@@ -33,10 +52,6 @@ class BaseConstructTarget(BaseVariable):
         structure: Dictionary of (key,value) pairs defining the structure, as returned by
                    :class:`~plugins.silicon.variables.construct_targets.ConstructTargetParser`.
 
-        n_subtargets: How many construction targets each structure should be broken into. Breaking a
-                      structure into more fine-grained "sub-structures", each of which is a
-                      construction target, allows for more fine-grained task allocations.
-
         orientation: ``X`` or ``Y``, defining the axis in the arena to use as the X axis for
                      structure generation.
 
@@ -46,12 +61,10 @@ class BaseConstructTarget(BaseVariable):
 
     def __init__(self,
                  structure: dict,
-                 n_subtargets: int,
                  orientation: str,
                  target_id: int):
 
         self.structure = structure
-        self.n_subtargets = n_subtargets
         self.orientation = orientation
         self.target_id = target_id
 
@@ -93,64 +106,13 @@ class BaseConstructTarget(BaseVariable):
                                     self.orientation,
                                     structure['bb'],
                                     structure['anchor'])
-        loop_adds.extend(self.gen_subtargets('loop_functions',
-                                             structure['type'],
-                                             target_id,
-                                             self.orientation,
-                                             structure['bb'],
-                                             structure['anchor']))
 
         controller_adds = self.gen_target('params',
                                           target_name,
                                           self.orientation,
                                           structure['bb'],
                                           structure['anchor'])
-        controller_adds.extend(self.gen_subtargets('params',
-                                                   structure['type'],
-                                                   target_id,
-                                                   self.orientation,
-                                                   structure['bb'],
-                                                   structure['anchor']))
         return [loop_adds, controller_adds]
-
-    def gen_subtargets(self,
-                       xml_parent: str,
-                       target_type: str,
-                       target_id: int,
-                       orientation: str,
-                       bb: tp.Tuple[int, int, int],
-                       anchor: tp.Tuple[int, int]):
-        """
-        Generate additional definitions for structure subtargets, which are logical
-        partitions of the overall structure which allow for more fine-grained task allocation.
-        """
-        target_name = target_type + str(target_id)
-        adds = []
-        adds.append((".//{0}/construct_targets/*[@id='{1}'".format(xml_parent,
-                                                                   target_name) + "]",
-                     "subtargets",
-                     {}))
-
-        for i in range(0, self.n_subtargets):
-            subtarget_name = 'sub' + target_type + str(i)
-
-            if orientation == 'X':
-                subtarget_size = int(bb[0] / self.n_subtargets)
-                tmin = anchor[0] + subtarget_size * i
-                tmax = anchor[0] + subtarget_size * (i + 1)
-            else:
-                subtarget_size = int(bb[1] / self.n_subtargets)
-                tmin = anchor[1] + subtarget_size * i
-                tmax = anchor[1] + subtarget_size * (i + 1)
-
-            adds.append((".//{0}/construct_targets/*[@id='{1}'".format(xml_parent,
-                                                                       target_name) +
-                         "]/subtargets",
-                         'sub' + target_type,
-                         {'type': orientation,
-                          'id': subtarget_name,
-                          'range': "{0}:{1}".format(tmin, tmax)}))
-            return adds
 
 
 class RampConstructTarget(BaseConstructTarget):
@@ -166,9 +128,6 @@ class RampConstructTarget(BaseConstructTarget):
     def __init__(self, *args, **kwargs):
         BaseConstructTarget.__init__(self, *args, **kwargs)
         self.__structure_sanity_checks(self.structure)
-
-    def gen_tag_addlist(self):
-        return self.gen_structure(self.structure, self.target_id)
 
     def __structure_sanity_checks(self, structure: dict):
         bb = structure['bb']
@@ -199,7 +158,7 @@ class RampConstructTarget(BaseConstructTarget):
                      'ramp',
                      {'id': target_name,
                       'bounding_box': "{0},{1},{2}".format(bb[0], bb[1], bb[2]),
-                      'anchor': "{0}:{1}".format(anchor[0], anchor[1]),
+                      'anchor': "{0},{1},0".format(anchor[0], anchor[1]),
                       'orientation': orientation}))
         adds.append((".//{0}/construct_targets/*[@id='{1}'".format(xml_parent, target_name) + "]",
                      "ramp_blocks",
@@ -209,31 +168,28 @@ class RampConstructTarget(BaseConstructTarget):
                      {}))
 
         # First, construct the list of ramp blocks.
-        ramp_list = RampConstructTarget.__gen_ramp_blocks(orientation, bb, anchor)
+        ramp_list = RampConstructTarget.__gen_ramp_blocks(orientation, bb)
         for i, block in enumerate(ramp_list):
             adds.append((".//{0}/construct_targets/*[@id='{1}'".format(xml_parent,
                                                                        target_name) + "]/ramp_blocks",
                          "ramp_block",
-                         {'id': str(i),
-                          'loc': '{0},{1},{2}'.format(block[0],
-                                                      block[1],
-                                                      block[2])}))
+                         {'cell': '{0},{1},{2}'.format(block[0],
+                                                       block[1],
+                                                       block[2])}))
         # Next, construct the list of cube blocks
-        cube_list = RampConstructTarget.__gen_cube_blocks(orientation, bb, anchor)
+        cube_list = RampConstructTarget.__gen_cube_blocks(orientation, bb)
         for i, block in enumerate(cube_list):
             adds.append((".//{0}/construct_targets/*[@id='{1}'".format(xml_parent,
                                                                        target_name) + "]/cube_blocks",
                          "cube_block",
-                         {'id': str(i),
-                          'loc': '{0},{1},{2}'.format(block[0],
-                                                      block[1],
-                                                      block[2])}))
+                         {'cell': '{0},{1},{2}'.format(block[0],
+                                                       block[1],
+                                                       block[2])}))
         return adds
 
     @staticmethod
     def __gen_ramp_blocks(orientation: str,
-                          bb: tp.Tuple[int, int, int],
-                          anchor: tp.Tuple[int, int]):
+                          bb: tp.Tuple[int, int, int]):
         """
         Return the list of ramp blocks that will be part of the ramp construction target, given its
         bounding box and location in the arena.
@@ -247,7 +203,7 @@ class RampConstructTarget(BaseConstructTarget):
                 for y in range(0, bb[1]):
                     # -1 is for the height of the ramp block; the zval eqn gives the value of the
                     # bottom left corner
-                    ramp_list.append((x + anchor[0], y + anchor[1], zval - 1))
+                    ramp_list.append((x, y, zval - 1))
         else:
             for y in range(0, bb[1], ratio):
                 zval = int(-y / ratio + bb[2])
@@ -255,13 +211,12 @@ class RampConstructTarget(BaseConstructTarget):
                 for x in range(0, bb[0]):
                     # -1 is for the height of the ramp block; the zval eqn gives the value of the
                     # bottom left corner
-                    ramp_list.append((x + anchor[0], y + anchor[1], zval - 1))
+                    ramp_list.append((x, y, zval - 1))
         return ramp_list
 
     @staticmethod
     def __gen_cube_blocks(orientation: str,
-                          bb: tp.Tuple[int, int, int],
-                          anchor: tp.Tuple[int, int]):
+                          bb: tp.Tuple[int, int, int]):
         """
         Return the list of cube blocks that will be part of the ramp construction target, given its
         bounding box and location in the arena.
@@ -270,23 +225,38 @@ class RampConstructTarget(BaseConstructTarget):
         ratio = RampConstructTarget.kRAMP_LENGTH_RATIO
 
         if orientation == "X":
-            for x in range(0, bb[0], ratio):
-                zval = int(-x / ratio + bb[2])
-
-                # -1 is for the height of the ramp block; the zval eqn gives the value of the
-                # bottom left corner
+            for x in range(0, int(bb[0])):
+                # The height in z UNDER a ramp block of a specified L is the same for all X
+                # underneath it, BUT only one of the cells under the ramp block will have an X that
+                # will interspect the Z = mx + b line of the ramp slope at an integer. We obtain
+                # this value and use it to calculate the necessary height in Z for all X under the
+                # block; the Z = mx + b equation does not (easily) work with rounding fractional
+                # values if you try to plug EACH X into the equation.
+                #
+                # The -1 is for the height of the ramp block.
+                eff_x = int(int(x / ratio) * ratio)
+                zval = int(-eff_x / ratio + bb[2]) - 1
                 for z in range(0, zval):
                     for y in range(0, bb[1]):
-                        cube_list.append((anchor[0] + x, anchor[1] + y, z))
+                        cube_list.append((x, y, z))
         else:
-            for y in range(0, bb[y], ratio):
-                zval = int(-y / ratio + bb[2])
+            for y in range(0, bb[1]):
+                # The height in z UNDER a ramp block of a specified L is the same for all Y
+                # underneath it, BUT only one of the cells under the ramp block will have an Y that
+                # will interspect the Z = mx + b line of the ramp slope at an integer. We obtain
+                # this value and use it to calculate the necessary height in Z for all Y under the
+                # block; the Z = mx + b equation does not (easily) work with rounding fractional
+                # values if you try to plug EACH Y into the equation.
+                #
+                # The -1 is for the height of the ramp block.
+                eff_y = int(int(y / ratio) * ratio)
+                zval = int(-eff_y / ratio + bb[2]) - 1
 
                 # -1 is for the height of the ramp block; the zval eqn gives the value of the
                 # bottom left corner
                 for z in range(0, zval):
                     for x in range(0, bb[0]):
-                        cube_list.append((anchor[0] + x, anchor[1] + y, z))
+                        cube_list.append((x, y, z))
 
         return cube_list
 
@@ -312,28 +282,25 @@ class RectprismConstructTarget(BaseConstructTarget):
                      'rectprism',
                      {'id': target_name,
                       'bounding_box': "{0},{1},{2}".format(bb[0], bb[1], bb[2]),
-                      'anchor': "{0},{1}".format(anchor[0], anchor[1]),
+                      'anchor': "{0},{1},0".format(anchor[0], anchor[1]),
                       'orientation': orientation}))
         adds.append((".//{0}/construct_targets/*[@id='{1}'".format(xml_parent, target_name) + "]",
                      "cube_blocks",
                      {}))
 
         # Construct the list of cube blocks
-        cube_list = RectprismConstructTarget.__gen_cube_blocks(orientation, bb, anchor)
+        cube_list = RectprismConstructTarget.__gen_cube_blocks(orientation, bb)
         for i, block in enumerate(cube_list):
             adds.append((".//{0}/construct_targets/*[@id='{1}'".format(xml_parent,
                                                                        target_name) + "]/cube_blocks",
                          "cube_block",
-                         {'id': 'block' + str(i),
-                          'loc': '{0},{1},{2}'.format(block[0],
-                                                      block[1],
-                                                      block[2])}))
+                         {'cell': '{0},{1},{2}'.format(block[0],
+                                                       block[1],
+                                                       block[2])}))
         return adds
 
     @staticmethod
-    def __gen_cube_blocks(orientation: str,
-                          bb: tp.Tuple[int, int, int],
-                          anchor: tp.Tuple[int, int]):
+    def __gen_cube_blocks(orientation: str, bb: tp.Tuple[int, int, int]):
         """
         Return the list of cube blocks that will be part of the prismatic construction target, given
         its bounding box and location in the arena.
@@ -344,12 +311,12 @@ class RectprismConstructTarget(BaseConstructTarget):
             for x in range(0, bb[0]):
                 for y in range(0, bb[1]):
                     for z in range(0, bb[2]):
-                        cube_list.append((anchor[0] + x, anchor[1] + y, z))
+                        cube_list.append((x, y, z))
         else:
             for x in range(0, bb[1]):
                 for y in range(0, bb[0]):
                     for z in range(0, bb[2]):
-                        cube_list.append((anchor[0] + x, anchor[1] + y, z))
+                        cube_list.append((x, y, z))
 
         return cube_list
 
@@ -398,11 +365,9 @@ def factory(cmdopts: tp.Dict[str, str],
 
     if target['type'] == 'ramp':
         return RampConstructTarget(target,
-                                   cmdopts['construct_n_subtargets'],
                                    cmdopts['construct_orientation'],
                                    target_id)
     elif target['type'] == 'rectprism':
         return RectprismConstructTarget(target,
-                                        cmdopts['construct_n_subtargets'],
                                         cmdopts['construct_orientation'],
                                         target_id)
