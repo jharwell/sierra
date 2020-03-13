@@ -499,6 +499,7 @@ class CoreCmdline:
                                  choices=['intra', 'inter', 'all', 'none'],
                                  help="""
 
+<<<<<<< HEAD
                                  Specify which types of graphs should be generated from experimental results:
 
                                  - ``intra`` - Generate intra-experiment graphs from the results of a single experiment
@@ -512,6 +513,11 @@ class CoreCmdline:
 
                                  - ``none`` - Skip graph generation; provided to skip graph generation if video outputs
                                    are desired instead.
+=======
+                                 Specify which graphs should be generated: Only intra-experiment graphs, only
+                                 inter-experiment graphs, both, or none. The 'none' option is provided to skip graph
+                                 generation if video outputs are desired instead.
+>>>>>>> 0539919... enh(#189): General metric rendering
 
                                  Use=stage{4}; can be omitted otherwise.
 
@@ -659,6 +665,7 @@ class CoreCmdline:
         rendering.add_argument("--argos-rendering",
                                help="""
 
+<<<<<<< HEAD
                                If passed, the ARGoS Qt/OpenGL visualization subtree should is not removed from
                                ``--template-input-file`` before generating experimental inputs. Otherwise, it is removed
                                if it exists.
@@ -667,6 +674,14 @@ class CoreCmdline:
                                ``--plugin`` basis) will be rendered into a unique video file with directory using ffmpeg
                                (precise command configurable), and output to a ``videos/argos.mp4`` in the output
                                directory of each simulation.
+=======
+                               Specify that the ARGoS Qt/OpenGL visualization subtree should be left in the input ``.argos``
+                               file. By default it is stripped out.
+
+                               Any files in the ``frames/`` directory of each simulation will be rendered into a unique
+                               video file with directory using ffmpeg (precise command configurable), and output to a
+                               ``videos/argos.mp4`` in the output directory of each simulation.
+>>>>>>> 0539919... enh(#189): General metric rendering
 
                                This option assumes that [ffmpeg, Xvfb] programs can be found.
 
@@ -677,9 +692,16 @@ class CoreCmdline:
         rendering.add_argument("--render-cmd-opts",
                                help="""
 
+<<<<<<< HEAD
                                Specify the ffmpeg options to appear between the specification of the input ``.png``
                                files and the specification of the output file. The default is suitable for use with
                                ARGoS frame grabbing set to a frames of 1600x1200 to output a reasonable quality video.
+=======
+                               Specify the ffmpeg options to appear between the specification of the input .png files
+                               and the specification of the output file. The default is suitable for use with ARGoS
+                               frame grabbing set to a frames of 1600x1200 to output a reasonable quality video, as well
+                               as with the image files generated from metrics collected by plugins.
+>>>>>>> 0539919... enh(#189): General metric rendering
 
                                Use=stage{4}; can be omitted otherwise.
 
@@ -689,6 +711,7 @@ class CoreCmdline:
         rendering.add_argument("--plugin-imagizing",
                                help="""
 
+<<<<<<< HEAD
                                Plugins can generate ``.csv`` files residing in subdirectories within the the
                                ``<metrics_leaf>`` directory (directory path set on a per ``--plugin`` basis) for each
                                ARGoS simulation, in addition to generating ``.csv`` files residing directly in the
@@ -697,6 +720,15 @@ class CoreCmdline:
                                in each simulation are treated as snapshots of 2D or 3D data over time, and will be
                                averaged together across simulations and then turn into image files suitable for video
                                rendering in stage 4. The following restrictions apply:
+=======
+                               Plugins can generate ``.csv`` files residing in directories within the ``<metrics_leaf>``
+                               directory for each ARGoS simulation (rather than directly in the ``<metrics_leaf>``
+                               directory). If this option is passed, then the ``.csv`` files residing each subdirectory
+                               under ``<metrics_leaf>`` (no recursive nesting is allowed) in each simulation are treated
+                               as snapshots of 2D or 3D data over time, and will be averaged together across simulations
+                               and then turn into image files suitable for video rendering in stage 4. The following
+                               restrictions apply:
+>>>>>>> 0539919... enh(#189): General metric rendering
 
                                - A common stem with a unique numeric ID is required for each ``.csv`` must be present
                                  for each ``.csv``.
@@ -708,9 +740,15 @@ class CoreCmdline:
                                  ``swarm-distribution/swarm-distributionXXXXX.csv``, where XXXXX is any length numeric
                                  prefix (possibly preceded by an underscore or dash).
 
+<<<<<<< HEAD
                                *Important note!*: Averaging the image ``.csv`` files and generating the images for each
                                experiment does not happen automatically as part of stage 3 because it can take a LONG
                                time and is idempotent.
+=======
+                               Averaging the image ``.csv`` files and generating the images for each experiment does not
+                               happen automatically as part of stage 3 because it can take a LONG time and is
+                               idempotent.
+>>>>>>> 0539919... enh(#189): General metric rendering
 
                                Use=stage{3,4}; can be omitted otherwise.
 
@@ -724,7 +762,11 @@ class CoreCmdline:
                                happen automatically every time as part of stage 4 because it can take a LONG time and is
                                idempotent.
 
+<<<<<<< HEAD
                                This option assumes that [ffmpeg] programs can be found.
+=======
+                               This option assumes that ffmpeg program can be found.
+>>>>>>> 0539919... enh(#189): General metric rendering
 
                                Use=stage{4}; can be omitted otherwise.
 
