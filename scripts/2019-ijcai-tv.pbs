@@ -10,9 +10,13 @@
 # Initialize modules
 source /home/gini/shared/swarm/bin/build-env-setup.sh
 
+# Add ARGoS libraries to system library search path, since they are in a
+# non-standard location
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SWARM_ROOT/$MSICLUSTER/lib/argos3
+
 # Set ARGoS library search path. Must contain both the ARGoS core libraries path
 # AND the fordyca library path.
-export ARGOS_PLUGIN_PATH=$ARGOS_PLUGIN_PATH:$HOME/git/fordyca/build/lib
+export ARGOS_PLUGIN_PATH=$SWARM_ROOT/$MSICLUSTER/lib/argos3:$HOME/git/fordyca/build/lib
 
 # Setup logging (maybe compiled out and unneeded, but maybe not)
 export LOG4CXX_CONFIGURATION=$HOME/git/fordyca/log4cxx.xml
@@ -25,6 +29,23 @@ MODULEVERSION_STACK --env MODULESHOME --env OMP_DYNAMICS --env
 OMP_MAX_ACTIVE_LEVELS --env OMP_NESTED --env OMP_NUM_THREADS --env
 OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 --env ARGOS_PLUGIN_PATH --env LOG4CXX_CONFIGURATION"
+
+################################################################################
+# MSI Runtimes (with margin included)                                          #
+################################################################################
+#
+# SS64x32: BCStepU,Log128: 4.5 hrs
+# SS64x32: BCStepU,Log256: 7 hrs
+# SS64x32: BCStepU,Log512: 12.5 hrs
+# SS64x32: BCStepU,Log1024: 20 hrs
+# SS64x32: BCStepU,Log2048: 36.5 hrs
+# SS64x32: BCStepU,Log4096: 73.5 hrs
+#
+################################################################################
+# Non-batch Parameters                                                         #
+################################################################################
+# SS64x32: BC StepD, time=10000, block density = 10.0%, static cache % = 10.0,
+# max speed = 10.0
 
 ################################################################################
 # Begin Experiments                                                            #

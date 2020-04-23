@@ -1,0 +1,98 @@
+#!/bin/bash -l
+#PBS -l walltime=4:00:00,nodes=50:ppn=8,pmem=2500mb
+#PBS -m abe
+#PBS -M harwe006@umn.edu
+
+################################################################################
+# Setup Simulation Environment                                                 #
+################################################################################
+
+# Initialize modules
+source /home/gini/shared/swarm/bin/build-env-setup.sh
+
+# Add ARGoS libraries to system library search path, since they are in a
+# non-standard location
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SWARM_ROOT/$MSICLUSTER/lib/argos3
+
+# Set ARGoS library search path. Must contain both the ARGoS core libraries path
+# AND the fordyca library path.
+export ARGOS_PLUGIN_PATH=$SWARM_ROOT/$MSICLUSTER/lib/argos3:$HOME/git/fordyca/build/lib
+
+# Setup logging (maybe compiled out and unneeded, but maybe not)
+export LOG4CXX_CONFIGURATION=$HOME/git/fordyca/log4cxx.xml
+
+# From MSI docs: transfers all of the loaded modules to the compute nodes (not
+# inherited from the master/launch node when using GNU parallel)
+export PARALLEL="--workdir . --env PATH --env LD_LIBRARY_PATH --env
+LOADEDMODULES --env _LMFILES_ --env MODULE_VERSION --env MODULEPATH --env
+MODULEVERSION_STACK --env MODULESHOME --env OMP_DYNAMICS --env
+OMP_MAX_ACTIVE_LEVELS --env OMP_NESTED --env OMP_NUM_THREADS --env
+OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
+--env ARGOS_PLUGIN_PATH --env LOG4CXX_CONFIGURATION"
+
+################################################################################
+# MSI Runtimes (with margin included)                                          #
+################################################################################
+#
+# {CRW,DPO,GP-DPO},Log1024,SS32x16: 6 hrs
+# {CRW,DPO,GP-DPO},Log1024,SS64x32: 6 hrs
+# {CRW,DPO,GP-DPO},Log4096,SS64x32: 18.5 hrs
+#
+# {CRW,DPO,GP-DPO},Log1024,SS96x48: 6.5 hrs
+# {CRW,DPO,GP-DPO},Log4096,SS96x48: 18.5 hrs
+# {CRW,DPO,GP-DPO},Log8192,SS96x48: 36 hrs
+# {CRW,DPO,GP-DPO},Log16384,SS96x48: 75 hrs
+#
+################################################################################
+# Non-batch Parameters                                                         #
+################################################################################
+# Med block, high speed: block density = 5.0%, static cache % = 10.0, max speed
+# = 10.0
+#
+# 32x16: 25 blocks, static cache respawn = 3
+# 64x32: 100 blocks, static cache respawn = 10
+# 96x48: 230 blocks, static cache respawn = 23
+#
+# High block, high speed: block density = 10.0%, static cache % = 10.0, max
+# speed = 10.0
+#
+# 32x16: 50 blocks, static cache respawn = 5
+# 64x32: 200 blocks, static cache respawn = 20
+# 96x48: 460 blocks, static cache respawn = 46
+
+################################################################################
+# Begin Experiments                                                            #
+################################################################################
+NSIMS=50
+DIMS=(96x48)
+OUTPUT_ROOT=$HOME/exp/test
+BASE_CMD="python3 sierra.py \
+                  --sierra-root=$OUTPUT_ROOT \
+                  --template-config-file=$HOME/git/sierra/templates/ideal.argos \
+                  --n-sims=$NSIMS\
+                  --batch-criteria=swarm_size.Log16384\
+                  --n-physics-engines=8 --batch-exp-range=14:14\
+                  --n-threads=8 --pipeline 1\
+                  --n-blocks=460\
+                  --static-cache-blocks=46\
+                  --exec-method=local.parallel\
+                  --time-setup=time_setup.T100\
+                  --perf-measures=sc,so,sp"
+
+cd $HOME/git/sierra
+
+# GO GO Power Rangers!
+#
+# - Executes each method interleaved rather than sequentially so that interim
+#   results can be obtained faster.
+for d in "${DIMS[@]}"
+do
+    $BASE_CMD --generator=depth0.CRW.SS${d}
+    $BASE_CMD --generator=depth0.DPO.SS${d}
+    $BASE_CMD --generator=depth1.GP_DPO.SS${d}
+done
+
+
+# Generate comparison graphs (a valid batch criteria still needed to
+# correctly generate graph labels)
+$BASE_CMD --generator=depth1.GP_DPO.SS96x48 --pipeline 5

@@ -18,7 +18,7 @@
   <controllers>
 
     <__controller__ id="ffc"
-                  library="foo">
+                  library="libfordyca">
       <actuators>
         <differential_steering implementation="default" />
         <leds implementation="default" medium="leds" />
@@ -26,13 +26,13 @@
       </actuators>
       <sensors>
         <positioning implementation="default"/>
-        <differential_steering implementation="default"/>
-        <footbot_proximity implementation="default" show_rays="true"/>
-        <footbot_light implementation="rot_z_only" show_rays="false"/>
-        <footbot_motor_ground implementation="rot_z_only"/>
+        <differential_steering implementation="default" />
+        <footbot_proximity implementation="default" show_rays="true" />
+        <footbot_light implementation="rot_z_only" show_rays="false" />
+        <footbot_motor_ground implementation="rot_z_only" />
         <range_and_bearing implementation="medium" medium="rab" />
         <colored_blob_omnidirectional_camera implementation="rot_z_only"
-                                             medium="leds"/>
+                                             medium="leds" />
       </sensors>
       <params>
         <output
@@ -75,7 +75,7 @@
             <ema alpha="0.5"/>
           </task_exec_estimates>
 
-          <epsilon_greedy epsilon="0.4"
+          <epsilon_greedy epsilon="0.11"
                           regret_bound="linear"/>
           <ucb1 gamma="1000"/>
           <stoch_nbhd1
@@ -138,7 +138,7 @@
             site_xrange="2:10"
             site_yrange="2.5:3">
           <pickup_policy
-              policy="Null"
+              policy="cache_size"
               timestep="20000"
               cache_size="3"/>
         </cache_sel_matrix>
@@ -189,101 +189,37 @@
   <!-- ****************** -->
   <!-- * Loop functions * -->
   <!-- ****************** -->
-  <loop_functions library="foo"
+  <loop_functions library="libfordyca"
                   label="depth2_loop_functions">
     <output output_root="output"
             output_dir="__current_date__">
       <metrics
-          output_dir="metrics">
-        <append
-            output_interval="1000"
-            block_acq_counts="block-acq-counts"
-            fsm_collision_counts="fsm-collision-counts"
-            block_transport="block-transport"
-            block_manipulation="block-manipulation"
-            cache_acq_counts="cache-acq-counts"
-            cache_utilization="cache-utilization"
-            cache_lifecycle="cache-lifecycle"
-            cache_site_selection="cache-site-selection"
-            task_execution_generalist="task-execution-generalist"
-            task_execution_collector="task-execution-collector"
-            task_execution_harvester="task-execution-harvester"
-            task_execution_cache_starter="task-execution-cache_starter"
-            task_execution_cache_finisher="task-execution-cache_finisher"
-            task_execution_cache_transferer="task-execution-cache_transferer"
-            task_execution_cache_collector="task-execution-cache_collector"
-            task_tab_generalist="task-tab-generalist"
-            task_tab_collector="task-tab-collector"
-            task_tab_harvester="task-tab-harvester"
-            task_distribution="task-distribution"
-            perception_dpo="perception-dpo"
-            perception_mdpo="perception-mdpo"
-            swarm_convergence="swarm-convergence"
-            tv_population="tv-population"
-            tv_environment="tv-environment"/>
-
-        <create output_interval="10"
-                block_acq_locs="block-acq-locs"
-                fsm_collision_locs="fsm-collision-locs"
-                block_acq_explore_locs="block-acq-explore-locs"
-                cache_acq_locs="cache-acq-locs"
-                cache_acq_explore_locs="cache-acq-explore-locs"
-                cache_acq_vector_locs="cache-acq-vector-locs"
-                cache_locations="cache-locations"
-                swarm_dist2D_pos="swarm-dist-pos2D"/>
+          output_dir="metrics"
+          block_acq_counts="block-acq-counts.csv"
+          fsm_collision_counts="fsm-collision-counts.csv"
+          block_transport="block-transport.csv"
+          cache_acq_counts="cache-acq-counts.csv"
+          cache_utilization="cache-utilization.csv"
+          cache_lifecycle="cache-lifecycle.csv"
+          cache_locations="cache-locations.csv"
+          task_execution_generalist="task-execution-generalist.csv"
+          task_execution_collector="task-execution-collector.csv"
+          task_execution_harvester="task-execution-harvester.csv"
+          task_tab_generalist="task-tab-generalist.csv"
+          task_distribution="task-distribution.csv"
+          perception_dpo="perception-dpo.csv"
+          output_interval="1000">
       </metrics>
     </output>
-    <convergence
-        n_threads="0"
-        epsilon="0.5">
-      <positional_entropy
-          enable="false"
-          horizon="0:13.41"
-          horizon_delta="1.34"/>
-      <interactivity enable="false"/>
-      <angular_order enable="false"/>
-      <task_dist_entropy enable="false"/>
-    </convergence>
     <oracle_manager>
       <tasking_oracle
-          task_exec_ests="true"
-          task_interface_ests="true"
+          task_exec_est="false"
+          task_interface_est="false"
           />
       <entities_oracle
-          blocks="true"
-          caches="true"/>
+          blocks="false"
+          caches="false"/>
     </oracle_manager>
-    <temporal_variance>
-      <blocks>
-        <manipulation_penalty>
-          <waveform
-              type="Null"
-              frequency="0.01"
-              amplitude="50"
-              offset="50"
-              phase="0"/>
-        </manipulation_penalty>
-        <carry_throttle>
-          <waveform
-              type="Null"
-              frequency="100"
-              amplitude="0.4"
-              offset="0.1"
-              phase="0"/>
-        </carry_throttle>
-      </blocks>
-      <caches>
-        <usage_penalty>
-          <waveform
-              type="Null"
-              frequency="100"
-              amplitude="500"
-              offset="10"
-              phase="0"/>
-        </usage_penalty>
-      </caches>
-    </temporal_variance>
-
     <arena_map>
       <grid resolution="0.2"
             size="12, 6, 2"/>
@@ -291,11 +227,6 @@
         <distribution
             arena_resolution="0.2"
             dist_type="single_source">
-          <powerlaw
-              pwr_min="0"
-              pwr_max="3"
-              n_clusters="15"
-              />
           <manifest
               n_cube="40"
               n_ramp="0"
@@ -346,7 +277,7 @@
     </box>
 
     <distribute>
-      <position method="uniform" min="1,1,0.5" max="10,5,0.5" />
+      <position method="uniform" min="1,1,0" max="10,5,0" />
       <orientation method="uniform" min="0,0,0" max="360,0,0" />
       <entity quantity="16" max_trials="1000">
         <foot-bot id="fb" omnidirectional_camera_aperture="89.5">
@@ -372,28 +303,4 @@
     <range_and_bearing id="rab" />
     <led id="leds"/>
   </media>
-
-  <visualization>
-    <qt-opengl autoplay="true">
-             <frame_grabbing directory="frames"
-                       base_name="frame_"
-                       format="png"
-                       quality="100"
-                       headless_grabbing="true"
-                       headless_frame_size="1600x1200"
-                       headless_frame_rate="50"
-                       />
-
-      <camera>
-        <placement idx="0"
-                   position="6,3,8"
-                   look_at="6,3,0"
-                   lens_focal_length="20"
-                   up="0,1,0"
-                   />
-      </camera>
-      <user_functions label="depth0_qt_user_functions" />
-    </qt-opengl>
-  </visualization>
-
 </argos-configuration>

@@ -18,7 +18,7 @@
   <controllers>
 
     <__controller__ id="ffc"
-                  library="foo">
+                                library="libfordyca">
       <actuators>
         <differential_steering implementation="default" />
         <leds implementation="default" medium="leds" />
@@ -26,19 +26,21 @@
       </actuators>
       <sensors>
         <positioning implementation="default"/>
-        <differential_steering implementation="default"/>
-        <footbot_proximity implementation="default" show_rays="true"/>
-        <footbot_light implementation="rot_z_only" show_rays="false"/>
-        <footbot_motor_ground implementation="rot_z_only"/>
+        <footbot_proximity implementation="default" show_rays="true" />
+        <footbot_light implementation="rot_z_only" show_rays="false" />
+        <footbot_motor_ground implementation="rot_z_only" />
         <range_and_bearing implementation="medium" medium="rab" />
+        <differential_steering implementation="default"/>
         <colored_blob_omnidirectional_camera implementation="rot_z_only"
-                                             medium="leds"/>
+                                             medium="leds" />
+        <battery implementation="default" />
       </sensors>
       <params>
+        <rng seed="123"/>
         <output
-          output_root="output"
-          output_dir="__current_date__"
-          />
+            output_root="output"
+            output_dir="__current_date__"
+            />
         <perception
             los_dim="0.4">
           <grid resolution="0.2"
@@ -58,10 +60,10 @@
               <sigmoid_sel
                   method="harwell2018">
                 <sigmoid reactivity="8"
-                         offset="3.0"
+                         offset="3"
                          gamma="1.0"/>
               </sigmoid_sel>
-              </src_sigmoid_sel>
+            </src_sigmoid_sel>
           </task_abort>
           <task_exec_estimates
               seed_enabled="true"
@@ -72,12 +74,9 @@
               cache_finisher="1000:2000"
               cache_collector="1000:2000"
               cache_transferer="1000:2000">
-            <ema alpha="0.5"/>
+            <ema alpha="0.8"/>
           </task_exec_estimates>
 
-          <epsilon_greedy epsilon="0.4"
-                          regret_bound="linear"/>
-          <ucb1 gamma="1000"/>
           <stoch_nbhd1
               tab_init_policy="max_depth">
             <task_partition
@@ -88,9 +87,9 @@
                 <sigmoid_sel
                     method="pini2011">
                   <sigmoid
-                      reactivity="8.0"
-                      offset="1.25"
-                      gamma="1.25"/>
+                      reactivity="4"
+                      offset="1.0"
+                      gamma="1.0"/>
                 </sigmoid_sel>
               </src_sigmoid_sel>
             </task_partition>
@@ -100,7 +99,7 @@
                 <sigmoid_sel
                     method="harwell2018">
                   <sigmoid
-                      reactivity="4.0"
+                      reactivity="8"
                       offset="1.25"
                       gamma="1.0"/>
                 </sigmoid_sel>
@@ -112,7 +111,7 @@
                 <sigmoid_sel
                     method="harwell2019">
                   <sigmoid
-                      reactivity="6.0"
+                      reactivity="4"
                       offset="1.0"
                       gamma="1.0"/>
                 </sigmoid_sel>
@@ -121,24 +120,19 @@
           </stoch_nbhd1>
         </task_alloc>
         <block_sel_matrix
-            nest="2.0, 3">
-          <block_priorities
-              cube="1.0"
-              ramp="1.0"
-              />
+            nest="6, 3">
           <pickup_policy
               policy="cluster_proximity"
-              prox_dist="2.0"
-              />
+              prox_dist="3.0"/>
         </block_sel_matrix>
         <cache_sel_matrix
-            cache_prox_dist="3.2"
+            cache_prox_dist="1.6"
             nest_prox_dist="3.0"
             block_prox_dist="1.0"
             site_xrange="2:10"
             site_yrange="2.5:3">
           <pickup_policy
-              policy="Null"
+              policy="cache_size"
               timestep="20000"
               cache_size="3"/>
         </cache_sel_matrix>
@@ -172,13 +166,13 @@
             <wander_force circle_distance="4.0"
                           circle_radius="100.0"
                           max_angle_delta="5"
-                          max="9"
+                          max="9.0"
                           interval="1"
                           normal_dist="false"/>
             <phototaxis_force max="8"/>
           </force_calculator>
 
-          <diff_drive soft_turn_max="15"
+          <diff_drive soft_turn_max="25"
                       max_speed="10.0" />
         </actuation_subsystem2D>
       </params>
@@ -189,10 +183,11 @@
   <!-- ****************** -->
   <!-- * Loop functions * -->
   <!-- ****************** -->
-  <loop_functions library="foo"
-                  label="depth2_loop_functions">
-    <output output_root="output"
-            output_dir="__current_date__">
+  <loop_functions library="libfordyca"
+                  label="depth0_loop_functions">
+    <output
+        output_root="output"
+        output_dir="__current_date__">
       <metrics
           output_dir="metrics">
         <append
@@ -217,71 +212,26 @@
             task_tab_harvester="task-tab-harvester"
             task_distribution="task-distribution"
             perception_dpo="perception-dpo"
-            perception_mdpo="perception-mdpo"
-            swarm_convergence="swarm-convergence"
-            tv_population="tv-population"
-            tv_environment="tv-environment"/>
+            tv_population="tv-population"/>
 
-        <create output_interval="10"
-                block_acq_locs="block-acq-locs"
-                fsm_collision_locs="fsm-collision-locs"
-                block_acq_explore_locs="block-acq-explore-locs"
-                cache_acq_locs="cache-acq-locs"
-                cache_acq_explore_locs="cache-acq-explore-locs"
-                cache_acq_vector_locs="cache-acq-vector-locs"
-                cache_locations="cache-locations"
-                swarm_dist2D_pos="swarm-dist-pos2D"/>
+        <truncate output_interval="10"
+                  block_acq_locs="block-acq-locs"
+                  fsm_collision_locs="fsm-collision-locs"
+                  block_acq_explore_locs="block-acq-explore-locs"
+                  cache_acq_locs="cache-acq-locs"
+                  cache_acq_explore_locs="cache-acq-explore-locs"
+                  cache_acq_vector_locs="cache-acq-vector-locs"
+                  cache_locations="cache-locations"
+                  swarm_dist2D_pos="swarm-dist-pos2D"/>
       </metrics>
     </output>
-    <convergence
-        n_threads="0"
-        epsilon="0.5">
-      <positional_entropy
-          enable="false"
-          horizon="0:13.41"
-          horizon_delta="1.34"/>
-      <interactivity enable="false"/>
-      <angular_order enable="false"/>
-      <task_dist_entropy enable="false"/>
-    </convergence>
-    <oracle_manager>
-      <tasking_oracle
-          task_exec_ests="true"
-          task_interface_ests="true"
-          />
-      <entities_oracle
-          blocks="true"
-          caches="true"/>
-    </oracle_manager>
     <temporal_variance>
-      <blocks>
-        <manipulation_penalty>
-          <waveform
-              type="Null"
-              frequency="0.01"
-              amplitude="50"
-              offset="50"
-              phase="0"/>
-        </manipulation_penalty>
-        <carry_throttle>
-          <waveform
-              type="Null"
-              frequency="100"
-              amplitude="0.4"
-              offset="0.1"
-              phase="0"/>
-        </carry_throttle>
-      </blocks>
-      <caches>
-        <usage_penalty>
-          <waveform
-              type="Null"
-              frequency="100"
-              amplitude="500"
-              offset="10"
-              phase="0"/>
-        </usage_penalty>
-      </caches>
+      <population_dynamics
+          birth_mu="0.0"
+          death_lambda="0.0"
+          malfunction_lambda="0.0"
+          max_size="128"
+          repair_mu="0.0"/>
     </temporal_variance>
 
     <arena_map>
@@ -289,15 +239,9 @@
             size="12, 6, 2"/>
       <blocks>
         <distribution
-            arena_resolution="0.2"
             dist_type="single_source">
-          <powerlaw
-              pwr_min="0"
-              pwr_max="3"
-              n_clusters="15"
-              />
           <manifest
-              n_cube="40"
+              n_cube="25"
               n_ramp="0"
               unit_dim="0.2"
               />
@@ -305,22 +249,15 @@
       </blocks>
       <nest size="1.0, 4.0" center="2, 3" />
     </arena_map>
-    <caches dimension="1.2">
+    <caches dimension="0.8">
       <static enable="true"
               size="2"
               respawn_scale_factor="0.05"/>
       <dynamic enable="true"
-               min_dist="1.2"
+               min_dist="0.8"
                min_blocks="2"
-               robot_drop_only="false"/>
-
+               robot_drop_only="true"/>
     </caches>
-
-    <visualization robot_id="true"
-                   robot_los="true"
-                   robot_task="true"
-                   block_id="false"
-                   />
   </loop_functions>
 
   <!-- *********************** -->
@@ -346,10 +283,10 @@
     </box>
 
     <distribute>
-      <position method="uniform" min="1,1,0.5" max="10,5,0.5" />
+      <position method="uniform" min="1,1,0" max="10,5,0" />
       <orientation method="uniform" min="0,0,0" max="360,0,0" />
-      <entity quantity="16" max_trials="1000">
-        <foot-bot id="fb" omnidirectional_camera_aperture="89.5">
+      <entity quantity="128" max_trials="1000">
+        <foot-bot id="fb">
           <controller config="ffc" />
           <battery model= "time_motion"/>
         </foot-bot>
@@ -373,26 +310,20 @@
     <led id="leds"/>
   </media>
 
+  <!-- ****************** -->
+  <!-- * Visualization * -->
+  <!-- ****************** -->
   <visualization>
-    <qt-opengl autoplay="true">
-             <frame_grabbing directory="frames"
-                       base_name="frame_"
-                       format="png"
-                       quality="100"
-                       headless_grabbing="true"
-                       headless_frame_size="1600x1200"
-                       headless_frame_rate="50"
-                       />
-
+    <qt-opengl>
       <camera>
         <placement idx="0"
-                   position="6,3,8"
-                   look_at="6,3,0"
+                   position="5,2.5,6"
+                   look_at="5,2.5,0"
                    lens_focal_length="20"
                    up="0,1,0"
                    />
       </camera>
-      <user_functions label="depth0_qt_user_functions" />
+      <user_functions label="stateful_foraging_qt_user_functions" />
     </qt-opengl>
   </visualization>
 

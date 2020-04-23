@@ -1,0 +1,37 @@
+# Intra-scenario
+intra_scenario:
+  graphs:
+    - src_stem: pm-scalability-fm
+      dest_stem: cc-pm-scalability-fm
+      title: 'Swarm Scalability (Fractional Performance Maintenance)'
+      label: 'Scalability Value'
+
+    - src_stem: pm-scalability-norm
+      dest_stem: cc-pm-scalability-norm
+      title: 'Swarm Scalability (Normalized)'
+      label: 'Scalability Value'
+
+    - src_stem: pm-self-org-fl
+      dest_stem: cc-pm-self-org-fl
+      title: 'Swarm Self Organization'
+      label: 'Self Organization Value'
+
+    # - src_stem: pm-robustness-size
+    #   dest_stem: cc-pm-robustness-size
+    #   title: 'Swarm Robustness (Population Size)'
+    #   label: 'Robustness Value'
+
+    # - src_stem: pm-robustness-saa
+    #   dest_stem: cc-pm-robustness-saa
+    #   title: 'Swarm Robustness (SAA Noise)'
+    #   label: 'Robustness Value'
+
+    - src_stem: pm-blocks-transported-cum
+      dest_stem: cc-pm-blocks-transported-cum
+      title: 'Swarm Performance'
+      label: 'Total Blocks Collected'
+
+    - src_stem: pm-karpflatt
+      dest_stem: cc-pm-karpflatt
+      title: 'Swarm Scalability (Karp-Flatt)'
+      label: 'Karp-Flatt Value'

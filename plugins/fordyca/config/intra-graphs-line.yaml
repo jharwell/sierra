@@ -1,0 +1,1006 @@
+LN_block_manip:
+  graphs:
+    - src_stem: block-manipulation
+      dest_stem: block-manip-events
+      cols:
+        - int_avg_free_pickup_events
+        - int_avg_free_drop_events
+        - int_avg_cache_pickup_events
+        - int_avg_cache_drop_events
+      title: 'Block Manipulation Pickups/Drops'
+      legend:
+        - 'Average # Free Pickups (Interval)'
+        - 'Average # Free Drops (Interval)'
+        - 'Average # Cache Pickups (Interval)'
+        - 'Average # Cache Drops (Interval)'
+      xlabel: 'Interval'
+      ylabel: '# Pickups/Drops'
+    - src_stem: block-manipulation
+      dest_stem: block-manip-penalties
+      cols:
+        - int_avg_free_pickup_penalty
+        - int_avg_free_drop_penalty
+        - int_avg_cache_pickup_penalty
+        - int_avg_cache_drop_penalty
+      title: 'Block Manipulation Penalties'
+      legend:
+        - 'Average Free Pickup Penalty (Interval)'
+        - 'Average Free Drop Penalty (Interval)'
+        - 'Average Cache Pickup Penalty (Interval)'
+        - 'Average Cache Drop Penalty (Interval)'
+      xlabel: 'Interval'
+      ylabel: 'Penalty'
+
+LN_perception:
+  graphs:
+    - src_stem: perception-mdpo
+      dest_stem: perception-mdpo
+      cols:
+        - int_avg_ST_EMPTY_inaccuracies
+        - int_avg_ST_HAS_BLOCK_inaccuracies
+        - int_avg_ST_HAS_CACHE_inaccuracies
+        - cum_avg_ST_EMPTY_inaccuracies
+        - cum_avg_ST_HAS_BLOCK_inaccuracies
+        - cum_avg_ST_HAS_CACHE_inaccuracies
+      title: 'MDPO Perception Model Inaccuracies'
+      legend:
+        - 'Average ST_EMPTY Inaccuracies(Interval)'
+        - 'Average ST_HAS_BLOCK Inaccuracies (Interval)'
+        - 'Average ST_HAS_CACHE Inaccuracies (Interval)'
+        - 'Average ST_EMPTY Inaccuracies (Cumulative)'
+        - 'Average ST_HAS_BLOCK Inaccuracies (Cumulative)'
+        - 'Average ST_HAS_CACHE Inaccuracies (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+    - src_stem: perception-dpo
+      dest_stem: perception-dpo-counts
+      cols:
+        - int_avg_known_blocks
+        - int_avg_known_caches
+        - cum_avg_known_blocks
+        - cum_avg_known_caches
+      title: 'DPO Perception Model Tracking Counts'
+      legend:
+        - 'Average known blocks (Interval)'
+        - 'Average known caches (Interval)'
+        - 'Average known blocks (Cumulative)'
+        - 'Average known caches (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+    - src_stem: perception-dpo
+      dest_stem: perception-dpo-densities
+      cols:
+        - int_avg_block_pheromone_density
+        - int_avg_cache_pheromone_density
+        - cum_avg_block_pheromone_density
+        - cum_avg_cache_pheromone_density
+      title: 'DPO Perception Model Pheromone Densities'
+      legend:
+        - 'Average block (Interval)'
+        - 'Average cache (Interval)'
+        - 'Average block (Cumulative)'
+        - 'Average cache (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Density'
+
+LN_block_trans:
+  graphs:
+    - src_stem: block-transport
+      dest_stem: blocks-transported-avg
+      cols:
+        - int_avg_transported
+        - int_avg_cube_transported
+        - int_avg_ramp_transported
+        - cum_avg_transported
+        - cum_avg_cube_transported
+        - cum_avg_ramp_transported
+      legend:
+        - 'All Blocks (Interval)'
+        - '# Cube Blocks (Interval)'
+        - '# Ramp Blocks (Interval)'
+        - 'All Blocks (cumulative)'
+        - '# Cube Blocks (cumulative)'
+        - '# Ramp Blocks (cumulative)'
+      title: 'Average Blocks Transported'
+      xlabel: 'Interval'
+      ylabel: '# Blocks'
+    - src_stem: block-transport
+      dest_stem: blocks-transported-cum
+      cols:
+        - cum_transported
+        - cum_cube_transported
+        - cum_ramp_transported
+      title: 'Blocks Transported (cumulative)'
+      legend:
+        - 'All Blocks'
+        - '# Cube Blocks'
+        - '# Ramp Blocks'
+      xlabel: 'Interval'
+      ylabel: '# Blocks'
+    - src_stem: block-transport
+      dest_stem: block-transporters-count
+      cols:
+        - int_avg_transporters
+        - cum_avg_transporters
+      title: 'Swarm Block Average Transporters'
+      legend:
+        - 'Average # Transporters Per Block (Interval)'
+        - 'Average # Transporters Per Block (cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Transporters'
+    - src_stem: block-transport
+      dest_stem: block-transporters-time
+      cols:
+        - int_avg_transport_time
+        - cum_avg_transport_time
+        - int_avg_initial_wait_time
+        - cum_avg_initial_wait_time
+      title: 'Swarm Block Transport Time'
+      legend:
+        - 'Average Transport Time (Interval)'
+        - 'Average Transport Time (cumulative)'
+        - 'Average Initial Wait Time (Interval)'
+        - 'Average Initial Wait Time (cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Timesteps'
+
+# Depth 1
+LN_cache_util:
+  graphs:
+    - src_stem: cache-utilization
+      dest_stem: cache-utilization-opcounts
+      cols:
+        - int_avg_pickups
+        - int_avg_drops
+        - cum_avg_pickups
+        - cum_avg_drops
+      title: 'Average # Pickups/Drops Across All Caches'
+      legend:
+        - 'Average # Pickups (Interval)'
+        - 'Average # Drops (Interval)'
+        - 'Average # Pickups (Cumulative)'
+        - 'Average # Drops (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: cache-utilization
+      dest_stem: cache-utilization-cache-counts
+      cols:
+        - int_avg_caches
+        - cum_avg_caches
+      title: '# Caches in Arena'
+      legend:
+        - '# Caches (Interval)'
+        - '# Caches (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: cache-utilization
+      dest_stem: cache-utilization-block-counts
+      cols:
+        - int_avg_blocks
+        - cum_avg_blocks
+      title: '# Blocks in Caches'
+      legend:
+        - 'Average # Blocks (Interval)'
+        - 'Average # Blocks (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+LN_cache_lifecycle:
+  graphs:
+    - src_stem: cache-lifecycle
+      dest_stem: cache-lifecyle-counts
+      cols:
+        - int_created
+        - int_depleted
+      title: '# Caches Created/Depleted (Interval)'
+      legend:
+        - '# Created'
+        - '# Depleted'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+    - src_stem: cache-lifecycle
+      dest_stem: cache-lifecyle-avg
+      cols:
+        - int_avg_created
+        - int_avg_depleted
+        - cum_avg_created
+        - cum_avg_depleted
+      title: 'Average # Caches Created/Depleted'
+      legend:
+        - 'Average # Created (Interval)'
+        - 'Average # Depleted (Interval)'
+        - 'Average # Created (Cumulative)'
+        - 'Average # Depleted (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+    - src_stem: cache-lifecycle
+      dest_stem: cache-lifecyle-ages
+      cols:
+        - int_avg_depletion_age
+        - cum_avg_depletion_age
+      title: 'Average Cache Age Upon Depletion'
+      legend:
+        - 'Average Age (Interval)'
+        - 'Average Age (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Age (timesteps)'
+
+LN_cache_acq:
+  graphs:
+    - src_stem: cache-acq-counts
+      dest_stem: caches-acq-counts
+      cols:
+        - int_avg_acquiring_goal
+        - cum_avg_acquiring_goal
+        - int_avg_vectoring_to_goal
+        - cum_avg_vectoring_to_goal
+        - int_avg_true_exploring_for_goal
+        - cum_avg_true_exploring_for_goal
+        - int_avg_false_exploring_for_goal
+        - cum_avg_false_exploring_for_goal
+      title: 'Swarm Cache Acquisition'
+      legend:
+        - 'Average # Robots Acquiring Caches (Interval)'
+        - 'Average # Robots Acquiring Caches (cumulative)'
+        - 'Average # Robots Vectoring To Caches (Interval)'
+        - 'Average # Robots Vectoring To Caches (cumulative)'
+        - 'Average # Robots Exploring For Caches (Interval)'
+        - 'Average # Robots Exploring For Caches (cumulative)'
+        - 'Average # Robots Falsely Exploring For Caches (Interval)'
+        - 'Average # Robots Falsely Exploring For Caches (cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+
+LN_depth1_task_exec:
+  graphs:
+    - src_stem: task-execution-collector
+      dest_stem: task-execution-collector-times
+      cols:
+        - int_avg_exec_time
+        - cum_avg_exec_time
+        - int_avg_interface_time
+        - cum_avg_interface_time
+      title: 'Collector Execution/Interface Times'
+      legend:
+        - 'Average Exec Time (Interval)'
+        - 'Average Exec Time (Cumulative)'
+        - 'Average Interface Time (Interval)'
+        - 'Average Interface Time (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Time'
+
+    - src_stem: task-execution-collector
+      dest_stem: task-execution-collector-ests
+      cols:
+        - int_avg_exec_estimate
+        - cum_avg_exec_estimate
+        - int_avg_interface_estimate
+        - cum_avg_interface_estimate
+      title: 'Collector Execution/Interface Estimates'
+      legend:
+        - 'Average Exec Estimate (Interval)'
+        - 'Average Exec Estimate (Cumulative)'
+        - 'Average Interface Estimate (Interval)'
+        - 'Average Interface Estimate (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Time'
+
+    - src_stem: task-execution-collector
+      dest_stem: task-execution-collector-counts
+      cols:
+        - int_avg_abort_count
+        - cum_avg_abort_count
+        - int_avg_complete_count
+        - cum_avg_complete_count
+      title: 'Collector Abort/Completion Counts'
+      legend:
+        - 'Average Abort Count (Interval)'
+        - 'Average Abort Count (Cumulative)'
+        - 'Average Completion Count (Interval)'
+        - 'Average Completion Count (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: task-execution-harvester
+      dest_stem: task-execution-harvester-times
+      cols:
+        - int_avg_exec_time
+        - cum_avg_exec_time
+        - int_avg_interface_time
+        - cum_avg_interface_time
+      title: 'Harvester Execution/Interface Times'
+      legend:
+        - 'Average Exec Time (Interval)'
+        - 'Average Exec Time (Cumulative)'
+        - 'Average Interface Time (Interval)'
+        - 'Average Interface Time (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Time'
+
+    - src_stem: task-execution-harvester
+      dest_stem: task-execution-harvester-ests
+      cols:
+        - int_avg_exec_estimate
+        - cum_avg_exec_estimate
+        - int_avg_interface_estimate
+        - cum_avg_interface_estimate
+      title: 'Harvester Execution/Interface Estimates'
+      legend:
+        - 'Average Exec Estimate (Interval)'
+        - 'Average Exec Estimate (Cumulative)'
+        - 'Average Interface Estimate (Interval)'
+        - 'Average Interface Estimate (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Time'
+
+    - src_stem: task-execution-harvester
+      dest_stem: task-execution-harvester-counts
+      cols:
+        - int_avg_abort_count
+        - cum_avg_abort_count
+        - int_avg_complete_count
+        - cum_avg_complete_count
+      title: 'Harvester Abort/Completion Counts'
+      legend:
+        - 'Average Abort Count (Interval)'
+        - 'Average Abort Count (Cumulative)'
+        - 'Average Completion Count (Interval)'
+        - 'Average Completion Count (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: task-execution-generalist
+      dest_stem: task-execution-generalist-times
+      cols:
+        - int_avg_exec_time
+        - cum_avg_exec_time
+        - int_avg_interface_time
+        - cum_avg_interface_time
+      title: 'Generalist Execution/Interface Times'
+      legend:
+        - 'Average Exec Time (Interval)'
+        - 'Average Exec Time (Cumulative)'
+        - 'Average Interface Time (Interval)'
+        - 'Average Interface Time (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Time'
+
+    - src_stem: task-execution-generalist
+      dest_stem: task-execution-generalist-counts
+      cols:
+        - int_avg_abort_count
+        - cum_avg_abort_count
+        - int_avg_complete_count
+        - cum_avg_complete_count
+      title: 'Generalist Abort/Completion Counts'
+      legend:
+        - 'Average Abort Count (Interval)'
+        - 'Average Average Abort Count (Cumulative)'
+        - 'Average Completion Count (Interval)'
+        - 'Average Completion Count (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: task-execution-generalist
+      dest_stem: task-execution-generalist-ests
+      cols:
+        - int_avg_exec_estimate
+        - cum_avg_exec_estimate
+      title: 'Generalist Execution Estimates'
+      legend:
+        - 'Average Exec Estimate (Interval)'
+        - 'Average Exec Estimate (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Time'
+
+LN_generalist_tab:
+  graphs:
+    - src_stem: task-tab-generalist
+      dest_stem: task-tab-generalist-subtask-counts
+      cols:
+        - int_avg_subtask1_count
+        - cum_avg_subtask1_count
+        - int_avg_subtask2_count
+        - cum_avg_subtask2_count
+      title: 'Average Generalist TAB Subtask Selection Counts'
+      legend:
+        - 'Harvester (Interval)'
+        - 'Harvester (Cumulative)'
+        - 'Collector (Interval)'
+        - 'Collector (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: task-tab-generalist
+      dest_stem: task-tab-generalist-partition-counts
+      cols:
+        - int_avg_partition_count
+        - cum_avg_partition_count
+        - int_avg_no_partition_count
+        - cum_avg_no_partition_count
+      title: 'Averge Generalist TAB Partition Counts'
+      legend:
+        - 'Partition (Interval)'
+        - 'Partition (Cumulative)'
+        - 'No Partition (Interval)'
+        - 'No Partition (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: task-tab-generalist
+      dest_stem: task-tab-generalist-task-sw-counts
+      cols:
+        - int_avg_task_sw_count
+        - cum_avg_task_sw_count
+      title: 'Average Generalist TAB Task Switch Counts'
+      legend:
+        - 'Interval'
+        - 'Cumulative'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: task-tab-generalist
+      dest_stem: task-tab-generalist-task-sw-counts
+      cols:
+        - int_avg_task_sw_count
+        - cum_avg_task_sw_count
+      title: 'Average Generalist TAB Task Switch Counts'
+      legend:
+        - 'Interval'
+        - 'Cumulative'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: task-tab-generalist
+      dest_stem: task-tab-generalist-task-depth-sw-counts
+      cols:
+        - int_avg_task_depth_sw_count
+        - cum_avg_task_depth_sw_count
+      title: 'Average Generalist TAB Task Depth Switch Counts'
+      legend:
+        - 'Interval'
+        - 'Cumulative'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: task-tab-generalist
+      dest_stem: task-tab-generalist-prob
+      cols:
+        - int_avg_partition_prob
+        - cum_avg_partition_prob
+        - int_avg_subtask_selection_prob
+        - cum_avg_subtask_selection_prob
+      title: 'Generalist TAB Partition/Subtask Selection Probabilities'
+      legend:
+        - 'Partition Probability (Interval Average)'
+        - 'Partition Probability (Cumulative Average)'
+        - 'Subtask Selection Probability (Interval Average)'
+        - 'Subtask Selection Probability (Cumulative Average)'
+      xlabel: 'Interval'
+      ylabel: 'Value'
+
+LN_depth1_task_dist:
+  graphs:
+    - src_stem: task-distribution
+      dest_stem: task-distribution-int-depth-counts
+      cols:
+        - int_avg_depth0_count
+        - cum_avg_depth0_count
+        - int_avg_depth1_count
+        - cum_avg_depth1_count
+      title: 'Task Distribution Depth Counts'
+      legend:
+        - 'Depth0 (Interval)'
+        - 'Depth0 (Cumulative Average)'
+        - 'Depth1 (Interval)'
+        - 'Depth1 (Cumulative Average)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: task-distribution
+      dest_stem: task-distribution-task-counts
+      cols:
+        - int_avg_task0_count
+        - cum_avg_task0_count
+        - int_avg_task1_count
+        - cum_avg_task1_count
+        - int_avg_task2_count
+        - cum_avg_task2_count
+      title: 'Task Distribution Task Counts'
+      legend:
+        - 'Average Generalist (Interval)'
+        - 'Average Generalist (Cumulative)'
+        - 'Average Harvester (Interval)'
+        - 'Average Harvester (Cumulative)'
+        - 'Average Collector (Interval)'
+        - 'Average Collector (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: task-distribution
+      dest_stem: task-distribution-tab-counts
+      cols:
+        - int_avg_tab0_count
+        - cum_avg_tab0_count
+      title: 'Task Distribution TAB Counts'
+      legend:
+        - 'TAB0 (Interval)'
+        - 'TAB0 (Cumulative Average)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+# Depth 2
+LN_depth2_task_dist:
+  graphs:
+    - src_stem: task-distribution
+      dest_stem: task-distribution-int-depth-counts
+      cols:
+        - int_avg_depth0_count
+        - cum_avg_depth0_count
+        - int_avg_depth1_count
+        - cum_avg_depth1_count
+        - int_avg_depth2_count
+        - cum_avg_depth2_count
+      title: 'Task Distribution Depth Counts'
+      legend:
+        - 'Depth0 (Interval)'
+        - 'Depth0 (Cumulative Average)'
+        - 'Depth1 (Interval)'
+        - 'Depth1 (Cumulative Average)'
+        - 'Depth2 (Interval)'
+        - 'Depth2 (Cumulative Average)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: task-distribution
+      dest_stem: task-distribution-task-counts-int
+      cols:
+        - int_avg_task0_count
+        - int_avg_task1_count
+        - int_avg_task2_count
+        - int_avg_task3_count
+        - int_avg_task4_count
+        - int_avg_task5_count
+        - int_avg_task6_count
+      title: 'Task Distribution Task Counts (Interval)'
+      legend:
+        - 'Average Generalist'
+        - 'Average Harvester'
+        - 'Average Collector'
+        - 'Average Cache Starter'
+        - 'Average Cache Finisher'
+        - 'Average Cache Transferer'
+        - 'Average Cache Collector'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+    - src_stem: task-distribution
+      dest_stem: task-distribution-task-counts-cum
+      cols:
+        - cum_avg_task0_count
+        - cum_avg_task1_count
+        - cum_avg_task2_count
+        - cum_avg_task3_count
+        - cum_avg_task4_count
+        - cum_avg_task5_count
+        - cum_avg_task6_count
+      title: 'Task Distribution Task Counts (Cumulative)'
+      legend:
+        - 'Average Generalist'
+        - 'Average Harvester'
+        - 'Average Collector'
+        - 'Average Cache Starter'
+        - 'Average Cache Finisher'
+        - 'Average Cache Transferer'
+        - 'Average Cache Collector'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: task-distribution
+      dest_stem: task-distribution-tab-counts
+      cols:
+        - int_avg_tab0_count
+        - cum_avg_tab0_count
+        - int_avg_tab1_count
+        - cum_avg_tab1_count
+        - int_avg_tab2_count
+        - cum_avg_tab2_count
+      title: 'Task Distribution TAB Counts'
+      legend:
+        - 'TAB0 (Interval)'
+        - 'TAB0 (Cumulative Average)'
+        - 'TAB1 (Interval)'
+        - 'TAB1 (Cumulative Average)'
+        - 'TAB2 (Interval)'
+        - 'TAB2 (Cumulative Average)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+LN_harvester_tab:
+  graphs:
+    - src_stem: task-tab-harvester
+      dest_stem: task-tab-harvester-subtask-counts
+      cols:
+        - int_avg_subtask1_count
+        - cum_avg_subtask1_count
+        - int_avg_subtask2_count
+        - cum_avg_subtask2_count
+      title: 'Average Harvester TAB Subtask Selection Counts'
+      legend:
+        - 'Cache Starter (Interval)'
+        - 'Cache Starter (Cumulative)'
+        - 'Cache Finisher (Interval)'
+        - 'Cache Finisher (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: task-tab-harvester
+      dest_stem: task-tab-harvester-partition-counts
+      cols:
+        - int_avg_partition_count
+        - cum_avg_partition_count
+        - int_avg_no_partition_count
+        - cum_avg_no_partition_count
+      title: 'Average Harvester TAB Partition Counts'
+      legend:
+        - 'Partition (Interval)'
+        - 'Partition (Cumulative)'
+        - 'No Partition (Interval)'
+        - 'No Partition (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: task-tab-harvester
+      dest_stem: task-tab-harvester-task-sw-counts
+      cols:
+        - int_avg_task_sw_count
+        - cum_avg_task_sw_count
+      title: 'Average Harvester TAB Task Switch Counts'
+      legend:
+        - 'Interval'
+        - 'Cumulative'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: task-tab-harvester
+      dest_stem: task-tab-harvester-task-depth-sw-counts
+      cols:
+        - int_avg_task_depth_sw_count
+        - cum_avg_task_depth_sw_count
+      title: 'Average Harvester TAB Task Depth Switch Counts'
+      legend:
+        - 'Interval'
+        - 'Cumulative'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: task-tab-harvester
+      dest_stem: task-tab-harvester-prob
+      cols:
+        - int_avg_partition_prob
+        - cum_avg_partition_prob
+        - int_avg_subtask_selection_prob
+        - cum_avg_subtask_selection_prob
+      title: 'Harvester TAB Partition/Subtask Selection Probabilities'
+      legend:
+        - 'Partition Probability (Interval Average)'
+        - 'Partition Probability (Cumulative Average)'
+        - 'Subtask Selection Probability (Interval Average)'
+        - 'Subtask Selection Probability (Cumulative Average)'
+      xlabel: 'Interval'
+      ylabel: 'Value'
+
+
+LN_collector_tab:
+  graphs:
+    - src_stem: task-tab-collector
+      dest_stem: task-tab-collector-subtask-counts
+      cols:
+        - int_avg_subtask1_count
+        - cum_avg_subtask1_count
+        - int_avg_subtask2_count
+        - cum_avg_subtask2_count
+      title: 'Average Collector TAB Subtask Selection Counts'
+      legend:
+        - 'Cache Transferer (Interval)'
+        - 'Cache Transferer (Cumulative)'
+        - 'Cache Collector (Interval)'
+        - 'Cache Collector (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: task-tab-collector
+      dest_stem: task-tab-collector-partition-counts
+      cols:
+        - int_avg_partition_count
+        - cum_avg_partition_count
+        - int_avg_no_partition_count
+        - cum_avg_no_partition_count
+      title: 'Average Collector TAB Partition Counts'
+      legend:
+        - 'Partition (Interval)'
+        - 'Partition (Cumulative)'
+        - 'No Partition (Interval)'
+        - 'No Partition (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: task-tab-collector
+      dest_stem: task-tab-collector-task-sw-counts
+      cols:
+        - int_avg_task_sw_count
+        - cum_avg_task_sw_count
+      title: 'Average Collector TAB Task Switch Counts'
+      legend:
+        - 'Interval'
+        - 'Cumulative'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: task-tab-collector
+      dest_stem: task-tab-collector-task-depth-sw-counts
+      cols:
+        - int_avg_task_depth_sw_count
+        - cum_avg_task_depth_sw_count
+      title: 'Average Collector TAB Task Depth Switch Counts'
+      legend:
+        - 'Interval'
+        - 'Cumulative'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: task-tab-collector
+      dest_stem: task-tab-collector-prob
+      cols:
+        - int_avg_partition_prob
+        - cum_avg_partition_prob
+        - int_avg_subtask_selection_prob
+        - cum_avg_subtask_selection_prob
+      title: 'Collector TAB Partition/Subtask Selection Probabilities'
+      legend:
+        - 'Partition Probability (Interval Average)'
+        - 'Partition Probability (Cumulative Average)'
+        - 'Subtask Selection Probability (Interval Average)'
+        - 'Subtask Selection Probability (Cumulative Average)'
+      xlabel: 'Interval'
+      ylabel: 'Value'
+
+
+LN_depth2_task_exec:
+  graphs:
+    - src_stem: task-execution-cache-starter
+      dest_stem: task-execution-cache-starter-times
+      cols:
+        - int_avg_exec_time
+        - cum_avg_exec_time
+        - int_avg_interface_time
+        - cum_avg_interface_time
+      title: 'Cache Starter Execution/Interface Times'
+      legend:
+        - 'Average Exec Time (Interval)'
+        - 'Average Exec Time (Cumulative)'
+        - 'Average Interface Time (Interval)'
+        - 'Average Interface Time (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Time'
+
+    - src_stem: task-execution-cache-starter
+      dest_stem: task-execution-cache-starter-ests
+      cols:
+        - int_avg_exec_estimate
+        - cum_avg_exec_estimate
+        - int_avg_interface_estimate
+        - cum_avg_interface_estimate
+      title: 'Cache Starter Execution/Interface Estimates'
+      legend:
+        - 'Average Exec Estimate (Interval)'
+        - 'Average Exec Estimate (Cumulative)'
+        - 'Average Interface Estimate (Interval)'
+        - 'Average Interface Estimate (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Time'
+
+    - src_stem: task-execution-cache-starter
+      dest_stem: task-execution-cache-starter-counts
+      cols:
+        - int_avg_abort_count
+        - cum_avg_abort_count
+        - int_avg_complete_count
+        - cum_avg_complete_count
+      title: 'Cache Starter Abort/Completion Counts'
+      legend:
+        - 'Average Abort Count (Interval)'
+        - 'Average Abort Count (Cumulative)'
+        - 'Average Completion Count (Interval)'
+        - 'Average Completion Count (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: task-execution-cache-finisher
+      dest_stem: task-execution-cache-finisher-times
+      cols:
+        - int_avg_exec_time
+        - cum_avg_exec_time
+        - int_avg_interface_time
+        - cum_avg_interface_time
+      title: 'Cache Finisher Execution/Interface Times'
+      legend:
+        - 'Average Exec Time (Interval)'
+        - 'Average Exec Time (Cumulative)'
+        - 'Average Interface Time (Interval)'
+        - 'Average Interface Time (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Time'
+
+    - src_stem: task-execution-cache-finisher
+      dest_stem: task-execution-cache-finisher-ests
+      cols:
+        - int_avg_exec_estimate
+        - cum_avg_exec_estimate
+        - int_avg_interface_estimate
+        - cum_avg_interface_estimate
+      title: 'Cache Finisher Execution/Interface Estimates'
+      legend:
+        - 'Average Exec Estimate (Interval)'
+        - 'Average Exec Estimate (Cumulative)'
+        - 'Average Interface Estimate (Interval)'
+        - 'Average Interface Estimate (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Time'
+
+    - src_stem: task-execution-cache-finisher
+      dest_stem: task-execution-cache-finisher-counts
+      cols:
+        - int_avg_abort_count
+        - cum_avg_abort_count
+        - int_avg_complete_count
+        - cum_avg_complete_count
+      title: 'Cache Finisher Abort/Completion Counts'
+      legend:
+        - 'Average Abort Count (Interval)'
+        - 'Average Average Abort Count (Cumulative)'
+        - 'Average Completion Count (Interval)'
+        - 'Average Average Completion Count (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: task-execution-cache-transferer
+      dest_stem: task-execution-cache-transferer-times
+      cols:
+        - int_avg_exec_time
+        - cum_avg_exec_time
+        - int_avg_interface_time
+        - cum_avg_interface_time
+      title: 'Cache Transferer Execution/Interface Times'
+      legend:
+        - 'Average Exec Time (Interval)'
+        - 'Average Exec Time (Cumulative)'
+        - 'Average Interface Time (Interval)'
+        - 'Average Interface Time (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Time'
+
+    - src_stem: task-execution-cache-transferer
+      dest_stem: task-execution-cache-transferer-ests
+      cols:
+        - int_avg_exec_estimate
+        - cum_avg_exec_estimate
+        - int_avg_interface_estimate
+        - cum_avg_interface_estimate
+      title: 'Cache Transferer Execution/Interface Estimates'
+      legend:
+        - 'Average Exec Estimate (Interval)'
+        - 'Average Exec Estimate (Cumulative)'
+        - 'Average Interface Estimate (Interval)'
+        - 'Average Interface Estimate (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Time'
+
+
+    - src_stem: task-execution-cache-transferer
+      dest_stem: task-execution-cache-transferer-counts
+      cols:
+        - int_avg_abort_count
+        - cum_avg_abort_count
+        - int_avg_complete_count
+        - cum_avg_complete_count
+      title: 'Cache Transferer Abort/Completion Counts'
+      legend:
+        - 'Average Abort Count (Interval)'
+        - 'Average Abort Count (Cumulative)'
+        - 'Average Completion Count (Interval)'
+        - 'Average Completion Count (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: task-execution-cache-collector
+      dest_stem: task-execution-cache-collector-times
+      cols:
+        - int_avg_exec_time
+        - cum_avg_exec_time
+        - int_avg_interface_time
+        - cum_avg_interface_time
+      title: 'Cache Collector Execution/Interface Times'
+      legend:
+        - 'Average Exec Time (Interval)'
+        - 'Average Exec Time (Cumulative)'
+        - 'Average Interface Time (Interval)'
+        - 'Average Interface Time (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Time'
+
+    - src_stem: task-execution-cache-collector
+      dest_stem: task-execution-cache-collector-ests
+      cols:
+        - int_avg_exec_estimate
+        - cum_avg_exec_estimate
+        - int_avg_interface_estimate
+        - cum_avg_interface_estimate
+      title: 'Cache Collector Execution/Interface Estimates'
+      legend:
+        - 'Average Exec Estimate (Interval)'
+        - 'Average Exec Estimate (Cumulative)'
+        - 'Average Interface Estimate (Interval)'
+        - 'Average Interface Estimate (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Time'
+
+    - src_stem: task-execution-cache-collector
+      dest_stem: task-execution-cache-collector-counts
+      cols:
+        - int_avg_abort_count
+        - cum_avg_abort_count
+        - int_avg_complete_count
+        - cum_avg_complete_count
+      title: 'Cache Collector Abort/Completion Counts'
+      legend:
+        - 'Average Abort Count (Interval)'
+        - 'Average Abort Count (Cumulative)'
+        - 'Average Completion Count (Interval)'
+        - 'Average Completion Count (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+LN_cache_sites:
+  graphs:
+    - src_stem: cache-site-selection
+      dest_stem: cache-site-selection-counts-int
+      cols:
+        - int_n_successes
+        - int_n_fails
+        - int_nlopt_stopval
+        - int_nlopt_ftol
+        - int_nlopt_xtol
+        - int_nlopt_maxeval
+      title: 'Cache Site Selection NLopt Stats'
+      legend:
+        - 'Success Count (Interval)'
+        - 'Fail Count (Interval)'
+        - 'NLopt STOPVAL_REACHED Count (Interval)'
+        - 'NLopt FTOL_REACHED Count (Interval)'
+        - 'NLopt XTOL_REACHED Count (Interval)'
+        - 'NLopt MAXEVAL_REACHED Count (Interval)'
+      xlabel: 'Interval'
+      ylabel: 'Count'
+
+    - src_stem: cache-site-selection
+      dest_stem: cache-site-selection-counts-cum
+      cols:
+        - cum_n_successes
+        - cum_n_fails
+        - cum_nlopt_stopval
+        - cum_nlopt_ftol
+        - cum_nlopt_xtol
+        - cum_nlopt_maxeval
+      title: 'Cache Site Selection NLopt Stats'
+      legend:
+        - 'Success Count (Cumulative)'
+        - 'Fail Count (Cumulative)'
+        - 'NLopt STOPVAL_REACHED Count (Cumulative)'
+        - 'NLopt FTOL_REACHED Count (Cumulative)'
+        - 'NLopt XTOL_REACHED Count (Cumulative)'
+        - 'NLopt MAXEVAL_REACHED Count (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Count'

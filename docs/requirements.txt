@@ -1,0 +1,9 @@
+sphinx-argparse
+sphinxcontrib-napoleon
+sphinx-rtd-theme
+pyyaml
+pandas
+similaritymeasures
+fastdtw
+matplotlib
+coloredlogs

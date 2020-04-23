@@ -100,3 +100,6 @@ ENV/
 # mypy
 .mypy_cache/
 .gdb_history
+
+# pytype
+.pytype
