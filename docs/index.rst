@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to SIERRA's documentation!
-==================================
+Welcome the documentation for SIERRA: the amazing swarm robotics automation tool!
+=================================================================================
 
 .. toctree::
    :maxdepth: 2
@@ -25,8 +25,8 @@ SIERRA has been used for results generation in the following papers:
 Projects Using SIERRA
 ---------------------
 
-- `FORDYCA <https://swarm-robotics-fordyca.readthedocs.io>`_
-- `SILICON <https://swarm-robotics-cosm.readthedocs.io>`_
+- :xref:`FORDYCA`
+- :xref:`SILICON`
 
 Other Projects: (in descending probability of interest)
 -------------------------------------------------------

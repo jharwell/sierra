@@ -21,7 +21,7 @@ Extensions to :class:`core.generators.BaseScenarioGenerator` common to all FORDY
 import typing as tp
 
 from core.utils import ArenaExtent as ArenaExtent
-from plugins.fordyca.variables import dynamic_cache, static_cache
+from plugins.fordyca.variables import dynamic_cache, static_cache, nest_pose
 from core.xml_luigi import XMLLuigi
 
 
@@ -37,6 +37,20 @@ def generate_dynamic_cache(xml_luigi: XMLLuigi, extent: ArenaExtent):
     rms = cache.gen_tag_rmlist()
     if rms:  # non-empty
         [xml_luigi.tag_remove(a) for a in rms[0]]
+
+
+def generate_nest_pose(exp_def: XMLLuigi, extent: ArenaExtent, dist_type: str):
+    """
+    Generate XML changes for the specified arena dimensions and block distribution type to
+    properly place the nest.
+
+    Does not write generated changes to the simulation definition pickle file.
+    """
+    np = nest_pose.NestPose(dist_type, [extent])
+    [exp_def.attr_change(a[0], a[1], a[2]) for a in np.gen_attr_changelist()[0]]
+    rms = np.gen_tag_rmlist()
+    if rms:  # non-empty
+        [exp_def.tag_remove(a) for a in rms[0]]
 
 
 def generate_static_cache(xml_luigi: XMLLuigi,

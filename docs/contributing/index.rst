@@ -13,8 +13,7 @@ First, install additional dependencies::
 General Workflow
 ----------------
 
-For the general contribution workflow, see the docs over in `libra
-<https://github.com/swarm-robotics/libra/tree/devel/workflow.md>`_.
+For the general contribution workflow, see the docs over in :xref:`LIBRA`.
 
 For the static analysis step:
 

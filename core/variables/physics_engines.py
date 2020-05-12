@@ -215,7 +215,7 @@ class PhysicsEngines(BaseVariable):
                                       n_engines_y=2,
                                       forward_engines=[0, 1])
 
-    def __gen8_engines(self, extent: tp.Tuple[int, int]):
+    def __gen8_engines(self, extent: ArenaExtent):
         """
         Generate definitions for 8 2D or 3D physics engine for the specified pair of (X,Y) arena
         extents with a uniform grid layout.
@@ -302,7 +302,7 @@ class PhysicsEngines2D(PhysicsEngines):
                  n_engines: int,
                  iter_per_tick: int,
                  layout: str,
-                 extents: tp.List[tp.Tuple[int, int, int]]):
+                 extents: tp.List[ArenaExtent]):
         PhysicsEngines.__init__(self,
                                 engine_type,
                                 n_engines,
@@ -321,7 +321,7 @@ class PhysicsEngines3D(PhysicsEngines):
                  n_engines: int,
                  iter_per_tick: int,
                  layout: str,
-                 extents: tp.List[tp.Tuple[int, int, int]]):
+                 extents: tp.List[ArenaExtent]):
         PhysicsEngines.__init__(self,
                                 engine_type,
                                 n_engines,
@@ -330,10 +330,7 @@ class PhysicsEngines3D(PhysicsEngines):
                                 extents)
 
 
-def factory(engine_type: str,
-            n_engines: int,
-            cmdopts: tp.Dict[str, str],
-            extents: tp.List[ArenaExtent]):
+def factory(engine_type: str, n_engines: int, cmdopts: dict, extents: tp.List[ArenaExtent]):
     """
     Create a physics engine mapping onto a list of arena extents for 2D or 3D
     """

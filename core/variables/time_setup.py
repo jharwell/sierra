@@ -81,7 +81,7 @@ class TimeSetup(BaseVariable):
 
 class TInterval(TimeSetup):
     def __init__(self):
-        super().__init__(1000 / kTICKS_PER_SECOND, 1000 / k1D_DATA_POINTS)
+        super().__init__(int(1000 / kTICKS_PER_SECOND), int(1000 / k1D_DATA_POINTS))
 
 
 class TimeSetupParser():
@@ -89,7 +89,7 @@ class TimeSetupParser():
     Enforces the cmdline definition of time setup criteria.
     """
 
-    def __call__(self, time_str: str) -> tp.Dict[str, str]:
+    def __call__(self, time_str: str) -> tp.Dict[str, int]:
         ret = {}
 
         ret.update(TimeSetupParser.duration_parse(time_str))
@@ -131,7 +131,7 @@ def factory(time_str: str):
     def __init__(self):
         TimeSetup.__init__(self,
                            attr["sim_duration"],
-                           attr["sim_duration"] * kTICKS_PER_SECOND / attr["n_datapoints"])
+                           int(attr["sim_duration"] * kTICKS_PER_SECOND / attr["n_datapoints"]))
 
     return type(time_str,
                 (TimeSetup,),

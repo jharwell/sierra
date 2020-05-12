@@ -50,6 +50,9 @@ class SSGenerator(sg.SSGenerator):
                               self.cmdopts['physics_engine_type2D'],
                               self.cmdopts['physics_n_engines'],
                               [ArenaExtent(dims=arena_dim)])
+
+        gc.generate_nest_pose(exp_def, ArenaExtent(dims=arena_dim), "single_source")
+
         return exp_def
 
 
@@ -83,6 +86,8 @@ class DSGenerator(sg.DSGenerator):
                               self.cmdopts['physics_engine_type2D'],
                               self.cmdopts['physics_n_engines'],
                               [ArenaExtent(dims=arena_dim)])
+
+        gc.generate_nest_pose(exp_def, ArenaExtent(dims=arena_dim), "dual_source")
 
         return exp_def
 
@@ -118,6 +123,8 @@ class QSGenerator(sg.QSGenerator):
                               self.cmdopts['physics_n_engines'],
                               [ArenaExtent(dims=arena_dim)])
 
+        gc.generate_nest_pose(exp_def, ArenaExtent(dims=arena_dim), "quad_source")
+
         return exp_def
 
 
@@ -151,6 +158,9 @@ class RNGenerator(sg.RNGenerator):
                               self.cmdopts['physics_engine_type2D'],
                               self.cmdopts['physics_n_engines'],
                               [ArenaExtent(dims=arena_dim)])
+
+        gc.generate_nest_pose(exp_def, ArenaExtent(dims=arena_dim), "random")
+
         return exp_def
 
 
@@ -184,5 +194,7 @@ class PLGenerator(sg.PLGenerator):
                               self.cmdopts['physics_engine_type2D'],
                               self.cmdopts['physics_n_engines'],
                               [ArenaExtent(dims=arena_dim)])
+
+        gc.generate_nest_pose(exp_def, ArenaExtent(dims=arena_dim), "powerlaw")
 
         return exp_def

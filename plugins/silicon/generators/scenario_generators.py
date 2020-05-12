@@ -14,7 +14,6 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-
 import core.generators.scenario_generator as sg
 import plugins.silicon.generators.common as gc
 import plugins.silicon.variables.construct_targets as ct
@@ -47,6 +46,9 @@ class SSGenerator(sg.SSGenerator):
             [exp_def.tag_remove(a[0], a[1]) for a in target.gen_tag_rmlist()[0]]
             [exp_def.tag_add(a[0], a[1], a[2])
              for addset in target.gen_tag_addlist() for a in addset]
+
+            # Nest
+            gc.generate_nest_pose(exp_def, target.extent)
 
         # Mixed 2D/3D physics
         gc.generate_mixed_physics(exp_def, self.cmdopts, max_z, 'single_source')
@@ -82,6 +84,9 @@ class DSGenerator(sg.DSGenerator):
             [exp_def.tag_add(a[0], a[1], a[2])
              for addset in target.gen_tag_addlist() for a in addset]
 
+            # Nest
+            gc.generate_nest_pose(exp_def, target.extent)
+
         # Mixed 2D/3D physics
         gc.generate_mixed_physics(exp_def, self.cmdopts, max_z, 'dual_source')
 
@@ -115,6 +120,9 @@ class QSGenerator(sg.QSGenerator):
             [exp_def.tag_remove(a[0], a[1]) for a in target.gen_tag_rmlist()[0]]
             [exp_def.tag_add(a[0], a[1], a[2])
              for addset in target.gen_tag_addlist() for a in addset]
+
+            # Nest
+            gc.generate_nest_pose(exp_def, target.extent)
 
         # Mixed 2D/3D physics
         gc.generate_mixed_physics(exp_def, self.cmdopts, max_z, 'quad_source')
@@ -150,6 +158,9 @@ class RNGenerator(sg.RNGenerator):
             [exp_def.tag_add(a[0], a[1], a[2])
              for addset in target.gen_tag_addlist() for a in addset]
 
+            # Nest
+            gc.generate_nest_pose(exp_def, target.extent)
+
         # Mixed 2D/3D physics
         gc.generate_mixed_physics(exp_def, self.cmdopts, max_z, 'random')
 
@@ -183,6 +194,9 @@ class PLGenerator(sg.PLGenerator):
             [exp_def.tag_remove(a[0], a[1]) for a in target.gen_tag_rmlist()[0]]
             [exp_def.tag_add(a[0], a[1], a[2])
              for addset in target.gen_tag_addlist() for a in addset]
+
+            # Nest
+            gc.generate_nest_pose(exp_def, target.extent)
 
         # Mixed 2D/3D physics
         gc.generate_mixed_physics(exp_def, self.cmdopts, max_z, 'powerlaw')

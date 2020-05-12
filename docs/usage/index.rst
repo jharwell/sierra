@@ -1,17 +1,15 @@
-.. SIERRA documentation master file, created by
-   sphinx-quickstart on Sat Oct 12 17:39:54 2019.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. _ln-usage:
 
 How To Use SIERRA
 =================
 
 The following steps outline things to do to get up and running with SIERRA, once
 you have completed the setup steps (either :ref:`ln-msi-setup` or
-:ref:`ln-nonmsi-setup`).
+:ref:`ln-local-setup`).
 
 #. Decide what variable you are interested in investigating by consulting
-   :ref:`ln-batch-criteria`.
+   :ref:`ln-batch-criteria` (i.e., what variable(s) you want to change across
+   some range and see how swarm behavior changes, or doesn't change).
 
 #. Determine how to invoke SIERRA. At a minimum you need to tell it the
    following:
@@ -20,8 +18,8 @@ you have completed the setup steps (either :ref:`ln-msi-setup` or
 
      - Compute the name of the library SIERRA will tell ARGoS to search for on
        ``ARGOS_PLUGIN_PATH`` when looking for controller and loop function
-       definitions. For example if you pass ``--plugin=foobar``, then ARGoS will
-       search for ``libfoobar.so`` on ``ARGOS_PLUGIN_PATH``.
+       definitions. For example if you pass ``--plugin=foobar``, then SIERRA
+       will tell ARGoS to search for ``libfoobar.so`` on ``ARGOS_PLUGIN_PATH``.
 
      - Figure out the plugin directory to load graph and simulation processing
        configuration from.
@@ -46,7 +44,7 @@ you have completed the setup steps (either :ref:`ln-msi-setup` or
 
    If you try to invoke SIERRA with an (obviously) incorrect combination of
    command line options, it will refuse to do anything. For less obviously
-   incorrect combinations, it will (hopefull) stop when an assert fails before
+   incorrect combinations, it will (hopefully) stop when an assert fails before
    doing anything substantial.
 
    Full documentation of all command line options it accepts is in
@@ -54,10 +52,10 @@ you have completed the setup steps (either :ref:`ln-msi-setup` or
    skimming the CLI docs is **very** worthwhile.
 
 #. Learn SIERRA's runtime :ref:`ln-runtime-exp-tree`. When running, SIERRA will
-   create a (rather) large directory structure for you, which can be mystifying
-   at first. Reading the docs is worthwhile to understand what the structure
-   means, and to gain intuition into where to look for things inputs/outputs
-   etc. without having to search exhaustively through the filesystem.
+   create a (rather) large directory structure for you, so reading the docs is
+   worthwhile to understand what the structure means, and to gain intuition into
+   where to look for the inputs/outputs of different stages, etc., without having
+   to search exhaustively through the filesystem.
 
 #. If running SIERRA on MSI, learn how to submit jobs by reading
    :ref:`ln-msi-runtime`.
@@ -67,16 +65,16 @@ General Usage Tips
 
 - The best way to figure out what SIERRA can do is by reading the :ref:`ln-cli`
   docs. Every option is very well documented. The second best way is to look at
-  the scripts under ``scripts/``.
+  scripts under ``scripts/``, which are scripts I've used before on MSI.
 
 - There are 5 pipeline stages, though only the first 4 will run automatically.
 
 - If you run stages individually, then before stage X will probably run
   without crashing, you need to run stage X-1.
 
-- If you are using a ``quad_source`` block distribution, the arena should be at
-  least 16x16 (smaller arenas don't leave enough space for caches and often
-  cause segfaults).
+- If you are running the :xref:`FORDYCA` project and using a ``quad_source``
+  block distribution, the arena should be at least 16x16 (smaller arenas don't
+  leave enough space for caches and often cause segfaults).
 
 - When using multiple physics engines, always make sure that ``# engines / arena
   dimension`` (X **AND** Y dimensions) is always a rational number. That is,

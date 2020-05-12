@@ -25,7 +25,7 @@ import typing as tp
 class ArenaExtent():
     def __init__(self,
                  dims: tp.Tuple[int, int, int],
-                 offset: tp.Tuple[int, int, int] = (0.0, 0.0, 0.0)):
+                 offset: tp.Tuple[int, int, int] = (0, 0, 0)):
         self.offset = offset
         self.dims = dims
 

@@ -4,29 +4,37 @@ SIERRA Directory Structures
 SIERRA Source Code
 ------------------
 
-It is helpful to know how sierra is layed out, so it is easier to see how things
+It is helpful to know how SIERRA is layed out, so it is easier to see how things
 fit together, and where to look for implementation details if (really `when`)
 SIERRA crashes. So here is the directory structure, as seen from the root of the
 repository.
 
-- ``generators/`` - Controller and scenario generators used to modify template
-  .argos files to provide the setting/context for running experiments with
-  variables.
+- ``core/`` - The parts of SIERRA which are (mostly) agnostic to the project
+  being run. This is not strictly true, as there are still many elements that
+  are tied to _my_ projects, but decoupling is an ongoing process.
 
-- ``graphs/`` - Generic code to generate graphs of different types.
+  - ``generators/`` - Generic controller and scenario generators used to modify
+    template ``.argos`` files to provide the setting/context for running
+    experiments with variables.
 
-- ``perf_measures/`` - Measures to compare performance of different controllers
-  across experiments.
+  - ``graphs/`` - Generic code to generate graphs of different types.
 
-- ``pipeline/`` - Core pipline code in 5 stages:
+  - ``perf_measures/`` - Generic measures to compare performance of different
+    controllers across experiments.
 
-  #. Generate inputs
-  #. Run experiments
-  #. Process results of running experiments (averaging, etc.)
-  #. Generate graphs within a single experiment and between
-     experiments in a batch.
-  #. Generate graphs comparing batched experiments (not part of
-     default pipeline).
+  - ``pipeline/`` - Core pipline code in 5 stages:
+
+    #. Generate inputs
+    #. Run experiments
+    #. Process results of running experiments (averaging, etc.)
+    #. Generate graphs within a single experiment and between
+       experiments in a batch.
+    #. Generate graphs comparing batched experiments (not part of
+       default pipeline).
+
+  - ``variables/`` - Genertic generators for experimental variables to modify
+    template ``.argos`` files in order to run experiments with a given
+    controller.
 
 - ``scripts/`` - Contains some ``.pbs`` scripts that can be run on MSI. Scripts
   become outdated quickly as the code base for this project and its upstream
@@ -34,27 +42,24 @@ repository.
   they should be used to gain insight into how to use sierra and how to craft
   your own script.
 
-- ``templates/`` - Contains template .argos files. Really only necessary to be
-  able to change configuration that is not directly controllable via generators,
-  and the # of templates should be kept small, as they need to be manually kept
-  in sync with the capabilities of fordyca.
-
-- ``variables/`` - Generators for experimental variables to modify template
-  .argos files in order to run experiments with a given controller.
+- ``templates/`` - Contains template ``.argos`` files. Really only necessary to
+  be able to change configuration that is not directly controllable via
+  generators, and the # of templates should be kept small.
 
 - ``docs/`` - Contains sphinx scaffolding/source code to generate these shiny
   docs.
 
 - ``config/`` - Contains runtime configuration YAML files, used to fine tune how
   SIERRA functions: what graphs to generate, what controllers are valid, what
-  graphs to generate for each controller, etc.
+  graphs to generate for each controller, etc., which are common to all
+  projects.
 
 .. _ln-runtime-exp-tree:
 
 Experiment Tree
 ---------------
 
-.. important:: SIERRA **NEVER** deletes directories for you.
+.. IMPORTANT:: SIERRA **NEVER** deletes directories for you.
 
    Subsequent experiments using the same ``--controller``, ``--scenario``,
    ``--sierra-root``, ``--template-input-file`` **WILL** overwrite the results
@@ -73,7 +78,7 @@ Experiment Tree
    Always better to check the arguments before hitting ENTER. Measure twice, cut
    once, as the saying goes.
 
-.. warning:: Changing the ``--batch-criteria`` does not (currently) change where
+.. WARNING:: Changing the ``--batch-criteria`` does not (currently) change where
    the simulation results are stored/how subtrees under ``--sierra-root`` are
    named, which `can` result in lost data, depending. This is somewhat
    counter-intuitive, hence its appearance as a standalone warning.
@@ -98,20 +103,20 @@ it runs stages 1-4:
     - ``CATEGORY.my_controller`` - Each controller gets their own directory in the
       SIERRA root, which is **NOT** deleted on subsequent runs.
 
-      - ``mytemplate-SS.12x6`` - The directory for the batched experiment is named
-        from a combination of the template input file used
+      - ``mytemplate-SS.12x6`` - The directory for the batched experiment is
+        named from a combination of the template input file used
         (``--template-input-file``) and the scenario (``--scenario``).
 
         - ``exp-inputs`` - Root directory for experimental inputs; each experiment
           gets their own directory in here. Directory name is hardcoded (for now).
 
-          - ``exp0`` - Within the input directory for each experiment in the batch
-            (there are 4 such directories in this example), there will be an input
-            file for each simulation in the experiment, as well as a
-            ``commands.txt`` used by GNU parallel to run them all in parallel. The
-            leaf of the ``--template-input-file``, sans extension, has the
-            simulation # appended to it (e.g. ``my-template_0`` is the input file
-            for simulation 0).
+          - ``exp0`` - Within the input directory for each experiment in the
+            batch (there are 4 such directories in this example), there will be
+            an input file for each simulation in the experiment, as well as a
+            ``commands.txt`` used by GNU parallel to run them all in
+            parallel. The leaf of the ``--template-input-file``, sans extension,
+            has the simulation # appended to it (e.g. ``my-template_0`` is the
+            input file for simulation 0).
 
               - ``commands.txt``
               - ``my-template_0``
@@ -139,18 +144,18 @@ it runs stages 1-4:
           inputs). Directory name is hardcoded (for now).
 
           - ``exp0`` - Within the output directory for each experiment in the
-            batch (there are 4 such directories in this example), there will be a
-            `directory` (rather than a file, as was the case for inputs) for each
-            simulation's output, including metrics, grabbed, frames, etc., as
-            configured in the XML input file.
+            batch (there are 4 such directories in this example), there will be
+            a `directory` (rather than a file, as was the case for inputs) for
+            each simulation's output, including metrics, grabbed, frames, etc.,
+            as configured in the XML input file.
 
             - ``my-template_0``
             - ``my-template_1``
             - ``my-template_2``
             - ``my-template_3``
-            - ``averaged-output`` - During stage3, the results for all simulations
-              in the experiment are averaged together and placed into this
-              directory. Directory name is controlled by the main YAML
+            - ``averaged-output`` - During stage3, the results for all
+              simulations in the experiment are averaged together and placed
+              into this directory. Directory name is controlled by the main YAML
               configuration.
 
           - ``exp1``
@@ -184,7 +189,7 @@ it runs stages 1-4:
           - ``exp1``
           - ``exp2``
           - ``exp3``
-          - ``collated-graphs`` - Graphs which are generated across experiments in
-            the batch from collated .csv data, rather than from the averaged
+          - ``collated-graphs`` - Graphs which are generated across experiments
+            in the batch from collated .csv data, rather than from the averaged
             results within each experiment, are output here. Directory name is
             controlled by the main YAML configuration.

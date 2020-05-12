@@ -20,7 +20,6 @@ import subprocess
 import time
 import sys
 import logging
-import multiprocessing
 import typing as tp
 import datetime
 

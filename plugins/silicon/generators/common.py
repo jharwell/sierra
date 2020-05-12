@@ -25,6 +25,8 @@ from core.utils import ArenaExtent
 from core.xml_luigi import XMLLuigi
 import core.generators.scenario_generator as sg
 
+from plugins.silicon.variables import nest_pose
+
 
 def generate_mixed_physics(exp_def: XMLLuigi,
                            cmdopts: tp.Dict[str, str],
@@ -94,3 +96,25 @@ def generate_mixed_physics(exp_def: XMLLuigi,
                                               n_engines_2D,
                                               extents_2D,
                                               False)
+
+
+def generate_nest_pose(exp_def: XMLLuigi, extent: ArenaExtent):
+    """
+    Generate XML changes for the specified target extent to properly place the nest under the
+    construction target.
+
+    Does not write generated changes to the simulation definition pickle file.
+    """
+    np = nest_pose.NestPose([extent])
+
+    rms = np.gen_tag_rmlist()
+    if rms:  # non-empty
+        [exp_def.tag_remove(a[0], a[1]) for a in rms[0]]
+
+    adds = np.gen_tag_addlist()
+    if adds:  # non-empty
+        [exp_def.tag_add(a[0], a[1], a[2]) for a in adds[0]]
+
+    changes = np.gen_attr_changelist()
+    if changes:  # non-empty
+        [exp_def.attr_change(a[0], a[1], a[2]) for a in changes[0]]

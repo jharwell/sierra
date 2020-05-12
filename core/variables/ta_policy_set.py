@@ -116,7 +116,7 @@ class TAPolicySetParser():
             "FATAL: Bad TAPolicy set in criteria '{0}'. Must be 'All'".format(criteria_str)
 
         # Parse swarm size
-        res = re.search("\.Z[0-9]+", criteria_str)
+        res = re.search(r".Z[0-9]+", criteria_str)
         if res is not None:
             ret['population'] = int(res.group(0)[2:])
 

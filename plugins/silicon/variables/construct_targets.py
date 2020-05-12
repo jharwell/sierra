@@ -42,6 +42,7 @@ import re
 import typing as tp
 
 from core.variables.base_variable import BaseVariable
+from core.utils import ArenaExtent as ArenaExtent
 
 
 class BaseConstructTarget(BaseVariable):
@@ -67,6 +68,8 @@ class BaseConstructTarget(BaseVariable):
         self.structure = structure
         self.orientation = orientation
         self.target_id = target_id
+        self.extent = ArenaExtent(offset=self.structure['anchor'],
+                                  dims=self.structure['bb'])
 
     def gen_attr_changelist(self):
         """
@@ -87,9 +90,7 @@ class BaseConstructTarget(BaseVariable):
     def gen_tag_addlist(self):
         return self.gen_target_and_subtargets(self.structure, self.target_id)
 
-    def gen_target_and_subtargets(self,
-                                  structure: tp.Tuple[str, tuple, tuple],
-                                  target_id: int):
+    def gen_target_and_subtargets(self, structure: dict, target_id: int):
         """
         Generate definitions for the specified # of construct subtargets for the specified
         construction target.
@@ -348,7 +349,7 @@ class ConstructTargetParser():
         ret['bb'] = tuple(int(x) for x in res.group(0).split('x'))
 
         # Parse target anchor
-        res = re.search(r"@[0-9]+,[0-9]+", cmdline_str)
+        res = re.search(r"@[0-9]+,[0-9]+,[0-9]+", cmdline_str)
         assert res is not None, "Bad target anchor specification in {0}".format(cmdline_str)
         ret['anchor'] = tuple(int(x) for x in res.group(0)[1:].split(','))
 

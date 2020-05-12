@@ -18,7 +18,7 @@ import pickle
 import logging
 import typing as tp
 
-from core.variables import block_distribution, nest_pose, arena_shape
+from core.variables import block_distribution, arena_shape
 from core.xml_luigi import XMLLuigi
 from core.generators import exp_generator
 from core.variables import physics_engines
@@ -59,20 +59,6 @@ class BaseScenarioGenerator():
         [exp_def.attr_change(a[0], a[1], a[2]) for a in block_dist.gen_attr_changelist()[0]]
 
         rms = block_dist.gen_tag_rmlist()
-        if rms:  # non-empty
-            [exp_def.tag_remove(a) for a in rms[0]]
-
-    @staticmethod
-    def generate_nest_pose(exp_def: XMLLuigi, extent: ArenaExtent, dist_type: str):
-        """
-        Generate XML changes for the specified arena dimensions and block distribution type to
-        properly place the nest.
-
-        Does not write generated changes to the simulation definition pickle file.
-        """
-        np = nest_pose.NestPose(dist_type, [extent])
-        [exp_def.attr_change(a[0], a[1], a[2]) for a in np.gen_attr_changelist()[0]]
-        rms = np.gen_tag_rmlist()
         if rms:  # non-empty
             [exp_def.tag_remove(a) for a in rms[0]]
 
@@ -184,9 +170,6 @@ class SSGenerator(BaseScenarioGenerator):
         # Generate and apply block distribution type definitions
         super().generate_block_dist(exp_def, block_distribution.TypeSingleSource())
 
-        # Generate and apply nest definitions
-        super().generate_nest_pose(exp_def, ArenaExtent(dims=arena_dim), "single_source")
-
         # Generate and apply # blocks definitions
         self.generate_block_count(exp_def)
 
@@ -226,9 +209,6 @@ class DSGenerator(BaseScenarioGenerator):
         # Generate and apply block distribution type definitions
         super().generate_block_dist(exp_def, block_distribution.TypeDualSource())
 
-        # Generate and apply nest definitions
-        super().generate_nest_pose(exp_def, ArenaExtent(dims=arena_dim), "dual_source")
-
         # Generate and apply # blocks definitions
         self.generate_block_count(exp_def)
 
@@ -267,9 +247,6 @@ class QSGenerator(BaseScenarioGenerator):
         source = block_distribution.TypeQuadSource()
         super().generate_block_dist(exp_def, source)
 
-        # Generate and apply nest definitions
-        super().generate_nest_pose(exp_def, ArenaExtent(dims=arena_dim), "quad_source")
-
         # Generate and apply # blocks definitions
         self.generate_block_count(exp_def)
 
@@ -307,9 +284,6 @@ class PLGenerator(BaseScenarioGenerator):
         # Generate and apply block distribution type definitions
         super().generate_block_dist(exp_def, block_distribution.TypePowerLaw())
 
-        # Generate and apply nest definitions
-        super().generate_nest_pose(exp_def, ArenaExtent(dims=arena_dim), "powerlaw")
-
         # Generate and apply # blocks definitions
         self.generate_block_count(exp_def)
 
@@ -346,9 +320,6 @@ class RNGenerator(BaseScenarioGenerator):
 
         # Generate and apply block distribution type definitions
         super().generate_block_dist(exp_def, block_distribution.TypeRandom())
-
-        # Generate and apply nest definitions
-        super().generate_nest_pose(exp_def, ArenaExtent(dims=arena_dim), "random")
 
         # Generate and apply # blocks definitions
         self.generate_block_count(exp_def)

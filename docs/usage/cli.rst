@@ -27,4 +27,7 @@ FORDYCA Plugin Command Line Extensions
 SILICON Plugin Command Line Extensions
 --------------------------------------
 
-None for the moment.
+.. argparse::
+   :filename: ../plugins/silicon/cmdline.py
+   :func: sphinx_cmdline
+   :prog: cmdline.py
