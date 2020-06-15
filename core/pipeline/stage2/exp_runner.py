@@ -40,7 +40,7 @@ class BatchedExpRunner:
 
     """
 
-    def __init__(self, cmdopts: tp.Dict[str, str], criteria: bc.BatchCriteria):
+    def __init__(self, cmdopts: tp.Dict[str, str], criteria: bc.BatchCriteria) -> None:
         self.cmdopts = cmdopts
         self.criteria = criteria
 
@@ -118,7 +118,7 @@ class ExpRunner:
 
     """
 
-    def __init__(self, exp_generation_root: str, exp_num: int, hpc_env: str):
+    def __init__(self, exp_generation_root: str, exp_num: int, hpc_env: str) -> None:
         self.exp_generation_root = os.path.abspath(exp_generation_root)
         self.exp_num = exp_num
         self.hpc_env = hpc_env

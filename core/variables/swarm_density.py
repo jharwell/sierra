@@ -58,8 +58,8 @@ class SwarmConstantDensity(cd.ConstantDensity):
                  main_config: tp.Dict[str, str],
                  batch_generation_root: str,
                  target_density: float,
-                 dimensions: tp.List[tuple],
-                 dist_type: str):
+                 dimensions: tp.List[core.utils.ArenaExtent],
+                 dist_type: str) -> None:
         cd.ConstantDensity.__init__(self,
                                     cli_arg,
                                     main_config,
@@ -74,12 +74,13 @@ class SwarmConstantDensity(cd.ConstantDensity):
         sizes such that the swarm density is constant. Robots are approximated as point masses.
         """
         for changeset in self.changes:
-            for c in changeset:
-                if c[0] == ".//arena" and c[1] == "size":
-                    x, y, z = c[2].split(',')
+            for path, attr, value in changeset:
+                if path == ".//arena" and attr == "size":
+                    extent = core.utils.ArenaExtent((value.split(",")))
                     # ARGoS won't start if there are 0 robots, so you always need to put at least
                     # 1.
-                    n_robots = int(max(1, (int(x) * int(y)) * (self.target_density / 100.0)))
+                    n_robots = int(max(1, (extent.x() * extent.y())
+                                       * (self.target_density / 100.0)))
                     changeset.add((".//arena/distribute/entity", "quantity", str(n_robots)))
                     break
 
@@ -89,7 +90,9 @@ class SwarmConstantDensity(cd.ConstantDensity):
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
-    def graph_xticks(self, cmdopts: tp.Dict[str, str], exp_dirs) -> tp.List[float]:
+    def graph_xticks(self,
+                     cmdopts: tp.Dict[str, str],
+                     exp_dirs: list = None) -> tp.List[float]:
         areas = []
         if exp_dirs is not None:
             dirs = exp_dirs
@@ -103,18 +106,20 @@ class SwarmConstantDensity(cd.ConstantDensity):
             exp_def = core.utils.unpickle_exp_def(pickle_fpath)
             for path, attr, value in exp_def:
                 if path == ".//arena" and attr == "size":
-                    x, y, z = value.split(",")
-            areas.append((int(x) * int(y)))
+                    extent = core.utils.ArenaExtent((value.split(",")))
+                    areas.append(float((extent.x() * extent.y())))
         return areas
 
-    def graph_xticklabels(self, cmdopts: tp.Dict[str, str], exp_dirs) -> tp.List[float]:
+    def graph_xticklabels(self,
+                          cmdopts: tp.Dict[str, str],
+                          exp_dirs: list = None) -> tp.List[str]:
         return [str(int(self.target_density / 100.0 * x)) for x in self.graph_xticks(cmdopts, exp_dirs)]
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
         return r"Swarm Size"
 
-    def pm_query(self, query) -> bool:
-        return query in ['blocks-transported', 'scalability', 'self-org']
+    def pm_query(self, pm) -> bool:
+        return pm in ['blocks-transported', 'scalability', 'self-org']
 
 
 def factory(cli_arg: str, main_config:
@@ -130,21 +135,20 @@ def factory(cli_arg: str, main_config:
     kw = sgp.ScenarioGeneratorParser.reparse_str(kwargs['scenario'])
 
     if kw['dist_type'] == "SS" or kw['dist_type'] == "DS":
-        dims = [(x, int(x / 2)) for x in range(kw['arena_x'],
-                                               kw['arena_x'] +
-                                               SwarmConstantDensity.kExperimentsPerDensity *
-                                               attr['arena_size_inc'],
-                                               attr['arena_size_inc'])]
+        r = range(kw['arena_x'],
+                  kw['arena_x'] + SwarmConstantDensity.kExperimentsPerDensity * attr['arena_size_inc'],
+                  attr['arena_size_inc'])
+        dims = [core.utils.ArenaExtent((x, int(x / 2), 0)) for x in r]
     elif kw['dist_type'] == "QS" or kw['dist_type'] == "RN":
-        dims = [(x, x) for x in range(kw['arena_x'],
-                                      kw['arena_x'] + SwarmConstantDensity.kExperimentsPerDensity *
-                                      attr['arena_size_inc'],
-                                      attr['arena_size_inc'])]
+        r = range(kw['arena_x'],
+                  kw['arena_x'] + SwarmConstantDensity.kExperimentsPerDensity * attr['arena_size_inc'],
+                  attr['arena_size_inc'])
+        dims = [core.utils.ArenaExtent((x, x, 0)) for x in r]
     else:
         raise NotImplementedError(
             "Unsupported block dstribution '{0}': Only SS,DS,QS,RN supported".format(kw['dist_type']))
 
-    def __init__(self):
+    def __init__(self) -> None:
         SwarmConstantDensity.__init__(self,
                                       cli_arg,
                                       main_config,

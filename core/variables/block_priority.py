@@ -16,8 +16,8 @@
 
 from core.variables.base_variable import BaseVariable
 
-kMinPriority = 1
-kMaxPriority = 10
+kMIN_PRIORITY = 1
+kMAX_PRIORITY = 10
 
 
 class Priority(BaseVariable):
@@ -30,7 +30,7 @@ class Priority(BaseVariable):
       simulations. Each tuple is (cube, ramp) priorities.
     """
 
-    def __init__(self, priorities):
+    def __init__(self, priorities) -> None:
         self.priorities = priorities
 
     def gen_attr_changelist(self):
@@ -52,12 +52,12 @@ class Priority(BaseVariable):
 class StaticCube(Priority):
     """Gives a higher priority to cube blocks than ramp blocks that does not change with time."""
 
-    def __init__(self):
-        super().__init__([(x, kMinPriority) for x in range(kMinPriority, kMaxPriority + 1)])
+    def __init__(self) -> None:
+        super().__init__([(x, kMIN_PRIORITY) for x in range(kMIN_PRIORITY, kMAX_PRIORITY + 1)])
 
 
 class StaticRamp(Priority):
     """Gives a higher priority to ramp blocks than cube blocks that does not change with time."""
 
-    def __init__(self):
-        super().__init__([(kMinPriority, x) for x in range(kMinPriority, kMaxPriority + 1)])
+    def __init__(self) -> None:
+        super().__init__([(kMIN_PRIORITY, x) for x in range(kMIN_PRIORITY, kMAX_PRIORITY + 1)])

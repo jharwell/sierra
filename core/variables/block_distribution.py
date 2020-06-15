@@ -26,7 +26,7 @@ class Type(BaseVariable):
         dist_type: [single_source, dual_source, quad_source, powerlaw, random].
     """
 
-    def __init__(self, dist_type: str):
+    def __init__(self, dist_type: str) -> None:
         self.dist_type = dist_type
 
     def gen_attr_changelist(self):
@@ -44,27 +44,27 @@ class Type(BaseVariable):
 
 
 class TypeSingleSource(Type):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("single_source")
 
 
 class TypeDualSource(Type):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("dual_source")
 
 
 class TypeQuadSource(Type):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("quad_source")
 
 
 class TypePowerLaw(Type):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("powerlaw")
 
 
 class TypeRandom(Type):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("random")
 
 
@@ -78,7 +78,7 @@ class Quantity(BaseVariable):
       blocks_list(list): List of block quantities to be distributed.
     """
 
-    def __init__(self, blocks_list):
+    def __init__(self, blocks_list) -> None:
         self.blocks_list = blocks_list
 
     def gen_attr_changelist(self):

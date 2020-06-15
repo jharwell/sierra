@@ -100,6 +100,10 @@ xref_links = {
                   "https://arxiv.org/abs/1906.01108"),
     "Chen2019": ("Maximizing Energy Efficiency in Swarm Robotics",
                  "https://arxiv.org/abs/1906.01957"),
+    "Hecker2015": ("Hecker2015",
+                   "https://www.cs.unm.edu/~wjust/CS523/S2018/Readings/Hecker_Beyond_Pheromones_Swarm_Intelligence.pdf"),
+    "Rosenfield2006": ("Rosenfield2006",
+                       "http://users.umiacs.umd.edu/~sarit/data/articles/rosenfeldetalbook06.pdf")
     "FORDYCA": ("FORDYCA", "https://swarm-robotics-fordyca.readthedocs.io"),
     "SILICON": ("SILICON", "https://swarm-robotics-silicon.readthedocs.io"),
     "LIBRA": ("LIBRA", "https://swarm-robotics-libra.readthedocs.io")

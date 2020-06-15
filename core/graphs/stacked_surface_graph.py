@@ -42,7 +42,7 @@ class StackedSurfaceGraph:
     """
     kMaxSurfaces = 4
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
 
         self.input_stem_pattern = os.path.abspath(kwargs['input_stem_pattern'])
         self.output_fpath = kwargs['output_fpath']
@@ -173,7 +173,7 @@ class StackedSurfaceGraph:
 
 
 class HandlerColormap(mpl.legend_handler.HandlerBase):
-    def __init__(self, cmap, num_stripes=8, **kw):
+    def __init__(self, cmap, num_stripes=8, **kw) -> None:
         super().__init__(**kw)
         self.cmap = cmap
         self.num_stripes = num_stripes

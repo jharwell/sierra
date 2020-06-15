@@ -49,7 +49,7 @@ class TAPolicySet(UnivarBatchCriteria):
                  main_config: tp.Dict[str, str],
                  batch_generation_root: str,
                  policies: list,
-                 population: int):
+                 population: int) -> None:
         UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
         self.policies = policies
         self.population = population
@@ -79,22 +79,26 @@ class TAPolicySet(UnivarBatchCriteria):
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
-    def graph_xticks(self, cmdopts: tp.Dict[str, str], exp_dirs: tp.List[str]) -> tp.List[float]:
+    def graph_xticks(self,
+                     cmdopts: tp.Dict[str, str],
+                     exp_dirs: tp.List[str] = None) -> tp.List[float]:
         if exp_dirs is not None:
             dirs = exp_dirs
         else:
             dirs = self.gen_exp_dirnames(cmdopts)
 
-        return [i for i in range(1, len(dirs) + 1)]
+        return [float(i) for i in range(1, len(dirs) + 1)]
 
-    def graph_xticklabels(self, cmdopts: tp.Dict[str, str], exp_dirs) -> tp.List[float]:
+    def graph_xticklabels(self,
+                          cmdopts: tp.Dict[str, str],
+                          exp_dirs: tp.List[str] = None) -> tp.List[str]:
         return ['Random', 'STOCH-N1', 'MAT-OPT', r'$\epsilon$-greedy', 'UCB1']
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
         return "Task Allocation Policy"
 
-    def pm_query(self, query: str) -> bool:
-        return query in ['blocks-transported']
+    def pm_query(self, pm: str) -> bool:
+        return pm in ['blocks-transported']
 
 
 class TAPolicySetParser():
@@ -134,7 +138,7 @@ def factory(cli_arg: str,
     """
     attr = TAPolicySetParser().parse(cli_arg)
 
-    def __init__(self):
+    def __init__(self) -> None:
         TAPolicySet.__init__(self, cli_arg, main_config, batch_generation_root,
                              TAPolicySet.kPolicies, attr.get('population', None))
 

@@ -24,7 +24,7 @@ import logging
 import math
 import typing as tp
 
-import pandas as pd
+import pandas as pd  # type: ignore
 
 from core.graphs.batch_ranged_graph import BatchRangedGraph
 from core.graphs.heatmap import Heatmap
@@ -32,238 +32,84 @@ from core.perf_measures import common
 from core.variables import batch_criteria as bc
 from core.variables import population_size as ps
 
+################################################################################
+# Univariate Classes
+################################################################################
 
-class EfficiencyBivar:
-    r"""
-    Calculates the per-robot efficiency in the following way for each experiment in a bivariate
-    batched experiment.
 
-    Uses the following equation:
-
-    .. math::
-        E = \frac{P(N)}{N}
-
-    Where :math:`P(N)` is an arbitrary performance measure, evaluated on a swarm of size :math:`N`.
+class InterRobotInterferenceUnivar:
     """
+    Univariate calculator for the per-robot inter-robot interference for each experiment in a batch
+    (intra-experiment measure; no comparison across experiments in a batch is performed).
 
-    def __init__(self, cmdopts: tp.Dict[str, str], inter_perf_csv: str):
-        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
-        # are generated after us
+    """
+    kCountLeaf = 'pm-interference-count'
+    kDurationLeaf = 'pm-interference-duration'
+
+    def __init__(self, cmdopts: dict,
+                 interference_count_csv: str,
+                 interference_duration_csv: str) -> None:
         self.cmdopts = copy.deepcopy(cmdopts)
-        self.inter_perf_stem = inter_perf_csv.split('.')[0]
+        self.interference_count_stem = interference_count_csv.split('.')[0]
+        self.interference_duration_stem = interference_duration_csv.split('.')[0]
 
-    def calculate(self, batch_criteria: bc.BatchCriteria):
-        """
-        Calculate efficiency metric for the given controller for each experiment in a
-        batch.
+    def generate(self, batch_criteria: bc.UnivarBatchCriteria):
+        count_csv_istem = os.path.join(self.cmdopts["collate_root"],
+                                       self.interference_count_stem)
+        duration_csv_istem = os.path.join(self.cmdopts["collate_root"],
+                                          self.interference_duration_stem)
+        count_csv_ostem = os.path.join(self.cmdopts["collate_root"], self.kCountLeaf)
+        duration_csv_ostem = os.path.join(self.cmdopts["collate_root"], self.kDurationLeaf)
+        count_png_ostem = os.path.join(self.cmdopts["graph_root"], self.kCountLeaf)
+        duration_png_ostem = os.path.join(self.cmdopts["graph_root"], self.kDurationLeaf)
 
-        Return:
-          (Calculated metric dataframe, stddev dataframe) if stddev was collected
-          (Calculated metric datafram, None) otherwise.
-        """
-        sc_ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
-        stddev_ipath = os.path.join(self.cmdopts["collate_root"],
-                                    self.inter_perf_stem + '.stddev')
+        count_df = self.__calculate_measure(count_csv_istem + ".csv", batch_criteria)
+        count_df.to_csv(count_csv_ostem + '.csv', sep=';', index=False)
 
-        # Metric calculation is the same for the actual value of it and the std deviation,
-        if os.path.exists(stddev_ipath):
-            return (self.__calculate_metric(sc_ipath, batch_criteria),
-                    self.__calculate_metric(stddev_ipath, batch_criteria, False))
-        else:
-            return (self.__calculate_metric(sc_ipath, batch_criteria), None)
+        duration_df = self.__calculate_measure(duration_csv_istem + ".csv", batch_criteria)
+        duration_df.to_csv(duration_csv_ostem + '.csv', sep=';', index=False)
 
-    def generate(self, dfs: tp.Tuple[pd.DataFrame, pd.DataFrame], batch_criteria: bc.BatchCriteria):
-        cum_stem = os.path.join(self.cmdopts["collate_root"], "pm-scalability-norm")
-        metric_df, stddev_df = dfs
+        BatchRangedGraph(inputy_stem_fpath=count_csv_ostem,
+                         output_fpath=count_png_ostem + '.png',
+                         title="Swarm Inter-Robot Interference Counts",
+                         xlabel=batch_criteria.graph_xlabel(self.cmdopts),
+                         ylabel="Average # Robots",
+                         xticks=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
-        metric_df.to_csv(cum_stem + ".csv", sep=';', index=False)
-        if stddev_df is not None:
-            stddev_df.to_csv(cum_stem + ".stddev", sep=';', index=False)
+        BatchRangedGraph(inputy_stem_fpath=duration_csv_ostem,
+                         output_fpath=duration_png_ostem + '.png',
+                         title="Swarm Average Inter-Robot Interference Duration",
+                         xlabel=batch_criteria.graph_xlabel(self.cmdopts),
+                         ylabel="# Timesteps",
+                         xticks=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
-        Heatmap(input_fpath=cum_stem + '.csv',
-                output_fpath=os.path.join(self.cmdopts["graph_root"], "pm-efficiency.png"),
-                title='Swarm Efficiency (Normalized)',
-                xlabel=batch_criteria.graph_xlabel(self.cmdopts),
-                ylabel=batch_criteria.graph_ylabel(self.cmdopts),
-                xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
-                ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)).generate()
-
-    def __calculate_metric(self,
-                           ipath: str,
-                           batch_criteria: bc.BatchCriteria,
-                           must_exist: bool = True):
-        assert(not (must_exist and not os.path.exists(ipath))
-               ), "FATAL: {0} does not exist".format(ipath)
+    def __calculate_measure(self, ipath: str, batch_criteria: bc.UnivarBatchCriteria):
+        assert(os.path.exists(ipath)), "FATAL: {0} does not exist".format(ipath)
         raw_df = pd.read_csv(ipath, sep=';')
         eff_df = pd.DataFrame(columns=raw_df.columns,
-                              index=raw_df.index)
+                              index=[0])
+
         populations = batch_criteria.populations(self.cmdopts)
-        for i in range(0, len(eff_df.index)):
-            for j in range(0, len(eff_df.columns)):
-                eff_df.iloc[i, j] = common.csv_3D_value_iloc(raw_df,
-                                                             i,
-                                                             j,
-                                                             slice(-1, None)) / populations[i][j]
+        for i in range(0, len(raw_df.columns)):
+            eff_df[raw_df.columns[i]] = calc_efficiency(raw_df[raw_df.columns[i]], populations[i])
+
         return eff_df
 
 
-class FractionalMaintenanceBivar:
+class NormalizedEfficiencyUnivar:
     r"""
-    Calculates fractional performance losses via
-    :class:`~perf_measures.common.FractionalLossesBivar`, and uses that to compute the fraction of
-    performance that is maintained as swarm sizes increase.
-
-    Uses the following equation:
-
-    .. math::
-       M(N) = 1 - \frac{1}{e^{1 - FL(N)}}
-
-    where :math:`FL(N)` is the fractional performance losses experienced by a swarm of size
-    :math:`N`.
-
+    Univariate calculator for per-robot efficiency for each experiment in a batch
+    (intra-experiment measure; no comparison across experiments in a batch is performed). See
+    :func:`calc_efficiency` for calculations.
     """
 
-    def __init__(self, cmdopts, inter_perf_csv, ca_in_csv):
-        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
-        # are generated after us
-        self.cmdopts = copy.deepcopy(cmdopts)
-        self.inter_perf_csv = inter_perf_csv
-        self.ca_in_csv = ca_in_csv
-
-    def calculate(self, batch_criteria):
-        df = common.FractionalLossesBivar(self.cmdopts,
-                                          self.inter_perf_csv,
-                                          self.ca_in_csv,
-                                          batch_criteria).calculate(batch_criteria)
-
-        for i in range(0, len(df.index)):
-            for c in df.columns:
-                df.loc[i, c] = 1.0 - 1.0 / math.exp(1.0 - df.loc[i, c])
-
-        return df
-
-    def generate(self, df: pd.DataFrame, batch_criteria: bc.BatchCriteria):
-        stem_path = os.path.join(self.cmdopts["collate_root"], "pm-scalability-fm")
-
-        df.to_csv(stem_path + '.csv', sep=';', index=False)
-        Heatmap(input_fpath=stem_path + '.csv',
-                output_fpath=os.path.join(self.cmdopts["graph_root"], "pm-scalability-fm.png"),
-                title="Swarm Scalability: Fractional Performance Maintenance In The Presence Of Inter-robot Interference",
-                xlabel=batch_criteria.graph_xlabel(self.cmdopts),
-                ylabel=batch_criteria.graph_ylabel(self.cmdopts),
-                xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
-                ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)).generate()
-
-
-class KarpFlattBivar:
-    r"""
-    Given a swarm exhibiting speedup :math:`X` with N robots (N > 1), compute the serial fraction
-    :math:`Y` of the swarm's performance. The lower the value of Y, the better the
-    parallelization/scalability, suggesting that the addition of more robots will bring additional
-    performance improvements.
-
-    Uses the following equation:
-
-    .. math::
-        Y = \frac{\frac{1}{X} - \frac{1}{N}}{1 - \frac{1}{N}}
-
-    Where $X$ is is the projective performance calculated via
-    :class:`~perf_measures.common.ProjectivePerformanceCalculatorBivar`.
-
-    """
-
-    def __init__(self, cmdopts, inter_perf_csv):
-        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
-        # are generated after us
-        self.cmdopts = copy.deepcopy(cmdopts)
-        self.inter_perf_csv = inter_perf_csv
-
-    def calculate(self, batch_criteria):
-        df = common.ProjectivePerformanceCalculatorBivar(self.cmdopts,
-                                                         self.inter_perf_csv,
-                                                         "positive")(batch_criteria)
-
-        sizes = batch_criteria.populations(self.cmdopts)
-        xfactor = 0
-        yfactor = 0
-
-        # Swarm size is along rows (X), so the first column by definition has perfect scalability
-        if isinstance(batch_criteria.criteria1, ps.PopulationSize):
-            df.iloc[:, 0] = 0.0
-            yfactor = 1
-
-        # Swarm size is along rows (Y), so the first row by definition has perfect scalability
-        else:
-            df.iloc[0, :] = 0.0
-            xfactor = 1
-
-        for i in range(0 + xfactor, len(df.index)):
-            for j in range(0 + yfactor, len(df.columns)):
-                x = df.iloc[i, j]
-
-                # We need to know which of the 2 variables was swarm size, in order to determine
-                # the correct dimension along which to compute the metric, which depends on
-                # performance between adjacent swarm sizes.
-                if isinstance(batch_criteria.criteria1, ps.PopulationSize):
-                    n = sizes[i + 1][j]
-                else:
-                    n = sizes[i][j + 1]
-
-                df.iloc[i, j] = (1.0 / x - 1.0 / n) / (1 - 1.0 / n)
-        return df
-
-    def generate(self, df, batch_criteria):
-        stem_path = os.path.join(self.cmdopts["collate_root"], "pm-karpflatt")
-        df.to_csv(stem_path + ".csv", sep=';', index=False)
-
-        Heatmap(input_fpath=stem_path + '.csv',
-                output_fpath=os.path.join(self.cmdopts["graph_root"], "pm-karpflatt.png"),
-                title="Swarm Serial Fraction: Karp-Flatt Metric",
-                xlabel=batch_criteria.graph_xlabel(self.cmdopts),
-                ylabel=batch_criteria.graph_ylabel(self.cmdopts),
-                xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
-                ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)[1:]).generate()
-
-
-class ScalabilityBivarGenerator:
-    """
-    Calculates the scalability of the swarm configuration across a bivariate batched set of
-    experiments within the same scenario from collated .csv data in various ways.
-    """
-
-    def __call__(self, inter_perf_csv, ca_in_csv, cmdopts, batch_criteria):
-        logging.info("Bivariate scalability from %s", cmdopts["collate_root"])
-
-        e = EfficiencyBivar(cmdopts, inter_perf_csv)
-        e.generate(e.calculate(batch_criteria), batch_criteria)
-
-        f = FractionalMaintenanceBivar(cmdopts, inter_perf_csv, ca_in_csv)
-        f.generate(f.calculate(batch_criteria), batch_criteria)
-
-        k = KarpFlattBivar(cmdopts, inter_perf_csv)
-        k.generate(k.calculate(batch_criteria), batch_criteria)
-
-
-class EfficiencyUnivar:
-    r"""
-    Calculates the per-robot efficiency in the following way for each experiment in a univariate
-    batched experiment.
-
-    Uses the following equation:
-
-    .. math::
-       E = \frac{P(N)}{N}
-
-    Where :math:`P(N)` is an arbitrary performance measure, evaluated on a swarm of size :math:`N`.
-    """
-
-    def __init__(self, cmdopts: tp.Dict[str, str], inter_perf_csv: str):
+    def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
         self.inter_perf_stem = inter_perf_csv.split('.')[0]
 
-    def calculate(self, batch_criteria: bc.BatchCriteria):
+    def calculate(self, batch_criteria: bc.UnivarBatchCriteria):
         """
         Calculate efficiency metric for the givenn controller for each experiment in a
         batch.
@@ -278,12 +124,14 @@ class EfficiencyUnivar:
 
         # Metric calculation is the same for the actual value of it and the std deviation,
         if os.path.exists(stddev_ipath):
-            return (self.__calculate_metric(sc_ipath, batch_criteria),
-                    self.__calculate_metric(stddev_ipath, batch_criteria, False))
+            return (self.__calculate_measure(sc_ipath, batch_criteria),
+                    self.__calculate_measure(stddev_ipath, batch_criteria, False))
         else:
-            return (self.__calculate_metric(sc_ipath, batch_criteria), None)
+            return (self.__calculate_measure(sc_ipath, batch_criteria), None)
 
-    def generate(self, dfs: tp.Tuple[pd.DataFrame, pd.DataFrame], batch_criteria: bc.BatchCriteria):
+    def generate(self,
+                 dfs: tp.Tuple[pd.DataFrame, pd.DataFrame],
+                 batch_criteria: bc.UnivarBatchCriteria):
         cum_stem = os.path.join(self.cmdopts["collate_root"], "pm-scalability-norm")
         metric_df = dfs[0]
         stddev_df = dfs[1]
@@ -299,10 +147,10 @@ class EfficiencyUnivar:
                          ylabel="Efficiency",
                          xticks=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
-    def __calculate_metric(self,
-                           ipath: str,
-                           batch_criteria: bc.BatchCriteria,
-                           must_exist: bool = True):
+    def __calculate_measure(self,
+                            ipath: str,
+                            batch_criteria: bc.UnivarBatchCriteria,
+                            must_exist: bool = True):
         assert(not (must_exist and not os.path.exists(ipath))
                ), "FATAL: {0} does not exist".format(ipath)
         raw_df = pd.read_csv(ipath, sep=';')
@@ -323,7 +171,7 @@ class ProjectivePerformanceComparisonUnivar:
     Calculates projective performance for each experiment i > 0 in the batch and productes a graph.
     """
 
-    def __init__(self, cmdopts: tp.Dict[str, str], inter_perf_csv: str, projection_type: str):
+    def __init__(self, cmdopts: dict, inter_perf_csv: str, projection_type: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
@@ -340,7 +188,7 @@ class ProjectivePerformanceComparisonUnivar:
         df.to_csv(cum_stem + ".csv", sep=';', index=False)
         xticks = batch_criteria.graph_xticks(self.cmdopts)
 
-        BatchRangedGraph(inputy_stem_fpath=cum_stem + ".csv",
+        BatchRangedGraph(inputy_stem_fpath=cum_stem,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-pp-comp-" + self.projection_type + ".png"),
                          title="Swarm Projective Performance Comparison ({0})".format(
@@ -351,20 +199,19 @@ class ProjectivePerformanceComparisonUnivar:
 
 
 class ProjectivePerformanceComparisonPositiveUnivar(ProjectivePerformanceComparisonUnivar):
-    def __init__(self, cmdopts, inter_perf_csv):
+    def __init__(self, cmdopts, inter_perf_csv) -> None:
         super().__init__(cmdopts, inter_perf_csv, "positive")
 
 
 class ProjectivePerformanceComparisonNegativeUnivar(ProjectivePerformanceComparisonUnivar):
-    def __init__(self, cmdopts, inter_perf_csv):
+    def __init__(self, cmdopts, inter_perf_csv) -> None:
         super().__init__(cmdopts, inter_perf_csv, "negative")
 
 
 class FractionalMaintenanceUnivar:
     """
-    Calculates fractional performance losses via
-    :class:`~perf_measures.common.FractionalLossesUnivar`, and uses that to compute the fraction of
-    performance that is maintained as swarm sizes increase.
+    Univariate calculator for fractional performance maintenance via
+    :class:`~perf_measures.common.FractionalLossesUnivar` (basically the inverse of the losses).
 
     Uses the following equation:
 
@@ -373,20 +220,19 @@ class FractionalMaintenanceUnivar:
 
     where :math:`FL(N)` is the fractional performance losses experienced by a swarm of size
     :math:`N`.
-
     """
 
-    def __init__(self, cmdopts: tp.Dict[str, str], inter_perf_csv: str, ca_in_csv: str):
+    def __init__(self, cmdopts: dict, inter_perf_csv: str, interference_count_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
         self.inter_perf_csv = inter_perf_csv
-        self.ca_in_csv = ca_in_csv
+        self.interference_count_csv = interference_count_csv
 
-    def calculate(self, batch_criteria: bc.BatchCriteria):
+    def calculate(self, batch_criteria: bc.UnivarBatchCriteria):
         df = common.FractionalLossesUnivar(self.cmdopts,
                                            self.inter_perf_csv,
-                                           self.ca_in_csv,
+                                           self.interference_count_csv,
                                            batch_criteria).calculate(batch_criteria)
 
         for c in df.columns:
@@ -408,27 +254,21 @@ class FractionalMaintenanceUnivar:
 
 class KarpFlattUnivar:
     r"""
-    Given a swarm exhibiting speedup :math:`X` with N robots(N > 1), compute the serial fraction
-    :math:`Y` of the swarm's performance. The lower the value of Y, the better the
-    parallelization/scalability, suggesting that the addition of more robots will bring additional
-    performance improvements:
+    Calculates the scalability of the swarm configuration across a univariate batched set of
+    experiments within the same scenario from collated ``.csv`` data using the Karp-Flatt metric
+    (See :func:`calc_karpflatt`).
 
-    .. math::
-        Y = \frac{\frac{1}{X} - \frac{1}{N}}{1 - \frac{1}{N}}
-
-    Defined for swarms with N >=1 robots. For N=1, we obtain a Karp-Flatt value of 1.0 using
-    L'Hospital's rule and taking the derivative with respect to N (1 - 1/N is giving the problem
-    after all).
-
+    Only valid if one of the batch criteria was :class:`~variables.population_size.PopulationSize`
+    derived.
     """
 
-    def __init__(self, cmdopts: tp.Dict[str, str], inter_perf_csv: str):
+    def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
         self.inter_perf_csv = inter_perf_csv
 
-    def calculate(self, batch_criteria: bc.BatchCriteria):
+    def calculate(self, batch_criteria: bc.UnivarBatchCriteria):
         # Projective performance does not cover exp0, so we have to get the right column name from
         # the performance .csv again so we can add it to the Karp-Flatt dataframe.
         path = os.path.join(self.cmdopts["collate_root"], self.inter_perf_csv)
@@ -439,14 +279,10 @@ class KarpFlattUnivar:
         df = pd.DataFrame(columns=columns, index=[0])
         sizes = batch_criteria.populations(self.cmdopts)
 
-        # Perfect scalability with only 1 robot, from L'Hospital's rule
-        df[df.columns[0]] = 1.0
         df[projection.columns] = projection[projection.columns]
 
-        for i in range(1, len(df.columns)):
-            c = df.columns[i]
-            s = sizes[i]
-            df[c] = (1.0 / df[c] - 1.0 / s) / (1 - 1.0 / s)
+        for i in range(0, len(df.columns)):
+            df[df.columns[i]] = calc_karpflatt(df[df.columns[i]], sizes[i])
 
         return df
 
@@ -469,14 +305,332 @@ class ScalabilityUnivarGenerator:
     experiments within the same scenario from collated .csv datain various ways.
     """
 
-    def __call__(self, inter_perf_csv, ca_in_csv, cmdopts, batch_criteria):
+    def __call__(self,
+                 inter_perf_csv: str,
+                 interference_count_csv: str,
+                 interference_duration_csv: str,
+                 cmdopts: dict,
+                 batch_criteria: bc.UnivarBatchCriteria):
         logging.info("Univariate scalability from %s", cmdopts["collate_root"])
 
-        e = EfficiencyUnivar(cmdopts, inter_perf_csv)
+        e = NormalizedEfficiencyUnivar(cmdopts, inter_perf_csv)
         e.generate(e.calculate(batch_criteria), batch_criteria)
 
-        f = FractionalMaintenanceUnivar(cmdopts, inter_perf_csv, ca_in_csv)
+        i = InterRobotInterferenceUnivar(cmdopts,
+                                         interference_count_csv,
+                                         interference_duration_csv)
+        i.generate(batch_criteria)
+
+        f = FractionalMaintenanceUnivar(cmdopts, inter_perf_csv, interference_count_csv)
         f.generate(f.calculate(batch_criteria), batch_criteria)
 
         k = KarpFlattUnivar(cmdopts, inter_perf_csv)
         k.generate(k.calculate(batch_criteria), batch_criteria)
+
+################################################################################
+# Bivariate Classes
+################################################################################
+
+
+class InterRobotInterferenceBivar:
+    """
+    Bivariate calculator for the per-robot inter-robot interference for each experiment in a batch
+    (intra-experiment measure; no comparison across experiments in a batch is performed).
+
+    """
+    kCountLeaf = 'pm-interference-count'
+    kDurationLeaf = 'pm-interference-duration'
+
+    def __init__(self, cmdopts: dict,
+                 interference_count_csv: str,
+                 interference_duration_csv: str) -> None:
+        self.cmdopts = copy.deepcopy(cmdopts)
+        self.interference_count_stem = interference_count_csv.split('.')[0]
+        self.interference_duration_stem = interference_duration_csv.split('.')[0]
+
+    def generate(self, batch_criteria: bc.BivarBatchCriteria):
+        count_csv_istem = os.path.join(self.cmdopts["collate_root"],
+                                       self.interference_count_stem)
+        duration_csv_istem = os.path.join(self.cmdopts["collate_root"],
+                                          self.interference_duration_stem)
+        count_csv_ostem = os.path.join(self.cmdopts["collate_root"], self.kCountLeaf)
+        duration_csv_ostem = os.path.join(self.cmdopts["collate_root"], self.kDurationLeaf)
+        count_png_ostem = os.path.join(self.cmdopts["graph_root"], self.kCountLeaf)
+        duration_png_ostem = os.path.join(self.cmdopts["graph_root"], self.kDurationLeaf)
+
+        count_df = self.__calculate_measure(count_csv_istem + ".csv", batch_criteria)
+        count_df.to_csv(count_csv_ostem + '.csv', sep=';', index=False)
+
+        duration_df = self.__calculate_measure(duration_csv_istem + ".csv", batch_criteria)
+        duration_df.to_csv(duration_csv_ostem + '.csv', sep=';', index=False)
+
+        Heatmap(input_fpath=count_csv_ostem + ".csv",
+                output_fpath=count_png_ostem + ".png",
+                title='Swarm Inter-Robot Interference Counts',
+                xlabel=batch_criteria.graph_xlabel(self.cmdopts),
+                ylabel=batch_criteria.graph_ylabel(self.cmdopts),
+                xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
+                ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)).generate()
+
+        Heatmap(input_fpath=duration_csv_ostem + ".csv",
+                output_fpath=duration_png_ostem + ".png",
+                title='Swarm Average Inter-Robot Interference Duration',
+                xlabel=batch_criteria.graph_xlabel(self.cmdopts),
+                ylabel=batch_criteria.graph_ylabel(self.cmdopts),
+                xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
+                ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)).generate()
+
+    def __calculate_measure(self, ipath: str, batch_criteria: bc.BivarBatchCriteria):
+        assert(os.path.exists(ipath)), "FATAL: {0} does not exist".format(ipath)
+        raw_df = pd.read_csv(ipath, sep=';')
+        eff_df = pd.DataFrame(columns=raw_df.columns,
+                              index=raw_df.index)
+        for i in range(0, len(eff_df.index)):
+            for j in range(0, len(eff_df.columns)):
+                eff_df.iloc[i, j] = common.csv_3D_value_iloc(raw_df,
+                                                             i,
+                                                             j,
+                                                             slice(-1, None))
+        return eff_df
+
+
+class NormalizedEfficiencyBivar:
+    """
+    Bivariate calculator for per-robot efficiency for each experiment in a batch
+    (intra-experiment measure; no comparison across experiments in a batch is performed). See
+    :func:`calc_efficiency` for calculations.
+    """
+
+    def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
+        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
+        # are generated after us
+        self.cmdopts = copy.deepcopy(cmdopts)
+        self.inter_perf_stem = inter_perf_csv.split('.')[0]
+
+    def calculate(self, batch_criteria: bc.BivarBatchCriteria):
+        """
+        Calculate efficiency metric for the given controller for each experiment in a
+        batch.
+
+        Return:
+          (Calculated metric dataframe, stddev dataframe) if stddev was collected
+          (Calculated metric datafram, None) otherwise.
+        """
+        sc_ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
+        stddev_ipath = os.path.join(self.cmdopts["collate_root"],
+                                    self.inter_perf_stem + '.stddev')
+
+        # Metric calculation is the same for the actual value of it and the std deviation,
+        if os.path.exists(stddev_ipath):
+            return (self.__calculate_measure(sc_ipath, batch_criteria),
+                    self.__calculate_measure(stddev_ipath, batch_criteria, False))
+        else:
+            return (self.__calculate_measure(sc_ipath, batch_criteria), None)
+
+    def generate(self,
+                 dfs: tp.Tuple[pd.DataFrame, pd.DataFrame],
+                 batch_criteria: bc.BivarBatchCriteria):
+        cum_stem = os.path.join(self.cmdopts["collate_root"], "pm-scalability-norm")
+        metric_df, stddev_df = dfs
+
+        metric_df.to_csv(cum_stem + ".csv", sep=';', index=False)
+        if stddev_df is not None:
+            stddev_df.to_csv(cum_stem + ".stddev", sep=';', index=False)
+
+        Heatmap(input_fpath=cum_stem + '.csv',
+                output_fpath=os.path.join(self.cmdopts["graph_root"], "pm-efficiency.png"),
+                title='Swarm Efficiency (Normalized)',
+                xlabel=batch_criteria.graph_xlabel(self.cmdopts),
+                ylabel=batch_criteria.graph_ylabel(self.cmdopts),
+                xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
+                ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)).generate()
+
+    def __calculate_measure(self,
+                            ipath: str,
+                            batch_criteria: bc.BivarBatchCriteria,
+                            must_exist: bool = True):
+        assert(not (must_exist and not os.path.exists(ipath))
+               ), "FATAL: {0} does not exist".format(ipath)
+        raw_df = pd.read_csv(ipath, sep=';')
+        eff_df = pd.DataFrame(columns=raw_df.columns,
+                              index=raw_df.index)
+        populations = batch_criteria.populations(self.cmdopts)
+        for i in range(0, len(eff_df.index)):
+            for j in range(0, len(eff_df.columns)):
+                perf_i = common.csv_3D_value_iloc(raw_df,
+                                                  i,
+                                                  j,
+                                                  slice(-1, None))
+                eff_df.iloc[i, j] = calc_efficiency(perf_i, populations[i][j])
+        return eff_df
+
+
+class FractionalMaintenanceBivar:
+    r"""
+    Bivariate calculator for fractional performance maintenance via
+    :class:`~perf_measures.common.FractionalLossesBivar` (basically the inverse of the losses).
+    See :class:`~perf_measures.scalability.FractionalMaintenanceUnivar` for a description of the
+    mathematical calculations performed by this class.
+
+    Does not require one of the batch criteria to be swarm size, but the this metric will (probably)
+    not be of much value if that is not the case. Does not require swarm sizes to be powers of two.
+    """
+
+    def __init__(self, cmdopts, inter_perf_csv, interference_count_csv) -> None:
+        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
+        # are generated after us
+        self.cmdopts = copy.deepcopy(cmdopts)
+        self.inter_perf_csv = inter_perf_csv
+        self.interference_count_csv = interference_count_csv
+
+    def calculate(self, batch_criteria):
+        df = common.FractionalLossesBivar(self.cmdopts,
+                                          self.inter_perf_csv,
+                                          self.interference_count_csv,
+                                          batch_criteria).calculate(batch_criteria)
+
+        for i in range(0, len(df.index)):
+            for c in df.columns:
+                df.loc[i, c] = 1.0 - 1.0 / math.exp(1.0 - df.loc[i, c])
+
+        return df
+
+    def generate(self, df: pd.DataFrame, batch_criteria: bc.BatchCriteria):
+        stem_path = os.path.join(self.cmdopts["collate_root"], "pm-scalability-fm")
+
+        df.to_csv(stem_path + '.csv', sep=';', index=False)
+        Heatmap(input_fpath=stem_path + '.csv',
+                output_fpath=os.path.join(self.cmdopts["graph_root"], "pm-scalability-fm.png"),
+                title="Swarm Scalability: Fractional Performance Maintenance In The Presence Of Inter-robot Interference",
+                xlabel=batch_criteria.graph_xlabel(self.cmdopts),
+                ylabel=batch_criteria.graph_ylabel(self.cmdopts),
+                xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
+                ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)).generate()
+
+
+class KarpFlattBivar:
+    """
+    Calculates the scalability of the swarm configuration across a bivariate batched set of
+    experiments within the same scenario from collated ``.csv`` data using the Karp-Flatt metric
+    (See :func:`calc_karpflatt`).
+
+    Only valid if one of the batch criteria was :class:`~variables.population_size.PopulationSize`
+    derived.
+
+    """
+
+    def __init__(self, cmdopts, inter_perf_csv) -> None:
+        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
+        # are generated after us
+        self.cmdopts = copy.deepcopy(cmdopts)
+        self.inter_perf_csv = inter_perf_csv
+
+    def calculate(self, batch_criteria):
+        # Projective performance does not cover exp0, so we have to get the right column name from
+        # the performance .csv again so we can add it to the Karp-Flatt dataframe.
+        path = os.path.join(self.cmdopts["collate_root"], self.inter_perf_csv)
+        columns = pd.read_csv(path, sep=';').columns
+        projection = common.ProjectivePerformanceCalculatorUnivar(self.cmdopts,
+                                                                  self.inter_perf_csv,
+                                                                  "positive")(batch_criteria)
+        df = pd.DataFrame(columns=columns, index=[0])
+        df[projection.columns] = projection[projection.columns]
+
+        sizes = batch_criteria.populations(self.cmdopts)
+
+        for i in range(0, len(df.index)):
+            for j in range(0, len(df.columns)):
+                proj_x = df.iloc[i, j]
+
+                # We need to know which of the 2 variables was swarm size, in order to determine
+                # the correct dimension along which to compute the metric, which depends on
+                # performance between adjacent swarm sizes.
+                if isinstance(batch_criteria.criteria1, ps.PopulationSize):
+                    n_robots_x = sizes[i + 1][j]
+                else:
+                    n_robots_x = sizes[i][j + 1]
+
+                df.iloc[i, j] = calc_karpflatt(proj_x, n_robots_x)
+
+        return df
+
+    def generate(self, df, batch_criteria):
+        stem_path = os.path.join(self.cmdopts["collate_root"], "pm-karpflatt")
+        df.to_csv(stem_path + ".csv", sep=';', index=False)
+
+        Heatmap(input_fpath=stem_path + '.csv',
+                output_fpath=os.path.join(self.cmdopts["graph_root"], "pm-karpflatt.png"),
+                title="Swarm Serial Fraction: Karp-Flatt Metric",
+                xlabel=batch_criteria.graph_xlabel(self.cmdopts),
+                ylabel=batch_criteria.graph_ylabel(self.cmdopts),
+                xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
+                ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)[1:]).generate()
+
+
+class ScalabilityBivarGenerator:
+    """
+    Calculates the scalability of the swarm configuration across a bivariate batched set of
+    experiments within the same scenario from collated .csv data in various ways.
+    """
+
+    def __call__(self,
+                 inter_perf_csv: str,
+                 interference_count_csv: str,
+                 interference_duration_csv: str,
+                 cmdopts: dict,
+                 batch_criteria: bc.BivarBatchCriteria):
+        logging.info("Bivariate scalability from %s", cmdopts["collate_root"])
+
+        e = NormalizedEfficiencyBivar(cmdopts, inter_perf_csv)
+        e.generate(e.calculate(batch_criteria), batch_criteria)
+
+        i = InterRobotInterferenceBivar(cmdopts,
+                                        interference_count_csv,
+                                        interference_duration_csv)
+        i.generate(batch_criteria)
+
+        f = FractionalMaintenanceBivar(cmdopts, inter_perf_csv, interference_count_csv)
+        f.generate(f.calculate(batch_criteria), batch_criteria)
+
+        k = KarpFlattBivar(cmdopts, inter_perf_csv)
+        k.generate(k.calculate(batch_criteria), batch_criteria)
+
+
+################################################################################
+# Calculation Functions
+################################################################################
+
+def calc_karpflatt(speedup: float, n_robots: int):
+    """
+    Given a swarm exhibiting speedup :math:`X` with N robots(N > 1), compute the serial fraction
+    :math:`e` of the swarm's performance. The lower the value of :math:`e`, the better the
+    parallelization/scalability, suggesting that the addition of more robots will bring additional
+    performance improvements:
+
+    .. math::
+        e = \frac{\frac{1}{X} - \frac{1}{N}}{1 - \frac{1}{N}}
+
+    Defined for swarms with N > 1 robots. For N=1, we obtain a Karp-Flatt value of 1.0 using
+    L'Hospital's rule and taking the derivative with respect to N (1 - 1/N is giving the problem
+    after all).
+
+    From :xref:`Harwell2019`.
+    """
+    if n_robots > 1:
+        return (1.0 / speedup - 1.0 / float(n_robots)) / (1 - 1.0 / float(n_robots))
+    else:
+        return 1.0
+
+
+def calc_efficiency(perf_i: float, n_robots_i: int):
+    """
+    Calculate for per-robot efficiency.
+
+    .. math::
+       E = \frac{P(N)}{N}
+
+    Where :math:`P(N)` is an arbitrary performance measure, evaluated on a swarm of size :math:`N`.
+
+    From :xref:`Hecker2015`.
+    """
+    return perf_i / float(n_robots_i)

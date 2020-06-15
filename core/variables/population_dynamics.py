@@ -104,7 +104,7 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
                  main_config: tp.Dict[str, str],
                  batch_generation_root: str,
                  dynamics_types: tp.List[tp.Tuple[str, int]],
-                 dynamics: tp.List[tp.Tuple[str, int]]):
+                 dynamics: tp.List[tp.Tuple[str, int]]) -> None:
         bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
         self.dynamics_types = dynamics_types
         self.dynamics = dynamics
@@ -115,9 +115,12 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
         """
         # Note the # of decimal places used--these rates can get pretty small, and we do NOT want to
         # round/truncate unecessarily, because that can change behavior in statistical equilibrium.
-        dynamics = [{(".//temporal_variance/population_dynamics",
-                      t[0],
-                      str('%3.9f' % t[1])) for t in d} for d in self.dynamics]
+
+        dynamics = []  # type: list
+        for d in dynamics:
+            dynamics.append({(".//temporal_variance/population_dynamics",
+                              t[0],
+                              str('%3.9f' % t[1])) for t in d})
         return dynamics
 
     def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> list:
@@ -144,8 +147,10 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
         else:
             return ticks
 
-    def graph_xticklabels(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[float]:
-        return self.graph_xticks(cmdopts, exp_dirs)
+    def graph_xticklabels(self,
+                          cmdopts: tp.Dict[str, str],
+                          exp_dirs: list = None) -> tp.List[str]:
+        return list(map(str, self.graph_xticks(cmdopts, exp_dirs)))
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
         return "Average Fraction of Time Robots Allocated To Task"
@@ -200,7 +205,10 @@ class PopulationDynamicsParser():
     """
 
     def __call__(self, criteria_str) -> dict:
-        ret = {}
+        ret = {
+            'dynamics': list(),
+            'factor': float()
+        }
 
         # Parse cardinality
         res = re.search(r".C[0-9]+", criteria_str)
@@ -264,7 +272,7 @@ def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_generation_root:
                           for d in attr['dynamics']} for x in range(0, attr['cardinality'])])
         return dynamics
 
-    def __init__(self):
+    def __init__(self) -> None:
         PopulationDynamics.__init__(self,
                                     cli_arg,
                                     main_config,

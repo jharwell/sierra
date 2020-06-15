@@ -18,6 +18,7 @@ import re
 import typing as tp
 from core.variables import batch_criteria as bc
 from core.variables.arena_shape import RectangularArena
+from core.utils import ArenaExtent
 
 
 class ConstantDensity(bc.UnivarBatchCriteria):
@@ -43,8 +44,8 @@ class ConstantDensity(bc.UnivarBatchCriteria):
                  main_config: tp.Dict[str, str],
                  batch_generation_root: str,
                  target_density: float,
-                 dimensions: tp.List[tuple],
-                 dist_type: str):
+                 dimensions: tp.List[ArenaExtent],
+                 dist_type: str) -> None:
         bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
         self.target_density = target_density
         self.dimensions = dimensions
@@ -75,8 +76,7 @@ class ConstantDensity(bc.UnivarBatchCriteria):
         starting arena dimensions), and the correct arena dimensions for a given exp must be found
         via lookup with THIS function).
         """
-        dims = map(str, list(self.dimensions[exp_num]))
-        return self.dist_type + '.' + 'x'.join(dims)
+        return self.dist_type + '.' + 'x'.join(str(self.dimensions[exp_num]))
 
 
 class ConstantDensityParser():

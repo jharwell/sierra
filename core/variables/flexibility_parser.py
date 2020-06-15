@@ -16,7 +16,6 @@
 
 
 import re
-import typing as tp
 
 
 class FlexibilityParser():
@@ -27,7 +26,7 @@ class FlexibilityParser():
 
     """
 
-    def __call__(self, criteria_str: str) -> tp.Dict[str, str]:
+    def __call__(self, criteria_str: str) -> dict:
         """
         Returns:
             Dictionary with the following keys:
@@ -39,7 +38,14 @@ class FlexibilityParser():
                 - population: Swarm size to use (optional)
 
         """
-        ret = {}
+        ret = {
+            'variance_type': "",
+            'xml_parent_path': "",
+            'variance_csv_col': "",
+            'waveform_type': "",
+            'waveform_param': "",
+            'population': 0
+        }
         xml_parent = {
             'BC': './/env_dynamics/blocks/carry_throttle',
             'BM': './/env_dynamics/blocks/manipulation_penalty',
@@ -51,20 +57,23 @@ class FlexibilityParser():
         # Parse variance type
         res = re.search("BC|BM", criteria_str)
         assert res is not None, "FATAL: Bad variance type in criteria '{0}'".format(criteria_str)
-        ret['variance_type'] = res.group(0)
-        ret['xml_parent_path'] = xml_parent[ret['variance_type']]
-        ret['variance_csv_col'] = variance_col[ret['variance_type']]
+        variance_type = str(res.group(0))
+        ret['variance_type'] = variance_type
+        ret['xml_parent_path'] = xml_parent[variance_type]
+        ret['variance_csv_col'] = variance_col[variance_type]
 
         # Parse waveform type
         res = re.search("Sine|Square|Sawtooth|Step[UD]|Constant", criteria_str)
         assert res is not None, "FATAL: Bad waveform type in criteria '{0}'".format(criteria_str)
-        ret['waveform_type'] = res.group(0)
+        waveform_type = str(res.group(0))
 
-        if 'Step' in ret['waveform_type']:
+        if 'Step' in waveform_type:
             res = re.search("Step[UD][0-9]+", criteria_str)
-            assert res is not None, "FATAL: Bad step specification type in criteria '{0}'".format(
-                criteria_str)
+            assert res is not None, \
+                "FATAL: Bad step specification type in criteria '{0}'".format(
+                    criteria_str)
             ret['waveform_param'] = int(res.group(0)[5:])
+        ret['waveform_type'] = waveform_type
 
         # Parse swarm size (optional)
         res = re.search(r"\.Z[0-9]+", criteria_str)

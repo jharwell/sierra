@@ -29,7 +29,7 @@ class UnivarCSVCollator:
 
     """
 
-    def __init__(self, main_config, cmdopts):
+    def __init__(self, main_config, cmdopts) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
 
@@ -132,7 +132,7 @@ class BivarCSVCollator:
 
     """
 
-    def __init__(self, main_config, cmdopts):
+    def __init__(self, main_config, cmdopts) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
 

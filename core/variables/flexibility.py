@@ -34,9 +34,11 @@ The frequency, amplitude, offset, and phase of the waveforms is set via the main
 file (not an easy way to specify ranges in a single batch criteria definition string). The relevant
 section is shown below.
 
-.. code-block:: yaml
+.. _flexibility-main-config:
 
-   sierra:
+.. code-block:: YAML
+
+   perf:
      ...
      flexibility:
        # The range of Hz to use for generated waveforms. Applies to Sine, Sawtooth, Square
@@ -112,7 +114,7 @@ class Flexibility(UnivarBatchCriteria):
                  main_config: tp.Dict[str, str],
                  batch_generation_root: str,
                  variances: list,
-                 population: int):
+                 population: int) -> None:
         UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
 
         self.variances = variances
@@ -161,15 +163,15 @@ class Flexibility(UnivarBatchCriteria):
 
         # zeroth element is the distance to ideal conditions for exp0, which is by definition ideal
         # conditions, so the distance is 0.
-        ret = [0]
+        ret = [0.0]
         ret.extend([vcs.EnvironmentalCS(self.main_config, cmdopts, x)(self, exp_dirs)
                     for x in range(1, m)])
         return ret
 
     def graph_xticklabels(self,
                           cmdopts: tp.Dict[str, str],
-                          exp_dirs: tp.List[str] = None) -> tp.List[float]:
-        return self.graph_xticks(cmdopts, exp_dirs)
+                          exp_dirs: tp.List[str] = None) -> tp.List[str]:
+        return list(map(str, self.graph_xticks(cmdopts, exp_dirs)))
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
         return vcs.method_xlabel(cmdopts["envc_cs_method"])
@@ -189,7 +191,7 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
     """
     attr = FlexibilityParser()(cli_arg)
 
-    def gen_variances(attr: tp.Dict[str, str]):
+    def gen_variances(attr: dict):
 
         amps = main_config['sierra']['flexibility'][attr['variance_type'] + '_amp']
         hzs = main_config['sierra']['flexibility']['hz']
@@ -200,8 +202,8 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
                       "Constant",
                       hzs[0],
                       amps[0],
-                      0,
-                      0)]
+                      0.0,
+                      0.0)]
 
         if any(v == attr["waveform_type"] for v in ["Sine", "Square", "Sawtooth"]):
             variances.extend([(attr["xml_parent_path"],
@@ -227,7 +229,7 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
                                math.pi) for amp in amps[1:]])
         return variances
 
-    def __init__(self):
+    def __init__(self) -> None:
         Flexibility.__init__(self,
                              cli_arg,
                              main_config,

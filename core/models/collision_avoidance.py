@@ -37,7 +37,7 @@ class CAModelEnter:
       robot_av_vel(float): Average robot velocity.
     """
 
-    def __init__(self, batch_generation_root):
+    def __init__(self, batch_generation_root) -> None:
         self.robot_prox_radius = FootbotModel.kRobotProxRadius
         self.robot_av_vel = FootbotModel.kRobotAvgVelocity
         self.batch_generation_root = batch_generation_root

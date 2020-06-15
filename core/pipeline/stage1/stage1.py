@@ -34,7 +34,7 @@ class PipelineStage1:
 
     """
 
-    def __init__(self, controller, scenario, batch_criteria, cmdopts):
+    def __init__(self, controller, scenario, batch_criteria, cmdopts) -> None:
         self.generator = BatchedExpDefGenerator(batch_config_template=cmdopts['template_input_file'],
                                                 controller_name=controller,
                                                 scenario_basename=scenario,

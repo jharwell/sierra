@@ -55,8 +55,8 @@ class BlockConstantDensity(cd.ConstantDensity):
                  main_config: tp.Dict[str, str],
                  batch_generation_root: str,
                  target_density: float,
-                 dimensions: tp.List[tuple],
-                 dist_type: str):
+                 dimensions: tp.List[core.utils.ArenaExtent],
+                 dist_type: str) -> None:
         cd.ConstantDensity.__init__(self,
                                     cli_arg,
                                     main_config,
@@ -73,8 +73,8 @@ class BlockConstantDensity(cd.ConstantDensity):
         for changeset in self.changes:
             for c in changeset:
                 if c[0] == ".//arena" and c[1] == "size":
-                    x, y, z = c[2].split(',')
-                    n_blocks = max(1, (int(x) * int(y)) * (self.target_density / 100.0))
+                    extent = core.utils.ArenaExtent((c[2].split(',')))
+                    n_blocks = max(1, (extent.x() * extent.y()) * (self.target_density / 100.0))
                     changeset.add((".//arena_map/blocks/distribution/manifest",
                                    "n_cube", "{0}".format(int(n_blocks / 2.0))))
                     changeset.add((".//arena_map/blocks/distribution/manifest",
@@ -87,7 +87,9 @@ class BlockConstantDensity(cd.ConstantDensity):
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
-    def graph_xticks(self, cmdopts: tp.Dict[str, str], exp_dirs) -> tp.List[float]:
+    def graph_xticks(self,
+                     cmdopts: tp.Dict[str, str],
+                     exp_dirs: list = None) -> tp.List[float]:
         if exp_dirs is not None:
             dirs = exp_dirs
         else:
@@ -99,13 +101,15 @@ class BlockConstantDensity(cd.ConstantDensity):
                                         d,
                                         "exp_def.pkl")
             exp_def = core.utils.unpickle_exp_def(pickle_fpath)
-            for e in exp_def:
-                if e[0] == ".//arena" and e[1] == "size":
-                    x, y, z = e[2].split(",")
-                    areas.append(int(x) * int(y))
+            for path, attr, value in exp_def:
+                if path == ".//arena" and attr == "size":
+                    extent = core.utils.ArenaExtent((value.split(",")))
+                    areas.append(float((extent.x() * extent.y())))
         return areas
 
-    def graph_xticklabels(self, cmdopts: tp.Dict[str, str], exp_dirs) -> tp.List[float]:
+    def graph_xticklabels(self,
+                          cmdopts: tp.Dict[str, str],
+                          exp_dirs: list = None) -> tp.List[str]:
         return [str(x) + r' $m^2$' for x in self.graph_xticks(cmdopts, exp_dirs)]
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
@@ -128,22 +132,20 @@ def factory(cli_arg: str, main_config:
     kw = sgp.ScenarioGeneratorParser.reparse_str(kwargs['scenario'])
 
     if kw['dist_type'] == "SS" or kw['dist_type'] == "DS":
-        dims = [(x, int(x / 2)) for x in range(kw['arena_x'],
-                                               kw['arena_x'] +
-                                               BlockConstantDensity.kExperimentsPerDensity *
-                                               attr['arena_size_inc'],
-                                               attr['arena_size_inc'])]
+        r = range(kw['arena_x'],
+                  kw['arena_x'] + BlockConstantDensity.kExperimentsPerDensity * attr['arena_size_inc'],
+                  attr['arena_size_inc'])
+        dims = [core.utils.ArenaExtent((x, int(x / 2), 0)) for x in r]
     elif kw['dist_type'] == "PL" or kw['dist_type'] == "RN":
-        dims = [(x, x) for x in range(kw['arena_x'],
-                                      kw['arena_x'] +
-                                      BlockConstantDensity.kExperimentsPerDensity *
-                                      attr['arena_size_inc'],
-                                      attr['arena_size_inc'])]
+        r = range(kw['arena_x'],
+                  kw['arena_x'] + BlockConstantDensity.kExperimentsPerDensity * attr['arena_size_inc'],
+                  attr['arena_size_inc'])
+        dims = [core.utils.ArenaExtent((x, x, 0)) for x in r]
     else:
         raise NotImplementedError(
             "Unsupported block dstribution '{0}': Only SS,DS,QS,RN supported".format(kw['dist_type']))
 
-    def __init__(self):
+    def __init__(self) -> None:
         BlockConstantDensity.__init__(self,
                                       cli_arg,
                                       main_config,

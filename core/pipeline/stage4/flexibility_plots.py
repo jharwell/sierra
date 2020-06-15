@@ -45,10 +45,10 @@ class FlexibilityPlotsCSVGenerator:
                       source of the performance waveforms to generate definitions for.
     """
 
-    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, str]):
+    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, str]) -> None:
         self.cmdopts = copy.deepcopy(cmdopts)
         self.main_config = main_config
-        self.perf_csv_col = main_config['sierra']['perf']['intra_perf_col']
+        self.perf_csv_col = main_config['perf']['intra_perf_col']
 
     def __call__(self, batch_criteria: BatchCriteria):
         tv_attr = FlexibilityParser()(batch_criteria.def_str)
@@ -70,12 +70,12 @@ class FlexibilityPlotsCSVGenerator:
         expx_perf = vcs.DataFrames.expx_perf_df(self.cmdopts,
                                                 batch_criteria,
                                                 self.main_config['sierra']['avg_output_leaf'],
-                                                self.main_config['sierra']['perf']['intra_perf_csv'],
+                                                self.main_config['perf']['intra_perf_csv'],
                                                 exp_num)[self.perf_csv_col].values
         expx_var = vcs.DataFrames.expx_var_df(self.cmdopts,
                                               batch_criteria,
                                               self.main_config['sierra']['avg_output_leaf'],
-                                              self.main_config['sierra']['perf']['tv_flexibility_csv'],
+                                              self.main_config['perf']['tv_environment_csv'],
                                               exp_num)[tv_attr['variance_csv_col']].values
         comp_expx_var = self._comparable_exp_variance(expx_var,
                                                       tv_attr,
@@ -87,22 +87,22 @@ class FlexibilityPlotsCSVGenerator:
                 'clock': vcs.DataFrames.expx_perf_df(self.cmdopts,
                                                      batch_criteria,
                                                      self.main_config['sierra']['avg_output_leaf'],
-                                                     self.main_config['sierra']['perf']['intra_perf_csv'],
+                                                     self.main_config['perf']['intra_perf_csv'],
                                                      exp_num)['clock'].values,
                 'expx_perf': vcs.DataFrames.expx_perf_df(self.cmdopts,
                                                          batch_criteria,
                                                          self.main_config['sierra']['avg_output_leaf'],
-                                                         self.main_config['sierra']['perf']['intra_perf_csv'],
+                                                         self.main_config['perf']['intra_perf_csv'],
                                                          exp_num)[self.perf_csv_col].values,
                 'expx_var': comp_expx_var,
                 'exp0_perf': vcs.DataFrames.exp0_perf_df(self.cmdopts,
                                                          batch_criteria,
                                                          self.main_config['sierra']['avg_output_leaf'],
-                                                         self.main_config['sierra']['perf']['intra_perf_csv'])[self.perf_csv_col].values,
+                                                         self.main_config['perf']['intra_perf_csv'])[self.perf_csv_col].values,
                 'exp0_var': vcs.DataFrames.exp0_var_df(self.cmdopts,
                                                        batch_criteria,
                                                        self.main_config['sierra']['avg_output_leaf'],
-                                                       self.main_config['sierra']['perf']['tv_flexibility_csv'])[tv_attr['variance_csv_col']].values,
+                                                       self.main_config['perf']['tv_environment_csv'])[tv_attr['variance_csv_col']].values,
                 'ideal_reactivity': reactivity.calc_waveforms()[0][:, 1],
                 'ideal_adaptability': adaptability.calc_waveforms()[0][:, 1]
             }

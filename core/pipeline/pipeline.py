@@ -42,7 +42,7 @@ from core.pipeline.stage5 import PipelineStage5
 class Pipeline:
     "Implements SIERRA's 5 stage pipeline."
 
-    def __init__(self, args, controller, scenario, cmdopts):
+    def __init__(self, args, controller, scenario, cmdopts) -> None:
         self.args = args
         self.cmdopts = {
             # general

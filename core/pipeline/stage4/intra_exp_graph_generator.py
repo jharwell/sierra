@@ -36,7 +36,7 @@ class BatchedIntraExpGraphGenerator:
         cmdopts: Dictionary of parsed cmdline attributes.
     """
 
-    def __init__(self, cmdopts: tp.Dict[str, str]):
+    def __init__(self, cmdopts: tp.Dict[str, str]) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
@@ -81,7 +81,7 @@ class IntraExpGraphGenerator:
                  controller_config: dict,
                  LN_config: dict,
                  HM_config: dict,
-                 cmdopts: tp.Dict[str, str]):
+                 cmdopts: tp.Dict[str, str]) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
@@ -164,7 +164,7 @@ class HeatmapsGenerator:
                  generated.
     """
 
-    def __init__(self, exp_output_root: str, exp_graph_root: str, targets: list):
+    def __init__(self, exp_output_root: str, exp_graph_root: str, targets: list) -> None:
 
         self.exp_output_root = exp_output_root
         self.exp_graph_root = exp_graph_root
@@ -197,7 +197,7 @@ class LinegraphsGenerator:
                  generated.
     """
 
-    def __init__(self, exp_output_root: str, exp_graph_root: str, targets: list):
+    def __init__(self, exp_output_root: str, exp_graph_root: str, targets: list) -> None:
 
         self.exp_output_root = exp_output_root
         self.exp_graph_root = exp_graph_root

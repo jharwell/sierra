@@ -36,7 +36,7 @@ class StackedLineGraph:
 
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
 
         self.input_csv_fpath = os.path.abspath(kwargs['input_stem_fpath']) + ".csv"
         self.input_stddev_fpath = os.path.abspath(kwargs['input_stem_fpath']) + ".stddev"

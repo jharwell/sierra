@@ -32,7 +32,7 @@ class NestPose(BaseVariable):
       extents: List of arena extents to generation nest poses for.
     """
 
-    def __init__(self, dist_type: str, extents: tp.List[ArenaExtent]):
+    def __init__(self, dist_type: str, extents: tp.List[ArenaExtent]) -> None:
         self.dist_type = dist_type
         self.extents = extents
 

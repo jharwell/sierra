@@ -51,7 +51,7 @@ class PhysicsEngines(BaseVariable):
                  n_engines: int,
                  iter_per_tick: int,
                  layout: str,
-                 extents: tp.List[ArenaExtent]):
+                 extents: tp.List[ArenaExtent]) -> None:
 
         self.engine_type = engine_type
         self.n_engines = n_engines
@@ -85,7 +85,7 @@ class PhysicsEngines(BaseVariable):
                       self.engine_type,
                       self.extents)
         if self.n_engines == 1:
-            return [self.__gen1_engines(s) for s in self.extents]
+            return [self.__gen1_engines()]
         elif self.n_engines == 4:
             return [self.__gen4_engines(s) for s in self.extents]
         elif self.n_engines == 8:
@@ -106,7 +106,7 @@ class PhysicsEngines(BaseVariable):
         Generate definitions for the specified # of 2D/3D physics engines for the specified arena
         extent.
         """
-        adds = [('.', 'physics_engines', {})]
+        adds = [('.', 'physics_engines', {})]  # type: tp.List[tuple]
 
         for i in range(0, self.n_engines):
             adds.extend(self.__gen_single_engine(i,
@@ -187,7 +187,7 @@ class PhysicsEngines(BaseVariable):
                          "vertex", {"point": "{0}, {1}".format(v[0], v[1])}))
         return adds
 
-    def __gen1_engines(self, extent: ArenaExtent):
+    def __gen1_engines(self):
         """
         Generate definitions for 1 2D or 3D physics engine for the specified extents.
 
@@ -302,7 +302,7 @@ class PhysicsEngines2D(PhysicsEngines):
                  n_engines: int,
                  iter_per_tick: int,
                  layout: str,
-                 extents: tp.List[ArenaExtent]):
+                 extents: tp.List[ArenaExtent]) -> None:
         PhysicsEngines.__init__(self,
                                 engine_type,
                                 n_engines,
@@ -321,7 +321,7 @@ class PhysicsEngines3D(PhysicsEngines):
                  n_engines: int,
                  iter_per_tick: int,
                  layout: str,
-                 extents: tp.List[ArenaExtent]):
+                 extents: tp.List[ArenaExtent]) -> None:
         PhysicsEngines.__init__(self,
                                 engine_type,
                                 n_engines,

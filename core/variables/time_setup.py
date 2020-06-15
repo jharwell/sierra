@@ -58,7 +58,7 @@ class TimeSetup(BaseVariable):
         metric_interval: Base interval for metric collection.
     """
 
-    def __init__(self, sim_duration: int, metric_interval: int):
+    def __init__(self, sim_duration: int, metric_interval: int) -> None:
         self.sim_duration = sim_duration
         self.metric_interval = metric_interval
 
@@ -80,7 +80,7 @@ class TimeSetup(BaseVariable):
 
 
 class TInterval(TimeSetup):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(int(1000 / kTICKS_PER_SECOND), int(1000 / k1D_DATA_POINTS))
 
 
@@ -128,7 +128,7 @@ def factory(time_str: str):
     """
     attr = TimeSetupParser()(time_str.split(".")[1])
 
-    def __init__(self):
+    def __init__(self) -> None:
         TimeSetup.__init__(self,
                            attr["sim_duration"],
                            int(attr["sim_duration"] * kTICKS_PER_SECOND / attr["n_datapoints"]))

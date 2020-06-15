@@ -21,11 +21,10 @@ import logging
 
 import numpy as np
 import sympy
-from scipy import stats
 import pandas as pd
+import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 
 
 class Scatterplot2D:
@@ -35,7 +34,7 @@ class Scatterplot2D:
     If the necessary `.csv` file does not exist, the graph is not generated.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
 
         self.input_csv_fpath = os.path.abspath(kwargs['input_csv_fpath'])
         self.output_fpath = kwargs['output_fpath']

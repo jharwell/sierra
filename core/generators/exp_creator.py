@@ -20,7 +20,6 @@ Experiment creation classes, taking an experiment definition `generated` by clas
 
 import os
 import random
-import typing as tp
 import logging
 
 from core.xml_luigi import XMLLuigi
@@ -45,7 +44,7 @@ class SimDefUniqueGenerator:
                  sim_num: int,
                  exp_output_root: str,
                  sim_output_dir: str,
-                 cmdopts: tp.Dict[str, str]):
+                 cmdopts: dict) -> None:
 
         self.exp_output_root = exp_output_root
         self.sim_output_dir = sim_output_dir
@@ -114,7 +113,7 @@ class ExpCreator:
                  template_input_file: str,
                  exp_generation_root: str,
                  exp_output_root: str,
-                 cmdopts: tp.Dict[str, str]):
+                 cmdopts: dict) -> None:
 
         # will get the main name and extension of the config file (without the full absolute path)
         self.main_input_name, self.main_input_extension = os.path.splitext(
@@ -248,7 +247,7 @@ class BatchedExpCreator:
                  batch_generation_root: str,
                  batch_output_root: str,
                  criteria: bc.BatchCriteria,
-                 cmdopts: tp.Dict[str, str]):
+                 cmdopts: dict) -> None:
 
         self.batch_config_template = batch_config_template
         self.batch_config_leaf, _ = os.path.splitext(
@@ -260,8 +259,6 @@ class BatchedExpCreator:
         self.cmdopts = cmdopts
 
     def create(self, generator):
-        """
-        """
         os.makedirs(self.batch_generation_root, exist_ok=True)
 
         # Scaffold the batched experiment, creating experiment directories and writing template XML

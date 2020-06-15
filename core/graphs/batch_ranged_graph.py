@@ -51,7 +51,7 @@ class BatchRangedGraph:
     # Maximum # of rows that the input .csv to guarantee unique colors
     kMaxRows = 8
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         self.inputy_csv_fpath = os.path.abspath(kwargs['inputy_stem_fpath'] + '.csv')
         self.inputy_stddev_fpath = os.path.abspath(kwargs['inputy_stem_fpath'] + '.stddev')
         self.output_fpath = os.path.abspath(kwargs['output_fpath'])

@@ -34,7 +34,7 @@ class BootstrapCmdline:
     needed to load the project plugin.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.parser = argparse.ArgumentParser(prog='sierra',
                                               formatter_class=HelpFormatter)
 
@@ -72,9 +72,7 @@ class CoreCmdline:
         stage3: Cmdline arguments specific to stage3.
         stage4: Cmdline arguments specific to stage4.
         stage5: Cmdline arguments specific to stage5.
-        """
 
-    """
     Define the cmdline arguments.
 
     Arguments:
@@ -82,7 +80,7 @@ class CoreCmdline:
                        perform scaffolding. Used to correctly generate sphinx docs.
     """
 
-    def __init__(self, scaffold_only: bool = False):
+    def __init__(self, scaffold_only: bool = False) -> None:
         self.parser = argparse.ArgumentParser(prog='SIERRA',
                                               formatter_class=HelpFormatter)
         self.stage1 = self.parser.add_argument_group(
@@ -689,20 +687,20 @@ class CoreCmdline:
                                help="""
 
                                Plugins can generate ``.csv`` files residing in subdirectories within the the
-                               ``<metrics_leaf>`` directory (directory path set on a per ``--plugin`` basis) for each
-                               ARGoS simulation, in addition to generating ``.csv`` files residing directly in the
-                               ``<metrics_leaf>`` directory. If this option is passed, then the ``.csv`` files residing
-                               each subdirectory under the ``<metrics_leaf>`` directory(no recursive nesting is allowed)
-                               in each simulation are treated as snapshots of 2D or 3D data over time, and will be
-                               averaged together across simulations and then turn into image files suitable for video
-                               rendering in stage 4. The following restrictions apply:
+                               ``<sim_metrics_leaf>`` directory (directory path set on a per ``--plugin`` basis) for
+                               each ARGoS simulation, in addition to generating ``.csv`` files residing directly in the
+                               ``<sim_metrics_leaf>`` directory. If this option is passed, then the ``.csv`` files
+                               residing each subdirectory under the ``<sim_metrics_leaf>`` directory(no recursive
+                               nesting is allowed) in each simulation are treated as snapshots of 2D or 3D data over
+                               time, and will be averaged together across simulations and then turn into image files
+                               suitable for video rendering in stage 4. The following restrictions apply:
 
                                - A common stem with a unique numeric ID is required for each ``.csv`` must be present
                                  for each ``.csv``.
 
-                               - The directory name within ``<metrics_leaf>`` must be the same as the stem for each
+                               - The directory name within ``<sim_metrics_leaf>`` must be the same as the stem for each
                                  ``.csv`` file in that directory. For example, if the directory name was
-                                 ``swarm-distribution`` under ``<metrics_leaf>`` then all ``.csv`` files within that
+                                 ``swarm-distribution`` under ``<sim_metrics_leaf>`` then all ``.csv`` files within that
                                  directory must be named according to
                                  ``swarm-distribution/swarm-distributionXXXXX.csv``, where XXXXX is any length numeric
                                  prefix (possibly preceded by an underscore or dash).
@@ -846,7 +844,7 @@ class CoreCmdline:
 
 
 class HPCEnvInheritor():
-    def __init__(self, env_type):
+    def __init__(self, env_type) -> None:
         self.env_type = env_type
         self.environs = ['mesabi', 'mangi']
 

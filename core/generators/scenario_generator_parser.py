@@ -35,7 +35,7 @@ class ScenarioGeneratorParser:
         if the user is only running stage [4,5], and is not an error. In that case, None is returned.
     """
 
-    def __init__(self, args):
+    def __init__(self, args) -> None:
         self.args = args
         self.scenario = None
 

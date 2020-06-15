@@ -43,7 +43,7 @@ class InterExpGraphGenerator:
 
     """
 
-    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, str], targets: dict):
+    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, str], targets: dict) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
@@ -73,9 +73,9 @@ class InterExpGraphGenerator:
         """
 
         if batch_criteria.is_univar():
-            # LinegraphsGenerator(self.cmdopts["collate_root"],
-            #                     self.cmdopts["graph_root"],
-            #                     self.targets).generate()
+            LinegraphsGenerator(self.cmdopts["collate_root"],
+                                self.cmdopts["graph_root"],
+                                self.targets).generate()
             UnivarPerfMeasuresGenerator(self.main_config, self.cmdopts)(batch_criteria)
         else:
             BivarPerfMeasuresGenerator(self.main_config, self.cmdopts)(batch_criteria)
@@ -91,7 +91,7 @@ class LinegraphsGenerator:
       targets: Dictionary of parsed YAML configuration controlling what graphs should be generated.
     """
 
-    def __init__(self, collate_root: str, graph_root: str, targets: dict):
+    def __init__(self, collate_root: str, graph_root: str, targets: dict) -> None:
         self.collate_root = collate_root
         self.graph_root = graph_root
         self.targets = targets
@@ -127,7 +127,7 @@ class UnivarPerfMeasuresGenerator:
         main_config: Dictionary of parsed main YAML config.
     """
 
-    def __init__(self, main_config, cmdopts):
+    def __init__(self, main_config, cmdopts) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
@@ -136,29 +136,31 @@ class UnivarPerfMeasuresGenerator:
     def __call__(self, batch_criteria):
         if batch_criteria.pm_query('blocks-transported'):
             pmbc.BlockCollectionUnivar(self.cmdopts,
-                                       self.main_config['sierra']['perf']['inter_perf_csv']).generate(batch_criteria)
-            if batch_criteria.pm_query('scalability'):
-                pms.ScalabilityUnivarGenerator()(self.main_config['sierra']['perf']['inter_perf_csv'],
-                                                 self.main_config['sierra']['perf']['ca_in_csv'],
-                                                 self.cmdopts,
-                                                 batch_criteria)
+                                       self.main_config['perf']['inter_perf_csv']).generate(batch_criteria)
+        if batch_criteria.pm_query('scalability'):
+            pms.ScalabilityUnivarGenerator()(self.main_config['perf']['inter_perf_csv'],
+                                             self.main_config['perf']['interference_count_csv'],
+                                             self.main_config['perf']['interference_duration_csv'],
+                                             self.cmdopts,
+                                             batch_criteria)
 
-            if batch_criteria.pm_query('self-org'):
-                pmso.SelfOrganizationFLUnivar(self.cmdopts,
-                                              self.main_config['sierra']['perf']['inter_perf_csv'],
-                                              self.main_config['sierra']['perf']['ca_in_csv']).generate(batch_criteria)
+        if batch_criteria.pm_query('self-org'):
+            pmso.SelfOrgUnivarGenerator()(self.main_config['perf']['inter_perf_csv'],
+                                          self.main_config['perf']['interference_count_csv'],
+                                          self.cmdopts,
+                                          batch_criteria)
 
-            if batch_criteria.pm_query('reactivity'):
-                pmr.ReactivityUnivar(self.cmdopts).generate(self.main_config, batch_criteria)
+        if batch_criteria.pm_query('reactivity'):
+            pmr.ReactivityUnivar(self.cmdopts).generate(self.main_config, batch_criteria)
 
-            if batch_criteria.pm_query('adaptability'):
-                pma.AdaptabilityUnivar(self.cmdopts).generate(self.main_config, batch_criteria)
+        if batch_criteria.pm_query('adaptability'):
+            pma.AdaptabilityUnivar(self.cmdopts).generate(self.main_config, batch_criteria)
 
-            if batch_criteria.pm_query('robustness-saa'):
-                pmb.RobustnessSAAUnivar(self.cmdopts).generate(self.main_config, batch_criteria)
+        if batch_criteria.pm_query('robustness-saa'):
+            pmb.RobustnessSAAUnivar(self.cmdopts).generate(self.main_config, batch_criteria)
 
-            if batch_criteria.pm_query('robustness-size'):
-                pmb.RobustnessSizeUnivar(self.cmdopts).generate(self.main_config, batch_criteria)
+        if batch_criteria.pm_query('robustness-size'):
+            pmb.RobustnessSizeUnivar(self.cmdopts).generate(self.main_config, batch_criteria)
 
 
 class BivarPerfMeasuresGenerator:
@@ -172,7 +174,7 @@ class BivarPerfMeasuresGenerator:
         main_config: Dictionary of parsed main YAML config.
     """
 
-    def __init__(self, main_config, cmdopts):
+    def __init__(self, main_config, cmdopts) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
@@ -181,18 +183,20 @@ class BivarPerfMeasuresGenerator:
     def __call__(self, batch_criteria):
         if batch_criteria.pm_query('blocks-transported'):
             pmbc.BlockCollectionBivar(self.cmdopts,
-                                      self.main_config['sierra']['perf']['inter_perf_csv']).generate(batch_criteria)
+                                      self.main_config['perf']['inter_perf_csv']).generate(batch_criteria)
 
         if batch_criteria.pm_query('scalability'):
-            pms.ScalabilityBivarGenerator()(self.main_config['sierra']['perf']['inter_perf_csv'],
-                                            self.main_config['sierra']['perf']['ca_in_csv'],
+            pms.ScalabilityBivarGenerator()(self.main_config['perf']['inter_perf_csv'],
+                                            self.main_config['perf']['interference_count_csv'],
+                                            self.main_config['perf']['interference_duration_csv'],
                                             self.cmdopts,
                                             batch_criteria)
 
         if batch_criteria.pm_query('self-org'):
-            pmso.SelfOrganizationFLBivar(self.cmdopts,
-                                         self.main_config['sierra']['perf']['inter_perf_csv'],
-                                         self.main_config['sierra']['perf']['ca_in_csv']).generate(batch_criteria)
+            pmso.SelfOrgBivarGenerator()(self.main_config['perf']['inter_perf_csv'],
+                                         self.main_config['perf']['interference_count_csv'],
+                                         self.cmdopts,
+                                         batch_criteria)
 
         if batch_criteria.pm_query('reactivity'):
             pmr.ReactivityBivar(self.cmdopts).generate(self.main_config, batch_criteria)
@@ -203,8 +207,8 @@ class BivarPerfMeasuresGenerator:
 
         if batch_criteria.pm_query('robustness-saa'):
             pmb.RobustnessSAABivar(self.cmdopts,
-                                   self.main_config['sierra']['perf']['inter_perf_csv']).generate(self.main_config,
-                                                                                                  batch_criteria)
+                                   self.main_config['perf']['inter_perf_csv']).generate(self.main_config,
+                                                                                        batch_criteria)
         if batch_criteria.pm_query('robustness-size'):
             pmb.RobustnessSizeBivar(self.cmdopts,
-                                    self.main_config['sierra']['perf']['inter_perf_csv']).generate(batch_criteria)
+                                    self.main_config['perf']['inter_perf_csv']).generate(batch_criteria)

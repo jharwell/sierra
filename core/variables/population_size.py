@@ -54,7 +54,7 @@ class PopulationSize(bc.UnivarBatchCriteria):
                  cli_arg: str,
                  main_config: tp.Dict[str, str],
                  batch_generation_root: str,
-                 size_list: tp.List[str]):
+                 size_list: tp.List[int]) -> None:
         bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
         self.size_list = size_list
 
@@ -75,16 +75,20 @@ class PopulationSize(bc.UnivarBatchCriteria):
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
-    def graph_xticks(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[float]:
-        ret = self.populations(cmdopts, exp_dirs)
+    def graph_xticks(self,
+                     cmdopts: tp.Dict[str, str],
+                     exp_dirs: list = None) -> tp.List[float]:
 
+        ret = list(map(float, self.populations(cmdopts, exp_dirs)))
         if cmdopts['plot_log_xaxis']:
             return [math.log2(x) for x in ret]
         else:
             return ret
 
-    def graph_xticklabels(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[float]:
-        return self.graph_xticks(cmdopts, exp_dirs)
+    def graph_xticklabels(self,
+                          cmdopts: tp.Dict[str, str],
+                          exp_dirs: list = None) -> tp.List[str]:
+        return list(map(str, self.graph_xticks(cmdopts, exp_dirs)))
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
         return "Swarm Size"
@@ -135,8 +139,10 @@ def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_generation_root:
             return [attr["linear_increment"] * x for x in range(1, 11)]
         elif attr["increment_type"] == 'Log':
             return [2 ** x for x in range(0, int(math.log2(attr["max_size"])) + 1)]
+        else:
+            return None
 
-    def __init__(self):
+    def __init__(self) -> None:
         PopulationSize.__init__(self,
                                 cli_arg,
                                 main_config,

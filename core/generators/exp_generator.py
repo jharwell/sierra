@@ -31,6 +31,7 @@ from core.variables import constant_density
 import core.generators.generator_factory as gf
 import core.generators.scenario_generator_parser as sgp
 import core.xml_luigi
+from core.utils import ArenaExtent
 
 
 class ExpDefCommonGenerator:
@@ -55,7 +56,7 @@ class ExpDefCommonGenerator:
     def __init__(self,
                  template_input_file: str,
                  exp_def_fpath: str,
-                 cmdopts: tp.Dict[str, str]):
+                 cmdopts: dict) -> None:
 
         self.template_input_file = os.path.abspath(template_input_file)
         self.cmdopts = cmdopts
@@ -199,7 +200,7 @@ class BatchedExpDefGenerator:
                  criteria: bc.BatchCriteria,
                  controller_name: str,
                  scenario_basename: str,
-                 cmdopts: tp.Dict[str, str]):
+                 cmdopts: dict) -> None:
         assert os.path.isfile(
             batch_config_template), \
             "The path '{}' (which should point to the main config file) did not point to a file".format(
@@ -247,14 +248,19 @@ class BatchedExpDefGenerator:
         Arguments:
             exp_num: Experiment number in the batch
         """
+        from_bivar_bc1 = False
+        from_bivar_bc2 = False
+        from_univar_bc = False
+
+        if self.criteria.is_bivar():
+            bivar = tp.cast(bc.BivarBatchCriteria, self.criteria)
+            from_bivar_bc1 = isinstance(bivar.criteria1, constant_density.ConstantDensity)
+            from_bivar_bc2 = isinstance(bivar.criteria2, constant_density.ConstantDensity)
+        else:
+            from_univar_bc = isinstance(self.criteria, constant_density.ConstantDensity)
+
         # Need to get per-experiment arena dimensions from batch criteria, as they are different
         # for each experiment
-        from_bivar_bc1 = (self.criteria.is_bivar() and isinstance(self.criteria.criteria1,
-                                                                  constant_density.ConstantDensity))
-        from_bivar_bc2 = (self.criteria.is_bivar() and isinstance(self.criteria.criteria2,
-                                                                  constant_density.ConstantDensity))
-        from_univar_bc = (self.criteria.is_univar() and isinstance(self.criteria,
-                                                                   constant_density.ConstantDensity))
         if from_univar_bc:
             self.cmdopts["arena_dim"] = self.criteria.arena_dims()[exp_num]
             eff_scenario_name = self.criteria.exp_scenario_name(exp_num)
@@ -267,7 +273,7 @@ class BatchedExpDefGenerator:
             eff_scenario_name = self.criteria.exp_scenario_name(exp_num)
         else:  # Defaultc case: scenario dimensions read from cmdline
             kw = sgp.ScenarioGeneratorParser.reparse_str(self.scenario_basename)
-            self.cmdopts["arena_dim"] = (kw['arena_x'], kw['arena_y'], kw['arena_z'])
+            self.cmdopts["arena_dim"] = ArenaExtent((kw['arena_x'], kw['arena_y'], kw['arena_z']))
             logging.debug("Read scenario dimensions %s from cmdline spec",
                           self.cmdopts['arena_dim'])
 
@@ -276,20 +282,20 @@ class BatchedExpDefGenerator:
         exp_generation_root = os.path.join(self.batch_generation_root,
                                            self.criteria.gen_exp_dirnames(self.cmdopts)[exp_num])
 
-        scenario = gf.ScenarioGeneratorfactory(controller=self.controller_name,
-                                               scenario=eff_scenario_name,
-                                               template_input_file=os.path.join(exp_generation_root,
-                                                                                self.batch_config_leaf),
-                                               exp_def_fpath=os.path.join(exp_generation_root,
-                                                                          "exp_def.pkl"),
-                                               cmdopts=self.cmdopts)
+        scenario = gf.scenario_generator_create(controller=self.controller_name,
+                                                scenario=eff_scenario_name,
+                                                template_input_file=os.path.join(exp_generation_root,
+                                                                                 self.batch_config_leaf),
+                                                exp_def_fpath=os.path.join(exp_generation_root,
+                                                                           "exp_def.pkl"),
+                                                cmdopts=self.cmdopts)
 
-        controller = gf.ControllerGeneratorfactory(controller=self.controller_name,
-                                                   config_root=self.cmdopts['plugin_config_root'],
-                                                   cmdopts=self.cmdopts)
+        controller = gf.controller_generator_create(controller=self.controller_name,
+                                                    config_root=self.cmdopts['plugin_config_root'],
+                                                    cmdopts=self.cmdopts)
 
         self.cmdopts['joint_generator'] = '+'.join([controller.__class__.__name__,
                                                     scenario.__class__.__name__])
 
-        return gf.JointGeneratorfactory(scenario=scenario,
-                                        controller=controller)
+        return gf.joint_generator_create(scenario=scenario,
+                                         controller=controller)

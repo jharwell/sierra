@@ -42,7 +42,7 @@ class PipelineStage5:
                       generation.
     """
 
-    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, str]):
+    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, str]) -> None:
         self.cmdopts = cmdopts
         self.main_config = main_config
         self.stage5_config = yaml.load(open(os.path.join(self.cmdopts['plugin_config_root'],

@@ -58,9 +58,9 @@ class BivarIntraScenarioComparator:
                  controllers: tp.List[str],
                  cc_csv_root: str,
                  cc_graph_root: str,
-                 cmdopts: tp.Dict[str, str],
+                 cmdopts: dict,
                  cli_args: dict,
-                 main_config: dict):
+                 main_config: dict) -> None:
         self.controllers = controllers
         self.cc_csv_root = cc_csv_root
         self.cc_graph_root = cc_graph_root
@@ -88,10 +88,10 @@ class BivarIntraScenarioComparator:
                 self.__compare_in_scenario(cmdopts, graph, s, legend, comp_type)
 
     def __compare_in_scenario(self,
-                              cmdopts: tp.Dict[str, str],
+                              cmdopts: dict,
                               graph: dict,
                               scenario_dir: str,
-                              legend: str,
+                              legend: tp.List[str],
                               comp_type: str):
         """
         Compares all controllers within the specified scenario, generating ``.csv`` files and graphs
@@ -111,9 +111,9 @@ class BivarIntraScenarioComparator:
             # We need to generate the root directory paths for each batched experiment
             # (which # lives inside of the scenario dir), because they are all
             # different. We need generate these paths for EACH controller, because the
-            # controller is part of the batch root.
-            paths = rdg.regen_from_exp(self.cli_args.sierra_root,
-                                       self.cli_args.plugin,
+            # controller is part of the batch root directory path.
+            paths = rdg.regen_from_exp(self.cmdopts['sierra_root'],
+                                       self.cmdopts['plugin'],
                                        self.cli_args.batch_criteria,
                                        dirs[0],
                                        controller)
@@ -152,7 +152,7 @@ class BivarIntraScenarioComparator:
     def __gen_heatmaps(self,
                        scenario: str,
                        batch_criteria: bc.UnivarBatchCriteria,
-                       cmdopts: tp.Dict[str, str],
+                       cmdopts: dict,
                        dest_stem: str,
                        title: str,
                        label: str,
@@ -179,7 +179,7 @@ class BivarIntraScenarioComparator:
     def __gen_paired_heatmaps(self,
                               scenario: str,
                               batch_criteria: bc.UnivarBatchCriteria,
-                              cmdopts: tp.Dict[str, str],
+                              cmdopts: dict,
                               dest_stem: str,
                               title: str,
                               label: str,
@@ -221,7 +221,7 @@ class BivarIntraScenarioComparator:
     def __gen_dual_heatmaps(self,
                             scenario: str,
                             batch_criteria: bc.UnivarBatchCriteria,
-                            cmdopts: tp.Dict[str, str],
+                            cmdopts: dict,
                             dest_stem: str,
                             title: str,
                             label: str,
@@ -238,7 +238,7 @@ class BivarIntraScenarioComparator:
         paths = [f for f in glob.glob(
             csv_stem_root + '*.csv') if re.search('_[0-9]+', f)]
 
-        for i in range(0, len(paths)):
+        for _ in range(0, len(paths)):
             DualHeatmap(input_stem_pattern=csv_stem_root,
                         output_fpath=os.path.join(self.cc_graph_root,
                                                   dest_stem) + '-' + scenario + ".png",
@@ -253,7 +253,7 @@ class BivarIntraScenarioComparator:
     def __gen_graph3D(self,
                       scenario: str,
                       batch_criteria: bc.UnivarBatchCriteria,
-                      cmdopts: tp.Dict[str, str],
+                      cmdopts: dict,
                       dest_stem: str,
                       title: str,
                       zlabel: str,
@@ -284,12 +284,12 @@ class BivarIntraScenarioComparator:
         """
         if 'scale' in comp_type:
             return label + ' (Scaled)'
-        elif 'diff'in comp_type == comp_type:
+        elif 'diff' in comp_type == comp_type:
             return label + ' (Difference Comparison)'
         return label
 
     def __gen_csv(self,
-                  cmdopts: tp.Dict[str, str],
+                  cmdopts: dict,
                   batch_root: str,
                   controller: str,
                   src_stem: str,
@@ -355,9 +355,9 @@ class UnivarIntraScenarioComparator:
                  controllers: tp.List[str],
                  cc_csv_root: str,
                  cc_graph_root: str,
-                 cmdopts: tp.Dict[str, str],
+                 cmdopts: dict,
                  cli_args,
-                 main_config):
+                 main_config) -> None:
         self.controllers = controllers
         self.cc_graph_root = cc_graph_root
         self.cc_csv_root = cc_csv_root
@@ -385,10 +385,10 @@ class UnivarIntraScenarioComparator:
                 self.__compare_in_scenario(cmdopts, graph, s, legend)
 
     def __compare_in_scenario(self,
-                              cmdopts: tp.Dict[str, str],
+                              cmdopts: dict,
                               graph: dict,
                               scenario: str,
-                              legend: str):
+                              legend: tp.List[str]):
         for controller in self.controllers:
             # We need to generate the root directory paths for each batched experiment
             # (which # lives inside of the scenario dir), because they are all
@@ -421,7 +421,7 @@ class UnivarIntraScenarioComparator:
     def __gen_graph(self,
                     scenario: str,
                     batch_criteria: bc.UnivarBatchCriteria,
-                    cmdopts: tp.Dict[str, str],
+                    cmdopts: dict,
                     dest_stem: str,
                     title: str,
                     label: str,
@@ -445,7 +445,7 @@ class UnivarIntraScenarioComparator:
                          legend=legend).generate()
 
     def __gen_csv(self,
-                  cmdopts: tp.Dict[str, str],
+                  cmdopts: dict,
                   scenario: str,
                   controller: str,
                   src_stem: str,

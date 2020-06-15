@@ -39,7 +39,7 @@ class BlockCollectionUnivar:
 
     """
 
-    def __init__(self, cmdopts: tp.Dict[str, str], blocks_collected_csv: str):
+    def __init__(self, cmdopts: tp.Dict[str, str], blocks_collected_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
@@ -73,8 +73,8 @@ class BlockCollectionUnivar:
         total_stddev_df = pd.read_csv(ipath, sep=';')
         cum_stddev_df = pd.DataFrame(columns=total_stddev_df.columns)
 
-        for c in cum_stddev_df.columns:
-            cum_stddev_df[c] = total_stddev_df.tail(1)[c]
+        for col in cum_stddev_df.columns:
+            cum_stddev_df[col] = total_stddev_df.tail(1)[col]
 
         cum_stddev_df.to_csv(opath, sep=';', index=False)
 
@@ -98,7 +98,7 @@ class BlockCollectionBivar:
 
     """
 
-    def __init__(self, cmdopts: tp.Dict[str, str], blocks_collected_csv: str):
+    def __init__(self, cmdopts: tp.Dict[str, str], blocks_collected_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)

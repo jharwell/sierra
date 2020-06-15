@@ -34,7 +34,7 @@ class AdaptabilityUnivar:
 
     """
 
-    def __init__(self, cmdopts: tp.Dict[str, str]):
+    def __init__(self, cmdopts: tp.Dict[str, str]) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us.
         self.cmdopts = copy.deepcopy(cmdopts)
@@ -79,5 +79,5 @@ class AdaptabilityBivar:
 
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         raise NotImplementedError

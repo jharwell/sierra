@@ -67,12 +67,12 @@ class BatchedExpVideoRenderer:
                 opts = copy.deepcopy(render_opts)
                 opts['ofile_leaf'] = 'argos.mp4'
 
-                # ARGoS render targets are in <batch_output_root>/<exp>/<sim>/<frames_leaf, for all
-                # simulations in a given experiment (which can be a lot!).
+                # ARGoS render targets are in <batch_output_root>/<exp>/<sim>/<argos_frames_leaf>,
+                # for all simulations in a given experiment (which can be a lot!).
                 for sim in os.listdir(exp_root):
                     frames_root = os.path.join(exp_root,
                                                sim,
-                                               main_config['sim']['frames_leaf'])
+                                               main_config['sim']['argos_frames_leaf'])
                     if main_config['sierra']['avg_output_leaf'] not in frames_root and \
                             main_config['sierra']['plugin_frames_leaf'] not in frames_root:
                         opts['image_dir'] = frames_root

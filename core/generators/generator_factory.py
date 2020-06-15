@@ -22,14 +22,14 @@ import yaml
 from core.xml_luigi import XMLLuigi
 
 
-def JointGeneratorfactory(controller, scenario):
+def joint_generator_create(controller, scenario):
     """
     Given a controller(generator), and a scenario(generator), construct a joint generator class
     that can be used for experiment generation.
 
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.controller = controller
         self.scenario = scenario
 
@@ -42,13 +42,13 @@ def JointGeneratorfactory(controller, scenario):
                             generate})()
 
 
-def ScenarioGeneratorfactory(scenario, controller, **kwargs):
+def scenario_generator_create(scenario, controller, **kwargs):
     """
     Creates a scenario generator using arbitrary arena dimensions and with an arbitrary
     controller.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         res = re.search('[SDQLR][SSSLN]', scenario)
         abbrev = res.group(0)
         cmdopts = kwargs['cmdopts']
@@ -72,13 +72,13 @@ def ScenarioGeneratorfactory(scenario, controller, **kwargs):
                             })(**kwargs)
 
 
-def ControllerGeneratorfactory(controller, config_root, cmdopts):
+def controller_generator_create(controller, config_root, cmdopts):
     """
     Creates a controller generator from the cmdline specification that exists in one of
     the configuration files.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.config = yaml.load(open(os.path.join(config_root, 'controllers.yaml')),
                                 yaml.FullLoader)
         self.category, self.name = controller.split('.')

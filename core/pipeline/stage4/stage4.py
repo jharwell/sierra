@@ -86,7 +86,7 @@ class PipelineStage4:
 
     """
 
-    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, str]):
+    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, str]) -> None:
         self.cmdopts = cmdopts
 
         self.main_config = main_config

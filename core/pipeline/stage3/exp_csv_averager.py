@@ -88,7 +88,7 @@ class ExpCSVAverager:
                          absolute).
     """
 
-    def __init__(self, main_config: dict, avg_opts: tp.Dict[str, str], exp_output_root: str):
+    def __init__(self, main_config: dict, avg_opts: tp.Dict[str, str], exp_output_root: str) -> None:
         self.avg_opts = avg_opts
 
         # will get the main name and extension of the config file (without the full absolute path)
@@ -100,9 +100,9 @@ class ExpCSVAverager:
         self.avgd_output_leaf = main_config['sierra']['avg_output_leaf']
         self.avgd_output_root = os.path.join(self.exp_output_root,
                                              self.avgd_output_leaf)
-        self.metrics_leaf = main_config['sim']['metrics_leaf']
+        self.sim_metrics_leaf = main_config['sim']['sim_metrics_leaf']
         self.plugin_frames_leaf = main_config['sierra']['plugin_frames_leaf']
-        self.argos_frames_leaf = main_config['sim']['frames_leaf']
+        self.argos_frames_leaf = main_config['sim']['argos_frames_leaf']
         self.videos_leaf = 'videos'
         self.plugin_imagize = avg_opts['plugin_imagizing']
 
@@ -143,7 +143,7 @@ class ExpCSVAverager:
         self.__average_csvs_within_exp(csvs)
 
     def __gather_csvs_from_sim(self, sim: str, csvs: dict):
-        csv_root = os.path.join(self.exp_output_root, sim, self.metrics_leaf)
+        csv_root = os.path.join(self.exp_output_root, sim, self.sim_metrics_leaf)
 
         # The metrics folder should contain nothing but .csv files and directories. For all
         # directories it contains, they each should contain nothing but .csv files (these are
@@ -205,12 +205,12 @@ class ExpCSVAverager:
         for exp1 in experiments:
             csv_root1 = os.path.join(self.exp_output_root,
                                      exp1,
-                                     self.metrics_leaf)
+                                     self.sim_metrics_leaf)
 
             for exp2 in experiments:
                 csv_root2 = os.path.join(self.exp_output_root,
                                          exp2,
-                                         self.metrics_leaf)
+                                         self.sim_metrics_leaf)
 
                 if not os.path.isdir(csv_root2):
                     continue
@@ -221,8 +221,8 @@ class ExpCSVAverager:
 
                     # .csvs for rendering that we don't verify (for now...)
                     if os.path.isdir(path1) or os.path.isdir(path2):
-                        logging.warning("Skipping verification metrics for rendering in %s",
-                                        path1)
+                        logging.debug("Not verifying %s: contains rendering data",
+                                      path1)
                         continue
 
                     assert (os.path.exists(path1) and os.path.exists(path2)),\

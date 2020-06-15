@@ -1,33 +1,34 @@
-LN_fsm_collision:
+LN_fsm_interference:
   graphs:
-    - src_stem: fsm-collision-counts
-      dest_stem: fsm-collision-counts
+    - src_stem: fsm-interference-counts
+      dest_stem: fsm-interference-counts
       cols:
-        - int_avg_in_avoidance
-        - cum_avg_in_avoidance
-        - int_avg_entered_avoidance
-        - cum_avg_entered_avoidance
-        - int_avg_exited_avoidance
-        - cum_avg_exited_avoidance
-      title: 'Swarm Collision Avoidance'
+        - int_avg_exp_interference
+        - cum_avg_exp_interference
+        - int_avg_entered_interference
+        - cum_avg_entered_interference
+        - int_avg_exited_interference
+        - cum_avg_exited_interference
+      title: 'Swarm Inter-Robot Interference'
       legend:
-        - 'Average # Robots Avoiding Collision (Interval)'
-        - 'Average # Robots Avoiding Collision (cumulative)'
-        - 'Average # Robots Entered Avoidance (Interval)'
-        - 'Average # Robots Entered Avoidance (cumulative)'
-        - 'Average # Robots Exited Avoidance (Interval)'
-        - 'Average # Robots Exited Avoidance (cumulative)'
+        - 'Average # Robots Experiencing Interference (Interval)'
+        - 'Average # Robots Experiencing Interference (cumulative)'
+        - 'Average # Robots Beginning Interference Encounter (Interval)'
+        - 'Average # Robots Beginning Interference Encounter (cumulative)'
+        - 'Average # Robots Ending Interference Encounter (Interval)'
+        - 'Average # Robots Ending Interference Encounter (cumulative)'
       xlabel: 'Interval'
       ylabel: '# Robots'
-    - src_stem: fsm-collision
-      dest_stem: fsm-collision-duration
+
+    - src_stem: fsm-interference-counts
+      dest_stem: fsm-interference-duration
       cols:
-        - int_avg_avoidance_duration
-        - cum_avg_avoidance_duration
-      title: 'Swarm Collision Avoidance Duration'
+        - int_avg_interference_duration
+        - cum_avg_interference_duration
+      title: 'Swarm Interference Duration'
       legend:
-        - 'Average Avoidance Duration (Interval)'
-        - 'Average Avoidance Duration (cumulative)'
+        - 'Average Interference Duration (Interval)'
+        - 'Average Interference Duration (cumulative)'
       xlabel: 'Interval'
       ylabel: '# Timesteps'
 
@@ -232,13 +233,17 @@ LN_population:
     - src_stem: tv-population
       dest_stem: tv-population-size
       cols:
-        - int_avg_swarm_population
-        - cum_avg_swarm_population
-        - swarm_max_population
+        - int_avg_active_population
+        - cum_avg_active_population
+        - int_avg_total_population
+        - cum_avg_total_population
+        - max_population
       title: 'Swarm Population'
       legend:
-        - 'Average Swarm Population (Interval)'
-        - 'Average Swarm Population (Cumulative)'
+        - 'Average Swarm Active Population (Interval)'
+        - 'Average Swarm Active Population (Cumulative)'
+        - 'Average Swarm Total Population (Interval)'
+        - 'Average Swarm Total Population (Cumulative)'
         - 'Swarm Max Population'
       xlabel: 'Interval'
       ylabel: '# Robots'

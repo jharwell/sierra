@@ -13,6 +13,10 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
+"""
+Measures for swarm robustness (sensor and/or actuator noise, fluctuating population sizes) in
+univariate and bivariate batched experiments.
+"""
 
 
 import os
@@ -34,7 +38,7 @@ class ReactivityUnivar:
 
     """
 
-    def __init__(self, cmdopts: tp.Dict[str, str]):
+    def __init__(self, cmdopts: tp.Dict[str, str]) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us.
         self.cmdopts = copy.deepcopy(cmdopts)
@@ -79,5 +83,5 @@ class ReactivityBivar:
 
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         raise NotImplementedError

@@ -23,7 +23,6 @@ import logging
 import typing as tp
 import multiprocessing as mp
 import queue
-import time
 
 from core.graphs.heatmap import Heatmap
 
@@ -64,7 +63,7 @@ class BatchedExpImagizer:
                     os.makedirs(imagize_output_root, exist_ok=True)
                     q.put(imagize_opts)
 
-        for i in range(0, mp.cpu_count()):
+        for _ in range(0, mp.cpu_count()):
             p = mp.Process(target=BatchedExpImagizer.__thread_worker,
                            args=(q, HM_config))
             p.start()

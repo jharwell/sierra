@@ -30,3 +30,9 @@ SIERRA to do so are outlined below.
 .. IMPORTANT:: Do not try to run sierra with a debug build of whatever project
                you are using (:xref:`FORDYCA`,:xref:`SILICON`, etc). It (probably)
                won't work and will be obnoxiously/irritatingly slow if it does.
+
+#. Clone plugin for whatever project you are going to use into
+   ``plugins``. SIERRA will (probably) refuse to do anything useful if there are
+   no plugins installed. The repository should be cloned into a directory with
+   the EXACT name you want it to be callable with on the cmdline via
+   ``--plugin``.

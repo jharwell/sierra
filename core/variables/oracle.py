@@ -61,7 +61,7 @@ class Oracle(UnivarBatchCriteria):
                  main_config: tp.Dict[str, str],
                  batch_generation_root: str,
                  tuples: tp.List[tuple],
-                 population: int):
+                 population: int) -> None:
         UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
 
         self.tuples = tuples
@@ -89,10 +89,14 @@ class Oracle(UnivarBatchCriteria):
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
-    def graph_xticks(self, cmdopts: tp.Dict[str, str], exp_dirs: tp.List[str]) -> str:
-        return [d for d in self.gen_exp_dirnames(cmdopts)]
+    def graph_xticks(self,
+                     cmdopts: tp.Dict[str, str],
+                     exp_dirs: tp.List[str] = None) -> tp.List[float]:
+        return list(map(float, range(0, len(self.gen_exp_dirnames(cmdopts)))))
 
-    def graph_xticklabels(self, cmdopts: tp.Dict[str, str], exp_dirs: tp.List[str] = None) -> tp.List[float]:
+    def graph_xticklabels(self,
+                          cmdopts: dict,
+                          exp_dirs: tp.List[str] = None) -> tp.List[str]:
         raise NotImplementedError
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
@@ -116,7 +120,11 @@ class OracleParser():
                 population: Size of swarm to use (optional)
 
         """
-        ret = {}
+        ret = {
+            'oracle_name': str(),
+            'oracle_type': str(),
+            'population': int()
+        }
 
         # Parse oracle name
         if 'entities' in criteria_str:
@@ -157,7 +165,7 @@ def factory(cli_arg: str,
         else:
             return None
 
-    def __init__(self):
+    def __init__(self) -> None:
         Oracle.__init__(self,
                         cli_arg,
                         main_config,

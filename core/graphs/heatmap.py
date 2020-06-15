@@ -36,7 +36,7 @@ class Heatmap:
 
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         self.input_csv_fpath = os.path.abspath(kwargs['input_fpath'])
         self.output_fpath = os.path.abspath(kwargs['output_fpath'])
         self.title = '\n'.join(textwrap.wrap(kwargs['title'], 40))
@@ -133,7 +133,7 @@ class DualHeatmap:
     """
     kCardinality = 2
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
 
         self.input_stem_pattern = os.path.abspath(kwargs['input_stem_pattern'])
         self.output_fpath = kwargs['output_fpath']

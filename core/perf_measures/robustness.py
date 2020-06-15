@@ -27,7 +27,7 @@ import pandas as pd
 
 from core.graphs.batch_ranged_graph import BatchRangedGraph
 from core.perf_measures import vcs
-from core.variables.batch_criteria import BatchCriteria
+import core.variables.batch_criteria as bc
 from core.graphs.heatmap import Heatmap
 from core.graphs.scatterplot2D import Scatterplot2D
 import core.variables.saa_noise as saan
@@ -43,12 +43,12 @@ class RobustnessSAAUnivar:
     curve similarity measures.
     """
 
-    def __init__(self, cmdopts: tp.Dict[str, str]):
+    def __init__(self, cmdopts: dict) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us.
         self.cmdopts = copy.deepcopy(cmdopts)
 
-    def generate(self, main_config: dict, batch_criteria: BatchCriteria):
+    def generate(self, main_config: dict, criteria: bc.UnivarBatchCriteria):
         """
         Generate a robustness graph for a given controller in a given scenario by computing the
         value of the robustness metric for each experiment within the batch (Y values), and plotting
@@ -56,7 +56,7 @@ class RobustnessSAAUnivar:
         """
 
         logging.info("Univariate SAA Robustness from %s", self.cmdopts["collate_root"])
-        batch_exp_dirnames = batch_criteria.gen_exp_dirnames(self.cmdopts)
+        batch_exp_dirnames = criteria.gen_exp_dirnames(self.cmdopts)
 
         # Robustness is only defined for experiments > 0, as exp0 is assumed to be ideal conditions,
         # so we have to slice. We use the reactivity curve similarity measure because we are
@@ -66,11 +66,11 @@ class RobustnessSAAUnivar:
         df = pd.DataFrame(columns=batch_exp_dirnames, index=[0])
         df[batch_exp_dirnames[0]] = 0.0  # By definition
 
-        for i in range(1, batch_criteria.n_exp()):
+        for i in range(1, criteria.n_exp()):
             df[batch_exp_dirnames[i]] = vcs.RawPerfCS(main_config,
                                                       self.cmdopts,
                                                       0,
-                                                      i)(batch_criteria)
+                                                      i)(criteria)
 
         stem_opath = os.path.join(self.cmdopts["collate_root"], "pm-robustness-saa")
 
@@ -81,11 +81,11 @@ class RobustnessSAAUnivar:
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-robustness-saa.png"),
                          title="Swarm Robustness (SAA)",
-                         xlabel=batch_criteria.graph_xlabel(self.cmdopts),
+                         xlabel=criteria.graph_xlabel(self.cmdopts),
                          ylabel=vcs.method_ylabel(self.cmdopts["rperf_cs_method"],
                                                   'robustness_saa'),
-                         xticks=batch_criteria.graph_xticks(self.cmdopts),
-                         xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts)).generate()
+                         xticks=criteria.graph_xticks(self.cmdopts),
+                         xtick_labels=criteria.graph_xticklabels(self.cmdopts)).generate()
 
 
 class RobustnessSizeUnivar:
@@ -94,12 +94,12 @@ class RobustnessSizeUnivar:
     univariate batched set of experiments within the same scenario from collated .csv data.
     """
 
-    def __init__(self, cmdopts: tp.Dict[str, str]):
+    def __init__(self, cmdopts: dict) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us.
         self.cmdopts = copy.deepcopy(cmdopts)
 
-    def generate(self, main_config: dict, batch_criteria: BatchCriteria):
+    def generate(self, main_config: dict, criteria: bc.UnivarBatchCriteria):
         """
         Generate a robustness graph for a given controller in a given scenario by computing the
         value of the robustness metric for each experiment within the batch (Y values), and plotting
@@ -108,15 +108,15 @@ class RobustnessSizeUnivar:
 
         logging.info("Univariate Population Fluctuation Robustness from %s",
                      self.cmdopts["collate_root"])
-        batch_exp_dirnames = batch_criteria.gen_exp_dirnames(self.cmdopts)
+        batch_exp_dirnames = criteria.gen_exp_dirnames(self.cmdopts)
 
         df = pd.DataFrame(columns=batch_exp_dirnames, index=[0])
         perf_df = pd.read_csv(os.path.join(self.cmdopts["collate_root"],
-                                           main_config['sierra']['perf']['inter_perf_csv']),
+                                           main_config['perf']['inter_perf_csv']),
                               sep=';')
         df[batch_exp_dirnames[0]] = 1.0  # by definition
 
-        for i in range(1, batch_criteria.n_exp()):
+        for i in range(1, criteria.n_exp()):
             exp_def = core.utils.unpickle_exp_def(os.path.join(self.cmdopts['generation_root'],
                                                                batch_exp_dirnames[i],
                                                                'exp_def.pkl'))
@@ -143,10 +143,10 @@ class RobustnessSizeUnivar:
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-robustness-size.png"),
                          title="Swarm Robustness (Fluctuating Population)",
-                         xlabel=batch_criteria.graph_xlabel(self.cmdopts),
+                         xlabel=criteria.graph_xlabel(self.cmdopts),
                          ylabel='Value',
-                         xticks=batch_criteria.graph_xticks(self.cmdopts),
-                         xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts)).generate()
+                         xticks=criteria.graph_xticks(self.cmdopts),
+                         xtick_labels=criteria.graph_xticklabels(self.cmdopts)).generate()
 
 
 class RobustnessSAABivar:
@@ -156,13 +156,13 @@ class RobustnessSAABivar:
     curve similarity measures.
     """
 
-    def __init__(self, cmdopts: tp.Dict[str, str], inter_perf_csv: str):
+    def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
         self.inter_perf_stem = inter_perf_csv.split('.')[0]
 
-    def generate(self, main_config: dict, batch_criteria: BatchCriteria):
+    def generate(self, main_config: dict, criteria: bc.BivarBatchCriteria):
         """
         - :class:`~core.graphs.heatmap.Heatmap` of robustness values for the bivariate batch
           criteria.
@@ -170,7 +170,7 @@ class RobustnessSAABivar:
           regression purposes.
         """
         logging.info("Bivariate SAA Robustness from %s", self.cmdopts["collate_root"])
-        csv_ipath = self.__gen_heatmap(main_config, batch_criteria)
+        csv_ipath = self.__gen_heatmap(main_config, criteria)
         self.__gen_scatterplot(csv_ipath)
 
     def __gen_scatterplot(self, rob_ipath: str):
@@ -209,7 +209,7 @@ class RobustnessSAABivar:
                       xlabel='Robustness Value',
                       ylabel='# Blocks Collected').generate()
 
-    def __gen_heatmap(self, main_config: dict, batch_criteria: BatchCriteria):
+    def __gen_heatmap(self, main_config: dict, criteria: bc.BivarBatchCriteria):
         """
         Generate a robustness graph for a given controller in a given scenario by computing the
         value of the robustness metric for each experiment within the batch, and plot
@@ -223,23 +223,23 @@ class RobustnessSAABivar:
         opath_stem = os.path.join(self.cmdopts["collate_root"], "pm-robustness-saa")
 
         # Generate heatmap dataframe and write to file
-        df = self.__gen_heatmap_df(main_config, raw_df, batch_criteria)
+        df = self.__gen_heatmap_df(main_config, raw_df, criteria)
         df.to_csv(opath_stem + ".csv", sep=';', index=False)
 
         Heatmap(input_fpath=opath_stem + '.csv',
                 output_fpath=os.path.join(self.cmdopts["graph_root"], "pm-robustness-saa.png"),
                 title='Swarm Robustness (SAA)',
-                xlabel=batch_criteria.graph_xlabel(self.cmdopts),
-                ylabel=batch_criteria.graph_ylabel(self.cmdopts),
+                xlabel=criteria.graph_xlabel(self.cmdopts),
+                ylabel=criteria.graph_ylabel(self.cmdopts),
                 zlabel='Robustness Value',
-                xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
-                ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)).generate()
+                xtick_labels=criteria.graph_xticklabels(self.cmdopts),
+                ytick_labels=criteria.graph_yticklabels(self.cmdopts)).generate()
         return opath_stem + '.csv'
 
     def __gen_heatmap_df(self,
                          main_config: dict,
                          raw_df: pd.DataFrame,
-                         batch_criteria: BatchCriteria):
+                         criteria: bc.BivarBatchCriteria):
         df = pd.DataFrame(columns=raw_df.columns, index=raw_df.index)
         df.iloc[0, 0] = 0.0  # By definition
 
@@ -247,7 +247,7 @@ class RobustnessSAABivar:
         yfactor = 0
         # SAA noise is along rows (X), so the first row by definition is ideal conditions and has
         # 0.0 distance to ideal conditions.
-        if isinstance(batch_criteria.criteria1, saan.SAANoise):
+        if isinstance(criteria.criteria1, saan.SAANoise):
             df.iloc[0, :] = 0.0
             xfactor = 1
         # SAA noise is along colums (Y), so the first column by definition is ideal conditions and
@@ -260,16 +260,16 @@ class RobustnessSAABivar:
             for j in range(0 + yfactor, len(df.columns)):
                 # We need to know which of the 2 variables was SAA noise, in order to determine the
                 # correct dimension along which to compute the metric.
-                if isinstance(batch_criteria.criteria1, saan.SAANoise):
+                if isinstance(criteria.criteria1, saan.SAANoise):
                     val = vcs.RawPerfCS(main_config,
                                         self.cmdopts,
                                         j,  # exp0 in first row with i=0
-                                        i * len(df.columns) + j)(batch_criteria)
+                                        i * len(df.columns) + j)(criteria)
                 else:
                     val = vcs.RawPerfCS(main_config,
                                         self.cmdopts,  # exp0 in first col with j=0
                                         i * len(df.columns),
-                                        i * len(df.columns) + j)(batch_criteria)
+                                        i * len(df.columns) + j)(criteria)
 
                 df.iloc[i, j] = val
         return df
@@ -281,13 +281,13 @@ class RobustnessSizeBivar:
     bivariate batched set of experiments within the same scenario from collated .csv data.
     """
 
-    def __init__(self, cmdopts: tp.Dict[str, str], inter_perf_csv: str):
+    def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
         self.inter_perf_stem = inter_perf_csv.split('.')[0]
 
-    def generate(self, batch_criteria: BatchCriteria):
+    def generate(self, criteria: bc.BivarBatchCriteria):
         """
         - :class:`~core.graphs.heatmap.Heatmap` of robustness values for the bivariate batch
           criteria
@@ -295,7 +295,7 @@ class RobustnessSizeBivar:
           regression purposes.
         """
         logging.info("Bivariate Population Size Robustness from %s", self.cmdopts["collate_root"])
-        csv_ipath = self.__gen_heatmap(batch_criteria)
+        csv_ipath = self.__gen_heatmap(criteria)
         self.__gen_scatterplot(csv_ipath)
 
     def __gen_scatterplot(self, rob_ipath: str):
@@ -334,7 +334,7 @@ class RobustnessSizeBivar:
                       xlabel='Robustness Value',
                       ylabel='# Blocks Collected').generate()
 
-    def __gen_heatmap(self, batch_criteria: BatchCriteria):
+    def __gen_heatmap(self, criteria: bc.BivarBatchCriteria):
         """
         Generate a robustness graph for a given controller in a given scenario by computing the
         value of the robustness metric for each experiment within the batch, and plot
@@ -348,20 +348,20 @@ class RobustnessSizeBivar:
         opath_stem = os.path.join(self.cmdopts["collate_root"], "pm-robustness-size")
 
         # Generate heatmap dataframe and write to file
-        df = self.__gen_heatmap_df(raw_df, batch_criteria)
+        df = self.__gen_heatmap_df(raw_df, criteria)
         df.to_csv(opath_stem + ".csv", sep=';', index=False)
 
         Heatmap(input_fpath=opath_stem + '.csv',
                 output_fpath=os.path.join(self.cmdopts["graph_root"], "pm-robustness-size.png"),
                 title='Swarm Robustness (Fluctuating Population)',
-                xlabel=batch_criteria.graph_xlabel(self.cmdopts),
-                ylabel=batch_criteria.graph_ylabel(self.cmdopts),
+                xlabel=criteria.graph_xlabel(self.cmdopts),
+                ylabel=criteria.graph_ylabel(self.cmdopts),
                 zlabel='Robustness Value',
-                xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
-                ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)).generate()
+                xtick_labels=criteria.graph_xticklabels(self.cmdopts),
+                ytick_labels=criteria.graph_yticklabels(self.cmdopts)).generate()
         return opath_stem + '.csv'
 
-    def __gen_heatmap_df(self, raw_df: pd.DataFrame, batch_criteria: BatchCriteria):
+    def __gen_heatmap_df(self, raw_df: pd.DataFrame, criteria: bc.BivarBatchCriteria):
         df = pd.DataFrame(columns=raw_df.columns, index=raw_df.index)
         df.iloc[0, 0] = 0.0  # By definition
 
@@ -369,7 +369,7 @@ class RobustnessSizeBivar:
         yfactor = 0
         # SAA noise is along rows (X), so the first row by definition is ideal conditions and has
         # 1.0 robustness.
-        if isinstance(batch_criteria.criteria1, saan.SAANoise):
+        if isinstance(criteria.criteria1, saan.SAANoise):
             df.iloc[0, :] = 1.0
             xfactor = 1
         # SAA noise is along colums (Y), so the first column by definition is ideal conditions and
@@ -378,7 +378,7 @@ class RobustnessSizeBivar:
             df.iloc[:, 0] = 1.0
             yfactor = 1
 
-        exp_dirnames = batch_criteria.gen_exp_dirnames(self.cmdopts)
+        exp_dirnames = criteria.gen_exp_dirnames(self.cmdopts)
         for i in range(0 + xfactor, len(df.index)):
             for j in range(0 + yfactor, len(df.columns)):
                 exp_def = core.utils.unpickle_exp_def(os.path.join(self.cmdopts['generation_root'],
@@ -396,7 +396,7 @@ class RobustnessSizeBivar:
 
                 # We need to know which of the 2 variables was SAA noise, in order to determine the
                 # correct dimension along which to compute the metric.
-                if isinstance(batch_criteria.criteria1, saan.SAANoise):
+                if isinstance(criteria.criteria1, saan.SAANoise):
                     perf0 = common.csv_3D_value_iloc(raw_df,
                                                      0,  # exp0 in first row with i=0
                                                      j,

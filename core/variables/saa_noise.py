@@ -31,11 +31,13 @@ Examples:
     - ``all.C10``: 10 levels of noise applied to both sensors and actuators; swarm size not
       modified.
 
-The values for the min, max noise levels for each sensor which are used along with ``n_levels`` to
-define the set of noise ranges to test are set via the main YAML configuration file (not an easy way
-to specify ranges in a single batch criteria definition string). The relevant section is shown
+The values for the min, max noise levels for each sensor which are used along with ``cardinality``
+to define the set of noise ranges to test are set via the main YAML configuration file (not an easy
+way to specify ranges in a single batch criteria definition string). The relevant section is shown
 below. If the min, max level for a sensor/actuator is not specified in the YAML file, no XML changes
 will be generated for it.
+
+.. _robustness-main-config:
 
 .. code-block:: yaml
 
@@ -108,7 +110,7 @@ class SAANoise(UnivarBatchCriteria):
                  batch_generation_root: str,
                  variances: list,
                  population: int,
-                 noise_type: str):
+                 noise_type: str) -> None:
         UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
 
         self.variances = variances
@@ -161,7 +163,7 @@ class SAANoise(UnivarBatchCriteria):
 
     def graph_xticklabels(self,
                           cmdopts: tp.Dict[str, str],
-                          exp_dirs: tp.List[str] = None) -> tp.List[float]:
+                          exp_dirs: tp.List[str] = None) -> tp.List[str]:
         if exp_dirs is not None:
             if self.__uniform_sources():
                 return ["U(-{0},{0})".format(round(l, 2)) for l in self.graph_xticks(cmdopts, exp_dirs)]
@@ -169,7 +171,7 @@ class SAANoise(UnivarBatchCriteria):
                 levels = [self.__avg_gaussian_level_from_dir(d) for d in exp_dirs]
                 return ["G({0},{1})".format(round(mean, 2), round(stddev)) for mean, stddev in levels]
             else:
-                return [x for x in range(0, len(exp_dirs))]
+                return list(map(str, range(0, len(exp_dirs))))
         else:
             if self.__uniform_sources():
                 levels = [self.__avg_uniform_level_from_chglist(v) for v in self.variances]
@@ -178,7 +180,7 @@ class SAANoise(UnivarBatchCriteria):
                 levels = [self.__avg_gaussian_level_from_chglist(v) for v in self.variances]
                 return ["G({0},{1})".format(round(mean), round(stddev)) for mean, stddev in levels]
             else:
-                return [x for x in range(0, self.n_exp())]
+                return list(map(str, range(0, self.n_exp())))
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
         labels = {
@@ -248,7 +250,7 @@ class SAANoise(UnivarBatchCriteria):
                 count += 1
         return accum / count
 
-    def __avg_gaussian_level_from_chglist(self, changelist) -> float:
+    def __avg_gaussian_level_from_chglist(self, changelist) -> tp.Tuple[float, float]:
         """
         Return the average (mean, stddev) used for all Gaussian noise sources for the specified
         changelist corresponding to a particular experiment by reading the XML attribute
@@ -297,7 +299,7 @@ class SAANoiseParser():
     Enforces the cmdline definition of the :class:`SAANoise` batch criteria.
     """
 
-    def __call__(self, criteria_str: str) -> tp.Dict[str, str]:
+    def __call__(self, criteria_str: str) -> dict:
         """
         Returns:
             Dictionary with the following keys:
@@ -306,7 +308,11 @@ class SAANoiseParser():
                 - population: Swarm size to use (optional)
 
         """
-        ret = {}
+        ret = {
+            'noise_type': str(),
+            'cardinality': int(),
+            'population': int()
+        }
 
         # Parse noise type
         res = re.search("sensors|actuators|all", criteria_str)
@@ -329,13 +335,13 @@ class SAANoiseParser():
 
 def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwargs):
     """
-    Factory to create :class:`Robustness` derived classes from the command line definition of
+    Factory to create :class:`SAANoise` derived classes from the command line definition of
     batch criteria.
 
     """
     attr = SAANoiseParser()(cli_arg)
 
-    def gen_variances(attr: tp.Dict[str, str]):
+    def gen_variances(attr: dict):
 
         xml_parents = {
             'sensors': {
@@ -401,7 +407,7 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
         # Invert!
         by_exp = []
         for i in range(0, n_levels):
-            # This the magic line. It takes every "level"-th element, since that is the # of
+            # This is the magic line. It takes every "level"-th element, since that is the # of
             # experiments that this criteria defines, starting with i=0...n_levels. So if there are
             # 10 levels, then the first set added to the return list would be i={0,10,20,...}, the
             # second would be i={1,11,21,...}, etc.
@@ -409,7 +415,7 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
 
         return by_exp
 
-    def __init__(self):
+    def __init__(self) -> None:
         SAANoise.__init__(self,
                           cli_arg,
                           main_config,
