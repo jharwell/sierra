@@ -200,3 +200,14 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'https://docs.python.org/': None}
+
+# HACK! The [FORDYCA, SILICON] plugin repos are needed to get the SIERRA docs to build, and
+# readthedocs doesn't support a nice way updating submodules to something other than the master
+# branch after SIERRA is switched from the master to the devel branch.
+import subprocess
+res = subprocess.run(["git",
+                      "submodule",
+                      "update",
+                      "--remote",
+                      "--recursive",
+                      "--init"])

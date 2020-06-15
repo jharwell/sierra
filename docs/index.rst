@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome the documentation for SIERRA: the amazing swarm robotics automation tool!
-=================================================================================
+Welcome to the documentation for SIERRA: the amazing swarm robotics automation tool!
+====================================================================================
 
 .. toctree::
    :maxdepth: 2
