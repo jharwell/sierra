@@ -417,7 +417,7 @@ def calculate_fpr(w: float, T: int, perf0: float, perfN: float):
 
     .. math::
        \begin{equation}
-       \theta_{B_{sz}}(\kappa,t) = \sum_{t\in{T}}P(N,\kappa,t) - \frac{w}{T}P_{ideal}(N,\kappa,t)
+       \theta_{B_{sz}}(\kappa,t) = P(N,\kappa,t) - \frac{w}{T}P_{ideal}(N,\kappa,t)
        \end{equation}
 
     """

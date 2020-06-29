@@ -102,7 +102,7 @@ class BatchCriteria(base_variable.BaseVariable):
     def scaffold_exps(self,
                       xml_luigi: core.xml_luigi.XMLLuigi,
                       batch_config_leaf: str,
-                      cmdopts: tp.Dict[str, str]):
+                      cmdopts: dict):
         """
         Scaffold a batched experiment by taking the raw template input file and applying the XML
         attribute changes to it, and saving the result in the experiment input directory in each
@@ -131,7 +131,7 @@ class BatchCriteria(base_variable.BaseVariable):
                           i,
                           exp_dirname)
 
-            os.makedirs(exp_generation_root, exist_ok=True)
+            core.utils.dir_create_checked(exp_generation_root, exist_ok=cmdopts['exp_overwrite'])
             for path, attr, value in defi:
                 xml_luigi.attr_change(path, attr, value)
 

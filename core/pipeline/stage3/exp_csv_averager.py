@@ -29,6 +29,9 @@ import queue
 import pandas as pd
 
 
+import core.utils
+
+
 class BatchedExpCSVAverager:
     """
     Averages the .csv output files for each experiment in the specified batch directory in sequence.
@@ -106,7 +109,7 @@ class ExpCSVAverager:
         self.videos_leaf = 'videos'
         self.plugin_imagize = avg_opts['plugin_imagizing']
 
-        os.makedirs(self.avgd_output_root, exist_ok=True)
+        core.utils.dir_create_checked(self.avgd_output_root, exist_ok=True)
 
         # to be formatted like: self.input_name_format.format(name, experiment_number)
         format_base = "{}_{}"
@@ -174,7 +177,8 @@ class ExpCSVAverager:
             by_row_index = csv_concat.groupby(csv_concat.index)
             csv_averaged = by_row_index.mean()
             if csv_fname[1] != '':
-                os.makedirs(os.path.join(self.avgd_output_root, csv_fname[1]), exist_ok=True)
+                core.utils.dir_create_checked(os.path.join(self.avgd_output_root, csv_fname[1]),
+                                              exist_ok=True)
 
             csv_averaged.to_csv(os.path.join(self.avgd_output_root, csv_fname[1], csv_fname[0]),
                                 sep=';',

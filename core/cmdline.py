@@ -103,9 +103,23 @@ class CoreCmdline:
 
                                  The template ``.argos`` input file for the batched experiment.
 
-                                 Use=stage[1, 2, 3, 4}; can be omitted if only running other stages.
+                                 Use=stage{1, 2, 3, 4}; can be omitted if only running other stages.
 
                                  """)
+
+        self.parser.add_argument("--exp-overwrite",
+                                 help="""
+
+                                 When SIERRA calculates the batch experiment root (or any child path in the batch
+                                 experiment root) during stage{1,2}, if the calculated path already exists it is treated
+                                 as a fatal error and no modifications to the filesystem are performed. This flag
+                                 overwrides the default behavior. Provided to avoid accidentally overwrite input/output
+                                 files for an experiment, forcing the user to be explicit with potentially dangerous
+                                 actions.
+
+                                 Use=stage{1,2}; can be omitted otherwise.
+                                """,
+                                 action='store_true')
 
         self.parser.add_argument("--sierra-root",
                                  metavar="dirpath",

@@ -98,19 +98,14 @@ def __gen_batch_root(sierra_root: str,
                      template_basename: str):
     """
     Generate the directory path for the root directory for batch experiments depending on what
-    the batch criteria is. The default is to use the block distribution type + arena size to
-    differentiate between batched experiments, for some batch criteria, those will be the same
-    and so you need to use the batch criteria definition itself to uniquely identify in all
-    cases.
+    the batch criteria is. The directory path depends on all of the input arguments to this
+    function, and if ANY of the arguments change, so should the generated path.
     """
+    for b in batch_criteria:
 
-    problematica = ['flexibility', 'constant_density']
-    for p in problematica:
-        for b in batch_criteria:
-            if p in b:
-                # use dash instead of dot in the criteria string to not confuse external
-                # programs that rely on file extensions.
-                scenario = scenario + '+' + b.replace('-', '')
+        # use dash instead of dot in the criteria string to not confuse external
+        # programs that rely on file extensions.
+        scenario = scenario + '+' + b.replace('-', '')
 
     return os.path.join(sierra_root,
                         plugin,

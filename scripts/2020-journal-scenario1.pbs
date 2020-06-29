@@ -31,19 +31,6 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 --env ARGOS_PLUGIN_PATH --env LOG4CXX_CONFIGURATION"
 
 ################################################################################
-# MSI Runtimes (with margin included)                                          #
-################################################################################
-#
-# {CRW,DPO,GP-DPO},Log1024,SS32x16: 6 hrs
-# {CRW,DPO,GP-DPO},Log1024,SS64x32: 6 hrs
-# {CRW,DPO,GP-DPO},Log4096,SS64x32: 18.5 hrs
-#
-# {CRW,DPO,GP-DPO},Log1024,SS96x48: 6.5 hrs
-# {CRW,DPO,GP-DPO},Log4096,SS96x48: 18.5 hrs
-# {CRW,DPO,GP-DPO},Log8192,SS96x48: 36 hrs
-# {CRW,DPO,GP-DPO},Log16384,SS96x48: 75 hrs
-#
-################################################################################
 # Non-batch Parameters                                                         #
 ################################################################################
 # Med block, high speed: block density = 5.0%, static cache % = 10.0, max speed
@@ -64,35 +51,58 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 # Begin Experiments                                                            #
 ################################################################################
 NSIMS=50
-DIMS=(96x48)
+CONTROLLERS0=(depth0.CRW depth0.DPO)
+CONTROLLERS12=(depth1.BITD_DPO depth2.BIRTD_DPO)
 OUTPUT_ROOT=$HOME/exp/test
 BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \
-                  --template-config-file=$HOME/git/sierra/templates/ideal.argos \
+                  --template-input-file=$HOME/git/sierra/templates/ideal.argos \
                   --n-sims=$NSIMS\
-                  --batch-criteria=swarm_size.Log16384\
-                  --n-physics-engines=8 --batch-exp-range=14:14\
-                  --n-threads=8 --pipeline 1\
-                  --n-blocks=460\
-                  --static-cache-blocks=46\
-                  --exec-method=local.parallel\
-                  --time-setup=time_setup.T100\
-                  --perf-measures=sc,so,sp"
+                  --physics-n-engines=8\
+                  --n-threads=8\
+                  --pipeline 1\
+                  --plugin=fordyca\
+                  --exec-method=local\
+                  --time-setup=time_setup.T5000"
 
 cd $HOME/git/sierra
 
 # GO GO Power Rangers!
-#
-# - Executes each method interleaved rather than sequentially so that interim
-#   results can be obtained faster.
-for d in "${DIMS[@]}"
+for c in "${CONTROLLERS0[@]}"
 do
-    $BASE_CMD --generator=depth0.CRW.SS${d}
-    $BASE_CMD --generator=depth0.DPO.SS${d}
-    $BASE_CMD --generator=depth1.GP_DPO.SS${d}
+    $BASE_CMD --scenario=SS.32x16 \
+              --batch-criteria=population_dynamics.F2p0.M0p001.R0p005
+              --controller=${c}
+
+    $BASE_CMD --scenario=RN.48x48 \
+              --batch-criteria=population_dynamics.F2p0.M0p001.R0p005
+              --controller=${c}
+
+    $BASE_CMD --scenario=RN.92x92 \
+              --batch-criteria=population_dynamics.F2p0.M0p001.R0p005
+              --controller=${c}
+done
+
+for c in "${CONTROLLERS12[@]}"
+do
+    $BASE_CMD --scenario=SS.32x16 \
+              --batch-criteria=ta.policy_set.All.Z128 population_dynamics.F2p0.M0p001.R0p005\
+              --controller=${c}
+
+    $BASE_CMD --scenario=RN.48x48 \
+              --batch-criteria=ta_policy_set.All.Z512 population_dynamics.F2p0.M0p001.R0p005\
+              --controller=${c}
+
+    $BASE_CMD --scenario=RN.92x92 \
+              --batch-criteria=ta_policy_set.All.Z2048 population_dynamics.F2p0.M0p001.R0p005\
+              --controller=${c}
 done
 
 
-# Generate comparison graphs (a valid batch criteria still needed to
-# correctly generate graph labels)
-$BASE_CMD --generator=depth1.GP_DPO.SS96x48 --pipeline 5
+# Generate comparison graphs
+python3 sierra.py \
+        --pipeline 5\
+        --plugin=fordyca\
+        --sierra-root=$OUTPUT_ROOT\
+        --batch-criteria population_size.Log256\
+        --bc-univar

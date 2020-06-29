@@ -61,27 +61,24 @@ Experiment Tree
 
 .. IMPORTANT:: SIERRA **NEVER** deletes directories for you.
 
-   Subsequent experiments using the same ``--controller``, ``--scenario``,
-   ``--sierra-root``, ``--template-input-file`` **WILL** overwrite the results
-   of previous experiments, even if other parameters change (or if you change
-   the contents of the template input file). That bears repeating:
+   Subsequent experiments using the same values for the following cmdline
+   components **WILL** result in the same calculated root directory for
+   experimental inputs and outputs, even if other parameters change (or if you
+   change the contents of the template input file):
 
-   `If you change other parameters but keep the same SIERRA root, controller,
-   scenario, and template input file` **YOUR RESULTS WILL BE OVERWRITTEN**.
+   - ``--controller``
+   - ``--scenario``
+   - ``--sierra-root``
+   - ``--template-input-file``
+   - ``--batch-criteria``
 
-   This may or may not be desirable, so no warnings are emitted when overwriting
-   happens or when it does not. While there are pitfalls with this approach, it
-   is still much better than the alternative, which is to delete previous parts
-   of the experiment tree if they are found to be identical to what is generated
-   for the current invocation.
+   SIERRA will abort stage{1,2} processing when this occurs in order to preserve
+   data integrity; this behavior can be overwridden with ``--exp-overwrite``, in
+   which case the use assumes full responsibility for ensuring the integrity of
+   the experiment.
 
    Always better to check the arguments before hitting ENTER. Measure twice, cut
    once, as the saying goes.
-
-.. WARNING:: Changing the ``--batch-criteria`` does not (currently) change where
-   the simulation results are stored/how subtrees under ``--sierra-root`` are
-   named, which `can` result in lost data, depending. This is somewhat
-   counter-intuitive, hence its appearance as a standalone warning.
 
 When SIERRA runs, it creates a directory structure under whatever was passed as
 ``--sierra-root``. For the purposes of explanation, I will use the following

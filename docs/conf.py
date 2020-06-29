@@ -103,7 +103,7 @@ xref_links = {
     "Hecker2015": ("Hecker2015",
                    "https://www.cs.unm.edu/~wjust/CS523/S2018/Readings/Hecker_Beyond_Pheromones_Swarm_Intelligence.pdf"),
     "Rosenfield2006": ("Rosenfield2006",
-                       "http://users.umiacs.umd.edu/~sarit/data/articles/rosenfeldetalbook06.pdf")
+                       "http://users.umiacs.umd.edu/~sarit/data/articles/rosenfeldetalbook06.pdf"),
     "FORDYCA": ("FORDYCA", "https://swarm-robotics-fordyca.readthedocs.io"),
     "SILICON": ("SILICON", "https://swarm-robotics-silicon.readthedocs.io"),
     "LIBRA": ("LIBRA", "https://swarm-robotics-libra.readthedocs.io")

@@ -56,6 +56,7 @@ class Pipeline:
             "n_threads": args.n_threads,
             'n_blocks': args.n_blocks,
             'plugin_imagizing': self.args.plugin_imagizing,
+            'exp_overwrite': self.args.exp_overwrite,
 
             # stage 1
             'time_setup': self.args.time_setup,

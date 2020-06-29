@@ -33,7 +33,6 @@ def __sierra_run_default(args):
     controller = ControllerGeneratorParser()(args)
     scenario = ScenarioGeneratorParser(args).parse_cmdline()
 
-    # Add the template file leaf to the root directory path to help track what experiment was run.
     logging.info("Controller=%s, Scenario=%s", controller, scenario)
     cmdopts = rdg.from_cmdline(args)
     pipeline = Pipeline(args, controller, scenario, cmdopts)

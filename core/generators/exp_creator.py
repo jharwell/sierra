@@ -25,6 +25,8 @@ import logging
 from core.xml_luigi import XMLLuigi
 from core.variables import batch_criteria as bc
 
+import core.utils
+
 
 class SimDefUniqueGenerator:
     """
@@ -143,8 +145,6 @@ class ExpCreator:
         addition changes unique to each simulation and then write out files to the filesystem.
 
         """
-        os.makedirs(self.exp_generation_root, exist_ok=True)
-
         seeds = self.__generate_random_seeds()
 
         for sim_num in range(self.cmdopts['n_sims']):
@@ -161,7 +161,7 @@ class ExpCreator:
 
             if self.cmdopts['argos_rendering']:
                 frames_fpath = os.path.join(self.exp_output_root, sim_output_dir, "frames")
-                os.makedirs(frames_fpath, exist_ok=True)
+                core.utils.dir_create_checked(frames_fpath, exist_ok=True)
 
         # Clear out commands file if it exists
         if os.path.exists(self.commands_fpath):
@@ -259,7 +259,7 @@ class BatchedExpCreator:
         self.cmdopts = cmdopts
 
     def create(self, generator):
-        os.makedirs(self.batch_generation_root, exist_ok=True)
+        core.utils.dir_create_checked(self.batch_generation_root, self.cmdopts['exp_overwrite'])
 
         # Scaffold the batched experiment, creating experiment directories and writing template XML
         # input files for each experiment in the batch with changes from the batch criteria added

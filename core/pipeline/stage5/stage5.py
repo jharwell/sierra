@@ -26,6 +26,8 @@ import yaml
 from core.pipeline.stage5 import intra_scenario_comparator as isc
 import core.pipeline.root_dirpath_generator as rdg
 
+import core.utils
+
 
 class PipelineStage5:
     """
@@ -70,7 +72,7 @@ class PipelineStage5:
         """
         # Create directories for controller .csv files and graphs
         for v in self.output_roots.values():
-            os.makedirs(v, exist_ok=True)
+            core.utils.dir_create_checked(v, self.cmdopts['exp_overwrite'])
 
         # Use nice controller names on graph legends if configured
         if self.cmdopts['controllers_legend'] is not None:

@@ -19,6 +19,8 @@ Miscellaneous classes/functions used in mutiple places but that don't really fit
 """
 
 import pickle
+import os
+import logging
 
 
 class ArenaExtent():
@@ -63,3 +65,11 @@ def unpickle_exp_def(exp_def_fpath):
     except EOFError:
         pass
     return exp_def
+
+
+def dir_create_checked(path: str, exist_ok: bool):
+    try:
+        os.makedirs(path, exist_ok=exist_ok)
+    except FileExistsError:
+        logging.fatal("%s already exists! Not overwriting", path)
+        raise

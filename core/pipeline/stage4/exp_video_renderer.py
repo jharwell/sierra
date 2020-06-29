@@ -28,6 +28,9 @@ import queue
 import copy
 
 
+import core.utils
+
+
 class BatchedExpVideoRenderer:
     """
     Render the video for each experiment in the specified batch directory in sequence.
@@ -60,7 +63,9 @@ class BatchedExpVideoRenderer:
                         opts['image_dir'] = src_dir
                         opts['output_dir'] = os.path.join(exp_root, 'videos')
                         opts['ofile_leaf'] = d + '.mp4'
-                        os.makedirs(opts['output_dir'], exist_ok=True)
+
+                        core.utils.create_dir_checked(opts['output_dir'],
+                                                      self.cmdopts['exp_overwrite'])
                         q.put(opts)
 
             if render_opts['argos_rendering']:
@@ -77,7 +82,7 @@ class BatchedExpVideoRenderer:
                             main_config['sierra']['plugin_frames_leaf'] not in frames_root:
                         opts['image_dir'] = frames_root
                         opts['output_dir'] = os.path.join(exp_root, 'videos')
-                        os.makedirs(opts['output_dir'], exist_ok=True)
+                        core.utils.dir_create_checked(opts['output_dir'], exist_ok=True)
                         q.put(opts)
 
         # Render videos in parallel--waaayyyy faster

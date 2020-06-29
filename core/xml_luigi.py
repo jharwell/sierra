@@ -121,12 +121,14 @@ class XMLLuigi:
         """
 
         parent = self.root.find(path)
-        if parent is None:
-            if not noprint:
-                logging.warning("No victim '%s' found in parent '%s'", tag, path)
-        else:
+        if parent is not None:
             victim = parent.find(tag)
-            parent.remove(victim)
+            if victim is not None:
+                parent.remove(victim)
+                return
+
+        if not noprint:
+            logging.warning("No victim '%s' found in parent '%s'", tag, path)
 
     def tag_add(self, path, tag, attr=dict()):
         """

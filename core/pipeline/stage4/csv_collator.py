@@ -19,6 +19,8 @@ import os
 import logging
 import pandas as pd
 
+import core.utils
+
 
 class UnivarCSVCollator:
     """
@@ -36,7 +38,8 @@ class UnivarCSVCollator:
         self.batch_output_root = os.path.abspath(self.cmdopts['output_root'])
         self.collate_root = os.path.join(self.batch_output_root,
                                          self.main_config['sierra']['collate_csv_leaf'])
-        os.makedirs(self.collate_root, exist_ok=True)
+
+        core.utils.dir_create_checked(self.collate_root, exist_ok=True)
 
     def __call__(self, batch_criteria, targets):
         logging.info("Stage4: Collating univar inter-experiment .csv files from batch in %s to %s...",
@@ -139,7 +142,7 @@ class BivarCSVCollator:
         self.batch_output_root = os.path.abspath(self.cmdopts['output_root'])
         self.collate_root = os.path.join(self.batch_output_root,
                                          self.main_config['sierra']['collate_csv_leaf'])
-        os.makedirs(self.collate_root, exist_ok=True)
+        core.utils.dir_create_checked(self.collate_root, exist_ok=self.cmdopts['exp_overwrite'])
 
     def __call__(self, batch_criteria, targets):
         logging.info("Stage4: Collating bivariate inter-experiment .csv files from batch in %s to %s...",

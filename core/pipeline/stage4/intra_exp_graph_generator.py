@@ -26,6 +26,7 @@ import typing as tp
 from core.graphs.stacked_line_graph import StackedLineGraph
 from core.graphs.heatmap import Heatmap
 from core.pipeline.stage4.flexibility_plots import FlexibilityPlotsCSVGenerator, FlexibilityPlotsDefinitionsGenerator
+import core.utils
 
 
 class BatchedIntraExpGraphGenerator:
@@ -93,7 +94,7 @@ class IntraExpGraphGenerator:
         self.cmdopts["output_root"] = os.path.join(self.cmdopts["output_root"],
                                                    self.main_config['sierra']['avg_output_leaf'])
 
-        os.makedirs(self.cmdopts["graph_root"], exist_ok=True)
+        core.utils.dir_create_checked(self.cmdopts["graph_root"], exist_ok=True)
 
     def __call__(self, batch_criteria):
         """

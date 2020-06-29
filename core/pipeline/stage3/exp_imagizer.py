@@ -25,6 +25,7 @@ import multiprocessing as mp
 import queue
 
 from core.graphs.heatmap import Heatmap
+import core.utils
 
 
 class BatchedExpImagizer:
@@ -60,7 +61,7 @@ class BatchedExpImagizer:
                         'output_root': imagize_output_root
                     }
 
-                    os.makedirs(imagize_output_root, exist_ok=True)
+                    core.utils.dir_create_checked(imagize_output_root, exist_ok=True)
                     q.put(imagize_opts)
 
         for _ in range(0, mp.cpu_count()):

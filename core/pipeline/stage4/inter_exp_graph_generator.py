@@ -30,6 +30,7 @@ import core.perf_measures.block_collection as pmbc
 import core.perf_measures.reactivity as pmr
 import core.perf_measures.adaptability as pma
 import core.perf_measures.robustness as pmb
+import core.utils
 from core.graphs.stacked_line_graph import StackedLineGraph
 from core.variables import batch_criteria as bc
 
@@ -56,7 +57,7 @@ class InterExpGraphGenerator:
                                                                     collate_csv_leaf))
         self.cmdopts["graph_root"] = os.path.abspath(os.path.join(self.cmdopts["graph_root"],
                                                                   collate_graph_leaf))
-        os.makedirs(self.cmdopts["graph_root"], exist_ok=True)
+        core.utils.dir_create_checked(self.cmdopts["graph_root"], exist_ok=True)
 
     def __call__(self, batch_criteria: bc.BatchCriteria):
         """
@@ -73,9 +74,9 @@ class InterExpGraphGenerator:
         """
 
         if batch_criteria.is_univar():
-            LinegraphsGenerator(self.cmdopts["collate_root"],
-                                self.cmdopts["graph_root"],
-                                self.targets).generate()
+            # LinegraphsGenerator(self.cmdopts["collate_root"],
+            #                     self.cmdopts["graph_root"],
+            #                     self.targets).generate()
             UnivarPerfMeasuresGenerator(self.main_config, self.cmdopts)(batch_criteria)
         else:
             BivarPerfMeasuresGenerator(self.main_config, self.cmdopts)(batch_criteria)

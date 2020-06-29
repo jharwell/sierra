@@ -17,7 +17,7 @@
 Definition:
     {category}.C{cardinality}[.Z{population}]
 
-    category - {sensors,actuators,saa}
+    category - {sensors,actuators,all}
 
     cardinality - The # of different noise levels to test with between the min and max specified in
     the config file for each sensor/actuator which defines the cardinality of the batched
@@ -67,13 +67,17 @@ will be generated for it.
            model: gaussian
            stddev_range: [0.0, 0.1]
            mean_range: [0.0, 0.0]
-         steering:
+         steering: # applied to [vel_noise, dist_noise]
            model: uniform
            range: [0.0, 0.1]
          position:
            model: uniform
            range: [0.0, 0.1]
 
+         actuators:
+           steering:
+             model: uniform
+             range: [0.0, 0.1]
 """
 
 import re
@@ -201,7 +205,7 @@ class SAANoise(UnivarBatchCriteria):
         Return TRUE if all noise sources are uniform.
         """
         for v in self.variances:
-            for parent, attr, value in v:
+            for _, attr, value in v:
                 if attr == 'model' and value != 'uniform':
                     return False
         return True
@@ -211,7 +215,7 @@ class SAANoise(UnivarBatchCriteria):
         Return TRUE if all noise sources are gaussian.
         """
         for v in self.variances:
-            for parent, attr, value in v:
+            for _, attr, value in v:
                 if attr == 'model' and value != 'gaussian':
                     return False
         return True
@@ -225,7 +229,7 @@ class SAANoise(UnivarBatchCriteria):
         accum = 0.0
         count = 0
         for source in changelist:
-            parent, attr, value = source
+            _, attr, value = source
             if attr == 'level':
                 accum += float(value)
                 count += 1
@@ -345,11 +349,15 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
 
         xml_parents = {
             'sensors': {
-                'light': './/sensors/footbot_light',
-                'proximity': './/sensors/footbot_proximity',
-                'ground': './/sensors/footbot_motor_ground',
-                'steering': './/sensors/differential_steering',
-                'position': './/sensors/positioning',
+                'light': ('.//sensors/footbot_light', ['noise']),
+                'proximity': ('.//sensors/footbot_proximity', ['noise']),
+                'ground': ('.//sensors/footbot_motor_ground', ['noise']),
+                'steering': ('.//sensors/differential_steering', ['vel_noise', 'dist_noise']),
+                'position': ('.//sensors/positioning', ['noise']),
+            },
+
+            'actuators': {
+                'steering': ('.//sensors/differential_steering', ['noise_factor'])
             }
 
         }
@@ -378,16 +386,19 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
         for src, config in sources.items():
             for nt in noise_types:
                 # Cannot always add noise to the sensor AND actuator models for the same device (eg
-                # light sensor has not light actuator complement).
+                # light sensor does not have a light actuator complement).
                 if src not in xml_parents[nt]:
                     continue
 
+                xml_parent = xml_parents[nt][src][0]
+                xml_child_tags = xml_parents[nt][src][1]
                 if config['model'] == 'uniform':
                     levels = [x for x in np.linspace(config['range'][0],
                                                      config['range'][1],
                                                      num=attr['cardinality'] + 1)]
-                    by_src.extend([set([(xml_parents[nt][src] + "/noise", 'model', config['model']),
-                                        (xml_parents[nt][src] + "/noise", 'level', str(l))]) for l in levels])
+                    for l in levels:
+                        by_src.extend([set([(xml_parent + tag, 'model', config['model']),
+                                            (xml_parent + tag, 'level', str(l))]) for tag in xml_child_tags])
                     n_levels = len(levels)
                 elif config['model'] == 'gaussian':
                     stddev_levels = [x for x in np.linspace(config['stddev_range'][0],
@@ -396,10 +407,11 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
                     mean_levels = [x for x in np.linspace(config['mean_range'][0],
                                                           config['mean_range'][1],
                                                           num=attr['cardinality'] + 1)]
-                    by_src.extend([set([(xml_parents[nt][src] + '/noise', 'model', config['model']),
-                                        (xml_parents[nt][src] + '/noise', 'mean', str(l1)),
-                                        (xml_parents[nt][src] + '/noise', 'stddev', str(l2))])
-                                   for l1, l2 in zip(mean_levels, stddev_levels)])
+                    for l1, l2 in zip(mean_levels, stddev_levels):
+                        by_src.extend([set([(xml_parent + tag, 'model', config['model']),
+                                            (xml_parent + tag, 'mean', str(l1)),
+                                            (xml_parent + tag, 'stddev', str(l2))])
+                                       for tag in xml_child_tags])
                     n_levels = len(mean_levels)
                 else:
                     assert False, "FATAL: bad noise model '{0}'".format(config['model'])
