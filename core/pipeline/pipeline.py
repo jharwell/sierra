@@ -88,6 +88,7 @@ class Pipeline:
             'exp_graphs': self.args.exp_graphs,
             'plugin_rendering': self.args.plugin_rendering,
             'plot_regression_lines': self.args.plot_regression_lines,
+            'plot_primary_axis': self.args.plot_primary_axis,
 
             # stage 5
             'controllers_list': self.args.controllers_list,

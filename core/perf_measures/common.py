@@ -128,17 +128,19 @@ class ProjectivePerformanceCalculatorBivar:
         # We need to know which of the 2 variables was swarm size, in order to determine
         # the correct dimension along which to compute the metric, which depends on
         # performance between adjacent swarm sizes.
-        if isinstance(batch_criteria.criteria1, PopulationSize):
-            return self.__project_vals_row(perf_df, batch_criteria)
+        if isinstance(batch_criteria.criteria1, PopulationSize) or self.cmdopts['plot_primary_axis'] == '0':
+            return self.__compute_vals_col(perf_df, batch_criteria)
         else:
-            return self.__project_vals_col(perf_df, batch_criteria)
+            return self.__compute_vals_row(perf_df, batch_criteria)
 
-    def __project_vals_col(self, perf_df: pd.DataFrame, batch_criteria: bc.BatchCriteria):
-        proj_df = pd.DataFrame(columns=perf_df.columns[1:], index=perf_df.index)
+    def __compute_vals_row(self, perf_df: pd.DataFrame, batch_criteria: bc.BatchCriteria):
+        proj_df = pd.DataFrame(columns=perf_df.columns, index=perf_df.index)
         yvals = batch_criteria.graph_yticks(self.cmdopts)
 
+        proj_df.iloc[:, 0] = math.nan
+
         for i in range(0, len(proj_df.index)):
-            for j in range(0, len(proj_df.columns)):
+            for j in range(1, len(proj_df.columns)):
                 similarity = float(yvals[j]) / float(yvals[j - 1])
                 obs = csv_3D_value_iloc(perf_df, i, j, slice(-1, None))
                 prev_obs = csv_3D_value_iloc(perf_df, i, j - 1, slice(-1, None))
@@ -153,11 +155,13 @@ class ProjectivePerformanceCalculatorBivar:
                                                                                               similarity)
         return proj_df
 
-    def __project_vals_row(self, perf_df: pd.DataFrame, batch_criteria: bc.BatchCriteria):
-        proj_df = pd.DataFrame(columns=perf_df.columns, index=perf_df.index[1:])
+    def __compute_vals_col(self, perf_df: pd.DataFrame, batch_criteria: bc.BatchCriteria):
+        proj_df = pd.DataFrame(columns=perf_df.columns, index=perf_df.index)
         xvals = batch_criteria.graph_xticks(self.cmdopts)
 
-        for i in range(0, len(proj_df.index)):
+        proj_df.iloc[0, :] = math.nan
+
+        for i in range(1, len(proj_df.index)):
             for j in range(0, len(proj_df.columns)):
                 similarity = float(xvals[i]) / float(xvals[i - 1])
                 obs = csv_3D_value_iloc(perf_df, i, j, slice(-1, None))
@@ -361,7 +365,7 @@ class PerfLostInteractiveSwarmBivar:
                     # We need to know which of the 2 variables was swarm size, in order to determine
                     # the correct axis along which to compute the metric, which depends on
                     # performance between adjacent swarm sizes.
-                    if isinstance(batch_criteria.criteria1, PopulationSize):
+                    if isinstance(batch_criteria.criteria1, PopulationSize) or self.cmdopts['plot_primary_axis'] == '0':
                         n_robots = populations[i][0]  # same population in all columns
                     else:
                         n_robots = populations[0][j]  # same population in all rows

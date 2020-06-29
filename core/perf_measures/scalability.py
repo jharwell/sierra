@@ -91,7 +91,8 @@ class InterRobotInterferenceUnivar:
 
         populations = batch_criteria.populations(self.cmdopts)
         for i in range(0, len(raw_df.columns)):
-            eff_df[raw_df.columns[i]] = calc_efficiency(raw_df[raw_df.columns[i]], populations[i])
+            eff_df[raw_df.columns[i]] = calculate_efficiency(
+                raw_df[raw_df.columns[i]], populations[i])
 
         return eff_df
 
@@ -100,7 +101,7 @@ class NormalizedEfficiencyUnivar:
     r"""
     Univariate calculator for per-robot efficiency for each experiment in a batch
     (intra-experiment measure; no comparison across experiments in a batch is performed). See
-    :func:`calc_efficiency` for calculations.
+    :func:`calculate_efficiency` for calculations.
     """
 
     def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
@@ -256,7 +257,7 @@ class KarpFlattUnivar:
     r"""
     Calculates the scalability of the swarm configuration across a univariate batched set of
     experiments within the same scenario from collated ``.csv`` data using the Karp-Flatt metric
-    (See :func:`calc_karpflatt`).
+    (See :func:`calculate_karpflatt`).
 
     Only valid if one of the batch criteria was :class:`~variables.population_size.PopulationSize`
     derived.
@@ -282,7 +283,7 @@ class KarpFlattUnivar:
         df[projection.columns] = projection[projection.columns]
 
         for i in range(0, len(df.columns)):
-            df[df.columns[i]] = calc_karpflatt(df[df.columns[i]], sizes[i])
+            df[df.columns[i]] = calculate_karpflatt(df[df.columns[i]], sizes[i])
 
         return df
 
@@ -358,10 +359,10 @@ class InterRobotInterferenceBivar:
         count_png_ostem = os.path.join(self.cmdopts["graph_root"], self.kCountLeaf)
         duration_png_ostem = os.path.join(self.cmdopts["graph_root"], self.kDurationLeaf)
 
-        count_df = self.__calculate_measure(count_csv_istem + ".csv", batch_criteria)
+        count_df = self.__calculate_measure(count_csv_istem + ".csv")
         count_df.to_csv(count_csv_ostem + '.csv', sep=';', index=False)
 
-        duration_df = self.__calculate_measure(duration_csv_istem + ".csv", batch_criteria)
+        duration_df = self.__calculate_measure(duration_csv_istem + ".csv")
         duration_df.to_csv(duration_csv_ostem + '.csv', sep=';', index=False)
 
         Heatmap(input_fpath=count_csv_ostem + ".csv",
@@ -380,7 +381,7 @@ class InterRobotInterferenceBivar:
                 xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
                 ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)).generate()
 
-    def __calculate_measure(self, ipath: str, batch_criteria: bc.BivarBatchCriteria):
+    def __calculate_measure(self, ipath: str):
         assert(os.path.exists(ipath)), "FATAL: {0} does not exist".format(ipath)
         raw_df = pd.read_csv(ipath, sep=';')
         eff_df = pd.DataFrame(columns=raw_df.columns,
@@ -398,7 +399,7 @@ class NormalizedEfficiencyBivar:
     """
     Bivariate calculator for per-robot efficiency for each experiment in a batch
     (intra-experiment measure; no comparison across experiments in a batch is performed). See
-    :func:`calc_efficiency` for calculations.
+    :func:`calculate_efficiency` for calculations.
     """
 
     def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
@@ -461,7 +462,7 @@ class NormalizedEfficiencyBivar:
                                                   i,
                                                   j,
                                                   slice(-1, None))
-                eff_df.iloc[i, j] = calc_efficiency(perf_i, populations[i][j])
+                eff_df.iloc[i, j] = calculate_efficiency(perf_i, populations[i][j])
         return eff_df
 
 
@@ -512,7 +513,7 @@ class KarpFlattBivar:
     """
     Calculates the scalability of the swarm configuration across a bivariate batched set of
     experiments within the same scenario from collated ``.csv`` data using the Karp-Flatt metric
-    (See :func:`calc_karpflatt`).
+    (See :func:`calculate_karpflatt`).
 
     Only valid if one of the batch criteria was :class:`~variables.population_size.PopulationSize`
     derived.
@@ -540,17 +541,17 @@ class KarpFlattBivar:
 
         for i in range(0, len(df.index)):
             for j in range(0, len(df.columns)):
-                proj_x = df.iloc[i, j]
+                proj_xplus1 = df.iloc[i, j]
 
                 # We need to know which of the 2 variables was swarm size, in order to determine
                 # the correct dimension along which to compute the metric, which depends on
                 # performance between adjacent swarm sizes.
-                if isinstance(batch_criteria.criteria1, ps.PopulationSize):
-                    n_robots_x = sizes[i + 1][j]
+                if isinstance(batch_criteria.criteria1, ps.PopulationSize) or self.cmdopts['plot_primary_axis'] == '0':
+                    n_robots_xplus1 = sizes[i + 1][j]
                 else:
-                    n_robots_x = sizes[i][j + 1]
+                    n_robots_xplus1 = sizes[i][j + 1]
 
-                df.iloc[i, j] = calc_karpflatt(proj_x, n_robots_x)
+                df.iloc[i, j] = calculate_karpflatt(proj_xplus1, n_robots_xplus1)
 
         return df
 
@@ -600,9 +601,9 @@ class ScalabilityBivarGenerator:
 # Calculation Functions
 ################################################################################
 
-def calc_karpflatt(speedup: float, n_robots: int):
+def calculate_karpflatt(speedup: float, n_robots: int):
     """
-    Given a swarm exhibiting speedup :math:`X` with N robots(N > 1), compute the serial fraction
+    Given a swarm exhibiting speedup :math:`X` with :math:`N>1` robots, compute the serial fraction
     :math:`e` of the swarm's performance. The lower the value of :math:`e`, the better the
     parallelization/scalability, suggesting that the addition of more robots will bring additional
     performance improvements:
@@ -610,9 +611,8 @@ def calc_karpflatt(speedup: float, n_robots: int):
     .. math::
         e = \frac{\frac{1}{X} - \frac{1}{N}}{1 - \frac{1}{N}}
 
-    Defined for swarms with N > 1 robots. For N=1, we obtain a Karp-Flatt value of 1.0 using
-    L'Hospital's rule and taking the derivative with respect to N (1 - 1/N is giving the problem
-    after all).
+    Defined for swarms with :math:`N>1` robots. For :math:`N=1`, we obtain a Karp-Flatt value of 1.0
+    using L'Hospital's rule and taking the derivative with respect to :math:`N`.
 
     From :xref:`Harwell2019`.
     """
@@ -622,7 +622,7 @@ def calc_karpflatt(speedup: float, n_robots: int):
         return 1.0
 
 
-def calc_efficiency(perf_i: float, n_robots_i: int):
+def calculate_efficiency(perf_i: float, n_robots_i: int):
     """
     Calculate for per-robot efficiency.
 

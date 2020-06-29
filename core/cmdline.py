@@ -535,6 +535,25 @@ class CoreCmdline:
                                  - ``saa_noise`` (bivariate)
 
                                  """)
+        self.stage4.add_argument("--plot-primary-axis",
+                                 help="""
+
+
+                                 For all heatmaps generated from performance measures, this option allows you to
+                                 override the primary axis, which is normally it is computed based on the batch
+                                 criteria.
+
+                                 For example, if the first batch criteria swarm population size, then swarm scalability
+                                 metrics will be computed by COMPUTING across .csv rows and PRJECTING down the columns
+                                 by default, since swarm size will only vary within a row. Passing a value of 1 to this
+                                 option will override this calculation, which can be useful in bivariate batch criteria
+                                 in which you are interested in the effect of the OTHER non-size criteria on various
+                                 performance measures.
+
+                                 0=rows
+                                 1=columns
+                                 """,
+                                 default=None)
 
         # Variance curve similarity options
         vcs = self.parser.add_argument_group('Stage4: VCS',

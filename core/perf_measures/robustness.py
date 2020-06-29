@@ -20,7 +20,6 @@ Classes for measuring the robustness of a swarm configuration in various ways.
 import os
 import copy
 import logging
-import typing as tp
 import math
 
 import pandas as pd
@@ -34,6 +33,12 @@ import core.variables.saa_noise as saan
 import core.perf_measures.common as common
 import core.utils
 from core.variables.population_dynamics import PopulationDynamics
+
+kIDEAL_SAA_ROBUSTNESS = 0.0
+
+################################################################################
+# Univariate Classes
+################################################################################
 
 
 class RobustnessSAAUnivar:
@@ -64,7 +69,7 @@ class RobustnessSAAUnivar:
         # conditions. With perfect SAA robustness, they should track exactly.
 
         df = pd.DataFrame(columns=batch_exp_dirnames, index=[0])
-        df[batch_exp_dirnames[0]] = 0.0  # By definition
+        df[batch_exp_dirnames[0]] = kIDEAL_SAA_ROBUSTNESS
 
         for i in range(1, criteria.n_exp()):
             df[batch_exp_dirnames[i]] = vcs.RawPerfCS(main_config,
@@ -72,14 +77,14 @@ class RobustnessSAAUnivar:
                                                       0,
                                                       i)(criteria)
 
-        stem_opath = os.path.join(self.cmdopts["collate_root"], "pm-robustness-saa")
+        stem_opath = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
 
         # Write .csv to file
         df.to_csv(stem_opath + '.csv', sep=';', index=False)
 
         BatchRangedGraph(inputy_stem_fpath=stem_opath,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
-                                                   "pm-robustness-saa.png"),
+                                                   self.kLeaf + ".png"),
                          title="Swarm Robustness (SAA)",
                          xlabel=criteria.graph_xlabel(self.cmdopts),
                          ylabel=vcs.method_ylabel(self.cmdopts["rperf_cs_method"],
@@ -114,9 +119,8 @@ class RobustnessSizeUnivar:
         perf_df = pd.read_csv(os.path.join(self.cmdopts["collate_root"],
                                            main_config['perf']['inter_perf_csv']),
                               sep=';')
-        df[batch_exp_dirnames[0]] = 1.0  # by definition
 
-        for i in range(1, criteria.n_exp()):
+        for i in range(0, criteria.n_exp()):
             exp_def = core.utils.unpickle_exp_def(os.path.join(self.cmdopts['generation_root'],
                                                                batch_exp_dirnames[i],
                                                                'exp_def.pkl'))
@@ -128,25 +132,30 @@ class RobustnessSizeUnivar:
 
             s = dlambda + mlambda - (bmu + rmu)
             w = 1.0 / s if s > 0.0 else math.inf
+            perf0 = perf_df[batch_exp_dirnames[0]].tail(1)
+            perfN = perf_df[batch_exp_dirnames[i]].tail(1)
 
-            df[batch_exp_dirnames[i]] = calc_Bsz_harwell2020(explen * expticks,
-                                                             w,
-                                                             perf_df[batch_exp_dirnames[0]].tail(1),
-                                                             perf_df[batch_exp_dirnames[i]].tail(1))
+            df[batch_exp_dirnames[i]] = calculate_fpr(w=w,
+                                                      T=explen * expticks,
+                                                      perf0=perf0,
+                                                      perfN=perfN)
 
-        stem_opath = os.path.join(self.cmdopts["collate_root"], "pm-robustness-size")
+        stem_opath = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
 
         # Write .csv to file
         df.to_csv(stem_opath + '.csv', sep=';', index=False)
 
         BatchRangedGraph(inputy_stem_fpath=stem_opath,
-                         output_fpath=os.path.join(self.cmdopts["graph_root"],
-                                                   "pm-robustness-size.png"),
-                         title="Swarm Robustness (Fluctuating Population)",
+                         output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),
+                         title="Swarm Robustness (Fluctuating Populations)",
                          xlabel=criteria.graph_xlabel(self.cmdopts),
-                         ylabel='Value',
+                         ylabel=criteria.graph_ylabel(self.cmdopts),
                          xticks=criteria.graph_xticks(self.cmdopts),
                          xtick_labels=criteria.graph_xticklabels(self.cmdopts)).generate()
+
+################################################################################
+# Bivariate Classes
+################################################################################
 
 
 class RobustnessSAABivar:
@@ -155,6 +164,7 @@ class RobustnessSAABivar:
     bivariate batched set of experiments within the same scenario from collated .csv data using
     curve similarity measures.
     """
+    kLeaf = "pm-robustness-saa"
 
     def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -171,16 +181,15 @@ class RobustnessSAABivar:
         """
         logging.info("Bivariate SAA Robustness from %s", self.cmdopts["collate_root"])
         csv_ipath = self.__gen_heatmap(main_config, criteria)
-        self.__gen_scatterplot(csv_ipath)
+        self.__gen_scatterplot(csv_ipath, criteria)
 
-    def __gen_scatterplot(self, rob_ipath: str):
+    def __gen_scatterplot(self, rob_ipath: str, criteria: bc.BivarBatchCriteria):
         """
         Generate a :class:`~core.graphs.scatterplot2D.Scatterplot2D` graph of robustness
         vs. performance AFTER the main robustness `.csv` has generated in :method:`__gen_heatmap()`
         """
         perf_ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
-        opath = os.path.join(self.cmdopts['collate_root'],
-                             'pm-robustness-saa-vs-perf.csv')
+        opath = os.path.join(self.cmdopts['collate_root'], self.kLeaf + '-vs-perf.csv')
         perf_df = pd.read_csv(perf_ipath, sep=';')
         rob_df = pd.read_csv(rob_ipath, sep=';')
         scatter_df = pd.DataFrame(columns=['perf', 'robustness-saa'])
@@ -201,13 +210,13 @@ class RobustnessSAABivar:
 
         Scatterplot2D(input_csv_fpath=opath,
                       output_fpath=os.path.join(self.cmdopts["graph_root"],
-                                                "pm-robustness-saa-vs-perf.png"),
+                                                self.kLeaf + "-vs-perf.png"),
                       title='Swarm Robustness (SAA) vs. Performance',
                       xcol='robustness-saa',
                       ycol='perf',
                       regression=self.cmdopts['plot_regression_lines'],
-                      xlabel='Robustness Value',
-                      ylabel='# Blocks Collected').generate()
+                      xlabel='Robustness (SAA)',
+                      ylabel=criteria.graph_ylabel(self.cmdopts)).generate()
 
     def __gen_heatmap(self, main_config: dict, criteria: bc.BivarBatchCriteria):
         """
@@ -220,18 +229,17 @@ class RobustnessSAABivar:
         """
         ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
         raw_df = pd.read_csv(ipath, sep=';')
-        opath_stem = os.path.join(self.cmdopts["collate_root"], "pm-robustness-saa")
+        opath_stem = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
 
         # Generate heatmap dataframe and write to file
         df = self.__gen_heatmap_df(main_config, raw_df, criteria)
         df.to_csv(opath_stem + ".csv", sep=';', index=False)
 
         Heatmap(input_fpath=opath_stem + '.csv',
-                output_fpath=os.path.join(self.cmdopts["graph_root"], "pm-robustness-saa.png"),
+                output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),
                 title='Swarm Robustness (SAA)',
                 xlabel=criteria.graph_xlabel(self.cmdopts),
                 ylabel=criteria.graph_ylabel(self.cmdopts),
-                zlabel='Robustness Value',
                 xtick_labels=criteria.graph_xticklabels(self.cmdopts),
                 ytick_labels=criteria.graph_yticklabels(self.cmdopts)).generate()
         return opath_stem + '.csv'
@@ -241,34 +249,20 @@ class RobustnessSAABivar:
                          raw_df: pd.DataFrame,
                          criteria: bc.BivarBatchCriteria):
         df = pd.DataFrame(columns=raw_df.columns, index=raw_df.index)
-        df.iloc[0, 0] = 0.0  # By definition
 
-        xfactor = 0
-        yfactor = 0
-        # SAA noise is along rows (X), so the first row by definition is ideal conditions and has
-        # 0.0 distance to ideal conditions.
-        if isinstance(criteria.criteria1, saan.SAANoise):
-            df.iloc[0, :] = 0.0
-            xfactor = 1
-        # SAA noise is along colums (Y), so the first column by definition is ideal conditions and
-        # has 0.0 distance to ideal conditions.
-        else:
-            df.iloc[:, 0] = 0.0
-            yfactor = 1
-
-        for i in range(0 + xfactor, len(df.index)):
-            for j in range(0 + yfactor, len(df.columns)):
+        for i in range(0, len(df.index)):
+            for j in range(0, len(df.columns)):
                 # We need to know which of the 2 variables was SAA noise, in order to determine the
                 # correct dimension along which to compute the metric.
-                if isinstance(criteria.criteria1, saan.SAANoise):
+                if isinstance(criteria.criteria1, saan.SAANoise) or self.cmdopts['plot_primary_axis'] == '0':
                     val = vcs.RawPerfCS(main_config,
                                         self.cmdopts,
                                         j,  # exp0 in first row with i=0
                                         i * len(df.columns) + j)(criteria)
                 else:
                     val = vcs.RawPerfCS(main_config,
-                                        self.cmdopts,  # exp0 in first col with j=0
-                                        i * len(df.columns),
+                                        self.cmdopts,
+                                        i * len(df.columns),  # exp0 in first col with j=0
                                         i * len(df.columns) + j)(criteria)
 
                 df.iloc[i, j] = val
@@ -280,6 +274,7 @@ class RobustnessSizeBivar:
     Calculates the robustness of the swarm configuration to fluctuating population sies across a
     bivariate batched set of experiments within the same scenario from collated .csv data.
     """
+    kLeaf = "pm-robustness-size"
 
     def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -296,16 +291,16 @@ class RobustnessSizeBivar:
         """
         logging.info("Bivariate Population Size Robustness from %s", self.cmdopts["collate_root"])
         csv_ipath = self.__gen_heatmap(criteria)
-        self.__gen_scatterplot(csv_ipath)
+        self.__gen_scatterplot(csv_ipath, criteria)
 
-    def __gen_scatterplot(self, rob_ipath: str):
+    def __gen_scatterplot(self, rob_ipath: str, criteria: bc.BivarBatchCriteria):
         """
         Generate a :class:`~core.graphs.scatterplot2D.Scatterplot2D` graph of robustness
         vs. performance AFTER the main robustness `.csv` has generated in :method:`__gen_heatmap()`
         """
         perf_ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
         opath = os.path.join(self.cmdopts['collate_root'],
-                             'pm-robustness-size-vs-perf.csv')
+                             self.kLeaf + '-vs-perf.csv')
         perf_df = pd.read_csv(perf_ipath, sep=';')
         rob_df = pd.read_csv(rob_ipath, sep=';')
         scatter_df = pd.DataFrame(columns=['perf', 'robustness-size'])
@@ -326,13 +321,13 @@ class RobustnessSizeBivar:
 
         Scatterplot2D(input_csv_fpath=opath,
                       output_fpath=os.path.join(self.cmdopts["graph_root"],
-                                                "pm-robustness-size-vs-perf.png"),
+                                                self.kLeaf + "-vs-perf.png"),
                       title='Swarm Robustness (Fluctuating Population) vs. Performance',
                       xcol='robustness-size',
                       ycol='perf',
                       regression=self.cmdopts['plot_regression_lines'],
                       xlabel='Robustness Value',
-                      ylabel='# Blocks Collected').generate()
+                      ylabel=criteria.graph_ylabel(self.cmdopts)).generate()
 
     def __gen_heatmap(self, criteria: bc.BivarBatchCriteria):
         """
@@ -345,46 +340,32 @@ class RobustnessSizeBivar:
         """
         ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
         raw_df = pd.read_csv(ipath, sep=';')
-        opath_stem = os.path.join(self.cmdopts["collate_root"], "pm-robustness-size")
+        opath_stem = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
 
         # Generate heatmap dataframe and write to file
         df = self.__gen_heatmap_df(raw_df, criteria)
         df.to_csv(opath_stem + ".csv", sep=';', index=False)
 
         Heatmap(input_fpath=opath_stem + '.csv',
-                output_fpath=os.path.join(self.cmdopts["graph_root"], "pm-robustness-size.png"),
-                title='Swarm Robustness (Fluctuating Population)',
+                output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),
+                title='Swarm Robustness (Fluctuating Populations)',
                 xlabel=criteria.graph_xlabel(self.cmdopts),
                 ylabel=criteria.graph_ylabel(self.cmdopts),
-                zlabel='Robustness Value',
                 xtick_labels=criteria.graph_xticklabels(self.cmdopts),
                 ytick_labels=criteria.graph_yticklabels(self.cmdopts)).generate()
         return opath_stem + '.csv'
 
     def __gen_heatmap_df(self, raw_df: pd.DataFrame, criteria: bc.BivarBatchCriteria):
         df = pd.DataFrame(columns=raw_df.columns, index=raw_df.index)
-        df.iloc[0, 0] = 0.0  # By definition
-
-        xfactor = 0
-        yfactor = 0
-        # SAA noise is along rows (X), so the first row by definition is ideal conditions and has
-        # 1.0 robustness.
-        if isinstance(criteria.criteria1, saan.SAANoise):
-            df.iloc[0, :] = 1.0
-            xfactor = 1
-        # SAA noise is along colums (Y), so the first column by definition is ideal conditions and
-        # has 1.0 robustness.
-        else:
-            df.iloc[:, 0] = 1.0
-            yfactor = 1
 
         exp_dirnames = criteria.gen_exp_dirnames(self.cmdopts)
-        for i in range(0 + xfactor, len(df.index)):
-            for j in range(0 + yfactor, len(df.columns)):
-                exp_def = core.utils.unpickle_exp_def(os.path.join(self.cmdopts['generation_root'],
-                                                                   exp_dirnames[i *
-                                                                                len(df.columns) + j],
-                                                                   'exp_def.pkl'))
+        for i in range(0, len(df.index)):
+            for j in range(0, len(df.columns)):
+                pickle_path = os.path.join(self.cmdopts['generation_root'],
+                                           exp_dirnames[i * len(df.columns) + j],
+                                           'exp_def.pkl')
+                exp_def = core.utils.unpickle_exp_def(pickle_path)
+
                 # Get the simulation duration
                 explen, expticks = PopulationDynamics.extract_explen(exp_def)
 
@@ -396,7 +377,7 @@ class RobustnessSizeBivar:
 
                 # We need to know which of the 2 variables was SAA noise, in order to determine the
                 # correct dimension along which to compute the metric.
-                if isinstance(criteria.criteria1, saan.SAANoise):
+                if isinstance(criteria.criteria1, saan.SAANoise) or self.cmdopts['plot_primary_axis'] == '0':
                     perf0 = common.csv_3D_value_iloc(raw_df,
                                                      0,  # exp0 in first row with i=0
                                                      j,
@@ -406,30 +387,40 @@ class RobustnessSizeBivar:
                                                      i,
                                                      0,  # exp0 in first col with j=0
                                                      slice(-1, None))
+
                 perfN = common.csv_3D_value_iloc(raw_df,
                                                  i,
                                                  j,
                                                  slice(-1, None))
-                df.iloc[i, j] = calc_Bsz_harwell2020(explen * expticks, w, perfN, perf0)
+                df.iloc[i, j] = calculate_fpr(w=w,
+                                              T=explen * expticks,
+                                              perfN=perfN,
+                                              perf0=perf0)
         return df
 
+################################################################################
+# Calculation Functions
+################################################################################
 
-def calc_Bsz_harwell2020(duration: int, w: float, perfN: float, perf0: float):
+
+def calculate_fpr(w: float, T: int, perf0: float, perfN: float):
     r"""
-    Calculate swarm robustness to fluctuating swarm sizes. Equation taken from :xref:`Harwell2020`.
+    Calculate swarm robustness to fluctuating swarm populations. Equation taken from
+    :xref:`Harwell2020`.
 
     .. math::
        \begin{equation}
-       B_{sz}(\kappa,T) = \frac{1}{1+e^(\theta_{B_{sz}})}
+       B_{sz}(\kappa) = \sum_{t\in{T}}\frac{1}{1+e^(-\theta_{B_{sz}})} - \frac{1}{1+e^(+\theta_{B_{sz}})}
        \end{equation}
 
     where
 
     .. math::
        \begin{equation}
-       \theta_{B_{sz}}(\kappa,T) = \frac{w}{T}\frac{P(N,\kappa,T) - P_{ideal}(N,\kappa,T)}{P_{ideal}(N,\kappa,T)}
+       \theta_{B_{sz}}(\kappa,t) = \sum_{t\in{T}}P(N,\kappa,t) - \frac{w}{T}P_{ideal}(N,\kappa,t)
        \end{equation}
 
     """
-    theta = float(w) / float(duration) * (perfN - perf0) / perf0
-    return 1.0 / (1.0 + math.exp(theta))
+    scaled_perf0 = float(w) / float(T) * perf0
+    theta = (perfN - scaled_perf0)
+    return 1.0 / (1 + math.exp(-theta)) - 1.0 / (1 + math.exp(theta))

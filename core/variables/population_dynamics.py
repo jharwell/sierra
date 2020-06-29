@@ -155,6 +155,9 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
         return "Average Fraction of Time Robots Allocated To Task"
 
+    def graph_ylabel(self, cmdopts: tp.Dict[str, str]) -> str:
+        return "Superlinearity"
+
     def pm_query(self, pm: str) -> bool:
         return pm in ['blocks-transported', 'robustness-size']
 

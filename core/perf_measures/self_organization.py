@@ -33,6 +33,9 @@ from core.perf_measures import common
 from core.variables import batch_criteria as bc
 from core.variables import population_size as ps
 
+kIDEAL_SELF_ORG = 1.0
+kNO_SELF_ORG = 0.0
+
 ################################################################################
 # Univariate Classes
 ################################################################################
@@ -47,7 +50,9 @@ class FractionalLossesUnivar:
     Generates a :class:`~graphs.batch_ranged_graph.BatchRangedGraph` across swarm sizes of self
     organization using :class:`perf_measures.common.FractionalLossesUnivar`.
 
-    Only valid if the batch criteria was :class:`~variables.population_size.PopulationSize` derived.
+    Assumptions:
+        - exp0 has 1 robot.
+        - The batch criteria was :class:`~variables.population_size.PopulationSize` derived.
     """
     kLeaf = "pm-self-org-fl"
 
@@ -68,8 +73,9 @@ class FractionalLossesUnivar:
         populations = batch_criteria.populations(self.cmdopts)
 
         for i in range(0, len(fl.columns)):
-            df_new.loc[0, batch_exp_dirnames[i]] = calc_self_org_fl(fl[batch_exp_dirnames[i]],
-                                                                    fl[batch_exp_dirnames[i - 1]],
+            df_new.loc[0, batch_exp_dirnames[i]] = calc_self_org_fl(fl[batch_exp_dirnames[i]].values[0],
+                                                                    fl[batch_exp_dirnames[i - 1]
+                                                                       ].values[0],
                                                                     populations[i],
                                                                     populations[i - 1])
 
@@ -79,9 +85,9 @@ class FractionalLossesUnivar:
         BatchRangedGraph(inputy_stem_fpath=stem_path,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    self.kLeaf + ".png"),
-                         title="Swarm Self-Organization Due To Sub-Linear Fractional Performance Losses",
+                         title="Swarm Self-Organization via Sub-Linear Performance Losses",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
-                         ylabel="",
+                         ylabel="Sub-linearity",
                          xticks=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
 
@@ -96,11 +102,12 @@ class MarginalPerformanceGainUnivar:
     Generates a :class:`~graphs.batch_ranged_graph.BatchRangedGraph` across swarm sizes of self
     organization.
 
-    Only valid if one of the batch criteria was :class:`~variables.population_size.PopulationSize`
-    derived.
+    Assumptions:
+        - exp0 has 1 robot.
+        - The batch criteria was :class:`~variables.population_size.PopulationSize` derived.
 
     """
-    kLeaf = "pm-marginal-perf-gain"
+    kLeaf = "pm-self-org-mpg"
 
     def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -142,7 +149,7 @@ class MarginalPerformanceGainUnivar:
 
         BatchRangedGraph(inputy_stem_fpath=cum_stem,
                          output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf),
-                         title="Swarm Marginal Performance Gain",
+                         title="Swarm Self-Organization via Marginal Performance Gains",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="Marginal Performance Gain",
                          xticks=batch_criteria.graph_xticks(self.cmdopts)).generate()
@@ -205,8 +212,9 @@ class FractionalLossesBivar:
     Generates a :class:`~graphs.heatmap.Heatmap` across swarm sizes of self organization from
     :class:`~perf_measures.common.FractionalLossesBivar` data.
 
-    Only valid if one of the batch criteria was :class:`~variables.population_size.PopulationSize`
-    derived.
+    Assumptions:
+        - exp0 has 1 robot.
+        - One of the batch criteria was :class:`~variables.population_size.PopulationSize` derived.
     """
     kLeaf = "pm-self-org-fl"
 
@@ -233,7 +241,7 @@ class FractionalLossesBivar:
 
         Heatmap(input_fpath=stem_path + '.csv',
                 output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),
-                title="Swarm Self-Organization Due To Sub-Linear Fractional Performance Losses",
+                title="Swarm Self-Organization via Sub-Linear Performance Losses",
                 xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                 ylabel=batch_criteria.graph_ylabel(self.cmdopts),
                 xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
@@ -251,12 +259,12 @@ class FractionalLossesBivar:
                 # We need to know which of the 2 variables was swarm size, in order to determine the
                 # correct dimension along which to compute the metric, which depends on performance
                 # between adjacent swarm sizes.
-                if isinstance(batch_criteria.criteria1, ps.PopulationSize):
-                    fl_iminus1 = fl.iloc[i, j - 1]
-                    n_robots_iminus1 = populations[i][j - 1]
-                else:
+                if isinstance(batch_criteria.criteria1, ps.PopulationSize) or self.cmdopts['plot_primary_axis'] == '0':
                     fl_iminus1 = fl.iloc[i - 1, j]
                     n_robots_iminus1 = populations[i - 1][j]
+                else:
+                    fl_iminus1 = fl.iloc[i, j - 1]
+                    n_robots_iminus1 = populations[i][j - 1]
 
                 so_df.iloc[i, j] = calc_self_org_fl(fl_i,
                                                     n_robots_i,
@@ -275,10 +283,11 @@ class MarginalPerformanceGainBivar:
 
     Generates a :class:`~graphs.heatmap.Heatmap` across swarm sizes of self organization.
 
-    Only valid if one of the batch criteria was :class:`~variables.population_size.PopulationSize`
-    derived.
+    Assumptions:
+        - exp0 has 1 robot.
+        - One of the batch criteria was :class:`~variables.population_size.PopulationSize` derived.
     """
-    kLeaf = "pm-marginal-perf-gain"
+    kLeaf = "pm-self-org-mpg"
 
     def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -309,8 +318,6 @@ class MarginalPerformanceGainBivar:
     def generate(self,
                  dfs: tp.Tuple[pd.DataFrame, pd.DataFrame],
                  batch_criteria: bc.BivarBatchCriteria):
-        logging.info("Bivariate MPG self-organization from %s", self.cmdopts["collate_root"])
-
         cum_stem = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
         metric_df, stddev_df = dfs
 
@@ -320,7 +327,7 @@ class MarginalPerformanceGainBivar:
 
         Heatmap(input_fpath=cum_stem + '.csv',
                 output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),
-                title='Swarm Marginal Performance Gains',
+                title="Swarm Self-Organization via Marginal Performance Gains",
                 xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                 ylabel=batch_criteria.graph_ylabel(self.cmdopts),
                 xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
@@ -346,12 +353,12 @@ class MarginalPerformanceGainBivar:
                 perf_i = raw_df[i][j]
                 n_robots_i = populations[i][j]
 
-                if isinstance(batch_criteria.criteria1, ps.PopulationSize):
-                    perf_iminus1 = raw_df[i][j - 1]
-                    n_robots_iminus1 = populations[i][j - 1]
-                else:
+                if isinstance(batch_criteria.criteria1, ps.PopulationSize) or self.cmdopts['plot_primary_axis'] == '0':
                     perf_iminus1 = raw_df[i - 1][j]
                     n_robots_iminus1 = populations[i - 1][j]
+                else:
+                    perf_iminus1 = raw_df[i][j - 1]
+                    n_robots_iminus1 = populations[i][j - 1]
 
                 eff_df.iloc = calc_self_org_mpg(perf_i, n_robots_i, perf_iminus1, n_robots_iminus1)
 
@@ -382,35 +389,40 @@ class SelfOrgBivarGenerator:
 # Calculation Functions
 ################################################################################
 
+
 def calc_self_org_fl(fl_i: float, n_robots_i: int, fl_iminus1: float, n_robots_iminus1: int):
     r"""
     Calculates the self organization for a particular swarm configuration of size :math:`m_i`, given
-    fractional performance losses for :math:`m_i` and a smaller swarm size :math:`m_{i-1}`. Equation
-    taken from :xref:`Harwell2019`.
+    fractional performance losses for :math:`m_i` and a smaller swarm size :math:`m_{i-1}`.
 
     .. math::
        \begin{equation}
-       Z(m_i,\kappa) = \sum_{t\in{T}}1 - \frac{1}{1 + e^{-\theta_Z(m_i,\kappa,t)}}
+       Z(m_i,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{-\theta_Z(m_i,\kappa,t)}} - {1 + e^{\theta_Z(m_i,\kappa,t)}}
        \end{equation}
 
     where
 
     .. math::
        \begin{equation}
-       \theta_Z(m_i,\kappa,t) = P_{lost}(m_i,\kappa,t) - \frac{m_i}{m_{i-1}}{P_{lost}(m_{i-1},\kappa,t)}
+       \theta_Z(m_i,\kappa,t) = \frac{m_i}{m_{i-1}}{P_{lost}(m_{i-1},\kappa,t)} - P_{lost}(m_i,\kappa,t)
        \end{equation}
 
-    Defined for swarms with :math:`N` > 1 robots. For :math:`N=1`, we obtain a :math:`\theta` value
-    of :math:`-P_{lost}(m_{i-1},\kappa,t)` using L'Hospital's rule and taking the derivative with
-    respect to :math:`N`.
+    Defined for swarms with :math:`m_{i-1}` > 1 robots. For :math:`m_{i-1}=1`, we obtain a
+    :math:`\theta` value of :math:`{m_i}{P_{lost}(m_{i-1},\kappa,t)}{m_{i-1}^2}` using L'Hospital's
+    rule and taking the derivative with respect to :math:`m_{i-1}`.
+
+    Original equation taken from :xref:`Harwell2019`, modified to have better theoretical limits.
+
     """
 
-    if n_robots_iminus1 > 0:
-        theta = fl_i - float(n_robots_i) / float(n_robots_iminus1) * fl_iminus1
+    if n_robots_iminus1 >= 1:
+        scaled_fl_iminus1 = float(n_robots_i) / float(n_robots_iminus1) * fl_iminus1
     else:
-        theta = - fl_iminus1
+        scaled_fl_iminus1 = float(n_robots_i) * fl_iminus1 * math.pow(float(n_robots_iminus1), -2)
 
-    return 1.0 - 1.0 / (1 + math.exp(-theta))
+    theta = (scaled_fl_iminus1 - fl_i)
+
+    return 1.0 / (1 + math.exp(-theta)) - 1.0 / (1 + math.exp(theta))
 
 
 def calc_self_org_mpg(perf_i: float, n_robots_i: int, perf_iminus1: float, n_robots_iminus1: int):
@@ -421,23 +433,24 @@ def calc_self_org_mpg(perf_i: float, n_robots_i: int, perf_iminus1: float, n_rob
 
     .. math::
        \begin{equation}
-       Z(m_i,\kappa) = \sum_{t\in{T}}1 - \frac{1}{1 + e^{-\theta_Z(m_i,\kappa,t)}}
+       Z(m_i,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{-\theta_Z(m_i,\kappa,t)}}
        \end{equation}
 
     .. math::
-       \begin{equation}
+       \begi{equation}
        theta = \frac{m_i}{m_{i-1}} - \frac{P(m_i,\kappa,t}{P(m_{i-1},\kappa,t)}
        \end{equation}
 
-    Defined for swarms with :math:`N` > 1 robots. For :math:`N=1`, we obtain a :math:`\theta` value
-    of -1.0 using L'Hospital's rule and taking the derivative with respect to :math:`N`.
+    Defined for swarms with :math:`m_{i-1}` > 1 robots. For :math:`m_{i-1}=1`, we obtain a
+    :math:`\theta` value of :math:`-m_i{m_{i-1}^2` using L'Hospital's rule and taking the derivative
+    with respect to :math:`m_i{i-1}`.
 
     Inspired by :xref:`Rosenfield2006`.
 
     """
-    if n_robots_iminus1 > 0:
+    if n_robots_iminus1 >= 1:
         theta = (perf_i / perf_iminus1) - (float(n_robots_i) / float(n_robots_iminus1))
     else:
-        theta = -1.0
+        theta = - float(n_robots_i) / math.pow(n_robots_iminus1, 2)
 
-    return 1.0 - 1.0 / (1 + math.exp(-theta))
+    return 1.0 / (1 + math.exp(-theta)) - 1.0 / (1 + math.exp(theta))
