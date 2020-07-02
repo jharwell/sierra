@@ -129,3 +129,8 @@ class StackedLineGraph:
         #              yerr=2 * stddev_df[c], linestyle = '')
         plt.fill_between(data_df.index, data_df[col] - 2 * stddev_df[col],
                          data_df[col] + 2 * stddev_df[col], alpha=0.25)
+
+
+__api__ = [
+    'StackedLineGraph'
+]

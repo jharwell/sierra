@@ -528,3 +528,10 @@ def __bivar_factory(main_config: dict, cmdopts: tp.Dict[str, str], cli_arg: tp.L
                  ret.criteria1.__class__.__name__,
                  ret.criteria2.__class__.__name__)
     return ret
+
+
+__api__ = [
+    'BatchCriteria',
+    'UnivarBatchCriteria',
+    'BivarBatchCriteria',
+]

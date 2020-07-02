@@ -20,40 +20,16 @@
     <__controller__ id="ffc"
                   library="foo">
       <actuators>
-        <differential_steering implementation="default">
-          <noise_factor model="gaussian"
-                        stddev="0.05"/>
-        </differential_steering>
+        <differential_steering implementation="default"/>
       </actuators>
       <sensors>
-        <positioning implementation="default">
-          <noise model="gaussian"
-                 stddev="0.05"/>
-        </positioning>
-        <differential_steering implementation="default">
-          <dist_noise model="gaussian"
-                      stddev="0.05"/>
-          <vel_noise model="gaussian"
-                     stddev="0.05"/>
-        </differential_steering>
-
-        <footbot_proximity implementation="default">
-          <noise model="gaussian"
-                 stddev="0.05"/>
-        </footbot_proximity>
-        <footbot_light implementation="rot_z_only">
-          <noise model="gaussian"
-                 stddev="0.05"/>
-        </footbot_light>
-        <footbot_motor_ground implementation="rot_z_only">
-          <noise model="gaussian"
-                 stddev="0.05"/>
-        </footbot_motor_ground>
+        <positioning implementation="default"/>
+        <differential_steering implementation="default"/>
+        <footbot_proximity implementation="default"/>
+        <footbot_light implementation="rot_z_only"/>
+        <footbot_motor_ground implementation="rot_z_only"/>
         <colored_blob_omnidirectional_camera implementation="rot_z_only"
-                                             medium="leds">
-          <noise model="gaussian"
-                 stddev="0.05"/>
-        </colored_blob_omnidirectional_camera>
+                                             medium="leds"/>
       </sensors>
       <params>
         <output

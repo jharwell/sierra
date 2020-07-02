@@ -545,3 +545,14 @@ def csv_3D_value_iloc(df, xslice, yslice, zslice):
     arr = np.fromstring(df.iloc[xslice, yslice][1:-1], dtype=np.float, sep=' ')
     # The second index is an artifact of how numpy represents scalars (1 element arrays).
     return arr[zslice][0]
+
+
+__api__ = [
+    'ProjectivePerformanceCalculatorUnivar',
+    'ProjectivePerformanceCalculatorBivar',
+    'PerfLostInteractiveSwarmUnivar',
+    'PerfLostInteractiveSwarmBivar',
+    'FractionalLosses',
+    'FractionalLossesUnivar',
+    'FractionalLossesBivar',
+]

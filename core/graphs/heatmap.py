@@ -226,3 +226,8 @@ class DualHeatmap:
     def __plot_labels(self, ax):
         ax.set_ylabel(self.xlabel, fontsize=18)
         # ax.set_xlabel(self.ylabel, fontsize=18)
+
+
+__api__ = [
+    'Heatmap'
+]

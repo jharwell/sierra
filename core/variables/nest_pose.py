@@ -71,3 +71,8 @@ class NestPose(BaseVariable):
 
     def gen_tag_addlist(self):
         return []
+
+
+__api__ = [
+    'NestPose'
+]

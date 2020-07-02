@@ -3,6 +3,18 @@
 How To Use SIERRA
 =================
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents
+
+   batch_criteria.rst
+   cli.rst
+   directories.rst
+   msi.rst
+
+Step by Step
+------------
+
 The following steps outline things to do to get up and running with SIERRA, once
 you have completed the setup steps (either :ref:`ln-msi-setup` or
 :ref:`ln-local-setup`).
@@ -63,9 +75,13 @@ you have completed the setup steps (either :ref:`ln-msi-setup` or
 General Usage Tips
 ------------------
 
-- The best way to figure out what SIERRA can do is by reading the :ref:`ln-cli`
-  docs. Every option is very well documented. The second best way is to look at
-  scripts under ``scripts/``, which are scripts I've used before on MSI.
+- The best ways to figure out what SIERRA can do are:
+
+  #. Reading the :ref:`ln-batch-criteria` docs.
+  #. Reading the :ref:`ln-cli` docs. Every option is very well documented.
+  #. Look at scripts under ``scripts/``, which are scripts I've used before on
+     MSI (they might no longer work, but they do give you some idea of how to
+     invoke SIERRA).
 
 - There are 5 pipeline stages, though only the first 4 will run automatically.
 
@@ -95,12 +111,3 @@ General Usage Tips
 
 - For ``QS,PL,RN`` distributions a square arena is required (if you try to run
   with anything else, you will get an error).
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Full Usage Docs:
-
-   batch_criteria.rst
-   cli.rst
-   directories.rst
-   msi.rst

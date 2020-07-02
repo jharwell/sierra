@@ -111,3 +111,10 @@ def __gen_batch_root(sierra_root: str,
                         plugin,
                         controller,
                         template_basename + '-' + scenario)
+
+
+__api__ = [
+    'from_cmdline',
+    'regen_from_exp',
+    'parse_batch_root'
+]

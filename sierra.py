@@ -23,10 +23,11 @@ import collections
 import coloredlogs
 
 import core.cmdline as cmd
+import core.hpc as hpc
 from core.pipeline.pipeline import Pipeline
 from core.generators.controller_generator_parser import ControllerGeneratorParser
 from core.generators.scenario_generator_parser import ScenarioGeneratorParser
-import core.pipeline.root_dirpath_generator as rdg
+import core.root_dirpath_generator as rdg
 
 
 def __sierra_run_default(args):
@@ -50,11 +51,13 @@ def __sierra_run():
     coloredlogs.install(fmt='%(asctime)s %(levelname)s - %(message)s',
                         level=eval("logging." + bootstrap_args.log_level))
 
-    logging.info("Loading cmdline extensions from plugin '%s'", bootstrap_args.plugin)
+    # Load HPC environment plugin
+    logging.info("Loading cmdline extensions from project '%s'", bootstrap_args.plugin)
+
     module = __import__("plugins.{0}.cmdline".format(bootstrap_args.plugin),
                         fromlist=["*"])
     args = module.Cmdline().parser.parse_args(other_args)
-    args = cmd.HPCEnvInheritor(args.hpc_env)(args)
+    args = hpc.EnvConfigurer(bootstrap_args.hpc_env)(args)
     args.__dict__['plugin'] = bootstrap_args.plugin
 
     module.CmdlineValidator()(args)

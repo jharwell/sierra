@@ -424,3 +424,11 @@ def calculate_fpr(w: float, T: int, perf0: float, perfN: float):
     scaled_perf0 = float(w) / float(T) * perf0
     theta = (perfN - scaled_perf0)
     return 1.0 / (1 + math.exp(-theta)) - 1.0 / (1 + math.exp(theta))
+
+
+__api__ = [
+    'RobustnessSAAUnivar',
+    'RobustnessSizeUnivar',
+    'RobustnessSAABivar',
+    'RobustnessSizeBivar',
+]

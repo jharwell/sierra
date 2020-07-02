@@ -253,3 +253,8 @@ class PipelineStage4:
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         logging.info("Stage4: Inter-experiment graph generation complete: %s", str(sec))
+
+
+__api__ = [
+    'PipelineStage4'
+]

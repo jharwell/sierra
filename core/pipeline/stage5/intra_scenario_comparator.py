@@ -31,7 +31,7 @@ from core.graphs.batch_ranged_graph import BatchRangedGraph
 from core.graphs.stacked_surface_graph import StackedSurfaceGraph
 from core.graphs.heatmap import Heatmap, DualHeatmap
 from core.variables import batch_criteria as bc
-import core.pipeline.root_dirpath_generator as rdg
+import core.root_dirpath_generator as rdg
 
 
 class BivarIntraScenarioComparator:

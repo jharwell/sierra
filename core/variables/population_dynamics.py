@@ -13,68 +13,9 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # SIERRA.  If not, see <http://www.gnu.org/licenses/
-r"""
-Definition:
-    C{cardinality}.F{Factor}[.{dynamics_type}{prob}[...]]
-
-    - cardinality - The # of different values of each of the specified dynamics types to to test
-      with (starting with the one on the cmdline). This defines the cardinality of the batched
-      experiment.
-
-    - Factor - The factor by which the starting value of all dynamics types specified on the cmdline
-      are increased for each each experiment (i.e., value in last experiment in batch will be
-      ``<start value> + cardinality``; a linear increase).
-
-    - dynamics_type - {B|D|M|R}.
-
-      - ``B`` - Adds birth dynamics to the population. Has no effect by itself, as it specifies a
-        pure birth process with :math:`\lambda=\infty`, :math:`\mu_{b}`=``prob`` (a queue with an
-        infinite # of robots in it which robots periodically leave from), resulting in dynamic swarm
-        sizes which will increase from N...N over time. Can be specified with along with ``D|M|R``,
-        in which case swarm sizes will increase according to the birth rate up until N, given N
-        robots at the start of simulation.
-
-      - ``D`` - Adds death dynamics to the population. By itself, it specifies a pure death process
-        with :math:`\lambda_{d}`=``prob``, and :math:`\mu_{d}`=`\infty` (a queue which robots enter
-        but never leave), resulting in dynamic swarm sizes which will decrease from N...1 over
-        time. Can be specified along with ``B|M|R``.
-
-      - ``M|R`` - Adds malfunction/repair dynamics to the population. If ``M`` dynamics specified,
-        ``R`` dynamics must also be specified, and vice versa. Together they specify the dynamics of
-        the swarm as robots temporarily fail, and removed from simulation, and then later are
-        re-introduced after they have been repaired (a queue with :math:`\lambda_{m}` arrival rate
-        and :math:`\mu_{r}` repair rate). Can be specified along with ``B|D``.
-
-
-    The specified :math:`\lambda` or :math:`\mu` are the rate parameters of the exponential
-    distribution used to distribute the event times of the Poisson process governing swarm sizes,
-    *NOT* Poisson process parameter, which is their mean; e.g.,
-    :math:`\lambda=\frac{1}{\lambda_{d}}` for death dynamics.
-
-Examples:
-
-    - ``C10.F2p0.B0p001``: 10 levels of population variability applied using a pure birth process
-      with a 0.001 parameter, which will be linearly varied in [0.001,0.001*2.0*10]. For all
-      experiments, the initial swarm is not controlled directly; the value in template input file if
-      not controlled by another variable.
-
-    - ``C4.F3p0.D0p001``: 4 levels of population variability applied using a pure death process with
-      a 0.001 parameter, which will be linearly varied in [0.001,0.001*3.0*4]. For all experiments,
-      the initial swarm is not controlled directly; the value in template input file if not
-      controlled by another variable.
-
-    - ``C8.F4p0.B0p001.D0p005``: 8 levels of population variability applied using a birth-death
-      process with a 0.001 parameter for birth and a 0.005 parameter for death, which will be
-      linearly varied in [0.001,0.001*4.0*8] and [0.005, 0.005*4.0*8] respectively. For all
-      experiments, the initial swarm is not controlled directly; the value in template input file if
-      not controlled by another variable.
-
-    - ``C2.F1p5.M0p001.R0p005``: 2 levels of population variability applied using a
-      malfunction-repair process with a 0.001 parameter for malfunction and a 0.005 parameter for
-      repair which will be linearly varied in [0.001, 0.001*1.5*2] and [0.005, 0.005*1.5*2]
-      respectively. For all experiments, the initial swarm is not controlled directly; the value in
-      template input file if not controlled by another variable.
-
+"""
+Classes for the population dynamics batch criteria. See :ref:`ln-bc-population-dynamics` for usage
+documentation.
 """
 
 import typing as tp
@@ -286,3 +227,8 @@ def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_generation_root:
     return type(cli_arg,
                 (PopulationDynamics,),
                 {"__init__": __init__})
+
+
+__api__ = [
+    'PopulationDynamics'
+]

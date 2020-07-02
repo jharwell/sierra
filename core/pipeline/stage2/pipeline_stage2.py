@@ -45,3 +45,8 @@ class PipelineStage2:
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         logging.info("Stage2: Execution complete in %s", str(sec))
+
+
+__api__ = [
+    'PipelineStage2'
+]

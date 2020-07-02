@@ -32,11 +32,12 @@ import logging
 import yaml
 
 import core.variables.batch_criteria as bc
-from core.pipeline.stage1 import PipelineStage1
-from core.pipeline.stage2 import PipelineStage2
-from core.pipeline.stage3 import PipelineStage3
-from core.pipeline.stage4 import PipelineStage4
-from core.pipeline.stage5 import PipelineStage5
+
+from core.pipeline.stage1.pipeline_stage1 import PipelineStage1
+from core.pipeline.stage2.pipeline_stage2 import PipelineStage2
+from core.pipeline.stage3.pipeline_stage3 import PipelineStage3
+from core.pipeline.stage4.pipeline_stage4 import PipelineStage4
+from core.pipeline.stage5.pipeline_stage5 import PipelineStage5
 
 
 class Pipeline:
@@ -70,7 +71,6 @@ class Pipeline:
 
             # stage 2
             'exec_exp_range': self.args.exec_exp_range,
-            'exec_method': self.args.exec_method,
             'exec_resume': self.args.exec_resume,
             'n_jobs_per_node': self.args.n_jobs_per_node,
 
@@ -148,3 +148,8 @@ class Pipeline:
         # not part of default pipeline
         if 5 in self.args.pipeline:
             PipelineStage5(self.main_config, self.cmdopts).run(self.args)
+
+
+__api__ = [
+    'Pipeline'
+]

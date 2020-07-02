@@ -1,1 +1,0 @@
-../../../plugins/silicon/docs/plugins.silicon.rst

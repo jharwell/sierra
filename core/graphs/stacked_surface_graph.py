@@ -196,3 +196,8 @@ class HandlerColormap(mpl.legend_handler.HandlerBase):
                                       transform=trans)
             stripes.append(s)
         return stripes
+
+
+__api__ = [
+    'StackedSurfaceGraph'
+]

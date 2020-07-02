@@ -349,3 +349,10 @@ def factory(engine_type: str, n_engines: int, cmdopts: dict, extents: tp.List[Ar
                                 cmdopts['physics_iter_per_tick'],
                                 'uniform_grid2D',
                                 extents)
+
+
+__api__ = [
+    'PhysicsEngines',
+    'PhysicsEngines2D',
+    'PhysicsEngines3D',
+]

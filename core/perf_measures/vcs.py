@@ -444,3 +444,12 @@ class DataFrames:
                                         avg_output_leaf,
                                         tv_environment_csv),
                            sep=';')
+
+
+__api__ = [
+    'EnvironmentalCS',
+    'RawPerfCS',
+    'AdaptabilityCS',
+    'ReactivityCS',
+    'CSRaw',
+]

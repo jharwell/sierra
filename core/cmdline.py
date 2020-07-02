@@ -18,8 +18,6 @@ Core command line parsing and validation classes.
 """
 
 import argparse
-import os
-import multiprocessing
 
 
 class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawTextHelpFormatter):
@@ -55,10 +53,49 @@ class BootstrapCmdline:
                                  """,
                                  default="INFO")
 
+        self.parser.add_argument("--hpc-env",
+                                 help="""
+
+                                 The value of this argument determines if the ``--physics-n-engines`` and ``--n-sims``
+                                 options will be computed/inherited from the specified HPC environment. Otherwise, they
+                                 must be specified on the cmdline.
+
+                                 Valid values:
+
+                                 - ``local`` - This will direct SIERRA to run all experiments on the local machine it is
+                                   launched from using GNU parallel. The # simultaneous simulations will be determined
+                                   by:
+
+                                   # cores on machine / # physics engines
+
+                                   If more simulations are requested than can be run in parallel, SIERRA will start
+                                   additional simulations as currently running simulations finish.
+
+                                 - ``MSI`` - The following environment variables are used/must be defined:
+
+                                   - ``PBS_NUM_PPN`` - Infer  # threads and # physics engines per simulation
+                                     # simulations to run, along with ``PBS_NUM_NODES``.
+
+                                   - ``MSICLUSTER`` - Determine the names of ARGoS executables, so that in HPC
+                                     environments with multiple clusters with different architectures ARGoS can be
+                                     compiled natively for each for maximum performance.
+
+                                 - ``PBS_NODEFILE`` and ``PBS_JOBID`` - Used to configure simulation launches.
+
+                                 - ``adhoc`` - The following environment variables are used to compute the # threads, #
+                                   physics engines, and # simulations to run:
+
+                                   - ``ADHOC_NODEFILE`` - Points to a file suitable for passing to GNU parallel via
+                                     --sshloginfile.
+
+                                 """,
+                                 choices=['MSI', 'local', 'adhoc'],
+                                 default='local')
+
 
 class CoreCmdline:
     """
-    Defines the core command line arguments for SIERRA using :class:`argparse`.
+    Defines the core command line arguments for SIERRA using: class:`argparse`.
 
     Project plugins should inherit from this class and add to its arguments as necessary. The
     following arguments **MUST** be added (or SIERRA will probably crash):
@@ -66,7 +103,7 @@ class CoreCmdline:
     - ``--controllers``
 
     Attributes:
-        parser: :class:`argparse.ArgumentParser`. Holds non stage-specific arguments.
+        parser:: class: `argparse.ArgumentParser`. Holds non stage-specific arguments.
         stage1: Cmdline arguments specific to stage1.
         stage2: Cmdline arguments specific to stage2.
         stage3: Cmdline arguments specific to stage3.
@@ -103,21 +140,21 @@ class CoreCmdline:
 
                                  The template ``.argos`` input file for the batched experiment.
 
-                                 Use=stage{1, 2, 3, 4}; can be omitted if only running other stages.
+                                 Use = stage{1, 2, 3, 4}; can be omitted if only running other stages.
 
                                  """)
 
         self.parser.add_argument("--exp-overwrite",
                                  help="""
 
-                                 When SIERRA calculates the batch experiment root (or any child path in the batch
-                                 experiment root) during stage{1,2}, if the calculated path already exists it is treated
+                                 When SIERRA calculates the batch experiment root ( or any child path in the batch
+                                 experiment root) during stage{1, 2}, if the calculated path already exists it is treated
                                  as a fatal error and no modifications to the filesystem are performed. This flag
                                  overwrides the default behavior. Provided to avoid accidentally overwrite input/output
                                  files for an experiment, forcing the user to be explicit with potentially dangerous
                                  actions.
 
-                                 Use=stage{1,2}; can be omitted otherwise.
+                                 Use = stage{1, 2}; can be omitted otherwise.
                                 """,
                                  action='store_true')
 
@@ -216,27 +253,6 @@ class CoreCmdline:
                                  default=[1, 2, 3, 4]
                                  )
 
-        self.parser.add_argument("--hpc-env",
-                                 help="""
-
-                                 The value of this argument determines if the ``--n-threads``, ``--physics-n-engines``,
-                                 and ``--n-sims`` options will be computed/inherited from the specified HPC
-                                 environment. Otherwise, they must be specified on the cmdline.
-
-                                 Value values:
-
-                                 - ``MSI`` - The following PBS environment variables are used to infer the # threads, #
-                                   physics engines, and # simulations to run, respectively: ``PBS_NUM_PPN``,
-                                   ``PBS_NUM_PPN``, ``PBS_NUM_NODES``. ``MSICLUSTER`` is used to determine the names of
-                                   ARGoS executables, so that in HPC environments with multiple clusters with different
-                                   architectures ARGoS can be compiled natively for each for maximum
-                                   performance.``PBS_NODEFILE`` and ``PBS_JOBID`` are used to configure simulation
-                                   launches.
-
-                                 """,
-                                 choices=['MSI', None],
-                                 default=None)
-
         self.init_stage1()
         self.init_stage2()
         self.init_stage3()
@@ -267,24 +283,8 @@ class CoreCmdline:
                                  The # of simulations that will be run and their results averaged to form the
                                  result of a single experiment within a batch.
 
-                                 If ``--exec-method=hpc`` then the value of this option will be used to determine
+                                 If ``--hpc-env`` is something other than ``local`` then it will be used to determine
                                  # jobs/HPC node, # physics engines/simulation, and # threads/simulation.
-
-                                 Use=stage{1}; can be omitted otherwise.
-
-                                 """)
-
-        self.stage1.add_argument("--n-threads",
-                                 type=int,
-                                 help="""
-
-                                The # of ARGoS threads that will be used in each simulation.
-
-                                 If ``--exec-method=hpc`` then the value of this option will be set to the value of
-                                 `--physics-n-engines`, per the findings of the original ARGoS paper, and the cmdline
-                                 value (if any) is ignored.
-
-                                 If ``exec-method=local`` then this option is required.
 
                                  Use=stage{1}; can be omitted otherwise.
 
@@ -334,8 +334,8 @@ class CoreCmdline:
                              2D engines will manage 1/3 of the arena, and 2 3D engines will manage the other 2/3 of the
                              arena.
 
-                             If ``--exec-method=hpc`` then the value of this option will be computed from the HPC
-                             environment, and the cmdline value (if any) will be ignored.
+                             If ``--hpc-env`` is something other than ``local`` then the # physics engines will be
+                             computed from the HPC environment, and the cmdline value (if any) will be ignored.
 
                              Use=stage{1}; can be omitted otherwise.
                              """)
@@ -425,28 +425,6 @@ class CoreCmdline:
         """
         Define cmdline arguments for stage 2.
         """
-        self.stage2.add_argument("--exec-method",
-                                 choices=['local', 'hpc'],
-                                 help="""
-
-                                 Specify the execution method to use when running experiments.
-
-                                 - ``local`` - Run the maximum # of simulations simultaneously on the local machine
-                                   using GNU parallel. # of simultaneous simulations is determined by:
-
-                                   # cores on machine / # configured ARGoS threads
-
-                                   If more simulations are requested than can be run in parallel, SIERRA will start
-                                   additional simulations as currently running simulations finish.
-
-                                 - ``hpc`` - Use GNU parallel in an HPC environment to run the specified # of
-                                   simulations simultaneously on a computing cluster. See ``--hpc-env`` for supported
-                                   HPC environments.
-
-                                 Use=stage{2}; can be omitted otherwise.
-
-                                 """,
-                                 default="local")
         self.stage2.add_argument("--exec-exp-range",
                                  help="""
 
@@ -876,49 +854,6 @@ class CoreCmdline:
                                  action='store_true')
 
 
-class HPCEnvInheritor():
-    def __init__(self, env_type) -> None:
-        self.env_type = env_type
-        self.environs = ['mesabi', 'mangi']
-
-    def __call__(self, args):
-        # non-MSI
-        if self.env_type is None:
-            if any(s in args.pipeline for s in [1, 2]):
-                args.__dict__['n_jobs_per_node'] = min(args.n_sims,
-                                                       max(1,
-                                                           int(multiprocessing.cpu_count() / float(args.n_threads))))
-            else:
-                args.__dict__['n_jobs_per_node'] = 0
-
-            return args
-
-        keys = ['MSICLUSTER', 'PBS_NUM_PPN', 'PBS_NUM_NODES']
-
-        for k in keys:
-            assert k in os.environ,\
-                "FATAL: Attempt to run SIERRA in non-MSI environment: '{0}' not found".format(k)
-
-        if self.env_type == 'MSI':
-            assert os.environ['MSICLUSTER'] in self.environs,\
-                "FATAL: Unknown MSI cluster '{0}'".format(os.environ['MSICLUSTER'])
-            assert args.n_sims >= int(os.environ['PBS_NUM_NODES']),\
-                "FATAL: Too few simulations requested: {0} < {1}".format(args.n_sims,
-                                                                         os.environ['PBS_NUM_NODES'])
-            assert args.n_sims % int(os.environ['PBS_NUM_NODES']) == 0,\
-                "FATAL: # simulations ({0}) not a multiple of # nodes ({1})".format(args.n_sims,
-                                                                                    os.environ['PBS_NUM_NODES'])
-
-            # For HPC, we want to use the the maximum # of simultaneous jobs per node such that
-            # there is no thread oversubscription. We also always want to allocate each physics
-            # engine its own thread for maximum performance, per the original ARGoS paper.
-            args.__dict__['n_jobs_per_node'] = int(
-                float(args.n_sims) / int(os.environ['PBS_NUM_NODES']))
-            args.physics_n_engines = int(float(os.environ['PBS_NUM_PPN']) / args.n_jobs_per_node)
-            args.n_threads = args.physics_n_engines
-        return args
-
-
 class CoreCmdlineValidator():
     """
     Validate the core command line arguments to ensure that the pipeline will work properly in all stages, given the
@@ -941,11 +876,6 @@ class CoreCmdlineValidator():
 
         if any([1, 2]) in args.pipeline:
             assert args.n_sims is not None, '--n-sims is required'
-            if args.exec_method == 'local':
-                assert args.physics_n_engines is not None,\
-                    '--physics-n-engines is required for --exec-method=local'
-                assert args.n_threads is not None,\
-                    '--n-threads is required for --exec-method=local'
 
         if 5 in args.pipeline:
             assert args.bc_univar or args.bc_bivar,\
@@ -966,3 +896,9 @@ def sphinx_cmdline_bootstrap():
     nice documentation from it.
     """
     return BootstrapCmdline().parser
+
+
+__api__ = [
+    'BootstrapCmdline',
+    'CoreCmdline',
+]

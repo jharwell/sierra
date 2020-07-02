@@ -136,3 +136,9 @@ class XMLLuigi:
         the initial set of specified attributes.
         """
         ET.SubElement(self.root.find(path), tag, attr)
+
+
+__api__ = [
+    'InvalidElementError',
+    'XMLLuigi',
+]

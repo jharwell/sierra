@@ -1,18 +1,22 @@
 API Reference
 =============
 
-.. autosummary::
-   :toctree: core
+SIERRA Core
+-----------
+.. toctree::
 
-   core.cmdline
-   core.graphs
-   core.perf_measures
-   core.utils
-   core.variables
-   core.xml_luigi
+   core/core.cmdline.rst
+   core/core.perf_measures.rst
+   core/core.generators.rst
+   core/core.pipeline.rst
+   core/core.variables.rst
+   core/core.graphs.rst
 
-.. autosummary::
-   :toctree: plugins
 
-   plugins.fordyca
-   plugins.silicon
+
+Plugins
+-------
+.. toctree::
+
+   plugins/plugins.fordyca.rst
+   plugins/plugins.silicon.rst

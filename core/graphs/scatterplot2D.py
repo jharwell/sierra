@@ -93,3 +93,8 @@ class Scatterplot2D:
         latex = sympy.printing.latex(eqn)
         plt.plot(x_new, y_new, label="${}$".format(latex))
         plt.legend(fontsize=18)
+
+
+__api__ = [
+    'Scatterplot2D'
+]

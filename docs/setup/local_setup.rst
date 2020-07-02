@@ -28,7 +28,7 @@ SIERRA to do so are outlined below.
                will only be able to launch it from the root of the SIERRA repo.
 
 .. IMPORTANT:: Do not try to run sierra with a debug build of whatever project
-               you are using (:xref:`FORDYCA`,:xref:`SILICON`, etc). It (probably)
+               you are using (:xref:`FORDYCA`, :xref:`SILICON`, etc). It (probably)
                won't work and will be obnoxiously/irritatingly slow if it does.
 
 #. Clone plugin for whatever project you are going to use into

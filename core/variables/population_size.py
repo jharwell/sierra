@@ -14,20 +14,8 @@
 # You should have received a copy of the GNU General Public License along with
 # SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
-Definition:
-    {increment_type}{N}
-
-    - increment_type - {Log,Linear}. If ``Log``, then swarm sizes for each experiment are
-      distributed 1...N by powers of 2. If ``Linear`` then swarm sizes for each experiment are
-      distributed linearly between 1...N, split evenly into 10 different sizes.
-
-    - N - The maximum swarm size.
-
-Examples:
-    - ``static.Log1024``: Static swarm sizes 1...1024
-
-    - ``static.Linear1000``: Static swarm sizes 100...1000
-
+Classes for the population size batch criteria. See :ref:`ln-bc-population-size` for usage
+documentation.
 """
 
 import typing as tp
@@ -152,3 +140,8 @@ def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_generation_root:
     return type(cli_arg,
                 (PopulationSize,),
                 {"__init__": __init__})
+
+
+__api__ = [
+    'PopulationSize'
+]

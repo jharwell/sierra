@@ -15,22 +15,7 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Definition:
-    {oracle_name}[.Z{population}]
-
-    oracle_name - {entities, tasks}
-    population - Static size of the swarm to use (optional)
-
-Examples:
-    - ``entities.Z16``: All permutations of oracular information about entities in the arena, run
-      with swarms of size 16.
-
-    - ``tasks.Z8``: All permutations of oracular information about tasks in the arena, run with
-      swarms of size 8.
-
-    - ``entities``: All permuntations of oracular information of entities in the arena (swarm size
-      is not modified).
-
+Classes for the oracle batch criteria. See :ref:`ln-bc-oracle` for usage documentation.
 """
 
 
@@ -176,3 +161,8 @@ def factory(cli_arg: str,
     return type(cli_arg,
                 (Oracle,),
                 {"__init__": __init__})
+
+
+__api__ = [
+    'Oracle'
+]

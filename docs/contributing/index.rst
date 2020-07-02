@@ -1,10 +1,13 @@
-.. SIERRA documentation master file, created by
-   sphinx-quickstart on Sat Oct 12 17:39:54 2019.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Contributing
 ============
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+   variable.rst
+   graphs.rst
+   plugin.rst
 
 First, install additional dependencies::
 
@@ -41,11 +44,3 @@ For the static analysis step:
    Fix ANY errors your changes have introduced (there will probably still be
    errors in the my output, because cleaning up the code is always a work in
    progress).
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Full Docs:
-
-   variable.rst
-   graphs.rst
-   plugin.rst

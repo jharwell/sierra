@@ -14,72 +14,7 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
-Definition:
-    {variance_type}{waveform_type}[step_time][.Z{population}]
-
-    variance_type - {BC,BM}
-
-    waveform_type - {Sine,Square,Sawtooth,Step{U,D},Constant}
-
-    step_time - Timestep the step function should switch (optional)
-
-    population - The static swarm size to use (optional)
-
-Examples:
-    - ``BCSine.Z16``: Block carry sinusoidal variance in a swarm of size 16.
-    - ``BCStep50000.Z32``: Block carry step variance at 50000 timesteps in a swarm of size 32.
-    - ``BCStep50000``: Block carry step variance at 50000 timesteps; swarm size not modified.
-
-The frequency, amplitude, offset, and phase of the waveforms is set via the main YAML configuration
-file (not an easy way to specify ranges in a single batch criteria definition string). The relevant
-section is shown below.
-
-.. _flexibility-main-config:
-
-.. code-block:: YAML
-
-   perf:
-     ...
-     flexibility:
-       # The range of Hz to use for generated waveforms. Applies to Sine, Sawtooth, Square
-       # waves. There is no limit for the length of the list.
-       hz:
-         - frequency1
-         - frequency2
-         - frequency3
-         - ...
-       # The range of block manipulation penalties to use if that is the type of applied temporal
-       # variance (BM). Specified in timesteps. There is no limit for the length of the list.
-       BM_amp:
-         - penalty1
-         - penalty2
-         - penalty3
-         - ...
-      # The range of block carry penalties to use if that is the type of applied temporal variance
-      # (BC). Specified as percent slowdown: [0.0, 1.0]. There is no limit for the length of the
-      # list.
-      BC_amp:
-         - percent1
-         - percent2
-         - percent3
-         - ...
-
-Batch experiments are defined from temporal variance criteria as follows:
-
-exp0: Ideal conditions, which is a ``Constant`` waveform with amplitude ``BC_amp[0]``, or
-     ``BM_amp[0]``, depending.
-exp1-expN:
-  - Cardinality of ``|hz|`` * ``|BM_amp|`` if the variance type is ``BM`` and the waveform type is
-    Sine, Square, or Sawtooth.
-
-  - Cardinality of ``|hz|`` * ``|BC_amp|`` if the variance type is ``BC`` and the waveform type is
-    Sine, Square, or Sawtooth.
-
-  - Cardinality of ``|BM_amp|`` if the variance type is ``BM`` and the waveform type is StepU,
-    StepD.
-
-  - Cardinality of ``|BC_amp|`` if the variance type is ``BC`` and the waveform type is StepU,
-    StepD.
+Classes for the flexibility batch criteria. See :ref:`ln-bc-flexibility` for usage documentation.
 
 """
 
@@ -240,3 +175,8 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
     return type(cli_arg,
                 (Flexibility,),
                 {"__init__": __init__})
+
+
+__api__ = [
+    'Flexibility'
+]

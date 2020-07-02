@@ -24,7 +24,7 @@ import logging
 import yaml
 
 from core.pipeline.stage5 import intra_scenario_comparator as isc
-import core.pipeline.root_dirpath_generator as rdg
+import core.root_dirpath_generator as rdg
 
 import core.utils
 
@@ -135,3 +135,8 @@ class PipelineStage5:
                         logging.warning("%s does not exist in %s", scenario, path2)
                     if scenario in path2 and scenario not in path2:
                         logging.warning("%s does not exist in %s", scenario, path1)
+
+
+__api__ = [
+    'PipelineStage5'
+]

@@ -144,3 +144,8 @@ class BatchRangedGraph:
         if self.xtick_labels is not None:
             ax.set_xticks(self.xticks)
             ax.set_xticklabels(self.xtick_labels, rotation='vertical')
+
+
+__api__ = [
+    'BatchRangedGraph'
+]

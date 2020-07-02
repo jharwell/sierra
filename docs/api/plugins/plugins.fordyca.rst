@@ -1,1 +1,15 @@
-../../../plugins/fordyca/docs/plugins.fordyca.rst
+===================
+``plugins.fordyca``
+===================
+
+.. automodule:: plugins.fordyca
+
+   .. contents::
+      :local:
+
+
+.. toctree::
+
+   plugins.fordyca.cmdline
+
+.. currentmodule:: plugins.fordyca

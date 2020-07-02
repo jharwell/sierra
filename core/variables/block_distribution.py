@@ -95,3 +95,14 @@ class Quantity(BaseVariable):
 
     def gen_tag_rmlist(self):
         return []
+
+
+__api__ = [
+    'Type',
+    'TypeSingleSource',
+    'TypeDualSource',
+    'TypeQuadSource',
+    'TypePowerLaw',
+    'TypeRandom',
+    'Quantity',
+]

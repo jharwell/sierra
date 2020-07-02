@@ -81,3 +81,8 @@ class AdaptabilityBivar:
 
     def __init__(self) -> None:
         raise NotImplementedError
+
+
+__api__ = [
+    'AdaptabilityUnivar'
+]

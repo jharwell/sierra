@@ -1,31 +1,32 @@
-core.cmdline
-============
+================
+``core.cmdline``
+================
 
 .. automodule:: core.cmdline
 
+   .. contents::
+      :local:
+
+.. currentmodule:: core.cmdline
 
 
+- :py:class:`BootstrapCmdline`:
+  Defines the cmdline arguments that are used to bootstrap SIERRA. That is, the arguments that are
+
+- :py:class:`CoreCmdline`:
+  Defines the core command line arguments for SIERRA using :class:`argparse`.
 
 
+.. autoclass:: BootstrapCmdline
+   :members:
 
+   .. rubric:: Inheritance
+   .. inheritance-diagram:: BootstrapCmdline
+      :parts: 1
 
-   .. rubric:: Functions
+.. autoclass:: CoreCmdline
+   :members:
 
-   .. autosummary::
-
-      sphinx_cmdline_bootstrap
-      sphinx_cmdline_core
-
-
-
-
-
-   .. rubric:: Classes
-
-   .. autosummary::
-
-      BootstrapCmdline
-      CoreCmdline
-      CoreCmdlineValidator
-      HPCEnvInheritor
-      HelpFormatter
+   .. rubric:: Inheritance
+   .. inheritance-diagram:: CoreCmdline
+      :parts: 1

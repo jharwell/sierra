@@ -325,3 +325,13 @@ class RNGenerator(BaseScenarioGenerator):
         self.generate_block_count(exp_def)
 
         return exp_def
+
+
+__api__ = [
+    'BaseScenarioGenerator',
+    'SSGenerator',
+    'DSGenerator',
+    'QSGenerator',
+    'PLGenerator',
+    'RNGenerator',
+]

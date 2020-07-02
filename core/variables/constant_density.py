@@ -126,3 +126,8 @@ class ConstantDensityParser():
         ret['arena_size_inc'] = int(res.group(0)[1:])
 
         return ret
+
+
+__api__ = [
+    'ConstantDensity'
+]

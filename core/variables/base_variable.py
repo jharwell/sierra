@@ -30,3 +30,8 @@ class BaseVariable:
         file.
         """
         raise NotImplementedError
+
+
+__api__ = [
+    'BaseVariable'
+]

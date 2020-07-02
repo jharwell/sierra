@@ -634,3 +634,18 @@ def calculate_efficiency(perf_i: float, n_robots_i: int):
     From :xref:`Hecker2015`.
     """
     return perf_i / float(n_robots_i)
+
+
+__api__ = [
+    'InterRobotInterferenceUnivar',
+    'NormalizedEfficiencyUnivar',
+    'ProjectivePerformanceComparisonUnivar',
+    'ProjectivePerformanceComparisonPositiveUnivar',
+    'ProjectivePerformanceComparisonNegativeUnivar',
+    'FractionalMaintenanceUnivar',
+    'KarpFlattUnivar',
+    'InterRobotInterferenceBivar',
+    'NormalizedEfficiencyBivar',
+    'FractionalMaintenanceBivar',
+    'KarpFlattBivar',
+]

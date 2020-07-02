@@ -15,19 +15,8 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
 """
-Definition:
-    CD{density}.I{Arena Size Increment}
-
-    - density - <integer>p<integer> (i.e. 5p0 for 5.0)
-
-    - Arena Size Increment - Size in meters that the X and Y dimensions should increase by in
-                             between experiments. Larger values here will result in larger arenas
-                             and more blocks. Must be an integer.
-
-Examples:
-    - ``CD1p0.I16``: Constant density of 1.0. Arena dimensions will increase by 16 in both X and Y
-                     for each experiment in the batch.
-
+Classes for the block density batch criteria. See :ref:`ln-bc-block-density` for usage
+documentation.
 """
 
 import typing as tp
@@ -157,3 +146,8 @@ def factory(cli_arg: str, main_config:
     return type(cli_arg,
                 (BlockConstantDensity,),
                 {"__init__": __init__})
+
+
+__api__ = [
+    'BlockConstantDensity'
+]

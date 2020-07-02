@@ -15,19 +15,8 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
 """
-Definition:
-    CD{density}.I{Arena Size Increment}
-
-    - density - <integer>p<integer> (i.e. 5p0 for 5.0)
-
-    - Arena Size Increment - Size in meters that the X and Y dimensions should increase by in
-                             between experiments. Larger values here will result in larger arenas
-                             and more robots being simulated at a given density. Must be an integer.
-
-Examples:
-    - ``CD1p0.I16``: Constant density of 1.0. Arena dimensions will increase by 16 in both X and Y
-                     for each experiment in the batch.
-
+Classes for the population density batch criteria. See :ref:`ln-bc-population-density` for usage
+documentation.
 """
 
 import typing as tp
@@ -38,12 +27,12 @@ import core.generators.scenario_generator_parser as sgp
 import core.utils
 
 
-class SwarmConstantDensity(cd.ConstantDensity):
+class PopulationConstantDensity(cd.ConstantDensity):
     """
-    A univariate range specifiying the swarm density (ratio of swarm size to arena size) to hold
-    constant as swarm and arena size are increased. This class is a base class which should (almost)
-    never be used on its own. Instead, the ``factory()`` function should be used to dynamically
-    create derived classes expressing the user's desired density.
+    A univariate range specifiying the population density (ratio of swarm size to arena size) to
+    hold constant as swarm and arena size are increased. This class is a base class which should
+    (almost) never be used on its own. Instead, the ``factory()`` function should be used to
+    dynamically create derived classes expressing the user's desired density.
 
     Does not change the # blocks/block manifest.
 
@@ -116,7 +105,7 @@ class SwarmConstantDensity(cd.ConstantDensity):
         return [str(int(self.target_density / 100.0 * x)) for x in self.graph_xticks(cmdopts, exp_dirs)]
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
-        return r"Swarm Size"
+        return r"Population Size"
 
     def pm_query(self, pm) -> bool:
         return pm in ['blocks-transported', 'scalability', 'self-org']
@@ -136,12 +125,14 @@ def factory(cli_arg: str, main_config:
 
     if kw['dist_type'] == "SS" or kw['dist_type'] == "DS":
         r = range(kw['arena_x'],
-                  kw['arena_x'] + SwarmConstantDensity.kExperimentsPerDensity * attr['arena_size_inc'],
+                  kw['arena_x'] + PopulationConstantDensity.kExperimentsPerDensity *
+                  attr['arena_size_inc'],
                   attr['arena_size_inc'])
         dims = [core.utils.ArenaExtent((x, int(x / 2), 0)) for x in r]
     elif kw['dist_type'] == "QS" or kw['dist_type'] == "RN":
         r = range(kw['arena_x'],
-                  kw['arena_x'] + SwarmConstantDensity.kExperimentsPerDensity * attr['arena_size_inc'],
+                  kw['arena_x'] + PopulationConstantDensity.kExperimentsPerDensity *
+                  attr['arena_size_inc'],
                   attr['arena_size_inc'])
         dims = [core.utils.ArenaExtent((x, x, 0)) for x in r]
     else:
@@ -149,14 +140,19 @@ def factory(cli_arg: str, main_config:
             "Unsupported block dstribution '{0}': Only SS,DS,QS,RN supported".format(kw['dist_type']))
 
     def __init__(self) -> None:
-        SwarmConstantDensity.__init__(self,
-                                      cli_arg,
-                                      main_config,
-                                      batch_generation_root,
-                                      attr["target_density"],
-                                      dims,
-                                      kw['dist_type'])
+        PopulationConstantDensity.__init__(self,
+                                           cli_arg,
+                                           main_config,
+                                           batch_generation_root,
+                                           attr["target_density"],
+                                           dims,
+                                           kw['dist_type'])
 
     return type(cli_arg,
-                (SwarmConstantDensity,),
+                (PopulationConstantDensity,),
                 {"__init__": __init__})
+
+
+__api__ = [
+    'PopulationConstantDensity'
+]

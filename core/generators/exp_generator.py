@@ -299,3 +299,9 @@ class BatchedExpDefGenerator:
 
         return gf.joint_generator_create(scenario=scenario,
                                          controller=controller)
+
+
+__api__ = [
+    'ExpDefCommonGenerator',
+    'BatchedExpDefGenerator',
+]

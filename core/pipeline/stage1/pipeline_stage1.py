@@ -61,3 +61,8 @@ class PipelineStage1:
         logging.info("Stage1: %d input files generated in %d experiments.",
                      sum([len(files) for r, d, files in os.walk(self.cmdopts['generation_root'])]),
                      sum([len(d) for r, d, files in os.walk(self.cmdopts['generation_root'])]))
+
+
+__api__ = [
+    'PipelineStage1'
+]

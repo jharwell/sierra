@@ -50,54 +50,57 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 ################################################################################
 # Begin Experiments                                                            #
 ################################################################################
-NSIMS=50
-CONTROLLERS0=(depth0.CRW depth0.DPO)
-CONTROLLERS12=(depth1.BITD_DPO depth2.BIRTD_DPO)
+NSIMS=4
+CONTROLLERS=(depth0.CRW depth0.DPO depth1.BITD_DPO depth2.BIRTD_DPO)
 OUTPUT_ROOT=$HOME/exp/test
 BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \
                   --template-input-file=$HOME/git/sierra/templates/ideal.argos \
                   --n-sims=$NSIMS\
                   --physics-n-engines=8\
-                  --n-threads=8\
                   --pipeline 1\
                   --plugin=fordyca\
-                  --exec-method=local\
-                  --time-setup=time_setup.T5000"
+                  --hpc-env=local \
+                  --time-setup=time_setup.T100000"
 
 cd $HOME/git/sierra
 
-# GO GO Power Rangers!
-for c in "${CONTROLLERS0[@]}"
+# Robustness analysis
+for c in "${CONTROLLERS[@]}"
 do
+    # Steady state population of 10 when total swarm size is 50 (repair queue steady state of 40)
     $BASE_CMD --scenario=SS.32x16 \
-              --batch-criteria=population_dynamics.F2p0.M0p001.R0p005
+              --batch-criteria population_dynamics.F2p0.M0p001.R0p00102501 saa_noise.all.C5.Z50\
               --controller=${c}
 
+    # Steady state population of 40 when total swarm size is 200 (repair queue steady state of 160)
     $BASE_CMD --scenario=RN.48x48 \
-              --batch-criteria=population_dynamics.F2p0.M0p001.R0p005
-              --controller=${c}
-
-    $BASE_CMD --scenario=RN.92x92 \
-              --batch-criteria=population_dynamics.F2p0.M0p001.R0p005
+              --batch-criteria population_dynamics.F2p0.M0p001.R0p00100625 saa_noise.all.C5.Z200\
               --controller=${c}
 done
 
-for c in "${CONTROLLERS12[@]}"
+# Scalability/emergence analysis
+for c in "${CONTROLLERS[@]}"
 do
     $BASE_CMD --scenario=SS.32x16 \
-              --batch-criteria=ta.policy_set.All.Z128 population_dynamics.F2p0.M0p001.R0p005\
+              --batch-criteria population_size.Log128 population_dynamics.F2p0.M0p001.R0p00102501\
               --controller=${c}
 
     $BASE_CMD --scenario=RN.48x48 \
-              --batch-criteria=ta_policy_set.All.Z512 population_dynamics.F2p0.M0p001.R0p005\
-              --controller=${c}
-
-    $BASE_CMD --scenario=RN.92x92 \
-              --batch-criteria=ta_policy_set.All.Z2048 population_dynamics.F2p0.M0p001.R0p005\
+              --batch-criteria population_size.Log2048 population_dynamics.F2p0.M0p001.R0p00100625\
               --controller=${c}
 done
 
+for c in "${CONTROLLERS[@]}"
+do
+    $BASE_CMD --scenario=SS.32x16 \
+              --batch-criteria population_size.Log128 saa_noise.all.C5\
+              --controller=${c}
+
+    $BASE_CMD --scenario=RN.48x48 \
+              --batch-criteria population_size.Log2048 saa_noise.all.C5\
+              --controller=${c}
+done
 
 # Generate comparison graphs
 python3 sierra.py \

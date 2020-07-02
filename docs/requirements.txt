@@ -7,3 +7,4 @@ similaritymeasures
 fastdtw
 matplotlib
 coloredlogs
+autoapi

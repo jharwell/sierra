@@ -26,6 +26,7 @@ from core.xml_luigi import XMLLuigi
 from core.variables import batch_criteria as bc
 
 import core.utils
+import core.hpc
 
 
 class SimDefUniqueGenerator:
@@ -182,30 +183,10 @@ class ExpCreator:
     def __update_cmds_file(self, cmds_file, sim_input_path: str):
         """Adds the command to run a particular simulation definition to the command file."""
 
-        # Specify ARGoS invocation in generated command file per cmdline arguments. An option is
-        # provided to tweak the exact name of the program used to invoke ARGoS so that different
-        # versions compiled for different architectures/machines that exist on the same filesystem
-        # can easily be run.
-        if 'local' in self.cmdopts['exec_method']:
-            argos_cmd = 'argos3'
-        else:
-            if self.cmdopts['hpc_env'] == 'MSI':
-                argos_cmd = 'argos3-' + os.environ['MSICLUSTER']
+        argos_cmd = core.hpc.ARGoSCmdGenerator()(self.cmdopts, sim_input_path)
+        xvfb_cmd = core.hpc.XvfbCmdGenerator()(self.cmdopts)
 
-        # When running ARGoS under Xvfb in order to headlessly render frames, we need to start a
-        # per-instance Xvfb server that we tell ARGoS to use via the DISPLAY environment variable,
-        # which will then be killed when the shell GNU parallel spawns to run each line in the
-        # commands.txt file exits.
-        xvfb_cmd = ""
-        if self.cmdopts['argos_rendering']:
-            display_port = random.randint(0, 1000000)
-            xvfb_cmd = "eval 'Xvfb :{0} -screen 0, 1600x1200x24 &' && DISPLAY=:{0} ".format(
-                display_port)
-
-        cmds_file.write(xvfb_cmd +
-                        argos_cmd +
-                        ' -c "{0}" --log-file /dev/null --logerr-file /dev/null\n'.format(
-                            sim_input_path))
+        cmds_file.write(xvfb_cmd + argos_cmd)
 
     def __generate_random_seeds(self):
         """Generates random seeds for experiments to use."""
@@ -286,3 +267,10 @@ class BatchedExpCreator:
                        exp_generation_root,
                        exp_output_root,
                        self.cmdopts).from_def(defi)
+
+
+__api__ = [
+    'SimDefUniqueGenerator',
+    'ExpCreator',
+    'BatchedExpCreator',
+]

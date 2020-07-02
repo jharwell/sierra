@@ -24,6 +24,7 @@ import typing as tp
 import datetime
 
 from core.variables import batch_criteria as bc
+import core.hpc
 
 
 class BatchedExpRunner:
@@ -52,7 +53,6 @@ class BatchedExpRunner:
         Runs experiments in the batch according to configuration.
 
         Arguments:
-            exec_method: The method of running the experiments (HPC or on local machine).
             n_threads_per_sim: How many threads each ARGoS simulation will use. Not used in this
                                function except as diagnostic output (setting # threads used is done
                                in stage1).
@@ -65,7 +65,6 @@ class BatchedExpRunner:
                             Xvfb processes that get run for each simulation after all experiments
                             are finished.
         """
-        exec_method = self.cmdopts['exec_method']
         n_threads_per_sim = self.cmdopts['n_threads']
         n_sims = self.cmdopts['n_sims']
         exec_resume = self.cmdopts['exec_resume']
@@ -89,15 +88,11 @@ class BatchedExpRunner:
         else:
             exp_to_run = exp_all
 
-        # Verify environment
-        assert os.environ.get(
-            "ARGOS_PLUGIN_PATH") is not None, ("FATAL: You must have ARGOS_PLUGIN_PATH defined")
-        assert os.environ.get(
-            "LOG4CXX_CONFIGURATION") is not None, ("FATAL: You must LOG4CXX_CONFIGURATION defined")
+        # Verify environment is OK before running anything
+        core.hpc.EnvChecker()
 
         for exp in exp_to_run:
-            ExpRunner(exp, exp_all.index(exp), self.cmdopts['hpc_env'])(exec_method,
-                                                                        n_jobs,
+            ExpRunner(exp, exp_all.index(exp), self.cmdopts['hpc_env'])(n_jobs,
                                                                         exec_resume)
 
         # Cleanup Xvfb processes which were started in the background
@@ -123,36 +118,38 @@ class ExpRunner:
         self.exp_num = exp_num
         self.hpc_env = hpc_env
 
-    def __call__(self, exec_method: str, n_jobs: int, exec_resume: bool):
+    def __call__(self, n_jobs: int, exec_resume: bool):
         """
         Runs the simulations for a single experiment in parallel.
 
         Arguments:
-            exec_method: Should the experiments be run in an HPC environment on on the local
-                         machine?
             n_jobs: How many concurrent jobs are allowed? (Don't want
                     to oversubscribe the machine).
             exec_resume: Is this run of SIERRA resuming a previous run that failed/did not finish?
 
         """
 
-        # Root directory for the job. Chose the exp input directory rather than the output directory
-        # in order to keep simulation outputs separate from those for the framework used to run the
-        # experiments.
-        jobroot = self.exp_generation_root
-
-        cmdfile = os.path.join(self.exp_generation_root, "commands.txt")
-        joblog = os.path.join(jobroot, "parallel$PBS_JOBID.log")
-
         logging.info('Running exp%s in %s...', self.exp_num, self.exp_generation_root)
         sys.stdout.flush()
 
         start = time.time()
+        parallel_opts = {
+            # Root directory for the job. Chose the exp input directory rather than the output
+            # directory in order to keep simulation outputs separate from those for the framework
+            # used to run the experiments.
+            'jobroot_path': self.exp_generation_root,
+            'cmdfile_path': os.path.join(self.exp_generation_root, "commands.txt"),
+            'joblog_path': os.path.join(self.exp_generation_root, "parallel.log"),
+            'exec_resume': exec_resume,
+            'n_jobs': n_jobs
+        }
         try:
-            if exec_method == 'local':
-                ExpRunner.__run_local(jobroot, cmdfile, joblog, n_jobs, exec_resume)
-            elif 'hpc' in exec_method:
-                ExpRunner.__run_hpc_MSI(jobroot, cmdfile, joblog, n_jobs, exec_resume)
+            cmd = core.hpc.ParallelCmdGenerator()(self.hpc_env, parallel_opts)
+            subprocess.run(cmd,
+                           shell=True,
+                           check=True,
+                           stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE)
 
         # Catch the exception but do not raise it again so that additional experiments can still be
         # run if possible
@@ -163,38 +160,3 @@ class ExpRunner:
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         logging.info('Exp%s elapsed time: %s', self.exp_num, str(sec))
-
-    @staticmethod
-    def __run_local(jobroot_path, cmdfile_path, joblog_path, n_jobs, exec_resume):
-        resume = ''
-        if exec_resume:
-            resume = '--resume'
-
-        cmd = 'cd {0} &&' \
-            'parallel {1} --jobs {2} --results {0} --joblog {3} --no-notice < "{4}"'.format(
-                jobroot_path,
-                resume,
-                n_jobs,
-                joblog_path,
-                cmdfile_path)
-        subprocess.run(cmd, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-    @staticmethod
-    def __run_hpc_MSI(jobroot_path, cmdfile_path, joblog_path, n_jobs, exec_resume):
-        jobid = os.environ['PBS_JOBID']
-        nodelist = os.path.join(jobroot_path, "{0}-nodelist.txt".format(jobid))
-
-        resume = ''
-        if exec_resume:
-            resume = '--resume'
-
-        cmd = 'sort -u $PBS_NODEFILE > {0} && ' \
-            'parallel {2} --jobs {1} --results {4} --joblog {3} --sshloginfile {0} --workdir {4} < "{5}"'.format(
-                nodelist,
-                n_jobs,
-                resume,
-                joblog_path,
-                jobroot_path,
-                cmdfile_path)
-
-        subprocess.run(cmd, shell=True, check=True)

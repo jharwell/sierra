@@ -94,3 +94,8 @@ class PipelineStage3:
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         logging.info("Stage3: Imagizing complete: %s", str(sec))
+
+
+__api__ = [
+    'PipelineStage1'
+]

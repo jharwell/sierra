@@ -14,14 +14,8 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
-Definition:
-    All[.Z{population}]
-
-    population - The swarm size to use (optional)
-
-Examples:
-    - ``All.Z16``: All possible task allocation policies with swarms of size 16.
-    - ``All``: All possible task allocation policies; swarm size not modified.
+Classes for the task allocation policy batch criteria. See :ref:`ln-bc-ta-policy-set` for usage
+documentation.
 """
 
 
@@ -145,3 +139,8 @@ def factory(cli_arg: str,
     return type(cli_arg,
                 (TAPolicySet,),
                 {"__init__": __init__})
+
+
+__api__ = [
+    'TAPolicySet'
+]

@@ -829,3 +829,15 @@ def calc_self_org_ipg(perf_i: float, n_robots_i: int, perf_0: float):
     theta = perf_i - n_robots_i * perf_0
 
     return 1.0 / (1 + math.exp(-theta)) - 1.0 / (1 + math.exp(theta))
+
+
+__api__ = [
+    'FractionalLossesMarginalUnivar',
+    'FractionalLossesInteractiveUnivar',
+    'PerformanceGainMarginalUnivar',
+    'PerformanceGainInteractiveUnivar',
+    'FractionalLossesMarginalBivar',
+    'FractionalLossesInteractiveBivar',
+    'PerformanceGainMarginalBivar',
+    'PerformanceGainInteractiveBivar',
+]

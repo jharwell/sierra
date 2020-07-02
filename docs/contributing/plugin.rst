@@ -6,7 +6,7 @@ The argument to the cmdline option ``--plugin`` is added to the path
 structure and content (a subset of the SIERRA core directory structure):
 
 - ``config/`` - Plugin YAML configuration root. within this directory, the following
-                files must be present when running a stage that utilizes them:
+  files must be present when running a stage that utilizes them:
 
   - ``main.yaml`` - Main SIERRA configuration file. This file is required for all
     pipeline stages.
@@ -49,10 +49,10 @@ Contents of ``main.yaml``
 Root level dictionaries:
 
 - ``sim`` - Configuration for each ARGoS simulation run. This dictionary is
-   mandatory for all simulations.
+  mandatory for all simulations.
 
 - ``sierra`` - Configuration for SIERRA internals. This dictionary is mandatory
-   for all simulations.
+  for all simulations.
 
 - ``perf`` - Configuration for performance measures. This dictionary is
   mandatory for all simulations.
@@ -64,8 +64,8 @@ Root level dictionaries:
    sim:
 
      # The directory within each simulation's working directory which will
-     @ contain the metrics output as by the simulation. This key is mandatory
-     for all simulations.
+     # @ contain the metrics output as by the simulation. This key is mandatory
+     # for all simulations.
      sim_metrics_leaf: 'metrics'
 
      # The directory within each simulation's working directory which will
@@ -142,20 +142,10 @@ Root level dictionaries:
 ``perf.flexibility`` sub-dictionary
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-See :ref:`flexibility-main-config`.
-
-.. WARNING::
-
-   Some of the flexibility config via applied temporal variance is very FORDYCA
-   specific; hopefully this will change in the future, or be pushed down to a
-   project-specific extension of a base flexibility class.
+See :ref:`Flexibility config <ln-bc-flexibility-yaml-config>`.
 
 ``perf.robustness`` sub-dictionary
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-See :ref:`robustness-main-config`.
+See :ref:`SAA noise config <ln-bc-saa-noise-yaml-config>`.
 
-.. IMPORTANT::
-
-   SIERRA currently is only setup to work with the ARGoS footbot robot
-   internally in terms of sensor/actuator noise application.

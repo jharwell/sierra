@@ -61,3 +61,12 @@ class StaticRamp(Priority):
 
     def __init__(self) -> None:
         super().__init__([(kMIN_PRIORITY, x) for x in range(kMIN_PRIORITY, kMAX_PRIORITY + 1)])
+
+
+__api__ = [
+    'kMIN_PRIORITY',
+    'kMAX_PRIORITY',
+    'Priority',
+    'StaticCube',
+    'StaticRamp',
+]

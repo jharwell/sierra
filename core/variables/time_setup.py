@@ -32,21 +32,21 @@ import typing as tp
 
 from core.variables.base_variable import BaseVariable
 
+k1D_DATA_POINTS = 50
 """
 Default # datapoints in each .csv of one-dimensional data.
 """
-k1D_DATA_POINTS = 50
 
+kND_DATA_DIVISOR = 10
 """
 Default divisor for the output interval for  each .csv of two- or three-dimensional data, as
 compared to the output interval for 1D data.
 """
-kND_DATA_DIVISOR = 10
 
+kTICKS_PER_SECOND = 5
 """
 Default # times each controller will be run per second in simulation.
 """
-kTICKS_PER_SECOND = 5
 
 
 class TimeSetup(BaseVariable):
@@ -136,3 +136,12 @@ def factory(time_str: str):
     return type(time_str,
                 (TimeSetup,),
                 {"__init__": __init__})
+
+
+__api__ = [
+    'k1D_DATA_POINTS',
+    'kND_DATA_DIVISOR',
+    'kTICKS_PER_SECOND',
+    'TimeSetup',
+    'TInterval',
+]

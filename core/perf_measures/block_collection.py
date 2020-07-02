@@ -153,3 +153,9 @@ class BlockCollectionBivar:
                                                                 slice(-1, None))
 
         cum_df.to_csv(opath, sep=';', index=False)
+
+
+__api__ = [
+    'BlockCollectionUnivar',
+    'BlockCollectionBivar'
+]

@@ -141,3 +141,13 @@ class SquareArena(RectangularArena):
 
     def __init__(self, sqrange: range) -> None:
         super().__init__([ArenaExtent((x, x, 1)) for x in sqrange])
+
+
+__api__ = [
+    'BaseVariable',
+    'ArenaExtent',
+    'kWALL_WIDTH',
+    'RectangularArena',
+    'RectangularArenaTwoByOne',
+    'SquareArena',
+]

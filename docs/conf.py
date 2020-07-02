@@ -39,10 +39,12 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.mathjax',
               'sphinx.ext.ifconfig',
               'sphinx.ext.viewcode',
+              'sphinx.ext.inheritance_diagram',
               'sphinxarg.ext',
               'xref',
               'sphinx_rtd_theme',
               'sphinxcontrib.napoleon',
+              'autoapi.sphinx',
               'sphinx.ext.autosummary']
 
 # Add any paths that contain templates here, relative to this directory.
@@ -90,6 +92,17 @@ pygments_style = 'sphinx'
 todo_include_todos = True
 
 autosummary_generate = True
+
+autoapi_modules = {
+    'core.cmdline': {'output': 'api/core'},
+    'core.perf_measures': {'output': 'api/core'},
+    'core.generators': {'output': 'api/core'},
+    'core.pipeline': {'output': 'api/core'},
+    'core.variables': {'output': 'api/core'},
+    'core.graphs': {'output': 'api/core'},
+    'plugins.fordyca': {'output': 'api/plugins'},
+    'plugins.silicon': {'output': 'api/plugins'}
+}
 
 xref_links = {
     "Harwell2020": ("Demystifying Emergent Intelligence and Its Effect on Performance in Large Swarms",

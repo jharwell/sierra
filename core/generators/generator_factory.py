@@ -111,3 +111,10 @@ def controller_generator_create(controller, config_root, cmdopts):
                 (object,), {"__init__": __init__,
                             "generate": generate
                             })()
+
+
+__api__ = [
+    'joint_generator_create',
+    'scenario_generator_create',
+    'controller_generator_create',
+]

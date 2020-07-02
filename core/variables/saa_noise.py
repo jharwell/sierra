@@ -14,70 +14,8 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
-Definition:
-    {category}.C{cardinality}[.Z{population}]
+Classes for the SAA noise batch criteria. See :ref:`ln-bc-saa-noise` for usage documentation.
 
-    category - {sensors,actuators,all}
-
-    cardinality - The # of different noise levels to test with between the min and max specified in
-    the config file for each sensor/actuator which defines the cardinality of the batched
-    experiment.
-
-    population - The static swarm size to use (optional).
-
-Examples:
-    - ``sensors.C4.Z16``: 4 levels of noise applied to all sensors in a swarm of size 16.
-    - ``actuators.C3.Z32``: 3 levels of noise applied to all actuators in a swarm of size 32.
-    - ``all.C10``: 10 levels of noise applied to both sensors and actuators; swarm size not
-      modified.
-
-The values for the min, max noise levels for each sensor which are used along with ``cardinality``
-to define the set of noise ranges to test are set via the main YAML configuration file (not an easy
-way to specify ranges in a single batch criteria definition string). The relevant section is shown
-below. If the min, max level for a sensor/actuator is not specified in the YAML file, no XML changes
-will be generated for it.
-
-.. _robustness-main-config:
-
-.. code-block:: yaml
-
-   sierra:
-     ...
-     robustness:
-       # For all sensors and actuators, the noise model and dependent parameters must be specified.
-       #
-       # For a ``uniform`` model, the ``range`` attribute is required, and defines the -[level,
-       # level] distribution.  For example, setting `` range: [0.0,1.0]`` with ``cardinality=2``
-       # will result in two experiments with uniformly distributed noise ranges of ``[0.0, 0.5]``,
-       # and ``[0.0, 1.0]``.
-       #
-       # For a ``gaussian`` model, the ``stddev_range`` and ``mean_range`` attributes are required.
-       # For example, setting ``stddev_range: [0.0,1.0]`` and ``mean_range[0.0, 0.0] with
-       # ``cardinality=2`` will result in two experiments with Guassian distributed ranges
-       # ``Gaussian(0, 0.5)``, and ``Gaussian(0, 1.0)``.
-       sensors:
-         light:
-           model: uniform
-           range: [0.0, 0.4]
-         proximity:
-           model: gaussian
-           stddev_range: [0.0, 0.1]
-           mean_range: [0.0, 0.0]
-         ground:
-           model: gaussian
-           stddev_range: [0.0, 0.1]
-           mean_range: [0.0, 0.0]
-         steering: # applied to [vel_noise, dist_noise]
-           model: uniform
-           range: [0.0, 0.1]
-         position:
-           model: uniform
-           range: [0.0, 0.1]
-
-         actuators:
-           steering:
-             model: uniform
-             range: [0.0, 0.1]
 """
 
 import re
@@ -439,3 +377,8 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
     return type(cli_arg,
                 (SAANoise,),
                 {"__init__": __init__})
+
+
+__api__ = [
+    'SAANoise'
+]

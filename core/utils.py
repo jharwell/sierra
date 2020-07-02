@@ -73,3 +73,9 @@ def dir_create_checked(path: str, exist_ok: bool):
     except FileExistsError:
         logging.fatal("%s already exists! Not overwriting", path)
         raise
+
+
+__api__ = [
+    'ArenaExtent',
+    'unpickle_exp_def'
+]
