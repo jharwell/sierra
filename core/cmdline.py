@@ -36,11 +36,11 @@ class BootstrapCmdline:
         self.parser = argparse.ArgumentParser(prog='sierra',
                                               formatter_class=HelpFormatter)
 
-        self.parser.add_argument("--plugin",
+        self.parser.add_argument("--project",
                                  choices=["fordyca", "silicon"],
                                  help="""
 
-                                 Specify which plugin to load (really what project you want to use SIERRA with).
+                                 Specify which project to load.
 
                                  Use=stage[1,2,3,4,5].
                                  """)
@@ -60,9 +60,10 @@ class BootstrapCmdline:
                                  options will be computed/inherited from the specified HPC environment. Otherwise, they
                                  must be specified on the cmdline.
 
-                                 Valid values:
+                                 Valid values can be any folder name under the ``plugins`` directory, but the ones that
+                                 come with SIERRA are:
 
-                                 - ``local`` - This will direct SIERRA to run all experiments on the local machine it is
+                                 - ``hpc_local`` - This will direct SIERRA to run all experiments on the local machine it is
                                    launched from using GNU parallel. The # simultaneous simulations will be determined
                                    by:
 
@@ -71,7 +72,7 @@ class BootstrapCmdline:
                                    If more simulations are requested than can be run in parallel, SIERRA will start
                                    additional simulations as currently running simulations finish.
 
-                                 - ``MSI`` - The following environment variables are used/must be defined:
+                                 - ``hpc_msi`` - The following environment variables are used/must be defined:
 
                                    - ``PBS_NUM_PPN`` - Infer  # threads and # physics engines per simulation
                                      # simulations to run, along with ``PBS_NUM_NODES``.
@@ -82,15 +83,14 @@ class BootstrapCmdline:
 
                                  - ``PBS_NODEFILE`` and ``PBS_JOBID`` - Used to configure simulation launches.
 
-                                 - ``adhoc`` - The following environment variables are used to compute the # threads, #
+                                 - ``hpc_adhoc`` - The following environment variables are used to compute the # threads, #
                                    physics engines, and # simulations to run:
 
                                    - ``ADHOC_NODEFILE`` - Points to a file suitable for passing to GNU parallel via
                                      --sshloginfile.
 
                                  """,
-                                 choices=['MSI', 'local', 'adhoc'],
-                                 default='local')
+                                 default='hpc_local')
 
 
 class CoreCmdline:
@@ -300,7 +300,7 @@ class CoreCmdline:
 
                              The type of 2D physics engine to use for managing spatial extents within the arena,
                              choosing one of the types that ARGoS supports. The precise 2D areas (if any) within the
-                             arena which the will be controlled by 2D physics engines is defined on a per `--plugin`
+                             arena which the will be controlled by 2D physics engines is defined on a per `--project`
                              basis.
 
                              """,
@@ -312,7 +312,7 @@ class CoreCmdline:
 
                              The type of 3D physics engine to use for managing 3D volumetric extents within the arena,
                              choosing one of the types that ARGoS supports. The precise 3D volumes (if any) within the
-                             arena which the will be controlled by 3D physics engines is defined on a per `--plugin`
+                             arena which the will be controlled by 3D physics engines is defined on a per `--project`
                              basis.
 
                              """,
@@ -671,7 +671,7 @@ class CoreCmdline:
                                if it exists.
 
                                Any files in the "frames" directory of each simulation (directory path set on a per
-                               ``--plugin`` basis) will be rendered into a unique video file with directory using ffmpeg
+                               ``--project`` basis) will be rendered into a unique video file with directory using ffmpeg
                                (precise command configurable), and output to a ``videos/argos.mp4`` in the output
                                directory of each simulation.
 
@@ -694,11 +694,11 @@ class CoreCmdline:
                                """,
                                default="-r 10 -s:v 800x600 -c:v libx264 -crf 25 -filter:v scale=-2:956 -pix_fmt yuv420p")
 
-        rendering.add_argument("--plugin-imagizing",
+        rendering.add_argument("--project-imagizing",
                                help="""
 
-                               Plugins can generate ``.csv`` files residing in subdirectories within the the
-                               ``<sim_metrics_leaf>`` directory (directory path set on a per ``--plugin`` basis) for
+                               Projects can generate ``.csv`` files residing in subdirectories within the the
+                               ``<sim_metrics_leaf>`` directory (directory path set on a per ``--project`` basis) for
                                each ARGoS simulation, in addition to generating ``.csv`` files residing directly in the
                                ``<sim_metrics_leaf>`` directory. If this option is passed, then the ``.csv`` files
                                residing each subdirectory under the ``<sim_metrics_leaf>`` directory(no recursive
@@ -724,7 +724,7 @@ class CoreCmdline:
 
                                """,
                                action='store_true')
-        rendering.add_argument("--plugin-rendering",
+        rendering.add_argument("--project-rendering",
                                help="""
 
                                Specify that the imagized ``.csv`` files previously created should be used to generate a

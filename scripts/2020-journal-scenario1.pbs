@@ -42,8 +42,8 @@ BASE_CMD="python3 sierra.py \
                   --n-sims=$NSIMS\
                   --physics-n-engines=4\
                   --pipeline 1 2 3 \
-                  --plugin=fordyca\
-                  --hpc-env=local \
+                  --project=fordyca\
+                  --hpc-env=hpc_local \
                   --exp-overwrite \
                   --time-setup=time_setup.T10000"
 

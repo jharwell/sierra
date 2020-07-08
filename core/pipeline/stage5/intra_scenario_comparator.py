@@ -76,7 +76,7 @@ class BivarIntraScenarioComparator:
         # controllers, because we have already checked that all controllers executed the same set
         # scenarios.
         dirs = os.listdir(os.path.join(self.cmdopts['sierra_root'],
-                                       self.cmdopts['plugin'],
+                                       self.cmdopts['project'],
                                        self.controllers[0]))
         scenario_dirs = [rdg.parse_batch_root(d)[1] for d in dirs]
 
@@ -99,7 +99,7 @@ class BivarIntraScenarioComparator:
         """
         for controller in self.controllers:
             dirs = [d for d in os.listdir(os.path.join(self.cmdopts['sierra_root'],
-                                                       self.cmdopts['plugin'],
+                                                       self.cmdopts['project'],
                                                        controller)) if scenario_dir in d]
             if len(dirs) == 0:
                 logging.warning("Controller %s was not run on scenario %s",
@@ -113,7 +113,7 @@ class BivarIntraScenarioComparator:
             # different. We need generate these paths for EACH controller, because the
             # controller is part of the batch root directory path.
             paths = rdg.regen_from_exp(self.cmdopts['sierra_root'],
-                                       self.cmdopts['plugin'],
+                                       self.cmdopts['project'],
                                        self.cli_args.batch_criteria,
                                        dirs[0],
                                        controller)
@@ -309,7 +309,7 @@ class BivarIntraScenarioComparator:
 
         """
         csv_ipath = os.path.join(cmdopts['sierra_root'],
-                                 cmdopts['plugin'],
+                                 cmdopts['project'],
                                  controller,
                                  batch_root,
                                  'exp-outputs',
@@ -374,7 +374,7 @@ class UnivarIntraScenarioComparator:
         # controllers, because we have already checked that all controllers executed the same set
         # scenarios
         scenarios = os.listdir(os.path.join(self.cmdopts['sierra_root'],
-                                            self.cmdopts['plugin'],
+                                            self.cmdopts['project'],
                                             self.controllers[0]))
 
         # For each controller comparison graph we are interested in, generate it using data from all
@@ -395,7 +395,7 @@ class UnivarIntraScenarioComparator:
             # different. We need generate these paths for EACH controller, because the
             # controller is part of the batch root.
             paths = rdg.regen_from_exp(self.cli_args.sierra_root,
-                                       self.cli_args.plugin,
+                                       self.cli_args.project,
                                        self.cli_args.batch_criteria,
                                        scenario,
                                        controller)
@@ -456,14 +456,14 @@ class UnivarIntraScenarioComparator:
         """
 
         csv_ipath = os.path.join(cmdopts['sierra_root'],
-                                 cmdopts['plugin'],
+                                 cmdopts['project'],
                                  controller,
                                  scenario,
                                  'exp-outputs',
                                  self.main_config['sierra']['collate_csv_leaf'],
                                  src_stem + ".csv")
         stddev_ipath = os.path.join(cmdopts['sierra_root'],
-                                    cmdopts['plugin'],
+                                    cmdopts['project'],
                                     controller,
                                     scenario,
                                     'exp-outputs',

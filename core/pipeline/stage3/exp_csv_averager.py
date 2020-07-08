@@ -104,10 +104,10 @@ class ExpCSVAverager:
         self.avgd_output_root = os.path.join(self.exp_output_root,
                                              self.avgd_output_leaf)
         self.sim_metrics_leaf = main_config['sim']['sim_metrics_leaf']
-        self.plugin_frames_leaf = main_config['sierra']['plugin_frames_leaf']
+        self.project_frames_leaf = main_config['sierra']['project_frames_leaf']
         self.argos_frames_leaf = main_config['sim']['argos_frames_leaf']
         self.videos_leaf = 'videos'
-        self.plugin_imagize = avg_opts['plugin_imagizing']
+        self.project_imagize = avg_opts['project_imagizing']
 
         core.utils.dir_create_checked(self.avgd_output_root, exist_ok=True)
 
@@ -134,7 +134,7 @@ class ExpCSVAverager:
         # check to make sure all directories are simulation runs, skipping the directory within each
         # experiment that the averaged data is placed in
         simulations = [e for e in os.listdir(self.exp_output_root) if e not in [
-            self.avgd_output_leaf, self.plugin_frames_leaf, self.argos_frames_leaf, self. videos_leaf]]
+            self.avgd_output_leaf, self.project_frames_leaf, self.argos_frames_leaf, self. videos_leaf]]
 
         assert(all(re.match(pattern, s) for s in simulations)),\
             "FATAL: Not all directories in {0} are simulation runs".format(self.exp_output_root)
@@ -161,7 +161,7 @@ class ExpCSVAverager:
                 csvs[(item, '')].append(df)
             else:
                 # This takes FOREVER, so only do it if we absolutely need to
-                if not self.plugin_imagize:
+                if not self.project_imagize:
                     continue
                 for csv_fname in os.listdir(item_path):
                     csv_path = os.path.join(item_path, csv_fname)

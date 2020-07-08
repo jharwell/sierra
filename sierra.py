@@ -21,6 +21,7 @@ import logging
 import sys
 import collections
 import coloredlogs
+import os
 
 import core.cmdline as cmd
 import core.hpc as hpc
@@ -28,6 +29,7 @@ from core.pipeline.pipeline import Pipeline
 from core.generators.controller_generator_parser import ControllerGeneratorParser
 from core.generators.scenario_generator_parser import ScenarioGeneratorParser
 import core.root_dirpath_generator as rdg
+import core.plugin_manager
 
 
 def __sierra_run_default(args):
@@ -51,14 +53,19 @@ def __sierra_run():
     coloredlogs.install(fmt='%(asctime)s %(levelname)s - %(message)s',
                         level=eval("logging." + bootstrap_args.log_level))
 
-    # Load HPC environment plugin
-    logging.info("Loading cmdline extensions from project '%s'", bootstrap_args.plugin)
+    # Load plugins
+    pm = core.plugin_manager.PluginManager()
+    pm.initialize(os.path.join(os.getcwd(), 'plugins'))
+    for plugin in pm.available_plugins():
+        pm.load_plugin(plugin)
 
-    module = __import__("plugins.{0}.cmdline".format(bootstrap_args.plugin),
+    logging.info("Loading cmdline extensions from project '%s'", bootstrap_args.project)
+    module = __import__("plugins.{0}.cmdline".format(bootstrap_args.project),
                         fromlist=["*"])
+
     args = module.Cmdline().parser.parse_args(other_args)
-    args = hpc.EnvConfigurer(bootstrap_args.hpc_env)(args)
-    args.__dict__['plugin'] = bootstrap_args.plugin
+    args = hpc.EnvConfigurer()(bootstrap_args.hpc_env, args)
+    args.__dict__['project'] = bootstrap_args.project
 
     module.CmdlineValidator()(args)
 

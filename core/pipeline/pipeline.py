@@ -50,13 +50,13 @@ class Pipeline:
             'sierra_root': self.args.sierra_root,
             'scenario': self.args.scenario,
             'template_input_file': self.args.template_input_file,
-            'plugin': self.args.plugin,
+            'project': self.args.project,
             'hpc_env': args.hpc_env,
             'argos_rendering': self.args.argos_rendering,
             "n_sims": args.n_sims,
             "n_threads": args.n_threads,
             'n_blocks': args.n_blocks,
-            'plugin_imagizing': self.args.plugin_imagizing,
+            'project_imagizing': self.args.project_imagizing,
             'exp_overwrite': self.args.exp_overwrite,
 
             # stage 1
@@ -87,7 +87,7 @@ class Pipeline:
             'adaptability_cs_method': self.args.adaptability_cs_method,
             'rperf_cs_method': self.args.rperf_cs_method,
             'exp_graphs': self.args.exp_graphs,
-            'plugin_rendering': self.args.plugin_rendering,
+            'project_rendering': self.args.project_rendering,
             'plot_regression_lines': self.args.plot_regression_lines,
             'plot_primary_axis': self.args.plot_primary_axis,
 
@@ -101,23 +101,23 @@ class Pipeline:
 
         if cmdopts is not None:
             self.cmdopts.update(cmdopts)
-            module = __import__("plugins.{0}.cmdline".format(self.cmdopts['plugin']),
+            module = __import__("plugins.{0}.cmdline".format(self.cmdopts['project']),
                                 fromlist=["*"])
-            logging.debug("Updating cmdopts for cmdline extensions from plugin '%s'",
-                          self.cmdopts['plugin'])
+            logging.debug("Updating cmdopts for cmdline extensions from project '%s'",
+                          self.cmdopts['project'])
             module.Cmdline.cmdopts_update(self.args, self.cmdopts)
 
         self.cmdopts['core_config_root'] = os.path.join('core', 'config')
-        self.cmdopts['plugin_config_root'] = os.path.join('plugins',
-                                                          self.cmdopts['plugin'],
-                                                          'config')
+        self.cmdopts['project_config_root'] = os.path.join('plugins',
+                                                           self.cmdopts['project'],
+                                                           'config')
 
         try:
-            self.main_config = yaml.load(open(os.path.join(self.cmdopts['plugin_config_root'],
+            self.main_config = yaml.load(open(os.path.join(self.cmdopts['project_config_root'],
                                                            'main.yaml')),
                                          yaml.FullLoader)
         except FileNotFoundError:
-            logging.exception("%s/main.yaml must exist!", self.cmdopts['plugin_config_root'])
+            logging.exception("%s/main.yaml must exist!", self.cmdopts['project_config_root'])
             raise
 
         if 5 not in self.args.pipeline:

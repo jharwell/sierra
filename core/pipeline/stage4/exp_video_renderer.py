@@ -50,12 +50,12 @@ class BatchedExpVideoRenderer:
         for exp in experiments:
             exp_root = os.path.join(batch_exp_root, exp)
 
-            if render_opts['plugin_rendering']:
+            if render_opts['project_rendering']:
                 opts = copy.deepcopy(render_opts)
 
                 frames_root = os.path.join(exp_root,
-                                           main_config['sierra']['plugin_frames_leaf'])
-                # Plugin render targets are in <averaged_output_root>/<metric_dir_name>, for all
+                                           main_config['sierra']['project_frames_leaf'])
+                # Project render targets are in <averaged_output_root>/<metric_dir_name>, for all
                 # directories in <averaged_output_root>.
                 for d in os.listdir(frames_root):
                     src_dir = os.path.join(frames_root, d)
@@ -79,7 +79,7 @@ class BatchedExpVideoRenderer:
                                                sim,
                                                main_config['sim']['argos_frames_leaf'])
                     if main_config['sierra']['avg_output_leaf'] not in frames_root and \
-                            main_config['sierra']['plugin_frames_leaf'] not in frames_root:
+                            main_config['sierra']['project_frames_leaf'] not in frames_root:
                         opts['image_dir'] = frames_root
                         opts['output_dir'] = os.path.join(exp_root, 'videos')
                         core.utils.dir_create_checked(opts['output_dir'], exist_ok=True)

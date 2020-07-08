@@ -47,7 +47,7 @@ class PipelineStage5:
     def __init__(self, main_config: dict, cmdopts: tp.Dict[str, str]) -> None:
         self.cmdopts = cmdopts
         self.main_config = main_config
-        self.stage5_config = yaml.load(open(os.path.join(self.cmdopts['plugin_config_root'],
+        self.stage5_config = yaml.load(open(os.path.join(self.cmdopts['project_config_root'],
                                                          'stage5.yaml')),
                                        yaml.FullLoader)
         self.controllers = self.cmdopts['controllers_list'].split(',')
@@ -57,10 +57,10 @@ class PipelineStage5:
         # (i.e. make stage5 idempotent).
         self.output_roots = {
             'cc_graphs': os.path.join(self.cmdopts['sierra_root'],
-                                      self.cmdopts['plugin'],
+                                      self.cmdopts['project'],
                                       '+'.join(self.controllers) + "-cc-graphs"),
             'cc_csvs': os.path.join(self.cmdopts['sierra_root'],
-                                    self.cmdopts['plugin'],
+                                    self.cmdopts['project'],
                                     '+'.join(self.controllers) + "-cc-csvs"),
         }
 
@@ -116,17 +116,17 @@ class PipelineStage5:
         for t1 in controllers:
             for t2 in controllers:
                 for item in os.listdir(os.path.join(self.cmdopts['sierra_root'],
-                                                    self.cmdopts['plugin'],
+                                                    self.cmdopts['project'],
                                                     t1)):
                     _, scenario = rdg.parse_batch_root(item)
                     path1 = os.path.join(self.cmdopts['sierra_root'],
-                                         self.cmdopts['plugin'],
+                                         self.cmdopts['project'],
                                          t1,
                                          item,
                                          'exp-outputs',
                                          self.main_config['sierra']['collate_csv_leaf'])
                     path2 = os.path.join(self.cmdopts['sierra_root'],
-                                         self.cmdopts['plugin'],
+                                         self.cmdopts['project'],
                                          t2,
                                          item,
                                          'exp-outputs',

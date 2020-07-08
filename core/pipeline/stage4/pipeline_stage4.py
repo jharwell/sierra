@@ -58,31 +58,31 @@ class PipelineStage4:
         cmdopts: Dictionary of parsed cmdline options.
 
         controller_config: YAML configuration file found in
-                           ``<plugin_config_root>/controllers.yaml``. Contains configuration for
+                           ``<project_config_root>/controllers.yaml``. Contains configuration for
                            what categories of graphs should be generated for what controllers, for
                            all categories of graphs in both inter- and intra-experiment graph
                            generation.
 
         inter_LN_config: YAML configuration file found in
-                         ``<plugin_config_root>/inter-graphs-line.yaml`` Contains configuration for
+                         ``<project_config_root>/inter-graphs-line.yaml`` Contains configuration for
                          categories of linegraphs that can potentially be generated for all
                          controllers `across` experiments in a batch. Which linegraphs are actually
                          generated for a given controller is controlled by
-                         ``<plugin_config_root>/controllers.yaml``.
+                         ``<project_config_root>/controllers.yaml``.
 
         intra_LN_config: YAML configuration file found in
-                         ``<plugin_config_root>/intra-graphs-line.yaml`` Contains configuration for
+                         ``<project_config_root>/intra-graphs-line.yaml`` Contains configuration for
                          categories of linegraphs that can potentially be generated for all
                          controllers `within` each experiment in a batch. Which linegraphs are
                          actually generated for a given controller in each experiment is controlled
-                         by ``<plugin_config_root>/controllers.yaml``.
+                         by ``<project_config_root>/controllers.yaml``.
 
         intra_HM_config: YAML configuration file found in
-                         ``<plugin_config_root>/intra-graphs-hm.yaml`` Contains configuration for
+                         ``<project_config_root>/intra-graphs-hm.yaml`` Contains configuration for
                          categories of heatmaps that can potentially be generated for all
                          controllers `within` each experiment in a batch. Which heatmaps are
                          actually generated for a given controller in each experiment is controlled
-                         by ``<plugin_config_root>/controllers.yaml``.
+                         by ``<project_config_root>/controllers.yaml``.
 
     """
 
@@ -90,7 +90,7 @@ class PipelineStage4:
         self.cmdopts = cmdopts
 
         self.main_config = main_config
-        self.controller_config = yaml.load(open(os.path.join(self.cmdopts['plugin_config_root'],
+        self.controller_config = yaml.load(open(os.path.join(self.cmdopts['project_config_root'],
                                                              'controllers.yaml')),
                                            yaml.FullLoader)
 
@@ -104,44 +104,47 @@ class PipelineStage4:
                                                            'intra-graphs-hm.yaml')),
                                          yaml.FullLoader)
 
-        plugin_inter_LN = os.path.join(self.cmdopts['plugin_config_root'],
-                                       'inter-graphs-line.yaml')
-        plugin_intra_LN = os.path.join(self.cmdopts['plugin_config_root'],
-                                       'intra-graphs-line.yaml')
-        plugin_intra_HM = os.path.join(self.cmdopts['plugin_config_root'],
-                                       'intra-graphs-hm.yaml')
-        if os.path.exists(plugin_intra_LN):
-            logging.info("Stage4: Loading additional intra-experiment linegraph config for plugin '%s'",
-                         self.cmdopts['plugin'])
-            plugin_dict = yaml.load(open(plugin_intra_LN), yaml.FullLoader)
+        project_inter_LN = os.path.join(self.cmdopts['project_config_root'],
+                                        'inter-graphs-line.yaml')
+        project_intra_LN = os.path.join(self.cmdopts['project_config_root'],
+                                        'intra-graphs-line.yaml')
+        project_intra_HM = os.path.join(self.cmdopts['project_config_root'],
+                                        'intra-graphs-hm.yaml')
+        if os.path.exists(project_intra_LN):
+            logging.info("Stage4: Loading additional intra-experiment linegraph config for project '%s'",
+                         self.cmdopts['project'])
+            project_dict = yaml.load(open(project_intra_LN), yaml.FullLoader)
 
-            for category in plugin_dict:
+            for category in project_dict:
                 if category not in self.intra_LN_config:
-                    self.intra_LN_config.update({category: plugin_dict[category]})
+                    self.intra_LN_config.update({category: project_dict[category]})
                 else:
-                    self.intra_LN_config[category]['graphs'].extend(plugin_dict[category]['graphs'])
+                    self.intra_LN_config[category]['graphs'].extend(
+                        project_dict[category]['graphs'])
 
-                self.intra_LN_config.update({category: plugin_dict[category]})
+                self.intra_LN_config.update({category: project_dict[category]})
 
-        if os.path.exists(plugin_intra_HM):
-            logging.info("Stage4: Loading additional intra-experiment heatmap config for plugin '%s'",
-                         self.cmdopts['plugin'])
-            plugin_dict = yaml.load(open(plugin_intra_HM), yaml.FullLoader)
-            for category in plugin_dict:
+        if os.path.exists(project_intra_HM):
+            logging.info("Stage4: Loading additional intra-experiment heatmap config for project '%s'",
+                         self.cmdopts['project'])
+            project_dict = yaml.load(open(project_intra_HM), yaml.FullLoader)
+            for category in project_dict:
                 if category not in self.intra_HM_config:
-                    self.intra_HM_config.update({category: plugin_dict[category]})
+                    self.intra_HM_config.update({category: project_dict[category]})
                 else:
-                    self.intra_HM_config[category]['graphs'].extend(plugin_dict[category]['graphs'])
+                    self.intra_HM_config[category]['graphs'].extend(
+                        project_dict[category]['graphs'])
 
-        if os.path.exists(plugin_inter_LN):
-            logging.info("Stage4: Loading additional inter-experiment linegraph config for plugin '%s'",
-                         self.cmdopts['plugin'])
-            plugin_dict = yaml.load(open(plugin_inter_LN), yaml.FullLoader)
-            for category in plugin_dict:
+        if os.path.exists(project_inter_LN):
+            logging.info("Stage4: Loading additional inter-experiment linegraph config for project '%s'",
+                         self.cmdopts['project'])
+            project_dict = yaml.load(open(project_inter_LN), yaml.FullLoader)
+            for category in project_dict:
                 if category not in self.inter_LN_config:
-                    self.inter_LN_config.update({category: plugin_dict[category]})
+                    self.inter_LN_config.update({category: project_dict[category]})
                 else:
-                    self.inter_LN_config[category]['graphs'].extend(plugin_dict[category]['graphs'])
+                    self.inter_LN_config[category]['graphs'].extend(
+                        project_dict[category]['graphs'])
 
     def run(self, batch_criteria):
         """
@@ -169,7 +172,7 @@ class PipelineStage4:
         #. :class:`~pipeline.stage4.InterExpGraphGenerator` to perform graph generation from
            collated ``.csv`` files.
         """
-        if self.cmdopts['plugin_rendering'] or self.cmdopts['argos_rendering']:
+        if self.cmdopts['project_rendering'] or self.cmdopts['argos_rendering']:
             self.__run_rendering()
 
         if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'intra':
@@ -213,7 +216,7 @@ class PipelineStage4:
         render_opts = {
             'cmd_opts': self.cmdopts['render_cmd_opts'],
             'argos_rendering': self.cmdopts['argos_rendering'],
-            'plugin_rendering': self.cmdopts['plugin_rendering']
+            'project_rendering': self.cmdopts['project_rendering']
         }
         logging.info("Stage4: Rendering videos...")
         start = time.time()

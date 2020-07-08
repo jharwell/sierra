@@ -38,7 +38,7 @@ class PipelineStage3:
     together, according to configuration. Currently this includes:
 
     - Averaging simulation results.
-    - Generating image files from plugin metric collection for later use in video rendering in stage
+    - Generating image files from project metric collection for later use in video rendering in stage
       4.
 
     This stage is idempotent.
@@ -47,23 +47,23 @@ class PipelineStage3:
     def run(self, main_config: dict, cmdopts: tp.Dict[str, str]):
         self.__run_averaging(main_config, cmdopts)
 
-        if cmdopts['plugin_imagizing']:
+        if cmdopts['project_imagizing']:
             intra_HM_config = yaml.load(open(os.path.join(cmdopts['core_config_root'],
                                                           'intra-graphs-hm.yaml')),
                                         yaml.FullLoader)
 
-            plugin_intra_HM = os.path.join(cmdopts['plugin_config_root'],
-                                           'intra-graphs-hm.yaml')
+            project_intra_HM = os.path.join(cmdopts['project_config_root'],
+                                            'intra-graphs-hm.yaml')
 
-            if os.path.exists(plugin_intra_HM):
-                logging.info("Stage3: Loading additional intra-experiment heatmap config for plugin '%s'",
-                             cmdopts['plugin'])
-                plugin_dict = yaml.load(open(plugin_intra_HM), yaml.FullLoader)
-                for category in plugin_dict:
+            if os.path.exists(project_intra_HM):
+                logging.info("Stage3: Loading additional intra-experiment heatmap config for project '%s'",
+                             cmdopts['project'])
+                project_dict = yaml.load(open(project_intra_HM), yaml.FullLoader)
+                for category in project_dict:
                     if category not in intra_HM_config:
-                        intra_HM_config.update({category: plugin_dict[category]})
+                        intra_HM_config.update({category: project_dict[category]})
                     else:
-                        intra_HM_config[category]['graphs'].extend(plugin_dict[category]['graphs'])
+                        intra_HM_config[category]['graphs'].extend(project_dict[category]['graphs'])
 
             self.__run_imagizing(main_config, intra_HM_config, cmdopts)
 
@@ -75,7 +75,7 @@ class PipelineStage3:
             'template_input_leaf': template_input_leaf,
             'no_verify_results': cmdopts['no_verify_results'],
             'gen_stddev': cmdopts['gen_stddev'],
-            'plugin_imagizing': cmdopts['plugin_imagizing']
+            'project_imagizing': cmdopts['project_imagizing']
         }
         logging.info("Stage3: Averaging batched experiment outputs in %s...",
                      cmdopts['output_root'])

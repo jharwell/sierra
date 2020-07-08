@@ -53,7 +53,7 @@ class BatchedExpImagizer:
                 if os.path.isdir(metrics_path):
                     imagize_output_root = os.path.join(batch_exp_root,
                                                        exp,
-                                                       main_config['sierra']['plugin_frames_leaf'],
+                                                       main_config['sierra']['project_frames_leaf'],
                                                        m)
                     imagize_opts = {
                         'csv_dir_root': avg_root,

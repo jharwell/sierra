@@ -144,7 +144,7 @@ class ExpRunner:
             'n_jobs': n_jobs
         }
         try:
-            cmd = core.hpc.ParallelCmdGenerator()(self.hpc_env, parallel_opts)
+            cmd = core.hpc.GNUParallelCmdGenerator()(self.hpc_env, parallel_opts)
             subprocess.run(cmd,
                            shell=True,
                            check=True,

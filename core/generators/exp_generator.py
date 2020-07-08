@@ -153,10 +153,10 @@ class ExpDefCommonGenerator:
         """
         xml_luigi.attr_change(".//loop_functions",
                               "library",
-                              "lib" + self.cmdopts['plugin'])
+                              "lib" + self.cmdopts['project'])
         xml_luigi.attr_change(".//__controller__",
                               "library",
-                              "lib" + self.cmdopts['plugin'])
+                              "lib" + self.cmdopts['project'])
 
     def __generate_visualization(self, xml_luigi: XMLLuigi):
         """
@@ -291,7 +291,7 @@ class BatchedExpDefGenerator:
                                                 cmdopts=self.cmdopts)
 
         controller = gf.controller_generator_create(controller=self.controller_name,
-                                                    config_root=self.cmdopts['plugin_config_root'],
+                                                    config_root=self.cmdopts['project_config_root'],
                                                     cmdopts=self.cmdopts)
 
         self.cmdopts['joint_generator'] = '+'.join([controller.__class__.__name__,

@@ -53,7 +53,7 @@ def scenario_generator_create(scenario, controller, **kwargs):
         abbrev = res.group(0)
         cmdopts = kwargs['cmdopts']
         try:
-            path = 'plugins.{0}.generators.scenario_generators'.format(cmdopts['plugin'])
+            path = 'plugins.{0}.generators.scenario_generators'.format(cmdopts['project'])
             module = __import__(path, fromlist=["*"])
         except ModuleNotFoundError:
             logging.exception("module %s must exist!", path)
