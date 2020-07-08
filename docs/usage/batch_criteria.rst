@@ -25,11 +25,18 @@ defined by the selected project):
   - :ref:`Block Density <ln-bc-block-density>`
   - :ref:`Flexibility <ln-bc-flexibility>`
   - :ref:`Oracle <ln-bc-oracle>`
-  - :ref:`Oracle <ln-bc-ta-policy-set>`
+  - :ref:`Task Allocation Policy <ln-bc-ta-policy-set>`
   - :ref:`SAA Noise <ln-bc-saa-noise>`
 
 You *should* be able to combine any two of the criteria above, or use them
 independently. I have not tried all combinations, so YMMV.
+
+.. IMPORTANT::
+
+   All batch criteria only *modify* existing XML attributes, and will not create
+   new XML tags or attributes if they do not exist. So, any attribute under a
+   given tag that will be modified by a batch criteria will need to exist in
+   whatever file you pass with ``--template-input-file``.
 
 .. _ln-bc-population-size:
 
@@ -325,20 +332,20 @@ Examples:
 Sensor and Actuator Noise
 -------------------------
 
-.. WARNING::
-
-   Some of the flexibility config via applied temporal variance is very FORDYCA
-   specific; hopefully this will change in the future, or be pushed down to a
-   project-specific extension of a base flexibility class.
-
 Cmdline Syntax
 ^^^^^^^^^^^^^^
 ``saa_noise.{category}.C{cardinality}[.Z{population}]``
 
 - ``category`` - [sensors,actuators,all]
-  - ``sensors`` - Apply noise to robot sensors only.
-  - ``actuators`` - Apply noise to robot actuators only.
-  - ``all`` - Apply noise to robot sensors AND actuators.
+
+  - ``sensors`` - Apply noise to robot sensors only. The ``sensors`` dictionary
+  must be present and non-empty in the ``main.yaml``.
+
+  - ``actuators`` - Apply noise to robot actuators only. The ``actuators``
+  dictionary must be present and non-empty in ``main.yaml``.
+
+  - ``all`` - Apply noise to robot sensors AND actuators. [ ``sensors``,
+  ``actuators`` ] dictionaries both optional in ``main.yaml``.
 
 - ``cardinality`` - The # of different noise levels to test with between the min
   and max specified in the config file for each sensor/actuator which defines
@@ -348,8 +355,10 @@ Cmdline Syntax
 
 Examples:
 
-- ``sensors.C4.Z16``: 4 levels of noise applied to all sensors in a swarm of size 16.
-- ``actuators.C3.Z32``: 3 levels of noise applied to all actuators in a swarm of size 32.
+- ``sensors.C4.Z16``: 4 levels of noise applied to all sensors in a swarm of
+  size 16.
+- ``actuators.C3.Z32``: 3 levels of noise applied to all actuators in a swarm of
+  size 32.
 - ``all.C10``: 10 levels of noise applied to both sensors and actuators; swarm size not
   modified.
 
@@ -359,6 +368,13 @@ main YAML configuration file (not an easy way to specify ranges in a single
 batch criteria definition string). The relevant section is shown below. If the
 min, max level for a sensor/actuator is not specified in the YAML file, no XML
 changes will be generated for it.
+
+
+.. NOTE::
+
+   Some of the flexibility config via applied temporal variance is very FORDYCA
+   specific; hopefully this will change in the future, or be pushed down to a
+   project-specific extension of a base flexibility class.
 
 .. _ln-bc-saa-noise-yaml-config:
 
@@ -375,9 +391,9 @@ For a ``uniform`` model, the ``range`` attribute is required, and defines the
 noise ranges of ``[0.0, 0.5]``, and ``[0.0, 1.0]``.
 
 For a ``gaussian`` model, the ``stddev_range`` and ``mean_range`` attributes are
-required.  For example, setting ``stddev_range: [0.0,1.0]`` and ``mean_range:
-[0.0, 0.0]`` with ``cardinality=2`` will result in two experiments with Guassian
-distributed ranges ``Gaussian(0, 0.5)``, and ``Gaussian(0, 1.0)``.
+required.  For example, setting ``stddev_range: [0.0,1.0]`` and
+``mean_range: [0.0, 0.0]`` with ``cardinality=2`` will result in two experiments
+with Guassian distributed ranges ``Gaussian(0, 0.5)``, and ``Gaussian(0, 1.0)``.
 
 .. code-block:: YAML
 
@@ -404,9 +420,9 @@ distributed ranges ``Gaussian(0, 0.5)``, and ``Gaussian(0, 1.0)``.
            range: [0.0, 0.1]
 
          actuators:
-           steering:
+           steering: # applied to [noise_factor]
              model: uniform
-             range: [0.0, 0.1]
+             range: [0.95, 1.05]
 
 Experiment Definitions
 ^^^^^^^^^^^^^^^^^^^^^^

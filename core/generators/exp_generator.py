@@ -116,7 +116,7 @@ class ExpDefCommonGenerator:
         tsetup_inst = getattr(setup, "factory")(self.cmdopts["time_setup"])()
 
         for a in tsetup_inst.gen_attr_changelist()[0]:
-            xml_luigi.attr_change(a[0], a[1], a[2])
+            xml_luigi.attr_change(a[0], a[1], a[2], True)
 
         # Write time setup info to file for later retrieval
         with open(exp_def_fpath, 'ab') as f:

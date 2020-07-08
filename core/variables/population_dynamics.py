@@ -57,12 +57,12 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
         # Note the # of decimal places used--these rates can get pretty small, and we do NOT want to
         # round/truncate unecessarily, because that can change behavior in statistical equilibrium.
 
-        dynamics = []  # type: list
-        for d in dynamics:
-            dynamics.append({(".//temporal_variance/population_dynamics",
-                              t[0],
-                              str('%3.9f' % t[1])) for t in d})
-        return dynamics
+        changes = []  # type: list
+        for d in self.dynamics:
+            changes.append({(".//temporal_variance/population_dynamics",
+                             t[0],
+                             str('%3.9f' % t[1])) for t in d})
+        return changes
 
     def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> list:
         changes = self.gen_attr_changelist()

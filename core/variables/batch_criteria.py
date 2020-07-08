@@ -115,8 +115,8 @@ class BatchCriteria(base_variable.BaseVariable):
         """
         assert len(self.gen_tag_addlist()) == 0, "FATAL: Batch criteria cannot add XML tags"
         chg_defs = list(self.gen_attr_changelist())
-
         n_exps = len(chg_defs)
+
         logging.info("Scaffolding experiments from batch criteria '%s' by modifying %s XML tags",
                      self.cli_arg,
                      len(chg_defs[0]))

@@ -160,8 +160,6 @@ class RawPerfCS():
 
         intra_perf_col = self.main_config['perf']['intra_perf_col']
 
-        # print(ideal_df[intra_perf_col].values)
-        # print(exp_df[intra_perf_col].values)
         xlen = len(exp_df[intra_perf_col].values)
         exp_data = np.zeros((xlen, 2))
         exp_data[:, 0] = exp_df["clock"].values

@@ -243,17 +243,17 @@ class BatchedExpCreator:
         core.utils.dir_create_checked(self.batch_generation_root, self.cmdopts['exp_overwrite'])
 
         # Scaffold the batched experiment, creating experiment directories and writing template XML
-        # input files for each experiment in the batch with changes from the batch criteria added
+        # input files for each experiment in the batch with changes from the batch criteria added.
         self.criteria.scaffold_exps(XMLLuigi(self.batch_config_template),
                                     self.batch_config_leaf,
                                     self.cmdopts)
 
         # Pickle experiment definitions in the actual batched experiment directory for later
-        # retrieval
+        # retrieval.
         self.criteria.pickle_exp_defs(self.cmdopts)
 
         # Run batched experiment generator (must be after scaffolding so the per-experiment template
-        # files are in place)
+        # files are in place).
         defs = generator.generate_defs()
 
         for i, defi in enumerate(defs):

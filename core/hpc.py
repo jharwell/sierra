@@ -149,8 +149,9 @@ class AdHocParallelCmdGenerator():
 
 class LocalEnvConfigurer():
     def __call__(self, args):
-        assert args.physics_n_engines is not None,\
-            'FATAL: --physics-n-engines is required for --hpc-env=local'
+        if any([1, 2]) in args.pipeline:
+            assert args.physics_n_engines is not None,\
+                'FATAL: --physics-n-engines is required for --hpc-env=local when running stage{1,2}'
 
         args.__dict__['n_threads'] = args.physics_n_engines
 

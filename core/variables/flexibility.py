@@ -60,29 +60,24 @@ class Flexibility(UnivarBatchCriteria):
         Generate a list of sets of changes necessary to make to the input file to correctly set up
         the simulation with the specified temporal variances.
         """
+        all_changes = [set([("{0}/waveform".format(v[0]), "type", str(v[1])),
+                            ("{0}/waveform".format(v[0]), "frequency", str(v[2])),
+                            ("{0}/waveform".format(v[0]), "amplitude", str(v[3])),
+                            ("{0}/waveform".format(v[0]), "offset", str(v[4])),
+                            ("{0}/waveform".format(v[0]), "phase", str(v[5]))]) for v in self.variances]
+
         # Swarm size is optional. It can be (1) controlled via this variable, (2) controlled by
         # another variable in a bivariate batch criteria, (3) not controlled at all. For (2), (3),
         # the swarm size can be None.
-
         if self.population is not None:
-            size_attr = next(iter(PopulationSize(self.cli_arg,
-                                                 self.main_config,
-                                                 self.batch_generation_root,
-                                                 [self.population]).gen_attr_changelist()[0]))
-            return [set([
-                size_attr,
-                ("{0}/waveform".format(v[0]), "type", str(v[1])),
-                ("{0}/waveform".format(v[0]), "frequency", str(v[2])),
-                ("{0}/waveform".format(v[0]), "amplitude", str(v[3])),
-                ("{0}/waveform".format(v[0]), "offset", str(v[4])),
-                ("{0}/waveform".format(v[0]), "phase", str(v[5]))]) for v in self.variances]
-        else:
-            return [set([
-                ("{0}/waveform".format(v[0]), "type", str(v[1])),
-                ("{0}/waveform".format(v[0]), "frequency", str(v[2])),
-                ("{0}/waveform".format(v[0]), "amplitude", str(v[3])),
-                ("{0}/waveform".format(v[0]), "offset", str(v[4])),
-                ("{0}/waveform".format(v[0]), "phase", str(v[5]))]) for v in self.variances]
+            size_chgs = PopulationSize(self.cli_arg,
+                                       self.main_config,
+                                       self.batch_generation_root,
+                                       [self.population]).gen_attr_changelist()[0]
+            for exp_chgs in all_changes:
+                exp_chgs |= size_chgs
+
+        return all_changes
 
     def graph_xticks(self,
                      cmdopts: tp.Dict[str, str],

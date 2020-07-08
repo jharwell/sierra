@@ -68,14 +68,15 @@ class SAANoise(UnivarBatchCriteria):
         # another variable in a bivariate batch criteria, (3) not controlled at all. For (2), (3),
         # the swarm size can be None.
         if self.population is not None:
-            size_attr = next(iter(PopulationSize(self.cli_arg,
-                                                 self.main_config,
-                                                 self.batch_generation_root,
-                                                 [self.population]).gen_attr_changelist()[0]))
-            changes = [{(v2[0], v2[1], v2[2]) for v2 in v1} for v1 in self.variances]
-            for c in changes:
-                c.add(size_attr)
-            return changes
+            size_chgs = PopulationSize(self.cli_arg,
+                                       self.main_config,
+                                       self.batch_generation_root,
+                                       [self.population]).gen_attr_changelist()[0]
+            all_changes = [{(v2[0], v2[1], v2[2]) for v2 in v1} for v1 in self.variances]
+            for exp_chgs in all_changes:
+                exp_chgs |= size_chgs
+
+            return all_changes
         else:
             return [{v2 for v2 in v1} for v1 in self.variances]
 
@@ -203,7 +204,7 @@ class SAANoise(UnivarBatchCriteria):
         stddev_accum = 0.0
         count = 0
         for source in changelist:
-            parent, attr, value = source
+            _, attr, value = source
             if attr == 'mean':
                 mean_accum += float(value)
                 count += 1
@@ -292,21 +293,22 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
                 'ground': ('.//sensors/footbot_motor_ground', ['noise']),
                 'steering': ('.//sensors/differential_steering', ['vel_noise', 'dist_noise']),
                 'position': ('.//sensors/positioning', ['noise']),
+                'colored_blob_omnidirectional_camera': ('.//sensors/colored_blob_omnidirectional_camera', ['noise'])
             },
 
             'actuators': {
-                'steering': ('.//sensors/differential_steering', ['noise_factor'])
+                'steering': ('.//actuators/differential_steering', ['noise_factor'])
             }
 
         }
 
         if any(v == attr['noise_type'] for v in ['sensors', 'actuators']):
-            sources = main_config['sierra']['robustness'][attr['noise_type']]
-            noise_types = [attr['noise_type']]
+            configured_sources = {attr['noise_type']: main_config['perf']['robustness'][attr['noise_type']]}
         else:
-            sources = main_config['sierra']['robustness']['actuators']
-            sources.update(main_config['sierra']['robustness']['sensors'])
-            noise_types = ['sensors', 'actuators']
+            configured_sources = {
+                'actuators': main_config['perf']['robustness'].get('actuators', {}),
+                'sensors': main_config['perf']['robustness'].get('sensors', {})
+            }
 
         # We iterate through by noise source (sensor or actuator) creating lists of noise levels for
         # each source, which are joined to create a list-of-lists: by_src. We have to do it this
@@ -320,50 +322,61 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
         #
         # I couldn't find a more elegant way of doing this.
         by_src = []
-        n_levels = 0
-        for src, config in sources.items():
-            for nt in noise_types:
-                # Cannot always add noise to the sensor AND actuator models for the same device (eg
-                # light sensor does not have a light actuator complement).
-                if src not in xml_parents[nt]:
+        for dev_type in xml_parents.keys():
+            # Either the sensors or actuators list is empty because it wasn't included in the YAML
+            # config file.
+            if dev_type not in configured_sources.keys():
+                continue
+            for dev_name in xml_parents[dev_type].keys():
+                # Sensor or actuator missing from YAML list
+                if dev_name not in configured_sources[dev_type].keys():
                     continue
 
-                xml_parent = xml_parents[nt][src][0]
-                xml_child_tags = xml_parents[nt][src][1]
-                if config['model'] == 'uniform':
-                    levels = [x for x in np.linspace(config['range'][0],
-                                                     config['range'][1],
-                                                     num=attr['cardinality'] + 1)]
-                    for l in levels:
-                        by_src.extend([set([(xml_parent + tag, 'model', config['model']),
-                                            (xml_parent + tag, 'level', str(l))]) for tag in xml_child_tags])
-                    n_levels = len(levels)
-                elif config['model'] == 'gaussian':
-                    stddev_levels = [x for x in np.linspace(config['stddev_range'][0],
-                                                            config['stddev_range'][1],
-                                                            num=attr['cardinality'] + 1)]
-                    mean_levels = [x for x in np.linspace(config['mean_range'][0],
-                                                          config['mean_range'][1],
-                                                          num=attr['cardinality'] + 1)]
-                    for l1, l2 in zip(mean_levels, stddev_levels):
-                        by_src.extend([set([(xml_parent + tag, 'model', config['model']),
-                                            (xml_parent + tag, 'mean', str(l1)),
-                                            (xml_parent + tag, 'stddev', str(l2))])
-                                       for tag in xml_child_tags])
-                    n_levels = len(mean_levels)
-                else:
-                    assert False, "FATAL: bad noise model '{0}'".format(config['model'])
+                dev_noise_config = configured_sources[dev_type][dev_name]
+                configure_device(xml_parents[dev_type][dev_name], dev_noise_config, by_src)
 
         # Invert!
         by_exp = []
-        for i in range(0, n_levels):
+        for i in range(0, attr['cardinality'] + 1):
             # This is the magic line. It takes every "level"-th element, since that is the # of
             # experiments that this criteria defines, starting with i=0...n_levels. So if there are
             # 10 levels, then the first set added to the return list would be i={0,10,20,...}, the
             # second would be i={1,11,21,...}, etc.
-            by_exp.append({chg for s in by_src[i::n_levels] for chg in s})
+            by_exp.append({chg for s in by_src[i:: attr['cardinality'] + 1] for chg in s})
 
         return by_exp
+
+    def configure_device(xml_config: tuple, dev_noise_config: dict, by_src: list):
+        xml_parent = xml_config[0]
+        xml_child_tags = xml_config[1]
+
+        if dev_noise_config['model'] == 'uniform':
+            levels = [x for x in np.linspace(dev_noise_config['range'][0],
+                                             dev_noise_config['range'][1],
+                                             num=attr['cardinality'] + 1)]
+            for level in levels:
+                v = set()
+                for tag in xml_child_tags:
+                    v |= set([(xml_parent + "/" + tag, 'model', dev_noise_config['model']),
+                              (xml_parent + "/" + tag, 'level', str(level))])
+                by_src.extend([v])
+        elif dev_noise_config['model'] == 'gaussian':
+            stddev_levels = [x for x in np.linspace(dev_noise_config['stddev_range'][0],
+                                                    dev_noise_config['stddev_range'][1],
+                                                    num=attr['cardinality'] + 1)]
+            mean_levels = [x for x in np.linspace(dev_noise_config['mean_range'][0],
+                                                  dev_noise_config['mean_range'][1],
+                                                  num=attr['cardinality'] + 1)]
+            for l1, l2 in zip(mean_levels, stddev_levels):
+                v = set()
+                for tag in xml_child_tags:
+                    v |= set([(xml_parent + "/" + tag, 'model', dev_noise_config['model']),
+                              (xml_parent + "/" + tag, 'mean', str(l1)),
+                              (xml_parent + "/" + tag, 'stddev', str(l2))])
+
+                by_src.extend([v])
+        else:
+            assert False, "FATAL: bad noise model '{0}'".format(dev_noise_config['model'])
 
     def __init__(self) -> None:
         SAANoise.__init__(self,
@@ -381,4 +394,6 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
 
 __api__ = [
     'SAANoise'
+
+
 ]

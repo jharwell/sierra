@@ -20,16 +20,47 @@
     <__controller__ id="ffc"
                   library="foo">
       <actuators>
-        <differential_steering implementation="default"/>
+        <differential_steering implementation="default">
+          <noise_factor model="none"
+                        mean="0"
+                        stddev="0"/>
+        </differential_steering>
       </actuators>
       <sensors>
-        <positioning implementation="default"/>
-        <differential_steering implementation="default"/>
-        <footbot_proximity implementation="default"/>
-        <footbot_light implementation="rot_z_only"/>
-        <footbot_motor_ground implementation="rot_z_only"/>
+        <positioning implementation="default">
+          <noise model="none"
+                 stddev="0"
+                 mean="0"/>
+        </positioning>
+        <differential_steering implementation="default">
+          <dist_noise model="none"
+                      stddev="0"
+                      mean="0"/>
+          <vel_noise model="none"
+                     stddev="0"
+                     mean="0"/>
+        </differential_steering>
+
+        <footbot_proximity implementation="default">
+          <noise model="none"
+                 stddev="0"
+                 mean="0"/>
+        </footbot_proximity>
+        <footbot_light implementation="rot_z_only">
+          <noise model="none"
+                 stddev="0"
+                 mean="0"/>
+        </footbot_light>
+        <footbot_motor_ground implementation="rot_z_only">
+          <noise model="none"
+                 stddev="0"
+                 mean="0"/>
+        </footbot_motor_ground>
         <colored_blob_omnidirectional_camera implementation="rot_z_only"
-                                             medium="leds"/>
+                                             medium="leds">
+          <noise model="none"
+                 stddev="0"/>
+        </colored_blob_omnidirectional_camera>
       </sensors>
       <params>
         <output
@@ -262,9 +293,10 @@
       <blocks>
         <distribution
             arena_resolution="0.2"
-            dist_type="single_source">
+            dist_type="single_source"
+            strict_success="false">
           <manifest
-              n_cube="64"
+              n_cube="2048"
               n_ramp="0"
               unit_dim="0.2"
               />
@@ -281,7 +313,7 @@
       <dynamic enable="true"
                min_dist="1.2"
                min_blocks="2"
-               robot_drop_only="false"/>
+               robot_drop_only="true"/>
 
     </caches>
 

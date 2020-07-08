@@ -53,17 +53,19 @@ class TAPolicySet(UnivarBatchCriteria):
         # another variable in a bivariate batch criteria, (3) not controlled at all. For (2), (3),
         # the swarm size can be None.
         if self.population is not None:
-            size_attr = [next(iter(PopulationSize(self.cli_arg,
-                                                  self.main_config,
-                                                  self.batch_generation_root,
-                                                  [self.population]).gen_attr_changelist()[0]))]
+            size_chgs = PopulationSize(self.cli_arg,
+                                       self.main_config,
+                                       self.batch_generation_root,
+                                       [self.population]).gen_attr_changelist()[0]
         else:
-            size_attr = []
+            size_chgs = []
         changes = []
 
         for p in self.policies:
             c = []
-            c.extend(size_attr)
+            for chg in size_chgs:
+                c.extend(chg)
+
             c.extend([(".//task_alloc", "policy", "{0}".format(p))])
 
             changes.append(set(c))

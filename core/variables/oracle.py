@@ -56,19 +56,19 @@ class Oracle(UnivarBatchCriteria):
         # Swarm size is optional. It can be (1) controlled via this variable, (2) controlled by
         # another variable in a bivariate batch criteria, (3) not controlled at all. For (2), (3),
         # the swarm size can be None.
-        changes = [set([(".//oracle_manager/{0}".format(str(t[0])),
-                         "{0}".format(str(feat[0])),
-                         "{0}".format(str(feat[1]))) for feat in t[1]]) for t in self.tuples]
+        all_changes = [set([(".//oracle_manager/{0}".format(str(t[0])),
+                             "{0}".format(str(feat[0])),
+                             "{0}".format(str(feat[1]))) for feat in t[1]]) for t in self.tuples]
 
         if self.population is not None:
-            size_attr = [next(iter(PopulationSize(self.cli_arg,
-                                                  self.main_config,
-                                                  self.batch_generation_root,
-                                                  [self.population]).gen_attr_changelist()[0]))]
-            for c in changes:
-                c.add(size_attr)
+            size_chgs = PopulationSize(self.cli_arg,
+                                       self.main_config,
+                                       self.batch_generation_root,
+                                       [self.population]).gen_attr_changelist()[0]
+            for exp_chgs in all_changes:
+                exp_chgs |= size_chgs
 
-        return changes
+        return all_changes
 
     def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> tp.List[str]:
         changes = self.gen_attr_changelist()
