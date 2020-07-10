@@ -156,7 +156,18 @@ Root level dictionaries:
 ``perf.flexibility`` sub-dictionary
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-See :ref:`Flexibility config <ln-bc-flexibility-yaml-config>`.
+.. code-block:: YAML
+
+   flexibility:
+     # The weighting factor for the reactivity axis of flexibility. If it
+     # omitted it defaults to 0.5.
+     alpha_R: 0.50
+
+     # The weighting factor for the adaptability axis of flexibility. If it is
+     # omitted it defaults to 0.5.
+     alpha_A: 0.50
+
+See also :ref:`Flexibility config <ln-bc-flexibility-yaml-config>`.
 
 ``perf.robustness`` sub-dictionary
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

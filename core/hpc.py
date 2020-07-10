@@ -13,7 +13,10 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-
+"""
+Dispatcher classes for the various HPC plugins that can be used with SIERRA for running
+experiments.
+"""
 import os
 import core.plugin_manager
 
@@ -23,33 +26,54 @@ import core.plugin_manager
 
 
 class ARGoSCmdGenerator():
+    """
+    Dispatcher to generate the ARGoS cmd to run for a simulation, given its input file.
+    """
+
     def __call__(self, cmdopts: dict, input_fpath: str):
         hpc = core.plugin_manager.PluginManager().get_plugin(cmdopts['hpc_env'])
         return hpc.generate_argos_cmd(input_fpath)
 
 
 class GNUParallelCmdGenerator():
+    """
+    Dispatcher to generate the GNU Parallel cmd SIERRA will use to run experiments in the specified
+    HPC environment.
+    """
+
     def __call__(self, hpc_env: str, parallel_opts: dict):
         hpc = core.plugin_manager.PluginManager().get_plugin(hpc_env)
         return hpc.generate_gnu_parallel_cmd(parallel_opts)
 
 
 class XvfbCmdGenerator():
+    """
+    Dispatcher to generate the Xvfb wrapper cmd prepended to the generated ARGoS cmd for headless
+    rendering.
+    """
+
     def __call__(self, cmdopts: dict):
         hpc = core.plugin_manager.PluginManager().get_plugin(cmdopts['hpc_env'])
         return hpc.generate_xvfb_cmd(cmdopts)
 
 
 class EnvConfigurer():
+    """
+    Dispatcher for configuring the HPC environment via the specified plugin.
+    """
+
     def __call__(self, hpc_env: str, args):
         args.__dict__['hpc_env'] = hpc_env
-        print(core.plugin_manager.PluginManager().main_module)
         hpc = core.plugin_manager.PluginManager().get_plugin(hpc_env)
         hpc.configure_env(args)
         return args
 
 
 class EnvChecker():
+    """
+    Verify the configured HPC environment before running any experiments.
+    """
+
     def __call__(self):
         # Verify environment
         assert os.environ.get(

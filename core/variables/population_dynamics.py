@@ -100,7 +100,7 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
         return "Superlinearity"
 
     def pm_query(self, pm: str) -> bool:
-        return pm in ['blocks-transported', 'robustness-size']
+        return pm in ['blocks-transported', 'robustness']
 
     @staticmethod
     def extract_rate_params(exp_def):

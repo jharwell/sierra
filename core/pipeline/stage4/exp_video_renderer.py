@@ -64,8 +64,7 @@ class BatchedExpVideoRenderer:
                         opts['output_dir'] = os.path.join(exp_root, 'videos')
                         opts['ofile_leaf'] = d + '.mp4'
 
-                        core.utils.create_dir_checked(opts['output_dir'],
-                                                      self.cmdopts['exp_overwrite'])
+                        core.utils.dir_create_checked(opts['output_dir'], True)
                         q.put(opts)
 
             if render_opts['argos_rendering']:

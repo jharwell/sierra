@@ -17,8 +17,6 @@
    core.variables.block_distribution
    core.variables.block_priority
    core.variables.constant_density
-   core.variables.flexibility
-   core.variables.flexibility_parser
    core.variables.nest_pose
    core.variables.oracle
    core.variables.physics_engines
@@ -27,6 +25,8 @@
    core.variables.population_size
    core.variables.saa_noise
    core.variables.ta_policy_set
+   core.variables.temporal_variance
+   core.variables.temporal_variance_parser
    core.variables.time_setup
 
 .. currentmodule:: core.variables

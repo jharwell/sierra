@@ -25,7 +25,7 @@ import re
 import typing as tp
 import pandas as pd
 
-from core.variables.flexibility_parser import FlexibilityParser
+from core.variables.temporal_variance_parser import TemporalVarianceParser
 from core.variables.batch_criteria import BatchCriteria
 import core.perf_measures.vcs as vcs
 
@@ -51,7 +51,7 @@ class FlexibilityPlotsCSVGenerator:
         self.perf_csv_col = main_config['perf']['intra_perf_col']
 
     def __call__(self, batch_criteria: BatchCriteria):
-        tv_attr = FlexibilityParser()(batch_criteria.def_str)
+        tv_attr = Temporal_VarianceParser()(batch_criteria.def_str)
 
         res = re.search("exp[0-9]+", self.cmdopts['output_root'])
         assert res is not None, "FATAL: Unexpected experiment output dir name '{0}'".format(

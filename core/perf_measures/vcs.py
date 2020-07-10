@@ -22,9 +22,10 @@ import fastdtw
 import pandas as pd
 import numpy as np
 import similaritymeasures as sm
+from scipy.stats import zscore
 
 from core.variables.batch_criteria import BatchCriteria
-from core.variables.flexibility_parser import FlexibilityParser
+from core.variables.temporal_variance_parser import TemporalVarianceParser
 
 
 def method_xlabel(method: str):
@@ -38,7 +39,7 @@ def method_xlabel(method: str):
         "area_between": "Area Difference For Experiment and Ideal Conditions Variance Curves",
         "frechet": "Experiment Frechet Distance To Ideal Conditions",
         "curve_length": "Curve Length Difference To Ideal Conditions",
-        "dtw": r'DTW($I_{ec}(t)$,$V_{ec}(t)$)'
+        "dtw": r'DTW($I_{{ec}}(t)$,$V_{{ec}}(t)$)'
     }
     return labels[method]
 
@@ -104,7 +105,8 @@ class EnvironmentalCS():
                                           self.main_config['sierra']['avg_output_leaf'],
                                           self.main_config['perf']['tv_environment_csv']),
                              sep=';')
-        attr = FlexibilityParser()(batch_criteria.cli_arg)
+
+        attr = TemporalVarianceParser()(batch_criteria.cli_arg)
 
         xlen = len(exp_df[attr["variance_csv_col"]].values)
         exp_data = np.zeros((xlen, 2))
@@ -114,7 +116,6 @@ class EnvironmentalCS():
         ideal_data = np.zeros((xlen, 2))
         ideal_data[:, 0] = ideal_df["clock"].values
         ideal_data[:, 1] = ideal_df[attr["variance_csv_col"]].values
-
         return CSRaw()(exp_data=exp_data,
                        ideal_data=ideal_data,
                        method=self.cmdopts["envc_cs_method"])
@@ -210,7 +211,7 @@ class AdaptabilityCS():
         self.main_config = main_config
 
         self.perf_csv_col = main_config['perf']['intra_perf_col']
-        self.var_csv_col = FlexibilityParser()(self.batch_criteria.cli_arg)['variance_csv_col']
+        self.var_csv_col = TemporalVarianceParser()(self.batch_criteria.cli_arg)['variance_csv_col']
 
     def calc_waveforms(self):
         """
@@ -261,18 +262,27 @@ class AdaptabilityCS():
         xlen = len(exp0_var_df[self.var_csv_col].values)
 
         exp_data = np.zeros((xlen, 2))
-        exp_data[:, 0] = expx_perf_df["clock"].values
+        exp_data[:, 0] = expx_perf_df['clock'].values
         exp_data[:, 1] = expx_perf_df[self.perf_csv_col].values
 
         ideal_data = np.zeros((xlen, 2))
-        ideal_data[:, 0] = ideal_df.index.values
+        ideal_data[:, 0] = expx_perf_df['clock'].values
         ideal_data[:, 1] = ideal_df[self.perf_csv_col].values
         return ideal_data, exp_data
 
     def __call__(self):
         ideal_data, exp_data = self.calc_waveforms()
+
+        exp0_perf_df = DataFrames.exp0_perf_df(self.cmdopts,
+                                               self.batch_criteria,
+                                               self.main_config['sierra']['avg_output_leaf'],
+                                               self.main_config['perf']['intra_perf_csv'])
+
+        maxval = exp0_perf_df[self.perf_csv_col].max() * len(exp0_perf_df[self.perf_csv_col])
+
         return CSRaw()(exp_data=exp_data,
                        ideal_data=ideal_data,
+                       maxval=maxval,
                        method=self.cmdopts["adaptability_cs_method"])
 
 
@@ -305,7 +315,7 @@ class ReactivityCS():
 
         self.exp_num = exp_num
         self.perf_csv_col = self.main_config['perf']['intra_perf_col']
-        self.var_csv_col = FlexibilityParser()(batch_criteria.cli_arg)['variance_csv_col']
+        self.var_csv_col = TemporalVarianceParser()(batch_criteria.cli_arg)['variance_csv_col']
         self.batch_criteria = batch_criteria
 
     def calc_waveforms(self):
@@ -355,19 +365,27 @@ class ReactivityCS():
 
         xlen = len(exp0_var_df[self.var_csv_col].values)
         exp_data = np.zeros((xlen, 2))
-        exp_data[:, 0] = expx_perf_df["clock"].values
+        exp_data[:, 0] = expx_perf_df['clock'].values
         exp_data[:, 1] = expx_perf_df[self.perf_csv_col].values
 
         ideal_data = np.zeros((xlen, 2))
-        ideal_data[:, 0] = expx_var_df.index.values
+        ideal_data[:, 0] = expx_var_df['clock'].values
         ideal_data[:, 1] = ideal_df[self.perf_csv_col].values
 
         return ideal_data, exp_data
 
     def __call__(self):
         ideal_data, exp_data = self.calc_waveforms()
+        exp0_perf_df = DataFrames.exp0_perf_df(self.cmdopts,
+                                               self.batch_criteria,
+                                               self.main_config['sierra']['avg_output_leaf'],
+                                               self.main_config['perf']['intra_perf_csv'])
+
+        maxval = exp0_perf_df[self.perf_csv_col].max() * len(exp0_perf_df[self.perf_csv_col])
+
         return CSRaw()(exp_data=exp_data,
                        ideal_data=ideal_data,
+                       maxval=maxval,
                        method=self.cmdopts["reactivity_cs_method"])
 
 
@@ -377,7 +395,7 @@ class CSRaw():
     method for comparison, perform the comparison.
     """
 
-    def __call__(self, exp_data, ideal_data, method: str):
+    def __call__(self, exp_data, ideal_data, method: str, maxval: float = None):
         assert method is not None, "FATAL: Cannot compare curves without method"
 
         if method == "pcm":
@@ -389,6 +407,11 @@ class CSRaw():
         elif method == "dtw":
             # Don't use the sm version--waaayyyy too slow
             dist, _ = fastdtw.fastdtw(exp_data, ideal_data)
+
+            # Normalize [0,infinity) into [0,1], where HIGHER values now are better (much more
+            # intuitive this way)
+            if maxval is not None:
+                return (maxval - dist) / maxval
             return dist
         elif method == "curve_length":
             return sm.curve_length_measure(exp_data, ideal_data)

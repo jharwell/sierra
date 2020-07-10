@@ -13,16 +13,17 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-
+"""
+Parser for the :class:`TemporalVariance` batch criteria. This is its own file due to an otherwise
+circular import dependence between it and vcs.
+"""
 
 import re
 
 
-class FlexibilityParser():
+class TemporalVarianceParser():
     """
-    Enforces the cmdline definition of the :class:`Flexibility` batch criteria.
-
-    This is its own file due to an otherwise circular import dependence between it and vcs.
+    Enforces the cmdline definition of the :class:`TemporalVariance` batch criteria.
 
     """
 

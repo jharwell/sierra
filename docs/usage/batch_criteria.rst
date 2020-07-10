@@ -23,7 +23,7 @@ defined by the selected project):
   - :ref:`Swarm Population Dynamics <ln-bc-population-dynamics>`
   - :ref:`Swarm Population Density <ln-bc-population-density>`
   - :ref:`Block Density <ln-bc-block-density>`
-  - :ref:`Flexibility <ln-bc-flexibility>`
+  - :ref:`Temporal Variance <ln-bc-temporal-variance>`
   - :ref:`Oracle <ln-bc-oracle>`
   - :ref:`Task Allocation Policy <ln-bc-ta-policy-set>`
   - :ref:`SAA Noise <ln-bc-saa-noise>`
@@ -184,23 +184,23 @@ Examples:
     - ``CD1p0.I16``: Constant density of 1.0. Arena dimensions will increase by
       16 in both X and Y for each experiment in the batch.
 
-.. _ln-bc-flexibility:
+.. _ln-bc-tv:
 
-Flexibility
------------
+Temporal Variance
+-----------------
 
 .. WARNING::
 
-   Some of the flexibility config via applied temporal variance is very FORDYCA
-   specific; hopefully this will change in the future, or be pushed down to a
-   project-specific extension of a base flexibility class.
+   Some of the temporal variance config is very FORDYCA specific; hopefully this
+   will change in the future, or be pushed down to a project-specific extension
+   of a base flexibility class.
 
-.. _ln-bc-flexibility-cmdline:
+.. _ln-bc-tv-cmdline:
 
 Cmdline Syntax
 ^^^^^^^^^^^^^^
 
-``flexibility.{variance_type}{waveform_type}[step_time][.Z{population}]``
+``temporal_variance.{variance_type}{waveform_type}[step_time][.Z{population}]``
 
 - ``variance_type`` - [BC,BM].
 
@@ -210,29 +210,32 @@ Cmdline Syntax
   - ``BM`` - Apply the specified waveform when calculating robot block
     manipulation penalties (pickup, drop, etc.).
 
-- ``waveform_type`` - {Sine,Square,Sawtooth,Step{U,D},Constant}
+- ``waveform_type`` - {Sine,Square,Sawtooth,Step{U,D},Constant}.
 
-- ``step_time`` - Timestep the step function should switch (optional)
+- ``step_time`` - Timestep the step function should switch (optional).
 
-- ``population`` - The static swarm size to use (optional)
+- ``population`` - The static swarm size to use (optional).
 
 Examples:
 
 - ``BCSine.Z16`` - Block carry sinusoidal variance in a swarm of size 16.
 
-- ``BCStep50000.Z32`` - Block carry step variance at 50000 timesteps in a swarm
-  of size 32.
+- ``BCStep50000.Z32`` - Block carry step variance switch at 50000 timesteps in a
+  swarm of size 32.
 
-- ``BCStep50000`` - Block carry step variance at 50000 timesteps; swarm size not
-  modified.
+- ``BCStep50000`` - Block carry step variance switching at 50000 timesteps;
+  swarm size not modified.
 
 The frequency, amplitude, offset, and phase of the waveforms is set via the
 ``main.yaml`` configuration file for a project (not an easy way to specify
 ranges in a single batch criteria definition string). The relevant section is
 shown below.
 
+For the {Sine,Square,Sawtooth} waveforms, the cardinality of the batched
+experiment is determined by: (Size of Hz list -1) * (Size of BC_amp/BM_amp
+list - 1).
 
-.. _ln-bc-flexibility-yaml-config:
+.. _ln-bc-tv-yaml-config:
 
 YAML Config
 ^^^^^^^^^^^

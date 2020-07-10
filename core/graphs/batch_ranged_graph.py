@@ -110,7 +110,7 @@ class BatchRangedGraph:
         mark_styles = ['o', '^', 's', 'x', 'o', '^', 's', 'x']
         colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red',
                   'tab:brown', 'tab:pink', 'tab:gray', 'tab:olive']
-        i = 0
+
         for i in range(0, len(dfy.values)):
             plt.plot(self.xticks, dfy.values[i], line_styles[i],
                      marker=mark_styles[i],

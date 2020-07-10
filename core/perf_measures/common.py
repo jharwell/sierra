@@ -27,6 +27,8 @@ import numpy as np
 import core.utils
 from core.variables.population_size import PopulationSize
 from core.variables import batch_criteria as bc
+from core.graphs.heatmap import Heatmap
+from core.graphs.batch_ranged_graph import BatchRangedGraph
 
 
 class ProjectivePerformanceCalculatorUnivar:
@@ -457,7 +459,7 @@ class FractionalLossesUnivar(FractionalLosses):
         fl_df.insert(0, exp0_dirname, 0.0)
         return fl_df
 
-    @ staticmethod
+    @staticmethod
     def __calc_fl(perf_df: pd.DataFrame,
                   plost_n: pd.DataFrame,
                   scale_cols: tp.List[str]):
@@ -506,7 +508,7 @@ class FractionalLossesBivar(FractionalLosses):
 
         return fl_df
 
-    @ staticmethod
+    @staticmethod
     def __calc_fl(perf_df: pd.DataFrame, plost_n: pd.DataFrame):
         """
         Calculate fractional losses as:
@@ -529,6 +531,101 @@ class FractionalLossesBivar(FractionalLosses):
                 else:
                     fl_df.loc[i, c] = round(plost_n.loc[i, c] / perf_N, 4)
         return fl_df
+
+
+class WeightedPMUnivar():
+    """
+    Univariate calculator for a weighted performance measure.
+
+    """
+
+    def __init__(self,
+                 cmdopts: dict,
+                 output_leaf: str,
+                 ax1_leaf: str,
+                 ax2_leaf: str,
+                 ax1_alpha: float,
+                 ax2_alpha: float,
+                 title: str) -> None:
+        self.cmdopts = copy.deepcopy(cmdopts)
+        self.output_leaf = output_leaf
+        self.ax1_leaf = ax1_leaf
+        self.ax2_leaf = ax2_leaf
+        self.ax1_alpha = ax1_alpha
+        self.ax2_alpha = ax2_alpha
+        self.title = title
+
+    def generate(self, batch_criteria: bc.BatchCriteria):
+        ifl_csv_istem = os.path.join(self.cmdopts["collate_root"], self.ax1_leaf)
+        mpg_csv_istem = os.path.join(self.cmdopts["collate_root"], self.ax2_leaf)
+
+        csv_ostem = os.path.join(self.cmdopts["collate_root"], self.output_leaf)
+        png_ostem = os.path.join(self.cmdopts["graph_root"], self.output_leaf)
+
+        ax1_df = pd.read_csv(ifl_csv_istem + '.csv', sep=';')
+        ax2_df = pd.read_csv(mpg_csv_istem + '.csv', sep=';')
+        out_df = ax1_df * self.ax1_alpha + ax2_df * self.ax2_alpha
+
+        out_df.to_csv(csv_ostem + '.csv', sep=';', index=False)
+
+        xticks = batch_criteria.graph_xticks(self.cmdopts)
+        len_diff = len(xticks) - len(out_df.columns)
+
+        BatchRangedGraph(inputy_stem_fpath=csv_ostem,
+                         output_fpath=png_ostem + '.png',
+                         title=self.title,
+                         ylabel="Value",
+                         xlabel=batch_criteria.graph_xlabel(self.cmdopts),
+                         xticks=xticks[len_diff:]).generate()
+
+
+class WeightedPMBivar():
+    """
+    Bivariate calculator for a weighted performance measure.
+    """
+
+    def __init__(self,
+                 cmdopts: dict,
+                 output_leaf: str,
+                 ax1_leaf: str,
+                 ax2_leaf: str,
+                 ax1_alpha: float,
+                 ax2_alpha: float,
+                 title: str) -> None:
+        self.cmdopts = copy.deepcopy(cmdopts)
+        self.output_leaf = output_leaf
+        self.ax1_leaf = ax1_leaf
+        self.ax2_leaf = ax2_leaf
+        self.ax1_alpha = ax1_alpha
+        self.ax2_alpha = ax2_alpha
+        self.title = title
+
+    def generate(self, batch_criteria: bc.BatchCriteria):
+        ifl_csv_istem = os.path.join(self.cmdopts["collate_root"], self.ax1_leaf)
+        mpg_csv_istem = os.path.join(self.cmdopts["collate_root"], self.ax2_leaf)
+
+        csv_ostem = os.path.join(self.cmdopts["collate_root"], self.output_leaf)
+        png_ostem = os.path.join(self.cmdopts["graph_root"], self.output_leaf)
+
+        ax1_df = pd.read_csv(ifl_csv_istem + '.csv', sep=';')
+        ax2_df = pd.read_csv(mpg_csv_istem + '.csv', sep=';')
+        out_df = ax1_df * self.ax1_alpha + ax2_df * self.ax2_alpha
+
+        out_df.to_csv(csv_ostem + '.csv', sep=';', index=False)
+
+        xlabels = batch_criteria.graph_xticklabels(self.cmdopts)
+        ylabels = batch_criteria.graph_yticklabels(self.cmdopts)
+
+        len_xdiff = len(xlabels) - len(out_df.columns)
+        len_ydiff = len(ylabels) - len(out_df.columns)
+
+        Heatmap(input_fpath=csv_ostem + '.csv',
+                output_fpath=png_ostem + '.png',
+                title=self.title,
+                xlabel=batch_criteria.graph_xlabel(self.cmdopts),
+                ylabel=batch_criteria.graph_ylabel(self.cmdopts),
+                xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts)[len_xdiff:],
+                ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)[len_ydiff:]).generate()
 
 
 def csv_3D_value_loc(df, xslice, ycol, zslice):

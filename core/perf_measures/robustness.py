@@ -47,6 +47,7 @@ class RobustnessSAAUnivar:
     univariate batched set of experiments within the same scenario from collated .csv data using
     curve similarity measures.
     """
+    kLeaf = 'pm-robustness-saa'
 
     def __init__(self, cmdopts: dict) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -60,7 +61,6 @@ class RobustnessSAAUnivar:
         a line graph from it using the X-values from the specified batch criteria.
         """
 
-        logging.info("Univariate SAA Robustness from %s", self.cmdopts["collate_root"])
         batch_exp_dirnames = criteria.gen_exp_dirnames(self.cmdopts)
 
         # Robustness is only defined for experiments > 0, as exp0 is assumed to be ideal conditions,
@@ -93,31 +93,32 @@ class RobustnessSAAUnivar:
                          xtick_labels=criteria.graph_xticklabels(self.cmdopts)).generate()
 
 
-class RobustnessSizeUnivar:
+class RobustnessPDUnivar:
     """
     Calculates the robustness of the swarm configuration to population size fluctuations across a
     univariate batched set of experiments within the same scenario from collated .csv data.
     """
+    kLeaf = 'pm-robustness-pd'
 
-    def __init__(self, cmdopts: dict) -> None:
+    def __init__(self, cmdopts: dict,
+                 inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us.
         self.cmdopts = copy.deepcopy(cmdopts)
+        self.inter_perf_csv = inter_perf_csv
 
-    def generate(self, main_config: dict, criteria: bc.UnivarBatchCriteria):
+    def generate(self, criteria: bc.UnivarBatchCriteria):
         """
         Generate a robustness graph for a given controller in a given scenario by computing the
         value of the robustness metric for each experiment within the batch (Y values), and plotting
         a line graph from it using the X-values from the specified batch criteria.
         """
 
-        logging.info("Univariate Population Fluctuation Robustness from %s",
-                     self.cmdopts["collate_root"])
         batch_exp_dirnames = criteria.gen_exp_dirnames(self.cmdopts)
 
         df = pd.DataFrame(columns=batch_exp_dirnames, index=[0])
         perf_df = pd.read_csv(os.path.join(self.cmdopts["collate_root"],
-                                           main_config['perf']['inter_perf_csv']),
+                                           self.inter_perf_csv),
                               sep=';')
 
         for i in range(0, criteria.n_exp()):
@@ -153,6 +154,42 @@ class RobustnessSizeUnivar:
                          xticks=criteria.graph_xticks(self.cmdopts),
                          xtick_labels=criteria.graph_xticklabels(self.cmdopts)).generate()
 
+
+class RobustnessUnivarGenerator:
+    """
+    Calculates the robustness of the swarm configuration across a univariate batched set of
+    experiments within the same scenario from collated .csv data in the following ways:
+
+    - SAA robustness
+    - Population dynamics robustness
+    - Weighted SAA robustness+population dynamics robustness
+    """
+
+    def __call__(self,
+                 cmdopts: dict,
+                 main_config: dict,
+                 alpha_SAA: float,
+                 alpha_PD: float,
+                 batch_criteria: bc.UnivarBatchCriteria):
+        logging.info("Univariate robustness from %s", cmdopts["collate_root"])
+
+        inter_perf_csv = main_config['perf']['inter_perf_csv']
+
+        RobustnessSAAUnivar(cmdopts).generate(main_config, batch_criteria)
+        RobustnessPDUnivar(cmdopts, inter_perf_csv).generate(batch_criteria)
+
+        title1 = 'Swarm Robustness '
+        title2 = r'($\alpha_{{B_{{SAA}}}}={0},\alpha_{{B_{{PD}}}}={1}$)'.format(alpha_SAA,
+                                                                                alpha_PD)
+        w = common.WeightedPMUnivar(cmdopts=cmdopts,
+                                    output_leaf='pm-robustness',
+                                    ax1_leaf=RobustnessSAABivar.kLeaf,
+                                    ax2_leaf=RobustnessPDBivar.kLeaf,
+                                    ax1_alpha=alpha_SAA,
+                                    ax2_alpha=alpha_PD,
+                                    title=title1 + title2)
+        w.generate(batch_criteria)
+
 ################################################################################
 # Bivariate Classes
 ################################################################################
@@ -170,7 +207,7 @@ class RobustnessSAABivar:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
-        self.inter_perf_stem = inter_perf_csv.split('.')[0]
+        self.inter_perf_csv = inter_perf_csv
 
     def generate(self, main_config: dict, criteria: bc.BivarBatchCriteria):
         """
@@ -179,7 +216,6 @@ class RobustnessSAABivar:
         - :class:`~core.graphs.scatterplot2D.Scatterplot2D` of performance vs. robustness for
           regression purposes.
         """
-        logging.info("Bivariate SAA Robustness from %s", self.cmdopts["collate_root"])
         csv_ipath = self.__gen_heatmap(main_config, criteria)
         self.__gen_scatterplot(csv_ipath, criteria)
 
@@ -188,7 +224,7 @@ class RobustnessSAABivar:
         Generate a :class:`~core.graphs.scatterplot2D.Scatterplot2D` graph of robustness
         vs. performance AFTER the main robustness `.csv` has generated in :method:`__gen_heatmap()`
         """
-        perf_ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
+        perf_ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_csv)
         opath = os.path.join(self.cmdopts['collate_root'], self.kLeaf + '-vs-perf.csv')
         perf_df = pd.read_csv(perf_ipath, sep=';')
         rob_df = pd.read_csv(rob_ipath, sep=';')
@@ -227,7 +263,7 @@ class RobustnessSAABivar:
         Returns:
            The path to the `.csv` file used to generate the heatmap.
         """
-        ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
+        ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_csv)
         raw_df = pd.read_csv(ipath, sep=';')
         opath_stem = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
 
@@ -269,7 +305,7 @@ class RobustnessSAABivar:
         return df
 
 
-class RobustnessSizeBivar:
+class RobustnessPDBivar:
     """
     Calculates the robustness of the swarm configuration to fluctuating population sies across a
     bivariate batched set of experiments within the same scenario from collated .csv data.
@@ -280,7 +316,7 @@ class RobustnessSizeBivar:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
-        self.inter_perf_stem = inter_perf_csv.split('.')[0]
+        self.inter_perf_csv = inter_perf_csv
 
     def generate(self, criteria: bc.BivarBatchCriteria):
         """
@@ -289,7 +325,6 @@ class RobustnessSizeBivar:
         - :class:`~core.graphs.scatterplot2D.Scatterplot2D` of performance vs. robustness for
           regression purposes.
         """
-        logging.info("Bivariate Population Size Robustness from %s", self.cmdopts["collate_root"])
         csv_ipath = self.__gen_heatmap(criteria)
         self.__gen_scatterplot(csv_ipath, criteria)
 
@@ -298,7 +333,7 @@ class RobustnessSizeBivar:
         Generate a :class:`~core.graphs.scatterplot2D.Scatterplot2D` graph of robustness
         vs. performance AFTER the main robustness `.csv` has generated in :method:`__gen_heatmap()`
         """
-        perf_ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
+        perf_ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_csv)
         opath = os.path.join(self.cmdopts['collate_root'],
                              self.kLeaf + '-vs-perf.csv')
         perf_df = pd.read_csv(perf_ipath, sep=';')
@@ -338,7 +373,7 @@ class RobustnessSizeBivar:
         Returns:
            The path to the `.csv` file used to generate the heatmap.
         """
-        ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
+        ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_csv)
         raw_df = pd.read_csv(ipath, sep=';')
         opath_stem = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
 
@@ -398,6 +433,42 @@ class RobustnessSizeBivar:
                                               perf0=perf0)
         return df
 
+
+class RobustnessBivarGenerator:
+    """
+    Calculates the robustness of the swarm configuration across a bivariate batched set of
+    experiments within the same scenario from collated .csv data in the following ways:
+
+    - SAA robustness
+    - Population dynamics robustness
+    - Weighted SAA robustness+population dynamics robustness
+    """
+
+    def __call__(self,
+                 cmdopts: dict,
+                 main_config: dict,
+                 alpha_SAA: float,
+                 alpha_PD: float,
+                 batch_criteria: bc.BivarBatchCriteria):
+        logging.info("Bivariate robustness from %s", cmdopts["collate_root"])
+
+        inter_perf_csv = main_config['perf']['inter_perf_csv']
+
+        RobustnessSAABivar(cmdopts, inter_perf_csv).generate(main_config, batch_criteria)
+        RobustnessPDBivar(cmdopts, inter_perf_csv).generate(batch_criteria)
+
+        title1 = 'Swarm Robustness '
+        title2 = r'($\alpha_{{B_{{SAA}}}}={0},\alpha_{{B_{{PD}}}}={1}$)'.format(alpha_SAA,
+                                                                                alpha_PD)
+        w = common.WeightedPMBivar(cmdopts=cmdopts,
+                                   output_leaf='pm-robustness',
+                                   ax1_leaf=RobustnessSAAUnivar.kLeaf,
+                                   ax2_leaf=RobustnessPDUnivar.kLeaf,
+                                   ax1_alpha=alpha_SAA,
+                                   ax2_alpha=alpha_PD,
+                                   title=title1 + title2)
+        w.generate(batch_criteria)
+
 ################################################################################
 # Calculation Functions
 ################################################################################
@@ -428,7 +499,7 @@ def calculate_fpr(w: float, T: int, perf0: float, perfN: float):
 
 __api__ = [
     'RobustnessSAAUnivar',
-    'RobustnessSizeUnivar',
+    'RobustnessPDUnivar',
     'RobustnessSAABivar',
-    'RobustnessSizeBivar',
+    'RobustnessPDBivar',
 ]

@@ -34,6 +34,7 @@ from core.variables import batch_criteria as bc
 from core.variables import population_size as ps
 
 kNO_SELF_ORG = 0.0
+
 ################################################################################
 # Univariate Classes
 ################################################################################
@@ -319,49 +320,6 @@ class PerformanceGainInteractiveUnivar:
         return eff_df
 
 
-class WeightedSelfOrgUnivar():
-    """
-    Univariate calculator for the weighted self-organization measure built from
-    :class:`~perf_measures.self_organization.FractionalLossesInteractiveUnivar` and
-    :class:`~perf_measures.self_organization.PerformanceGainMarginalUnivar`.
-
-    """
-    kLeaf = 'pm-self-org'
-
-    def __init__(self,
-                 cmdopts: dict,
-                 alpha_S: float,
-                 alpha_T: float) -> None:
-        self.cmdopts = copy.deepcopy(cmdopts)
-        self.alpha_S = alpha_S
-        self.alpha_T = alpha_T
-
-    def generate(self, batch_criteria: bc.UnivarBatchCriteria):
-        ifl_csv_istem = os.path.join(self.cmdopts["collate_root"],
-                                     FractionalLossesInteractiveUnivar.kLeaf)
-        mpg_csv_istem = os.path.join(self.cmdopts["collate_root"],
-                                     PerformanceGainMarginalUnivar.kLeaf)
-
-        csv_ostem = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
-        png_ostem = os.path.join(self.cmdopts["graph_root"], self.kLeaf)
-
-        ifl_df = pd.read_csv(ifl_csv_istem + '.csv', sep=';')
-        mpg_df = pd.read_csv(mpg_csv_istem + '.csv', sep=';')
-        out_df = ifl_df * self.alpha_S + mpg_df * self.alpha_T
-
-        out_df.to_csv(csv_ostem + '.csv', sep=';', index=False)
-
-        title1 = 'Swarm Emergent-Self Organization '
-        title2 = r'($\alpha_{{E_S}}={0},\alpha_{{E_T}}={1}$)'.format(self.alpha_S, self.alpha_T)
-
-        BatchRangedGraph(inputy_stem_fpath=csv_ostem + '.csv',
-                         output_fpath=png_ostem + '.png',
-                         title=title1 + title2,
-                         xlabel=batch_criteria.graph_xlabel(self.cmdopts),
-                         ylabel="Value",
-                         xticks=batch_criteria.graph_xticks(self.cmdopts)).generate()
-
-
 class SelfOrgUnivarGenerator:
     """
     Calculates the self-organization of the swarm configuration across a univariate batched set of
@@ -369,11 +327,11 @@ class SelfOrgUnivarGenerator:
     """
 
     def __call__(self,
+                 cmdopts: dict,
                  inter_perf_csv: str,
                  interference_count_csv: str,
                  alpha_S: float,
                  alpha_T: float,
-                 cmdopts: dict,
                  batch_criteria: bc.UnivarBatchCriteria):
         logging.info("Univariate self-organization from %s", cmdopts["collate_root"])
 
@@ -389,7 +347,15 @@ class SelfOrgUnivarGenerator:
         ipg = PerformanceGainInteractiveUnivar(cmdopts, inter_perf_csv)
         ipg.generate(ipg.calculate(batch_criteria), batch_criteria)
 
-        w = WeightedSelfOrgUnivar(cmdopts, alpha_S, alpha_T)
+        title1 = 'Swarm Emergent-Self Organization '
+        title2 = r'($\alpha_{{E_S}}={0},\alpha_{{E_T}}={1}$)'.format(alpha_S, alpha_T)
+        w = common.WeightedPMUnivar(cmdopts=cmdopts,
+                                    output_leaf='pm-self-org',
+                                    ax1_leaf=FractionalLossesInteractiveBivar.kLeaf,
+                                    ax2_leaf=PerformanceGainMarginalBivar.kLeaf,
+                                    ax1_alpha=alpha_S,
+                                    ax2_alpha=alpha_T,
+                                    title=title1 + title2)
         w.generate(batch_criteria)
 
 ################################################################################
@@ -736,62 +702,18 @@ class PerformanceGainInteractiveBivar:
         return eff_df
 
 
-class WeightedSelfOrgBivar():
-    """
-    Univariate calculator for the weighted self-organization measure built from
-    :class:`~perf_measures.self_organization.FractionalLossesInteractiveBivar` and
-    :class:`~perf_measures.self_organization.PerformanceGainMarginalBivar`.
-
-    """
-    kLeaf = 'pm-self-org'
-
-    def __init__(self,
-                 cmdopts: dict,
-                 alpha_S: float,
-                 alpha_T: float) -> None:
-        self.cmdopts = copy.deepcopy(cmdopts)
-        self.alpha_S = alpha_S
-        self.alpha_T = alpha_T
-
-    def generate(self, batch_criteria: bc.BivarBatchCriteria):
-        ifl_csv_istem = os.path.join(self.cmdopts["collate_root"],
-                                     FractionalLossesInteractiveBivar.kLeaf)
-        mpg_csv_istem = os.path.join(self.cmdopts["collate_root"],
-                                     PerformanceGainMarginalBivar.kLeaf)
-
-        csv_ostem = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
-        png_ostem = os.path.join(self.cmdopts["graph_root"], self.kLeaf)
-
-        ifl_df = pd.read_csv(ifl_csv_istem + '.csv', sep=';')
-        mpg_df = pd.read_csv(mpg_csv_istem + '.csv', sep=';')
-        out_df = ifl_df * self.alpha_S + mpg_df * self.alpha_T
-
-        out_df.to_csv(csv_ostem + '.csv', sep=';', index=False)
-
-        title1 = 'Swarm Emergent-Self Organization '
-        title2 = r'($\alpha_{{E_S}}={0},\alpha_{{E_T}}={1}$)'.format(self.alpha_S, self.alpha_T)
-
-        Heatmap(input_fpath=csv_ostem + '.csv',
-                output_fpath=png_ostem + '.png',
-                title=title1 + title2,
-                xlabel=batch_criteria.graph_xlabel(self.cmdopts),
-                ylabel=batch_criteria.graph_ylabel(self.cmdopts),
-                xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
-                ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)).generate()
-
-
 class SelfOrgBivarGenerator:
     """
     Calculates the self-organization of the swarm configuration across a bivariate batched set of
-    experiments within the same scenario from collated .csv datain various ways.
+    experiments within the same scenario from collated .csv data in various ways.
     """
 
     def __call__(self,
+                 cmdopts: dict,
                  inter_perf_csv: str,
                  interference_count_csv: str,
                  alpha_S: float,
                  alpha_T: float,
-                 cmdopts: dict,
                  batch_criteria: bc.BivarBatchCriteria):
         logging.info("Bivariate self-organization from %s", cmdopts["collate_root"])
 
@@ -807,7 +729,15 @@ class SelfOrgBivarGenerator:
         ipg = PerformanceGainInteractiveBivar(cmdopts, inter_perf_csv)
         ipg.generate(ipg.calculate(batch_criteria), batch_criteria)
 
-        w = WeightedSelfOrgBivar(cmdopts, alpha_S, alpha_T)
+        title1 = 'Swarm Emergent-Self Organization '
+        title2 = r'($\alpha_{{E_S}}={0},\alpha_{{E_T}}={1}$)'.format(alpha_S, alpha_T)
+        w = common.WeightedPMBivar(cmdopts=cmdopts,
+                                   output_leaf='pm-self-org',
+                                   ax1_leaf=FractionalLossesInteractiveBivar.kLeaf,
+                                   ax2_leaf=PerformanceGainMarginalBivar.kLeaf,
+                                   ax1_alpha=alpha_S,
+                                   ax2_alpha=alpha_T,
+                                   title=title1 + title2)
         w.generate(batch_criteria)
 
 
@@ -883,7 +813,7 @@ def calc_self_org_mpg(perf_i: float, n_robots_i: int, perf_iminus1: float, n_rob
 
     .. math::
        \begin{equation}
-       Z(m_i,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{-\theta_Z(m_i,\kappa,t)}}
+       Z(m_i,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{-\theta_Z(m_i,\kappa,t)}} - \frac{1}{1 + e^{\theta_Z(m_i,\kappa,t)}}
        \end{equation}
 
     .. math::
@@ -912,7 +842,7 @@ def calc_self_org_ipg(perf_i: float, n_robots_i: int, perf_0: float):
 
     .. math::
        \begin{equation}
-       Z(N,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{-\theta_Z(N,\kappa,t)}}
+       Z(N,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{-\theta_Z(N,\kappa,t)}} - \frac{1}{1 + e^{\theta_Z(N,\kappa,t)}}
        \end{equation}
 
     .. math::

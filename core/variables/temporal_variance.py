@@ -14,7 +14,7 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
-Classes for the flexibility batch criteria. See :ref:`ln-bc-flexibility` for usage documentation.
+Classes for the temporal variance batch criteria. See :ref:`ln-bc-tv` for usage documentation.
 
 """
 
@@ -24,10 +24,10 @@ import typing as tp
 from core.variables.batch_criteria import UnivarBatchCriteria
 from core.variables.population_size import PopulationSize
 from core.perf_measures import vcs
-from core.variables.flexibility_parser import FlexibilityParser
+from core.variables.temporal_variance_parser import TemporalVarianceParser
 
 
-class Flexibility(UnivarBatchCriteria):
+class TemporalVariance(UnivarBatchCriteria):
     """
     A univariate range specifiying the set of temporal variances (and possibly swarm size) to
     use to define the batched experiment. This class is a base class which should (almost) never be
@@ -94,7 +94,7 @@ class Flexibility(UnivarBatchCriteria):
         # zeroth element is the distance to ideal conditions for exp0, which is by definition ideal
         # conditions, so the distance is 0.
         ret = [0.0]
-        ret.extend([vcs.EnvironmentalCS(self.main_config, cmdopts, x)(self, exp_dirs)
+        ret.extend([round(vcs.EnvironmentalCS(self.main_config, cmdopts, x)(self, exp_dirs), 4)
                     for x in range(1, m)])
         return ret
 
@@ -110,21 +110,21 @@ class Flexibility(UnivarBatchCriteria):
         return ['exp' + str(x) for x in range(0, len(self.gen_attr_changelist()))]
 
     def pm_query(self, pm: str) -> bool:
-        return pm in ['blocks-transported', 'reactivity', 'adaptability']
+        return pm in ['blocks-transported', 'flexibility']
 
 
 def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwargs):
     """
-    Factory to create :class:`Flexibility` derived classes from the command line definition of
+    Factory to create :class:`TemporalVariance` derived classes from the command line definition of
     batch criteria.
 
     """
-    attr = FlexibilityParser()(cli_arg)
+    attr = TemporalVarianceParser()(cli_arg)
 
     def gen_variances(attr: dict):
 
-        amps = main_config['sierra']['flexibility'][attr['variance_type'] + '_amp']
-        hzs = main_config['sierra']['flexibility']['hz']
+        amps = main_config['perf']['flexibility'][attr['variance_type'] + '_amp']
+        hzs = main_config['perf']['flexibility']['hz']
 
         # All variances need to have baseline/ideal conditions for comparison, which is a small
         # constant penalty
@@ -160,18 +160,18 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
         return variances
 
     def __init__(self) -> None:
-        Flexibility.__init__(self,
-                             cli_arg,
-                             main_config,
-                             batch_generation_root,
-                             gen_variances(attr),
-                             attr.get("population", None))
+        TemporalVariance.__init__(self,
+                                  cli_arg,
+                                  main_config,
+                                  batch_generation_root,
+                                  gen_variances(attr),
+                                  attr.get("population", None))
 
     return type(cli_arg,
-                (Flexibility,),
+                (TemporalVariance,),
                 {"__init__": __init__})
 
 
 __api__ = [
-    'Flexibility'
+    'TemporalVariance'
 ]

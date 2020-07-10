@@ -27,9 +27,8 @@ import typing as tp
 import core.perf_measures.scalability as pms
 import core.perf_measures.self_organization as pmso
 import core.perf_measures.block_collection as pmbc
-import core.perf_measures.reactivity as pmr
-import core.perf_measures.adaptability as pma
 import core.perf_measures.robustness as pmb
+import core.perf_measures.flexibility as pmf
 import core.utils
 from core.graphs.stacked_line_graph import StackedLineGraph
 from core.variables import batch_criteria as bc
@@ -59,7 +58,7 @@ class InterExpGraphGenerator:
                                                                   collate_graph_leaf))
         core.utils.dir_create_checked(self.cmdopts["graph_root"], exist_ok=True)
 
-    def __call__(self, batch_criteria: bc.BatchCriteria):
+    def __call__(self, batch_criteria: bc.UnivarBatchCriteria):
         """
         Runs the following to generate graphs across experiments in the batch:
 
@@ -74,9 +73,9 @@ class InterExpGraphGenerator:
         """
 
         if batch_criteria.is_univar():
-            LinegraphsGenerator(self.cmdopts["collate_root"],
-                                self.cmdopts["graph_root"],
-                                self.targets).generate()
+            # LinegraphsGenerator(self.cmdopts["collate_root"],
+            #                     self.cmdopts["graph_root"],
+            #                     self.targets).generate()
             UnivarPerfMeasuresGenerator(self.main_config, self.cmdopts)(batch_criteria)
         else:
             BivarPerfMeasuresGenerator(self.main_config, self.cmdopts)(batch_criteria)
@@ -134,36 +133,48 @@ class UnivarPerfMeasuresGenerator:
         self.cmdopts = copy.deepcopy(cmdopts)
         self.main_config = main_config
 
-    def __call__(self, batch_criteria):
+    def __call__(self, batch_criteria: bc.UnivarBatchCriteria):
+        inter_perf_csv = self.main_config['perf']['inter_perf_csv']
+        interference_count_csv = self.main_config['perf']['interference_count_csv']
+        interference_duration_csv = self.main_config['perf']['interference_duration_csv']
+
         if batch_criteria.pm_query('blocks-transported'):
             pmbc.BlockCollectionUnivar(self.cmdopts,
-                                       self.main_config['perf']['inter_perf_csv']).generate(batch_criteria)
+                                       inter_perf_csv).generate(batch_criteria)
         if batch_criteria.pm_query('scalability'):
-            pms.ScalabilityUnivarGenerator()(self.main_config['perf']['inter_perf_csv'],
-                                             self.main_config['perf']['interference_count_csv'],
-                                             self.main_config['perf']['interference_duration_csv'],
+            pms.ScalabilityUnivarGenerator()(inter_perf_csv,
+                                             interference_count_csv,
+                                             interference_duration_csv,
                                              self.cmdopts,
                                              batch_criteria)
 
         if batch_criteria.pm_query('self-org'):
-            pmso.SelfOrgUnivarGenerator()(self.main_config['perf']['inter_perf_csv'],
-                                          self.main_config['perf']['interference_count_csv'],
-                                          self.main_config['perf']['emergence'].get('alpha_S', 0.5),
-                                          self.main_config['perf']['emergence'].get('alpha_T', 0.5),
-                                          self.cmdopts,
+            alpha_S = self.main_config['perf']['emergence'].get('alpha_S', 0.5)
+            alpha_T = self.main_config['perf']['emergence'].get('alpha_T', 0.5)
+            pmso.SelfOrgUnivarGenerator()(self.cmdopts,
+                                          inter_perf_csv,
+                                          interference_count_csv,
+                                          alpha_S,
+                                          alpha_T,
                                           batch_criteria)
 
-        if batch_criteria.pm_query('reactivity'):
-            pmr.ReactivityUnivar(self.cmdopts).generate(self.main_config, batch_criteria)
+        if batch_criteria.pm_query('flexibility'):
+            alpha_R = self.main_config['perf']['flexibility'].get('alpha_R', 0.5)
+            alpha_S = self.main_config['perf']['flexibility'].get('alpha_A', 0.5)
+            pmf.FlexibilityUnivarGenerator()(self.cmdopts,
+                                             self.main_config,
+                                             alpha_R,
+                                             alpha_S,
+                                             batch_criteria)
 
-        if batch_criteria.pm_query('adaptability'):
-            pma.AdaptabilityUnivar(self.cmdopts).generate(self.main_config, batch_criteria)
-
-        if batch_criteria.pm_query('robustness-saa'):
-            pmb.RobustnessSAAUnivar(self.cmdopts).generate(self.main_config, batch_criteria)
-
-        if batch_criteria.pm_query('robustness-size'):
-            pmb.RobustnessSizeUnivar(self.cmdopts).generate(self.main_config, batch_criteria)
+        if batch_criteria.pm_query('robustness'):
+            alpha_SAA = self.main_config['perf']['robustness'].get('alpha_SAA', 0.5)
+            alpha_PD = self.main_config['perf']['robustness'].get('alpha_PD', 0.5)
+            pmb.RobustnessUnivarGenerator()(self.cmdopts,
+                                            self.main_config,
+                                            alpha_SAA,
+                                            alpha_PD,
+                                            batch_criteria)
 
 
 class BivarPerfMeasuresGenerator:
@@ -184,36 +195,46 @@ class BivarPerfMeasuresGenerator:
         self.main_config = main_config
 
     def __call__(self, batch_criteria):
+        inter_perf_csv = self.main_config['perf']['inter_perf_csv']
+        interference_count_csv = self.main_config['perf']['interference_count_csv']
+        interference_duration_csv = self.main_config['perf']['interference_duration_csv']
+
         if batch_criteria.pm_query('blocks-transported'):
             pmbc.BlockCollectionBivar(self.cmdopts,
-                                      self.main_config['perf']['inter_perf_csv']).generate(batch_criteria)
+                                      inter_perf_csv).generate(batch_criteria)
 
         if batch_criteria.pm_query('scalability'):
-            pms.ScalabilityBivarGenerator()(self.main_config['perf']['inter_perf_csv'],
-                                            self.main_config['perf']['interference_count_csv'],
-                                            self.main_config['perf']['interference_duration_csv'],
+            pms.ScalabilityBivarGenerator()(inter_perf_csv,
+                                            interference_count_csv,
+                                            interference_duration_csv,
                                             self.cmdopts,
                                             batch_criteria)
 
         if batch_criteria.pm_query('self-org'):
-            pmso.SelfOrgBivarGenerator()(self.main_config['perf']['inter_perf_csv'],
-                                         self.main_config['perf']['interference_count_csv'],
-                                         self.main_config['perf']['emergence'].get('alpha_S', 0.5),
-                                         self.main_config['perf']['emergence'].get('alpha_T', 0.5),
-                                         self.cmdopts,
+            alpha_S = self.main_config['perf']['emergence'].get('alpha_S', 0.5)
+            alpha_T = self.main_config['perf']['emergence'].get('alpha_T', 0.5)
+
+            pmso.SelfOrgBivarGenerator()(self.cmdopts,
+                                         inter_perf_csv,
+                                         interference_count_csv,
+                                         alpha_S,
+                                         alpha_T,
                                          batch_criteria)
 
-        if batch_criteria.pm_query('reactivity'):
-            pmr.ReactivityBivar(self.cmdopts).generate(self.main_config, batch_criteria)
+        if batch_criteria.pm_query('flexibility'):
+            alpha_R = self.main_config['perf']['flexibility'].get('alpha_R', 0.5)
+            alpha_S = self.main_config['perf']['flexibility'].get('alpha_A', 0.5)
+            pmf.FlexibilityBivarGenerator()(self.cmdopts,
+                                            self.main_config,
+                                            alpha_R,
+                                            alpha_S,
+                                            batch_criteria)
 
-        if batch_criteria.pm_query('adaptability'):
-            pma.AdaptabilityBivar(self.main_config, self.cmdopts).generate(self.main_config,
-                                                                           batch_criteria)
-
-        if batch_criteria.pm_query('robustness-saa'):
-            pmb.RobustnessSAABivar(self.cmdopts,
-                                   self.main_config['perf']['inter_perf_csv']).generate(self.main_config,
-                                                                                        batch_criteria)
-        if batch_criteria.pm_query('robustness-size'):
-            pmb.RobustnessSizeBivar(self.cmdopts,
-                                    self.main_config['perf']['inter_perf_csv']).generate(batch_criteria)
+        if batch_criteria.pm_query('robustness'):
+            alpha_SAA = self.main_config['perf']['robustness'].get('alpha_SAA', 0.5)
+            alpha_PD = self.main_config['perf']['robustness'].get('alpha_PD', 0.5)
+            pmb.RobustnessBivarGenerator()(self.cmdopts,
+                                           self.main_config,
+                                           alpha_SAA,
+                                           alpha_PD,
+                                           batch_criteria)

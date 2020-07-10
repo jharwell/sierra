@@ -564,7 +564,7 @@ class CoreCmdline:
                           Generate plots of ideal vs. observed swarm [reactivity, adaptability] for each experiment in
                           the batch. Only generated when one of the following batch criteria are used:
 
-                         - ``flexibility``
+                         - ``temporal_variance``
 
                           Use=stage{4}; can be omitted otherwise.
 
@@ -601,7 +601,7 @@ class CoreCmdline:
                          similarity between curves of applied variance (non-ideal conditions) and ideal conditions
                          (exp0). Only applicable if one of the following batch criteria is used:
 
-                         - ``flexibility``
+                         - ``temporal_variance``
 
                          Valid values:
 
@@ -625,7 +625,7 @@ class CoreCmdline:
                          similarity between the inverted applied variance curve for a simulation and the corrsponding
                          performance curve. Only applicable if one of the following batch criteria is used:
 
-                         - ``flexibility``
+                         - ``temporal_variance``
 
                          Valid values:
 
@@ -649,7 +649,7 @@ class CoreCmdline:
                          similarity between the inverted applied variance curve for a simulation and the corrsponding
                          performance curve. Only applicable if one of the following batch criteria is used:
 
-                         - ``flexibility``
+                         - ``temporal_variance``
 
                          Valid values:
 

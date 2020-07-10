@@ -270,22 +270,17 @@ class KarpFlattUnivar:
         self.inter_perf_csv = inter_perf_csv
 
     def calculate(self, batch_criteria: bc.UnivarBatchCriteria):
-        # Projective performance does not cover exp0, so we have to get the right column name from
-        # the performance .csv again so we can add it to the Karp-Flatt dataframe.
-        path = os.path.join(self.cmdopts["collate_root"], self.inter_perf_csv)
-        columns = pd.read_csv(path, sep=';').columns
-        projection = common.ProjectivePerformanceCalculatorUnivar(self.cmdopts,
-                                                                  self.inter_perf_csv,
-                                                                  "positive")(batch_criteria)
-        df = pd.DataFrame(columns=columns, index=[0])
+        perf_df = pd.read_csv(os.path.join(self.cmdopts["collate_root"], self.inter_perf_csv),
+                              sep=';')
+        sc_df = pd.DataFrame(columns=perf_df.columns, index=[0])
         sizes = batch_criteria.populations(self.cmdopts)
 
-        df[projection.columns] = projection[projection.columns]
+        perf_0 = perf_df.tail(1)[perf_df.columns[0]]
+        for i in range(0, len(perf_df.columns)):
+            perf_i = perf_df.tail(1)[perf_df.columns[i]]
+            sc_df[sc_df.columns[i]] = calculate_karpflatt(perf_i / perf_0, sizes[i])
 
-        for i in range(0, len(df.columns)):
-            df[df.columns[i]] = calculate_karpflatt(df[df.columns[i]], sizes[i])
-
-        return df
+        return sc_df
 
     def generate(self, df: pd.DataFrame, batch_criteria: bc.BatchCriteria):
         stem_path = os.path.join(self.cmdopts["collate_root"], "pm-karpflatt")
@@ -527,33 +522,28 @@ class KarpFlattBivar:
         self.inter_perf_csv = inter_perf_csv
 
     def calculate(self, batch_criteria):
-        # Projective performance does not cover exp0, so we have to get the right column name from
-        # the performance .csv again so we can add it to the Karp-Flatt dataframe.
-        path = os.path.join(self.cmdopts["collate_root"], self.inter_perf_csv)
-        columns = pd.read_csv(path, sep=';').columns
-        projection = common.ProjectivePerformanceCalculatorUnivar(self.cmdopts,
-                                                                  self.inter_perf_csv,
-                                                                  "positive")(batch_criteria)
-        df = pd.DataFrame(columns=columns, index=[0])
-        df[projection.columns] = projection[projection.columns]
+        perf_df = pd.read_csv(os.path.join(self.cmdopts["collate_root"],
+                                           self.inter_perf_csv), sep=';')
+        sc_df = pd.DataFrame(columns=perf_df.columns)
 
         sizes = batch_criteria.populations(self.cmdopts)
 
-        for i in range(0, len(df.index)):
-            for j in range(0, len(df.columns)):
-                proj_xplus1 = df.iloc[i, j]
+        for i in range(0, len(sc_df.index)):
+            for j in range(0, len(sc_df.columns)):
+                perf_x = perf_df.iloc[i, j]
+                n_robots_x = sizes[i][j]
 
-                # We need to know which of the 2 variables was swarm size, in order to determine
-                # the correct dimension along which to compute the metric, which depends on
-                # performance between adjacent swarm sizes.
+                # We need to know which of the 2 variables was swarm size, in order to determine the
+                # correct dimension along which to compute the metric, which depends on performance
+                # between adjacent swarm sizes.
                 if isinstance(batch_criteria.criteria1, ps.PopulationSize) or self.cmdopts['plot_primary_axis'] == '0':
-                    n_robots_xplus1 = sizes[i + 1][j]
+                    perf_0 = perf_df.iloc[0, j]
                 else:
-                    n_robots_xplus1 = sizes[i][j + 1]
+                    perf_0 = perf_df.iloc[i, 0]
 
-                df.iloc[i, j] = calculate_karpflatt(proj_xplus1, n_robots_xplus1)
+                sc_df.iloc[i, j] = calculate_karpflatt(perf_x / perf_0, n_robots_x)
 
-        return df
+        return sc_df
 
     def generate(self, df, batch_criteria):
         stem_path = os.path.join(self.cmdopts["collate_root"], "pm-karpflatt")
@@ -601,7 +591,7 @@ class ScalabilityBivarGenerator:
 # Calculation Functions
 ################################################################################
 
-def calculate_karpflatt(speedup: float, n_robots: int):
+def calculate_karpflatt(speedup_i: float, n_robots_i: int):
     """
     Given a swarm exhibiting speedup :math:`X` with :math:`N>1` robots, compute the serial fraction
     :math:`e` of the swarm's performance. The lower the value of :math:`e`, the better the
@@ -609,17 +599,31 @@ def calculate_karpflatt(speedup: float, n_robots: int):
     performance improvements:
 
     .. math::
-        e = \frac{\frac{1}{X} - \frac{1}{N}}{1 - \frac{1}{N}}
+       \begin{equation}
+       C(N,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{-\theta_C(N,\kappa,t)}} - \frac{1}{1 + e^{\theta_C(N,\kappa,t)}}
+       \end{equation}
+
+    where
+    .. math::
+       \begin{equation}
+       theta_C = 1.0 - \frac{\frac{1}{X} - \frac{1}{N}}{1 - \frac{1}{N}}
+       \end{equation}
+
 
     Defined for swarms with :math:`N>1` robots. For :math:`N=1`, we obtain a Karp-Flatt value of 1.0
     using L'Hospital's rule and taking the derivative with respect to :math:`N`.
 
-    From :xref:`Harwell2019`.
+    Inspired by :xref:`Harwell2019`.
+
     """
-    if n_robots > 1:
-        return (1.0 / speedup - 1.0 / float(n_robots)) / (1 - 1.0 / float(n_robots))
+    if n_robots_i > 1:
+        e = (1.0 / speedup_i - 1.0 / float(n_robots_i)) / (1 - 1.0 / float(n_robots_i))
     else:
-        return 1.0
+        e = 1.0
+
+    theta = 1.0 - e
+
+    return 1.0 / (1 + math.exp(-theta)) - 1.0 / (1 + math.exp(theta))
 
 
 def calculate_efficiency(perf_i: float, n_robots_i: int):

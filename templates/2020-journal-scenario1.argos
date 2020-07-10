@@ -261,30 +261,32 @@
       </metrics>
     </output>
     <temporal_variance>
-      <blocks>
-        <manipulation_penalty>
-          <waveform
-              type="Null"
-              frequency="0.01"
-              amplitude="50"
-              offset="50"
-              phase="0"/>
-        </manipulation_penalty>
-        <carry_throttle>
-          <waveform
-              type="Null"
-              frequency="100"
-              amplitude="0.4"
-              offset="0.1"
-              phase="0"/>
-        </carry_throttle>
-      </blocks>
-      <population_dynamics
-          birth_mu="0.0"
-          death_lambda="0.0"
-          malfunction_lambda="0.000"
-          max_size="0"
-          repair_mu="0.000"/>
+      <env_dynamics>
+        <blocks>
+          <manipulation_penalty>
+            <waveform
+                type="Null"
+                frequency="0.01"
+                amplitude="50"
+                offset="50"
+                phase="0"/>
+          </manipulation_penalty>
+          <carry_throttle>
+            <waveform
+                type="Null"
+                frequency="100"
+                amplitude="0.4"
+                offset="0.1"
+                phase="0"/>
+          </carry_throttle>
+        </blocks>
+        <population_dynamics
+            birth_mu="0.0"
+            death_lambda="0.0"
+            malfunction_lambda="0.000"
+            max_size="0"
+            repair_mu="0.000"/>
+      </env_dynamics>
     </temporal_variance>
 
     <arena_map>

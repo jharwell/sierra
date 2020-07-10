@@ -37,7 +37,7 @@ class BatchCriteria(base_variable.BaseVariable):
 
     """
 
-    kPMNames = ['blocks-transported', 'scalability', 'self-org', 'reactivity', 'adaptability']
+    kPMNames = ['blocks-transported', 'scalability', 'self-org', 'flexibility', 'robustness']
 
     def __init__(self,
                  cli_arg: str,
@@ -403,6 +403,7 @@ class BivarBatchCriteria(BatchCriteria):
             return self.criteria2.exp_scenario_name(int(exp_num % len(self.criteria2.gen_attr_changelist())))
         else:
             assert False, "FATAL: bivariate batch criteria does not contain constant density"
+            return None
 
     def is_bivar(self) -> bool:
         return True
