@@ -74,9 +74,9 @@ class InterExpGraphGenerator:
         """
 
         if batch_criteria.is_univar():
-            # LinegraphsGenerator(self.cmdopts["collate_root"],
-            #                     self.cmdopts["graph_root"],
-            #                     self.targets).generate()
+            LinegraphsGenerator(self.cmdopts["collate_root"],
+                                self.cmdopts["graph_root"],
+                                self.targets).generate()
             UnivarPerfMeasuresGenerator(self.main_config, self.cmdopts)(batch_criteria)
         else:
             BivarPerfMeasuresGenerator(self.main_config, self.cmdopts)(batch_criteria)
@@ -148,6 +148,8 @@ class UnivarPerfMeasuresGenerator:
         if batch_criteria.pm_query('self-org'):
             pmso.SelfOrgUnivarGenerator()(self.main_config['perf']['inter_perf_csv'],
                                           self.main_config['perf']['interference_count_csv'],
+                                          self.main_config['perf']['emergence'].get('alpha_S', 0.5),
+                                          self.main_config['perf']['emergence'].get('alpha_T', 0.5),
                                           self.cmdopts,
                                           batch_criteria)
 
@@ -196,6 +198,8 @@ class BivarPerfMeasuresGenerator:
         if batch_criteria.pm_query('self-org'):
             pmso.SelfOrgBivarGenerator()(self.main_config['perf']['inter_perf_csv'],
                                          self.main_config['perf']['interference_count_csv'],
+                                         self.main_config['perf']['emergence'].get('alpha_S', 0.5),
+                                         self.main_config['perf']['emergence'].get('alpha_T', 0.5),
                                          self.cmdopts,
                                          batch_criteria)
 

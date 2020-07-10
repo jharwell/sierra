@@ -1,7 +1,7 @@
 How to Add A New Plugin (I mean project)
 ========================================
 
-The argument to the cmdline option ``--plugin`` is added to the path
+The argument to the cmdline option ``--project`` is added to the path
 ``plugins/<option>``, and the plugin directory tree must have the following
 structure and content (a subset of the SIERRA core directory structure):
 
@@ -139,6 +139,20 @@ Root level dictionaries:
      # contains information about temporally fluctuating populations.
      tv_population_csv: 'tv-population.csv'
 
+``perf.emergence`` sub-dictionary
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: YAML
+
+   emergence:
+     # The weighting factor for task-based emergent self-organization. If it
+     # omitted it defaults to 0.5.
+     alpha_T: 0.50
+
+     # The weighting factor for spatial emergent self-organization. If it is
+     # omitted it defaults to 0.5.
+     alpha_S: 0.50
+
 ``perf.flexibility`` sub-dictionary
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -148,4 +162,3 @@ See :ref:`Flexibility config <ln-bc-flexibility-yaml-config>`.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 See :ref:`SAA noise config <ln-bc-saa-noise-yaml-config>`.
-

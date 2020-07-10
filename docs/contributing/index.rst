@@ -7,7 +7,7 @@ Contributing
 
    variable.rst
    graphs.rst
-   plugin.rst
+   project.rst
 
 First, install additional dependencies::
 

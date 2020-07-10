@@ -53,9 +53,9 @@ cd $HOME/git/sierra
 for c in "${CONTROLLERS[@]}"
 do
     # Steady state population of 10 when total swarm size is 50 (repair queue steady state of 40)
-    $BASE_CMD --scenario=SS.32x16 \
-              --batch-criteria population_dynamics.C10.F2p0.M0p001.R0p00102501 saa_noise.all.C5.Z50\
-              --controller=${c}
+    # $BASE_CMD --scenario=SS.32x16 \
+    #           --batch-criteria population_dynamics.C10.F2p0.M0p001.R0p00102501 saa_noise.all.C5.Z50\
+    #           --controller=${c}
 
     # Steady state population of 40 when total swarm size is 200 (repair queue steady state of 160)
     $BASE_CMD --scenario=RN.48x48 \
@@ -64,16 +64,16 @@ do
 done
 
 # Scalability/emergence analysis
-for c in "${CONTROLLERS[@]}"
-do
-    $BASE_CMD --scenario=SS.32x16 \
-              --batch-criteria population_size.Log128 \
-              --controller=${c}
+# for c in "${CONTROLLERS[@]}"
+# do
+#     $BASE_CMD --scenario=SS.32x16 \
+#               --batch-criteria population_size.Log128 \
+#               --controller=${c}
 
-    $BASE_CMD --scenario=RN.48x48 \
-              --batch-criteria population_size.Log2048 \
-              --controller=${c}
-done
+#     $BASE_CMD --scenario=RN.48x48 \
+#               --batch-criteria population_size.Log2048 \
+#               --controller=${c}
+# done
 
 # Generate comparison graphs
 # python3 sierra.py \

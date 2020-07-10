@@ -72,7 +72,10 @@ class BootstrapCmdline:
                                    If more simulations are requested than can be run in parallel, SIERRA will start
                                    additional simulations as currently running simulations finish.
 
-                                 - ``hpc_msi`` - The following environment variables are used/must be defined:
+                                 - ``hpc_msi`` - The directs SIERRA to run experiments spread across multiple allocated
+                                   nodes in the MSI computing environment.
+
+                                   The following environment variables are used/must be defined:
 
                                    - ``PBS_NUM_PPN`` - Infer  # threads and # physics engines per simulation
                                      # simulations to run, along with ``PBS_NUM_NODES``.
@@ -83,8 +86,12 @@ class BootstrapCmdline:
 
                                  - ``PBS_NODEFILE`` and ``PBS_JOBID`` - Used to configure simulation launches.
 
-                                 - ``hpc_adhoc`` - The following environment variables are used to compute the # threads, #
-                                   physics engines, and # simulations to run:
+                                 - ``hpc_adhoc`` - This will direct SIERRA to run experiments on an ad-hoc network of
+                                   computers. The only requirement is that they `must` share a common filesystem for
+                                   whatever ``--sierra-root`` is.
+
+                                   The following environment variables are used to compute the # threads, # physics
+                                   engines, and # simulations to run:
 
                                    - ``ADHOC_NODEFILE`` - Points to a file suitable for passing to GNU parallel via
                                      --sshloginfile.

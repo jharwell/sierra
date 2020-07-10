@@ -217,9 +217,14 @@ Cmdline Syntax
 - ``population`` - The static swarm size to use (optional)
 
 Examples:
+
 - ``BCSine.Z16`` - Block carry sinusoidal variance in a swarm of size 16.
-- ``BCStep50000.Z32`` - Block carry step variance at 50000 timesteps in a swarm of size 32.
-- ``BCStep50000`` - Block carry step variance at 50000 timesteps; swarm size not modified.
+
+- ``BCStep50000.Z32`` - Block carry step variance at 50000 timesteps in a swarm
+  of size 32.
+
+- ``BCStep50000`` - Block carry step variance at 50000 timesteps; swarm size not
+  modified.
 
 The frequency, amplitude, offset, and phase of the waveforms is set via the
 ``main.yaml`` configuration file for a project (not an easy way to specify
@@ -339,13 +344,13 @@ Cmdline Syntax
 - ``category`` - [sensors,actuators,all]
 
   - ``sensors`` - Apply noise to robot sensors only. The ``sensors`` dictionary
-  must be present and non-empty in the ``main.yaml``.
+    must be present and non-empty in the ``main.yaml``.
 
   - ``actuators`` - Apply noise to robot actuators only. The ``actuators``
-  dictionary must be present and non-empty in ``main.yaml``.
+    dictionary must be present and non-empty in ``main.yaml``.
 
   - ``all`` - Apply noise to robot sensors AND actuators. [ ``sensors``,
-  ``actuators`` ] dictionaries both optional in ``main.yaml``.
+    ``actuators`` ] dictionaries both optional in ``main.yaml``.
 
 - ``cardinality`` - The # of different noise levels to test with between the min
   and max specified in the config file for each sensor/actuator which defines
