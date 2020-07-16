@@ -428,6 +428,18 @@ class CoreCmdline:
                             type=int,
                             default=None)
 
+        robots.add_argument("--n-robots",
+                            help="""
+
+                            The # robots that should be used in the simulation. Can be used to override batch criteria,
+                            or to supplement experiments that do not set it so that manual modification of input file is
+                            unneccesary.
+
+                            Use=stage{1}; can be omitted otherwise.
+                            """,
+                            type=int,
+                            default=None)
+
     def init_stage2(self):
         """
         Define cmdline arguments for stage 2.
@@ -779,7 +791,7 @@ class CoreCmdline:
                                    against all other controllers, pairwise, outputting one 2D heatmap per comparison.
 
                                  - ``scale2D`` - Scale controller performance measures against those of the controller
-                                   of primary interest by dividing, outputting one 2D heatmap per comparison.
+                                   of primary interest by dividing, outputing one 2D heatmap per comparison.
 
                                  - ``raw3D`` - Output raw 3D performance measures as a single, stacked 3D surface
                                    plots comparing all controllers (identical plots, but view from different

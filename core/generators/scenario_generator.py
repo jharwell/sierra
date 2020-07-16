@@ -19,6 +19,7 @@ import logging
 import typing as tp
 
 from core.variables import block_distribution, arena_shape
+from core.variables import population_size
 from core.xml_luigi import XMLLuigi
 from core.generators import exp_generator
 from core.variables import physics_engines
@@ -106,6 +107,24 @@ class BaseScenarioGenerator():
         with open(self.exp_def_fpath, 'ab') as f:
             pickle.dump(bd.gen_attr_changelist()[0], f)
 
+    def generate_n_robots(self, xml_luigi: XMLLuigi):
+        """
+        Generate XML changes to setup # robots.
+
+        Writes generated changes to the simulation definition pickle file.
+        """
+        if self.cmdopts['n_robots'] is None:
+            return
+
+        chgs = population_size.PopulationSize.gen_attr_changelist_from_list(
+            [self.cmdopts['n_robots']])
+        for a in chgs[0]:
+            xml_luigi.attr_change(a[0], a[1], a[2], True)
+
+        # Write time setup info to file for later retrieval
+        with open(self.exp_def_fpath, 'ab') as f:
+            pickle.dump(chgs[0], f)
+
     @staticmethod
     def generate_physics(exp_def: XMLLuigi,
                          cmdopts: dict,
@@ -145,11 +164,6 @@ class SSGenerator(BaseScenarioGenerator):
 
     - Rectangular 2x1 arena
     - Single source block distribution
-
-    Changes are *NOT* generated for the following:
-
-    - # robots
-
     """
 
     def __init__(self, *args, **kwargs) -> None:
@@ -173,6 +187,9 @@ class SSGenerator(BaseScenarioGenerator):
         # Generate and apply # blocks definitions
         self.generate_block_count(exp_def)
 
+        # Generate and apply robot count definitions
+        self.generate_n_robots(exp_def)
+
         return exp_def
 
 
@@ -184,10 +201,6 @@ class DSGenerator(BaseScenarioGenerator):
 
     - Rectangular 2x1 arena
     - Dual source block distribution
-
-    Changes are *NOT* generated for the following:
-
-    - # robots
 
     """
 
@@ -212,6 +225,9 @@ class DSGenerator(BaseScenarioGenerator):
         # Generate and apply # blocks definitions
         self.generate_block_count(exp_def)
 
+        # Generate and apply robot count definitions
+        self.generate_n_robots(exp_def)
+
         return exp_def
 
 
@@ -223,10 +239,6 @@ class QSGenerator(BaseScenarioGenerator):
 
     - Square arena
     - Quad source block distribution
-
-    Changes are *NOT* generated for the following:
-
-    - # robots
 
     """
 
@@ -249,6 +261,9 @@ class QSGenerator(BaseScenarioGenerator):
 
         # Generate and apply # blocks definitions
         self.generate_block_count(exp_def)
+
+        # Generate and apply robot count definitions
+        self.generate_n_robots(exp_def)
 
         return exp_def
 
@@ -299,10 +314,6 @@ class RNGenerator(BaseScenarioGenerator):
     - Square arena
     - Random block distribution
 
-    Changes are *NOT* generated for the following:
-
-    - # robots
-
     """
 
     def __init__(self, *args, **kwargs) -> None:
@@ -323,6 +334,9 @@ class RNGenerator(BaseScenarioGenerator):
 
         # Generate and apply # blocks definitions
         self.generate_block_count(exp_def)
+
+        # Generate and apply robot count definitions
+        self.generate_n_robots(exp_def)
 
         return exp_def
 

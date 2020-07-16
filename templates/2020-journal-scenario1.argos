@@ -280,13 +280,13 @@
                 phase="0"/>
           </carry_throttle>
         </blocks>
-        <population_dynamics
+      </env_dynamics>
+      <population_dynamics
             birth_mu="0.0"
             death_lambda="0.0"
             malfunction_lambda="0.000"
             max_size="0"
             repair_mu="0.000"/>
-      </env_dynamics>
     </temporal_variance>
 
     <arena_map>

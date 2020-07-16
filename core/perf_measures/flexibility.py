@@ -67,6 +67,7 @@ class ReactivityUnivar:
 
         # Write .csv to file
         df.to_csv(stem_opath + '.csv', sep=';', index=False)
+
         BatchRangedGraph(inputy_stem_fpath=stem_opath,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    self.kLeaf + ".png"),

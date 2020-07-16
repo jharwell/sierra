@@ -125,19 +125,13 @@ class RobustnessPDUnivar:
             exp_def = core.utils.unpickle_exp_def(os.path.join(self.cmdopts['generation_root'],
                                                                batch_exp_dirnames[i],
                                                                'exp_def.pkl'))
-            # Get the simulation duration
-            explen, expticks = PopulationDynamics.extract_explen(exp_def)
+            TS, T = PopulationDynamics.calc_tasked_swarm_time(exp_def)
 
-            # Get the rate parameters used in simulation
-            dlambda, bmu, mlambda, rmu = PopulationDynamics.extract_rate_params(exp_def)
-
-            s = dlambda + mlambda - (bmu + rmu)
-            w = 1.0 / s if s > 0.0 else math.inf
             perf0 = perf_df[batch_exp_dirnames[0]].tail(1)
             perfN = perf_df[batch_exp_dirnames[i]].tail(1)
 
-            df[batch_exp_dirnames[i]] = calculate_fpr(w=w,
-                                                      T=explen * expticks,
+            df[batch_exp_dirnames[i]] = calculate_fpr(TS=TS,
+                                                      T=T,
                                                       perf0=perf0,
                                                       perfN=perfN)
 
@@ -310,7 +304,7 @@ class RobustnessPDBivar:
     Calculates the robustness of the swarm configuration to fluctuating population sies across a
     bivariate batched set of experiments within the same scenario from collated .csv data.
     """
-    kLeaf = "pm-robustness-size"
+    kLeaf = "pm-robustness-pd"
 
     def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -401,18 +395,11 @@ class RobustnessPDBivar:
                                            'exp_def.pkl')
                 exp_def = core.utils.unpickle_exp_def(pickle_path)
 
-                # Get the simulation duration
-                explen, expticks = PopulationDynamics.extract_explen(exp_def)
-
-                # Get the rate parameters used in simulation
-                dlambda, bmu, mlambda, rmu = PopulationDynamics.extract_rate_params(exp_def)
-
-                s = dlambda + mlambda - (bmu + rmu)
-                w = 1.0 / s if s > 0.0 else math.inf
+                TS, T = PopulationDynamics.calc_tasked_swarm_time(exp_def)
 
                 # We need to know which of the 2 variables was SAA noise, in order to determine the
                 # correct dimension along which to compute the metric.
-                if isinstance(criteria.criteria1, saan.SAANoise) or self.cmdopts['plot_primary_axis'] == '0':
+                if isinstance(criteria.criteria1, PopulationDynamics) or self.cmdopts['plot_primary_axis'] == '0':
                     perf0 = common.csv_3D_value_iloc(raw_df,
                                                      0,  # exp0 in first row with i=0
                                                      j,
@@ -427,8 +414,8 @@ class RobustnessPDBivar:
                                                  i,
                                                  j,
                                                  slice(-1, None))
-                df.iloc[i, j] = calculate_fpr(w=w,
-                                              T=explen * expticks,
+                df.iloc[i, j] = calculate_fpr(TS=TS,
+                                              T=T,
                                               perfN=perfN,
                                               perf0=perf0)
         return df
@@ -457,7 +444,7 @@ class RobustnessBivarGenerator:
         RobustnessSAABivar(cmdopts, inter_perf_csv).generate(main_config, batch_criteria)
         RobustnessPDBivar(cmdopts, inter_perf_csv).generate(batch_criteria)
 
-        title1 = 'Swarm Robustness '
+        title1 = r'Swarm Robustness '
         title2 = r'($\alpha_{{B_{{SAA}}}}={0},\alpha_{{B_{{PD}}}}={1}$)'.format(alpha_SAA,
                                                                                 alpha_PD)
         w = common.WeightedPMBivar(cmdopts=cmdopts,
@@ -474,7 +461,7 @@ class RobustnessBivarGenerator:
 ################################################################################
 
 
-def calculate_fpr(w: float, T: int, perf0: float, perfN: float):
+def calculate_fpr(TS: float, T: int, perf0: float, perfN: float):
     r"""
     Calculate swarm robustness to fluctuating swarm populations. Equation taken from
     :xref:`Harwell2020`.
@@ -488,13 +475,13 @@ def calculate_fpr(w: float, T: int, perf0: float, perfN: float):
 
     .. math::
        \begin{equation}
-       \theta_{B_{sz}}(\kappa,t) = P(N,\kappa,t) - \frac{w}{T}P_{ideal}(N,\kappa,t)
+       \theta_{B_{sz}}(\kappa,t) = P(N,\kappa,t) - \frac{T_S}{T}P_{ideal}(N,\kappa,t)
        \end{equation}
 
     """
-    scaled_perf0 = float(w) / float(T) * perf0
+    scaled_perf0 = float(TS) / float(T) * perf0
     theta = (perfN - scaled_perf0)
-    return 1.0 / (1 + math.exp(-theta)) - 1.0 / (1 + math.exp(theta))
+    return core.utils.Sigmoid(theta)() - core.utils.Sigmoid(-theta)()
 
 
 __api__ = [

@@ -12,8 +12,6 @@ SIERRA Core
    core/core.variables.rst
    core/core.graphs.rst
 
-
-
 Plugins
 -------
 .. toctree::

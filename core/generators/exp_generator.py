@@ -79,14 +79,14 @@ class ExpDefCommonGenerator:
         self.__generate_threading(xml_luigi)
 
         # Setup robot sensors/actuators
-        self.__generate_sa(xml_luigi)
+        self.__generate_saa(xml_luigi)
 
         # Setup simulation time parameters
         self.__generate_time(xml_luigi, self.exp_def_fpath)
 
         return xml_luigi
 
-    def __generate_sa(self, xml_luigi: XMLLuigi):
+    def __generate_saa(self, xml_luigi: XMLLuigi):
         """
         Generates XML changes to disable selected sensors/actuators, which are computationally
         expensive in large swarms, but not that costly if the # robots is small.

@@ -32,6 +32,7 @@ from core.graphs.heatmap import Heatmap
 from core.perf_measures import common
 from core.variables import batch_criteria as bc
 from core.variables import population_size as ps
+from core.utils import Sigmoid
 
 kNO_SELF_ORG = 0.0
 
@@ -825,12 +826,12 @@ def calc_self_org_mpg(perf_i: float, n_robots_i: int, perf_iminus1: float, n_rob
     :math:`\theta` value using L'Hospital's rule and taking the derivative with respect to
     :math:`m_i{i-1}`.
 
-    Inspired by :xref:`Rosenfield2006`.
+    Inspired by :xref:`Rosenfeld2006`.
 
     """
     if n_robots_i > 1:
         theta = perf_i - (float(n_robots_i) / float(n_robots_iminus1)) * perf_iminus1
-        return 1.0 / (1 + math.exp(-theta)) - 1.0 / (1 + math.exp(theta))
+        return Sigmoid(theta)() - Sigmoid(-theta)()
     else:
         return 0.0
 
@@ -850,12 +851,11 @@ def calc_self_org_ipg(perf_i: float, n_robots_i: int, perf_0: float):
        theta_Z(N,\kappa,t) =  P(N,\kappa,t} - {N}{P(1,\kappa,t)}
        \end{equation}
 
-    Inspired by :xref:`Rosenfield2006`.
+    Inspired by :xref:`Rosenfeld2006`.
 
     """
     theta = perf_i - n_robots_i * perf_0
-
-    return 1.0 / (1 + math.exp(-theta)) - 1.0 / (1 + math.exp(theta))
+    return Sigmoid(theta)() - Sigmoid(-theta)()
 
 
 __api__ = [
@@ -863,10 +863,8 @@ __api__ = [
     'FractionalLossesInteractiveUnivar',
     'PerformanceGainMarginalUnivar',
     'PerformanceGainInteractiveUnivar',
-    'WeightedSelfOrgUnivar',
     'FractionalLossesMarginalBivar',
     'FractionalLossesInteractiveBivar',
     'PerformanceGainMarginalBivar',
     'PerformanceGainInteractiveBivar',
-    'WeightedSelfOrgBivar'
 ]

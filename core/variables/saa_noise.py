@@ -112,7 +112,7 @@ class SAANoise(UnivarBatchCriteria):
                 return ["U(-{0},{0})".format(round(l, 2)) for l in self.graph_xticks(cmdopts, exp_dirs)]
             elif self.__gaussian_sources():
                 levels = [self.__avg_gaussian_level_from_dir(d) for d in exp_dirs]
-                return ["G({0},{1})".format(round(mean, 2), round(stddev)) for mean, stddev in levels]
+                return ["G({0},{1})".format(round(mean, 2), round(stddev, 2)) for mean, stddev in levels]
             else:
                 return list(map(str, range(0, len(exp_dirs))))
         else:
@@ -121,7 +121,7 @@ class SAANoise(UnivarBatchCriteria):
                 return ["U(-{0},{0})".format(round(l, 2)) for l in levels]
             elif self.__gaussian_sources():
                 levels = [self.__avg_gaussian_level_from_chglist(v) for v in self.variances]
-                return ["G({0},{1})".format(round(mean), round(stddev)) for mean, stddev in levels]
+                return ["G({0},{1})".format(round(mean), round(stddev, 2)) for mean, stddev in levels]
             else:
                 return list(map(str, range(0, self.n_exp())))
 

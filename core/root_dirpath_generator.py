@@ -65,6 +65,17 @@ def parse_batch_root(root: str):
     return (template_basename, scenario)
 
 
+def gen_scenario_leaf(raw_scenario: str, criteria: tp.List[str]):
+
+    scenario = raw_scenario.split('+')[0]  # Get the base scenario
+    for b in criteria:
+        # use dash instead of dot in the criteria string to not confuse external
+        # programs that rely on file extensions.
+        scenario = '+'.join([scenario, b.replace('-', '')])
+
+    return scenario
+
+
 def regen_from_exp(sierra_root: str,
                    project: str,
                    batch_criteria: tp.List[str],
@@ -76,6 +87,7 @@ def regen_from_exp(sierra_root: str,
     :meth:`from_cmdline()`).
     """
     template_basename, scenario = parse_batch_root(batch_root)
+    scenario = scenario.split('+')[0]
     root = __gen_batch_root(sierra_root,
                             project,
                             batch_criteria,
@@ -92,7 +104,7 @@ def regen_from_exp(sierra_root: str,
 
 def __gen_batch_root(sierra_root: str,
                      project: str,
-                     batch_criteria: tp.List[str],
+                     criteria: tp.List[str],
                      scenario: str,
                      controller: str,
                      template_basename: str):
@@ -101,12 +113,7 @@ def __gen_batch_root(sierra_root: str,
     the batch criteria is. The directory path depends on all of the input arguments to this
     function, and if ANY of the arguments change, so should the generated path.
     """
-    for b in batch_criteria:
-
-        # use dash instead of dot in the criteria string to not confuse external
-        # programs that rely on file extensions.
-        scenario = scenario + '+' + b.replace('-', '')
-
+    scenario = gen_scenario_leaf(scenario, criteria)
     return os.path.join(sierra_root,
                         project,
                         controller,

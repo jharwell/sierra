@@ -56,8 +56,7 @@ class PopulationSize(bc.UnivarBatchCriteria):
         robots for the simulation, in order to provide buffer so that the queueing theoretic
         predictions of long-run population size are accurate.
         """
-        return [set([(".//arena/distribute/entity", "quantity", str(s)),
-                     (".//population_dynamics", "max_size", str(4 * s))]) for s in self.size_list]
+        return PopulationSize.gen_attr_changelist_from_list(self.size_list)
 
     def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> list:
         changes = self.gen_attr_changelist()
@@ -83,6 +82,11 @@ class PopulationSize(bc.UnivarBatchCriteria):
 
     def pm_query(self, pm: str) -> bool:
         return pm in ['blocks-transported', 'scalability', 'self-org']
+
+    @staticmethod
+    def gen_attr_changelist_from_list(size_list: list):
+        return [set([(".//arena/distribute/entity", "quantity", str(s)),
+                     (".//population_dynamics", "max_size", str(4 * s))]) for s in size_list]
 
 
 class PopulationSizeParser():

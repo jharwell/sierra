@@ -34,88 +34,148 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 # Begin Experiments                                                            #
 ################################################################################
 NSIMS=4
-CONTROLLERS=(depth0.CRW)
-OUTPUT_ROOT=$HOME/exp/test
+CONTROLLERS=(depth0.CRW depth0.DPO depth1.BITD_DPO depth2.BIRTD_DPO)
+OUTPUT_ROOT=$HOME/exp/sc1
 BASE_CMD="python3 sierra.py \
-                  --sierra-root=$OUTPUT_ROOT \
+                  --sierra-root=$OUTPUT_ROOT\
                   --template-input-file=$HOME/git/sierra/templates/2020-journal-scenario1.argos \
                   --n-sims=$NSIMS\
                   --physics-n-engines=4\
-                  --pipeline 4 --exp-graphs=inter\
+                  --pipeline 1 2 3 4 --exp-graphs=inter\
                   --project=fordyca\
                   --hpc-env=hpc_local \
                   --exp-overwrite \
                   --time-setup=time_setup.T10000"
 
+TASK="$1"
+
 cd $HOME/git/sierra
 
 # Robustness analysis
-# for c in "${CONTROLLERS[@]}"
-# do
-    # Steady state population of 5 when total swarm size is 50 (repair queue
-    # steady state of 45)
-    # rho = 45/46
-    #
-    # $BASE_CMD --scenario=SS.32x16 \
-    #           --batch-criteria population_dynamics.C10.F2p0.M0p001.R0p0010222222 saa_noise.all.C5.Z50\
-    #           --controller=${c} \
-    #           --n-blocks=50
+if [ "$TASK" == "robustness" ] || [ "$TASK" == "all" ]
+then
+    for c in "${CONTROLLERS[@]}"
+    do
+        # Steady state population of 5 when total swarm size is 50 (repair queue
+        # steady state of 45)
+        # rho = 45/46
 
-    # Steady state population of 20 when total swarm size is 200 (repair queue
-    # steady state of 180)
-    # rho = 180 / 181
-    # $BASE_CMD --scenario=RN.48x48 \
-    #           --batch-criteria population_dynamics.C10.F2p0.M0p001.R0p00064629 saa_noise.all.C5.Z200\
-    #           --controller=${c} \
-    #           --n-blocks=200
-# done
+        $BASE_CMD --scenario=SS.32x16 \
+                  --batch-criteria population_dynamics.C10.F2p0.M0p001.R0p001022222\
+                  --controller=${c} \
+                  --n-blocks=50\
+                  --n-robots=50
+
+        $BASE_CMD --scenario=SS.32x16 \
+                  --batch-criteria saa_noise.all.C3.Z50\
+                  --controller=${c} \
+                  --n-blocks=50\
+                  --n-robots=50
+
+        # Steady state population of 20 when total swarm size is 200 (repair queue
+        # steady state of 180)
+        # rho = 180 / 181
+        $BASE_CMD --scenario=RN.48x48 \
+                  --batch-criteria population_dynamics.C10.F2p0.M0p001.R0p001005556 \
+                  --controller=${c} \
+                  --n-blocks=200\
+                  --n-robots=200
+
+        $BASE_CMD --scenario=RN.48x48 \
+                  --batch-criteria saa_noise.all.C3.Z200\
+                  --controller=${c} \
+                  --n-blocks=200\
+                  --n-robots=200
+    done
+fi
 
 # Scalability/emergence analysis
-for c in "${CONTROLLERS[@]}"
-do
-    $BASE_CMD --scenario=SS.32x16 \
-              --batch-criteria population_size.Log128 \
-              --controller=${c} \
-              --n-blocks=128
+if [ "$TASK" == "scalability" ] || [ "$TASK" == "emergence" ] || [ "$TASK" == "all" ]
+then
+    for c in "${CONTROLLERS[@]}"
+    do
+        $BASE_CMD --scenario=SS.32x16 \
+                  --batch-criteria population_size.Log128 \
+                  --controller=${c} \
+                  --n-blocks=128
 
 
-    # $BASE_CMD --scenario=RN.48x48 \
-    #           --batch-criteria population_size.Log2048 \
-    #           --controller=${c} \
-    #           --n-blocks=2048
+        $BASE_CMD --scenario=RN.48x48 \
+                  --batch-criteria population_size.Log2048 \
+                  --controller=${c} \
+                  --n-blocks=2048
 
-done
+    done
+fi
 
 # Flexibility analysis
-# for c in "${CONTROLLERS[@]}"
-# do
-#     $BASE_CMD --scenario=SS.32x16 \
-#               --batch-criteria temporal_variance.BCSquare.Z50 \
-#               --controller=${c}\
-#               --n-blocks=50
+if [ "$TASK" == "flexibility" ] || [ "$TASK" == "all" ]
+then
+    for c in "${CONTROLLERS[@]}"
+    do
+        $BASE_CMD --scenario=SS.32x16 \
+                  --batch-criteria temporal_variance.BCSquare.Z50 \
+                  --controller=${c}\
+                  --n-blocks=50
 
-#     $BASE_CMD --scenario=SS.32x16 \
-#               --batch-criteria temporal_variance.BCSawtooth.Z50 \
-#               --controller=${c}
-#               --n-blocks=50
+        $BASE_CMD --scenario=SS.32x16 \
+                  --batch-criteria temporal_variance.BCSawtooth.Z50 \
+                  --controller=${c} \
+                  --n-blocks=50
 
-#     $BASE_CMD --scenario=RN.48x48 \
-#               --batch-criteria temporal_variance.BCSquare.Z200\
-#               --controller=${c} \
-#               --n-blocks=200
+        $BASE_CMD --scenario=RN.48x48 \
+                  --batch-criteria temporal_variance.BCSquare.Z200\
+                  --controller=${c} \
+                  --n-blocks=200
 
-#     $BASE_CMD --scenario=RN.48x48 \
-#               --batch-criteria temporal_variance.BCSawtooth.Z200\
-#               --controller=${c} \
-#               --n-blocks=200
+        $BASE_CMD --scenario=RN.48x48 \
+                  --batch-criteria temporal_variance.BCSawtooth.Z200\
+                  --controller=${c} \
+                  --n-blocks=200
 
-# done
+    done
+fi
+
+if [ "$TASK" == "comp" ] || [ "$TASK" == "all" ]
+then
+    STAGE5_CMD="python3 sierra.py \
+                  --project=fordyca\
+                  --pipeline 5\
+                  --controllers-list depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO"
+
+    # Generate robustness comparison graphs
+    $STAGE5_CMD --batch-criteria population_dynamics.C10.F2p0.M0p001.R0p0010222222\
+                --bc-univar
+
+    $STAGE5_CMD --batch-criteria saa_noise.all.C3.Z50\
+                --bc-univar
+
+    $STAGE5_CMD --batch-criteria population_dynamics.C10.F2p0.M0p001.R0p001005556 \
+                --bc-univar
 
 
-# Generate comparison graphs
-# python3 sierra.py \
-#         --pipeline 5\
-#         --plugin=fordyca\
-#         --sierra-root=$OUTPUT_ROOT\
-#         --batch-criteria population_size.Log256\
-#         --bc-univar
+    # Generate scalability/emergence comparison graphs
+    $STAGE5_CMD --batch-criteria population_size.Log128 \
+                --bc-univar
+
+    $STAGE5_CMD --batch-criteria population_size.Log2048 \
+                --bc-univar
+
+
+    # Generate flexibility comparison graphs
+    $STAGE5_CMD --batch-criteria temporal_variance.BCSawtooth.Z200\
+                --bc-univar\
+                --bc-undefined-exp0
+
+    $STAGE5_CMD --batch-criteria temporal_variance.BCSquare.Z200\
+                --bc-univar\
+                --bc-undefined-exp0
+
+    $STAGE5_CMD --batch-criteria temporal_variance.BCSawtooth.Z50\
+                --bc-univar\
+                --bc-undefined-exp0
+
+    $STAGE5_CMD --batch-criteria temporal_variance.BCSquare.Z50\
+                --bc-univar\
+                --bc-undefined-exp0
+fi

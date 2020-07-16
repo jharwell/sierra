@@ -17,12 +17,12 @@
 
 import os
 import typing as tp
+import logging
 
 import fastdtw
 import pandas as pd
 import numpy as np
 import similaritymeasures as sm
-from scipy.stats import zscore
 
 from core.variables.batch_criteria import BatchCriteria
 from core.variables.temporal_variance_parser import TemporalVarianceParser
@@ -170,9 +170,20 @@ class RawPerfCS():
         ideal_data[:, 0] = ideal_df["clock"].values
         ideal_data[:, 1] = ideal_df[intra_perf_col].values
 
+        maxval = self.__maxval_calc(ideal_df, intra_perf_col)
+
         return CSRaw()(exp_data=exp_data,
                        ideal_data=ideal_data,
+                       maxval=maxval,
                        method=self.cmdopts["rperf_cs_method"])
+
+    def __maxval_calc(self, ideal_df, intra_perf_col: str):
+        if self.cmdopts['rperf_cs_method'] == 'dtw':
+            return ideal_df[intra_perf_col].max() * len(ideal_df[intra_perf_col])
+        else:
+            logging.warning('No maxval defined for method %s',
+                            self.cmdopts['rperf_cs_method'])
+            return None
 
 
 class AdaptabilityCS():
@@ -278,12 +289,20 @@ class AdaptabilityCS():
                                                self.main_config['sierra']['avg_output_leaf'],
                                                self.main_config['perf']['intra_perf_csv'])
 
-        maxval = exp0_perf_df[self.perf_csv_col].max() * len(exp0_perf_df[self.perf_csv_col])
+        maxval = self.__maxval_calc(exp0_perf_df)
 
         return CSRaw()(exp_data=exp_data,
                        ideal_data=ideal_data,
                        maxval=maxval,
                        method=self.cmdopts["adaptability_cs_method"])
+
+    def __maxval_calc(self, exp0_perf_df):
+        if self.cmdopts['adaptability_cs_method'] == 'dtw':
+            return exp0_perf_df[self.perf_csv_col].max() * len(exp0_perf_df[self.perf_csv_col])
+        else:
+            logging.warning('No maxval defined for method %s',
+                            self.cmdopts['adaptability_cs_method'])
+            return None
 
 
 class ReactivityCS():
@@ -381,12 +400,20 @@ class ReactivityCS():
                                                self.main_config['sierra']['avg_output_leaf'],
                                                self.main_config['perf']['intra_perf_csv'])
 
-        maxval = exp0_perf_df[self.perf_csv_col].max() * len(exp0_perf_df[self.perf_csv_col])
+        maxval = self.__maxval_calc(exp0_perf_df)
 
         return CSRaw()(exp_data=exp_data,
                        ideal_data=ideal_data,
                        maxval=maxval,
                        method=self.cmdopts["reactivity_cs_method"])
+
+    def __maxval_calc(self, exp0_perf_df):
+        if self.cmdopts['reactivity_cs_method'] == 'dtw':
+            return exp0_perf_df[self.perf_csv_col].max() * len(exp0_perf_df[self.perf_csv_col])
+        else:
+            logging.warning('No maxval defined for method %s',
+                            self.cmdopts['reactivity_cs_method'])
+            return None
 
 
 class CSRaw():
@@ -395,7 +422,10 @@ class CSRaw():
     method for comparison, perform the comparison.
     """
 
-    def __call__(self, exp_data, ideal_data, method: str, maxval: float = None):
+    def __call__(self, exp_data,
+                 ideal_data,
+                 method: str,
+                 maxval: float = None):
         assert method is not None, "FATAL: Cannot compare curves without method"
 
         if method == "pcm":
@@ -408,15 +438,26 @@ class CSRaw():
             # Don't use the sm version--waaayyyy too slow
             dist, _ = fastdtw.fastdtw(exp_data, ideal_data)
 
-            # Normalize [0,infinity) into [0,1], where HIGHER values now are better (much more
-            # intuitive this way)
             if maxval is not None:
-                return (maxval - dist) / maxval
+                # Normalize [0,infinity) into [0,1], where HIGHER values now are better (much more
+                # intuitive this way)
+                normalized = (maxval - dist) / maxval
+
+                # Normalize into [-1,1] to be congruent with the other measures
+                return CSRaw.__scale_minmax(0.0, 1.0, normalized)
+
             return dist
         elif method == "curve_length":
             return sm.curve_length_measure(exp_data, ideal_data)
         else:
             return None
+
+    @staticmethod
+    def __scale_minmax(minval: float, maxval: float, val: float):
+        """
+        Scale values from range [minval, maxval] -> [-1,1]
+        """
+        return -1.0 + (val - minval) * (1 - (-1)) / (maxval - minval)
 
 
 class DataFrames:

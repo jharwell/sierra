@@ -31,6 +31,7 @@ from core.graphs.heatmap import Heatmap
 from core.perf_measures import common
 from core.variables import batch_criteria as bc
 from core.variables import population_size as ps
+from core.utils import Sigmoid
 
 ################################################################################
 # Univariate Classes
@@ -275,9 +276,10 @@ class KarpFlattUnivar:
         sc_df = pd.DataFrame(columns=perf_df.columns, index=[0])
         sizes = batch_criteria.populations(self.cmdopts)
 
-        perf_0 = perf_df.tail(1)[perf_df.columns[0]]
+        idx = perf_df.index[-1]
+        perf_0 = perf_df.loc[idx, perf_df.columns[0]]
         for i in range(0, len(perf_df.columns)):
-            perf_i = perf_df.tail(1)[perf_df.columns[i]]
+            perf_i = perf_df.loc[idx, perf_df.columns[i]]
             sc_df[sc_df.columns[i]] = calculate_karpflatt(perf_i / perf_0, sizes[i])
 
         return sc_df
@@ -623,7 +625,7 @@ def calculate_karpflatt(speedup_i: float, n_robots_i: int):
 
     theta = 1.0 - e
 
-    return 1.0 / (1 + math.exp(-theta)) - 1.0 / (1 + math.exp(theta))
+    return Sigmoid(theta)() - Sigmoid(-theta)()
 
 
 def calculate_efficiency(perf_i: float, n_robots_i: int):

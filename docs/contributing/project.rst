@@ -167,7 +167,7 @@ Root level dictionaries:
      # omitted it defaults to 0.5.
      alpha_A: 0.50
 
-See also :ref:`Flexibility config <ln-bc-flexibility-yaml-config>`.
+See also :ref:`Flexibility config <ln-bc-tv-yaml-config>`.
 
 ``perf.robustness`` sub-dictionary
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

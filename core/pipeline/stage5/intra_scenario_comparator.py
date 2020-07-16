@@ -84,8 +84,25 @@ class BivarIntraScenarioComparator:
         # For each controller comparison graph we are interested in, generate it using data from all
         # scenarios
         for graph in graphs:
+            found = False
             for s in scenario_dirs:
-                self.__compare_in_scenario(cmdopts, graph, s, legend, comp_type)
+                if self.__scenario_select(s):
+                    found = True
+                    self.__compare_in_scenario(cmdopts, graph, s, legend, comp_type)
+                    break
+            if not found:
+                logging.warning("Did not find scenario to compare in for criteria %s",
+                                self.cli_args.batch_criteria)
+
+    def __scenario_select(self, candidate: str):
+        """
+        Select which scenario to compare controllers within. You can only compare controllers within
+        the scenario directly generated from the value of ``--batch-criteria``; other scenarios
+        (probably) will cause file not found errors.
+
+        """
+        scenario = rdg.gen_scenario_leaf(candidate, self.cli_args.batch_criteria)
+        return scenario in candidate
 
     def __compare_in_scenario(self,
                               cmdopts: dict,
@@ -106,6 +123,7 @@ class BivarIntraScenarioComparator:
                                 controller,
                                 scenario_dir)
                 continue
+
             scenario = rdg.parse_batch_root(dirs[0])[1]
 
             # We need to generate the root directory paths for each batched experiment
@@ -139,7 +157,7 @@ class BivarIntraScenarioComparator:
                                 legend=legend,
                                 comp_type=comp_type)
 
-        if '3D' in comp_type:
+        elif '3D' in comp_type:
             self.__gen_graph3D(scenario=scenario,
                                batch_criteria=criteria,
                                cmdopts=cmdopts,
@@ -148,10 +166,12 @@ class BivarIntraScenarioComparator:
                                zlabel=graph['label'],
                                legend=legend,
                                comp_type=comp_type)
+        else:
+            raise ValueError('Bad comparison type requested: {0}'.format(comp_type))
 
     def __gen_heatmaps(self,
                        scenario: str,
-                       batch_criteria: bc.UnivarBatchCriteria,
+                       batch_criteria: bc.BivarBatchCriteria,
                        cmdopts: dict,
                        dest_stem: str,
                        title: str,
@@ -178,7 +198,7 @@ class BivarIntraScenarioComparator:
 
     def __gen_paired_heatmaps(self,
                               scenario: str,
-                              batch_criteria: bc.UnivarBatchCriteria,
+                              batch_criteria: bc.BivarBatchCriteria,
                               cmdopts: dict,
                               dest_stem: str,
                               title: str,
@@ -220,7 +240,7 @@ class BivarIntraScenarioComparator:
 
     def __gen_dual_heatmaps(self,
                             scenario: str,
-                            batch_criteria: bc.UnivarBatchCriteria,
+                            batch_criteria: bc.BivarBatchCriteria,
                             cmdopts: dict,
                             dest_stem: str,
                             title: str,
@@ -235,6 +255,7 @@ class BivarIntraScenarioComparator:
         """
 
         csv_stem_root = os.path.join(self.cc_csv_root, dest_stem + "-" + scenario)
+
         paths = [f for f in glob.glob(
             csv_stem_root + '*.csv') if re.search('_[0-9]+', f)]
 
@@ -252,7 +273,7 @@ class BivarIntraScenarioComparator:
 
     def __gen_graph3D(self,
                       scenario: str,
-                      batch_criteria: bc.UnivarBatchCriteria,
+                      batch_criteria: bc.BivarBatchCriteria,
                       cmdopts: dict,
                       dest_stem: str,
                       title: str,
@@ -381,14 +402,32 @@ class UnivarIntraScenarioComparator:
         # scenarios
         cmdopts = copy.deepcopy(self.cmdopts)
         for graph in graphs:
+            found = False
             for s in scenarios:
-                self.__compare_in_scenario(cmdopts, graph, s, legend)
+                if self.__scenario_select(s):
+                    self.__compare_in_scenario(cmdopts, graph, s, legend)
+                    found = True
+                    break
+            if not found:
+                logging.warning("Did not find scenario to compare in for criteria %s",
+                                self.cli_args.batch_criteria)
+
+    def __scenario_select(self, candidate: str):
+        """
+        Select which scenario to compare controllers within. You can only compare controllers within
+        the scenario directly generated from the value of ``--batch-criteria``; other scenarios will
+        (probably) cause file not found errors.
+
+        """
+        scenario = rdg.gen_scenario_leaf(candidate, self.cli_args.batch_criteria)
+        return scenario in candidate
 
     def __compare_in_scenario(self,
                               cmdopts: dict,
                               graph: dict,
                               scenario: str,
                               legend: tp.List[str]):
+
         for controller in self.controllers:
             # We need to generate the root directory paths for each batched experiment
             # (which # lives inside of the scenario dir), because they are all
@@ -434,6 +473,7 @@ class UnivarIntraScenarioComparator:
         csv_stem_opath = os.path.join(self.cc_csv_root, dest_stem + "-" + scenario)
         xticks = batch_criteria.graph_xticks(cmdopts)
         xtick_labels = batch_criteria.graph_xticklabels(cmdopts)
+
         BatchRangedGraph(inputy_stem_fpath=csv_stem_opath,
                          output_fpath=os.path.join(self.cc_graph_root,
                                                    dest_stem) + '-' + scenario + ".png",
@@ -482,7 +522,7 @@ class UnivarIntraScenarioComparator:
             cum_df = pd.DataFrame()
 
         t = pd.read_csv(csv_ipath, sep=';')
-        cum_df = cum_df.append(t[list(t.columns)[cmdopts['bc_undefined_exp0']:]])
+        cum_df = cum_df.append(t)
 
         cum_df.to_csv(csv_opath_stem + '.csv', sep=';', index=False)
 
@@ -493,5 +533,5 @@ class UnivarIntraScenarioComparator:
 
         if os.path.exists(stddev_ipath):
             t = pd.read_csv(stddev_ipath, sep=';')
-            cum_stddev_df = cum_stddev_df.append(t[list(t.columns)[cmdopts['bc_undefined_exp0']:]])
+            cum_stddev_df = cum_stddev_df.append(t)
             cum_stddev_df.to_csv(csv_opath_stem + '.stddev', sep=';', index=False)

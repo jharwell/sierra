@@ -72,7 +72,7 @@ class PipelineStage5:
         """
         # Create directories for controller .csv files and graphs
         for v in self.output_roots.values():
-            core.utils.dir_create_checked(v, self.cmdopts['exp_overwrite'])
+            core.utils.dir_create_checked(v, True)
 
         # Use nice controller names on graph legends if configured
         if self.cmdopts['controllers_legend'] is not None:

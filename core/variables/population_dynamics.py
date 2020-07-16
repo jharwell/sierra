@@ -73,16 +73,14 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
             exp_dirs = self.gen_exp_dirnames(cmdopts)
 
         ticks = []
+
         for d in exp_dirs:
             exp_def = core.utils.unpickle_exp_def(os.path.join(self.batch_generation_root,
                                                                d,
                                                                'exp_def.pkl'))
-            explen, expticks = PopulationDynamics.extract_explen(exp_def)
-            dlambda, bmu, mlambda, rmu = PopulationDynamics.extract_rate_params(exp_def)
-            s = dlambda + mlambda - (bmu + rmu)
-            w = 1.0 / s if s > 0.0 else (explen * expticks)
-            ticks.append(round(w / (explen * expticks), 4))
-
+            TS, T = PopulationDynamics.calc_tasked_swarm_time(exp_def)
+            ticks.append(round(TS / T, 4))
+            print(TS, T)
         if cmdopts['plot_log_xaxis']:
             return [math.log2(x) for x in ticks]
         else:
@@ -101,6 +99,22 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
 
     def pm_query(self, pm: str) -> bool:
         return pm in ['blocks-transported', 'robustness']
+
+    @staticmethod
+    def calc_tasked_swarm_time(exp_def):
+        explen, expticks = PopulationDynamics.extract_explen(exp_def)
+        T = explen * expticks
+        lambda_d, mu_b, lambda_m, mu_r = PopulationDynamics.extract_rate_params(exp_def)
+
+        # mu/lambda for combined queue
+        lambda_Sbar = lambda_d + lambda_m
+        mu_Sbar = mu_b + mu_r
+
+        if (mu_Sbar - lambda_Sbar) != 0:
+            TSbar = 1 / (mu_Sbar - lambda_Sbar) - 1 / mu_Sbar
+            return (T - TSbar, T)
+        else:
+            return (T, T)
 
     @staticmethod
     def extract_rate_params(exp_def):
@@ -177,14 +191,14 @@ class PopulationDynamicsParser():
             # Parse characteristic
             res = re.search('[0-9]+', spec)
             assert res is not None, \
-                "FATAL: Bad lambda characteristic specification in criteria '{0}'".format(
+                "FATAL: Bad lambda/mu characteristic specification in criteria '{0}'".format(
                     criteria_str)
             characteristic = float(res.group(0))
 
             # Parser mantissa
             res = re.search('p[0-9]+', spec)
             assert res is not None, \
-                "FATAL: Bad lambda mantissa specification in criteria '{0}'".format(
+                "FATAL: Bad lambda/mu mantissa specification in criteria '{0}'".format(
                     criteria_str)
             mantissa = float("0." + res.group(0)[1:])
 
@@ -212,8 +226,14 @@ def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_generation_root:
     def gen_dynamics():
         # ideal conditions = no dynamics
         dynamics = [{(d[0], 0.0) for d in attr['dynamics']}]
-        dynamics.extend([{(d[0], d[1] + d[1] * x * float(attr['factor']))
-                          for d in attr['dynamics']} for x in range(0, attr['cardinality'])])
+
+        # We reverse the generated dynamics, because as the gap between the lambda/mu grows, robots
+        # will process through the queue MORE quickly, which will lead to MORE stable swarms as we
+        # go from exp0...expN rather than the other way around.
+        nonzero = [{(d[0], d[1] + d[1] * x * float(attr['factor']))
+                    for d in attr['dynamics']} for x in range(0, attr['cardinality'])]
+        nonzero.reverse()
+        dynamics.extend(nonzero)
         return dynamics
 
     def __init__(self) -> None:

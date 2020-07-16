@@ -21,9 +21,12 @@ Miscellaneous classes/functions used in mutiple places but that don't really fit
 import pickle
 import os
 import logging
+import numpy as np
 
 
 class ArenaExtent():
+    """Representation of a 2D or 3D section/chunk/volume of the arena."""
+
     def __init__(self,
                  dims: tuple,
                  offset: tuple = (0, 0, 0)) -> None:
@@ -49,6 +52,41 @@ class ArenaExtent():
 
     def __str__(self) -> str:
         return str(self.dims) + '@' + str(self.offset)
+
+
+class Sigmoid():
+    """
+    Sigmoid activation function.
+
+    .. math::
+       f(x) = \frac{1}{1+e^{-x}}
+
+    """
+
+    def __init__(self, x: float):
+        self.x = x
+
+    def __call__(self):
+        if self.x < 0:
+            # Equivalent, and numerically stable for large negative exponents. If you don't case the
+            # sigmoid, you get overflow errors at runtime.
+            return 1.0 - 1.0 / (1 + np.exp(self.x))
+        else:
+            return 1.0 / (1 + np.exp(-self.x))
+
+
+class ReLu():
+    """
+    REctified Linear Unit activation function.
+
+    .. math::
+       \begin{equation}
+           \begin{aligned}
+               f(x) = max(0,x) &= x \textit{if} x > 0
+                               &= 0 \textit{else}
+           \end{aligned}
+       \end{equation}
+    """
 
 
 def unpickle_exp_def(exp_def_fpath):

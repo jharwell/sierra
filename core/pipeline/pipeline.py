@@ -56,6 +56,7 @@ class Pipeline:
             "n_sims": args.n_sims,
             "n_threads": args.n_threads,
             'n_blocks': args.n_blocks,
+            'n_robots': args.n_robots,
             'project_imagizing': self.args.project_imagizing,
             'exp_overwrite': self.args.exp_overwrite,
 

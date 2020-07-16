@@ -21,6 +21,8 @@ import os
 import math
 import copy
 import typing as tp
+import logging
+
 import pandas as pd
 import numpy as np
 
@@ -556,14 +558,21 @@ class WeightedPMUnivar():
         self.title = title
 
     def generate(self, batch_criteria: bc.BatchCriteria):
-        ifl_csv_istem = os.path.join(self.cmdopts["collate_root"], self.ax1_leaf)
-        mpg_csv_istem = os.path.join(self.cmdopts["collate_root"], self.ax2_leaf)
+        csv1_istem = os.path.join(self.cmdopts["collate_root"], self.ax1_leaf)
+        csv2_istem = os.path.join(self.cmdopts["collate_root"], self.ax2_leaf)
+        csv1_ipath = csv1_istem + '.csv'
+        csv2_ipath = csv2_istem + '.csv'
 
         csv_ostem = os.path.join(self.cmdopts["collate_root"], self.output_leaf)
         png_ostem = os.path.join(self.cmdopts["graph_root"], self.output_leaf)
 
-        ax1_df = pd.read_csv(ifl_csv_istem + '.csv', sep=';')
-        ax2_df = pd.read_csv(mpg_csv_istem + '.csv', sep=';')
+        if not os.path.exists(csv1_ipath) or not os.path.exists(csv2_ipath):
+            logging.debug("Not generating univariate weighted performance measure: %s or %s does not exist",
+                          csv1_ipath, csv2_ipath)
+            return
+
+        ax1_df = pd.read_csv(csv1_istem + '.csv', sep=';')
+        ax2_df = pd.read_csv(csv2_istem + '.csv', sep=';')
         out_df = ax1_df * self.ax1_alpha + ax2_df * self.ax2_alpha
 
         out_df.to_csv(csv_ostem + '.csv', sep=';', index=False)
@@ -601,14 +610,21 @@ class WeightedPMBivar():
         self.title = title
 
     def generate(self, batch_criteria: bc.BatchCriteria):
-        ifl_csv_istem = os.path.join(self.cmdopts["collate_root"], self.ax1_leaf)
-        mpg_csv_istem = os.path.join(self.cmdopts["collate_root"], self.ax2_leaf)
+        csv1_istem = os.path.join(self.cmdopts["collate_root"], self.ax1_leaf)
+        csv2_istem = os.path.join(self.cmdopts["collate_root"], self.ax2_leaf)
+        csv1_ipath = csv1_istem + '.csv'
+        csv2_ipath = csv2_istem + '.csv'
 
         csv_ostem = os.path.join(self.cmdopts["collate_root"], self.output_leaf)
         png_ostem = os.path.join(self.cmdopts["graph_root"], self.output_leaf)
 
-        ax1_df = pd.read_csv(ifl_csv_istem + '.csv', sep=';')
-        ax2_df = pd.read_csv(mpg_csv_istem + '.csv', sep=';')
+        if not os.path.exists(csv1_ipath) or not os.path.exists(csv2_ipath):
+            logging.debug("Not generating bivariate weighted performance measure: %s or %s does not exist",
+                          csv1_ipath, csv2_ipath)
+            return
+
+        ax1_df = pd.read_csv(csv1_istem + '.csv', sep=';')
+        ax2_df = pd.read_csv(csv2_istem + '.csv', sep=';')
         out_df = ax1_df * self.ax1_alpha + ax2_df * self.ax2_alpha
 
         out_df.to_csv(csv_ostem + '.csv', sep=';', index=False)
@@ -616,7 +632,7 @@ class WeightedPMBivar():
         xlabels = batch_criteria.graph_xticklabels(self.cmdopts)
         ylabels = batch_criteria.graph_yticklabels(self.cmdopts)
 
-        len_xdiff = len(xlabels) - len(out_df.columns)
+        len_xdiff = len(xlabels) - len(out_df.index)
         len_ydiff = len(ylabels) - len(out_df.columns)
 
         Heatmap(input_fpath=csv_ostem + '.csv',
