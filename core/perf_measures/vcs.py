@@ -170,15 +170,15 @@ class RawPerfCS():
         ideal_data[:, 0] = ideal_df["clock"].values
         ideal_data[:, 1] = ideal_df[intra_perf_col].values
 
-        maxval = self.__maxval_calc(ideal_df, intra_perf_col)
-
         return CSRaw()(exp_data=exp_data,
                        ideal_data=ideal_data,
-                       maxval=maxval,
+                       maxval=self.__maxval_calc(ideal_df, intra_perf_col),
                        method=self.cmdopts["rperf_cs_method"])
 
     def __maxval_calc(self, ideal_df, intra_perf_col: str):
         if self.cmdopts['rperf_cs_method'] == 'dtw':
+            # Max value is the maximum performance under ideal conditions (exp0) as compared with an
+            # expx curve which is 0 at every point
             return ideal_df[intra_perf_col].max() * len(ideal_df[intra_perf_col])
         else:
             logging.warning('No maxval defined for method %s',
@@ -289,15 +289,15 @@ class AdaptabilityCS():
                                                self.main_config['sierra']['avg_output_leaf'],
                                                self.main_config['perf']['intra_perf_csv'])
 
-        maxval = self.__maxval_calc(exp0_perf_df)
-
         return CSRaw()(exp_data=exp_data,
                        ideal_data=ideal_data,
-                       maxval=maxval,
+                       maxval=self.__maxval_calc(exp0_perf_df),
                        method=self.cmdopts["adaptability_cs_method"])
 
     def __maxval_calc(self, exp0_perf_df):
         if self.cmdopts['adaptability_cs_method'] == 'dtw':
+            # Max value is the maximum performance under ideal conditions (exp0) as compared with an
+            # expx curve which is 0 at every point.
             return exp0_perf_df[self.perf_csv_col].max() * len(exp0_perf_df[self.perf_csv_col])
         else:
             logging.warning('No maxval defined for method %s',
@@ -400,15 +400,15 @@ class ReactivityCS():
                                                self.main_config['sierra']['avg_output_leaf'],
                                                self.main_config['perf']['intra_perf_csv'])
 
-        maxval = self.__maxval_calc(exp0_perf_df)
-
         return CSRaw()(exp_data=exp_data,
                        ideal_data=ideal_data,
-                       maxval=maxval,
+                       maxval=self.__maxval_calc(exp0_perf_df),
                        method=self.cmdopts["reactivity_cs_method"])
 
     def __maxval_calc(self, exp0_perf_df):
         if self.cmdopts['reactivity_cs_method'] == 'dtw':
+            # Max value is the maximum performance under ideal conditions (exp0) as compared with an
+            # expx curve which is 0 at every point.
             return exp0_perf_df[self.perf_csv_col].max() * len(exp0_perf_df[self.perf_csv_col])
         else:
             logging.warning('No maxval defined for method %s',

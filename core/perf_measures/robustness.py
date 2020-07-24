@@ -121,14 +121,15 @@ class RobustnessPDUnivar:
                                            self.inter_perf_csv),
                               sep=';')
 
+        idx = perf_df.index[-1]
         for i in range(0, criteria.n_exp()):
             exp_def = core.utils.unpickle_exp_def(os.path.join(self.cmdopts['generation_root'],
                                                                batch_exp_dirnames[i],
                                                                'exp_def.pkl'))
             TS, T = PopulationDynamics.calc_tasked_swarm_time(exp_def)
 
-            perf0 = perf_df[batch_exp_dirnames[0]].tail(1)
-            perfN = perf_df[batch_exp_dirnames[i]].tail(1)
+            perf0 = perf_df.loc[idx, batch_exp_dirnames[0]]
+            perfN = perf_df.loc[idx, batch_exp_dirnames[i]]
 
             df[batch_exp_dirnames[i]] = calculate_fpr(TS=TS,
                                                       T=T,

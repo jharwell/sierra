@@ -83,14 +83,15 @@ class Pipeline:
             # stage 4
             'envc_cs_method': self.args.envc_cs_method,
             'gen_vc_plots': self.args.gen_vc_plots,
-            'plot_log_xaxis': self.args.plot_log_xaxis,
             'reactivity_cs_method': self.args.reactivity_cs_method,
             'adaptability_cs_method': self.args.adaptability_cs_method,
             'rperf_cs_method': self.args.rperf_cs_method,
             'exp_graphs': self.args.exp_graphs,
             'project_rendering': self.args.project_rendering,
+            'plot_log_xaxis': self.args.plot_log_xaxis,
             'plot_regression_lines': self.args.plot_regression_lines,
             'plot_primary_axis': self.args.plot_primary_axis,
+            'plot_normalize_scalability': self.args.plot_normalize_scalability,
 
             # stage 5
             'controllers_list': self.args.controllers_list,

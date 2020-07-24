@@ -280,7 +280,9 @@ class KarpFlattUnivar:
         perf_0 = perf_df.loc[idx, perf_df.columns[0]]
         for i in range(0, len(perf_df.columns)):
             perf_i = perf_df.loc[idx, perf_df.columns[i]]
-            sc_df[sc_df.columns[i]] = calculate_karpflatt(perf_i / perf_0, sizes[i])
+            sc_df[sc_df.columns[i]] = calculate_karpflatt(perf_i / perf_0,
+                                                          sizes[i],
+                                                          self.cmdopts['plot_normalize_scalability'])
 
         return sc_df
 
@@ -543,7 +545,9 @@ class KarpFlattBivar:
                 else:
                     perf_0 = perf_df.iloc[i, 0]
 
-                sc_df.iloc[i, j] = calculate_karpflatt(perf_x / perf_0, n_robots_x)
+                sc_df.iloc[i, j] = calculate_karpflatt(perf_x / perf_0,
+                                                       n_robots_x,
+                                                       self.cmdopts['plot_normalize_scalability'])
 
         return sc_df
 
@@ -593,12 +597,19 @@ class ScalabilityBivarGenerator:
 # Calculation Functions
 ################################################################################
 
-def calculate_karpflatt(speedup_i: float, n_robots_i: int):
+def calculate_karpflatt(speedup_i: float, n_robots_i: int, normalize: bool):
     """
     Given a swarm exhibiting speedup :math:`X` with :math:`N>1` robots, compute the serial fraction
     :math:`e` of the swarm's performance. The lower the value of :math:`e`, the better the
     parallelization/scalability, suggesting that the addition of more robots will bring additional
     performance improvements:
+
+    .. math::
+       \begin{equation}
+       C(N,\kappa) = \sum_{t\in{T}} 1.0 - \theta_C(N,\kappa,t)
+       \end{equation}
+
+    or
 
     .. math::
        \begin{equation}
@@ -611,6 +622,7 @@ def calculate_karpflatt(speedup_i: float, n_robots_i: int):
        theta_C = 1.0 - \frac{\frac{1}{X} - \frac{1}{N}}{1 - \frac{1}{N}}
        \end{equation}
 
+    Depending on normalization configuration.
 
     Defined for swarms with :math:`N>1` robots. For :math:`N=1`, we obtain a Karp-Flatt value of 1.0
     using L'Hospital's rule and taking the derivative with respect to :math:`N`.
@@ -625,7 +637,10 @@ def calculate_karpflatt(speedup_i: float, n_robots_i: int):
 
     theta = 1.0 - e
 
-    return Sigmoid(theta)() - Sigmoid(-theta)()
+    if normalize:
+        return Sigmoid(theta)() - Sigmoid(-theta)()
+    else:
+        return theta
 
 
 def calculate_efficiency(perf_i: float, n_robots_i: int):
