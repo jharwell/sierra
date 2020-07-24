@@ -83,47 +83,46 @@ class SAANoise(UnivarBatchCriteria):
     def graph_xticks(self,
                      cmdopts: tp.Dict[str, str],
                      exp_dirs: tp.List[str] = None) -> tp.List[float]:
+        xticks_range = []
 
         # If exp_dirs is passed, then we have been handed a subset of the total # of directories in
         # the batch exp root, and so n_exp() will return more experiments than we actually
         # have. This behavior is needed to correctly extract x/y values for bivariate experiments.
+        if self.__gaussian_sources():
+            xticks_range = self.main_config['perf']['robustness']['gaussian_ticks_mean_range']
+        elif self.__uniform_sources():
+            xticks_range = self.main_config['perf']['robustness']['uniform_ticks_range']
+
         if exp_dirs is not None:
-            if self.__uniform_sources():
-                return [self.__avg_uniform_level_from_dir(d) for d in exp_dirs]
-            elif self.__gaussian_sources():
-                # order by mean
-                return [self.__avg_gaussian_level_from_dir(d)[0] for d in exp_dirs]
-            else:
-                return [x for x in range(0, len(exp_dirs))]
+            return np.linspace(xticks_range[0], xticks_range[1], num=len(exp_dirs) + 1)
         else:
-            if self.__uniform_sources():
-                return [self.__avg_uniform_level_from_chglist(v) for v in self.variances]
-            elif self.__gaussian_sources():
-                # order by mean
-                return [self.__avg_gaussian_level_from_chglist(v)[0] for v in self.variances]
-            else:
-                return [x for x in range(0, self.n_exp())]
+            return np.linspace(xticks_range[0], xticks_range[1], num=len(self.variances) + 1)
 
     def graph_xticklabels(self,
                           cmdopts: tp.Dict[str, str],
                           exp_dirs: tp.List[str] = None) -> tp.List[str]:
-        if exp_dirs is not None:
-            if self.__uniform_sources():
-                return ["U(-{0},{0})".format(round(l, 2)) for l in self.graph_xticks(cmdopts, exp_dirs)]
-            elif self.__gaussian_sources():
-                levels = [self.__avg_gaussian_level_from_dir(d) for d in exp_dirs]
-                return ["G({0},{1})".format(round(mean, 2), round(stddev, 2)) for mean, stddev in levels]
+
+        if self.__uniform_sources():
+            xticks = self.graph_xticks(cmdopts, exp_dirs)
+            return ["U(-{0},{0})".format(round(t, 3)) for t in xticks]
+        elif self.__gaussian_sources():
+            mean_xticks = self.graph_xticks(cmdopts, exp_dirs)
+            xticks_stddev_range = self.main_config['perf']['robustness']['gaussian_ticks_stddev_range']
+            stddev_xticks = []
+
+            if exp_dirs is not None:
+                stddev_xticks = np.linspace(xticks_stddev_range[0],
+                                            xticks_stddev_range[1],
+                                            num=len(exp_dirs))
             else:
-                return list(map(str, range(0, len(exp_dirs))))
+                stddev_xticks = np.linspace(xticks_stddev_range[0],
+                                            xticks_stddev_range[1],
+                                            num=len(self.variances))
+
+            levels = zip(mean_xticks, stddev_xticks)
+            return ["G({0},{1})".format(round(mean, 3), round(stddev, 3)) for mean, stddev in levels]
         else:
-            if self.__uniform_sources():
-                levels = [self.__avg_uniform_level_from_chglist(v) for v in self.variances]
-                return ["U(-{0},{0})".format(round(l, 2)) for l in levels]
-            elif self.__gaussian_sources():
-                levels = [self.__avg_gaussian_level_from_chglist(v) for v in self.variances]
-                return ["G({0},{1})".format(round(mean), round(stddev, 2)) for mean, stddev in levels]
-            else:
-                return list(map(str, range(0, self.n_exp())))
+            return []
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
         labels = {
@@ -158,83 +157,6 @@ class SAANoise(UnivarBatchCriteria):
                 if attr == 'model' and value != 'gaussian':
                     return False
         return True
-
-    def __avg_uniform_level_from_chglist(self, changelist) -> float:
-        """
-        Return the average level used for all uniform noise sources for the specified changelist
-        corresponding to a particular experiment by reading the XML attribute changelist. Only valid
-        if :method:`__uniform_sources` returns `True`.
-        """
-        accum = 0.0
-        count = 0
-        for source in changelist:
-            _, attr, value = source
-            if attr == 'level':
-                accum += float(value)
-                count += 1
-        return accum / count
-
-    def __avg_uniform_level_from_dir(self, expdir: str):
-        """
-        Return the average level used for all uniform noise sources within the specified experiment
-        by reading the pickle file; this is only needed for bivariate batch criteria in order to get
-        graph ticks/tick labels to come out right. Only valid if :method:`__uniform_sources` returns
-        `True`.
-
-        """
-        accum = 0.0
-        exp_def = core.utils.unpickle_exp_def(os.path.join(self.batch_generation_root,
-                                                           expdir,
-                                                           'exp_def.pkl'))
-        count = 0
-        for parent, attr, value in exp_def:
-            if 'noise' in parent and attr == 'level':
-                accum += float(value)
-                count += 1
-        return accum / count
-
-    def __avg_gaussian_level_from_chglist(self, changelist) -> tp.Tuple[float, float]:
-        """
-        Return the average (mean, stddev) used for all Gaussian noise sources for the specified
-        changelist corresponding to a particular experiment by reading the XML attribute
-        changelist. Only valid if :method:`__guassian_sources` returns `True`.
-
-        """
-        mean_accum = 0.0
-        stddev_accum = 0.0
-        count = 0
-        for source in changelist:
-            _, attr, value = source
-            if attr == 'mean':
-                mean_accum += float(value)
-                count += 1
-            elif attr == 'stddev':
-                stddev_accum += float(value)
-                count += 1
-        return (mean_accum / count, stddev_accum / count)
-
-    def __avg_gaussian_level_from_dir(self, expdir: str):
-        """
-        Return the average (mean, stddev) used for all gaussian Noise sources within a specific
-        experiment by reading the pickle file; this is only needed for bivariate batch criteria in
-        order to get graph ticks/tick labels to come out right. Only valid if
-        :method:`__gaussian_sources` returns `True`.
-
-        """
-        mean_accum = 0.0
-        stddev_accum = 0.0
-        count = 0
-        exp_def = core.utils.unpickle_exp_def(os.path.join(self.batch_generation_root,
-                                                           expdir,
-                                                           'exp_def.pkl'))
-        for parent, attr, value in exp_def:
-            if 'noise' in parent and attr == 'mean':
-                mean_accum += float(value)
-                count += 1
-            if 'noise' in parent and attr == 'stddev':
-                stddev_accum += float(value)
-                count += 1
-        return (mean_accum / count, stddev_accum / count)
 
 
 class SAANoiseParser():

@@ -403,11 +403,25 @@ required.  For example, setting ``stddev_range: [0.0,1.0]`` and
 ``mean_range: [0.0, 0.0]`` with ``cardinality=2`` will result in two experiments
 with Guassian distributed ranges ``Gaussian(0, 0.5)``, and ``Gaussian(0, 1.0)``.
 
+The appropriate ticks_range attribute is required, as there is no way to
+calculate in general what the correct range of X values for generated graphs
+should be, because some sensors/actuators may have different
+assumptions/requirements about noise application than others. For example, the
+differential steering actuator ``noise_factor`` has a default value of 1.0
+rather than 0.0, due to its implementation model in ARGoS, so the same range of
+noise applied to it and, say, the ground sensor, will have different XML changes
+generated, and so you can't just average the ranges for all sensors/actuators to
+compute what the ticks should be for a given experiment.
+
 .. code-block:: YAML
 
    perf:
      ...
      robustness:
+       uniform_ticks_range: [0.0, 0.1]
+       gaussian_ticks_mean_range: [0.0, 0.1]
+       gaussian_ticks_stddev_range: [0.0, 0.0]
+
        sensors:
          light:
            model: uniform

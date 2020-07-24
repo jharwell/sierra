@@ -80,7 +80,7 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
                                                                'exp_def.pkl'))
             TS, T = PopulationDynamics.calc_tasked_swarm_time(exp_def)
             ticks.append(round(TS / T, 4))
-            print(TS, T)
+
         if cmdopts['plot_log_xaxis']:
             return [math.log2(x) for x in ticks]
         else:
