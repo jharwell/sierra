@@ -94,9 +94,9 @@ class SAANoise(UnivarBatchCriteria):
             xticks_range = self.main_config['perf']['robustness']['uniform_ticks_range']
 
         if exp_dirs is not None:
-            return np.linspace(xticks_range[0], xticks_range[1], num=len(exp_dirs) + 1)
+            return np.linspace(xticks_range[0], xticks_range[1], num=len(exp_dirs))
         else:
-            return np.linspace(xticks_range[0], xticks_range[1], num=len(self.variances) + 1)
+            return np.linspace(xticks_range[0], xticks_range[1], num=len(self.variances))
 
     def graph_xticklabels(self,
                           cmdopts: tp.Dict[str, str],

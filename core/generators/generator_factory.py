@@ -49,7 +49,7 @@ def scenario_generator_create(scenario, controller, **kwargs):
     """
 
     def __init__(self, **kwargs) -> None:
-        res = re.search('[SDQLR][SSSLN]', scenario)
+        res = re.search('[SDQPR][SSSLN]', scenario)
         abbrev = res.group(0)
         cmdopts = kwargs['cmdopts']
         try:

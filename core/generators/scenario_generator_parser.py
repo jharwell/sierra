@@ -51,7 +51,7 @@ class ScenarioGeneratorParser:
         logging.info("Parse scenario generator from cmdline specification '%s'",
                      self.args.scenario)
 
-        res1 = re.search('[SDQLR][SSSLN]', self.args.scenario)
+        res1 = re.search('[SDQPR][SSSLN]', self.args.scenario)
         assert res1 is not None,\
             "FATAL: Bad block distribution specification in '{0}'".format(self.args.scenario)
         res2 = re.search('[0-9]+x[0-9]+x[0-9]+', self.args.scenario)

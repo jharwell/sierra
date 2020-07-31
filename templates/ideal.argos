@@ -264,6 +264,8 @@
       <grid2D resolution="0.2"
             dims="12, 6, 2"/>
       <blocks>
+        <motion policy="Null"
+                random_walk_prob="0.0"/>
         <distribution
             arena_resolution="0.2"
             dist_type="single_source">
@@ -271,6 +273,11 @@
               n_cube="64"
               n_ramp="0"
               unit_dim="0.2"
+              />
+          <powerlaw
+              pwr_min="2"
+              pwr_max="7"
+              n_clusters="10"
               />
         </distribution>
       </blocks>

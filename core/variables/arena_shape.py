@@ -42,9 +42,9 @@ class RectangularArena(BaseVariable):
         Generate list of sets of changes necessary to make to the input file to correctly set up the
         simulation with the specified area size/shape.
         """
-        return [set([(".//arena", "size", "{0}, {1}, 2".format(extent.x(), extent.y())),
+        return [set([(".//arena", "size", "{0:.9f}, {1:.9f}, 2".format(extent.x(), extent.y())),
                      (".//arena", "center",
-                      "{0}, {1}, 1".format(extent.x() / 2.0, extent.y() / 2.0)),
+                      "{0:.9f}, {1:.9f}, 1".format(extent.x() / 2.0, extent.y() / 2.0)),
 
                      # We restrict the places robots can spawn within the arena as follows:
                      #
@@ -57,21 +57,21 @@ class RectangularArena(BaseVariable):
                      # - All robots start on the ground with Z=0.
                      (".//arena/distribute/position",
                       "max",
-                      "{0}, {1}, 0".format(extent.x() - 2.0 * kWALL_WIDTH - 2.0,
-                                           extent.y() - 2.0 * kWALL_WIDTH - 2.0)),
+                      "{0:.9f}, {1:.9f}, 0".format(extent.x() - 2.0 * kWALL_WIDTH - 2.0,
+                                                   extent.y() - 2.0 * kWALL_WIDTH - 2.0)),
                      (".//arena/distribute/position",
                       "min",
-                      "{0}, {1}, 0".format(2.0 * kWALL_WIDTH + 2.0, 2.0 * kWALL_WIDTH + 2.0)),
+                      "{0:.9f}, {1:.9f}, 0".format(2.0 * kWALL_WIDTH + 2.0, 2.0 * kWALL_WIDTH + 2.0)),
 
-                     (".//arena/*[@id='wall_north']", "size", "{0}, {1}, 0.5".format(extent.x(),
-                                                                                     kWALL_WIDTH)),
+                     (".//arena/*[@id='wall_north']", "size", "{0:.9f}, {1:.9f}, 0.5".format(extent.x(),
+                                                                                             kWALL_WIDTH)),
 
                      (".//arena/*[@id='wall_north']/body",
-                      "position", "{0}, {1}, 0".format(extent.x() / 2.0, extent.y())),
-                     (".//arena/*[@id='wall_south']", "size", "{0}, {1}, 0.5".format(extent.x(),
-                                                                                     kWALL_WIDTH)),
+                      "position", "{0:.9f}, {1:.9f}, 0".format(extent.x() / 2.0, extent.y())),
+                     (".//arena/*[@id='wall_south']", "size", "{0:.9f}, {1:.9f}, 0.5".format(extent.x(),
+                                                                                             kWALL_WIDTH)),
                      (".//arena/*[@id='wall_south']/body",
-                      "position", "{0}, 0, 0 ".format(extent.x() / 2.0)),
+                      "position", "{0:.9f}, 0, 0 ".format(extent.x() / 2.0)),
 
                      # East wall needs to have its X coordinate offset by the width of the wall / 2
                      # in order to be centered on the boundary for the arena. This is necessary to
@@ -79,40 +79,40 @@ class RectangularArena(BaseVariable):
                      # upper boundary of physics engines incident along the east wall.
                      #
                      # I think this is a bug in ARGoS.
-                     (".//arena/*[@id='wall_east']", "size", "{0}, {1}, 0.5".format(kWALL_WIDTH,
-                                                                                    extent.y() + kWALL_WIDTH)),
+                     (".//arena/*[@id='wall_east']", "size", "{0:.9f}, {1:.9f}, 0.5".format(kWALL_WIDTH,
+                                                                                            extent.y() + kWALL_WIDTH)),
                      (".//arena/*[@id='wall_east']/body",
                       "position",
-                      "{0}, {1}, 0".format(extent.x() - kWALL_WIDTH / 2.0,
-                                           extent.y() / 2.0)),
+                      "{0:.9f}, {1:.9f}, 0".format(extent.x() - kWALL_WIDTH / 2.0,
+                                                   extent.y() / 2.0)),
 
-                     (".//arena/*[@id='wall_west']", "size", "{0}, {1}, 0.5".format(kWALL_WIDTH,
-                                                                                    extent.y() + kWALL_WIDTH)),
+                     (".//arena/*[@id='wall_west']", "size", "{0:.9f}, {1:.9f}, 0.5".format(kWALL_WIDTH,
+                                                                                            extent.y() + kWALL_WIDTH)),
                      (".//arena/*[@id='wall_west']/body",
-                      "position", "0, {0}, 0".format(extent.y() / 2.0)),
+                      "position", "0, {0:.9f}, 0".format(extent.y() / 2.0)),
 
                      (".//arena_map/grid2D", "dims",
-                      "{0}, {1}, 2".format(extent.x(), extent.y())),
+                      "{0:.9f}, {1:.9f}, 2".format(extent.x(), extent.y())),
                      (".//perception/grid2D", "dims",
-                      "{0}, {1}, 2".format(extent.x(), extent.y())),
+                      "{0:.9f}, {1:.9f}, 2".format(extent.x(), extent.y())),
 
                      (".//convergence/positional_entropy",
                       "horizon",
-                      "0:{0}".format(math.sqrt(extent.x() ** 2 + extent.y() ** 2))),
+                      "0:{0:.9f}".format(math.sqrt(extent.x() ** 2 + extent.y() ** 2))),
                      (".//convergence/positional_entropy",
                       "horizon_delta",
-                      "{0}".format(math.sqrt(extent.x() ** 2 + extent.y() ** 2) / 10.0)),
+                      "{0:.9f}".format(math.sqrt(extent.x() ** 2 + extent.y() ** 2) / 10.0)),
 
                      # Finally, set camera positioning. Probably will not be used, but IF rendering
                      # is enabled we want to have the visualizations come out nicely. I assume a
                      # single camera is present.
                      (".//camera/placement",
-                      "position", "{0}, {1}, {2}".format(extent.x() / 2.0,
-                                                         extent.y() / 2.0,
-                                                         max(extent.x(), extent.y()) * 2.0 / 3.0)),
+                      "position", "{0:.9f}, {1:.9f}, {2:.9f}".format(extent.x() / 2.0,
+                                                                     extent.y() / 2.0,
+                                                                     max(extent.x(), extent.y()) * 2.0 / 3.0)),
                      (".//camera/placement",
-                      "look_at", "{0}, {1}, 0".format(extent.x() / 2.0,
-                                                      extent.y() / 2.0))
+                      "look_at", "{0:.9f}, {1:.9f}, 0".format(extent.x() / 2.0,
+                                                              extent.y() / 2.0))
                      ])
                 for extent in self.dimensions]
 

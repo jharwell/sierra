@@ -43,7 +43,7 @@ BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \
                   --template-input-file=$HOME/git/sierra/templates/2020-journal-scenario2.argos \
                   --n-sims=$NSIMS\
-                  --physics-n-engines=4\
+                  --physics-n-engines=8\
                   --pipeline 1 2 3 4 --exp-graphs=inter\
                   --project=fordyca\
                   --hpc-env=hpc_local \
@@ -58,7 +58,7 @@ then
     for c in "${CONTROLLERS[@]}"
     do
         $BASE_CMD --scenario=${BLOCK_DIST}.16x16 \
-                  --batch-criteria population_density.CD${DENSITY}.I16\
+                  --batch-criteria population_density.CD${DENSITY}.I16 block_motion.C4.F25p0.RW0p001\
                   --controller=${c} \
                   --n-blocks=${N_BLOCKS}
 

@@ -25,6 +25,7 @@ import os
 
 from core.variables import batch_criteria as bc
 import core.utils
+import core.variables.dynamics_parser as dp
 
 
 class PopulationDynamics(bc.UnivarBatchCriteria):
@@ -157,63 +158,18 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
         return (explen, expticks)
 
 
-class PopulationDynamicsParser():
+class PopulationDynamicsParser(dp.DynamicsParser):
     """
     Enforces the cmdline definition of the criteria described in the module docstring.
     """
 
-    def __call__(self, criteria_str) -> dict:
-        ret = {
-            'dynamics': list(),
-            'factor': float()
-        }
-
-        # Parse cardinality
-        res = re.search(r".C[0-9]+", criteria_str)
-        assert res is not None, \
-            "FATAL: Bad cardinality for population dynamics in criteria '{0}'".format(criteria_str)
-        ret['cardinality'] = int(res.group(0)[2:])
-
-        # Parse factor characteristic
-        res = re.search(r'F[0-9]+p[0-9]+', criteria_str)
-        assert res is not None, \
-            "FATAL: Bad Factor specification in criteria '{0}'".format(criteria_str)
-        characteristic = float(res.group(0)[1:].split('p')[0])
-        mantissa = float("0." + res.group(0)[1:].split('p')[1])
-
-        ret['factor'] = characteristic + mantissa
-
-        # Parse birth/death process parameters
-        specs = criteria_str.split('.')[2:]
-        dynamics = []
-
-        for spec in specs:
-            # Parse characteristic
-            res = re.search('[0-9]+', spec)
-            assert res is not None, \
-                "FATAL: Bad lambda/mu characteristic specification in criteria '{0}'".format(
-                    criteria_str)
-            characteristic = float(res.group(0))
-
-            # Parser mantissa
-            res = re.search('p[0-9]+', spec)
-            assert res is not None, \
-                "FATAL: Bad lambda/mu mantissa specification in criteria '{0}'".format(
-                    criteria_str)
-            mantissa = float("0." + res.group(0)[1:])
-
-            if 'B' in spec:
-                dynamics.append(('birth_mu', characteristic + mantissa))
-            elif 'D' in spec:
-                dynamics.append(('death_lambda', characteristic + mantissa))
-            elif 'M' in spec:
-                dynamics.append(('malfunction_lambda', characteristic + mantissa))
-            elif 'R' in spec:
-                dynamics.append(('repair_mu', characteristic + mantissa))
-
-        ret['dynamics'] = dynamics
-
-        return ret
+    def __call__(self, criteria_str: str) -> dict:
+        specs_dict = {'B': 'birth_mu',
+                      'D': 'death_lambda',
+                      'M': 'malfunction_lambda',
+                      'R': 'repair_mu'
+                      }
+        return super().__call__(criteria_str, specs_dict)
 
 
 def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_generation_root: str, **kwargs):

@@ -23,6 +23,7 @@ defined by the selected project):
   - :ref:`Swarm Population Dynamics <ln-bc-population-dynamics>`
   - :ref:`Swarm Population Density <ln-bc-population-density>`
   - :ref:`Block Density <ln-bc-block-density>`
+  - :ref:`Block Motion DynamicsSAA Noise <ln-bc-block-motion-dynamics>`
   - :ref:`Temporal Variance <ln-bc-tv>`
   - :ref:`Oracle <ln-bc-oracle>`
   - :ref:`Task Allocation Policy <ln-bc-ta-policy-set>`
@@ -183,6 +184,38 @@ Cmdline Syntax
 Examples:
     - ``CD1p0.I16``: Constant density of 1.0. Arena dimensions will increase by
       16 in both X and Y for each experiment in the batch.
+
+.. _ln-bc-block-motion-dynamics:
+
+Block Motion Dynamics
+---------------------
+
+Cmdline Syntax
+^^^^^^^^^^^^^^
+
+``block_motion_dynamics.C{cardinality}.F{Factor}.{dynamics_type}{prob}``
+
+- ``cardinality`` - The # of different values of each of the specified dynamics
+  types to to test with (starting with the one on the cmdline). This defines the
+  cardinality of the batched experiment.
+
+- ``Factor`` - The factor by which the starting value of all dynamics types
+  specified on the cmdline are increased for each each experiment (i.e., value
+  in last experiment in batch will be ``<start value> + cardinality``; a linear
+  increase).
+
+- ``dynamics_type`` - [RW]
+
+  - ``RW`` - Adds random walk dynamics to the arena. Free blocks will execute a
+    random walk with a specified probability each timestep.
+
+
+Examples:
+    - ``C10.F2p0.RW0p001``: 10 levels of block motion variability applied using
+      a random walk with a 0.001 probability for each block each timestep, which
+      will be linearly varied in [0.001,0.001*2.0*10]. For all experiments, the
+      initial swarm is not controlled directly; the value in template input file
+      will be used if swarm size is not set by another variable.
 
 .. _ln-bc-tv:
 

@@ -132,19 +132,30 @@ class BatchCriteria(base_variable.BaseVariable):
                           exp_dirname)
 
             core.utils.dir_create_checked(exp_generation_root, exist_ok=cmdopts['exp_overwrite'])
-            for path, attr, value in defi:
+            for changes_i in defi:
+                try:
+                    path, attr, value = changes_i
+                except ValueError:
+                    logging.fatal("%s XML changes not a 3-tuple (path,attr,value)", changes_i)
+                    raise
+
                 xml_luigi.attr_change(path, attr, value)
 
             xml_luigi.write(os.path.join(exp_generation_root,
                                          batch_config_leaf))
 
         n_exp_dirs = len(os.listdir(self.batch_generation_root))
-        assert n_exps == n_exp_dirs,\
-            "FATAL: Size of batched experiment ({0}) != # exp dirs ({1}): possibly caused by:\n"\
-            "(1) Changing batch criteria without changing the generation root ({2})\n"\
-            "(2) Sharing {2} between different batch criteria\n".format(n_exps,
-                                                                        n_exp_dirs,
-                                                                        self.batch_generation_root)
+        if n_exps != n_exp_dirs:
+            msg1 = "Size of batched experiment ({0}) != # exp dirs ({1}): possibly caused by:".format(n_exps,
+                                                                                                      n_exp_dirs)
+            msg2 = "(1) Changing batch criteria without changing the generation root ({0})".format(
+                self.batch_generation_root)
+            msg3 = "(2) Sharing {0} between different batch criteria".format(
+                self.batch_generation_root)
+            logging.fatal(msg1)
+            logging.fatal(msg2)
+            logging.fatal(msg3)
+            raise ValueError("Batch experiment size/# exp dir mismatch")
 
     def is_bivar(self) -> bool:
         """
@@ -175,7 +186,7 @@ class BatchCriteria(base_variable.BaseVariable):
 
     def graph_xticks(self,
                      cmdopts: tp.Dict[str, str],
-                     exp_dirs: list = None) -> tp.List[float]:
+                     exp_dirs: list=None) -> tp.List[float]:
         """
 
         Arguments:
@@ -191,7 +202,7 @@ class BatchCriteria(base_variable.BaseVariable):
 
     def graph_yticks(self,
                      cmdopts: tp.Dict[str, str],
-                     exp_dirs: list = None) -> tp.List[float]:
+                     exp_dirs: list=None) -> tp.List[float]:
         """
 
         Arguments:
@@ -208,7 +219,7 @@ class BatchCriteria(base_variable.BaseVariable):
 
     def graph_yticklabels(self,
                           cmdopts: tp.Dict[str, str],
-                          exp_dirs: list = None) -> tp.List[str]:
+                          exp_dirs: list=None) -> tp.List[str]:
         """
 
         Arguments:
@@ -224,7 +235,7 @@ class BatchCriteria(base_variable.BaseVariable):
 
     def graph_xticklabels(self,
                           cmdopts: tp.Dict[str, str],
-                          exp_dirs: list = None) -> tp.List[str]:
+                          exp_dirs: list=None) -> tp.List[str]:
         """
 
         Arguments:
@@ -278,7 +289,7 @@ class UnivarBatchCriteria(BatchCriteria):
     def is_univar(self) -> bool:
         return True
 
-    def populations(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[int]:
+    def populations(self, cmdopts: tp.Dict[str, str], exp_dirs: list=None) -> tp.List[int]:
         """
         Arguments:
             cmdopts: Dictionary of parsed command line options.
@@ -337,7 +348,7 @@ class BivarBatchCriteria(BatchCriteria):
 
     def gen_exp_dirnames(self,
                          cmdopts: tp.Dict[str, str],
-                         what: str = 'all') -> tp.List[str]:
+                         what: str='all') -> tp.List[str]:
         """
         Generates a SORTED list of strings for all X/Y axis directories for the bivariate
         experiments, or both X and Y.
@@ -371,7 +382,7 @@ class BivarBatchCriteria(BatchCriteria):
         n_chgs = len(self.criteria2.gen_attr_changelist())
         n_adds = len(self.criteria2.gen_tag_addlist())
 
-        assert n_chgs == 0 or n_adds == 0, \
+        assert n_chgs == 0 or n_adds == 0,\
             "FATAL: Criteria defines both XML attribute changes and XML tag additions"
 
         for d in dirs:
@@ -419,7 +430,7 @@ class BivarBatchCriteria(BatchCriteria):
 
     def graph_xticks(self,
                      cmdopts: tp.Dict[str, str],
-                     exp_dirs: tp.List[str] = None) -> tp.List[float]:
+                     exp_dirs: tp.List[str]=None) -> tp.List[float]:
         dirs = []
         for c1 in self.criteria1.gen_exp_dirnames(cmdopts):
             for x in self.gen_exp_dirnames(cmdopts):
@@ -433,7 +444,7 @@ class BivarBatchCriteria(BatchCriteria):
 
     def graph_yticks(self,
                      cmdopts: tp.Dict[str, str],
-                     exp_dirs: tp.List[str] = None) -> tp.List[float]:
+                     exp_dirs: tp.List[str]=None) -> tp.List[float]:
         dirs = []
         for c2 in self.criteria2.gen_exp_dirnames(cmdopts):
             for x in self.gen_exp_dirnames(cmdopts):
@@ -448,7 +459,7 @@ class BivarBatchCriteria(BatchCriteria):
 
     def graph_xticklabels(self,
                           cmdopts: tp.Dict[str, str],
-                          exp_dirs: list = None) -> tp.List[str]:
+                          exp_dirs: list=None) -> tp.List[str]:
         dirs = []
         for c1 in self.criteria1.gen_exp_dirnames(cmdopts):
             for x in self.gen_exp_dirnames(cmdopts):
@@ -462,7 +473,7 @@ class BivarBatchCriteria(BatchCriteria):
 
     def graph_yticklabels(self,
                           cmdopts: tp.Dict[str, str],
-                          exp_dirs: list = None) -> tp.List[str]:
+                          exp_dirs: list=None) -> tp.List[str]:
         dirs = []
         for c2 in self.criteria2.gen_exp_dirnames(cmdopts):
             for y in self.gen_exp_dirnames(cmdopts):
@@ -489,7 +500,7 @@ class BivarBatchCriteria(BatchCriteria):
         self.criteria2.batch_generation_root = root
 
 
-def factory(main_config: dict, cmdopts: tp.Dict[str, str], args, scenario: str = None):
+def factory(main_config: dict, cmdopts: tp.Dict[str, str], args, scenario: str=None):
     if scenario is None:
         scenario = args.scenario
 

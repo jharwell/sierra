@@ -145,7 +145,7 @@ class RobustnessPDUnivar:
                          output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),
                          title="Swarm Robustness (Fluctuating Populations)",
                          xlabel=criteria.graph_xlabel(self.cmdopts),
-                         ylabel=criteria.graph_ylabel(self.cmdopts),
+                         ylabel="Value",
                          xticks=criteria.graph_xticks(self.cmdopts),
                          xtick_labels=criteria.graph_xticklabels(self.cmdopts)).generate()
 
