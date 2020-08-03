@@ -20,6 +20,7 @@ Classes for the temporal variance batch criteria. See :ref:`ln-bc-tv` for usage 
 
 import math
 import typing as tp
+import logging
 
 from core.variables.batch_criteria import UnivarBatchCriteria
 from core.variables.population_size import PopulationSize
@@ -123,8 +124,15 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
 
     def gen_variances(attr: dict):
 
-        amps = main_config['perf']['flexibility'][attr['variance_type'] + '_amp']
-        hzs = main_config['perf']['flexibility']['hz']
+        try:
+            amps_key = attr['variance_type'] + '_amp'
+            amps = main_config['perf']['flexibility'][amps_key]
+            hzs = main_config['perf']['flexibility']['hz']
+        except KeyError:
+            msg = "'hz' or '{0}' not found in flexibility section of main config file for project".format(
+                amps_key)
+            logging.fatal(msg)
+            raise
 
         # All variances need to have baseline/ideal conditions for comparison, which is a small
         # constant penalty

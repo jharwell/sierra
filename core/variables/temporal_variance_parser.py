@@ -31,7 +31,7 @@ class TemporalVarianceParser():
         """
         Returns:
             Dictionary with the following keys:
-                - variance_type: BC|BM
+                - variance_type: BC|BM|M
                 - xml_parent_path: Parent XPath within template input file
                 - variance_csv_col: Column within configured .csv containing the variance
                 - waveform_type: Sine|Square|Sawtooth|StepU|StepD|Constant
@@ -48,15 +48,20 @@ class TemporalVarianceParser():
             'population': 0
         }
         xml_parent = {
+            'M': './/env_dynamics/motion_throttle',
             'BC': './/env_dynamics/blocks/carry_throttle',
             'BM': './/env_dynamics/blocks/manipulation_penalty',
         }
         variance_col = {
+            # I do not currently distinguish between different types of swarm motion throttle,
+            # though that may be added in the future.
             'BC': "swarm_motion_throttle",
+            'M': "swarm_motion_throttle",
             'BM': "env_block_manip",
+
         }
         # Parse variance type
-        res = re.search("BC|BM", criteria_str)
+        res = re.search("BC|BM|M", criteria_str)
         assert res is not None, "FATAL: Bad variance type in criteria '{0}'".format(criteria_str)
         variance_type = str(res.group(0))
         ret['variance_type'] = variance_type

@@ -427,14 +427,15 @@ and dependent parameters must be specified (i.e. if a given sensor or sensor is
 present in the config, all config items for it are mandatory).
 
 For a ``uniform`` model, the ``range`` attribute is required, and defines the
--[level, level] distribution.  For example, setting `` range: [0.0,1.0]`` with
-``cardinality=2`` will result in two experiments with uniformly distributed
-noise ranges of ``[0.0, 0.5]``, and ``[0.0, 1.0]``.
+-[level, level] distribution.  For example, setting ``range: [0.0,0.1]`` with
+``cardinality=1`` will result in two experiments with uniform noise
+distributions of ``[0.0, 0.0]``, and ``[-0.1, 0.1]``.
 
 For a ``gaussian`` model, the ``stddev_range`` and ``mean_range`` attributes are
-required.  For example, setting ``stddev_range: [0.0,1.0]`` and
-``mean_range: [0.0, 0.0]`` with ``cardinality=2`` will result in two experiments
-with Guassian distributed ranges ``Gaussian(0, 0.5)``, and ``Gaussian(0, 1.0)``.
+required.  For example, setting ``stddev_range: [0.0,1.0]`` and ``mean_range:
+[0.0, 0.0]`` with ``cardinality=2`` will result in two experiments with Guassian
+noise distributions of ``Gaussian(0,0)``, ``Gaussian(0, 0.5)``, and ``Gaussian(0,
+1.0)``.
 
 The appropriate ticks_range attribute is required, as there is no way to
 calculate in general what the correct range of X values for generated graphs

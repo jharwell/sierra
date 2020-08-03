@@ -187,20 +187,13 @@ class RawPerfCS():
 
 
 class AdaptabilityCS():
-    """
-    Compute the adaptability of a controller/algorithm by comparing the observed performance curve
+    """Compute the adaptability of a controller/algorithm by comparing the observed performance curve
     for the current experiment, the performance curve for exp0, and the applied variance curve for
     the experiment.
 
-    An algorithm that is maximally adaptive will have a performance curve that:
-
-    - Tracks the inverse of the applied variance very closely if the value of the applied variance
-      at a time t is BELOW the value at time t for exp0. In that case we should see a proportional
-      INCREASE in observed performance for the current experiment.
-
-    - Remain unchanged from the value at time t for exp0 if the value of the applied variance is
-      ABOVE the value at time t for exp0. This corresponds to resisting the adverse conditions
-      present in the current experiment.
+    An algorithm that is maximally adaptive will have a performance curve that remains unchanged
+    from the value at time t from the value in exp0 for all t. This corresponds to resisting the
+    adverse AND beneficial conditions present in the current experiment.
 
     Assumes exp0 is "ideal" conditions.
 
@@ -209,6 +202,7 @@ class AdaptabilityCS():
         cmdopts: Dictionary of parsed commandline options.
         batch_criteria: The batch criteria for the experiment.
         exp_num: Current experiment number to compute VCS for.
+
     """
 
     def __init__(self,
@@ -251,24 +245,9 @@ class AdaptabilityCS():
 
         ideal_df = pd.DataFrame(index=exp0_var_df.index, columns=[self.perf_csv_col])
 
-        # The performance curve of an adaptable system should resist adverse changes in the
-        # environment, and should exploit beneficial changes in the environment.
-        #
-        # So, if the penalty imposed during the current experiment at timestep t is more than that
-        # imposed during the ideal conditions experiment (exp0), then the performance curve should
-        # exactly resemble the one for ideal conditions (for a maximally adaptable system). If the
-        # penalty imposed during the current experiment at timestep t is less than that imposed
-        # during the ideal conditions experiment, then the performance curve should be observed to
-        # increase by an amount proportional to that difference, as the system exploits the drop in
-        # penalties.
-        for i in exp0_perf_df[self.perf_csv_col].index:
-            if exp0_var_df.loc[i, self.var_csv_col] > expx_var_df.loc[i, self.var_csv_col]:
-                ideal_df.loc[i, self.perf_csv_col] = exp0_perf_df.loc[i, self.perf_csv_col] * \
-                    (exp0_var_df.loc[i, self.var_csv_col] / expx_var_df.loc[i, self.var_csv_col])
-            elif exp0_var_df.loc[i, self.var_csv_col] < expx_var_df.loc[i, self.var_csv_col]:
-                ideal_df.loc[i, self.perf_csv_col] = exp0_perf_df.loc[i, self.perf_csv_col]
-            else:
-                ideal_df.loc[i, self.perf_csv_col] = expx_perf_df.loc[i, self.perf_csv_col]
+        # The performance curve of an adaptable system should resist all changes in the
+        # environment, and be the same as exp0
+        ideal_df[self.perf_csv_col] = exp0_perf_df[self.perf_csv_col]
 
         xlen = len(exp0_var_df[self.var_csv_col].values)
 

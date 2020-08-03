@@ -317,12 +317,6 @@
                robot_drop_only="true"/>
 
     </caches>
-
-    <visualization robot_id="true"
-                   robot_los="true"
-                   robot_task="true"
-                   block_id="false"
-                   />
   </loop_functions>
 
   <!-- *********************** -->

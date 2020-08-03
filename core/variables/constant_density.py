@@ -53,10 +53,11 @@ class ConstantDensity(bc.UnivarBatchCriteria):
         self.changes = RectangularArena(dimensions).gen_attr_changelist()
 
         dist_types = {
-            'SS': 'TypeSingleSource',
-            'DS': 'TypeDualSource',
-            'QS': 'TypeQuadSource',
-            'RN': 'TypeRandom'
+            'SS': 'SingleSourceDistribution',
+            'DS': 'DualSourceDistribution',
+            'QS': 'QuadSourceDistribution',
+            'RN': 'RandomDistribution',
+            'PL': 'PowerLawDistribution'
         }
         module = __import__("core.variables.block_distribution", fromlist=["*"])
         dist = getattr(module, dist_types[self.dist_type])()

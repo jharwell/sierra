@@ -129,7 +129,7 @@ def factory(cli_arg: str, main_config:
                   attr['arena_size_inc'],
                   attr['arena_size_inc'])
         dims = [core.utils.ArenaExtent((x, int(x / 2), 0)) for x in r]
-    elif kw['dist_type'] == "QS" or kw['dist_type'] == "RN":
+    elif kw['dist_type'] == "QS" or kw['dist_type'] == "RN" or kw['dist_type'] == 'PL':
         r = range(kw['arena_x'],
                   kw['arena_x'] + PopulationConstantDensity.kExperimentsPerDensity *
                   attr['arena_size_inc'],
@@ -137,7 +137,7 @@ def factory(cli_arg: str, main_config:
         dims = [core.utils.ArenaExtent((x, x, 0)) for x in r]
     else:
         raise NotImplementedError(
-            "Unsupported block dstribution '{0}': Only SS,DS,QS,RN supported".format(kw['dist_type']))
+            "Unsupported block dstribution '{0}': Only SS,DS,QS,RN,PL supported".format(kw['dist_type']))
 
     def __init__(self) -> None:
         PopulationConstantDensity.__init__(self,
