@@ -65,7 +65,8 @@ class PopulationConstantDensity(cd.ConstantDensity):
         for changeset in self.changes:
             for path, attr, value in changeset:
                 if path == ".//arena" and attr == "size":
-                    extent = core.utils.ArenaExtent((value.split(",")))
+                    x, y, z = [int(float(_)) for _ in value.split(",")]
+                    extent = core.utils.ArenaExtent((x, y, z))
                     # ARGoS won't start if there are 0 robots, so you always need to put at least
                     # 1.
                     n_robots = int(max(1, (extent.x() * extent.y())
@@ -111,8 +112,8 @@ class PopulationConstantDensity(cd.ConstantDensity):
         return pm in ['blocks-transported', 'scalability', 'self-org']
 
 
-def factory(cli_arg: str, main_config:
-            tp.Dict[str, str],
+def factory(cli_arg: str,
+            main_config: tp.Dict[str, str],
             batch_generation_root: str,
             **kwargs):
     """

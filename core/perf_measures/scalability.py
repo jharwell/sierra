@@ -277,12 +277,24 @@ class KarpFlattUnivar:
         sizes = batch_criteria.populations(self.cmdopts)
 
         idx = perf_df.index[-1]
-        perf_0 = perf_df.loc[idx, perf_df.columns[0]]
+
         for i in range(0, len(perf_df.columns)):
             perf_i = perf_df.loc[idx, perf_df.columns[i]]
-            sc_df[sc_df.columns[i]] = calculate_karpflatt(perf_i / perf_0,
-                                                          sizes[i],
-                                                          self.cmdopts['plot_normalize_scalability'])
+            n_robots_i = sizes[i]
+
+            if self.cmdopts['pm_scalability_from_exp0']:
+                n_robots_iminus1 = sizes[0]
+                perf_iminus1 = perf_df.loc[idx, perf_df.columns[0]]
+            else:
+                n_robots_iminus1 = sizes[i - 1]
+                perf_iminus1 = perf_df.loc[idx, perf_df.columns[i - 1]]
+
+            speedup_i = perf_i / perf_iminus1
+
+            sc_df[sc_df.columns[i]] = calculate_karpflatt(speedup_i=speedup_i,
+                                                          n_robots_i=n_robots_i,
+                                                          n_robots_iminus1=n_robots_iminus1,
+                                                          normalize=self.cmdopts['pm_scalability_normalize'])
 
         return sc_df
 
@@ -295,6 +307,7 @@ class KarpFlattUnivar:
                                                    "pm-karpflatt.png"),
                          title="Swarm Serial Fraction: Karp-Flatt Metric",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
+                         xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
                          ylabel="",
                          xticks=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
@@ -541,13 +554,26 @@ class KarpFlattBivar:
                 # correct dimension along which to compute the metric, which depends on performance
                 # between adjacent swarm sizes.
                 if isinstance(batch_criteria.criteria1, ps.PopulationSize) or self.cmdopts['plot_primary_axis'] == '0':
-                    perf_0 = perf_df.iloc[0, j]
+                    if self.cmdopts['pm_scalability_from_exp0']:
+                        n_robots_xminus1 = sizes[0][j]
+                        perf_xminus1 = perf_df.iloc[i - 1, j]
+                    else:
+                        n_robots_xminus1 = sizes[i - 1][j]
+                        perf_xminus1 = perf_df.iloc[i - 1, j]
                 else:
-                    perf_0 = perf_df.iloc[i, 0]
+                    if self.cmdopts['pm_scalability_from_exp0']:
+                        n_robots_xminus1 = sizes[0][j]
+                        perf_xminus1 = perf_df.iloc[i, j - 1]
+                    else:
+                        n_robots_xminus1 = sizes[i][j - 1]
+                        perf_xminus1 = perf_df.iloc[i, j - 1]
 
-                sc_df.iloc[i, j] = calculate_karpflatt(perf_x / perf_0,
-                                                       n_robots_x,
-                                                       self.cmdopts['plot_normalize_scalability'])
+            speedup_i = perf_x / perf_xminus1
+
+            sc_df[sc_df.columns[i]] = calculate_karpflatt(speedup_i=speedup_i,
+                                                          n_robots_i=n_robots_x,
+                                                          n_robots_iminus1=n_robots_xminus1,
+                                                          normalize=self.cmdopts['pm_scalability_normalize'])
 
         return sc_df
 
@@ -597,32 +623,32 @@ class ScalabilityBivarGenerator:
 # Calculation Functions
 ################################################################################
 
-def calculate_karpflatt(speedup_i: float, n_robots_i: int, normalize: bool):
-    """
-    Given a swarm exhibiting speedup :math:`X` with :math:`N>1` robots, compute the serial fraction
-    :math:`e` of the swarm's performance. The lower the value of :math:`e`, the better the
-    parallelization/scalability, suggesting that the addition of more robots will bring additional
-    performance improvements:
+def calculate_karpflatt(speedup_i: float, n_robots_i: int, n_robots_iminus1: int, normalize: bool):
+    r"""
+    Given a swarm exhibiting speedup :math:`X` with :math:`m_i>1` robots relative to a swarm with
+    fewer (:math:`m_{i-1}`) robots, compute the serial fraction :math:`e` of the swarm's
+    performance. The lower the value of :math:`e`, the better the parallelization/scalability,
+    suggesting that the addition of more robots will bring additional performance improvements:
 
     .. math::
        \begin{equation}
-       C(N,\kappa) = \sum_{t\in{T}} 1.0 - \theta_C(N,\kappa,t)
+       C(m_i,\kappa) = \sum_{t\in{T}} 1.0 - \theta_C(m_i,\kappa,t)
        \end{equation}
 
     or
 
     .. math::
        \begin{equation}
-       C(N,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{-\theta_C(N,\kappa,t)}} - \frac{1}{1 + e^{\theta_C(N,\kappa,t)}}
+       C(m_i,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{-\theta_C(m_i,\kappa,t)}} - \frac{1}{1 + e^{\theta_C(m_i,\kappa,t)}}
        \end{equation}
 
     where
     .. math::
        \begin{equation}
-       theta_C = 1.0 - \frac{\frac{1}{X} - \frac{1}{N}}{1 - \frac{1}{N}}
+       theta_C = 1.0 - \frac{\frac{1}{X} - \frac{1}{\frac{m_i}{m_{i-1}}}}{1 - \frac{1}{\frac{m_i}{m_{i-1}}}}
        \end{equation}
 
-    Depending on normalization configuration.
+    depending on normalization configuration.
 
     Defined for swarms with :math:`N>1` robots. For :math:`N=1`, we obtain a Karp-Flatt value of 1.0
     using L'Hospital's rule and taking the derivative with respect to :math:`N`.
@@ -631,7 +657,8 @@ def calculate_karpflatt(speedup_i: float, n_robots_i: int, normalize: bool):
 
     """
     if n_robots_i > 1:
-        e = (1.0 / speedup_i - 1.0 / float(n_robots_i)) / (1 - 1.0 / float(n_robots_i))
+        size_ratio = float(n_robots_i) / float(n_robots_iminus1)
+        e = (1.0 / speedup_i - 1.0 / size_ratio) / (1 - 1.0 / size_ratio)
     else:
         e = 1.0
 

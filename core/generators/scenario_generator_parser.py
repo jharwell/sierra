@@ -74,10 +74,10 @@ class ScenarioGeneratorParser:
         # Try parsing a 3D scenario dimension specification, and if that does not work, then it must
         # be a 2D scenario specification.
         try:
-            x, y, z = scenario.split('.')[1].split('x')
+            x, y, z = scenario.split('+')[0].split('.')[1].split('x')
 
         except ValueError:
-            x, y = scenario.split('.')[1].split('x')
+            x, y = scenario.split('+')[0].split('.')[1].split('x')
             z = 1.0
 
         dist_type = scenario.split('.')[0]

@@ -74,10 +74,7 @@ class BlockMotionDynamics(bc.UnivarBatchCriteria):
                                                                'exp_def.pkl'))
             ticks.append(BlockMotionDynamics.calc_xtick(exp_def))
 
-        if cmdopts['plot_log_xaxis']:
-            return [math.log2(x) for x in ticks]
-        else:
-            return ticks
+        return ticks
 
     def graph_xticklabels(self,
                           cmdopts: tp.Dict[str, str],
@@ -138,7 +135,7 @@ def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_generation_root:
                       d[0],
                       str("%3.9f" % (d[1] + d[1] * x * float(attr['factor']))))} for d in attr['dynamics']]
             dynamics.extend(expx)
-            print(expx)
+
         return dynamics
 
     def __init__(self) -> None:

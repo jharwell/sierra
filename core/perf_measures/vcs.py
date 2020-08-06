@@ -187,7 +187,8 @@ class RawPerfCS():
 
 
 class AdaptabilityCS():
-    """Compute the adaptability of a controller/algorithm by comparing the observed performance curve
+    """
+    Compute the adaptability of a controller/algorithm by comparing the observed performance curve
     for the current experiment, the performance curve for exp0, and the applied variance curve for
     the experiment.
 

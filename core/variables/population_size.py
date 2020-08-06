@@ -66,18 +66,28 @@ class PopulationSize(bc.UnivarBatchCriteria):
                      cmdopts: tp.Dict[str, str],
                      exp_dirs: list = None) -> tp.List[float]:
 
+        if exp_dirs is None:
+            exp_dirs = self.gen_exp_dirnames(cmdopts)
+
         ret = list(map(float, self.populations(cmdopts, exp_dirs)))
         if cmdopts['plot_log_xaxis']:
-            return [math.log2(x) for x in ret]
+            return [int(math.log2(x)) for x in ret]
         else:
             return ret
 
     def graph_xticklabels(self,
                           cmdopts: tp.Dict[str, str],
                           exp_dirs: list = None) -> tp.List[str]:
+
+        if exp_dirs is None:
+            exp_dirs = self.gen_exp_dirnames(cmdopts)
+
         return list(map(str, self.graph_xticks(cmdopts, exp_dirs)))
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
+        if cmdopts['plot_log_xaxis']:
+            return r"$\log_{2}$(Swarm Size)"
+
         return "Swarm Size"
 
     def pm_query(self, pm: str) -> bool:

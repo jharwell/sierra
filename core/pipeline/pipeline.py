@@ -91,7 +91,9 @@ class Pipeline:
             'plot_log_xaxis': self.args.plot_log_xaxis,
             'plot_regression_lines': self.args.plot_regression_lines,
             'plot_primary_axis': self.args.plot_primary_axis,
-            'plot_normalize_scalability': self.args.plot_normalize_scalability,
+            'pm_scalability_normalize': self.args.pm_scalability_normalize,
+            'pm_scalability_from_exp0': self.args.pm_scalability_from_exp0,
+            'pm_self_org_normalize': self.args.pm_self_org_normalize,
 
             # stage 5
             'controllers_list': self.args.controllers_list,

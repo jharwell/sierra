@@ -85,14 +85,17 @@ class SAANoise(UnivarBatchCriteria):
                      exp_dirs: tp.List[str] = None) -> tp.List[float]:
         xticks_range = []
 
-        # If exp_dirs is passed, then we have been handed a subset of the total # of directories in
-        # the batch exp root, and so n_exp() will return more experiments than we actually
-        # have. This behavior is needed to correctly extract x/y values for bivariate experiments.
         if self.__gaussian_sources():
-            xticks_range = self.main_config['perf']['robustness']['gaussian_ticks_mean_range']
+            if self.main_config['perf']['robustness']['gaussian_ticks_src'] == 'mean':
+                xticks_range = self.main_config['perf']['robustness']['gaussian_ticks_mean_range']
+            else:
+                xticks_range = self.main_config['perf']['robustness']['gaussian_ticks_stddev_range']
         elif self.__uniform_sources():
             xticks_range = self.main_config['perf']['robustness']['uniform_ticks_range']
 
+        # If exp_dirs is passed, then we have been handed a subset of the total # of directories in
+        # the batch exp root, and so n_exp() will return more experiments than we actually
+        # have. This behavior is needed to correctly extract x/y values for bivariate experiments.
         if exp_dirs is not None:
             return np.linspace(xticks_range[0], xticks_range[1], num=len(exp_dirs))
         else:
@@ -106,15 +109,24 @@ class SAANoise(UnivarBatchCriteria):
             xticks = self.graph_xticks(cmdopts, exp_dirs)
             return ["U(-{0},{0})".format(round(t, 3)) for t in xticks]
         elif self.__gaussian_sources():
-            mean_xticks = self.graph_xticks(cmdopts, exp_dirs)
-            xticks_stddev_range = self.main_config['perf']['robustness']['gaussian_ticks_stddev_range']
+            mean_xticks = []
             stddev_xticks = []
 
+            xticks_mean_range = self.main_config['perf']['robustness']['gaussian_ticks_mean_range']
+            xticks_stddev_range = self.main_config['perf']['robustness']['gaussian_ticks_stddev_range']
+
             if exp_dirs is not None:
+                mean_xticks = np.linspace(xticks_mean_range[0],
+                                          xticks_mean_range[1],
+                                          num=len(exp_dirs))
                 stddev_xticks = np.linspace(xticks_stddev_range[0],
                                             xticks_stddev_range[1],
                                             num=len(exp_dirs))
+
             else:
+                mean_xticks = np.linspace(xticks_mean_range[0],
+                                          xticks_mean_range[1],
+                                          num=len(self.variances))
                 stddev_xticks = np.linspace(xticks_stddev_range[0],
                                             xticks_stddev_range[1],
                                             num=len(self.variances))
@@ -176,7 +188,7 @@ class SAANoiseParser():
         ret = {
             'noise_type': str(),
             'cardinality': int(),
-            'population': int()
+            'population': None
         }
 
         # Parse noise type
@@ -225,7 +237,8 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
         }
 
         if any(v == attr['noise_type'] for v in ['sensors', 'actuators']):
-            configured_sources = {attr['noise_type']: main_config['perf']['robustness'][attr['noise_type']]}
+            configured_sources = {attr['noise_type']
+                : main_config['perf']['robustness'][attr['noise_type']]}
         else:
             configured_sources = {
                 'actuators': main_config['perf']['robustness'].get('actuators', {}),

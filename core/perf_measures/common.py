@@ -626,7 +626,6 @@ class WeightedPMBivar():
         ax1_df = pd.read_csv(csv1_istem + '.csv', sep=';')
         ax2_df = pd.read_csv(csv2_istem + '.csv', sep=';')
         out_df = ax1_df * self.ax1_alpha + ax2_df * self.ax2_alpha
-
         out_df.to_csv(csv_ostem + '.csv', sep=';', index=False)
 
         xlabels = batch_criteria.graph_xticklabels(self.cmdopts)

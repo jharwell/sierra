@@ -45,7 +45,7 @@ class TemporalVarianceParser():
             'variance_csv_col': "",
             'waveform_type': "",
             'waveform_param': "",
-            'population': 0
+            'population': None
         }
         xml_parent = {
             'M': './/env_dynamics/motion_throttle',

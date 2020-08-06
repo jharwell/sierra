@@ -82,10 +82,7 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
             TS, T = PopulationDynamics.calc_tasked_swarm_time(exp_def)
             ticks.append(round(TS / T, 4))
 
-        if cmdopts['plot_log_xaxis']:
-            return [math.log2(x) for x in ticks]
-        else:
-            return ticks
+        return ticks
 
     def graph_xticklabels(self,
                           cmdopts: tp.Dict[str, str],
@@ -110,9 +107,9 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
         # mu/lambda for combined queue
         lambda_Sbar = lambda_d + lambda_m
         mu_Sbar = mu_b + mu_r
-
         if (mu_Sbar - lambda_Sbar) != 0:
             TSbar = 1 / (mu_Sbar - lambda_Sbar) - 1 / mu_Sbar
+
             return (T - TSbar, T)
         else:
             return (T, T)

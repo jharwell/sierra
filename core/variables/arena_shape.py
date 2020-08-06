@@ -42,7 +42,7 @@ class RectangularArena(BaseVariable):
         Generate list of sets of changes necessary to make to the input file to correctly set up the
         simulation with the specified area size/shape.
         """
-        return [set([(".//arena", "size", "{0:.9f}, {1:.9f}, 2".format(extent.x(), extent.y())),
+        return [set([(".//arena", "size", "{0}, {1}, 2".format(extent.x(), extent.y())),
                      (".//arena", "center",
                       "{0:.9f}, {1:.9f}, 1".format(extent.x() / 2.0, extent.y() / 2.0)),
 
@@ -92,9 +92,9 @@ class RectangularArena(BaseVariable):
                       "position", "0, {0:.9f}, 0".format(extent.y() / 2.0)),
 
                      (".//arena_map/grid2D", "dims",
-                      "{0:.9f}, {1:.9f}, 2".format(extent.x(), extent.y())),
+                      "{0}, {1}, 2".format(extent.x(), extent.y())),
                      (".//perception/grid2D", "dims",
-                      "{0:.9f}, {1:.9f}, 2".format(extent.x(), extent.y())),
+                      "{0}, {1}, 2".format(extent.x(), extent.y())),
 
                      (".//convergence/positional_entropy",
                       "horizon",

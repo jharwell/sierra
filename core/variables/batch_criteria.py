@@ -78,7 +78,7 @@ class BatchCriteria(base_variable.BaseVariable):
             for c in exp:
                 if c[0] == ".//arena" and c[1] == "size":
                     x, y, z = c[2].split(',')
-                    dims.append((int(x), int(y), int(z)))
+                    dims.append(core.utils.ArenaExtent((int(x), int(y), int(z))))
         assert len(dims) > 0, "Scenario dimensions not contained in batch criteria"
         return dims
 

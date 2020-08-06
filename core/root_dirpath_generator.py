@@ -48,76 +48,112 @@ def from_cmdline(args):
 
     # Remove all '-' from the template input file stem so we know the only '-' that are in it are
     # ones that we put there.
+    template_stem = template_stem.replace('-', '')
+
+    batch_leaf = gen_batch_leaf(args.batch_criteria, template_stem, args.scenario)
+
     return regen_from_exp(args.sierra_root,
                           args.project,
-                          args.batch_criteria,
-                          template_stem.replace('-', '') + '-' + args.scenario,
+                          batch_leaf,
                           args.controller)
 
 
-def parse_batch_root(root: str):
+def parse_batch_leaf(root: str):
     """
-    Parse a batch root into (template input file basename, scenario) components.
+    Parse a batch root into (template input file basename, scenario, batch criteria list) string
+    components as they would have been specified on the cmdline.
     """
-    template_basename = ''.join(root.split('-')[:-1])
-    scenario = ''.join(root.split('-')[1:])
+    template_stem = ''.join(root.split('-')[0])
+    scenario_and_bc = root.split('-')[1].split('+')
+    scenario = scenario_and_bc[0]
+    bc = scenario_and_bc[1:]
 
-    return (template_basename, scenario)
+    if not isinstance(bc, list):  # Univariate batch criteria
+        bc = [bc]
 
-
-def gen_scenario_leaf(raw_scenario: str, criteria: tp.List[str]):
-
-    scenario = raw_scenario.split('+')[0]  # Get the base scenario
-    for b in criteria:
-        # use dash instead of dot in the criteria string to not confuse external
-        # programs that rely on file extensions.
-        scenario = '+'.join([scenario, b.replace('-', '')])
-
-    return scenario
+    return (template_stem, scenario, bc)
 
 
-def regen_from_exp(sierra_root: str,
+def gen_batch_leaf(criteria: tp.List[str],
+                   template_stem: str,
+                   scenario: str):
+    leaf = template_stem + '-' + scenario + '+' + '+'.join(criteria)
+    logging.debug("Generated batch leaf %s", leaf)
+    return leaf
+
+
+def regen_from_exp(sierra_rpath: str,
                    project: str,
-                   batch_criteria: tp.List[str],
-                   batch_root: str,
+                   batch_leaf: str,
                    controller: str):
     """
     Re-generates the directory paths for the root directories for a single batched experiment from a
     previously created batch experiment (i.e. something that was generated with
     :meth:`from_cmdline()`).
+
+    Arguments:
+        sierra_rpath: The path to the root directory where SIERRA should store everything.
+        project: The name of the project plugin used.
+        criteria: List of strings from the cmdline specification of the batch criteria.
+        batch_root: The name of the directory that will be the root of the batched experiment (not
+                    including its parent).
+        controller: The name of the controller used.
     """
-    template_basename, scenario = parse_batch_root(batch_root)
-    scenario = scenario.split('+')[0]
-    root = __gen_batch_root(sierra_root,
-                            project,
-                            batch_criteria,
-                            scenario,
-                            controller,
-                            template_basename)
+    template_stem, scenario, bc = parse_batch_leaf(batch_leaf)
+
+    root = gen_batch_root(sierra_rpath,
+                          project,
+                          bc,
+                          scenario,
+                          controller,
+                          template_stem)
     logging.info('Generated batch root %s', root)
     return {
-        'generation_root': os.path.join(root, "exp-inputs"),
-        'output_root': os.path.join(root, "exp-outputs"),
-        'graph_root': os.path.join(root, "graphs")
+        'generation_root': gen_generation_root(root),
+        'output_root': gen_output_root(root),
+        'graph_root': gen_graph_root(root)
     }
 
 
-def __gen_batch_root(sierra_root: str,
-                     project: str,
-                     criteria: tp.List[str],
-                     scenario: str,
-                     controller: str,
-                     template_basename: str):
+def gen_output_root(root: str):
+    return os.path.join(root, "exp-outputs")
+
+
+def gen_generation_root(root: str):
+    return os.path.join(root, "exp-inputs")
+
+
+def gen_graph_root(root: str):
+    return os.path.join(root, "graphs")
+
+
+def gen_batch_root(sierra_rpath: str,
+                   project: str,
+                   criteria: tp.List[str],
+                   scenario: str,
+                   controller: str,
+                   template_stem: str):
     """
     Generate the directory path for the root directory for batch experiments depending on what
     the batch criteria is. The directory path depends on all of the input arguments to this
     function, and if ANY of the arguments change, so should the generated path.
+
+    Arguments:
+        sierra_rpath: The path to the root directory where SIERRA should store everything.
+        project: The name of the project plugin used.
+        criteria: List of strings from the cmdline specification of the batch criteria.
+        scenario: The cmdline specification of ``--scenario``
+        batch_root: The name of the directory that will be the root of the batched experiment (not
+                    including its parent).
+        controller: The name of the controller used.
+
+    Batch root is: <sierra root>/<project>/<template_basename>-<scenario>+<criteria0>+<criteria1>
     """
-    scenario = gen_scenario_leaf(scenario, criteria)
-    return os.path.join(sierra_root,
+    batch_leaf = gen_batch_leaf(criteria, template_stem, scenario)
+    return os.path.join(sierra_rpath,
                         project,
                         controller,
-                        template_basename + '-' + scenario)
+                        batch_leaf)
 
 
 __api__ = [

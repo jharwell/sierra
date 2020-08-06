@@ -499,6 +499,37 @@ class CoreCmdline:
                                  """ + self.stage_usage_doc([4]),
                                  default='all')
 
+        # Performance measure calculation options
+        self.stage4.add_argument("--pm-scalability-from-exp0",
+                                 help="""
+
+                                 If passed, then swarm scalability will be calculated based on the "speedup"
+                                 achieved by a swarm of size N in exp X relative to the performance in exp 0, as opposed
+                                 to the performance in exp X-1 (default). 
+                                 """,
+                                 action='store_true')
+
+        self.stage4.add_argument("--pm-scalability-normalize",
+                                 help="""
+
+                                 If passed, then swarm scalability will be normalized into [-1,1] via sigmoids (similar
+                                 to other performance measures), as opposed to raw values (default). This may make
+                                 graphs more or less readable/interpretable.
+
+                                 """,
+                                 action='store_true')
+
+        self.stage4.add_argument("--pm-self-org-normalize",
+                                 help="""
+
+                                 If passed, then swarm self-organization calculations will be
+                                 normalized into [-1,1] via sigmoids (similar to other performance
+                                 measures), as opposed to raw values (default). This may make graphs
+                                 more or less readable/interpretable.
+
+                                 """,
+                                 action='store_true')
+
         # Plotting options
         self.stage4.add_argument("--plot-log-xaxis",
                                  help="""
@@ -507,8 +538,11 @@ class CoreCmdline:
                                  logarithmic (base 2) space. Mainly useful when the batch criteria involves large swarm
                                  sizes, so that the plots are more readable.
 
-                                 """ + self.stage_usage_doc([4]),
-                                 default=False)
+                                 """ +
+
+                                 self.bc_applicable_doc([':ref:`Population Size <ln-bc-population-size>`']) +
+                                 self.stage_usage_doc([4]),
+                                 action='store_true')
 
         self.stage4.add_argument("--plot-regression-lines",
                                  help="""
@@ -538,16 +572,6 @@ class CoreCmdline:
                                  1=columns
                                  """ + self.stage_usage_doc([4]),
                                  default=None)
-
-        self.stage4.add_argument("--plot-normalize-scalability",
-                                 help="""
-
-                                 If passed, then swarm scalability will be normalized into [-1,1] via sigmoids (similar
-                                 to other performance measures), as opposed to raw values (default). This may make
-                                 graphs more or less readable.
-
-                                 """,
-                                 action='store_true')
 
         # Variance curve similarity options
         vcs = self.parser.add_argument_group('Stage4: VCS',

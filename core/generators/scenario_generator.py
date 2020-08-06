@@ -116,7 +116,6 @@ class BaseScenarioGenerator():
         """
         if self.cmdopts['n_robots'] is None:
             return
-
         chgs = population_size.PopulationSize.gen_attr_changelist_from_list(
             [self.cmdopts['n_robots']])
         for a in chgs[0]:

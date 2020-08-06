@@ -232,7 +232,8 @@ class PerformanceGainMarginalUnivar:
             eff_df.loc[0, eff_df.columns[i]] = calc_self_org_mpg(perf_i=perf_i,
                                                                  n_robots_i=n_robots_i,
                                                                  perf_iminus1=perf_iminus1,
-                                                                 n_robots_iminus1=n_robots_iminus1)
+                                                                 n_robots_iminus1=n_robots_iminus1,
+                                                                 normalize=self.cmdopts['pm_self_org_normalize'])
 
         return eff_df
 
@@ -316,7 +317,8 @@ class PerformanceGainInteractiveUnivar:
             n_robots_i = populations[i]
             eff_df.loc[0, eff_df.columns[i]] = calc_self_org_ipg(perf_i=perf_i,
                                                                  n_robots_i=n_robots_i,
-                                                                 perf_0=perf_0)
+                                                                 perf_0=perf_0,
+                                                                 normalize=self.cmdopts['pm_self_org_normalize'])
 
         return eff_df
 
@@ -607,7 +609,11 @@ class PerformanceGainMarginalBivar:
                     perf_iminus1 = raw_df[i][j - 1]
                     n_robots_iminus1 = populations[i][j - 1]
 
-                eff_df.iloc = calc_self_org_mpg(perf_i, n_robots_i, perf_iminus1, n_robots_iminus1)
+                eff_df.iloc = calc_self_org_mpg(perf_i=perf_i,
+                                                n_robots_i=n_robots_i,
+                                                perf_iminus1=perf_iminus1,
+                                                n_robots_iminus1=n_robots_iminus1,
+                                                normalize=self.cmdopts['pm_self_org_normalize'])
 
         return eff_df
 
@@ -698,7 +704,8 @@ class PerformanceGainInteractiveBivar:
 
                 eff_df.iloc = calc_self_org_ipg(perf_i=perf_i,
                                                 n_robots_i=n_robots_i,
-                                                perf_0=perf_0)
+                                                perf_0=perf_0,
+                                                normalize=self.cmdopts['pm_self_org_normalize'])
 
         return eff_df
 
@@ -806,7 +813,11 @@ def calc_self_org_mfl(fl_i: float, n_robots_i: int, fl_iminus1: float, n_robots_
         return 0.0
 
 
-def calc_self_org_mpg(perf_i: float, n_robots_i: int, perf_iminus1: float, n_robots_iminus1: int):
+def calc_self_org_mpg(perf_i: float,
+                      n_robots_i: int,
+                      perf_iminus1: float,
+                      n_robots_iminus1: int,
+                      normalize: bool):
     r"""
     Calculates the marginal performance gains achieved by the swarm configuration of size
     :math:`m_i`, given the performance achieved with :math:`m_i` robots and with a smaller swarm
@@ -814,13 +825,22 @@ def calc_self_org_mpg(perf_i: float, n_robots_i: int, perf_iminus1: float, n_rob
 
     .. math::
        \begin{equation}
+       Z(m_i,\kappa) = \sum_{t\in{T}} \theta_Z(m_i,\kappa,t)
+       \end{equation}
+
+    or
+    .. math::
+       \begin{equation}
        Z(m_i,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{-\theta_Z(m_i,\kappa,t)}} - \frac{1}{1 + e^{\theta_Z(m_i,\kappa,t)}}
        \end{equation}
 
+    where
     .. math::
-       \begi{equation}
+       \begin{equation}
        theta = P(m_i,\kappa,t) - \frac{m_i}{m_{i-1}}{P(m_{i-1},\kappa,t)}
        \end{equation}
+
+    depending on normalization configuration.
 
     Defined for swarms with :math:`m_{i-1}` > 1 robots. For :math:`m_{i-1}=1`, we obtain a
     :math:`\theta` value using L'Hospital's rule and taking the derivative with respect to
@@ -831,31 +851,47 @@ def calc_self_org_mpg(perf_i: float, n_robots_i: int, perf_iminus1: float, n_rob
     """
     if n_robots_i > 1:
         theta = perf_i - (float(n_robots_i) / float(n_robots_iminus1)) * perf_iminus1
+    else:
+        theta = 0.0
+
+    if normalize:
         return Sigmoid(theta)() - Sigmoid(-theta)()
     else:
-        return 0.0
+        return theta
 
 
-def calc_self_org_ipg(perf_i: float, n_robots_i: int, perf_0: float):
+def calc_self_org_ipg(perf_i: float, n_robots_i: int, perf_0: float, normalize: bool):
     r"""
     Calculates the self organization due to inter-robot interaction for a swarm configuration of
     size :math:`N`, given the performance achieved with a single robot with the same configuration.
 
     .. math::
        \begin{equation}
+       Z(N,\kappa) = \sum_{t\in{T}} \theta_Z(N,\kappa,t)
+       \end{equation}
+
+    or
+    .. math::
+       \begin{equation}
        Z(N,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{-\theta_Z(N,\kappa,t)}} - \frac{1}{1 + e^{\theta_Z(N,\kappa,t)}}
        \end{equation}
 
+    where
     .. math::
        \begin{equation}
        theta_Z(N,\kappa,t) =  P(N,\kappa,t} - {N}{P(1,\kappa,t)}
        \end{equation}
 
+    depending on normalization configuration.
+
     Inspired by :xref:`Rosenfeld2006`.
 
     """
     theta = perf_i - n_robots_i * perf_0
-    return Sigmoid(theta)() - Sigmoid(-theta)()
+    if normalize:
+        return Sigmoid(theta)() - Sigmoid(-theta)()
+    else:
+        return theta
 
 
 __api__ = [

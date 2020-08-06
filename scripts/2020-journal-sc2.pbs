@@ -45,21 +45,23 @@ BASE_CMD="python3 sierra.py \
                   --template-input-file=$HOME/git/sierra/templates/2020-journal-sc2.argos \
                   --n-sims=$NSIMS\
                   --physics-n-engines=8\
-                  --pipeline 1 2 3 4 --exp-graphs=inter\
+                  --pipeline 1 2 3 --exp-graphs=inter\
                   --project=fordyca\
                   --hpc-env=hpc_local \
                   --exp-overwrite \
                   --time-setup=time_setup.T${TIME}"
 
+TASK="$1"
+
 cd $HOME/git/sierra
 
 # Scalability/emergence analysis
-if [ "$TASK" == "scalability" ] || [ "$TASK" == "emergence" ]
+if [ "$TASK" == "scalability" ] || [ "$TASK" == "emergence" ] || [ "$TASK" == "all" ]
 then
     for c in "${CONTROLLERS[@]}"
     do
         $BASE_CMD --scenario=${BLOCK_DIST}.16x16 \
-                  --batch-criteria population_density.CD${DENSITY}.I16 block_motion.C4.F25p0.RW0p001\
+                  --batch-criteria population_density.CD${DENSITY}.I16 block_motion_dynamics.C4.F25p0.RW0p001\
                   --controller=${c} \
                   --n-blocks=${N_BLOCKS}
 
@@ -67,7 +69,7 @@ then
 fi
 
 # Flexibility analysis
-if [ "$TASK" == "flexibility" ]
+if [ "$TASK" == "flexibility" ] || [ "$TASK" == "all" ]
 then
     for c in "${CONTROLLERS[@]}"
     do
@@ -90,7 +92,7 @@ then
 fi
 
 # Robustness analysis
-if [ "$TASK" == "robustness" ]
+if [ "$TASK" == "robustness" ] || [ "$TASK" == "all" ]
 then
     for c in "${CONTROLLERS[@]}"
     do
@@ -107,7 +109,7 @@ then
 fi
 
 # Generate comparison graphs
-if [ "$TASK" == "comp" ]
+if [ "$TASK" == "comp" ] || [ "$TASK" == "all" ]
    then
    STAGE5_CMD="python3 sierra.py \
                   --project=fordyca\
@@ -116,7 +118,7 @@ if [ "$TASK" == "comp" ]
                   --controllers-list depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO"
 
    # Generate scalability/emergence comparison graphs
-   $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I16\
+   $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I16 block_motion_dynamics.C4.F25p0.RW0p001\
                --bc-univar
 
    # Generate flexibility comparison graphs
@@ -134,5 +136,5 @@ if [ "$TASK" == "comp" ]
                --bc-bivar
 
    $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I16 saa_noise.all.C3\
-               --bi-bivar
+               --bc-bivar
 fi

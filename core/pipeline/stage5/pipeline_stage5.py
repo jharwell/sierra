@@ -80,7 +80,7 @@ class PipelineStage5:
         else:
             legend = self.controllers
 
-        self.__verify_controllers(self.controllers)
+        self.__verify_controllers(self.controllers, cli_args)
 
         logging.info("Stage5: Inter-batch controller comparison of %s...", self.controllers)
 
@@ -107,34 +107,39 @@ class PipelineStage5:
 
         logging.info("Stage5: Inter-batch controller comparison complete")
 
-    def __verify_controllers(self, controllers):
+    def __verify_controllers(self, controllers, cli_args):
         """
         Verify that all controllers have run the same set of experiments before doing the
         comparison. If they have not, it is not `necessarily` an error, but probably should be
         looked at, so it is only a warning, not fatal.
         """
         for t1 in controllers:
-            for t2 in controllers:
-                for item in os.listdir(os.path.join(self.cmdopts['sierra_root'],
-                                                    self.cmdopts['project'],
-                                                    t1)):
-                    _, scenario = rdg.parse_batch_root(item)
-                    path1 = os.path.join(self.cmdopts['sierra_root'],
-                                         self.cmdopts['project'],
-                                         t1,
-                                         item,
-                                         'exp-outputs',
-                                         self.main_config['sierra']['collate_csv_leaf'])
-                    path2 = os.path.join(self.cmdopts['sierra_root'],
-                                         self.cmdopts['project'],
-                                         t2,
-                                         item,
-                                         'exp-outputs',
-                                         self.main_config['sierra']['collate_csv_leaf'])
-                    if scenario in path1 and scenario not in path2:
-                        logging.warning("%s does not exist in %s", scenario, path2)
-                    if scenario in path2 and scenario not in path2:
-                        logging.warning("%s does not exist in %s", scenario, path1)
+            for item in os.listdir(os.path.join(self.cmdopts['sierra_root'],
+                                                self.cmdopts['project'],
+                                                t1)):
+                template_stem, scenario, _ = rdg.parse_batch_leaf(item)
+                batch_leaf = rdg.gen_batch_leaf(cli_args.batch_criteria,
+                                                template_stem,
+                                                scenario)
+
+                for t2 in controllers:
+                    opts1 = rdg.regen_from_exp(sierra_rpath=self.cmdopts['sierra_root'],
+                                               project=self.cmdopts['project'],
+                                               batch_leaf=batch_leaf,
+                                               controller=t1)
+                    opts2 = rdg.regen_from_exp(sierra_rpath=self.cmdopts['sierra_root'],
+                                               project=self.cmdopts['project'],
+                                               batch_leaf=batch_leaf,
+                                               controller=t2)
+                    collate_root1 = os.path.join(opts1['output_root'],
+                                                 self.main_config['sierra']['collate_csv_leaf'])
+                    collate_root2 = os.path.join(opts2['output_root'],
+                                                 self.main_config['sierra']['collate_csv_leaf'])
+
+                    if scenario in collate_root1 and scenario not in collate_root2:
+                        logging.warning("%s does not exist in %s", scenario, collate_root2)
+                    if scenario in collate_root2 and scenario not in collate_root1:
+                        logging.warning("%s does not exist in %s", scenario, collate_root1)
 
 
 __api__ = [

@@ -127,10 +127,8 @@ class RobustnessPDUnivar:
                                                                batch_exp_dirnames[i],
                                                                'exp_def.pkl'))
             TS, T = PopulationDynamics.calc_tasked_swarm_time(exp_def)
-
             perf0 = perf_df.loc[idx, batch_exp_dirnames[0]]
             perfN = perf_df.loc[idx, batch_exp_dirnames[i]]
-
             df[batch_exp_dirnames[i]] = calculate_fpr(TS=TS,
                                                       T=T,
                                                       perf0=perf0,
@@ -143,9 +141,9 @@ class RobustnessPDUnivar:
 
         BatchRangedGraph(inputy_stem_fpath=stem_opath,
                          output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),
-                         title="Swarm Robustness (Fluctuating Populations)",
+                         title="Swarm Robustness (Population Dynamics)",
                          xlabel=criteria.graph_xlabel(self.cmdopts),
-                         ylabel="Value",
+                         ylabel="Robustness Value",
                          xticks=criteria.graph_xticks(self.cmdopts),
                          xtick_labels=criteria.graph_xticklabels(self.cmdopts)).generate()
 
@@ -482,7 +480,8 @@ def calculate_fpr(TS: float, T: int, perf0: float, perfN: float):
     """
     scaled_perf0 = float(TS) / float(T) * perf0
     theta = (perfN - scaled_perf0)
-    return core.utils.Sigmoid(theta)() - core.utils.Sigmoid(-theta)()
+    return theta
+    # return 1 / (1 + 2**-theta) - 1 / (1 + 2**theta)
 
 
 __api__ = [

@@ -21,6 +21,8 @@ Miscellaneous classes/functions used in mutiple places but that don't really fit
 import pickle
 import os
 import logging
+import typing as tp
+
 import numpy as np
 
 
@@ -28,7 +30,7 @@ class ArenaExtent():
     """Representation of a 2D or 3D section/chunk/volume of the arena."""
 
     def __init__(self,
-                 dims: tuple,
+                 dims: tp.Tuple[int],
                  offset: tuple = (0, 0, 0)) -> None:
         self.offset = offset
         self.dims = dims
@@ -87,6 +89,12 @@ class ReLu():
            \end{aligned}
        \end{equation}
     """
+
+    def __init__(self, x: float):
+        self.x = x
+
+    def __call__(self):
+        return max(0, self.x)
 
 
 def unpickle_exp_def(exp_def_fpath):
