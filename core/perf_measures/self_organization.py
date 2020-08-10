@@ -21,7 +21,6 @@ Measures for swarm self-organization/emergence in univariate and bivariate batch
 
 import os
 import copy
-import math
 import logging
 import typing as tp
 
@@ -33,8 +32,6 @@ from core.perf_measures import common
 from core.variables import batch_criteria as bc
 from core.variables import population_size as ps
 from core.utils import Sigmoid
-
-kNO_SELF_ORG = 0.0
 
 ################################################################################
 # Univariate Classes
@@ -72,9 +69,7 @@ class FractionalLossesMarginalUnivar:
         df_new = pd.DataFrame(columns=batch_exp_dirnames, index=[0])
         populations = batch_criteria.populations(self.cmdopts)
 
-        df_new[batch_exp_dirnames[0]] = kNO_SELF_ORG
-
-        for i in range(1, len(fl.columns)):
+        for i in range(0, len(fl.columns)):
             fl_i = fl[batch_exp_dirnames[i]].values[0]
             fl_iminus1 = fl[batch_exp_dirnames[i - 1]].values[0]
             n_robots_i = populations[i]
@@ -82,7 +77,8 @@ class FractionalLossesMarginalUnivar:
             df_new.loc[0, batch_exp_dirnames[i]] = calc_self_org_mfl(fl_i=fl_i,
                                                                      fl_iminus1=fl_iminus1,
                                                                      n_robots_i=n_robots_i,
-                                                                     n_robots_iminus1=n_robots_iminus1)
+                                                                     n_robots_iminus1=n_robots_iminus1,
+                                                                     normalize=self.cmdopts['pm_self_org_normalize'])
 
         stem_path = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
         df_new.to_csv(stem_path + ".csv", sep=';', index=False)
@@ -128,14 +124,14 @@ class FractionalLossesInteractiveUnivar:
         df_new = pd.DataFrame(columns=batch_exp_dirnames, index=[0])
         populations = batch_criteria.populations(self.cmdopts)
 
-        df_new[batch_exp_dirnames[0]] = kNO_SELF_ORG
-        for i in range(1, len(fl.columns)):
+        for i in range(0, len(fl.columns)):
             fl_i = fl[batch_exp_dirnames[i]].values[0]
             n_robots_i = populations[i]
             fl_1 = fl[batch_exp_dirnames[0]].values[0]
             df_new.loc[0, batch_exp_dirnames[i]] = calc_self_org_ifl(fl_i=fl_i,
                                                                      n_robots_i=n_robots_i,
-                                                                     fl_1=fl_1)
+                                                                     fl_1=fl_1,
+                                                                     normalize=self.cmdopts['pm_self_org_normalize'])
 
         stem_path = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
         df_new.to_csv(stem_path + ".csv", sep=';', index=False)
@@ -370,7 +366,7 @@ class FractionalLossesMarginalBivar:
     """
     Calculates the self-organization of the swarm configuration across a bivariate batched set of
     experiments within the same scenario from collated ``.csv`` data using fractional performance
-    losses due to inter-robot interference  (See :meth:`calc_self_org_mfl`).
+    losses due to inter-robot interference (See :meth:`calc_self_org_mfl`).
 
     Generates a :class:`~graphs.heatmap.Heatmap` across swarm sizes of self organization from
     :class:`~perf_measures.common.FractionalLossesBivar` data.
@@ -414,17 +410,8 @@ class FractionalLossesMarginalBivar:
         populations = batch_criteria.populations(self.cmdopts)
         so_df = pd.DataFrame(columns=fl.columns, index=fl.index)
 
-        xfactor = 0
-        yfactor = 0
-        if isinstance(batch_criteria.criteria1, ps.PopulationSize) or self.cmdopts['plot_primary_axis'] == '0':
-            so_df.iloc[:, 0] = kNO_SELF_ORG
-            xfactor = 1
-        else:
-            so_df.iloc[0, :] = kNO_SELF_ORG
-            yfactor = 1
-
-        for i in range(xfactor, len(fl.index)):
-            for j in range(yfactor, len(fl.columns)):
+        for i in range(0, len(fl.index)):
+            for j in range(0, len(fl.columns)):
                 fl_i = fl.iloc[i][j]
                 n_robots_i = populations[i][j]
 
@@ -441,7 +428,8 @@ class FractionalLossesMarginalBivar:
                 so_df.iloc[i, j] = calc_self_org_mfl(fl_i=fl_i,
                                                      n_robots_i=n_robots_i,
                                                      fl_iminus1=fl_iminus1,
-                                                     n_robots_iminus1=n_robots_iminus1)
+                                                     n_robots_iminus1=n_robots_iminus1,
+                                                     normalize=self.cmdopts['pm_self_org_normalize'])
         return so_df
 
 
@@ -494,17 +482,8 @@ class FractionalLossesInteractiveBivar:
         populations = batch_criteria.populations(self.cmdopts)
         so_df = pd.DataFrame(columns=fl.columns, index=fl.index)
 
-        xfactor = 0
-        yfactor = 0
-        if isinstance(batch_criteria.criteria1, ps.PopulationSize) or self.cmdopts['plot_primary_axis'] == '0':
-            so_df.iloc[:, 0] = kNO_SELF_ORG
-            xfactor = 1
-        else:
-            so_df.iloc[0, :] = kNO_SELF_ORG
-            yfactor = 1
-
-        for i in range(xfactor, len(fl.index)):
-            for j in range(yfactor, len(fl.columns)):
+        for i in range(0, len(fl.index)):
+            for j in range(0, len(fl.columns)):
                 fl_i = fl.iloc[i][j]
                 n_robots_i = populations[i][j]
 
@@ -518,7 +497,8 @@ class FractionalLossesInteractiveBivar:
 
                 so_df.iloc[i, j] = calc_self_org_ifl(fl_i=fl_i,
                                                      n_robots_i=n_robots_i,
-                                                     fl_1=fl_1)
+                                                     fl_1=fl_1,
+                                                     normalize=self.cmdopts['pm_self_org_normalize'])
         return so_df
 
 
@@ -599,21 +579,30 @@ class PerformanceGainMarginalBivar:
                 # We need to know which of the 2 variables was swarm size, in order to determine
                 # the correct dimension along which to compute the metric, which depends on
                 # performance between adjacent swarm sizes.
-                perf_i = raw_df[i][j]
+                perf_i = common.csv_3D_value_iloc(raw_df,
+                                                  i,
+                                                  j,
+                                                  slice(-1, None))
                 n_robots_i = populations[i][j]
 
                 if isinstance(batch_criteria.criteria1, ps.PopulationSize) or self.cmdopts['plot_primary_axis'] == '0':
-                    perf_iminus1 = raw_df[i - 1][j]
+                    perf_iminus1 = common.csv_3D_value_iloc(raw_df,
+                                                            i - 1,
+                                                            j,
+                                                            slice(-1, None))
                     n_robots_iminus1 = populations[i - 1][j]
                 else:
-                    perf_iminus1 = raw_df[i][j - 1]
+                    perf_iminus1 = common.csv_3D_value_iloc(raw_df,
+                                                            i,
+                                                            j - 1,
+                                                            slice(-1, None))
                     n_robots_iminus1 = populations[i][j - 1]
 
-                eff_df.iloc = calc_self_org_mpg(perf_i=perf_i,
-                                                n_robots_i=n_robots_i,
-                                                perf_iminus1=perf_iminus1,
-                                                n_robots_iminus1=n_robots_iminus1,
-                                                normalize=self.cmdopts['pm_self_org_normalize'])
+                eff_df.iloc[i, j] = calc_self_org_mpg(perf_i=perf_i,
+                                                      n_robots_i=n_robots_i,
+                                                      perf_iminus1=perf_iminus1,
+                                                      n_robots_iminus1=n_robots_iminus1,
+                                                      normalize=self.cmdopts['pm_self_org_normalize'])
 
         return eff_df
 
@@ -694,18 +683,27 @@ class PerformanceGainInteractiveBivar:
                 # We need to know which of the 2 variables was swarm size, in order to determine
                 # the correct dimension along which to compute the metric, which depends on
                 # performance between adjacent swarm sizes.
-                perf_i = raw_df[i][j]
+                perf_i = common.csv_3D_value_iloc(raw_df,
+                                                  i,
+                                                  j,
+                                                  slice(-1, None))
                 n_robots_i = populations[i][j]
 
                 if isinstance(batch_criteria.criteria1, ps.PopulationSize) or self.cmdopts['plot_primary_axis'] == '0':
-                    perf_0 = raw_df[0][j]
+                    perf_0 = common.csv_3D_value_iloc(raw_df,
+                                                      0,
+                                                      j,
+                                                      slice(-1, None))
                 else:
-                    perf_0 = raw_df[i][0]
+                    perf_0 = common.csv_3D_value_iloc(raw_df,
+                                                      i,
+                                                      0,
+                                                      slice(-1, None))
 
-                eff_df.iloc = calc_self_org_ipg(perf_i=perf_i,
-                                                n_robots_i=n_robots_i,
-                                                perf_0=perf_0,
-                                                normalize=self.cmdopts['pm_self_org_normalize'])
+                eff_df.iloc[i, j] = calc_self_org_ipg(perf_i=perf_i,
+                                                      n_robots_i=n_robots_i,
+                                                      perf_0=perf_0,
+                                                      normalize=self.cmdopts['pm_self_org_normalize'])
 
         return eff_df
 
@@ -754,7 +752,7 @@ class SelfOrgBivarGenerator:
 ################################################################################
 
 
-def calc_self_org_ifl(fl_i: float, n_robots_i: int, fl_1: float):
+def calc_self_org_ifl(fl_i: float, n_robots_i: int, fl_1: float, normalize: bool):
     r"""
     Calculates the self organization due to inter-robot interaction for a swarm configuration of
     size :math:`N`, using scaled fractional performance losses in comparison to a non-interactive
@@ -762,15 +760,24 @@ def calc_self_org_ifl(fl_i: float, n_robots_i: int, fl_1: float):
 
     .. math::
        \begin{equation}
-       Z(N,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{-\theta_Z(N,\kappa,t)}} - {1 + e^{\theta_Z(N,\kappa,t)}}
+       Z(N,\kappa) = \sum_{t\in{T}}\theta_Z(N,\kappa,t)
        \end{equation}
 
     where
 
+    or
+    .. math::
+       \begin{equation}
+       Z(m_i,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{-\theta_Z(m_i,\kappa,t)}} - \frac{1}{1 + e^{\theta_Z(m_i,\kappa,t)}}
+       \end{equation}
+
+    where
     .. math::
        \begin{equation}
        \theta_Z(N,\kappa,t) = {N}{P_{lost}(1,\kappa,t)} - P_{lost}(N,\kappa,t)
        \end{equation}
+
+    depending on normalization configuration.
 
     Inspired by :xref:`Harwell2019`.
 
@@ -779,10 +786,17 @@ def calc_self_org_ifl(fl_i: float, n_robots_i: int, fl_1: float):
     scaled_fl_1 = float(n_robots_i) * fl_1
     theta = scaled_fl_1 - fl_i
 
-    return 1.0 / (1 + math.exp(-theta)) - 1.0 / (1 + math.exp(theta))
+    if normalize:
+        return Sigmoid(-theta)() - Sigmoid(theta)()
+    else:
+        return theta
 
 
-def calc_self_org_mfl(fl_i: float, n_robots_i: int, fl_iminus1: float, n_robots_iminus1: int):
+def calc_self_org_mfl(fl_i: float,
+                      n_robots_i: int,
+                      fl_iminus1: float,
+                      n_robots_iminus1: int,
+                      normalize: bool):
     r"""
     Calculates the self organization due to inter-robot interaction for a  swarm configuration of
     size :math:`m_{i}`, given fractional performance losses for :math:`m_{i}` robots and for a
@@ -790,7 +804,13 @@ def calc_self_org_mfl(fl_i: float, n_robots_i: int, fl_iminus1: float, n_robots_
 
     .. math::
        \begin{equation}
-       Z(m_i,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{-\theta_Z(m_i,\kappa,t)}} - {1 + e^{\theta_Z(m_i,\kappa,t)}}
+       Z(m_i,\kappa) = \sum_{t\in{T}}\theta_Z(m_i,\kappa,t)
+       \end{equation}
+
+    or
+    .. math::
+       \begin{equation}
+       Z(m_i,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{-\theta_Z(m_i,\kappa,t)}} - \frac{1}{1 + e^{\theta_Z(m_i,\kappa,t)}}
        \end{equation}
 
     where
@@ -800,6 +820,8 @@ def calc_self_org_mfl(fl_i: float, n_robots_i: int, fl_iminus1: float, n_robots_
        \theta_Z(m_i,\kappa,t) = \frac{m_{i}}{m_{i-1}}{P_{lost}(m_{i-1},\kappa,t)} - P_{lost}(m_{i},\kappa,t)
        \end{equation}
 
+    depending on normalization configuration.
+
     Defined for swarms with :math:`N` > 1 robots. For :math:`N=1`, we obtain a :math:`\theta` value
     using L'Hospital's rule and taking the derivative with respect to :math:`m_{i-1}`.
 
@@ -808,9 +830,13 @@ def calc_self_org_mfl(fl_i: float, n_robots_i: int, fl_iminus1: float, n_robots_
     """
     if n_robots_i > 1:
         theta = float(n_robots_i) / float(n_robots_iminus1) * fl_iminus1 - fl_i
-        return 1.0 / (1 + math.exp(-theta)) - 1.0 / (1 + math.exp(theta))
     else:
-        return 0.0
+        theta = 0.0
+
+    if normalize:
+        return Sigmoid(-theta)() - Sigmoid(theta)()
+    else:
+        return theta
 
 
 def calc_self_org_mpg(perf_i: float,
@@ -831,7 +857,7 @@ def calc_self_org_mpg(perf_i: float,
     or
     .. math::
        \begin{equation}
-       Z(m_i,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{-\theta_Z(m_i,\kappa,t)}} - \frac{1}{1 + e^{\theta_Z(m_i,\kappa,t)}}
+       Z(m_i,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{\theta_Z(m_i,\kappa,t)}} - \frac{1}{1 + e^{-\theta_Z(m_i,\kappa,t)}}
        \end{equation}
 
     where
@@ -873,7 +899,7 @@ def calc_self_org_ipg(perf_i: float, n_robots_i: int, perf_0: float, normalize: 
     or
     .. math::
        \begin{equation}
-       Z(N,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{-\theta_Z(N,\kappa,t)}} - \frac{1}{1 + e^{\theta_Z(N,\kappa,t)}}
+       Z(N,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{\theta_Z(N,\kappa,t)}} - \frac{1}{1 + e^{-\theta_Z(N,\kappa,t)}}
        \end{equation}
 
     where

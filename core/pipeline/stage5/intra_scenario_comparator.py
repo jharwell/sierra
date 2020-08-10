@@ -72,42 +72,50 @@ class BivarIntraScenarioComparator:
                  graphs: dict,
                  legend: tp.List[str],
                  comp_type: str):
+
         # Obtain the list of scenarios to use. We can just take the scenario list of the first
         # controllers, because we have already checked that all controllers executed the same set
         # scenarios.
-        dirs = os.listdir(os.path.join(self.cmdopts['sierra_root'],
-                                       self.cmdopts['project'],
-                                       self.controllers[0]))
-        scenario_dirs = [rdg.parse_batch_root(d)[1] for d in dirs]
+        batch_leaves = os.listdir(os.path.join(self.cmdopts['sierra_root'],
+                                               self.cmdopts['project'],
+                                               self.controllers[0]))
 
         cmdopts = copy.deepcopy(self.cmdopts)
+
         # For each controller comparison graph we are interested in, generate it using data from all
         # scenarios
+        cmdopts = copy.deepcopy(self.cmdopts)
         for graph in graphs:
             found = False
-            for s in scenario_dirs:
-                if self.__scenario_select(s):
+            for leaf in batch_leaves:
+                if self.__leaf_select(leaf):
+                    self.__compare_in_scenario(cmdopts=cmdopts,
+                                               graph=graph,
+                                               batch_leaf=leaf,
+                                               legend=legend)
                     found = True
-                    self.__compare_in_scenario(cmdopts, graph, s, legend, comp_type)
                     break
             if not found:
                 logging.warning("Did not find scenario to compare in for criteria %s",
                                 self.cli_args.batch_criteria)
 
-    def __scenario_select(self, candidate: str):
+    def __leaf_select(self, candidate: str):
         """
         Select which scenario to compare controllers within. You can only compare controllers within
-        the scenario directly generated from the value of ``--batch-criteria``; other scenarios
-        (probably) will cause file not found errors.
+        the scenario directly generated from the value of ``--batch-criteria``; other scenarios will
+        (probably) cause file not found errors.
 
         """
-        scenario = rdg.gen_scenario_leaf(candidate, self.cli_args.batch_criteria)
-        return scenario in candidate
+        template_stem, scenario, _ = rdg.parse_batch_leaf(candidate)
+        leaf = rdg.gen_batch_leaf(criteria=self.cli_args.batch_criteria,
+                                  scenario=scenario,
+                                  template_stem=template_stem)
+        return leaf in candidate
 
     def __compare_in_scenario(self,
                               cmdopts: dict,
                               graph: dict,
-                              scenario_dir: str,
+                              batch_leaf: str,
                               legend: tp.List[str],
                               comp_type: str):
         """
@@ -117,29 +125,29 @@ class BivarIntraScenarioComparator:
         for controller in self.controllers:
             dirs = [d for d in os.listdir(os.path.join(self.cmdopts['sierra_root'],
                                                        self.cmdopts['project'],
-                                                       controller)) if scenario_dir in d]
+                                                       controller)) if batch_leaf in d]
             if len(dirs) == 0:
                 logging.warning("Controller %s was not run on scenario %s",
                                 controller,
-                                scenario_dir)
+                                batch_leaf)
                 continue
 
-            scenario = rdg.parse_batch_root(dirs[0])[1]
+            batch_leaf = dirs[0]
+            _, scenario, _ = rdg.parse_batch_leaf(batch_leaf)
 
             # We need to generate the root directory paths for each batched experiment
             # (which # lives inside of the scenario dir), because they are all
             # different. We need generate these paths for EACH controller, because the
-            # controller is part of the batch root directory path.
-            paths = rdg.regen_from_exp(self.cmdopts['sierra_root'],
-                                       self.cmdopts['project'],
-                                       self.cli_args.batch_criteria,
-                                       dirs[0],
-                                       controller)
+            # controller is part of the batch root path.
+            paths = rdg.regen_from_exp(sierra_rpath=self.cli_args.sierra_root,
+                                       project=self.cli_args.project,
+                                       batch_leaf=batch_leaf,
+                                       controller=controller)
+
             cmdopts.update(paths)
 
             # For each scenario, we have to create the batch criteria for it, because they
             # are all different.
-
             criteria = bc.factory(self.main_config, cmdopts, self.cli_args, scenario)
 
             self.__gen_csv(cmdopts=cmdopts,

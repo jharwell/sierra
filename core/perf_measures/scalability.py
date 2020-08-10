@@ -541,39 +541,46 @@ class KarpFlattBivar:
     def calculate(self, batch_criteria):
         perf_df = pd.read_csv(os.path.join(self.cmdopts["collate_root"],
                                            self.inter_perf_csv), sep=';')
-        sc_df = pd.DataFrame(columns=perf_df.columns)
+        sc_df = pd.DataFrame(columns=perf_df.columns, index=perf_df.index)
 
         sizes = batch_criteria.populations(self.cmdopts)
-
         for i in range(0, len(sc_df.index)):
             for j in range(0, len(sc_df.columns)):
-                perf_x = perf_df.iloc[i, j]
+                perf_x = common.csv_3D_value_iloc(perf_df,
+                                                  i,
+                                                  j,
+                                                  slice(-1, None))
                 n_robots_x = sizes[i][j]
 
                 # We need to know which of the 2 variables was swarm size, in order to determine the
                 # correct dimension along which to compute the metric, which depends on performance
                 # between adjacent swarm sizes.
                 if isinstance(batch_criteria.criteria1, ps.PopulationSize) or self.cmdopts['plot_primary_axis'] == '0':
+                    perf_xminus1 = common.csv_3D_value_iloc(perf_df,
+                                                            i - 1,
+                                                            j,
+                                                            slice(-1, None))
+
                     if self.cmdopts['pm_scalability_from_exp0']:
                         n_robots_xminus1 = sizes[0][j]
-                        perf_xminus1 = perf_df.iloc[i - 1, j]
                     else:
                         n_robots_xminus1 = sizes[i - 1][j]
-                        perf_xminus1 = perf_df.iloc[i - 1, j]
                 else:
+                    perf_xminus1 = common.csv_3D_value_iloc(perf_df,
+                                                            i,
+                                                            j - 1,
+                                                            slice(-1, None))
                     if self.cmdopts['pm_scalability_from_exp0']:
                         n_robots_xminus1 = sizes[0][j]
-                        perf_xminus1 = perf_df.iloc[i, j - 1]
                     else:
                         n_robots_xminus1 = sizes[i][j - 1]
-                        perf_xminus1 = perf_df.iloc[i, j - 1]
 
             speedup_i = perf_x / perf_xminus1
 
-            sc_df[sc_df.columns[i]] = calculate_karpflatt(speedup_i=speedup_i,
-                                                          n_robots_i=n_robots_x,
-                                                          n_robots_iminus1=n_robots_xminus1,
-                                                          normalize=self.cmdopts['pm_scalability_normalize'])
+            sc_df.iloc[i, j] = calculate_karpflatt(speedup_i=speedup_i,
+                                                   n_robots_i=n_robots_x,
+                                                   n_robots_iminus1=n_robots_xminus1,
+                                                   normalize=self.cmdopts['pm_scalability_normalize'])
 
         return sc_df
 
@@ -587,7 +594,7 @@ class KarpFlattBivar:
                 xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                 ylabel=batch_criteria.graph_ylabel(self.cmdopts),
                 xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
-                ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)[1:]).generate()
+                ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)).generate()
 
 
 class ScalabilityBivarGenerator:
@@ -632,7 +639,7 @@ def calculate_karpflatt(speedup_i: float, n_robots_i: int, n_robots_iminus1: int
 
     .. math::
        \begin{equation}
-       C(m_i,\kappa) = \sum_{t\in{T}} 1.0 - \theta_C(m_i,\kappa,t)
+       C(m_i,\kappa) = \sum_{t\in{T}}\theta_C(m_i,\kappa,t)
        \end{equation}
 
     or
@@ -665,7 +672,7 @@ def calculate_karpflatt(speedup_i: float, n_robots_i: int, n_robots_iminus1: int
     theta = 1.0 - e
 
     if normalize:
-        return Sigmoid(theta)() - Sigmoid(-theta)()
+        return Sigmoid(-theta)() - Sigmoid(theta)()
     else:
         return theta
 
@@ -696,4 +703,6 @@ __api__ = [
     'NormalizedEfficiencyBivar',
     'FractionalMaintenanceBivar',
     'KarpFlattBivar',
+
+
 ]

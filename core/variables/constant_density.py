@@ -37,7 +37,7 @@ class ConstantDensity(bc.UnivarBatchCriteria):
 
     # How many experiments to run for the given density value, in which the arena size is increased
     # from its initial value according to parsed parameters.
-    kExperimentsPerDensity = 10
+    kExperimentsPerDensity = 5
 
     def __init__(self,
                  cli_arg: str,

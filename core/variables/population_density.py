@@ -96,7 +96,8 @@ class PopulationConstantDensity(cd.ConstantDensity):
             exp_def = core.utils.unpickle_exp_def(pickle_fpath)
             for path, attr, value in exp_def:
                 if path == ".//arena" and attr == "size":
-                    extent = core.utils.ArenaExtent((value.split(",")))
+                    x, y, z = [int(float(_)) for _ in value.split(",")]
+                    extent = core.utils.ArenaExtent((x, y, z))
                     areas.append(float((extent.x() * extent.y())))
         return areas
 

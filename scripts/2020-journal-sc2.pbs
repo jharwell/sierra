@@ -44,8 +44,8 @@ BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \
                   --template-input-file=$HOME/git/sierra/templates/2020-journal-sc2.argos \
                   --n-sims=$NSIMS\
-                  --physics-n-engines=8\
-                  --pipeline 1 2 3 --exp-graphs=inter\
+                  --physics-n-engines=4\
+                  --pipeline 4 --exp-graphs=inter\
                   --project=fordyca\
                   --hpc-env=hpc_local \
                   --exp-overwrite \
@@ -55,7 +55,7 @@ TASK="$1"
 
 cd $HOME/git/sierra
 
-# Scalability/emergence analysis
+# # Scalability/emergence analysis
 if [ "$TASK" == "scalability" ] || [ "$TASK" == "emergence" ] || [ "$TASK" == "all" ]
 then
     for c in "${CONTROLLERS[@]}"
@@ -109,32 +109,32 @@ then
 fi
 
 # Generate comparison graphs
-if [ "$TASK" == "comp" ] || [ "$TASK" == "all" ]
-   then
-   STAGE5_CMD="python3 sierra.py \
-                  --project=fordyca\
-                  --pipeline 5\
-                  --sierra-root=$OUTPUT_ROOT\
-                  --controllers-list depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO"
+# if [ "$TASK" == "comp" ] || [ "$TASK" == "all" ]
+#    then
+#    STAGE5_CMD="python3 sierra.py \
+#                   --project=fordyca\
+#                   --pipeline 5\
+#                   --sierra-root=$OUTPUT_ROOT\
+#                   --controllers-list depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO"
 
-   # Generate scalability/emergence comparison graphs
-   $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I16 block_motion_dynamics.C4.F25p0.RW0p001\
-               --bc-univar
+#    # Generate scalability/emergence comparison graphs
+#    $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I16 block_motion_dynamics.C4.F25p0.RW0p001\
+#                --bc-bivar
 
-   # Generate flexibility comparison graphs
-   $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I16 temporal_variance.BCStepU250000\
-               --bc-bivar
+#    # Generate flexibility comparison graphs
+#    $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I16 temporal_variance.BCStepU250000\
+#                --bc-bivar
 
-   $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I16 temporal_variance.BCStepD250000\
-               --bc-bivar
+#    $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I16 temporal_variance.BCStepD250000\
+#                --bc-bivar
 
-   $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I16 temporal_variance.BCSine\
-               --bc-bivar
+#    $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I16 temporal_variance.BCSine\
+#                --bc-bivar
 
-   # Generate robustness comparison graphs
-   $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I16 population_dynamics.C3.F2p0.Dp0001\
-               --bc-bivar
+#    # Generate robustness comparison graphs
+#    $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I16 population_dynamics.C3.F2p0.Dp0001\
+#                --bc-bivar
 
-   $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I16 saa_noise.all.C3\
-               --bc-bivar
-fi
+#    $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I16 saa_noise.all.C3\
+#                --bc-bivar
+# fi

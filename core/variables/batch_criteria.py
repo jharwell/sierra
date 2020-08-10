@@ -348,7 +348,7 @@ class BivarBatchCriteria(BatchCriteria):
 
     def gen_exp_dirnames(self,
                          cmdopts: tp.Dict[str, str],
-                         what: str='all') -> tp.List[str]:
+                         what: str = 'all') -> tp.List[str]:
         """
         Generates a SORTED list of strings for all X/Y axis directories for the bivariate
         experiments, or both X and Y.
@@ -430,7 +430,7 @@ class BivarBatchCriteria(BatchCriteria):
 
     def graph_xticks(self,
                      cmdopts: tp.Dict[str, str],
-                     exp_dirs: tp.List[str]=None) -> tp.List[float]:
+                     exp_dirs: tp.List[str] = None) -> tp.List[float]:
         dirs = []
         for c1 in self.criteria1.gen_exp_dirnames(cmdopts):
             for x in self.gen_exp_dirnames(cmdopts):
@@ -444,7 +444,7 @@ class BivarBatchCriteria(BatchCriteria):
 
     def graph_yticks(self,
                      cmdopts: tp.Dict[str, str],
-                     exp_dirs: tp.List[str]=None) -> tp.List[float]:
+                     exp_dirs: tp.List[str] = None) -> tp.List[float]:
         dirs = []
         for c2 in self.criteria2.gen_exp_dirnames(cmdopts):
             for x in self.gen_exp_dirnames(cmdopts):
@@ -459,7 +459,7 @@ class BivarBatchCriteria(BatchCriteria):
 
     def graph_xticklabels(self,
                           cmdopts: tp.Dict[str, str],
-                          exp_dirs: list=None) -> tp.List[str]:
+                          exp_dirs: list = None) -> tp.List[str]:
         dirs = []
         for c1 in self.criteria1.gen_exp_dirnames(cmdopts):
             for x in self.gen_exp_dirnames(cmdopts):
@@ -473,7 +473,7 @@ class BivarBatchCriteria(BatchCriteria):
 
     def graph_yticklabels(self,
                           cmdopts: tp.Dict[str, str],
-                          exp_dirs: list=None) -> tp.List[str]:
+                          exp_dirs: list = None) -> tp.List[str]:
         dirs = []
         for c2 in self.criteria2.gen_exp_dirnames(cmdopts):
             for y in self.gen_exp_dirnames(cmdopts):

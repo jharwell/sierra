@@ -82,7 +82,7 @@ class BlockMotionDynamics(bc.UnivarBatchCriteria):
         return list(map(str, self.graph_xticks(cmdopts, exp_dirs)))
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
-        labels = {'RW', 'Random Walk Probability'}
+        labels = {'RW': 'Random Walk Probability'}
         return labels[self.dynamics_type]
 
     def pm_query(self, pm: str) -> bool:

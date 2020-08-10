@@ -66,6 +66,7 @@ class Heatmap:
         # Plot heatmap
         if self.transpose:
             df = df.transpose()
+
         plt.imshow(df, cmap='coolwarm', interpolation=self.interpolation)
 
         # Add labels

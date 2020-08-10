@@ -27,9 +27,11 @@ import typing as tp
 import pandas as pd
 
 from core.graphs.batch_ranged_graph import BatchRangedGraph
+from core.graphs.heatmap import Heatmap
 from core.perf_measures import vcs
 import core.variables.batch_criteria as bc
 import core.perf_measures.common as common
+import core.variables.temporal_variance as tv
 
 ################################################################################
 # Univariate Classes
@@ -61,6 +63,7 @@ class ReactivityUnivar:
             df[batch_exp_dirnames[i]] = vcs.ReactivityCS(main_config,
                                                          self.cmdopts,
                                                          batch_criteria,
+                                                         0,
                                                          i)()
 
         stem_opath = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
@@ -104,6 +107,7 @@ class AdaptabilityUnivar:
             df[batch_exp_dirnames[i]] = vcs.AdaptabilityCS(main_config,
                                                            self.cmdopts,
                                                            batch_criteria,
+                                                           0,
                                                            i)()
 
         stem_opath = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
@@ -168,11 +172,71 @@ class ReactivityBivar:
     """
     kLeaf = 'pm-reactivity'
 
-    def __init__(self, cmdopts: tp.Dict[str, str]) -> None:
-        raise NotImplementedError
+    def __init__(self, cmdopts: tp.Dict[str, str], inter_perf_csv: str) -> None:
+        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
+        # are generated after us.
+        self.cmdopts = copy.deepcopy(cmdopts)
+        self.inter_perf_csv = inter_perf_csv
 
-    def generate(self, main_config: dict, batch_criteria: bc.BivarBatchCriteria):
-        raise NotImplementedError
+    def generate(self, main_config: dict, criteria: bc.BivarBatchCriteria):
+        """
+        Calculate the reactivity metric for a given controller within a specific scenario, and
+        generate a graph of the result.
+        """
+        self.__gen_heatmap(main_config, criteria)
+
+    def __gen_heatmap(self, main_config: dict, criteria: bc.BivarBatchCriteria):
+        """
+        Generate a reactivity graph for a given controller in a given scenario by computing the
+        value of the reactivity metric for each experiment within the batch, and plot
+        a :class:`~core.graphs.heatmap.Heatmap` of the reactivity variable vs. the other one.
+
+        Returns:
+           The path to the `.csv` file used to generate the heatmap.
+        """
+        ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_csv)
+        raw_df = pd.read_csv(ipath, sep=';')
+        opath_stem = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
+
+        # Generate heatmap dataframe and write to file
+        df = self.__gen_heatmap_df(main_config, raw_df, criteria)
+        df.to_csv(opath_stem + ".csv", sep=';', index=False)
+
+        Heatmap(input_fpath=opath_stem + '.csv',
+                output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),
+                title='Swarm Reactivity',
+                xlabel=criteria.graph_xlabel(self.cmdopts),
+                ylabel=criteria.graph_ylabel(self.cmdopts),
+                xtick_labels=criteria.graph_xticklabels(self.cmdopts),
+                ytick_labels=criteria.graph_yticklabels(self.cmdopts)).generate()
+        return opath_stem + '.csv'
+
+    def __gen_heatmap_df(self,
+                         main_config: dict,
+                         raw_df: pd.DataFrame,
+                         criteria: bc.BivarBatchCriteria):
+        df = pd.DataFrame(columns=raw_df.columns, index=raw_df.index)
+
+        exp_dirs = criteria.gen_exp_dirnames(self.cmdopts)
+        for i in range(0, len(df.index)):
+            for j in range(0, len(df.columns)):
+                # We need to know which of the 2 variables was temporal variance, in order to
+                # determine the correct dimension along which to compute the metric.
+                if isinstance(criteria.criteria1, tv.TemporalVariance) or self.cmdopts['plot_primary_axis'] == '0':
+                    val = vcs.ReactivityCS(main_config,
+                                           self.cmdopts,
+                                           criteria,
+                                           j,  # exp0 in first row with i=0
+                                           i)(exp_dirs)
+                else:
+                    val = vcs.ReactivityCS(main_config,
+                                           self.cmdopts,
+                                           criteria,
+                                           i * len(df.columns),  # exp0 in first col with j=0
+                                           i * len(df.columns) + j)(exp_dirs)
+
+                df.iloc[i, j] = val
+        return df
 
 
 class AdaptabilityBivar:
@@ -183,11 +247,72 @@ class AdaptabilityBivar:
     """
     kLeaf = 'pm-adaptability'
 
-    def __init__(self, cmdopts: tp.Dict[str, str]) -> None:
-        raise NotImplementedError
+    def __init__(self, cmdopts: tp.Dict[str, str], inter_perf_csv: str) -> None:
+        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
+        # are generated after us.
+        self.cmdopts = copy.deepcopy(cmdopts)
+        self.inter_perf_csv = inter_perf_csv
 
-    def generate(self, main_config: dict, batch_criteria: bc.BivarBatchCriteria):
-        raise NotImplementedError
+    def generate(self, main_config: dict, criteria: bc.BivarBatchCriteria):
+        """
+        Calculate the adaptability metric for a given controller within a specific scenario, and
+        generate a graph of the result.
+        """
+        self.__gen_heatmap(main_config, criteria)
+
+    def __gen_heatmap(self, main_config: dict, criteria: bc.BivarBatchCriteria):
+        """
+        Generate a adaptability graph for a given controller in a given scenario by computing the
+        value of the adaptability metric for each experiment within the batch, and plot
+        a :class:`~core.graphs.heatmap.Heatmap` of the adaptability variable vs. the other one.
+
+        Returns:
+           The path to the `.csv` file used to generate the heatmap.
+        """
+        ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_csv)
+        raw_df = pd.read_csv(ipath, sep=';')
+        opath_stem = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
+
+        # Generate heatmap dataframe and write to file
+        df = self.__gen_heatmap_df(main_config, raw_df, criteria)
+        df.to_csv(opath_stem + ".csv", sep=';', index=False)
+
+        Heatmap(input_fpath=opath_stem + '.csv',
+                output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),
+                title='Swarm Adaptability',
+                xlabel=criteria.graph_xlabel(self.cmdopts),
+                ylabel=criteria.graph_ylabel(self.cmdopts),
+                xtick_labels=criteria.graph_xticklabels(self.cmdopts),
+                ytick_labels=criteria.graph_yticklabels(self.cmdopts)).generate()
+        return opath_stem + '.csv'
+
+    def __gen_heatmap_df(self,
+                         main_config: dict,
+                         raw_df: pd.DataFrame,
+                         criteria: bc.BivarBatchCriteria):
+        df = pd.DataFrame(columns=raw_df.columns, index=raw_df.index)
+
+        exp_dirs = criteria.gen_exp_dirnames(self.cmdopts)
+
+        for i in range(0, len(df.index)):
+            for j in range(0, len(df.columns)):
+                # We need to know which of the 2 variables was temporal variance, in order to
+                # determine the correct dimension along which to compute the metric.
+                if isinstance(criteria.criteria1, tv.TemporalVariance) or self.cmdopts['plot_primary_axis'] == '0':
+                    val = vcs.AdaptabilityCS(main_config,
+                                             self.cmdopts,
+                                             criteria,
+                                             j,  # exp0 in first row with i=0
+                                             i)(exp_dirs)
+                else:
+                    val = vcs.AdaptabilityCS(main_config,
+                                             self.cmdopts,
+                                             criteria,
+                                             i * len(df.columns),  # exp0 in first col with j=0
+                                             i * len(df.columns) + j)(exp_dirs)
+
+                df.iloc[i, j] = val
+        return df
 
 
 class FlexibilityBivarGenerator:
@@ -205,11 +330,13 @@ class FlexibilityBivarGenerator:
                  main_config: dict,
                  alpha_SAA: float,
                  alpha_PD: float,
-                 batch_criteria: bc.BivarBatchCriteria):
-        logging.info("Biivariate flexbility from %s", cmdopts["collate_root"])
+                 criteria: bc.BivarBatchCriteria):
+        logging.info("Bivariate flexbility from %s", cmdopts["collate_root"])
 
-        ReactivityBivar(cmdopts).generate(main_config, batch_criteria)
-        AdaptabilityBivar(cmdopts).generate(main_config, batch_criteria)
+        inter_perf_csv = main_config['perf']['inter_perf_csv']
+
+        ReactivityBivar(cmdopts, inter_perf_csv).generate(main_config, criteria)
+        AdaptabilityBivar(cmdopts, inter_perf_csv).generate(main_config, criteria)
 
         title1 = 'Swarm Flexbility '
         title2 = r'($\alpha_{{F_{{R}}}}={0},\alpha_{{F_{{A}}}}={1}$)'.format(alpha_SAA,
@@ -221,7 +348,7 @@ class FlexibilityBivarGenerator:
                                    ax1_alpha=alpha_SAA,
                                    ax2_alpha=alpha_PD,
                                    title=title1 + title2)
-        w.generate(batch_criteria)
+        w.generate(criteria)
 
 
 __api__ = [

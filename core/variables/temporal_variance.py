@@ -87,17 +87,13 @@ class TemporalVariance(UnivarBatchCriteria):
         # If exp_dirs is passed, then we have been handed a subset of the total # of directories in
         # the batch exp root, and so n_exp() will return more experiments than we actually
         # have. This behavior is needed to correct extract x/y values for bivar experiments.
-        if exp_dirs is not None:
-            m = len(exp_dirs)
-        else:
-            m = self.n_exp()
+        if exp_dirs is None:
+            exp_dirs = self.gen_exp_dirnames(cmdopts)
 
-        # zeroth element is the distance to ideal conditions for exp0, which is by definition ideal
-        # conditions, so the distance is 0.
-        ret = [0.0]
-        ret.extend([round(vcs.EnvironmentalCS(self.main_config, cmdopts, x)(self, exp_dirs), 4)
-                    for x in range(1, m)])
-        return ret
+        m = len(exp_dirs)
+
+        return [round(vcs.EnvironmentalCS(self.main_config, cmdopts, x)(self, exp_dirs), 4)
+                for x in range(0, m)]
 
     def graph_xticklabels(self,
                           cmdopts: tp.Dict[str, str],

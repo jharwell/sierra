@@ -108,8 +108,8 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
         lambda_Sbar = lambda_d + lambda_m
         mu_Sbar = mu_b + mu_r
         if (mu_Sbar - lambda_Sbar) != 0:
+            print(mu_Sbar, lambda_Sbar)
             TSbar = 1 / (mu_Sbar - lambda_Sbar) - 1 / mu_Sbar
-
             return (T - TSbar, T)
         else:
             return (T, T)
