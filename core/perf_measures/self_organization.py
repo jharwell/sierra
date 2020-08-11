@@ -30,8 +30,9 @@ from core.graphs.batch_ranged_graph import BatchRangedGraph
 from core.graphs.heatmap import Heatmap
 from core.perf_measures import common
 from core.variables import batch_criteria as bc
-from core.variables import population_size as ps
-from core.utils import Sigmoid
+from core.variables import population_size
+from core.variables import population_density
+import core.utils
 
 ################################################################################
 # Univariate Classes
@@ -418,7 +419,11 @@ class FractionalLossesMarginalBivar:
                 # We need to know which of the 2 variables was swarm size, in order to determine the
                 # correct dimension along which to compute the metric, which depends on performance
                 # between adjacent swarm sizes.
-                if isinstance(batch_criteria.criteria1, ps.PopulationSize) or self.cmdopts['plot_primary_axis'] == '0':
+                axis = core.utils.get_primary_axis(batch_criteria,
+                                                   [population_size.PopulationSize,
+                                                    population_density.PopulationConstantDensity],
+                                                   self.cmdopts)
+                if axis == 0:
                     fl_iminus1 = fl.iloc[i - 1, j]
                     n_robots_iminus1 = populations[i - 1][j]
                 else:
@@ -490,7 +495,11 @@ class FractionalLossesInteractiveBivar:
                 # We need to know which of the 2 variables was swarm size, in order to determine the
                 # correct dimension along which to compute the metric, which depends on performance
                 # between adjacent swarm sizes.
-                if isinstance(batch_criteria.criteria1, ps.PopulationSize) or self.cmdopts['plot_primary_axis'] == '0':
+                axis = core.utils.get_primary_axis(batch_criteria,
+                                                   [population_size.PopulationSize,
+                                                    population_density.PopulationConstantDensity],
+                                                   self.cmdopts)
+                if axis == 0:
                     fl_1 = fl.iloc[0, j]
                 else:
                     fl_1 = fl.iloc[i, 0]
@@ -585,7 +594,11 @@ class PerformanceGainMarginalBivar:
                                                   slice(-1, None))
                 n_robots_i = populations[i][j]
 
-                if isinstance(batch_criteria.criteria1, ps.PopulationSize) or self.cmdopts['plot_primary_axis'] == '0':
+                axis = core.utils.get_primary_axis(batch_criteria,
+                                                   [population_size.PopulationSize,
+                                                    population_density.PopulationConstantDensity],
+                                                   self.cmdopts)
+                if axis == 0:
                     perf_iminus1 = common.csv_3D_value_iloc(raw_df,
                                                             i - 1,
                                                             j,
@@ -689,7 +702,11 @@ class PerformanceGainInteractiveBivar:
                                                   slice(-1, None))
                 n_robots_i = populations[i][j]
 
-                if isinstance(batch_criteria.criteria1, ps.PopulationSize) or self.cmdopts['plot_primary_axis'] == '0':
+                axis = core.utils.get_primary_axis(batch_criteria,
+                                                   [population_size.PopulationSize,
+                                                    population_density.PopulationConstantDensity],
+                                                   self.cmdopts)
+                if axis == 0:
                     perf_0 = common.csv_3D_value_iloc(raw_df,
                                                       0,
                                                       j,
@@ -787,7 +804,7 @@ def calc_self_org_ifl(fl_i: float, n_robots_i: int, fl_1: float, normalize: bool
     theta = scaled_fl_1 - fl_i
 
     if normalize:
-        return Sigmoid(-theta)() - Sigmoid(theta)()
+        return core.utils.Sigmoid(-theta)() - core.utils.Sigmoid(theta)()
     else:
         return theta
 
@@ -834,7 +851,7 @@ def calc_self_org_mfl(fl_i: float,
         theta = 0.0
 
     if normalize:
-        return Sigmoid(-theta)() - Sigmoid(theta)()
+        return core.utils.Sigmoid(-theta)() - core.utils.Sigmoid(theta)()
     else:
         return theta
 
@@ -881,7 +898,7 @@ def calc_self_org_mpg(perf_i: float,
         theta = 0.0
 
     if normalize:
-        return Sigmoid(theta)() - Sigmoid(-theta)()
+        return core.utils.Sigmoid(theta)() - core.utils.Sigmoid(-theta)()
     else:
         return theta
 
@@ -915,7 +932,7 @@ def calc_self_org_ipg(perf_i: float, n_robots_i: int, perf_0: float, normalize: 
     """
     theta = perf_i - n_robots_i * perf_0
     if normalize:
-        return Sigmoid(theta)() - Sigmoid(-theta)()
+        return core.utils.Sigmoid(theta)() - core.utils.Sigmoid(-theta)()
     else:
         return theta
 

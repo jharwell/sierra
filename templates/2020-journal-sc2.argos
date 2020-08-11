@@ -302,11 +302,15 @@
       <blocks>
         <motion
             policy="random_walk"
-            random_walk_prob="0"/>
+            random_walk_prob="0.001"/>
         <distribution
             arena_resolution="0.2"
             dist_type="single_source"
             strict_success="false">
+          <powerlaw
+              pwr_min="3"
+              pwr_max="10"
+              n_clusters="20"/>
           <manifest
               n_cube="2048"
               n_ramp="0"

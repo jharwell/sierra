@@ -34,22 +34,24 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 # Begin Experiments                                                            #
 ################################################################################
 NSIMS=4
-CONTROLLERS=(depth0.CRW depth0.DPO depth1.BITD_DPO depth2.BIRTD_DPO)
+CONTROLLERS=(depth2.BIRTD_DPO)
 OUTPUT_ROOT=$HOME/exp/sc2
-DENSITY=5p0 # 1280 robots max
-N_BLOCKS=1280
-BLOCK_DIST=RN
-TIME=1000
+DENSITY=5p0 # 1280 robots max with cardinality = 10
+N_BLOCKS=512
+BLOCK_DIST=PL
+CARDINALITY=4
+TIME_SHORT=20000
+TIME_LONG=100000
+
 BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \
                   --template-input-file=$HOME/git/sierra/templates/2020-journal-sc2.argos \
                   --n-sims=$NSIMS\
                   --physics-n-engines=4\
-                  --pipeline 4 --exp-graphs=inter\
+                  --pipeline 1 2 3 4 --exp-graphs=inter\
                   --project=fordyca\
                   --hpc-env=hpc_local \
-                  --exp-overwrite \
-                  --time-setup=time_setup.T${TIME}"
+                  --exp-overwrite"
 
 TASK="$1"
 
@@ -61,80 +63,62 @@ then
     for c in "${CONTROLLERS[@]}"
     do
         $BASE_CMD --scenario=${BLOCK_DIST}.16x16 \
-                  --batch-criteria population_density.CD${DENSITY}.I16 block_motion_dynamics.C4.F25p0.RW0p001\
+                  --batch-criteria population_density.CD${DENSITY}.I16.C${CARDINALITY} block_motion_dynamics.C${CARDINALITY}.F25p0.RW0p001\
                   --controller=${c} \
-                  --n-blocks=${N_BLOCKS}
+                  --n-blocks=${N_BLOCKS}\
+                  --time-setup=time_setup.T${TIME_SHORT}
 
     done
 fi
 
-# Flexibility analysis
+# Flexibility analysis. Once I get the results of scalability/emergence
+# analysis, switch from population density to block motion dynamics, and pick
+# one or two swarm sizes that seem interesting. This will make the experiments
+# sooooo much faster.
 if [ "$TASK" == "flexibility" ] || [ "$TASK" == "all" ]
 then
     for c in "${CONTROLLERS[@]}"
     do
         $BASE_CMD --scenario=${BLOCK_DIST}.16x16 \
-                  --batch-criteria population_density.CD${DENSITY}.I16 temporal_variance.BCStepU250000\
+                  --batch-criteria  population_density.CD${DENSITY}.I16.C${CARDINALITY} temporal_variance.MStepU50000\
                   --controller=${c}\
-                  --n-blocks=${N_BLOCKS}
+                  --n-blocks=${N_BLOCKS}\
+                  --time-setup=time_setup.T${TIME_SHORT}
 
         $BASE_CMD --scenario=${BLOCK_DIST}.16x16 \
-                  --batch-criteria population_density.CD${DENSITY}.I16 temporal_variance.BCStepD250000\
+                  --batch-criteria   population_density.CD${DENSITY}.I16.C${CARDINALITY} temporal_variance.MStepD50000\
                   --controller=${c}\
-                  --n-blocks=${N_BLOCKS}
+                  --n-blocks=${N_BLOCKS}\
+                  --time-setup=time_setup.T${TIME_SHORT}
 
         $BASE_CMD --scenario=${BLOCK_DIST}.16x16 \
-                  --batch-criteria population_density.CD${DENSITY}.I16 temporal_variance.BCSine\
+                  --batch-criteria  population_density.CD${DENSITY}.I16.C${CARDINALITY} temporal_variance.MSine\
                   --controller=${c}\
-                  --n-blocks=${N_BLOCKS}
+                  --n-blocks=${N_BLOCKS}\
+                  --time-setup=time_setup.T${TIME_SHORT}
 
     done
 fi
 
-# Robustness analysis
+# Robustness analysis. Once I get the results of scalability/emergence
+# analysis, switch from population density to block motion dynamics, and pick
+# one or two swarm sizes that seem interesting. This will make the experiments
+# sooooo much faster.
 if [ "$TASK" == "robustness" ] || [ "$TASK" == "all" ]
 then
     for c in "${CONTROLLERS[@]}"
     do
         $BASE_CMD --scenario=${BLOCK_DIST}.16x16 \
-                  --batch-criteria population_density.CD${DENSITY}.I16 population_dynamics.C3.F2p0.Dp0001\
+                  --batch-criteria  population_density.CD${DENSITY}.I16.C${CARDINALITY} population_dynamics.C${CARDINALITY}.F2p0.Dp0001 \
                   --controller=${c} \
-                  --n-blocks=${N_BLOCKS}
+                  --n-blocks=${N_BLOCKS}\
+                  --time-setup=time_setup.T${TIME_LONG}
 
         $BASE_CMD --scenario=${BLOCK_DIST}.16x16 \
-                  --batch-criteria population_density.CD${DENSITY}.I16 saa_noise.all.C3\
+                  --batch-criteria    population_density.CD${DENSITY}.I16.C${CARDINALITY} saa_noise.all.C3\
                   --controller=${c} \
-                  --n-blocks=${N_BLOCKS}
+                  --n-blocks=${N_BLOCKS}\
+                  --time-setup=time_setup.T${TIME_SHORT}
     done
 fi
-
-# Generate comparison graphs
-# if [ "$TASK" == "comp" ] || [ "$TASK" == "all" ]
-#    then
-#    STAGE5_CMD="python3 sierra.py \
-#                   --project=fordyca\
-#                   --pipeline 5\
-#                   --sierra-root=$OUTPUT_ROOT\
-#                   --controllers-list depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO"
-
-#    # Generate scalability/emergence comparison graphs
-#    $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I16 block_motion_dynamics.C4.F25p0.RW0p001\
-#                --bc-bivar
-
-#    # Generate flexibility comparison graphs
-#    $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I16 temporal_variance.BCStepU250000\
-#                --bc-bivar
-
-#    $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I16 temporal_variance.BCStepD250000\
-#                --bc-bivar
-
-#    $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I16 temporal_variance.BCSine\
-#                --bc-bivar
-
-#    # Generate robustness comparison graphs
-#    $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I16 population_dynamics.C3.F2p0.Dp0001\
-#                --bc-bivar
-
-#    $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I16 saa_noise.all.C3\
-#                --bc-bivar
-# fi
+3

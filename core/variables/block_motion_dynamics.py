@@ -129,7 +129,7 @@ def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_generation_root:
         dynamics = [{policy_xml,
                      ('.//arena_map/blocks/motion', d[0], "0.0")} for d in attr['dynamics']]
 
-        for x in range(0, attr['cardinality']):
+        for x in range(0, attr['cardinality'] - 1):
             expx = [{policy_xml,
                      ('.//arena_map/blocks/motion',
                       d[0],

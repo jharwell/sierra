@@ -283,7 +283,8 @@ class RobustnessSAABivar:
             for j in range(0, len(df.columns)):
                 # We need to know which of the 2 variables was SAA noise, in order to determine the
                 # correct dimension along which to compute the metric.
-                if isinstance(criteria.criteria1, saan.SAANoise) or self.cmdopts['plot_primary_axis'] == '0':
+                axis = core.utils.get_primary_axis(criteria, [saan.SAANoise], self.cmdopts)
+                if axis == 0:
                     val = vcs.RawPerfCS(main_config,
                                         self.cmdopts,
                                         j,  # exp0 in first row with i=0
@@ -398,7 +399,8 @@ class RobustnessPDBivar:
 
                 # We need to know which of the 2 variables was SAA noise, in order to determine the
                 # correct dimension along which to compute the metric.
-                if isinstance(criteria.criteria1, PopulationDynamics) or self.cmdopts['plot_primary_axis'] == '0':
+                axis = core.utils.get_primary_axis(criteria, [PopulationDynamics], self.cmdopts)
+                if axis == 0:
                     perf0 = common.csv_3D_value_iloc(raw_df,
                                                      0,  # exp0 in first row with i=0
                                                      j,

@@ -38,24 +38,8 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
     """
 
-    # How many experiments to run for the given density value, in which the arena size is increased
-    # from its initial value according to parsed parameters.
-    kExperimentsPerDensity = 10
-
-    def __init__(self,
-                 cli_arg: str,
-                 main_config: tp.Dict[str, str],
-                 batch_generation_root: str,
-                 target_density: float,
-                 dimensions: tp.List[core.utils.ArenaExtent],
-                 dist_type: str) -> None:
-        cd.ConstantDensity.__init__(self,
-                                    cli_arg,
-                                    main_config,
-                                    batch_generation_root,
-                                    target_density,
-                                    dimensions,
-                                    dist_type)
+    def __init__(self, *args, **kwargs):
+        cd.ConstantDensity.__init__(self, *args, **kwargs)
 
     def gen_attr_changelist(self) -> list:
         """
@@ -64,6 +48,7 @@ class PopulationConstantDensity(cd.ConstantDensity):
         """
         for changeset in self.changes:
             for path, attr, value in changeset:
+
                 if path == ".//arena" and attr == "size":
                     x, y, z = [int(float(_)) for _ in value.split(",")]
                     extent = core.utils.ArenaExtent((x, y, z))
@@ -127,15 +112,14 @@ def factory(cli_arg: str,
 
     if kw['dist_type'] == "SS" or kw['dist_type'] == "DS":
         r = range(kw['arena_x'],
-                  kw['arena_x'] + PopulationConstantDensity.kExperimentsPerDensity *
-                  attr['arena_size_inc'],
+                  kw['arena_x'] + attr['cardinality'] * attr['arena_size_inc'],
                   attr['arena_size_inc'])
         dims = [core.utils.ArenaExtent((x, int(x / 2), 0)) for x in r]
     elif kw['dist_type'] == "QS" or kw['dist_type'] == "RN" or kw['dist_type'] == 'PL':
         r = range(kw['arena_x'],
-                  kw['arena_x'] + PopulationConstantDensity.kExperimentsPerDensity *
-                  attr['arena_size_inc'],
+                  kw['arena_x'] + attr['cardinality'] * attr['arena_size_inc'],
                   attr['arena_size_inc'])
+
         dims = [core.utils.ArenaExtent((x, x, 0)) for x in r]
     else:
         raise NotImplementedError(

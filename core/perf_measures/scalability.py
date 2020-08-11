@@ -30,8 +30,9 @@ from core.graphs.batch_ranged_graph import BatchRangedGraph
 from core.graphs.heatmap import Heatmap
 from core.perf_measures import common
 from core.variables import batch_criteria as bc
-from core.variables import population_size as ps
-from core.utils import Sigmoid
+from core.variables import population_size
+from core.variables import population_density
+import core.utils
 
 ################################################################################
 # Univariate Classes
@@ -166,48 +167,6 @@ class NormalizedEfficiencyUnivar:
             perf_N = raw_df.tail(1)[col]
             eff_df[col] = perf_N / n_robots
         return eff_df
-
-
-class ProjectivePerformanceComparisonUnivar:
-    """
-    Calculates projective performance for each experiment i > 0 in the batch and productes a graph.
-    """
-
-    def __init__(self, cmdopts: dict, inter_perf_csv: str, projection_type: str) -> None:
-        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
-        # are generated after us
-        self.cmdopts = copy.deepcopy(cmdopts)
-        self.inter_perf_csv = inter_perf_csv
-        self.projection_type = projection_type
-
-    def calculate(self, batch_criteria: bc.BatchCriteria):
-        return common.ProjectivePerformanceCalculatorUnivar(self.cmdopts,
-                                                            self.inter_perf_csv,
-                                                            self.projection_type)(batch_criteria)
-
-    def generate(self, df: pd.DataFrame, batch_criteria: bc.BatchCriteria):
-        cum_stem = os.path.join(self.cmdopts["collate_root"], "pm-pp-comp-" + self.projection_type)
-        df.to_csv(cum_stem + ".csv", sep=';', index=False)
-        xticks = batch_criteria.graph_xticks(self.cmdopts)
-
-        BatchRangedGraph(inputy_stem_fpath=cum_stem,
-                         output_fpath=os.path.join(self.cmdopts["graph_root"],
-                                                   "pm-pp-comp-" + self.projection_type + ".png"),
-                         title="Swarm Projective Performance Comparison ({0})".format(
-                             self.projection_type),
-                         xlabel=batch_criteria.graph_xlabel(self.cmdopts),
-                         ylabel="Observed-Projected Ratio",
-                         xticks=xticks[1:]).generate()
-
-
-class ProjectivePerformanceComparisonPositiveUnivar(ProjectivePerformanceComparisonUnivar):
-    def __init__(self, cmdopts, inter_perf_csv) -> None:
-        super().__init__(cmdopts, inter_perf_csv, "positive")
-
-
-class ProjectivePerformanceComparisonNegativeUnivar(ProjectivePerformanceComparisonUnivar):
-    def __init__(self, cmdopts, inter_perf_csv) -> None:
-        super().__init__(cmdopts, inter_perf_csv, "negative")
 
 
 class FractionalMaintenanceUnivar:
@@ -555,7 +514,11 @@ class KarpFlattBivar:
                 # We need to know which of the 2 variables was swarm size, in order to determine the
                 # correct dimension along which to compute the metric, which depends on performance
                 # between adjacent swarm sizes.
-                if isinstance(batch_criteria.criteria1, ps.PopulationSize) or self.cmdopts['plot_primary_axis'] == '0':
+                axis = core.utils.get_primary_axis(batch_criteria,
+                                                   [population_size.PopulationSize,
+                                                    population_density.PopulationConstantDensity],
+                                                   self.cmdopts)
+                if axis == 0:
                     perf_xminus1 = common.csv_3D_value_iloc(perf_df,
                                                             i - 1,
                                                             j,
@@ -672,7 +635,7 @@ def calculate_karpflatt(speedup_i: float, n_robots_i: int, n_robots_iminus1: int
     theta = 1.0 - e
 
     if normalize:
-        return Sigmoid(-theta)() - Sigmoid(theta)()
+        return core.utils.Sigmoid(-theta)() - core.utils.Sigmoid(theta)()
     else:
         return theta
 

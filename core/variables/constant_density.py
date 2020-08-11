@@ -35,10 +35,6 @@ class ConstantDensity(bc.UnivarBatchCriteria):
 
     """
 
-    # How many experiments to run for the given density value, in which the arena size is increased
-    # from its initial value according to parsed parameters.
-    kExperimentsPerDensity = 5
-
     def __init__(self,
                  cli_arg: str,
                  main_config: tp.Dict[str, str],
@@ -51,20 +47,6 @@ class ConstantDensity(bc.UnivarBatchCriteria):
         self.dimensions = dimensions
         self.dist_type = dist_type
         self.changes = RectangularArena(dimensions).gen_attr_changelist()
-
-        dist_types = {
-            'SS': 'SingleSourceDistribution',
-            'DS': 'DualSourceDistribution',
-            'QS': 'QuadSourceDistribution',
-            'RN': 'RandomDistribution',
-            'PL': 'PowerLawDistribution'
-        }
-        module = __import__("core.variables.block_distribution", fromlist=["*"])
-        dist = getattr(module, dist_types[self.dist_type])()
-
-        for changeset in self.changes:
-            for c in dist.gen_attr_changelist():
-                changeset = changeset | c
 
     def exp_scenario_name(self, exp_num: int) -> str:
         """
@@ -95,8 +77,8 @@ class ConstantDensityParser():
         """
         ret = {}
         # Need to have 1 dot/2 parts
-        assert 3 == len(cli_arg.split('.')),\
-            "Bad criteria formatting in criteria '{0}': must have 2 sections, separated by '.'".format(
+        assert len(cli_arg.split('.')) == 4,\
+            "Bad criteria formatting in criteria '{0}': must have 3 sections, separated by '.'".format(
                 cli_arg)
 
         # Parse type
@@ -123,8 +105,15 @@ class ConstantDensityParser():
         res = re.search('I[0-9]+', increment)
         assert res is not None, \
             "FATAL: Bad arena increment specification in criteria '{0}'".format(cli_arg)
-
         ret['arena_size_inc'] = int(res.group(0)[1:])
+
+        # Parse cardinality
+        increment = cli_arg.split('.')[3]
+        res = re.search('C[0-9]+', increment)
+        assert res is not None, \
+            "FATAL: Bad cardinality specification in criteria '{0}'".format(cli_arg)
+
+        ret['cardinality'] = int(res.group(0)[1:])
 
         return ret
 

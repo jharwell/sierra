@@ -121,6 +121,20 @@ def dir_create_checked(path: str, exist_ok: bool):
         raise
 
 
+def get_primary_axis(criteria,
+                     primary_axis_bc: tp.List,
+                     cmdopts: dict):
+    if cmdopts['plot_primary_axis'] == '0':
+        return 0
+    elif cmdopts['plot_primary_axis'] == '1':
+        return 1
+
+    if any([isinstance(criteria.criteria1, elt) for elt in primary_axis_bc]):
+        return 0
+    else:
+        return 1
+
+
 __api__ = [
     'ArenaExtent',
     'unpickle_exp_def'
