@@ -170,7 +170,7 @@ class NormalizedEfficiencyUnivar:
 
 
 class FractionalMaintenanceUnivar:
-    """
+    r"""
     Univariate calculator for fractional performance maintenance via
     :class:`~perf_measures.common.FractionalLossesUnivar` (basically the inverse of the losses).
 
@@ -503,6 +503,7 @@ class KarpFlattBivar:
         sc_df = pd.DataFrame(columns=perf_df.columns, index=perf_df.index)
 
         sizes = batch_criteria.populations(self.cmdopts)
+
         for i in range(0, len(sc_df.index)):
             for j in range(0, len(sc_df.columns)):
                 perf_x = common.csv_3D_value_iloc(perf_df,
@@ -510,7 +511,6 @@ class KarpFlattBivar:
                                                   j,
                                                   slice(-1, None))
                 n_robots_x = sizes[i][j]
-
                 # We need to know which of the 2 variables was swarm size, in order to determine the
                 # correct dimension along which to compute the metric, which depends on performance
                 # between adjacent swarm sizes.
@@ -538,12 +538,11 @@ class KarpFlattBivar:
                     else:
                         n_robots_xminus1 = sizes[i][j - 1]
 
-            speedup_i = perf_x / perf_xminus1
-
-            sc_df.iloc[i, j] = calculate_karpflatt(speedup_i=speedup_i,
-                                                   n_robots_i=n_robots_x,
-                                                   n_robots_iminus1=n_robots_xminus1,
-                                                   normalize=self.cmdopts['pm_scalability_normalize'])
+                speedup_i = perf_x / perf_xminus1
+                sc_df.iloc[i, j] = calculate_karpflatt(speedup_i=speedup_i,
+                                                       n_robots_i=n_robots_x,
+                                                       n_robots_iminus1=n_robots_xminus1,
+                                                       normalize=self.cmdopts['pm_scalability_normalize'])
 
         return sc_df
 

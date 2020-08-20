@@ -22,7 +22,7 @@ import multiprocessing
 import random
 
 
-def configure_env(args):
+def env_configure(args):
     """
     Configure SIERRA for local HPC by the parsed cmdline arguments according to the # CPUs
     available on the local machine.
@@ -42,7 +42,7 @@ def configure_env(args):
         args.__dict__['n_jobs_per_node'] = 0
 
 
-def generate_argos_cmd(input_fpath: str):
+def argos_cmd_generate(input_fpath: str):
     """
     Generate the ARGoS cmd to run on the local machine, given the path to an input file. The
     ARGoS executable is assumed to be called ``argos3``.
@@ -50,7 +50,7 @@ def generate_argos_cmd(input_fpath: str):
     return 'argos3 -c "{0}" --log-file /dev/null --logerr-file /dev/null\n'.format(input_fpath)
 
 
-def generate_gnu_parallel_cmd(parallel_opts: dict):
+def gnu_parallel_cmd_generate(parallel_opts: dict):
     """
     Given a dictionary containing job information, generate the cmd to correctly invoke GNU Parallel
     in the ad-hoc environment.
@@ -77,7 +77,7 @@ def generate_gnu_parallel_cmd(parallel_opts: dict):
             parallel_opts['cmdfile_path'])
 
 
-def generate_xvfb_cmd(cmdopts: dict):
+def xvfb_cmd_generate(cmdopts: dict):
     """
     Generate the command for running ARGoS under Xvfb for headless rendering (if configured).
     """
@@ -92,11 +92,3 @@ def generate_xvfb_cmd(cmdopts: dict):
         xvfb_cmd = "eval 'Xvfb :{0} -screen 0, 1600x1200x24 &' && DISPLAY=:{0} ".format(
             display_port)
     return xvfb_cmd
-
-
-__api__ = [
-    'EnvConfigurer',
-    'GNUParallelCmdGenerator',
-    'ARGoSCmdGenerator'
-    'XvfbCmdGenerator'
-]

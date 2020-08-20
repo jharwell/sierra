@@ -37,6 +37,8 @@ class FlexibilityPlotsCSVGenerator:
     correct/make sense and that my waveform comparison calculations are doing what I think they
     are.
 
+    Note: Only works for univariate batch criteria.
+
     Attributes:
         main_config: Parsed dictionary of main YAML configuration.
         cmdopts: Dictionary of commandline arguments used during intra-experiment graph
@@ -51,7 +53,7 @@ class FlexibilityPlotsCSVGenerator:
         self.perf_csv_col = main_config['perf']['intra_perf_col']
 
     def __call__(self, batch_criteria: BatchCriteria):
-        tv_attr = Temporal_VarianceParser()(batch_criteria.def_str)
+        tv_attr = TemporalVarianceParser()(batch_criteria.def_str)
 
         res = re.search("exp[0-9]+", self.cmdopts['output_root'])
         assert res is not None, "FATAL: Unexpected experiment output dir name '{0}'".format(
@@ -64,16 +66,26 @@ class FlexibilityPlotsCSVGenerator:
         output_root = self.cmdopts['output_root']
         self.cmdopts['output_root'] = self.cmdopts['output_root'].split(res.group())[0]
         exp_num = int(res.group()[3:])
-        adaptability = vcs.AdaptabilityCS(self.main_config, self.cmdopts, batch_criteria, exp_num)
-        reactivity = vcs.ReactivityCS(self.main_config, self.cmdopts, batch_criteria, exp_num)
+        adaptability = vcs.AdaptabilityCS(self.main_config,
+                                          self.cmdopts,
+                                          batch_criteria,
+                                          0,
+                                          exp_num)
+        reactivity = vcs.ReactivityCS(self.main_config,
+                                      self.cmdopts,
+                                      batch_criteria,
+                                      0,
+                                      exp_num)
 
         expx_perf = vcs.DataFrames.expx_perf_df(self.cmdopts,
                                                 batch_criteria,
+                                                None,
                                                 self.main_config['sierra']['avg_output_leaf'],
                                                 self.main_config['perf']['intra_perf_csv'],
                                                 exp_num)[self.perf_csv_col].values
         expx_var = vcs.DataFrames.expx_var_df(self.cmdopts,
                                               batch_criteria,
+                                              None,
                                               self.main_config['sierra']['avg_output_leaf'],
                                               self.main_config['perf']['tv_environment_csv'],
                                               exp_num)[tv_attr['variance_csv_col']].values
@@ -86,23 +98,29 @@ class FlexibilityPlotsCSVGenerator:
             {
                 'clock': vcs.DataFrames.expx_perf_df(self.cmdopts,
                                                      batch_criteria,
+                                                     None,
                                                      self.main_config['sierra']['avg_output_leaf'],
                                                      self.main_config['perf']['intra_perf_csv'],
                                                      exp_num)['clock'].values,
                 'expx_perf': vcs.DataFrames.expx_perf_df(self.cmdopts,
                                                          batch_criteria,
+                                                         None,
                                                          self.main_config['sierra']['avg_output_leaf'],
                                                          self.main_config['perf']['intra_perf_csv'],
                                                          exp_num)[self.perf_csv_col].values,
                 'expx_var': comp_expx_var,
-                'exp0_perf': vcs.DataFrames.exp0_perf_df(self.cmdopts,
+                'exp0_perf': vcs.DataFrames.expx_perf_df(self.cmdopts,
                                                          batch_criteria,
+                                                         None,
                                                          self.main_config['sierra']['avg_output_leaf'],
-                                                         self.main_config['perf']['intra_perf_csv'])[self.perf_csv_col].values,
-                'exp0_var': vcs.DataFrames.exp0_var_df(self.cmdopts,
+                                                         self.main_config['perf']['intra_perf_csv'],
+                                                         0)[self.perf_csv_col].values,
+                'exp0_var': vcs.DataFrames.expx_var_df(self.cmdopts,
                                                        batch_criteria,
+                                                       None,
                                                        self.main_config['sierra']['avg_output_leaf'],
-                                                       self.main_config['perf']['tv_environment_csv'])[tv_attr['variance_csv_col']].values,
+                                                       self.main_config['perf']['tv_environment_csv'],
+                                                       0)[tv_attr['variance_csv_col']].values,
                 'ideal_reactivity': reactivity.calc_waveforms()[0][:, 1],
                 'ideal_adaptability': adaptability.calc_waveforms()[0][:, 1]
             }

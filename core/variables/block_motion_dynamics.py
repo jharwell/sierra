@@ -14,13 +14,11 @@
 # You should have received a copy of the GNU General Public License along with
 # SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
-Classes for the block motion batch criteria. See :ref:`ln-bc-block-motion` for usage
+Classes for the block motion batch criteria. See :ref:`ln-bc-block-motion-dynamics` for usage
 documentation.
 """
 
 import typing as tp
-import re
-import math
 import os
 
 from core.variables import batch_criteria as bc
@@ -107,9 +105,12 @@ class BlockMotionDynamicsParser(dp.DynamicsParser):
     Enforces the cmdline definition of the criteria described in the module docstring.
     """
 
+    def specs_dict(self):
+        return {'RW': 'random_walk_prob'}
+
     def __call__(self, criteria_str: str) -> dict:
-        specs_dict = {'RW': 'random_walk_prob'}
-        return super().__call__(criteria_str, specs_dict)
+
+        return super().__call__(criteria_str)
 
 
 def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_generation_root: str, **kwargs):

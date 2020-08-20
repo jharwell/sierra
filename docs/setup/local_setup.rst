@@ -10,7 +10,7 @@ SIERRA to do so are outlined below.
 
 #. Install python dependencies with ``pip3``::
 
-     pip3 install pandas similaritymeasures fastdtw matplotlib pyyaml coloredlogs sympy
+     pip3 install -r requirements/common.txt
 
    - pandas (used for .csv file manipulation)
    - similaritymeasures (needed for temporal variance graph generation)

@@ -582,7 +582,7 @@ class CoreCmdline:
 
                           Generate plots of ideal vs. observed swarm [reactivity, adaptability] for each experiment in
                           the batch.""" +
-                         self.bc_applicable_doc([':ref:`SAA Noise <ln-bc-saa-noise>`']) +
+                         self.bc_applicable_doc([':ref:`Temporal Variance <ln-bc-tv>`']) +
                          self.stage_usage_doc([4]),
                          action="store_true")
 

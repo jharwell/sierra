@@ -43,7 +43,7 @@ class BatchedExpImagizer:
         experiments = [d for d in os.listdir(batch_exp_root)
                        if main_config['sierra']['collate_csv_leaf'] not in d]
 
-        q = mp.JoinableQueue()
+        q = mp.JoinableQueue()  # type: mp.JoinableQueue
 
         for exp in experiments:
             exp_root = os.path.join(batch_exp_root, exp)

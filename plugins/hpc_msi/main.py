@@ -19,7 +19,7 @@ HPC plugin for running SIERRA on the MSI supercomputing institute at the Univers
 import os
 
 
-class EnvConfigurer():
+def env_configure(args):
     """
     Configure SIERRA for HPC at MSI by reading environment variables and modifying the parsed
     cmdline arguments. Uses the following environment variables (if any of them are not defined an
@@ -30,37 +30,34 @@ class EnvConfigurer():
     - ``PBS_NUM_NODES``
     - ``MSICLUSTER``
     """
+    environs = ['mesabi', 'mangi']
 
-    def __init__(self) -> None:
-        self.environs = ['mesabi', 'mangi']
+    keys = ['MSICLUSTER', 'PBS_NUM_PPN', 'PBS_NUM_NODES', 'PBS_NODEFILE']
 
-    def __call__(self, args):
-        keys = ['MSICLUSTER', 'PBS_NUM_PPN', 'PBS_NUM_NODES', 'PBS_NODEFILE']
+    for k in keys:
+        assert k in os.environ,\
+            "FATAL: Attempt to run SIERRA in non-MSI environment: '{0}' not found".format(k)
 
-        for k in keys:
-            assert k in os.environ,\
-                "FATAL: Attempt to run SIERRA in non-MSI environment: '{0}' not found".format(k)
+    assert os.environ['MSICLUSTER'] in environs,\
+        "FATAL: Unknown MSI cluster '{0}'".format(os.environ['MSICLUSTER'])
+    assert args.n_sims >= int(os.environ['PBS_NUM_NODES']),\
+        "FATAL: Too few simulations requested: {0} < {1}".format(args.n_sims,
+                                                                 os.environ['PBS_NUM_NODES'])
+    assert args.n_sims % int(os.environ['PBS_NUM_NODES']) == 0,\
+        "FATAL: # simulations ({0}) not a multiple of # nodes ({1})".format(args.n_sims,
+                                                                            os.environ['PBS_NUM_NODES'])
 
-        assert os.environ['MSICLUSTER'] in self.environs,\
-            "FATAL: Unknown MSI cluster '{0}'".format(os.environ['MSICLUSTER'])
-        assert args.n_sims >= int(os.environ['PBS_NUM_NODES']),\
-            "FATAL: Too few simulations requested: {0} < {1}".format(args.n_sims,
-                                                                     os.environ['PBS_NUM_NODES'])
-        assert args.n_sims % int(os.environ['PBS_NUM_NODES']) == 0,\
-            "FATAL: # simulations ({0}) not a multiple of # nodes ({1})".format(args.n_sims,
-                                                                                os.environ['PBS_NUM_NODES'])
-
-        # For HPC, we want to use the the maximum # of simultaneous jobs per node such that
-        # there is no thread oversubscription. We also always want to allocate each physics
-        # engine its own thread for maximum performance, per the original ARGoS paper.
-        args.__dict__['n_jobs_per_node'] = int(
-            float(args.n_sims) / int(os.environ['PBS_NUM_NODES']))
-        args.physics_n_engines = int(
-            float(os.environ['PBS_NUM_PPN']) / args.n_jobs_per_node)
-        args.__dict__['n_threads'] = args.physics_n_engines
+    # For HPC, we want to use the the maximum # of simultaneous jobs per node such that
+    # there is no thread oversubscription. We also always want to allocate each physics
+    # engine its own thread for maximum performance, per the original ARGoS paper.
+    args.__dict__['n_jobs_per_node'] = int(
+        float(args.n_sims) / int(os.environ['PBS_NUM_NODES']))
+    args.physics_n_engines = int(
+        float(os.environ['PBS_NUM_PPN']) / args.n_jobs_per_node)
+    args.__dict__['n_threads'] = args.physics_n_engines
 
 
-class ARGoSCmdGenerator():
+def argos_cmd_generate(input_fpath: str):
     """
     Generate the ARGoS cmd to run in the MSI environment, given the path to an input file. Dependent
     on which MSI cluster you are running on, so that different versions compiled for different
@@ -69,13 +66,12 @@ class ARGoSCmdGenerator():
     ``argos3-$MSICLUSTER``.
     """
 
-    def __call__(self, input_fpath: str):
-        return 'argos3-' + \
-            os.environ['MSICLUSTER'] + \
-            ' -c "{0}" --log-file /dev/null --logerr-file /dev/null\n'.format(input_fpath)
+    return 'argos3-' + \
+        os.environ['MSICLUSTER'] + \
+        ' -c "{0}" --log-file /dev/null --logerr-file /dev/null\n'.format(input_fpath)
 
 
-class GNUParallelCmdGenerator():
+def gnu_parallel_cmd_generate(parallel_opts: dict):
     """
     Given a dictionary containing job information, generate the cmd to correctly invoke GNU Parallel
     on MSI.
@@ -88,25 +84,26 @@ class GNUParallelCmdGenerator():
                        - joblog_path - The logfile for GNU parallel output.
                        - cmdfile_path - The file containing the ARGoS cmds to run.
     """
+    jobid = os.environ['PBS_JOBID']
+    nodelist = os.path.join(parallel_opts['jobroot_path'],
+                            "{0}-nodelist.txt".format(jobid))
 
-    def __call__(self,
-                 parallel_opts: dict):
-        jobid = os.environ['PBS_JOBID']
-        nodelist = os.path.join(parallel_opts['jobroot_path'],
-                                "{0}-nodelist.txt".format(jobid))
+    resume = ''
+    if parallel_opts['exec_resume']:
+        resume = '--resume'
 
-        resume = ''
-        if parallel_opts['exec_resume']:
-            resume = '--resume'
+    return 'sort -u $PBS_NODEFILE > {0} && ' \
+        'parallel {2} --jobs {1} --results {4} --joblog {3} --sshloginfile {0} --workdir {4} < "{5}"'.format(
+            nodelist,
+            parallel_opts['n_jobs'],
+            resume,
+            parallel_opts['joblog_path'],
+            parallel_opts['jobroot_path'],
+            parallel_opts['cmdfile_path'])
 
-        return 'sort -u $PBS_NODEFILE > {0} && ' \
-            'parallel {2} --jobs {1} --results {4} --joblog {3} --sshloginfile {0} --workdir {4} < "{5}"'.format(
-                nodelist,
-                parallel_opts['n_jobs'],
-                resume,
-                parallel_opts['joblog_path'],
-                parallel_opts['jobroot_path'],
-                parallel_opts['cmdfile_path'])
+
+def xvfb_cmd_generate(cmdopts: dict):
+    return ''
 
 
 __api__ = [

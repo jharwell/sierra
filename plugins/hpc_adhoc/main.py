@@ -21,7 +21,7 @@ import os
 import math
 
 
-class EnvConfigurer():
+def env_configure(all_args):
     """
     Configure SIERRA for ad-hoc HPC by reading environment variables and modifying the parsed
     cmdline arguments. Uses the following environment variables (if any of them are not defined an
@@ -31,40 +31,38 @@ class EnvConfigurer():
 
     """
 
-    def __call__(self, all_args):
-        keys = ['ADHOC_NODEFILE']
+    keys = ['ADHOC_NODEFILE']
 
-        for k in keys:
-            assert k in os.environ,\
-                "FATAL: Attempt to run SIERRA in non-ADHOC environment: '{0}' not found".format(k)
+    for k in keys:
+        assert k in os.environ,\
+            "FATAL: Attempt to run SIERRA in non-ADHOC environment: '{0}' not found".format(k)
 
-        with open(os.environ['ADHOC_NODEFILE'], 'r') as f:
-            lines = f.readlines()
-            n_nodes = len(lines)
+    with open(os.environ['ADHOC_NODEFILE'], 'r') as f:
+        lines = f.readlines()
+        n_nodes = len(lines)
 
-            ppn = math.inf
-            for line in lines:
-                ppn = min(ppn, int(line.split('/')[0]))
+        ppn = math.inf
+        for line in lines:
+            ppn = min(ppn, int(line.split('/')[0]))
 
-        # For HPC, we want to use the the maximum # of simultaneous jobs per node such that
-        # there is no thread oversubscription. We also always want to allocate each physics
-        # engine its own thread for maximum performance, per the original ARGoS paper.
-        all_args.__dict__['n_jobs_per_node'] = int(float(all_args.n_sims) / n_nodes)
-        all_args.physics_n_engines = int(ppn / all_args.n_jobs_per_node)
-        all_args.__dict__['n_threads'] = all_args.physics_n_engines
+    # For HPC, we want to use the the maximum # of simultaneous jobs per node such that
+    # there is no thread oversubscription. We also always want to allocate each physics
+    # engine its own thread for maximum performance, per the original ARGoS paper.
+    all_args.__dict__['n_jobs_per_node'] = int(float(all_args.n_sims) / n_nodes)
+    all_args.physics_n_engines = int(ppn / all_args.n_jobs_per_node)
+    all_args.__dict__['n_threads'] = all_args.physics_n_engines
 
 
-class ARGoSCmdGenerator():
+def argos_cmd_generate(input_fpath: str):
     """
     Generate the ARGOS cmd to run in the ad-hoc environment, given the path to an input file. The
     ARGoS executable is assumed to be called ``argos3``.
     """
 
-    def __call__(self, input_fpath: str):
-        return 'argos3 -c "{0}" --log-file /dev/null --logerr-file /dev/null\n'.format(input_fpath)
+    return 'argos3 -c "{0}" --log-file /dev/null --logerr-file /dev/null\n'.format(input_fpath)
 
 
-class GNUParallelCmdGenerator():
+def gnu_parallel_cmd_generate(parallel_opts: dict):
     """
     Given a dictionary containing job information, generate the cmd to correctly invoke GNU Parallel
     in the ad-hoc environment.
@@ -78,28 +76,23 @@ class GNUParallelCmdGenerator():
                        - cmdfile_path - The file containing the ARGoS cmds to run.
     """
 
-    def __call__(self,
-                 parallel_opts: dict):
-        jobid = os.getpid()
-        nodelist = os.path.join(parallel_opts['jobroot_path'],
-                                "{0}-nodelist.txt".format(jobid))
+    jobid = os.getpid()
+    nodelist = os.path.join(parallel_opts['jobroot_path'],
+                            "{0}-nodelist.txt".format(jobid))
 
-        resume = ''
-        if parallel_opts['exec_resume']:
-            resume = '--resume'
+    resume = ''
+    if parallel_opts['exec_resume']:
+        resume = '--resume'
 
-        return 'sort -u $ADHOC_NODEFILE > {0} && ' \
-            'parallel {2} --jobs {1} --results {4} --joblog {3} --sshloginfile {0} --workdir {4} < "{5}"'.format(
-                nodelist,
-                parallel_opts['n_jobs'],
-                resume,
-                parallel_opts['joblog_path'],
-                parallel_opts['jobroot_path'],
-                parallel_opts['cmdfile_path'])
+    return 'sort -u $ADHOC_NODEFILE > {0} && ' \
+        'parallel {2} --jobs {1} --results {4} --joblog {3} --sshloginfile {0} --workdir {4} < "{5}"'.format(
+            nodelist,
+            parallel_opts['n_jobs'],
+            resume,
+            parallel_opts['joblog_path'],
+            parallel_opts['jobroot_path'],
+            parallel_opts['cmdfile_path'])
 
 
-__api__ = [
-    'EnvConfigurer',
-    'GNUParallelCmdGenerator',
-    'ARGoSCmdGenerator'
-]
+def xvfb_cmd_generate(cmdopts: dict):
+    return ''

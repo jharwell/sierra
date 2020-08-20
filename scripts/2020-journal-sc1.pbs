@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#PBS -l walltime=4:00:00,nodes=50:ppn=8,pmem=2500mb
+#PBS -l walltime=12:00:00,nodes=32:ppn=24,pmem=2500mb
 #PBS -m abe
 #PBS -M harwe006@umn.edu
 
@@ -34,12 +34,31 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 ################################################################################
 # Begin Experiments                                                            #
 ################################################################################
-NSIMS=8
 CONTROLLERS=(depth0.CRW depth0.DPO depth1.BITD_DPO depth2.BIRTD_DPO)
 OUTPUT_ROOT=$HOME/exp/sc1
 TIME_SHORT=50000
 TIME_LONG=100000
-BASE_CMD="python3 sierra.py \
+TASKS=("scalability" "flexibility" "robustness")
+
+
+if [ -n "$MSICLUSTER" ] # Running on MSI
+then
+    TASK=${TASKS[$PBS_ARRAYID]}
+    NSIMS=96
+    BASE_CMD="python3 sierra.py \
+                  --sierra-root=$OUTPUT_ROOT\
+                  --template-input-file=$HOME/git/sierra/templates/2020-journal-sc1.argos \
+                  --n-sims=$NSIMS\
+                  --physics-n-engines=4\
+                  --pipeline 1 2 3 4 --exp-graphs=inter\
+                  --project=fordyca\
+                  --hpc-env=hpc_msi \
+                  --exp-overwrite"
+
+else
+    TASK="$1"
+    NSIMS=8
+    BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT\
                   --template-input-file=$HOME/git/sierra/templates/2020-journal-sc1.argos \
                   --n-sims=$NSIMS\
@@ -49,7 +68,7 @@ BASE_CMD="python3 sierra.py \
                   --hpc-env=hpc_local \
                   --exp-overwrite"
 
-TASK="$1"
+fi
 
 cd $HOME/git/sierra
 
@@ -121,7 +140,7 @@ then
                   --time-setup=time_setup.T${TIME_LONG}
 
         $BASE_CMD --scenario=SS.32x16 \
-                  --batch-criteria saa_noise.all.C3.Z50\
+                  --batch-criteria saa_noise.all.C4.Z50\
                   --controller=${c} \
                   --n-blocks=50\
                   --n-robots=50\
@@ -138,7 +157,7 @@ then
                   --time-setup=time_setup.T${TIME_LONG}
 
         $BASE_CMD --scenario=RN.48x48 \
-                  --batch-criteria saa_noise.all.C3.Z200\
+                  --batch-criteria saa_noise.all.C4.Z200\
                   --controller=${c} \
                   --n-blocks=200\
                   --n-robots=200\

@@ -30,7 +30,7 @@ class ArenaExtent():
     """Representation of a 2D or 3D section/chunk/volume of the arena."""
 
     def __init__(self,
-                 dims: tp.Tuple[int],
+                 dims: tp.Tuple[int, int, int],
                  offset: tuple = (0, 0, 0)) -> None:
         self.offset = offset
         self.dims = dims

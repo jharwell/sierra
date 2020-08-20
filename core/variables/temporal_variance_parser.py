@@ -44,7 +44,7 @@ class TemporalVarianceParser():
             'xml_parent_path': "",
             'variance_csv_col': "",
             'waveform_type': "",
-            'waveform_param': "",
+            'waveform_param': int(),
             'population': None
         }
         xml_parent = {

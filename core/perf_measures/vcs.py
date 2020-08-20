@@ -410,7 +410,7 @@ class CSRaw():
                  exp_data,
                  ideal_data,
                  method: str,
-                 maxval: float = None):
+                 maxval: tp.Optional[float] = None):
         assert method is not None, "FATAL: Cannot compare curves without method"
 
         if method == "pcm":
@@ -434,7 +434,7 @@ class CSRaw():
         return -1.0 + (val - minval) * (1 - (-1)) / (maxval - minval)
 
     @staticmethod
-    def __calc_dtw(exp_data, ideal_data, maxval: float):
+    def __calc_dtw(exp_data, ideal_data, maxval: tp.Optional[float]):
         # Don't use the sm version--waaayyyy too slow
         dist, _ = fastdtw.fastdtw(exp_data, ideal_data)
 
@@ -453,7 +453,7 @@ class DataFrames:
     @staticmethod
     def expx_var_df(cmdopts: tp.Dict[str, str],
                     criteria: BatchCriteria,
-                    exp_dirs: tp.List[str],
+                    exp_dirs: tp.Optional[tp.List[str]],
                     avg_output_leaf: str,
                     tv_environment_csv: str,
                     exp_num: int):
@@ -476,7 +476,7 @@ class DataFrames:
     @staticmethod
     def expx_perf_df(cmdopts: tp.Dict[str, str],
                      criteria: BatchCriteria,
-                     exp_dirs: tp.List[str],
+                     exp_dirs: tp.Optional[tp.List[str]],
                      avg_output_leaf: str,
                      intra_perf_csv: str,
                      exp_num: int):

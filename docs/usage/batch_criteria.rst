@@ -23,7 +23,7 @@ defined by the selected project):
   - :ref:`Swarm Population Dynamics <ln-bc-population-dynamics>`
   - :ref:`Swarm Population Density <ln-bc-population-density>`
   - :ref:`Block Density <ln-bc-block-density>`
-  - :ref:`Block Motion DynamicsSAA Noise <ln-bc-block-motion-dynamics>`
+  - :ref:`Block Motion Dynamics <ln-bc-block-motion-dynamics>`
   - :ref:`Temporal Variance <ln-bc-tv>`
   - :ref:`Oracle <ln-bc-oracle>`
   - :ref:`Task Allocation Policy <ln-bc-ta-policy-set>`

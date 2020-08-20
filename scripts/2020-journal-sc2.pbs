@@ -34,7 +34,7 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 # Begin Experiments                                                            #
 ################################################################################
 NSIMS=4
-CONTROLLERS=(depth2.BIRTD_DPO)
+CONTROLLERS=(depth0.CRW depth0.DPO depth1.BITD_DPO depth2.BIRTD_DPO)
 OUTPUT_ROOT=$HOME/exp/sc2
 DENSITY=5p0 # 1280 robots max with cardinality = 10
 N_BLOCKS=512
@@ -48,7 +48,7 @@ BASE_CMD="python3 sierra.py \
                   --template-input-file=$HOME/git/sierra/templates/2020-journal-sc2.argos \
                   --n-sims=$NSIMS\
                   --physics-n-engines=4\
-                  --pipeline 1 2 3 4 --exp-graphs=inter\
+                  --pipeline 4 --exp-graphs=inter\
                   --project=fordyca\
                   --hpc-env=hpc_local \
                   --exp-overwrite"
@@ -71,10 +71,7 @@ then
     done
 fi
 
-# Flexibility analysis. Once I get the results of scalability/emergence
-# analysis, switch from population density to block motion dynamics, and pick
-# one or two swarm sizes that seem interesting. This will make the experiments
-# sooooo much faster.
+# Flexibility analysis.
 if [ "$TASK" == "flexibility" ] || [ "$TASK" == "all" ]
 then
     for c in "${CONTROLLERS[@]}"
@@ -100,25 +97,24 @@ then
     done
 fi
 
-# Robustness analysis. Once I get the results of scalability/emergence
-# analysis, switch from population density to block motion dynamics, and pick
-# one or two swarm sizes that seem interesting. This will make the experiments
-# sooooo much faster.
+# Robustness analysis.
 if [ "$TASK" == "robustness" ] || [ "$TASK" == "all" ]
 then
     for c in "${CONTROLLERS[@]}"
     do
-        $BASE_CMD --scenario=${BLOCK_DIST}.16x16 \
-                  --batch-criteria  population_density.CD${DENSITY}.I16.C${CARDINALITY} population_dynamics.C${CARDINALITY}.F2p0.Dp0001 \
-                  --controller=${c} \
-                  --n-blocks=${N_BLOCKS}\
-                  --time-setup=time_setup.T${TIME_LONG}
+        # Depending on what Maria/reviewers say, I might have to add birth
+        # dynamics to this to have a stable queueing system and get graph axis
+        # ticks that are well defined.
+        # $BASE_CMD --scenario=${BLOCK_DIST}.16x16 \
+        #           --batch-criteria  population_density.CD${DENSITY}.I16.C${CARDINALITY} population_dynamics.C${CARDINALITY}.F2p0.D0p0001 \
+        #           --controller=${c} \
+        #           --n-blocks=${N_BLOCKS}\
+        #           --time-setup=time_setup.T${TIME_LONG}
 
         $BASE_CMD --scenario=${BLOCK_DIST}.16x16 \
-                  --batch-criteria    population_density.CD${DENSITY}.I16.C${CARDINALITY} saa_noise.all.C3\
+                  --batch-criteria    population_density.CD${DENSITY}.I16.C${CARDINALITY} saa_noise.all.C${CARDINALITY}\
                   --controller=${c} \
                   --n-blocks=${N_BLOCKS}\
                   --time-setup=time_setup.T${TIME_SHORT}
     done
 fi
-3

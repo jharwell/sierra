@@ -237,8 +237,7 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
         }
 
         if any(v == attr['noise_type'] for v in ['sensors', 'actuators']):
-            configured_sources = {attr['noise_type']
-                : main_config['perf']['robustness'][attr['noise_type']]}
+            configured_sources = {attr['noise_type']                                  : main_config['perf']['robustness'][attr['noise_type']]}
         else:
             configured_sources = {
                 'actuators': main_config['perf']['robustness'].get('actuators', {}),
@@ -256,7 +255,8 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
         # etc.
         #
         # I couldn't find a more elegant way of doing this.
-        by_src = []
+        by_src = []  # type: tp.List[tp.Set]
+
         for dev_type in xml_parents.keys():
             # Either the sensors or actuators list is empty because it wasn't included in the YAML
             # config file.
@@ -272,12 +272,12 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
 
         # Invert!
         by_exp = []
-        for i in range(0, attr['cardinality'] + 1):
+        for i in range(0, attr['cardinality']):
             # This is the magic line. It takes every "level"-th element, since that is the # of
             # experiments that this criteria defines, starting with i=0...n_levels. So if there are
             # 10 levels, then the first set added to the return list would be i={0,10,20,...}, the
             # second would be i={1,11,21,...}, etc.
-            by_exp.append({chg for s in by_src[i:: attr['cardinality'] + 1] for chg in s})
+            by_exp.append({chg for s in by_src[i:: attr['cardinality']] for chg in s})
 
         return by_exp
 
@@ -288,7 +288,7 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
         if dev_noise_config['model'] == 'uniform':
             levels = [x for x in np.linspace(dev_noise_config['range'][0],
                                              dev_noise_config['range'][1],
-                                             num=attr['cardinality'] + 1)]
+                                             num=attr['cardinality'])]
             for level in levels:
                 v = set()
                 for tag in xml_child_tags:
@@ -298,10 +298,10 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
         elif dev_noise_config['model'] == 'gaussian':
             stddev_levels = [x for x in np.linspace(dev_noise_config['stddev_range'][0],
                                                     dev_noise_config['stddev_range'][1],
-                                                    num=attr['cardinality'] + 1)]
+                                                    num=attr['cardinality'])]
             mean_levels = [x for x in np.linspace(dev_noise_config['mean_range'][0],
                                                   dev_noise_config['mean_range'][1],
-                                                  num=attr['cardinality'] + 1)]
+                                                  num=attr['cardinality'])]
             for l1, l2 in zip(mean_levels, stddev_levels):
                 v = set()
                 for tag in xml_child_tags:

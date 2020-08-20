@@ -25,6 +25,8 @@ import logging
 import glob
 import re
 import typing as tp
+import argparse
+
 import pandas as pd
 
 from core.graphs.batch_ranged_graph import BatchRangedGraph
@@ -59,7 +61,7 @@ class BivarIntraScenarioComparator:
                  cc_csv_root: str,
                  cc_graph_root: str,
                  cmdopts: dict,
-                 cli_args: dict,
+                 cli_args: argparse.Namespace,
                  main_config: dict) -> None:
         self.controllers = controllers
         self.cc_csv_root = cc_csv_root
@@ -92,7 +94,8 @@ class BivarIntraScenarioComparator:
                     self.__compare_in_scenario(cmdopts=cmdopts,
                                                graph=graph,
                                                batch_leaf=leaf,
-                                               legend=legend)
+                                               legend=legend,
+                                               comp_type=comp_type)
                     found = True
                     break
             if not found:

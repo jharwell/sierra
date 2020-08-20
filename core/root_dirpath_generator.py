@@ -66,7 +66,7 @@ def parse_batch_leaf(root: str):
     template_stem = ''.join(root.split('-')[0])
     scenario_and_bc = root.split('-')[1].split('+')
     scenario = scenario_and_bc[0]
-    bc = scenario_and_bc[1:]
+    bc = scenario_and_bc[1:]  # type: tp.Union[tp.List,str]
 
     if not isinstance(bc, list):  # Univariate batch criteria
         bc = [bc]

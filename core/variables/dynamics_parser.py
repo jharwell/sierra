@@ -15,7 +15,6 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 import re
-import typing as tp
 
 
 class DynamicsParser():
@@ -23,14 +22,17 @@ class DynamicsParser():
     Base class for some dynamics parsers to reduce code duplication.
     """
 
+    def specs_dict(self):
+        raise NotImplementedError
+
     def __call__(self,
-                 criteria_str: str,
-                 specs_dict: tp.Dict[str, str]) -> dict:
+                 criteria_str: str) -> dict:
         ret = {
             'dynamics': list(),
             'factor': float(),
             'dynamics_types': list()
         }
+        specs_dict = self.specs_dict()
 
         # Parse cardinality
         res = re.search(r".C[0-9]+", criteria_str)
@@ -48,17 +50,17 @@ class DynamicsParser():
         ret['factor'] = characteristic + mantissa
 
         # Parse dynamics parameters
-        specs = criteria_str.split('.')[2:]
+        specs = criteria_str.split('.')[3:]
         dynamics = []
         dynamics_types = []
 
         for spec in specs:
             # Parse characteristic
-            res = re.search('[0-9]+', spec)
+            res = re.search('[0-9]+p', spec)
             assert res is not None, \
                 "FATAL: Bad characteristic specification in criteria '{0}'".format(
                     criteria_str)
-            characteristic = float(res.group(0))
+            characteristic = float(res.group(0)[0:-1])
 
             # Parser mantissa
             res = re.search('p[0-9]+', spec)

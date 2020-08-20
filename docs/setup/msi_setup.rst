@@ -11,7 +11,7 @@ MSI Setup
       on some small scale experiments of interest on your local machine.
 
 You really, really, *really*, don't want to be trying to do
-development/debugging on MSI, so
+development/debugging on MSI.
 
 #. Get an MSI account (you will need to talk to Maria Gini, my advisor), and
    verify that you can login to ``mesabi`` via the following commands, run from
@@ -45,14 +45,14 @@ development/debugging on MSI, so
                   build/run ANYTHING you MUST source this script otherwise
                   things will (probably) not work. This includes if you ran the
                   script on a login node and then started an interactive session
-                  (the environment is NOT inherited).
-
+                  via job submission with ``-I`` (the environment is NOT
+                  inherited).
 
 #. On an MSI login node (can be any type, as the filesystem is shared across all
    clusters), install the same python dependencies as in :ref:`ln-usage`, but
    user local (you obviously don't have admin priveleges on the cluster)::
 
-     pip3 install --user pandas similaritymeasures fastdtw matplotlib pyyaml coloredlogs sympy
+     pip3 install --user -r requirements/msi.txt
 
    This is a one time step. Must be done on a login node, as compute nodes do
    not always have internet access (apparently?).
@@ -78,7 +78,7 @@ development/debugging on MSI, so
    The above command, when it returns, will give you 1 hour of time on an actual
    compute node. You know you are running/building on a compute node rather than
    a login node on gangi/mesabi when the hostname is ``cnXXXX`` rather than
-   ``nodeXXXX``.
+   ``lnXXXX``.
 
 #. In your interactive session run the bash script to build the project (note
    that you may want to tweak the cmake defines in the script, or use your own

@@ -19,9 +19,8 @@ documentation.
 """
 
 import typing as tp
-import re
-import math
 import os
+import math
 
 from core.variables import batch_criteria as bc
 import core.utils
@@ -45,8 +44,8 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
                  cli_arg: str,
                  main_config: tp.Dict[str, str],
                  batch_generation_root: str,
-                 dynamics_types: tp.List[tp.Tuple[str, int]],
-                 dynamics: tp.List[tp.Tuple[str, int]]) -> None:
+                 dynamics_types: tp.List[str],
+                 dynamics: tp.List[tp.Set[tp.Tuple[str, int]]]) -> None:
         bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
         self.dynamics_types = dynamics_types
         self.dynamics = dynamics
@@ -79,8 +78,14 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
             exp_def = core.utils.unpickle_exp_def(os.path.join(self.batch_generation_root,
                                                                d,
                                                                'exp_def.pkl'))
-            TS, T = PopulationDynamics.calc_tasked_swarm_time(exp_def)
-            ticks.append(round(TS / T, 4))
+            # If we had pure death dynamics, the tasked swarm time is 0 in the steady state, so we
+            # use lambda_d as the ticks instead, which is somewhat more meaningful.
+            if self.is_pure_death_dynamics():
+                lambda_d, _, _, _ = PopulationDynamics.extract_rate_params(exp_def)
+                ticks.append(lambda_d)
+            else:
+                TS, T = PopulationDynamics.calc_tasked_swarm_time(exp_def)
+                ticks.append(round(TS / T, 4))
 
         return ticks
 
@@ -90,7 +95,10 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
         return list(map(str, self.graph_xticks(cmdopts, exp_dirs)))
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
-        return "Average Fraction of Time Robots Allocated To Task"
+        if self.is_pure_death_dynamics():
+            return "Death Rate"
+        else:
+            return "Average Fraction of Time Robots Allocated To Task"
 
     def graph_ylabel(self, cmdopts: tp.Dict[str, str]) -> str:
         return "Superlinearity"
@@ -98,20 +106,29 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
     def pm_query(self, pm: str) -> bool:
         return pm in ['blocks-transported', 'robustness']
 
+    def is_pure_death_dynamics(self):
+        return 'D' in self.dynamics_types and 'B' not in self.dynamics_types
+
     @staticmethod
     def calc_tasked_swarm_time(exp_def):
         explen, expticks = PopulationDynamics.extract_explen(exp_def)
         T = explen * expticks
         lambda_d, mu_b, lambda_m, mu_r = PopulationDynamics.extract_rate_params(exp_def)
 
+        # Pure death dynamics with a service rate of infinity. The "how long is a robot part of a
+        # tasked swarm" calculation is only valid for stable queueing systems, with well defined
+        # arrival and service rates (i.e. not 0 and not infinite).
+        if lambda_d > 0.0 and mu_b == 0.0:
+            return (0, T)
+
         # mu/lambda for combined queue
         lambda_Sbar = lambda_d + lambda_m
         mu_Sbar = mu_b + mu_r
-        if (mu_Sbar - lambda_Sbar) != 0:
-            print(mu_Sbar, lambda_Sbar)
+
+        try:
             TSbar = 1 / (mu_Sbar - lambda_Sbar) - 1 / mu_Sbar
             return (T - TSbar, T)
-        else:
+        except ZeroDivisionError:
             return (T, T)
 
     @staticmethod
@@ -160,13 +177,15 @@ class PopulationDynamicsParser(dp.DynamicsParser):
     Enforces the cmdline definition of the criteria described in the module docstring.
     """
 
+    def specs_dict(self):
+        return {'B': 'birth_mu',
+                'D': 'death_lambda',
+                'M': 'malfunction_lambda',
+                'R': 'repair_mu'
+                }
+
     def __call__(self, criteria_str: str) -> dict:
-        specs_dict = {'B': 'birth_mu',
-                      'D': 'death_lambda',
-                      'M': 'malfunction_lambda',
-                      'R': 'repair_mu'
-                      }
-        return super().__call__(criteria_str, specs_dict)
+        return super().__call__(criteria_str)
 
 
 def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_generation_root: str, **kwargs):
@@ -180,12 +199,20 @@ def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_generation_root:
         # ideal conditions = no dynamics
         dynamics = [{(d[0], 0.0) for d in attr['dynamics']}]
 
+        nonzero = [{(d[0], d[1] + d[1] * x * float(attr['factor']))
+                    for d in attr['dynamics']} for x in range(1, attr['cardinality'])]
+
+        pure_death = ['D'] == attr['dynamics_types']
+        pure_birth = ['B'] == attr['dynamics_types']
+        pure_malfunction = ['M'] == attr['dynamics_types']
+
         # We reverse the generated dynamics, because as the gap between the lambda/mu grows, robots
         # will process through the queue MORE quickly, which will lead to MORE stable swarms as we
-        # go from exp0...expN rather than the other way around.
-        nonzero = [{(d[0], d[1] + d[1] * x * float(attr['factor']))
-                    for d in attr['dynamics']} for x in range(0, attr['cardinality'])]
-        nonzero.reverse()
+        # go from exp0...expN rather than the other way around, but ONLY if we have a stable
+        # queueing system. If we have some type of pure dynamics, then we don't need to  do this.
+        if not (pure_death or pure_birth or pure_malfunction):
+            nonzero.reverse()
+
         dynamics.extend(nonzero)
         return dynamics
 
@@ -194,7 +221,7 @@ def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_generation_root:
                                     cli_arg,
                                     main_config,
                                     batch_generation_root,
-                                    attr['dynamics'],
+                                    attr['dynamics_types'],
                                     gen_dynamics())
 
     return type(cli_arg,

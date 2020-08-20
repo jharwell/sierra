@@ -20,8 +20,9 @@ Main module/entry point for SIERRA, the helpful command line swarm-robotic autom
 import logging
 import sys
 import collections
-import coloredlogs
 import os
+
+import coloredlogs
 
 import core.cmdline as cmd
 import core.hpc as hpc

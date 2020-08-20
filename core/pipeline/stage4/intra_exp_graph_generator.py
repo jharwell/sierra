@@ -106,7 +106,7 @@ class IntraExpGraphGenerator:
         #. :class:`~pipeline.stage4.intra_exp_graph_generator.HeatmapsGenerator` to generate
            heatmaps for each experiment in the batch.
         """
-        if self.cmdopts['gen_vc_plots']:
+        if self.cmdopts['gen_vc_plots'] and batch_criteria.is_univar():
             logging.info('Flexibility plots from %s', self.cmdopts['output_root'])
             FlexibilityPlotsCSVGenerator(self.main_config, self.cmdopts)(batch_criteria)
 

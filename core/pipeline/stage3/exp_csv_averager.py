@@ -50,7 +50,7 @@ class BatchedExpCSVAverager:
         experiments = [item for item in os.listdir(batch_output_root) if item not in [
             main_config['sierra']['collate_csv_leaf']]]
 
-        q = mp.JoinableQueue()
+        q = mp.JoinableQueue()  # type: mp.JoinableQueue
 
         for exp in experiments:
             path = os.path.join(batch_output_root, exp)

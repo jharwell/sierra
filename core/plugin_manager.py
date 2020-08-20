@@ -17,7 +17,7 @@
 A SUPER DUPER simple plugin manager for being able to add stuff to SIERRA without having to modify
 the core.
 """
-import importlib
+import importlib.util
 import os
 import logging
 from singleton_decorator import singleton
@@ -47,7 +47,10 @@ class PluginManager():
         for possible in os.listdir(self.plugin_root):
             location = os.path.join(self.plugin_root, possible)
             if os.path.isdir(location) and self.main_module + '.py' in os.listdir(location):
-                spec = importlib.machinery.PathFinder().find_spec(self.main_module, [location])
+                # importlib.machinery.PathFinder().find_spec(self.main_module, [location])
+                spec = importlib.util.spec_from_file_location(possible,
+                                                              os.path.join(location,
+                                                                           self.main_module + '.py'))
                 plugins[possible] = {
                     'spec': spec
                 }
@@ -69,7 +72,9 @@ class PluginManager():
             raise Exception("Cannot locate plugin '%s'" % name)
 
         if name not in self.loaded_plugins:
-            module = plugins[name]['spec'].loader.load_module()
+            module = importlib.util.module_from_spec(plugins[name]['spec'])
+            plugins[name]['spec'].loader.exec_module(module)
+
             self.loaded_plugins[name] = {
                 'spec': plugins[name]['spec'],
                 'module': module

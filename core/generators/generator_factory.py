@@ -50,6 +50,7 @@ def scenario_generator_create(scenario, controller, **kwargs):
 
     def __init__(self, **kwargs) -> None:
         res = re.search('[SDQPR][SSSLN]', scenario)
+        assert res is not None, "Bad block distribution in {0}".format(scenario)
         abbrev = res.group(0)
         cmdopts = kwargs['cmdopts']
         try:

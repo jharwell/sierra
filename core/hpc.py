@@ -32,7 +32,7 @@ class ARGoSCmdGenerator():
 
     def __call__(self, cmdopts: dict, input_fpath: str):
         hpc = core.plugin_manager.PluginManager().get_plugin(cmdopts['hpc_env'])
-        return hpc.generate_argos_cmd(input_fpath)
+        return hpc.argos_cmd_generate(input_fpath)
 
 
 class GNUParallelCmdGenerator():
@@ -43,7 +43,7 @@ class GNUParallelCmdGenerator():
 
     def __call__(self, hpc_env: str, parallel_opts: dict):
         hpc = core.plugin_manager.PluginManager().get_plugin(hpc_env)
-        return hpc.generate_gnu_parallel_cmd(parallel_opts)
+        return hpc.gnu_parallel_cmd_generate(parallel_opts)
 
 
 class XvfbCmdGenerator():
@@ -54,7 +54,7 @@ class XvfbCmdGenerator():
 
     def __call__(self, cmdopts: dict):
         hpc = core.plugin_manager.PluginManager().get_plugin(cmdopts['hpc_env'])
-        return hpc.generate_xvfb_cmd(cmdopts)
+        return hpc.xvfb_cmd_generate(cmdopts)
 
 
 class EnvConfigurer():
@@ -65,7 +65,7 @@ class EnvConfigurer():
     def __call__(self, hpc_env: str, args):
         args.__dict__['hpc_env'] = hpc_env
         hpc = core.plugin_manager.PluginManager().get_plugin(hpc_env)
-        hpc.configure_env(args)
+        hpc.env_configure(args)
         return args
 
 
