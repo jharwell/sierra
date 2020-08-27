@@ -20,16 +20,17 @@ Classes for the SAA noise batch criteria. See :ref:`ln-bc-saa-noise` for usage d
 
 import re
 import os
+import implements
 
 import typing as tp
 import numpy as np
 
-from core.variables.batch_criteria import UnivarBatchCriteria
+import core.variables.batch_criteria as bc
 from core.variables.population_size import PopulationSize
-import core.utils
 
 
-class SAANoise(UnivarBatchCriteria):
+@implements.implements(bc.IConcreteBatchCriteria)
+class SAANoise(bc.UnivarBatchCriteria):
     """
     A univariate range specifiying the set of noise ranges for Sensors And Actuators (SAA), and
     possibly swarm size to use to define the batched experiment. This class is a base class which
@@ -53,7 +54,7 @@ class SAANoise(UnivarBatchCriteria):
                  variances: list,
                  population: int,
                  noise_type: str) -> None:
-        UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
+        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
 
         self.variances = variances
         self.population = population

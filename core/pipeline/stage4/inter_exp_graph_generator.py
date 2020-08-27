@@ -133,7 +133,7 @@ class UnivarPerfMeasuresGenerator:
         self.cmdopts = copy.deepcopy(cmdopts)
         self.main_config = main_config
 
-    def __call__(self, batch_criteria: bc.UnivarBatchCriteria):
+    def __call__(self, batch_criteria: bc.IConcreteBatchCriteria):
         inter_perf_csv = self.main_config['perf']['inter_perf_csv']
         interference_count_csv = self.main_config['perf']['interference_count_csv']
         interference_duration_csv = self.main_config['perf']['interference_duration_csv']
@@ -143,7 +143,7 @@ class UnivarPerfMeasuresGenerator:
         if batch_criteria.pm_query('raw'):
             pmraw.RawUnivar(self.cmdopts, inter_perf_csv).generate(batch_criteria,
                                                                    title=raw_title,
-                                                                   ylbale=raw_ylabel)
+                                                                   ylabel=raw_ylabel)
         if batch_criteria.pm_query('scalability'):
             pms.ScalabilityUnivarGenerator()(inter_perf_csv,
                                              interference_count_csv,

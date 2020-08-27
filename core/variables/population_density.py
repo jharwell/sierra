@@ -21,12 +21,15 @@ documentation.
 
 import typing as tp
 import os
+import implements
 
 from core.variables import constant_density as cd
 import core.generators.scenario_generator_parser as sgp
 import core.utils
+import core.variables.batch_criteria as bc
 
 
+@implements.implements(bc.IConcreteBatchCriteria)
 class PopulationConstantDensity(cd.ConstantDensity):
     """
     A univariate range specifiying the population density (ratio of swarm size to arena size) to
@@ -67,7 +70,7 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
     def graph_xticks(self,
                      cmdopts: tp.Dict[str, str],
-                     exp_dirs: list = None) -> tp.List[float]:
+                     exp_dirs: tp.List[str] = None) -> tp.List[float]:
         areas = []
         if exp_dirs is not None:
             dirs = exp_dirs
@@ -88,13 +91,13 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
     def graph_xticklabels(self,
                           cmdopts: tp.Dict[str, str],
-                          exp_dirs: list = None) -> tp.List[str]:
+                          exp_dirs: tp.List[str] = None) -> tp.List[str]:
         return [str(int(self.target_density / 100.0 * x)) for x in self.graph_xticks(cmdopts, exp_dirs)]
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
         return r"Population Size"
 
-    def pm_query(self, pm) -> bool:
+    def pm_query(self, pm: str) -> bool:
         return pm in ['raw', 'scalability', 'self-org']
 
 

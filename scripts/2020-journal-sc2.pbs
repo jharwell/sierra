@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#PBS -l walltime=4:00:00,nodes=50:ppn=8,pmem=2500mb
+#PBS -l walltime=24:00:00,nodes=32:ppn=24,pmem=2500mb
 #PBS -m abe
 #PBS -M harwe006@umn.edu
 
@@ -36,11 +36,11 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 CONTROLLERS=(depth0.CRW depth0.DPO depth1.BITD_DPO depth2.BIRTD_DPO)
 OUTPUT_ROOT=$HOME/exp/sc2
 DENSITY=5p0 # 1280 robots max with cardinality = 10
-N_BLOCKS=512
+N_BLOCKS=1280
 BLOCK_DIST=PL
-CARDINALITY=4
-TIME_SHORT=20000
-TIME_LONG=100000
+CARDINALITY=8
+TIME_SHORT=time_setup.T50000N1000
+TIME_LONG=time_setup.T200000N1000
 TASKS=("scalability" "flexibility" "robustness")
 
 if [ -n "$MSICLUSTER" ] # Running on MSI
@@ -53,7 +53,7 @@ then
     TASK=${TASKS[$Y]}
     BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \
-                  --template-input-file=$HOME/git/sierra/templates/2020-journal-sc2.argos \
+                  --template-input-file=$HOME/git/sierra-sc2/templates/2020-journal-sc2.argos \
                   --n-sims=$NSIMS\
                   --physics-n-engines=4\
                   --pipeline 1 2 3 4\
@@ -68,10 +68,10 @@ else
     TASK="$1"
     BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT \
-                  --template-input-file=$HOME/git/sierra/templates/2020-journal-sc2.argos \
+                  --template-input-file=$HOME/git/sierra-sc2/templates/2020-journal-sc2.argos \
                   --n-sims=$NSIMS\
                   --physics-n-engines=4\
-                  --pipeline 4\
+                  --pipeline 1 2 3 4\
                   --exp-graphs=inter\
                   --project=fordyca\
                   --hpc-env=hpc_local \
@@ -80,7 +80,7 @@ else
 
 fi
 
-cd $HOME/git/sierra
+cd $HOME/git/sierra-sc2
 
 # # Scalability/emergence analysis
 if [ "$TASK" == "scalability" ] || [ "$TASK" == "emergence" ] || [ "$TASK" == "all" ]
@@ -91,7 +91,7 @@ then
                   --batch-criteria population_density.CD${DENSITY}.I16.C${CARDINALITY} block_motion_dynamics.C${CARDINALITY}.F25p0.RW0p001\
                   --controller=${c} \
                   --n-blocks=${N_BLOCKS}\
-                  --time-setup=time_setup.T${TIME_SHORT}
+                  --time-setup=${TIME_SHORT}
 
     done
 fi
@@ -101,23 +101,23 @@ if [ "$TASK" == "flexibility" ] || [ "$TASK" == "all" ]
 then
     for c in "${CONTROLLERS[@]}"
     do
-        $BASE_CMD --scenario=${BLOCK_DIST}.16x16 \
-                  --batch-criteria  population_density.CD${DENSITY}.I16.C${CARDINALITY} temporal_variance.MStepU50000\
-                  --controller=${c}\
-                  --n-blocks=${N_BLOCKS}\
-                  --time-setup=time_setup.T${TIME_SHORT}
+        # $BASE_CMD --scenario=${BLOCK_DIST}.16x16 \
+        #           --batch-criteria  population_density.CD${DENSITY}.I16.C${CARDINALITY} temporal_variance.MStepU50000\
+        #           --controller=${c}\
+        #           --n-blocks=${N_BLOCKS}\
+        #           --time-setup=${TIME_SHORT}
 
-        $BASE_CMD --scenario=${BLOCK_DIST}.16x16 \
-                  --batch-criteria   population_density.CD${DENSITY}.I16.C${CARDINALITY} temporal_variance.MStepD50000\
-                  --controller=${c}\
-                  --n-blocks=${N_BLOCKS}\
-                  --time-setup=time_setup.T${TIME_SHORT}
+        # $BASE_CMD --scenario=${BLOCK_DIST}.16x16 \
+        #           --batch-criteria   population_density.CD${DENSITY}.I16.C${CARDINALITY} temporal_variance.MStepD50000\
+        #           --controller=${c}\
+        #           --n-blocks=${N_BLOCKS}\
+        #           --time-setup=${TIME_SHORT}
 
         $BASE_CMD --scenario=${BLOCK_DIST}.16x16 \
                   --batch-criteria  population_density.CD${DENSITY}.I16.C${CARDINALITY} temporal_variance.MSine\
                   --controller=${c}\
                   --n-blocks=${N_BLOCKS}\
-                  --time-setup=time_setup.T${TIME_SHORT}
+                  --time-setup=${TIME_SHORT}
 
     done
 fi
@@ -130,16 +130,16 @@ then
         # Depending on what Maria/reviewers say, I might have to add birth
         # dynamics to this to have a stable queueing system and get graph axis
         # ticks that are well defined.
-        # $BASE_CMD --scenario=${BLOCK_DIST}.16x16 \
-        #           --batch-criteria  population_density.CD${DENSITY}.I16.C${CARDINALITY} population_dynamics.C${CARDINALITY}.F2p0.D0p0001 \
-        #           --controller=${c} \
-        #           --n-blocks=${N_BLOCKS}\
-        #           --time-setup=time_setup.T${TIME_LONG}
-
         $BASE_CMD --scenario=${BLOCK_DIST}.16x16 \
-                  --batch-criteria    population_density.CD${DENSITY}.I16.C${CARDINALITY} saa_noise.all.C${CARDINALITY}\
+                  --batch-criteria  population_density.CD${DENSITY}.I16.C${CARDINALITY} population_dynamics.C${CARDINALITY}.F2p0.D0p0001 \
                   --controller=${c} \
                   --n-blocks=${N_BLOCKS}\
-                  --time-setup=time_setup.T${TIME_SHORT}
+                  --time-setup=${TIME_LONG}
+
+        $BASE_CMD --scenario=${BLOCK_DIST}.16x16 \
+                  --batch-criteria  population_density.CD${DENSITY}.I16.C${CARDINALITY} saa_noise.all.C${CARDINALITY}\
+                  --controller=${c} \
+                  --n-blocks=${N_BLOCKS}\
+                  --time-setup=${TIME_SHORT}
     done
 fi

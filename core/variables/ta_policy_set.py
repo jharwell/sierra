@@ -21,12 +21,14 @@ documentation.
 
 import re
 import typing as tp
+import implements
 
-from core.variables.batch_criteria import UnivarBatchCriteria
+import core.variables.batch_criteria as bc
 from core.variables.population_size import PopulationSize
 
 
-class TAPolicySet(UnivarBatchCriteria):
+@implements.implements(bc.IConcreteBatchCriteria)
+class TAPolicySet(bc.UnivarBatchCriteria):
     """
     A univariate range specifiying the set of task allocation policies (and possibly swarm size) to
     use to define the batched experiment. This class is a base class which should (almost) never be
@@ -44,7 +46,7 @@ class TAPolicySet(UnivarBatchCriteria):
                  batch_generation_root: str,
                  policies: list,
                  population: int) -> None:
-        UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
+        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
         self.policies = policies
         self.population = population
 

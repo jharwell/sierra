@@ -21,10 +21,12 @@ documentation.
 import typing as tp
 import re
 import math
+import implements
 
 from core.variables import batch_criteria as bc
 
 
+@implements.implements(bc.IConcreteBatchCriteria)
 class PopulationSize(bc.UnivarBatchCriteria):
     """
     A univariate range of swarm sizes used to define batched
@@ -64,7 +66,7 @@ class PopulationSize(bc.UnivarBatchCriteria):
 
     def graph_xticks(self,
                      cmdopts: tp.Dict[str, str],
-                     exp_dirs: list = None) -> tp.List[float]:
+                     exp_dirs: tp.List[str] = None) -> tp.List[float]:
 
         if exp_dirs is None:
             exp_dirs = self.gen_exp_dirnames(cmdopts)
@@ -77,7 +79,7 @@ class PopulationSize(bc.UnivarBatchCriteria):
 
     def graph_xticklabels(self,
                           cmdopts: tp.Dict[str, str],
-                          exp_dirs: list = None) -> tp.List[str]:
+                          exp_dirs: tp.List[str] = None) -> tp.List[str]:
 
         if exp_dirs is None:
             exp_dirs = self.gen_exp_dirnames(cmdopts)

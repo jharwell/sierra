@@ -20,13 +20,14 @@ documentation.
 
 import typing as tp
 import os
-import math
+import implements
 
 from core.variables import batch_criteria as bc
 import core.utils
 import core.variables.dynamics_parser as dp
 
 
+@implements.implements(bc.IConcreteBatchCriteria)
 class PopulationDynamics(bc.UnivarBatchCriteria):
     """
     A univariate range of population dynamics used to define batched experiments. This class is a
@@ -68,7 +69,9 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
-    def graph_xticks(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[float]:
+    def graph_xticks(self,
+                     cmdopts: tp.Dict[str, str],
+                     exp_dirs: tp.List[str] = None) -> tp.List[float]:
         if exp_dirs is None:
             exp_dirs = self.gen_exp_dirnames(cmdopts)
 
@@ -91,7 +94,7 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
 
     def graph_xticklabels(self,
                           cmdopts: tp.Dict[str, str],
-                          exp_dirs: list = None) -> tp.List[str]:
+                          exp_dirs: tp.List[str] = None) -> tp.List[str]:
         return list(map(str, self.graph_xticks(cmdopts, exp_dirs)))
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:

@@ -23,11 +23,13 @@ import typing as tp
 import re
 import itertools
 
-from core.variables.batch_criteria import UnivarBatchCriteria
+import implements
+import core.variables.batch_criteria as bc
 from core.variables.population_size import PopulationSize
 
 
-class Oracle(UnivarBatchCriteria):
+@implements.implements(bc.IConcreteBatchCriteria)
+class Oracle(bc.UnivarBatchCriteria):
     """
     A univariate range specifiying the types of oracular information to disseminate to the swarm
     during simulation. This class is a base class which should (almost) never be used on its
@@ -47,7 +49,7 @@ class Oracle(UnivarBatchCriteria):
                  batch_generation_root: str,
                  tuples: tp.List[tuple],
                  population: int) -> None:
-        UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
+        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
 
         self.tuples = tuples
         self.population = population

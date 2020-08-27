@@ -14,24 +14,23 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
+import implements
 
-class BaseVariable:
+
+class IBaseVariable(implements.Interface):
     def gen_attr_changelist(self) -> list:
         """Generate list of sets for changing attributes in the template input file."""
-        raise NotImplementedError
 
     def gen_tag_rmlist(self) -> list:
         """Generate list of sets for removing tags in the template input file."""
-        raise NotImplementedError
 
     def gen_tag_addlist(self) -> list:
         """
         Generate list of sets for adding tags (and possibly attributes) in the template input
         file.
         """
-        raise NotImplementedError
 
 
 __api__ = [
-    'BaseVariable'
+    'IBaseVariable'
 ]

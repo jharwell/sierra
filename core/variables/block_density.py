@@ -21,12 +21,14 @@ documentation.
 
 import typing as tp
 import os
+import implements
 
 from core.variables import constant_density as cd
 import core.generators.scenario_generator_parser as sgp
 import core.utils
 
 
+@implements.implements(core.variables.batch_criteria.IConcreteBatchCriteria)
 class BlockConstantDensity(cd.ConstantDensity):
     """
     A univariate range specifiying the block density (ratio of block count to arena size) to hold

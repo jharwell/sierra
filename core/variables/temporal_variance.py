@@ -21,14 +21,16 @@ Classes for the temporal variance batch criteria. See :ref:`ln-bc-tv` for usage 
 import math
 import typing as tp
 import logging
+import implements
 
-from core.variables.batch_criteria import UnivarBatchCriteria
+import core.variables.batch_criteria as bc
 from core.variables.population_size import PopulationSize
 from core.perf_measures import vcs
 from core.variables.temporal_variance_parser import TemporalVarianceParser
 
 
-class TemporalVariance(UnivarBatchCriteria):
+@implements.implements(bc.IConcreteBatchCriteria)
+class TemporalVariance(bc.UnivarBatchCriteria):
     """
     A univariate range specifiying the set of temporal variances (and possibly swarm size) to
     use to define the batched experiment. This class is a base class which should (almost) never be
@@ -51,7 +53,7 @@ class TemporalVariance(UnivarBatchCriteria):
                  batch_generation_root: str,
                  variances: list,
                  population: int) -> None:
-        UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
+        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
 
         self.variances = variances
         self.population = population
@@ -142,7 +144,7 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
         if any(v == attr["waveform_type"] for v in ["Sine", "Square", "Sawtooth"]):
             variances.extend([(attr["xml_parent_path"],
                                attr["waveform_type"],
-                               1.0 / hz,
+                               hz,
                                amp,
                                amp,
                                0) for hz in hzs[1:] for amp in amps[1:]])

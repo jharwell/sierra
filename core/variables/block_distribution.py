@@ -16,11 +16,11 @@
 #
 import math
 
-from core.variables.base_variable import BaseVariable
+from core.variables.base_variable import IBaseVariable
 from core.utils import ArenaExtent
 
 
-class BaseDistribution(BaseVariable):
+class BaseDistribution(IBaseVariable):
 
     """
     Defines the type of distribution of objects in the arena.
@@ -101,7 +101,7 @@ class RandomDistribution(BaseDistribution):
         super().__init__("random")
 
 
-class Quantity(BaseVariable):
+class Quantity(IBaseVariable):
 
     """
     Defines the # of blocks in the arena. An equal # of all block types are created (# blocks/ #

@@ -24,11 +24,11 @@ without overlap.
 import typing as tp
 import logging
 
-from core.variables.base_variable import BaseVariable
+from core.variables.base_variable import IBaseVariable
 from core.utils import ArenaExtent as ArenaExtent
 
 
-class PhysicsEngines(BaseVariable):
+class PhysicsEngines(IBaseVariable):
     """
     Base physics engine class doing most of the work.
 

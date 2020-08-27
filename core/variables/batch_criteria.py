@@ -18,13 +18,127 @@ import os
 import pickle
 import logging
 import typing as tp
+import implements
 
 import core.utils
 import core.xml_luigi
-from core.variables import base_variable, constant_density
+from core.variables import constant_density, base_variable
 
 
-class BatchCriteria(base_variable.BaseVariable):
+class IConcreteBatchCriteria(implements.Interface):
+    """
+    'Final' interface that user-visible batch criteria variables need to implement to indicate that
+    they can be used as such, as they contain no virtual methods.
+    """
+
+    def graph_xticks(self,
+                     cmdopts: tp.Dict[str, str],
+                     exp_dirs: tp.List[str] = None) -> tp.List[float]:
+        """
+
+        Arguments:
+            cmdopts: Dictionary of parsed command line options.
+            exp_dirs: If not None, then this list of directories directories will be used to
+                      calculate the ticks, rather than the results of gen_exp_dirnames().
+
+        Returns:
+            A list of values to use as the X axis tick values for graph generation.
+
+        """
+
+    def graph_xticklabels(self,
+                          cmdopts: tp.Dict[str, str],
+                          exp_dirs: tp.List[str] = None) -> tp.List[str]:
+        """
+
+        Arguments:
+            cmdopts: Dictionary of parsed command line options.
+            exp_dirs: If not None, then these directories will be used to calculate the labels,
+                      rather than the results of gen_exp_dirnames().
+
+        Returns:
+            A list of values to use as the X axis tick labels for graph generation.
+
+        """
+
+    def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
+        """
+        Returns:
+            The X-label that should be used for the graphs of various performance measures across
+            batch criteria.
+        """
+
+    def pm_query(self, pm: str) -> bool:
+        """
+        Arguments:
+            pm: A possible performance measure to generate from the results of the batched
+                experiment defined by this object.
+
+        Returns:
+            `True` if the specified pm should be generated for the current object, and
+            `False` otherwise.
+        """
+
+
+class IBivarBatchCriteria(implements.Interface):
+    def graph_yticks(self,
+                     cmdopts: tp.Dict[str, str],
+                     exp_dirs: tp.List[str] = None) -> tp.List[float]:
+        """
+
+        Arguments:
+            cmdopts: Dictionary of parsed command line options.
+            exp_dirs: If not None, then these directories will be used to calculate the ticks,
+                      rather than the results of gen_exp_dirnames().
+
+        Returns:
+            A list of criteria-specific values to use as the Y axis tick values for graph
+            generation.
+
+        """
+
+    def graph_yticklabels(self,
+                          cmdopts: tp.Dict[str, str],
+                          exp_dirs: tp.List[str] = None) -> tp.List[str]:
+        """
+
+        Arguments:
+            cmdopts: Dictionary of parsed command line options.
+            exp_dirs: If not None, then these directories will be used to calculate the labels,
+                      rather than the results of gen_exp_dirnames().
+
+        Returns:
+            A list of values to use as the Y axis tick labels for graph generation.
+
+        """
+
+    def graph_ylabel(self, cmdopts: tp.Dict[str, str]) -> str:
+        """
+        Returns:
+            The Y-label that should be used for the graphs of various performance measures across
+            batch criteria. Only needed by bivar batch criteria.
+        """
+
+
+class IBatchCriteriaType(implements.Interface):
+    def is_bivar(self) -> bool:
+        """
+        Returns:
+            `True` if this class is a bivariate batch criteria instance, and `False` otherwise.
+        """
+        raise NotImplementedError
+
+    def is_univar(self) -> bool:
+        """
+
+        Returns:
+            `True` if this class is a univar batch criteria instance, and `False` otherwise.
+        """
+        raise NotImplementedError
+
+
+@implements.implements(base_variable.IBaseVariable)
+class BatchCriteria():
     """
     Defines the list of sets of changes to make to a template input file in order to run a related
     set of of experiments.
@@ -50,6 +164,8 @@ class BatchCriteria(base_variable.BaseVariable):
         self.cat_str = cli_arg.split('.')[0]
         self.def_str = '.'.join(cli_arg.split('.')[1:])
 
+    # Stub out IBaseVariable because all concrete batch criteria only implement a subset of them.
+
     def gen_attr_changelist(self) -> list:
         return []
 
@@ -59,13 +175,15 @@ class BatchCriteria(base_variable.BaseVariable):
     def gen_tag_addlist(self) -> list:
         return []
 
-    def exp_scenario_name(self, exp_num: int) -> str:
+    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> tp.List[str]:
         """
-        Given the exp number in the batch, compute a valid, parsable scenario name. It is necessary
-        to query this criteria after generating the changelist in order to create generator classes
-        for each experiment in the batch with the correct name and definition.
+        Generate list of strings from the current changelist to use for directory names within a
+        batched experiment.
+
+        Returns:
+            List of directory names for current experiment
+
         """
-        raise NotImplementedError
 
     def arena_dims(self) -> list:
         """
@@ -81,9 +199,6 @@ class BatchCriteria(base_variable.BaseVariable):
                     dims.append(core.utils.ArenaExtent((int(x), int(y), int(z))))
         assert len(dims) > 0, "Scenario dimensions not contained in batch criteria"
         return dims
-
-    def exp_dir2num(self, cmdopts: tp.Dict[str, str], exp_dir: str) -> int:
-        return self.gen_exp_dirnames(cmdopts).index(exp_dir)
 
     def n_exp(self) -> int:
         exps = [i for i in os.listdir(self.batch_generation_root) if
@@ -157,131 +272,15 @@ class BatchCriteria(base_variable.BaseVariable):
             logging.fatal(msg3)
             raise ValueError("Batch experiment size/# exp dir mismatch")
 
-    def is_bivar(self) -> bool:
-        """
 
-        Returns:
-            `True` if this class is a bivariate batch criteria instance, and `False` otherwise.
-        """
-        raise NotImplementedError
-
-    def is_univar(self) -> bool:
-        """
-
-        Returns:
-            `True` if this class is a univar batch criteria instance, and `False` otherwise.
-        """
-        raise NotImplementedError
-
-    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> tp.List[str]:
-        """
-        Generate list of strings from the current changelist to use for directory names within a
-        batched experiment.
-
-        Returns:
-            List of directory names for current experiment
-
-        """
-        raise NotImplementedError
-
-    def graph_xticks(self,
-                     cmdopts: tp.Dict[str, str],
-                     exp_dirs: list=None) -> tp.List[float]:
-        """
-
-        Arguments:
-            cmdopts: Dictionary of parsed command line options.
-            exp_dirs: If not None, then this list of directories directories will be used to
-                      calculate the ticks, rather than the results of gen_exp_dirnames().
-
-        Returns:
-            A list of values to use as the X axis tick values for graph generation.
-
-        """
-        raise NotImplementedError
-
-    def graph_yticks(self,
-                     cmdopts: tp.Dict[str, str],
-                     exp_dirs: list=None) -> tp.List[float]:
-        """
-
-        Arguments:
-            cmdopts: Dictionary of parsed command line options.
-            exp_dirs: If not None, then these directories will be used to calculate the ticks,
-                      rather than the results of gen_exp_dirnames().
-
-        Returns:
-            A list of criteria-specific values to use as the Y axis tick values for graph
-            generation.
-
-        """
-        raise NotImplementedError
-
-    def graph_yticklabels(self,
-                          cmdopts: tp.Dict[str, str],
-                          exp_dirs: list=None) -> tp.List[str]:
-        """
-
-        Arguments:
-            cmdopts: Dictionary of parsed command line options.
-            exp_dirs: If not None, then these directories will be used to calculate the labels,
-                      rather than the results of gen_exp_dirnames().
-
-        Returns:
-            A list of values to use as the Y axis tick labels for graph generation.
-
-        """
-        raise NotImplementedError
-
-    def graph_xticklabels(self,
-                          cmdopts: tp.Dict[str, str],
-                          exp_dirs: list=None) -> tp.List[str]:
-        """
-
-        Arguments:
-            cmdopts: Dictionary of parsed command line options.
-            exp_dirs: If not None, then these directories will be used to calculate the labels,
-                      rather than the results of gen_exp_dirnames().
-
-        Returns:
-            A list of values to use as the X axis tick labels for graph generation.
-
-        """
-        raise NotImplementedError
-
-    def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
-        """
-        Returns:
-            The X-label that should be used for the graphs of various performance measures across
-            batch criteria.
-        """
-        raise NotImplementedError
-
-    def graph_ylabel(self, cmdopts: tp.Dict[str, str]) -> str:
-        """
-        Returns:
-            The Y-label that should be used for the graphs of various performance measures across
-            batch criteria. Only needed by bivar batch criteria.
-        """
-        raise NotImplementedError
-
-    def pm_query(self, pm: str) -> bool:
-        """
-        Arguments:
-            pm: A possible performance measure to generate from the results of the batched
-                experiment defined by this object.
-
-        Returns:
-            `True` if the specified pm should be generated for the current object, and
-            `False` otherwise.
-        """
-        raise NotImplementedError
-
-
+@implements.implements(IBatchCriteriaType)
 class UnivarBatchCriteria(BatchCriteria):
     """
     Base class for a univariate batch criteria.
     """
+    #
+    # IBatchCriteriaType overrides
+    #
 
     def is_bivar(self) -> bool:
         return False
@@ -316,6 +315,8 @@ class UnivarBatchCriteria(BatchCriteria):
         return sizes
 
 
+@implements.implements(IBivarBatchCriteria)
+@implements.implements(IBatchCriteriaType)
 class BivarBatchCriteria(BatchCriteria):
     """
     Combination of the definition of two separate batch criteria.
@@ -329,6 +330,15 @@ class BivarBatchCriteria(BatchCriteria):
                                criteria1.batch_generation_root)
         self.criteria1 = criteria1
         self.criteria2 = criteria2
+    #
+    # IBatchCriteriaType overrides
+    #
+
+    def is_bivar(self) -> bool:
+        return True
+
+    def is_univar(self) -> bool:
+        return False
 
     def gen_attr_changelist(self) -> list:
         list1 = self.criteria1.gen_attr_changelist()
@@ -416,18 +426,6 @@ class BivarBatchCriteria(BatchCriteria):
             assert False, "FATAL: bivariate batch criteria does not contain constant density"
             return None
 
-    def is_bivar(self) -> bool:
-        return True
-
-    def is_univar(self) -> bool:
-        return False
-
-    def sc_graph_labels(self, scenarios):
-        raise NotImplementedError
-
-    def sc_sort_scenarios(self, scenarios):
-        raise NotImplementedError
-
     def graph_xticks(self,
                      cmdopts: tp.Dict[str, str],
                      exp_dirs: tp.List[str] = None) -> tp.List[float]:
@@ -459,7 +457,7 @@ class BivarBatchCriteria(BatchCriteria):
 
     def graph_xticklabels(self,
                           cmdopts: tp.Dict[str, str],
-                          exp_dirs: list = None) -> tp.List[str]:
+                          exp_dirs: tp.List[str] = None) -> tp.List[str]:
         dirs = []
         for c1 in self.criteria1.gen_exp_dirnames(cmdopts):
             for x in self.gen_exp_dirnames(cmdopts):
@@ -473,7 +471,7 @@ class BivarBatchCriteria(BatchCriteria):
 
     def graph_yticklabels(self,
                           cmdopts: tp.Dict[str, str],
-                          exp_dirs: list = None) -> tp.List[str]:
+                          exp_dirs: tp.List[str] = None) -> tp.List[str]:
         dirs = []
         for c2 in self.criteria2.gen_exp_dirnames(cmdopts):
             for y in self.gen_exp_dirnames(cmdopts):
@@ -500,7 +498,7 @@ class BivarBatchCriteria(BatchCriteria):
         self.criteria2.batch_generation_root = root
 
 
-def factory(main_config: dict, cmdopts: tp.Dict[str, str], args, scenario: str=None):
+def factory(main_config: dict, cmdopts: tp.Dict[str, str], args, scenario: str = None):
     if scenario is None:
         scenario = args.scenario
 

@@ -67,7 +67,7 @@ class Heatmap:
         if self.transpose:
             df = df.transpose()
 
-        plt.imshow(df, cmap='coolwarm', interpolation=self.interpolation)
+        plt.imshow(df, cmap='plasma', interpolation=self.interpolation)
 
         # Add labels
         plt.xlabel(self.xlabel, fontsize=18)

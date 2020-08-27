@@ -30,7 +30,7 @@ Examples:
 
 import typing as tp
 
-from core.variables.base_variable import BaseVariable
+from core.variables.base_variable import IBaseVariable
 
 k1D_DATA_POINTS = 50
 """
@@ -49,7 +49,7 @@ Default # times each controller will be run per second in simulation.
 """
 
 
-class TimeSetup(BaseVariable):
+class TimeSetup(IBaseVariable):
     """
     Defines the simulation duration, metric collection interval.
 

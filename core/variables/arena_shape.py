@@ -16,13 +16,13 @@
 
 import math
 import typing as tp
-from core.variables.base_variable import BaseVariable
+from core.variables.base_variable import IBaseVariable
 from core.utils import ArenaExtent
 
 kWALL_WIDTH = 0.4
 
 
-class RectangularArena(BaseVariable):
+class RectangularArena(IBaseVariable):
 
     """
     Maps a list of desired arena dimensions specified in (X,Y) tuples to a list of sets of changes
@@ -144,7 +144,6 @@ class SquareArena(RectangularArena):
 
 
 __api__ = [
-    'BaseVariable',
     'ArenaExtent',
     'kWALL_WIDTH',
     'RectangularArena',
