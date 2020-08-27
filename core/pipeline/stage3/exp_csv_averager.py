@@ -109,6 +109,11 @@ class ExpCSVAverager:
         self.videos_leaf = 'videos'
         self.project_imagize = avg_opts['project_imagizing']
 
+        # To support inverted performance measures where smaller is better
+        self.invert_perf = main_config['perf']['inverted']
+        self.intra_perf_csv = main_config['perf']['intra_perf_csv']
+        self.intra_perf_col = main_config['perf']['intra_perf_col']
+
         core.utils.dir_create_checked(self.avgd_output_root, exist_ok=True)
 
         # to be formatted like: self.input_name_format.format(name, experiment_number)
@@ -174,7 +179,13 @@ class ExpCSVAverager:
         # All CSV files with the same base name will be averaged together
         for csv_fname in csvs:
             csv_concat = pd.concat(csvs[csv_fname])
+            if (self.invert_perf and csv_fname[0] in self.intra_perf_csv):
+                csv_concat[self.intra_perf_col] = 1.0 / csv_concat[self.intra_perf_col]
+                logging.debug("Inverted performance column: df stem=%s,col=%s",
+                              csv_fname[0],
+                              self.intra_perf_col)
             by_row_index = csv_concat.groupby(csv_concat.index)
+
             csv_averaged = by_row_index.mean()
             if csv_fname[1] != '':
                 core.utils.dir_create_checked(os.path.join(self.avgd_output_root, csv_fname[1]),
@@ -183,6 +194,7 @@ class ExpCSVAverager:
             csv_averaged.to_csv(os.path.join(self.avgd_output_root, csv_fname[1], csv_fname[0]),
                                 sep=';',
                                 index=False)
+
             # Also write out stddev in order to calculate confidence intervals later
             if self.avg_opts['gen_stddev']:
                 csv_stddev = by_row_index.std().round(2)

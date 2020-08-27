@@ -455,11 +455,10 @@ class CoreCmdline:
                                  help="""
 
                                  If passed, then the verification step will be skipped during experimental results
-                                 processing, and outputs will be averaged directly. If not all ``.csv`` files for all
-                                 # of rows, then SIERRA will (probably) crash during
-                                 experiments exist and/or have the
-                                 stage4. Verification can take a same long time with large # of simulations per
-                                 experiment.
+                                 processing, and outputs will be averaged directly. If not all the corresponding
+                                 ``.csv`` files in all experiments generated the same # rows, then SIERRA will
+                                 (probably) crash during experiments exist and/or have the stage4. Verification can take
+                                 a long time with large # of simulations per experiment.
 
                                  """ + self.stage_usage_doc([3]),
                                  action='store_true',
@@ -505,7 +504,7 @@ class CoreCmdline:
 
                                  If passed, then swarm scalability will be calculated based on the "speedup"
                                  achieved by a swarm of size N in exp X relative to the performance in exp 0, as opposed
-                                 to the performance in exp X-1 (default). 
+                                 to the performance in exp X-1 (default).
                                  """,
                                  action='store_true')
 

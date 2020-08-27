@@ -48,7 +48,7 @@ BASE_CMD="python3 sierra.py \
                   --template-input-file=$HOME/git/sierra/templates/2020-journal-sc2.argos \
                   --n-sims=$NSIMS\
                   --physics-n-engines=4\
-                  --pipeline 4 --exp-graphs=inter\
+                  --pipeline 3 --exp-graphs=inter\
                   --project=fordyca\
                   --hpc-env=hpc_local \
                   --exp-overwrite"

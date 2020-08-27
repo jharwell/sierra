@@ -110,7 +110,7 @@ class IntraExpGraphGenerator:
             logging.info('Flexibility plots from %s', self.cmdopts['output_root'])
             FlexibilityPlotsCSVGenerator(self.main_config, self.cmdopts)(batch_criteria)
 
-        LN_targets, HM_targets = self.__calc_intra_targets(batch_criteria)
+        LN_targets, HM_targets = self.__calc_intra_targets()
 
         LinegraphsGenerator(self.cmdopts["output_root"],
                             self.cmdopts["graph_root"],
@@ -120,7 +120,7 @@ class IntraExpGraphGenerator:
                           self.cmdopts["graph_root"],
                           HM_targets).generate()
 
-    def __calc_intra_targets(self, batch_criteria):
+    def __calc_intra_targets(self):
         """
         Use YAML configuration for controller the controller and intra-experiment graphs to
         calculate what graphs should be generated.

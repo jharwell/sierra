@@ -34,7 +34,6 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 ################################################################################
 # Begin Experiments                                                            #
 ################################################################################
-CONTROLLERS=(depth0.CRW depth0.DPO depth1.BITD_DPO depth2.BIRTD_DPO)
 OUTPUT_ROOT=$HOME/exp/sc1
 TIME_SHORT=50000
 TIME_LONG=100000
@@ -43,27 +42,35 @@ TASKS=("scalability" "flexibility" "robustness")
 
 if [ -n "$MSICLUSTER" ] # Running on MSI
 then
-    TASK=${TASKS[$PBS_ARRAYID]}
     NSIMS=96
+    Y=$(($PBS_ARRAYID % 3)) # This is the task
+    X=$(($PBS_ARRAYID / 3)) # This is the controller
+    CONTROLLERS_LIST=(depth0.CRW depth0.DPO depth1.BITD_DPO depth2.BIRTD_DPO)
+    CONTROLLERS=(${CONTROLLERS_LIST[$X]})
+    TASK=${TASKS[$Y]}
     BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT\
                   --template-input-file=$HOME/git/sierra/templates/2020-journal-sc1.argos \
                   --n-sims=$NSIMS\
                   --physics-n-engines=4\
-                  --pipeline 1 2 3 4 --exp-graphs=inter\
+                  --pipeline 1 2 3 4\
+                   --exp-graphs=inter\
                   --project=fordyca\
                   --hpc-env=hpc_msi \
+                  --no-verify-results\
                   --exp-overwrite"
 
 else
     TASK="$1"
     NSIMS=8
+    CONTROLLERS=(depth0.CRW depth0.DPO depth1.BITD_DPO depth2.BIRTD_DPO)
     BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT\
                   --template-input-file=$HOME/git/sierra/templates/2020-journal-sc1.argos \
                   --n-sims=$NSIMS\
                   --physics-n-engines=4\
-                  --pipeline 1 2 3 4 --exp-graphs=inter\
+                  --pipeline 1 2 3 4\
+                  --exp-graphs=inter\
                   --project=fordyca\
                   --hpc-env=hpc_local \
                   --exp-overwrite"

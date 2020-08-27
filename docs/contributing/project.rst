@@ -109,6 +109,11 @@ Root level dictionaries:
 
    perf:
 
+     # Is the performance measure for the project inverted, meaning that lower
+     # values are better (as opposed to higher values, which is the default if
+     # this is omitted) ?
+     inverted: true
+   
      # The ``.csv`` file under ``avg_output_leaf`` for each experiment which
      # contains the performance information for the experiment.
      intra_perf_csv: 'block-transport.csv'
