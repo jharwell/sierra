@@ -148,7 +148,7 @@ class SAANoise(UnivarBatchCriteria):
         return ['exp' + str(x) for x in range(0, len(self.gen_attr_changelist()))]
 
     def pm_query(self, pm: str) -> bool:
-        return pm in ['blocks-transported', 'robustness']
+        return pm in ['raw', 'robustness']
 
     def __uniform_sources(self):
         """

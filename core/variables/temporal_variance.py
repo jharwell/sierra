@@ -107,7 +107,7 @@ class TemporalVariance(UnivarBatchCriteria):
         return ['exp' + str(x) for x in range(0, len(self.gen_attr_changelist()))]
 
     def pm_query(self, pm: str) -> bool:
-        return pm in ['blocks-transported', 'flexibility']
+        return pm in ['raw', 'flexibility']
 
 
 def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwargs):

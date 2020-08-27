@@ -94,7 +94,7 @@ class TAPolicySet(UnivarBatchCriteria):
         return "Task Allocation Policy"
 
     def pm_query(self, pm: str) -> bool:
-        return pm in ['blocks-transported']
+        return pm in ['raw']
 
 
 class TAPolicySetParser():

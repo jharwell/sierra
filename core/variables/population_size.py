@@ -91,7 +91,7 @@ class PopulationSize(bc.UnivarBatchCriteria):
         return "Swarm Size"
 
     def pm_query(self, pm: str) -> bool:
-        return pm in ['blocks-transported', 'scalability', 'self-org']
+        return pm in ['raw', 'scalability', 'self-org']
 
     @staticmethod
     def gen_attr_changelist_from_list(size_list: list):

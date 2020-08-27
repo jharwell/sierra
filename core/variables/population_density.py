@@ -95,7 +95,7 @@ class PopulationConstantDensity(cd.ConstantDensity):
         return r"Population Size"
 
     def pm_query(self, pm) -> bool:
-        return pm in ['blocks-transported', 'scalability', 'self-org']
+        return pm in ['raw', 'scalability', 'self-org']
 
 
 def factory(cli_arg: str,

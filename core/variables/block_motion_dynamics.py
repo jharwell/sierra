@@ -84,7 +84,7 @@ class BlockMotionDynamics(bc.UnivarBatchCriteria):
         return labels[self.dynamics_type]
 
     def pm_query(self, pm: str) -> bool:
-        return pm in ['blocks-transported']
+        return pm in ['raw']
 
     @staticmethod
     def calc_xtick(exp_def):

@@ -26,7 +26,7 @@ import typing as tp
 
 import core.perf_measures.scalability as pms
 import core.perf_measures.self_organization as pmso
-import core.perf_measures.block_collection as pmbc
+import core.perf_measures.raw as pmraw
 import core.perf_measures.robustness as pmb
 import core.perf_measures.flexibility as pmf
 import core.utils
@@ -137,10 +137,13 @@ class UnivarPerfMeasuresGenerator:
         inter_perf_csv = self.main_config['perf']['inter_perf_csv']
         interference_count_csv = self.main_config['perf']['interference_count_csv']
         interference_duration_csv = self.main_config['perf']['interference_duration_csv']
+        raw_title = self.main_config['perf']['raw_perf_title']
+        raw_ylabel = self.main_config['perf']['raw_perf_ylabel']
 
-        if batch_criteria.pm_query('blocks-transported'):
-            pmbc.BlockCollectionUnivar(self.cmdopts,
-                                       inter_perf_csv).generate(batch_criteria)
+        if batch_criteria.pm_query('raw'):
+            pmraw.RawUnivar(self.cmdopts, inter_perf_csv).generate(batch_criteria,
+                                                                   title=raw_title,
+                                                                   ylbale=raw_ylabel)
         if batch_criteria.pm_query('scalability'):
             pms.ScalabilityUnivarGenerator()(inter_perf_csv,
                                              interference_count_csv,
@@ -198,10 +201,11 @@ class BivarPerfMeasuresGenerator:
         inter_perf_csv = self.main_config['perf']['inter_perf_csv']
         interference_count_csv = self.main_config['perf']['interference_count_csv']
         interference_duration_csv = self.main_config['perf']['interference_duration_csv']
+        raw_title = self.main_config['perf']['raw_perf_title']
 
-        if batch_criteria.pm_query('blocks-transported'):
-            pmbc.BlockCollectionBivar(self.cmdopts,
-                                      inter_perf_csv).generate(batch_criteria)
+        if batch_criteria.pm_query('raw'):
+            pmraw.RawBivar(self.cmdopts, inter_perf_csv=inter_perf_csv).generate(batch_criteria,
+                                                                                 title=raw_title)
 
         if batch_criteria.pm_query('scalability'):
             pms.ScalabilityBivarGenerator()(inter_perf_csv,

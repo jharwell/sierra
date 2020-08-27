@@ -113,7 +113,11 @@ Root level dictionaries:
      # values are better (as opposed to higher values, which is the default if
      # this is omitted) ?
      inverted: true
-   
+
+     # The title that graphs of raw swarm performance should have (cannot be
+     # known a priori for all possible projects).
+     raw_perf_title: 'Swarm Blocks Collected'
+
      # The ``.csv`` file under ``avg_output_leaf`` for each experiment which
      # contains the performance information for the experiment.
      intra_perf_csv: 'block-transport.csv'

@@ -15,8 +15,9 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Measures for swarm performance in foraging tasks via block collection in univariate and bivariate
-batched experiments.
+Measures for raw swarm performance in foraging tasks, according to whatever their configured
+measure in univariate and bivariate batched experiments.
+
 """
 
 import os
@@ -31,41 +32,41 @@ import core.perf_measures as pm
 import core.variables.batch_criteria as bc
 
 
-class BlockCollectionUnivar:
+class RawUnivar:
     """
-    Generates a :class:`~graphs.stacked_line_graph.StackedLineGraph` from the cumulative blocks
-    collected count of the swarm configuration across a univariate batched set of experiments within
-    the same scenario from collated ``.csv`` data.
+    Generates a :class:`~graphs.stacked_line_graph.StackedLineGraph` from the cumulative raw
+    performance count of the swarm configuration across a univariate batched set of experiments
+    within the same scenario from collated ``.csv`` data.
 
     """
 
-    def __init__(self, cmdopts: tp.Dict[str, str], blocks_collected_csv: str) -> None:
+    def __init__(self, cmdopts: tp.Dict[str, str], inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
-        self.blocks_collected_stem = blocks_collected_csv.split('.')[0]
+        self.inter_perf_stem = inter_perf_csv.split('.')[0]
 
-    def generate(self, batch_criteria: bc.BatchCriteria):
-        logging.info("Univariate block collection from %s", self.cmdopts["collate_root"])
+    def generate(self, batch_criteria: bc.BatchCriteria, title: str, ylabel: str):
+        logging.info("Univariate raw performance from %s", self.cmdopts["collate_root"])
         stddev_ipath = os.path.join(self.cmdopts["collate_root"],
-                                    self.blocks_collected_stem + '.stddev')
+                                    self.inter_perf_stem + '.stddev')
         stddev_opath = os.path.join(self.cmdopts["collate_root"],
-                                    "pm-" + self.blocks_collected_stem + ".stddev")
-        perf_ipath = os.path.join(self.cmdopts["collate_root"], self.blocks_collected_stem + '.csv')
+                                    "pm-" + self.inter_perf_stem + ".stddev")
+        perf_ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
         perf_opath_stem = os.path.join(self.cmdopts["collate_root"],
-                                       "pm-" + self.blocks_collected_stem)
+                                       "pm-" + self.inter_perf_stem)
 
         if os.path.exists(stddev_ipath):
-            BlockCollectionUnivar.__gen_stddev(stddev_ipath, stddev_opath)
+            RawUnivar.__gen_stddev(stddev_ipath, stddev_opath)
 
-        BlockCollectionUnivar.__gen_csv(perf_ipath, perf_opath_stem + '.csv')
+        RawUnivar.__gen_csv(perf_ipath, perf_opath_stem + '.csv')
 
         BatchRangedGraph(inputy_stem_fpath=perf_opath_stem,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
-                                                   "pm-" + self.blocks_collected_stem + ".png"),
-                         title="Swarm Blocks Collected",
+                                                   "pm-" + self.inter_perf_stem + ".png"),
+                         title=title,
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
-                         ylabel="# Blocks",
+                         ylabel=ylabel,
                          xticks=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
     @staticmethod
@@ -90,39 +91,39 @@ class BlockCollectionUnivar:
         cum_df.to_csv(opath, sep=';', index=False)
 
 
-class BlockCollectionBivar:
+class RawBivar:
     """
-    Generates a :class:`graphs.heatmap.Heatmap` from the cumulative blocks collected count of the
+    Generates a :class:`graphs.heatmap.Heatmap` from the cumulative raw performance count of the
     swarm configuration across a bivariate batched set of experiments within the same scenario from
     collated ``.csv`` data.
 
     """
 
-    def __init__(self, cmdopts: tp.Dict[str, str], blocks_collected_csv: str) -> None:
+    def __init__(self, cmdopts: tp.Dict[str, str], inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
-        self.blocks_collected_stem = blocks_collected_csv.split('.')[0]
+        self.inter_perf_stem = inter_perf_csv.split('.')[0]
 
-    def generate(self, batch_criteria: bc.BatchCriteria):
-        logging.info("Bivariate block collection from %s", self.cmdopts["collate_root"])
+    def generate(self, batch_criteria: bc.BatchCriteria, title: str):
+        logging.info("Bivariate raw performance from %s", self.cmdopts["collate_root"])
         stddev_ipath = os.path.join(self.cmdopts["collate_root"],
-                                    self.blocks_collected_stem + '.stddev')
+                                    self.inter_perf_stem + '.stddev')
         stddev_opath = os.path.join(self.cmdopts["collate_root"],
-                                    self.blocks_collected_stem + ".stddev")
-        perf_ipath = os.path.join(self.cmdopts["collate_root"], self.blocks_collected_stem + '.csv')
+                                    self.inter_perf_stem + ".stddev")
+        perf_ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
         perf_opath_stem = os.path.join(self.cmdopts["collate_root"],
-                                       "pm-" + self.blocks_collected_stem)
+                                       "pm-" + self.inter_perf_stem)
 
         if os.path.exists(stddev_ipath):
-            BlockCollectionBivar.__gen_stddev(stddev_ipath, stddev_opath)
+            RawBivar.__gen_stddev(stddev_ipath, stddev_opath)
 
-        BlockCollectionBivar.__gen_csv(perf_ipath, perf_opath_stem + '.csv')
+        RawBivar.__gen_csv(perf_ipath, perf_opath_stem + '.csv')
 
         Heatmap(input_fpath=perf_opath_stem + '.csv',
                 output_fpath=os.path.join(self.cmdopts["graph_root"],
-                                          "pm-" + self.blocks_collected_stem + ".png"),
-                title='Swarm Blocks Collected',
+                                          "pm-" + self.inter_perf_stem + ".png"),
+                title=title,
                 xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                 ylabel=batch_criteria.graph_ylabel(self.cmdopts),
                 xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
@@ -156,6 +157,6 @@ class BlockCollectionBivar:
 
 
 __api__ = [
-    'BlockCollectionUnivar',
-    'BlockCollectionBivar'
+    'RawUnivar',
+    'RawBivar'
 ]

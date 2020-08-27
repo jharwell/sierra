@@ -37,7 +37,7 @@ class BatchCriteria(base_variable.BaseVariable):
 
     """
 
-    kPMNames = ['blocks-transported', 'scalability', 'self-org', 'flexibility', 'robustness']
+    kPMNames = ['raw', 'scalability', 'self-org', 'flexibility', 'robustness']
 
     def __init__(self,
                  cli_arg: str,

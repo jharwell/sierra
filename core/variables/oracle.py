@@ -88,7 +88,7 @@ class Oracle(UnivarBatchCriteria):
         return "Oracular Information Type"
 
     def pm_query(self, pm: str) -> bool:
-        return pm in ['blocks-transported']
+        return pm in ['raw']
 
 
 class OracleParser():

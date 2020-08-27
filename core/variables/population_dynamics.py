@@ -104,7 +104,7 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
         return "Superlinearity"
 
     def pm_query(self, pm: str) -> bool:
-        return pm in ['blocks-transported', 'robustness']
+        return pm in ['raw', 'robustness']
 
     def is_pure_death_dynamics(self):
         return 'D' in self.dynamics_types and 'B' not in self.dynamics_types
