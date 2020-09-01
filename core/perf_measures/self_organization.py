@@ -170,7 +170,7 @@ class PerformanceGainMarginalUnivar:
         self.cmdopts = copy.deepcopy(cmdopts)
         self.inter_perf_stem = inter_perf_csv.split('.')[0]
 
-    def calculate(self, batch_criteria: bc.UnivarBatchCriteria):
+    def calculate(self, batch_criteria: bc.IConcreteBatchCriteria):
         """
         Calculate marginal performance gain measure for th given controller for each experiment in a
         batch.
@@ -192,7 +192,7 @@ class PerformanceGainMarginalUnivar:
 
     def generate(self,
                  dfs: tp.Tuple[pd.DataFrame, pd.DataFrame],
-                 batch_criteria: bc.UnivarBatchCriteria):
+                 batch_criteria: bc.IConcreteBatchCriteria):
 
         cum_stem = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
         metric_df = dfs[0]
@@ -280,7 +280,7 @@ class PerformanceGainInteractiveUnivar:
 
     def generate(self,
                  dfs: tp.Tuple[pd.DataFrame, pd.DataFrame],
-                 batch_criteria: bc.UnivarBatchCriteria):
+                 batch_criteria: bc.IConcreteBatchCriteria):
 
         cum_stem = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
         metric_df = dfs[0]
@@ -332,7 +332,7 @@ class SelfOrgUnivarGenerator:
                  interference_count_csv: str,
                  alpha_S: float,
                  alpha_T: float,
-                 batch_criteria: bc.UnivarBatchCriteria):
+                 batch_criteria: bc.IConcreteBatchCriteria):
         logging.info("Univariate self-organization from %s", cmdopts["collate_root"])
 
         mfl = FractionalLossesMarginalUnivar(cmdopts, inter_perf_csv, interference_count_csv)
@@ -385,7 +385,7 @@ class FractionalLossesMarginalBivar:
         self.inter_perf_csv = inter_perf_csv
         self.interference_count_csv = interference_count_csv
 
-    def generate(self, batch_criteria):
+    def generate(self, batch_criteria: bc.IConcreteBatchCriteria):
         fl = common.FractionalLossesBivar(self.cmdopts,
                                           self.inter_perf_csv,
                                           self.interference_count_csv,
@@ -533,7 +533,7 @@ class PerformanceGainMarginalBivar:
         self.cmdopts = copy.deepcopy(cmdopts)
         self.inter_perf_stem = inter_perf_csv.split('.')[0]
 
-    def calculate(self, batch_criteria: bc.BivarBatchCriteria):
+    def calculate(self, batch_criteria: bc.IConcreteBatchCriteria):
         """
         Calculate marginal performance gain metric for the given controller for each experiment in a
         batch.
@@ -573,7 +573,7 @@ class PerformanceGainMarginalBivar:
 
     def __calculate_measure(self,
                             ipath: str,
-                            batch_criteria: bc.BivarBatchCriteria,
+                            batch_criteria: bc.IConcreteBatchCriteria,
                             must_exist: bool = True):
         assert(not (must_exist and not os.path.exists(ipath))
                ), "FATAL: {0} does not exist".format(ipath)
@@ -641,7 +641,7 @@ class PerformanceGainInteractiveBivar:
         self.cmdopts = copy.deepcopy(cmdopts)
         self.inter_perf_stem = inter_perf_csv.split('.')[0]
 
-    def calculate(self, batch_criteria: bc.BivarBatchCriteria):
+    def calculate(self, batch_criteria: bc.IConcreteBatchCriteria):
         """
         Calculate marginal performance gain metric for the given controller for each experiment in a
         batch.
@@ -737,7 +737,7 @@ class SelfOrgBivarGenerator:
                  interference_count_csv: str,
                  alpha_S: float,
                  alpha_T: float,
-                 batch_criteria: bc.BivarBatchCriteria):
+                 batch_criteria: bc.IConcreteBatchCriteria):
         logging.info("Bivariate self-organization from %s", cmdopts["collate_root"])
 
         mfl = FractionalLossesMarginalBivar(cmdopts, inter_perf_csv, interference_count_csv)

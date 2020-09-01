@@ -46,7 +46,7 @@ class RawUnivar:
         self.cmdopts = copy.deepcopy(cmdopts)
         self.inter_perf_stem = inter_perf_csv.split('.')[0]
 
-    def generate(self, batch_criteria: bc.BatchCriteria, title: str, ylabel: str):
+    def generate(self, batch_criteria: bc.IConcreteBatchCriteria, title: str, ylabel: str):
         logging.info("Univariate raw performance from %s", self.cmdopts["collate_root"])
         stddev_ipath = os.path.join(self.cmdopts["collate_root"],
                                     self.inter_perf_stem + '.stddev')
@@ -105,7 +105,7 @@ class RawBivar:
         self.cmdopts = copy.deepcopy(cmdopts)
         self.inter_perf_stem = inter_perf_csv.split('.')[0]
 
-    def generate(self, batch_criteria: bc.BatchCriteria, title: str):
+    def generate(self, batch_criteria: bc.IConcreteBatchCriteria, title: str):
         logging.info("Bivariate raw performance from %s", self.cmdopts["collate_root"])
         stddev_ipath = os.path.join(self.cmdopts["collate_root"],
                                     self.inter_perf_stem + '.stddev')

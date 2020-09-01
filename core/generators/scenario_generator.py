@@ -58,11 +58,13 @@ class BaseScenarioGenerator():
 
         Does not write generated changes to the simulation definition pickle file.
         """
-        [exp_def.attr_change(a[0], a[1], a[2]) for a in block_dist.gen_attr_changelist()[0]]
+        for a in block_dist.gen_attr_changelist()[0]:
+            exp_def.attr_change(a[0], a[1], a[2])
 
         rms = block_dist.gen_tag_rmlist()
         if rms:  # non-empty
-            [exp_def.tag_remove(a[0], a[1]) for a in rms[0]]
+            for a in rms[0]:
+                exp_def.tag_remove(a[0], a[1])
 
     def generate_arena_shape(self, exp_def: XMLLuigi, shape: arena_shape.RectangularArena):
         """
@@ -81,7 +83,8 @@ class BaseScenarioGenerator():
 
         rms = shape.gen_tag_rmlist()
         if rms:  # non-empty
-            [exp_def.tag_remove(a[0], a[1]) for a in rms[0]]
+            for a in rms[0]:
+                exp_def.tag_remove(a[0], a[1])
 
     def generate_block_count(self, exp_def: XMLLuigi):
         """
@@ -99,11 +102,14 @@ class BaseScenarioGenerator():
 
         bd = block_distribution.Quantity([n_blocks])
 
-        [exp_def.attr_change(a[0], a[1], a[2]) for a in bd.gen_attr_changelist()[0]]
+        for a in bd.gen_attr_changelist()[0]:
+            exp_def.attr_change(a[0], a[1], a[2])
+
         rms = bd.gen_tag_rmlist()
 
         if rms:  # non-empty
-            [exp_def.tag_remove(a[0], a[1]) for a in rms[0]]
+            for a in rms[0]:
+                exp_def.tag_remove(a[0], a[1])
 
         with open(self.exp_def_fpath, 'ab') as f:
             pickle.dump(bd.gen_attr_changelist()[0], f)
@@ -152,8 +158,11 @@ class BaseScenarioGenerator():
         pe = physics_engines.factory(engine_type, n_engines, cmdopts, extents)
 
         if remove_defs:
-            [exp_def.tag_remove(a[0], a[1]) for a in pe.gen_tag_rmlist()[0]]
-        [exp_def.tag_add(a[0], a[1], a[2]) for a in pe.gen_tag_addlist()[0]]
+            for a in pe.gen_tag_rmlist()[0]:
+                exp_def.tag_remove(a[0], a[1])
+
+        for a in pe.gen_tag_addlist()[0]:
+            exp_def.tag_add(a[0], a[1], a[2])
 
 
 class SSGenerator(BaseScenarioGenerator):

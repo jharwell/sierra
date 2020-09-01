@@ -197,7 +197,7 @@ class BatchedExpDefGenerator:
 
     def __init__(self,
                  batch_config_template: str,
-                 criteria: bc.BatchCriteria,
+                 criteria,
                  controller_name: str,
                  scenario_basename: str,
                  cmdopts: dict) -> None:

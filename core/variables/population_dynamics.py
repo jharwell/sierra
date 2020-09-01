@@ -187,9 +187,6 @@ class PopulationDynamicsParser(dp.DynamicsParser):
                 'R': 'repair_mu'
                 }
 
-    def __call__(self, criteria_str: str) -> dict:
-        return super().__call__(criteria_str)
-
 
 def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_generation_root: str, **kwargs):
     """

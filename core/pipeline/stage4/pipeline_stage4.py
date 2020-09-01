@@ -200,7 +200,8 @@ class PipelineStage4:
                 # valid to specify no graphs, and only to inherit graphs
                 keys = controller.get('graphs', [])
                 if 'graphs_inherit' in controller:
-                    [keys.extend(l) for l in controller['graphs_inherit']]  # optional
+                    for inherit in controller['graphs_inherit']:
+                        keys.extend(inherit)   # optional
 
         filtered_keys = [k for k in self.inter_LN_config if k in keys]
         targets = [self.inter_LN_config[k] for k in filtered_keys]

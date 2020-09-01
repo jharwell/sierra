@@ -59,7 +59,7 @@ class ProjectivePerformanceCalculatorUnivar:
         self.projection_type = projection_type
         self.inter_perf_stem = inter_perf_csv.split('.')[0]
 
-    def __call__(self, batch_criteria: bc.BatchCriteria):
+    def __call__(self, batch_criteria: bc.IConcreteBatchCriteria):
         path = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
         assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
         perf_df = pd.read_csv(path, sep=';')
@@ -124,7 +124,7 @@ class ProjectivePerformanceCalculatorBivar:
         self.projection_type = projection_type
         self.inter_perf_stem = inter_perf_csv.split('.')[0]
 
-    def __call__(self, batch_criteria: bc.BivarBatchCriteria):
+    def __call__(self, batch_criteria: bc.IConcreteBatchCriteria):
         path = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
         assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
         perf_df = pd.read_csv(path, sep=';')
@@ -137,7 +137,7 @@ class ProjectivePerformanceCalculatorBivar:
         else:
             return self.__compute_vals_row(perf_df, batch_criteria)
 
-    def __compute_vals_row(self, perf_df: pd.DataFrame, batch_criteria: bc.BatchCriteria):
+    def __compute_vals_row(self, perf_df: pd.DataFrame, batch_criteria: bc.IConcreteBatchCriteria):
         proj_df = pd.DataFrame(columns=perf_df.columns, index=perf_df.index)
         yvals = batch_criteria.graph_yticks(self.cmdopts)
 
@@ -159,7 +159,7 @@ class ProjectivePerformanceCalculatorBivar:
                                                                                               similarity)
         return proj_df
 
-    def __compute_vals_col(self, perf_df: pd.DataFrame, batch_criteria: bc.BatchCriteria):
+    def __compute_vals_col(self, perf_df: pd.DataFrame, batch_criteria: bc.IConcreteBatchCriteria):
         proj_df = pd.DataFrame(columns=perf_df.columns, index=perf_df.index)
         xvals = batch_criteria.graph_xticks(self.cmdopts)
 
@@ -393,7 +393,7 @@ class FractionalLosses:
                  cmdopts: tp.Dict[str, str],
                  inter_perf_csv: str,
                  interference_count_csv: str,
-                 batch_criteria: bc.BatchCriteria) -> None:
+                 batch_criteria: bc.IConcreteBatchCriteria) -> None:
         self.cmdopts = cmdopts
         self.batch_output_root = cmdopts["collate_root"]
         self.inter_perf_csv = inter_perf_csv
@@ -557,7 +557,7 @@ class WeightedPMUnivar():
         self.ax2_alpha = ax2_alpha
         self.title = title
 
-    def generate(self, batch_criteria: bc.BatchCriteria):
+    def generate(self, batch_criteria: bc.IConcreteBatchCriteria):
         csv1_istem = os.path.join(self.cmdopts["collate_root"], self.ax1_leaf)
         csv2_istem = os.path.join(self.cmdopts["collate_root"], self.ax2_leaf)
         csv1_ipath = csv1_istem + '.csv'
@@ -609,7 +609,7 @@ class WeightedPMBivar():
         self.ax2_alpha = ax2_alpha
         self.title = title
 
-    def generate(self, batch_criteria: bc.BatchCriteria):
+    def generate(self, batch_criteria: bc.IConcreteBatchCriteria):
         csv1_istem = os.path.join(self.cmdopts["collate_root"], self.ax1_leaf)
         csv2_istem = os.path.join(self.cmdopts["collate_root"], self.ax2_leaf)
         csv1_ipath = csv1_istem + '.csv'

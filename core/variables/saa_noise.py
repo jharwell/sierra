@@ -19,10 +19,9 @@ Classes for the SAA noise batch criteria. See :ref:`ln-bc-saa-noise` for usage d
 """
 
 import re
-import os
-import implements
-
 import typing as tp
+
+import implements
 import numpy as np
 
 import core.variables.batch_criteria as bc

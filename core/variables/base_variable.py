@@ -18,16 +18,21 @@ import implements
 
 
 class IBaseVariable(implements.Interface):
+    """
+    Interface specifying the functions that all variables (not just those that are batch criteria)
+    must implement.
+    """
+
     def gen_attr_changelist(self) -> list:
-        """Generate list of sets for changing attributes in the template input file."""
+        """Generate list of sets for changing attributes in the template input XML file."""
 
     def gen_tag_rmlist(self) -> list:
-        """Generate list of sets for removing tags in the template input file."""
+        """Generate list of sets for removing tags in the template input XML file."""
 
     def gen_tag_addlist(self) -> list:
         """
         Generate list of sets for adding tags (and possibly attributes) in the template input
-        file.
+        XML file.
         """
 
 

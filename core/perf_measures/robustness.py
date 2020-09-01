@@ -20,7 +20,6 @@ Classes for measuring the robustness of a swarm configuration in various ways.
 import os
 import copy
 import logging
-import math
 
 import pandas as pd
 
@@ -54,7 +53,7 @@ class RobustnessSAAUnivar:
         # are generated after us.
         self.cmdopts = copy.deepcopy(cmdopts)
 
-    def generate(self, main_config: dict, criteria: bc.UnivarBatchCriteria):
+    def generate(self, main_config: dict, criteria: bc.IConcreteBatchCriteria):
         """
         Generate a robustness graph for a given controller in a given scenario by computing the
         value of the robustness metric for each experiment within the batch (Y values), and plotting
@@ -107,7 +106,7 @@ class RobustnessPDUnivar:
         self.cmdopts = copy.deepcopy(cmdopts)
         self.inter_perf_csv = inter_perf_csv
 
-    def generate(self, criteria: bc.UnivarBatchCriteria):
+    def generate(self, criteria: bc.IConcreteBatchCriteria):
         """
         Generate a robustness graph for a given controller in a given scenario by computing the
         value of the robustness metric for each experiment within the batch (Y values), and plotting
@@ -163,7 +162,7 @@ class RobustnessUnivarGenerator:
                  main_config: dict,
                  alpha_SAA: float,
                  alpha_PD: float,
-                 batch_criteria: bc.UnivarBatchCriteria):
+                 batch_criteria: bc.IConcreteBatchCriteria):
         logging.info("Univariate robustness from %s", cmdopts["collate_root"])
 
         inter_perf_csv = main_config['perf']['inter_perf_csv']
@@ -202,7 +201,7 @@ class RobustnessSAABivar:
         self.cmdopts = copy.deepcopy(cmdopts)
         self.inter_perf_csv = inter_perf_csv
 
-    def generate(self, main_config: dict, criteria: bc.BivarBatchCriteria):
+    def generate(self, main_config: dict, criteria: bc.IConcreteBatchCriteria):
         """
         - :class:`~core.graphs.heatmap.Heatmap` of robustness values for the bivariate batch
           criteria.
@@ -247,7 +246,7 @@ class RobustnessSAABivar:
                       xlabel='Robustness (SAA)',
                       ylabel=criteria.graph_ylabel(self.cmdopts)).generate()
 
-    def __gen_heatmap(self, main_config: dict, criteria: bc.BivarBatchCriteria):
+    def __gen_heatmap(self, main_config: dict, criteria: bc.IConcreteBatchCriteria):
         """
         Generate a robustness graph for a given controller in a given scenario by computing the
         value of the robustness metric for each experiment within the batch, and plot
@@ -437,7 +436,7 @@ class RobustnessBivarGenerator:
                  main_config: dict,
                  alpha_SAA: float,
                  alpha_PD: float,
-                 batch_criteria: bc.BivarBatchCriteria):
+                 batch_criteria: bc.IConcreteBatchCriteria):
         logging.info("Bivariate robustness from %s", cmdopts["collate_root"])
 
         inter_perf_csv = main_config['perf']['inter_perf_csv']

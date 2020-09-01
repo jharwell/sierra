@@ -137,7 +137,8 @@ class IntraExpGraphGenerator:
                 # valid to specify no graphs, and only to inherit graphs
                 keys = controller.get('graphs', [])
                 if 'graphs_inherit' in controller:
-                    [keys.extend(l) for l in controller['graphs_inherit']]  # optional
+                    for inherit in controller['graphs_inherit']:
+                        keys.extend(inherit)   # optional
                 if self.cmdopts['gen_vc_plots']:  # optional
                     extra_graphs = FlexibilityPlotsDefinitionsGenerator()()
 

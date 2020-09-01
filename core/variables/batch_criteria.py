@@ -184,6 +184,7 @@ class BatchCriteria():
             List of directory names for current experiment
 
         """
+        return []
 
     def arena_dims(self) -> list:
         """

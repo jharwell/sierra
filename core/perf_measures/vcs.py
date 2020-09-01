@@ -13,7 +13,9 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-
+"""
+Classes and functions for computing the similarity between various temporal curves.
+"""
 
 import os
 import typing as tp

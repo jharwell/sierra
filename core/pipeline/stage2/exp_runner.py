@@ -13,7 +13,10 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-
+"""
+Classes for running and single and batched experiments via the configured method specified on
+the cmdline (usually GNU parallel).
+"""
 
 import os
 import subprocess

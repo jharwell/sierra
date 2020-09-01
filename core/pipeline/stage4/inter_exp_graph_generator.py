@@ -58,7 +58,7 @@ class InterExpGraphGenerator:
                                                                   collate_graph_leaf))
         core.utils.dir_create_checked(self.cmdopts["graph_root"], exist_ok=True)
 
-    def __call__(self, batch_criteria: bc.UnivarBatchCriteria):
+    def __call__(self, criteria: bc.IConcreteBatchCriteria):
         """
         Runs the following to generate graphs across experiments in the batch:
 
@@ -72,13 +72,13 @@ class InterExpGraphGenerator:
            generate performance measures (bivariate batch criteria only).
         """
 
-        if batch_criteria.is_univar():
+        if criteria.is_univar():
             # LinegraphsGenerator(self.cmdopts["collate_root"],
             #                     self.cmdopts["graph_root"],
             #                     self.targets).generate()
-            UnivarPerfMeasuresGenerator(self.main_config, self.cmdopts)(batch_criteria)
+            UnivarPerfMeasuresGenerator(self.main_config, self.cmdopts)(criteria)
         else:
-            BivarPerfMeasuresGenerator(self.main_config, self.cmdopts)(batch_criteria)
+            BivarPerfMeasuresGenerator(self.main_config, self.cmdopts)(criteria)
 
 
 class LinegraphsGenerator:

@@ -25,7 +25,7 @@ import typing as tp
 import logging
 
 from core.variables.base_variable import IBaseVariable
-from core.utils import ArenaExtent as ArenaExtent
+from core.utils import ArenaExtent
 
 
 class PhysicsEngines(IBaseVariable):

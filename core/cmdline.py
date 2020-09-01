@@ -816,7 +816,8 @@ p
                                  """ + self.stage_usage_doc([5]),
                                  action='store_true')
 
-    def cs_methods_doc(self):
+    @staticmethod
+    def cs_methods_doc():
         return r"""
 
         The following methods can be specified. Note that each some methods have a defined normalized domain, and some do
@@ -855,10 +856,12 @@ p
           - Normalized domain: N/A.
         """
 
-    def stage_usage_doc(self, stages: tp.List[int], omitted: str = "If omitted: N/A."):
+    @staticmethod
+    def stage_usage_doc(stages: tp.List[int], omitted: str = "If omitted: N/A."):
         return "\n.. admonition:: Stage usage\n\n   Used by stage{" + ",".join(map(str, stages)) + "}; can be omitted otherwise. " + omitted + "\n"
 
-    def bc_applicable_doc(self, criteria: tp.List[str]):
+    @staticmethod
+    def bc_applicable_doc(criteria: tp.List[str]):
         lst = "".join(map(lambda bc: "   - " + bc + "\n", criteria))
         return "\n.. ADMONITION:: Applicable batch criteria\n\n" + lst + "\n"
 

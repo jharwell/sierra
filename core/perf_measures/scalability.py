@@ -55,7 +55,7 @@ class InterRobotInterferenceUnivar:
         self.interference_count_stem = interference_count_csv.split('.')[0]
         self.interference_duration_stem = interference_duration_csv.split('.')[0]
 
-    def generate(self, batch_criteria: bc.UnivarBatchCriteria):
+    def generate(self, batch_criteria: bc.IConcreteBatchCriteria):
         count_csv_istem = os.path.join(self.cmdopts["collate_root"],
                                        self.interference_count_stem)
         duration_csv_istem = os.path.join(self.cmdopts["collate_root"],
@@ -85,7 +85,7 @@ class InterRobotInterferenceUnivar:
                          ylabel="# Timesteps",
                          xticks=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
-    def __calculate_measure(self, ipath: str, batch_criteria: bc.UnivarBatchCriteria):
+    def __calculate_measure(self, ipath: str, batch_criteria: bc.IConcreteBatchCriteria):
         assert(os.path.exists(ipath)), "FATAL: {0} does not exist".format(ipath)
         raw_df = pd.read_csv(ipath, sep=';')
         eff_df = pd.DataFrame(columns=raw_df.columns,
@@ -112,7 +112,7 @@ class NormalizedEfficiencyUnivar:
         self.cmdopts = copy.deepcopy(cmdopts)
         self.inter_perf_stem = inter_perf_csv.split('.')[0]
 
-    def calculate(self, batch_criteria: bc.UnivarBatchCriteria):
+    def calculate(self, batch_criteria: bc.IConcreteBatchCriteria):
         """
         Calculate efficiency metric for the givenn controller for each experiment in a
         batch.
@@ -134,7 +134,7 @@ class NormalizedEfficiencyUnivar:
 
     def generate(self,
                  dfs: tp.Tuple[pd.DataFrame, pd.DataFrame],
-                 batch_criteria: bc.UnivarBatchCriteria):
+                 batch_criteria: bc.IConcreteBatchCriteria):
         cum_stem = os.path.join(self.cmdopts["collate_root"], "pm-scalability-norm")
         metric_df = dfs[0]
         stddev_df = dfs[1]
@@ -152,7 +152,7 @@ class NormalizedEfficiencyUnivar:
 
     def __calculate_measure(self,
                             ipath: str,
-                            batch_criteria: bc.UnivarBatchCriteria,
+                            batch_criteria: bc.IConcreteBatchCriteria,
                             must_exist: bool = True):
         assert(not (must_exist and not os.path.exists(ipath))
                ), "FATAL: {0} does not exist".format(ipath)
@@ -190,7 +190,7 @@ class FractionalMaintenanceUnivar:
         self.inter_perf_csv = inter_perf_csv
         self.interference_count_csv = interference_count_csv
 
-    def calculate(self, batch_criteria: bc.UnivarBatchCriteria):
+    def calculate(self, batch_criteria: bc.IConcreteBatchCriteria):
         df = common.FractionalLossesUnivar(self.cmdopts,
                                            self.inter_perf_csv,
                                            self.interference_count_csv,
@@ -200,7 +200,7 @@ class FractionalMaintenanceUnivar:
             df[c] = 1.0 - 1.0 / math.exp(1.0 - df[c])
         return df
 
-    def generate(self, df: pd.DataFrame, batch_criteria: bc.BatchCriteria):
+    def generate(self, df: pd.DataFrame, batch_criteria: bc.IConcreteBatchCriteria):
         stem_path = os.path.join(self.cmdopts["collate_root"], "pm-scalability-fm")
 
         df.to_csv(stem_path + '.csv', sep=';', index=False)
@@ -229,7 +229,7 @@ class KarpFlattUnivar:
         self.cmdopts = copy.deepcopy(cmdopts)
         self.inter_perf_csv = inter_perf_csv
 
-    def calculate(self, batch_criteria: bc.UnivarBatchCriteria):
+    def calculate(self, batch_criteria: bc.IConcreteBatchCriteria):
         perf_df = pd.read_csv(os.path.join(self.cmdopts["collate_root"], self.inter_perf_csv),
                               sep=';')
         sc_df = pd.DataFrame(columns=perf_df.columns, index=[0])
@@ -257,7 +257,7 @@ class KarpFlattUnivar:
 
         return sc_df
 
-    def generate(self, df: pd.DataFrame, batch_criteria: bc.BatchCriteria):
+    def generate(self, df: pd.DataFrame, batch_criteria: bc.IConcreteBatchCriteria):
         stem_path = os.path.join(self.cmdopts["collate_root"], "pm-karpflatt")
         df.to_csv(stem_path + ".csv", sep=';', index=False)
 
@@ -282,7 +282,7 @@ class ScalabilityUnivarGenerator:
                  interference_count_csv: str,
                  interference_duration_csv: str,
                  cmdopts: dict,
-                 batch_criteria: bc.UnivarBatchCriteria):
+                 batch_criteria: bc.IConcreteBatchCriteria):
         logging.info("Univariate scalability from %s", cmdopts["collate_root"])
 
         e = NormalizedEfficiencyUnivar(cmdopts, inter_perf_csv)
@@ -320,7 +320,7 @@ class InterRobotInterferenceBivar:
         self.interference_count_stem = interference_count_csv.split('.')[0]
         self.interference_duration_stem = interference_duration_csv.split('.')[0]
 
-    def generate(self, batch_criteria: bc.BivarBatchCriteria):
+    def generate(self, batch_criteria: bc.IConcreteBatchCriteria):
         count_csv_istem = os.path.join(self.cmdopts["collate_root"],
                                        self.interference_count_stem)
         duration_csv_istem = os.path.join(self.cmdopts["collate_root"],
@@ -352,7 +352,8 @@ class InterRobotInterferenceBivar:
                 xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
                 ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)).generate()
 
-    def __calculate_measure(self, ipath: str):
+    @staticmethod
+    def __calculate_measure(ipath: str):
         assert(os.path.exists(ipath)), "FATAL: {0} does not exist".format(ipath)
         raw_df = pd.read_csv(ipath, sep=';')
         eff_df = pd.DataFrame(columns=raw_df.columns,
@@ -379,7 +380,7 @@ class NormalizedEfficiencyBivar:
         self.cmdopts = copy.deepcopy(cmdopts)
         self.inter_perf_stem = inter_perf_csv.split('.')[0]
 
-    def calculate(self, batch_criteria: bc.BivarBatchCriteria):
+    def calculate(self, batch_criteria: bc.IConcreteBatchCriteria):
         """
         Calculate efficiency metric for the given controller for each experiment in a
         batch.
@@ -401,7 +402,7 @@ class NormalizedEfficiencyBivar:
 
     def generate(self,
                  dfs: tp.Tuple[pd.DataFrame, pd.DataFrame],
-                 batch_criteria: bc.BivarBatchCriteria):
+                 batch_criteria: bc.IConcreteBatchCriteria):
         cum_stem = os.path.join(self.cmdopts["collate_root"], "pm-scalability-norm")
         metric_df, stddev_df = dfs
 
@@ -419,7 +420,7 @@ class NormalizedEfficiencyBivar:
 
     def __calculate_measure(self,
                             ipath: str,
-                            batch_criteria: bc.BivarBatchCriteria,
+                            batch_criteria: bc.IConcreteBatchCriteria,
                             must_exist: bool = True):
         assert(not (must_exist and not os.path.exists(ipath))
                ), "FATAL: {0} does not exist".format(ipath)
@@ -467,7 +468,7 @@ class FractionalMaintenanceBivar:
 
         return df
 
-    def generate(self, df: pd.DataFrame, batch_criteria: bc.BatchCriteria):
+    def generate(self, df: pd.DataFrame, batch_criteria: bc.IConcreteBatchCriteria):
         stem_path = os.path.join(self.cmdopts["collate_root"], "pm-scalability-fm")
 
         df.to_csv(stem_path + '.csv', sep=';', index=False)
@@ -570,7 +571,7 @@ class ScalabilityBivarGenerator:
                  interference_count_csv: str,
                  interference_duration_csv: str,
                  cmdopts: dict,
-                 batch_criteria: bc.BivarBatchCriteria):
+                 batch_criteria: bc.IConcreteBatchCriteria):
         logging.info("Bivariate scalability from %s", cmdopts["collate_root"])
 
         e = NormalizedEfficiencyBivar(cmdopts, inter_perf_csv)

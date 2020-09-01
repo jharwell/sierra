@@ -50,7 +50,7 @@ class ReactivityUnivar:
         # are generated after us.
         self.cmdopts = copy.deepcopy(cmdopts)
 
-    def generate(self, main_config: dict, batch_criteria: bc.UnivarBatchCriteria):
+    def generate(self, main_config: dict, batch_criteria: bc.IConcreteBatchCriteria):
         """
         Calculate the reactivity metric for a given controller within a specific scenario, and
         generate a graph of the result.
@@ -94,7 +94,7 @@ class AdaptabilityUnivar:
         # are generated after us.
         self.cmdopts = copy.deepcopy(cmdopts)
 
-    def generate(self, main_config: dict, batch_criteria: bc.UnivarBatchCriteria):
+    def generate(self, main_config: dict, batch_criteria: bc.IConcreteBatchCriteria):
         """
         Calculate the adaptability metric for a given controller within a specific scenario, and
         generate a graph of the result.
@@ -141,7 +141,7 @@ class FlexibilityUnivarGenerator:
                  main_config: dict,
                  alpha_SAA: float,
                  alpha_PD: float,
-                 batch_criteria: bc.UnivarBatchCriteria):
+                 batch_criteria: bc.IConcreteBatchCriteria):
         logging.info("Univariate flexbility from %s", cmdopts["collate_root"])
 
         ReactivityUnivar(cmdopts).generate(main_config, batch_criteria)
@@ -330,7 +330,7 @@ class FlexibilityBivarGenerator:
                  main_config: dict,
                  alpha_SAA: float,
                  alpha_PD: float,
-                 criteria: bc.BivarBatchCriteria):
+                 criteria: bc.IConcreteBatchCriteria):
         logging.info("Bivariate flexbility from %s", cmdopts["collate_root"])
 
         inter_perf_csv = main_config['perf']['inter_perf_csv']

@@ -78,7 +78,7 @@ class Sigmoid():
 
 
 class ReLu():
-    """
+    r"""
     REctified Linear Unit activation function.
 
     .. math::

@@ -103,6 +103,8 @@ class BlockMotionDynamics(bc.UnivarBatchCriteria):
                 if policy == 'random_walk' and attr == 'random_walk_prob':
                     return float(value)
 
+        return None
+
 
 class BlockMotionDynamicsParser(dp.DynamicsParser):
     """
@@ -112,12 +114,11 @@ class BlockMotionDynamicsParser(dp.DynamicsParser):
     def specs_dict(self):
         return {'RW': 'random_walk_prob'}
 
-    def __call__(self, criteria_str: str) -> dict:
 
-        return super().__call__(criteria_str)
-
-
-def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_generation_root: str, **kwargs):
+def factory(cli_arg: str,
+            main_config: tp.Dict[str, str],
+            batch_generation_root: str,
+            **kwargs):
     """
     Factory to create ``BlockMotionDynamics`` derived classes from the command line definition.
 

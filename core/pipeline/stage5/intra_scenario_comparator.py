@@ -487,7 +487,7 @@ class UnivarIntraScenarioComparator:
 
     def __gen_graph(self,
                     batch_leaf: str,
-                    criteria: bc.UnivarBatchCriteria,
+                    criteria: bc.IConcreteBatchCriteria,
                     cmdopts: dict,
                     dest_stem: str,
                     title: str,
