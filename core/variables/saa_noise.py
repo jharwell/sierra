@@ -81,7 +81,7 @@ class SAANoise(bc.UnivarBatchCriteria):
             return [{v2 for v2 in v1} for v1 in self.variances]
 
     def graph_xticks(self,
-                     cmdopts: tp.Dict[str, str],
+                     cmdopts: dict,
                      exp_dirs: tp.List[str] = None) -> tp.List[float]:
         xticks_range = []
 
@@ -102,7 +102,7 @@ class SAANoise(bc.UnivarBatchCriteria):
             return np.linspace(xticks_range[0], xticks_range[1], num=len(self.variances))
 
     def graph_xticklabels(self,
-                          cmdopts: tp.Dict[str, str],
+                          cmdopts: dict,
                           exp_dirs: tp.List[str] = None) -> tp.List[str]:
 
         if self.__uniform_sources():
@@ -136,7 +136,7 @@ class SAANoise(bc.UnivarBatchCriteria):
         else:
             return []
 
-    def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
+    def graph_xlabel(self, cmdopts: dict) -> str:
         labels = {
             'sensors': 'Sensor Noise',
             'actuators': 'Actuator Noise',
@@ -144,7 +144,7 @@ class SAANoise(bc.UnivarBatchCriteria):
         }
         return labels[self.noise_type]
 
-    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> tp.List[str]:
+    def gen_exp_dirnames(self, cmdopts: dict) -> tp.List[str]:
         return ['exp' + str(x) for x in range(0, len(self.gen_attr_changelist()))]
 
     def pm_query(self, pm: str) -> bool:

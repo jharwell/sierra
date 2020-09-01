@@ -43,14 +43,17 @@ class FractionalLossesMarginalUnivar:
     """
     Calculates the self-organization of the swarm configuration across a univariate batched set of
     experiments within the same scenario from collated ``.csv`` data using marginal fractional
-    performance losses due to inter-robot interference (See :func:`calc_self_org_mfl`).
+    performance losses due to inter-robot interference (See :func:`calc_self_org_mfl()`).
 
-    Generates a :class:`~graphs.batch_ranged_graph.BatchRangedGraph` across swarm sizes of self
-    organization using :class:`perf_measures.common.FractionalLossesUnivar`.
+    Generates a :class:`~core.graphs.batch_ranged_graph.BatchRangedGraph` across swarm sizes of self
+    organization using :class:`~core.perf_measures.common.FractionalLossesUnivar`.
 
-    Assumptions:
-        - exp0 has 1 robot.
-        - The batch criteria was :class:`~variables.population_size.PopulationSize` derived.
+    Does not require the batch criteria to be
+    :class:`~core.variables.population_size.PopulationSize` derived, but if all experiments in a
+    batch have the same swarm size, then this calculation will be of limited use.
+
+    Does not require exp0 to have 1 robot, but the calculation will be more meaningful if that is
+    the case.
     """
     kLeaf = "pm-self-org-mfl"
 
@@ -98,14 +101,17 @@ class FractionalLossesInteractiveUnivar:
     Calculates the self-organization of the swarm configuration across a univariate batched set of
     experiments within the same scenario from collated ``.csv`` data using fractional
     performance losses due to interative inter-robot interference vs. independent action (See
-    :func:`calc_self_org_ifl`).
+    :func:`calc_self_org_ifl()`).
 
-    Generates a :class:`~graphs.batch_ranged_graph.BatchRangedGraph` across swarm sizes of self
-    organization using :class:`perf_measures.common.FractionalLossesUnivar`.
+    Generates a :class:`~core.graphs.batch_ranged_graph.BatchRangedGraph` across swarm sizes of self
+    organization using :class:`~core.perf_measures.common.FractionalLossesUnivar`.
 
-    Assumptions:
-        - exp0 has 1 robot.
-        - The batch criteria was :class:`~variables.population_size.PopulationSize` derived.
+    Does not require the batch criteria to be
+    :class:`~core.variables.population_size.PopulationSize` derived, but if all experiments in a
+    batch have the same swarm size, then this calculation will be of limited use.
+
+    Does not require exp0 to have 1 robot, but the calculation will be more meaningful if that is
+    the case.
     """
     kLeaf = "pm-self-org-ifl"
 
@@ -150,17 +156,19 @@ class PerformanceGainMarginalUnivar:
     r"""
     Calculates the self-organization of the swarm configuration across a univariate batched set of
     experiments within the same scenario from collated ``.csv`` data using superlinear increases in
-    performance between adjacent swarm size (e.g. for two swarms of size :math:`N` :math:`2N`, a 2X
-    increase in performance is expected, and more than this indicates emergent behavior).
-    See :func:`calc_self_org_mpg`).
+    performance between adjacent swarm size (e.g. for two swarms of size :math:`N`, :math:`2N`, a
+    linear 2X increase in performance is expected, and more than this indicates emergent behavior).
+    See :func:`calc_self_org_mpg()`).
 
-    Generates a :class:`~graphs.batch_ranged_graph.BatchRangedGraph` across swarm sizes of self
+    Generates a :class:`~core.graphs.batch_ranged_graph.BatchRangedGraph` across swarm sizes of self
     organization.
 
-    Assumptions:
-        - exp0 has 1 robot.
-        - The batch criteria was :class:`~variables.population_size.PopulationSize` derived.
+    Does not require the batch criteria to be
+    :class:`~core.variables.population_size.PopulationSize` derived, but if all experiments in a
+    batch have the same swarm size, then this calculation will be of limited use.
 
+    Does not require exp0 to have 1 robot, but the calculation will be more meaningful if that is
+    the case.
     """
     kLeaf = "pm-self-org-mpg"
 
@@ -240,15 +248,17 @@ class PerformanceGainInteractiveUnivar:
     Calculates the self-organization of the swarm configuration across a univariate batched set of
     experiments within the same scenario from collated ``.csv`` data using superlinear increases in
     performance between a swarm of :math:`N` interactive vs. independent robots.
-    See :func:`calc_self_org_ipg`).
+    See :func:`calc_self_org_ipg()`).
 
-    Generates a :class:`~graphs.batch_ranged_graph.BatchRangedGraph` across swarm sizes of self
+    Generates a :class:`~core.graphs.batch_ranged_graph.BatchRangedGraph` across swarm sizes of self
     organization.
 
-    Assumptions:
-        - exp0 has 1 robot.
-        - The batch criteria was :class:`~variables.population_size.PopulationSize` derived.
+    Does not require the batch criteria to be
+    :class:`~core.variables.population_size.PopulationSize` derived, but if all experiments in a
+    batch have the same swarm size, then this calculation will be of limited use.
 
+    Does not require exp0 to have 1 robot, but the calculation will be more meaningful if that is
+    the case.
     """
     kLeaf = "pm-self-org-ipg"
 
@@ -369,12 +379,13 @@ class FractionalLossesMarginalBivar:
     experiments within the same scenario from collated ``.csv`` data using fractional performance
     losses due to inter-robot interference (See :meth:`calc_self_org_mfl`).
 
-    Generates a :class:`~graphs.heatmap.Heatmap` across swarm sizes of self organization from
-    :class:`~perf_measures.common.FractionalLossesBivar` data.
+    Generates a :class:`~core.graphs.heatmap.Heatmap` across swarm sizes of self organization from
+    :class:`~core.perf_measures.common.FractionalLossesBivar` data.
 
     Assumptions:
         - exp0 has 1 robot.
-        - One of the batch criteria was :class:`~variables.population_size.PopulationSize` derived.
+        - One of the batch criteria was :class:`~core.variables.population_size.PopulationSize`
+          derived.
     """
     kLeaf = "pm-self-org-mfl"
 
@@ -445,12 +456,15 @@ class FractionalLossesInteractiveBivar:
     losses due to interactive inter-robot interference vs independent action  (See
     :meth:`calc_self_org_ifl`).
 
-    Generates a :class:`~graphs.heatmap.Heatmap` across swarm sizes of self organization from
-    :class:`~perf_measures.common.FractionalLossesBivar` data.
+    Generates a :class:`~core.graphs.heatmap.Heatmap` across swarm sizes of self organization from
+    :class:`~core.perf_measures.common.FractionalLossesBivar` data.
 
-    Assumptions:
-        - exp0 has 1 robot.
-        - One of the batch criteria was :class:`~variables.population_size.PopulationSize` derived.
+    Does not require one of the batch criteria to be
+    :class:`~core.variables.population_size.PopulationSize` derived, but if all experiments in a
+    batch have the same swarm size, then this calculation will be of limited use.
+
+    Does not require exp0 to have 1 robot, but the calculation will be more meaningful if that is
+    the case.
     """
     kLeaf = "pm-self-org-ifl"
 
@@ -515,15 +529,18 @@ class PerformanceGainMarginalBivar:
     """
     Calculates the self-organization of the swarm configuration across a bivariate batched set of
     experiments within the same scenario from collated ``.csv`` data using superlinear increases in
-    performance between adjacent swarm size (e.g. for two swarms of size :math:`N` :math:`2N`, a 2X
+    performance between adjacent swarm size (e.g. for two swarms of size :math:`N`, :math:`2N`, a 2X
     increase in performance is expected, and more than this indicates emergent behavior).
-    See :func:`calc_self_org_mpg`).
+    See :func:`calc_self_org_mpg()`).
 
-    Generates a :class:`~graphs.heatmap.Heatmap` across swarm sizes of self organization.
+    Generates a :class:`~core.graphs.heatmap.Heatmap` across swarm sizes of self organization.
 
-    Assumptions:
-        - exp0 has 1 robot.
-        - One of the batch criteria was :class:`~variables.population_size.PopulationSize` derived.
+    Does not require one of the batch criteria to be
+    :class:`~core.variables.population_size.PopulationSize` derived, but if all experiments in a
+    batch have the same swarm size, then this calculation will be of limited use.
+
+    Does not require exp0 to have 1 robot, but the calculation will be more meaningful if that is
+    the case.
     """
     kLeaf = "pm-self-org-mpg"
 
@@ -625,13 +642,16 @@ class PerformanceGainInteractiveBivar:
     Calculates the self-organization of the swarm configuration across a bivariate batched set of
     experiments within the same scenario from collated ``.csv`` data using superlinear increases in
     performance between a swarm of :math:`N` interacting vs. indpendently acting robots.
-    See :func:`calc_self_org_ipg`).
+    See :func:`calc_self_org_ipg()`).
 
-    Generates a :class:`~graphs.heatmap.Heatmap` across swarm sizes of self organization.
+    Generates a :class:`~core.graphs.heatmap.Heatmap` across swarm sizes of self organization.
 
-    Assumptions:
-        - exp0 has 1 robot.
-        - One of the batch criteria was :class:`~variables.population_size.PopulationSize` derived.
+    Does not require one of the batch criteria to be
+    :class:`~core.variables.population_size.PopulationSize` derived, but if all experiments in a
+    batch have the same swarm size, then this calculation will be of limited use.
+
+    Does not require exp0 to have 1 robot, but the calculation will be more meaningful if that is
+    the case.
     """
     kLeaf = "pm-self-org-ipg"
 
@@ -776,23 +796,17 @@ def calc_self_org_ifl(fl_i: float, n_robots_i: int, fl_1: float, normalize: bool
     swarm of size :math:`N`.
 
     .. math::
-       \begin{equation}
-       Z(N,\kappa) = \sum_{t\in{T}}\theta_Z(N,\kappa,t)
-       \end{equation}
-
-    where
+       E_S(N,\kappa) = \sum_{t\in{T}}\theta_{E_S}(N,\kappa)
 
     or
+
     .. math::
-       \begin{equation}
-       Z(m_i,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{-\theta_Z(m_i,\kappa,t)}} - \frac{1}{1 + e^{\theta_Z(m_i,\kappa,t)}}
-       \end{equation}
+       E_S(N,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{-\theta_{E_S}(t)}} - \frac{1}{1 + e^{\theta_{E_S}(t)}}
 
     where
+
     .. math::
-       \begin{equation}
-       \theta_Z(N,\kappa,t) = {N}{P_{lost}(1,\kappa,t)} - P_{lost}(N,\kappa,t)
-       \end{equation}
+       \theta_{E_S}(t) = {N}{P_{lost}(1,\kappa,t)} - P_{lost}(N,\kappa,t)
 
     depending on normalization configuration.
 
@@ -804,7 +818,7 @@ def calc_self_org_ifl(fl_i: float, n_robots_i: int, fl_1: float, normalize: bool
     theta = scaled_fl_1 - fl_i
 
     if normalize:
-        return core.utils.Sigmoid(-theta)() - core.utils.Sigmoid(theta)()
+        return core.utils.Sigmoid(theta)() - core.utils.Sigmoid(-theta)()
     else:
         return theta
 
@@ -816,31 +830,26 @@ def calc_self_org_mfl(fl_i: float,
                       normalize: bool):
     r"""
     Calculates the self organization due to inter-robot interaction for a  swarm configuration of
-    size :math:`m_{i}`, given fractional performance losses for :math:`m_{i}` robots and for a
-    smaller swarm of size :math:`m_{i-1}` with the same configuration.
+    size :math:`N_2`, given fractional performance losses for :math:`N_2` robots and for a
+    smaller swarm of size :math:`N_1` with the same configuration.
 
     .. math::
-       \begin{equation}
-       Z(m_i,\kappa) = \sum_{t\in{T}}\theta_Z(m_i,\kappa,t)
-       \end{equation}
+       E_S(N_1,N_2,\kappa) = \sum_{t\in{T}}\theta_{E_S}(t)
 
     or
+
     .. math::
-       \begin{equation}
-       Z(m_i,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{-\theta_Z(m_i,\kappa,t)}} - \frac{1}{1 + e^{\theta_Z(m_i,\kappa,t)}}
-       \end{equation}
+       E_S(N_1,N_2,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{-\theta_{E_S}(t)}} - \frac{1}{1 + e^{\theta_{E_S}(t)}}
 
     where
 
     .. math::
-       \begin{equation}
-       \theta_Z(m_i,\kappa,t) = \frac{m_{i}}{m_{i-1}}{P_{lost}(m_{i-1},\kappa,t)} - P_{lost}(m_{i},\kappa,t)
-       \end{equation}
+       \theta_{E_S}(t) = \frac{N_2}{N_1}{P_{lost}(N_1,\kappa,t)} - P_{lost}(N_2,\kappa,t)
 
     depending on normalization configuration.
 
-    Defined for swarms with :math:`N` > 1 robots. For :math:`N=1`, we obtain a :math:`\theta` value
-    using L'Hospital's rule and taking the derivative with respect to :math:`m_{i-1}`.
+    Defined for swarms with :math:`N_1` > 1 robots. For :math:`N_1=1`, we obtain a :math:`\theta`
+    value using L'Hospital's rule and taking the derivative with respect to :math:`N_1`.
 
     Original equation taken from :xref:`Harwell2019`, modified to have better theoretical limits.
 
@@ -851,7 +860,7 @@ def calc_self_org_mfl(fl_i: float,
         theta = 0.0
 
     if normalize:
-        return core.utils.Sigmoid(-theta)() - core.utils.Sigmoid(theta)()
+        return core.utils.Sigmoid(theta)() - core.utils.Sigmoid(-theta)()
     else:
         return theta
 
@@ -863,31 +872,27 @@ def calc_self_org_mpg(perf_i: float,
                       normalize: bool):
     r"""
     Calculates the marginal performance gains achieved by the swarm configuration of size
-    :math:`m_i`, given the performance achieved with :math:`m_i` robots and with a smaller swarm
-    size :math:`m_{i-1}` with the same configuration.
+    :math:`N_2`, given the performance achieved with :math:`N_2` robots and with a smaller swarm
+    size :math:`N_1` with the same configuration.
 
     .. math::
-       \begin{equation}
-       Z(m_i,\kappa) = \sum_{t\in{T}} \theta_Z(m_i,\kappa,t)
-       \end{equation}
+       E_T(N_1,N_2,\kappa) = \sum_{t\in{T}} \theta_{E_T}(t)
 
     or
+
     .. math::
-       \begin{equation}
-       Z(m_i,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{\theta_Z(m_i,\kappa,t)}} - \frac{1}{1 + e^{-\theta_Z(m_i,\kappa,t)}}
-       \end{equation}
+       E_T(N_1,N_2,\kappa) = \sum_{t\in{T}} \frac{1}{1 + e^{-\theta_{E_T}(t)}} - \frac{1}{1 + e^{\theta_{E_T}(t)}}
 
     where
+
     .. math::
-       \begin{equation}
-       theta = P(m_i,\kappa,t) - \frac{m_i}{m_{i-1}}{P(m_{i-1},\kappa,t)}
-       \end{equation}
+       \theta_{E_T}(t) = P(N_2,\kappa,t) - \frac{N_2}{N_1}{P(N_1,\kappa,t)}
 
     depending on normalization configuration.
 
-    Defined for swarms with :math:`m_{i-1}` > 1 robots. For :math:`m_{i-1}=1`, we obtain a
+    Defined for swarms with :math:`N_1` > 1 robots. For :math:`N_1=1`, we obtain a
     :math:`\theta` value using L'Hospital's rule and taking the derivative with respect to
-    :math:`m_i{i-1}`.
+    :math:`N_1`.
 
     Inspired by :xref:`Rosenfeld2006`.
 
@@ -909,21 +914,17 @@ def calc_self_org_ipg(perf_i: float, n_robots_i: int, perf_0: float, normalize: 
     size :math:`N`, given the performance achieved with a single robot with the same configuration.
 
     .. math::
-       \begin{equation}
-       Z(N,\kappa) = \sum_{t\in{T}} \theta_Z(N,\kappa,t)
-       \end{equation}
+       E_T(N,\kappa) = \sum_{t\in{T}} \theta_{E_T}(t)
 
     or
+
     .. math::
-       \begin{equation}
-       Z(N,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{\theta_Z(N,\kappa,t)}} - \frac{1}{1 + e^{-\theta_Z(N,\kappa,t)}}
-       \end{equation}
+       E_T(N,\kappa) = \sum_{t\in{T}} \frac{1}{1 + e^{-\theta_{E_T}(t)}} - \frac{1}{1 + e^{\theta_{E_T}(t)}}
 
     where
+
     .. math::
-       \begin{equation}
-       theta_Z(N,\kappa,t) =  P(N,\kappa,t} - {N}{P(1,\kappa,t)}
-       \end{equation}
+       \theta_{E_T}(t) =  P(N,\kappa,t} - {N}{P(1,\kappa,t)}
 
     depending on normalization configuration.
 
@@ -946,4 +947,8 @@ __api__ = [
     'FractionalLossesInteractiveBivar',
     'PerformanceGainMarginalBivar',
     'PerformanceGainInteractiveBivar',
+    'calc_self_org_ifl',
+    'calc_self_org_mfl',
+    'calc_self_org_mpg',
+    'calc_self_org_ipg'
 ]

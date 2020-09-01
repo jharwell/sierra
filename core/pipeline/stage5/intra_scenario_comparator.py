@@ -40,7 +40,7 @@ class BivarIntraScenarioComparator:
     """
     Compares a set of controllers on different performance measures in all scenarios, one at a
     time. Graph generation is controlled via a config file parsed in
-    :class:`~pipeline.stage5.PipelineStage5`. Bivariate batch criteria only.
+    :class:`~core.pipeline.stage5.PipelineStage5`. Bivariate batch criteria only.
 
     Attributes:
         controllers: List of controller names to compare.
@@ -50,7 +50,7 @@ class BivarIntraScenarioComparator:
                        to.
         cmdopts: Dictionary of parsed cmdline parameters.
         cli_args: :class:`argparse` object containing the cmdline parameters. Needed for
-                  :class:`~variables.batch_criteria.BatchCriteria` generation for each scenario
+                  :class:`~core.variables.batch_criteria.BatchCriteria` generation for each scenario
                   controllers are compared within, as batch criteria is dependent on
                   controller+scenario definition, and needs to be re-generated for each scenario in
                   order to get graph labels/axis ticks to come out right in all cases.
@@ -293,7 +293,7 @@ class BivarIntraScenarioComparator:
                       legend: tp.List[str],
                       comp_type: str):
         """
-        Generates a :class:`~graphs.stacked_surface_graph.StackedSurfaceGraph` comparing the
+        Generates a :class:`~core.graphs.stacked_surface_graph.StackedSurfaceGraph` comparing the
         specified controllers within thespecified scenario after input files have been gathered from
         each controllers into :attribute:`self.cc_csv_root`.
         """
@@ -333,12 +333,12 @@ class BivarIntraScenarioComparator:
         measures are 2D arrays, we actually just copy and rename the performance measure ``.csv``
         files for each controllers into :attribute:`self.cc_csv_root`.
 
-        :class:`~graphs.stacked_surface_graph.StackedSurfaceGraph` expects an ``_[0-9]+.csv``
+        :class:`~core.graphs.stacked_surface_graph.StackedSurfaceGraph` expects an ``_[0-9]+.csv``
         pattern for each 2D surfaces to graph in order to disambiguate which files belong to which
         controller without having the controller name in the filepath (contains dots), so we do that
-        here. :class:`~graphs.heatmap.Heatmap` does not require that, but for the heatmap set we
-        generate it IS helpful to have an easy way to differentiate primary vs. other controllers,
-        so we do it unconditionally here to handle both cases.
+        here. :class:`~core.graphs.heatmap.Heatmap` does not require that, but for the heatmap set
+        we generate it IS helpful to have an easy way to differentiate primary vs. other
+        controllers, so we do it unconditionally here to handle both cases.
 
         """
         csv_ipath = os.path.join(cmdopts['output_root'],
@@ -364,7 +364,7 @@ class UnivarIntraScenarioComparator:
     """
     Compares a set of controllers on different performance measures in all scenarios using
     univariate batch criteria, one at a time. Graph generation is controlled via a config file
-    parsed in :class:`~pipeline.stage5.PipelineStage5`. Univariate batch criteria only.
+    parsed in :class:`~core.pipeline.stage5.PipelineStage5`. Univariate batch criteria only.
 
     Attributes:
         controllers: List of controller names to compare.
@@ -374,7 +374,7 @@ class UnivarIntraScenarioComparator:
                        to.
         cmdopts: Dictionary of parsed cmdline parameters.
         cli_args: :class:`argparse` object containing the cmdline parameters. Needed for
-                  :class:`~variables.batch_criteria.BatchCriteria` generation for each scenario
+                  :class:`~core.variables.batch_criteria.BatchCriteria` generation for each scenario
                   controllers are compared within, as batch criteria is dependent on
                   controller+scenario definition, and needs to be re-generated for each scenario in
                   order to get graph labels/axis ticks to come out right in all cases.
@@ -494,9 +494,9 @@ class UnivarIntraScenarioComparator:
                     label: str,
                     legend: tp.List[str]):
         """
-        Generates a :class:`BatchRangeGraph` comparing the specified controllers within the
-        specified scenario after input files have been gathered from each controllers into
-        ``cc-csvs/``.
+        Generates a :class:`~core.graphs.batch_ranged_graph.BatchRangedGraph` comparing the
+        specified controllers within the specified scenario after input files have been gathered
+        from each controllers into ``cc-csvs/``.
         """
         csv_stem_opath = os.path.join(self.cc_csv_root, dest_stem + "-" + batch_leaf)
         xticks = criteria.graph_xticks(cmdopts)

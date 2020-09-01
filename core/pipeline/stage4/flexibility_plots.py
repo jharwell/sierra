@@ -47,7 +47,7 @@ class FlexibilityPlotsCSVGenerator:
                       source of the performance waveforms to generate definitions for.
     """
 
-    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, str]) -> None:
+    def __init__(self, main_config: dict, cmdopts: dict) -> None:
         self.cmdopts = copy.deepcopy(cmdopts)
         self.main_config = main_config
         self.perf_csv_col = main_config['perf']['intra_perf_col']

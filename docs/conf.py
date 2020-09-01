@@ -93,6 +93,10 @@ todo_include_todos = True
 
 autosummary_generate = True
 
+nitpicky = True
+math_number_all = True
+math_eqref_format = 'Eq. {number}'
+
 autoapi_modules = {
     'core.cmdline': {'output': 'api/core'},
     'core.perf_measures': {'output': 'api/core'},
@@ -182,6 +186,7 @@ latex_elements = {
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
+    'maxlistdepth': '50'
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
@@ -222,9 +227,22 @@ intersphinx_mapping = {'https://docs.python.org/': None}
 # readthedocs doesn't support a nice way updating submodules to something other than the master
 # branch after SIERRA is switched from the master to the devel branch.
 import subprocess
-res = subprocess.run(["git",
-                      "submodule",
-                      "update",
-                      "--remote",
-                      "--recursive",
-                      "--init"])
+import os
+cwd = os.getcwd()
+if not os.path.exists(os.path.join(os.getcwd(), "../plugins/fordyca")):
+    subprocess.run(["git",
+                    "clone",
+                    "https://github.com/swarm-robotics/sierra-plugin-fordyca",
+                    "../plugins/fordyca"])
+    os.chdir("../plugins/fordyca")
+    subprocess.run(["git", "checkout", "devel"])
+    os.chdir(cwd)
+
+if not os.path.exists(os.path.join(os.getcwd(), "../plugins/silicon")):
+    subprocess.run(["git",
+                    "clone",
+                    "https://github.com/swarm-robotics/sierra-plugin-silicon",
+                    "../plugins/silicon"])
+    os.chdir("../plugins/silicon")
+    subprocess.run(["git", "checkout", "devel"])
+    os.chdir(cwd)

@@ -23,7 +23,6 @@ import subprocess
 import time
 import sys
 import logging
-import typing as tp
 import datetime
 
 from core.variables import batch_criteria as bc
@@ -44,7 +43,7 @@ class BatchedExpRunner:
 
     """
 
-    def __init__(self, cmdopts: tp.Dict[str, str], criteria: bc.BatchCriteria) -> None:
+    def __init__(self, cmdopts: dict, criteria: bc.BatchCriteria) -> None:
         self.cmdopts = cmdopts
         self.criteria = criteria
 

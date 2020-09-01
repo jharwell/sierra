@@ -37,7 +37,7 @@ class BatchedIntraExpGraphGenerator:
         cmdopts: Dictionary of parsed cmdline attributes.
     """
 
-    def __init__(self, cmdopts: tp.Dict[str, str]) -> None:
+    def __init__(self, cmdopts: dict) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
@@ -82,7 +82,7 @@ class IntraExpGraphGenerator:
                  controller_config: dict,
                  LN_config: dict,
                  HM_config: dict,
-                 cmdopts: tp.Dict[str, str]) -> None:
+                 cmdopts: dict) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
@@ -100,11 +100,11 @@ class IntraExpGraphGenerator:
         """
         Runs the following to generate graphs for each experiment in the batch:
 
-        #. :class:`~pipeline.stage4.intra_exp_graph_generator.LinegraphsGenerator` to generate
-           linegraphs for each experiment in the batch.
+        #. :class:`~core.pipeline.pipeline_stage4.intra_exp_graph_generator.LinegraphsGenerator` to
+           generate linegraphs for each experiment in the batch.
 
-        #. :class:`~pipeline.stage4.intra_exp_graph_generator.HeatmapsGenerator` to generate
-           heatmaps for each experiment in the batch.
+        #. :class:`~core.pipeline.pipeline_stage4.intra_exp_graph_generator.HeatmapsGenerator` to
+           generate heatmaps for each experiment in the batch.
         """
         if self.cmdopts['gen_vc_plots'] and batch_criteria.is_univar():
             logging.info('Flexibility plots from %s', self.cmdopts['output_root'])

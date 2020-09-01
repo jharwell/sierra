@@ -74,13 +74,13 @@ class BlockConstantDensity(cd.ConstantDensity):
 
         return self.changes
 
-    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> tp.List[str]:
+    def gen_exp_dirnames(self, cmdopts: dict) -> tp.List[str]:
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
     def graph_xticks(self,
-                     cmdopts: tp.Dict[str, str],
-                     exp_dirs: list = None) -> tp.List[float]:
+                     cmdopts: dict,
+                     exp_dirs: tp.List[str] = None) -> tp.List[float]:
         if exp_dirs is not None:
             dirs = exp_dirs
         else:
@@ -99,19 +99,19 @@ class BlockConstantDensity(cd.ConstantDensity):
         return areas
 
     def graph_xticklabels(self,
-                          cmdopts: tp.Dict[str, str],
-                          exp_dirs: list = None) -> tp.List[str]:
+                          cmdopts: dict,
+                          exp_dirs: tp.List[str] = None) -> tp.List[str]:
         return [str(x) + r' $m^2$' for x in self.graph_xticks(cmdopts, exp_dirs)]
 
-    def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
+    def graph_xlabel(self, cmdopts: dict) -> str:
         return r"Block Density ({0}\%)".format(self.target_density)
 
-    def pm_query(self, pm) -> bool:
+    def pm_query(self, pm: str) -> bool:
         return pm in ['raw']
 
 
-def factory(cli_arg: str, main_config:
-            tp.Dict[str, str],
+def factory(cli_arg: str,
+            main_config: tp.Dict[str, str],
             batch_generation_root: str,
             **kwargs):
     """

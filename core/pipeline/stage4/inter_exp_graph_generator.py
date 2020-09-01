@@ -22,7 +22,6 @@ Classes for generating graphs across experiments in a batch.
 import os
 import copy
 import logging
-import typing as tp
 
 import core.perf_measures.scalability as pms
 import core.perf_measures.self_organization as pmso
@@ -38,12 +37,12 @@ class InterExpGraphGenerator:
     """
     Generates graphs from collated ``.csv`` files across experiments in a batch. Which graphs are
     generated is controlled by (1) YAML configuration files parsed in
-    :class:`~pipeline.stage4.PipelineStage4` (2) which batch criteria was used (for performance
+    :class:`~core.pipeline.stage4.PipelineStage4` (2) which batch criteria was used (for performance
     measures).
 
     """
 
-    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, str], targets: dict) -> None:
+    def __init__(self, main_config: dict, cmdopts: dict, targets: dict) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
@@ -62,20 +61,20 @@ class InterExpGraphGenerator:
         """
         Runs the following to generate graphs across experiments in the batch:
 
-        #. :class:`~pipeline.stage4.inter_exp_graph_generator.LinegraphsGenerator` to generate
-           linegraphs (univariate batch criteria only).
+        #. :class:`~core.pipeline.pipeline_stage4.inter_exp_graph_generator.LinegraphsGenerator` to
+           generate linegraphs (univariate batch criteria only).
 
-        #. :class:`~pipeline.stage4.inter_exp_graph_generator.UnivarPerfMeasuresGenerator` to
-           generate performance measures (univariate batch criteria only).
+        #. :class:`~core.pipeline.pipeline_stage4.inter_exp_graph_generator.UnivarPerfMeasuresGenerator`
+           to generate performance measures (univariate batch criteria only).
 
-        #. :class:`~pipeline.stage4.inter_exp_graph_generator.BivarPerfMeasuresGenerator` to
-           generate performance measures (bivariate batch criteria only).
+        #. :class:`~core.pipeline.pipeline_stage4.inter_exp_graph_generator.BivarPerfMeasuresGenerator`
+           to generate performance measures (bivariate batch criteria only).
         """
 
         if criteria.is_univar():
-            # LinegraphsGenerator(self.cmdopts["collate_root"],
-            #                     self.cmdopts["graph_root"],
-            #                     self.targets).generate()
+            LinegraphsGenerator(self.cmdopts["collate_root"],
+                                self.cmdopts["graph_root"],
+                                self.targets).generate()
             UnivarPerfMeasuresGenerator(self.main_config, self.cmdopts)(criteria)
         else:
             BivarPerfMeasuresGenerator(self.main_config, self.cmdopts)(criteria)

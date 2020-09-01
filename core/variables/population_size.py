@@ -60,12 +60,12 @@ class PopulationSize(bc.UnivarBatchCriteria):
         """
         return PopulationSize.gen_attr_changelist_from_list(self.size_list)
 
-    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> list:
+    def gen_exp_dirnames(self, cmdopts: dict) -> list:
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
     def graph_xticks(self,
-                     cmdopts: tp.Dict[str, str],
+                     cmdopts: dict,
                      exp_dirs: tp.List[str] = None) -> tp.List[float]:
 
         if exp_dirs is None:
@@ -78,7 +78,7 @@ class PopulationSize(bc.UnivarBatchCriteria):
             return ret
 
     def graph_xticklabels(self,
-                          cmdopts: tp.Dict[str, str],
+                          cmdopts: dict,
                           exp_dirs: tp.List[str] = None) -> tp.List[str]:
 
         if exp_dirs is None:
@@ -86,7 +86,7 @@ class PopulationSize(bc.UnivarBatchCriteria):
 
         return list(map(str, self.graph_xticks(cmdopts, exp_dirs)))
 
-    def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
+    def graph_xlabel(self, cmdopts: dict) -> str:
         if cmdopts['plot_log_xaxis']:
             return r"$\log_{2}$(Swarm Size)"
 

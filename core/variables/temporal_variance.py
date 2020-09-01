@@ -83,7 +83,7 @@ class TemporalVariance(bc.UnivarBatchCriteria):
         return all_changes
 
     def graph_xticks(self,
-                     cmdopts: tp.Dict[str, str],
+                     cmdopts: dict,
                      exp_dirs: tp.List[str] = None) -> tp.List[float]:
 
         # If exp_dirs is passed, then we have been handed a subset of the total # of directories in
@@ -98,14 +98,14 @@ class TemporalVariance(bc.UnivarBatchCriteria):
                 for x in range(0, m)]
 
     def graph_xticklabels(self,
-                          cmdopts: tp.Dict[str, str],
+                          cmdopts: dict,
                           exp_dirs: tp.List[str] = None) -> tp.List[str]:
         return list(map(str, self.graph_xticks(cmdopts, exp_dirs)))
 
-    def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
+    def graph_xlabel(self, cmdopts: dict) -> str:
         return vcs.method_xlabel(cmdopts["envc_cs_method"])
 
-    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> tp.List[str]:
+    def gen_exp_dirnames(self, cmdopts: dict) -> tp.List[str]:
         return ['exp' + str(x) for x in range(0, len(self.gen_attr_changelist()))]
 
     def pm_query(self, pm: str) -> bool:

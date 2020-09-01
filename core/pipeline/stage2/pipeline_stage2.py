@@ -36,7 +36,7 @@ class PipelineStage2:
     idempotent, for obvious reasons.
     """
 
-    def run(self, cmdopts: tp.Dict[str, str], batch_criteria: bc.BatchCriteria):
+    def run(self, cmdopts: dict, batch_criteria: bc.BatchCriteria):
         if cmdopts['argos_rendering']:
             logging.info('Stage2: ARGoS frame grabbing enabled')
 

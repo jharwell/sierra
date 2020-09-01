@@ -467,16 +467,12 @@ def calculate_fpr(TS: float, T: int, perf0: float, perfN: float):
     :xref:`Harwell2020`.
 
     .. math::
-       \begin{equation}
        B_{sz}(\kappa) = \sum_{t\in{T}}\frac{1}{1+e^(-\theta_{B_{sz}})} - \frac{1}{1+e^(+\theta_{B_{sz}})}
-       \end{equation}
 
     where
 
     .. math::
-       \begin{equation}
        \theta_{B_{sz}}(\kappa,t) = P(N,\kappa,t) - \frac{T_S}{T}P_{ideal}(N,\kappa,t)
-       \end{equation}
 
     """
     scaled_perf0 = float(TS) / float(T) * perf0

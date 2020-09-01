@@ -72,12 +72,12 @@ class Oracle(bc.UnivarBatchCriteria):
 
         return all_changes
 
-    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> tp.List[str]:
+    def gen_exp_dirnames(self, cmdopts: dict) -> tp.List[str]:
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
     def graph_xticks(self,
-                     cmdopts: tp.Dict[str, str],
+                     cmdopts: dict,
                      exp_dirs: tp.List[str] = None) -> tp.List[float]:
         return list(map(float, range(0, len(self.gen_exp_dirnames(cmdopts)))))
 
@@ -86,7 +86,7 @@ class Oracle(bc.UnivarBatchCriteria):
                           exp_dirs: tp.List[str] = None) -> tp.List[str]:
         raise NotImplementedError
 
-    def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
+    def graph_xlabel(self, cmdopts: dict) -> str:
         return "Oracular Information Type"
 
     def pm_query(self, pm: str) -> bool:

@@ -73,12 +73,12 @@ class TAPolicySet(bc.UnivarBatchCriteria):
             changes.append(set(c))
         return changes
 
-    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> tp.List[str]:
+    def gen_exp_dirnames(self, cmdopts: dict) -> tp.List[str]:
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
     def graph_xticks(self,
-                     cmdopts: tp.Dict[str, str],
+                     cmdopts: dict,
                      exp_dirs: tp.List[str] = None) -> tp.List[float]:
         if exp_dirs is not None:
             dirs = exp_dirs
@@ -88,11 +88,11 @@ class TAPolicySet(bc.UnivarBatchCriteria):
         return [float(i) for i in range(1, len(dirs) + 1)]
 
     def graph_xticklabels(self,
-                          cmdopts: tp.Dict[str, str],
+                          cmdopts: dict,
                           exp_dirs: tp.List[str] = None) -> tp.List[str]:
         return ['Random', 'STOCH-N1', 'MAT-OPT', r'$\epsilon$-greedy', 'UCB1']
 
-    def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
+    def graph_xlabel(self, cmdopts: dict) -> str:
         return "Task Allocation Policy"
 
     def pm_query(self, pm: str) -> bool:

@@ -23,7 +23,6 @@ measure in univariate and bivariate batched experiments.
 import os
 import copy
 import logging
-import typing as tp
 import pandas as pd
 
 from core.graphs.batch_ranged_graph import BatchRangedGraph
@@ -34,13 +33,13 @@ import core.variables.batch_criteria as bc
 
 class RawUnivar:
     """
-    Generates a :class:`~graphs.stacked_line_graph.StackedLineGraph` from the cumulative raw
+    Generates a :class:`~core.graphs.stacked_line_graph.StackedLineGraph` from the cumulative raw
     performance count of the swarm configuration across a univariate batched set of experiments
     within the same scenario from collated ``.csv`` data.
 
     """
 
-    def __init__(self, cmdopts: tp.Dict[str, str], inter_perf_csv: str) -> None:
+    def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
@@ -93,13 +92,13 @@ class RawUnivar:
 
 class RawBivar:
     """
-    Generates a :class:`graphs.heatmap.Heatmap` from the cumulative raw performance count of the
-    swarm configuration across a bivariate batched set of experiments within the same scenario from
-    collated ``.csv`` data.
+    Generates a :class:`core.graphs.heatmap.Heatmap` from the cumulative raw performance count of
+    the swarm configuration across a bivariate batched set of experiments within the same scenario
+    from collated ``.csv`` data.
 
     """
 
-    def __init__(self, cmdopts: tp.Dict[str, str], inter_perf_csv: str) -> None:
+    def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)

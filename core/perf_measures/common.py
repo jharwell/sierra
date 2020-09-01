@@ -33,190 +33,30 @@ from core.graphs.heatmap import Heatmap
 from core.graphs.batch_ranged_graph import BatchRangedGraph
 
 
-class ProjectivePerformanceCalculatorUnivar:
-    r"""
-    Calculates the following measure for each experiment in a univariate batched experiment. The
-    batch criteria must be derived from :class:`~variables.population_size.PopulationSize`, or this
-    measure will (probably) not have much meaning.
-
-    .. math::
-        \frac{Performance(exp_i)}{Distance(exp_i, exp{i-1}) * Performance(exp_{i})}
-
-    Domain: [0, inf)
-
-    If things are X amount better/worse (in terms of increasing/decreasing the swarm's potential for
-    performance) than they were for exp0 (baseline for comparison), then we *should* see a
-    corresponding increase/decrease in the level of observed performance
-
-    Only valid for exp i, i > 0.
-
-    """
-
-    def __init__(self, cmdopts: tp.Dict[str, str], inter_perf_csv: str, projection_type: str) -> None:
-        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
-        # are generated after us
-        self.cmdopts = copy.deepcopy(cmdopts)
-        self.projection_type = projection_type
-        self.inter_perf_stem = inter_perf_csv.split('.')[0]
-
-    def __call__(self, batch_criteria: bc.IConcreteBatchCriteria):
-        path = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
-        assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
-        perf_df = pd.read_csv(path, sep=';')
-        exp_dirs = batch_criteria.gen_exp_dirnames(self.cmdopts)
-        exp0_dir = exp_dirs[0]
-        scale_cols = [c for c in perf_df.columns if c not in [exp0_dir]]
-        proj_df = pd.DataFrame(columns=scale_cols, index=[0])
-
-        xvals = batch_criteria.graph_xticks(self.cmdopts)
-
-        for exp_num in range(1, len(scale_cols) + 1):
-            exp_col = exp_dirs[exp_num]
-            exp_prev_col = exp_dirs[exp_num - 1]
-
-            obs = perf_df.tail(1)[exp_col].values[0]
-            obs_prev = perf_df.tail(1)[exp_prev_col].values[0]
-            similarity = float(xvals[exp_num]) / float(xvals[exp_num - 1])
-
-            if self.projection_type == "positive":
-                proj_df[exp_col] = ProjectivePerformanceCalculatorUnivar.__calc_positive(obs,
-                                                                                         obs_prev,
-                                                                                         similarity)
-            elif self.projection_type == "negative":
-                proj_df[exp_col] = ProjectivePerformanceCalculatorUnivar.__calc_negative(obs,
-                                                                                         obs_prev,
-                                                                                         similarity)
-        return proj_df
-
-    @staticmethod
-    def __calc_positive(observed: float, exp0: float, similarity: float):
-        return observed / (exp0 * similarity)
-
-    @staticmethod
-    def __calc_negative(observed: float, exp0: float, similarity: float):
-        return observed / (exp0 * (1.0 - similarity))
-
-
-class ProjectivePerformanceCalculatorBivar:
-    r"""
-    Calculates the following measure for each experiment in a bivariate batched experiment. One of
-    the variables must be derived from :class:`~variables.population_size.PopulationSize`.
-
-    .. math::
-        \frac{Performance(exp_i)}{Distance(exp_i, exp_{i-1}) * Performance(exp_i)}
-
-    Domain: [0, inf)
-
-    If things are X amount better/worse (in terms of increasing/decreasing the swarm's potential for
-    performance) than they were for exp0 (baseline for comparison), then we *should* see a
-    corresponding increase/decrease in the level of observed performance.
-
-    Only valid for exp i > 0.
-    """
-
-    def __init__(self,
-                 cmdopts: tp.Dict[str, str],
-                 inter_perf_csv: str,
-                 projection_type: str) -> None:
-        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
-        # are generated after us
-        self.cmdopts = copy.deepcopy(cmdopts)
-        self.projection_type = projection_type
-        self.inter_perf_stem = inter_perf_csv.split('.')[0]
-
-    def __call__(self, batch_criteria: bc.IConcreteBatchCriteria):
-        path = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
-        assert(os.path.exists(path)), "FATAL: {0} does not exist".format(path)
-        perf_df = pd.read_csv(path, sep=';')
-
-        # We need to know which of the 2 variables was swarm size, in order to determine
-        # the correct dimension along which to compute the metric, which depends on
-        # performance between adjacent swarm sizes.
-        if isinstance(batch_criteria.criteria1, PopulationSize) or self.cmdopts['plot_primary_axis'] == '0':
-            return self.__compute_vals_col(perf_df, batch_criteria)
-        else:
-            return self.__compute_vals_row(perf_df, batch_criteria)
-
-    def __compute_vals_row(self, perf_df: pd.DataFrame, batch_criteria: bc.IConcreteBatchCriteria):
-        proj_df = pd.DataFrame(columns=perf_df.columns, index=perf_df.index)
-        yvals = batch_criteria.graph_yticks(self.cmdopts)
-
-        proj_df.iloc[:, 0] = math.nan
-
-        for i in range(0, len(proj_df.index)):
-            for j in range(1, len(proj_df.columns)):
-                similarity = float(yvals[j]) / float(yvals[j - 1])
-                obs = csv_3D_value_iloc(perf_df, i, j, slice(-1, None))
-                prev_obs = csv_3D_value_iloc(perf_df, i, j - 1, slice(-1, None))
-
-                if self.projection_type == 'positive':
-                    proj_df.iloc[i, j] = ProjectivePerformanceCalculatorBivar.__calc_positive(obs,
-                                                                                              prev_obs,
-                                                                                              similarity)
-                elif self.projection_type == 'negative':
-                    proj_df.iloc[i, j] = ProjectivePerformanceCalculatorBivar.__calc_negative(obs,
-                                                                                              prev_obs,
-                                                                                              similarity)
-        return proj_df
-
-    def __compute_vals_col(self, perf_df: pd.DataFrame, batch_criteria: bc.IConcreteBatchCriteria):
-        proj_df = pd.DataFrame(columns=perf_df.columns, index=perf_df.index)
-        xvals = batch_criteria.graph_xticks(self.cmdopts)
-
-        proj_df.iloc[0, :] = math.nan
-
-        for i in range(1, len(proj_df.index)):
-            for j in range(0, len(proj_df.columns)):
-                similarity = float(xvals[i]) / float(xvals[i - 1])
-                obs = csv_3D_value_iloc(perf_df, i, j, slice(-1, None))
-                prev_obs = csv_3D_value_iloc(perf_df, i - 1, j, slice(-1, None))
-
-                if self.projection_type == 'positive':
-                    proj_df.iloc[i, j] = ProjectivePerformanceCalculatorBivar.__calc_positive(obs,
-                                                                                              prev_obs,
-                                                                                              similarity)
-                elif self.projection_type == 'negative':
-                    proj_df.iloc[i, j] = ProjectivePerformanceCalculatorBivar.__calc_negative(obs,
-                                                                                              prev_obs,
-                                                                                              similarity)
-
-        return proj_df
-
-    @staticmethod
-    def __calc_positive(obs: float, prev_obs: float, similarity: float):
-        return obs / (prev_obs * similarity)
-
-    @staticmethod
-    def __calc_negative(obs: float, prev_obs: float, similarity: float):
-        return obs / (prev_obs * (1.0 - similarity))
-
-
 class PerfLostInteractiveSwarmUnivar:
     r"""
-    Univariate calculator for the perforance lost for a swarm of size N of `interacting` robots, as
-    oppopsed to a  swarm of size N of `non-interacting` robots.
+    Univariate calculator for the perforance lost per robot for a swarm of size N of `interacting`
+    robots, as oppopsed to a  swarm of size N of `non-interacting` robots.
 
     Calculated as (taken from :xref:`Harwell2019`):
 
     .. math::
-       \begin{equation}
-         P_{lost}(N,\kappa,t) =
-         \begin{cases}
-           {P(1,\kappa,t)}{t_{lost}^{1}(t)} & \text{if N = 1}
-           \\
-           \frac{P(N,\kappa,t){t_{lost}^{N}(t)} - {N}{P_{lost}(1,\kappa,t)}}{N}& \text{if N  $>$ 1}
-           \\
+       P_{lost}(N,\kappa,T) =
+       \begin{cases}
+         {P(1,\kappa,T)}{t_{lost}^{1}} & \text{if N = 1} \\
+           \frac{P(N,\kappa,T){t_{lost}^{N}} - {N}{P_{lost}(1,\kappa,T)}}{N} & \text{if N  $>$ 1}
        \end{cases}
-       \end{equation}
 
-    This gives how much MORE performance was lost per-robot across the entire simulation in an
-    interacting swarm of size N, as opposed to a swarm of N independent robots. Swarms exhibiting
-    emergent behavior should have `positive` values of performance loss (i.e. they performed
-    `better` than a swarm of N independent robots).
+    Swarms exhibiting high levels of emergent behavior should have `positive` values of performance
+    loss (i.e. they performed `better` than a swarm of N independent robots).
+
+    Does not require the batch criteria to be
+    :class:`~core.variables.population_size.PopulationSize` derived, but if all experiments in a
+    batch have the same swarm size, then this calculation will be of limited use.
     """
 
     def __init__(self,
-                 cmdopts: tp.Dict[str, str],
+                 cmdopts: dict,
                  inter_perf_csv: str,
                  interference_count_csv: str) -> None:
         self.cmdopts = cmdopts
@@ -278,14 +118,14 @@ class PerfLostInteractiveSwarmUnivar:
 
 class PerfLostInteractiveSwarmBivar:
     """
-    Bivariate calculator for the perforance lost for a swarm of size N of `interacting` robots, as
-    oppopsed to a  swarm of size N of `non-interacting` robots. See
-    :class:`~perf_measures.common.PerfLostInteractiveSwarmUnivar` for a description of the
+    Bivariate calculator for the perforance lost per-robot for a swarm of size N of `interacting`
+    robots, as oppopsed to a  swarm of size N of `non-interacting` robots. See
+    :class:`~core.perf_measures.common.PerfLostInteractiveSwarmUnivar` for a description of the
     mathematical calculations performed by this class.
     """
 
     def __init__(self,
-                 cmdopts: tp.Dict[str, str],
+                 cmdopts: dict,
                  inter_perf_csv: str,
                  interference_count_csv: str) -> None:
         self.cmdopts = cmdopts
@@ -384,13 +224,13 @@ class FractionalLosses:
     """
     Base class for calculating the fractional performance losses of a swarm across a range of swarm
     sizes. Does not do any calculations, but contains functionality and definitions common to both
-    :class:`~perf_measures.common.FractionalLossesUnivar` and
-    :class:`~perf_measures.common.FractionalLossesBivar`.
+    :class:`~core.perf_measures.common.FractionalLossesUnivar` and
+    :class:`~core.perf_measures.common.FractionalLossesBivar`.
 
     """
 
     def __init__(self,
-                 cmdopts: tp.Dict[str, str],
+                 cmdopts: dict,
                  inter_perf_csv: str,
                  interference_count_csv: str,
                  batch_criteria: bc.IConcreteBatchCriteria) -> None:
@@ -424,14 +264,15 @@ class FractionalLossesUnivar(FractionalLosses):
     defined as:
 
     .. math::
-       \begin{equation}
-         FL(N,\kappa = \frac{P_{lost}(N,\kappa,T)}{P(N,\kappa,T)}
-       \end{equation}
+       :label: pm-fractional-losses
+
+       FL(N,\kappa) = \frac{P_{lost}(N,\kappa,T)}{P(N,\kappa,T)}
 
     (i.e the fraction of performance which has been lost due to inter-robot interference).
 
-    Does not require the variable to be swarm size, but the this metric will (probably) not be of
-    much value if that is not the case.
+    Does not require the batch criteria to be
+    :class:`~core.variables.population_size.PopulationSize` derived, but if all experiments in a
+    batch have the same swarm size, then this calculation will be of limited use.
     """
 
     def calculate(self, batch_criteria: bc.UnivarBatchCriteria):
@@ -486,11 +327,8 @@ class FractionalLossesUnivar(FractionalLosses):
 class FractionalLossesBivar(FractionalLosses):
     """
     Fractional losses calculation for bivariate batch criteria. See
-    :class:`~perf_measures.common.FractionalLossesUnivar` for a description of the mathematical
+    :class:`~core.perf_measures.common.FractionalLossesUnivar` for a description of the mathematical
     calculations performed by this class.
-
-    Does not require one of the batch criteria to be swarm size, but the this metric will (probably)
-    not be of much value if that is not the case. Does not require swarm sizes to be powers of two.
 
     """
 
@@ -660,8 +498,6 @@ def csv_3D_value_iloc(df, xslice, yslice, zslice):
 
 
 __api__ = [
-    'ProjectivePerformanceCalculatorUnivar',
-    'ProjectivePerformanceCalculatorBivar',
     'PerfLostInteractiveSwarmUnivar',
     'PerfLostInteractiveSwarmBivar',
     'FractionalLosses',

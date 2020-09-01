@@ -85,7 +85,7 @@ class EnvironmentalCS():
 
     def __init__(self,
                  main_config: dict,
-                 cmdopts: tp.Dict[str, str],
+                 cmdopts: dict,
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
         self.exp_num = exp_num
@@ -133,7 +133,7 @@ class RawPerfCS():
 
     def __init__(self,
                  main_config: dict,
-                 cmdopts: tp.Dict[str, str],
+                 cmdopts: dict,
                  ideal_num: int,
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
@@ -202,7 +202,7 @@ class AdaptabilityCS():
 
     def __init__(self,
                  main_config: dict,
-                 cmdopts: tp.Dict[str, str],
+                 cmdopts: dict,
                  criteria: BatchCriteria,
                  ideal_num: int,
                  exp_num: int) -> None:
@@ -302,7 +302,7 @@ class ReactivityCS():
 
     def __init__(self,
                  main_config: dict,
-                 cmdopts: tp.Dict[str, str],
+                 cmdopts: dict,
                  criteria: BatchCriteria,
                  ideal_num: int,
                  exp_num: int) -> None:
@@ -453,7 +453,7 @@ class CSRaw():
 
 class DataFrames:
     @staticmethod
-    def expx_var_df(cmdopts: tp.Dict[str, str],
+    def expx_var_df(cmdopts: dict,
                     criteria: BatchCriteria,
                     exp_dirs: tp.Optional[tp.List[str]],
                     avg_output_leaf: str,
@@ -476,7 +476,7 @@ class DataFrames:
                           exp_num)
 
     @staticmethod
-    def expx_perf_df(cmdopts: tp.Dict[str, str],
+    def expx_perf_df(cmdopts: dict,
                      criteria: BatchCriteria,
                      exp_dirs: tp.Optional[tp.List[str]],
                      avg_output_leaf: str,

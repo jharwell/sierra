@@ -58,12 +58,12 @@ class BlockMotionDynamics(bc.UnivarBatchCriteria):
         """
         return self.dynamics
 
-    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> list:
+    def gen_exp_dirnames(self, cmdopts: dict) -> list:
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
     def graph_xticks(self,
-                     cmdopts: tp.Dict[str, str],
+                     cmdopts: dict,
                      exp_dirs: tp.List[str] = None) -> tp.List[float]:
         if exp_dirs is None:
             exp_dirs = self.gen_exp_dirnames(cmdopts)
@@ -79,11 +79,11 @@ class BlockMotionDynamics(bc.UnivarBatchCriteria):
         return ticks
 
     def graph_xticklabels(self,
-                          cmdopts: tp.Dict[str, str],
+                          cmdopts: dict,
                           exp_dirs: tp.List[str] = None) -> tp.List[str]:
         return list(map(str, self.graph_xticks(cmdopts, exp_dirs)))
 
-    def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
+    def graph_xlabel(self, cmdopts: dict) -> str:
         labels = {'RW': 'Random Walk Probability'}
         return labels[self.dynamics_type]
 

@@ -67,8 +67,8 @@ class PipelineStage5:
     def run(self, cli_args):
         """
         Runs :class:`UnivarIntraScenarioComparator` or :class:`BivarIntraScenarioComparator` as
-        appropriate, depending on which type of :class:`~variables.batch_criteria.BatchCriteria` was
-        selected on the cmdline.
+        appropriate, depending on which type of
+        :class:`~core.variables.batch_criteria.BatchCriteria` was selected on the cmdline.
         """
         # Create directories for controller .csv files and graphs
         for v in self.output_roots.values():

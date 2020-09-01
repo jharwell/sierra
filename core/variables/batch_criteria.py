@@ -32,7 +32,7 @@ class IConcreteBatchCriteria(implements.Interface):
     """
 
     def graph_xticks(self,
-                     cmdopts: tp.Dict[str, str],
+                     cmdopts: dict,
                      exp_dirs: tp.List[str] = None) -> tp.List[float]:
         """
 
@@ -47,7 +47,7 @@ class IConcreteBatchCriteria(implements.Interface):
         """
 
     def graph_xticklabels(self,
-                          cmdopts: tp.Dict[str, str],
+                          cmdopts: dict,
                           exp_dirs: tp.List[str] = None) -> tp.List[str]:
         """
 
@@ -61,7 +61,7 @@ class IConcreteBatchCriteria(implements.Interface):
 
         """
 
-    def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
+    def graph_xlabel(self, cmdopts: dict) -> str:
         """
         Returns:
             The X-label that should be used for the graphs of various performance measures across
@@ -82,7 +82,7 @@ class IConcreteBatchCriteria(implements.Interface):
 
 class IBivarBatchCriteria(implements.Interface):
     def graph_yticks(self,
-                     cmdopts: tp.Dict[str, str],
+                     cmdopts: dict,
                      exp_dirs: tp.List[str] = None) -> tp.List[float]:
         """
 
@@ -98,7 +98,7 @@ class IBivarBatchCriteria(implements.Interface):
         """
 
     def graph_yticklabels(self,
-                          cmdopts: tp.Dict[str, str],
+                          cmdopts: dict,
                           exp_dirs: tp.List[str] = None) -> tp.List[str]:
         """
 
@@ -112,7 +112,7 @@ class IBivarBatchCriteria(implements.Interface):
 
         """
 
-    def graph_ylabel(self, cmdopts: tp.Dict[str, str]) -> str:
+    def graph_ylabel(self, cmdopts: dict) -> str:
         """
         Returns:
             The Y-label that should be used for the graphs of various performance measures across
@@ -175,7 +175,7 @@ class BatchCriteria():
     def gen_tag_addlist(self) -> list:
         return []
 
-    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> tp.List[str]:
+    def gen_exp_dirnames(self, cmdopts: dict) -> tp.List[str]:
         """
         Generate list of strings from the current changelist to use for directory names within a
         batched experiment.
@@ -207,7 +207,7 @@ class BatchCriteria():
                 self.main_config['sierra']['collate_csv_leaf']]
         return len(exps)
 
-    def pickle_exp_defs(self, cmdopts: tp.Dict[str, str]):
+    def pickle_exp_defs(self, cmdopts: dict):
         defs = list(self.gen_attr_changelist())
         for i, exp_def in enumerate(defs):
             exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
@@ -289,7 +289,7 @@ class UnivarBatchCriteria(BatchCriteria):
     def is_univar(self) -> bool:
         return True
 
-    def populations(self, cmdopts: tp.Dict[str, str], exp_dirs: list=None) -> tp.List[int]:
+    def populations(self, cmdopts: dict, exp_dirs: list=None) -> tp.List[int]:
         """
         Arguments:
             cmdopts: Dictionary of parsed command line options.
@@ -358,7 +358,7 @@ class BivarBatchCriteria(BatchCriteria):
         return ret
 
     def gen_exp_dirnames(self,
-                         cmdopts: tp.Dict[str, str],
+                         cmdopts: dict,
                          what: str = 'all') -> tp.List[str]:
         """
         Generates a SORTED list of strings for all X/Y axis directories for the bivariate
@@ -379,7 +379,7 @@ class BivarBatchCriteria(BatchCriteria):
 
             return ret
 
-    def populations(self, cmdopts: tp.Dict[str, str]) -> tp.List[tp.List[int]]:
+    def populations(self, cmdopts: dict) -> tp.List[tp.List[int]]:
         """
         Generate a 2D array of swarm swarm sizes used the batched experiment, in the same order as
         the directories returned from `gen_exp_dirnames()` for each criteria along each axis.
@@ -428,7 +428,7 @@ class BivarBatchCriteria(BatchCriteria):
             return None
 
     def graph_xticks(self,
-                     cmdopts: tp.Dict[str, str],
+                     cmdopts: dict,
                      exp_dirs: tp.List[str] = None) -> tp.List[float]:
         dirs = []
         for c1 in self.criteria1.gen_exp_dirnames(cmdopts):
@@ -442,7 +442,7 @@ class BivarBatchCriteria(BatchCriteria):
         return self.criteria1.graph_xticks(cmdopts, dirs)
 
     def graph_yticks(self,
-                     cmdopts: tp.Dict[str, str],
+                     cmdopts: dict,
                      exp_dirs: tp.List[str] = None) -> tp.List[float]:
         dirs = []
         for c2 in self.criteria2.gen_exp_dirnames(cmdopts):
@@ -457,7 +457,7 @@ class BivarBatchCriteria(BatchCriteria):
         return self.criteria2.graph_xticks(cmdopts, dirs)
 
     def graph_xticklabels(self,
-                          cmdopts: tp.Dict[str, str],
+                          cmdopts: dict,
                           exp_dirs: tp.List[str] = None) -> tp.List[str]:
         dirs = []
         for c1 in self.criteria1.gen_exp_dirnames(cmdopts):
@@ -471,7 +471,7 @@ class BivarBatchCriteria(BatchCriteria):
         return self.criteria1.graph_xticklabels(cmdopts, dirs)
 
     def graph_yticklabels(self,
-                          cmdopts: tp.Dict[str, str],
+                          cmdopts: dict,
                           exp_dirs: tp.List[str] = None) -> tp.List[str]:
         dirs = []
         for c2 in self.criteria2.gen_exp_dirnames(cmdopts):
@@ -484,10 +484,10 @@ class BivarBatchCriteria(BatchCriteria):
             "FATAL: Bad yticks calculation"
         return self.criteria2.graph_xticklabels(cmdopts, dirs)
 
-    def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
+    def graph_xlabel(self, cmdopts: dict) -> str:
         return self.criteria1.graph_xlabel(cmdopts)
 
-    def graph_ylabel(self, cmdopts: tp.Dict[str, str]) -> str:
+    def graph_ylabel(self, cmdopts: dict) -> str:
         return self.criteria2.graph_xlabel(cmdopts)
 
     def pm_query(self, pm: str) -> bool:
@@ -499,7 +499,7 @@ class BivarBatchCriteria(BatchCriteria):
         self.criteria2.batch_generation_root = root
 
 
-def factory(main_config: dict, cmdopts: tp.Dict[str, str], args, scenario: str = None):
+def factory(main_config: dict, cmdopts: dict, args, scenario: str = None):
     if scenario is None:
         scenario = args.scenario
 
@@ -515,7 +515,7 @@ def factory(main_config: dict, cmdopts: tp.Dict[str, str], args, scenario: str =
     return ret
 
 
-def __univar_factory(main_config: dict, cmdopts: tp.Dict[str, str], cli_arg: str, scenario):
+def __univar_factory(main_config: dict, cmdopts: dict, cli_arg: str, scenario):
     """
     Construct a batch criteria object from a single cmdline argument.
     """
@@ -530,7 +530,7 @@ def __univar_factory(main_config: dict, cmdopts: tp.Dict[str, str], cli_arg: str
     return ret
 
 
-def __bivar_factory(main_config: dict, cmdopts: tp.Dict[str, str], cli_arg: tp.List[str], scenario):
+def __bivar_factory(main_config: dict, cmdopts: dict, cli_arg: tp.List[str], scenario):
     criteria1 = __univar_factory(main_config, cmdopts, cli_arg[0], scenario)
     criteria2 = __univar_factory(main_config, cmdopts, cli_arg[1], scenario)
     ret = BivarBatchCriteria(criteria1, criteria2)

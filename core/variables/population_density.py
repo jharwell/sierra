@@ -64,12 +64,12 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
         return self.changes
 
-    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> tp.List[str]:
+    def gen_exp_dirnames(self, cmdopts: dict) -> tp.List[str]:
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
     def graph_xticks(self,
-                     cmdopts: tp.Dict[str, str],
+                     cmdopts: dict,
                      exp_dirs: tp.List[str] = None) -> tp.List[float]:
         areas = []
         if exp_dirs is not None:
@@ -90,11 +90,11 @@ class PopulationConstantDensity(cd.ConstantDensity):
         return areas
 
     def graph_xticklabels(self,
-                          cmdopts: tp.Dict[str, str],
+                          cmdopts: dict,
                           exp_dirs: tp.List[str] = None) -> tp.List[str]:
         return [str(int(self.target_density / 100.0 * x)) for x in self.graph_xticks(cmdopts, exp_dirs)]
 
-    def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
+    def graph_xlabel(self, cmdopts: dict) -> str:
         return r"Population Size"
 
     def pm_query(self, pm: str) -> bool:

@@ -44,7 +44,7 @@ class PipelineStage3:
     This stage is idempotent.
     """
 
-    def run(self, main_config: dict, cmdopts: tp.Dict[str, str]):
+    def run(self, main_config: dict, cmdopts: dict):
         self.__run_averaging(main_config, cmdopts)
 
         if cmdopts['project_imagizing']:

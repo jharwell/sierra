@@ -86,7 +86,7 @@ class PipelineStage4:
 
     """
 
-    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, str]) -> None:
+    def __init__(self, main_config: dict, cmdopts: dict) -> None:
         self.cmdopts = cmdopts
 
         self.main_config = main_config
@@ -153,24 +153,25 @@ class PipelineStage4:
 
         Video generation: If images have previously been created, then the following is run:
 
-        #. :class:`~pipeline.stage4.BatchedExpVideoRenderer` to videos for each experiment in the
-        batch.
+        #. :class:`~pipeline.pipeline_stage4.BatchedExpVideoRenderer` to videos for each experiment
+        in the batch.
 
         Intra-experiment graph generation: if intra-experiment graphs should be generated,
         according to cmdline configuration, the following is run:
 
-        #. :class:`~pipeline.stage4.BatchedIntraExpGraphGenerator` to generate graphs for each
-           experiment in the batch.
+        #. :class:`~core.pipeline.pieline_stage4.BatchedIntraExpGraphGenerator` to generate graphs
+           for each experiment in the batch.
 
         Inter-experiment graph generation: if inter-experiment graphs should be generated according
         to cmdline configuration, the following is run:
 
-        #. :class:`~pipeline.stage4.UnivarCSVCollator` or :class:`~pipeline.stage4.BivarCSVCollator`
-           as appropriate (depending on which type of
-           :class:`~variables.batch_criteria.BatchCriteria` was specified on the cmdline).
+        #. :class:`~core.pipeline.pipeline_stage4.UnivarCSVCollator` or
+           :class:`~core.pipeline.pipeline_stage4.BivarCSVCollator` as appropriate (depending on
+           which type of :class:`~core.variables.batch_criteria.BatchCriteria` was specified on the
+           cmdline).
 
-        #. :class:`~pipeline.stage4.InterExpGraphGenerator` to perform graph generation from
-           collated ``.csv`` files.
+        #. :class:`~core.pipeline.pipeline_stage4.InterExpGraphGenerator` to perform graph
+           generation from collated ``.csv`` files.
         """
         if self.cmdopts['project_rendering'] or self.cmdopts['argos_rendering']:
             self.__run_rendering()

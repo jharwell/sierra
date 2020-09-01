@@ -93,7 +93,7 @@ class InterRobotInterferenceUnivar:
 
         populations = batch_criteria.populations(self.cmdopts)
         for i in range(0, len(raw_df.columns)):
-            eff_df[raw_df.columns[i]] = calculate_efficiency(
+            eff_df[raw_df.columns[i]] = efficiency_calculate(
                 raw_df[raw_df.columns[i]], populations[i])
 
         return eff_df
@@ -103,7 +103,7 @@ class NormalizedEfficiencyUnivar:
     r"""
     Univariate calculator for per-robot efficiency for each experiment in a batch
     (intra-experiment measure; no comparison across experiments in a batch is performed). See
-    :func:`calculate_efficiency` for calculations.
+    :func:`efficiency_calculate()` for calculations.
     """
 
     def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
@@ -172,7 +172,8 @@ class NormalizedEfficiencyUnivar:
 class FractionalMaintenanceUnivar:
     r"""
     Univariate calculator for fractional performance maintenance via
-    :class:`~perf_measures.common.FractionalLossesUnivar` (basically the inverse of the losses).
+    :class:`~core.perf_measures.common.FractionalLossesUnivar` (basically the inverse of the
+    losses).
 
     Uses the following equation:
 
@@ -180,7 +181,11 @@ class FractionalMaintenanceUnivar:
        M(N) = 1 - \frac{1}{e^{1 - FL(N)}}
 
     where :math:`FL(N)` is the fractional performance losses experienced by a swarm of size
-    :math:`N`.
+    :math:`N` (see :eq:`pm-fractional-losses`).
+
+    Does not require the batch criteria to be
+    :class:`~core.variables.population_size.PopulationSize` derived, but if all experiments in a
+    batch have the same swarm size, then this calculation will be of limited use.
     """
 
     def __init__(self, cmdopts: dict, inter_perf_csv: str, interference_count_csv: str) -> None:
@@ -213,14 +218,16 @@ class FractionalMaintenanceUnivar:
                          xticks=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
 
-class KarpFlattUnivar:
+class ParallelFractionUnivar:
     r"""
     Calculates the scalability of the swarm configuration across a univariate batched set of
     experiments within the same scenario from collated ``.csv`` data using the Karp-Flatt metric
-    (See :func:`calculate_karpflatt`).
+    (See :func:`parallel_fraction_calculate()`).
 
-    Only valid if one of the batch criteria was :class:`~variables.population_size.PopulationSize`
-    derived.
+    Does not require the batch criteria to be
+    :class:`~core.variables.population_size.PopulationSize` derived, but if all experiments in a
+    batch have the same swarm size, then this calculation will be of limited use.
+
     """
 
     def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
@@ -250,21 +257,21 @@ class KarpFlattUnivar:
 
             speedup_i = perf_i / perf_iminus1
 
-            sc_df[sc_df.columns[i]] = calculate_karpflatt(speedup_i=speedup_i,
-                                                          n_robots_i=n_robots_i,
-                                                          n_robots_iminus1=n_robots_iminus1,
-                                                          normalize=self.cmdopts['pm_scalability_normalize'])
+            sc_df[sc_df.columns[i]] = parallel_fraction_calculate(speedup_i=speedup_i,
+                                                                  n_robots_i=n_robots_i,
+                                                                  n_robots_iminus1=n_robots_iminus1,
+                                                                  normalize=self.cmdopts['pm_scalability_normalize'])
 
         return sc_df
 
     def generate(self, df: pd.DataFrame, batch_criteria: bc.IConcreteBatchCriteria):
-        stem_path = os.path.join(self.cmdopts["collate_root"], "pm-karpflatt")
+        stem_path = os.path.join(self.cmdopts["collate_root"], "pm-parallel-fraction")
         df.to_csv(stem_path + ".csv", sep=';', index=False)
 
         BatchRangedGraph(inputy_stem_fpath=stem_path,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
-                                                   "pm-karpflatt.png"),
-                         title="Swarm Serial Fraction: Karp-Flatt Metric",
+                                                   "pm-parallel-fraction.png"),
+                         title="Swarm Parallel Performance Fraction",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
                          ylabel="",
@@ -296,7 +303,7 @@ class ScalabilityUnivarGenerator:
         f = FractionalMaintenanceUnivar(cmdopts, inter_perf_csv, interference_count_csv)
         f.generate(f.calculate(batch_criteria), batch_criteria)
 
-        k = KarpFlattUnivar(cmdopts, inter_perf_csv)
+        k = ParallelFractionUnivar(cmdopts, inter_perf_csv)
         k.generate(k.calculate(batch_criteria), batch_criteria)
 
 ################################################################################
@@ -371,7 +378,7 @@ class NormalizedEfficiencyBivar:
     """
     Bivariate calculator for per-robot efficiency for each experiment in a batch
     (intra-experiment measure; no comparison across experiments in a batch is performed). See
-    :func:`calculate_efficiency` for calculations.
+    :func:`efficiency_calculate()` for calculations.
     """
 
     def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
@@ -434,19 +441,20 @@ class NormalizedEfficiencyBivar:
                                                   i,
                                                   j,
                                                   slice(-1, None))
-                eff_df.iloc[i, j] = calculate_efficiency(perf_i, populations[i][j])
+                eff_df.iloc[i, j] = efficiency_calculate(perf_i, populations[i][j])
         return eff_df
 
 
 class FractionalMaintenanceBivar:
     r"""
     Bivariate calculator for fractional performance maintenance via
-    :class:`~perf_measures.common.FractionalLossesBivar` (basically the inverse of the losses).
-    See :class:`~perf_measures.scalability.FractionalMaintenanceUnivar` for a description of the
-    mathematical calculations performed by this class.
+    :class:`~core.perf_measures.common.FractionalLossesBivar` (basically the inverse of the losses).
+    See :class:`~core.perf_measures.scalability.FractionalMaintenanceUnivar` for a description of
+    the mathematical calculations performed by this class.
 
-    Does not require one of the batch criteria to be swarm size, but the this metric will (probably)
-    not be of much value if that is not the case. Does not require swarm sizes to be powers of two.
+    Does not require the batch criteria to be
+    :class:`~core.variables.population_size.PopulationSize` derived, but if all experiments in a
+    batch have the same swarm size, then this calculation will be of limited use.
     """
 
     def __init__(self, cmdopts, inter_perf_csv, interference_count_csv) -> None:
@@ -481,14 +489,15 @@ class FractionalMaintenanceBivar:
                 ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)).generate()
 
 
-class KarpFlattBivar:
+class ParallelFractionBivar:
     """
     Calculates the scalability of the swarm configuration across a bivariate batched set of
     experiments within the same scenario from collated ``.csv`` data using the Karp-Flatt metric
-    (See :func:`calculate_karpflatt`).
+    (See :func:`parallel_fraction_calculate()`).
 
-    Only valid if one of the batch criteria was :class:`~variables.population_size.PopulationSize`
-    derived.
+    Does not require the batch criteria to be
+    :class:`~core.variables.population_size.PopulationSize` derived, but if all experiments in a
+    batch have the same swarm size, then this calculation will be of limited use.
 
     """
 
@@ -540,20 +549,20 @@ class KarpFlattBivar:
                         n_robots_xminus1 = sizes[i][j - 1]
 
                 speedup_i = perf_x / perf_xminus1
-                sc_df.iloc[i, j] = calculate_karpflatt(speedup_i=speedup_i,
-                                                       n_robots_i=n_robots_x,
-                                                       n_robots_iminus1=n_robots_xminus1,
-                                                       normalize=self.cmdopts['pm_scalability_normalize'])
+                sc_df.iloc[i, j] = parallel_fraction_calculate(speedup_i=speedup_i,
+                                                               n_robots_i=n_robots_x,
+                                                               n_robots_iminus1=n_robots_xminus1,
+                                                               normalize=self.cmdopts['pm_scalability_normalize'])
 
         return sc_df
 
     def generate(self, df, batch_criteria):
-        stem_path = os.path.join(self.cmdopts["collate_root"], "pm-karpflatt")
+        stem_path = os.path.join(self.cmdopts["collate_root"], "pm-parallel-fraction")
         df.to_csv(stem_path + ".csv", sep=';', index=False)
 
         Heatmap(input_fpath=stem_path + '.csv',
-                output_fpath=os.path.join(self.cmdopts["graph_root"], "pm-karpflatt.png"),
-                title="Swarm Serial Fraction: Karp-Flatt Metric",
+                output_fpath=os.path.join(self.cmdopts["graph_root"], "pm-parallel-fraction.png"),
+                title="Swarm Parallel Performance Fraction",
                 xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                 ylabel=batch_criteria.graph_ylabel(self.cmdopts),
                 xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
@@ -585,7 +594,7 @@ class ScalabilityBivarGenerator:
         f = FractionalMaintenanceBivar(cmdopts, inter_perf_csv, interference_count_csv)
         f.generate(f.calculate(batch_criteria), batch_criteria)
 
-        k = KarpFlattBivar(cmdopts, inter_perf_csv)
+        k = ParallelFractionBivar(cmdopts, inter_perf_csv)
         k.generate(k.calculate(batch_criteria), batch_criteria)
 
 
@@ -593,30 +602,28 @@ class ScalabilityBivarGenerator:
 # Calculation Functions
 ################################################################################
 
-def calculate_karpflatt(speedup_i: float, n_robots_i: int, n_robots_iminus1: int, normalize: bool):
+def parallel_fraction_calculate(speedup_i: float,
+                                n_robots_i: int,
+                                n_robots_iminus1: int,
+                                normalize: bool):
     r"""
     Given a swarm exhibiting speedup :math:`X` with :math:`m_i>1` robots relative to a swarm with
-    fewer (:math:`m_{i-1}`) robots, compute the serial fraction :math:`e` of the swarm's
+    fewer (:math:`N_1`) robots, compute the serial fraction :math:`e` of the swarm's
     performance. The lower the value of :math:`e`, the better the parallelization/scalability,
     suggesting that the addition of more robots will bring additional performance improvements:
 
     .. math::
-       \begin{equation}
-       C(m_i,\kappa) = \sum_{t\in{T}}\theta_C(m_i,\kappa,t)
-       \end{equation}
+       C(N_2,\kappa) = \sum_{t\in{T}}\theta_C(N_2,\kappa,t)
 
     or
 
     .. math::
-       \begin{equation}
-       C(m_i,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{-\theta_C(m_i,\kappa,t)}} - \frac{1}{1 + e^{\theta_C(m_i,\kappa,t)}}
-       \end{equation}
+       C(N_2,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{-\theta_C(t)}} - \frac{1}{1 + e^{\theta_C(t)}}
 
     where
+
     .. math::
-       \begin{equation}
-       theta_C = 1.0 - \frac{\frac{1}{X} - \frac{1}{\frac{m_i}{m_{i-1}}}}{1 - \frac{1}{\frac{m_i}{m_{i-1}}}}
-       \end{equation}
+       \theta_C(t) = 1.0 - \frac{\frac{1}{X} - \frac{1}{\frac{N_2}{N_1}}}{1 - \frac{1}{\frac{N_2}{N_1}}}
 
     depending on normalization configuration.
 
@@ -635,13 +642,13 @@ def calculate_karpflatt(speedup_i: float, n_robots_i: int, n_robots_iminus1: int
     theta = 1.0 - e
 
     if normalize:
-        return core.utils.Sigmoid(-theta)() - core.utils.Sigmoid(theta)()
+        return core.utils.Sigmoid(theta)() - core.utils.Sigmoid(-theta)()
     else:
         return theta
 
 
-def calculate_efficiency(perf_i: float, n_robots_i: int):
-    """
+def efficiency_calculate(perf_i: float, n_robots_i: int):
+    r"""
     Calculate for per-robot efficiency.
 
     .. math::
@@ -657,15 +664,12 @@ def calculate_efficiency(perf_i: float, n_robots_i: int):
 __api__ = [
     'InterRobotInterferenceUnivar',
     'NormalizedEfficiencyUnivar',
-    'ProjectivePerformanceComparisonUnivar',
-    'ProjectivePerformanceComparisonPositiveUnivar',
-    'ProjectivePerformanceComparisonNegativeUnivar',
     'FractionalMaintenanceUnivar',
-    'KarpFlattUnivar',
+    'ParallelFractionUnivar',
     'InterRobotInterferenceBivar',
     'NormalizedEfficiencyBivar',
     'FractionalMaintenanceBivar',
-    'KarpFlattBivar',
-
-
+    'ParallelFractionBivar',
+    'efficiency_calculate',
+    'parallel_fraction_calculate'
 ]
