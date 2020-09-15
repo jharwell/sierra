@@ -36,6 +36,205 @@ from core.variables import batch_criteria as bc
 import core.root_dirpath_generator as rdg
 
 
+class UnivarIntraScenarioComparator:
+    """
+    Compares a set of controllers on different performance measures in all scenarios using
+    univariate batch criteria, one at a time. Graph generation is controlled via a config file
+    parsed in :class:`~core.pipeline.stage5.PipelineStage5`. Univariate batch criteria only.
+
+    Attributes:
+        controllers: List of controller names to compare.
+        cc_csv_root: Absolute directory path to the location controller ``.csv`` files should be
+                     output to.
+        cc_graph_root: Absolute directory path to the location the generated graphs should be output
+                       to.
+        cmdopts: Dictionary of parsed cmdline parameters.
+        cli_args: :class:`argparse` object containing the cmdline parameters. Needed for
+                  :class:`~core.variables.batch_criteria.BatchCriteria` generation for each scenario
+                  controllers are compared within, as batch criteria is dependent on
+                  controller+scenario definition, and needs to be re-generated for each scenario in
+                  order to get graph labels/axis ticks to come out right in all cases.
+
+    """
+
+    def __init__(self,
+                 controllers: tp.List[str],
+                 cc_csv_root: str,
+                 cc_graph_root: str,
+                 cmdopts: dict,
+                 cli_args,
+                 main_config) -> None:
+        self.controllers = controllers
+        self.cc_graph_root = cc_graph_root
+        self.cc_csv_root = cc_csv_root
+
+        self.cmdopts = cmdopts
+        self.cli_args = cli_args
+        self.main_config = main_config
+
+    def __call__(self,
+                 graphs: dict,
+                 legend: tp.List[str],
+                 comp_type: str):
+        # Obtain the list of scenarios to use. We can just take the scenario list of the first
+        # controllers, because we have already checked that all controllers executed the same set
+        # scenarios
+        batch_leaves = os.listdir(os.path.join(self.cmdopts['sierra_root'],
+                                               self.cmdopts['project'],
+                                               self.controllers[0]))
+
+        # For each controller comparison graph we are interested in, generate it using data from all
+        # scenarios
+        cmdopts = copy.deepcopy(self.cmdopts)
+        for graph in graphs:
+            found = False
+            for leaf in batch_leaves:
+                if self.__leaf_select(leaf):
+                    self.__compare_in_scenario(cmdopts=cmdopts,
+                                               graph=graph,
+                                               batch_leaf=leaf,
+                                               legend=legend)
+                    found = True
+                    break
+            if not found:
+                logging.warning("Did not find scenario to compare in for criteria %s",
+                                self.cli_args.batch_criteria)
+
+    def __leaf_select(self, candidate: str):
+        """
+        Select which scenario to compare controllers within. You can only compare controllers within
+        the scenario directly generated from the value of ``--batch-criteria``; other scenarios will
+        (probably) cause file not found errors.
+
+        """
+        template_stem, scenario, _ = rdg.parse_batch_leaf(candidate)
+        leaf = rdg.gen_batch_leaf(criteria=self.cli_args.batch_criteria,
+                                  scenario=scenario,
+                                  template_stem=template_stem)
+        return leaf in candidate
+
+    def __compare_in_scenario(self,
+                              cmdopts: dict,
+                              graph: dict,
+                              batch_leaf: str,
+                              legend: tp.List[str]):
+
+        for controller in self.controllers:
+            dirs = [d for d in os.listdir(os.path.join(self.cmdopts['sierra_root'],
+                                                       self.cmdopts['project'],
+                                                       controller)) if batch_leaf in d]
+            if len(dirs) == 0:
+                logging.warning("Controller %s was not run on experiment %s",
+                                controller,
+                                batch_leaf)
+                continue
+
+            batch_leaf = dirs[0]
+            _, scenario, _ = rdg.parse_batch_leaf(batch_leaf)
+
+            # We need to generate the root directory paths for each batched experiment
+            # (which # lives inside of the scenario dir), because they are all
+            # different. We need generate these paths for EACH controller, because the
+            # controller is part of the batch root path.
+            paths = rdg.regen_from_exp(sierra_rpath=self.cli_args.sierra_root,
+                                       project=self.cli_args.project,
+                                       batch_leaf=batch_leaf,
+                                       controller=controller)
+            cmdopts.update(paths)
+
+            # For each scenario, we have to create the batch criteria for it, because they
+            # are all different.
+
+            criteria = bc.factory(self.main_config, cmdopts, self.cli_args, scenario)
+
+            self.__gen_csv(cmdopts=cmdopts,
+                           batch_leaf=batch_leaf,
+                           controller=controller,
+                           src_stem=graph['src_stem'],
+                           dest_stem=graph['dest_stem'])
+
+        self.__gen_graph(batch_leaf=batch_leaf,
+                         criteria=criteria,
+                         cmdopts=cmdopts,
+                         dest_stem=graph['dest_stem'],
+                         title=graph['title'],
+                         label=graph['label'],
+                         legend=legend)
+
+    def __gen_graph(self,
+                    batch_leaf: str,
+                    criteria: bc.IConcreteBatchCriteria,
+                    cmdopts: dict,
+                    dest_stem: str,
+                    title: str,
+                    label: str,
+                    legend: tp.List[str]):
+        """
+        Generates a :class:`~core.graphs.batch_ranged_graph.BatchRangedGraph` comparing the
+        specified controllers within the specified scenario after input files have been gathered
+        from each controllers into ``cc-csvs/``.
+        """
+        csv_stem_opath = os.path.join(self.cc_csv_root, dest_stem + "-" + batch_leaf)
+        xticks = criteria.graph_xticks(cmdopts)
+        xtick_labels = criteria.graph_xticklabels(cmdopts)
+
+        BatchRangedGraph(inputy_stem_fpath=csv_stem_opath,
+                         output_fpath=os.path.join(self.cc_graph_root,
+                                                   dest_stem) + '-' + batch_leaf + ".png",
+                         title=title,
+                         xlabel=criteria.graph_xlabel(cmdopts),
+                         ylabel=label,
+                         xtick_labels=xtick_labels[criteria.inter_exp_graphs_exclude_exp0():],
+                         xticks=xticks[criteria.inter_exp_graphs_exclude_exp0():],
+                         legend=legend).generate()
+
+    def __gen_csv(self,
+                  cmdopts: dict,
+                  batch_leaf: str,
+                  controller: str,
+                  src_stem: str,
+                  dest_stem: str):
+        """
+        Help function for generating a set of .csv files for use in intra-scenario graph generatio
+        (1 per controller).
+        """
+
+        csv_ipath = os.path.join(cmdopts['output_root'],
+                                 self.main_config['sierra']['collate_csv_leaf'],
+                                 src_stem + ".csv")
+        stddev_ipath = os.path.join(cmdopts['output_root'],
+                                    self.main_config['sierra']['collate_csv_leaf'],
+                                    src_stem + ".stddev")
+        csv_opath_stem = os.path.join(self.cc_csv_root,
+                                      dest_stem + "-" + batch_leaf)
+
+        # Some experiments might not generate the necessary performance measure .csvs for graph
+        # generation, which is OK.
+        if not os.path.exists(csv_ipath):
+            logging.warning("%s missing for controller %s", csv_ipath, controller)
+            return
+
+        if os.path.exists(csv_opath_stem + '.csv'):
+            cum_df = pd.read_csv(csv_opath_stem + '.csv', sep=';')
+        else:
+            cum_df = pd.DataFrame()
+
+        t = pd.read_csv(csv_ipath, sep=';')
+        cum_df = cum_df.append(t)
+
+        cum_df.to_csv(csv_opath_stem + '.csv', sep=';', index=False)
+
+        if os.path.exists(csv_opath_stem + '.stddev'):
+            cum_stddev_df = pd.read_csv(csv_opath_stem + '.stddev', sep=';')
+        else:
+            cum_stddev_df = pd.DataFrame()
+
+        if os.path.exists(stddev_ipath):
+            t = pd.read_csv(stddev_ipath, sep=';')
+            cum_stddev_df = cum_stddev_df.append(t)
+            cum_stddev_df.to_csv(csv_opath_stem + '.stddev', sep=';', index=False)
+
+
 class BivarIntraScenarioComparator:
     """
     Compares a set of controllers on different performance measures in all scenarios, one at a
@@ -358,202 +557,3 @@ class BivarIntraScenarioComparator:
 
         csv_opath_stem = os.path.join(self.cc_csv_root, leaf)
         df.to_csv(csv_opath_stem + '.csv', sep=';', index=False)
-
-
-class UnivarIntraScenarioComparator:
-    """
-    Compares a set of controllers on different performance measures in all scenarios using
-    univariate batch criteria, one at a time. Graph generation is controlled via a config file
-    parsed in :class:`~core.pipeline.stage5.PipelineStage5`. Univariate batch criteria only.
-
-    Attributes:
-        controllers: List of controller names to compare.
-        cc_csv_root: Absolute directory path to the location controller ``.csv`` files should be
-                     output to.
-        cc_graph_root: Absolute directory path to the location the generated graphs should be output
-                       to.
-        cmdopts: Dictionary of parsed cmdline parameters.
-        cli_args: :class:`argparse` object containing the cmdline parameters. Needed for
-                  :class:`~core.variables.batch_criteria.BatchCriteria` generation for each scenario
-                  controllers are compared within, as batch criteria is dependent on
-                  controller+scenario definition, and needs to be re-generated for each scenario in
-                  order to get graph labels/axis ticks to come out right in all cases.
-
-    """
-
-    def __init__(self,
-                 controllers: tp.List[str],
-                 cc_csv_root: str,
-                 cc_graph_root: str,
-                 cmdopts: dict,
-                 cli_args,
-                 main_config) -> None:
-        self.controllers = controllers
-        self.cc_graph_root = cc_graph_root
-        self.cc_csv_root = cc_csv_root
-
-        self.cmdopts = cmdopts
-        self.cli_args = cli_args
-        self.main_config = main_config
-
-    def __call__(self,
-                 graphs: dict,
-                 legend: tp.List[str],
-                 comp_type: str):
-        # Obtain the list of scenarios to use. We can just take the scenario list of the first
-        # controllers, because we have already checked that all controllers executed the same set
-        # scenarios
-        batch_leaves = os.listdir(os.path.join(self.cmdopts['sierra_root'],
-                                               self.cmdopts['project'],
-                                               self.controllers[0]))
-
-        # For each controller comparison graph we are interested in, generate it using data from all
-        # scenarios
-        cmdopts = copy.deepcopy(self.cmdopts)
-        for graph in graphs:
-            found = False
-            for leaf in batch_leaves:
-                if self.__leaf_select(leaf):
-                    self.__compare_in_scenario(cmdopts=cmdopts,
-                                               graph=graph,
-                                               batch_leaf=leaf,
-                                               legend=legend)
-                    found = True
-                    break
-            if not found:
-                logging.warning("Did not find scenario to compare in for criteria %s",
-                                self.cli_args.batch_criteria)
-
-    def __leaf_select(self, candidate: str):
-        """
-        Select which scenario to compare controllers within. You can only compare controllers within
-        the scenario directly generated from the value of ``--batch-criteria``; other scenarios will
-        (probably) cause file not found errors.
-
-        """
-        template_stem, scenario, _ = rdg.parse_batch_leaf(candidate)
-        leaf = rdg.gen_batch_leaf(criteria=self.cli_args.batch_criteria,
-                                  scenario=scenario,
-                                  template_stem=template_stem)
-        return leaf in candidate
-
-    def __compare_in_scenario(self,
-                              cmdopts: dict,
-                              graph: dict,
-                              batch_leaf: str,
-                              legend: tp.List[str]):
-
-        for controller in self.controllers:
-            dirs = [d for d in os.listdir(os.path.join(self.cmdopts['sierra_root'],
-                                                       self.cmdopts['project'],
-                                                       controller)) if batch_leaf in d]
-            if len(dirs) == 0:
-                logging.warning("Controller %s was not run on experiment %s",
-                                controller,
-                                batch_leaf)
-                continue
-
-            batch_leaf = dirs[0]
-            _, scenario, _ = rdg.parse_batch_leaf(batch_leaf)
-
-            # We need to generate the root directory paths for each batched experiment
-            # (which # lives inside of the scenario dir), because they are all
-            # different. We need generate these paths for EACH controller, because the
-            # controller is part of the batch root path.
-            paths = rdg.regen_from_exp(sierra_rpath=self.cli_args.sierra_root,
-                                       project=self.cli_args.project,
-                                       batch_leaf=batch_leaf,
-                                       controller=controller)
-            cmdopts.update(paths)
-
-            # For each scenario, we have to create the batch criteria for it, because they
-            # are all different.
-
-            criteria = bc.factory(self.main_config, cmdopts, self.cli_args, scenario)
-
-            self.__gen_csv(cmdopts=cmdopts,
-                           batch_leaf=batch_leaf,
-                           controller=controller,
-                           src_stem=graph['src_stem'],
-                           dest_stem=graph['dest_stem'])
-
-        self.__gen_graph(batch_leaf=batch_leaf,
-                         criteria=criteria,
-                         cmdopts=cmdopts,
-                         dest_stem=graph['dest_stem'],
-                         title=graph['title'],
-                         label=graph['label'],
-                         legend=legend)
-
-    def __gen_graph(self,
-                    batch_leaf: str,
-                    criteria: bc.IConcreteBatchCriteria,
-                    cmdopts: dict,
-                    dest_stem: str,
-                    title: str,
-                    label: str,
-                    legend: tp.List[str]):
-        """
-        Generates a :class:`~core.graphs.batch_ranged_graph.BatchRangedGraph` comparing the
-        specified controllers within the specified scenario after input files have been gathered
-        from each controllers into ``cc-csvs/``.
-        """
-        csv_stem_opath = os.path.join(self.cc_csv_root, dest_stem + "-" + batch_leaf)
-        xticks = criteria.graph_xticks(cmdopts)
-        xtick_labels = criteria.graph_xticklabels(cmdopts)
-
-        BatchRangedGraph(inputy_stem_fpath=csv_stem_opath,
-                         output_fpath=os.path.join(self.cc_graph_root,
-                                                   dest_stem) + '-' + batch_leaf + ".png",
-                         title=title,
-                         xlabel=criteria.graph_xlabel(cmdopts),
-                         ylabel=label,
-                         xtick_labels=xtick_labels[cmdopts['bc_undefined_exp0']:],
-                         xticks=xticks[cmdopts['bc_undefined_exp0']:],
-                         legend=legend).generate()
-
-    def __gen_csv(self,
-                  cmdopts: dict,
-                  batch_leaf: str,
-                  controller: str,
-                  src_stem: str,
-                  dest_stem: str):
-        """
-        Help function for generating a set of .csv files for use in intra-scenario graph generatio
-        (1 per controller).
-        """
-
-        csv_ipath = os.path.join(cmdopts['output_root'],
-                                 self.main_config['sierra']['collate_csv_leaf'],
-                                 src_stem + ".csv")
-        stddev_ipath = os.path.join(cmdopts['output_root'],
-                                    self.main_config['sierra']['collate_csv_leaf'],
-                                    src_stem + ".stddev")
-        csv_opath_stem = os.path.join(self.cc_csv_root,
-                                      dest_stem + "-" + batch_leaf)
-
-        # Some experiments might not generate the necessary performance measure .csvs for graph
-        # generation, which is OK.
-        if not os.path.exists(csv_ipath):
-            logging.warning("%s missing for controller %s", csv_ipath, controller)
-            return
-
-        if os.path.exists(csv_opath_stem + '.csv'):
-            cum_df = pd.read_csv(csv_opath_stem + '.csv', sep=';')
-        else:
-            cum_df = pd.DataFrame()
-
-        t = pd.read_csv(csv_ipath, sep=';')
-        cum_df = cum_df.append(t)
-
-        cum_df.to_csv(csv_opath_stem + '.csv', sep=';', index=False)
-
-        if os.path.exists(csv_opath_stem + '.stddev'):
-            cum_stddev_df = pd.read_csv(csv_opath_stem + '.stddev', sep=';')
-        else:
-            cum_stddev_df = pd.DataFrame()
-
-        if os.path.exists(stddev_ipath):
-            t = pd.read_csv(stddev_ipath, sep=';')
-            cum_stddev_df = cum_stddev_df.append(t)
-            cum_stddev_df.to_csv(csv_opath_stem + '.stddev', sep=';', index=False)

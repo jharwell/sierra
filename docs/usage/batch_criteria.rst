@@ -226,6 +226,10 @@ Examples:
 Temporal Variance
 -----------------
 
+.. NOTE::
+
+   The graphs generated from this criteria exclude exp0.
+
 .. WARNING::
 
    Some of the temporal variance config is very FORDYCA specific; hopefully this

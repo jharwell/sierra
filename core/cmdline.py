@@ -529,6 +529,41 @@ class CoreCmdline:
                                  """,
                                  action='store_true')
 
+        self.stage4.add_argument("--pm-flexibility-normalize",
+                                 help="""
+
+                                 If passed, then swarm flexibility calculations will be
+                                 normalized into [-1,1] via sigmoids (similar to other performance
+                                 measures), as opposed to raw values (default). This may make graphs
+                                 more or less readable/interpretable; without normalization, LOWER
+                                 values are better.
+
+                                 """,
+                                 action='store_true')
+
+        self.stage4.add_argument("--pm-robustness-normalize",
+                                 help="""
+
+                                 If passed, then swarm robustness calculations will be
+                                 normalized into [-1,1] via sigmoids (similar to other performance
+                                 measures), as opposed to raw values (default). This may make graphs
+                                 more or less readable/interpretable.
+
+                                 """,
+                                 action='store_true')
+
+        self.stage4.add_argument("--pm-all-normalize",
+                                 help="""
+
+                                 If passed, then swarm scalability, self-organization, flexibility,
+                                 nand robustness calculations will be normalized into [-1,1] via
+                                 sigmoids (similar to other performance measures), as opposed to raw
+                                 values (default). This may make graphs more or less
+                                 readable/interpretable.
+
+                                 """,
+                                 action='store_true')
+
         # Plotting options
         self.stage4.add_argument("--plot-log-xaxis",
                                  help="""
@@ -804,17 +839,6 @@ p
                                  interest if ``--comparison-type`` is passed.
 
                                  """ + self.stage_usage_doc([5]))
-
-        self.stage5.add_argument("--bc-undefined-exp0",
-                                 help="""
-
-                                 Specify that the batch criteria used is not defined for exp0. This is needed in stage
-                                 5, but not for stage 4, because there is no general way to know if the batch criteria
-                                 used is valid for exp0 or not (well you could put it in the batch criteria definition,
-                                 but that has a code smell). Only affects graph generation for univariate batch
-                                 criteria.
-                                 """ + self.stage_usage_doc([5]),
-                                 action='store_true')
 
     @staticmethod
     def cs_methods_doc():

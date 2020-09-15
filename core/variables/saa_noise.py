@@ -150,6 +150,9 @@ class SAANoise(bc.UnivarBatchCriteria):
     def pm_query(self, pm: str) -> bool:
         return pm in ['raw', 'robustness']
 
+    def inter_exp_graphs_exclude_exp0(self) -> bool:
+        return False
+
     def __uniform_sources(self):
         """
         Return TRUE if all noise sources are uniform.

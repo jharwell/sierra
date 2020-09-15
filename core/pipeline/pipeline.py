@@ -94,14 +94,21 @@ class Pipeline:
             'pm_scalability_normalize': self.args.pm_scalability_normalize,
             'pm_scalability_from_exp0': self.args.pm_scalability_from_exp0,
             'pm_self_org_normalize': self.args.pm_self_org_normalize,
+            'pm_flexibility_normalize': self.args.pm_flexibility_normalize,
+            'pm_robustness_normalize': self.args.pm_robustness_normalize,
 
             # stage 5
             'controllers_list': self.args.controllers_list,
             'controllers_legend': self.args.controllers_legend,
             'comparison_type': self.args.comparison_type,
             'transpose_graphs': self.args.transpose_graphs,
-            'bc_undefined_exp0': self.args.bc_undefined_exp0
         }
+
+        if self.args.pm_all_normalize:
+            cmdopts['pm_scalability_normalize'] = True
+            cmdopts['pm_self_org_normalize'] = True
+            cmdopts['pm_flexibility_normalize'] = True
+            cmdopts['pm_robustness_normalize'] = True
 
         if cmdopts is not None:
             self.cmdopts.update(cmdopts)

@@ -117,7 +117,8 @@ class EnvironmentalCS():
         ideal_data[:, 1] = ideal_var_df[attr["variance_csv_col"]].values
         return CSRaw()(exp_data=exp_data,
                        ideal_data=ideal_data,
-                       method=self.cmdopts["envc_cs_method"])
+                       method=self.cmdopts["envc_cs_method"],
+                       normalize=self.cmdopts['pm_flexibility_normalize'])
 
 
 class RawPerfCS():
@@ -169,7 +170,8 @@ class RawPerfCS():
         return CSRaw()(exp_data=exp_data,
                        ideal_data=ideal_data,
                        maxval=self.__maxval_calc(ideal_perf_df, intra_perf_col),
-                       method=self.cmdopts["rperf_cs_method"])
+                       method=self.cmdopts["rperf_cs_method"],
+                       normalize=self.cmdopts['pm_flexibility_normalize'])
 
     def __maxval_calc(self, ideal_perf_df, intra_perf_col: str):
         if self.cmdopts['rperf_cs_method'] == 'dtw':
@@ -270,7 +272,8 @@ class AdaptabilityCS():
         return CSRaw()(exp_data=exp_data,
                        ideal_data=ideal_data,
                        maxval=self.__maxval_calc(ideal_perf_df),
-                       method=self.cmdopts["adaptability_cs_method"])
+                       method=self.cmdopts["adaptability_cs_method"],
+                       normalize=self.cmdopts['pm_flexibility_normalize'])
 
     def __maxval_calc(self, ideal_perf_df):
         if self.cmdopts['adaptability_cs_method'] == 'dtw':
@@ -327,7 +330,8 @@ class ReactivityCS():
         return CSRaw()(exp_data=exp_data,
                        ideal_data=ideal_data,
                        maxval=self.__maxval_calc(ideal_perf_df),
-                       method=self.cmdopts["reactivity_cs_method"])
+                       method=self.cmdopts["reactivity_cs_method"],
+                       normalize=self.cmdopts['pm_flexibility_normalize'])
 
     def calc_waveforms(self, exp_dirs: tp.List[str] = None):
         """
@@ -412,6 +416,7 @@ class CSRaw():
                  exp_data,
                  ideal_data,
                  method: str,
+                 normalize: bool,
                  maxval: tp.Optional[float] = None):
         assert method is not None, "FATAL: Cannot compare curves without method"
 
@@ -422,7 +427,7 @@ class CSRaw():
         elif method == "frechet":
             return sm.frechet_dist(exp_data, ideal_data)
         elif method == "dtw":
-            return CSRaw.__calc_dtw(exp_data, ideal_data, maxval)
+            return CSRaw.__calc_dtw(exp_data, ideal_data, normalize, maxval)
         elif method == "curve_length":
             return sm.curve_length_measure(exp_data, ideal_data)
         else:
@@ -436,19 +441,19 @@ class CSRaw():
         return -1.0 + (val - minval) * (1 - (-1)) / (maxval - minval)
 
     @staticmethod
-    def __calc_dtw(exp_data, ideal_data, maxval: tp.Optional[float]):
+    def __calc_dtw(exp_data, ideal_data, normalize: bool, maxval: tp.Optional[float]):
         # Don't use the sm version--waaayyyy too slow
         dist, _ = fastdtw.fastdtw(exp_data, ideal_data)
 
-        if maxval is not None:
-            # Normalize [0,infinity) into [0,1], where HIGHER values now are better (much more
-            # intuitive this way)
-            normalized = (maxval - dist) / maxval
+        if not normalize or maxval is None:
+            return dist
 
-            # Normalize into [-1,1] to be congruent with the other measures
-            return CSRaw.__scale_minmax(0.0, 1.0, normalized)
+        # Normalize [0,infinity) into [0,1], where HIGHER values now are better (much more
+        # intuitive this way)
+        normalized = (maxval - dist) / maxval
 
-        return dist
+        # Normalize into [-1,1] to be congruent with the other measures
+        return CSRaw.__scale_minmax(0.0, 1.0, normalized)
 
 
 class DataFrames:

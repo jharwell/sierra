@@ -115,7 +115,7 @@ Root level dictionaries:
      inverted: true
 
      # The title that graphs of raw swarm performance should have (cannot be
-     # known a priori for all possible projects).
+     # known a priori for all possible projects during stage 4).
      raw_perf_title: 'Swarm Blocks Collected'
 
      # The ``.csv`` file under ``avg_output_leaf`` for each experiment which

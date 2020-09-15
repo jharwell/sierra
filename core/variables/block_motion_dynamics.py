@@ -90,6 +90,9 @@ class BlockMotionDynamics(bc.UnivarBatchCriteria):
     def pm_query(self, pm: str) -> bool:
         return pm in ['raw']
 
+    def inter_exp_graphs_exclude_exp0(self) -> bool:
+        return False
+
     @staticmethod
     def calc_xtick(exp_def):
         policy = None

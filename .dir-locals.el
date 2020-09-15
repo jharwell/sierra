@@ -10,7 +10,7 @@
         (add-to-list 'projectile-globally-ignored-file-suffixes ".html")
         (add-to-list 'projectile-globally-ignored-file-suffixes ".pickle")
         (add-to-list 'projectile-globally-ignored-file-suffixes ".pkl")
-        (python-mode))))
+        )))
 
 
 ;;; end of .dir-locals.el

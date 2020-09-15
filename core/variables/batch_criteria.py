@@ -79,6 +79,13 @@ class IConcreteBatchCriteria(implements.Interface):
             `False` otherwise.
         """
 
+    def inter_exp_graphs_exclude_exp0(self) -> bool:
+        """
+        Do the inter-experiment graphs for this batch criteria exclude exp0 ?
+
+        Needed for correct stage5 comparison graph generation for univariate criteria. 
+        """
+
 
 class IBivarBatchCriteria(implements.Interface):
     def graph_yticks(self,

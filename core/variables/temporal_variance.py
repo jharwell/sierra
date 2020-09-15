@@ -111,6 +111,9 @@ class TemporalVariance(bc.UnivarBatchCriteria):
     def pm_query(self, pm: str) -> bool:
         return pm in ['raw', 'flexibility']
 
+    def inter_exp_graphs_exclude_exp0(self) -> bool:
+        return True
+
 
 def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwargs):
     """

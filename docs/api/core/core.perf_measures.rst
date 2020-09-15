@@ -12,7 +12,6 @@
 
    core.perf_measures.common
    core.perf_measures.flexibility
-   core.perf_measures.flycheck_self_organization
    core.perf_measures.raw
    core.perf_measures.robustness
    core.perf_measures.scalability

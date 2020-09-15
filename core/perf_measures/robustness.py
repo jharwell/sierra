@@ -131,7 +131,8 @@ class RobustnessPDUnivar:
             df[batch_exp_dirnames[i]] = calculate_fpr(TS=TS,
                                                       T=T,
                                                       perf0=perf0,
-                                                      perfN=perfN)
+                                                      perfN=perfN,
+                                                      normalize=self.cmdopts['pm_robustness_normalize'])
 
         stem_opath = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
 
@@ -417,7 +418,8 @@ class RobustnessPDBivar:
                 df.iloc[i, j] = calculate_fpr(TS=TS,
                                               T=T,
                                               perfN=perfN,
-                                              perf0=perf0)
+                                              perf0=perf0,
+                                              normalize=self.cmdopts['pm_robustness_normalize'])
         return df
 
 
@@ -461,7 +463,7 @@ class RobustnessBivarGenerator:
 ################################################################################
 
 
-def calculate_fpr(TS: float, T: int, perf0: float, perfN: float):
+def calculate_fpr(TS: float, T: int, perf0: float, perfN: float, normalize: bool):
     r"""
     Calculate swarm robustness to fluctuating swarm populations. Equation taken from
     :xref:`Harwell2020`.
@@ -477,8 +479,11 @@ def calculate_fpr(TS: float, T: int, perf0: float, perfN: float):
     """
     scaled_perf0 = float(TS) / float(T) * perf0
     theta = (perfN - scaled_perf0)
-    return theta
-    # return 1 / (1 + 2**-theta) - 1 / (1 + 2**theta)
+
+    if normalize:
+        return core.utils.Sigmoid(theta)() - core.utils.Sigmoid(-theta)()
+    else:
+        return theta
 
 
 __api__ = [

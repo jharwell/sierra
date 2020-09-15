@@ -95,6 +95,9 @@ class PopulationSize(bc.UnivarBatchCriteria):
     def pm_query(self, pm: str) -> bool:
         return pm in ['raw', 'scalability', 'self-org']
 
+    def inter_exp_graphs_exclude_exp0(self) -> bool:
+        return False
+
     @staticmethod
     def gen_attr_changelist_from_list(size_list: list):
         return [set([(".//arena/distribute/entity", "quantity", str(s)),
