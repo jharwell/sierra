@@ -26,6 +26,7 @@ import pandas as pd
 import numpy as np
 import similaritymeasures as sm
 
+import core.utils
 from core.variables.batch_criteria import BatchCriteria
 from core.variables.temporal_variance_parser import TemporalVarianceParser
 
@@ -117,8 +118,7 @@ class EnvironmentalCS():
         ideal_data[:, 1] = ideal_var_df[attr["variance_csv_col"]].values
         return CSRaw()(exp_data=exp_data,
                        ideal_data=ideal_data,
-                       method=self.cmdopts["envc_cs_method"],
-                       normalize=self.cmdopts['pm_flexibility_normalize'])
+                       method=self.cmdopts["envc_cs_method"])
 
 
 class RawPerfCS():
@@ -169,19 +169,9 @@ class RawPerfCS():
 
         return CSRaw()(exp_data=exp_data,
                        ideal_data=ideal_data,
-                       maxval=self.__maxval_calc(ideal_perf_df, intra_perf_col),
                        method=self.cmdopts["rperf_cs_method"],
-                       normalize=self.cmdopts['pm_flexibility_normalize'])
-
-    def __maxval_calc(self, ideal_perf_df, intra_perf_col: str):
-        if self.cmdopts['rperf_cs_method'] == 'dtw':
-            # Max value is the maximum performance under ideal conditions (exp0) as compared with an
-            # expx curve which is 0 at every point
-            return ideal_perf_df[intra_perf_col].max() * len(ideal_perf_df[intra_perf_col])
-        else:
-            logging.warning('No maxval defined for method %s',
-                            self.cmdopts['rperf_cs_method'])
-            return None
+                       normalize=self.cmdopts['pm_flexibility_normalize'],
+                       normalize_method=self.cmdopts['pm_normalize_method'])
 
 
 class AdaptabilityCS():
@@ -262,28 +252,11 @@ class AdaptabilityCS():
     def __call__(self, exp_dirs: tp.List[str] = None):
         ideal_data, exp_data = self.calc_waveforms(exp_dirs)
 
-        ideal_perf_df = DataFrames.expx_perf_df(self.cmdopts,
-                                                self.criteria,
-                                                exp_dirs,
-                                                self.main_config['sierra']['avg_output_leaf'],
-                                                self.main_config['perf']['intra_perf_csv'],
-                                                self.ideal_num)
-
         return CSRaw()(exp_data=exp_data,
                        ideal_data=ideal_data,
-                       maxval=self.__maxval_calc(ideal_perf_df),
                        method=self.cmdopts["adaptability_cs_method"],
-                       normalize=self.cmdopts['pm_flexibility_normalize'])
-
-    def __maxval_calc(self, ideal_perf_df):
-        if self.cmdopts['adaptability_cs_method'] == 'dtw':
-            # Max value is the maximum performance under ideal conditions (exp0) as compared with an
-            # expx curve which is 0 at every point.
-            return ideal_perf_df[self.perf_csv_col].max() * len(ideal_perf_df[self.perf_csv_col])
-        else:
-            logging.warning('No maxval defined for method %s',
-                            self.cmdopts['adaptability_cs_method'])
-            return None
+                       normalize=self.cmdopts['pm_flexibility_normalize'],
+                       normalize_method=self.cmdopts['pm_normalize_method'])
 
 
 class ReactivityCS():
@@ -320,18 +293,12 @@ class ReactivityCS():
 
     def __call__(self, exp_dirs: tp.List[str] = None) -> float:
         ideal_data, exp_data = self.calc_waveforms(exp_dirs)
-        ideal_perf_df = DataFrames.expx_perf_df(self.cmdopts,
-                                                self.criteria,
-                                                exp_dirs,
-                                                self.main_config['sierra']['avg_output_leaf'],
-                                                self.main_config['perf']['intra_perf_csv'],
-                                                self.ideal_num)
 
         return CSRaw()(exp_data=exp_data,
                        ideal_data=ideal_data,
-                       maxval=self.__maxval_calc(ideal_perf_df),
                        method=self.cmdopts["reactivity_cs_method"],
-                       normalize=self.cmdopts['pm_flexibility_normalize'])
+                       normalize=self.cmdopts['pm_flexibility_normalize'],
+                       normalize_method=self.cmdopts['pm_normalize_method'])
 
     def calc_waveforms(self, exp_dirs: tp.List[str] = None):
         """
@@ -395,16 +362,6 @@ class ReactivityCS():
 
         return ideal_data, exp_data
 
-    def __maxval_calc(self, ideal_perf_df):
-        if self.cmdopts['reactivity_cs_method'] == 'dtw':
-            # Max value is the maximum performance under ideal conditions (exp0) as compared with an
-            # expx curve which is 0 at every point.
-            return ideal_perf_df[self.perf_csv_col].max() * len(ideal_perf_df[self.perf_csv_col])
-        else:
-            logging.warning('No maxval defined for method %s',
-                            self.cmdopts['reactivity_cs_method'])
-            return None
-
 
 class CSRaw():
     """
@@ -416,8 +373,8 @@ class CSRaw():
                  exp_data,
                  ideal_data,
                  method: str,
-                 normalize: bool,
-                 maxval: tp.Optional[float] = None):
+                 normalize: tp.Optional[bool] = False,
+                 normalize_method: tp.Optional[str] = None):
         assert method is not None, "FATAL: Cannot compare curves without method"
 
         if method == "pcm":
@@ -427,33 +384,32 @@ class CSRaw():
         elif method == "frechet":
             return sm.frechet_dist(exp_data, ideal_data)
         elif method == "dtw":
-            return CSRaw.__calc_dtw(exp_data, ideal_data, normalize, maxval)
+            return CSRaw.__calc_dtw(exp_data, ideal_data, normalize, normalize_method)
         elif method == "curve_length":
             return sm.curve_length_measure(exp_data, ideal_data)
         else:
             return None
 
     @staticmethod
-    def __scale_minmax(minval: float, maxval: float, val: float):
-        """
-        Scale values from range [minval, maxval] -> [-1,1]
-        """
-        return -1.0 + (val - minval) * (1 - (-1)) / (maxval - minval)
-
-    @staticmethod
-    def __calc_dtw(exp_data, ideal_data, normalize: bool, maxval: tp.Optional[float]):
+    def __calc_dtw(exp_data,
+                   ideal_data,
+                   normalize: tp.Optional[bool],
+                   normalize_method: tp.Optional[str]):
         # Don't use the sm version--waaayyyy too slow
         dist, _ = fastdtw.fastdtw(exp_data, ideal_data)
 
-        if not normalize or maxval is None:
+        if normalize is None or not normalize:
+            # You can't normalize [0,infinity) into [0,1], where HIGHER values now are better (even
+            # if it is more intuitive this way), because the maxval can be different for different
+            # controllers, resulting in apples to oranges comparisons in stage 5.
             return dist
 
-        # Normalize [0,infinity) into [0,1], where HIGHER values now are better (much more
-        # intuitive this way)
-        normalized = (maxval - dist) / maxval
-
-        # Normalize into [-1,1] to be congruent with the other measures
-        return CSRaw.__scale_minmax(0.0, 1.0, normalized)
+        else:
+            if normalize_method == 'sigmoid':
+                # Lower distance is better, so invert the usual sigmoid signs to normalize into
+                # [-1,1], where higher values are better.
+                return core.utils.Sigmoid(-dist)() - core.utils.Sigmoid(dist)()
+            return None
 
 
 class DataFrames:

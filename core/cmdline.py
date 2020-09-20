@@ -521,10 +521,9 @@ class CoreCmdline:
         self.stage4.add_argument("--pm-self-org-normalize",
                                  help="""
 
-                                 If passed, then swarm self-organization calculations will be
-                                 normalized into [-1,1] via sigmoids (similar to other performance
-                                 measures), as opposed to raw values (default). This may make graphs
-                                 more or less readable/interpretable.
+                                 If passed, then swarm self-organization calculations will be normalized into [-1,1] via
+                                 sigmoids (similar to other performance measures), as opposed to raw values
+                                 (default). This may make graphs more or less readable/interpretable.
 
                                  """,
                                  action='store_true')
@@ -532,11 +531,10 @@ class CoreCmdline:
         self.stage4.add_argument("--pm-flexibility-normalize",
                                  help="""
 
-                                 If passed, then swarm flexibility calculations will be
-                                 normalized into [-1,1] via sigmoids (similar to other performance
-                                 measures), as opposed to raw values (default). This may make graphs
-                                 more or less readable/interpretable; without normalization, LOWER
-                                 values are better.
+                                 If passed, then swarm flexibility calculations will be normalized into [-1,1] via
+                                 sigmoids (similar to other performance measures), as opposed to raw values
+                                 (default). This may make graphs more or less readable/interpretable; without
+                                 normalization, LOWER values are better.
 
                                  """,
                                  action='store_true')
@@ -544,10 +542,9 @@ class CoreCmdline:
         self.stage4.add_argument("--pm-robustness-normalize",
                                  help="""
 
-                                 If passed, then swarm robustness calculations will be
-                                 normalized into [-1,1] via sigmoids (similar to other performance
-                                 measures), as opposed to raw values (default). This may make graphs
-                                 more or less readable/interpretable.
+                                 If passed, then swarm robustness calculations will be normalized into [-1,1] via
+                                 sigmoids (similar to other performance measures), as opposed to raw values
+                                 (default). This may make graphs more or less readable/interpretable.
 
                                  """,
                                  action='store_true')
@@ -555,14 +552,24 @@ class CoreCmdline:
         self.stage4.add_argument("--pm-all-normalize",
                                  help="""
 
-                                 If passed, then swarm scalability, self-organization, flexibility,
-                                 nand robustness calculations will be normalized into [-1,1] via
-                                 sigmoids (similar to other performance measures), as opposed to raw
-                                 values (default). This may make graphs more or less
+                                 If passed, then swarm scalability, self-organization, flexibility, nand robustness
+                                 calculations will be normalized into [-1,1] via sigmoids (similar to other performance
+                                 measures), as opposed to raw values (default). This may make graphs more or less
                                  readable/interpretable.
 
                                  """,
                                  action='store_true')
+        self.stage4.add_argument("--pm-normalize-method",
+                                 choices=['sigmoid'],
+                                 help="""
+
+                                 The method to use for normalizing performance measure results,
+                                 where enabled:
+
+                                 - ``sigmoid`` - Use a pair of sigmoids to normalize the results into
+                                   [-1, 1]. Can be used with all performance measures.
+                                 """,
+                                 default='sigmoid')
 
         # Plotting options
         self.stage4.add_argument("--plot-log-xaxis",

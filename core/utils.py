@@ -113,6 +113,16 @@ def unpickle_exp_def(exp_def_fpath):
     return exp_def
 
 
+def scale_minmax(minval: float, maxval: float, val: float):
+    """
+    Scale values from range [minval, maxval] -> [-1,1]
+
+    .. math::
+       -1 + (value - minval) * (1 - \frac{-1}{maxval - minval})
+    """
+    return -1.0 + (val - minval) * (1 - (-1)) / (maxval - minval)
+
+
 def dir_create_checked(path: str, exist_ok: bool):
     try:
         os.makedirs(path, exist_ok=exist_ok)

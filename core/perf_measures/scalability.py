@@ -260,17 +260,18 @@ class ParallelFractionUnivar:
             sc_df[sc_df.columns[i]] = parallel_fraction_calculate(speedup_i=speedup_i,
                                                                   n_robots_i=n_robots_i,
                                                                   n_robots_iminus1=n_robots_iminus1,
-                                                                  normalize=self.cmdopts['pm_scalability_normalize'])
+                                                                  normalize=self.cmdopts['pm_scalability_normalize'],
+                                                                  normalize_method=self.cmdopts['pm_normalize_method'])
 
         return sc_df
 
     def generate(self, df: pd.DataFrame, batch_criteria: bc.IConcreteBatchCriteria):
-        stem_path = os.path.join(self.cmdopts["collate_root"], "pm-parallel-fraction")
+        stem_path = os.path.join(self.cmdopts["collate_root"], "pm-scalability-parallel-frac")
         df.to_csv(stem_path + ".csv", sep=';', index=False)
 
         BatchRangedGraph(inputy_stem_fpath=stem_path,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
-                                                   "pm-parallel-fraction.png"),
+                                                   "pm-scalability-parallel-frac.png"),
                          title="Swarm Parallel Performance Fraction",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
@@ -552,7 +553,8 @@ class ParallelFractionBivar:
                 sc_df.iloc[i, j] = parallel_fraction_calculate(speedup_i=speedup_i,
                                                                n_robots_i=n_robots_x,
                                                                n_robots_iminus1=n_robots_xminus1,
-                                                               normalize=self.cmdopts['pm_scalability_normalize'])
+                                                               normalize=self.cmdopts['pm_scalability_normalize'],
+                                                               normalize_method=self.cmdopts['pm_normalize_method'])
 
         return sc_df
 
@@ -605,7 +607,8 @@ class ScalabilityBivarGenerator:
 def parallel_fraction_calculate(speedup_i: float,
                                 n_robots_i: int,
                                 n_robots_iminus1: int,
-                                normalize: bool):
+                                normalize: bool,
+                                normalize_method: str):
     r"""
     Given a swarm exhibiting speedup :math:`X` with :math:`m_i>1` robots relative to a swarm with
     fewer (:math:`N_1`) robots, compute the serial fraction :math:`e` of the swarm's
@@ -619,6 +622,11 @@ def parallel_fraction_calculate(speedup_i: float,
 
     .. math::
        C(N_2,\kappa) = \sum_{t\in{T}}\frac{1}{1 + e^{-\theta_C(t)}} - \frac{1}{1 + e^{\theta_C(t)}}
+
+    or
+
+    .. math::
+       C(N_2,\kappa) = -1 + 2\theta_C(t)
 
     where
 
@@ -642,7 +650,8 @@ def parallel_fraction_calculate(speedup_i: float,
     theta = 1.0 - e
 
     if normalize:
-        return core.utils.Sigmoid(theta)() - core.utils.Sigmoid(-theta)()
+        if normalize_method == 'sigmoid':
+            return core.utils.Sigmoid(theta)() - core.utils.Sigmoid(-theta)()
     else:
         return theta
 

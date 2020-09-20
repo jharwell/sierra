@@ -82,7 +82,8 @@ class FractionalLossesMarginalUnivar:
                                                                      fl_iminus1=fl_iminus1,
                                                                      n_robots_i=n_robots_i,
                                                                      n_robots_iminus1=n_robots_iminus1,
-                                                                     normalize=self.cmdopts['pm_self_org_normalize'])
+                                                                     normalize=self.cmdopts['pm_self_org_normalize'],
+                                                                     normalize_method=self.cmdopts['pm_normalize_method'])
 
         stem_path = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
         df_new.to_csv(stem_path + ".csv", sep=';', index=False)
@@ -138,7 +139,8 @@ class FractionalLossesInteractiveUnivar:
             df_new.loc[0, batch_exp_dirnames[i]] = calc_self_org_ifl(fl_i=fl_i,
                                                                      n_robots_i=n_robots_i,
                                                                      fl_1=fl_1,
-                                                                     normalize=self.cmdopts['pm_self_org_normalize'])
+                                                                     normalize=self.cmdopts['pm_self_org_normalize'],
+                                                                     normalize_method=self.cmdopts['pm_normalize_method'])
 
         stem_path = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
         df_new.to_csv(stem_path + ".csv", sep=';', index=False)
@@ -238,7 +240,8 @@ class PerformanceGainMarginalUnivar:
                                                                  n_robots_i=n_robots_i,
                                                                  perf_iminus1=perf_iminus1,
                                                                  n_robots_iminus1=n_robots_iminus1,
-                                                                 normalize=self.cmdopts['pm_self_org_normalize'])
+                                                                 normalize=self.cmdopts['pm_self_org_normalize'],
+                                                                 normalize_method=self.cmdopts['pm_normalize_method'])
 
         return eff_df
 
@@ -325,7 +328,8 @@ class PerformanceGainInteractiveUnivar:
             eff_df.loc[0, eff_df.columns[i]] = calc_self_org_ipg(perf_i=perf_i,
                                                                  n_robots_i=n_robots_i,
                                                                  perf_0=perf_0,
-                                                                 normalize=self.cmdopts['pm_self_org_normalize'])
+                                                                 normalize=self.cmdopts['pm_self_org_normalize'],
+                                                                 normalize_method=self.cmdopts['pm_normalize_method'])
 
         return eff_df
 
@@ -445,7 +449,8 @@ class FractionalLossesMarginalBivar:
                                                      n_robots_i=n_robots_i,
                                                      fl_iminus1=fl_iminus1,
                                                      n_robots_iminus1=n_robots_iminus1,
-                                                     normalize=self.cmdopts['pm_self_org_normalize'])
+                                                     normalize=self.cmdopts['pm_self_org_normalize'],
+                                                     normalize_method=self.cmdopts['pm_normalize_method'])
         return so_df
 
 
@@ -521,7 +526,8 @@ class FractionalLossesInteractiveBivar:
                 so_df.iloc[i, j] = calc_self_org_ifl(fl_i=fl_i,
                                                      n_robots_i=n_robots_i,
                                                      fl_1=fl_1,
-                                                     normalize=self.cmdopts['pm_self_org_normalize'])
+                                                     normalize=self.cmdopts['pm_self_org_normalize'],
+                                                     normalize_method=self.cmdopts['pm_normalize_method'])
         return so_df
 
 
@@ -632,7 +638,8 @@ class PerformanceGainMarginalBivar:
                                                       n_robots_i=n_robots_i,
                                                       perf_iminus1=perf_iminus1,
                                                       n_robots_iminus1=n_robots_iminus1,
-                                                      normalize=self.cmdopts['pm_self_org_normalize'])
+                                                      normalize=self.cmdopts['pm_self_org_normalize'],
+                                                      normalize_method=self.cmdopts['pm_normalize_method'])
 
         return eff_df
 
@@ -702,7 +709,7 @@ class PerformanceGainInteractiveBivar:
     def __calculate_measure(self,
                             ipath: str,
                             batch_criteria: bc.BivarBatchCriteria,
-                            must_exist: bool = True):
+                            pp                            must_exist: bool = True):
         assert(not (must_exist and not os.path.exists(ipath))
                ), "FATAL: {0} does not exist".format(ipath)
         raw_df = pd.read_csv(ipath, sep=';')
@@ -740,7 +747,8 @@ class PerformanceGainInteractiveBivar:
                 eff_df.iloc[i, j] = calc_self_org_ipg(perf_i=perf_i,
                                                       n_robots_i=n_robots_i,
                                                       perf_0=perf_0,
-                                                      normalize=self.cmdopts['pm_self_org_normalize'])
+                                                      normalize=self.cmdopts['pm_self_org_normalize'],
+                                                      normalize_method=self.cmdopts['pm_normalize_method'])
 
         return eff_df
 
@@ -789,7 +797,11 @@ class SelfOrgBivarGenerator:
 ################################################################################
 
 
-def calc_self_org_ifl(fl_i: float, n_robots_i: int, fl_1: float, normalize: bool):
+def calc_self_org_ifl(fl_i: float,
+                      n_robots_i: int,
+                      fl_1: float,
+                      normalize: bool,
+                      normalize_method: str):
     r"""
     Calculates the self organization due to inter-robot interaction for a swarm configuration of
     size :math:`N`, using scaled fractional performance losses in comparison to a non-interactive
@@ -818,7 +830,10 @@ def calc_self_org_ifl(fl_i: float, n_robots_i: int, fl_1: float, normalize: bool
     theta = scaled_fl_1 - fl_i
 
     if normalize:
-        return core.utils.Sigmoid(theta)() - core.utils.Sigmoid(-theta)()
+        if normalize_method == 'sigmoid':
+            return core.utils.Sigmoid(theta)() - core.utils.Sigmoid(-theta)()
+        else:
+            return None
     else:
         return theta
 
@@ -827,7 +842,8 @@ def calc_self_org_mfl(fl_i: float,
                       n_robots_i: int,
                       fl_iminus1: float,
                       n_robots_iminus1: int,
-                      normalize: bool):
+                      normalize: bool,
+                      normalize_method: str):
     r"""
     Calculates the self organization due to inter-robot interaction for a  swarm configuration of
     size :math:`N_2`, given fractional performance losses for :math:`N_2` robots and for a
@@ -860,7 +876,10 @@ def calc_self_org_mfl(fl_i: float,
         theta = 0.0
 
     if normalize:
-        return core.utils.Sigmoid(theta)() - core.utils.Sigmoid(-theta)()
+        if normalize_method == 'sigmoid':
+            return core.utils.Sigmoid(theta)() - core.utils.Sigmoid(-theta)()
+        else:
+            return None
     else:
         return theta
 
@@ -869,7 +888,8 @@ def calc_self_org_mpg(perf_i: float,
                       n_robots_i: int,
                       perf_iminus1: float,
                       n_robots_iminus1: int,
-                      normalize: bool):
+                      normalize: bool,
+                      normalize_method: str):
     r"""
     Calculates the marginal performance gains achieved by the swarm configuration of size
     :math:`N_2`, given the performance achieved with :math:`N_2` robots and with a smaller swarm
@@ -903,12 +923,19 @@ def calc_self_org_mpg(perf_i: float,
         theta = 0.0
 
     if normalize:
-        return core.utils.Sigmoid(theta)() - core.utils.Sigmoid(-theta)()
+        if normalize_method == 'sigmoid':
+            return core.utils.Sigmoid(theta)() - core.utils.Sigmoid(-theta)()
+        else:
+            return None
     else:
         return theta
 
 
-def calc_self_org_ipg(perf_i: float, n_robots_i: int, perf_0: float, normalize: bool):
+def calc_self_org_ipg(perf_i: float,
+                      n_robots_i: int,
+                      perf_0: float,
+                      normalize: bool,
+                      normalize_method: str):
     r"""
     Calculates the self organization due to inter-robot interaction for a swarm configuration of
     size :math:`N`, given the performance achieved with a single robot with the same configuration.
@@ -932,8 +959,12 @@ def calc_self_org_ipg(perf_i: float, n_robots_i: int, perf_0: float, normalize: 
 
     """
     theta = perf_i - n_robots_i * perf_0
+
     if normalize:
-        return core.utils.Sigmoid(theta)() - core.utils.Sigmoid(-theta)()
+        if normalize_method == 'sigmoid':
+            return core.utils.Sigmoid(theta)() - core.utils.Sigmoid(-theta)()
+        else:
+            return None
     else:
         return theta
 

@@ -96,6 +96,7 @@ class Pipeline:
             'pm_self_org_normalize': self.args.pm_self_org_normalize,
             'pm_flexibility_normalize': self.args.pm_flexibility_normalize,
             'pm_robustness_normalize': self.args.pm_robustness_normalize,
+            'pm_normalize_method': self.args.pm_normalize_method,
 
             # stage 5
             'controllers_list': self.args.controllers_list,

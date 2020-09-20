@@ -160,6 +160,7 @@ class ExpCSVAverager:
             item_path = os.path.join(csv_root, item)
             if os.path.isfile(item_path):
                 df = pd.read_csv(item_path, index_col=False, sep=';')
+
                 if (item, '') not in csvs:
                     csvs[(item, '')] = []
 

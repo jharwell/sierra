@@ -132,7 +132,8 @@ class RobustnessPDUnivar:
                                                       T=T,
                                                       perf0=perf0,
                                                       perfN=perfN,
-                                                      normalize=self.cmdopts['pm_robustness_normalize'])
+                                                      normalize=self.cmdopts['pm_robustness_normalize'],
+                                                      normalize_method=self.cmdopts['pm_normalize_method'])
 
         stem_opath = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
 
@@ -419,7 +420,8 @@ class RobustnessPDBivar:
                                               T=T,
                                               perfN=perfN,
                                               perf0=perf0,
-                                              normalize=self.cmdopts['pm_robustness_normalize'])
+                                              normalize=self.cmdopts['pm_robustness_normalize'],
+                                              normalize_method=self.cmdopts['pm_normalize_method'])
         return df
 
 
@@ -463,13 +465,25 @@ class RobustnessBivarGenerator:
 ################################################################################
 
 
-def calculate_fpr(TS: float, T: int, perf0: float, perfN: float, normalize: bool):
+def calculate_fpr(TS: float,
+                  T: int,
+                  perf0: float,
+                  perfN: float,
+                  normalize: bool,
+                  normalize_method: str):
     r"""
     Calculate swarm robustness to fluctuating swarm populations. Equation taken from
     :xref:`Harwell2020`.
 
     .. math::
+       B_{sz}(\kappa) = \sum_{t\in{T}}\theta_{B_{sz}}
+
+    or
+
+    .. math::
        B_{sz}(\kappa) = \sum_{t\in{T}}\frac{1}{1+e^(-\theta_{B_{sz}})} - \frac{1}{1+e^(+\theta_{B_{sz}})}
+
+    depending on normalization configuration.
 
     where
 
@@ -481,7 +495,10 @@ def calculate_fpr(TS: float, T: int, perf0: float, perfN: float, normalize: bool
     theta = (perfN - scaled_perf0)
 
     if normalize:
-        return core.utils.Sigmoid(theta)() - core.utils.Sigmoid(-theta)()
+        if normalize_method == 'sigmoid':
+            return core.utils.Sigmoid(theta)() - core.utils.Sigmoid(-theta)()
+        else:
+            return None
     else:
         return theta
 
