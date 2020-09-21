@@ -34,6 +34,7 @@ from core.graphs.stacked_surface_graph import StackedSurfaceGraph
 from core.graphs.heatmap import Heatmap, DualHeatmap
 from core.variables import batch_criteria as bc
 import core.root_dirpath_generator as rdg
+import core.utils
 
 
 class UnivarIntraScenarioComparator:
@@ -210,29 +211,29 @@ class UnivarIntraScenarioComparator:
 
         # Some experiments might not generate the necessary performance measure .csvs for graph
         # generation, which is OK.
-        if not os.path.exists(csv_ipath):
+        if not core.utils.path_exists(csv_ipath):
             logging.warning("%s missing for controller %s", csv_ipath, controller)
             return
 
-        if os.path.exists(csv_opath_stem + '.csv'):
-            cum_df = pd.read_csv(csv_opath_stem + '.csv', sep=';')
+        if core.utils.path_exists(csv_opath_stem + '.csv'):
+            cum_df = core.utils.pd_csv_read(csv_opath_stem + '.csv')
         else:
             cum_df = pd.DataFrame()
 
-        t = pd.read_csv(csv_ipath, sep=';')
+        t = core.utils.pd_csv_read(csv_ipath)
         cum_df = cum_df.append(t)
 
-        cum_df.to_csv(csv_opath_stem + '.csv', sep=';', index=False)
+        core.utils.pd_csv_write(cum_df, csv_opath_stem + '.csv', index=False)
 
-        if os.path.exists(csv_opath_stem + '.stddev'):
-            cum_stddev_df = pd.read_csv(csv_opath_stem + '.stddev', sep=';')
+        if core.utils.path_exists(csv_opath_stem + '.stddev'):
+            cum_stddev_df = core.utils.pd_csv_read(csv_opath_stem + '.stddev')
         else:
             cum_stddev_df = pd.DataFrame()
 
-        if os.path.exists(stddev_ipath):
-            t = pd.read_csv(stddev_ipath, sep=';')
+        if core.utils.path_exists(stddev_ipath):
+            t = core.utils.pd_csv_read(stddev_ipath)
             cum_stddev_df = cum_stddev_df.append(t)
-            cum_stddev_df.to_csv(csv_opath_stem + '.stddev', sep=';', index=False)
+            core.utils.pd_csv_write(cum_stddev_df, csv_opath_stem + '.stddev', index=False)
 
 
 class BivarIntraScenarioComparator:
@@ -426,17 +427,17 @@ class BivarIntraScenarioComparator:
         paths = [f for f in glob.glob(
             csv_stem_root + '*.csv') if re.search('_[0-9]+', f)]
 
-        ref_df = pd.read_csv(paths[0], sep=';')
+        ref_df = core.utils.pd_csv_read(paths[0])
 
         for i in range(1, len(paths)):
-            df = pd.read_csv(paths[i], sep=';')
+            df = core.utils.pd_csv_read(paths[i])
 
             if comp_type == 'scale2D':
                 plot_df = df / ref_df
             elif comp_type == 'diff2D':
                 plot_df = df - ref_df
             opath_stem = csv_stem_root + "_{0}{1}".format(0, i)
-            plot_df.to_csv(opath_stem + ".csv", sep=';', index=False)
+            core.utils.pd_csv_write(plot_df, opath_stem + ".csv", index=False)
 
             Heatmap(input_fpath=opath_stem + ".csv",
                     output_fpath=os.path.join(self.cc_graph_root,
@@ -546,14 +547,14 @@ class BivarIntraScenarioComparator:
 
         # Some experiments might not generate the necessary performance measure .csvs for
         # graph generation, which is OK.
-        if not os.path.exists(csv_ipath):
+        if not core.utils.path_exists(csv_ipath):
             logging.warning("%s missing for controller %s", csv_ipath, controller)
             return
 
-        df = pd.read_csv(csv_ipath, sep=';')
+        df = core.utils.pd_csv_read(csv_ipath)
 
         _, batch_leaf, _ = rdg.parse_batch_leaf(batch_root)
         leaf = dest_stem + "-" + batch_leaf + '_' + str(self.controllers.index(controller))
 
         csv_opath_stem = os.path.join(self.cc_csv_root, leaf)
-        df.to_csv(csv_opath_stem + '.csv', sep=';', index=False)
+        core.utils.pd_csv_write(df, csv_opath_stem + '.csv', index=False)

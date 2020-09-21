@@ -159,7 +159,7 @@ class ExpCSVAverager:
         for item in os.listdir(csv_root):
             item_path = os.path.join(csv_root, item)
             if os.path.isfile(item_path):
-                df = pd.read_csv(item_path, index_col=False, sep=';')
+                df = core.utils.pd_csv_read(item_path, index_col=False)
 
                 if (item, '') not in csvs:
                     csvs[(item, '')] = []
@@ -171,7 +171,7 @@ class ExpCSVAverager:
                     continue
                 for csv_fname in os.listdir(item_path):
                     csv_path = os.path.join(item_path, csv_fname)
-                    df = pd.read_csv(csv_path, index_col=False, sep=';')
+                    df = core.utils.pd_csv_read(csv_path, index_col=False)
                     if (csv_fname, item) not in csvs:
                         csvs[(csv_fname, item)] = []
                     csvs[(csv_fname, item)].append(df)
@@ -192,17 +192,17 @@ class ExpCSVAverager:
                 core.utils.dir_create_checked(os.path.join(self.avgd_output_root, csv_fname[1]),
                                               exist_ok=True)
 
-            csv_averaged.to_csv(os.path.join(self.avgd_output_root, csv_fname[1], csv_fname[0]),
-                                sep=';',
-                                index=False)
+            core.utils.pd_csv_write(csv_averaged, os.path.join(self.avgd_output_root, csv_fname[1], csv_fname[0]),
+
+                                    index=False)
 
             # Also write out stddev in order to calculate confidence intervals later
             if self.avg_opts['gen_stddev']:
                 csv_stddev = by_row_index.std().round(2)
                 csv_stddev_fname = csv_fname.split('.')[0] + '.stddev'
-                csv_stddev.to_csv(os.path.join(self.avgd_output_root, csv_stddev_fname),
-                                  sep=';',
-                                  index=False)
+                core.utils.pd_csv_write(csv_stddev, os.path.join(self.avgd_output_root, csv_stddev_fname),
+
+                                        index=False)
 
     def __verify_exp(self):
         """
@@ -242,12 +242,12 @@ class ExpCSVAverager:
                                       path1)
                         continue
 
-                    assert (os.path.exists(path1) and os.path.exists(path2)),\
+                    assert (core.utils.path_exists(path1) and core.utils.path_exists(path2)),\
                         "FATAL: Either {0} or {1} does not exist".format(path1, path2)
 
                     # Verify both dataframes have same # columns, and that column sets are identical
-                    df1 = pd.read_csv(path1, sep=';')
-                    df2 = pd.read_csv(path2, sep=';')
+                    df1 = core.utils.pd_csv_read(path1)
+                    df2 = core.utils.pd_csv_read(path2)
                     assert (len(df1.columns) == len(df2.columns)), \
                         "FATAL: Dataframes from {0} and {1} do not have same # columns".format(
                             path1, path2)

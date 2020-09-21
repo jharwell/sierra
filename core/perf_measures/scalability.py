@@ -66,10 +66,10 @@ class InterRobotInterferenceUnivar:
         duration_png_ostem = os.path.join(self.cmdopts["graph_root"], self.kDurationLeaf)
 
         count_df = self.__calculate_measure(count_csv_istem + ".csv", batch_criteria)
-        count_df.to_csv(count_csv_ostem + '.csv', sep=';', index=False)
+        core.utils.pd_csv_write(count_df, count_csv_ostem + '.csv', index=False)
 
         duration_df = self.__calculate_measure(duration_csv_istem + ".csv", batch_criteria)
-        duration_df.to_csv(duration_csv_ostem + '.csv', sep=';', index=False)
+        core.utils.pd_csv_write(duration_df, duration_csv_ostem + '.csv', index=False)
 
         BatchRangedGraph(inputy_stem_fpath=count_csv_ostem,
                          output_fpath=count_png_ostem + '.png',
@@ -86,8 +86,8 @@ class InterRobotInterferenceUnivar:
                          xticks=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
     def __calculate_measure(self, ipath: str, batch_criteria: bc.IConcreteBatchCriteria):
-        assert(os.path.exists(ipath)), "FATAL: {0} does not exist".format(ipath)
-        raw_df = pd.read_csv(ipath, sep=';')
+        assert(core.utils.path_exists(ipath)), "FATAL: {0} does not exist".format(ipath)
+        raw_df = core.utils.pd_csv_read(ipath)
         eff_df = pd.DataFrame(columns=raw_df.columns,
                               index=[0])
 
@@ -126,7 +126,7 @@ class NormalizedEfficiencyUnivar:
                                     self.inter_perf_stem + '.stddev')
 
         # Metric calculation is the same for the actual value of it and the std deviation,
-        if os.path.exists(stddev_ipath):
+        if core.utils.path_exists(stddev_ipath):
             return (self.__calculate_measure(sc_ipath, batch_criteria),
                     self.__calculate_measure(stddev_ipath, batch_criteria, False))
         else:
@@ -138,9 +138,9 @@ class NormalizedEfficiencyUnivar:
         cum_stem = os.path.join(self.cmdopts["collate_root"], "pm-scalability-norm")
         metric_df = dfs[0]
         stddev_df = dfs[1]
-        metric_df.to_csv(cum_stem + ".csv", sep=';', index=False)
+        core.utils.pd_csv_write(metric_df, cum_stem + ".csv", index=False)
         if stddev_df is not None:
-            stddev_df.to_csv(cum_stem + ".stddev", sep=';', index=False)
+            core.utils.pd_csv_write(stddev_df, cum_stem + ".stddev", index=False)
 
         BatchRangedGraph(inputy_stem_fpath=cum_stem,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
@@ -154,9 +154,9 @@ class NormalizedEfficiencyUnivar:
                             ipath: str,
                             batch_criteria: bc.IConcreteBatchCriteria,
                             must_exist: bool = True):
-        assert(not (must_exist and not os.path.exists(ipath))
+        assert(not (must_exist and not core.utils.path_exists(ipath))
                ), "FATAL: {0} does not exist".format(ipath)
-        raw_df = pd.read_csv(ipath, sep=';')
+        raw_df = core.utils.pd_csv_read(ipath)
         eff_df = pd.DataFrame(columns=raw_df.columns
                               )
         populations = batch_criteria.populations(self.cmdopts)
@@ -208,7 +208,7 @@ class FractionalMaintenanceUnivar:
     def generate(self, df: pd.DataFrame, batch_criteria: bc.IConcreteBatchCriteria):
         stem_path = os.path.join(self.cmdopts["collate_root"], "pm-scalability-fm")
 
-        df.to_csv(stem_path + '.csv', sep=';', index=False)
+        core.utils.pd_csv_write(df, stem_path + '.csv', index=False)
         BatchRangedGraph(inputy_stem_fpath=stem_path,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
                                                    "pm-scalability-fm.png"),
@@ -237,8 +237,8 @@ class ParallelFractionUnivar:
         self.inter_perf_csv = inter_perf_csv
 
     def calculate(self, batch_criteria: bc.IConcreteBatchCriteria):
-        perf_df = pd.read_csv(os.path.join(self.cmdopts["collate_root"], self.inter_perf_csv),
-                              sep=';')
+        perf_df = core.utils.pd_csv_read(os.path.join(self.cmdopts["collate_root"],
+                                                      self.inter_perf_csv))
         sc_df = pd.DataFrame(columns=perf_df.columns, index=[0])
         sizes = batch_criteria.populations(self.cmdopts)
 
@@ -267,7 +267,7 @@ class ParallelFractionUnivar:
 
     def generate(self, df: pd.DataFrame, batch_criteria: bc.IConcreteBatchCriteria):
         stem_path = os.path.join(self.cmdopts["collate_root"], "pm-scalability-parallel-frac")
-        df.to_csv(stem_path + ".csv", sep=';', index=False)
+        core.utils.pd_csv_write(df, stem_path + ".csv", index=False)
 
         BatchRangedGraph(inputy_stem_fpath=stem_path,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
@@ -339,10 +339,10 @@ class InterRobotInterferenceBivar:
         duration_png_ostem = os.path.join(self.cmdopts["graph_root"], self.kDurationLeaf)
 
         count_df = self.__calculate_measure(count_csv_istem + ".csv")
-        count_df.to_csv(count_csv_ostem + '.csv', sep=';', index=False)
+        core.utils.pd_csv_write(count_df, count_csv_ostem + '.csv', index=False)
 
         duration_df = self.__calculate_measure(duration_csv_istem + ".csv")
-        duration_df.to_csv(duration_csv_ostem + '.csv', sep=';', index=False)
+        core.utils.pd_csv_write(duration_df, duration_csv_ostem + '.csv', index=False)
 
         Heatmap(input_fpath=count_csv_ostem + ".csv",
                 output_fpath=count_png_ostem + ".png",
@@ -362,8 +362,8 @@ class InterRobotInterferenceBivar:
 
     @staticmethod
     def __calculate_measure(ipath: str):
-        assert(os.path.exists(ipath)), "FATAL: {0} does not exist".format(ipath)
-        raw_df = pd.read_csv(ipath, sep=';')
+        assert(core.utils.path_exists(ipath)), "FATAL: {0} does not exist".format(ipath)
+        raw_df = core.utils.pd_csv_read(ipath)
         eff_df = pd.DataFrame(columns=raw_df.columns,
                               index=raw_df.index)
         for i in range(0, len(eff_df.index)):
@@ -402,7 +402,7 @@ class NormalizedEfficiencyBivar:
                                     self.inter_perf_stem + '.stddev')
 
         # Metric calculation is the same for the actual value of it and the std deviation,
-        if os.path.exists(stddev_ipath):
+        if core.utils.path_exists(stddev_ipath):
             return (self.__calculate_measure(sc_ipath, batch_criteria),
                     self.__calculate_measure(stddev_ipath, batch_criteria, False))
         else:
@@ -414,9 +414,9 @@ class NormalizedEfficiencyBivar:
         cum_stem = os.path.join(self.cmdopts["collate_root"], "pm-scalability-norm")
         metric_df, stddev_df = dfs
 
-        metric_df.to_csv(cum_stem + ".csv", sep=';', index=False)
+        core.utils.pd_csv_write(metric_df, cum_stem + ".csv", index=False)
         if stddev_df is not None:
-            stddev_df.to_csv(cum_stem + ".stddev", sep=';', index=False)
+            core.utils.pd_csv_write(stddev_df, cum_stem + ".stddev", index=False)
 
         Heatmap(input_fpath=cum_stem + '.csv',
                 output_fpath=os.path.join(self.cmdopts["graph_root"], "pm-efficiency.png"),
@@ -430,9 +430,9 @@ class NormalizedEfficiencyBivar:
                             ipath: str,
                             batch_criteria: bc.IConcreteBatchCriteria,
                             must_exist: bool = True):
-        assert(not (must_exist and not os.path.exists(ipath))
+        assert(not (must_exist and not core.utils.path_exists(ipath))
                ), "FATAL: {0} does not exist".format(ipath)
-        raw_df = pd.read_csv(ipath, sep=';')
+        raw_df = core.utils.pd_csv_read(ipath)
         eff_df = pd.DataFrame(columns=raw_df.columns,
                               index=raw_df.index)
         populations = batch_criteria.populations(self.cmdopts)
@@ -480,7 +480,7 @@ class FractionalMaintenanceBivar:
     def generate(self, df: pd.DataFrame, batch_criteria: bc.IConcreteBatchCriteria):
         stem_path = os.path.join(self.cmdopts["collate_root"], "pm-scalability-fm")
 
-        df.to_csv(stem_path + '.csv', sep=';', index=False)
+        core.utils.pd_csv_write(df, stem_path + '.csv', index=False)
         Heatmap(input_fpath=stem_path + '.csv',
                 output_fpath=os.path.join(self.cmdopts["graph_root"], "pm-scalability-fm.png"),
                 title="Swarm Scalability: Fractional Performance Maintenance In The Presence Of Inter-robot Interference",
@@ -509,8 +509,8 @@ class ParallelFractionBivar:
         self.inter_perf_csv = inter_perf_csv
 
     def calculate(self, batch_criteria):
-        perf_df = pd.read_csv(os.path.join(self.cmdopts["collate_root"],
-                                           self.inter_perf_csv), sep=';')
+        perf_df = core.utils.pd_csv_read(os.path.join(self.cmdopts["collate_root"],
+                                                      self.inter_perf_csv))
         sc_df = pd.DataFrame(columns=perf_df.columns, index=perf_df.index)
 
         sizes = batch_criteria.populations(self.cmdopts)
@@ -560,7 +560,7 @@ class ParallelFractionBivar:
 
     def generate(self, df, batch_criteria):
         stem_path = os.path.join(self.cmdopts["collate_root"], "pm-parallel-fraction")
-        df.to_csv(stem_path + ".csv", sep=';', index=False)
+        core.utils.pd_csv_write(df, stem_path + ".csv", index=False)
 
         Heatmap(input_fpath=stem_path + '.csv',
                 output_fpath=os.path.join(self.cmdopts["graph_root"], "pm-parallel-fraction.png"),
@@ -652,6 +652,8 @@ def parallel_fraction_calculate(speedup_i: float,
     if normalize:
         if normalize_method == 'sigmoid':
             return core.utils.Sigmoid(theta)() - core.utils.Sigmoid(-theta)()
+        else:
+            return None
     else:
         return theta
 

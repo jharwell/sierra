@@ -27,6 +27,8 @@ mpl.rcParams['lines.linewidth'] = 3
 mpl.rcParams['lines.markersize'] = 10
 mpl.use('Agg')
 
+import core.utils
+
 
 class BatchRangedGraph:
     """
@@ -65,13 +67,13 @@ class BatchRangedGraph:
         self.polynomial_fit = kwargs.get('polynomial_fit', -1)
 
     def generate(self):
-        if not os.path.exists(self.inputy_csv_fpath):
+        if not core.utils.path_exists(self.inputy_csv_fpath):
             logging.debug("Not generating batch ranged graph: %s does not exist",
                           self.inputy_csv_fpath)
             return
 
         # Read .csv and scaffold graph
-        dfy = pd.read_csv(self.inputy_csv_fpath, sep=';')
+        dfy = core.utils.pd_csv_read(self.inputy_csv_fpath)
         fig, ax = plt.subplots()
         ax.tick_params(labelsize=12)
 
@@ -130,10 +132,10 @@ class BatchRangedGraph:
 
         If the necessary ``.stddev`` file does not exist, no errorbars are plotted.
         """
-        if not os.path.exists(self.inputy_stddev_fpath):
+        if not core.utils.path_exists(self.inputy_stddev_fpath):
             return
 
-        stddev_df = pd.read_csv(self.inputy_stddev_fpath, sep=';')
+        stddev_df = core.utils.pd_csv_read(self.inputy_stddev_fpath)
 
         for i in range(0, len(data_df.values)):
             plt.fill_between(xticks, data_df.values[i] - 2 * stddev_df.values[i],

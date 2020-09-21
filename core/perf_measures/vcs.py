@@ -35,8 +35,6 @@ def method_xlabel(method: str):
     """
     Return the X-label of the method used for calculating the curve similarity.
     """
-    if method is None:
-        return None
     labels = {
         "pcm": "Partial Curve Mapping Distance To Ideal Conditions",
         "area_between": "Area Difference For Experiment and Ideal Conditions Variance Curves",
@@ -54,9 +52,6 @@ def method_ylabel(method: str, arg):
     method: Method name.
     arg: An additional multi-purpose argument to pass to the function
     """
-    if method is None:
-        return None
-
     ideal_curve_names = {
         "adaptability": r'$P_{A^{*}}(N,\kappa,t)$',
         "reactivity": r'$P_{R^{*}}(N,\kappa,t)$',
@@ -430,7 +425,7 @@ class DataFrames:
                                 dirs[exp_num],
                                 avg_output_leaf,
                                 tv_environment_csv)
-            return pd.read_csv(path, sep=';')
+            return core.utils.pd_csv_read(path)
         except (FileNotFoundError, IndexError):
             logging.fatal("%s does not exist for exp num %s",
                           path,
@@ -453,7 +448,7 @@ class DataFrames:
                                 dirs[exp_num],
                                 avg_output_leaf,
                                 intra_perf_csv)
-            return pd.read_csv(path, sep=';')
+            return core.utils.pd_csv_read(path)
         except (FileNotFoundError, IndexError):
             logging.fatal("%s does not exist for exp num %s",
                           path,

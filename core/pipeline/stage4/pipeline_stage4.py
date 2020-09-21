@@ -32,6 +32,7 @@ from core.pipeline.stage4.csv_collator import BivarCSVCollator
 from core.pipeline.stage4.intra_exp_graph_generator import BatchedIntraExpGraphGenerator
 from core.pipeline.stage4.inter_exp_graph_generator import InterExpGraphGenerator
 from core.pipeline.stage4.exp_video_renderer import BatchedExpVideoRenderer
+import core.utils
 
 mpl.rcParams['lines.linewidth'] = 3
 mpl.rcParams['lines.markersize'] = 10
@@ -110,7 +111,7 @@ class PipelineStage4:
                                         'intra-graphs-line.yaml')
         project_intra_HM = os.path.join(self.cmdopts['project_config_root'],
                                         'intra-graphs-hm.yaml')
-        if os.path.exists(project_intra_LN):
+        if core.utils.path_exists(project_intra_LN):
             logging.info("Stage4: Loading additional intra-experiment linegraph config for project '%s'",
                          self.cmdopts['project'])
             project_dict = yaml.load(open(project_intra_LN), yaml.FullLoader)
@@ -124,7 +125,7 @@ class PipelineStage4:
 
                 self.intra_LN_config.update({category: project_dict[category]})
 
-        if os.path.exists(project_intra_HM):
+        if core.utils.path_exists(project_intra_HM):
             logging.info("Stage4: Loading additional intra-experiment heatmap config for project '%s'",
                          self.cmdopts['project'])
             project_dict = yaml.load(open(project_intra_HM), yaml.FullLoader)
@@ -135,7 +136,7 @@ class PipelineStage4:
                     self.intra_HM_config[category]['graphs'].extend(
                         project_dict[category]['graphs'])
 
-        if os.path.exists(project_inter_LN):
+        if core.utils.path_exists(project_inter_LN):
             logging.info("Stage4: Loading additional inter-experiment linegraph config for project '%s'",
                          self.cmdopts['project'])
             project_dict = yaml.load(open(project_inter_LN), yaml.FullLoader)

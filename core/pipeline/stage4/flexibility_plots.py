@@ -22,12 +22,12 @@ by hooking into the intra-experiment graph generation.
 import os
 import copy
 import re
-import typing as tp
 import pandas as pd
 
 from core.variables.temporal_variance_parser import TemporalVarianceParser
 from core.variables.batch_criteria import BatchCriteria
 import core.perf_measures.vcs as vcs
+import core.utils
 
 
 class FlexibilityPlotsCSVGenerator:
@@ -125,7 +125,7 @@ class FlexibilityPlotsCSVGenerator:
                 'ideal_adaptability': adaptability.calc_waveforms()[0][:, 1]
             }
         )
-        df.to_csv(os.path.join(output_root, 'flexibility-plots.csv'), sep=';', index=False)
+        core.utils.pd_csv_write(df, os.path.join(output_root, 'flexibility-plots.csv'), index=False)
 
     def _comparable_exp_variance(self, var_df, tv_attr, perf_max, perf_min):
         """

@@ -29,6 +29,7 @@ from core.graphs.batch_ranged_graph import BatchRangedGraph
 from core.graphs.heatmap import Heatmap
 import core.perf_measures as pm
 import core.variables.batch_criteria as bc
+import core.utils
 
 
 class RawUnivar:
@@ -55,7 +56,7 @@ class RawUnivar:
         perf_opath_stem = os.path.join(self.cmdopts["collate_root"],
                                        "pm-" + self.inter_perf_stem)
 
-        if os.path.exists(stddev_ipath):
+        if core.utils.path_exists(stddev_ipath):
             RawUnivar.__gen_stddev(stddev_ipath, stddev_opath)
 
         RawUnivar.__gen_csv(perf_ipath, perf_opath_stem + '.csv')
@@ -70,24 +71,24 @@ class RawUnivar:
 
     @staticmethod
     def __gen_stddev(ipath: str, opath: str):
-        total_stddev_df = pd.read_csv(ipath, sep=';')
+        total_stddev_df = core.utils.pd_csv_read(ipath)
         cum_stddev_df = pd.DataFrame(columns=total_stddev_df.columns)
 
         for col in cum_stddev_df.columns:
             cum_stddev_df[col] = total_stddev_df.tail(1)[col]
 
-        cum_stddev_df.to_csv(opath, sep=';', index=False)
+        core.utils.pd_csv_write(cum_stddev_df, opath, index=False)
 
     @staticmethod
     def __gen_csv(ipath: str, opath: str):
-        assert(os.path.exists(ipath)), "FATAL: {0} does not exist".format(ipath)
-        total_df = pd.read_csv(ipath, sep=';')
+        assert(core.utils.path_exists(ipath)), "FATAL: {0} does not exist".format(ipath)
+        total_df = core.utils.pd_csv_read(ipath)
         cum_df = pd.DataFrame(columns=total_df.columns)
 
         for col in cum_df.columns:
             cum_df[col] = total_df.tail(1)[col]
 
-        cum_df.to_csv(opath, sep=';', index=False)
+        core.utils.pd_csv_write(cum_df, opath, index=False)
 
 
 class RawBivar:
@@ -114,7 +115,7 @@ class RawBivar:
         perf_opath_stem = os.path.join(self.cmdopts["collate_root"],
                                        "pm-" + self.inter_perf_stem)
 
-        if os.path.exists(stddev_ipath):
+        if core.utils.path_exists(stddev_ipath):
             RawBivar.__gen_stddev(stddev_ipath, stddev_opath)
 
         RawBivar.__gen_csv(perf_ipath, perf_opath_stem + '.csv')
@@ -130,18 +131,18 @@ class RawBivar:
 
     @staticmethod
     def __gen_stddev(ipath: str, opath: str):
-        total_stddev_df = pd.read_csv(ipath, sep=';')
+        total_stddev_df = core.utils.pd_csv_read(ipath)
         cum_stddev_df = pd.DataFrame(columns=total_stddev_df.columns)
 
         for c in cum_stddev_df.columns:
             cum_stddev_df[c] = total_stddev_df.tail(1)[c]
 
-        cum_stddev_df.to_csv(opath, sep=';', index=False)
+        core.utils.pd_csv_write(cum_stddev_df, opath, index=False)
 
     @staticmethod
     def __gen_csv(ipath: str, opath: str):
-        assert(os.path.exists(ipath)), "FATAL: {0} does not exist".format(ipath)
-        total_df = pd.read_csv(ipath, sep=';')
+        assert(core.utils.path_exists(ipath)), "FATAL: {0} does not exist".format(ipath)
+        total_df = core.utils.pd_csv_read(ipath)
         cum_df = pd.DataFrame(columns=total_df.columns,
                               index=total_df.index)
 
@@ -152,7 +153,7 @@ class RawBivar:
                                                                 j,
                                                                 slice(-1, None))
 
-        cum_df.to_csv(opath, sep=';', index=False)
+        core.utils.pd_csv_write(cum_df, opath, index=False)
 
 
 __api__ = [

@@ -79,7 +79,7 @@ class RobustnessSAAUnivar:
         stem_opath = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
 
         # Write .csv to file
-        df.to_csv(stem_opath + '.csv', sep=';', index=False)
+        core.utils.pd_csv_write(df, stem_opath + '.csv', index=False)
 
         BatchRangedGraph(inputy_stem_fpath=stem_opath,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
@@ -116,9 +116,8 @@ class RobustnessPDUnivar:
         batch_exp_dirnames = criteria.gen_exp_dirnames(self.cmdopts)
 
         df = pd.DataFrame(columns=batch_exp_dirnames, index=[0])
-        perf_df = pd.read_csv(os.path.join(self.cmdopts["collate_root"],
-                                           self.inter_perf_csv),
-                              sep=';')
+        perf_df = core.utils.pd_csv_read(os.path.join(self.cmdopts["collate_root"],
+                                                      self.inter_perf_csv))
 
         idx = perf_df.index[-1]
         for i in range(0, criteria.n_exp()):
@@ -138,7 +137,7 @@ class RobustnessPDUnivar:
         stem_opath = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
 
         # Write .csv to file
-        df.to_csv(stem_opath + '.csv', sep=';', index=False)
+        core.utils.pd_csv_write(df, stem_opath + '.csv', index=False)
 
         BatchRangedGraph(inputy_stem_fpath=stem_opath,
                          output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),
@@ -220,8 +219,8 @@ class RobustnessSAABivar:
         """
         perf_ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_csv)
         opath = os.path.join(self.cmdopts['collate_root'], self.kLeaf + '-vs-perf.csv')
-        perf_df = pd.read_csv(perf_ipath, sep=';')
-        rob_df = pd.read_csv(rob_ipath, sep=';')
+        perf_df = core.utils.pd_csv_read(perf_ipath)
+        rob_df = core.utils.pd_csv_read(rob_ipath)
         scatter_df = pd.DataFrame(columns=['perf', 'robustness-saa'])
 
         # The inter-perf csv has temporal sequences at each (i,j) location, so we need to reduce
@@ -236,7 +235,7 @@ class RobustnessSAABivar:
 
         scatter_df['perf'] = perf_df.values.flatten()
         scatter_df['robustness-saa'] = rob_df.values.flatten()
-        scatter_df.to_csv(opath, sep=';', index=False)
+        core.utils.pd_csv_write(scatter_df, opath, index=False)
 
         Scatterplot2D(input_csv_fpath=opath,
                       output_fpath=os.path.join(self.cmdopts["graph_root"],
@@ -258,12 +257,12 @@ class RobustnessSAABivar:
            The path to the `.csv` file used to generate the heatmap.
         """
         ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_csv)
-        raw_df = pd.read_csv(ipath, sep=';')
+        raw_df = core.utils.pd_csv_read(ipath)
         opath_stem = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
 
         # Generate heatmap dataframe and write to file
         df = self.__gen_heatmap_df(main_config, raw_df, criteria)
-        df.to_csv(opath_stem + ".csv", sep=';', index=False)
+        core.utils.pd_csv_write(df, opath_stem + ".csv", index=False)
 
         Heatmap(input_fpath=opath_stem + '.csv',
                 output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),
@@ -331,8 +330,8 @@ class RobustnessPDBivar:
         perf_ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_csv)
         opath = os.path.join(self.cmdopts['collate_root'],
                              self.kLeaf + '-vs-perf.csv')
-        perf_df = pd.read_csv(perf_ipath, sep=';')
-        rob_df = pd.read_csv(rob_ipath, sep=';')
+        perf_df = core.utils.pd_csv_read(perf_ipath)
+        rob_df = core.utils.pd_csv_read(rob_ipath)
         scatter_df = pd.DataFrame(columns=['perf', 'robustness-size'])
 
         # The inter-perf csv has temporal sequences at each (i,j) location, so we need to reduce
@@ -347,7 +346,7 @@ class RobustnessPDBivar:
 
         scatter_df['perf'] = perf_df.values.flatten()
         scatter_df['robustness-size'] = rob_df.values.flatten()
-        scatter_df.to_csv(opath, sep=';', index=False)
+        core.utils.pd_csv_write(scatter_df, opath, index=False)
 
         Scatterplot2D(input_csv_fpath=opath,
                       output_fpath=os.path.join(self.cmdopts["graph_root"],
@@ -369,12 +368,12 @@ class RobustnessPDBivar:
            The path to the `.csv` file used to generate the heatmap.
         """
         ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_csv)
-        raw_df = pd.read_csv(ipath, sep=';')
+        raw_df = core.utils.pd_csv_read(ipath, )
         opath_stem = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
 
         # Generate heatmap dataframe and write to file
         df = self.__gen_heatmap_df(raw_df, criteria)
-        df.to_csv(opath_stem + ".csv", sep=';', index=False)
+        core.utils.pd_csv_write(df, opath_stem + ".csv", index=False)
 
         Heatmap(input_fpath=opath_stem + '.csv',
                 output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),

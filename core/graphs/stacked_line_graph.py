@@ -25,6 +25,8 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 plt.rcParams["axes.prop_cycle"] = plt.cycler("color", plt.cm.tab20.colors)
 
+import core.utils
+
 
 class StackedLineGraph:
     """
@@ -51,17 +53,17 @@ class StackedLineGraph:
         self.cols = kwargs.get('cols', None)
 
     def generate(self):
-        if not os.path.exists(self.input_csv_fpath):
+        if not core.utils.path_exists(self.input_csv_fpath):
             logging.debug("Not generating stacked line graph: %s does not exist",
                           self.input_csv_fpath)
             return
 
         # Read .csv and scaffold graph
-        df = pd.read_csv(self.input_csv_fpath, sep=';')
-        if not os.path.exists(self.input_stddev_fpath):
+        df = core.utils.pd_csv_read(self.input_csv_fpath)
+        if not core.utils.path_exists(self.input_stddev_fpath):
             df2 = None
         else:
-            df2 = pd.read_csv(self.input_stddev_fpath, sep=';')
+            df2 = core.utils.pd_csv_read(self.input_stddev_fpath)
 
         # Plot specified columns from dataframe
         if self.cols is None:

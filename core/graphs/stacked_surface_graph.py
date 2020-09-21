@@ -21,12 +21,13 @@ import glob
 import re
 import logging
 
-import pandas as pd
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 mpl.use('Agg')
+
+import core.utils
 
 
 class StackedSurfaceGraph:
@@ -56,7 +57,7 @@ class StackedSurfaceGraph:
         self.comp_type = kwargs['comp_type']
 
     def generate(self):
-        dfs = [pd.read_csv(f, sep=';') for f in glob.glob(
+        dfs = [core.utils.pd_csv_read(f) for f in glob.glob(
             self.input_stem_pattern + '*.csv') if re.search('_[0-9]+', f)]
 
         if not dfs:  # empty list

@@ -74,18 +74,18 @@ class UnivarCSVCollator:
                                                                  stddev_df_new)
 
         if all([v for v in csv_src_exists]):
-            data_df_new.to_csv(os.path.join(self.collate_root,
-                                            target['dest_stem'] + '.csv'), sep=';',
-                               index=False)
+            core.utils.pd_csv_write(data_df_new, os.path.join(self.collate_root,
+                                                              target['dest_stem'] + '.csv'),
+                                    index=False)
         elif any([v for v in csv_src_exists]):
             logging.warning("Not all experiments in %s produced '%s.csv'",
                             self.batch_output_root,
                             target['src_stem'])
 
         if all([v for v in csv_src_exists]) and not stddev_df_new.empty:
-            stddev_df_new.to_csv(os.path.join(self.collate_root,
-                                              target['dest_stem'] + '.stddev'), sep=';',
-                                 index=False)
+            core.utils.pd_csv_write(stddev_df_new, os.path.join(self.collate_root,
+                                                                target['dest_stem'] + '.stddev'),
+                                    index=False)
 
     def __collate_exp_csv_data(self, exp_dir, target, collated_df):
         exp_output_root = os.path.join(self.batch_output_root, exp_dir)
@@ -93,10 +93,10 @@ class UnivarCSVCollator:
                                  self.main_config['sierra']['avg_output_leaf'],
                                  target['src_stem'] + '.csv')
 
-        if not os.path.exists(csv_ipath):
+        if not core.utils.path_exists(csv_ipath):
             return False
 
-        data_df = pd.read_csv(csv_ipath, sep=';')
+        data_df = core.utils.pd_csv_read(csv_ipath)
 
         assert target['col'] in data_df.columns.values,\
             "FATAL: {0} not in columns of {1}".format(target['col'],
@@ -112,10 +112,10 @@ class UnivarCSVCollator:
 
         # Will not exist if the cmdline option to generate these files was not passed during
         # stage 3.
-        if not os.path.exists(stddev_ipath):
+        if not core.utils.path_exists(stddev_ipath):
             return False
 
-        stddev_df = pd.read_csv(stddev_ipath, sep=';')
+        stddev_df = core.utils.pd_csv_read(stddev_ipath)
 
         assert target['col'] in stddev_df.columns.values,\
             "FATAL: {0} not in columns of {1}".format(target['col'],
@@ -175,30 +175,30 @@ class BivarCSVCollator:
                                                                  target,
                                                                  stddev_df_new)
         if all([v for v in csv_src_exists]):
-            data_df_new.to_csv(os.path.join(self.collate_root,
-                                            target['dest_stem'] + '.csv'),
-                               sep=';',
-                               index=False)
+            core.utils.pd_csv_write(data_df_new, os.path.join(self.collate_root,
+                                                              target['dest_stem'] + '.csv'),
+
+                                    index=False)
         elif any([v for v in csv_src_exists]):
             logging.warning("Not all experiments in %s produced '%s.csv'",
                             self.batch_output_root,
                             target['src_stem'])
 
         if all([v for v in csv_src_exists]) and not stddev_df_new.empty:
-            stddev_df_new.to_csv(os.path.join(self.collate_root,
-                                              target['dest_stem'] + '.stddev'),
-                                 sep=';',
-                                 index=False)
+            core.utils.pd_csv_write(stddev_df_new, os.path.join(self.collate_root,
+                                                                target['dest_stem'] + '.stddev'),
+
+                                    index=False)
 
     def __collate_exp_csv_data(self, exp_dir: str, target, collated_df):
         exp_output_root = os.path.join(self.batch_output_root, exp_dir)
         csv_ipath = os.path.join(exp_output_root,
                                  self.main_config['sierra']['avg_output_leaf'],
                                  target['src_stem'] + '.csv')
-        if not os.path.exists(csv_ipath):
+        if not core.utils.path_exists(csv_ipath):
             return False
 
-        data_df = pd.read_csv(csv_ipath, sep=';')
+        data_df = core.utils.pd_csv_read(csv_ipath)
 
         assert target['col'] in data_df.columns.values,\
             "FATAL: {0} not in columns of {1}".format(target['col'],
@@ -215,10 +215,10 @@ class BivarCSVCollator:
 
         # Will not exist if the cmdline option to generate these files was not passed during
         # stage 3.
-        if not os.path.exists(stddev_ipath):
+        if not core.utils.path_exists(stddev_ipath):
             return False
 
-        stddev_df = pd.read_csv(stddev_ipath, sep=';')
+        stddev_df = core.utils.pd_csv_read(stddev_ipath)
 
         assert target['col'] in stddev_df.columns.values,\
             "FATAL: {0} not in columns of {1}".format(target['col'],
@@ -226,4 +226,3 @@ class BivarCSVCollator:
 
         xlabel, ylabel = exp_dir.split('+')
         collated_df.iloc[xlabel, ylabel] = stddev_df[target['col']]
-        return True

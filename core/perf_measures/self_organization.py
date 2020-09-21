@@ -86,7 +86,7 @@ class FractionalLossesMarginalUnivar:
                                                                      normalize_method=self.cmdopts['pm_normalize_method'])
 
         stem_path = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
-        df_new.to_csv(stem_path + ".csv", sep=';', index=False)
+        core.utils.pd_csv_write(df_new, stem_path + ".csv", index=False)
 
         BatchRangedGraph(inputy_stem_fpath=stem_path,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
@@ -143,7 +143,7 @@ class FractionalLossesInteractiveUnivar:
                                                                      normalize_method=self.cmdopts['pm_normalize_method'])
 
         stem_path = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
-        df_new.to_csv(stem_path + ".csv", sep=';', index=False)
+        core.utils.pd_csv_write(df_new, stem_path + ".csv", index=False)
 
         BatchRangedGraph(inputy_stem_fpath=stem_path,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
@@ -194,7 +194,7 @@ class PerformanceGainMarginalUnivar:
                                     self.inter_perf_stem + '.stddev')
 
         # Metric calculation is the same for the actual value of it and the std deviation
-        if os.path.exists(stddev_ipath):
+        if core.utils.path_exists(stddev_ipath):
             return (self.__calculate_measure(sc_ipath, batch_criteria),
                     self.__calculate_measure(stddev_ipath, batch_criteria, False))
         else:
@@ -208,9 +208,9 @@ class PerformanceGainMarginalUnivar:
         metric_df = dfs[0]
         stddev_df = dfs[1]
 
-        metric_df.to_csv(cum_stem + ".csv", sep=';', index=False)
+        core.utils.pd_csv_write(metric_df, cum_stem + ".csv", index=False)
         if stddev_df is not None:
-            stddev_df.to_csv(cum_stem + ".stddev", sep=';', index=False)
+            core.utils.pd_csv_write(stddev_df, cum_stem + ".stddev", index=False)
 
         BatchRangedGraph(inputy_stem_fpath=cum_stem,
                          output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf),
@@ -223,9 +223,9 @@ class PerformanceGainMarginalUnivar:
                             ipath: str,
                             batch_criteria: bc.UnivarBatchCriteria,
                             must_exist: bool = True):
-        assert(not (must_exist and not os.path.exists(ipath))
+        assert(not (must_exist and not core.utils.path_exists(ipath))
                ), "FATAL: {0} does not exist".format(ipath)
-        raw_df = pd.read_csv(ipath, sep=';')
+        raw_df = core.utils.pd_csv_read(ipath)
         eff_df = pd.DataFrame(columns=raw_df.columns, index=[0])
 
         idx = raw_df.index[-1]
@@ -285,7 +285,7 @@ class PerformanceGainInteractiveUnivar:
                                     self.inter_perf_stem + '.stddev')
 
         # Metric calculation is the same for the actual value of it and the std deviation
-        if os.path.exists(stddev_ipath):
+        if core.utils.path_exists(stddev_ipath):
             return (self.__calculate_measure(sc_ipath, batch_criteria),
                     self.__calculate_measure(stddev_ipath, batch_criteria, False))
         else:
@@ -299,9 +299,9 @@ class PerformanceGainInteractiveUnivar:
         metric_df = dfs[0]
         stddev_df = dfs[1]
 
-        metric_df.to_csv(cum_stem + ".csv", sep=';', index=False)
+        core.utils.pd_csv_write(metric_df, cum_stem + ".csv", index=False)
         if stddev_df is not None:
-            stddev_df.to_csv(cum_stem + ".stddev", sep=';', index=False)
+            core.utils.pd_csv_write(stddev_df, cum_stem + ".stddev", index=False)
 
         BatchRangedGraph(inputy_stem_fpath=cum_stem,
                          output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf),
@@ -314,9 +314,9 @@ class PerformanceGainInteractiveUnivar:
                             ipath: str,
                             batch_criteria: bc.UnivarBatchCriteria,
                             must_exist: bool = True):
-        assert(not (must_exist and not os.path.exists(ipath))
+        assert(not (must_exist and not core.utils.path_exists(ipath))
                ), "FATAL: {0} does not exist".format(ipath)
-        raw_df = pd.read_csv(ipath, sep=';')
+        raw_df = core.utils.pd_csv_read(ipath)
         eff_df = pd.DataFrame(columns=raw_df.columns, index=[0])
 
         idx = raw_df.index[-1]
@@ -412,7 +412,7 @@ class FractionalLossesMarginalBivar:
         so_df = self.__calc_measure(fl, batch_criteria)
 
         stem_path = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
-        so_df.to_csv(stem_path + ".csv", sep=';', index=False)
+        core.utils.pd_csv_write(so_df, stem_path + ".csv", index=False)
 
         Heatmap(input_fpath=stem_path + '.csv',
                 output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),
@@ -492,7 +492,7 @@ class FractionalLossesInteractiveBivar:
         so_df = self.__calc_measure(fl, batch_criteria)
 
         stem_path = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
-        so_df.to_csv(stem_path + ".csv", sep=';', index=False)
+        core.utils.pd_csv_write(so_df, stem_path + ".csv", index=False)
 
         Heatmap(input_fpath=stem_path + '.csv',
                 output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),
@@ -570,7 +570,7 @@ class PerformanceGainMarginalBivar:
                                     self.inter_perf_stem + '.stddev')
 
         # Metric calculation is the same for the actual value of it and the std deviation,
-        if os.path.exists(stddev_ipath):
+        if core.utils.path_exists(stddev_ipath):
             return (self.__calculate_measure(sc_ipath, batch_criteria),
                     self.__calculate_measure(stddev_ipath, batch_criteria, False))
         else:
@@ -582,9 +582,9 @@ class PerformanceGainMarginalBivar:
         cum_stem = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
         metric_df, stddev_df = dfs
 
-        metric_df.to_csv(cum_stem + ".csv", sep=';', index=False)
+        core.utils.pd_csv_write(metric_df, cum_stem + ".csv", index=False)
         if stddev_df is not None:
-            stddev_df.to_csv(cum_stem + ".stddev", sep=';', index=False)
+            core.utils.pd_csv_write(stddev_df, cum_stem + ".stddev", index=False)
 
         Heatmap(input_fpath=cum_stem + '.csv',
                 output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),
@@ -598,9 +598,9 @@ class PerformanceGainMarginalBivar:
                             ipath: str,
                             batch_criteria: bc.IConcreteBatchCriteria,
                             must_exist: bool = True):
-        assert(not (must_exist and not os.path.exists(ipath))
+        assert(not (must_exist and not core.utils.path_exists(ipath))
                ), "FATAL: {0} does not exist".format(ipath)
-        raw_df = pd.read_csv(ipath, sep=';')
+        raw_df = core.utils.pd_csv_read(ipath)
         eff_df = pd.DataFrame(columns=raw_df.columns,
                               index=raw_df.index)
 
@@ -682,7 +682,7 @@ class PerformanceGainInteractiveBivar:
                                     self.inter_perf_stem + '.stddev')
 
         # Metric calculation is the same for the actual value of it and the std deviation,
-        if os.path.exists(stddev_ipath):
+        if core.utils.path_exists(stddev_ipath):
             return (self.__calculate_measure(sc_ipath, batch_criteria),
                     self.__calculate_measure(stddev_ipath, batch_criteria, False))
         else:
@@ -694,9 +694,9 @@ class PerformanceGainInteractiveBivar:
         cum_stem = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
         metric_df, stddev_df = dfs
 
-        metric_df.to_csv(cum_stem + ".csv", sep=';', index=False)
+        core.utils.pd_csv_write(metric_df, cum_stem + ".csv", index=False)
         if stddev_df is not None:
-            stddev_df.to_csv(cum_stem + ".stddev", sep=';', index=False)
+            core.utils.pd_csv_write(stddev_df, cum_stem + ".stddev", index=False)
 
         Heatmap(input_fpath=cum_stem + '.csv',
                 output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),
@@ -709,10 +709,10 @@ class PerformanceGainInteractiveBivar:
     def __calculate_measure(self,
                             ipath: str,
                             batch_criteria: bc.BivarBatchCriteria,
-                            pp                            must_exist: bool = True):
-        assert(not (must_exist and not os.path.exists(ipath))
+                            must_exist: bool = True):
+        assert(not (must_exist and not core.utils.path_exists(ipath))
                ), "FATAL: {0} does not exist".format(ipath)
-        raw_df = pd.read_csv(ipath, sep=';')
+        raw_df = core.utils.pd_csv_read(ipath)
         eff_df = pd.DataFrame(columns=raw_df.columns,
                               index=raw_df.index)
 

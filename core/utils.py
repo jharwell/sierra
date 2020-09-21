@@ -22,8 +22,10 @@ import pickle
 import os
 import logging
 import typing as tp
+import time
 
 import numpy as np
+import pandas as pd
 
 
 class ArenaExtent():
@@ -129,6 +131,41 @@ def dir_create_checked(path: str, exist_ok: bool):
     except FileExistsError:
         logging.fatal("%s already exists! Not overwriting", path)
         raise
+
+
+def pd_csv_read(path: str, **kwargs):
+    count = 0
+    while count < 10:
+        try:
+            return pd.read_csv(path, sep=';', **kwargs)
+        except pd.errors.ParserError:
+            logging.warning("(Temporarily?) Failed to read %s", path)
+        count += 1
+    raise ValueError("Failed to read %s after 10 tries" % path)
+
+
+def pd_csv_write(df: pd.DataFrame, path: str, **kwargs):
+    count = 0
+    while count < 10:
+        try:
+            df.to_csv(path, sep=';', **kwargs)
+            return
+        except pd.errors.ParserError:
+            logging.warning("(Temporarily?) Failed to write %s", path)
+        count += 1
+    raise ValueError("Failed to write %s after 10 tries" % path)
+
+
+def path_exists(path: str):
+    res = []
+    for i in range(0, 10):
+        if os.path.exists(path):
+            res.append(True)
+        else:
+            res.append(False)
+            time.sleep(0.100)
+
+    return max(set(res), key=res.count)
 
 
 def get_primary_axis(criteria,

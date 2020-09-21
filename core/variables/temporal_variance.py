@@ -135,37 +135,29 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
             logging.fatal(msg)
             raise
 
-        # All variances need to have baseline/ideal conditions for comparison, which is a small
-        # constant penalty
-        variances = [(attr["xml_parent_path"],
-                      "Constant",
-                      hzs[0],
-                      amps[0],
-                      0.0,
-                      0.0)]
-
         if any(v == attr["waveform_type"] for v in ["Sine", "Square", "Sawtooth"]):
-            variances.extend([(attr["xml_parent_path"],
-                               attr["waveform_type"],
-                               hz,
-                               amp,
-                               amp,
-                               0) for hz in hzs[1:] for amp in amps[1:]])
+            variances = [(attr["xml_parent_path"],
+                          attr["waveform_type"],
+                          hz,
+                          amp,
+                          amp,
+                          0) for hz in hzs for amp in amps]
         elif attr["waveform_type"] == "StepD":
-            variances.extend([(attr["xml_parent_path"],
-                               "Square",
-                               1 / (2 * attr["waveform_param"]),
-                               amp,
-                               0,
-                               0) for amp in amps[1:]])
+            variances = [(attr["xml_parent_path"],
+                          "Square",
+                          1 / (2 * attr["waveform_param"]),
+                          amp,
+                          0,
+                          0) for amp in amps]
 
         if attr["waveform_type"] == "StepU":
-            variances.extend([(attr["xml_parent_path"],
-                               "Square",
-                               1 / (2 * attr["waveform_param"]),
-                               amp,
-                               amp,
-                               math.pi) for amp in amps[1:]])
+            variances = [(attr["xml_parent_path"],
+                          "Square",
+                          1 / (2 * attr["waveform_param"]),
+                          amp,
+                          amp,
+                          math.pi) for amp in amps]
+        print(variances)
         return variances
 
     def __init__(self) -> None:

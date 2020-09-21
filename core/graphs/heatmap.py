@@ -22,10 +22,11 @@ import logging
 import glob
 import re
 
-import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import mpl_toolkits.axes_grid1
+
+import core.utils
 
 
 class Heatmap:
@@ -55,12 +56,12 @@ class Heatmap:
             self.ytick_labels = kwargs.get('ytick_labels', None)
 
     def generate(self):
-        if not os.path.exists(self.input_csv_fpath):
+        if not core.utils.path_exists(self.input_csv_fpath):
             logging.debug("Not generating heatmap: %s does not exist", self.input_csv_fpath)
             return
 
         # Read .csv and create raw heatmap from default configuration
-        df = pd.read_csv(self.input_csv_fpath, sep=';')
+        df = core.utils.pd_csv_read(self.input_csv_fpath)
         fig, ax = plt.subplots()
 
         # Plot heatmap
@@ -148,7 +149,7 @@ class DualHeatmap:
         self.ytick_labels = kwargs.get('ytick_labels', None)
 
     def generate(self):
-        dfs = [pd.read_csv(f, sep=';') for f in glob.glob(
+        dfs = [core.utils.pd_csv_read(f) for f in glob.glob(
             self.input_stem_pattern + '*.csv') if re.search('_[0-9]+', f)]
 
         if not dfs or len(dfs) != DualHeatmap.kCardinality:

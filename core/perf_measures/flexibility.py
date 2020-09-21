@@ -32,6 +32,7 @@ from core.perf_measures import vcs
 import core.variables.batch_criteria as bc
 import core.perf_measures.common as common
 import core.variables.temporal_variance as tv
+import core.utils
 
 ################################################################################
 # Univariate Classes
@@ -69,7 +70,7 @@ class ReactivityUnivar:
         stem_opath = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
 
         # Write .csv to file
-        df.to_csv(stem_opath + '.csv', sep=';', index=False)
+        core.utils.pd_csv_write(df, stem_opath + '.csv', index=False)
 
         BatchRangedGraph(inputy_stem_fpath=stem_opath,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
@@ -113,7 +114,7 @@ class AdaptabilityUnivar:
         stem_opath = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
 
         # Write .csv to file
-        df.to_csv(stem_opath + '.csv', sep=';', index=False)
+        core.utils.pd_csv_write(df, stem_opath + '.csv', index=False)
 
         BatchRangedGraph(inputy_stem_fpath=stem_opath,
                          output_fpath=os.path.join(self.cmdopts["graph_root"],
@@ -195,12 +196,12 @@ class ReactivityBivar:
            The path to the `.csv` file used to generate the heatmap.
         """
         ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_csv)
-        raw_df = pd.read_csv(ipath, sep=';')
+        raw_df = core.utils.pd_csv_read(ipath)
         opath_stem = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
 
         # Generate heatmap dataframe and write to file
         df = self.__gen_heatmap_df(main_config, raw_df, criteria)
-        df.to_csv(opath_stem + ".csv", sep=';', index=False)
+        core.utils.pd_csv_write(df, opath_stem + ".csv", index=False)
 
         Heatmap(input_fpath=opath_stem + '.csv',
                 output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),
@@ -270,12 +271,12 @@ class AdaptabilityBivar:
            The path to the `.csv` file used to generate the heatmap.
         """
         ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_csv)
-        raw_df = pd.read_csv(ipath, sep=';')
+        raw_df = core.utils.pd_csv_read(ipath)
         opath_stem = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
 
         # Generate heatmap dataframe and write to file
         df = self.__gen_heatmap_df(main_config, raw_df, criteria)
-        df.to_csv(opath_stem + ".csv", sep=';', index=False)
+        core.utils.pd_csv_write(df, opath_stem + ".csv", index=False)
 
         Heatmap(input_fpath=opath_stem + '.csv',
                 output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),

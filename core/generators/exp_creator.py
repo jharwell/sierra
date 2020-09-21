@@ -165,7 +165,7 @@ class ExpCreator:
                 core.utils.dir_create_checked(frames_fpath, exist_ok=True)
 
         # Clear out commands file if it exists
-        if os.path.exists(self.commands_fpath):
+        if core.utils.path_exists(self.commands_fpath):
             os.remove(self.commands_fpath)
 
         # Write the GNU Parallel commands input file

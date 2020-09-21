@@ -28,6 +28,7 @@ import yaml
 
 from core.pipeline.stage3.exp_csv_averager import BatchedExpCSVAverager
 from core.pipeline.stage3.exp_imagizer import BatchedExpImagizer
+import core.utils
 
 
 class PipelineStage3:
@@ -55,7 +56,7 @@ class PipelineStage3:
             project_intra_HM = os.path.join(cmdopts['project_config_root'],
                                             'intra-graphs-hm.yaml')
 
-            if os.path.exists(project_intra_HM):
+            if core.utils.path_exists(project_intra_HM):
                 logging.info("Stage3: Loading additional intra-experiment heatmap config for project '%s'",
                              cmdopts['project'])
                 project_dict = yaml.load(open(project_intra_HM), yaml.FullLoader)

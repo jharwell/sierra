@@ -67,14 +67,14 @@ class PerfLostInteractiveSwarmUnivar:
     def calculate(self, batch_criteria: bc.UnivarBatchCriteria):
         # Get .csv with interference info
         interference_path = os.path.join(self.batch_output_root, self.interference_stem + '.csv')
-        assert(os.path.exists(interference_path)
+        assert(core.utils.path_exists(interference_path)
                ), "FATAL: {0} does not exist".format(interference_path)
-        interference_df = pd.read_csv(interference_path, sep=';')
+        interference_df = core.utils.pd_csv_read(interference_path)
 
         # Get .csv with performance info
         perf_path = os.path.join(self.batch_output_root, self.inter_perf_stem + '.csv')
-        assert(os.path.exists(perf_path)), "FATAL: {0} does not exist".format(perf_path)
-        perf_df = pd.read_csv(perf_path, sep=';')
+        assert(core.utils.path_exists(perf_path)), "FATAL: {0} does not exist".format(perf_path)
+        perf_df = core.utils.pd_csv_read(perf_path)
 
         exp0_dirname = batch_criteria.gen_exp_dirnames(self.cmdopts)[0]
 
@@ -136,14 +136,14 @@ class PerfLostInteractiveSwarmBivar:
     def calculate(self, batch_criteria: bc.BivarBatchCriteria):
         # Get .csv with interference info
         interference_path = os.path.join(self.batch_output_root, self.interference_stem + '.csv')
-        assert(os.path.exists(interference_path)
+        assert(core.utils.path_exists(interference_path)
                ), "FATAL: {0} does not exist".format(interference_path)
-        interference_df = pd.read_csv(interference_path, sep=';')
+        interference_df = core.utils.pd_csv_read(interference_path)
 
         # Get .csv with performance info
         perf_path = os.path.join(self.batch_output_root, self.inter_perf_stem + '.csv')
-        assert(os.path.exists(perf_path)), "FATAL: {0} does not exist".format(perf_path)
-        perf_df = pd.read_csv(perf_path, sep=';')
+        assert(core.utils.path_exists(perf_path)), "FATAL: {0} does not exist".format(perf_path)
+        perf_df = core.utils.pd_csv_read(perf_path)
 
         exp0_dirname = batch_criteria.gen_exp_dirnames(self.cmdopts)[0]
 
@@ -283,14 +283,14 @@ class FractionalLossesUnivar(FractionalLosses):
 
         # Get .csv with interference info
         interference_path = os.path.join(self.batch_output_root, self.interference_stem + '.csv')
-        assert(os.path.exists(interference_path)
+        assert(core.utils.path_exists(interference_path)
                ), "FATAL: {0} does not exist".format(interference_path)
-        interference_df = pd.read_csv(interference_path, sep=';')
+        interference_df = core.utils.pd_csv_read(interference_path)
 
         # Get .csv with performance info
         perf_path = os.path.join(self.batch_output_root, self.inter_perf_stem + '.csv')
-        assert(os.path.exists(perf_path)), "FATAL: {0} does not exist".format(perf_path)
-        perf_df = pd.read_csv(perf_path, sep=';')
+        assert(core.utils.path_exists(perf_path)), "FATAL: {0} does not exist".format(perf_path)
+        perf_df = core.utils.pd_csv_read(perf_path)
 
         exp0_dirname = batch_criteria.gen_exp_dirnames(self.cmdopts)[0]
         scale_cols = [c for c in interference_df.columns if c not in [exp0_dirname]]
@@ -340,8 +340,8 @@ class FractionalLossesBivar(FractionalLosses):
 
         # Get .csv with performance info
         perf_path = os.path.join(self.batch_output_root, self.inter_perf_stem + '.csv')
-        assert(os.path.exists(perf_path)), "FATAL: {0} does not exist".format(perf_path)
-        perf_df = pd.read_csv(perf_path, sep=';')
+        assert(core.utils.path_exists(perf_path)), "FATAL: {0} does not exist".format(perf_path)
+        perf_df = core.utils.pd_csv_read(perf_path)
 
         # Calculate fractional losses for all swarm sizes
         fl_df = FractionalLossesBivar.__calc_fl(perf_df, plost_n)
@@ -404,16 +404,16 @@ class WeightedPMUnivar():
         csv_ostem = os.path.join(self.cmdopts["collate_root"], self.output_leaf)
         png_ostem = os.path.join(self.cmdopts["graph_root"], self.output_leaf)
 
-        if not os.path.exists(csv1_ipath) or not os.path.exists(csv2_ipath):
+        if not core.utils.path_exists(csv1_ipath) or not core.utils.path_exists(csv2_ipath):
             logging.debug("Not generating univariate weighted performance measure: %s or %s does not exist",
                           csv1_ipath, csv2_ipath)
             return
 
-        ax1_df = pd.read_csv(csv1_istem + '.csv', sep=';')
-        ax2_df = pd.read_csv(csv2_istem + '.csv', sep=';')
+        ax1_df = core.utils.pd_csv_read(csv1_istem + '.csv')
+        ax2_df = core.utils.pd_csv_read(csv2_istem + '.csv')
         out_df = ax1_df * self.ax1_alpha + ax2_df * self.ax2_alpha
 
-        out_df.to_csv(csv_ostem + '.csv', sep=';', index=False)
+        core.utils.pd_csv_write(out_df, csv_ostem + '.csv', index=False)
 
         xticks = batch_criteria.graph_xticks(self.cmdopts)
         len_diff = len(xticks) - len(out_df.columns)
@@ -456,15 +456,15 @@ class WeightedPMBivar():
         csv_ostem = os.path.join(self.cmdopts["collate_root"], self.output_leaf)
         png_ostem = os.path.join(self.cmdopts["graph_root"], self.output_leaf)
 
-        if not os.path.exists(csv1_ipath) or not os.path.exists(csv2_ipath):
+        if not core.utils.path_exists(csv1_ipath) or not core.utils.path_exists(csv2_ipath):
             logging.debug("Not generating bivariate weighted performance measure: %s or %s does not exist",
                           csv1_ipath, csv2_ipath)
             return
 
-        ax1_df = pd.read_csv(csv1_istem + '.csv', sep=';')
-        ax2_df = pd.read_csv(csv2_istem + '.csv', sep=';')
+        ax1_df = core.utils.pd_csv_read(csv1_istem + '.csv')
+        ax2_df = core.utils.pd_csv_read(csv2_istem + '.csv')
         out_df = ax1_df * self.ax1_alpha + ax2_df * self.ax2_alpha
-        out_df.to_csv(csv_ostem + '.csv', sep=';', index=False)
+        core.utils.pd_csv_write(out_df, csv_ostem + '.csv', index=False)
 
         xlabels = batch_criteria.graph_xticklabels(self.cmdopts)
         ylabels = batch_criteria.graph_yticklabels(self.cmdopts)
