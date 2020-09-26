@@ -47,6 +47,7 @@ class PopulationSize(bc.UnivarBatchCriteria):
                  size_list: tp.List[int]) -> None:
         bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
         self.size_list = size_list
+        self.attr_changes = []  # type: tp.List
 
     def gen_attr_changelist(self) -> list:
         """
@@ -58,7 +59,9 @@ class PopulationSize(bc.UnivarBatchCriteria):
         robots for the simulation, in order to provide buffer so that the queueing theoretic
         predictions of long-run population size are accurate.
         """
-        return PopulationSize.gen_attr_changelist_from_list(self.size_list)
+        if not self.attr_changes:
+            self.attr_changes = PopulationSize.gen_attr_changelist_from_list(self.size_list)
+        return self.attr_changes
 
     def gen_exp_dirnames(self, cmdopts: dict) -> list:
         changes = self.gen_attr_changelist()

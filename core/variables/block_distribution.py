@@ -15,6 +15,7 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
 import math
+import typing as tp
 
 from core.variables.base_variable import IBaseVariable
 from core.utils import ArenaExtent
@@ -31,13 +32,18 @@ class BaseDistribution(IBaseVariable):
 
     def __init__(self, dist_type: str) -> None:
         self.dist_type = dist_type
+        self.attr_changes = []  # type: tp.List
 
     def gen_attr_changelist(self):
         """
         Generate a list of sets of changes necessary to make to the input file to correctly set up
         the simulation with the specified block distribution
         """
-        return [set([(".//arena_map/blocks/distribution", "dist_type", "{0}".format(self.dist_type))])]
+        if not self.attr_changes:
+            self.attr_changes = [set([(".//arena_map/blocks/distribution",
+                                       "dist_type",
+                                       "{0}".format(self.dist_type))])]
+        return self.attr_changes
 
     def gen_tag_rmlist(self):
         return []

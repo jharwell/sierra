@@ -53,24 +53,26 @@ class Oracle(bc.UnivarBatchCriteria):
 
         self.tuples = tuples
         self.population = population
+        self.attr_changes = []  # type: tp.List
 
     def gen_attr_changelist(self) -> list:
-        # Swarm size is optional. It can be (1) controlled via this variable, (2) controlled by
-        # another variable in a bivariate batch criteria, (3) not controlled at all. For (2), (3),
-        # the swarm size can be None.
-        all_changes = [set([(".//oracle_manager/{0}".format(str(t[0])),
-                             "{0}".format(str(feat[0])),
-                             "{0}".format(str(feat[1]))) for feat in t[1]]) for t in self.tuples]
+        if not self.attr_changes:
+            # Swarm size is optional. It can be (1) controlled via this variable, (2) controlled by
+            # another variable in a bivariate batch criteria, (3) not controlled at all. For (2),
+            # (3), the swarm size can be None.
+            self.attr_changes = [set([(".//oracle_manager/{0}".format(str(t[0])),
+                                       "{0}".format(str(feat[0])),
+                                       "{0}".format(str(feat[1]))) for feat in t[1]]) for t in self.tuples]
 
-        if self.population is not None:
-            size_chgs = PopulationSize(self.cli_arg,
-                                       self.main_config,
-                                       self.batch_generation_root,
-                                       [self.population]).gen_attr_changelist()[0]
-            for exp_chgs in all_changes:
-                exp_chgs |= size_chgs
+            if self.population is not None:
+                size_chgs = PopulationSize(self.cli_arg,
+                                           self.main_config,
+                                           self.batch_generation_root,
+                                           [self.population]).gen_attr_changelist()[0]
+                for exp_chgs in self.attr_changes:
+                    exp_chgs |= size_chgs
 
-        return all_changes
+        return self.attr_changes
 
     def gen_exp_dirnames(self, cmdopts: dict) -> tp.List[str]:
         changes = self.gen_attr_changelist()

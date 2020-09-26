@@ -58,27 +58,28 @@ class SAANoise(bc.UnivarBatchCriteria):
         self.variances = variances
         self.population = population
         self.noise_type = noise_type
+        self.attr_changes = []  # type: tp.List
 
     def gen_attr_changelist(self) -> list:
         """
         Generate a list of sets of changes necessary to make to the input file to correctly set up
         the simulation with the specified noise ranges.
         """
-        # Swarm size is optional. It can be (1) controlled via this variable, (2) controlled by
-        # another variable in a bivariate batch criteria, (3) not controlled at all. For (2), (3),
-        # the swarm size can be None.
-        if self.population is not None:
-            size_chgs = PopulationSize(self.cli_arg,
-                                       self.main_config,
-                                       self.batch_generation_root,
-                                       [self.population]).gen_attr_changelist()[0]
-            all_changes = [{(v2[0], v2[1], v2[2]) for v2 in v1} for v1 in self.variances]
-            for exp_chgs in all_changes:
-                exp_chgs |= size_chgs
+        if not self.attr_changes:
+            self.attr_changes = [{(v2[0], v2[1], v2[2]) for v2 in v1} for v1 in self.variances]
 
-            return all_changes
-        else:
-            return [{v2 for v2 in v1} for v1 in self.variances]
+            # Swarm size is optional. It can be (1) controlled via this variable, (2) controlled by
+            # another variable in a bivariate batch criteria, (3) not controlled at all. For (2),
+            # (3), the swarm size can be None.
+            if self.population is not None:
+                size_chgs = PopulationSize(self.cli_arg,
+                                           self.main_config,
+                                           self.batch_generation_root,
+                                           [self.population]).gen_attr_changelist()[0]
+                for exp_chgs in self.attr_changes:
+                    exp_chgs |= size_chgs
+
+        return self.attr_changes
 
     def graph_xticks(self,
                      cmdopts: dict,
@@ -240,7 +241,7 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
         }
 
         if any(v == attr['noise_type'] for v in ['sensors', 'actuators']):
-            configured_sources = {attr['noise_type']                                  : main_config['perf']['robustness'][attr['noise_type']]}
+            configured_sources = {attr['noise_type']: main_config['perf']['robustness'][attr['noise_type']]}
         else:
             configured_sources = {
                 'actuators': main_config['perf']['robustness'].get('actuators', {}),

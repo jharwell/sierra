@@ -46,7 +46,7 @@ class ConstantDensity(bc.UnivarBatchCriteria):
         self.target_density = target_density
         self.dimensions = dimensions
         self.dist_type = dist_type
-        self.changes = RectangularArena(dimensions).gen_attr_changelist()
+        self.attr_changes = RectangularArena(dimensions).gen_attr_changelist()
 
     def exp_scenario_name(self, exp_num: int) -> str:
         """

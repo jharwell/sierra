@@ -49,29 +49,32 @@ class TAPolicySet(bc.UnivarBatchCriteria):
         bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
         self.policies = policies
         self.population = population
+        self.attr_changes = []  # type: tp.List
 
     def gen_attr_changelist(self) -> list:
-        # Swarm size is optional. It can be (1) controlled via this variable, (2) controlled by
-        # another variable in a bivariate batch criteria, (3) not controlled at all. For (2), (3),
-        # the swarm size can be None.
-        if self.population is not None:
-            size_chgs = PopulationSize(self.cli_arg,
-                                       self.main_config,
-                                       self.batch_generation_root,
-                                       [self.population]).gen_attr_changelist()[0]
-        else:
-            size_chgs = []
-        changes = []
+        if not self.attr_changes:
+            # Swarm size is optional. It can be (1) controlled via this variable, (2) controlled by
+            # another variable in a bivariate batch criteria, (3) not controlled at all. For (2),
+            # (3), the swarm size can be None.
+            if self.population is not None:
+                size_chgs = PopulationSize(self.cli_arg,
+                                           self.main_config,
+                                           self.batch_generation_root,
+                                           [self.population]).gen_attr_changelist()[0]
+            else:
+                size_chgs = []
 
-        for p in self.policies:
-            c = []
-            for chg in size_chgs:
-                c.extend(chg)
+            self.attr_changes = []
 
-            c.extend([(".//task_alloc", "policy", "{0}".format(p))])
+            for p in self.policies:
+                c = []
+                for chg in size_chgs:
+                    c.extend(chg)
 
-            changes.append(set(c))
-        return changes
+                c.extend([(".//task_alloc", "policy", "{0}".format(p))])
+                self.attr_changes.append(set(c))
+
+        return self.attr_changes
 
     def gen_exp_dirnames(self, cmdopts: dict) -> tp.List[str]:
         changes = self.gen_attr_changelist()
