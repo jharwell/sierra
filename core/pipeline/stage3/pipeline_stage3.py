@@ -29,6 +29,7 @@ import yaml
 from core.pipeline.stage3.exp_csv_averager import BatchedExpCSVAverager
 from core.pipeline.stage3.exp_imagizer import BatchedExpImagizer
 import core.utils
+import core.variables.batch_criteria as bc
 
 
 class PipelineStage3:
@@ -45,8 +46,8 @@ class PipelineStage3:
     This stage is idempotent.
     """
 
-    def run(self, main_config: dict, cmdopts: dict):
-        self.__run_averaging(main_config, cmdopts)
+    def run(self, main_config: dict, cmdopts: dict, criteria: bc.IConcreteBatchCriteria):
+        self.__run_averaging(main_config, cmdopts, criteria)
 
         if cmdopts['project_imagizing']:
             intra_HM_config = yaml.load(open(os.path.join(cmdopts['core_config_root'],
@@ -69,19 +70,11 @@ class PipelineStage3:
             self.__run_imagizing(main_config, intra_HM_config, cmdopts)
 
     # Private functions
-    def __run_averaging(self, main_config, cmdopts):
-        template_input_leaf, _ = os.path.splitext(
-            os.path.basename(cmdopts['template_input_file']))
-        avg_params = {
-            'template_input_leaf': template_input_leaf,
-            'no_verify_results': cmdopts['no_verify_results'],
-            'gen_stddev': cmdopts['gen_stddev'],
-            'project_imagizing': cmdopts['project_imagizing']
-        }
+    def __run_averaging(self, main_config, cmdopts, criteria):
         logging.info("Stage3: Averaging batched experiment outputs in %s...",
                      cmdopts['output_root'])
         start = time.time()
-        BatchedExpCSVAverager()(main_config, avg_params, cmdopts['output_root'])
+        BatchedExpCSVAverager(main_config, cmdopts, cmdopts['output_root'])(criteria)
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         logging.info("Stage3: Averaging complete in %s", str(sec))

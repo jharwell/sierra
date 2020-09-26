@@ -48,7 +48,7 @@ class BatchedExpRunner:
         self.criteria = criteria
 
         self.batch_exp_root = os.path.abspath(self.cmdopts['generation_root'])
-        self.exec_exp_range = self.cmdopts['exec_exp_range']
+        self.exec_exp_range = self.cmdopts['exp_range']
 
     def __call__(self):
         """
@@ -78,17 +78,8 @@ class BatchedExpRunner:
 
         exp_all = [os.path.join(self.batch_exp_root, d)
                    for d in self.criteria.gen_exp_dirnames(self.cmdopts)]
-        exp_to_run = []
 
-        if self.exec_exp_range is not None:
-            min_exp = int(self.exec_exp_range.split(':')[0])
-            max_exp = int(self.exec_exp_range.split(':')[1])
-            assert min_exp <= max_exp, "FATAL: Min batch exp >= max batch exp({0} vs. {1})".format(
-                min_exp, max_exp)
-
-            exp_to_run = exp_all[min_exp: max_exp + 1]
-        else:
-            exp_to_run = exp_all
+        exp_to_run = core.utils.exp_range_calc(self.cmdopts, self.criteria)
 
         # Verify environment is OK before running anything
         core.hpc.EnvChecker()

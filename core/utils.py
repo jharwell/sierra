@@ -173,13 +173,29 @@ def get_primary_axis(criteria,
                      cmdopts: dict):
     if cmdopts['plot_primary_axis'] == '0':
         return 0
-    elif cmdopts['plot_primary_axis'] == '1':
+    if cmdopts['plot_primary_axis'] == '1':
         return 1
 
     if any([isinstance(criteria.criteria1, elt) for elt in primary_axis_bc]):
         return 0
-    else:
-        return 1
+
+    return 1
+
+
+def exp_range_calc(cmdopts: dict, root_dir: str, criteria):
+    exp_all = [os.path.join(root_dir, d)
+               for d in criteria.gen_exp_dirnames(cmdopts)]
+
+    exp_range = cmdopts['exp_range']
+    if cmdopts['exp_range'] is not None:
+        min_exp = int(exp_range.split(':')[0])
+        max_exp = int(exp_range.split(':')[1])
+        assert min_exp <= max_exp, "FATAL: Min batch exp >= max batch exp({0} vs. {1})".format(
+            min_exp, max_exp)
+
+        return exp_all[min_exp: max_exp + 1]
+
+    return exp_all
 
 
 __api__ = [

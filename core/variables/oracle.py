@@ -154,8 +154,8 @@ def factory(cli_arg: str,
                                ))
 
             return tuples
-        else:
-            return None
+
+        return None
 
     def __init__(self) -> None:
         Oracle.__init__(self,

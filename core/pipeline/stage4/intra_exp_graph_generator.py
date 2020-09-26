@@ -55,14 +55,16 @@ class BatchedIntraExpGraphGenerator:
         batch_graph_root = self.cmdopts["graph_root"]
         batch_generation_root = self.cmdopts['generation_root']
 
-        for item in os.listdir(batch_output_root):
+        exp_to_gen = core.utils.exp_range_calc(self.cmdopts, batch_output_root, batch_criteria)
+
+        for exp in exp_to_gen:
 
             # Roots need to be modified for each experiment for correct behavior
             cmdopts = copy.deepcopy(self.cmdopts)
-            cmdopts["generation_root"] = os.path.join(batch_generation_root, item)
-            cmdopts["output_root"] = os.path.join(batch_output_root, item)
-            cmdopts["graph_root"] = os.path.join(batch_graph_root, item)
-            if os.path.isdir(cmdopts["output_root"]) and main_config['sierra']['collate_csv_leaf'] != item:
+            cmdopts["generation_root"] = os.path.join(batch_generation_root, exp)
+            cmdopts["output_root"] = os.path.join(batch_output_root, exp)
+            cmdopts["graph_root"] = os.path.join(batch_graph_root, exp)
+            if os.path.isdir(cmdopts["output_root"]) and main_config['sierra']['collate_csv_leaf'] != exp:
                 IntraExpGraphGenerator(main_config,
                                        controller_config,
                                        LN_config,

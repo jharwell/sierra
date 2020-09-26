@@ -30,36 +30,49 @@ import pandas as pd
 
 
 import core.utils
+import core.variables.batch_criteria as bc
 
 
 class BatchedExpCSVAverager:
     """
-    Averages the .csv output files for each experiment in the specified batch directory in sequence.
+    Averages the .csv output files for each experiment in the specified batch directory.
+
+    Attributes:
+        main_config: Parsed dictionary of main YAML configuration.
+        cmdopts: Dictionary parsed cmdline parameters.
+        batch_exp_root: Directory for averaged .csv output (relative to current dir or
+                           absolute).
     """
 
-    def __call__(self, main_config: dict, avg_opts: tp.Dict[str, str], batch_output_root: str):
-        """
-        Arguments:
-            main_config: Parsed dictionary of main YAML configuration.
-            avg_opts: Dictionary of parameters for batch averaging.
-            batch_output_root: Directory for averaged .csv output (relative to current dir or
-                               absolute).
-        """
+    def __init__(self, main_config: dict, cmdopts: dict, batch_output_root: str):
+        self.main_config = main_config
+        self.cmdopts = cmdopts
+        self.batch_output_root = batch_output_root
 
-        # Ignore the folder for .csv files collated across experiments within a batch
-        experiments = [item for item in os.listdir(batch_output_root) if item not in [
-            main_config['sierra']['collate_csv_leaf']]]
+    def __call__(self, criteria: bc.IConcreteBatchCriteria):
+
+        exp_to_avg = core.utils.exp_range_calc(self.cmdopts, self.batch_output_root, criteria)
+
+        template_input_leaf, _ = os.path.splitext(
+            os.path.basename(self.cmdopts['template_input_file']))
+
+        avg_opts = {
+            'template_input_leaf': template_input_leaf,
+            'no_verify_results': self.cmdopts['no_verify_results'],
+            'gen_stddev': self.cmdopts['gen_stddev'],
+            'project_imagizing': self.cmdopts['project_imagizing'],
+        }
 
         q = mp.JoinableQueue()  # type: mp.JoinableQueue
 
-        for exp in experiments:
-            path = os.path.join(batch_output_root, exp)
+        for exp in exp_to_avg:
+            path = os.path.join(self.batch_output_root, exp)
             if os.path.isdir(path):
                 q.put(path)
 
         for i in range(0, mp.cpu_count()):
             p = mp.Process(target=BatchedExpCSVAverager.__thread_worker,
-                           args=(q, main_config, avg_opts))
+                           args=(q, self.main_config, avg_opts))
             p.start()
 
         q.join()

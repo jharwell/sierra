@@ -16,12 +16,12 @@
 #
 import re
 import typing as tp
-from core.variables import batch_criteria as bc
+from core.variables.batch_criteria import UnivarBatchCriteria
 from core.variables.arena_shape import RectangularArena
 from core.utils import ArenaExtent
 
 
-class ConstantDensity(bc.UnivarBatchCriteria):
+class ConstantDensity(UnivarBatchCriteria):
     """
     A univariate range specifiying the density (ratio of SOMETHING to arena size) to hold constant
     as arena size is increased. This class is a base class which should NEVER be used on its
@@ -42,7 +42,7 @@ class ConstantDensity(bc.UnivarBatchCriteria):
                  target_density: float,
                  dimensions: tp.List[ArenaExtent],
                  dist_type: str) -> None:
-        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
+        UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
         self.target_density = target_density
         self.dimensions = dimensions
         self.dist_type = dist_type

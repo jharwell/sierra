@@ -255,6 +255,18 @@ class CoreCmdline:
                                  nargs='*',
                                  default=[1, 2, 3, 4]
                                  )
+        self.parser.add_argument("--exp-range",
+                                 help="""
+
+                                 Set the experiment numbers from the batch to run, average, or generate intra-experiment
+                                 graphs from (0 based). Specified in the form ``min_exp_num:max_exp_num``. If omitted,
+                                 runs, averages, and generates intra-experimentns from for all experiments in the batch
+                                 (default behavior).
+
+                                 This is useful to re-run part of a batched experiment in HPC environments if SIERRA
+                                 gets killed before it finishes running all experiments in the batch.
+
+                                 """ + self.stage_usage_doc([2, 3, 4]))
 
         self.init_stage1()
         self.init_stage2()
@@ -427,17 +439,6 @@ class CoreCmdline:
         """
         Define cmdline arguments for stage 2.
         """
-        self.stage2.add_argument("--exec-exp-range",
-                                 help="""
-
-                                 Set the experiment numbers from the batch to run (0 based). Specified in the form
-                                 ``min_exp_num:max_exp_num``. If omitted, runs all experiments in the batch (default
-                                 behavior).
-
-                                 This is useful to re-run part of a batched experiment in HPC environments if SIERRA
-                                 gets killed before it finishes running all experiments in the batch.
-
-                                 """ + self.stage_usage_doc([2]))
         self.stage2.add_argument("--exec-resume",
                                  help="""
 

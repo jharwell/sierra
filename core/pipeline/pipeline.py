@@ -59,6 +59,7 @@ class Pipeline:
             'n_robots': args.n_robots,
             'project_imagizing': self.args.project_imagizing,
             'exp_overwrite': self.args.exp_overwrite,
+            'exp_range': self.args.exp_range,
 
             # stage 1
             'time_setup': self.args.time_setup,
@@ -71,7 +72,6 @@ class Pipeline:
             "with_robot_battery": self.args.with_robot_battery,
 
             # stage 2
-            'exec_exp_range': self.args.exec_exp_range,
             'exec_resume': self.args.exec_resume,
             'n_jobs_per_node': self.args.n_jobs_per_node,
 
@@ -149,17 +149,22 @@ class Pipeline:
                            self.cmdopts).run()
 
         if 2 in self.args.pipeline:
-            PipelineStage2().run(self.cmdopts, self.batch_criteria)
+            PipelineStage2().run(self.cmdopts,
+                                 self.batch_criteria)
 
         if 3 in self.args.pipeline:
-            PipelineStage3().run(self.main_config, self.cmdopts)
+            PipelineStage3().run(self.main_config,
+                                 self.cmdopts,
+                                 self.batch_criteria)
 
         if 4 in self.args.pipeline:
-            PipelineStage4(self.main_config, self.cmdopts).run(self.batch_criteria)
+            PipelineStage4(self.main_config,
+                           self.cmdopts).run(self.batch_criteria)
 
         # not part of default pipeline
         if 5 in self.args.pipeline:
-            PipelineStage5(self.main_config, self.cmdopts).run(self.args)
+            PipelineStage5(self.main_config,
+                           self.cmdopts).run(self.args)
 
 
 __api__ = [
