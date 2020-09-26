@@ -57,30 +57,32 @@ class TemporalVariance(bc.UnivarBatchCriteria):
 
         self.variances = variances
         self.population = population
+        self.attr_changes = []  # type: tp.List
 
     def gen_attr_changelist(self) -> list:
         """
         Generate a list of sets of changes necessary to make to the input file to correctly set up
         the simulation with the specified temporal variances.
         """
-        all_changes = [set([("{0}/waveform".format(v[0]), "type", str(v[1])),
-                            ("{0}/waveform".format(v[0]), "frequency", str(v[2])),
-                            ("{0}/waveform".format(v[0]), "amplitude", str(v[3])),
-                            ("{0}/waveform".format(v[0]), "offset", str(v[4])),
-                            ("{0}/waveform".format(v[0]), "phase", str(v[5]))]) for v in self.variances]
+        if not self.attr_changes:
+            self.attr_changes = [set([("{0}/waveform".format(v[0]), "type", str(v[1])),
+                                      ("{0}/waveform".format(v[0]), "frequency", str(v[2])),
+                                      ("{0}/waveform".format(v[0]), "amplitude", str(v[3])),
+                                      ("{0}/waveform".format(v[0]), "offset", str(v[4])),
+                                      ("{0}/waveform".format(v[0]), "phase", str(v[5]))]) for v in self.variances]
 
-        # Swarm size is optional. It can be (1) controlled via this variable, (2) controlled by
-        # another variable in a bivariate batch criteria, (3) not controlled at all. For (2), (3),
-        # the swarm size can be None.
-        if self.population is not None:
-            size_chgs = PopulationSize(self.cli_arg,
-                                       self.main_config,
-                                       self.batch_generation_root,
-                                       [self.population]).gen_attr_changelist()[0]
-            for exp_chgs in all_changes:
-                exp_chgs |= size_chgs
+            # Swarm size is optional. It can be (1) controlled via this variable, (2) controlled by
+            # another variable in a bivariate batch criteria, (3) not controlled at all. For (2), (3),
+            # the swarm size can be None.
+            if self.population is not None:
+                size_chgs = PopulationSize(self.cli_arg,
+                                           self.main_config,
+                                           self.batch_generation_root,
+                                           [self.population]).gen_attr_changelist()[0]
+                for exp_chgs in self.attr_changes:
+                    exp_chgs |= size_chgs
 
-        return all_changes
+        return self.attr_changes
 
     def graph_xticks(self,
                      cmdopts: dict,
@@ -141,14 +143,14 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
                           hz,
                           amp,
                           amp,
-                          0) for hz in hzs for amp in amps]
+                          0.0) for hz in hzs for amp in amps]
         elif attr["waveform_type"] == "StepD":
             variances = [(attr["xml_parent_path"],
                           "Square",
                           1 / (2 * attr["waveform_param"]),
                           amp,
-                          0,
-                          0) for amp in amps]
+                          0.0,
+                          0.0) for amp in amps]
 
         if attr["waveform_type"] == "StepU":
             variances = [(attr["xml_parent_path"],

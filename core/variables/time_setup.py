@@ -61,16 +61,20 @@ class TimeSetup(IBaseVariable):
     def __init__(self, sim_duration: int, metric_interval: int) -> None:
         self.sim_duration = sim_duration
         self.metric_interval = metric_interval
+        self.attr_changes = []  # type: tp.List
 
     def gen_attr_changelist(self):
-        return [set([
-            (".//experiment", "length", "{0}".format(self.sim_duration)),
-            (".//experiment", "ticks_per_second", "{0}".format(kTICKS_PER_SECOND)),
-            (".//output/metrics/append", "output_interval", "{0}".format(self.metric_interval)),
-            (".//output/metrics/truncate", "output_interval", "{0}".format(self.metric_interval)),
-            (".//output/metrics/create", "output_interval",
-             "{0}".format(max(1, self.metric_interval / kND_DATA_DIVISOR)))
-        ])]
+        if not self.attr_changes:
+            self.attr_changes = [set([
+                (".//experiment", "length", "{0}".format(self.sim_duration)),
+                (".//experiment", "ticks_per_second", "{0}".format(kTICKS_PER_SECOND)),
+                (".//output/metrics/append", "output_interval", "{0}".format(self.metric_interval)),
+                (".//output/metrics/truncate", "output_interval",
+                 "{0}".format(self.metric_interval)),
+                (".//output/metrics/create", "output_interval",
+                 "{0}".format(max(1, self.metric_interval / kND_DATA_DIVISOR)))
+            ])]
+        return self.attr_changes
 
     def gen_tag_rmlist(self):
         return []

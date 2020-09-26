@@ -43,26 +43,30 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
     def __init__(self, *args, **kwargs):
         cd.ConstantDensity.__init__(self, *args, **kwargs)
+        self.already_added = False
 
     def gen_attr_changelist(self) -> list:
         """
         Generate list of sets of changes to input file to set the # robots for a set of arena
         sizes such that the swarm density is constant. Robots are approximated as point masses.
         """
-        for changeset in self.changes:
-            for path, attr, value in changeset:
+        if not self.already_added:
+            for changeset in self.attr_changes:
+                for path, attr, value in changeset:
 
-                if path == ".//arena" and attr == "size":
-                    x, y, z = [int(float(_)) for _ in value.split(",")]
-                    extent = core.utils.ArenaExtent((x, y, z))
-                    # ARGoS won't start if there are 0 robots, so you always need to put at least
-                    # 1.
-                    n_robots = int(max(1, (extent.x() * extent.y())
-                                       * (self.target_density / 100.0)))
-                    changeset.add((".//arena/distribute/entity", "quantity", str(n_robots)))
-                    break
+                    if path == ".//arena" and attr == "size":
+                        x, y, z = [int(float(_)) for _ in value.split(",")]
+                        extent = core.utils.ArenaExtent((x, y, z))
+                        # ARGoS won't start if there are 0 robots, so you always need to put at least
+                        # 1.
+                        n_robots = int(max(1, (extent.x() * extent.y())
+                                           * (self.target_density / 100.0)))
+                        changeset.add((".//arena/distribute/entity", "quantity", str(n_robots)))
+                        break
 
-        return self.changes
+            self.already_added = True
+
+        return self.attr_changes
 
     def gen_exp_dirnames(self, cmdopts: dict) -> tp.List[str]:
         changes = self.gen_attr_changelist()

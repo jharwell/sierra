@@ -50,6 +50,7 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
         bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
         self.dynamics_types = dynamics_types
         self.dynamics = dynamics
+        self.attr_changes = []  # type: tp.List
 
     def gen_attr_changelist(self) -> list:
         """
@@ -57,13 +58,12 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
         """
         # Note the # of decimal places used--these rates can get pretty small, and we do NOT want to
         # round/truncate unecessarily, because that can change behavior in statistical equilibrium.
-
-        changes = []  # type: list
-        for d in self.dynamics:
-            changes.append({(".//temporal_variance/population_dynamics",
-                             t[0],
-                             str('%3.9f' % t[1])) for t in d})
-        return changes
+        if not self.attr_changes:  # empty
+            for d in self.dynamics:
+                self.attr_changes.append({(".//temporal_variance/population_dynamics",
+                                           t[0],
+                                           str('%3.9f' % t[1])) for t in d})
+        return self.attr_changes
 
     def gen_exp_dirnames(self, cmdopts: dict) -> list:
         changes = self.gen_attr_changelist()

@@ -55,24 +55,27 @@ class BlockConstantDensity(cd.ConstantDensity):
                                     target_density,
                                     dimensions,
                                     dist_type)
+        self.already_added = False
 
     def gen_attr_changelist(self) -> list:
         """
         Generate list of sets of changes to input file to set the # blocks for a set of arena
         sizes such that the blocks density is constant. Blocks are approximated as point masses.
         """
-        for changeset in self.changes:
-            for c in changeset:
-                if c[0] == ".//arena" and c[1] == "size":
-                    extent = core.utils.ArenaExtent((c[2].split(',')))
-                    n_blocks = max(1, (extent.x() * extent.y()) * (self.target_density / 100.0))
-                    changeset.add((".//arena_map/blocks/distribution/manifest",
-                                   "n_cube", "{0}".format(int(n_blocks / 2.0))))
-                    changeset.add((".//arena_map/blocks/distribution/manifest",
-                                   "n_ramp", "{0}".format(int(n_blocks / 2.0))))
-                    break
+        if not self.already_added:
+            for changeset in self.attr_changes:
+                for c in changeset:
+                    if c[0] == ".//arena" and c[1] == "size":
+                        extent = core.utils.ArenaExtent((c[2].split(',')))
+                        n_blocks = max(1, (extent.x() * extent.y()) * (self.target_density / 100.0))
+                        changeset.add((".//arena_map/blocks/distribution/manifest",
+                                       "n_cube", "{0}".format(int(n_blocks / 2.0))))
+                        changeset.add((".//arena_map/blocks/distribution/manifest",
+                                       "n_ramp", "{0}".format(int(n_blocks / 2.0))))
+                        break
+            self.already_added = True
 
-        return self.changes
+        return self.attr_changes
 
     def gen_exp_dirnames(self, cmdopts: dict) -> tp.List[str]:
         changes = self.gen_attr_changelist()
