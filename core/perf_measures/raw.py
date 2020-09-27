@@ -24,6 +24,7 @@ import os
 import copy
 import logging
 import pandas as pd
+import math
 
 from core.graphs.batch_ranged_graph import BatchRangedGraph
 from core.graphs.heatmap import Heatmap
@@ -148,10 +149,13 @@ class RawBivar:
 
         for i in range(0, len(cum_df.index)):
             for j in range(0, len(cum_df.columns)):
-                cum_df.iloc[i, j] = pm.common.csv_3D_value_iloc(total_df,
-                                                                i,
-                                                                j,
-                                                                slice(-1, None))
+                if total_df.iloc[i, j] == '':
+                    cum_df.iloc[i, j] = math.nan
+                else:
+                    cum_df.iloc[i, j] = pm.common.csv_3D_value_iloc(total_df,
+                                                                    i,
+                                                                    j,
+                                                                    slice(-1, None))
 
         core.utils.pd_csv_write(cum_df, opath, index=False)
 
