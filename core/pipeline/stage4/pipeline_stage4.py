@@ -27,8 +27,7 @@ import datetime
 import yaml
 import matplotlib as mpl
 
-from core.pipeline.stage4.csv_collator import UnivarCSVCollator
-from core.pipeline.stage4.csv_collator import BivarCSVCollator
+from core.pipeline.stage4.csv_collator import MultithreadCollator
 from core.pipeline.stage4.intra_exp_graph_generator import BatchedIntraExpGraphGenerator
 from core.pipeline.stage4.inter_exp_graph_generator import InterExpGraphGenerator
 from core.pipeline.stage4.exp_video_renderer import BatchedExpVideoRenderer
@@ -248,10 +247,14 @@ class PipelineStage4:
         Generate inter-experiment graphs (duh).
         """
         targets = self.__calc_inter_LN_targets()
-        if batch_criteria.is_univar():
-            UnivarCSVCollator(self.main_config, self.cmdopts)(batch_criteria, targets)
-        else:
-            BivarCSVCollator(self.main_config, self.cmdopts)(batch_criteria, targets)
+
+        if not self.cmdopts['no_collate']:
+            logging.info("Stage4: Collating inter-experiment .csv files...")
+            start = time.time()
+            MultithreadCollator(self.main_config, self.cmdopts)(batch_criteria, targets)
+            elapsed = int(time.time() - start)
+            sec = datetime.timedelta(seconds=elapsed)
+            logging.info("Stage4: Collating inter-experiment .csv files complete: %s", str(sec))
 
         logging.info("Stage4: Generating inter-experiment graphs...")
         start = time.time()

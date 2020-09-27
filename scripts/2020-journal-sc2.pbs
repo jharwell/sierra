@@ -41,7 +41,7 @@ BLOCK_DIST=PL
 CARDINALITY=8
 TIME_SHORT=time_setup.T50000N1000
 TIME_LONG=time_setup.T200000N1000
-TASKS=("scalability" "flexibility" "robustness")
+TASKS=("scalability" "flexibility" "robustness_pd" "robustness_saa")
 
 if [ -n "$MSICLUSTER" ] # Running on MSI
 then
@@ -101,18 +101,6 @@ if [ "$TASK" == "flexibility" ] || [ "$TASK" == "all" ]
 then
     for c in "${CONTROLLERS[@]}"
     do
-        # $BASE_CMD --scenario=${BLOCK_DIST}.16x16 \
-        #           --batch-criteria  population_density.CD${DENSITY}.I16.C${CARDINALITY} temporal_variance.MStepU50000\
-        #           --controller=${c}\
-        #           --n-blocks=${N_BLOCKS}\
-        #           --time-setup=${TIME_SHORT}
-
-        # $BASE_CMD --scenario=${BLOCK_DIST}.16x16 \
-        #           --batch-criteria   population_density.CD${DENSITY}.I16.C${CARDINALITY} temporal_variance.MStepD50000\
-        #           --controller=${c}\
-        #           --n-blocks=${N_BLOCKS}\
-        #           --time-setup=${TIME_SHORT}
-
         $BASE_CMD --scenario=${BLOCK_DIST}.16x16 \
                   --batch-criteria  population_density.CD${DENSITY}.I16.C${CARDINALITY} temporal_variance.MSine\
                   --controller=${c}\
@@ -123,7 +111,7 @@ then
 fi
 
 # Robustness analysis.
-if [ "$TASK" == "robustness" ] || [ "$TASK" == "all" ]
+if [ "$TASK" == "robustness_pd" ] || [ "$TASK" == "all" ]
 then
     for c in "${CONTROLLERS[@]}"
     do
@@ -135,7 +123,13 @@ then
                   --controller=${c} \
                   --n-blocks=${N_BLOCKS}\
                   --time-setup=${TIME_LONG}
+    done
+fi
 
+if [ "$TASK" == "robustness_saa" ] || [ "$TASK" == "all" ]
+then
+    for c in "${CONTROLLERS[@]}"
+    do
         $BASE_CMD --scenario=${BLOCK_DIST}.16x16 \
                   --batch-criteria  population_density.CD${DENSITY}.I16.C${CARDINALITY} saa_noise.all.C${CARDINALITY}\
                   --controller=${c} \

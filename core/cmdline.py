@@ -258,10 +258,10 @@ class CoreCmdline:
         self.parser.add_argument("--exp-range",
                                  help="""
 
-                                 Set the experiment numbers from the batch to run, average, or generate intra-experiment
-                                 graphs from (0 based). Specified in the form ``min_exp_num:max_exp_num``. If omitted,
-                                 runs, averages, and generates intra-experimentns from for all experiments in the batch
-                                 (default behavior).
+                                 Set the experiment numbers from the batch to run, average, generate intra-experiment
+                                 graphs from, or generate inter-experiment graphs from (0 based). Specified in the form
+                                 ``min_exp_num:max_exp_num``. If omitted, runs, averages, and generates intra-experiment
+                                 and inter-experiment graphs for all experiments in the batch (default behavior).
 
                                  This is useful to re-run part of a batched experiment in HPC environments if SIERRA
                                  gets killed before it finishes running all experiments in the batch.
@@ -498,6 +498,13 @@ class CoreCmdline:
 
                                  """ + self.stage_usage_doc([4]),
                                  default='all')
+        self.stage4.add_argument("--no-collate",
+                                 help="""
+                                 Specify that no collation of data from experiments within a batch should be
+                                 performed. Useful if collation takes a long time and multiple types of stage 4 outputs
+                                 are desired.
+                                 """,
+                                 action='store_true')
 
         # Performance measure calculation options
         self.stage4.add_argument("--pm-scalability-from-exp0",
