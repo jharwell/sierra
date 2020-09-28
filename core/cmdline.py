@@ -329,12 +329,11 @@ class CoreCmdline:
                              """ + self.stage_usage_doc([1]),
                              default='dynamics3d')
         physics.add_argument("--physics-n-engines",
-                             choices=[1, 4, 8, 16, 24],
+                             choices=[1, 4, 6, 8, 16, 24],
                              type=int,
                              help="""
 
-                             # of physics engines to use during simulation (yay ARGoS!). If N > 1, the
-                             Defines the
+                             # of physics engines to use during simulation (yay ARGoS!). If N > 1, the Defines the
                              engines will be tiled in a uniform grid within the arena (X and Y spacing may not be the
                              same depending on dimensions and how many engines are chosen, however), extending upward in
                              Z to the height specified by ``--scenario`` (i.e., forming a set of "silos" rather that

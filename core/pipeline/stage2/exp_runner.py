@@ -79,7 +79,7 @@ class BatchedExpRunner:
         exp_all = [os.path.join(self.batch_exp_root, d)
                    for d in self.criteria.gen_exp_dirnames(self.cmdopts)]
 
-        exp_to_run = core.utils.exp_range_calc(self.cmdopts, self.criteria)
+        exp_to_run = core.utils.exp_range_calc(self.cmdopts, self.batch_exp_root, self.criteria)
 
         # Verify environment is OK before running anything
         core.hpc.EnvChecker()

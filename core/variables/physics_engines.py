@@ -90,6 +90,8 @@ class PhysicsEngines(IBaseVariable):
                 self.xml_adds = [self.__gen1_engines()]
             elif self.n_engines == 4:
                 self.xml_adds = [self.__gen4_engines(s) for s in self.extents]
+            elif self.n_engines == 6:
+                self.xml_adds = [self.__gen6_engines(s) for s in self.extents]
             elif self.n_engines == 8:
                 self.xml_adds = [self.__gen8_engines(s) for s in self.extents]
             elif self.n_engines == 16:
@@ -218,6 +220,23 @@ class PhysicsEngines(IBaseVariable):
                                       n_engines_x=2,
                                       n_engines_y=2,
                                       forward_engines=[0, 1])
+
+    def __gen6_engines(self, extent: ArenaExtent):
+        """
+        Generate definitions for 6 2D or 3D physics engine for the specified extent.
+
+        Engines are layed out as follows in 2D, regardless if they are 2D or 3D engines:
+
+         5 4 3
+         0 1 2
+
+        Volume is *NOT* divided equally among engines, but rather each of the engines is extended up
+        to some maximum height in Z, forming a set of "silos".
+        """
+        return self.__gen_all_engines(extent,
+                                      n_engines_x=3,
+                                      n_engines_y=2,
+                                      forward_engines=[0, 1, 2])
 
     def __gen8_engines(self, extent: ArenaExtent):
         """
