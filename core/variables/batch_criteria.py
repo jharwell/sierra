@@ -364,9 +364,7 @@ class BivarBatchCriteria(BatchCriteria):
         ret.extend(self.criteria2.gen_tag_rmlist())
         return ret
 
-    def gen_exp_dirnames(self,
-                         cmdopts: dict,
-                         what: str = 'all') -> tp.List[str]:
+    def gen_exp_dirnames(self, cmdopts: dict) -> tp.List[str]:
         """
         Generates a SORTED list of strings for all X/Y axis directories for the bivariate
         experiments, or both X and Y.
@@ -375,16 +373,11 @@ class BivarBatchCriteria(BatchCriteria):
         list2 = self.criteria2.gen_exp_dirnames(cmdopts)
         ret = []
 
-        if what == 'x':
-            return ['c1-' + x for x in list1]
-        elif what == 'y':
-            return ['c2-' + y for y in list2]
-        else:
-            for l1 in list1:
-                for l2 in list2:
-                    ret.append('+'.join(['c1-' + l1, 'c2-' + l2]))
+        for l1 in list1:
+            for l2 in list2:
+                ret.append('+'.join(['c1-' + l1, 'c2-' + l2]))
 
-            return ret
+        return ret
 
     def populations(self, cmdopts: dict) -> tp.List[tp.List[int]]:
         """
@@ -437,28 +430,33 @@ class BivarBatchCriteria(BatchCriteria):
                      cmdopts: dict,
                      exp_dirs: tp.List[str] = None) -> tp.List[float]:
         dirs = []
+        all_dirs = core.utils.exp_range_calc(cmdopts,
+                                             cmdopts['output_root'],
+                                             self)
+
         for c1 in self.criteria1.gen_exp_dirnames(cmdopts):
-            for x in self.gen_exp_dirnames(cmdopts):
-                if c1 in x.split('+')[0]:
-                    dirs.append(x)
+            for x in all_dirs:
+                leaf = os.path.split(x)[1]
+                if c1 in leaf.split('+')[0]:
+                    dirs.append(leaf)
                     break
 
-        assert len(dirs) == len(self.criteria1.gen_exp_dirnames(cmdopts)),\
-            "FATAL: Bad xvals calculation"
         return self.criteria1.graph_xticks(cmdopts, dirs)
 
     def graph_yticks(self,
                      cmdopts: dict,
                      exp_dirs: tp.List[str] = None) -> tp.List[float]:
         dirs = []
-        for c2 in self.criteria2.gen_exp_dirnames(cmdopts):
-            for x in self.gen_exp_dirnames(cmdopts):
-                if c2 in x.split('+')[1]:
-                    dirs.append(x)
-                    break
+        all_dirs = core.utils.exp_range_calc(cmdopts,
+                                             cmdopts['output_root'],
+                                             self)
 
-        assert len(dirs) == len(self.criteria2.gen_exp_dirnames(cmdopts)),\
-            "FATAL: Bad yvals calculation"
+        for c2 in self.criteria2.gen_exp_dirnames(cmdopts):
+            for y in all_dirs:
+                leaf = os.path.split(y)[1]
+                if c2 in leaf.split('+')[1]:
+                    dirs.append(leaf)
+                    break
 
         return self.criteria2.graph_xticks(cmdopts, dirs)
 
@@ -466,28 +464,34 @@ class BivarBatchCriteria(BatchCriteria):
                           cmdopts: dict,
                           exp_dirs: tp.List[str] = None) -> tp.List[str]:
         dirs = []
+        all_dirs = core.utils.exp_range_calc(cmdopts,
+                                             cmdopts['output_root'],
+                                             self)
+
         for c1 in self.criteria1.gen_exp_dirnames(cmdopts):
-            for x in self.gen_exp_dirnames(cmdopts):
-                if c1 in x.split('+')[0]:
-                    dirs.append(x)
+            for x in all_dirs:
+                leaf = os.path.split(x)[1]
+                if c1 in leaf.split('+')[0]:
+                    dirs.append(leaf)
                     break
 
-        assert len(dirs) == len(self.criteria1.gen_exp_dirnames(cmdopts)),\
-            "FATAL: Bad xticks calculation"
         return self.criteria1.graph_xticklabels(cmdopts, dirs)
 
     def graph_yticklabels(self,
                           cmdopts: dict,
                           exp_dirs: tp.List[str] = None) -> tp.List[str]:
         dirs = []
+        all_dirs = core.utils.exp_range_calc(cmdopts,
+                                             cmdopts['output_root'],
+                                             self)
+
         for c2 in self.criteria2.gen_exp_dirnames(cmdopts):
-            for y in self.gen_exp_dirnames(cmdopts):
-                if c2 in y.split('+')[1]:
-                    dirs.append(y)
+            for y in all_dirs:
+                leaf = os.path.split(y)[1]
+                if c2 in leaf.split('+')[1]:
+                    dirs.append(leaf)
                     break
 
-        assert len(dirs) == len(self.criteria2.gen_exp_dirnames(cmdopts)),\
-            "FATAL: Bad yticks calculation"
         return self.criteria2.graph_xticklabels(cmdopts, dirs)
 
     def graph_xlabel(self, cmdopts: dict) -> str:

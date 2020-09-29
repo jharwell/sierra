@@ -261,7 +261,8 @@ class CoreCmdline:
                                  Set the experiment numbers from the batch to run, average, generate intra-experiment
                                  graphs from, or generate inter-experiment graphs from (0 based). Specified in the form
                                  ``min_exp_num:max_exp_num``. If omitted, runs, averages, and generates intra-experiment
-                                 and inter-experiment graphs for all experiments in the batch (default behavior).
+                                 and inter-experiment performance measure graphs for all experiments in the batch
+                                 (default behavior).
 
                                  This is useful to re-run part of a batched experiment in HPC environments if SIERRA
                                  gets killed before it finishes running all experiments in the batch.
@@ -726,7 +727,7 @@ class CoreCmdline:
 
                                - A common stem with a unique numeric ID is required for each ``.csv`` must be present
                                  for each ``.csv``.
-p
+
                                - The directory name within `` < sim_metrics_leaf > `` must be the same as the stem for each
                                  ``.csv`` file in that directory. For example, if the directory name was
                                  ``swarm-distribution`` under `` < sim_metrics_leaf > `` then all ``.csv`` files within that

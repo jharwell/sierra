@@ -84,9 +84,6 @@ class PopulationSize(bc.UnivarBatchCriteria):
                           cmdopts: dict,
                           exp_dirs: tp.List[str] = None) -> tp.List[str]:
 
-        if exp_dirs is None:
-            exp_dirs = self.gen_exp_dirnames(cmdopts)
-
         return list(map(str, self.graph_xticks(cmdopts, exp_dirs)))
 
     def graph_xlabel(self, cmdopts: dict) -> str:
