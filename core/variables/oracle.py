@@ -24,6 +24,7 @@ import re
 import itertools
 
 import implements
+
 import core.variables.batch_criteria as bc
 from core.variables.population_size import PopulationSize
 
@@ -81,7 +82,10 @@ class Oracle(bc.UnivarBatchCriteria):
     def graph_xticks(self,
                      cmdopts: dict,
                      exp_dirs: tp.List[str] = None) -> tp.List[float]:
-        return list(map(float, range(0, len(self.gen_exp_dirnames(cmdopts)))))
+        if exp_dirs is None:
+            exp_dirs = self.gen_exp_dirnames(cmdopts)
+
+        return list(map(float, range(0, len(exp_dirs))))
 
     def graph_xticklabels(self,
                           cmdopts: dict,

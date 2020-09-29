@@ -241,7 +241,8 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
         }
 
         if any(v == attr['noise_type'] for v in ['sensors', 'actuators']):
-            configured_sources = {attr['noise_type']: main_config['perf']['robustness'][attr['noise_type']]}
+            configured_sources = {attr['noise_type']
+                : main_config['perf']['robustness'][attr['noise_type']]}
         else:
             configured_sources = {
                 'actuators': main_config['perf']['robustness'].get('actuators', {}),

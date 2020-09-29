@@ -82,7 +82,8 @@ class InterExpGraphGenerator:
 
 class LinegraphsGenerator:
     """
-    Generates linegraphs from collated .csv data across a batch of experiments.
+    Generates linegraphs from collated .csv data across a batch of experiments. The graphs generated
+    by this class ignore the ``--exp-range`` cmdline option.
 
     Attributes:
       collate_root: Absolute path to root directory for collated csvs.
@@ -103,9 +104,8 @@ class LinegraphsGenerator:
             for graph in category['graphs']:
                 StackedLineGraph(input_stem_fpath=os.path.join(self.collate_root,
                                                                graph['dest_stem']),
-                                 output_fpath=os.path.join(
-                                     self.graph_root,
-                                     graph['dest_stem'] + '.png'),
+                                 output_fpath=os.path.join(self.graph_root,
+                                                           graph['dest_stem'] + '.png'),
                                  cols=None,
                                  title=graph['title'],
                                  legend=None,

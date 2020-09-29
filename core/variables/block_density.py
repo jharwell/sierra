@@ -84,13 +84,11 @@ class BlockConstantDensity(cd.ConstantDensity):
     def graph_xticks(self,
                      cmdopts: dict,
                      exp_dirs: tp.List[str] = None) -> tp.List[float]:
-        if exp_dirs is not None:
-            dirs = exp_dirs
-        else:
-            dirs = self.gen_exp_dirnames(cmdopts)
+        if exp_dirs is None:
+            exp_dirs = self.gen_exp_dirnames(cmdopts)
 
         areas = []
-        for d in dirs:
+        for d in exp_dirs:
             pickle_fpath = os.path.join(self.batch_generation_root,
                                         d,
                                         "exp_def.pkl")
