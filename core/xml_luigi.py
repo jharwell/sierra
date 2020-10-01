@@ -25,7 +25,6 @@ import logging
 
 class InvalidElementError(RuntimeError):
     """Error class for when an element cannot be found or used."""
-    pass
 
 
 class XMLLuigi:
@@ -40,7 +39,7 @@ class XMLLuigi:
                                     file. (Defaults to overwriting the input file.)
     """
 
-    def __init__(self, input_filepath: str, output_filepath: str = None):
+    def __init__(self, input_filepath: str, output_filepath: str = None) -> None:
         if output_filepath is None:
             output_filepath = input_filepath
 
@@ -58,12 +57,16 @@ class XMLLuigi:
         self.tree.write(filepath)
 
     def attr_get(self, path: str, attr: str):
+        """
+        Retrieve the specified attribute as a child of the element corresponding to the specified
+        path, if it exists. If it does not exist, None is returned.
+        """
         el = self.root.find(path)
-        if self.has_tag(path) and attr in el.attrib:
+        if el is not None and attr in el.attrib:
             return el.attrib[attr]
         return None
 
-    def attr_change(self, path: str, attr: str, value: str, noprint: bool=False):
+    def attr_change(self, path: str, attr: str, value: str, noprint: bool = False):
         """
         Change the specified attribute of the *FIRST* element matching the specified path searching
         from the tree root.
@@ -75,8 +78,8 @@ class XMLLuigi:
           value: The value to set the attribute to.
         """
         el = self.root.find(path)
-        if self.has_tag(path) and attr in el.attrib:
-            el.attrib[attr] = value   # pytype: disable=attribute-error
+        if el is not None and self.has_tag(path) and attr in el.attrib:
+            el.attrib[attr] = value
         else:
             if not noprint:
                 logging.warning("No attribute '%s' found in node '%s'", attr, path)
@@ -96,13 +99,17 @@ class XMLLuigi:
           value: The value to set the tag to.
         """
         el = self.root.find(path)
+        if el is None:
+            logging.warning("Parent node '%s' not found", path)
+            return
+
         for child in el:
             if child.tag == tag:
                 child.tag = value
                 return
-        raise InvalidElementError("No such element '{0}' found in '{1}'".format(tag, path))
+        logging.warning("No such element '%s' found in '%s'", tag, path)
 
-    def tag_remove(self, path: str, tag: str, noprint: bool=False):
+    def tag_remove(self, path: str, tag: str, noprint: bool = False):
         """
         Remove the specified tag of the child element found in the enclosing parent specified by the
         path.
@@ -113,14 +120,25 @@ class XMLLuigi:
           tag: Name of the tag to remove within the enclosing element, in XPath syntax.
         """
 
-        try:
-            parent = self.root.find(path)
-            victim = parent.find(tag)    # pytype: disable=attribute-error
-            parent.remove(victim)   # pytype: disable=attribute-error
-        except (AttributeError, TypeError):
-            if not noprint:
-                logging.warning("No victim '%s' found in parent '%s'", tag, path)
-            pass
+        parent = self.root.find(path)
+        if parent is not None:
+            victim = parent.find(tag)
+            if victim is not None:
+                parent.remove(victim)
+                return
 
-    def tag_add(self, path, tag, attr={}):
+        if not noprint:
+            logging.warning("No victim '%s' found in parent '%s'", tag, path)
+
+    def tag_add(self, path, tag, attr=dict()):
+        """
+        Add the tag name as a child element of the element found by the specified path, giving it
+        the initial set of specified attributes.
+        """
         ET.SubElement(self.root.find(path), tag, attr)
+
+
+__api__ = [
+    'InvalidElementError',
+    'XMLLuigi',
+]

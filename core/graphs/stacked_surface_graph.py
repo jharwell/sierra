@@ -21,12 +21,13 @@ import glob
 import re
 import logging
 
-import pandas as pd
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 mpl.use('Agg')
+
+import core.utils
 
 
 class StackedSurfaceGraph:
@@ -42,7 +43,7 @@ class StackedSurfaceGraph:
     """
     kMaxSurfaces = 4
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
 
         self.input_stem_pattern = os.path.abspath(kwargs['input_stem_pattern'])
         self.output_fpath = kwargs['output_fpath']
@@ -56,7 +57,7 @@ class StackedSurfaceGraph:
         self.comp_type = kwargs['comp_type']
 
     def generate(self):
-        dfs = [pd.read_csv(f, sep=';') for f in glob.glob(
+        dfs = [core.utils.pd_csv_read(f) for f in glob.glob(
             self.input_stem_pattern + '*.csv') if re.search('_[0-9]+', f)]
 
         if not dfs:  # empty list
@@ -173,7 +174,7 @@ class StackedSurfaceGraph:
 
 
 class HandlerColormap(mpl.legend_handler.HandlerBase):
-    def __init__(self, cmap, num_stripes=8, **kw):
+    def __init__(self, cmap, num_stripes=8, **kw) -> None:
         super().__init__(**kw)
         self.cmap = cmap
         self.num_stripes = num_stripes
@@ -196,3 +197,8 @@ class HandlerColormap(mpl.legend_handler.HandlerBase):
                                       transform=trans)
             stripes.append(s)
         return stripes
+
+
+__api__ = [
+    'StackedSurfaceGraph'
+]

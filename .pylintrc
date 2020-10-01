@@ -56,7 +56,7 @@ confidence=
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use"--disable=all --enable=classes
 # --disable=W"
-disable=no-else-return,not-an-iterable,unsubscriptable-object
+disable=no-else-return,not-an-iterable,unsubscriptable-object,missing-function-docstring,line-too-long,import-error,abstract-method,too-many-instance-attributes
 
 
 [REPORTS]
@@ -90,7 +90,7 @@ evaluation=10.0 - ((float(5 * error + warning + refactor + convention) / stateme
 [BASIC]
 
 # Good variable names which should always be accepted, separated by a comma
-good-names=i,j,k,ex,Run,_
+good-names=i,j,k,ex,_,df,x,y,z,X,Y,q,alpha_S,alpha_T,alpha_R,alpha_A,alpha_SAA,alpha_PD,LN_config,LN_targets,HM_config,HM_targets
 
 # Bad variable names which should always be refused, separated by a comma
 bad-names=foo,bar,baz,toto,tutu,tata
@@ -107,7 +107,7 @@ include-naming-hint=no
 property-classes=abc.abstractproperty
 
 # Regular expression matching correct function names
-function-rgx=[a-z_][a-z0-9_]{2,30}$
+function-rgx=[a-z__][a-z0-9_]{2,30}$
 
 # Naming hint for function names
 function-name-hint=[a-z_][a-z0-9_]{2,30}$
@@ -116,10 +116,10 @@ function-name-hint=[a-z_][a-z0-9_]{2,30}$
 variable-rgx=[a-z][a-z0-9]*((_[a-z0-9]+)*)?$
 
 # Naming hint for variable names
-variable-name-hint=[a-z_][a-z0-9_]{2,30}$
+variable-name-hint=[a-z_][a-z0-9_]{1,30}$
 
 # Regular expression matching correct constant names
-const-rgx=((k[A-Z_][a-z0-9_]*)|(__.*__))
+const-rgx=((k[A-Z_][0-9_]*)|(__.*__))
 
 # Naming hint for constant names
 const-name-hint=(([A-Z_][A-Z0-9_]*)|(__.*__))$

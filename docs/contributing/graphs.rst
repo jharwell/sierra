@@ -13,8 +13,7 @@ There are two types of intra-experiment graphs: linegraphs and heatmaps, and
 each has their own config file (details of each is below).
 
 **TEST YOUR NEW GRAPH TO VERIFY IT DOES NOT CRASH**. If it does, that likely
-means that the .csv file the graph is build from is not being generated properly
-in FORDYCA.
+means that the .csv file the graph is build from is not being generated properly.
 
 Linegraphs
 ----------
@@ -48,8 +47,7 @@ dictionary:
 - ``ylabel`` - The label of the Y-axis of the graph.
 
 To add a linegraph, simply add a new entry to the config file that will be
-parsed by SIERRA in an appropriate category (notice that the categories map back
-to the collectors/generate .csv files in FORDYCA). Linegraphs are appropriate if:
+parsed by SIERRA in an appropriate category. Linegraphs are appropriate if:
 
 - The data you want to graph can be represented by a line (i.e. is one
   dimensional in some way).
@@ -70,8 +68,7 @@ dictionary:
   matplotlib after all).
 
 To add a heatmap, simply add a new entry to the config file that will be
-parsed by SIERRA in an appropriate category (notice that the categories map back
-to the collectors/generate .csv files in FORDYCA). Heatmaps are appropriate if:
+parsed by SIERRA in an appropriate category. Heatmaps are appropriate if:
 
 - The data you want to graph is two dimensional (i.e. a spatial representation
   of the arena is some way).
@@ -86,7 +83,7 @@ the ``config/`` directory in an appropriate category if:
   dimensional in some way).
 
 - The data you want to graph can be obtained from a single column from a single
-  .csv file.
+  ``.csv`` file.
 
 - The data you want to graph requires comparison between multiple experiments in
   a batch.

@@ -29,34 +29,50 @@ import queue
 import pandas as pd
 
 
+import core.utils
+import core.variables.batch_criteria as bc
+
+
 class BatchedExpCSVAverager:
     """
-    Averages the .csv output files for each experiment in the specified batch directory in sequence.
+    Averages the .csv output files for each experiment in the specified batch directory.
+
+    Attributes:
+        main_config: Parsed dictionary of main YAML configuration.
+        cmdopts: Dictionary parsed cmdline parameters.
+        batch_exp_root: Directory for averaged .csv output (relative to current dir or
+                           absolute).
     """
 
-    def __call__(self, main_config: dict, avg_opts: tp.Dict[str, str], batch_output_root: str):
-        """
-        Arguments:
-            main_config: Parsed dictionary of main YAML configuration.
-            avg_opts: Dictionary of parameters for batch averaging.
-            batch_output_root: Directory for averaged .csv output (relative to current dir or
-                               absolute).
-        """
+    def __init__(self, main_config: dict, cmdopts: dict, batch_output_root: str):
+        self.main_config = main_config
+        self.cmdopts = cmdopts
+        self.batch_output_root = batch_output_root
 
-        # Ignore the folder for .csv files collated across experiments within a batch
-        experiments = [item for item in os.listdir(batch_output_root) if item not in [
-            main_config['sierra']['collate_csv_leaf']]]
+    def __call__(self, criteria: bc.IConcreteBatchCriteria):
 
-        q = mp.JoinableQueue()
+        exp_to_avg = core.utils.exp_range_calc(self.cmdopts, self.batch_output_root, criteria)
 
-        for exp in experiments:
-            path = os.path.join(batch_output_root, exp)
+        template_input_leaf, _ = os.path.splitext(
+            os.path.basename(self.cmdopts['template_input_file']))
+
+        avg_opts = {
+            'template_input_leaf': template_input_leaf,
+            'no_verify_results': self.cmdopts['no_verify_results'],
+            'gen_stddev': self.cmdopts['gen_stddev'],
+            'project_imagizing': self.cmdopts['project_imagizing'],
+        }
+
+        q = mp.JoinableQueue()  # type: mp.JoinableQueue
+
+        for exp in exp_to_avg:
+            path = os.path.join(self.batch_output_root, exp)
             if os.path.isdir(path):
                 q.put(path)
 
         for i in range(0, mp.cpu_count()):
             p = mp.Process(target=BatchedExpCSVAverager.__thread_worker,
-                           args=(q, main_config, avg_opts))
+                           args=(q, self.main_config, avg_opts))
             p.start()
 
         q.join()
@@ -88,7 +104,7 @@ class ExpCSVAverager:
                          absolute).
     """
 
-    def __init__(self, main_config: dict, avg_opts: tp.Dict[str, str], exp_output_root: str):
+    def __init__(self, main_config: dict, avg_opts: tp.Dict[str, str], exp_output_root: str) -> None:
         self.avg_opts = avg_opts
 
         # will get the main name and extension of the config file (without the full absolute path)
@@ -100,13 +116,18 @@ class ExpCSVAverager:
         self.avgd_output_leaf = main_config['sierra']['avg_output_leaf']
         self.avgd_output_root = os.path.join(self.exp_output_root,
                                              self.avgd_output_leaf)
-        self.metrics_leaf = main_config['sim']['metrics_leaf']
-        self.plugin_frames_leaf = main_config['sierra']['plugin_frames_leaf']
-        self.argos_frames_leaf = main_config['sim']['frames_leaf']
+        self.sim_metrics_leaf = main_config['sim']['sim_metrics_leaf']
+        self.project_frames_leaf = main_config['sierra']['project_frames_leaf']
+        self.argos_frames_leaf = main_config['sim']['argos_frames_leaf']
         self.videos_leaf = 'videos'
-        self.plugin_imagize = avg_opts['plugin_imagizing']
+        self.project_imagize = avg_opts['project_imagizing']
 
-        os.makedirs(self.avgd_output_root, exist_ok=True)
+        # To support inverted performance measures where smaller is better
+        self.invert_perf = main_config['perf']['inverted']
+        self.intra_perf_csv = main_config['perf']['intra_perf_csv']
+        self.intra_perf_col = main_config['perf']['intra_perf_col']
+
+        core.utils.dir_create_checked(self.avgd_output_root, exist_ok=True)
 
         # to be formatted like: self.input_name_format.format(name, experiment_number)
         format_base = "{}_{}"
@@ -131,7 +152,7 @@ class ExpCSVAverager:
         # check to make sure all directories are simulation runs, skipping the directory within each
         # experiment that the averaged data is placed in
         simulations = [e for e in os.listdir(self.exp_output_root) if e not in [
-            self.avgd_output_leaf, self.plugin_frames_leaf, self.argos_frames_leaf, self. videos_leaf]]
+            self.avgd_output_leaf, self.project_frames_leaf, self.argos_frames_leaf, self. videos_leaf]]
 
         assert(all(re.match(pattern, s) for s in simulations)),\
             "FATAL: Not all directories in {0} are simulation runs".format(self.exp_output_root)
@@ -143,7 +164,7 @@ class ExpCSVAverager:
         self.__average_csvs_within_exp(csvs)
 
     def __gather_csvs_from_sim(self, sim: str, csvs: dict):
-        csv_root = os.path.join(self.exp_output_root, sim, self.metrics_leaf)
+        csv_root = os.path.join(self.exp_output_root, sim, self.sim_metrics_leaf)
 
         # The metrics folder should contain nothing but .csv files and directories. For all
         # directories it contains, they each should contain nothing but .csv files (these are
@@ -151,18 +172,19 @@ class ExpCSVAverager:
         for item in os.listdir(csv_root):
             item_path = os.path.join(csv_root, item)
             if os.path.isfile(item_path):
-                df = pd.read_csv(item_path, index_col=False, sep=';')
+                df = core.utils.pd_csv_read(item_path, index_col=False)
+
                 if (item, '') not in csvs:
                     csvs[(item, '')] = []
 
                 csvs[(item, '')].append(df)
             else:
                 # This takes FOREVER, so only do it if we absolutely need to
-                if not self.plugin_imagize:
+                if not self.project_imagize:
                     continue
                 for csv_fname in os.listdir(item_path):
                     csv_path = os.path.join(item_path, csv_fname)
-                    df = pd.read_csv(csv_path, index_col=False, sep=';')
+                    df = core.utils.pd_csv_read(csv_path, index_col=False)
                     if (csv_fname, item) not in csvs:
                         csvs[(csv_fname, item)] = []
                     csvs[(csv_fname, item)].append(df)
@@ -171,21 +193,29 @@ class ExpCSVAverager:
         # All CSV files with the same base name will be averaged together
         for csv_fname in csvs:
             csv_concat = pd.concat(csvs[csv_fname])
+            if (self.invert_perf and csv_fname[0] in self.intra_perf_csv):
+                csv_concat[self.intra_perf_col] = 1.0 / csv_concat[self.intra_perf_col]
+                logging.debug("Inverted performance column: df stem=%s,col=%s",
+                              csv_fname[0],
+                              self.intra_perf_col)
             by_row_index = csv_concat.groupby(csv_concat.index)
+
             csv_averaged = by_row_index.mean()
             if csv_fname[1] != '':
-                os.makedirs(os.path.join(self.avgd_output_root, csv_fname[1]), exist_ok=True)
+                core.utils.dir_create_checked(os.path.join(self.avgd_output_root, csv_fname[1]),
+                                              exist_ok=True)
 
-            csv_averaged.to_csv(os.path.join(self.avgd_output_root, csv_fname[1], csv_fname[0]),
-                                sep=';',
-                                index=False)
+            core.utils.pd_csv_write(csv_averaged, os.path.join(self.avgd_output_root, csv_fname[1], csv_fname[0]),
+
+                                    index=False)
+
             # Also write out stddev in order to calculate confidence intervals later
             if self.avg_opts['gen_stddev']:
                 csv_stddev = by_row_index.std().round(2)
                 csv_stddev_fname = csv_fname.split('.')[0] + '.stddev'
-                csv_stddev.to_csv(os.path.join(self.avgd_output_root, csv_stddev_fname),
-                                  sep=';',
-                                  index=False)
+                core.utils.pd_csv_write(csv_stddev, os.path.join(self.avgd_output_root, csv_stddev_fname),
+
+                                        index=False)
 
     def __verify_exp(self):
         """
@@ -205,12 +235,12 @@ class ExpCSVAverager:
         for exp1 in experiments:
             csv_root1 = os.path.join(self.exp_output_root,
                                      exp1,
-                                     self.metrics_leaf)
+                                     self.sim_metrics_leaf)
 
             for exp2 in experiments:
                 csv_root2 = os.path.join(self.exp_output_root,
                                          exp2,
-                                         self.metrics_leaf)
+                                         self.sim_metrics_leaf)
 
                 if not os.path.isdir(csv_root2):
                     continue
@@ -221,16 +251,16 @@ class ExpCSVAverager:
 
                     # .csvs for rendering that we don't verify (for now...)
                     if os.path.isdir(path1) or os.path.isdir(path2):
-                        logging.warning("Skipping verification metrics for rendering in %s",
-                                        path1)
+                        logging.debug("Not verifying %s: contains rendering data",
+                                      path1)
                         continue
 
-                    assert (os.path.exists(path1) and os.path.exists(path2)),\
+                    assert (core.utils.path_exists(path1) and core.utils.path_exists(path2)),\
                         "FATAL: Either {0} or {1} does not exist".format(path1, path2)
 
                     # Verify both dataframes have same # columns, and that column sets are identical
-                    df1 = pd.read_csv(path1, sep=';')
-                    df2 = pd.read_csv(path2, sep=';')
+                    df1 = core.utils.pd_csv_read(path1)
+                    df2 = core.utils.pd_csv_read(path2)
                     assert (len(df1.columns) == len(df2.columns)), \
                         "FATAL: Dataframes from {0} and {1} do not have same # columns".format(
                             path1, path2)

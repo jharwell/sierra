@@ -21,11 +21,11 @@ import logging
 
 import numpy as np
 import sympy
-from scipy import stats
-import pandas as pd
+import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+
+import core.utils
 
 
 class Scatterplot2D:
@@ -35,7 +35,7 @@ class Scatterplot2D:
     If the necessary `.csv` file does not exist, the graph is not generated.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
 
         self.input_csv_fpath = os.path.abspath(kwargs['input_csv_fpath'])
         self.output_fpath = kwargs['output_fpath']
@@ -47,13 +47,13 @@ class Scatterplot2D:
         self.regression = kwargs.get('regression', False)
 
     def generate(self):
-        if not os.path.exists(self.input_csv_fpath):
+        if not core.utils.path_exists(self.input_csv_fpath):
             logging.debug("Not generating 2D scatterplot: %s does not exist",
                           self.input_csv_fpath)
             return
 
         # Read .csv and scaffold graph
-        df = pd.read_csv(self.input_csv_fpath, sep=';')
+        df = core.utils.pd_csv_read(self.input_csv_fpath)
         ax = df.plot.scatter(x=self.xcol, y=self.ycol)
 
         # Plot regression line
@@ -94,3 +94,8 @@ class Scatterplot2D:
         latex = sympy.printing.latex(eqn)
         plt.plot(x_new, y_new, label="${}$".format(latex))
         plt.legend(fontsize=18)
+
+
+__api__ = [
+    'Scatterplot2D'
+]

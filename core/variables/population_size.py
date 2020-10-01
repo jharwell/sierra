@@ -14,29 +14,19 @@
 # You should have received a copy of the GNU General Public License along with
 # SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
-Definition:
-    {increment_type}{N}
-
-    - increment_type - {Log,Linear}. If ``Log``, then swarm sizes for each experiment are
-      distributed 1...N by powers of 2. If ``Linear`` then swarm sizes for each experiment are
-      distributed linearly between 1...N, split evenly into 10 different sizes.
-
-    - N - The maximum swarm size.
-
-Examples:
-    - ``static.Log1024``: Static swarm sizes 1...1024
-
-    - ``static.Linear1000``: Static swarm sizes 100...1000
-
+Classes for the population size batch criteria. See :ref:`ln-bc-population-size` for usage
+documentation.
 """
 
 import typing as tp
 import re
 import math
+import implements
 
 from core.variables import batch_criteria as bc
 
 
+@implements.implements(bc.IConcreteBatchCriteria)
 class PopulationSize(bc.UnivarBatchCriteria):
     """
     A univariate range of swarm sizes used to define batched
@@ -54,9 +44,10 @@ class PopulationSize(bc.UnivarBatchCriteria):
                  cli_arg: str,
                  main_config: tp.Dict[str, str],
                  batch_generation_root: str,
-                 size_list: tp.List[str]):
+                 size_list: tp.List[int]) -> None:
         bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
         self.size_list = size_list
+        self.attr_changes = []  # type: tp.List
 
     def gen_attr_changelist(self) -> list:
         """
@@ -68,29 +59,49 @@ class PopulationSize(bc.UnivarBatchCriteria):
         robots for the simulation, in order to provide buffer so that the queueing theoretic
         predictions of long-run population size are accurate.
         """
-        return [set([(".//arena/distribute/entity", "quantity", str(s)),
-                     (".//population_dynamics", "max_size", str(4 * s))]) for s in self.size_list]
+        if not self.attr_changes:
+            self.attr_changes = PopulationSize.gen_attr_changelist_from_list(self.size_list)
+        return self.attr_changes
 
-    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> list:
+    def gen_exp_dirnames(self, cmdopts: dict) -> list:
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
-    def graph_xticks(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[float]:
-        ret = self.populations(cmdopts, exp_dirs)
+    def graph_xticks(self,
+                     cmdopts: dict,
+                     exp_dirs: tp.List[str] = None) -> tp.List[float]:
 
+        if exp_dirs is None:
+            exp_dirs = self.gen_exp_dirnames(cmdopts)
+
+        ret = list(map(float, self.populations(cmdopts, exp_dirs)))
         if cmdopts['plot_log_xaxis']:
-            return [math.log2(x) for x in ret]
+            return [int(math.log2(x)) for x in ret]
         else:
             return ret
 
-    def graph_xticklabels(self, cmdopts: tp.Dict[str, str], exp_dirs: list = None) -> tp.List[float]:
-        return self.graph_xticks(cmdopts, exp_dirs)
+    def graph_xticklabels(self,
+                          cmdopts: dict,
+                          exp_dirs: tp.List[str] = None) -> tp.List[str]:
 
-    def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
+        return list(map(str, self.graph_xticks(cmdopts, exp_dirs)))
+
+    def graph_xlabel(self, cmdopts: dict) -> str:
+        if cmdopts['plot_log_xaxis']:
+            return r"$\log_{2}$(Swarm Size)"
+
         return "Swarm Size"
 
     def pm_query(self, pm: str) -> bool:
-        return pm in ['blocks-transported', 'scalability', 'self-org']
+        return pm in ['raw', 'scalability', 'self-org']
+
+    def inter_exp_graphs_exclude_exp0(self) -> bool:
+        return False
+
+    @staticmethod
+    def gen_attr_changelist_from_list(size_list: list):
+        return [set([(".//arena/distribute/entity", "quantity", str(s)),
+                     (".//population_dynamics", "max_size", str(4 * s))]) for s in size_list]
 
 
 class PopulationSizeParser():
@@ -135,8 +146,10 @@ def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_generation_root:
             return [attr["linear_increment"] * x for x in range(1, 11)]
         elif attr["increment_type"] == 'Log':
             return [2 ** x for x in range(0, int(math.log2(attr["max_size"])) + 1)]
+        else:
+            return None
 
-    def __init__(self):
+    def __init__(self) -> None:
         PopulationSize.__init__(self,
                                 cli_arg,
                                 main_config,
@@ -146,3 +159,8 @@ def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_generation_root:
     return type(cli_arg,
                 (PopulationSize,),
                 {"__init__": __init__})
+
+
+__api__ = [
+    'PopulationSize'
+]

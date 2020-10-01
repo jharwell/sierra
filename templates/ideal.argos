@@ -26,6 +26,7 @@
       </actuators>
       <sensors>
         <positioning implementation="default"/>
+          
         <differential_steering implementation="default"/>
         <footbot_proximity implementation="default" show_rays="true"/>
         <footbot_light implementation="rot_z_only" show_rays="false"/>
@@ -41,8 +42,8 @@
           />
         <perception
             los_dim="0.4">
-          <grid resolution="0.2"
-                size="12, 6, 2"/>
+          <grid2D resolution="0.2"
+                dims="12, 6, 2"/>
           <pheromone rho="0.00001"
                      repeat_deposit="false"/>
         </perception>
@@ -138,14 +139,14 @@
             site_xrange="2:10"
             site_yrange="2.5:3">
           <pickup_policy
-              policy="Null"
+              policy="cache_size"
               timestep="20000"
               cache_size="3"/>
         </cache_sel_matrix>
         <exploration
             block_strategy="CRW"
             cache_strategy="ledtaxis_search"/>
-        <sensing_subsystem2D>
+        <sensing_subsystemQ3D>
           <!-- -5pi/6 : 5pi/6 -->
           <proximity_sensor fov="-2.61:2.61"
                             delta="0.1" />
@@ -161,7 +162,7 @@
             <cache range="0.3:0.5"
                    consensus="3"/>
           </ground_sensor>
-        </sensing_subsystem2D>
+        </sensing_subsystemQ3D>
         <actuation_subsystem2D>
           <force_calculator>
             <avoidance_force lookahead="0.5"
@@ -198,9 +199,10 @@
         <append
             output_interval="1000"
             block_acq_counts="block-acq-counts"
-            fsm_collision_counts="fsm-collision-counts"
+            fsm_interference_counts="fsm-interference-counts"
             block_transport="block-transport"
             block_manipulation="block-manipulation"
+            fsm_movement='fsm-movement'
             cache_acq_counts="cache-acq-counts"
             cache_utilization="cache-utilization"
             cache_lifecycle="cache-lifecycle"
@@ -217,93 +219,73 @@
             task_tab_harvester="task-tab-harvester"
             task_distribution="task-distribution"
             perception_dpo="perception-dpo"
-            perception_mdpo="perception-mdpo"
-            swarm_convergence="swarm-convergence"
             tv_population="tv-population"
             tv_environment="tv-environment"/>
 
-        <create output_interval="10"
-                block_acq_locs="block-acq-locs"
-                fsm_collision_locs="fsm-collision-locs"
-                block_acq_explore_locs="block-acq-explore-locs"
-                cache_acq_locs="cache-acq-locs"
-                cache_acq_explore_locs="cache-acq-explore-locs"
-                cache_acq_vector_locs="cache-acq-vector-locs"
-                cache_locations="cache-locations"
-                swarm_dist2D_pos="swarm-dist-pos2D"/>
+        <truncate output_interval="10"
+                  block_acq_locs="block-acq-locs"
+                  fsm_interference_locs2D="fsm-interference-locs2D"
+                  block_acq_explore_locs2D="block-acq-explore-locs2D"
+                  cache_acq_locs2D="cache-acq-locs2D"
+                  cache_acq_explore_locs2D="cache-acq-explore-locs2D"
+                  cache_acq_vector_locs2D="cache-acq-vector-locs2D"
+                  cache_locations="cache-locations"
+                  swarm_dist2D_pos="swarm-dist-pos2D"/>
       </metrics>
     </output>
-    <convergence
-        n_threads="0"
-        epsilon="0.5">
-      <positional_entropy
-          enable="false"
-          horizon="0:13.41"
-          horizon_delta="1.34"/>
-      <interactivity enable="false"/>
-      <angular_order enable="false"/>
-      <task_dist_entropy enable="false"/>
-    </convergence>
-    <oracle_manager>
-      <tasking_oracle
-          task_exec_ests="true"
-          task_interface_ests="true"
-          />
-      <entities_oracle
-          blocks="true"
-          caches="true"/>
-    </oracle_manager>
     <temporal_variance>
-      <blocks>
-        <manipulation_penalty>
-          <waveform
-              type="Null"
-              frequency="0.01"
-              amplitude="50"
-              offset="50"
-              phase="0"/>
-        </manipulation_penalty>
-        <carry_throttle>
-          <waveform
-              type="Null"
-              frequency="100"
-              amplitude="0.4"
-              offset="0.1"
-              phase="0"/>
-        </carry_throttle>
-      </blocks>
-      <caches>
-        <usage_penalty>
-          <waveform
-              type="Null"
-              frequency="100"
-              amplitude="500"
-              offset="10"
-              phase="0"/>
-        </usage_penalty>
-      </caches>
+      <env_dynamics>
+        <blocks>
+          <manipulation_penalty>
+            <waveform
+                type="Null"
+                frequency="0.01"
+                amplitude="50"
+                offset="50"
+                phase="0"/>
+          </manipulation_penalty>
+          <carry_throttle>
+            <waveform
+                type="Null"
+                frequency="100"
+                amplitude="0.4"
+                offset="0.1"
+                phase="0"/>
+          </carry_throttle>
+        </blocks>
+      </env_dynamics>
+      <population_dynamics
+          birth_mu="0.0"
+          death_lambda="0.0"
+          malfunction_lambda="0.000"
+          max_size="0"
+          repair_mu="0.000"/>
     </temporal_variance>
 
     <arena_map>
-      <grid resolution="0.2"
-            size="12, 6, 2"/>
+      <grid2D resolution="0.2"
+            dims="12, 6, 2"/>
       <blocks>
+        <motion policy="Null"
+                random_walk_prob="0.0"/>
         <distribution
             arena_resolution="0.2"
             dist_type="single_source">
-          <powerlaw
-              pwr_min="0"
-              pwr_max="3"
-              n_clusters="15"
-              />
           <manifest
-              n_cube="40"
+              n_cube="64"
               n_ramp="0"
               unit_dim="0.2"
               />
+          <powerlaw
+              pwr_min="2"
+              pwr_max="7"
+              n_clusters="10"
+              />
         </distribution>
       </blocks>
-      <nest size="1.0, 4.0" center="2, 3" />
+      <nests>
+        <nest dims="1.0, 4.0" center="2, 3" />
+        </nests>
     </arena_map>
     <caches dimension="1.2">
       <static enable="true"

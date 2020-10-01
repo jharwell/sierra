@@ -1,0 +1,5 @@
+-r common.txt
+sphinx-argparse
+sphinxcontrib-napoleon
+sphinx-rtd-theme
+autoapi

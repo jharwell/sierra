@@ -24,11 +24,11 @@ without overlap.
 import typing as tp
 import logging
 
-from core.variables.base_variable import BaseVariable
-from core.utils import ArenaExtent as ArenaExtent
+from core.variables.base_variable import IBaseVariable
+from core.utils import ArenaExtent
 
 
-class PhysicsEngines(BaseVariable):
+class PhysicsEngines(IBaseVariable):
     """
     Base physics engine class doing most of the work.
 
@@ -51,13 +51,14 @@ class PhysicsEngines(BaseVariable):
                  n_engines: int,
                  iter_per_tick: int,
                  layout: str,
-                 extents: tp.List[ArenaExtent]):
+                 extents: tp.List[ArenaExtent]) -> None:
 
         self.engine_type = engine_type
         self.n_engines = n_engines
         self.iter_per_tick = iter_per_tick
         self.layout = layout
         self.extents = extents
+        self.xml_adds = None
 
         # If we are given multiple extents to map, we need to divide the specified # of engines
         # among them.
@@ -84,18 +85,23 @@ class PhysicsEngines(BaseVariable):
                       self.n_engines,
                       self.engine_type,
                       self.extents)
-        if self.n_engines == 1:
-            return [self.__gen1_engines(s) for s in self.extents]
-        elif self.n_engines == 4:
-            return [self.__gen4_engines(s) for s in self.extents]
-        elif self.n_engines == 8:
-            return [self.__gen8_engines(s) for s in self.extents]
-        elif self.n_engines == 16:
-            return [self.__gen16_engines(s) for s in self.extents]
-        elif self.n_engines == 24:
-            return [self.__gen24_engines(s) for s in self.extents]
-        else:
-            raise RuntimeError("Bad # of physics engines specified: {0}".format(self.n_engines))
+        if self.xml_adds is None:
+            if self.n_engines == 1:
+                self.xml_adds = [self.__gen1_engines()]
+            elif self.n_engines == 4:
+                self.xml_adds = [self.__gen4_engines(s) for s in self.extents]
+            elif self.n_engines == 6:
+                self.xml_adds = [self.__gen6_engines(s) for s in self.extents]
+            elif self.n_engines == 8:
+                self.xml_adds = [self.__gen8_engines(s) for s in self.extents]
+            elif self.n_engines == 16:
+                self.xml_adds = [self.__gen16_engines(s) for s in self.extents]
+            elif self.n_engines == 24:
+                self.xml_adds = [self.__gen24_engines(s) for s in self.extents]
+            else:
+                raise RuntimeError("Bad # of physics engines specified: {0}".format(self.n_engines))
+
+        return self.xml_adds
 
     def __gen_all_engines(self,
                           extent: ArenaExtent,
@@ -106,7 +112,7 @@ class PhysicsEngines(BaseVariable):
         Generate definitions for the specified # of 2D/3D physics engines for the specified arena
         extent.
         """
-        adds = [('.', 'physics_engines', {})]
+        adds = [('.', 'physics_engines', {})]  # type: tp.List[tuple]
 
         for i in range(0, self.n_engines):
             adds.extend(self.__gen_single_engine(i,
@@ -187,7 +193,7 @@ class PhysicsEngines(BaseVariable):
                          "vertex", {"point": "{0}, {1}".format(v[0], v[1])}))
         return adds
 
-    def __gen1_engines(self, extent: ArenaExtent):
+    def __gen1_engines(self):
         """
         Generate definitions for 1 2D or 3D physics engine for the specified extents.
 
@@ -215,7 +221,24 @@ class PhysicsEngines(BaseVariable):
                                       n_engines_y=2,
                                       forward_engines=[0, 1])
 
-    def __gen8_engines(self, extent: tp.Tuple[int, int]):
+    def __gen6_engines(self, extent: ArenaExtent):
+        """
+        Generate definitions for 6 2D or 3D physics engine for the specified extent.
+
+        Engines are layed out as follows in 2D, regardless if they are 2D or 3D engines:
+
+         5 4 3
+         0 1 2
+
+        Volume is *NOT* divided equally among engines, but rather each of the engines is extended up
+        to some maximum height in Z, forming a set of "silos".
+        """
+        return self.__gen_all_engines(extent,
+                                      n_engines_x=3,
+                                      n_engines_y=2,
+                                      forward_engines=[0, 1, 2])
+
+    def __gen8_engines(self, extent: ArenaExtent):
         """
         Generate definitions for 8 2D or 3D physics engine for the specified pair of (X,Y) arena
         extents with a uniform grid layout.
@@ -302,7 +325,7 @@ class PhysicsEngines2D(PhysicsEngines):
                  n_engines: int,
                  iter_per_tick: int,
                  layout: str,
-                 extents: tp.List[tp.Tuple[int, int, int]]):
+                 extents: tp.List[ArenaExtent]) -> None:
         PhysicsEngines.__init__(self,
                                 engine_type,
                                 n_engines,
@@ -321,7 +344,7 @@ class PhysicsEngines3D(PhysicsEngines):
                  n_engines: int,
                  iter_per_tick: int,
                  layout: str,
-                 extents: tp.List[tp.Tuple[int, int, int]]):
+                 extents: tp.List[ArenaExtent]) -> None:
         PhysicsEngines.__init__(self,
                                 engine_type,
                                 n_engines,
@@ -330,10 +353,7 @@ class PhysicsEngines3D(PhysicsEngines):
                                 extents)
 
 
-def factory(engine_type: str,
-            n_engines: int,
-            cmdopts: tp.Dict[str, str],
-            extents: tp.List[ArenaExtent]):
+def factory(engine_type: str, n_engines: int, cmdopts: dict, extents: tp.List[ArenaExtent]):
     """
     Create a physics engine mapping onto a list of arena extents for 2D or 3D
     """
@@ -352,3 +372,10 @@ def factory(engine_type: str,
                                 cmdopts['physics_iter_per_tick'],
                                 'uniform_grid2D',
                                 extents)
+
+
+__api__ = [
+    'PhysicsEngines',
+    'PhysicsEngines2D',
+    'PhysicsEngines3D',
+]

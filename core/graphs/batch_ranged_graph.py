@@ -27,6 +27,8 @@ mpl.rcParams['lines.linewidth'] = 3
 mpl.rcParams['lines.markersize'] = 10
 mpl.use('Agg')
 
+import core.utils
+
 
 class BatchRangedGraph:
     """
@@ -51,7 +53,7 @@ class BatchRangedGraph:
     # Maximum # of rows that the input .csv to guarantee unique colors
     kMaxRows = 8
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         self.inputy_csv_fpath = os.path.abspath(kwargs['inputy_stem_fpath'] + '.csv')
         self.inputy_stddev_fpath = os.path.abspath(kwargs['inputy_stem_fpath'] + '.stddev')
         self.output_fpath = os.path.abspath(kwargs['output_fpath'])
@@ -65,13 +67,13 @@ class BatchRangedGraph:
         self.polynomial_fit = kwargs.get('polynomial_fit', -1)
 
     def generate(self):
-        if not os.path.exists(self.inputy_csv_fpath):
+        if not core.utils.path_exists(self.inputy_csv_fpath):
             logging.debug("Not generating batch ranged graph: %s does not exist",
                           self.inputy_csv_fpath)
             return
 
         # Read .csv and scaffold graph
-        dfy = pd.read_csv(self.inputy_csv_fpath, sep=';')
+        dfy = core.utils.pd_csv_read(self.inputy_csv_fpath)
         fig, ax = plt.subplots()
         ax.tick_params(labelsize=12)
 
@@ -110,7 +112,7 @@ class BatchRangedGraph:
         mark_styles = ['o', '^', 's', 'x', 'o', '^', 's', 'x']
         colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red',
                   'tab:brown', 'tab:pink', 'tab:gray', 'tab:olive']
-        i = 0
+
         for i in range(0, len(dfy.values)):
             plt.plot(self.xticks, dfy.values[i], line_styles[i],
                      marker=mark_styles[i],
@@ -130,10 +132,10 @@ class BatchRangedGraph:
 
         If the necessary ``.stddev`` file does not exist, no errorbars are plotted.
         """
-        if not os.path.exists(self.inputy_stddev_fpath):
+        if not core.utils.path_exists(self.inputy_stddev_fpath):
             return
 
-        stddev_df = pd.read_csv(self.inputy_stddev_fpath, sep=';')
+        stddev_df = core.utils.pd_csv_read(self.inputy_stddev_fpath)
 
         for i in range(0, len(data_df.values)):
             plt.fill_between(xticks, data_df.values[i] - 2 * stddev_df.values[i],
@@ -144,3 +146,8 @@ class BatchRangedGraph:
         if self.xtick_labels is not None:
             ax.set_xticks(self.xticks)
             ax.set_xticklabels(self.xtick_labels, rotation='vertical')
+
+
+__api__ = [
+    'BatchRangedGraph'
+]

@@ -31,12 +31,12 @@ the following to get it to work with sierra as a batch criteria:
    to be made to the .argos template file in order to set the value of your
    variable to something. Each change is a tuple with the following elements:
 
-   0. XPath search path for the **parent** of the attribute that you want to
+   #. XPath search path for the **parent** of the attribute that you want to
       modify.
 
-   1. Name of the attribute you want to modify within the parent element.
+   #. Name of the attribute you want to modify within the parent element.
 
-   2. The new value as a string (integers will throw an exception).
+   #. The new value as a string (integers will throw an exception).
 
    ``gen_tag_rmlist()`` - Given whatever parameters that your variable was
    passed during initialization, generate a list of sets, where each set is all
@@ -45,10 +45,10 @@ the following to get it to work with sierra as a batch criteria:
 
    Each change is a tuple with the following elements:
 
-   0. XPath search path for the **parent** of the tag that you want to
+   #. XPath search path for the **parent** of the tag that you want to
       remove.
 
-   1. Name of the attribute you want to remove within the parent element.
+   #. Name of the attribute you want to remove within the parent element.
 
    ``gen_tag_addlist()`` - Given whatever parameters that your variable was
    passed during initialization, generate a list of sets, where each set is all
@@ -56,12 +56,12 @@ the following to get it to work with sierra as a batch criteria:
 
    Each change is a tuple with the following elements:
 
-   0. XPath search path for the **parent** of the tag that you want to
+   #. XPath search path for the **parent** of the tag that you want to
       add.
 
-   1. Name of the tag you want to add within the parent element.
+   #. Name of the tag you want to add within the parent element.
 
-   2. A dictionary of (attribute, value) pairs to create as children of the
+   #. A dictionary of (attribute, value) pairs to create as children of the
       tag when creating the tag itself.
 
    ``Factory(cmdline_str, main_config, batch_generation_root, **kwargs)`` -

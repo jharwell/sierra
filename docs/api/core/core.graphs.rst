@@ -1,34 +1,19 @@
-core.graphs
-===========
+===============
+``core.graphs``
+===============
 
 .. automodule:: core.graphs
-   :members:
 
-   .. rubric:: Classes
+   .. contents::
+      :local:
 
-   .. autosummary::
 
-      batch_ranged_graph
-      heatmap
-      stacked_line_graph
-      stacked_surface_graph
+.. toctree::
 
-Batch Ranged Graph
-------------------
-.. automodule:: core.graphs.batch_ranged_graph
-   :members:
+   core.graphs.batch_ranged_graph
+   core.graphs.heatmap
+   core.graphs.scatterplot2D
+   core.graphs.stacked_line_graph
+   core.graphs.stacked_surface_graph
 
-Heatmap
--------
-.. automodule:: core.graphs.heatmap
-   :members:
-
-Stacked Line Graph
-------------------
-.. automodule:: core.graphs.stacked_line_graph
-   :members:
-
-Stacked Surface Graph
----------------------
-.. automodule:: core.graphs.stacked_surface_graph
-   :members:
+.. currentmodule:: core.graphs

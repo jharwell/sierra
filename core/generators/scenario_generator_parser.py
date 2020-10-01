@@ -35,7 +35,7 @@ class ScenarioGeneratorParser:
         if the user is only running stage [4,5], and is not an error. In that case, None is returned.
     """
 
-    def __init__(self, args):
+    def __init__(self, args) -> None:
         self.args = args
         self.scenario = None
 
@@ -51,7 +51,7 @@ class ScenarioGeneratorParser:
         logging.info("Parse scenario generator from cmdline specification '%s'",
                      self.args.scenario)
 
-        res1 = re.search('[SDQLR][SSSLN]', self.args.scenario)
+        res1 = re.search('[SDQPR][SSSLN]', self.args.scenario)
         assert res1 is not None,\
             "FATAL: Bad block distribution specification in '{0}'".format(self.args.scenario)
         res2 = re.search('[0-9]+x[0-9]+x[0-9]+', self.args.scenario)
@@ -74,10 +74,10 @@ class ScenarioGeneratorParser:
         # Try parsing a 3D scenario dimension specification, and if that does not work, then it must
         # be a 2D scenario specification.
         try:
-            x, y, z = scenario.split('.')[1].split('x')
+            x, y, z = scenario.split('+')[0].split('.')[1].split('x')
 
         except ValueError:
-            x, y = scenario.split('.')[1].split('x')
+            x, y = scenario.split('+')[0].split('.')[1].split('x')
             z = 1.0
 
         dist_type = scenario.split('.')[0]

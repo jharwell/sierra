@@ -39,10 +39,12 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.mathjax',
               'sphinx.ext.ifconfig',
               'sphinx.ext.viewcode',
+              'sphinx.ext.inheritance_diagram',
               'sphinxarg.ext',
               'xref',
               'sphinx_rtd_theme',
               'sphinxcontrib.napoleon',
+              'autoapi.sphinx',
               'sphinx.ext.autosummary']
 
 # Add any paths that contain templates here, relative to this directory.
@@ -91,17 +93,37 @@ todo_include_todos = True
 
 autosummary_generate = True
 
+nitpicky = True
+math_number_all = True
+math_eqref_format = 'Eq. {number}'
+
+autoapi_modules = {
+    'core.cmdline': {'output': 'api/core'},
+    'core.perf_measures': {'output': 'api/core'},
+    'core.generators': {'output': 'api/core'},
+    'core.pipeline': {'output': 'api/core'},
+    'core.variables': {'output': 'api/core'},
+    'core.graphs': {'output': 'api/core'},
+    'plugins.fordyca': {'output': 'api/plugins'},
+    'plugins.silicon': {'output': 'api/plugins'}
+}
+
 xref_links = {
     "Harwell2020": ("Demystifying Emergent Intelligence and Its Effect on Performance in Large Swarms",
-                    "https://www.ifaamas.org/Proceedings/aamas2020/pdfs/XXX.pdf"),
+                    "http://ifaamas.org/Proceedings/aamas2020/pdfs/p474.pdf"),
     "Harwell2019": ("Swarm Engineering Through Quantitative Measurement in a 10,000 Robot Swarm",
-                    "https://www.ijcai.org/proceedings/2019/0048.pdf"),
+                    "https://www.ijcai.org/Proceedings/2019/0048.pdf"),
     "White2019": ("Socially Inspired Communication in Swarm Robotics",
                   "https://arxiv.org/abs/1906.01108"),
     "Chen2019": ("Maximizing Energy Efficiency in Swarm Robotics",
                  "https://arxiv.org/abs/1906.01957"),
+    "Hecker2015": ("Hecker2015",
+                   "https://www.cs.unm.edu/~wjust/CS523/S2018/Readings/Hecker_Beyond_Pheromones_Swarm_Intelligence.pdf"),
+    "Rosenfeld2006": ("Rosenfeld2006",
+                      "http://users.umiacs.umd.edu/~sarit/data/articles/rosenfeldetalbook06.pdf"),
     "FORDYCA": ("FORDYCA", "https://swarm-robotics-fordyca.readthedocs.io"),
-    "SILICON": ("SILICON", "https://swarm-robotics-silicon.readthedocs.io")
+    "SILICON": ("SILICON", "https://swarm-robotics-silicon.readthedocs.io"),
+    "LIBRA": ("LIBRA", "https://swarm-robotics-libra.readthedocs.io")
 }
 
 # -- Options for HTML output ----------------------------------------------
@@ -164,6 +186,7 @@ latex_elements = {
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
+    'maxlistdepth': '50'
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
@@ -199,3 +222,27 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'https://docs.python.org/': None}
+
+# HACK! The [FORDYCA, SILICON] plugin repos are needed to get the SIERRA docs to build, and
+# readthedocs doesn't support a nice way updating submodules to something other than the master
+# branch after SIERRA is switched from the master to the devel branch.
+import subprocess
+import os
+cwd = os.getcwd()
+if not os.path.exists(os.path.join(os.getcwd(), "../plugins/fordyca")):
+    subprocess.run(["git",
+                    "clone",
+                    "https://github.com/swarm-robotics/sierra-plugin-fordyca",
+                    "../plugins/fordyca"])
+    os.chdir("../plugins/fordyca")
+    subprocess.run(["git", "checkout", "devel"])
+    os.chdir(cwd)
+
+if not os.path.exists(os.path.join(os.getcwd(), "../plugins/silicon")):
+    subprocess.run(["git",
+                    "clone",
+                    "https://github.com/swarm-robotics/sierra-plugin-silicon",
+                    "../plugins/silicon"])
+    os.chdir("../plugins/silicon")
+    subprocess.run(["git", "checkout", "devel"])
+    os.chdir(cwd)

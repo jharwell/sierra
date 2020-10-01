@@ -1,1 +1,1 @@
-from .stage5 import PipelineStage5
+from core.pipeline.stage5.pipeline_stage5 import PipelineStage5

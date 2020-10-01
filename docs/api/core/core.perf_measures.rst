@@ -1,40 +1,21 @@
-core.perf\_measures
-===================
+======================
+``core.perf_measures``
+======================
 
 .. automodule:: core.perf_measures
-   :members:
 
-   .. rubric:: Classes
+   .. contents::
+      :local:
 
-   .. autosummary::
 
-      block_collection
-      scalability
-      self_organization
-      adaptability
-      reactivity
+.. toctree::
 
-Block Collection
-----------------
-.. automodule:: core.perf_measures.block_collection
-   :members:
+   core.perf_measures.common
+   core.perf_measures.flexibility
+   core.perf_measures.raw
+   core.perf_measures.robustness
+   core.perf_measures.scalability
+   core.perf_measures.self_organization
+   core.perf_measures.vcs
 
-Scalability
------------
-.. automodule:: core.perf_measures.scalability
-   :members:
-
-Self Organization
------------------
-.. automodule:: core.perf_measures.self_organization
-   :members:
-
-Adaptability
-------------
-.. automodule:: core.perf_measures.adaptability
-   :members:
-
-Reactivity
-----------
-.. automodule:: core.perf_measures.reactivity
-   :members:
+.. currentmodule:: core.perf_measures

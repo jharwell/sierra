@@ -17,13 +17,5 @@
 Variables (including some that are also batch criteria) that represent things that can be modified
 in the XML input file.
 """
-from core.variables import arena_shape
-from core.variables import block_distribution
-from core.variables import nest_pose
-from core.variables import swarm_density
-from core.variables import block_density
-from core.variables import population_size
-from core.variables import population_dynamics
-from core.variables import flexibility
-from core.variables import physics_engines
+from core.variables import constant_density
 from core.variables import batch_criteria

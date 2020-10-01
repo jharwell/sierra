@@ -18,7 +18,8 @@ import pickle
 import logging
 import typing as tp
 
-from core.variables import block_distribution, nest_pose, arena_shape
+from core.variables import block_distribution, arena_shape
+from core.variables import population_size
 from core.xml_luigi import XMLLuigi
 from core.generators import exp_generator
 from core.variables import physics_engines
@@ -40,8 +41,8 @@ class BaseScenarioGenerator():
     def __init__(self,
                  exp_def_fpath: str,
                  controller: str,
-                 cmdopts: tp.Dict[str, str],
-                 **kwargs):
+                 cmdopts: dict,
+                 **kwargs) -> None:
         self.controller = controller
         self.exp_def_fpath = exp_def_fpath
         self.cmdopts = cmdopts
@@ -50,31 +51,20 @@ class BaseScenarioGenerator():
                                                                **kwargs)
 
     @staticmethod
-    def generate_block_dist(exp_def: XMLLuigi, block_dist: block_distribution.Type):
+    def generate_block_dist(exp_def: XMLLuigi,
+                            block_dist: block_distribution.BaseDistribution):
         """
         Generate XML changes for the specified block distribution.
 
         Does not write generated changes to the simulation definition pickle file.
         """
-        [exp_def.attr_change(a[0], a[1], a[2]) for a in block_dist.gen_attr_changelist()[0]]
+        for a in block_dist.gen_attr_changelist()[0]:
+            exp_def.attr_change(a[0], a[1], a[2])
 
         rms = block_dist.gen_tag_rmlist()
         if rms:  # non-empty
-            [exp_def.tag_remove(a) for a in rms[0]]
-
-    @staticmethod
-    def generate_nest_pose(exp_def: XMLLuigi, extent: ArenaExtent, dist_type: str):
-        """
-        Generate XML changes for the specified arena dimensions and block distribution type to
-        properly place the nest.
-
-        Does not write generated changes to the simulation definition pickle file.
-        """
-        np = nest_pose.NestPose(dist_type, [extent])
-        [exp_def.attr_change(a[0], a[1], a[2]) for a in np.gen_attr_changelist()[0]]
-        rms = np.gen_tag_rmlist()
-        if rms:  # non-empty
-            [exp_def.tag_remove(a) for a in rms[0]]
+            for a in rms[0]:
+                exp_def.tag_remove(a[0], a[1])
 
     def generate_arena_shape(self, exp_def: XMLLuigi, shape: arena_shape.RectangularArena):
         """
@@ -93,7 +83,8 @@ class BaseScenarioGenerator():
 
         rms = shape.gen_tag_rmlist()
         if rms:  # non-empty
-            [exp_def.tag_remove(a) for a in rms[0]]
+            for a in rms[0]:
+                exp_def.tag_remove(a[0], a[1])
 
     def generate_block_count(self, exp_def: XMLLuigi):
         """
@@ -111,18 +102,38 @@ class BaseScenarioGenerator():
 
         bd = block_distribution.Quantity([n_blocks])
 
-        [exp_def.attr_change(a[0], a[1], a[2]) for a in bd.gen_attr_changelist()[0]]
+        for a in bd.gen_attr_changelist()[0]:
+            exp_def.attr_change(a[0], a[1], a[2])
+
         rms = bd.gen_tag_rmlist()
 
         if rms:  # non-empty
-            [exp_def.tag_remove(a) for a in rms[0]]
+            for a in rms[0]:
+                exp_def.tag_remove(a[0], a[1])
 
         with open(self.exp_def_fpath, 'ab') as f:
             pickle.dump(bd.gen_attr_changelist()[0], f)
 
+    def generate_n_robots(self, xml_luigi: XMLLuigi):
+        """
+        Generate XML changes to setup # robots.
+
+        Writes generated changes to the simulation definition pickle file.
+        """
+        if self.cmdopts['n_robots'] is None:
+            return
+        chgs = population_size.PopulationSize.gen_attr_changelist_from_list(
+            [self.cmdopts['n_robots']])
+        for a in chgs[0]:
+            xml_luigi.attr_change(a[0], a[1], a[2], True)
+
+        # Write time setup info to file for later retrieval
+        with open(self.exp_def_fpath, 'ab') as f:
+            pickle.dump(chgs[0], f)
+
     @staticmethod
     def generate_physics(exp_def: XMLLuigi,
-                         cmdopts: tp.Dict[str, str],
+                         cmdopts: dict,
                          engine_type: str,
                          n_engines: int,
                          extents: tp.List[ArenaExtent],
@@ -147,8 +158,11 @@ class BaseScenarioGenerator():
         pe = physics_engines.factory(engine_type, n_engines, cmdopts, extents)
 
         if remove_defs:
-            [exp_def.tag_remove(a[0], a[1]) for a in pe.gen_tag_rmlist()[0]]
-        [exp_def.tag_add(a[0], a[1], a[2]) for a in pe.gen_tag_addlist()[0]]
+            for a in pe.gen_tag_rmlist()[0]:
+                exp_def.tag_remove(a[0], a[1])
+
+        for a in pe.gen_tag_addlist()[0]:
+            exp_def.tag_add(a[0], a[1], a[2])
 
 
 class SSGenerator(BaseScenarioGenerator):
@@ -159,36 +173,31 @@ class SSGenerator(BaseScenarioGenerator):
 
     - Rectangular 2x1 arena
     - Single source block distribution
-
-    Changes are *NOT* generated for the following:
-
-    - # robots
-
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         BaseScenarioGenerator.__init__(self, *args, **kwargs)
 
     def generate(self):
         exp_def = self.common_defs.generate()
         arena_dim = self.cmdopts["arena_dim"]
 
-        assert arena_dim[0] == 2 * arena_dim[1],\
-            "FATAL: SS distribution requires a 2x1 arena: xdim={0},ydim={1}".format(arena_dim[0],
-                                                                                    arena_dim[1])
+        assert arena_dim.x() == 2 * arena_dim.y(),\
+            "FATAL: SS distribution requires a 2x1 arena: xdim={0},ydim={1}".format(arena_dim.x(),
+                                                                                    arena_dim.y())
 
         self.generate_arena_shape(exp_def,
-                                  arena_shape.RectangularArenaTwoByOne(x_range=[arena_dim[0]],
-                                                                       y_range=[arena_dim[1]]))
+                                  arena_shape.RectangularArenaTwoByOne(x_range=[arena_dim.x()],
+                                                                       y_range=[arena_dim.y()]))
 
         # Generate and apply block distribution type definitions
-        super().generate_block_dist(exp_def, block_distribution.TypeSingleSource())
-
-        # Generate and apply nest definitions
-        super().generate_nest_pose(exp_def, ArenaExtent(dims=arena_dim), "single_source")
+        super().generate_block_dist(exp_def, block_distribution.SingleSourceDistribution())
 
         # Generate and apply # blocks definitions
         self.generate_block_count(exp_def)
+
+        # Generate and apply robot count definitions
+        self.generate_n_robots(exp_def)
 
         return exp_def
 
@@ -202,35 +211,31 @@ class DSGenerator(BaseScenarioGenerator):
     - Rectangular 2x1 arena
     - Dual source block distribution
 
-    Changes are *NOT* generated for the following:
-
-    - # robots
-
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         BaseScenarioGenerator.__init__(self, *args, **kwargs)
 
     def generate(self):
         exp_def = self.common_defs.generate()
         arena_dim = self.cmdopts["arena_dim"]
 
-        assert arena_dim[0] == 2 * arena_dim[1],\
-            "FATAL: DS distribution requires a 2x1 arena: xdim={0},ydim={1}".format(arena_dim[0],
-                                                                                    arena_dim[1])
+        assert arena_dim.x() == 2 * arena_dim.y(),\
+            "FATAL: DS distribution requires a 2x1 arena: xdim={0},ydim={1}".format(arena_dim.x(),
+                                                                                    arena_dim.y())
 
         self.generate_arena_shape(exp_def,
-                                  arena_shape.RectangularArenaTwoByOne(x_range=[arena_dim[0]],
-                                                                       y_range=[arena_dim[1]]))
+                                  arena_shape.RectangularArenaTwoByOne(x_range=[arena_dim.x()],
+                                                                       y_range=[arena_dim.y()]))
 
         # Generate and apply block distribution type definitions
-        super().generate_block_dist(exp_def, block_distribution.TypeDualSource())
-
-        # Generate and apply nest definitions
-        super().generate_nest_pose(exp_def, ArenaExtent(dims=arena_dim), "dual_source")
+        super().generate_block_dist(exp_def, block_distribution.DualSourceDistribution())
 
         # Generate and apply # blocks definitions
         self.generate_block_count(exp_def)
+
+        # Generate and apply robot count definitions
+        self.generate_n_robots(exp_def)
 
         return exp_def
 
@@ -244,34 +249,30 @@ class QSGenerator(BaseScenarioGenerator):
     - Square arena
     - Quad source block distribution
 
-    Changes are *NOT* generated for the following:
-
-    - # robots
-
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         BaseScenarioGenerator.__init__(self, *args, **kwargs)
 
     def generate(self):
         exp_def = self.common_defs.generate()
         arena_dim = self.cmdopts["arena_dim"]
 
-        assert arena_dim[0] == arena_dim[1],\
-            "FATAL: QS distribution requires a square arena: xdim={0},ydim={1}".format(arena_dim[0],
-                                                                                       arena_dim[1])
+        assert arena_dim.x() == arena_dim.y(),\
+            "FATAL: QS distribution requires a square arena: xdim={0},ydim={1}".format(arena_dim.x(),
+                                                                                       arena_dim.y())
 
-        self.generate_arena_shape(exp_def, arena_shape.SquareArena(sqrange=[arena_dim[0]]))
+        self.generate_arena_shape(exp_def, arena_shape.SquareArena(sqrange=[arena_dim.x()]))
 
         # Generate and apply block distribution type definitions
-        source = block_distribution.TypeQuadSource()
+        source = block_distribution.QuadSourceDistribution()
         super().generate_block_dist(exp_def, source)
-
-        # Generate and apply nest definitions
-        super().generate_nest_pose(exp_def, ArenaExtent(dims=arena_dim), "quad_source")
 
         # Generate and apply # blocks definitions
         self.generate_block_count(exp_def)
+
+        # Generate and apply robot count definitions
+        self.generate_n_robots(exp_def)
 
         return exp_def
 
@@ -291,24 +292,21 @@ class PLGenerator(BaseScenarioGenerator):
 
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         BaseScenarioGenerator.__init__(self, *args, **kwargs)
 
     def generate(self):
         exp_def = self.common_defs.generate()
         arena_dim = self.cmdopts["arena_dim"]
 
-        assert arena_dim[0] == 2 * arena_dim[1],\
-            "FATAL: PL distribution requires a square arena: xdim={0},ydim={1}".format(arena_dim[0],
-                                                                                       arena_dim[1])
+        assert arena_dim.x() == arena_dim.y(),\
+            "FATAL: PL distribution requires a square arena: xdim={0},ydim={1}".format(arena_dim.x(),
+                                                                                       arena_dim.y())
 
-        self.generate_arena_shape(exp_def, arena_shape.SquareArena(sqrange=[arena_dim[0]]))
+        self.generate_arena_shape(exp_def, arena_shape.SquareArena(sqrange=[arena_dim.x()]))
 
         # Generate and apply block distribution type definitions
-        super().generate_block_dist(exp_def, block_distribution.TypePowerLaw())
-
-        # Generate and apply nest definitions
-        super().generate_nest_pose(exp_def, ArenaExtent(dims=arena_dim), "powerlaw")
+        super().generate_block_dist(exp_def, block_distribution.PowerLawDistribution(arena_dim))
 
         # Generate and apply # blocks definitions
         self.generate_block_count(exp_def)
@@ -325,32 +323,38 @@ class RNGenerator(BaseScenarioGenerator):
     - Square arena
     - Random block distribution
 
-    Changes are *NOT* generated for the following:
-
-    - # robots
-
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         BaseScenarioGenerator.__init__(self, *args, **kwargs)
 
     def generate(self):
         exp_def = self.common_defs.generate()
         arena_dim = self.cmdopts["arena_dim"]
 
-        assert arena_dim[0] == arena_dim[1],\
-            "FATAL: RN distribution requires a square arena: xdim={0},ydim={1}".format(arena_dim[0],
-                                                                                       arena_dim[1])
+        assert arena_dim.x() == arena_dim.y(),\
+            "FATAL: RN distribution requires a square arena: xdim={0},ydim={1}".format(arena_dim.x(),
+                                                                                       arena_dim.y())
 
-        self.generate_arena_shape(exp_def, arena_shape.SquareArena(sqrange=[arena_dim[0]]))
+        self.generate_arena_shape(exp_def, arena_shape.SquareArena(sqrange=[arena_dim.x()]))
 
         # Generate and apply block distribution type definitions
-        super().generate_block_dist(exp_def, block_distribution.TypeRandom())
-
-        # Generate and apply nest definitions
-        super().generate_nest_pose(exp_def, ArenaExtent(dims=arena_dim), "random")
+        super().generate_block_dist(exp_def, block_distribution.RandomDistribution())
 
         # Generate and apply # blocks definitions
         self.generate_block_count(exp_def)
 
+        # Generate and apply robot count definitions
+        self.generate_n_robots(exp_def)
+
         return exp_def
+
+
+__api__ = [
+    'BaseScenarioGenerator',
+    'SSGenerator',
+    'DSGenerator',
+    'QSGenerator',
+    'PLGenerator',
+    'RNGenerator',
+]

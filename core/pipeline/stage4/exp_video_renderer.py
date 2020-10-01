@@ -28,6 +28,9 @@ import queue
 import copy
 
 
+import core.utils
+
+
 class BatchedExpVideoRenderer:
     """
     Render the video for each experiment in the specified batch directory in sequence.
@@ -42,17 +45,17 @@ class BatchedExpVideoRenderer:
         """
         experiments = [d for d in os.listdir(batch_exp_root)
                        if main_config['sierra']['collate_csv_leaf'] not in d]
-        q = mp.JoinableQueue()
+        q = mp.JoinableQueue()  # type: mp.JoinableQueue
 
         for exp in experiments:
             exp_root = os.path.join(batch_exp_root, exp)
 
-            if render_opts['plugin_rendering']:
+            if render_opts['project_rendering']:
                 opts = copy.deepcopy(render_opts)
 
                 frames_root = os.path.join(exp_root,
-                                           main_config['sierra']['plugin_frames_leaf'])
-                # Plugin render targets are in <averaged_output_root>/<metric_dir_name>, for all
+                                           main_config['sierra']['project_frames_leaf'])
+                # Project render targets are in <averaged_output_root>/<metric_dir_name>, for all
                 # directories in <averaged_output_root>.
                 for d in os.listdir(frames_root):
                     src_dir = os.path.join(frames_root, d)
@@ -60,24 +63,25 @@ class BatchedExpVideoRenderer:
                         opts['image_dir'] = src_dir
                         opts['output_dir'] = os.path.join(exp_root, 'videos')
                         opts['ofile_leaf'] = d + '.mp4'
-                        os.makedirs(opts['output_dir'], exist_ok=True)
+
+                        core.utils.dir_create_checked(opts['output_dir'], True)
                         q.put(opts)
 
             if render_opts['argos_rendering']:
                 opts = copy.deepcopy(render_opts)
                 opts['ofile_leaf'] = 'argos.mp4'
 
-                # ARGoS render targets are in <batch_output_root>/<exp>/<sim>/<frames_leaf, for all
-                # simulations in a given experiment (which can be a lot!).
+                # ARGoS render targets are in <batch_output_root>/<exp>/<sim>/<argos_frames_leaf>,
+                # for all simulations in a given experiment (which can be a lot!).
                 for sim in os.listdir(exp_root):
                     frames_root = os.path.join(exp_root,
                                                sim,
-                                               main_config['sim']['frames_leaf'])
+                                               main_config['sim']['argos_frames_leaf'])
                     if main_config['sierra']['avg_output_leaf'] not in frames_root and \
-                            main_config['sierra']['plugin_frames_leaf'] not in frames_root:
+                            main_config['sierra']['project_frames_leaf'] not in frames_root:
                         opts['image_dir'] = frames_root
                         opts['output_dir'] = os.path.join(exp_root, 'videos')
-                        os.makedirs(opts['output_dir'], exist_ok=True)
+                        core.utils.dir_create_checked(opts['output_dir'], exist_ok=True)
                         q.put(opts)
 
         # Render videos in parallel--waaayyyy faster

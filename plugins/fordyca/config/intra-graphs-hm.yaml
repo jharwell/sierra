@@ -1,9 +1,0 @@
-HM_arena:
-  graphs:
-    - src_stem: cache-locations
-      title: 'Cache Placement Frequency'
-
-HM_swarm:
-  graphs:
-    - src_stem: cache-acq-locs
-      title: 'Cache Acquisition Locations'

@@ -6,6 +6,10 @@ Command Line Interface
 Core
 ----
 
+Unless an option says otherwise, it is applicable to all batch criteria. That
+is, option batch criteria applicability is only documented for options which
+apply to a subset of the available :ref:`Batch Criteria <ln-batch-criteria>`.
+
 .. argparse::
    :filename: ../core/cmdline.py
    :func: sphinx_cmdline_bootstrap
@@ -27,4 +31,7 @@ FORDYCA Plugin Command Line Extensions
 SILICON Plugin Command Line Extensions
 --------------------------------------
 
-None for the moment.
+.. argparse::
+   :filename: ../plugins/silicon/cmdline.py
+   :func: sphinx_cmdline
+   :prog: cmdline.py

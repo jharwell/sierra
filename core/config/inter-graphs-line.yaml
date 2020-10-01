@@ -1,58 +1,58 @@
-LN_fsm_collision:
+LN_fsm_interference:
   graphs:
-    - src_stem: fsm-collision-counts
-      dest_stem: ca-in-int-avg
-      col: int_avg_in_avoidance
-      title: 'Average Robots in Collision Avoidance (interval)'
+    - src_stem: fsm-interference-counts
+      dest_stem: interference-in-int-avg
+      col: int_avg_exp_interference
+      title: 'Average Robots Experiencing Interference (interval)'
       xlabel: 'Interval'
       ylabel: '# Robots'
 
-    - src_stem: fsm-collision-counts
-      dest_stem: ca-in-cum-avg
-      col: cum_avg_in_avoidance
-      title: 'Average Robots in Collision Avoidance (cumulative)'
+    - src_stem: fsm-interference-counts
+      dest_stem: interference-in-cum-avg
+      col: cum_avg_exp_interference
+      title: 'Average Robots Experiencing Interference (cumulative)'
       xlabel: 'Interval'
       ylabel: '# Robots'
 
-    - src_stem: fsm-collision-counts
-      dest_stem: ca-entered-int-avg
-      col: int_avg_entered_avoidance
-      title: 'Average Robots Entering Collision Avoidance (interval)'
+    - src_stem: fsm-interference-counts
+      dest_stem: interference-entered-int-avg
+      col: int_avg_entered_interference
+      title: 'Average Robots Entering Interference (interval)'
       xlabel: 'Interval'
       ylabel: '# Robots'
 
-    - src_stem: fsm-collision-counts
-      dest_stem: ca-entered-cum-avg
-      col: cum_avg_entered_avoidance
-      title: 'Average Robots Entering Collision Avoidance (cumulative)'
+    - src_stem: fsm-interference-counts
+      dest_stem: interference-entered-cum-avg
+      col: cum_avg_entered_interference
+      title: 'Average Robots Entering Interference (cumulative)'
       xlabel: 'Interval'
       ylabel: '# Robots'
 
-    - src_stem: fsm-collision-counts
-      dest_stem: ca-exited-int-avg
-      col: int_avg_exited_avoidance
-      title: 'Average Robots Exiting Collision Avoidance (interval)'
+    - src_stem: fsm-interference-counts
+      dest_stem: interference-exited-int-avg
+      col: int_avg_exited_interference
+      title: 'Average Robots Exiting Interference (interval)'
       xlabel: 'Interval'
       ylabel: '# Robots'
 
-    - src_stem: fsm-collision-counts
-      dest_stem: ca-exited-cum-avg
-      col: cum_avg_exited_avoidance
-      title: 'Average Robots Exiting Collision Avoidance (cumulative)'
+    - src_stem: fsm-interference-counts
+      dest_stem: interference-exited-cum-avg
+      col: cum_avg_exited_interference
+      title: 'Average Robots Exiting Interference (cumulative)'
       xlabel: 'Interval'
       ylabel: '# Robots'
 
-    - src_stem: fsm-collision-counts
-      dest_stem: ca-duration-int-avg
-      col: int_avg_avoidance_duration
-      title: 'Average Collision Avoidance Duration (interval)'
+    - src_stem: fsm-interference-counts
+      dest_stem: interference-duration-int-avg
+      col: int_avg_interference_duration
+      title: 'Average Interference Duration (interval)'
       xlabel: 'Interval'
       ylabel: '# Robots'
 
-    - src_stem: fsm-collision-counts
-      dest_stem: ca-duration-cum-avg
-      col: cum_avg_avoidance_duration
-      title: 'Average Collision Avoidance Duration (cumulative)'
+    - src_stem: fsm-interference-counts
+      dest_stem: interference-duration-cum-avg
+      col: cum_avg_interference_duration
+      title: 'Average Interference Duration (cumulative)'
       xlabel: 'Interval'
       ylabel: '# Robots'
 

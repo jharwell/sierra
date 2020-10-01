@@ -16,12 +16,13 @@
 
 import math
 import typing as tp
-from core.variables.base_variable import BaseVariable
+from core.variables.base_variable import IBaseVariable
+from core.utils import ArenaExtent
 
-kWallWidth = 0.4
+kWALL_WIDTH = 0.4
 
 
-class RectangularArena(BaseVariable):
+class RectangularArena(IBaseVariable):
 
     """
     Maps a list of desired arena dimensions specified in (X,Y) tuples to a list of sets of changes
@@ -33,85 +34,107 @@ class RectangularArena(BaseVariable):
         dimensions: List of (X, Y, Z) tuples of arena size.
     """
 
-    def __init__(self, dimensions: tp.List[tp.Tuple[int, int, int]]):
+    def __init__(self, dimensions: tp.List[ArenaExtent]) -> None:
         self.dimensions = dimensions
+        self.attr_changes = []  # type: tp.List
 
     def gen_attr_changelist(self) -> list:
         """
         Generate list of sets of changes necessary to make to the input file to correctly set up the
         simulation with the specified area size/shape.
         """
-        return [set([(".//arena", "size", "{0}, {1}, 2".format(s[0], s[1])),
-                     (".//arena", "center", "{0}, {1}, 1".format(s[0] / 2.0, s[1] / 2.0)),
+        if not self.attr_changes:
+            self.attr_changes = [set([(".//arena",
+                                       "size",
+                                       "{0}, {1}, 2".format(extent.x(), extent.y())),
+                                      (".//arena",
+                                       "center",
+                                       "{0:.9f},{1:.9f},1".format(extent.x() / 2.0, extent.y() / 2.0)),
 
-                     # We restrict the places robots can spawn within the arena as follows:
-                     #
-                     # - Subtract width of the walls so that robots do not spawn inside walls (which
-                     #   ARGoS seems to allow?).
-                     #
-                     # - Subtract a little bit more so robots don't get into weird states by being
-                     #   near arena boundaries on the first timestep.
-                     #
-                     # - All robots start on the ground with Z=0.
-                     (".//arena/distribute/position",
-                      "max",
-                      "{0}, {1}, 0".format(s[0] - 2.0 * kWallWidth - 2.0,
-                                           s[1] - 2.0 * kWallWidth - 2.0)),
-                     (".//arena/distribute/position",
-                      "min",
-                      "{0}, {1}, 0".format(2.0 * kWallWidth + 2.0, 2.0 * kWallWidth + 2.0)),
+                                      # We restrict the places robots can spawn within the arena as
+                                      # follows:
+                                      #
+                                      # - Subtract width of the walls so that robots do not spawn
+                                      #   inside walls (which ARGoS seems to allow?).
+                                      #
+                                      # - Subtract a little bit more so robots don't get into weird
+                                      #   states by being near arena boundaries on the first
+                                      #   timestep.
+                                      #
+                                      # - All robots start on the ground with Z=0.
+                                      (".//arena/distribute/position",
+                                       "max",
+                                       "{0:.9f}, {1:.9f}, 0".format(extent.x() - 2.0 * kWALL_WIDTH - 2.0,
+                                                                    extent.y() - 2.0 * kWALL_WIDTH - 2.0)),
+                                      (".//arena/distribute/position",
+                                       "min",
+                                       "{0:.9f}, {1:.9f}, 0".format(2.0 * kWALL_WIDTH + 2.0, 2.0 * kWALL_WIDTH + 2.0)),
 
-                     (".//arena/*[@id='wall_north']", "size", "{0}, {1}, 0.5".format(s[0],
-                                                                                     kWallWidth)),
+                                      (".//arena/*[@id='wall_north']",
+                                       "size",
+                                       "{0:.9f}, {1:.9f}, 0.5".format(extent.x(), kWALL_WIDTH)),
 
-                     (".//arena/*[@id='wall_north']/body",
-                      "position", "{0}, {1}, 0".format(s[0] / 2.0, s[1])),
-                     (".//arena/*[@id='wall_south']", "size", "{0}, {1}, 0.5".format(s[0],
-                                                                                     kWallWidth)),
-                     (".//arena/*[@id='wall_south']/body",
-                      "position", "{0}, 0, 0 ".format(s[0] / 2.0)),
+                                      (".//arena/*[@id='wall_north']/body",
+                                       "position", "{0:.9f}, {1:.9f}, 0".format(extent.x() / 2.0, extent.y())),
+                                      (".//arena/*[@id='wall_south']",
+                                       "size",
+                                       "{0:.9f}, {1:.9f}, 0.5".format(extent.x(), kWALL_WIDTH)),
+                                      (".//arena/*[@id='wall_south']/body",
+                                       "position",
+                                       "{0:.9f}, 0, 0 ".format(extent.x() / 2.0)),
 
+                                      # East wall needs to have its X coordinate offset by the width
+                                      # of the wall / 2 in order to be centered on the boundary for
+                                      # the arena. This is necessary to ensure that the maximum X
+                                      # coordinate that robots can access is LESS than the upper
+                                      # boundary of physics engines incident along the east wall.
+                                      #
+                                      # I think this is a bug in ARGoS.
+                                      (".//arena/*[@id='wall_east']",
+                                       "size",
+                                       "{0:.9f}, {1:.9f}, 0.5".format(kWALL_WIDTH,
+                                                                      extent.y() + kWALL_WIDTH)),
+                                      (".//arena/*[@id='wall_east']/body",
+                                       "position",
+                                       "{0:.9f}, {1:.9f}, 0".format(extent.x() - kWALL_WIDTH / 2.0,
+                                                                    extent.y() / 2.0)),
 
-                     # East wall needs to have its X coordinate offset by the width of the wall / 2
-                     # in order to be centered on the boundary for the arena. This is necessary to
-                     # ensure that the maximum X coordinate that robots can access is LESS than the
-                     # upper boundary of physics engines incident along the east wall.
-                     #
-                     # I think this is a bug in ARGoS.
-                     (".//arena/*[@id='wall_east']", "size", "{0}, {1}, 0.5".format(kWallWidth,
-                                                                                    s[1] + kWallWidth)),
-                     (".//arena/*[@id='wall_east']/body",
-                      "position",
-                      "{0}, {1}, 0".format(s[0] - kWallWidth / 2.0,
-                                           s[1] / 2.0)),
+                                      (".//arena/*[@id='wall_west']",
+                                       "size",
+                                       "{0:.9f}, {1:.9f}, 0.5".format(kWALL_WIDTH,
+                                                                      extent.y() + kWALL_WIDTH)),
+                                      (".//arena/*[@id='wall_west']/body",
+                                       "position",
+                                       "0, {0:.9f}, 0".format(extent.y() / 2.0)),
 
-                     (".//arena/*[@id='wall_west']", "size", "{0}, {1}, 0.5".format(kWallWidth,
-                                                                                    s[1] + kWallWidth)),
-                     (".//arena/*[@id='wall_west']/body",
-                      "position", "0, {0}, 0".format(s[1] / 2.0)),
+                                      (".//arena_map/grid2D",
+                                       "dims",
+                                       "{0}, {1}, 2".format(extent.x(), extent.y())),
+                                      (".//perception/grid2D", "dims",
+                                       "{0}, {1}, 2".format(extent.x(), extent.y())),
 
-                     (".//arena_map/grid", "size", "{0}, {1}, 2".format(s[0], s[1])),
-                     (".//perception/grid", "size", "{0}, {1}, 2".format(s[0], s[1])),
+                                      (".//convergence/positional_entropy",
+                                       "horizon",
+                                       "0:{0:.9f}".format(math.sqrt(extent.x() ** 2 + extent.y() ** 2))),
+                                      (".//convergence/positional_entropy",
+                                       "horizon_delta",
+                                       "{0:.9f}".format(math.sqrt(extent.x() ** 2 + extent.y() ** 2) / 10.0)),
 
-                     (".//convergence/positional_entropy",
-                      "horizon",
-                      "0:{0}".format(math.sqrt(s[0] ** 2 + s[1] ** 2))),
-                     (".//convergence/positional_entropy",
-                      "horizon_delta",
-                      "{0}".format(math.sqrt(s[0] ** 2 + s[1] ** 2) / 10.0)),
-
-                     # Finally, set camera positioning. Probably will not be used, but IF rendering
-                     # is enabled we want to have the visualizations come out nicely. I assume a
-                     # single camera is present.
-                     (".//camera/placement",
-                      "position", "{0}, {1}, {2}".format(s[0] / 2.0,
-                                                         s[1] / 2.0,
-                                                         max(s[0], s[1]) * 2.0 / 3.0)),
-                     (".//camera/placement",
-                      "look_at", "{0}, {1}, 0".format(s[0] / 2.0,
-                                                      s[1] / 2.0))
-                     ])
-                for s in self.dimensions]
+                                      # Finally, set camera positioning. Probably will not be used,
+                                      # but IF rendering is enabled we want to have the
+                                      # visualizations come out nicely. I assume a single camera is
+                                      # present.
+                                      (".//camera/placement",
+                                       "position", "{0:.9f}, {1:.9f}, {2:.9f}".format(extent.x() / 2.0,
+                                                                                      extent.y() / 2.0,
+                                                                                      max(extent.x(), extent.y()) * 2.0 / 3.0)),
+                                      (".//camera/placement",
+                                       "look_at",
+                                       "{0:.9f}, {1:.9f}, 0".format(extent.x() / 2.0,
+                                                                    extent.y() / 2.0))
+                                      ])
+                                 for extent in self.dimensions]
+        return self.attr_changes
 
     def gen_tag_rmlist(self) -> list:
         return []
@@ -126,8 +149,8 @@ class RectangularArenaTwoByOne(RectangularArena):
     Y range, where the X dimension is always twices as large as the Y dimension.
     """
 
-    def __init__(self, x_range: range, y_range: range):
-        super().__init__([(x, y) for x in x_range for y in y_range])
+    def __init__(self, x_range: range, y_range: range) -> None:
+        super().__init__([ArenaExtent((x, y, 1)) for x in x_range for y in y_range])
 
 
 class SquareArena(RectangularArena):
@@ -136,5 +159,14 @@ class SquareArena(RectangularArena):
     Y range, where the X and y dimensions are always equal.
     """
 
-    def __init__(self, sqrange: range):
-        super().__init__([(x, x) for x in sqrange])
+    def __init__(self, sqrange: range) -> None:
+        super().__init__([ArenaExtent((x, x, 1)) for x in sqrange])
+
+
+__api__ = [
+    'ArenaExtent',
+    'kWALL_WIDTH',
+    'RectangularArena',
+    'RectangularArenaTwoByOne',
+    'SquareArena',
+]

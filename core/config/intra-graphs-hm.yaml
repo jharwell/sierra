@@ -1,15 +1,15 @@
 HM_arena:
   graphs:
-    - src_stem: fsm-collision-locs
+    - src_stem: fsm-collision-locs2D
       title: 'Robot Collision Density'
     - src_stem: swarm-dist-pos2D
       title: 'Robot Occupancy Density'
 
 HM_swarm:
   graphs:
-    - src_stem: block-acq-locs
+    - src_stem: block-acq-locs2D
       title: 'Block Acquisition Locations'
-    - src_stem: block-acq-vector-locs
+    - src_stem: block-acq-vector-locs2D
       title: 'Block Acquisition Vector Locations'
-    - src_stem: block-acq-explore-locs
+    - src_stem: block-acq-explore-locs2D
       title: 'Block Acquisition Exploration Locations'

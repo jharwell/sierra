@@ -14,25 +14,21 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
-Definition:
-    All[.Z{population}]
-
-    population - The swarm size to use (optional)
-
-Examples:
-    - ``All.Z16``: All possible task allocation policies with swarms of size 16.
-    - ``All``: All possible task allocation policies; swarm size not modified.
+Classes for the task allocation policy batch criteria. See :ref:`ln-bc-ta-policy-set` for usage
+documentation.
 """
 
 
 import re
 import typing as tp
+import implements
 
-from core.variables.batch_criteria import UnivarBatchCriteria
+import core.variables.batch_criteria as bc
 from core.variables.population_size import PopulationSize
 
 
-class TAPolicySet(UnivarBatchCriteria):
+@implements.implements(bc.IConcreteBatchCriteria)
+class TAPolicySet(bc.UnivarBatchCriteria):
     """
     A univariate range specifiying the set of task allocation policies (and possibly swarm size) to
     use to define the batched experiment. This class is a base class which should (almost) never be
@@ -49,52 +45,64 @@ class TAPolicySet(UnivarBatchCriteria):
                  main_config: tp.Dict[str, str],
                  batch_generation_root: str,
                  policies: list,
-                 population: int):
-        UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
+                 population: int) -> None:
+        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
         self.policies = policies
         self.population = population
+        self.attr_changes = []  # type: tp.List
 
     def gen_attr_changelist(self) -> list:
-        # Swarm size is optional. It can be (1) controlled via this variable, (2) controlled by
-        # another variable in a bivariate batch criteria, (3) not controlled at all. For (2), (3),
-        # the swarm size can be None.
-        if self.population is not None:
-            size_attr = [next(iter(PopulationSize(self.cli_arg,
-                                                  self.main_config,
-                                                  self.batch_generation_root,
-                                                  [self.population]).gen_attr_changelist()[0]))]
-        else:
-            size_attr = []
-        changes = []
+        if not self.attr_changes:
+            # Swarm size is optional. It can be (1) controlled via this variable, (2) controlled by
+            # another variable in a bivariate batch criteria, (3) not controlled at all. For (2),
+            # (3), the swarm size can be None.
+            if self.population is not None:
+                size_chgs = PopulationSize(self.cli_arg,
+                                           self.main_config,
+                                           self.batch_generation_root,
+                                           [self.population]).gen_attr_changelist()[0]
+            else:
+                size_chgs = []
 
-        for p in self.policies:
-            c = []
-            c.extend(size_attr)
-            c.extend([(".//task_alloc", "policy", "{0}".format(p))])
+            self.attr_changes = []
 
-            changes.append(set(c))
-        return changes
+            for p in self.policies:
+                c = []
+                for chg in size_chgs:
+                    c.extend(chg)
 
-    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> tp.List[str]:
+                c.extend([(".//task_alloc", "policy", "{0}".format(p))])
+                self.attr_changes.append(set(c))
+
+        return self.attr_changes
+
+    def gen_exp_dirnames(self, cmdopts: dict) -> tp.List[str]:
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
-    def graph_xticks(self, cmdopts: tp.Dict[str, str], exp_dirs: tp.List[str]) -> tp.List[float]:
+    def graph_xticks(self,
+                     cmdopts: dict,
+                     exp_dirs: tp.List[str] = None) -> tp.List[float]:
         if exp_dirs is not None:
             dirs = exp_dirs
         else:
             dirs = self.gen_exp_dirnames(cmdopts)
 
-        return [i for i in range(1, len(dirs) + 1)]
+        return [float(i) for i in range(1, len(dirs) + 1)]
 
-    def graph_xticklabels(self, cmdopts: tp.Dict[str, str], exp_dirs) -> tp.List[float]:
+    def graph_xticklabels(self,
+                          cmdopts: dict,
+                          exp_dirs: tp.List[str] = None) -> tp.List[str]:
         return ['Random', 'STOCH-N1', 'MAT-OPT', r'$\epsilon$-greedy', 'UCB1']
 
-    def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
+    def graph_xlabel(self, cmdopts: dict) -> str:
         return "Task Allocation Policy"
 
-    def pm_query(self, query: str) -> bool:
-        return query in ['blocks-transported']
+    def pm_query(self, pm: str) -> bool:
+        return pm in ['raw']
+
+    def inter_exp_graphs_exclude_exp0(self) -> bool:
+        return False
 
 
 class TAPolicySetParser():
@@ -116,7 +124,7 @@ class TAPolicySetParser():
             "FATAL: Bad TAPolicy set in criteria '{0}'. Must be 'All'".format(criteria_str)
 
         # Parse swarm size
-        res = re.search("\.Z[0-9]+", criteria_str)
+        res = re.search(r".Z[0-9]+", criteria_str)
         if res is not None:
             ret['population'] = int(res.group(0)[2:])
 
@@ -134,10 +142,15 @@ def factory(cli_arg: str,
     """
     attr = TAPolicySetParser().parse(cli_arg)
 
-    def __init__(self):
+    def __init__(self) -> None:
         TAPolicySet.__init__(self, cli_arg, main_config, batch_generation_root,
                              TAPolicySet.kPolicies, attr.get('population', None))
 
     return type(cli_arg,
                 (TAPolicySet,),
                 {"__init__": __init__})
+
+
+__api__ = [
+    'TAPolicySet'
+]

@@ -26,6 +26,7 @@ import typing as tp
 from core.graphs.stacked_line_graph import StackedLineGraph
 from core.graphs.heatmap import Heatmap
 from core.pipeline.stage4.flexibility_plots import FlexibilityPlotsCSVGenerator, FlexibilityPlotsDefinitionsGenerator
+import core.utils
 
 
 class BatchedIntraExpGraphGenerator:
@@ -36,7 +37,7 @@ class BatchedIntraExpGraphGenerator:
         cmdopts: Dictionary of parsed cmdline attributes.
     """
 
-    def __init__(self, cmdopts: tp.Dict[str, str]):
+    def __init__(self, cmdopts: dict) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
@@ -54,14 +55,16 @@ class BatchedIntraExpGraphGenerator:
         batch_graph_root = self.cmdopts["graph_root"]
         batch_generation_root = self.cmdopts['generation_root']
 
-        for item in os.listdir(batch_output_root):
+        exp_to_gen = core.utils.exp_range_calc(self.cmdopts, batch_output_root, batch_criteria)
+
+        for exp in exp_to_gen:
 
             # Roots need to be modified for each experiment for correct behavior
             cmdopts = copy.deepcopy(self.cmdopts)
-            cmdopts["generation_root"] = os.path.join(batch_generation_root, item)
-            cmdopts["output_root"] = os.path.join(batch_output_root, item)
-            cmdopts["graph_root"] = os.path.join(batch_graph_root, item)
-            if os.path.isdir(cmdopts["output_root"]) and main_config['sierra']['collate_csv_leaf'] != item:
+            cmdopts["generation_root"] = os.path.join(batch_generation_root, exp)
+            cmdopts["output_root"] = os.path.join(batch_output_root, exp)
+            cmdopts["graph_root"] = os.path.join(batch_graph_root, exp)
+            if os.path.isdir(cmdopts["output_root"]) and main_config['sierra']['collate_csv_leaf'] != exp:
                 IntraExpGraphGenerator(main_config,
                                        controller_config,
                                        LN_config,
@@ -81,7 +84,7 @@ class IntraExpGraphGenerator:
                  controller_config: dict,
                  LN_config: dict,
                  HM_config: dict,
-                 cmdopts: tp.Dict[str, str]):
+                 cmdopts: dict) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
@@ -93,23 +96,23 @@ class IntraExpGraphGenerator:
         self.cmdopts["output_root"] = os.path.join(self.cmdopts["output_root"],
                                                    self.main_config['sierra']['avg_output_leaf'])
 
-        os.makedirs(self.cmdopts["graph_root"], exist_ok=True)
+        core.utils.dir_create_checked(self.cmdopts["graph_root"], exist_ok=True)
 
     def __call__(self, batch_criteria):
         """
         Runs the following to generate graphs for each experiment in the batch:
 
-        #. :class:`~pipeline.stage4.intra_exp_graph_generator.LinegraphsGenerator` to generate
-           linegraphs for each experiment in the batch.
+        #. :class:`~core.pipeline.pipeline_stage4.intra_exp_graph_generator.LinegraphsGenerator` to
+           generate linegraphs for each experiment in the batch.
 
-        #. :class:`~pipeline.stage4.intra_exp_graph_generator.HeatmapsGenerator` to generate
-           heatmaps for each experiment in the batch.
+        #. :class:`~core.pipeline.pipeline_stage4.intra_exp_graph_generator.HeatmapsGenerator` to
+           generate heatmaps for each experiment in the batch.
         """
-        if self.cmdopts['gen_vc_plots']:
+        if self.cmdopts['gen_vc_plots'] and batch_criteria.is_univar():
             logging.info('Flexibility plots from %s', self.cmdopts['output_root'])
             FlexibilityPlotsCSVGenerator(self.main_config, self.cmdopts)(batch_criteria)
 
-        LN_targets, HM_targets = self.__calc_intra_targets(batch_criteria)
+        LN_targets, HM_targets = self.__calc_intra_targets()
 
         LinegraphsGenerator(self.cmdopts["output_root"],
                             self.cmdopts["graph_root"],
@@ -119,7 +122,7 @@ class IntraExpGraphGenerator:
                           self.cmdopts["graph_root"],
                           HM_targets).generate()
 
-    def __calc_intra_targets(self, batch_criteria):
+    def __calc_intra_targets(self):
         """
         Use YAML configuration for controller the controller and intra-experiment graphs to
         calculate what graphs should be generated.
@@ -136,7 +139,8 @@ class IntraExpGraphGenerator:
                 # valid to specify no graphs, and only to inherit graphs
                 keys = controller.get('graphs', [])
                 if 'graphs_inherit' in controller:
-                    [keys.extend(l) for l in controller['graphs_inherit']]  # optional
+                    for inherit in controller['graphs_inherit']:
+                        keys.extend(inherit)   # optional
                 if self.cmdopts['gen_vc_plots']:  # optional
                     extra_graphs = FlexibilityPlotsDefinitionsGenerator()()
 
@@ -164,7 +168,7 @@ class HeatmapsGenerator:
                  generated.
     """
 
-    def __init__(self, exp_output_root: str, exp_graph_root: str, targets: list):
+    def __init__(self, exp_output_root: str, exp_graph_root: str, targets: list) -> None:
 
         self.exp_output_root = exp_output_root
         self.exp_graph_root = exp_graph_root
@@ -197,7 +201,7 @@ class LinegraphsGenerator:
                  generated.
     """
 
-    def __init__(self, exp_output_root: str, exp_graph_root: str, targets: list):
+    def __init__(self, exp_output_root: str, exp_graph_root: str, targets: list) -> None:
 
         self.exp_output_root = exp_output_root
         self.exp_graph_root = exp_graph_root

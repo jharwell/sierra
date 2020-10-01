@@ -15,22 +15,7 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Definition:
-    {oracle_name}[.Z{population}]
-
-    oracle_name - {entities, tasks}
-    population - Static size of the swarm to use (optional)
-
-Examples:
-    - ``entities.Z16``: All permutations of oracular information about entities in the arena, run
-      with swarms of size 16.
-
-    - ``tasks.Z8``: All permutations of oracular information about tasks in the arena, run with
-      swarms of size 8.
-
-    - ``entities``: All permuntations of oracular information of entities in the arena (swarm size
-      is not modified).
-
+Classes for the oracle batch criteria. See :ref:`ln-bc-oracle` for usage documentation.
 """
 
 
@@ -38,11 +23,14 @@ import typing as tp
 import re
 import itertools
 
-from core.variables.batch_criteria import UnivarBatchCriteria
+import implements
+
+import core.variables.batch_criteria as bc
 from core.variables.population_size import PopulationSize
 
 
-class Oracle(UnivarBatchCriteria):
+@implements.implements(bc.IConcreteBatchCriteria)
+class Oracle(bc.UnivarBatchCriteria):
     """
     A univariate range specifiying the types of oracular information to disseminate to the swarm
     during simulation. This class is a base class which should (almost) never be used on its
@@ -61,45 +49,57 @@ class Oracle(UnivarBatchCriteria):
                  main_config: tp.Dict[str, str],
                  batch_generation_root: str,
                  tuples: tp.List[tuple],
-                 population: int):
-        UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
+                 population: int) -> None:
+        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
 
         self.tuples = tuples
         self.population = population
+        self.attr_changes = []  # type: tp.List
 
     def gen_attr_changelist(self) -> list:
-        # Swarm size is optional. It can be (1) controlled via this variable, (2) controlled by
-        # another variable in a bivariate batch criteria, (3) not controlled at all. For (2), (3),
-        # the swarm size can be None.
-        changes = [set([(".//oracle_manager/{0}".format(str(t[0])),
-                         "{0}".format(str(feat[0])),
-                         "{0}".format(str(feat[1]))) for feat in t[1]]) for t in self.tuples]
+        if not self.attr_changes:
+            # Swarm size is optional. It can be (1) controlled via this variable, (2) controlled by
+            # another variable in a bivariate batch criteria, (3) not controlled at all. For (2),
+            # (3), the swarm size can be None.
+            self.attr_changes = [set([(".//oracle_manager/{0}".format(str(t[0])),
+                                       "{0}".format(str(feat[0])),
+                                       "{0}".format(str(feat[1]))) for feat in t[1]]) for t in self.tuples]
 
-        if self.population is not None:
-            size_attr = [next(iter(PopulationSize(self.cli_arg,
-                                                  self.main_config,
-                                                  self.batch_generation_root,
-                                                  [self.population]).gen_attr_changelist()[0]))]
-            for c in changes:
-                c.add(size_attr)
+            if self.population is not None:
+                size_chgs = PopulationSize(self.cli_arg,
+                                           self.main_config,
+                                           self.batch_generation_root,
+                                           [self.population]).gen_attr_changelist()[0]
+                for exp_chgs in self.attr_changes:
+                    exp_chgs |= size_chgs
 
-        return changes
+        return self.attr_changes
 
-    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, str]) -> tp.List[str]:
+    def gen_exp_dirnames(self, cmdopts: dict) -> tp.List[str]:
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
-    def graph_xticks(self, cmdopts: tp.Dict[str, str], exp_dirs: tp.List[str]) -> str:
-        return [d for d in self.gen_exp_dirnames(cmdopts)]
+    def graph_xticks(self,
+                     cmdopts: dict,
+                     exp_dirs: tp.List[str] = None) -> tp.List[float]:
+        if exp_dirs is None:
+            exp_dirs = self.gen_exp_dirnames(cmdopts)
 
-    def graph_xticklabels(self, cmdopts: tp.Dict[str, str], exp_dirs: tp.List[str] = None) -> tp.List[float]:
+        return list(map(float, range(0, len(exp_dirs))))
+
+    def graph_xticklabels(self,
+                          cmdopts: dict,
+                          exp_dirs: tp.List[str] = None) -> tp.List[str]:
         raise NotImplementedError
 
-    def graph_xlabel(self, cmdopts: tp.Dict[str, str]) -> str:
+    def graph_xlabel(self, cmdopts: dict) -> str:
         return "Oracular Information Type"
 
     def pm_query(self, pm: str) -> bool:
-        return pm in ['blocks-transported']
+        return pm in ['raw']
+
+    def inter_exp_graphs_exclude_exp0(self) -> bool:
+        return False
 
 
 class OracleParser():
@@ -116,7 +116,11 @@ class OracleParser():
                 population: Size of swarm to use (optional)
 
         """
-        ret = {}
+        ret = {
+            'oracle_name': str(),
+            'oracle_type': str(),
+            'population': int()
+        }
 
         # Parse oracle name
         if 'entities' in criteria_str:
@@ -154,10 +158,10 @@ def factory(cli_arg: str,
                                ))
 
             return tuples
-        else:
-            return None
 
-    def __init__(self):
+        return None
+
+    def __init__(self) -> None:
         Oracle.__init__(self,
                         cli_arg,
                         main_config,
@@ -168,3 +172,8 @@ def factory(cli_arg: str,
     return type(cli_arg,
                 (Oracle,),
                 {"__init__": __init__})
+
+
+__api__ = [
+    'Oracle'
+]

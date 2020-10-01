@@ -16,11 +16,12 @@
 #
 import re
 import typing as tp
-from core.variables import batch_criteria as bc
+from core.variables.batch_criteria import UnivarBatchCriteria
 from core.variables.arena_shape import RectangularArena
+from core.utils import ArenaExtent
 
 
-class ConstantDensity(bc.UnivarBatchCriteria):
+class ConstantDensity(UnivarBatchCriteria):
     """
     A univariate range specifiying the density (ratio of SOMETHING to arena size) to hold constant
     as arena size is increased. This class is a base class which should NEVER be used on its
@@ -34,35 +35,18 @@ class ConstantDensity(bc.UnivarBatchCriteria):
 
     """
 
-    # How many experiments to run for the given density value, in which the arena size is increased
-    # from its initial value according to parsed parameters.
-    kExperimentsPerDensity = 10
-
     def __init__(self,
                  cli_arg: str,
                  main_config: tp.Dict[str, str],
                  batch_generation_root: str,
                  target_density: float,
-                 dimensions: tp.List[tuple],
-                 dist_type: str):
-        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
+                 dimensions: tp.List[ArenaExtent],
+                 dist_type: str) -> None:
+        UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
         self.target_density = target_density
         self.dimensions = dimensions
         self.dist_type = dist_type
-        self.changes = RectangularArena(dimensions).gen_attr_changelist()
-
-        dist_types = {
-            'SS': 'TypeSingleSource',
-            'DS': 'TypeDualSource',
-            'QS': 'TypeQuadSource',
-            'RN': 'TypeRandom'
-        }
-        module = __import__("core.variables.block_distribution", fromlist=["*"])
-        dist = getattr(module, dist_types[self.dist_type])()
-
-        for changeset in self.changes:
-            for c in dist.gen_attr_changelist():
-                changeset = changeset | c
+        self.attr_changes = RectangularArena(dimensions).gen_attr_changelist()
 
     def exp_scenario_name(self, exp_num: int) -> str:
         """
@@ -75,8 +59,7 @@ class ConstantDensity(bc.UnivarBatchCriteria):
         starting arena dimensions), and the correct arena dimensions for a given exp must be found
         via lookup with THIS function).
         """
-        dims = map(str, list(self.dimensions[exp_num]))
-        return self.dist_type + '.' + 'x'.join(dims)
+        return self.dist_type + '.' + 'x'.join(str(self.dimensions[exp_num]))
 
 
 class ConstantDensityParser():
@@ -94,8 +77,8 @@ class ConstantDensityParser():
         """
         ret = {}
         # Need to have 1 dot/2 parts
-        assert 3 == len(cli_arg.split('.')),\
-            "Bad criteria formatting in criteria '{0}': must have 2 sections, separated by '.'".format(
+        assert len(cli_arg.split('.')) == 4,\
+            "Bad criteria formatting in criteria '{0}': must have 3 sections, separated by '.'".format(
                 cli_arg)
 
         # Parse type
@@ -122,7 +105,19 @@ class ConstantDensityParser():
         res = re.search('I[0-9]+', increment)
         assert res is not None, \
             "FATAL: Bad arena increment specification in criteria '{0}'".format(cli_arg)
-
         ret['arena_size_inc'] = int(res.group(0)[1:])
 
+        # Parse cardinality
+        increment = cli_arg.split('.')[3]
+        res = re.search('C[0-9]+', increment)
+        assert res is not None, \
+            "FATAL: Bad cardinality specification in criteria '{0}'".format(cli_arg)
+
+        ret['cardinality'] = int(res.group(0)[1:])
+
         return ret
+
+
+__api__ = [
+    'ConstantDensity'
+]

@@ -30,26 +30,26 @@ Examples:
 
 import typing as tp
 
-from core.variables.base_variable import BaseVariable
+from core.variables.base_variable import IBaseVariable
 
+k1D_DATA_POINTS = 50
 """
 Default # datapoints in each .csv of one-dimensional data.
 """
-k1D_DATA_POINTS = 50
 
+kND_DATA_DIVISOR = 10
 """
 Default divisor for the output interval for  each .csv of two- or three-dimensional data, as
 compared to the output interval for 1D data.
 """
-kND_DATA_DIVISOR = 10
 
+kTICKS_PER_SECOND = 5
 """
 Default # times each controller will be run per second in simulation.
 """
-kTICKS_PER_SECOND = 5
 
 
-class TimeSetup(BaseVariable):
+class TimeSetup(IBaseVariable):
     """
     Defines the simulation duration, metric collection interval.
 
@@ -58,19 +58,23 @@ class TimeSetup(BaseVariable):
         metric_interval: Base interval for metric collection.
     """
 
-    def __init__(self, sim_duration: int, metric_interval: int):
+    def __init__(self, sim_duration: int, metric_interval: int) -> None:
         self.sim_duration = sim_duration
         self.metric_interval = metric_interval
+        self.attr_changes = []  # type: tp.List
 
     def gen_attr_changelist(self):
-        return [set([
-            (".//experiment", "length", "{0}".format(self.sim_duration)),
-            (".//experiment", "ticks_per_second", "{0}".format(kTICKS_PER_SECOND)),
-            (".//output/metrics/append", "output_interval", "{0}".format(self.metric_interval)),
-            (".//output/metrics/truncate", "output_interval", "{0}".format(self.metric_interval)),
-            (".//output/metrics/create", "output_interval",
-             "{0}".format(max(1, self.metric_interval / kND_DATA_DIVISOR)))
-        ])]
+        if not self.attr_changes:
+            self.attr_changes = [set([
+                (".//experiment", "length", "{0}".format(self.sim_duration)),
+                (".//experiment", "ticks_per_second", "{0}".format(kTICKS_PER_SECOND)),
+                (".//output/metrics/append", "output_interval", "{0}".format(self.metric_interval)),
+                (".//output/metrics/truncate", "output_interval",
+                 "{0}".format(self.metric_interval)),
+                (".//output/metrics/create", "output_interval",
+                 "{0}".format(max(1, self.metric_interval / kND_DATA_DIVISOR)))
+            ])]
+        return self.attr_changes
 
     def gen_tag_rmlist(self):
         return []
@@ -80,8 +84,8 @@ class TimeSetup(BaseVariable):
 
 
 class TInterval(TimeSetup):
-    def __init__(self):
-        super().__init__(1000 / kTICKS_PER_SECOND, 1000 / k1D_DATA_POINTS)
+    def __init__(self) -> None:
+        super().__init__(int(1000 / kTICKS_PER_SECOND), int(1000 / k1D_DATA_POINTS))
 
 
 class TimeSetupParser():
@@ -89,7 +93,7 @@ class TimeSetupParser():
     Enforces the cmdline definition of time setup criteria.
     """
 
-    def __call__(self, time_str: str) -> tp.Dict[str, str]:
+    def __call__(self, time_str: str) -> tp.Dict[str, int]:
         ret = {}
 
         ret.update(TimeSetupParser.duration_parse(time_str))
@@ -128,11 +132,20 @@ def factory(time_str: str):
     """
     attr = TimeSetupParser()(time_str.split(".")[1])
 
-    def __init__(self):
+    def __init__(self) -> None:
         TimeSetup.__init__(self,
                            attr["sim_duration"],
-                           attr["sim_duration"] * kTICKS_PER_SECOND / attr["n_datapoints"])
+                           int(attr["sim_duration"] * kTICKS_PER_SECOND / attr["n_datapoints"]))
 
     return type(time_str,
                 (TimeSetup,),
                 {"__init__": __init__})
+
+
+__api__ = [
+    'k1D_DATA_POINTS',
+    'kND_DATA_DIVISOR',
+    'kTICKS_PER_SECOND',
+    'TimeSetup',
+    'TInterval',
+]

@@ -1,29 +1,15 @@
-plugins.fordyca
-===============
+===================
+``plugins.fordyca``
+===================
 
 .. automodule:: plugins.fordyca
-   :members:
 
-Cmdline
--------
-.. automodule:: plugins.fordyca.cmdline
-   :members:
+   .. contents::
+      :local:
 
-Variables
----------
 
-Dynamic Caches
-^^^^^^^^^^^^^^
+.. toctree::
 
-.. automodule:: plugins.fordyca.variables.dynamic_cache
-   :members:
+   plugins.fordyca.cmdline
 
-Static Caches
-^^^^^^^^^^^^^
-.. automodule:: plugins.fordyca.variables.static_cache
-   :members:
-
-Generators
-----------
-.. automodule:: plugins.fordyca.generators.scenario_generators
-   :members:
+.. currentmodule:: plugins.fordyca

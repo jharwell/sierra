@@ -22,14 +22,14 @@ import yaml
 from core.xml_luigi import XMLLuigi
 
 
-def JointGeneratorfactory(controller, scenario):
+def joint_generator_create(controller, scenario):
     """
     Given a controller(generator), and a scenario(generator), construct a joint generator class
     that can be used for experiment generation.
 
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.controller = controller
         self.scenario = scenario
 
@@ -42,18 +42,19 @@ def JointGeneratorfactory(controller, scenario):
                             generate})()
 
 
-def ScenarioGeneratorfactory(scenario, controller, **kwargs):
+def scenario_generator_create(scenario, controller, **kwargs):
     """
     Creates a scenario generator using arbitrary arena dimensions and with an arbitrary
     controller.
     """
 
-    def __init__(self, **kwargs):
-        res = re.search('[SDQLR][SSSLN]', scenario)
+    def __init__(self, **kwargs) -> None:
+        res = re.search('[SDQPR][SSSLN]', scenario)
+        assert res is not None, "Bad block distribution in {0}".format(scenario)
         abbrev = res.group(0)
         cmdopts = kwargs['cmdopts']
         try:
-            path = 'plugins.{0}.generators.scenario_generators'.format(cmdopts['plugin'])
+            path = 'plugins.{0}.generators.scenario_generators'.format(cmdopts['project'])
             module = __import__(path, fromlist=["*"])
         except ModuleNotFoundError:
             logging.exception("module %s must exist!", path)
@@ -72,13 +73,13 @@ def ScenarioGeneratorfactory(scenario, controller, **kwargs):
                             })(**kwargs)
 
 
-def ControllerGeneratorfactory(controller, config_root, cmdopts):
+def controller_generator_create(controller, config_root, cmdopts):
     """
     Creates a controller generator from the cmdline specification that exists in one of
     the configuration files.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.config = yaml.load(open(os.path.join(config_root, 'controllers.yaml')),
                                 yaml.FullLoader)
         self.category, self.name = controller.split('.')
@@ -111,3 +112,10 @@ def ControllerGeneratorfactory(controller, config_root, cmdopts):
                 (object,), {"__init__": __init__,
                             "generate": generate
                             })()
+
+
+__api__ = [
+    'joint_generator_create',
+    'scenario_generator_create',
+    'controller_generator_create',
+]

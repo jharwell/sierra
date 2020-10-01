@@ -14,10 +14,14 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
-from core.variables.base_variable import BaseVariable
+import math
+import typing as tp
+
+from core.variables.base_variable import IBaseVariable
+from core.utils import ArenaExtent
 
 
-class Type(BaseVariable):
+class BaseDistribution(IBaseVariable):
 
     """
     Defines the type of distribution of objects in the arena.
@@ -26,15 +30,20 @@ class Type(BaseVariable):
         dist_type: [single_source, dual_source, quad_source, powerlaw, random].
     """
 
-    def __init__(self, dist_type: str):
+    def __init__(self, dist_type: str) -> None:
         self.dist_type = dist_type
+        self.attr_changes = []  # type: tp.List
 
     def gen_attr_changelist(self):
         """
         Generate a list of sets of changes necessary to make to the input file to correctly set up
         the simulation with the specified block distribution
         """
-        return [set([(".//arena_map/blocks/distribution", "dist_type", "{0}".format(self.dist_type))])]
+        if not self.attr_changes:
+            self.attr_changes = [set([(".//arena_map/blocks/distribution",
+                                       "dist_type",
+                                       "{0}".format(self.dist_type))])]
+        return self.attr_changes
 
     def gen_tag_rmlist(self):
         return []
@@ -43,32 +52,62 @@ class Type(BaseVariable):
         return []
 
 
-class TypeSingleSource(Type):
-    def __init__(self):
+class SingleSourceDistribution(BaseDistribution):
+    def __init__(self) -> None:
         super().__init__("single_source")
 
 
-class TypeDualSource(Type):
-    def __init__(self):
+class DualSourceDistribution(BaseDistribution):
+    def __init__(self) -> None:
         super().__init__("dual_source")
 
 
-class TypeQuadSource(Type):
-    def __init__(self):
+class QuadSourceDistribution(BaseDistribution):
+    def __init__(self) -> None:
         super().__init__("quad_source")
 
 
-class TypePowerLaw(Type):
-    def __init__(self):
+class PowerLawDistribution(BaseDistribution):
+    def __init__(self, arena_dim: ArenaExtent) -> None:
         super().__init__("powerlaw")
+        self.arena_dim = arena_dim
+
+    def gen_attr_changelist(self):
+        r"""
+        Generate a list of sets of changes necessary to make to the input file to correctly set up
+        the simulation for the powerlaw block distribution.
+
+        2020/7/29: As a first guess, I've set the following parameters:
+
+        - Min :math:`2^X` power to 2
+        - Max 2^X power to :math:`\sqrt{X}`
+        - # clusters to :math:`X`
+
+        where :math:`X` is the arena dimension (assumed to be square). Not all of the clusters will
+        be able to be placed in all likelihood for many arena layouts, but this is a good
+        starting point.
+
+        """
+        changes = super().gen_attr_changelist()
+        for c in changes:
+            c |= set([(".//arena_map/blocks/distribution/powerlaw",
+                       "pwr_min",
+                       "{0}".format(2)),
+                      (".//arena_map/blocks/distribution/powerlaw",
+                       "pwr_max",
+                       "{0}".format(math.ceil(math.sqrt(self.arena_dim.x())))),
+                      (".//arena_map/blocks/distribution/powerlaw",
+                       "n_clusters",
+                       "{0}".format(self.arena_dim.x()))])
+        return changes
 
 
-class TypeRandom(Type):
-    def __init__(self):
+class RandomDistribution(BaseDistribution):
+    def __init__(self) -> None:
         super().__init__("random")
 
 
-class Quantity(BaseVariable):
+class Quantity(IBaseVariable):
 
     """
     Defines the # of blocks in the arena. An equal # of all block types are created (# blocks/ #
@@ -78,7 +117,7 @@ class Quantity(BaseVariable):
       blocks_list(list): List of block quantities to be distributed.
     """
 
-    def __init__(self, blocks_list):
+    def __init__(self, blocks_list) -> None:
         self.blocks_list = blocks_list
 
     def gen_attr_changelist(self):
@@ -95,3 +134,14 @@ class Quantity(BaseVariable):
 
     def gen_tag_rmlist(self):
         return []
+
+
+__api__ = [
+    'BaseDistribution',
+    'SingleSourceDistribution',
+    'DualSourceDistribution',
+    'QuadSourceDistribution',
+    'PowerLawDistribution',
+    'RandomDistribution',
+    'Quantity',
+]

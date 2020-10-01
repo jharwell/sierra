@@ -63,6 +63,7 @@ instance/
 
 # Sphinx documentation
 docs/_build/
+docs/api
 
 # PyBuilder
 target/
@@ -103,3 +104,10 @@ ENV/
 
 # pytype
 .pytype
+
+# Plugins
+plugins/
+
+# MSI
+*.pbs.e*
+*.pbs.o*

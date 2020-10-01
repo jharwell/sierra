@@ -22,10 +22,11 @@ import logging
 import glob
 import re
 
-import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import mpl_toolkits.axes_grid1
+
+import core.utils
 
 
 class Heatmap:
@@ -36,7 +37,7 @@ class Heatmap:
 
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         self.input_csv_fpath = os.path.abspath(kwargs['input_fpath'])
         self.output_fpath = os.path.abspath(kwargs['output_fpath'])
         self.title = '\n'.join(textwrap.wrap(kwargs['title'], 40))
@@ -55,18 +56,19 @@ class Heatmap:
             self.ytick_labels = kwargs.get('ytick_labels', None)
 
     def generate(self):
-        if not os.path.exists(self.input_csv_fpath):
+        if not core.utils.path_exists(self.input_csv_fpath):
             logging.debug("Not generating heatmap: %s does not exist", self.input_csv_fpath)
             return
 
         # Read .csv and create raw heatmap from default configuration
-        df = pd.read_csv(self.input_csv_fpath, sep=';')
+        df = core.utils.pd_csv_read(self.input_csv_fpath)
         fig, ax = plt.subplots()
 
         # Plot heatmap
         if self.transpose:
             df = df.transpose()
-        plt.imshow(df, cmap='coolwarm', interpolation=self.interpolation)
+
+        plt.imshow(df, cmap='plasma', interpolation=self.interpolation)
 
         # Add labels
         plt.xlabel(self.xlabel, fontsize=18)
@@ -133,7 +135,7 @@ class DualHeatmap:
     """
     kCardinality = 2
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
 
         self.input_stem_pattern = os.path.abspath(kwargs['input_stem_pattern'])
         self.output_fpath = kwargs['output_fpath']
@@ -147,7 +149,7 @@ class DualHeatmap:
         self.ytick_labels = kwargs.get('ytick_labels', None)
 
     def generate(self):
-        dfs = [pd.read_csv(f, sep=';') for f in glob.glob(
+        dfs = [core.utils.pd_csv_read(f) for f in glob.glob(
             self.input_stem_pattern + '*.csv') if re.search('_[0-9]+', f)]
 
         if not dfs or len(dfs) != DualHeatmap.kCardinality:
@@ -226,3 +228,8 @@ class DualHeatmap:
     def __plot_labels(self, ax):
         ax.set_ylabel(self.xlabel, fontsize=18)
         # ax.set_xlabel(self.ylabel, fontsize=18)
+
+
+__api__ = [
+    'Heatmap'
+]

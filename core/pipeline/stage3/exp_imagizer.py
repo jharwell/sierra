@@ -23,9 +23,9 @@ import logging
 import typing as tp
 import multiprocessing as mp
 import queue
-import time
 
 from core.graphs.heatmap import Heatmap
+import core.utils
 
 
 class BatchedExpImagizer:
@@ -43,7 +43,7 @@ class BatchedExpImagizer:
         experiments = [d for d in os.listdir(batch_exp_root)
                        if main_config['sierra']['collate_csv_leaf'] not in d]
 
-        q = mp.JoinableQueue()
+        q = mp.JoinableQueue()  # type: mp.JoinableQueue
 
         for exp in experiments:
             exp_root = os.path.join(batch_exp_root, exp)
@@ -53,7 +53,7 @@ class BatchedExpImagizer:
                 if os.path.isdir(metrics_path):
                     imagize_output_root = os.path.join(batch_exp_root,
                                                        exp,
-                                                       main_config['sierra']['plugin_frames_leaf'],
+                                                       main_config['sierra']['project_frames_leaf'],
                                                        m)
                     imagize_opts = {
                         'csv_dir_root': avg_root,
@@ -61,10 +61,10 @@ class BatchedExpImagizer:
                         'output_root': imagize_output_root
                     }
 
-                    os.makedirs(imagize_output_root, exist_ok=True)
+                    core.utils.dir_create_checked(imagize_output_root, exist_ok=True)
                     q.put(imagize_opts)
 
-        for i in range(0, mp.cpu_count()):
+        for _ in range(0, mp.cpu_count()):
             p = mp.Process(target=BatchedExpImagizer.__thread_worker,
                            args=(q, HM_config))
             p.start()
