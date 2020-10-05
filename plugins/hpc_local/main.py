@@ -35,11 +35,13 @@ def env_configure(args):
     args.__dict__['n_threads'] = args.physics_n_engines
 
     if any(s in args.pipeline for s in [1, 2]):
-        args.__dict__['n_jobs_per_node'] = min(args.n_sims,
-                                               max(1,
-                                                   int(multiprocessing.cpu_count() / float(args.n_threads))))
+        if args.exec_jobs_per_node is None:
+            args.exec_jobs_per_node = min(args.n_sims,
+                                          max(1,
+                                              int(multiprocessing.cpu_count() / float(args.n_threads))))
+
     else:
-        args.__dict__['n_jobs_per_node'] = 0
+        args.exec_jobs_per_node = 0
 
 
 def argos_cmd_generate(input_fpath: str):
@@ -65,8 +67,11 @@ def gnu_parallel_cmd_generate(parallel_opts: dict):
     """
 
     resume = ''
+
+    # This can't be --resume, because then GNU parallel looks at the results directory, and if there
+    # is stuff in it, assumes that the job finished...
     if parallel_opts['exec_resume']:
-        resume = '--resume'
+        resume = '--resume-failed'
 
     return 'cd {0} &&' \
         'parallel {1} --jobs {2} --results {0} --joblog {3} --no-notice < "{4}"'.format(

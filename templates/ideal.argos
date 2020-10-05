@@ -218,6 +218,7 @@
             task_tab_collector="task-tab-collector"
             task_tab_harvester="task-tab-harvester"
             task_distribution="task-distribution"
+            block_clusters="block-clusters"
             perception_dpo="perception-dpo"
             tv_population="tv-population"
             tv_environment="tv-environment"/>
@@ -272,7 +273,7 @@
             arena_resolution="0.2"
             dist_type="single_source">
           <manifest
-              n_cube="64"
+              n_cube="250"
               n_ramp="0"
               unit_dim="0.2"
               />

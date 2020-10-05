@@ -34,19 +34,20 @@ class PipelineStage1:
 
     """
 
-    def __init__(self, controller, scenario, batch_criteria, cmdopts) -> None:
+    def __init__(self, controller, scenario, criteria, cmdopts) -> None:
         self.generator = BatchedExpDefGenerator(batch_config_template=cmdopts['template_input_file'],
                                                 controller_name=controller,
                                                 scenario_basename=scenario,
-                                                criteria=batch_criteria,
+                                                criteria=criteria,
                                                 cmdopts=cmdopts)
         self.creator = BatchedExpCreator(batch_config_template=cmdopts['template_input_file'],
                                          batch_generation_root=cmdopts['generation_root'],
                                          batch_output_root=cmdopts['output_root'],
-                                         criteria=batch_criteria,
+                                         criteria=criteria,
                                          cmdopts=cmdopts)
 
         self.cmdopts = cmdopts
+        self.criteria = criteria
 
     def run(self):
         """
@@ -59,8 +60,8 @@ class PipelineStage1:
         self.creator.create(self.generator)
 
         logging.info("Stage1: %d input files generated in %d experiments.",
-                     sum([len(files) for r, d, files in os.walk(self.cmdopts['generation_root'])]),
-                     sum([len(d) for r, d, files in os.walk(self.cmdopts['generation_root'])]))
+                     self.cmdopts['n_sims'] * len(self.criteria.gen_attr_changelist()),
+                     len(self.criteria.gen_attr_changelist()))
 
 
 __api__ = [

@@ -71,7 +71,7 @@ class BatchedExpRunner:
         n_sims = self.cmdopts['n_sims']
         exec_resume = self.cmdopts['exec_resume']
         with_rendering = self.cmdopts['argos_rendering']
-        n_jobs = self.cmdopts['n_jobs_per_node']
+        n_jobs = self.cmdopts['exec_jobs_per_node']
 
         s = "Stage2: Running batched experiment in %s: sims_per_exp=%s,threads_per_sim=%s,n_jobs=%s"
         logging.info(s, self.batch_exp_root, n_sims, n_threads_per_sim, n_jobs)

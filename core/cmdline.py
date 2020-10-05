@@ -442,11 +442,25 @@ class CoreCmdline:
         self.stage2.add_argument("--exec-resume",
                                  help="""
 
-                                 Resume a batched experiment that was killed/stopped/etc last time SIERRA was run.
+                                 Resume a batched experiment that was killed/stopped/etc last time SIERRA was run. This
+                                 maps directly to GNU parallel's ``--resume-failed`` option.
 
                                  """ + self.stage_usage_doc([2]),
                                  action='store_true',
                                  default=False)
+
+        self.stage2.add_argument("--exec-jobs-per-node",
+                                 help="""
+
+                                 Specify the maximum number of parallel jobs for GNU parallel. By default this is
+                                 computed from the selected HPC environment, which assumes that the SIERRA process has
+                                 full usage/control of the nodes it is running on (i.e. no need to play fair with other
+                                 users). However, this might not be the case, in which case this options enables user
+                                 override of the default behavior.
+
+                                 """ + self.stage_usage_doc([2]),
+                                 type=int,
+                                 default=None)
 
     def init_stage3(self):
         """

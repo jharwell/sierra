@@ -73,7 +73,7 @@ class Pipeline:
 
             # stage 2
             'exec_resume': self.args.exec_resume,
-            'n_jobs_per_node': self.args.n_jobs_per_node,
+            'exec_jobs_per_node': self.args.exec_jobs_per_node,
 
             # stage 3
             'no_verify_results': self.args.no_verify_results,

@@ -21,7 +21,7 @@ import os
 import math
 
 
-def env_configure(all_args):
+def env_configure(args):
     """
     Configure SIERRA for ad-hoc HPC by reading environment variables and modifying the parsed
     cmdline arguments. Uses the following environment variables (if any of them are not defined an
@@ -48,9 +48,11 @@ def env_configure(all_args):
     # For HPC, we want to use the the maximum # of simultaneous jobs per node such that
     # there is no thread oversubscription. We also always want to allocate each physics
     # engine its own thread for maximum performance, per the original ARGoS paper.
-    all_args.__dict__['n_jobs_per_node'] = int(float(all_args.n_sims) / n_nodes)
-    all_args.physics_n_engines = int(ppn / all_args.n_jobs_per_node)
-    all_args.__dict__['n_threads'] = all_args.physics_n_engines
+    if args.exec_jobs_per_node is None:
+        args.exec_jobs_per_node = int(float(args.n_sims) / n_nodes)
+
+    args.physics_n_engines = int(ppn / args.exec_jobs_per_node)
+    args.__dict__['n_threads'] = args.physics_n_engines
 
 
 def argos_cmd_generate(input_fpath: str):
@@ -81,8 +83,10 @@ def gnu_parallel_cmd_generate(parallel_opts: dict):
                             "{0}-nodelist.txt".format(jobid))
 
     resume = ''
+    # This can't be --resume, because then GNU parallel looks at the results directory, and if there
+    # is stuff in it, assumes that the job finished...
     if parallel_opts['exec_resume']:
-        resume = '--resume'
+        resume = '--resume-faileb'
 
     return 'sort -u $ADHOC_NODEFILE > {0} && ' \
         'parallel {2} --jobs {1} --results {4} --joblog {3} --sshloginfile {0} --workdir {4} < "{5}"'.format(
