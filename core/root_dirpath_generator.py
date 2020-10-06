@@ -23,8 +23,8 @@ experiment.
   distribution + arena dimensions) and ``--batch-criteria`` in order to guarantee uniqueness
   among batch roots anytime the batch criteria or scenario change.
 
-- The batch generation root. All input files will be generated under this root
-  directory. Named ``<batch experiment root>/exp-inputs``.
+- The batch input root. All input files will be generated under this root directory. Named ``<batch
+  experiment root>/exp-inputs``. 
 
 - The batch output root. All output files will accrue under this root
   directory. Each experiment will get their own directory in this root for its outputs to
@@ -109,9 +109,10 @@ def regen_from_exp(sierra_rpath: str,
                           template_stem)
     logging.info('Generated batch root %s', root)
     return {
-        'generation_root': gen_generation_root(root),
-        'output_root': gen_output_root(root),
-        'graph_root': gen_graph_root(root)
+        'batch_root': root,
+        'batch_input_root': gen_input_root(root),
+        'batch_output_root': gen_output_root(root),
+        'batch_graph_root': gen_graph_root(root)
     }
 
 
@@ -119,7 +120,7 @@ def gen_output_root(root: str):
     return os.path.join(root, "exp-outputs")
 
 
-def gen_generation_root(root: str):
+def gen_input_root(root: str):
     return os.path.join(root, "exp-inputs")
 
 

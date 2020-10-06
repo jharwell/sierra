@@ -43,9 +43,9 @@ class PopulationSize(bc.UnivarBatchCriteria):
     def __init__(self,
                  cli_arg: str,
                  main_config: tp.Dict[str, str],
-                 batch_generation_root: str,
+                 batch_input_root: str,
                  size_list: tp.List[int]) -> None:
-        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
+        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_input_root)
         self.size_list = size_list
         self.attr_changes = []  # type: tp.List
 
@@ -131,7 +131,7 @@ class PopulationSizeParser():
         return ret
 
 
-def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_generation_root: str, **kwargs):
+def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_input_root: str, **kwargs):
     """
     Factory to create ``PopulationSize`` derived classes from the command line definition.
 
@@ -153,7 +153,7 @@ def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_generation_root:
         PopulationSize.__init__(self,
                                 cli_arg,
                                 main_config,
-                                batch_generation_root,
+                                batch_input_root,
                                 gen_max_sizes())
 
     return type(cli_arg,

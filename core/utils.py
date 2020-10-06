@@ -45,6 +45,11 @@ class ArenaExtent():
         self.ymax = offset[1] + int(dims[1])
         self.zmax = offset[2] + int(dims[2])
 
+    def contains(self, loc: tp.Tuple[float, float, float]):
+        return loc[0] >= self.xmin and loc[0] <= self.xmax and \
+            loc[1] >= self.ymin and loc[1] <= self.ymax and  \
+            loc[2] >= self.zmin and loc[2] <= self.zmax
+
     def x(self):
         return self.dims[0]
 

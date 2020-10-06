@@ -153,7 +153,7 @@ class BatchCriteria():
     Attributes:
         cli_arg: Unparsed batch criteria string from command line.
         main_config: Parsed dictionary of main YAML configuration.
-        batch_generation_root: Absolute path to the directory where batch experiment directories
+        batch_input_root: Absolute path to the directory where batch experiment directories
                                should be created.
 
     """
@@ -163,10 +163,10 @@ class BatchCriteria():
     def __init__(self,
                  cli_arg: str,
                  main_config: dict,
-                 batch_generation_root: str) -> None:
+                 batch_input_root: str) -> None:
         self.cli_arg = cli_arg
         self.main_config = main_config
-        self.batch_generation_root = batch_generation_root
+        self.batch_input_root = batch_input_root
 
         self.cat_str = cli_arg.split('.')[0]
         self.def_str = '.'.join(cli_arg.split('.')[1:])
@@ -209,8 +209,8 @@ class BatchCriteria():
         return dims
 
     def n_exp(self) -> int:
-        exps = [i for i in os.listdir(self.batch_generation_root) if
-                os.path.isdir(os.path.join(self.batch_generation_root, i)) and i not in
+        exps = [i for i in os.listdir(self.batch_input_root) if
+                os.path.isdir(os.path.join(self.batch_input_root, i)) and i not in
                 self.main_config['sierra']['collate_csv_leaf']]
         return len(exps)
 
@@ -218,7 +218,7 @@ class BatchCriteria():
         defs = list(self.gen_attr_changelist())
         for i, exp_def in enumerate(defs):
             exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
-            pkl_path = os.path.join(self.batch_generation_root, exp_dirname, 'exp_def.pkl')
+            pkl_path = os.path.join(self.batch_input_root, exp_dirname, 'exp_def.pkl')
             with open(pkl_path, 'ab') as f:
                 pickle.dump(exp_def, f)
 
@@ -246,15 +246,15 @@ class BatchCriteria():
 
         for i, defi in enumerate(chg_defs):
             exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
-            exp_generation_root = os.path.join(self.batch_generation_root,
-                                               str(exp_dirname))
+            exp_input_root = os.path.join(self.batch_input_root,
+                                          str(exp_dirname))
             logging.debug("Applying %s XML attribute changes from batch criteria generator '%s' for exp%s in %s",
                           len(defi),
                           self.cli_arg,
                           i,
                           exp_dirname)
 
-            core.utils.dir_create_checked(exp_generation_root, exist_ok=cmdopts['exp_overwrite'])
+            core.utils.dir_create_checked(exp_input_root, exist_ok=cmdopts['exp_overwrite'])
             for changes_i in defi:
                 try:
                     path, attr, value = changes_i
@@ -264,17 +264,17 @@ class BatchCriteria():
 
                 xml_luigi.attr_change(path, attr, value)
 
-            xml_luigi.write(os.path.join(exp_generation_root,
+            xml_luigi.write(os.path.join(exp_input_root,
                                          batch_config_leaf))
 
-        n_exp_dirs = len(os.listdir(self.batch_generation_root))
+        n_exp_dirs = len(os.listdir(self.batch_input_root))
         if n_exps != n_exp_dirs:
             msg1 = "Size of batched experiment ({0}) != # exp dirs ({1}): possibly caused by:".format(n_exps,
                                                                                                       n_exp_dirs)
             msg2 = "(1) Changing batch criteria without changing the generation root ({0})".format(
-                self.batch_generation_root)
+                self.batch_input_root)
             msg3 = "(2) Sharing {0} between different batch criteria".format(
-                self.batch_generation_root)
+                self.batch_input_root)
             logging.fatal(msg1)
             logging.fatal(msg2)
             logging.fatal(msg3)
@@ -314,7 +314,7 @@ class UnivarBatchCriteria(BatchCriteria):
             dirs = self.gen_exp_dirnames(cmdopts)
 
         for d in dirs:
-            exp_def = core.utils.unpickle_exp_def(os.path.join(self.batch_generation_root,
+            exp_def = core.utils.unpickle_exp_def(os.path.join(self.batch_input_root,
                                                                d,
                                                                "exp_def.pkl"))
             for e in exp_def:
@@ -335,7 +335,7 @@ class BivarBatchCriteria(BatchCriteria):
         BatchCriteria.__init__(self,
                                '+'.join([criteria1.cli_arg, criteria2.cli_arg]),
                                criteria1.main_config,
-                               criteria1.batch_generation_root)
+                               criteria1.batch_input_root)
         self.criteria1 = criteria1
         self.criteria2 = criteria2
     #
@@ -397,7 +397,7 @@ class BivarBatchCriteria(BatchCriteria):
             "FATAL: Criteria defines both XML attribute changes and XML tag additions"
 
         for d in dirs:
-            exp_def = core.utils.unpickle_exp_def(os.path.join(self.batch_generation_root,
+            exp_def = core.utils.unpickle_exp_def(os.path.join(self.batch_input_root,
                                                                d,
                                                                "exp_def.pkl"))
             for path, attr, value in exp_def:
@@ -431,7 +431,7 @@ class BivarBatchCriteria(BatchCriteria):
                      exp_dirs: tp.List[str] = None) -> tp.List[float]:
         dirs = []
         all_dirs = core.utils.exp_range_calc(cmdopts,
-                                             cmdopts['output_root'],
+                                             cmdopts['batch_output_root'],
                                              self)
 
         for c1 in self.criteria1.gen_exp_dirnames(cmdopts):
@@ -448,7 +448,7 @@ class BivarBatchCriteria(BatchCriteria):
                      exp_dirs: tp.List[str] = None) -> tp.List[float]:
         dirs = []
         all_dirs = core.utils.exp_range_calc(cmdopts,
-                                             cmdopts['output_root'],
+                                             cmdopts['batch_output_root'],
                                              self)
 
         for c2 in self.criteria2.gen_exp_dirnames(cmdopts):
@@ -465,7 +465,7 @@ class BivarBatchCriteria(BatchCriteria):
                           exp_dirs: tp.List[str] = None) -> tp.List[str]:
         dirs = []
         all_dirs = core.utils.exp_range_calc(cmdopts,
-                                             cmdopts['output_root'],
+                                             cmdopts['batch_output_root'],
                                              self)
 
         for c1 in self.criteria1.gen_exp_dirnames(cmdopts):
@@ -482,7 +482,7 @@ class BivarBatchCriteria(BatchCriteria):
                           exp_dirs: tp.List[str] = None) -> tp.List[str]:
         dirs = []
         all_dirs = core.utils.exp_range_calc(cmdopts,
-                                             cmdopts['output_root'],
+                                             cmdopts['batch_output_root'],
                                              self)
 
         for c2 in self.criteria2.gen_exp_dirnames(cmdopts):
@@ -503,10 +503,10 @@ class BivarBatchCriteria(BatchCriteria):
     def pm_query(self, pm: str) -> bool:
         return self.criteria1.pm_query(pm) or self.criteria2.pm_query(pm)
 
-    def set_batch_generation_root(self, root: str):
-        self.batch_generation_root = root
-        self.criteria1.batch_generation_root = root
-        self.criteria2.batch_generation_root = root
+    def set_batch_input_root(self, root: str):
+        self.batch_input_root = root
+        self.criteria1.batch_input_root = root
+        self.criteria2.batch_input_root = root
 
 
 def factory(main_config: dict, cmdopts: dict, args, scenario: str = None):
@@ -533,7 +533,7 @@ def __univar_factory(main_config: dict, cmdopts: dict, cli_arg: str, scenario):
     module = __import__("core.variables.{0}".format(category), fromlist=["*"])
     ret = getattr(module, "factory")(cli_arg,
                                      main_config,
-                                     cmdopts['generation_root'],
+                                     cmdopts['batch_input_root'],
                                      scenario=scenario)()
     logging.info("Create univariate batch criteria '%s'",
                  ret.__class__.__name__)

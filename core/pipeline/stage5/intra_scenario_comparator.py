@@ -200,10 +200,10 @@ class UnivarIntraScenarioComparator:
         (1 per controller).
         """
 
-        csv_ipath = os.path.join(cmdopts['output_root'],
+        csv_ipath = os.path.join(cmdopts['batch_output_root'],
                                  self.main_config['sierra']['collate_csv_leaf'],
                                  src_stem + ".csv")
-        stddev_ipath = os.path.join(cmdopts['output_root'],
+        stddev_ipath = os.path.join(cmdopts['batch_output_root'],
                                     self.main_config['sierra']['collate_csv_leaf'],
                                     src_stem + ".stddev")
         csv_opath_stem = os.path.join(self.cc_csv_root,
@@ -541,7 +541,7 @@ class BivarIntraScenarioComparator:
         controllers, so we do it unconditionally here to handle both cases.
 
         """
-        csv_ipath = os.path.join(cmdopts['output_root'],
+        csv_ipath = os.path.join(cmdopts['batch_output_root'],
                                  self.main_config['sierra']['collate_csv_leaf'],
                                  src_stem + ".csv")
 

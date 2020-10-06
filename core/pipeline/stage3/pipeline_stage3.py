@@ -72,9 +72,9 @@ class PipelineStage3:
     # Private functions
     def __run_averaging(self, main_config, cmdopts, criteria):
         logging.info("Stage3: Averaging batched experiment outputs in %s...",
-                     cmdopts['output_root'])
+                     cmdopts['batch_output_root'])
         start = time.time()
-        BatchedExpCSVAverager(main_config, cmdopts, cmdopts['output_root'])(criteria)
+        BatchedExpCSVAverager(main_config, cmdopts, cmdopts['batch_output_root'])(criteria)
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         logging.info("Stage3: Averaging complete in %s", str(sec))
@@ -84,7 +84,7 @@ class PipelineStage3:
         start = time.time()
         BatchedExpImagizer()(main_config,
                              intra_HM_config,
-                             cmdopts['output_root'])
+                             cmdopts['batch_output_root'])
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         logging.info("Stage3: Imagizing complete: %s", str(sec))

@@ -105,7 +105,7 @@ class ExpCreator:
     Attributes:
         template_input_file: Path(relative to current dir or absolute) to the template XML
                              configuration file.
-        generation_root: Absolute path to experiment directory where generated XML input files for
+        exp_input_root: Absolute path to experiment directory where generated XML input files for
                          ARGoS for this experiment should be written.
         exp_output_root: Absolute path to root directory for simulation outputs for this experiment
                          (sort of a scratch directory).
@@ -114,7 +114,7 @@ class ExpCreator:
 
     def __init__(self,
                  template_input_file: str,
-                 exp_generation_root: str,
+                 exp_input_root: str,
                  exp_output_root: str,
                  cmdopts: dict) -> None:
 
@@ -123,11 +123,11 @@ class ExpCreator:
             os.path.basename(os.path.abspath(template_input_file)))
 
         # where the generated config and command files should be stored
-        self.exp_generation_root = os.path.abspath(exp_generation_root)
+        self.exp_input_root = os.path.abspath(exp_input_root)
 
-        assert self.exp_generation_root.find(" ") == -1, \
+        assert self.exp_input_root.find(" ") == -1, \
             ("ARGoS(apparently) does not support input file paths with in the name--remove spaces"
-             "from {0} and try again".format(self.exp_generation_root))
+             "from {0} and try again".format(self.exp_input_root))
 
         self.exp_output_root = os.path.abspath(exp_output_root)
         self.cmdopts = cmdopts
@@ -137,7 +137,7 @@ class ExpCreator:
 
         # where the commands file will be stored
         self.commands_fpath = os.path.abspath(
-            os.path.join(self.exp_generation_root, "commands.txt"))
+            os.path.join(self.exp_input_root, "commands.txt"))
 
     def from_def(self, exp_def: XMLLuigi):
         """
@@ -177,7 +177,7 @@ class ExpCreator:
         """
         File is named as ``<template input file stem>_<sim_num>`` in the generation root.
         """
-        return os.path.join(self.exp_generation_root,
+        return os.path.join(self.exp_input_root,
                             "{0}_{1}".format(self.main_input_name, sim_num))
 
     def __update_cmds_file(self, cmds_file, sim_input_path: str):
@@ -208,7 +208,7 @@ class BatchedExpCreator:
         batch_config_template: Path (relative to current dir or absolute) to the root template
                                XML configuration file.
 
-        batch_generation_root: Root directory for all generated XML input files all experiments
+        batch_input_root: Root directory for all generated XML input files all experiments
                                should be stored (relative to current dir or absolute). Each
                                experiment will get a directory within this root to store the xml
                                input files for the simulation runs comprising an experiment;
@@ -225,7 +225,7 @@ class BatchedExpCreator:
 
     def __init__(self,
                  batch_config_template: str,
-                 batch_generation_root: str,
+                 batch_input_root: str,
                  batch_output_root: str,
                  criteria: bc.BatchCriteria,
                  cmdopts: dict) -> None:
@@ -234,13 +234,13 @@ class BatchedExpCreator:
         self.batch_config_leaf, _ = os.path.splitext(
             os.path.basename(self.batch_config_template))
 
-        self.batch_generation_root = batch_generation_root
+        self.batch_input_root = batch_input_root
         self.batch_output_root = batch_output_root
         self.criteria = criteria
         self.cmdopts = cmdopts
 
     def create(self, generator):
-        core.utils.dir_create_checked(self.batch_generation_root, self.cmdopts['exp_overwrite'])
+        core.utils.dir_create_checked(self.batch_input_root, self.cmdopts['exp_overwrite'])
 
         # Scaffold the batched experiment, creating experiment directories and writing template XML
         # input files for each experiment in the batch with changes from the batch criteria added.
@@ -260,11 +260,11 @@ class BatchedExpCreator:
             logging.debug("Applying generated scenario+controller changes to exp%s", i)
             exp_output_root = os.path.join(self.batch_output_root,
                                            self.criteria.gen_exp_dirnames(self.cmdopts)[i])
-            exp_generation_root = os.path.join(self.batch_generation_root,
-                                               self.criteria.gen_exp_dirnames(self.cmdopts)[i])
+            exp_input_root = os.path.join(self.batch_input_root,
+                                          self.criteria.gen_exp_dirnames(self.cmdopts)[i])
 
             ExpCreator(self.batch_config_template,
-                       exp_generation_root,
+                       exp_input_root,
                        exp_output_root,
                        self.cmdopts).from_def(defi)
 

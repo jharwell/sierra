@@ -38,11 +38,11 @@ class ConstantDensity(UnivarBatchCriteria):
     def __init__(self,
                  cli_arg: str,
                  main_config: tp.Dict[str, str],
-                 batch_generation_root: str,
+                 batch_input_root: str,
                  target_density: float,
                  dimensions: tp.List[ArenaExtent],
                  dist_type: str) -> None:
-        UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
+        UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_input_root)
         self.target_density = target_density
         self.dimensions = dimensions
         self.dist_type = dist_type

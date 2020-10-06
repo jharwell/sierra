@@ -421,7 +421,7 @@ class DataFrames:
             dirs = exp_dirs
 
         try:
-            path = os.path.join(cmdopts['output_root'],
+            path = os.path.join(cmdopts['batch_exp_root'],
                                 dirs[exp_num],
                                 avg_output_leaf,
                                 tv_environment_csv)
@@ -444,7 +444,7 @@ class DataFrames:
             dirs = exp_dirs
 
         try:
-            path = os.path.join(cmdopts['output_root'],
+            path = os.path.join(cmdopts['batch_exp_root'],
                                 dirs[exp_num],
                                 avg_output_leaf,
                                 intra_perf_csv)

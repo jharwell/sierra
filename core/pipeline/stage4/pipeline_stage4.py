@@ -222,7 +222,7 @@ class PipelineStage4:
         }
         logging.info("Stage4: Rendering videos...")
         start = time.time()
-        BatchedExpVideoRenderer()(self.main_config, render_opts, self.cmdopts['output_root'])
+        BatchedExpVideoRenderer()(self.main_config, render_opts, self.cmdopts['batch_output_root'])
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         logging.info("Stage4: Rendering complete in %s", str(sec))

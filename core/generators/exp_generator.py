@@ -28,6 +28,7 @@ import logging
 from core.xml_luigi import XMLLuigi
 from core.variables import batch_criteria as bc
 from core.variables import constant_density
+from core.variables import camera_timeline
 import core.generators.generator_factory as gf
 import core.generators.scenario_generator_parser as sgp
 import core.xml_luigi
@@ -161,13 +162,22 @@ class ExpDefCommonGenerator:
     def __generate_visualization(self, xml_luigi: XMLLuigi):
         """
         Generates XML changes to remove visualization elements from input file, if configured to do
-        so. This dependent on cmdline parameters, as visualization definitions should be left in if
+        so. This depends on cmdline parameters, as visualization definitions should be left in if
         ARGoS should output simulation frames for video creation.
 
         Does not write generated changes to the simulation definition pickle file.
         """
         if not self.cmdopts["argos_rendering"]:
             xml_luigi.tag_remove(".", "./visualization", noprint=True)  # ARGoS visualizations
+        else:
+            cams = camera_timeline.factory(self.cmdopts, [self.cmdopts['arena_dim']])
+            rms = cams.gen_tag_rmlist()[0]
+            if rms:
+                for r in rms:
+                    xml_luigi.tag_remove(r[0], r[1], True)  # OK if camera stuff isn't there
+
+            for a in cams.gen_tag_addlist()[0]:
+                xml_luigi.tag_add(a[0], a[1], a[2])
 
 
 class BatchedExpDefGenerator:
@@ -179,7 +189,7 @@ class BatchedExpDefGenerator:
         batch_config_template: Path (relative to current dir or absolute) to the root template
                                XML configuration file.
 
-        batch_generation_root: Root directory for all generated XML input files all experiments
+        batch_input_root: Root directory for all generated XML input files all experiments
                                should be stored (relative to current dir or absolute). Each
                                experiment will get a directory within this root to store the xml
                                input files for the simulation runs comprising an experiment;
@@ -210,12 +220,12 @@ class BatchedExpDefGenerator:
             os.path.basename(self.batch_config_template))
         self.batch_config_extension = None
 
-        self.batch_generation_root = os.path.abspath(cmdopts['generation_root'])
-        assert self.batch_generation_root.find(" ") == -1, \
+        self.batch_input_root = os.path.abspath(cmdopts['batch_input_root'])
+        assert self.batch_input_root.find(" ") == -1, \
             ("ARGoS (apparently) does not work with input file paths with spaces. Please make sure the " +
-             "batch generation root directory '{}' does not have any spaces in it").format(self.batch_generation_root)
+             "batch input root directory '{}' does not have any spaces in it").format(self.batch_input_root)
 
-        self.batch_output_root = os.path.abspath(cmdopts['output_root'])
+        self.batch_output_root = os.path.abspath(cmdopts['batch_output_root'])
 
         self.controller_name = controller_name
         self.scenario_basename = scenario_basename
@@ -279,14 +289,14 @@ class BatchedExpDefGenerator:
 
             eff_scenario_name = self.scenario_basename
 
-        exp_generation_root = os.path.join(self.batch_generation_root,
-                                           self.criteria.gen_exp_dirnames(self.cmdopts)[exp_num])
+        exp_input_root = os.path.join(self.batch_input_root,
+                                      self.criteria.gen_exp_dirnames(self.cmdopts)[exp_num])
 
         scenario = gf.scenario_generator_create(controller=self.controller_name,
                                                 scenario=eff_scenario_name,
-                                                template_input_file=os.path.join(exp_generation_root,
+                                                template_input_file=os.path.join(exp_input_root,
                                                                                  self.batch_config_leaf),
-                                                exp_def_fpath=os.path.join(exp_generation_root,
+                                                exp_def_fpath=os.path.join(exp_input_root,
                                                                            "exp_def.pkl"),
                                                 cmdopts=self.cmdopts)
 

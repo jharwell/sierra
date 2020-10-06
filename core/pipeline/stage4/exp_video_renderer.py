@@ -69,20 +69,19 @@ class BatchedExpVideoRenderer:
 
             if render_opts['argos_rendering']:
                 opts = copy.deepcopy(render_opts)
-                opts['ofile_leaf'] = 'argos.mp4'
 
                 # ARGoS render targets are in <batch_output_root>/<exp>/<sim>/<argos_frames_leaf>,
                 # for all simulations in a given experiment (which can be a lot!).
-                for sim in os.listdir(exp_root):
+                for sim in self.__filter_sim_dirs(os.listdir(exp_root), main_config):
+                    opts['ofile_leaf'] = sim + '.mp4'
                     frames_root = os.path.join(exp_root,
                                                sim,
                                                main_config['sim']['argos_frames_leaf'])
-                    if main_config['sierra']['avg_output_leaf'] not in frames_root and \
-                            main_config['sierra']['project_frames_leaf'] not in frames_root:
-                        opts['image_dir'] = frames_root
-                        opts['output_dir'] = os.path.join(exp_root, 'videos')
-                        core.utils.dir_create_checked(opts['output_dir'], exist_ok=True)
-                        q.put(opts)
+                    opts['image_dir'] = frames_root
+                    opts['output_dir'] = os.path.join(exp_root, 'videos')
+
+                    core.utils.dir_create_checked(opts['output_dir'], exist_ok=True)
+                    q.put(copy.deepcopy(opts))
 
         # Render videos in parallel--waaayyyy faster
         for i in range(0, mp.cpu_count()):
@@ -102,6 +101,12 @@ class BatchedExpVideoRenderer:
                 q.task_done()
             except queue.Empty:
                 break
+
+    @staticmethod
+    def __filter_sim_dirs(sim_dirs: tp.List[str], main_config: dict):
+        return [s for s in sim_dirs if s not in [main_config['sierra']['avg_output_leaf'],
+                                                 main_config['sierra']['project_frames_leaf'],
+                                                 'videos']]
 
 
 class ExpVideoRenderer:

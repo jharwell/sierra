@@ -235,11 +235,11 @@ class CoreCmdline:
                                  - Stage2: Run the batched experiment on a previously generated experiment. Part of
                                    default pipeline.
 
-                                 - Stage3: Process experimental results after running the batched experiment; some parts
-                                   of this can be done in parallel. Part of default pipeline.
+                                 - Stage3: Post-process experimental results after running the batched experiment; some
+                                   parts of this can be done in parallel. Part of default pipeline.
 
-                                 - Stage4: Perform graph generation after processing results for a batched
-                                   experiment. Part of default pipeline.
+                                 - Stage4: Perform deliverable generation after processing results for a batched
+                                   experiment, which can include shiny graphs and videos. Part of default pipeline.
 
                                  - Stage5: Perform graph generation for comparing controllers AFTER graph generation for
                                    batched experiments has been run. Not part of default pipeline.
@@ -268,6 +268,27 @@ class CoreCmdline:
                                  gets killed before it finishes running all experiments in the batch.
 
                                  """ + self.stage_usage_doc([2, 3, 4]))
+
+        self.parser.add_argument("--argos-rendering",
+                                 help="""
+
+                                 If passed, the ARGoS Qt/OpenGL visualization subtree should is not removed from
+                                 ``--template-input-file`` before generating experimental inputs. Otherwise, it is
+                                 removed if it exists.
+
+                                 Any files in the "frames" directory of each simulation (directory path set on a per
+                                 ``--project`` basis) will be rendered into a unique video file using ffmpeg (precise
+                                 command configurable), and output to a ``videos/<output_dir>`` in the output directory
+                                 of each simulation.
+
+                                 If this option is passed, then a 3D scenario specification should be also be specified
+                                 via ``--scenario``, otherwise camera placements will be very close to the ground, which
+                                 is not useful for larger arena/swarms.
+
+                                 This option assumes that[ffmpeg, Xvfb] programs can be found.
+
+                               """ + self.stage_usage_doc([1, 4]),
+                                 action='store_true')
 
         self.init_stage1()
         self.init_stage2()
@@ -698,23 +719,6 @@ class CoreCmdline:
         # Rendering options
         rendering = self.parser.add_argument_group(
             'Stage4: Rendering', 'Rendering options for stage4')
-
-        rendering.add_argument("--argos-rendering",
-                               help="""
-
-                               If passed, the ARGoS Qt/OpenGL visualization subtree should is not removed from
-                               ``--template-input-file`` before generating experimental inputs. Otherwise, it is removed
-                               if it exists.
-
-                               Any files in the "frames" directory of each simulation(directory path set on a per
-                               ``--project`` basis) will be rendered into a unique video file with directory using ffmpeg
-                               (precise command configurable), and output to a ``videos/argos.mp4`` in the output
-                               directory of each simulation.
-
-                               This option assumes that[ffmpeg, Xvfb] programs can be found.
-
-                               """ + self.stage_usage_doc([1, 4]),
-                               action='store_true')
 
         rendering.add_argument("--render-cmd-opts",
                                help="""

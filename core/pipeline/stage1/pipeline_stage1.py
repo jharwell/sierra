@@ -41,8 +41,8 @@ class PipelineStage1:
                                                 criteria=criteria,
                                                 cmdopts=cmdopts)
         self.creator = BatchedExpCreator(batch_config_template=cmdopts['template_input_file'],
-                                         batch_generation_root=cmdopts['generation_root'],
-                                         batch_output_root=cmdopts['output_root'],
+                                         batch_input_root=cmdopts['batch_input_root'],
+                                         batch_output_root=cmdopts['batch_output_root'],
                                          criteria=criteria,
                                          cmdopts=cmdopts)
 
@@ -55,7 +55,7 @@ class PipelineStage1:
         """
 
         logging.info("Stage1: Generating input files for batched experiment in %s...",
-                     self.cmdopts['generation_root'])
+                     self.cmdopts['batch_input_root'])
         logging.debug("Using '%s'", self.cmdopts['time_setup'])
         self.creator.create(self.generator)
 

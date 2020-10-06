@@ -121,7 +121,7 @@ class RobustnessPDUnivar:
 
         idx = perf_df.index[-1]
         for i in range(0, criteria.n_exp()):
-            exp_def = core.utils.unpickle_exp_def(os.path.join(self.cmdopts['generation_root'],
+            exp_def = core.utils.unpickle_exp_def(os.path.join(self.cmdopts['batch_input_root'],
                                                                batch_exp_dirnames[i],
                                                                'exp_def.pkl'))
             TS, T = PopulationDynamics.calc_tasked_swarm_time(exp_def)
@@ -390,7 +390,7 @@ class RobustnessPDBivar:
         exp_dirnames = criteria.gen_exp_dirnames(self.cmdopts)
         for i in range(0, len(df.index)):
             for j in range(0, len(df.columns)):
-                pickle_path = os.path.join(self.cmdopts['generation_root'],
+                pickle_path = os.path.join(self.cmdopts['batch_input_root'],
                                            exp_dirnames[i * len(df.columns) + j],
                                            'exp_def.pkl')
                 exp_def = core.utils.unpickle_exp_def(pickle_path)

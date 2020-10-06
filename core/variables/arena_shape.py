@@ -31,11 +31,11 @@ class RectangularArena(IBaseVariable):
     this file should be used instead.
 
     Attributes:
-        dimensions: List of (X, Y, Z) tuples of arena size.
+        extents: List of (X, Y, Z) tuples of arena size.
     """
 
-    def __init__(self, dimensions: tp.List[ArenaExtent]) -> None:
-        self.dimensions = dimensions
+    def __init__(self, extents: tp.List[ArenaExtent]) -> None:
+        self.extents = extents
         self.attr_changes = []  # type: tp.List
 
     def gen_attr_changelist(self) -> list:
@@ -46,7 +46,7 @@ class RectangularArena(IBaseVariable):
         if not self.attr_changes:
             self.attr_changes = [set([(".//arena",
                                        "size",
-                                       "{0}, {1}, 2".format(extent.x(), extent.y())),
+                                       "{0}, {1}, {2}".format(extent.x(), extent.y(), extent.z())),
                                       (".//arena",
                                        "center",
                                        "{0:.9f},{1:.9f},1".format(extent.x() / 2.0, extent.y() / 2.0)),
@@ -133,7 +133,7 @@ class RectangularArena(IBaseVariable):
                                        "{0:.9f}, {1:.9f}, 0".format(extent.x() / 2.0,
                                                                     extent.y() / 2.0))
                                       ])
-                                 for extent in self.dimensions]
+                                 for extent in self.extents]
         return self.attr_changes
 
     def gen_tag_rmlist(self) -> list:
@@ -145,22 +145,22 @@ class RectangularArena(IBaseVariable):
 
 class RectangularArenaTwoByOne(RectangularArena):
     """
-    Define arenas that vary in size for each combination of dimensions in the specified X range and
+    Define arenas that vary in size for each combination of extents in the specified X range and
     Y range, where the X dimension is always twices as large as the Y dimension.
     """
 
-    def __init__(self, x_range: range, y_range: range) -> None:
-        super().__init__([ArenaExtent((x, y, 1)) for x in x_range for y in y_range])
+    def __init__(self, x_range: range, y_range: range, z: int) -> None:
+        super().__init__([ArenaExtent((x, y, z)) for x in x_range for y in y_range])
 
 
 class SquareArena(RectangularArena):
     """
-    Define arenas that vary in size for each combination of dimensions in the specified X range and
-    Y range, where the X and y dimensions are always equal.
+    Define arenas that vary in size for each combination of extents in the specified X range and
+    Y range, where the X and y extents are always equal.
     """
 
-    def __init__(self, sqrange: range) -> None:
-        super().__init__([ArenaExtent((x, x, 1)) for x in sqrange])
+    def __init__(self, sqrange: range, z: int) -> None:
+        super().__init__([ArenaExtent((x, x, z)) for x in sqrange])
 
 
 __api__ = [

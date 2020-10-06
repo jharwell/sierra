@@ -60,19 +60,19 @@ class PerfLostInteractiveSwarmUnivar:
                  inter_perf_csv: str,
                  interference_count_csv: str) -> None:
         self.cmdopts = cmdopts
-        self.batch_output_root = cmdopts["collate_root"]
+        self.batch_collate_root = cmdopts["collate_root"]
         self.inter_perf_stem = inter_perf_csv.split('.')[0]
         self.interference_stem = interference_count_csv.split('.')[0]
 
     def calculate(self, batch_criteria: bc.UnivarBatchCriteria):
         # Get .csv with interference info
-        interference_path = os.path.join(self.batch_output_root, self.interference_stem + '.csv')
+        interference_path = os.path.join(self.batch_collate_root, self.interference_stem + '.csv')
         assert(core.utils.path_exists(interference_path)
                ), "FATAL: {0} does not exist".format(interference_path)
         interference_df = core.utils.pd_csv_read(interference_path)
 
         # Get .csv with performance info
-        perf_path = os.path.join(self.batch_output_root, self.inter_perf_stem + '.csv')
+        perf_path = os.path.join(self.batch_collate_root, self.inter_perf_stem + '.csv')
         assert(core.utils.path_exists(perf_path)), "FATAL: {0} does not exist".format(perf_path)
         perf_df = core.utils.pd_csv_read(perf_path)
 
@@ -129,19 +129,19 @@ class PerfLostInteractiveSwarmBivar:
                  inter_perf_csv: str,
                  interference_count_csv: str) -> None:
         self.cmdopts = cmdopts
-        self.batch_output_root = cmdopts["collate_root"]
+        self.batch_collate_root = cmdopts["collate_root"]
         self.inter_perf_stem = inter_perf_csv.split('.')[0]
         self.interference_stem = interference_count_csv.split('.')[0]
 
     def calculate(self, batch_criteria: bc.BivarBatchCriteria):
         # Get .csv with interference info
-        interference_path = os.path.join(self.batch_output_root, self.interference_stem + '.csv')
+        interference_path = os.path.join(self.batch_collate_root, self.interference_stem + '.csv')
         assert(core.utils.path_exists(interference_path)
                ), "FATAL: {0} does not exist".format(interference_path)
         interference_df = core.utils.pd_csv_read(interference_path)
 
         # Get .csv with performance info
-        perf_path = os.path.join(self.batch_output_root, self.inter_perf_stem + '.csv')
+        perf_path = os.path.join(self.batch_collate_root, self.inter_perf_stem + '.csv')
         assert(core.utils.path_exists(perf_path)), "FATAL: {0} does not exist".format(perf_path)
         perf_df = core.utils.pd_csv_read(perf_path)
 
@@ -235,7 +235,7 @@ class FractionalLosses:
                  interference_count_csv: str,
                  batch_criteria: bc.IConcreteBatchCriteria) -> None:
         self.cmdopts = cmdopts
-        self.batch_output_root = cmdopts["collate_root"]
+        self.batch_collate_root = cmdopts["collate_root"]
         self.inter_perf_csv = inter_perf_csv
         self.interference_count_csv = interference_count_csv
         self.inter_perf_stem = inter_perf_csv.split('.')[0]
@@ -243,7 +243,7 @@ class FractionalLosses:
 
         # Just need to get # timesteps per simulation which is the same for all
         # simulations/experiments, so we pick exp0 for simplicity to calculate
-        exp_def = core.utils.unpickle_exp_def(os.path.join(cmdopts["generation_root"],
+        exp_def = core.utils.unpickle_exp_def(os.path.join(cmdopts["batch_input_root"],
                                                            batch_criteria.gen_exp_dirnames(
                                                                self.cmdopts)[0],
                                                            "exp_def.pkl"))
@@ -282,13 +282,13 @@ class FractionalLossesUnivar(FractionalLosses):
                                                  self.interference_count_csv).calculate(batch_criteria)
 
         # Get .csv with interference info
-        interference_path = os.path.join(self.batch_output_root, self.interference_stem + '.csv')
+        interference_path = os.path.join(self.batch_collate_root, self.interference_stem + '.csv')
         assert(core.utils.path_exists(interference_path)
                ), "FATAL: {0} does not exist".format(interference_path)
         interference_df = core.utils.pd_csv_read(interference_path)
 
         # Get .csv with performance info
-        perf_path = os.path.join(self.batch_output_root, self.inter_perf_stem + '.csv')
+        perf_path = os.path.join(self.batch_collate_root, self.inter_perf_stem + '.csv')
         assert(core.utils.path_exists(perf_path)), "FATAL: {0} does not exist".format(perf_path)
         perf_df = core.utils.pd_csv_read(perf_path)
 
@@ -339,7 +339,7 @@ class FractionalLossesBivar(FractionalLosses):
                                                 self.interference_count_csv).calculate(batch_criteria)
 
         # Get .csv with performance info
-        perf_path = os.path.join(self.batch_output_root, self.inter_perf_stem + '.csv')
+        perf_path = os.path.join(self.batch_collate_root, self.inter_perf_stem + '.csv')
         assert(core.utils.path_exists(perf_path)), "FATAL: {0} does not exist".format(perf_path)
         perf_df = core.utils.pd_csv_read(perf_path)
 

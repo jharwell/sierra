@@ -80,7 +80,7 @@ class PopulationConstantDensity(cd.ConstantDensity):
             exp_dirs = self.gen_exp_dirnames(cmdopts)
 
         for d in exp_dirs:
-            pickle_fpath = os.path.join(self.batch_generation_root,
+            pickle_fpath = os.path.join(self.batch_input_root,
                                         d,
                                         "exp_def.pkl")
             exp_def = core.utils.unpickle_exp_def(pickle_fpath)
@@ -108,7 +108,7 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
 def factory(cli_arg: str,
             main_config: tp.Dict[str, str],
-            batch_generation_root: str,
+            batch_input_root: str,
             **kwargs):
     """
     Factory to create ``ConstantDensity`` derived classes from the command line definition of batch
@@ -137,7 +137,7 @@ def factory(cli_arg: str,
         PopulationConstantDensity.__init__(self,
                                            cli_arg,
                                            main_config,
-                                           batch_generation_root,
+                                           batch_input_root,
                                            attr["target_density"],
                                            dims,
                                            kw['dist_type'])

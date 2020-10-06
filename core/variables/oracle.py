@@ -47,10 +47,10 @@ class Oracle(bc.UnivarBatchCriteria):
 
     def __init__(self, cli_arg: str,
                  main_config: tp.Dict[str, str],
-                 batch_generation_root: str,
+                 batch_input_root: str,
                  tuples: tp.List[tuple],
                  population: int) -> None:
-        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
+        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_input_root)
 
         self.tuples = tuples
         self.population = population
@@ -68,7 +68,7 @@ class Oracle(bc.UnivarBatchCriteria):
             if self.population is not None:
                 size_chgs = PopulationSize(self.cli_arg,
                                            self.main_config,
-                                           self.batch_generation_root,
+                                           self.batch_input_root,
                                            [self.population]).gen_attr_changelist()[0]
                 for exp_chgs in self.attr_changes:
                     exp_chgs |= size_chgs
@@ -139,7 +139,7 @@ class OracleParser():
 
 def factory(cli_arg: str,
             main_config: tp.Dict[str, str],
-            batch_generation_root: str,
+            batch_input_root: str,
             **kwargs):
     """
     Factory to create ``Oracle`` derived classes from the command line definition.
@@ -165,7 +165,7 @@ def factory(cli_arg: str,
         Oracle.__init__(self,
                         cli_arg,
                         main_config,
-                        batch_generation_root,
+                        batch_input_root,
                         gen_tuples(),
                         attr.get('population', None))
 

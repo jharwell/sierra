@@ -131,9 +131,9 @@ class PipelineStage5:
                                                project=self.cmdopts['project'],
                                                batch_leaf=batch_leaf,
                                                controller=t2)
-                    collate_root1 = os.path.join(opts1['output_root'],
+                    collate_root1 = os.path.join(opts1['batch_output_root'],
                                                  self.main_config['sierra']['collate_csv_leaf'])
-                    collate_root2 = os.path.join(opts2['output_root'],
+                    collate_root2 = os.path.join(opts2['batch_output_root'],
                                                  self.main_config['sierra']['collate_csv_leaf'])
 
                     if scenario in collate_root1 and scenario not in collate_root2:

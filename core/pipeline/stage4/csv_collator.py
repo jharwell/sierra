@@ -36,17 +36,17 @@ class UnivarGraphCollator:
     def __init__(self, main_config: dict, cmdopts: dict) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
-        self.batch_output_root = os.path.abspath(self.cmdopts['output_root'])
 
     def __call__(self, batch_criteria, target: dict, collate_root: str):
         logging.info("Stage4: Collating univariate files from batch in %s for graph '%s'...",
-                     self.batch_output_root,
+                     self.cmdopts['batch_output_root'],
                      target['src_stem'])
 
         data_df_new = pd.DataFrame(columns=batch_criteria.gen_exp_dirnames(self.cmdopts))
         stddev_df_new = pd.DataFrame(columns=batch_criteria.gen_exp_dirnames(self.cmdopts))
 
-        exp_dirs = core.utils.exp_range_calc(self.cmdopts, self.batch_output_root, batch_criteria)
+        exp_dirs = core.utils.exp_range_calc(
+            self.cmdopts, self.cmdopts['batch_output_root'], batch_criteria)
         csv_src_exists = [False for d in exp_dirs]
         stddev_src_exists = [False for d in exp_dirs]
 
@@ -68,7 +68,7 @@ class UnivarGraphCollator:
                                     index=False)
         elif any([v for v in csv_src_exists]):
             logging.warning("Not all experiments in %s produced '%s.csv'",
-                            self.batch_output_root,
+                            self.cmdopts['batch_output_root'],
                             target['src_stem'])
 
         if all([v for v in csv_src_exists]) and not stddev_df_new.empty:
@@ -77,7 +77,7 @@ class UnivarGraphCollator:
                                     index=False)
 
     def __collate_exp_csv_data(self, exp_dir: str, target: dict, collated_df: pd.DataFrame):
-        exp_output_root = os.path.join(self.batch_output_root, exp_dir)
+        exp_output_root = os.path.join(self.cmdopts['batch_output_root'], exp_dir)
         csv_ipath = os.path.join(exp_output_root,
                                  self.main_config['sierra']['avg_output_leaf'],
                                  target['src_stem'] + '.csv')
@@ -94,7 +94,7 @@ class UnivarGraphCollator:
         return True
 
     def __collate_exp_csv_stddev(self, exp_dir: str, target: dict, collated_df: pd.DataFrame):
-        exp_output_root = os.path.join(self.batch_output_root, exp_dir)
+        exp_output_root = os.path.join(self.cmdopts['batch_output_root'], exp_dir)
         stddev_ipath = os.path.join(exp_output_root,
                                     self.main_config['sierra']['avg_output_leaf'],
                                     target['src_stem'] + '.stddev')
@@ -126,14 +126,13 @@ class BivarGraphCollator:
         self.main_config = main_config
         self.cmdopts = cmdopts
 
-        self.batch_output_root = os.path.abspath(self.cmdopts['output_root'])
-
     def __call__(self, batch_criteria, target: dict, collate_root: str):
         logging.info("Stage4: Collating bivariate files from batch in %s for graph '%s'...",
-                     self.batch_output_root,
+                     self.cmdopts['batch_output_root'],
                      target['src_stem'])
 
-        exp_dirs = core.utils.exp_range_calc(self.cmdopts, self.batch_output_root, batch_criteria)
+        exp_dirs = core.utils.exp_range_calc(
+            self.cmdopts, self.cmdopts['batch_output_root'], batch_criteria)
 
         # Because sets are used, if a sub-range of experiments are selected for collation, the
         # selected range has to be an even multiple of the # of experiments in the second batch
@@ -172,7 +171,7 @@ class BivarGraphCollator:
                                     index=False)
         elif any([v for v in csv_src_exists]):
             logging.warning("Not all experiments in %s produced '%s.csv'",
-                            self.batch_output_root,
+                            self.cmdopts['batch_output_root'],
                             target['src_stem'])
 
         if all([v for v in csv_src_exists]) and not stddev_df_new.empty:
@@ -182,7 +181,7 @@ class BivarGraphCollator:
                                     index=False)
 
     def __collate_exp_csv_data(self, exp_dir: str, target: dict, collated_df: pd.DataFrame):
-        exp_output_root = os.path.join(self.batch_output_root, exp_dir)
+        exp_output_root = os.path.join(self.cmdopts['batch_output_root'], exp_dir)
         csv_ipath = os.path.join(exp_output_root,
                                  self.main_config['sierra']['avg_output_leaf'],
                                  target['src_stem'] + '.csv')
@@ -199,7 +198,7 @@ class BivarGraphCollator:
         return True
 
     def __collate_exp_csv_stddev(self, exp_dir: str, target: dict, collated_df: pd.DataFrame):
-        exp_output_root = os.path.join(self.batch_output_root, exp_dir)
+        exp_output_root = os.path.join(self.cmdopts['batch_output_root'], exp_dir)
         stddev_ipath = os.path.join(exp_output_root,
                                     self.main_config['sierra']['avg_output_leaf'],
                                     target['src_stem'] + '.stddev')
@@ -232,9 +231,8 @@ class MultithreadCollator():
     def __init__(self, main_config: dict, cmdopts: dict) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
-        self.batch_output_root = os.path.abspath(self.cmdopts['output_root'])
 
-        self.collate_root = os.path.join(self.batch_output_root,
+        self.collate_root = os.path.join(self.cmdopts['batch_output_root'],
                                          self.main_config['sierra']['collate_csv_leaf'])
         core.utils.dir_create_checked(self.collate_root, exist_ok=True)
 

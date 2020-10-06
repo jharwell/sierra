@@ -44,10 +44,10 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
     def __init__(self,
                  cli_arg: str,
                  main_config: tp.Dict[str, str],
-                 batch_generation_root: str,
+                 batch_input_root: str,
                  dynamics_types: tp.List[str],
                  dynamics: tp.List[tp.Set[tp.Tuple[str, int]]]) -> None:
-        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
+        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_input_root)
         self.dynamics_types = dynamics_types
         self.dynamics = dynamics
         self.attr_changes = []  # type: tp.List
@@ -78,7 +78,7 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
         ticks = []
 
         for d in exp_dirs:
-            exp_def = core.utils.unpickle_exp_def(os.path.join(self.batch_generation_root,
+            exp_def = core.utils.unpickle_exp_def(os.path.join(self.batch_input_root,
                                                                d,
                                                                'exp_def.pkl'))
             # If we had pure death dynamics, the tasked swarm time is 0 in the steady state, so we
@@ -191,7 +191,7 @@ class PopulationDynamicsParser(dp.DynamicsParser):
                 }
 
 
-def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_generation_root: str, **kwargs):
+def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_input_root: str, **kwargs):
     """
     Factory to create ``PopulationDynamics`` derived classes from the command line definition.
 
@@ -223,7 +223,7 @@ def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_generation_root:
         PopulationDynamics.__init__(self,
                                     cli_arg,
                                     main_config,
-                                    batch_generation_root,
+                                    batch_input_root,
                                     attr['dynamics_types'],
                                     gen_dynamics())
 

@@ -50,10 +50,10 @@ class TemporalVariance(bc.UnivarBatchCriteria):
     def __init__(self,
                  cli_arg: str,
                  main_config: tp.Dict[str, str],
-                 batch_generation_root: str,
+                 batch_input_root: str,
                  variances: list,
                  population: int) -> None:
-        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
+        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_input_root)
 
         self.variances = variances
         self.population = population
@@ -77,7 +77,7 @@ class TemporalVariance(bc.UnivarBatchCriteria):
             if self.population is not None:
                 size_chgs = PopulationSize(self.cli_arg,
                                            self.main_config,
-                                           self.batch_generation_root,
+                                           self.batch_input_root,
                                            [self.population]).gen_attr_changelist()[0]
                 for exp_chgs in self.attr_changes:
                     exp_chgs |= size_chgs
@@ -117,7 +117,7 @@ class TemporalVariance(bc.UnivarBatchCriteria):
         return True
 
 
-def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwargs):
+def factory(cli_arg: str, main_config: dict, batch_input_root: str, **kwargs):
     """
     Factory to create :class:`TemporalVariance` derived classes from the command line definition of
     batch criteria.
@@ -165,7 +165,7 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
         TemporalVariance.__init__(self,
                                   cli_arg,
                                   main_config,
-                                  batch_generation_root,
+                                  batch_input_root,
                                   gen_variances(attr),
                                   attr.get("population", None))
 

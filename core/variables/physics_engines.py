@@ -58,7 +58,7 @@ class PhysicsEngines(IBaseVariable):
         self.iter_per_tick = iter_per_tick
         self.layout = layout
         self.extents = extents
-        self.xml_adds = None
+        self.tag_adds = None
 
         # If we are given multiple extents to map, we need to divide the specified # of engines
         # among them.
@@ -85,23 +85,23 @@ class PhysicsEngines(IBaseVariable):
                       self.n_engines,
                       self.engine_type,
                       self.extents)
-        if self.xml_adds is None:
+        if self.tag_adds is None:
             if self.n_engines == 1:
-                self.xml_adds = [self.__gen1_engines()]
+                self.tag_adds = [self.__gen1_engines()]
             elif self.n_engines == 4:
-                self.xml_adds = [self.__gen4_engines(s) for s in self.extents]
+                self.tag_adds = [self.__gen4_engines(s) for s in self.extents]
             elif self.n_engines == 6:
-                self.xml_adds = [self.__gen6_engines(s) for s in self.extents]
+                self.tag_adds = [self.__gen6_engines(s) for s in self.extents]
             elif self.n_engines == 8:
-                self.xml_adds = [self.__gen8_engines(s) for s in self.extents]
+                self.tag_adds = [self.__gen8_engines(s) for s in self.extents]
             elif self.n_engines == 16:
-                self.xml_adds = [self.__gen16_engines(s) for s in self.extents]
+                self.tag_adds = [self.__gen16_engines(s) for s in self.extents]
             elif self.n_engines == 24:
-                self.xml_adds = [self.__gen24_engines(s) for s in self.extents]
+                self.tag_adds = [self.__gen24_engines(s) for s in self.extents]
             else:
                 raise RuntimeError("Bad # of physics engines specified: {0}".format(self.n_engines))
 
-        return self.xml_adds
+        return self.tag_adds
 
     def __gen_all_engines(self,
                           extent: ArenaExtent,

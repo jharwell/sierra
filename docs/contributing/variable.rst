@@ -64,7 +64,7 @@ the following to get it to work with sierra as a batch criteria:
    #. A dictionary of (attribute, value) pairs to create as children of the
       tag when creating the tag itself.
 
-   ``Factory(cmdline_str, main_config, batch_generation_root, **kwargs)`` -
+   ``Factory(cmdline_str, main_config, batch_input_root, **kwargs)`` -
 
    Given:
 

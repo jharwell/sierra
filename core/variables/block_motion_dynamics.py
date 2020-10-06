@@ -44,10 +44,10 @@ class BlockMotionDynamics(bc.UnivarBatchCriteria):
     def __init__(self,
                  cli_arg: str,
                  main_config: tp.Dict[str, str],
-                 batch_generation_root: str,
+                 batch_input_root: str,
                  dynamics_type: str,
                  dynamics: tp.List[tp.Tuple[str, int]]) -> None:
-        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
+        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_input_root)
         # For now, only a single dynamics type
         self.dynamics_type = dynamics_type
         self.dynamics = dynamics
@@ -71,7 +71,7 @@ class BlockMotionDynamics(bc.UnivarBatchCriteria):
         ticks = []
 
         for d in exp_dirs:
-            exp_def = core.utils.unpickle_exp_def(os.path.join(self.batch_generation_root,
+            exp_def = core.utils.unpickle_exp_def(os.path.join(self.batch_input_root,
                                                                d,
                                                                'exp_def.pkl'))
             ticks.append(BlockMotionDynamics.calc_xtick(exp_def))
@@ -120,7 +120,7 @@ class BlockMotionDynamicsParser(dp.DynamicsParser):
 
 def factory(cli_arg: str,
             main_config: tp.Dict[str, str],
-            batch_generation_root: str,
+            batch_input_root: str,
             **kwargs):
     """
     Factory to create ``BlockMotionDynamics`` derived classes from the command line definition.
@@ -151,7 +151,7 @@ def factory(cli_arg: str,
         BlockMotionDynamics.__init__(self,
                                      cli_arg,
                                      main_config,
-                                     batch_generation_root,
+                                     batch_input_root,
                                      dynamics_type,
                                      gen_dynamics())
 

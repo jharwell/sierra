@@ -44,14 +44,14 @@ class BlockConstantDensity(cd.ConstantDensity):
     def __init__(self,
                  cli_arg: str,
                  main_config: tp.Dict[str, str],
-                 batch_generation_root: str,
+                 batch_input_root: str,
                  target_density: float,
                  dimensions: tp.List[core.utils.ArenaExtent],
                  dist_type: str) -> None:
         cd.ConstantDensity.__init__(self,
                                     cli_arg,
                                     main_config,
-                                    batch_generation_root,
+                                    batch_input_root,
                                     target_density,
                                     dimensions,
                                     dist_type)
@@ -89,7 +89,7 @@ class BlockConstantDensity(cd.ConstantDensity):
 
         areas = []
         for d in exp_dirs:
-            pickle_fpath = os.path.join(self.batch_generation_root,
+            pickle_fpath = os.path.join(self.batch_input_root,
                                         d,
                                         "exp_def.pkl")
             exp_def = core.utils.unpickle_exp_def(pickle_fpath)
@@ -116,7 +116,7 @@ class BlockConstantDensity(cd.ConstantDensity):
 
 def factory(cli_arg: str,
             main_config: tp.Dict[str, str],
-            batch_generation_root: str,
+            batch_input_root: str,
             **kwargs):
     """
     factory to create ``BlockConstantDensity`` derived classes from the command line definition of
@@ -144,7 +144,7 @@ def factory(cli_arg: str,
         BlockConstantDensity.__init__(self,
                                       cli_arg,
                                       main_config,
-                                      batch_generation_root,
+                                      batch_input_root,
                                       attr["target_density"],
                                       dims,
                                       kw['dist_type'])

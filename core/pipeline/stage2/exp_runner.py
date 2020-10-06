@@ -47,7 +47,7 @@ class BatchedExpRunner:
         self.cmdopts = cmdopts
         self.criteria = criteria
 
-        self.batch_exp_root = os.path.abspath(self.cmdopts['generation_root'])
+        self.batch_exp_root = os.path.abspath(self.cmdopts['batch_input_root'])
         self.exec_exp_range = self.cmdopts['exp_range']
 
     def __call__(self):
@@ -99,15 +99,15 @@ class ExpRunner:
     in an HPC environment, or on the current local machine.
 
     Attributes:
-        exp_generation_root: Absolute path to the root directory for all generated simulation
+        exp_input_root: Absolute path to the root directory for all generated simulation
                              input files for the experiment (i.e. an experiment directory
                              within the batch experiment root).
         exp_num: Experiment number in the batch.
 
     """
 
-    def __init__(self, exp_generation_root: str, exp_num: int, hpc_env: str) -> None:
-        self.exp_generation_root = os.path.abspath(exp_generation_root)
+    def __init__(self, exp_input_root: str, exp_num: int, hpc_env: str) -> None:
+        self.exp_input_root = os.path.abspath(exp_input_root)
         self.exp_num = exp_num
         self.hpc_env = hpc_env
 
@@ -122,7 +122,7 @@ class ExpRunner:
 
         """
 
-        logging.info('Running exp%s in %s...', self.exp_num, self.exp_generation_root)
+        logging.info('Running exp%s in %s...', self.exp_num, self.exp_input_root)
         sys.stdout.flush()
 
         start = time.time()
@@ -130,9 +130,9 @@ class ExpRunner:
             # Root directory for the job. Chose the exp input directory rather than the output
             # directory in order to keep simulation outputs separate from those for the framework
             # used to run the experiments.
-            'jobroot_path': self.exp_generation_root,
-            'cmdfile_path': os.path.join(self.exp_generation_root, "commands.txt"),
-            'joblog_path': os.path.join(self.exp_generation_root, "parallel.log"),
+            'jobroot_path': self.exp_input_root,
+            'cmdfile_path': os.path.join(self.exp_input_root, "commands.txt"),
+            'joblog_path': os.path.join(self.exp_input_root, "parallel.log"),
             'exec_resume': exec_resume,
             'n_jobs': n_jobs
         }

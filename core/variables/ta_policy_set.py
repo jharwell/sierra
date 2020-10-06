@@ -43,10 +43,10 @@ class TAPolicySet(bc.UnivarBatchCriteria):
 
     def __init__(self, cli_arg: str,
                  main_config: tp.Dict[str, str],
-                 batch_generation_root: str,
+                 batch_input_root: str,
                  policies: list,
                  population: int) -> None:
-        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
+        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_input_root)
         self.policies = policies
         self.population = population
         self.attr_changes = []  # type: tp.List
@@ -59,7 +59,7 @@ class TAPolicySet(bc.UnivarBatchCriteria):
             if self.population is not None:
                 size_chgs = PopulationSize(self.cli_arg,
                                            self.main_config,
-                                           self.batch_generation_root,
+                                           self.batch_input_root,
                                            [self.population]).gen_attr_changelist()[0]
             else:
                 size_chgs = []
@@ -133,7 +133,7 @@ class TAPolicySetParser():
 
 def factory(cli_arg: str,
             main_config: tp.Dict[str, str],
-            batch_generation_root: str,
+            batch_input_root: str,
             **kwargs):
     """
     Factory to create :class:`TAPolicySet` derived classes from the command line definition of batch
@@ -143,7 +143,7 @@ def factory(cli_arg: str,
     attr = TAPolicySetParser().parse(cli_arg)
 
     def __init__(self) -> None:
-        TAPolicySet.__init__(self, cli_arg, main_config, batch_generation_root,
+        TAPolicySet.__init__(self, cli_arg, main_config, batch_input_root,
                              TAPolicySet.kPolicies, attr.get('population', None))
 
     return type(cli_arg,

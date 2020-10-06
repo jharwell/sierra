@@ -31,9 +31,10 @@ class PipelineStage2:
     """
     Implements stage 2 of the experimental pipeline.
 
-    Runs all experiments in the generation root in parallel using GNU Parallel on
-    the provided set of hosts in an HPC environment, or on the local machine. This stage is *NOT*
-    idempotent, for obvious reasons.
+    Runs all experiments in the input root in parallel using GNU Parallel on the provided set of
+    hosts in an HPC environment, or on the local machine. This stage is *NOT* idempotent, for
+    obvious reasons.
+
     """
 
     def run(self, cmdopts: dict, batch_criteria: bc.BatchCriteria):

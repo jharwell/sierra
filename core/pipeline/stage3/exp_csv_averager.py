@@ -112,6 +112,7 @@ class ExpCSVAverager:
             os.path.basename(self.avg_opts['template_input_leaf']))
 
         self.exp_output_root = os.path.abspath(exp_output_root)
+        self.main_config = main_config
 
         self.avgd_output_leaf = main_config['sierra']['avg_output_leaf']
         self.avgd_output_root = os.path.join(self.exp_output_root,
@@ -149,10 +150,9 @@ class ExpCSVAverager:
         pattern = self.output_name_format.format(
             re.escape(self.avg_opts['template_input_leaf']), r'\d+')
 
-        # check to make sure all directories are simulation runs, skipping the directory within each
-        # experiment that the averaged data is placed in
-        simulations = [e for e in os.listdir(self.exp_output_root) if e not in [
-            self.avgd_output_leaf, self.project_frames_leaf, self.argos_frames_leaf, self. videos_leaf]]
+        # Check to make sure all directories are simulation runs, skipping directories as needed.
+        simulations = sim_dir_filter(os.listdir(self.exp_output_root),
+                                     self.main_config, self.videos_leaf)
 
         assert(all(re.match(pattern, s) for s in simulations)),\
             "FATAL: Not all directories in {0} are simulation runs".format(self.exp_output_root)
@@ -227,8 +227,9 @@ class ExpCSVAverager:
         - All simulation ``.csv`` files have the same # rows/columns.
         - No simulation ``.csv``files contain NaNs.
         """
-        experiments = [exp for exp in os.listdir(self.exp_output_root) if exp not in [
-            self.avgd_output_leaf]]
+        experiments = sim_dir_filter(os.listdir(self.exp_output_root),
+                                     self.main_config,
+                                     self.videos_leaf)
 
         logging.info('Verifying results in %s...', self.exp_output_root)
 
@@ -274,3 +275,13 @@ class ExpCSVAverager:
                         assert(all(len(df1[c1]) == len(df2[c2])) for c2 in df1.columns),\
                             "FATAL: Not all columns from {0} and {1} have same length".format(path1,
                                                                                               path2)
+
+
+def sim_dir_filter(exp_dirs: str, main_config: dict, videos_leaf: str):
+    avgd_output_leaf = main_config['sierra']['avg_output_leaf']
+    project_frames_leaf = main_config['sierra']['project_frames_leaf']
+    argos_frames_leaf = main_config['sim']['argos_frames_leaf']
+    return [e for e in exp_dirs if e not in [avgd_output_leaf,
+                                             project_frames_leaf,
+                                             argos_frames_leaf,
+                                             videos_leaf]]

@@ -75,10 +75,9 @@ class ScenarioGeneratorParser:
         # be a 2D scenario specification.
         try:
             x, y, z = scenario.split('+')[0].split('.')[1].split('x')
-
         except ValueError:
             x, y = scenario.split('+')[0].split('.')[1].split('x')
-            z = 1.0
+            z = 2.0
 
         dist_type = scenario.split('.')[0]
 
