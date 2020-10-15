@@ -67,7 +67,7 @@ class ConstantDensityParser():
     Enforces the cmdline definition of constant density criteria.
     """
 
-    def parse(self, cli_arg) -> dict:
+    def parse(self, cli_arg: str) -> dict:
         """
         Returns:
             Dictionary with keys:

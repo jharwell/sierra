@@ -49,7 +49,7 @@ class BatchedExpCSVAverager:
         self.cmdopts = cmdopts
         self.batch_output_root = batch_output_root
 
-    def __call__(self, criteria: bc.IConcreteBatchCriteria):
+    def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
 
         exp_to_avg = core.utils.exp_range_calc(self.cmdopts, self.batch_output_root, criteria)
 
@@ -78,7 +78,9 @@ class BatchedExpCSVAverager:
         q.join()
 
     @staticmethod
-    def __thread_worker(q: mp.Queue, main_config: dict, avg_opts: tp.Dict[str, str]):
+    def __thread_worker(q: mp.Queue,
+                        main_config: dict,
+                        avg_opts: tp.Dict[str, str]) -> None:
         while True:
             # Wait for 3 seconds after the queue is empty before bailing
             try:
@@ -163,7 +165,7 @@ class ExpCSVAverager:
 
         self.__average_csvs_within_exp(csvs)
 
-    def __gather_csvs_from_sim(self, sim: str, csvs: dict):
+    def __gather_csvs_from_sim(self, sim: str, csvs: dict) -> None:
         csv_root = os.path.join(self.exp_output_root, sim, self.sim_metrics_leaf)
 
         # The metrics folder should contain nothing but .csv files and directories. For all
@@ -189,7 +191,7 @@ class ExpCSVAverager:
                         csvs[(csv_fname, item)] = []
                     csvs[(csv_fname, item)].append(df)
 
-    def __average_csvs_within_exp(self, csvs: dict):
+    def __average_csvs_within_exp(self, csvs: dict) -> None:
         # All CSV files with the same base name will be averaged together
         for csv_fname in csvs:
             csv_concat = pd.concat(csvs[csv_fname])
@@ -277,11 +279,14 @@ class ExpCSVAverager:
                                                                                               path2)
 
 
-def sim_dir_filter(exp_dirs: str, main_config: dict, videos_leaf: str):
+def sim_dir_filter(exp_dirs: str, main_config: dict, videos_leaf: str) -> tp.List[str]:
     avgd_output_leaf = main_config['sierra']['avg_output_leaf']
     project_frames_leaf = main_config['sierra']['project_frames_leaf']
     argos_frames_leaf = main_config['sim']['argos_frames_leaf']
+    models_leaf = main_config['sierra']['models_leaf']
+
     return [e for e in exp_dirs if e not in [avgd_output_leaf,
                                              project_frames_leaf,
                                              argos_frames_leaf,
-                                             videos_leaf]]
+                                             videos_leaf,
+                                             models_leaf]]

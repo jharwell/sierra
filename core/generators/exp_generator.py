@@ -26,13 +26,10 @@ import typing as tp
 import logging
 
 from core.xml_luigi import XMLLuigi
-from core.variables import batch_criteria as bc
-from core.variables import constant_density
 from core.variables import camera_timeline
 import core.generators.generator_factory as gf
-import core.generators.scenario_generator_parser as sgp
 import core.xml_luigi
-from core.utils import ArenaExtent
+from core.experiment_spec import ExperimentSpec
 
 
 class ExpDefCommonGenerator:
@@ -50,18 +47,17 @@ class ExpDefCommonGenerator:
     Attributes:
         template_input_file: Path(relative to current dir or absolute) to the template XML
                              configuration file.
-        exp_def_fname: Path to file to use for pickling experiment definitions.
         cmdopts: Dictionary containing parsed cmdline options.
     """
 
     def __init__(self,
+                 spec: ExperimentSpec,
                  template_input_file: str,
-                 exp_def_fpath: str,
                  cmdopts: dict) -> None:
 
         self.template_input_file = os.path.abspath(template_input_file)
         self.cmdopts = cmdopts
-        self.exp_def_fpath = exp_def_fpath
+        self.spec = spec
 
     def generate(self):
         """
@@ -83,7 +79,7 @@ class ExpDefCommonGenerator:
         self.__generate_saa(xml_luigi)
 
         # Setup simulation time parameters
-        self.__generate_time(xml_luigi, self.exp_def_fpath)
+        self.__generate_time(xml_luigi)
 
         return xml_luigi
 
@@ -106,7 +102,7 @@ class ExpDefCommonGenerator:
             xml_luigi.tag_remove(".//sensors", "battery", noprint=True)
             xml_luigi.tag_remove(".//entity/*", "battery", noprint=True)
 
-    def __generate_time(self, xml_luigi: XMLLuigi, exp_def_fpath: str):
+    def __generate_time(self, xml_luigi: XMLLuigi):
         """
         Generate XML changes to setup simulation time parameters.
 
@@ -120,7 +116,7 @@ class ExpDefCommonGenerator:
             xml_luigi.attr_change(a[0], a[1], a[2], True)
 
         # Write time setup info to file for later retrieval
-        with open(exp_def_fpath, 'ab') as f:
+        with open(self.spec.exp_def_fpath, 'ab') as f:
             pickle.dump(tsetup_inst.gen_attr_changelist()[0], f)
 
     def __generate_threading(self, xml_luigi: XMLLuigi):
@@ -258,46 +254,13 @@ class BatchedExpDefGenerator:
         Arguments:
             exp_num: Experiment number in the batch
         """
-        from_bivar_bc1 = False
-        from_bivar_bc2 = False
-        from_univar_bc = False
 
-        if self.criteria.is_bivar():
-            bivar = tp.cast(bc.BivarBatchCriteria, self.criteria)
-            from_bivar_bc1 = isinstance(bivar.criteria1, constant_density.ConstantDensity)
-            from_bivar_bc2 = isinstance(bivar.criteria2, constant_density.ConstantDensity)
-        else:
-            from_univar_bc = isinstance(self.criteria, constant_density.ConstantDensity)
-
-        # Need to get per-experiment arena dimensions from batch criteria, as they are different
-        # for each experiment
-        if from_univar_bc:
-            self.cmdopts["arena_dim"] = self.criteria.arena_dims()[exp_num]
-            eff_scenario_name = self.criteria.exp_scenario_name(exp_num)
-            logging.debug("Obtained scenario dimensions '%s' from univariate batch criteria",
-                          self.cmdopts['arena_dim'])
-        elif from_bivar_bc1 or from_bivar_bc2:
-            self.cmdopts["arena_dim"] = self.criteria.arena_dims()[exp_num]
-            logging.debug("Obtained scenario dimensions '%s' bivariate batch criteria",
-                          self.cmdopts['arena_dim'])
-            eff_scenario_name = self.criteria.exp_scenario_name(exp_num)
-        else:  # Defaultc case: scenario dimensions read from cmdline
-            kw = sgp.ScenarioGeneratorParser.reparse_str(self.scenario_basename)
-            self.cmdopts["arena_dim"] = ArenaExtent((kw['arena_x'], kw['arena_y'], kw['arena_z']))
-            logging.debug("Read scenario dimensions %s from cmdline spec",
-                          self.cmdopts['arena_dim'])
-
-            eff_scenario_name = self.scenario_basename
-
-        exp_input_root = os.path.join(self.batch_input_root,
-                                      self.criteria.gen_exp_dirnames(self.cmdopts)[exp_num])
+        spec = ExperimentSpec(self.criteria, self.cmdopts, exp_num)
 
         scenario = gf.scenario_generator_create(controller=self.controller_name,
-                                                scenario=eff_scenario_name,
-                                                template_input_file=os.path.join(exp_input_root,
+                                                spec=spec,
+                                                template_input_file=os.path.join(spec.exp_input_root,
                                                                                  self.batch_config_leaf),
-                                                exp_def_fpath=os.path.join(exp_input_root,
-                                                                           "exp_def.pkl"),
                                                 cmdopts=self.cmdopts)
 
         controller = gf.controller_generator_create(controller=self.controller_name,

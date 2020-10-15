@@ -114,10 +114,10 @@ class Quantity(IBaseVariable):
     block types).
 
     Attributes:
-      blocks_list(list): List of block quantities to be distributed.
+      blocks_list: List of block quantities to be distributed.
     """
 
-    def __init__(self, blocks_list) -> None:
+    def __init__(self, blocks_list: tp.List) -> None:
         self.blocks_list = blocks_list
 
     def gen_attr_changelist(self):

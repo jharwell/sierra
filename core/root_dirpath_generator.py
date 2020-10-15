@@ -58,7 +58,7 @@ def from_cmdline(args):
                           args.controller)
 
 
-def parse_batch_leaf(root: str):
+def parse_batch_leaf(root: str) -> tp.Tuple[str, str, list]:
     """
     Parse a batch root into (template input file basename, scenario, batch criteria list) string
     components as they would have been specified on the cmdline.
@@ -76,7 +76,7 @@ def parse_batch_leaf(root: str):
 
 def gen_batch_leaf(criteria: tp.List[str],
                    template_stem: str,
-                   scenario: str):
+                   scenario: str) -> str:
     leaf = template_stem + '-' + scenario + '+' + '+'.join(criteria)
     logging.debug("Generated batch leaf %s", leaf)
     return leaf
@@ -85,7 +85,7 @@ def gen_batch_leaf(criteria: tp.List[str],
 def regen_from_exp(sierra_rpath: str,
                    project: str,
                    batch_leaf: str,
-                   controller: str):
+                   controller: str) -> dict:
     """
     Re-generates the directory paths for the root directories for a single batched experiment from a
     previously created batch experiment (i.e. something that was generated with
@@ -112,20 +112,25 @@ def regen_from_exp(sierra_rpath: str,
         'batch_root': root,
         'batch_input_root': gen_input_root(root),
         'batch_output_root': gen_output_root(root),
-        'batch_graph_root': gen_graph_root(root)
+        'batch_graph_root': gen_graph_root(root),
+        'batch_model_root': gen_model_root(root)
     }
 
 
-def gen_output_root(root: str):
+def gen_output_root(root: str) -> str:
     return os.path.join(root, "exp-outputs")
 
 
-def gen_input_root(root: str):
+def gen_input_root(root: str) -> str:
     return os.path.join(root, "exp-inputs")
 
 
-def gen_graph_root(root: str):
+def gen_graph_root(root: str) -> str:
     return os.path.join(root, "graphs")
+
+
+def gen_model_root(root: str) -> str:
+    return os.path.join(root, "models")
 
 
 def gen_batch_root(sierra_rpath: str,
@@ -133,7 +138,7 @@ def gen_batch_root(sierra_rpath: str,
                    criteria: tp.List[str],
                    scenario: str,
                    controller: str,
-                   template_stem: str):
+                   template_stem: str) -> str:
     """
     Generate the directory path for the root directory for batch experiments depending on what
     the batch criteria is. The directory path depends on all of the input arguments to this

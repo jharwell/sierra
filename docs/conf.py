@@ -104,6 +104,10 @@ autoapi_modules = {
     'core.pipeline': {'output': 'api/core'},
     'core.variables': {'output': 'api/core'},
     'core.graphs': {'output': 'api/core'},
+    'core.xml_luigi': {'output': 'api/core'},
+    'core.utils': {'output': 'api/core'},
+    'core.experiment_spec': {'output': 'api/core'},
+    'models.model': {'output': 'api/models'},
     'plugins.fordyca': {'output': 'api/plugins'},
     'plugins.silicon': {'output': 'api/plugins'}
 }
@@ -221,7 +225,14 @@ texinfo_documents = [
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}
+intersphinx_mapping = {'python3': ('https://docs.python.org/3', None),
+                       'numpy': ('https://numpy.org/doc/stable/', None),
+                       'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
+                       'matplotlib': ('https://matplotlib.org', None),
+                       'sphinx': ('https://www.sphinx-doc.org/en/stable/', None),
+                       'pandas': ('https://pandas.pydata.org/docs/', None),
+                       'implements': ('https://implements.readthedocs.io/en/latest/', None)
+                       }
 
 # HACK! The [FORDYCA, SILICON] plugin repos are needed to get the SIERRA docs to build, and
 # readthedocs doesn't support a nice way updating submodules to something other than the master

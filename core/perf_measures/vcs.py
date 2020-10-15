@@ -31,7 +31,7 @@ from core.variables.batch_criteria import BatchCriteria
 from core.variables.temporal_variance_parser import TemporalVarianceParser
 
 
-def method_xlabel(method: str):
+def method_xlabel(method: str) -> str:
     """
     Return the X-label of the method used for calculating the curve similarity.
     """
@@ -45,7 +45,7 @@ def method_xlabel(method: str):
     return labels[method]
 
 
-def method_ylabel(method: str, arg):
+def method_ylabel(method: str, arg) -> str:
     """
     Return the Y-label of the method used for calculating the curve similarity.
 
@@ -87,7 +87,9 @@ class EnvironmentalCS():
         self.exp_num = exp_num
         self.main_config = main_config
 
-    def __call__(self, criteria: BatchCriteria, exp_dirs: tp.List[str] = None):
+    def __call__(self,
+                 criteria: BatchCriteria,
+                 exp_dirs: tp.List[str] = None) -> None:
         ideal_var_df = DataFrames.expx_var_df(self.cmdopts,
                                               criteria,
                                               exp_dirs,
@@ -202,7 +204,7 @@ class AdaptabilityCS():
         self.perf_csv_col = main_config['perf']['intra_perf_col']
         self.var_csv_col = TemporalVarianceParser()(self.criteria.cli_arg)['variance_csv_col']
 
-    def calc_waveforms(self, exp_dirs: tp.List[str] = None):
+    def calc_waveforms(self, exp_dirs: tp.List[str] = None) -> None:
         """
         Calculates the (ideal performance, experimental performance) comparable waveforms for the
         experiment. Returns NP arrays rather than dataframes, because that is what the curve
@@ -244,7 +246,7 @@ class AdaptabilityCS():
         ideal_data[:, 1] = ideal_df[self.perf_csv_col].values
         return ideal_data, exp_data
 
-    def __call__(self, exp_dirs: tp.List[str] = None):
+    def __call__(self, exp_dirs: tp.List[str] = None) -> None:
         ideal_data, exp_data = self.calc_waveforms(exp_dirs)
 
         return CSRaw()(exp_data=exp_data,
@@ -295,7 +297,7 @@ class ReactivityCS():
                        normalize=self.cmdopts['pm_flexibility_normalize'],
                        normalize_method=self.cmdopts['pm_normalize_method'])
 
-    def calc_waveforms(self, exp_dirs: tp.List[str] = None):
+    def calc_waveforms(self, exp_dirs: tp.List[str] = None) -> None:
         """
         Calculates the (ideal performance, experimental performance) comparable waveforms for the
         experiment. Returns NP arrays rather than dataframes, because that is what the curve

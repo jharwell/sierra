@@ -37,7 +37,7 @@ class UnivarGraphCollator:
         self.main_config = main_config
         self.cmdopts = cmdopts
 
-    def __call__(self, batch_criteria, target: dict, collate_root: str):
+    def __call__(self, batch_criteria, target: dict, collate_root: str) -> None:
         logging.info("Stage4: Collating univariate files from batch in %s for graph '%s'...",
                      self.cmdopts['batch_output_root'],
                      target['src_stem'])
@@ -76,7 +76,7 @@ class UnivarGraphCollator:
                                                                 target['dest_stem'] + '.stddev'),
                                     index=False)
 
-    def __collate_exp_csv_data(self, exp_dir: str, target: dict, collated_df: pd.DataFrame):
+    def __collate_exp_csv_data(self, exp_dir: str, target: dict, collated_df: pd.DataFrame) -> bool:
         exp_output_root = os.path.join(self.cmdopts['batch_output_root'], exp_dir)
         csv_ipath = os.path.join(exp_output_root,
                                  self.main_config['sierra']['avg_output_leaf'],
@@ -93,7 +93,7 @@ class UnivarGraphCollator:
         collated_df[exp_dir] = data_df[target['col']]
         return True
 
-    def __collate_exp_csv_stddev(self, exp_dir: str, target: dict, collated_df: pd.DataFrame):
+    def __collate_exp_csv_stddev(self, exp_dir: str, target: dict, collated_df: pd.DataFrame) -> bool:
         exp_output_root = os.path.join(self.cmdopts['batch_output_root'], exp_dir)
         stddev_ipath = os.path.join(exp_output_root,
                                     self.main_config['sierra']['avg_output_leaf'],
@@ -126,7 +126,7 @@ class BivarGraphCollator:
         self.main_config = main_config
         self.cmdopts = cmdopts
 
-    def __call__(self, batch_criteria, target: dict, collate_root: str):
+    def __call__(self, batch_criteria, target: dict, collate_root: str) -> None:
         logging.info("Stage4: Collating bivariate files from batch in %s for graph '%s'...",
                      self.cmdopts['batch_output_root'],
                      target['src_stem'])
@@ -180,7 +180,7 @@ class BivarGraphCollator:
 
                                     index=False)
 
-    def __collate_exp_csv_data(self, exp_dir: str, target: dict, collated_df: pd.DataFrame):
+    def __collate_exp_csv_data(self, exp_dir: str, target: dict, collated_df: pd.DataFrame) -> bool:
         exp_output_root = os.path.join(self.cmdopts['batch_output_root'], exp_dir)
         csv_ipath = os.path.join(exp_output_root,
                                  self.main_config['sierra']['avg_output_leaf'],
@@ -197,7 +197,7 @@ class BivarGraphCollator:
         collated_df.loc[xlabel, ylabel] = data_df[target['col']].to_numpy()
         return True
 
-    def __collate_exp_csv_stddev(self, exp_dir: str, target: dict, collated_df: pd.DataFrame):
+    def __collate_exp_csv_stddev(self, exp_dir: str, target: dict, collated_df: pd.DataFrame) -> bool:
         exp_output_root = os.path.join(self.cmdopts['batch_output_root'], exp_dir)
         stddev_ipath = os.path.join(exp_output_root,
                                     self.main_config['sierra']['avg_output_leaf'],
@@ -236,7 +236,7 @@ class MultithreadCollator():
                                          self.main_config['sierra']['collate_csv_leaf'])
         core.utils.dir_create_checked(self.collate_root, exist_ok=True)
 
-    def __call__(self, batch_criteria, targets: dict):
+    def __call__(self, batch_criteria, targets: dict) -> None:
         q = mp.JoinableQueue()  # type: mp.JoinableQueue
 
         # For each category of graphs we are generating
@@ -261,7 +261,7 @@ class MultithreadCollator():
                         main_config: dict,
                         cmdopts: dict,
                         collate_root: str,
-                        batch_criteria):
+                        batch_criteria) -> None:
 
         collator = None  # type: tp.Any
 
@@ -278,3 +278,6 @@ class MultithreadCollator():
                 q.task_done()
             except queue.Empty:
                 break
+
+
+__api__ = ['UnivarGraphCollator', 'BivarGraphCollator']

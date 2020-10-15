@@ -32,6 +32,11 @@ structure and content (a subset of the SIERRA core directory structure):
   - ``stage5.yaml`` - Configuration for stage5 controller comparisons. This file
     is required if stage5 is run, and optional otherwise.
 
+  - ``models.yaml`` - Configuration for intra- and inter-experiment models. This
+    file is optional. If it is present, models defined and enabled in it will be
+    run before stage 4 intra- and/or inter-experiment graph generation, if stage
+    4 is run.
+
 - ``generators/scenario_generators.py`` - Specifies extensions/specializations
   of the foraging scenarios in the SIERRA core, as well as any other scenarios
   the user would want to be able to pass via the ``--scenario`` cmdline
@@ -117,6 +122,10 @@ Root level dictionaries:
      # The title that graphs of raw swarm performance should have (cannot be
      # known a priori for all possible projects during stage 4).
      raw_perf_title: 'Swarm Blocks Collected'
+
+     # The Y label for graphs of raw swarm performance (cannot be
+     # known a priori for all possible projects during stage 4).
+     raw_perf_ylabel: '# Blocks'
 
      # The ``.csv`` file under ``avg_output_leaf`` for each experiment which
      # contains the performance information for the experiment.

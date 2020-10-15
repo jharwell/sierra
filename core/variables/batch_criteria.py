@@ -83,7 +83,7 @@ class IConcreteBatchCriteria(implements.Interface):
         """
         Do the inter-experiment graphs for this batch criteria exclude exp0 ?
 
-        Needed for correct stage5 comparison graph generation for univariate criteria. 
+        Needed for correct stage5 comparison graph generation for univariate criteria.
         """
 
 
@@ -214,7 +214,7 @@ class BatchCriteria():
                 self.main_config['sierra']['collate_csv_leaf']]
         return len(exps)
 
-    def pickle_exp_defs(self, cmdopts: dict):
+    def pickle_exp_defs(self, cmdopts: dict) -> None:
         defs = list(self.gen_attr_changelist())
         for i, exp_def in enumerate(defs):
             exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
@@ -225,7 +225,7 @@ class BatchCriteria():
     def scaffold_exps(self,
                       xml_luigi: core.xml_luigi.XMLLuigi,
                       batch_config_leaf: str,
-                      cmdopts: dict):
+                      cmdopts: dict) -> None:
         """
         Scaffold a batched experiment by taking the raw template input file and applying the XML
         attribute changes to it, and saving the result in the experiment input directory in each
@@ -331,7 +331,9 @@ class BivarBatchCriteria(BatchCriteria):
 
     """
 
-    def __init__(self, criteria1, criteria2) -> None:
+    def __init__(self,
+                 criteria1: IConcreteBatchCriteria,
+                 criteria2: IConcreteBatchCriteria) -> None:
         BatchCriteria.__init__(self,
                                '+'.join([criteria1.cli_arg, criteria2.cli_arg]),
                                criteria1.main_config,
@@ -503,29 +505,33 @@ class BivarBatchCriteria(BatchCriteria):
     def pm_query(self, pm: str) -> bool:
         return self.criteria1.pm_query(pm) or self.criteria2.pm_query(pm)
 
-    def set_batch_input_root(self, root: str):
+    def set_batch_input_root(self, root: str) -> None:
         self.batch_input_root = root
         self.criteria1.batch_input_root = root
         self.criteria2.batch_input_root = root
 
 
-def factory(main_config: dict, cmdopts: dict, args, scenario: str = None):
+def factory(main_config: dict,
+            cmdopts: dict,
+            args,
+            scenario: str = None) -> IConcreteBatchCriteria:
     if scenario is None:
         scenario = args.scenario
 
     if len(args.batch_criteria) == 1:
-        ret = __univar_factory(main_config, cmdopts, args.batch_criteria[0], scenario)
+        return __univar_factory(main_config, cmdopts, args.batch_criteria[0], scenario)
     elif len(args.batch_criteria) == 2:
         assert args.batch_criteria[0] != args.batch_criteria[1],\
             "FATAL: Duplicate batch criteria passed"
-        ret = __bivar_factory(main_config, cmdopts, args.batch_criteria, scenario)
+        return __bivar_factory(main_config, cmdopts, args.batch_criteria, scenario)
     else:
         assert False, "FATAL: 1 or 2 batch criterias must be specified on the cmdline"
 
-    return ret
 
-
-def __univar_factory(main_config: dict, cmdopts: dict, cli_arg: str, scenario):
+def __univar_factory(main_config: dict,
+                     cmdopts: dict,
+                     cli_arg: str,
+                     scenario) -> IConcreteBatchCriteria:
     """
     Construct a batch criteria object from a single cmdline argument.
     """
@@ -540,19 +546,24 @@ def __univar_factory(main_config: dict, cmdopts: dict, cli_arg: str, scenario):
     return ret
 
 
-def __bivar_factory(main_config: dict, cmdopts: dict, cli_arg: tp.List[str], scenario):
+def __bivar_factory(main_config: dict,
+                    cmdopts: dict,
+                    cli_arg: tp.List[str],
+                    scenario: str) -> IConcreteBatchCriteria:
     criteria1 = __univar_factory(main_config, cmdopts, cli_arg[0], scenario)
     criteria2 = __univar_factory(main_config, cmdopts, cli_arg[1], scenario)
     ret = BivarBatchCriteria(criteria1, criteria2)
 
-    logging.info("Create BivariateBatchCriteria from %s,%s",
+    logging.info("Created BivariateBatchCriteria from %s,%s",
                  ret.criteria1.__class__.__name__,
                  ret.criteria2.__class__.__name__)
-    return ret
+
+    return ret  # type: ignore
 
 
 __api__ = [
     'BatchCriteria',
+    'IConcreteBatchCriteria',
     'UnivarBatchCriteria',
     'BivarBatchCriteria',
 ]

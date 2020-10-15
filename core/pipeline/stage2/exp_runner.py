@@ -111,7 +111,7 @@ class ExpRunner:
         self.exp_num = exp_num
         self.hpc_env = hpc_env
 
-    def __call__(self, n_jobs: int, exec_resume: bool):
+    def __call__(self, n_jobs: int, exec_resume: bool) -> None:
         """
         Runs the simulations for a single experiment in parallel.
 

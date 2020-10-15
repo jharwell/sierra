@@ -45,7 +45,7 @@ class TAPolicySet(bc.UnivarBatchCriteria):
                  main_config: tp.Dict[str, str],
                  batch_input_root: str,
                  policies: list,
-                 population: int) -> None:
+                 population: tp.Optional[int]) -> None:
         bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_input_root)
         self.policies = policies
         self.population = population

@@ -35,8 +35,8 @@ class XMLLuigi:
 
     Attributes:
         input_filepath: The location of the xml file to process.
-        output_filepath (optional): Where the object should save changes it has made to the xml
-                                    file. (Defaults to overwriting the input file.)
+        output_filepath: Where the object should save changes it has made to the xml
+                         file. (Defaults to overwriting the input file.)
     """
 
     def __init__(self, input_filepath: str, output_filepath: str = None) -> None:
@@ -66,7 +66,7 @@ class XMLLuigi:
             return el.attrib[attr]
         return None
 
-    def attr_change(self, path: str, attr: str, value: str, noprint: bool = False):
+    def attr_change(self, path: str, attr: str, value: str, noprint: bool = False) -> None:
         """
         Change the specified attribute of the *FIRST* element matching the specified path searching
         from the tree root.
@@ -84,10 +84,10 @@ class XMLLuigi:
             if not noprint:
                 logging.warning("No attribute '%s' found in node '%s'", attr, path)
 
-    def has_tag(self, path: str):
+    def has_tag(self, path: str) -> bool:
         return self.root.find(path) is not None
 
-    def tag_change(self, path: str, tag: str, value: str):
+    def tag_change(self, path: str, tag: str, value: str) -> None:
         """
         Change the specified tag of the element matching the specified path searching
         from the tree root.
@@ -109,7 +109,7 @@ class XMLLuigi:
                 return
         logging.warning("No such element '%s' found in '%s'", tag, path)
 
-    def tag_remove(self, path: str, tag: str, noprint: bool = False):
+    def tag_remove(self, path: str, tag: str, noprint: bool = False) -> None:
         """
         Remove the specified tag of the child element found in the enclosing parent specified by the
         path.

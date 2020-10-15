@@ -7,6 +7,7 @@ Contributing
 
    variable.rst
    graphs.rst
+   models.rst
    project.rst
 
 First, install additional dependencies::
@@ -39,7 +40,7 @@ For the static analysis step:
 #. Run the following on any module directories you changed, from the root of
    SIERRA::
 
-     mypy --ignore-missing-imports <directory name>
+     mypy --ignore-missing-imports --warn-unreachable <directory name>
 
    Fix ANY errors your changes have introduced (there will probably still be
    errors in the my output, because cleaning up the code is always a work in

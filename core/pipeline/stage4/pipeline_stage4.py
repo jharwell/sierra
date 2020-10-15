@@ -27,16 +27,19 @@ import datetime
 import yaml
 import matplotlib as mpl
 
-from core.pipeline.stage4.csv_collator import MultithreadCollator
+from core.pipeline.stage4.graph_collator import MultithreadCollator
 from core.pipeline.stage4.intra_exp_graph_generator import BatchedIntraExpGraphGenerator
+from core.pipeline.stage4.intra_exp_model_runner import BatchedIntraExpModelRunner
 from core.pipeline.stage4.inter_exp_graph_generator import InterExpGraphGenerator
 from core.pipeline.stage4.exp_video_renderer import BatchedExpVideoRenderer
+import core.plugin_manager
 import core.utils
 
 mpl.rcParams['lines.linewidth'] = 3
 mpl.rcParams['lines.markersize'] = 10
 mpl.rcParams['figure.max_open_warning'] = 10000
 mpl.rcParams['axes.formatter.limits'] = (-4, 4)
+logging.getLogger('matplotlib').setLevel(logging.WARNING)
 mpl.use('Agg')
 
 
@@ -94,22 +97,97 @@ class PipelineStage4:
                                                              'controllers.yaml')),
                                            yaml.FullLoader)
 
+        self.__load_LN_config()
+        self.__load_HM_config()
+        self.__load_models()
+
+    def run(self, batch_criteria):
+        """
+        Runs simulation deliverable generation, ``.csv`` collation for inter-experiment graph
+        generation, and inter-experiment graph generation, as configured on the cmdline.
+
+        Video generation: If images have previously been created, then the following is run:
+
+        #. :class:`~pipeline.stage4.exp_video_renderer.BatchedExpVideoRenderer` to render
+           videos for each experiment in the batch, or a subset.
+
+        Intra-experiment graph generation: if intra-experiment graphs should be generated,
+        according to cmdline configuration, the following is run:
+
+        #. Model generation for each enabled and loaded model.
+
+        #. :class:`~core.pipeline.stage4.intra_exp_graph_generator.BatchedIntraExpGraphGenerator` to
+           generate graphs for each experiment in the batch, or a subset.
+
+
+        Inter-experiment graph generation: if inter-experiment graphs should be generated according
+        to cmdline configuration, the following is run:
+
+        #. :class:`~core.pipeline.stage4.graph_collator.UnivarGraphCollator` or
+           :class:`~core.pipeline.stage4.graph_collator.BivarGraphCollator` as appropriate
+           (depending on which type of :class:`~core.variables.batch_criteria.BatchCriteria` was
+           specified on the cmdline).
+
+        #. Model generation for each enabled and loaded model.
+
+        #. :class:`~core.pipeline.stage4.inter_exp_graph_generator.InterExpGraphGenerator`
+           to perform graph generation from collated ``.csv`` files.
+        """
+        if self.cmdopts['project_rendering'] or self.cmdopts['argos_rendering']:
+            self.__run_rendering()
+
+        if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'intra':
+            if self.run_models:
+                self.__run_models(batch_criteria)
+
+            self.__run_intra_graph_generation(batch_criteria)
+
+        # Collation must be after intra-experiment graph generation, so that all .csv files to
+        # be collated have been generated/modified according to parameters.
+        if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'inter':
+            self.__run_inter_graph_generation(batch_criteria)
+
+    def __load_models(self):
+        project_models = os.path.join(self.cmdopts['project_config_root'], 'models.yaml')
+        self.models_intra = []
+        self.run_models = False
+
+        if not core.utils.path_exists(project_models):
+            return
+
+        logging.info("Stage4: Loading models for project '%s'", self.cmdopts['project'])
+
+        self.models_config = yaml.load(open(project_models), yaml.FullLoader)
+        pm = core.plugin_manager.ModelPluginManager()
+        pm.initialize(os.path.join(self.cmdopts['project_model_root']))
+
+        # All models present in the .yaml file are enabled/set to run unconditionally
+        for module_name in pm.available_plugins():
+            for conf in self.models_config['models']:
+                if conf['src']['py'] == module_name:
+                    module = pm.load_plugin(module_name)
+                    for avail in module.available_models('intra'):
+                        model = getattr(module, avail)(conf)
+                        self.models_intra.append(model)
+
+        if len(self.models_intra) > 0:
+            logging.info("Stage4: Loaded %s intra-experiment models for project '%s'",
+                         len(self.models_intra),
+                         self.cmdopts['project'])
+            self.run_models = True
+
+    def __load_LN_config(self):
         self.inter_LN_config = yaml.load(open(os.path.join(self.cmdopts['core_config_root'],
                                                            'inter-graphs-line.yaml')),
                                          yaml.FullLoader)
         self.intra_LN_config = yaml.load(open(os.path.join(self.cmdopts['core_config_root'],
                                                            'intra-graphs-line.yaml')),
                                          yaml.FullLoader)
-        self.intra_HM_config = yaml.load(open(os.path.join(self.cmdopts['core_config_root'],
-                                                           'intra-graphs-hm.yaml')),
-                                         yaml.FullLoader)
-
         project_inter_LN = os.path.join(self.cmdopts['project_config_root'],
                                         'inter-graphs-line.yaml')
         project_intra_LN = os.path.join(self.cmdopts['project_config_root'],
                                         'intra-graphs-line.yaml')
-        project_intra_HM = os.path.join(self.cmdopts['project_config_root'],
-                                        'intra-graphs-hm.yaml')
+
         if core.utils.path_exists(project_intra_LN):
             logging.info("Stage4: Loading additional intra-experiment linegraph config for project '%s'",
                          self.cmdopts['project'])
@@ -124,17 +202,6 @@ class PipelineStage4:
 
                 self.intra_LN_config.update({category: project_dict[category]})
 
-        if core.utils.path_exists(project_intra_HM):
-            logging.info("Stage4: Loading additional intra-experiment heatmap config for project '%s'",
-                         self.cmdopts['project'])
-            project_dict = yaml.load(open(project_intra_HM), yaml.FullLoader)
-            for category in project_dict:
-                if category not in self.intra_HM_config:
-                    self.intra_HM_config.update({category: project_dict[category]})
-                else:
-                    self.intra_HM_config[category]['graphs'].extend(
-                        project_dict[category]['graphs'])
-
         if core.utils.path_exists(project_inter_LN):
             logging.info("Stage4: Loading additional inter-experiment linegraph config for project '%s'",
                          self.cmdopts['project'])
@@ -146,43 +213,24 @@ class PipelineStage4:
                     self.inter_LN_config[category]['graphs'].extend(
                         project_dict[category]['graphs'])
 
-    def run(self, batch_criteria):
-        """
-        Runs simulation deliverable generation, ``.csv`` collation for inter-experiment graph
-        generation, and inter-experiment graph generation, as configured on the cmdline.
+    def __load_HM_config(self):
+        self.intra_HM_config = yaml.load(open(os.path.join(self.cmdopts['core_config_root'],
+                                                           'intra-graphs-hm.yaml')),
+                                         yaml.FullLoader)
 
-        Video generation: If images have previously been created, then the following is run:
+        project_intra_HM = os.path.join(self.cmdopts['project_config_root'],
+                                        'intra-graphs-hm.yaml')
 
-        #. :class:`~pipeline.pipeline_stage4.BatchedExpVideoRenderer` to videos for each experiment
-        in the batch.
-
-        Intra-experiment graph generation: if intra-experiment graphs should be generated,
-        according to cmdline configuration, the following is run:
-
-        #. :class:`~core.pipeline.pieline_stage4.BatchedIntraExpGraphGenerator` to generate graphs
-           for each experiment in the batch.
-
-        Inter-experiment graph generation: if inter-experiment graphs should be generated according
-        to cmdline configuration, the following is run:
-
-        #. :class:`~core.pipeline.pipeline_stage4.UnivarCSVCollator` or
-           :class:`~core.pipeline.pipeline_stage4.BivarCSVCollator` as appropriate (depending on
-           which type of :class:`~core.variables.batch_criteria.BatchCriteria` was specified on the
-           cmdline).
-
-        #. :class:`~core.pipeline.pipeline_stage4.InterExpGraphGenerator` to perform graph
-           generation from collated ``.csv`` files.
-        """
-        if self.cmdopts['project_rendering'] or self.cmdopts['argos_rendering']:
-            self.__run_rendering()
-
-        if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'intra':
-            self.__run_intra_graph_generation(batch_criteria)
-
-        # Collation must be after intra-experiment graph generation, so that all .csv files to
-        # be collated have been generated/modified according to parameters.
-        if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'inter':
-            self.__run_inter_graph_generation(batch_criteria)
+        if core.utils.path_exists(project_intra_HM):
+            logging.info("Stage4: Loading additional intra-experiment heatmap config for project '%s'",
+                         self.cmdopts['project'])
+            project_dict = yaml.load(open(project_intra_HM), yaml.FullLoader)
+            for category in project_dict:
+                if category not in self.intra_HM_config:
+                    self.intra_HM_config.update({category: project_dict[category]})
+                else:
+                    self.intra_HM_config[category]['graphs'].extend(
+                        project_dict[category]['graphs'])
 
     def __calc_inter_LN_targets(self):
         """
@@ -227,6 +275,16 @@ class PipelineStage4:
         sec = datetime.timedelta(seconds=elapsed)
         logging.info("Stage4: Rendering complete in %s", str(sec))
 
+    def __run_models(self, batch_criteria):
+        logging.info("Stage4: Running intra-experiment models...")
+        start = time.time()
+        BatchedIntraExpModelRunner(self.cmdopts,
+                                   self.models_intra)(self.main_config,
+                                                      batch_criteria)
+        elapsed = int(time.time() - start)
+        sec = datetime.timedelta(seconds=elapsed)
+        logging.info("Stage4: Intra-experiment models finished in %s", str(sec))
+
     def __run_intra_graph_generation(self, batch_criteria):
         """
         Generate intra-experiment graphs (duh).
@@ -266,4 +324,6 @@ class PipelineStage4:
 
 __api__ = [
     'PipelineStage4'
+
+
 ]

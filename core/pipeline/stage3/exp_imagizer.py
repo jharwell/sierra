@@ -33,7 +33,7 @@ class BatchedExpImagizer:
     Generate the images for each experiment in the specified batch directory.
     """
 
-    def __call__(self, main_config: dict, HM_config: dict, batch_exp_root: str):
+    def __call__(self, main_config: dict, HM_config: dict, batch_exp_root: str) -> None:
         """
         Arguments:
             main_config: Parsed dictionary of main YAML configuration.
@@ -72,7 +72,7 @@ class BatchedExpImagizer:
         q.join()
 
     @staticmethod
-    def __thread_worker(q: mp.Queue, HM_config: dict):
+    def __thread_worker(q: mp.Queue, HM_config: dict) -> None:
         while True:
             # Wait for 3 seconds after the queue is empty before bailing
             try:
@@ -93,7 +93,7 @@ class ExpImagizer:
         imagize_opts: Dictionary of imagizing options.
     """
 
-    def __call__(self, HM_config: dict, imagize_opts: tp.Dict[str, str]):
+    def __call__(self, HM_config: dict, imagize_opts: tp.Dict[str, str]) -> None:
         path = os.path.join(imagize_opts['csv_dir_root'], imagize_opts['csv_dir'])
 
         logging.info("Imagizing .csvs in %s...", path)

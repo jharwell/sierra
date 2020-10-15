@@ -54,14 +54,21 @@ def __sierra_run():
     coloredlogs.install(fmt='%(asctime)s %(levelname)s - %(message)s',
                         level=eval("logging." + bootstrap_args.log_level))
 
-    # Load plugins
-    pm = core.plugin_manager.PluginManager()
+    # Load non-project directory plugins
+    pm = core.plugin_manager.DirectoryPluginManager()
     pm.initialize(os.path.join(os.getcwd(), 'plugins'))
     for plugin in pm.available_plugins():
         pm.load_plugin(plugin)
 
+    # Load HPC plugins
+    logging.info("Loading HPC plugins")
+    pm = hpc.HPCPluginManager()
+    pm.initialize(os.path.join(os.getcwd(), 'plugins', 'hpc'))
+    for plugin in pm.available_plugins():
+        pm.load_plugin(plugin)
+
     logging.info("Loading cmdline extensions from project '%s'", bootstrap_args.project)
-    module = __import__("plugins.{0}.cmdline".format(bootstrap_args.project),
+    module = __import__("projects.{0}.cmdline".format(bootstrap_args.project),
                         fromlist=["*"])
 
     args = module.Cmdline().parser.parse_args(other_args)

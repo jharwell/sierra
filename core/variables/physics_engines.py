@@ -58,7 +58,7 @@ class PhysicsEngines(IBaseVariable):
         self.iter_per_tick = iter_per_tick
         self.layout = layout
         self.extents = extents
-        self.tag_adds = None
+        self.tag_adds = []  # type: tp.List
 
         # If we are given multiple extents to map, we need to divide the specified # of engines
         # among them.
@@ -72,7 +72,7 @@ class PhysicsEngines(IBaseVariable):
         """
         return []
 
-    def gen_tag_rmlist(self):
+    def gen_tag_rmlist(self) -> tp.List:
         """
         Removing the ``<physics_engines>`` tag if it exists may be desirable so an option is
         provided to do so. Obviously you *must* call this function BEFORE adding new definitions.
@@ -80,12 +80,12 @@ class PhysicsEngines(IBaseVariable):
         """
         return [set([(".", "./physics_engines")])]
 
-    def gen_tag_addlist(self):
+    def gen_tag_addlist(self) -> tp.List:
         logging.debug("Mapping %s physics engines of type %s to extents=%s",
                       self.n_engines,
                       self.engine_type,
                       self.extents)
-        if self.tag_adds is None:
+        if not self.tag_adds:
             if self.n_engines == 1:
                 self.tag_adds = [self.__gen1_engines()]
             elif self.n_engines == 4:
@@ -107,7 +107,7 @@ class PhysicsEngines(IBaseVariable):
                           extent: ArenaExtent,
                           n_engines_x: int,
                           n_engines_y: int,
-                          forward_engines: tp.List[int]):
+                          forward_engines: tp.List[int]) -> tp.List:
         """
         Generate definitions for the specified # of 2D/3D physics engines for the specified arena
         extent.
@@ -128,7 +128,7 @@ class PhysicsEngines(IBaseVariable):
                             extent: ArenaExtent,
                             n_engines_x: int,
                             n_engines_y: int,
-                            forward_engines: tp.List[int]):
+                            forward_engines: tp.List[int]) -> tp.List:
         """
         Generate definitions for a specific 2D/3D engine as a member of the mapping of the specified
         arena extent to one or more engines.
@@ -193,7 +193,7 @@ class PhysicsEngines(IBaseVariable):
                          "vertex", {"point": "{0}, {1}".format(v[0], v[1])}))
         return adds
 
-    def __gen1_engines(self):
+    def __gen1_engines(self) -> tp.List:
         """
         Generate definitions for 1 2D or 3D physics engine for the specified extents.
 
@@ -204,7 +204,7 @@ class PhysicsEngines(IBaseVariable):
         return [('.', 'physics_engines', {}),
                 (".//physics_engines", self.engine_type, {'id': name})]
 
-    def __gen4_engines(self, extent: ArenaExtent):
+    def __gen4_engines(self, extent: ArenaExtent) -> tp.List:
         """
         Generate definitions for 4 2D or 3D physics engine for the specified extent.
 
@@ -221,7 +221,7 @@ class PhysicsEngines(IBaseVariable):
                                       n_engines_y=2,
                                       forward_engines=[0, 1])
 
-    def __gen6_engines(self, extent: ArenaExtent):
+    def __gen6_engines(self, extent: ArenaExtent) -> tp.List:
         """
         Generate definitions for 6 2D or 3D physics engine for the specified extent.
 
@@ -238,7 +238,7 @@ class PhysicsEngines(IBaseVariable):
                                       n_engines_y=2,
                                       forward_engines=[0, 1, 2])
 
-    def __gen8_engines(self, extent: ArenaExtent):
+    def __gen8_engines(self, extent: ArenaExtent) -> tp.List:
         """
         Generate definitions for 8 2D or 3D physics engine for the specified pair of (X,Y) arena
         extents with a uniform grid layout.
@@ -256,7 +256,7 @@ class PhysicsEngines(IBaseVariable):
                                       n_engines_y=2,
                                       forward_engines=[0, 1, 2, 3])
 
-    def __gen16_engines(self, extent: ArenaExtent):
+    def __gen16_engines(self, extent: ArenaExtent) -> tp.List:
         """
         Generate definitions for 16 2D or 3D physics engine for the specified pair of (X,Y) arena
         extents with a uniform grid layout.
@@ -276,7 +276,7 @@ class PhysicsEngines(IBaseVariable):
                                       n_engines_y=4,
                                       forward_engines=[0, 1, 2, 3, 8, 9, 10, 11])
 
-    def __gen24_engines(self, extent: ArenaExtent):
+    def __gen24_engines(self, extent: ArenaExtent) -> tp.List:
         """
         Generate definitions for 16 2D or 3D physics engine for the specified pair of (X,Y) arena
         extents with a uniform grid layout.
@@ -296,7 +296,7 @@ class PhysicsEngines(IBaseVariable):
                                       n_engines_y=4,
                                       forward_engines=[0, 1, 2, 3, 4, 5, 12, 13, 14, 15, 16, 17])
 
-    def __gen_engine_name(self, engine_id: int):
+    def __gen_engine_name(self, engine_id: int) -> str:
         """
         Generate the unique string for an engine comprised of a type + numeric identifier of the
         engine.
@@ -321,7 +321,7 @@ class PhysicsEngines2D(PhysicsEngines):
     """
 
     def __init__(self,
-                 engine_type,
+                 engine_type: str,
                  n_engines: int,
                  iter_per_tick: int,
                  layout: str,
@@ -340,7 +340,7 @@ class PhysicsEngines3D(PhysicsEngines):
     """
 
     def __init__(self,
-                 engine_type,
+                 engine_type: str,
                  n_engines: int,
                  iter_per_tick: int,
                  layout: str,
@@ -353,7 +353,7 @@ class PhysicsEngines3D(PhysicsEngines):
                                 extents)
 
 
-def factory(engine_type: str, n_engines: int, cmdopts: dict, extents: tp.List[ArenaExtent]):
+def factory(engine_type: str, n_engines: int, cmdopts: dict, extents: tp.List[ArenaExtent]) -> PhysicsEngines:
     """
     Create a physics engine mapping onto a list of arena extents for 2D or 3D
     """

@@ -32,20 +32,24 @@ class ArenaExtent():
     """Representation of a 2D or 3D section/chunk/volume of the arena."""
 
     def __init__(self,
-                 dims: tp.Tuple[int, int, int],
+                 dims: tp.Tuple[float, float, float],
                  offset: tuple = (0, 0, 0)) -> None:
         self.offset = offset
         self.dims = dims
 
-        self.xmin = int(offset[0])
-        self.ymin = int(offset[1])
-        self.zmin = int(offset[2])
+        self.xmin = offset[0]
+        self.ymin = offset[1]
+        self.zmin = offset[2]
 
-        self.xmax = offset[0] + int(dims[0])
-        self.ymax = offset[1] + int(dims[1])
-        self.zmax = offset[2] + int(dims[2])
+        self.xmax = offset[0] + dims[0]
+        self.ymax = offset[1] + dims[1]
+        self.zmax = offset[2] + dims[2]
 
-    def contains(self, loc: tp.Tuple[float, float, float]):
+        self.xcenter = offset[0] + dims[0] / 2.0
+        self.ycenter = offset[1] + dims[1] / 2.0
+        self.zcenter = offset[2] + dims[2] / 2.0
+
+    def contains(self, loc: tp.Tuple[float, float, float]) -> bool:
         return loc[0] >= self.xmin and loc[0] <= self.xmax and \
             loc[1] >= self.ymin and loc[1] <= self.ymax and  \
             loc[2] >= self.zmin and loc[2] <= self.zmax
@@ -120,7 +124,7 @@ def unpickle_exp_def(exp_def_fpath):
     return exp_def
 
 
-def scale_minmax(minval: float, maxval: float, val: float):
+def scale_minmax(minval: float, maxval: float, val: float) -> float:
     """
     Scale values from range [minval, maxval] -> [-1,1]
 
@@ -130,7 +134,7 @@ def scale_minmax(minval: float, maxval: float, val: float):
     return -1.0 + (val - minval) * (1 - (-1)) / (maxval - minval)
 
 
-def dir_create_checked(path: str, exist_ok: bool):
+def dir_create_checked(path: str, exist_ok: bool) -> None:
     try:
         os.makedirs(path, exist_ok=exist_ok)
     except FileExistsError:
@@ -138,7 +142,7 @@ def dir_create_checked(path: str, exist_ok: bool):
         raise
 
 
-def pd_csv_read(path: str, **kwargs):
+def pd_csv_read(path: str, **kwargs) -> pd.DataFrame:
     count = 0
     while count < 10:
         try:
@@ -149,7 +153,7 @@ def pd_csv_read(path: str, **kwargs):
     raise ValueError("Failed to read %s after 10 tries" % path)
 
 
-def pd_csv_write(df: pd.DataFrame, path: str, **kwargs):
+def pd_csv_write(df: pd.DataFrame, path: str, **kwargs) -> None:
     count = 0
     while count < 10:
         try:
@@ -161,7 +165,7 @@ def pd_csv_write(df: pd.DataFrame, path: str, **kwargs):
     raise ValueError("Failed to write %s after 10 tries" % path)
 
 
-def path_exists(path: str):
+def path_exists(path: str) -> bool:
     res = []
     for i in range(0, 10):
         if os.path.exists(path):
@@ -173,9 +177,7 @@ def path_exists(path: str):
     return max(set(res), key=res.count)
 
 
-def get_primary_axis(criteria,
-                     primary_axis_bc: tp.List,
-                     cmdopts: dict):
+def get_primary_axis(criteria, primary_axis_bc: tp.List, cmdopts: dict) -> int:
     if cmdopts['plot_primary_axis'] == '0':
         return 0
     if cmdopts['plot_primary_axis'] == '1':
@@ -187,7 +189,7 @@ def get_primary_axis(criteria,
     return 1
 
 
-def exp_range_calc(cmdopts: dict, root_dir: str, criteria):
+def exp_range_calc(cmdopts: dict, root_dir: str, criteria) -> tp.List[str]:
     exp_all = [os.path.join(root_dir, d)
                for d in criteria.gen_exp_dirnames(cmdopts)]
 

@@ -37,8 +37,8 @@ class InterExpGraphGenerator:
     """
     Generates graphs from collated ``.csv`` files across experiments in a batch. Which graphs are
     generated is controlled by (1) YAML configuration files parsed in
-    :class:`~core.pipeline.stage4.PipelineStage4` (2) which batch criteria was used (for performance
-    measures).
+    :class:`~core.pipeline.stage4.pipeline_stage4.PipelineStage4` (2) which batch criteria was used
+    (for performance measures).
 
     """
 
@@ -51,29 +51,31 @@ class InterExpGraphGenerator:
 
         collate_csv_leaf = self.main_config['sierra']['collate_csv_leaf']
         collate_graph_leaf = self.main_config['sierra']['collate_graph_leaf']
-        self.cmdopts["collate_root"] = os.path.abspath(os.path.join(self.cmdopts["output_root"],
-                                                                    collate_csv_leaf))
-        self.cmdopts["graph_root"] = os.path.abspath(os.path.join(self.cmdopts["graph_root"],
-                                                                  collate_graph_leaf))
-        core.utils.dir_create_checked(self.cmdopts["graph_root"], exist_ok=True)
+
+        self.cmdopts['batch_collate_root'] = os.path.abspath(os.path.join(self.cmdopts['batch_output_root'],
+                                                                          collate_csv_leaf))
+        self.cmdopts["batch_collate_graph_root"] = os.path.abspath(os.path.join(self.cmdopts['batch_graph_root'],
+                                                                                collate_graph_leaf))
+        core.utils.dir_create_checked(self.cmdopts['batch_collate_graph_root'], exist_ok=True)
 
     def __call__(self, criteria: bc.IConcreteBatchCriteria):
         """
         Runs the following to generate graphs across experiments in the batch:
 
-        #. :class:`~core.pipeline.pipeline_stage4.inter_exp_graph_generator.LinegraphsGenerator` to
-           generate linegraphs (univariate batch criteria only).
+        #. :class:`~core.pipeline.stage4.pipeline_stage4.inter_exp_graph_generator.LinegraphsGenerator`
+           to generate linegraphs (univariate batch criteria only).
 
-        #. :class:`~core.pipeline.pipeline_stage4.inter_exp_graph_generator.UnivarPerfMeasuresGenerator`
-           to generate performance measures (univariate batch criteria only).
+        #. :class:`~core.pipeline.stage4.pipeline_stage4.inter_exp_graph_generator.UnivarPerfMeasuresGenerator`to
+           generate performance measures (univariate batch criteria only).
 
-        #. :class:`~core.pipeline.pipeline_stage4.inter_exp_graph_generator.BivarPerfMeasuresGenerator`
+        #. :class:`~core.pipeline.stage4.pipeline_stage4.inter_exp_graph_generator.BivarPerfMeasuresGenerator`
            to generate performance measures (bivariate batch criteria only).
         """
 
         if criteria.is_univar():
-            LinegraphsGenerator(self.cmdopts["collate_root"],
-                                self.cmdopts["graph_root"],
+            LinegraphsGenerator(self.cmdopts["batch_collate_root"],
+                                self.cmdopts["batch_collate_graph_root"],
+                                self.cmdopts["batch_model_root"],
                                 self.targets).generate()
             UnivarPerfMeasuresGenerator(self.main_config, self.cmdopts)(criteria)
         else:
@@ -86,25 +88,34 @@ class LinegraphsGenerator:
     by this class ignore the ``--exp-range`` cmdline option.
 
     Attributes:
-      collate_root: Absolute path to root directory for collated csvs.
-      graph_root: Absolute path to root directory where the generated graphs should be saved.
+      batch_collate_root: Absolute path to root directory for collated csvs.
+      batch_graph_root: Absolute path to root directory where the generated graphs should be saved.
       targets: Dictionary of parsed YAML configuration controlling what graphs should be generated.
     """
 
-    def __init__(self, collate_root: str, graph_root: str, targets: dict) -> None:
-        self.collate_root = collate_root
-        self.graph_root = graph_root
+    def __init__(self,
+                 batch_collate_root: str,
+                 batch_graph_root: str,
+                 batch_model_root: str,
+                 targets: dict) -> None:
+        self.batch_collate_root = batch_collate_root
+        self.batch_graph_root = batch_graph_root
+        self.batch_model_root = batch_model_root
         self.targets = targets
 
     def generate(self):
-        logging.info("Linegraphs from %s", self.collate_root)
+        logging.info("Linegraphs from %s", self.batch_collate_root)
         # For each category of linegraphs we are generating
         for category in self.targets:
             # For each graph in each category
             for graph in category['graphs']:
-                StackedLineGraph(input_stem_fpath=os.path.join(self.collate_root,
-                                                               graph['dest_stem']),
-                                 output_fpath=os.path.join(self.graph_root,
+                StackedLineGraph(input_csv_fpath=os.path.join(self.batch_collate_root,
+                                                              graph['src_stem'] + '.csv'),
+                                 input_stddev_fpath=os.path.join(self.batch_collate_root,
+                                                                 graph['src_stem'] + '.stddev'),
+                                 input_model_fpath=os.path.join(self.batch_model_root,
+                                                                graph['src_stem'] + '.model'),
+                                 output_fpath=os.path.join(self.batch_graph_root,
                                                            graph['dest_stem'] + '.png'),
                                  cols=None,
                                  title=graph['title'],
@@ -241,3 +252,9 @@ class BivarPerfMeasuresGenerator:
                                            alpha_SAA,
                                            alpha_PD,
                                            batch_criteria)
+
+
+__api__ = ['InterExpGraphGenerator',
+           'BivarPerfMeasuresGenerator',
+           'UnivarPerfMeasuresGenerator',
+           'LinegraphsGenerator']

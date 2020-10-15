@@ -191,7 +191,11 @@ class PopulationDynamicsParser(dp.DynamicsParser):
                 }
 
 
-def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_input_root: str, **kwargs):
+def factory(cli_arg: str,
+            main_config:
+            tp.Dict[str, str],
+            batch_input_root: str,
+            **kwargs) -> PopulationDynamics:
     """
     Factory to create ``PopulationDynamics`` derived classes from the command line definition.
 
@@ -227,7 +231,7 @@ def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_input_root: str,
                                     attr['dynamics_types'],
                                     gen_dynamics())
 
-    return type(cli_arg,
+    return type(cli_arg,  # type: ignore
                 (PopulationDynamics,),
                 {"__init__": __init__})
 

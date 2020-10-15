@@ -15,16 +15,18 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
 
-
+# Core packages
 import os
 import logging
 
+# 3rd party packages
 import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 plt.rcParams["axes.prop_cycle"] = plt.cycler("color", plt.cm.tab20.colors)
 
+# Project packages
 import core.utils
 
 
@@ -40,15 +42,14 @@ class StackedLineGraph:
 
     def __init__(self, **kwargs) -> None:
 
-        self.input_csv_fpath = os.path.abspath(kwargs['input_stem_fpath']) + ".csv"
-        self.input_stddev_fpath = os.path.abspath(kwargs['input_stem_fpath']) + ".stddev"
+        self.input_csv_fpath = os.path.abspath(kwargs['input_csv_fpath'])
         self.output_fpath = kwargs['output_fpath']
         self.title = kwargs['title']
         self.xlabel = kwargs['xlabel']
         self.ylabel = kwargs['ylabel']
 
-        self.linestyles = kwargs.get('linestyles', None)
-        self.dashes = kwargs.get('dashes', None)
+        self.input_model_fpath = kwargs.get('input_model_fpath', None)
+        self.input_stddev_fpath = kwargs.get('input_stddev_fpath', None)
         self.legend = kwargs.get('legend', None)
         self.cols = kwargs.get('cols', None)
 
@@ -59,29 +60,28 @@ class StackedLineGraph:
             return
 
         # Read .csv and scaffold graph
-        df = core.utils.pd_csv_read(self.input_csv_fpath)
-        if not core.utils.path_exists(self.input_stddev_fpath):
-            df2 = None
-        else:
-            df2 = core.utils.pd_csv_read(self.input_stddev_fpath)
+        data_df = core.utils.pd_csv_read(self.input_csv_fpath)
+        stddev_df = None
+        model_df = None
+
+        if self.input_stddev_fpath is not None and core.utils.path_exists(self.input_stddev_fpath):
+            stddev_df = core.utils.pd_csv_read(self.input_stddev_fpath)
+
+        if self.input_model_fpath is not None and core.utils.path_exists(self.input_model_fpath):
+            model_df = core.utils.pd_csv_read(self.input_model_fpath)
 
         # Plot specified columns from dataframe
         if self.cols is None:
-            ncols = max(1, int(len(df.columns) / 3.0))
-            ax = self._plot_selected_cols(df, df2, df.columns)
+            ncols = max(1, int(len(data_df.columns) / 3.0))
+            ax = self._plot_selected_cols(data_df, stddev_df, data_df.columns, model_df)
         else:
             ncols = max(1, int(len(self.cols) / 3.0))
-            ax = self._plot_selected_cols(df, df2, self.cols)
+            ax = self._plot_selected_cols(data_df, stddev_df, self.cols, model_df)
         ax.tick_params(labelsize=12)
 
         # Add legend. Should have ~3 entries per column, in order to maximize real estate on tightly
         # constrained papers.
-        if self.legend is not None:
-            lines, labels = ax.get_legend_handles_labels()
-            ax.legend(lines, self.legend, loc=9, bbox_to_anchor=(
-                0.5, -0.1), ncol=ncols, fontsize=14)
-        else:
-            ax.legend(loc=9, bbox_to_anchor=(0.5, -0.1), ncol=ncols, fontsize=14)
+        self._plot_legend(ax, model_df, ncols)
 
         # Add title
         ax.set_title(self.title, fontsize=24)
@@ -96,32 +96,26 @@ class StackedLineGraph:
         fig.savefig(self.output_fpath, bbox_inches='tight', dpi=100)
         plt.close(fig)  # Prevent memory accumulation (fig.clf() does not close everything)
 
-    def _plot_selected_cols(self, data_df, stddev_df, cols):
+    def _plot_selected_cols(self, data_df, stddev_df, cols, model_df):
         """
         Plots selected columns in a dataframe, (possibly) including:
 
-        - Custom linestyles
-        - Custom dash styles
         - Errorbars
+        - Models
         """
-        if self.linestyles is None:
-            ax = data_df[cols].plot()
-            if stddev_df is not None:
-                for c in cols:
-                    self._plot_col_errorbars(data_df, stddev_df, c)
-            return ax
-        else:
-            if self.dashes is None:
-                for c, s in zip(cols, self.linestyles):
-                    ax = data_df[c].plot(linestyle=s)
-                    if stddev_df is not None:
-                        self._plot_col_errorbars(data_df, stddev_df, c)
-            else:
-                for c, s, d in zip(cols, self.linestyles, self.dashes):
-                    ax = data_df[c].plot(linestyle=s, dashes=d)
-                    if stddev_df is not None:
-                        self._plot_col_errorbars(data_df, stddev_df, c)
-            return ax
+        # Always plot the data
+        ax = data_df[cols].plot()
+
+        # Plot models if they have been computed
+        if model_df is not None:
+            model_df[model_df.columns].plot(ax=ax)
+
+        # Plot stddev if it has been computed
+        if stddev_df is not None:
+            for c in cols:
+                self._plot_col_errorbars(data_df, stddev_df, c)
+
+        return ax
 
     def _plot_col_errorbars(self, data_df, stddev_df, col):
         """
@@ -131,6 +125,20 @@ class StackedLineGraph:
         #              yerr=2 * stddev_df[c], linestyle = '')
         plt.fill_between(data_df.index, data_df[col] - 2 * stddev_df[col],
                          data_df[col] + 2 * stddev_df[col], alpha=0.25)
+
+    def _plot_legend(self, ax, model_df, ncols):
+        # If the legend is not specified, then we assume this is not a graph that will contain any
+        # models.
+        if self.legend is not None:
+            if model_df is not None:
+                ncols += 1
+                self.legend.append('Model Prediction')
+
+            lines, labels = ax.get_legend_handles_labels()
+            ax.legend(lines, self.legend, loc=9, bbox_to_anchor=(
+                0.5, -0.1), ncol=ncols, fontsize=14)
+        else:
+            ax.legend(loc=9, bbox_to_anchor=(0.5, -0.1), ncol=ncols, fontsize=14)
 
 
 __api__ = [

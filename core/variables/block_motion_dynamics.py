@@ -121,7 +121,7 @@ class BlockMotionDynamicsParser(dp.DynamicsParser):
 def factory(cli_arg: str,
             main_config: tp.Dict[str, str],
             batch_input_root: str,
-            **kwargs):
+            **kwargs) -> BlockMotionDynamics:
     """
     Factory to create ``BlockMotionDynamics`` derived classes from the command line definition.
 
@@ -155,7 +155,7 @@ def factory(cli_arg: str,
                                      dynamics_type,
                                      gen_dynamics())
 
-    return type(cli_arg,
+    return type(cli_arg,  # type: ignore
                 (BlockMotionDynamics,),
                 {"__init__": __init__})
 

@@ -64,7 +64,7 @@ class BootstrapCmdline:
                                  Valid values can be any folder name under the ``plugins`` directory, but the ones that
                                  come with SIERRA are:
 
-                                 - ``hpc_local`` - This will direct SIERRA to run all experiments on the local machine it is
+                                 - ``local`` - This will direct SIERRA to run all experiments on the local machine it is
                                    launched from using GNU parallel. The # simultaneous simulations will be determined
                                    by:
 
@@ -73,7 +73,7 @@ class BootstrapCmdline:
                                    If more simulations are requested than can be run in parallel, SIERRA will start
                                    additional simulations as currently running simulations finish.
 
-                                 - ``hpc_msi`` - The directs SIERRA to run experiments spread across multiple allocated
+                                 - ``msi`` - The directs SIERRA to run experiments spread across multiple allocated
                                    nodes in the MSI computing environment.
 
                                    The following environment variables are used/must be defined:
@@ -87,7 +87,7 @@ class BootstrapCmdline:
 
                                  - ``PBS_NODEFILE`` and ``PBS_JOBID`` - Used to configure simulation launches.
 
-                                 - ``hpc_adhoc`` - This will direct SIERRA to run experiments on an ad-hoc network of
+                                 - ``adhoc`` - This will direct SIERRA to run experiments on an ad-hoc network of
                                    computers. The only requirement is that they `must` share a common filesystem for
                                    whatever ``--sierra-root`` is.
 
@@ -98,7 +98,7 @@ class BootstrapCmdline:
                                      --sshloginfile.
 
                                  """,
-                                 default='hpc_local')
+                                 default='local')
 
 
 class CoreCmdline:
@@ -521,10 +521,13 @@ class CoreCmdline:
 
                                  - ``intra`` - Generate intra-experiment graphs from the results of a single experiment
                                    within a batch, for each experiment in the batch (this can take a long time with
-                                   large batched experiments).
+                                   large batched experiments). If any intra-experiment models are defined and enabled,
+                                   those are run and the results placed on appropriate graphs.
 
                                  - ``inter`` - Generate inter-experiment graphs _across_ the results of all experiments
-                                   in a batch. These are very fast to generate, regardless of batch experiment size.
+                                   in a batch. These are very fast to generate, regardless of batch experiment size. If
+                                   any inter-experiment models are defined and enabled, those are run and the results
+                                   placed on appropriate graphs.
 
                                  - ``all`` - Generate all types of graphs.
 
@@ -914,11 +917,11 @@ class CoreCmdline:
         """
 
     @staticmethod
-    def stage_usage_doc(stages: tp.List[int], omitted: str = "If omitted: N/A."):
+    def stage_usage_doc(stages: tp.List[int], omitted: str = "If omitted: N/A.") -> str:
         return "\n.. admonition:: Stage usage\n\n   Used by stage{" + ",".join(map(str, stages)) + "}; can be omitted otherwise. " + omitted + "\n"
 
     @staticmethod
-    def bc_applicable_doc(criteria: tp.List[str]):
+    def bc_applicable_doc(criteria: tp.List[str]) -> str:
         lst = "".join(map(lambda bc: "   - " + bc + "\n", criteria))
         return "\n.. ADMONITION:: Applicable batch criteria\n\n" + lst + "\n"
 

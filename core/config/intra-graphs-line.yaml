@@ -45,6 +45,7 @@ LN_fsm_movement:
         - 'Distance (cumulative)'
       xlabel: 'Interval'
       ylabel: 'Distance (m)'
+
     - src_stem: fsm-movement
       dest_stem: fsm-movement-velocity
       cols:

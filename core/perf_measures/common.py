@@ -60,13 +60,14 @@ class PerfLostInteractiveSwarmUnivar:
                  inter_perf_csv: str,
                  interference_count_csv: str) -> None:
         self.cmdopts = cmdopts
-        self.batch_collate_root = cmdopts["collate_root"]
+        self.batch_collate_root = cmdopts["batch_collate_root"]
         self.inter_perf_stem = inter_perf_csv.split('.')[0]
         self.interference_stem = interference_count_csv.split('.')[0]
 
     def calculate(self, batch_criteria: bc.UnivarBatchCriteria):
         # Get .csv with interference info
-        interference_path = os.path.join(self.batch_collate_root, self.interference_stem + '.csv')
+        interference_path = os.path.join(
+            self.batch_collate_root, self.interference_stem + '.csv')
         assert(core.utils.path_exists(interference_path)
                ), "FATAL: {0} does not exist".format(interference_path)
         interference_df = core.utils.pd_csv_read(interference_path)
@@ -129,13 +130,14 @@ class PerfLostInteractiveSwarmBivar:
                  inter_perf_csv: str,
                  interference_count_csv: str) -> None:
         self.cmdopts = cmdopts
-        self.batch_collate_root = cmdopts["collate_root"]
+        self.batch_collate_root = cmdopts["batch_collate_root"]
         self.inter_perf_stem = inter_perf_csv.split('.')[0]
         self.interference_stem = interference_count_csv.split('.')[0]
 
     def calculate(self, batch_criteria: bc.BivarBatchCriteria):
         # Get .csv with interference info
-        interference_path = os.path.join(self.batch_collate_root, self.interference_stem + '.csv')
+        interference_path = os.path.join(
+            self.batch_collate_root, self.interference_stem + '.csv')
         assert(core.utils.path_exists(interference_path)
                ), "FATAL: {0} does not exist".format(interference_path)
         interference_df = core.utils.pd_csv_read(interference_path)
@@ -235,7 +237,7 @@ class FractionalLosses:
                  interference_count_csv: str,
                  batch_criteria: bc.IConcreteBatchCriteria) -> None:
         self.cmdopts = cmdopts
-        self.batch_collate_root = cmdopts["collate_root"]
+        self.batch_collate_root = cmdopts["batch_collate_root"]
         self.inter_perf_csv = inter_perf_csv
         self.interference_count_csv = interference_count_csv
         self.inter_perf_stem = inter_perf_csv.split('.')[0]
@@ -282,7 +284,8 @@ class FractionalLossesUnivar(FractionalLosses):
                                                  self.interference_count_csv).calculate(batch_criteria)
 
         # Get .csv with interference info
-        interference_path = os.path.join(self.batch_collate_root, self.interference_stem + '.csv')
+        interference_path = os.path.join(
+            self.batch_collate_root, self.interference_stem + '.csv')
         assert(core.utils.path_exists(interference_path)
                ), "FATAL: {0} does not exist".format(interference_path)
         interference_df = core.utils.pd_csv_read(interference_path)
@@ -396,13 +399,13 @@ class WeightedPMUnivar():
         self.title = title
 
     def generate(self, batch_criteria: bc.IConcreteBatchCriteria):
-        csv1_istem = os.path.join(self.cmdopts["collate_root"], self.ax1_leaf)
-        csv2_istem = os.path.join(self.cmdopts["collate_root"], self.ax2_leaf)
+        csv1_istem = os.path.join(self.cmdopts["batch_collate_root"], self.ax1_leaf)
+        csv2_istem = os.path.join(self.cmdopts["batch_collate_root"], self.ax2_leaf)
         csv1_ipath = csv1_istem + '.csv'
         csv2_ipath = csv2_istem + '.csv'
 
-        csv_ostem = os.path.join(self.cmdopts["collate_root"], self.output_leaf)
-        png_ostem = os.path.join(self.cmdopts["graph_root"], self.output_leaf)
+        csv_ostem = os.path.join(self.cmdopts["batch_collate_root"], self.output_leaf)
+        png_ostem = os.path.join(self.cmdopts["batch_collate_graph_root"], self.output_leaf)
 
         if not core.utils.path_exists(csv1_ipath) or not core.utils.path_exists(csv2_ipath):
             logging.debug("Not generating univariate weighted performance measure: %s or %s does not exist",
@@ -448,13 +451,13 @@ class WeightedPMBivar():
         self.title = title
 
     def generate(self, batch_criteria: bc.IConcreteBatchCriteria):
-        csv1_istem = os.path.join(self.cmdopts["collate_root"], self.ax1_leaf)
-        csv2_istem = os.path.join(self.cmdopts["collate_root"], self.ax2_leaf)
+        csv1_istem = os.path.join(self.cmdopts["batch_collate_root"], self.ax1_leaf)
+        csv2_istem = os.path.join(self.cmdopts["batch_collate_root"], self.ax2_leaf)
         csv1_ipath = csv1_istem + '.csv'
         csv2_ipath = csv2_istem + '.csv'
 
-        csv_ostem = os.path.join(self.cmdopts["collate_root"], self.output_leaf)
-        png_ostem = os.path.join(self.cmdopts["graph_root"], self.output_leaf)
+        csv_ostem = os.path.join(self.cmdopts["batch_collate_root"], self.output_leaf)
+        png_ostem = os.path.join(self.cmdopts["batch_collate_graph_root"], self.output_leaf)
 
         if not core.utils.path_exists(csv1_ipath) or not core.utils.path_exists(csv2_ipath):
             logging.debug("Not generating bivariate weighted performance measure: %s or %s does not exist",

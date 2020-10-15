@@ -78,7 +78,7 @@ class CameraTimeline(IBaseVariable):
         return [adds]
 
 
-def factory(cmdopts: dict, extents: tp.List[ArenaExtent]):
+def factory(cmdopts: dict, extents: tp.List[ArenaExtent]) -> CameraTimeline:
     """
     Create cameras for a list of arena extents.
     """

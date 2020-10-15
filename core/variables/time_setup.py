@@ -101,7 +101,7 @@ class TimeSetupParser():
         return ret
 
     @staticmethod
-    def duration_parse(time_str: str):
+    def duration_parse(time_str: str) -> dict:
         """
         Parse the simulation duration.
         """
@@ -114,7 +114,7 @@ class TimeSetupParser():
         return ret
 
     @staticmethod
-    def n_datapoints_parse(time_str: str):
+    def n_datapoints_parse(time_str: str) -> dict:
         """
         Parse the  # datapoints that will be present in each .csv.
         """
@@ -126,7 +126,7 @@ class TimeSetupParser():
         return ret
 
 
-def factory(time_str: str):
+def factory(time_str: str) -> TimeSetup:
     """
     Factory to create :class:`TimeSetup` derived classes from the command line definition.
     """
@@ -137,7 +137,7 @@ def factory(time_str: str):
                            attr["sim_duration"],
                            int(attr["sim_duration"] * kTICKS_PER_SECOND / attr["n_datapoints"]))
 
-    return type(time_str,
+    return type(time_str,  # type: ignore
                 (TimeSetup,),
                 {"__init__": __init__})
 

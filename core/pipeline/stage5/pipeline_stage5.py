@@ -66,7 +66,7 @@ class PipelineStage5:
 
     def run(self, cli_args):
         """
-        Runs :class:`UnivarIntraScenarioComparator` or :class:`BivarIntraScenarioComparator` as
+        Runs :class:`~core.pipeline.stage5.intra_scenario_comparator.UnivarIntraScenarioComparator` or :class:`~core.pipeline.stage5.intra_scenario_comparator.BivarIntraScenarioComparator` as
         appropriate, depending on which type of
         :class:`~core.variables.batch_criteria.BatchCriteria` was selected on the cmdline.
         """

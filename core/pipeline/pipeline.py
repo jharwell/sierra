@@ -114,16 +114,20 @@ class Pipeline:
 
         if cmdopts is not None:
             self.cmdopts.update(cmdopts)
-            module = __import__("plugins.{0}.cmdline".format(self.cmdopts['project']),
+            module = __import__("projects.{0}.cmdline".format(self.cmdopts['project']),
                                 fromlist=["*"])
             logging.debug("Updating cmdopts for cmdline extensions from project '%s'",
                           self.cmdopts['project'])
             module.Cmdline.cmdopts_update(self.args, self.cmdopts)
 
+        self.cmdopts['plugin_root'] = 'plugins'
         self.cmdopts['core_config_root'] = os.path.join('core', 'config')
-        self.cmdopts['project_config_root'] = os.path.join('plugins',
+        self.cmdopts['project_config_root'] = os.path.join('projects',
                                                            self.cmdopts['project'],
                                                            'config')
+        self.cmdopts['project_model_root'] = os.path.join('projects',
+                                                          self.cmdopts['project'],
+                                                          'models')
 
         try:
             self.main_config = yaml.load(open(os.path.join(self.cmdopts['project_config_root'],
@@ -137,7 +141,6 @@ class Pipeline:
             self.batch_criteria = bc.factory(self.main_config, self.cmdopts, self.args)
 
         self.controller = controller
-        self.scenario = scenario
 
     def run(self):
         """
@@ -145,7 +148,6 @@ class Pipeline:
         """
         if 1 in self.args.pipeline:
             PipelineStage1(self.controller,
-                           self.scenario,
                            self.batch_criteria,
                            self.cmdopts).run()
 

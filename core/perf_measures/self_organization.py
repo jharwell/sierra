@@ -85,11 +85,11 @@ class FractionalLossesMarginalUnivar:
                                                                      normalize=self.cmdopts['pm_self_org_normalize'],
                                                                      normalize_method=self.cmdopts['pm_normalize_method'])
 
-        stem_path = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
+        stem_path = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
         core.utils.pd_csv_write(df_new, stem_path + ".csv", index=False)
 
         BatchRangedGraph(inputy_stem_fpath=stem_path,
-                         output_fpath=os.path.join(self.cmdopts["graph_root"],
+                         output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
                                                    self.kLeaf + ".png"),
                          title="Swarm Self-Organization via Marginal Sub-Linear Performance Losses",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
@@ -142,11 +142,11 @@ class FractionalLossesInteractiveUnivar:
                                                                      normalize=self.cmdopts['pm_self_org_normalize'],
                                                                      normalize_method=self.cmdopts['pm_normalize_method'])
 
-        stem_path = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
+        stem_path = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
         core.utils.pd_csv_write(df_new, stem_path + ".csv", index=False)
 
         BatchRangedGraph(inputy_stem_fpath=stem_path,
-                         output_fpath=os.path.join(self.cmdopts["graph_root"],
+                         output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
                                                    self.kLeaf + ".png"),
                          title="Swarm Self-Organization via Sub-Linear Performance Losses Through Interaction",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
@@ -189,8 +189,8 @@ class PerformanceGainMarginalUnivar:
           (Calculated metric dataframe, stddev dataframe) if stddev was collected.
           (Calculated metric datafram, None) otherwise.
         """
-        sc_ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
-        stddev_ipath = os.path.join(self.cmdopts["collate_root"],
+        sc_ipath = os.path.join(self.cmdopts["batch_collate_root"], self.inter_perf_stem + '.csv')
+        stddev_ipath = os.path.join(self.cmdopts["batch_collate_root"],
                                     self.inter_perf_stem + '.stddev')
 
         # Metric calculation is the same for the actual value of it and the std deviation
@@ -204,7 +204,7 @@ class PerformanceGainMarginalUnivar:
                  dfs: tp.Tuple[pd.DataFrame, pd.DataFrame],
                  batch_criteria: bc.IConcreteBatchCriteria):
 
-        cum_stem = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
+        cum_stem = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
         metric_df = dfs[0]
         stddev_df = dfs[1]
 
@@ -213,7 +213,8 @@ class PerformanceGainMarginalUnivar:
             core.utils.pd_csv_write(stddev_df, cum_stem + ".stddev", index=False)
 
         BatchRangedGraph(inputy_stem_fpath=cum_stem,
-                         output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf),
+                         output_fpath=os.path.join(
+                             self.cmdopts["batch_collate_graph_root"], self.kLeaf),
                          title="Swarm Self-Organization via Marginal Performance Gains",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="Value",
@@ -280,8 +281,8 @@ class PerformanceGainInteractiveUnivar:
           (Calculated metric dataframe, stddev dataframe) if stddev was collected.
           (Calculated metric datafram, None) otherwise.
         """
-        sc_ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
-        stddev_ipath = os.path.join(self.cmdopts["collate_root"],
+        sc_ipath = os.path.join(self.cmdopts["batch_collate_root"], self.inter_perf_stem + '.csv')
+        stddev_ipath = os.path.join(self.cmdopts["batch_collate_root"],
                                     self.inter_perf_stem + '.stddev')
 
         # Metric calculation is the same for the actual value of it and the std deviation
@@ -295,7 +296,7 @@ class PerformanceGainInteractiveUnivar:
                  dfs: tp.Tuple[pd.DataFrame, pd.DataFrame],
                  batch_criteria: bc.IConcreteBatchCriteria):
 
-        cum_stem = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
+        cum_stem = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
         metric_df = dfs[0]
         stddev_df = dfs[1]
 
@@ -304,7 +305,8 @@ class PerformanceGainInteractiveUnivar:
             core.utils.pd_csv_write(stddev_df, cum_stem + ".stddev", index=False)
 
         BatchRangedGraph(inputy_stem_fpath=cum_stem,
-                         output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf),
+                         output_fpath=os.path.join(
+                             self.cmdopts["batch_collate_graph_root"], self.kLeaf),
                          title="Swarm Self-Organization via Performance Gains Through Interaction",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="Value",
@@ -347,7 +349,7 @@ class SelfOrgUnivarGenerator:
                  alpha_S: float,
                  alpha_T: float,
                  batch_criteria: bc.IConcreteBatchCriteria):
-        logging.info("Univariate self-organization from %s", cmdopts["collate_root"])
+        logging.info("Univariate self-organization from %s", cmdopts["batch_collate_root"])
 
         mfl = FractionalLossesMarginalUnivar(cmdopts, inter_perf_csv, interference_count_csv)
         mfl.generate(batch_criteria)
@@ -411,11 +413,12 @@ class FractionalLossesMarginalBivar:
 
         so_df = self.__calc_measure(fl, batch_criteria)
 
-        stem_path = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
+        stem_path = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
         core.utils.pd_csv_write(so_df, stem_path + ".csv", index=False)
 
         Heatmap(input_fpath=stem_path + '.csv',
-                output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),
+                output_fpath=os.path.join(
+                    self.cmdopts["batch_collate_graph_root"], self.kLeaf + ".png"),
                 title="Swarm Self-Organization via Marginal Sub-Linear Performance Losses",
                 xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                 ylabel=batch_criteria.graph_ylabel(self.cmdopts),
@@ -491,11 +494,12 @@ class FractionalLossesInteractiveBivar:
 
         so_df = self.__calc_measure(fl, batch_criteria)
 
-        stem_path = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
+        stem_path = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
         core.utils.pd_csv_write(so_df, stem_path + ".csv", index=False)
 
         Heatmap(input_fpath=stem_path + '.csv',
-                output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),
+                output_fpath=os.path.join(
+                    self.cmdopts["batch_collate_graph_root"], self.kLeaf + ".png"),
                 title="Swarm Self-Organization via Sub-Linear Performance Losses",
                 xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                 ylabel=batch_criteria.graph_ylabel(self.cmdopts),
@@ -565,8 +569,8 @@ class PerformanceGainMarginalBivar:
           (Calculated metric dataframe, stddev dataframe) if stddev was collected
           (Calculated metric datafram, None) otherwise.
         """
-        sc_ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
-        stddev_ipath = os.path.join(self.cmdopts["collate_root"],
+        sc_ipath = os.path.join(self.cmdopts["batch_collate_root"], self.inter_perf_stem + '.csv')
+        stddev_ipath = os.path.join(self.cmdopts["batch_collate_root"],
                                     self.inter_perf_stem + '.stddev')
 
         # Metric calculation is the same for the actual value of it and the std deviation,
@@ -579,7 +583,7 @@ class PerformanceGainMarginalBivar:
     def generate(self,
                  dfs: tp.Tuple[pd.DataFrame, pd.DataFrame],
                  batch_criteria: bc.BivarBatchCriteria):
-        cum_stem = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
+        cum_stem = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
         metric_df, stddev_df = dfs
 
         core.utils.pd_csv_write(metric_df, cum_stem + ".csv", index=False)
@@ -587,7 +591,8 @@ class PerformanceGainMarginalBivar:
             core.utils.pd_csv_write(stddev_df, cum_stem + ".stddev", index=False)
 
         Heatmap(input_fpath=cum_stem + '.csv',
-                output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),
+                output_fpath=os.path.join(
+                    self.cmdopts["batch_collate_graph_root"], self.kLeaf + ".png"),
                 title="Swarm Self-Organization via Marginal Performance Gains",
                 xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                 ylabel=batch_criteria.graph_ylabel(self.cmdopts),
@@ -677,8 +682,8 @@ class PerformanceGainInteractiveBivar:
           (Calculated metric dataframe, stddev dataframe) if stddev was collected
           (Calculated metric datafram, None) otherwise.
         """
-        sc_ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
-        stddev_ipath = os.path.join(self.cmdopts["collate_root"],
+        sc_ipath = os.path.join(self.cmdopts["batch_collate_root"], self.inter_perf_stem + '.csv')
+        stddev_ipath = os.path.join(self.cmdopts["batch_collate_root"],
                                     self.inter_perf_stem + '.stddev')
 
         # Metric calculation is the same for the actual value of it and the std deviation,
@@ -691,7 +696,7 @@ class PerformanceGainInteractiveBivar:
     def generate(self,
                  dfs: tp.Tuple[pd.DataFrame, pd.DataFrame],
                  batch_criteria: bc.BivarBatchCriteria):
-        cum_stem = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
+        cum_stem = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
         metric_df, stddev_df = dfs
 
         core.utils.pd_csv_write(metric_df, cum_stem + ".csv", index=False)
@@ -699,7 +704,8 @@ class PerformanceGainInteractiveBivar:
             core.utils.pd_csv_write(stddev_df, cum_stem + ".stddev", index=False)
 
         Heatmap(input_fpath=cum_stem + '.csv',
-                output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),
+                output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
+                                          self.kLeaf + ".png"),
                 title="Swarm Self-Organization via Performance Gains Through Interaction",
                 xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                 ylabel=batch_criteria.graph_ylabel(self.cmdopts),
@@ -766,7 +772,7 @@ class SelfOrgBivarGenerator:
                  alpha_S: float,
                  alpha_T: float,
                  batch_criteria: bc.IConcreteBatchCriteria):
-        logging.info("Bivariate self-organization from %s", cmdopts["collate_root"])
+        logging.info("Bivariate self-organization from %s", cmdopts["batch_collate_root"])
 
         mfl = FractionalLossesMarginalBivar(cmdopts, inter_perf_csv, interference_count_csv)
         mfl.generate(batch_criteria)

@@ -99,7 +99,7 @@ class PopulationSize(bc.UnivarBatchCriteria):
         return False
 
     @staticmethod
-    def gen_attr_changelist_from_list(size_list: list):
+    def gen_attr_changelist_from_list(size_list: list) -> tp.List:
         return [set([(".//arena/distribute/entity", "quantity", str(s)),
                      (".//population_dynamics", "max_size", str(4 * s))]) for s in size_list]
 
@@ -109,7 +109,7 @@ class PopulationSizeParser():
     Enforces the cmdline definition of the criteria described in the module docstring.
     """
 
-    def __call__(self, criteria_str) -> dict:
+    def __call__(self, criteria_str: str) -> dict:
         ret = {}
 
         # Parse increment type
@@ -131,7 +131,10 @@ class PopulationSizeParser():
         return ret
 
 
-def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_input_root: str, **kwargs):
+def factory(cli_arg: str,
+            main_config: tp.Dict[str, str],
+            batch_input_root: str,
+            **kwargs) -> PopulationSize:
     """
     Factory to create ``PopulationSize`` derived classes from the command line definition.
 
@@ -156,7 +159,7 @@ def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_input_root: str,
                                 batch_input_root,
                                 gen_max_sizes())
 
-    return type(cli_arg,
+    return type(cli_arg,  # type: ignore
                 (PopulationSize,),
                 {"__init__": __init__})
 

@@ -48,13 +48,13 @@ class RawUnivar:
         self.inter_perf_stem = inter_perf_csv.split('.')[0]
 
     def generate(self, batch_criteria: bc.IConcreteBatchCriteria, title: str, ylabel: str):
-        logging.info("Univariate raw performance from %s", self.cmdopts["collate_root"])
-        stddev_ipath = os.path.join(self.cmdopts["collate_root"],
+        logging.info("Univariate raw performance from %s", self.cmdopts["batch_collate_root"])
+        stddev_ipath = os.path.join(self.cmdopts["batch_collate_root"],
                                     self.inter_perf_stem + '.stddev')
-        stddev_opath = os.path.join(self.cmdopts["collate_root"],
+        stddev_opath = os.path.join(self.cmdopts["batch_collate_root"],
                                     "pm-" + self.inter_perf_stem + ".stddev")
-        perf_ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
-        perf_opath_stem = os.path.join(self.cmdopts["collate_root"],
+        perf_ipath = os.path.join(self.cmdopts["batch_collate_root"], self.inter_perf_stem + '.csv')
+        perf_opath_stem = os.path.join(self.cmdopts["batch_collate_root"],
                                        "pm-" + self.inter_perf_stem)
 
         if core.utils.path_exists(stddev_ipath):
@@ -63,7 +63,7 @@ class RawUnivar:
         RawUnivar.__gen_csv(perf_ipath, perf_opath_stem + '.csv')
 
         BatchRangedGraph(inputy_stem_fpath=perf_opath_stem,
-                         output_fpath=os.path.join(self.cmdopts["graph_root"],
+                         output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
                                                    "pm-" + self.inter_perf_stem + ".png"),
                          title=title,
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
@@ -107,13 +107,13 @@ class RawBivar:
         self.inter_perf_stem = inter_perf_csv.split('.')[0]
 
     def generate(self, batch_criteria: bc.IConcreteBatchCriteria, title: str):
-        logging.info("Bivariate raw performance from %s", self.cmdopts["collate_root"])
-        stddev_ipath = os.path.join(self.cmdopts["collate_root"],
+        logging.info("Bivariate raw performance from %s", self.cmdopts["batch_collate_root"])
+        stddev_ipath = os.path.join(self.cmdopts["batch_collate_root"],
                                     self.inter_perf_stem + '.stddev')
-        stddev_opath = os.path.join(self.cmdopts["collate_root"],
+        stddev_opath = os.path.join(self.cmdopts["batch_collate_root"],
                                     self.inter_perf_stem + ".stddev")
-        perf_ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
-        perf_opath_stem = os.path.join(self.cmdopts["collate_root"],
+        perf_ipath = os.path.join(self.cmdopts["batch_collate_root"], self.inter_perf_stem + '.csv')
+        perf_opath_stem = os.path.join(self.cmdopts["batch_collate_root"],
                                        "pm-" + self.inter_perf_stem)
 
         if core.utils.path_exists(stddev_ipath):
@@ -122,7 +122,7 @@ class RawBivar:
         RawBivar.__gen_csv(perf_ipath, perf_opath_stem + '.csv')
 
         Heatmap(input_fpath=perf_opath_stem + '.csv',
-                output_fpath=os.path.join(self.cmdopts["graph_root"],
+                output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
                                           "pm-" + self.inter_perf_stem + ".png"),
                 title=title,
                 xlabel=batch_criteria.graph_xlabel(self.cmdopts),

@@ -36,7 +36,10 @@ class BatchedExpVideoRenderer:
     Render the video for each experiment in the specified batch directory in sequence.
     """
 
-    def __call__(self, main_config: dict, render_opts: tp.Dict[str, str], batch_exp_root: str):
+    def __call__(self,
+                 main_config: dict,
+                 render_opts: tp.Dict[str, str],
+                 batch_exp_root: str) -> None:
         """
         Arguments:
             main_config: Parsed dictionary of main YAML configuration.
@@ -92,7 +95,7 @@ class BatchedExpVideoRenderer:
         q.join()
 
     @staticmethod
-    def __thread_worker(q: mp.Queue, main_config: dict):
+    def __thread_worker(q: mp.Queue, main_config: dict) -> None:
         while True:
             # Wait for 3 seconds after the queue is empty before bailing
             try:
@@ -103,7 +106,7 @@ class BatchedExpVideoRenderer:
                 break
 
     @staticmethod
-    def __filter_sim_dirs(sim_dirs: tp.List[str], main_config: dict):
+    def __filter_sim_dirs(sim_dirs: tp.List[str], main_config: dict) -> tp.List[str]:
         return [s for s in sim_dirs if s not in [main_config['sierra']['avg_output_leaf'],
                                                  main_config['sierra']['project_frames_leaf'],
                                                  'videos']]
@@ -119,7 +122,7 @@ class ExpVideoRenderer:
         render_opts: Dictionary of render options.
     """
 
-    def __call__(self, main_config: dict, render_opts: tp.Dict[str, str]):
+    def __call__(self, main_config: dict, render_opts: tp.Dict[str, str]) -> None:
         logging.info("Rendering images in %s,ofile_leaf=%s...",
                      render_opts['image_dir'],
                      render_opts['ofile_leaf'])
@@ -139,3 +142,6 @@ class ExpVideoRenderer:
                              stderr=subprocess.DEVNULL,
                              stdout=subprocess.DEVNULL)
         p.wait()
+
+
+__api__ = ['BatchedExpVideoRenderer', 'ExpVideoRenderer']

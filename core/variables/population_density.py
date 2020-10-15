@@ -109,7 +109,7 @@ class PopulationConstantDensity(cd.ConstantDensity):
 def factory(cli_arg: str,
             main_config: tp.Dict[str, str],
             batch_input_root: str,
-            **kwargs):
+            **kwargs) -> PopulationConstantDensity:
     """
     Factory to create ``ConstantDensity`` derived classes from the command line definition of batch
     criteria.
@@ -142,7 +142,7 @@ def factory(cli_arg: str,
                                            dims,
                                            kw['dist_type'])
 
-    return type(cli_arg,
+    return type(cli_arg,  # type: ignore
                 (PopulationConstantDensity,),
                 {"__init__": __init__})
 

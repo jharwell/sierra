@@ -107,6 +107,7 @@ ENV/
 
 # Plugins
 plugins/
+projects/
 
 # MSI
 *.pbs.e*

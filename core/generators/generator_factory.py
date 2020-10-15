@@ -20,6 +20,7 @@ import logging
 import yaml
 
 from core.xml_luigi import XMLLuigi
+from core.experiment_spec import ExperimentSpec
 
 
 def joint_generator_create(controller, scenario):
@@ -42,32 +43,32 @@ def joint_generator_create(controller, scenario):
                             generate})()
 
 
-def scenario_generator_create(scenario, controller, **kwargs):
+def scenario_generator_create(spec: ExperimentSpec, controller, **kwargs):
     """
     Creates a scenario generator using arbitrary arena dimensions and with an arbitrary
     controller.
     """
 
     def __init__(self, **kwargs) -> None:
-        res = re.search('[SDQPR][SSSLN]', scenario)
-        assert res is not None, "Bad block distribution in {0}".format(scenario)
+        res = re.search('[SDQPR][SSSLN]', spec.scenario_name)
+        assert res is not None, "Bad block distribution in {0}".format(spec.scenario_name)
         abbrev = res.group(0)
         cmdopts = kwargs['cmdopts']
         try:
-            path = 'plugins.{0}.generators.scenario_generators'.format(cmdopts['project'])
+            path = 'projects.{0}.generators.scenario_generators'.format(cmdopts['project'])
             module = __import__(path, fromlist=["*"])
         except ModuleNotFoundError:
             logging.exception("module %s must exist!", path)
             raise
 
-        self.scenario_generator = getattr(module,
-                                          abbrev + 'Generator')(controller=controller,
-                                                                **kwargs)
+        self.scenario_generator = getattr(module, abbrev + 'Generator')(controller=controller,
+                                                                        spec=spec,
+                                                                        **kwargs)
 
     def generate(self):
         return self.scenario_generator.generate()
 
-    return type(scenario,
+    return type(spec.scenario_name,
                 (object,), {"__init__": __init__,
                             "generate": generate
                             })(**kwargs)

@@ -56,14 +56,15 @@ class InterRobotInterferenceUnivar:
         self.interference_duration_stem = interference_duration_csv.split('.')[0]
 
     def generate(self, batch_criteria: bc.IConcreteBatchCriteria):
-        count_csv_istem = os.path.join(self.cmdopts["collate_root"],
+        count_csv_istem = os.path.join(self.cmdopts["batch_collate_root"],
                                        self.interference_count_stem)
-        duration_csv_istem = os.path.join(self.cmdopts["collate_root"],
+        duration_csv_istem = os.path.join(self.cmdopts["batch_collate_root"],
                                           self.interference_duration_stem)
-        count_csv_ostem = os.path.join(self.cmdopts["collate_root"], self.kCountLeaf)
-        duration_csv_ostem = os.path.join(self.cmdopts["collate_root"], self.kDurationLeaf)
-        count_png_ostem = os.path.join(self.cmdopts["graph_root"], self.kCountLeaf)
-        duration_png_ostem = os.path.join(self.cmdopts["graph_root"], self.kDurationLeaf)
+        count_csv_ostem = os.path.join(self.cmdopts["batch_collate_root"], self.kCountLeaf)
+        duration_csv_ostem = os.path.join(self.cmdopts["batch_collate_root"], self.kDurationLeaf)
+        count_png_ostem = os.path.join(self.cmdopts["batch_collate_graph_root"], self.kCountLeaf)
+        duration_png_ostem = os.path.join(
+            self.cmdopts["batch_collate_graph_root"], self.kDurationLeaf)
 
         count_df = self.__calculate_measure(count_csv_istem + ".csv", batch_criteria)
         core.utils.pd_csv_write(count_df, count_csv_ostem + '.csv', index=False)
@@ -121,8 +122,8 @@ class NormalizedEfficiencyUnivar:
           (Calculated metric dataframe, stddev dataframe) if stddev was collected.
           (Calculated metric datafram, None) otherwise.
         """
-        sc_ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
-        stddev_ipath = os.path.join(self.cmdopts["collate_root"],
+        sc_ipath = os.path.join(self.cmdopts["batch_collate_root"], self.inter_perf_stem + '.csv')
+        stddev_ipath = os.path.join(self.cmdopts["batch_collate_root"],
                                     self.inter_perf_stem + '.stddev')
 
         # Metric calculation is the same for the actual value of it and the std deviation,
@@ -135,7 +136,7 @@ class NormalizedEfficiencyUnivar:
     def generate(self,
                  dfs: tp.Tuple[pd.DataFrame, pd.DataFrame],
                  batch_criteria: bc.IConcreteBatchCriteria):
-        cum_stem = os.path.join(self.cmdopts["collate_root"], "pm-scalability-norm")
+        cum_stem = os.path.join(self.cmdopts["batch_collate_root"], "pm-scalability-norm")
         metric_df = dfs[0]
         stddev_df = dfs[1]
         core.utils.pd_csv_write(metric_df, cum_stem + ".csv", index=False)
@@ -143,7 +144,7 @@ class NormalizedEfficiencyUnivar:
             core.utils.pd_csv_write(stddev_df, cum_stem + ".stddev", index=False)
 
         BatchRangedGraph(inputy_stem_fpath=cum_stem,
-                         output_fpath=os.path.join(self.cmdopts["graph_root"],
+                         output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
                                                    "pm-efficiency.png"),
                          title="Swarm Efficiency (normalized)",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
@@ -206,11 +207,11 @@ class FractionalMaintenanceUnivar:
         return df
 
     def generate(self, df: pd.DataFrame, batch_criteria: bc.IConcreteBatchCriteria):
-        stem_path = os.path.join(self.cmdopts["collate_root"], "pm-scalability-fm")
+        stem_path = os.path.join(self.cmdopts["batch_collate_root"], "pm-scalability-fm")
 
         core.utils.pd_csv_write(df, stem_path + '.csv', index=False)
         BatchRangedGraph(inputy_stem_fpath=stem_path,
-                         output_fpath=os.path.join(self.cmdopts["graph_root"],
+                         output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
                                                    "pm-scalability-fm.png"),
                          title="Swarm Scalability: Fractional Performance Maintenance In The Presence Of Inter-robot Interference",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
@@ -237,7 +238,7 @@ class ParallelFractionUnivar:
         self.inter_perf_csv = inter_perf_csv
 
     def calculate(self, batch_criteria: bc.IConcreteBatchCriteria):
-        perf_df = core.utils.pd_csv_read(os.path.join(self.cmdopts["collate_root"],
+        perf_df = core.utils.pd_csv_read(os.path.join(self.cmdopts["batch_collate_root"],
                                                       self.inter_perf_csv))
         sc_df = pd.DataFrame(columns=perf_df.columns, index=[0])
         sizes = batch_criteria.populations(self.cmdopts)
@@ -266,11 +267,11 @@ class ParallelFractionUnivar:
         return sc_df
 
     def generate(self, df: pd.DataFrame, batch_criteria: bc.IConcreteBatchCriteria):
-        stem_path = os.path.join(self.cmdopts["collate_root"], "pm-scalability-parallel-frac")
+        stem_path = os.path.join(self.cmdopts["batch_collate_root"], "pm-scalability-parallel-frac")
         core.utils.pd_csv_write(df, stem_path + ".csv", index=False)
 
         BatchRangedGraph(inputy_stem_fpath=stem_path,
-                         output_fpath=os.path.join(self.cmdopts["graph_root"],
+                         output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
                                                    "pm-scalability-parallel-frac.png"),
                          title="Swarm Parallel Performance Fraction",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
@@ -291,7 +292,7 @@ class ScalabilityUnivarGenerator:
                  interference_duration_csv: str,
                  cmdopts: dict,
                  batch_criteria: bc.IConcreteBatchCriteria):
-        logging.info("Univariate scalability from %s", cmdopts["collate_root"])
+        logging.info("Univariate scalability from %s", cmdopts["batch_collate_root"])
 
         e = NormalizedEfficiencyUnivar(cmdopts, inter_perf_csv)
         e.generate(e.calculate(batch_criteria), batch_criteria)
@@ -329,14 +330,15 @@ class InterRobotInterferenceBivar:
         self.interference_duration_stem = interference_duration_csv.split('.')[0]
 
     def generate(self, batch_criteria: bc.IConcreteBatchCriteria):
-        count_csv_istem = os.path.join(self.cmdopts["collate_root"],
+        count_csv_istem = os.path.join(self.cmdopts["batch_collate_root"],
                                        self.interference_count_stem)
-        duration_csv_istem = os.path.join(self.cmdopts["collate_root"],
+        duration_csv_istem = os.path.join(self.cmdopts["batch_collate_root"],
                                           self.interference_duration_stem)
-        count_csv_ostem = os.path.join(self.cmdopts["collate_root"], self.kCountLeaf)
-        duration_csv_ostem = os.path.join(self.cmdopts["collate_root"], self.kDurationLeaf)
-        count_png_ostem = os.path.join(self.cmdopts["graph_root"], self.kCountLeaf)
-        duration_png_ostem = os.path.join(self.cmdopts["graph_root"], self.kDurationLeaf)
+        count_csv_ostem = os.path.join(self.cmdopts["batch_collate_root"], self.kCountLeaf)
+        duration_csv_ostem = os.path.join(self.cmdopts["batch_collate_root"], self.kDurationLeaf)
+        count_png_ostem = os.path.join(self.cmdopts["batch_collate_graph_root"], self.kCountLeaf)
+        duration_png_ostem = os.path.join(
+            self.cmdopts["batch_collate_graph_root"], self.kDurationLeaf)
 
         count_df = self.__calculate_measure(count_csv_istem + ".csv")
         core.utils.pd_csv_write(count_df, count_csv_ostem + '.csv', index=False)
@@ -397,8 +399,8 @@ class NormalizedEfficiencyBivar:
           (Calculated metric dataframe, stddev dataframe) if stddev was collected
           (Calculated metric datafram, None) otherwise.
         """
-        sc_ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_stem + '.csv')
-        stddev_ipath = os.path.join(self.cmdopts["collate_root"],
+        sc_ipath = os.path.join(self.cmdopts["batch_collate_root"], self.inter_perf_stem + '.csv')
+        stddev_ipath = os.path.join(self.cmdopts["batch_collate_root"],
                                     self.inter_perf_stem + '.stddev')
 
         # Metric calculation is the same for the actual value of it and the std deviation,
@@ -411,7 +413,7 @@ class NormalizedEfficiencyBivar:
     def generate(self,
                  dfs: tp.Tuple[pd.DataFrame, pd.DataFrame],
                  batch_criteria: bc.IConcreteBatchCriteria):
-        cum_stem = os.path.join(self.cmdopts["collate_root"], "pm-scalability-norm")
+        cum_stem = os.path.join(self.cmdopts["batch_collate_root"], "pm-scalability-norm")
         metric_df, stddev_df = dfs
 
         core.utils.pd_csv_write(metric_df, cum_stem + ".csv", index=False)
@@ -419,7 +421,8 @@ class NormalizedEfficiencyBivar:
             core.utils.pd_csv_write(stddev_df, cum_stem + ".stddev", index=False)
 
         Heatmap(input_fpath=cum_stem + '.csv',
-                output_fpath=os.path.join(self.cmdopts["graph_root"], "pm-efficiency.png"),
+                output_fpath=os.path.join(
+                    self.cmdopts["batch_collate_graph_root"], "pm-efficiency.png"),
                 title='Swarm Efficiency (Normalized)',
                 xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                 ylabel=batch_criteria.graph_ylabel(self.cmdopts),
@@ -478,11 +481,12 @@ class FractionalMaintenanceBivar:
         return df
 
     def generate(self, df: pd.DataFrame, batch_criteria: bc.IConcreteBatchCriteria):
-        stem_path = os.path.join(self.cmdopts["collate_root"], "pm-scalability-fm")
+        stem_path = os.path.join(self.cmdopts["batch_collate_root"], "pm-scalability-fm")
 
         core.utils.pd_csv_write(df, stem_path + '.csv', index=False)
         Heatmap(input_fpath=stem_path + '.csv',
-                output_fpath=os.path.join(self.cmdopts["graph_root"], "pm-scalability-fm.png"),
+                output_fpath=os.path.join(
+                    self.cmdopts["batch_collate_graph_root"], "pm-scalability-fm.png"),
                 title="Swarm Scalability: Fractional Performance Maintenance In The Presence Of Inter-robot Interference",
                 xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                 ylabel=batch_criteria.graph_ylabel(self.cmdopts),
@@ -509,7 +513,7 @@ class ParallelFractionBivar:
         self.inter_perf_csv = inter_perf_csv
 
     def calculate(self, batch_criteria):
-        perf_df = core.utils.pd_csv_read(os.path.join(self.cmdopts["collate_root"],
+        perf_df = core.utils.pd_csv_read(os.path.join(self.cmdopts["batch_collate_root"],
                                                       self.inter_perf_csv))
         sc_df = pd.DataFrame(columns=perf_df.columns, index=perf_df.index)
 
@@ -559,11 +563,12 @@ class ParallelFractionBivar:
         return sc_df
 
     def generate(self, df, batch_criteria):
-        stem_path = os.path.join(self.cmdopts["collate_root"], "pm-parallel-fraction")
+        stem_path = os.path.join(self.cmdopts["batch_collate_root"], "pm-parallel-fraction")
         core.utils.pd_csv_write(df, stem_path + ".csv", index=False)
 
         Heatmap(input_fpath=stem_path + '.csv',
-                output_fpath=os.path.join(self.cmdopts["graph_root"], "pm-parallel-fraction.png"),
+                output_fpath=os.path.join(
+                    self.cmdopts["batch_collate_graph_root"], "pm-parallel-fraction.png"),
                 title="Swarm Parallel Performance Fraction",
                 xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                 ylabel=batch_criteria.graph_ylabel(self.cmdopts),
@@ -583,7 +588,7 @@ class ScalabilityBivarGenerator:
                  interference_duration_csv: str,
                  cmdopts: dict,
                  batch_criteria: bc.IConcreteBatchCriteria):
-        logging.info("Bivariate scalability from %s", cmdopts["collate_root"])
+        logging.info("Bivariate scalability from %s", cmdopts["batch_collate_root"])
 
         e = NormalizedEfficiencyBivar(cmdopts, inter_perf_csv)
         e.generate(e.calculate(batch_criteria), batch_criteria)

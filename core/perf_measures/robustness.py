@@ -76,13 +76,13 @@ class RobustnessSAAUnivar:
                                                       0,
                                                       i)(criteria)
 
-        stem_opath = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
+        stem_opath = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
 
         # Write .csv to file
         core.utils.pd_csv_write(df, stem_opath + '.csv', index=False)
 
         BatchRangedGraph(inputy_stem_fpath=stem_opath,
-                         output_fpath=os.path.join(self.cmdopts["graph_root"],
+                         output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
                                                    self.kLeaf + ".png"),
                          title="Swarm Robustness (SAA)",
                          xlabel=criteria.graph_xlabel(self.cmdopts),
@@ -116,7 +116,7 @@ class RobustnessPDUnivar:
         batch_exp_dirnames = criteria.gen_exp_dirnames(self.cmdopts)
 
         df = pd.DataFrame(columns=batch_exp_dirnames, index=[0])
-        perf_df = core.utils.pd_csv_read(os.path.join(self.cmdopts["collate_root"],
+        perf_df = core.utils.pd_csv_read(os.path.join(self.cmdopts["batch_collate_root"],
                                                       self.inter_perf_csv))
 
         idx = perf_df.index[-1]
@@ -134,13 +134,14 @@ class RobustnessPDUnivar:
                                                       normalize=self.cmdopts['pm_robustness_normalize'],
                                                       normalize_method=self.cmdopts['pm_normalize_method'])
 
-        stem_opath = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
+        stem_opath = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
 
         # Write .csv to file
         core.utils.pd_csv_write(df, stem_opath + '.csv', index=False)
 
         BatchRangedGraph(inputy_stem_fpath=stem_opath,
-                         output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),
+                         output_fpath=os.path.join(
+                             self.cmdopts["batch_collate_graph_root"], self.kLeaf + ".png"),
                          title="Swarm Robustness (Population Dynamics)",
                          xlabel=criteria.graph_xlabel(self.cmdopts),
                          ylabel="Robustness Value",
@@ -164,7 +165,7 @@ class RobustnessUnivarGenerator:
                  alpha_SAA: float,
                  alpha_PD: float,
                  batch_criteria: bc.IConcreteBatchCriteria):
-        logging.info("Univariate robustness from %s", cmdopts["collate_root"])
+        logging.info("Univariate robustness from %s", cmdopts["batch_collate_root"])
 
         inter_perf_csv = main_config['perf']['inter_perf_csv']
 
@@ -217,8 +218,8 @@ class RobustnessSAABivar:
         Generate a :class:`~core.graphs.scatterplot2D.Scatterplot2D` graph of robustness
         vs. performance AFTER the main robustness `.csv` has generated in :method:`__gen_heatmap()`
         """
-        perf_ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_csv)
-        opath = os.path.join(self.cmdopts['collate_root'], self.kLeaf + '-vs-perf.csv')
+        perf_ipath = os.path.join(self.cmdopts["batch_collate_root"], self.inter_perf_csv)
+        opath = os.path.join(self.cmdopts['batch_collate_root'], self.kLeaf + '-vs-perf.csv')
         perf_df = core.utils.pd_csv_read(perf_ipath)
         rob_df = core.utils.pd_csv_read(rob_ipath)
         scatter_df = pd.DataFrame(columns=['perf', 'robustness-saa'])
@@ -238,7 +239,7 @@ class RobustnessSAABivar:
         core.utils.pd_csv_write(scatter_df, opath, index=False)
 
         Scatterplot2D(input_csv_fpath=opath,
-                      output_fpath=os.path.join(self.cmdopts["graph_root"],
+                      output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
                                                 self.kLeaf + "-vs-perf.png"),
                       title='Swarm Robustness (SAA) vs. Performance',
                       xcol='robustness-saa',
@@ -256,16 +257,17 @@ class RobustnessSAABivar:
         Returns:
            The path to the `.csv` file used to generate the heatmap.
         """
-        ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_csv)
+        ipath = os.path.join(self.cmdopts["batch_collate_root"], self.inter_perf_csv)
         raw_df = core.utils.pd_csv_read(ipath)
-        opath_stem = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
+        opath_stem = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
 
         # Generate heatmap dataframe and write to file
         df = self.__gen_heatmap_df(main_config, raw_df, criteria)
         core.utils.pd_csv_write(df, opath_stem + ".csv", index=False)
 
         Heatmap(input_fpath=opath_stem + '.csv',
-                output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),
+                output_fpath=os.path.join(
+                    self.cmdopts["batch_collate_graph_root"], self.kLeaf + ".png"),
                 title='Swarm Robustness (SAA)',
                 xlabel=criteria.graph_xlabel(self.cmdopts),
                 ylabel=criteria.graph_ylabel(self.cmdopts),
@@ -327,8 +329,8 @@ class RobustnessPDBivar:
         Generate a :class:`~core.graphs.scatterplot2D.Scatterplot2D` graph of robustness
         vs. performance AFTER the main robustness `.csv` has generated in :method:`__gen_heatmap()`
         """
-        perf_ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_csv)
-        opath = os.path.join(self.cmdopts['collate_root'],
+        perf_ipath = os.path.join(self.cmdopts["batch_collate_root"], self.inter_perf_csv)
+        opath = os.path.join(self.cmdopts['batch_collate_root'],
                              self.kLeaf + '-vs-perf.csv')
         perf_df = core.utils.pd_csv_read(perf_ipath)
         rob_df = core.utils.pd_csv_read(rob_ipath)
@@ -349,7 +351,7 @@ class RobustnessPDBivar:
         core.utils.pd_csv_write(scatter_df, opath, index=False)
 
         Scatterplot2D(input_csv_fpath=opath,
-                      output_fpath=os.path.join(self.cmdopts["graph_root"],
+                      output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
                                                 self.kLeaf + "-vs-perf.png"),
                       title='Swarm Robustness (Fluctuating Population) vs. Performance',
                       xcol='robustness-size',
@@ -367,16 +369,17 @@ class RobustnessPDBivar:
         Returns:
            The path to the `.csv` file used to generate the heatmap.
         """
-        ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_csv)
+        ipath = os.path.join(self.cmdopts["batch_collate_root"], self.inter_perf_csv)
         raw_df = core.utils.pd_csv_read(ipath, )
-        opath_stem = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
+        opath_stem = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
 
         # Generate heatmap dataframe and write to file
         df = self.__gen_heatmap_df(raw_df, criteria)
         core.utils.pd_csv_write(df, opath_stem + ".csv", index=False)
 
         Heatmap(input_fpath=opath_stem + '.csv',
-                output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),
+                output_fpath=os.path.join(
+                    self.cmdopts["batch_collate_graph_root"], self.kLeaf + ".png"),
                 title='Swarm Robustness (Fluctuating Populations)',
                 xlabel=criteria.graph_xlabel(self.cmdopts),
                 ylabel=criteria.graph_ylabel(self.cmdopts),
@@ -440,7 +443,7 @@ class RobustnessBivarGenerator:
                  alpha_SAA: float,
                  alpha_PD: float,
                  batch_criteria: bc.IConcreteBatchCriteria):
-        logging.info("Bivariate robustness from %s", cmdopts["collate_root"])
+        logging.info("Bivariate robustness from %s", cmdopts["batch_collate_root"])
 
         inter_perf_csv = main_config['perf']['inter_perf_csv']
 
