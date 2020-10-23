@@ -119,19 +119,6 @@ class RectangularArena(IBaseVariable):
                                       (".//convergence/positional_entropy",
                                        "horizon_delta",
                                        "{0:.9f}".format(math.sqrt(extent.x() ** 2 + extent.y() ** 2) / 10.0)),
-
-                                      # Finally, set camera positioning. Probably will not be used,
-                                      # but IF rendering is enabled we want to have the
-                                      # visualizations come out nicely. I assume a single camera is
-                                      # present.
-                                      (".//camera/placement",
-                                       "position", "{0:.9f}, {1:.9f}, {2:.9f}".format(extent.x() / 2.0,
-                                                                                      extent.y() / 2.0,
-                                                                                      max(extent.x(), extent.y()) * 2.0 / 3.0)),
-                                      (".//camera/placement",
-                                       "look_at",
-                                       "{0:.9f}, {1:.9f}, 0".format(extent.x() / 2.0,
-                                                                    extent.y() / 2.0))
                                       ])
                                  for extent in self.extents]
         return self.attr_changes

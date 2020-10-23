@@ -255,6 +255,7 @@ class BatchCriteria():
                           exp_dirname)
 
             core.utils.dir_create_checked(exp_input_root, exist_ok=cmdopts['exp_overwrite'])
+
             for changes_i in defi:
                 try:
                     path, attr, value = changes_i

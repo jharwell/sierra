@@ -64,7 +64,7 @@ class ConstantDensity(UnivarBatchCriteria):
 
 class ConstantDensityParser():
     """
-    Enforces the cmdline definition of constant density criteria.
+    Enforces the cmdline definition of a :class:`ConstantDensity` derived batche criteria.
     """
 
     def parse(self, cli_arg: str) -> dict:

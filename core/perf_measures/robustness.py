@@ -81,7 +81,7 @@ class RobustnessSAAUnivar:
         # Write .csv to file
         core.utils.pd_csv_write(df, stem_opath + '.csv', index=False)
 
-        BatchRangedGraph(inputy_stem_fpath=stem_opath,
+        BatchRangedGraph(input_fpath=stem_opath + '.csv',
                          output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
                                                    self.kLeaf + ".png"),
                          title="Swarm Robustness (SAA)",
@@ -139,7 +139,7 @@ class RobustnessPDUnivar:
         # Write .csv to file
         core.utils.pd_csv_write(df, stem_opath + '.csv', index=False)
 
-        BatchRangedGraph(inputy_stem_fpath=stem_opath,
+        BatchRangedGraph(input_fpath=stem_opath + '.csv',
                          output_fpath=os.path.join(
                              self.cmdopts["batch_collate_graph_root"], self.kLeaf + ".png"),
                          title="Swarm Robustness (Population Dynamics)",
@@ -238,7 +238,7 @@ class RobustnessSAABivar:
         scatter_df['robustness-saa'] = rob_df.values.flatten()
         core.utils.pd_csv_write(scatter_df, opath, index=False)
 
-        Scatterplot2D(input_csv_fpath=opath,
+        Scatterplot2D(input_fpath=opath,
                       output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
                                                 self.kLeaf + "-vs-perf.png"),
                       title='Swarm Robustness (SAA) vs. Performance',
@@ -350,7 +350,7 @@ class RobustnessPDBivar:
         scatter_df['robustness-size'] = rob_df.values.flatten()
         core.utils.pd_csv_write(scatter_df, opath, index=False)
 
-        Scatterplot2D(input_csv_fpath=opath,
+        Scatterplot2D(input_fpath=opath,
                       output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
                                                 self.kLeaf + "-vs-perf.png"),
                       title='Swarm Robustness (Fluctuating Population) vs. Performance',

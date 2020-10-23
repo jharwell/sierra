@@ -90,23 +90,29 @@ def controller_generator_create(controller, config_root, cmdopts):
         Generates all changes to the input file for the simulation (does not save)
         """
         # Setup loop functions
-        for t in self.config[self.category]['xml']['attr_change']:
-            exp_def.attr_change(t[0],
-                                t[1],
-                                t[2],
-                                cmdopts['argos_rendering'] is False)
+        try:
+            for t in self.config[self.category]['xml']['attr_change']:
+                exp_def.attr_change(t[0],
+                                    t[1],
+                                    t[2],
+                                    cmdopts['argos_rendering'] is False)
+        except KeyError:
+            logging.fatal("Loop functions category '%s' not found in YAML configuration",
+                          self.category)
+            raise
 
         # Setup controller
-        exists = False
-        for controller in self.config[self.category]['controllers']:
-            if controller['name'] == self.name:
-                exists = True
-                for t in controller['xml']['attr_change']:
-                    exp_def.tag_change(t[0], t[1], t[2])
+        try:
+            for controller in self.config[self.category]['controllers']:
+                if controller['name'] == self.name:
+                    for t in controller['xml']['attr_change']:
+                        exp_def.tag_change(t[0], t[1], t[2])
+        except KeyError:
+            logging.fatal("Controller category '%s' or name '%s' not found in YAML configuration",
+                          self.category,
+                          self.name)
+            raise
 
-        assert exists, \
-            "FATAL: '{0}' not found in controller YAML config under category '{1}'".format(self.name,
-                                                                                           self.category)
         return exp_def
 
     return type(controller,

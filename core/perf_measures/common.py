@@ -421,7 +421,7 @@ class WeightedPMUnivar():
         xticks = batch_criteria.graph_xticks(self.cmdopts)
         len_diff = len(xticks) - len(out_df.columns)
 
-        BatchRangedGraph(inputy_stem_fpath=csv_ostem,
+        BatchRangedGraph(input_fpath=csv_ostem + '.csv',
                          output_fpath=png_ostem + '.png',
                          title=self.title,
                          ylabel="Value",

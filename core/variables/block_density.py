@@ -119,8 +119,8 @@ def factory(cli_arg: str,
             batch_input_root: str,
             **kwargs) -> BlockConstantDensity:
     """
-    factory to create ``BlockConstantDensity`` derived classes from the command line definition of
-    batch criteria.
+    Factory to create :class:`BlockConstantDensity` derived classes from the command line definition
+    of batch criteria.
 
     """
     attr = cd.ConstantDensityParser().parse(cli_arg)

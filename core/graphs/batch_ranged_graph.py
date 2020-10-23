@@ -16,6 +16,7 @@
 #
 
 
+import core.utils
 import os
 import logging
 
@@ -27,8 +28,6 @@ mpl.rcParams['lines.linewidth'] = 3
 mpl.rcParams['lines.markersize'] = 10
 mpl.use('Agg')
 
-import core.utils
-
 
 class BatchRangedGraph:
     """
@@ -38,7 +37,7 @@ class BatchRangedGraph:
     If the necessary .csv file does not exist, the graph is not generated.
 
     Attributes:
-        inputy_csv_fpath: The absolute/relative path to the csv file containing the y values to
+        input_fpath: The absolute/relative path to the csv file containing the y values to
                            be graphed.
         output_fpath: The absolute/relative path to the output image file to save generated graph
                        to.
@@ -54,8 +53,11 @@ class BatchRangedGraph:
     kMaxRows = 8
 
     def __init__(self, **kwargs) -> None:
-        self.inputy_csv_fpath = os.path.abspath(kwargs['inputy_stem_fpath'] + '.csv')
-        self.inputy_stddev_fpath = os.path.abspath(kwargs['inputy_stem_fpath'] + '.stddev')
+        self.input_fpath = kwargs['input_fpath']
+
+        self.stddev_fpath = kwargs.get('stddev_fpath', None)
+        self.model_fpath = kwargs.get('model_fpath', None)
+        self.model_legend_fpath = kwargs.get('model_legend_fpath', None)
         self.output_fpath = os.path.abspath(kwargs['output_fpath'])
         self.title = kwargs['title']
         self.xlabel = kwargs['xlabel']
@@ -67,36 +69,50 @@ class BatchRangedGraph:
         self.polynomial_fit = kwargs.get('polynomial_fit', -1)
 
     def generate(self):
-        if not core.utils.path_exists(self.inputy_csv_fpath):
+        if not core.utils.path_exists(self.input_fpath):
             logging.debug("Not generating batch ranged graph: %s does not exist",
-                          self.inputy_csv_fpath)
+                          self.input_fpath)
             return
 
-        # Read .csv and scaffold graph
-        dfy = core.utils.pd_csv_read(self.inputy_csv_fpath)
+        data_dfy = core.utils.pd_csv_read(self.input_fpath)
+        stddev_dfy = None
+        model_dfy = None
+
+        if self.stddev_fpath is not None and core.utils.path_exists(self.stddev_fpath):
+            stddev_dfy = core.utils.pd_csv_read(self.stddev_fpath)
+
+        if self.model_fpath is not None and core.utils.path_exists(self.model_fpath):
+            model_dfy = core.utils.pd_csv_read(self.model_fpath)
+            if self.model_legend_fpath is not None and core.utils.path_exists(self.model_legend_fpath):
+                with open(self.model_legend_fpath, 'r') as f:
+                    model_legend = f.readlines()[0]
+            else:
+                model_legend = 'Model prediction'
+        else:
+            model_legend = None
+
         fig, ax = plt.subplots()
         ax.tick_params(labelsize=12)
 
-        assert len(dfy.values) <= BatchRangedGraph.kMaxRows, \
+        assert len(data_dfy.values) <= BatchRangedGraph.kMaxRows, \
             "FATAL: Too many rows to make unique line styles/colors/markers {0} > {1}".format(
-                len(dfy.values), BatchRangedGraph.kMaxRows)
+                len(data_dfy.values), BatchRangedGraph.kMaxRows)
 
         # Plot lines
-        self.__plot_lines(dfy)
-
-        # Add error bars according to configuration
-        self.__plot_errorbars(self.xticks, dfy)
+        self._plot_lines(data_dfy, model_dfy)
 
         # Add legend
-        if self.legend is not None:
-            plt.legend(self.legend, fontsize=14, ncol=max(1, int(len(self.legend) / 3.0)))
+        self._plot_legend(model_legend)
 
-        # Add X,Y labels
+        # Add error bars according to configuration
+        self._plot_errorbars(self.xticks, data_dfy, stddev_dfy)
+
+        # Add X,Y labelsg
         plt.ylabel(self.ylabel, fontsize=18)
         plt.xlabel(self.xlabel, fontsize=18)
 
         # Add ticks
-        self.__plot_ticks(ax)
+        self._plot_ticks(ax)
 
         # Add title
         plt.title(self.title, fontsize=24)
@@ -107,45 +123,63 @@ class BatchRangedGraph:
         fig.savefig(self.output_fpath, bbox_inches='tight', dpi=100)
         plt.close(fig)  # Prevent memory accumulation (fig.clf() does not close everything)
 
-    def __plot_lines(self, dfy):
+    def _plot_lines(self, data_dfy, model_dfy):
         line_styles = [':', '--', '.-', '-', ':', '--', '.-', '-']
         mark_styles = ['o', '^', 's', 'x', 'o', '^', 's', 'x']
         colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red',
                   'tab:brown', 'tab:pink', 'tab:gray', 'tab:olive']
 
-        for i in range(0, len(dfy.values)):
-            plt.plot(self.xticks, dfy.values[i], line_styles[i],
+        for i in range(0, len(data_dfy.values)):
+            plt.plot(self.xticks, data_dfy.values[i], line_styles[i],
                      marker=mark_styles[i],
                      color=colors[i])
 
             if -1 != self.polynomial_fit:
-                coeffs = np.polyfit(self.xticks, dfy.values[i], self.polynomial_fit)
+                coeffs = np.polyfit(self.xticks, data_dfy.values[i], self.polynomial_fit)
                 ffit = np.poly1d(coeffs)
                 x_new = np.linspace(self.xticks[0], self.xticks[-1], 50)
                 y_new = ffit(x_new)
                 plt.plot(x_new, y_new, line_styles[i])
 
-    def __plot_errorbars(self, xticks, data_df):
+        if model_dfy is None:
+            return
+
+        offset = len(data_dfy.values)
+        for j in range(0, len(data_dfy.values)):
+            plt.plot(self.xticks,
+                     model_dfy.values[j],
+                     line_styles[j + offset],
+                     marker=mark_styles[j + offset],
+                     color=colors[j + offset])
+
+    def _plot_errorbars(self, xticks, data_dfy: pd.DataFrame, stddev_dfy: pd.DataFrame):
         """
         Plot errorbars for all lines on the graph, using a shaded region rather than strict error
         bars--looks much nicer.
-
-        If the necessary ``.stddev`` file does not exist, no errorbars are plotted.
         """
-        if not core.utils.path_exists(self.inputy_stddev_fpath):
+        if stddev_dfy is None:
             return
 
-        stddev_df = core.utils.pd_csv_read(self.inputy_stddev_fpath)
+        for i in range(0, len(data_dfy.values)):
+            plt.fill_between(xticks, data_dfy.values[i] - 2 * stddev_dfy.values[i],
+                             data_dfy.values[i] + 2 * stddev_dfy.values[i], alpha=0.25)
 
-        for i in range(0, len(data_df.values)):
-            plt.fill_between(xticks, data_df.values[i] - 2 * stddev_df.values[i],
-                             data_df.values[i] + 2 * stddev_df.values[i], alpha=0.25)
-
-    def __plot_ticks(self, ax):
+    def _plot_ticks(self, ax):
         # For ordered, qualitative data
         if self.xtick_labels is not None:
             ax.set_xticks(self.xticks)
             ax.set_xticklabels(self.xtick_labels, rotation='vertical')
+
+    def _plot_legend(self, model_legend: str):
+        if model_legend is not None:
+            if self.legend is not None:
+                self.legend.append(model_legend)
+            legend = self.legend
+        else:
+            legend = self.legend
+
+        if legend is not None:
+            plt.legend(legend, fontsize=14, ncol=max(1, int(len(legend) / 3.0)))
 
 
 __api__ = [

@@ -18,6 +18,7 @@
 # Core packages
 import os
 import logging
+import typing as tp
 
 # 3rd party packages
 import pandas as pd
@@ -35,42 +36,66 @@ class StackedLineGraph:
     Generates a line graph of one or more lines a column, or set of columns,
     respectively, from the specified .csv with the specified graph visuals.
 
-    If the necessary .csv file does not exist, the graph is not generated.
-    If the .stddev file that goes with the .csv does not exist, then no error bars are printed.
+    If the necessary data .csv file does not exist, the graph is not generated.
+    If the .stddev file that goes with the .csv does not exist, then no error bars are plotted.
+    if the .model file that goes with the .csv does not exist, then no model predictions are
+    plotted.
+
+    Ideally, model predictions/stddev calculations would be in derivade classes, but I can't figure
+    out a good way to easily pull that stuff out of here.
 
     """
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self,
+                 input_fpath: str,
+                 output_fpath: str,
+                 title: str,
+                 xlabel: str,
+                 ylabel: str,
+                 legend: tp.List[str] = None,
+                 cols: tp.List[str] = None,
+                 stddev_fpath=None,
+                 model_fpath: str = None,
+                 model_legend_fpath: str = None) -> None:
 
-        self.input_csv_fpath = os.path.abspath(kwargs['input_csv_fpath'])
-        self.output_fpath = kwargs['output_fpath']
-        self.title = kwargs['title']
-        self.xlabel = kwargs['xlabel']
-        self.ylabel = kwargs['ylabel']
+        self.input_fpath = input_fpath
+        self.output_fpath = output_fpath
+        self.title = title
+        self.xlabel = xlabel
+        self.ylabel = ylabel
 
-        self.input_model_fpath = kwargs.get('input_model_fpath', None)
-        self.input_stddev_fpath = kwargs.get('input_stddev_fpath', None)
-        self.legend = kwargs.get('legend', None)
-        self.cols = kwargs.get('cols', None)
+        self.legend = legend
+        self.cols = cols
+
+        self.model_fpath = model_fpath
+        self.model_legend_fpath = model_legend_fpath
+        self.stddev_fpath = stddev_fpath
 
     def generate(self):
-        if not core.utils.path_exists(self.input_csv_fpath):
+        if not core.utils.path_exists(self.input_fpath):
             logging.debug("Not generating stacked line graph: %s does not exist",
-                          self.input_csv_fpath)
+                          self.input_fpath)
             return
 
-        # Read .csv and scaffold graph
-        data_df = core.utils.pd_csv_read(self.input_csv_fpath)
+        data_df = core.utils.pd_csv_read(self.input_fpath)
         stddev_df = None
         model_df = None
 
-        if self.input_stddev_fpath is not None and core.utils.path_exists(self.input_stddev_fpath):
-            stddev_df = core.utils.pd_csv_read(self.input_stddev_fpath)
+        if self.stddev_fpath is not None and core.utils.path_exists(self.stddev_fpath):
+            stddev_df = core.utils.pd_csv_read(self.stddev_fpath)
 
-        if self.input_model_fpath is not None and core.utils.path_exists(self.input_model_fpath):
-            model_df = core.utils.pd_csv_read(self.input_model_fpath)
+        if self.model_fpath is not None and core.utils.path_exists(self.model_fpath):
+            model_df = core.utils.pd_csv_read(self.model_fpath)
 
-        # Plot specified columns from dataframe
+            if self.model_legend_fpath is not None and core.utils.path_exists(self.model_legend_fpath):
+                with open(self.model_legend_fpath, 'r') as f:
+                    model_legend = f.readlines()[0]
+            else:
+                model_legend = 'Model prediction'
+        else:
+            model_legend = None
+
+        # Plot specified columns from dataframe.
         if self.cols is None:
             ncols = max(1, int(len(data_df.columns) / 3.0))
             ax = self._plot_selected_cols(data_df, stddev_df, data_df.columns, model_df)
@@ -81,7 +106,7 @@ class StackedLineGraph:
 
         # Add legend. Should have ~3 entries per column, in order to maximize real estate on tightly
         # constrained papers.
-        self._plot_legend(ax, model_df, ncols)
+        self._plot_legend(ax, model_legend, ncols)
 
         # Add title
         ax.set_title(self.title, fontsize=24)
@@ -96,7 +121,11 @@ class StackedLineGraph:
         fig.savefig(self.output_fpath, bbox_inches='tight', dpi=100)
         plt.close(fig)  # Prevent memory accumulation (fig.clf() does not close everything)
 
-    def _plot_selected_cols(self, data_df, stddev_df, cols, model_df):
+    def _plot_selected_cols(self,
+                            data_df: pd.DataFrame,
+                            stddev_df: pd.DataFrame,
+                            cols: tp.List[str],
+                            model_df: pd.DataFrame):
         """
         Plots selected columns in a dataframe, (possibly) including:
 
@@ -117,7 +146,10 @@ class StackedLineGraph:
 
         return ax
 
-    def _plot_col_errorbars(self, data_df, stddev_df, col):
+    def _plot_col_errorbars(self,
+                            data_df: pd.DataFrame,
+                            stddev_df: pd.DataFrame,
+                            col: str):
         """
         Plot the errorbars for a specific column in a dataframe.
         """
@@ -126,13 +158,13 @@ class StackedLineGraph:
         plt.fill_between(data_df.index, data_df[col] - 2 * stddev_df[col],
                          data_df[col] + 2 * stddev_df[col], alpha=0.25)
 
-    def _plot_legend(self, ax, model_df, ncols):
+    def _plot_legend(self, ax, model_legend: str, ncols: int):
         # If the legend is not specified, then we assume this is not a graph that will contain any
         # models.
         if self.legend is not None:
-            if model_df is not None:
+            if model_legend is not None:
                 ncols += 1
-                self.legend.append('Model Prediction')
+                self.legend.append(model_legend)
 
             lines, labels = ax.get_legend_handles_labels()
             ax.legend(lines, self.legend, loc=9, bbox_to_anchor=(

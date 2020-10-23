@@ -12,11 +12,11 @@ LN_fsm_interference:
       title: 'Swarm Inter-Robot Interference'
       legend:
         - 'Average # Robots Experiencing Interference (Interval)'
-        - 'Average # Robots Experiencing Interference (cumulative)'
+        - 'Average # Robots Experiencing Interference (Cumulative)'
         - 'Average # Robots Beginning Interference Encounter (Interval)'
-        - 'Average # Robots Beginning Interference Encounter (cumulative)'
+        - 'Average # Robots Beginning Interference Encounter (Cumulative)'
         - 'Average # Robots Ending Interference Encounter (Interval)'
-        - 'Average # Robots Ending Interference Encounter (cumulative)'
+        - 'Average # Robots Ending Interference Encounter (Cumulative)'
       xlabel: 'Interval'
       ylabel: '# Robots'
 
@@ -28,35 +28,59 @@ LN_fsm_interference:
       title: 'Swarm Interference Duration'
       legend:
         - 'Average Interference Duration (Interval)'
-        - 'Average Interference Duration (cumulative)'
+        - 'Average Interference Duration (Cumulative)'
       xlabel: 'Interval'
       ylabel: '# Timesteps'
 
-LN_fsm_movement:
+LN_spatial_movement:
   graphs:
-    - src_stem: fsm-movement
-      dest_stem: fsm-movement-distance
+    - src_stem: spatial-movement
+      dest_stem: spatial-movement-distance-all
       cols:
-        - int_avg_distance
-        - cum_avg_distance
+        - int_avg_distance_all
+        - cum_avg_distance_all
       title: 'Average Per-robot Distance Traveled'
       legend:
         - 'Distance (Interval)'
-        - 'Distance (cumulative)'
+        - 'Distance (Cumulative)'
       xlabel: 'Interval'
       ylabel: 'Distance (m)'
 
-    - src_stem: fsm-movement
-      dest_stem: fsm-movement-velocity
+    - src_stem: spatial-movement
+      dest_stem: spatial-movement-velocity-all
       cols:
-        - int_avg_velocity
-        - cum_avg_velocity
+        - int_avg_velocity_all
+        - cum_avg_velocity_all
       title: 'Average Per-robot Velocity'
       legend:
         - 'Velocity (Interval)'
-        - 'Velocity (cumulative)'
+        - 'Velocity (Cumulative)'
       xlabel: 'Interval'
-      ylabel: 'Velocity (m/s)'
+      ylabel: 'Velocity (cm/s)'
+
+    - src_stem: spatial-movement
+      dest_stem: spatial-movement-distance-homing
+      cols:
+        - int_avg_distance_homing
+        - cum_avg_distance_homing
+      title: 'Average Per-robot Homing distance traveled'
+      legend:
+        - 'Distance (Interval)'
+        - 'Distance (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Distance (m)'
+
+    - src_stem: spatial-movement
+      dest_stem: spatial-movement-velocity-homing
+      cols:
+        - int_avg_velocity_homing
+        - cum_avg_velocity_homing
+      title: 'Average Per-robot Homing Velocity'
+      legend:
+        - 'Velocity (Interval)'
+        - 'Velocity (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Velocity (cm/s)'
 
 LN_block_trans:
   graphs:
@@ -73,9 +97,9 @@ LN_block_trans:
         - 'All Blocks (Interval)'
         - '# Cube Blocks (Interval)'
         - '# Ramp Blocks (Interval)'
-        - 'All Blocks (cumulative)'
-        - '# Cube Blocks (cumulative)'
-        - '# Ramp Blocks (cumulative)'
+        - 'All Blocks (Cumulative)'
+        - '# Cube Blocks (Cumulative)'
+        - '# Ramp Blocks (Cumulative)'
       title: 'Average Blocks Transported'
       xlabel: 'Interval'
       ylabel: '# Blocks'
@@ -85,7 +109,7 @@ LN_block_trans:
         - cum_transported
         - cum_cube_transported
         - cum_ramp_transported
-      title: 'Blocks Transported (cumulative)'
+      title: 'Blocks Transported (Cumulative)'
       legend:
         - 'All Blocks'
         - '# Cube Blocks'
@@ -100,7 +124,7 @@ LN_block_trans:
       title: 'Swarm Block Average Transporters'
       legend:
         - 'Average # Transporters Per Block (Interval)'
-        - 'Average # Transporters Per Block (cumulative)'
+        - 'Average # Transporters Per Block (Cumulative)'
       xlabel: 'Interval'
       ylabel: '# Transporters'
     - src_stem: block-transport
@@ -113,9 +137,9 @@ LN_block_trans:
       title: 'Swarm Block Transport Time'
       legend:
         - 'Average Transport Time (Interval)'
-        - 'Average Transport Time (cumulative)'
+        - 'Average Transport Time (Cumulative)'
         - 'Average Initial Wait Time (Interval)'
-        - 'Average Initial Wait Time (cumulative)'
+        - 'Average Initial Wait Time (Cumulative)'
       xlabel: 'Interval'
       ylabel: '# Timesteps'
 
@@ -136,13 +160,13 @@ LN_block_acq:
       title: 'Swarm Block Acquisition'
       legend:
         - 'Average # Robots Acquiring Blocks (Interval)'
-        - 'Average # Robots Acquiring Blocks (cumulative)'
+        - 'Average # Robots Acquiring Blocks (Cumulative)'
         - 'Average # Robots Vectoring To Blocks (Interval)'
-        - 'Average # Robots Vectoring To Blocks (cumulative)'
+        - 'Average # Robots Vectoring To Blocks (Cumulative)'
         - 'Average # Robots Exploring For Blocks (Interval)'
-        - 'Average # Robots Exploring For Blocks (cumulative)'
+        - 'Average # Robots Exploring For Blocks (Cumulative)'
         - 'Average # Robots Falsely Exploring For Blocks (Interval)'
-        - 'Average # Robots Falsely Exploring For Blocks (cumulative)'
+        - 'Average # Robots Falsely Exploring For Blocks (Cumulative)'
       xlabel: 'Interval'
       ylabel: '# Robots'
 

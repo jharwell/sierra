@@ -180,7 +180,8 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
 
 class PopulationDynamicsParser(dp.DynamicsParser):
     """
-    Enforces the cmdline definition of the criteria described in the module docstring.
+    Enforces the cmdline definition of the :class`PopulationDynamics` batch criteria described in
+    :ref:`ln-bc-population-dynamics`.
     """
 
     def specs_dict(self):

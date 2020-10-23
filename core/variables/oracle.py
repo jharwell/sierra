@@ -104,7 +104,8 @@ class Oracle(bc.UnivarBatchCriteria):
 
 class OracleParser():
     """
-    Enforces the cmdline definition of the criteria described in the module docstring.
+    Enforces the cmdline definition of the :class:`Oracle` batch criteria defined in
+    :ref:`ln-bc-oracle`.
     """
 
     def __call__(self, criteria_str: str) -> dict:

@@ -15,7 +15,7 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Wrapper around :py:class:`xml.etree.ElementTree` which contains a small set of functionality for
+Wrapper around :class:`xml.etree.ElementTree` which contains a small set of functionality for
 manipulating XML files.
 """
 

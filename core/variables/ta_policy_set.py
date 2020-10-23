@@ -107,7 +107,8 @@ class TAPolicySet(bc.UnivarBatchCriteria):
 
 class TAPolicySetParser():
     """
-    Enforces the cmdline definition of the criteria described in the module docstring.
+    Enforces the cmdline definition of the :class:`TAPolicySet` batch criteria defined in
+    :ref:`ln-bc-ta-policy-set`.
     """
 
     def parse(self, criteria_str: str):

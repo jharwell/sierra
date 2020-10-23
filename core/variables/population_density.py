@@ -111,8 +111,8 @@ def factory(cli_arg: str,
             batch_input_root: str,
             **kwargs) -> PopulationConstantDensity:
     """
-    Factory to create ``ConstantDensity`` derived classes from the command line definition of batch
-    criteria.
+    Factory to create :class:`PopulationConstantDensity` derived classes from the command line
+    definition of batch criteria.
 
     """
     attr = cd.ConstantDensityParser().parse(cli_arg)

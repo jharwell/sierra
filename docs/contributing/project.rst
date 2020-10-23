@@ -1,12 +1,13 @@
-How to Add A New Plugin (I mean project)
-========================================
+How to Add A New Project
+========================
 
 The argument to the cmdline option ``--project`` is added to the path
-``plugins/<option>``, and the plugin directory tree must have the following
+``projects/<option>``, and the plugin directory tree must have the following
 structure and content (a subset of the SIERRA core directory structure):
 
 - ``config/`` - Plugin YAML configuration root. within this directory, the following
-  files must be present when running a stage that utilizes them:
+  files are used (not all files are required when running a stage that utilizes
+  them):
 
   - ``main.yaml`` - Main SIERRA configuration file. This file is required for all
     pipeline stages.
@@ -19,7 +20,7 @@ structure and content (a subset of the SIERRA core directory structure):
     will be added to those specified in ``core/config/intra-graphs-line.yaml``,
     and will be generated if stage 4 is run.
 
-  - ``intra-graphs-line.yaml`` - Configuration for intra-experiment
+  - ``intra-graphs-hm.yaml`` - Configuration for intra-experiment
     heatmaps. This file is optional. If it is present, graphs defined in it will
     be added to those specified in ``core/config/intra-graphs-hm.yaml``, and
     will be generated if stage 4 is run.
@@ -48,8 +49,8 @@ structure and content (a subset of the SIERRA core directory structure):
 
 - ``cmdline.py`` - Specifies cmdline extensions specific to the plugin/project.
 
-Contents of ``main.yaml``
--------------------------
+Contents of ``config/main.yaml``
+--------------------------------
 
 Root level dictionaries:
 
@@ -160,16 +161,18 @@ Root level dictionaries:
 ``perf.emergence`` sub-dictionary
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+The sub-dictionary is optional.
+
 .. code-block:: YAML
 
    emergence:
      # The weighting factor for task-based emergent self-organization. If it
-     # omitted it defaults to 0.5.
-     alpha_T: 0.50
+     # omitted it defaults to 1.0
+     alpha_T: 1.0
 
      # The weighting factor for spatial emergent self-organization. If it is
-     # omitted it defaults to 0.5.
-     alpha_S: 0.50
+     # omitted it defaults to 1.0
+     alpha_S: 1.0
 
 ``perf.flexibility`` sub-dictionary
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -178,12 +181,12 @@ Root level dictionaries:
 
    flexibility:
      # The weighting factor for the reactivity axis of flexibility. If it
-     # omitted it defaults to 0.5.
-     alpha_R: 0.50
+     # omitted it defaults to 1.0.
+     alpha_R: 1.0
 
      # The weighting factor for the adaptability axis of flexibility. If it is
-     # omitted it defaults to 0.5.
-     alpha_A: 0.50
+     # omitted it defaults to 1.0.
+     alpha_A: 1.0
 
 See also :ref:`Flexibility config <ln-bc-tv-yaml-config>`.
 
@@ -191,3 +194,105 @@ See also :ref:`Flexibility config <ln-bc-tv-yaml-config>`.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 See :ref:`SAA noise config <ln-bc-saa-noise-yaml-config>`.
+
+Contents of ``config/models.yaml``
+----------------------------------
+
+Root level dictionaries:
+
+- ``models`` - List of enabled models. This dictionary is mandatory for all
+  simulations.
+
+
+``models`` dictionary
+#####################
+
+.. code-block:: YAML
+
+   models:
+     # The name of the python file under ``project/models`` containing one or
+     more models meeting the requirements of one of the model interfaces:
+     :class:`~models.IConcreteIntraExpModel1D`,
+            :class:`~models.IConcreteIntraExpModel2D`,
+                   :class:`~models.IConcreteInterExpModel1D`.
+     - pyfile: 'my_model1'
+     - pyfile: 'my_model2'
+     - ...
+
+.. _ln-intra-graphs-line-yaml:
+
+Contents of ``config/intra-graphs-line.yaml``
+---------------------------------------------
+
+Root level dictionaries: varies. Each root level dictionary must start with
+``LN_``.
+
+``LN_XXX`` sub-dictionary
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: YAML
+
+   graphs:
+     # The filename (no path) of the .csv within the simulation output
+     # directory for a simulation, sans the .csv extension.
+     - src_stem: 'foo'
+
+     # The filename (no path) of the graph to be generated
+     # (extension/image type is determined elsewhere). This allows for multiple
+     # graphs to be generated from the same ``.csv`` file by plotting different
+     # combinations of columns.
+     - dest_stem: 'bar'
+
+     # List of names of columns within the source .csv that should be
+     # included on the plot. Must match EXACTLY (i.e. no fuzzy matching). Can be
+     # omitted to plot all columns within the .csv.
+     - cols:
+         - 'col1'
+         - 'col2'
+         - 'col3'
+         - '...'
+
+     # The title the graph should have. LaTeX syntax is supported (uses
+     # matplotlib after all).
+     - title: 'My Title'
+
+     # List of names of the plotted lines within the graph. Can be
+     # omitted to set the legend for each column to the name of the column
+     # in the ``.csv``.
+     - legend:
+         - 'Column 1'
+         - 'Column 2'
+         - 'Column 3'
+         - '...'
+
+     # The label of the X-axis of the graph.
+     - xlabel: 'X'
+
+     # The label of the Y-axis of the graph.
+     - ylabel: 'Y'
+
+Contents of ``config/inter-graphs-line.yaml``
+---------------------------------------------
+
+See :ref:`ln-intra-graphs-line-yaml`.
+
+Contents of ``config/intra-graphs-hm.yaml``
+---------------------------------------------
+
+Root level dictionaries: varies. Each root level dictionary must start with
+``HM_``.
+
+``HM_XXX`` sub-dictionary
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: YAML
+
+   graphs:
+     # The filename (no path) of the .csv within the output directory
+     # for a simulation to look for the column(s) to plot, sans the .csv
+     # extension.
+     - src_stem: 'foo.csv'
+
+     # The title the graph should have. LaTeX syntax is supported (uses
+     # matplotlib after all).
+     - title: 'My Title'

@@ -111,7 +111,8 @@ class BlockMotionDynamics(bc.UnivarBatchCriteria):
 
 class BlockMotionDynamicsParser(dp.DynamicsParser):
     """
-    Enforces the cmdline definition of the criteria described in the module docstring.
+    Enforces the cmdline definition of the :class:`BlockMotionDynamics` batch criteria defined in
+    :ref:`ln-bc-block-motion-dynamics`
     """
 
     def specs_dict(self):
@@ -123,7 +124,7 @@ def factory(cli_arg: str,
             batch_input_root: str,
             **kwargs) -> BlockMotionDynamics:
     """
-    Factory to create ``BlockMotionDynamics`` derived classes from the command line definition.
+    Factory to create :class:`BlockMotionDynamics` derived classes from the command line definition.
 
     """
     attr = BlockMotionDynamicsParser()(cli_arg)

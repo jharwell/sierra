@@ -72,7 +72,7 @@ class ReactivityUnivar:
         # Write .csv to file
         core.utils.pd_csv_write(df, stem_opath + '.csv', index=False)
 
-        BatchRangedGraph(inputy_stem_fpath=stem_opath,
+        BatchRangedGraph(input_fpath=stem_opath + '.csv',
                          output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
                                                    self.kLeaf + ".png"),
                          title="Swarm Reactivity",
@@ -116,7 +116,7 @@ class AdaptabilityUnivar:
         # Write .csv to file
         core.utils.pd_csv_write(df, stem_opath + '.csv', index=False)
 
-        BatchRangedGraph(inputy_stem_fpath=stem_opath,
+        BatchRangedGraph(input_fpath=stem_opath + '.csv',
                          output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
                                                    self.kLeaf + ".png"),
                          title="Swarm Adaptability",

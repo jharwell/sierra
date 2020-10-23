@@ -88,7 +88,7 @@ class FractionalLossesMarginalUnivar:
         stem_path = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
         core.utils.pd_csv_write(df_new, stem_path + ".csv", index=False)
 
-        BatchRangedGraph(inputy_stem_fpath=stem_path,
+        BatchRangedGraph(input_fpath=stem_path + '.csv',
                          output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
                                                    self.kLeaf + ".png"),
                          title="Swarm Self-Organization via Marginal Sub-Linear Performance Losses",
@@ -145,7 +145,7 @@ class FractionalLossesInteractiveUnivar:
         stem_path = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
         core.utils.pd_csv_write(df_new, stem_path + ".csv", index=False)
 
-        BatchRangedGraph(inputy_stem_fpath=stem_path,
+        BatchRangedGraph(input_fpath=stem_path + '.csv',
                          output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
                                                    self.kLeaf + ".png"),
                          title="Swarm Self-Organization via Sub-Linear Performance Losses Through Interaction",
@@ -212,7 +212,7 @@ class PerformanceGainMarginalUnivar:
         if stddev_df is not None:
             core.utils.pd_csv_write(stddev_df, cum_stem + ".stddev", index=False)
 
-        BatchRangedGraph(inputy_stem_fpath=cum_stem,
+        BatchRangedGraph(input_fpath=cum_stem + '.csv',
                          output_fpath=os.path.join(
                              self.cmdopts["batch_collate_graph_root"], self.kLeaf),
                          title="Swarm Self-Organization via Marginal Performance Gains",
@@ -304,7 +304,7 @@ class PerformanceGainInteractiveUnivar:
         if stddev_df is not None:
             core.utils.pd_csv_write(stddev_df, cum_stem + ".stddev", index=False)
 
-        BatchRangedGraph(inputy_stem_fpath=cum_stem,
+        BatchRangedGraph(input_fpath=cum_stem + '.csv',
                          output_fpath=os.path.join(
                              self.cmdopts["batch_collate_graph_root"], self.kLeaf),
                          title="Swarm Self-Organization via Performance Gains Through Interaction",

@@ -22,6 +22,7 @@ defined by the selected project):
   - :ref:`Swarm Population Size <ln-bc-population-size>`
   - :ref:`Swarm Population Dynamics <ln-bc-population-dynamics>`
   - :ref:`Swarm Population Density <ln-bc-population-density>`
+  - :ref:`Block Quantity <ln-bc-block-quantity>`
   - :ref:`Block Density <ln-bc-block-density>`
   - :ref:`Block Motion Dynamics <ln-bc-block-motion-dynamics>`
   - :ref:`Temporal Variance <ln-bc-tv>`
@@ -58,8 +59,8 @@ Cmdline Syntax
 - ``N`` - The maximum swarm size.
 
 Examples:
-    - ``static.Log1024``: Static swarm sizes 1...1024
-    - ``static.Linear1000``: Static swarm sizes 100...1000
+    - ``Log1024``: Static swarm sizes 1...1024
+    - ``Linear1000``: Static swarm sizes 100...1000
 
 .. _ln-bc-population-dynamics:
 
@@ -165,6 +166,32 @@ Examples:
 .. NOTE:: This criteria is for `constant` density of robots as swarm sizes
           increase. For `variable` robot density, use
           :ref:`ln-bc-population-size`.
+
+
+.. _ln-bc-block-quantity:
+
+Block Quantity
+-----------
+
+.. _ln-bc-block-quantity-cmdline:
+
+Cmdline Syntax
+^^^^^^^^^^^^^^
+``block_quantity.{block_type}.{increment_type}{N}``
+
+- ``block_type`` - ``cube`` or ``ramp``, depending on what type of blocks you
+  want to control the count of.
+
+- ``increment_type`` - {Log,Linear}. If ``Log``, then swarm sizes for each
+  experiment are distributed 1...N by powers of 2. If ``Linear`` then block
+  counts for each experiment are distributed linearly between 1...N, split evenly
+  into 10 different sizes.
+
+- ``N`` - The maximum block count.
+
+Examples:
+    - ``cube.Log1024``: Cube block counts 1...1024
+    - ``ramp.Linear1000``: Ramp block counts 100...1000
 
 
 .. _ln-bc-block-density:

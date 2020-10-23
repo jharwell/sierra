@@ -19,7 +19,7 @@ Main module/entry point for SIERRA, the helpful command line swarm-robotic autom
 
 import logging
 import sys
-import collections
+from collections.abc import Iterable
 import os
 
 import coloredlogs
@@ -68,19 +68,23 @@ def __sierra_run():
         pm.load_plugin(plugin)
 
     logging.info("Loading cmdline extensions from project '%s'", bootstrap_args.project)
-    module = __import__("projects.{0}.cmdline".format(bootstrap_args.project),
-                        fromlist=["*"])
+    try:
+        module = __import__("projects.{0}.cmdline".format(bootstrap_args.project),
+                            fromlist=["*"])
+    except ModuleNotFoundError:
+        logging.fatal("Project '%s' not found", bootstrap_args.project)
+        raise
 
     args = module.Cmdline().parser.parse_args(other_args)
+    module.CmdlineValidator()(args)
+
     args = hpc.EnvConfigurer()(bootstrap_args.hpc_env, args)
     args.__dict__['project'] = bootstrap_args.project
-
-    module.CmdlineValidator()(args)
 
     # If only 1 pipeline stage is passed, then the list of stages to run is parsed as a non-iterable
     # integer, which can cause the generator to fail to be created. So make it iterable in that
     # case as well.
-    if not isinstance(args.pipeline, collections.Iterable):
+    if not isinstance(args.pipeline, Iterable):
         args.pipeline = [args.pipeline]
 
     if 5 not in args.pipeline:

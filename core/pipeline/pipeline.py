@@ -88,6 +88,8 @@ class Pipeline:
             'rperf_cs_method': self.args.rperf_cs_method,
             'exp_graphs': self.args.exp_graphs,
             'no_collate': self.args.no_collate,
+            'project_no_yaml_LN': self.args.project_no_yaml_LN,
+            'project_no_yaml_HM': self.args.project_no_yaml_HM,
             'project_rendering': self.args.project_rendering,
             'plot_log_xaxis': self.args.plot_log_xaxis,
             'plot_regression_lines': self.args.plot_regression_lines,

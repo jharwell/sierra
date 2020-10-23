@@ -37,7 +37,7 @@ class Scatterplot2D:
 
     def __init__(self, **kwargs) -> None:
 
-        self.input_csv_fpath = os.path.abspath(kwargs['input_csv_fpath'])
+        self.input_fpath = os.path.abspath(kwargs['input_fpath'])
         self.output_fpath = kwargs['output_fpath']
         self.title = kwargs['title']
         self.xlabel = kwargs['xlabel']
@@ -47,13 +47,13 @@ class Scatterplot2D:
         self.regression = kwargs.get('regression', False)
 
     def generate(self):
-        if not core.utils.path_exists(self.input_csv_fpath):
+        if not core.utils.path_exists(self.input_fpath):
             logging.debug("Not generating 2D scatterplot: %s does not exist",
-                          self.input_csv_fpath)
+                          self.input_fpath)
             return
 
         # Read .csv and scaffold graph
-        df = core.utils.pd_csv_read(self.input_csv_fpath)
+        df = core.utils.pd_csv_read(self.input_fpath)
         ax = df.plot.scatter(x=self.xcol, y=self.ycol)
 
         # Plot regression line

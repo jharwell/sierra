@@ -18,7 +18,7 @@ import pickle
 import logging
 import typing as tp
 
-from core.variables import block_distribution, arena_shape
+from core.variables import block_distribution, arena_shape, block_quantity
 from core.variables import population_size
 from core.xml_luigi import XMLLuigi
 from core.generators import exp_generator
@@ -88,30 +88,35 @@ class BaseScenarioGenerator():
     def generate_block_count(self, exp_def: XMLLuigi):
         """
         Generates XML changes for # blocks in the simulation. If specified on the cmdline, that
-        quantity is used. Otherwise, the # blocks specified in the manifest in the template input
-        file is used, and split evenly between ramp and cube blocks.
+        quantity is used (split evenly between ramp and cube blocks).
 
         Writes generated changes to the simulation definition pickle file.
         """
         if self.cmdopts['n_blocks'] is not None:
             n_blocks = self.cmdopts['n_blocks']
+            chgs1 = block_quantity.BlockQuantity.gen_attr_changelist_from_list([n_blocks / 2],
+                                                                               'cube')
+            chgs2 = block_quantity.BlockQuantity.gen_attr_changelist_from_list([n_blocks / 2],
+                                                                               'ramp')
         else:
-            n_blocks = int(exp_def.attr_get('.//manifest', 'n_cube')) + \
-                int(exp_def.attr_get('.//manifest', 'n_ramp'))
+            # This may have already been set by the batch criteria, but we can't know for sure, and
+            # we need block quantity definitions to always be written to the pickle file for later
+            # retrieval.
+            n_blocks1 = int(exp_def.attr_get('.//manifest', 'n_cube'))
+            n_blocks2 = int(exp_def.attr_get('.//manifest', 'n_ramp'))
 
-        bd = block_distribution.Quantity([n_blocks])
+            chgs1 = block_quantity.BlockQuantity.gen_attr_changelist_from_list([n_blocks1],
+                                                                               'cube')
+            chgs2 = block_quantity.BlockQuantity.gen_attr_changelist_from_list([n_blocks2],
+                                                                               'ramp')
+        chgs = [chgs1, chgs2]
 
-        for a in bd.gen_attr_changelist()[0]:
-            exp_def.attr_change(a[0], a[1], a[2])
+        for chgl in chgs:
+            for chg in chgl[0]:
+                exp_def.attr_change(chg[0], chg[1], chg[2])
 
-        rms = bd.gen_tag_rmlist()
-
-        if rms:  # non-empty
-            for a in rms[0]:
-                exp_def.tag_remove(a[0], a[1])
-
-        with open(self.spec.exp_def_fpath, 'ab') as f:
-            pickle.dump(bd.gen_attr_changelist()[0], f)
+            with open(self.spec.exp_def_fpath, 'ab') as f:
+                pickle.dump(chgl[0], f)
 
     def generate_n_robots(self, xml_luigi: XMLLuigi):
         """

@@ -56,33 +56,61 @@ LN_fsm_interference:
       xlabel: 'Interval'
       ylabel: '# Robots'
 
-LN_fsm_movement:
+LN_spatial_movement:
   graphs:
-    - src_stem: fsm-movement
-      dest_stem: distance-int-avg
-      col: int_avg_distance
+    - src_stem: spatial-movement
+      dest_stem: distance-int-avg-all
+      col: int_avg_distance_all
       title: 'Per-robot Distance Traveled (interval)'
       xlabel: 'Interval'
       ylabel: Distance (m)
 
-    - src_stem: fsm-movement
-      dest_stem: distance-cum-avg
-      col: cum_avg_distance
+    - src_stem: spatial-movement
+      dest_stem: distance-cum-avg-all
+      col: cum_avg_distance_all
       title: 'Per-robot Distance Traveled (cumulative)'
       xlabel: 'Interval'
       ylabel: 'Distance (m)'
 
-    - src_stem: fsm-movement
-      dest_stem: velocity-int-avg
-      col: int_avg_velocity
+    - src_stem: spatial-movement
+      dest_stem: velocity-int-avg-all
+      col: int_avg_velocity_all
       title: 'Per-robot Velocity (interval)'
       xlabel: 'Interval'
       ylabel: 'Velocity (m/s)'
 
-    - src_stem: fsm-movement
-      dest_stem: velocity-cum-avg
-      col: cum_avg_velocity
+    - src_stem: spatial-movement
+      dest_stem: velocity-cum-avg-all
+      col: cum_avg_velocity_all
       title: 'Per-robot Velocity (cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Velocity (m/s)'
+
+    - src_stem: spatial-movement
+      dest_stem: distance-int-avg-homing
+      col: int_avg_distance_homing
+      title: 'Per-robot Homing Distance Traveled (interval)'
+      xlabel: 'Interval'
+      ylabel: Distance (m)
+
+    - src_stem: spatial-movement
+      dest_stem: distance-cum-avg-homing
+      col: cum_avg_distance_homing
+      title: 'Per-robot Homing Distance Traveled (cumulative)'
+      xlabel: 'Interval'
+      ylabel: 'Distance (m)'
+
+    - src_stem: spatial-movement
+      dest_stem: velocity-int-avg-homing
+      col: int_avg_velocity_homing
+      title: 'Per-robot Homing Velocity (interval)'
+      xlabel: 'Interval'
+      ylabel: 'Velocity (m/s)'
+
+    - src_stem: spatial-movement
+      dest_stem: velocity-cum-avg-homing
+      col: cum_avg_velocity_homing
+      title: 'Per-robot Homing Velocity (cumulative)'
       xlabel: 'Interval'
       ylabel: 'Velocity (m/s)'
 

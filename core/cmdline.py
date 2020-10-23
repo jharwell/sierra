@@ -544,78 +544,107 @@ class CoreCmdline:
                                  """,
                                  action='store_true')
 
+        self.stage4.add_argument("--project-no-yaml-LN",
+                                 help="""
+
+                                 Specify that the intra-experiment and inter-experiment linegraphs defined in project
+                                 YAML configuration should not be generated. Useful if you are working on something
+                                 which results in the generation of other types of graphs, and the generation of those
+                                 linegraphs is not currently needed only slows down your development cycle.
+
+                                 Performance measure, model linegraphs are still generated, if applicable.
+
+                                 """,
+                                 action='store_true')
+
+        self.stage4.add_argument("--project-no-yaml-HM",
+                                 help="""
+
+                                 Specify that the intra-experiment heatmaps defined in project YAML configuration should
+                                 not be generated. Useful if you are working on something which results in the
+                                 generation of other types of graphs, and the generation of heatmaps only slows down
+                                 your development cycle.
+
+                                 Model heatmaps are still generated, if applicable.
+                                 """,
+                                 action='store_true')
+
         # Performance measure calculation options
-        self.stage4.add_argument("--pm-scalability-from-exp0",
-                                 help="""
+        pm = self.parser.add_argument_group('Stage4: PM',
+                                            'Performance measure options for stage4')
 
-                                 If passed, then swarm scalability will be calculated based on the "speedup"
-                                 achieved by a swarm of size N in exp X relative to the performance in exp 0, as opposed
-                                 to the performance in exp X-1 (default).
-                                 """,
-                                 action='store_true')
+        pm.add_argument("--pm-scalability-from-exp0",
+                        help="""
 
-        self.stage4.add_argument("--pm-scalability-normalize",
-                                 help="""
+                        If passed, then swarm scalability will be calculated based on the "speedup" achieved by a swarm
+                        of size N in exp X relative to the performance in exp 0, as opposed to the performance in exp
+                        X-1 (default).
 
-                                 If passed, then swarm scalability will be normalized into [-1,1] via sigmoids (similar
-                                 to other performance measures), as opposed to raw values (default). This may make
-                                 graphs more or less readable/interpretable.
+                        """ + self.stage_usage_doc([4]),
+                        action='store_true')
 
-                                 """,
-                                 action='store_true')
+        pm.add_argument("--pm-scalability-normalize",
+                        help="""
 
-        self.stage4.add_argument("--pm-self-org-normalize",
-                                 help="""
+                        If passed, then swarm scalability will be normalized into [-1,1] via sigmoids (similar to other
+                        performance measures), as opposed to raw values (default). This may make graphs more or less
+                        readable/interpretable.
 
-                                 If passed, then swarm self-organization calculations will be normalized into [-1,1] via
-                                 sigmoids (similar to other performance measures), as opposed to raw values
-                                 (default). This may make graphs more or less readable/interpretable.
+                        """ + self.stage_usage_doc([4]),
+                        action='store_true')
 
-                                 """,
-                                 action='store_true')
+        pm.add_argument("--pm-self-org-normalize",
+                        help="""
 
-        self.stage4.add_argument("--pm-flexibility-normalize",
-                                 help="""
+                        If passed, then swarm self-organization calculations will be normalized into [-1,1] via sigmoids
+                        (similar to other performance measures), as opposed to raw values (default). This may make
+                        graphs more or less readable/interpretable.
 
-                                 If passed, then swarm flexibility calculations will be normalized into [-1,1] via
-                                 sigmoids (similar to other performance measures), as opposed to raw values
-                                 (default). This may make graphs more or less readable/interpretable; without
-                                 normalization, LOWER values are better.
+                        """,
+                        action='store_true')
 
-                                 """,
-                                 action='store_true')
+        pm.add_argument("--pm-flexibility-normalize",
+                        help="""
 
-        self.stage4.add_argument("--pm-robustness-normalize",
-                                 help="""
+                        If passed, then swarm flexibility calculations will be normalized into [-1,1] via sigmoids
+                        (similar to other performance measures), as opposed to raw values (default). This may make graphs
+                        more or less readable/interpretable; without normalization, LOWER values are better.
 
-                                 If passed, then swarm robustness calculations will be normalized into [-1,1] via
-                                 sigmoids (similar to other performance measures), as opposed to raw values
-                                 (default). This may make graphs more or less readable/interpretable.
+                       """ + self.stage_usage_doc([4]),
+                        action='store_true')
 
-                                 """,
-                                 action='store_true')
+        pm.add_argument("--pm-robustness-normalize",
+                        help="""
 
-        self.stage4.add_argument("--pm-all-normalize",
-                                 help="""
+                        If passed, then swarm robustness calculations will be normalized into [-1,1] via sigmoids
+                        (similar to other performance measures), as opposed to raw values (default). This may make
+                        graphs more or less readable/interpretable.
 
-                                 If passed, then swarm scalability, self-organization, flexibility, nand robustness
-                                 calculations will be normalized into [-1,1] via sigmoids (similar to other performance
-                                 measures), as opposed to raw values (default). This may make graphs more or less
-                                 readable/interpretable.
+                        """ + self.stage_usage_doc([4]),
+                        action='store_true')
 
-                                 """,
-                                 action='store_true')
-        self.stage4.add_argument("--pm-normalize-method",
-                                 choices=['sigmoid'],
-                                 help="""
+        pm.add_argument("--pm-all-normalize",
+                        help="""
 
-                                 The method to use for normalizing performance measure results,
-                                 where enabled:
+                        If passed, then swarm scalability, self-organization, flexibility, and robustness calculations
+                        will be normalized into [-1,1] via sigmoids (similar to other performance measures), as opposed
+                        to raw values (default). This may make graphs more or less readable/interpretable.
 
-                                 - ``sigmoid`` - Use a pair of sigmoids to normalize the results into
-                                   [-1, 1]. Can be used with all performance measures.
-                                 """,
-                                 default='sigmoid')
+                        """ + self.stage_usage_doc([4]),
+                        action='store_true')
+
+        pm.add_argument("--pm-normalize-method",
+                        choices=['sigmoid'],
+                        help="""
+
+                        The method to use for normalizing performance measure results,
+                        where enabled:
+
+                        - ``sigmoid`` - Use a pair of sigmoids to normalize the results into
+                          [-1, 1]. Can be used with all performance measures.
+
+                        """ + self.stage_usage_doc([4]),
+                        default='sigmoid')
 
         # Plotting options
         self.stage4.add_argument("--plot-log-xaxis",
@@ -935,6 +964,8 @@ class CoreCmdlineValidator():
     def __call__(self, args):
         assert len(args.batch_criteria) <= 2, "FATAL: Too many batch criteria passed"
 
+        assert args.sierra_root is not None, '--sierra-root is required for all stages'
+
         if len(args.batch_criteria) == 2:
             assert args.batch_criteria[0] != args.batch_criteria[1], \
                 "FATAL: Duplicate batch criteria passed"
@@ -946,8 +977,14 @@ class CoreCmdlineValidator():
         assert isinstance(args.batch_criteria, list), \
             'FATAL Batch criteria not passed as list on cmdline'
 
-        if any([1, 2]) in args.pipeline:
-            assert args.n_sims is not None, '--n-sims is required'
+        if any([1]) in args.pipeline:
+            assert args.n_sims is not None, '--n-sims is required for running stage 1'
+            assert args.template_input_file is not None, '--template-input-file is required for running stage 1'
+            assert args.scenario is not None, '--scenario is required for running stage 1'
+
+        if any([1, 2, 3, 4]) in args.pipeline:
+            assert len(args.batch_criteria) > 0, '--batch-criteria is required for running stages 1-4'
+            assert args.controller is not None, '--controller is required for running stages 1-4'
 
         if 5 in args.pipeline:
             assert args.bc_univar or args.bc_bivar, \

@@ -107,41 +107,11 @@ class RandomDistribution(BaseDistribution):
         super().__init__("random")
 
 
-class Quantity(IBaseVariable):
-
-    """
-    Defines the # of blocks in the arena. An equal # of all block types are created (# blocks/ #
-    block types).
-
-    Attributes:
-      blocks_list: List of block quantities to be distributed.
-    """
-
-    def __init__(self, blocks_list: tp.List) -> None:
-        self.blocks_list = blocks_list
-
-    def gen_attr_changelist(self):
-        """
-        Generate a list of sets of changes necessary to make to the input file to correctly set up
-        the simulation with the specified # blocks.
-        """
-        return [set([
-            (".//arena_map/blocks/distribution/manifest", "n_cube", "{0}".format(int(n / 2.0))),
-            (".//arena_map/blocks/distribution/manifest", "n_ramp", "{0}".format(int(n / 2.0)))]) for n in self.blocks_list]
-
-    def gen_tag_addlist(self):
-        return []
-
-    def gen_tag_rmlist(self):
-        return []
-
-
 __api__ = [
     'BaseDistribution',
     'SingleSourceDistribution',
     'DualSourceDistribution',
     'QuadSourceDistribution',
     'PowerLawDistribution',
-    'RandomDistribution',
-    'Quantity',
+    'RandomDistribution'
 ]

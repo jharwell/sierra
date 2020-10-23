@@ -73,10 +73,11 @@ class InterExpGraphGenerator:
         """
 
         if criteria.is_univar():
-            LinegraphsGenerator(self.cmdopts["batch_collate_root"],
-                                self.cmdopts["batch_collate_graph_root"],
-                                self.cmdopts["batch_model_root"],
-                                self.targets).generate()
+            if not self.cmdopts['project_no_yaml_LN']:
+                LinegraphsGenerator(self.cmdopts["batch_collate_root"],
+                                    self.cmdopts["batch_collate_graph_root"],
+                                    self.cmdopts["batch_model_root"],
+                                    self.targets).generate()
             UnivarPerfMeasuresGenerator(self.main_config, self.cmdopts)(criteria)
         else:
             BivarPerfMeasuresGenerator(self.main_config, self.cmdopts)(criteria)
@@ -109,21 +110,21 @@ class LinegraphsGenerator:
         for category in self.targets:
             # For each graph in each category
             for graph in category['graphs']:
-                StackedLineGraph(input_csv_fpath=os.path.join(self.batch_collate_root,
-                                                              graph['src_stem'] + '.csv'),
-                                 input_stddev_fpath=os.path.join(self.batch_collate_root,
-                                                                 graph['src_stem'] + '.stddev'),
-                                 input_model_fpath=os.path.join(self.batch_model_root,
-                                                                graph['src_stem'] + '.model'),
+                StackedLineGraph(input_fpath=os.path.join(self.batch_collate_root,
+                                                          graph['dest_stem'] + '.csv'),
+                                 stddev_fpath=os.path.join(self.batch_collate_root,
+                                                           graph['src_stem'] + '.stddev'),
+                                 model_fpath=os.path.join(self.batch_model_root,
+                                                          graph['src_stem'] + '.model'),
+                                 model_legend_fpath=os.path.join(self.batch_model_root,
+                                                                 graph['src_stem'] + '.legend'),
                                  output_fpath=os.path.join(self.batch_graph_root,
                                                            graph['dest_stem'] + '.png'),
                                  cols=None,
                                  title=graph['title'],
                                  legend=None,
                                  xlabel=graph['xlabel'],
-                                 ylabel=graph['ylabel'],
-                                 linestyles=None,
-                                 dashes=None).generate()
+                                 ylabel=graph['ylabel']).generate()
 
 
 class UnivarPerfMeasuresGenerator:
@@ -162,8 +163,9 @@ class UnivarPerfMeasuresGenerator:
                                              batch_criteria)
 
         if batch_criteria.pm_query('self-org'):
-            alpha_S = self.main_config['perf']['emergence'].get('alpha_S', 0.5)
-            alpha_T = self.main_config['perf']['emergence'].get('alpha_T', 0.5)
+            alpha_S = self.main_config['perf'].get('emergence', {}).get('alpha_S', 1.0)
+            alpha_T = self.main_config['perf'].get('emergence', {}).get('alpha_T', 1.0)
+
             pmso.SelfOrgUnivarGenerator()(self.cmdopts,
                                           inter_perf_csv,
                                           interference_count_csv,
@@ -172,8 +174,8 @@ class UnivarPerfMeasuresGenerator:
                                           batch_criteria)
 
         if batch_criteria.pm_query('flexibility'):
-            alpha_R = self.main_config['perf']['flexibility'].get('alpha_R', 0.5)
-            alpha_S = self.main_config['perf']['flexibility'].get('alpha_A', 0.5)
+            alpha_R = self.main_config['perf'].get('flexibility', {}).get('alpha_R', 1.0)
+            alpha_S = self.main_config['perf'].get('flexibility', {}).get('alpha_A', 1.0)
             pmf.FlexibilityUnivarGenerator()(self.cmdopts,
                                              self.main_config,
                                              alpha_R,
@@ -181,8 +183,8 @@ class UnivarPerfMeasuresGenerator:
                                              batch_criteria)
 
         if batch_criteria.pm_query('robustness'):
-            alpha_SAA = self.main_config['perf']['robustness'].get('alpha_SAA', 0.5)
-            alpha_PD = self.main_config['perf']['robustness'].get('alpha_PD', 0.5)
+            alpha_SAA = self.main_config['perf'].get('robustness', {}).get('alpha_SAA', 1.0)
+            alpha_PD = self.main_config['perf'].get('robustness', {}).get('alpha_PD', 1.0)
             pmb.RobustnessUnivarGenerator()(self.cmdopts,
                                             self.main_config,
                                             alpha_SAA,

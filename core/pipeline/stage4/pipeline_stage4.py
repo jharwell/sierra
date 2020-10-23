@@ -29,7 +29,9 @@ import matplotlib as mpl
 
 from core.pipeline.stage4.graph_collator import MultithreadCollator
 from core.pipeline.stage4.intra_exp_graph_generator import BatchedIntraExpGraphGenerator
-from core.pipeline.stage4.intra_exp_model_runner import BatchedIntraExpModelRunner
+from core.pipeline.stage4.exp_model_runner import BatchedIntraExpModelRunner
+from core.pipeline.stage4.exp_model_runner import InterExpModelRunner
+
 from core.pipeline.stage4.inter_exp_graph_generator import InterExpGraphGenerator
 from core.pipeline.stage4.exp_video_renderer import BatchedExpVideoRenderer
 import core.plugin_manager
@@ -97,9 +99,9 @@ class PipelineStage4:
                                                              'controllers.yaml')),
                                            yaml.FullLoader)
 
-        self.__load_LN_config()
-        self.__load_HM_config()
-        self.__load_models()
+        self._load_LN_config()
+        self._load_HM_config()
+        self._load_models()
 
     def run(self, batch_criteria):
         """
@@ -108,7 +110,7 @@ class PipelineStage4:
 
         Video generation: If images have previously been created, then the following is run:
 
-        #. :class:`~pipeline.stage4.exp_video_renderer.BatchedExpVideoRenderer` to render
+        #. :class:`~core.pipeline.stage4.exp_video_renderer.BatchedExpVideoRenderer` to render
            videos for each experiment in the batch, or a subset.
 
         Intra-experiment graph generation: if intra-experiment graphs should be generated,
@@ -134,23 +136,28 @@ class PipelineStage4:
            to perform graph generation from collated ``.csv`` files.
         """
         if self.cmdopts['project_rendering'] or self.cmdopts['argos_rendering']:
-            self.__run_rendering()
+            self._run_rendering()
 
         if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'intra':
-            if self.run_models:
-                self.__run_models(batch_criteria)
+            if len(self.models_intra) > 0:
+                self._run_intra_models(batch_criteria)
 
-            self.__run_intra_graph_generation(batch_criteria)
+            self._run_intra_graph_generation(batch_criteria)
 
         # Collation must be after intra-experiment graph generation, so that all .csv files to
         # be collated have been generated/modified according to parameters.
         if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'inter':
-            self.__run_inter_graph_generation(batch_criteria)
+            self._run_collation(batch_criteria)
 
-    def __load_models(self):
+            if len(self.models_inter) > 0:
+                self._run_inter_models(batch_criteria)
+
+            self._run_inter_graph_generation(batch_criteria)
+
+    def _load_models(self):
         project_models = os.path.join(self.cmdopts['project_config_root'], 'models.yaml')
         self.models_intra = []
-        self.run_models = False
+        self.models_inter = []
 
         if not core.utils.path_exists(project_models):
             return
@@ -164,19 +171,26 @@ class PipelineStage4:
         # All models present in the .yaml file are enabled/set to run unconditionally
         for module_name in pm.available_plugins():
             for conf in self.models_config['models']:
-                if conf['src']['py'] == module_name:
+                if conf['pyfile'] == module_name:
                     module = pm.load_plugin(module_name)
                     for avail in module.available_models('intra'):
-                        model = getattr(module, avail)(conf)
+                        model = getattr(module, avail)(self.main_config, conf)
                         self.models_intra.append(model)
+                    for avail in module.available_models('inter'):
+                        model = getattr(module, avail)(self.main_config, conf)
+                        self.models_inter.append(model)
 
         if len(self.models_intra) > 0:
             logging.info("Stage4: Loaded %s intra-experiment models for project '%s'",
                          len(self.models_intra),
                          self.cmdopts['project'])
-            self.run_models = True
 
-    def __load_LN_config(self):
+        if len(self.models_inter) > 0:
+            logging.info("Stage4: Loaded %s inter-experiment models for project '%s'",
+                         len(self.models_inter),
+                         self.cmdopts['project'])
+
+    def _load_LN_config(self):
         self.inter_LN_config = yaml.load(open(os.path.join(self.cmdopts['core_config_root'],
                                                            'inter-graphs-line.yaml')),
                                          yaml.FullLoader)
@@ -213,7 +227,7 @@ class PipelineStage4:
                     self.inter_LN_config[category]['graphs'].extend(
                         project_dict[category]['graphs'])
 
-    def __load_HM_config(self):
+    def _load_HM_config(self):
         self.intra_HM_config = yaml.load(open(os.path.join(self.cmdopts['core_config_root'],
                                                            'intra-graphs-hm.yaml')),
                                          yaml.FullLoader)
@@ -232,7 +246,7 @@ class PipelineStage4:
                     self.intra_HM_config[category]['graphs'].extend(
                         project_dict[category]['graphs'])
 
-    def __calc_inter_LN_targets(self):
+    def _calc_inter_LN_targets(self):
         """
         Use YAML configuration for controllers and inter-experiment graphs to what ``.csv`` files
         need to be collated/what graphs should be generated.
@@ -259,7 +273,7 @@ class PipelineStage4:
         logging.debug("Enabled linegraph categories: %s", filtered_keys)
         return targets
 
-    def __run_rendering(self):
+    def _run_rendering(self):
         """
         Render captured ARGoS frames and/or frames created by imagizing in stage 3 into videos.
         """
@@ -275,7 +289,7 @@ class PipelineStage4:
         sec = datetime.timedelta(seconds=elapsed)
         logging.info("Stage4: Rendering complete in %s", str(sec))
 
-    def __run_models(self, batch_criteria):
+    def _run_intra_models(self, batch_criteria):
         logging.info("Stage4: Running intra-experiment models...")
         start = time.time()
         BatchedIntraExpModelRunner(self.cmdopts,
@@ -285,7 +299,17 @@ class PipelineStage4:
         sec = datetime.timedelta(seconds=elapsed)
         logging.info("Stage4: Intra-experiment models finished in %s", str(sec))
 
-    def __run_intra_graph_generation(self, batch_criteria):
+    def _run_inter_models(self, batch_criteria):
+        logging.info("Stage4: Running inter-experiment models...")
+        start = time.time()
+        InterExpModelRunner(self.cmdopts,
+                            self.models_inter)(self.main_config,
+                                               batch_criteria)
+        elapsed = int(time.time() - start)
+        sec = datetime.timedelta(seconds=elapsed)
+        logging.info("Stage4: inter-experiment models finished in %s", str(sec))
+
+    def _run_intra_graph_generation(self, batch_criteria):
         """
         Generate intra-experiment graphs (duh).
         """
@@ -300,11 +324,8 @@ class PipelineStage4:
         sec = datetime.timedelta(seconds=elapsed)
         logging.info("Stage4: Intra-experiment graph generation complete: %s", str(sec))
 
-    def __run_inter_graph_generation(self, batch_criteria):
-        """
-        Generate inter-experiment graphs (duh).
-        """
-        targets = self.__calc_inter_LN_targets()
+    def _run_collation(self, batch_criteria):
+        targets = self._calc_inter_LN_targets()
 
         if not self.cmdopts['no_collate']:
             logging.info("Stage4: Collating inter-experiment .csv files...")
@@ -313,6 +334,12 @@ class PipelineStage4:
             elapsed = int(time.time() - start)
             sec = datetime.timedelta(seconds=elapsed)
             logging.info("Stage4: Collating inter-experiment .csv files complete: %s", str(sec))
+
+    def _run_inter_graph_generation(self, batch_criteria):
+        """
+        Generate inter-experiment graphs (duh).
+        """
+        targets = self._calc_inter_LN_targets()
 
         logging.info("Stage4: Generating inter-experiment graphs...")
         start = time.time()

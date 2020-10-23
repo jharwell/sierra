@@ -71,16 +71,16 @@ class BatchedExpCSVAverager:
                 q.put(path)
 
         for i in range(0, mp.cpu_count()):
-            p = mp.Process(target=BatchedExpCSVAverager.__thread_worker,
+            p = mp.Process(target=BatchedExpCSVAverager._thread_worker,
                            args=(q, self.main_config, avg_opts))
             p.start()
 
         q.join()
 
     @staticmethod
-    def __thread_worker(q: mp.Queue,
-                        main_config: dict,
-                        avg_opts: tp.Dict[str, str]) -> None:
+    def _thread_worker(q: mp.Queue,
+                       main_config: dict,
+                       avg_opts: tp.Dict[str, str]) -> None:
         while True:
             # Wait for 3 seconds after the queue is empty before bailing
             try:
@@ -138,10 +138,10 @@ class ExpCSVAverager:
 
     def __call__(self):
         if not self.avg_opts['no_verify_results']:
-            self.__verify_exp()
-        self.__average_csvs()
+            self._verify_exp()
+        self._average_csvs()
 
-    def __average_csvs(self):
+    def _average_csvs(self):
         """Averages the CSV files found in the output save path"""
 
         logging.info('Averaging results in %s...', self.exp_output_root)
@@ -161,11 +161,11 @@ class ExpCSVAverager:
 
         csvs = {}
         for sim in simulations:
-            self.__gather_csvs_from_sim(sim, csvs)
+            self._gather_csvs_from_sim(sim, csvs)
 
-        self.__average_csvs_within_exp(csvs)
+        self._average_csvs_within_exp(csvs)
 
-    def __gather_csvs_from_sim(self, sim: str, csvs: dict) -> None:
+    def _gather_csvs_from_sim(self, sim: str, csvs: dict) -> None:
         csv_root = os.path.join(self.exp_output_root, sim, self.sim_metrics_leaf)
 
         # The metrics folder should contain nothing but .csv files and directories. For all
@@ -175,6 +175,8 @@ class ExpCSVAverager:
             item_path = os.path.join(csv_root, item)
             if os.path.isfile(item_path):
                 df = core.utils.pd_csv_read(item_path, index_col=False)
+                if df.dtypes[0] == 'object':
+                    df[df.columns[0]] = df[df.columns[0]].apply(lambda x: float(x))
 
                 if (item, '') not in csvs:
                     csvs[(item, '')] = []
@@ -191,7 +193,7 @@ class ExpCSVAverager:
                         csvs[(csv_fname, item)] = []
                     csvs[(csv_fname, item)].append(df)
 
-    def __average_csvs_within_exp(self, csvs: dict) -> None:
+    def _average_csvs_within_exp(self, csvs: dict) -> None:
         # All CSV files with the same base name will be averaged together
         for csv_fname in csvs:
             csv_concat = pd.concat(csvs[csv_fname])
@@ -200,26 +202,33 @@ class ExpCSVAverager:
                 logging.debug("Inverted performance column: df stem=%s,col=%s",
                               csv_fname[0],
                               self.intra_perf_col)
+
             by_row_index = csv_concat.groupby(csv_concat.index)
 
             csv_averaged = by_row_index.mean()
+
             if csv_fname[1] != '':
-                core.utils.dir_create_checked(os.path.join(self.avgd_output_root, csv_fname[1]),
+                core.utils.dir_create_checked(os.path.join(self.avgd_output_root,
+                                                           csv_fname[1]),
                                               exist_ok=True)
 
-            core.utils.pd_csv_write(csv_averaged, os.path.join(self.avgd_output_root, csv_fname[1], csv_fname[0]),
-
+            core.utils.pd_csv_write(csv_averaged,
+                                    os.path.join(self.avgd_output_root,
+                                                 csv_fname[1],
+                                                 csv_fname[0]),
                                     index=False)
 
             # Also write out stddev in order to calculate confidence intervals later
             if self.avg_opts['gen_stddev']:
-                csv_stddev = by_row_index.std().round(2)
-                csv_stddev_fname = csv_fname.split('.')[0] + '.stddev'
-                core.utils.pd_csv_write(csv_stddev, os.path.join(self.avgd_output_root, csv_stddev_fname),
-
+                csv_stddev = by_row_index.std().round(4)
+                csv_fname_stem = csv_fname[0].split('.')[0]
+                csv_stddev_fname = csv_fname_stem + '.stddev'
+                core.utils.pd_csv_write(csv_stddev,
+                                        os.path.join(self.avgd_output_root,
+                                                     csv_stddev_fname),
                                         index=False)
 
-    def __verify_exp(self):
+    def _verify_exp(self):
         """
         Verify the integrity of all simulations in an experiment.
 

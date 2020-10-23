@@ -72,14 +72,14 @@ class InterRobotInterferenceUnivar:
         duration_df = self.__calculate_measure(duration_csv_istem + ".csv", batch_criteria)
         core.utils.pd_csv_write(duration_df, duration_csv_ostem + '.csv', index=False)
 
-        BatchRangedGraph(inputy_stem_fpath=count_csv_ostem,
+        BatchRangedGraph(input_fpath=count_csv_ostem + '.csv',
                          output_fpath=count_png_ostem + '.png',
                          title="Swarm Inter-Robot Interference Counts",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="Average # Robots",
                          xticks=batch_criteria.graph_xticks(self.cmdopts)).generate()
 
-        BatchRangedGraph(inputy_stem_fpath=duration_csv_ostem,
+        BatchRangedGraph(input_fpath=duration_csv_ostem + '.csv',
                          output_fpath=duration_png_ostem + '.png',
                          title="Swarm Average Inter-Robot Interference Duration",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
@@ -143,7 +143,7 @@ class NormalizedEfficiencyUnivar:
         if stddev_df is not None:
             core.utils.pd_csv_write(stddev_df, cum_stem + ".stddev", index=False)
 
-        BatchRangedGraph(inputy_stem_fpath=cum_stem,
+        BatchRangedGraph(input_fpath=cum_stem + '.csv',
                          output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
                                                    "pm-efficiency.png"),
                          title="Swarm Efficiency (normalized)",
@@ -210,7 +210,7 @@ class FractionalMaintenanceUnivar:
         stem_path = os.path.join(self.cmdopts["batch_collate_root"], "pm-scalability-fm")
 
         core.utils.pd_csv_write(df, stem_path + '.csv', index=False)
-        BatchRangedGraph(inputy_stem_fpath=stem_path,
+        BatchRangedGraph(input_fpath=stem_path + '.csv',
                          output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
                                                    "pm-scalability-fm.png"),
                          title="Swarm Scalability: Fractional Performance Maintenance In The Presence Of Inter-robot Interference",
@@ -270,7 +270,7 @@ class ParallelFractionUnivar:
         stem_path = os.path.join(self.cmdopts["batch_collate_root"], "pm-scalability-parallel-frac")
         core.utils.pd_csv_write(df, stem_path + ".csv", index=False)
 
-        BatchRangedGraph(inputy_stem_fpath=stem_path,
+        BatchRangedGraph(input_fpath=stem_path + '.csv',
                          output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
                                                    "pm-scalability-parallel-frac.png"),
                          title="Swarm Parallel Performance Fraction",

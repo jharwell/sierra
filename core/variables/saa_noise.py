@@ -177,7 +177,8 @@ class SAANoise(bc.UnivarBatchCriteria):
 
 class SAANoiseParser():
     """
-    Enforces the cmdline definition of the :class:`SAANoise` batch criteria.
+    Enforces the cmdline definition of the :class:`SAANoise` batch criteria defined in
+    :ref:`ln-bc-saa-noise`.
     """
 
     def __call__(self, criteria_str: str) -> dict:
