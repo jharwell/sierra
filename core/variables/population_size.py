@@ -115,7 +115,7 @@ class PopulationSizeParser():
             'max_size': int(),
             'increment_type': str(),
             'linear_increment': None
-        }
+        }  # type: tp.Dict[str, tp.Union[int, str, None]]
 
         # Parse increment type
         res = re.search("Log|Linear", criteria_str)
@@ -131,7 +131,7 @@ class PopulationSizeParser():
 
         # Set linear_increment if needed
         if ret['increment_type'] == 'Linear':
-            ret['linear_increment'] = int(ret['max_size'] / 10.0)
+            ret['linear_increment'] = int(ret['max_size'] / 10.0)  # type: ignore
 
         return ret
 

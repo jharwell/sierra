@@ -19,14 +19,19 @@ Classes for the population density batch criteria. See :ref:`ln-bc-population-de
 documentation.
 """
 
+# Core packages
 import typing as tp
 import os
+
+# 3rd party packages
 import implements
 
+# Project packages
 from core.variables import constant_density as cd
 import core.generators.scenario_generator_parser as sgp
 import core.utils
 import core.variables.batch_criteria as bc
+from core.vector import Vector3D
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
@@ -56,11 +61,10 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
                     if path == ".//arena" and attr == "size":
                         x, y, z = [int(float(_)) for _ in value.split(",")]
-                        extent = core.utils.ArenaExtent((x, y, z))
-                        # ARGoS won't start if there are 0 robots, so you always need to put at least
-                        # 1.
-                        n_robots = int(max(1, (extent.x() * extent.y())
-                                           * (self.target_density / 100.0)))
+                        extent = core.utils.ArenaExtent(Vector3D(x, y, z))
+                        # ARGoS won't start if there are 0 robots, so you always need to put at
+                        # least 1.
+                        n_robots = int(max(1, extent.area() * (self.target_density / 100.0)))
                         changeset.add((".//arena/distribute/entity", "quantity", str(n_robots)))
                         break
 
@@ -84,11 +88,7 @@ class PopulationConstantDensity(cd.ConstantDensity):
                                         d,
                                         "exp_def.pkl")
             exp_def = core.utils.unpickle_exp_def(pickle_fpath)
-            for path, attr, value in exp_def:
-                if path == ".//arena" and attr == "size":
-                    x, y, z = [int(float(_)) for _ in value.split(",")]
-                    extent = core.utils.ArenaExtent((x, y, z))
-                    areas.append(float((extent.x() * extent.y())))
+            areas.append(core.utils.extract_arena_dims(exp_def).area())
         return areas
 
     def graph_xticklabels(self,
@@ -122,13 +122,13 @@ def factory(cli_arg: str,
         r = range(kw['arena_x'],
                   kw['arena_x'] + attr['cardinality'] * attr['arena_size_inc'],
                   attr['arena_size_inc'])
-        dims = [core.utils.ArenaExtent((x, int(x / 2), 0)) for x in r]
+        dims = [core.utils.ArenaExtent(Vector3D(x, x / 2, 0)) for x in r]
     elif kw['dist_type'] == "QS" or kw['dist_type'] == "RN" or kw['dist_type'] == 'PL':
         r = range(kw['arena_x'],
                   kw['arena_x'] + attr['cardinality'] * attr['arena_size_inc'],
                   attr['arena_size_inc'])
 
-        dims = [core.utils.ArenaExtent((x, x, 0)) for x in r]
+        dims = [core.utils.ArenaExtent(Vector3D(x, x, 0)) for x in r]
     else:
         raise NotImplementedError(
             "Unsupported block dstribution '{0}': Only SS,DS,QS,RN,PL supported".format(kw['dist_type']))

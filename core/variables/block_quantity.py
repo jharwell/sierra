@@ -142,7 +142,7 @@ class BlockQuantityParser():
 
         # Set linear_increment if needed
         if ret['increment_type'] == 'Linear':
-            ret['linear_increment'] = int(ret['max_quantity'] / 10.0)
+            ret['linear_increment'] = int(ret['max_quantity'] / 10.0)  # type: ignore
 
         return ret
 

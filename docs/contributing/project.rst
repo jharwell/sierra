@@ -228,7 +228,7 @@ Root level dictionaries: varies. Each root level dictionary must start with
 ``LN_``.
 
 ``LN_XXX`` sub-dictionary
-^^^^^^^^^^^^^^^^^^^^^^^^^
+#########################
 
 .. code-block:: YAML
 
@@ -274,7 +274,10 @@ Root level dictionaries: varies. Each root level dictionary must start with
 Contents of ``config/inter-graphs-line.yaml``
 ---------------------------------------------
 
-See :ref:`ln-intra-graphs-line-yaml`.
+See :ref:`ln-intra-graphs-line-yaml`. Each inter-experiment linegraph has an
+additional field ``batch`` which determines in the generated graph is a
+:class:`~core.graphs.batch_ranged_graph.BatchRangedGraph` or a
+:class:`~core.graphs.stacked_line_graph.StackedLineGraph` (default if omitted).
 
 Contents of ``config/intra-graphs-hm.yaml``
 ---------------------------------------------
@@ -283,7 +286,7 @@ Root level dictionaries: varies. Each root level dictionary must start with
 ``HM_``.
 
 ``HM_XXX`` sub-dictionary
-^^^^^^^^^^^^^^^^^^^^^^^^^
+#########################
 
 .. code-block:: YAML
 

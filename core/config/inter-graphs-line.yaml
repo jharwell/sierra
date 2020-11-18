@@ -161,30 +161,59 @@ LN_block_acq:
 LN_block_manip:
   graphs:
     - src_stem: block-manipulation
-      dest_stem: free-pickup-events-int-avg
+      dest_stem: block-manip-free-pickup-events-int-avg
       col: int_avg_free_pickup_events
       title: 'Average Free Block Pickup Events (interval)'
       xlabel: 'Interval'
       ylabel: '# Pickups'
 
     - src_stem: block-manipulation
-      dest_stem: free-drop-events-int-avg
+      dest_stem: block-manip-free-drop-events-int-avg
       col: int_avg_free_drop_events
       title: 'Average Free Block Drop Events (interval)'
       xlabel: 'Interval'
       ylabel: '# Drops'
 
     - src_stem: block-manipulation
-      dest_stem: free-pickup-penalty-int-avg
+      dest_stem: block-manip-free-pickup-penalty-int-avg
       col: int_avg_free_pickup_penalty
       title: 'Average Free Block Pickup Penalty (interval)'
       xlabel: 'Interval'
       ylabel: '# Timesteps'
 
     - src_stem: block-manipulation
-      dest_stem: free-drop-penalty-int-avg
-      col: int_avg_free_drop_penalty
+      dest_stem: block-manip-free-drop-penalty-int-avg
+      col: cum_avg_free_drop_penalty
       title: 'Average Free Block Drop Penalty (interval)'
+      xlabel: 'Interval'
+      ylabel: '# Timesteps'
+
+    - src_stem: block-manipulation
+      dest_stem: block-manip-free-pickup-events-cum-avg
+      col: cum_avg_free_pickup_events
+      title: 'Average Free Block Pickup Events (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Pickups'
+      batch: True
+
+    - src_stem: block-manipulation
+      dest_stem: block-manip-free-drop-events-cum-avg
+      col: cum_avg_free_drop_events
+      title: 'Average Free Block Drop Events (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Drops'
+
+    - src_stem: block-manipulation
+      dest_stem: block-manip-free-pickup-penalty-cum-avg
+      col: cum_avg_free_pickup_penalty
+      title: 'Average Free Block Pickup Penalty (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Timesteps'
+
+    - src_stem: block-manipulation
+      dest_stem: block-manip-free-drop-penalty-cum-avg
+      col: cum_avg_free_drop_penalty
+      title: 'Average Free Block Drop Penalty (Cumulative)'
       xlabel: 'Interval'
       ylabel: '# Timesteps'
 

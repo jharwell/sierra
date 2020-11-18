@@ -170,6 +170,10 @@ class PipelineStage4:
 
         # All models present in the .yaml file are enabled/set to run unconditionally
         for module_name in pm.available_plugins():
+            # No models specified--nothing to do
+            if self.models_config.get('models') is None or self.models_config['models'] is None:
+                continue
+
             for conf in self.models_config['models']:
                 if conf['pyfile'] == module_name:
                     module = pm.load_plugin(module_name)

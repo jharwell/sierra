@@ -30,6 +30,7 @@ import core.perf_measures.robustness as pmb
 import core.perf_measures.flexibility as pmf
 import core.utils
 from core.graphs.stacked_line_graph import StackedLineGraph
+from core.graphs.batch_ranged_graph import BatchRangedGraph
 from core.variables import batch_criteria as bc
 
 
@@ -74,10 +75,7 @@ class InterExpGraphGenerator:
 
         if criteria.is_univar():
             if not self.cmdopts['project_no_yaml_LN']:
-                LinegraphsGenerator(self.cmdopts["batch_collate_root"],
-                                    self.cmdopts["batch_collate_graph_root"],
-                                    self.cmdopts["batch_model_root"],
-                                    self.targets).generate()
+                LinegraphsGenerator(self.cmdopts, self.targets).generate(criteria)
             UnivarPerfMeasuresGenerator(self.main_config, self.cmdopts)(criteria)
         else:
             BivarPerfMeasuresGenerator(self.main_config, self.cmdopts)(criteria)
@@ -94,37 +92,49 @@ class LinegraphsGenerator:
       targets: Dictionary of parsed YAML configuration controlling what graphs should be generated.
     """
 
-    def __init__(self,
-                 batch_collate_root: str,
-                 batch_graph_root: str,
-                 batch_model_root: str,
-                 targets: dict) -> None:
-        self.batch_collate_root = batch_collate_root
-        self.batch_graph_root = batch_graph_root
-        self.batch_model_root = batch_model_root
+    def __init__(self, cmdopts: dict, targets: dict) -> None:
+        self.cmdopts = cmdopts
         self.targets = targets
 
-    def generate(self):
-        logging.info("Linegraphs from %s", self.batch_collate_root)
+    def generate(self, criteria: bc.IConcreteBatchCriteria):
+        logging.info("Linegraphs from %s", self.cmdopts['batch_collate_root'])
         # For each category of linegraphs we are generating
         for category in self.targets:
             # For each graph in each category
             for graph in category['graphs']:
-                StackedLineGraph(input_fpath=os.path.join(self.batch_collate_root,
-                                                          graph['dest_stem'] + '.csv'),
-                                 stddev_fpath=os.path.join(self.batch_collate_root,
-                                                           graph['src_stem'] + '.stddev'),
-                                 model_fpath=os.path.join(self.batch_model_root,
-                                                          graph['src_stem'] + '.model'),
-                                 model_legend_fpath=os.path.join(self.batch_model_root,
-                                                                 graph['src_stem'] + '.legend'),
-                                 output_fpath=os.path.join(self.batch_graph_root,
-                                                           graph['dest_stem'] + '.png'),
-                                 cols=None,
-                                 title=graph['title'],
-                                 legend=None,
-                                 xlabel=graph['xlabel'],
-                                 ylabel=graph['ylabel']).generate()
+                if graph.get('batch', False):
+                    BatchRangedGraph(input_fpath=os.path.join(self.cmdopts['batch_collate_root'],
+                                                              graph['dest_stem'] + '.csv'),
+                                     stddev_fpath=os.path.join(self.cmdopts['batch_collate_root'],
+                                                               graph['dest_stem'] + '.stddev'),
+                                     model_fpath=os.path.join(self.cmdopts['batch_model_root'],
+                                                              graph['dest_stem'] + '.model'),
+                                     model_legend_fpath=os.path.join(self.cmdopts['batch_model_root'],
+                                                                     graph['dest_stem'] + '.legend'),
+                                     output_fpath=os.path.join(self.cmdopts['batch_collate_graph_root'],
+                                                               'BR-' + graph['dest_stem'] + '.png'),
+                                     title=graph['title'],
+                                     xlabel=graph['xlabel'],
+                                     ylabel=graph['ylabel'],
+                                     xticks=criteria.graph_xticks(self.cmdopts),
+                                     xtick_labels=criteria.graph_xticklabels(self.cmdopts),
+                                     legend=['Empirical Data']).generate()
+                else:
+                    StackedLineGraph(input_fpath=os.path.join(self.cmdopts['batch_collate_root'],
+                                                              graph['dest_stem'] + '.csv'),
+                                     stddev_fpath=os.path.join(self.cmdopts['batch_collate_root'],
+                                                               graph['dest_stem'] + '.stddev'),
+                                     model_fpath=os.path.join(self.cmdopts['batch_model_root'],
+                                                              graph['dest_stem'] + '.model'),
+                                     model_legend_fpath=os.path.join(self.cmdopts['batch_model_root'],
+                                                                     graph['dest_stem'] + '.legend'),
+                                     output_fpath=os.path.join(self.cmdopts['batch_collate_graph_root'],
+                                                               'SLN-' + graph['dest_stem'] + '.png'),
+                                     cols=None,
+                                     title=graph['title'],
+                                     legend=None,
+                                     xlabel=graph['xlabel'],
+                                     ylabel=graph['ylabel']).generate()
 
 
 class UnivarPerfMeasuresGenerator:

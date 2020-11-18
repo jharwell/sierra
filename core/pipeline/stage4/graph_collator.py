@@ -90,7 +90,12 @@ class UnivarGraphCollator:
         assert target['col'] in data_df.columns.values,\
             "FATAL: {0} not in columns of {1}".format(target['col'],
                                                       target['src_stem'] + '.csv')
-        collated_df[exp_dir] = data_df[target['col']]
+
+        if target.get('batch', False):
+            collated_df.loc[0, exp_dir] = data_df.loc[data_df.index[-1], target['col']]
+        else:
+            collated_df[exp_dir] = data_df[target['col']]
+
         return True
 
     def __collate_exp_csv_stddev(self, exp_dir: str, target: dict, collated_df: pd.DataFrame) -> bool:
@@ -110,7 +115,11 @@ class UnivarGraphCollator:
             "FATAL: {0} not in columns of {1}".format(target['col'],
                                                       target['src_stem'] + '.stddev')
 
-        collated_df[exp_dir] = stddev_df[target['col']]
+        if target.get('batch', False):
+            collated_df.loc[0, exp_dir] = stddev_df.loc[stddev_df.index[-1], target['col']]
+        else:
+            collated_df[exp_dir] = stddev_df[target['col']]
+
         return True
 
 

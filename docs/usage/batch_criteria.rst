@@ -171,7 +171,7 @@ Examples:
 .. _ln-bc-block-quantity:
 
 Block Quantity
------------
+--------------
 
 .. _ln-bc-block-quantity-cmdline:
 

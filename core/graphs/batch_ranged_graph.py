@@ -83,6 +83,7 @@ class BatchRangedGraph:
 
         if self.model_fpath is not None and core.utils.path_exists(self.model_fpath):
             model_dfy = core.utils.pd_csv_read(self.model_fpath)
+
             if self.model_legend_fpath is not None and core.utils.path_exists(self.model_legend_fpath):
                 with open(self.model_legend_fpath, 'r') as f:
                     model_legend = f.readlines()[0]
@@ -93,9 +94,8 @@ class BatchRangedGraph:
 
         fig, ax = plt.subplots()
         ax.tick_params(labelsize=12)
-
         assert len(data_dfy.values) <= BatchRangedGraph.kMaxRows, \
-            "FATAL: Too many rows to make unique line styles/colors/markers {0} > {1}".format(
+            "FATAL: Too many rows to make unique line styles/colors/markers: {0} > {1}".format(
                 len(data_dfy.values), BatchRangedGraph.kMaxRows)
 
         # Plot lines

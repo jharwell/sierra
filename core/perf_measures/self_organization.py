@@ -55,7 +55,7 @@ class FractionalLossesMarginalUnivar:
     Does not require exp0 to have 1 robot, but the calculation will be more meaningful if that is
     the case.
     """
-    kLeaf = "pm-self-org-mfl"
+    kLeaf = "PM-self-org-mfl"
 
     def __init__(self, cmdopts, inter_perf_csv, interference_count_csv) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -114,7 +114,7 @@ class FractionalLossesInteractiveUnivar:
     Does not require exp0 to have 1 robot, but the calculation will be more meaningful if that is
     the case.
     """
-    kLeaf = "pm-self-org-ifl"
+    kLeaf = "PM-self-org-ifl"
 
     def __init__(self, cmdopts, inter_perf_csv, interference_count_csv) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -172,7 +172,7 @@ class PerformanceGainMarginalUnivar:
     Does not require exp0 to have 1 robot, but the calculation will be more meaningful if that is
     the case.
     """
-    kLeaf = "pm-self-org-mpg"
+    kLeaf = "PM-self-org-mpg"
 
     def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -264,7 +264,7 @@ class PerformanceGainInteractiveUnivar:
     Does not require exp0 to have 1 robot, but the calculation will be more meaningful if that is
     the case.
     """
-    kLeaf = "pm-self-org-ipg"
+    kLeaf = "PM-self-org-ipg"
 
     def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -366,7 +366,7 @@ class SelfOrgUnivarGenerator:
         title1 = 'Swarm Emergent-Self Organization '
         title2 = r'($\alpha_{{E_S}}={0},\alpha_{{E_T}}={1}$)'.format(alpha_S, alpha_T)
         w = common.WeightedPMUnivar(cmdopts=cmdopts,
-                                    output_leaf='pm-self-org',
+                                    output_leaf='PM-self-org',
                                     ax1_leaf=FractionalLossesInteractiveBivar.kLeaf,
                                     ax2_leaf=PerformanceGainMarginalBivar.kLeaf,
                                     ax1_alpha=alpha_S,
@@ -393,7 +393,7 @@ class FractionalLossesMarginalBivar:
         - One of the batch criteria was :class:`~core.variables.population_size.PopulationSize`
           derived.
     """
-    kLeaf = "pm-self-org-mfl"
+    kLeaf = "PM-self-org-mfl"
 
     def __init__(self, cmdopts, inter_perf_csv, interference_count_csv) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -417,8 +417,8 @@ class FractionalLossesMarginalBivar:
         core.utils.pd_csv_write(so_df, stem_path + ".csv", index=False)
 
         Heatmap(input_fpath=stem_path + '.csv',
-                output_fpath=os.path.join(
-                    self.cmdopts["batch_collate_graph_root"], self.kLeaf + ".png"),
+                output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
+                                          self.kLeaf + ".png"),
                 title="Swarm Self-Organization via Marginal Sub-Linear Performance Losses",
                 xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                 ylabel=batch_criteria.graph_ylabel(self.cmdopts),
@@ -474,7 +474,7 @@ class FractionalLossesInteractiveBivar:
     Does not require exp0 to have 1 robot, but the calculation will be more meaningful if that is
     the case.
     """
-    kLeaf = "pm-self-org-ifl"
+    kLeaf = "PM-self-org-ifl"
 
     def __init__(self, cmdopts, inter_perf_csv, interference_count_csv) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -552,7 +552,7 @@ class PerformanceGainMarginalBivar:
     Does not require exp0 to have 1 robot, but the calculation will be more meaningful if that is
     the case.
     """
-    kLeaf = "pm-self-org-mpg"
+    kLeaf = "PM-self-org-mpg"
 
     def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -665,7 +665,7 @@ class PerformanceGainInteractiveBivar:
     Does not require exp0 to have 1 robot, but the calculation will be more meaningful if that is
     the case.
     """
-    kLeaf = "pm-self-org-ipg"
+    kLeaf = "PM-self-org-ipg"
 
     def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that

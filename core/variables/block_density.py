@@ -19,13 +19,18 @@ Classes for the block density batch criteria. See :ref:`ln-bc-block-density` for
 documentation.
 """
 
+# Core packages
 import typing as tp
 import os
+
+# 3rd party packages
 import implements
 
+# Project packages
 from core.variables import constant_density as cd
 import core.generators.scenario_generator_parser as sgp
 import core.utils
+from core.vector import Vector3D
 
 
 @implements.implements(core.variables.batch_criteria.IConcreteBatchCriteria)
@@ -66,8 +71,10 @@ class BlockConstantDensity(cd.ConstantDensity):
             for changeset in self.attr_changes:
                 for c in changeset:
                     if c[0] == ".//arena" and c[1] == "size":
-                        extent = core.utils.ArenaExtent((c[2].split(',')))
-                        n_blocks = max(1, (extent.x() * extent.y()) * (self.target_density / 100.0))
+                        x, y, z = c[2].split(',')
+                        dims = Vector3D(float(x), float(y), float(z))
+                        extent = core.utils.ArenaExtent(dims)
+                        n_blocks = max(1, extent.area() * (self.target_density / 100.0))
                         changeset.add((".//arena_map/blocks/distribution/manifest",
                                        "n_cube", "{0}".format(int(n_blocks / 2.0))))
                         changeset.add((".//arena_map/blocks/distribution/manifest",
@@ -93,10 +100,8 @@ class BlockConstantDensity(cd.ConstantDensity):
                                         d,
                                         "exp_def.pkl")
             exp_def = core.utils.unpickle_exp_def(pickle_fpath)
-            for path, attr, value in exp_def:
-                if path == ".//arena" and attr == "size":
-                    extent = core.utils.ArenaExtent((value.split(",")))
-                    areas.append(float((extent.x() * extent.y())))
+            areas.append(core.utils.extract_arena_dims(exp_def).area())
+
         return areas
 
     def graph_xticklabels(self,
@@ -130,12 +135,12 @@ def factory(cli_arg: str,
         r = range(kw['arena_x'],
                   kw['arena_x'] + BlockConstantDensity.kExperimentsPerDensity * attr['arena_size_inc'],
                   attr['arena_size_inc'])
-        dims = [core.utils.ArenaExtent((x, int(x / 2), 0)) for x in r]
+        dims = [core.utils.ArenaExtent(Vector3D(x, x / 2.0, 0)) for x in r]
     elif kw['dist_type'] == "PL" or kw['dist_type'] == "RN":
         r = range(kw['arena_x'],
                   kw['arena_x'] + BlockConstantDensity.kExperimentsPerDensity * attr['arena_size_inc'],
                   attr['arena_size_inc'])
-        dims = [core.utils.ArenaExtent((x, x, 0)) for x in r]
+        dims = [core.utils.ArenaExtent(Vector3D(x, x, 0)) for x in r]
     else:
         raise NotImplementedError(
             "Unsupported block dstribution '{0}': Only SS,DS,QS,RN supported".format(kw['dist_type']))

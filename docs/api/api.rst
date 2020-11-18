@@ -14,11 +14,12 @@ SIERRA Core
    core/core.xml_luigi.rst
    core/core.utils.rst
    core/core.experiment_spec.rst
-   models/models.model.rst
+   models/models.interface.rst
+   models/models.graphs.rst
 
 Plugins
 -------
+
 .. toctree::
 
-   plugins/plugins.fordyca.rst
-   plugins/plugins.silicon.rst
+   plugins/hpc/plugins.hpc.rst

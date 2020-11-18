@@ -26,6 +26,7 @@ import core.variables.batch_criteria as bc
 from core.variables import constant_density
 from core.utils import ArenaExtent
 import core.generators.scenario_generator_parser as sgp
+from core.vector import Vector3D
 
 
 class ExperimentSpec():
@@ -70,7 +71,7 @@ class ExperimentSpec():
             self.scenario_name = criteria.exp_scenario_name(exp_num)
         else:  # Defaultc case: scenario dimensions read from cmdline
             kw = sgp.ScenarioGeneratorParser.reparse_str(cmdopts['scenario'])
-            self.arena_dim = ArenaExtent((kw['arena_x'], kw['arena_y'], kw['arena_z']))
+            self.arena_dim = ArenaExtent(Vector3D(kw['arena_x'], kw['arena_y'], kw['arena_z']))
             logging.debug("Read scenario dimensions %s from cmdline spec",
                           self.arena_dim)
 

@@ -44,7 +44,7 @@ class ReactivityUnivar:
     Calculates the reactivity of the swarm configuration across a univariate batched set of
     experiments within the same scenario from collated .csv data.
     """
-    kLeaf = 'pm-reactivity'
+    kLeaf = 'PM-reactivity'
 
     def __init__(self, cmdopts: tp.Dict[str, str]) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -88,7 +88,7 @@ class AdaptabilityUnivar:
     Calculates the adaptability of the swarm configuration across a univariate batched set of
     experiments within the same scenario from collated .csv data.
     """
-    kLeaf = 'pm-adaptability'
+    kLeaf = 'PM-adaptability'
 
     def __init__(self, cmdopts: tp.Dict[str, str]) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -171,7 +171,7 @@ class ReactivityBivar:
     experiments within the same scenario from collated .csv data.
 
     """
-    kLeaf = 'pm-reactivity'
+    kLeaf = 'PM-reactivity'
 
     def __init__(self, cmdopts: tp.Dict[str, str], inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -247,7 +247,7 @@ class AdaptabilityBivar:
     experiments within the same scenario from collated .csv data.
 
     """
-    kLeaf = 'pm-adaptability'
+    kLeaf = 'PM-adaptability'
 
     def __init__(self, cmdopts: tp.Dict[str, str], inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that

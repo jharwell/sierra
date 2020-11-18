@@ -46,7 +46,7 @@ class RobustnessSAAUnivar:
     univariate batched set of experiments within the same scenario from collated .csv data using
     curve similarity measures.
     """
-    kLeaf = 'pm-robustness-saa'
+    kLeaf = 'PM-robustness-saa'
 
     def __init__(self, cmdopts: dict) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -97,7 +97,7 @@ class RobustnessPDUnivar:
     Calculates the robustness of the swarm configuration to population size fluctuations across a
     univariate batched set of experiments within the same scenario from collated .csv data.
     """
-    kLeaf = 'pm-robustness-pd'
+    kLeaf = 'PM-robustness-pd'
 
     def __init__(self, cmdopts: dict,
                  inter_perf_csv: str) -> None:

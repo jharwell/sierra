@@ -5,28 +5,13 @@ If you add a new intra-experiment model, it will not automatically be run during
 stage 4. You will need to modify the ``models.yaml`` file to enable your model.
 
 
-With ``models.yaml``, each model has the following YAML fields, which are parsed
-into a python dictionary:
+With ``models.yaml``, each model has the following YAML fields under a root
+``models`` dictionary:
 
-- ``src`` - Information about the model source.
+- ``pyfile`` - The name of the python file with the ``models/`` directory for
+  the project where the model name be found. This also serves as the name of the
+  model within SIERRA.
 
-  - ``py`` - The name of the python file with the ``models/`` directory for the
-    project where the model name be found. This also serves as the name of the
-    model within SIERRA.
-
-  - ``class`` - The name of the python class within the ``.py`` source file
-    contaning the model.
-
-- ``target`` - Information about what graph to attach the results of the model
-  to.
-
-  - ``csv_stem`` - The name of the ``.csv`` file in the intra-experiment output
-    directory, sans extension, which the model should be added to.
-
-  - ``col`` - The name of the column within the model dataframe containing to
-    add to the target ``.csv``.
-
-- ``params`` - Any addition parameters your model needs can go here.
 
 Model File Requirements
 -----------------------
@@ -42,11 +27,7 @@ Model File Requirements
    models together in the same file, rather than requiring 1 model per ``.py``
    file.
 
-#. All model classes in the model ``.py`` must describe the functions from the
-   :class:`models.model.IConcreteModel` interface of ``<sierra>/models/model.py``.
-
-
-How to Add A New Inter-Experiment Model
-=======================================
-
-You can't currently, because this doesn't work in SIERRA yet.
+#. All model classes in the model ``.py`` must implement an appropriate
+   interface interface of ``<sierra>/models/interface.py``, depending on whether
+   the model is 1D or 2D, and whether or not it is an intra-experiment or
+   inter-experiment model.

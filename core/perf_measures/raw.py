@@ -39,6 +39,7 @@ class RawUnivar:
     within the same scenario from collated ``.csv`` data.
 
     """
+    kLeaf = 'PM-raw'
 
     def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -48,13 +49,13 @@ class RawUnivar:
 
     def generate(self, batch_criteria: bc.IConcreteBatchCriteria, title: str, ylabel: str):
         logging.info("Univariate raw performance from %s", self.cmdopts["batch_collate_root"])
+
         stddev_ipath = os.path.join(self.cmdopts["batch_collate_root"],
                                     self.inter_perf_stem + '.stddev')
         stddev_opath = os.path.join(self.cmdopts["batch_collate_root"],
-                                    "pm-" + self.inter_perf_stem + ".stddev")
+                                    self.inter_perf_stem + ".stddev")
         perf_ipath = os.path.join(self.cmdopts["batch_collate_root"], self.inter_perf_stem + '.csv')
-        perf_opath_stem = os.path.join(self.cmdopts["batch_collate_root"],
-                                       "pm-" + self.inter_perf_stem)
+        perf_opath_stem = os.path.join(self.cmdopts["batch_collate_graph_root"], self.kLeaf)
 
         if core.utils.path_exists(stddev_ipath):
             RawUnivar._gen_stddev(stddev_ipath, stddev_opath)
@@ -62,13 +63,12 @@ class RawUnivar:
         RawUnivar._gen_csv(perf_ipath, perf_opath_stem + '.csv')
 
         BatchRangedGraph(input_fpath=perf_opath_stem + '.csv',
-                         stddev_fpath=perf_opath_stem + '.stddev',
+                         output_fpath=perf_opath_stem + '.png',
+                         stddev_fpath=stddev_opath,
                          model_fpath=os.path.join(self.cmdopts['batch_model_root'],
                                                   self.inter_perf_stem + '.model'),
                          model_legend_fpath=os.path.join(self.cmdopts['batch_model_root'],
                                                          self.inter_perf_stem + '.legend'),
-                         output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
-                                                   "pm-raw.png"),
                          title=title,
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel=ylabel,
@@ -103,6 +103,7 @@ class RawBivar:
     from collated ``.csv`` data.
 
     """
+    kLeaf = 'PM-raw'
 
     def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -117,8 +118,7 @@ class RawBivar:
         stddev_opath = os.path.join(self.cmdopts["batch_collate_root"],
                                     self.inter_perf_stem + ".stddev")
         perf_ipath = os.path.join(self.cmdopts["batch_collate_root"], self.inter_perf_stem + '.csv')
-        perf_opath_stem = os.path.join(self.cmdopts["batch_collate_root"],
-                                       "pm-" + self.inter_perf_stem)
+        perf_opath_stem = os.path.join(self.cmdopts["batch_collate_graph_root"], self.kLeaf)
 
         if core.utils.path_exists(stddev_ipath):
             RawBivar._gen_stddev(stddev_ipath, stddev_opath)
@@ -126,8 +126,7 @@ class RawBivar:
         RawBivar._gen_csv(perf_ipath, perf_opath_stem + '.csv')
 
         Heatmap(input_fpath=perf_opath_stem + '.csv',
-                output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
-                                          "pm-raw.png"),
+                output_fpath=perf_opath_stem + '.png',
                 title=title,
                 xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                 ylabel=batch_criteria.graph_ylabel(self.cmdopts),

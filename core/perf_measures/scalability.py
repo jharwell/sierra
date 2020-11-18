@@ -45,8 +45,8 @@ class InterRobotInterferenceUnivar:
     (intra-experiment measure; no comparison across experiments in a batch is performed).
 
     """
-    kCountLeaf = 'pm-interference-count'
-    kDurationLeaf = 'pm-interference-duration'
+    kCountLeaf = 'PM-scalability-interference-count'
+    kDurationLeaf = 'PM-scalability-interference-duration'
 
     def __init__(self, cmdopts: dict,
                  interference_count_csv: str,
@@ -106,6 +106,7 @@ class NormalizedEfficiencyUnivar:
     (intra-experiment measure; no comparison across experiments in a batch is performed). See
     :func:`efficiency_calculate()` for calculations.
     """
+    kLeaf = 'PM-scalability-efficiency'
 
     def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -145,7 +146,7 @@ class NormalizedEfficiencyUnivar:
 
         BatchRangedGraph(input_fpath=cum_stem + '.csv',
                          output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
-                                                   "pm-efficiency.png"),
+                                                   self.kLeaf + ".png"),
                          title="Swarm Efficiency (normalized)",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="Efficiency",
@@ -188,6 +189,7 @@ class FractionalMaintenanceUnivar:
     :class:`~core.variables.population_size.PopulationSize` derived, but if all experiments in a
     batch have the same swarm size, then this calculation will be of limited use.
     """
+    kLeaf = 'PM-scalability-fm'
 
     def __init__(self, cmdopts: dict, inter_perf_csv: str, interference_count_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -207,12 +209,12 @@ class FractionalMaintenanceUnivar:
         return df
 
     def generate(self, df: pd.DataFrame, batch_criteria: bc.IConcreteBatchCriteria):
-        stem_path = os.path.join(self.cmdopts["batch_collate_root"], "pm-scalability-fm")
+        stem_path = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
 
         core.utils.pd_csv_write(df, stem_path + '.csv', index=False)
         BatchRangedGraph(input_fpath=stem_path + '.csv',
                          output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
-                                                   "pm-scalability-fm.png"),
+                                                   self.kLeaf + ".png"),
                          title="Swarm Scalability: Fractional Performance Maintenance In The Presence Of Inter-robot Interference",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="Scalability Value",
@@ -230,6 +232,7 @@ class ParallelFractionUnivar:
     batch have the same swarm size, then this calculation will be of limited use.
 
     """
+    kLeaf = 'PM-scalability-parallel-frac'
 
     def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -267,12 +270,12 @@ class ParallelFractionUnivar:
         return sc_df
 
     def generate(self, df: pd.DataFrame, batch_criteria: bc.IConcreteBatchCriteria):
-        stem_path = os.path.join(self.cmdopts["batch_collate_root"], "pm-scalability-parallel-frac")
+        stem_path = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
         core.utils.pd_csv_write(df, stem_path + ".csv", index=False)
 
         BatchRangedGraph(input_fpath=stem_path + '.csv',
                          output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
-                                                   "pm-scalability-parallel-frac.png"),
+                                                   self.kLeaf + ".png"),
                          title="Swarm Parallel Performance Fraction",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
@@ -319,8 +322,8 @@ class InterRobotInterferenceBivar:
     (intra-experiment measure; no comparison across experiments in a batch is performed).
 
     """
-    kCountLeaf = 'pm-interference-count'
-    kDurationLeaf = 'pm-interference-duration'
+    kCountLeaf = 'PM-scalability-interference-count'
+    kDurationLeaf = 'PM-scalability-interference-duration'
 
     def __init__(self, cmdopts: dict,
                  interference_count_csv: str,
@@ -383,6 +386,7 @@ class NormalizedEfficiencyBivar:
     (intra-experiment measure; no comparison across experiments in a batch is performed). See
     :func:`efficiency_calculate()` for calculations.
     """
+    kLeaf = 'PM-scalability-efficiency'
 
     def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -413,7 +417,7 @@ class NormalizedEfficiencyBivar:
     def generate(self,
                  dfs: tp.Tuple[pd.DataFrame, pd.DataFrame],
                  batch_criteria: bc.IConcreteBatchCriteria):
-        cum_stem = os.path.join(self.cmdopts["batch_collate_root"], "pm-scalability-norm")
+        cum_stem = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
         metric_df, stddev_df = dfs
 
         core.utils.pd_csv_write(metric_df, cum_stem + ".csv", index=False)
@@ -422,7 +426,7 @@ class NormalizedEfficiencyBivar:
 
         Heatmap(input_fpath=cum_stem + '.csv',
                 output_fpath=os.path.join(
-                    self.cmdopts["batch_collate_graph_root"], "pm-efficiency.png"),
+                    self.cmdopts["batch_collate_graph_root"], self.kLeaf + ".png"),
                 title='Swarm Efficiency (Normalized)',
                 xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                 ylabel=batch_criteria.graph_ylabel(self.cmdopts),
@@ -460,6 +464,7 @@ class FractionalMaintenanceBivar:
     :class:`~core.variables.population_size.PopulationSize` derived, but if all experiments in a
     batch have the same swarm size, then this calculation will be of limited use.
     """
+    kLeaf = 'PM-scalability-fm'
 
     def __init__(self, cmdopts, inter_perf_csv, interference_count_csv) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -481,12 +486,12 @@ class FractionalMaintenanceBivar:
         return df
 
     def generate(self, df: pd.DataFrame, batch_criteria: bc.IConcreteBatchCriteria):
-        stem_path = os.path.join(self.cmdopts["batch_collate_root"], "pm-scalability-fm")
+        stem_path = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
 
         core.utils.pd_csv_write(df, stem_path + '.csv', index=False)
         Heatmap(input_fpath=stem_path + '.csv',
                 output_fpath=os.path.join(
-                    self.cmdopts["batch_collate_graph_root"], "pm-scalability-fm.png"),
+                    self.cmdopts["batch_collate_graph_root"], self.kLeaf + ".png"),
                 title="Swarm Scalability: Fractional Performance Maintenance In The Presence Of Inter-robot Interference",
                 xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                 ylabel=batch_criteria.graph_ylabel(self.cmdopts),
@@ -505,6 +510,7 @@ class ParallelFractionBivar:
     batch have the same swarm size, then this calculation will be of limited use.
 
     """
+    kLeaf = 'PM-scalability-parallel-frac'
 
     def __init__(self, cmdopts, inter_perf_csv) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -563,12 +569,12 @@ class ParallelFractionBivar:
         return sc_df
 
     def generate(self, df, batch_criteria):
-        stem_path = os.path.join(self.cmdopts["batch_collate_root"], "pm-parallel-fraction")
+        stem_path = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
         core.utils.pd_csv_write(df, stem_path + ".csv", index=False)
 
         Heatmap(input_fpath=stem_path + '.csv',
-                output_fpath=os.path.join(
-                    self.cmdopts["batch_collate_graph_root"], "pm-parallel-fraction.png"),
+                output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
+                                          self.kLeaf + ".png"),
                 title="Swarm Parallel Performance Fraction",
                 xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                 ylabel=batch_criteria.graph_ylabel(self.cmdopts),

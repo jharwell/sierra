@@ -16,6 +16,8 @@
 #
 
 # Core packages
+import core.utils
+import matplotlib.pyplot as plt
 import os
 import logging
 import typing as tp
@@ -24,11 +26,9 @@ import typing as tp
 import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 plt.rcParams["axes.prop_cycle"] = plt.cycler("color", plt.cm.tab20.colors)
 
 # Project packages
-import core.utils
 
 
 class StackedLineGraph:

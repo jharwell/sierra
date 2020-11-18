@@ -189,7 +189,7 @@ class LinegraphsGenerator:
             # For each graph in each category
             for graph in category['graphs']:
                 output_fpath = os.path.join(self.exp_graph_root,
-                                            graph['dest_stem'] + '.png')
+                                            graph['dest_stem'] + '-LN.png')
                 try:
                     StackedLineGraph(input_fpath=os.path.join(self.exp_avgd_root,
                                                               graph['src_stem'] + '.csv'),
@@ -249,7 +249,7 @@ class HeatmapsGenerator:
                     input_fpath = os.path.join(self.exp_avgd_root,
                                                graph['src_stem'] + '.csv')
                     output_fpath = os.path.join(self.exp_graph_root,
-                                                graph['src_stem'] + '-hm.png')
+                                                graph['src_stem'] + '-HM.png')
 
                     Heatmap(input_fpath=input_fpath,
                             output_fpath=output_fpath,

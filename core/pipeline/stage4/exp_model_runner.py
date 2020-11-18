@@ -123,7 +123,8 @@ class InterExpModelRunner:
             if not os.path.exists(os.path.join(cmdopts['batch_collate_root'],
                                                model.target_csv_stem() + '.csv')):
                 logging.info("Generate graph for unattached model '%s'", model.config['pyfile'])
-
+                print(os.path.join(cmdopts["batch_collate_graph_root"],
+                                   model.target_csv_stem() + '.png'))
                 BatchRangedGraph(input_fpath=path_stem + '.csv',
                                  output_fpath=os.path.join(cmdopts["batch_collate_graph_root"],
                                                            model.target_csv_stem() + '.png'),
@@ -133,6 +134,7 @@ class InterExpModelRunner:
                                  xticks=criteria.graph_xticks(cmdopts)).generate()
 
             else:
+                print(path_stem)
                 # Write model .csv file
                 core.utils.pd_csv_write(df, path_stem + '.model', index=False)
 

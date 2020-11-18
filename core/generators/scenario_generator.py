@@ -185,15 +185,15 @@ class SSGenerator(BaseScenarioGenerator):
     def generate(self):
         exp_def = self.common_defs.generate()
 
-        assert self.spec.arena_dim.x() == 2 * self.spec.arena_dim.y(),\
-            "FATAL: SS distribution requires a 2x1 arena: xdim={0},ydim={1}".format(self.spec.arena_dim.x(),
-                                                                                    self.spec.arena_dim.y())
+        assert self.spec.arena_dim.xspan() == 2 * self.spec.arena_dim.yspan(),\
+            "FATAL: SS distribution requires a 2x1 arena: xdim={0},ydim={1}".format(self.spec.arena_dim.xspan(),
+                                                                                    self.spec.arena_dim.yspan())
 
         self.generate_arena_shape(exp_def,
-                                  arena_shape.RectangularArenaTwoByOne(x_range=[self.spec.arena_dim.x()],
+                                  arena_shape.RectangularArenaTwoByOne(x_range=[self.spec.arena_dim.xspan()],
                                                                        y_range=[
-                                                                           self.spec.arena_dim.y()],
-                                                                       z=self.spec.arena_dim.z()))
+                                                                           self.spec.arena_dim.yspan()],
+                                                                       z=self.spec.arena_dim.zspan()))
 
         # Generate and apply block distribution type definitions
         super().generate_block_dist(exp_def, block_distribution.SingleSourceDistribution())
@@ -224,15 +224,14 @@ class DSGenerator(BaseScenarioGenerator):
     def generate(self):
         exp_def = self.common_defs.generate()
 
-        assert self.spec.arena_dim.x() == 2 * self.spec.arena_dim.y(),\
-            "FATAL: DS distribution requires a 2x1 arena: xdim={0},ydim={1}".format(self.spec.arena_dim.x(),
-                                                                                    self.spec.arena_dim.y())
+        assert self.spec.arena_dim.xspan() == 2 * self.spec.arena_dim.yspan(),\
+            "FATAL: DS distribution requires a 2x1 arena: xdim={0},ydim={1}".format(self.spec.arena_dim.xspan(),
+                                                                                    self.spec.arena_dim.yspan())
 
-        self.generate_arena_shape(exp_def,
-                                  arena_shape.RectangularArenaTwoByOne(x_range=[self.spec.arena_dim.x()],
-                                                                       y_range=[
-                                                                           self.spec.arena_dim.y()],
-                                                                       z=self.spec.arena_dim.z()))
+        shape = arena_shape.RectangularArenaTwoByOne(x_range=[self.spec.arena_dim.xspan()],
+                                                     y_range=[self.spec.arena_dim.yspan()],
+                                                     z=self.spec.arena_dim.zspan())
+        self.generate_arena_shape(exp_def, shape)
 
         # Generate and apply block distribution type definitions
         super().generate_block_dist(exp_def, block_distribution.DualSourceDistribution())
@@ -263,12 +262,12 @@ class QSGenerator(BaseScenarioGenerator):
     def generate(self):
         exp_def = self.common_defs.generate()
 
-        assert self.spec.arena_dim.x() == self.spec.arena_dim.y(),\
-            "FATAL: QS distribution requires a square arena: xdim={0},ydim={1}".format(self.spec.arena_dim.x(),
-                                                                                       self.spec.arena_dim.y())
+        assert self.spec.arena_dim.xspan() == self.spec.arena_dim.yspan(),\
+            "FATAL: QS distribution requires a square arena: xdim={0},ydim={1}".format(self.spec.arena_dim.xspan(),
+                                                                                       self.spec.arena_dim.yspan())
 
-        self.generate_arena_shape(exp_def, arena_shape.SquareArena(sqrange=[self.spec.arena_dim.x()],
-                                                                   z=self.spec.arena_dim.z()))
+        self.generate_arena_shape(exp_def, arena_shape.SquareArena(sqrange=[self.spec.arena_dim.xspan()],
+                                                                   z=self.spec.arena_dim.zspan()))
 
         # Generate and apply block distribution type definitions
         source = block_distribution.QuadSourceDistribution()
@@ -292,10 +291,6 @@ class PLGenerator(BaseScenarioGenerator):
     - Square arena
     - Powerlaw block distribution
 
-    Changes are *NOT* generated for the following:
-
-    - # robots
-
     """
 
     def __init__(self, *args, **kwargs) -> None:
@@ -304,18 +299,21 @@ class PLGenerator(BaseScenarioGenerator):
     def generate(self):
         exp_def = self.common_defs.generate()
 
-        assert self.spec.arena_dim.x() == self.spec.arena_dim.y(),\
-            "FATAL: PL distribution requires a square arena: xdim={0},ydim={1}".format(self.spec.arena_dim.x(),
-                                                                                       self.spec.arena_dim.y())
+        assert self.spec.arena_dim.xspan() == self.spec.arena_dim.yspan(),\
+            "FATAL: PL distribution requires a square arena: xdim={0},ydim={1}".format(self.spec.arena_dim.xspan(),
+                                                                                       self.spec.arena_dim.yspan())
 
-        self.generate_arena_shape(exp_def, arena_shape.SquareArena(sqrange=[self.spec.arena_dim.x()],
-                                                                   z=self.spec.arena_dim.z()))
+        self.generate_arena_shape(exp_def, arena_shape.SquareArena(sqrange=[self.spec.arena_dim.xspan()],
+                                                                   z=self.spec.arena_dim.zspan()))
 
         # Generate and apply block distribution type definitions
         super().generate_block_dist(exp_def, block_distribution.PowerLawDistribution(self.spec.arena_dim))
 
         # Generate and apply # blocks definitions
         self.generate_block_count(exp_def)
+
+        # Generate and apply robot count definitions
+        self.generate_n_robots(exp_def)
 
         return exp_def
 
@@ -337,11 +335,11 @@ class RNGenerator(BaseScenarioGenerator):
     def generate(self):
         exp_def = self.common_defs.generate()
 
-        assert self.spec.arena_dim.x() == self.spec.arena_dim.y(),\
-            "FATAL: RN distribution requires a square arena: xdim={0},ydim={1}".format(self.spec.arena_dim.x(),
-                                                                                       self.spec.arena_dim.y())
-        self.generate_arena_shape(exp_def, arena_shape.SquareArena(sqrange=[self.spec.arena_dim.x()],
-                                                                   z=self.spec.arena_dim.z()))
+        assert self.spec.arena_dim.xspan() == self.spec.arena_dim.yspan(),\
+            "FATAL: RN distribution requires a square arena: xdim={0},ydim={1}".format(self.spec.arena_dim.xspan(),
+                                                                                       self.spec.arena_dim.yspan())
+        self.generate_arena_shape(exp_def, arena_shape.SquareArena(sqrange=[self.spec.arena_dim.xspan()],
+                                                                   z=self.spec.arena_dim.zspan()))
 
         # Generate and apply block distribution type definitions
         super().generate_block_dist(exp_def, block_distribution.RandomDistribution())

@@ -18,53 +18,49 @@
 Miscellaneous classes/functions used in mutiple places but that don't really fit anywhere.
 """
 
+# Core packages
 import pickle
 import os
 import logging
 import typing as tp
 import time
 
+# 3rd party packages
 import numpy as np
 import pandas as pd
+
+# Project packages
+from core.vector import Vector3D
 
 
 class ArenaExtent():
     """Representation of a 2D or 3D section/chunk/volume of the arena."""
 
-    def __init__(self,
-                 dims: tp.Tuple[float, float, float],
-                 offset: tuple = (0, 0, 0)) -> None:
-        self.offset = offset
+    def __init__(self, dims: Vector3D, origin: Vector3D = Vector3D()) -> None:
+        self.origin = origin
         self.dims = dims
+        self.ll = origin
+        self.ur = origin + dims
 
-        self.xmin = offset[0]
-        self.ymin = offset[1]
-        self.zmin = offset[2]
+        self.center = origin + dims / 2.0
 
-        self.xmax = offset[0] + dims[0]
-        self.ymax = offset[1] + dims[1]
-        self.zmax = offset[2] + dims[2]
+    def contains(self, pt: Vector3D) -> bool:
+        return pt >= self.ll and pt <= self.ur
 
-        self.xcenter = offset[0] + dims[0] / 2.0
-        self.ycenter = offset[1] + dims[1] / 2.0
-        self.zcenter = offset[2] + dims[2] / 2.0
+    def area(self) -> float:
+        return self.dims.x * self.dims.y
 
-    def contains(self, loc: tp.Tuple[float, float, float]) -> bool:
-        return loc[0] >= self.xmin and loc[0] <= self.xmax and \
-            loc[1] >= self.ymin and loc[1] <= self.ymax and  \
-            loc[2] >= self.zmin and loc[2] <= self.zmax
+    def xspan(self):
+        return self.dims.x
 
-    def x(self):
-        return self.dims[0]
+    def yspan(self):
+        return self.dims.y
 
-    def y(self):
-        return self.dims[1]
-
-    def z(self):
-        return self.dims[2]
+    def zspan(self):
+        return self.dims.z
 
     def __str__(self) -> str:
-        return str(self.dims) + '@' + str(self.offset)
+        return str(self.dims) + '@' + str(self.origin)
 
 
 class Sigmoid():
@@ -124,6 +120,16 @@ def unpickle_exp_def(exp_def_fpath):
     return exp_def
 
 
+def extract_arena_dims(exp_def) -> ArenaExtent:
+    for path, attr, value in exp_def:
+        if path == ".//arena" and attr == "size":
+            x, y, z = value.split(',')
+            dims = Vector3D(float(x), float(y), float(z))
+            return ArenaExtent(dims)
+
+    return None  # type: ignore
+
+
 def scale_minmax(minval: float, maxval: float, val: float) -> float:
     """
     Scale values from range [minval, maxval] -> [-1,1]
@@ -146,7 +152,8 @@ def pd_csv_read(path: str, **kwargs) -> pd.DataFrame:
     count = 0
     while count < 10:
         try:
-            return pd.read_csv(path, sep=';', **kwargs)
+            # Always specify the datatype so pandas does not have to infer it--much faster.
+            return pd.read_csv(path, sep=';', dtype=float, **kwargs)
         except pd.errors.ParserError:
             logging.warning("(Temporarily?) Failed to read %s", path)
         count += 1

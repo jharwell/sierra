@@ -31,6 +31,7 @@ Projects Using SIERRA
 Other Projects: (in descending probability of interest)
 -------------------------------------------------------
 
-- `COSM <https://swarm-robotics-cosm.readthedocs.io>`_
-- `RCPPSW <https://swarm-robotics-rcppsw.readthedocs.io>`_
-- `RCSW <https://swarm-robotics-rcsw.readthedocs.io>`_
+- :xref:`COSM`
+- :xref:`RCPPSW`
+- :xref:`RCSW`
+- :xref:`LIBRA`

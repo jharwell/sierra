@@ -20,18 +20,18 @@ apply to a subset of the available :ref:`Batch Criteria <ln-batch-criteria>`.
    :func: sphinx_cmdline_core
    :prog: cmdline.py
 
-FORDYCA Plugin Command Line Extensions
---------------------------------------
+FORDYCA Project Command Line Extensions
+---------------------------------------
 
 .. argparse::
-   :filename: ../plugins/fordyca/cmdline.py
+   :filename: ../projects/fordyca/cmdline.py
    :func: sphinx_cmdline
    :prog: cmdline.py
 
-SILICON Plugin Command Line Extensions
---------------------------------------
+SILICON Project Command Line Extensions
+---------------------------------------
 
 .. argparse::
-   :filename: ../plugins/silicon/cmdline.py
+   :filename: ../projects/silicon/cmdline.py
    :func: sphinx_cmdline
    :prog: cmdline.py

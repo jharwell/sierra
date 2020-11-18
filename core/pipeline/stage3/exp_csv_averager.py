@@ -220,7 +220,7 @@ class ExpCSVAverager:
 
             # Also write out stddev in order to calculate confidence intervals later
             if self.avg_opts['gen_stddev']:
-                csv_stddev = by_row_index.std().round(4)
+                csv_stddev = by_row_index.std().round(8)
                 csv_fname_stem = csv_fname[0].split('.')[0]
                 csv_stddev_fname = csv_fname_stem + '.stddev'
                 core.utils.pd_csv_write(csv_stddev,

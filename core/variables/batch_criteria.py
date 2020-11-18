@@ -14,15 +14,20 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
+# Core packages
 import os
 import pickle
 import logging
 import typing as tp
+
+# 3rd party packages
 import implements
 
+# Project packages
 import core.utils
 import core.xml_luigi
 from core.variables import constant_density, base_variable
+from core.vector import Vector3D
 
 
 class IConcreteBatchCriteria(implements.Interface):
@@ -204,7 +209,7 @@ class BatchCriteria():
             for c in exp:
                 if c[0] == ".//arena" and c[1] == "size":
                     x, y, z = c[2].split(',')
-                    dims.append(core.utils.ArenaExtent((int(x), int(y), int(z))))
+                    dims.append(core.utils.ArenaExtent(Vector3D(float(x), float(y), float(z))))
         assert len(dims) > 0, "Scenario dimensions not contained in batch criteria"
         return dims
 
@@ -297,7 +302,7 @@ class UnivarBatchCriteria(BatchCriteria):
     def is_univar(self) -> bool:
         return True
 
-    def populations(self, cmdopts: dict, exp_dirs: list=None) -> tp.List[int]:
+    def populations(self, cmdopts: dict, exp_dirs: list = None) -> tp.List[int]:
         """
         Arguments:
             cmdopts: Dictionary of parsed command line options.
