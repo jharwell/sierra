@@ -17,8 +17,8 @@
 import re
 import typing as tp
 from core.variables.batch_criteria import UnivarBatchCriteria
-from core.variables.arena_shape import RectangularArena
 from core.utils import ArenaExtent
+from core.variables.arena_shape import ArenaShape
 
 
 class ConstantDensity(UnivarBatchCriteria):
@@ -46,7 +46,7 @@ class ConstantDensity(UnivarBatchCriteria):
         self.target_density = target_density
         self.dimensions = dimensions
         self.dist_type = dist_type
-        self.attr_changes = RectangularArena(dimensions).gen_attr_changelist()
+        self.attr_changes = ArenaShape(dimensions).gen_attr_changelist()
 
     def exp_scenario_name(self, exp_num: int) -> str:
         """
@@ -55,11 +55,14 @@ class ConstantDensity(UnivarBatchCriteria):
         for each experiment in the batch with the correct name and definition.
 
         Normally controller+scenario are used to look up all necessary changes for the specified
-        arena size, but for this criteria the specified scenario is the base scenario (i.e. the
+        arena size, but for this criteria the specified scenario is the base scenario (i.e., the
         starting arena dimensions), and the correct arena dimensions for a given exp must be found
         via lookup with THIS function).
         """
-        return self.dist_type + '.' + 'x'.join(str(self.dimensions[exp_num]))
+        dims = self.dimensions[exp_num]
+        return self.dist_type + '.' + 'x'.join([str(dims.xsize()),
+                                                str(dims.ysize()),
+                                                str(dims.zsize())])
 
 
 class ConstantDensityParser():

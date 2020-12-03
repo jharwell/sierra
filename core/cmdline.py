@@ -689,6 +689,19 @@ class CoreCmdline:
                                  """ + self.stage_usage_doc([4]),
                                  default=None)
 
+        # Model options
+
+        models = self.parser.add_argument_group('Stage4: Models',
+                                                'Model options for stage4')
+        models.add_argument('--models-disable',
+                            help="""
+
+                            Disables running of all models, even if they appear in the project
+                            config file.
+
+                            """,
+                            action="store_true")
+
         # Variance curve similarity options
         vcs = self.parser.add_argument_group('Stage4: VCS',
                                              'Variance Curve Similarity options for stage4')
@@ -1010,6 +1023,4 @@ def sphinx_cmdline_bootstrap():
 __api__ = [
     'BootstrapCmdline',
     'CoreCmdline',
-
-
 ]

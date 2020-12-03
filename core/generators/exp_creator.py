@@ -56,13 +56,13 @@ class SimDefUniqueGenerator:
 
     def generate(self, xml_luigi: XMLLuigi, random_seeds):
         # Setup simulation random seed
-        SimDefUniqueGenerator.__generate_random(xml_luigi, random_seeds[self.sim_num])
+        SimDefUniqueGenerator._generate_random(xml_luigi, random_seeds[self.sim_num])
 
         # Setup simulation logging/output
-        self.__generate_output(xml_luigi)
+        self._generate_output(xml_luigi)
 
     @staticmethod
-    def __generate_random(xml_luigi, random_seed):
+    def _generate_random(xml_luigi, random_seed):
         """
         Generate XML changes for random seeding for a specific simulation in an experiment during
         the input generation process.
@@ -75,7 +75,7 @@ class SimDefUniqueGenerator:
         else:
             xml_luigi.tag_add(".//params", "rng", {"seed": str(random_seed)})
 
-    def __generate_output(self, xml_luigi: XMLLuigi):
+    def _generate_output(self, xml_luigi: XMLLuigi):
         """
         Generates XML changes for a specific simulation in an experiment during the input
         generation process.
@@ -146,7 +146,7 @@ class ExpCreator:
         addition changes unique to each simulation and then write out files to the filesystem.
 
         """
-        seeds = self.__generate_random_seeds()
+        seeds = self._generate_random_seeds()
 
         for sim_num in range(self.cmdopts['n_sims']):
             sim_output_dir = "{0}_{1}_output".format(self.main_input_name, sim_num)
@@ -156,7 +156,7 @@ class ExpCreator:
                                   self.cmdopts).generate(exp_def, seeds)
 
             # Finally, write out the simulation input file for ARGoS
-            save_path = self.__get_sim_input_path(sim_num)
+            save_path = self._get_sim_input_path(sim_num)
             open(save_path, 'w').close()  # create an empty file
             exp_def.write(save_path)
 
@@ -171,16 +171,16 @@ class ExpCreator:
         # Write the GNU Parallel commands input file
         with open(self.commands_fpath, 'w+') as cmds_file:
             for sim_num in range(self.cmdopts['n_sims']):
-                self.__update_cmds_file(cmds_file, self.__get_sim_input_path(sim_num))
+                self._update_cmds_file(cmds_file, self._get_sim_input_path(sim_num))
 
-    def __get_sim_input_path(self, sim_num: int):
+    def _get_sim_input_path(self, sim_num: int):
         """
         File is named as ``<template input file stem>_<sim_num>`` in the generation root.
         """
         return os.path.join(self.exp_input_root,
                             "{0}_{1}".format(self.main_input_name, sim_num))
 
-    def __update_cmds_file(self, cmds_file, sim_input_path: str):
+    def _update_cmds_file(self, cmds_file, sim_input_path: str):
         """Adds the command to run a particular simulation definition to the command file."""
 
         argos_cmd = core.hpc.ARGoSCmdGenerator()(self.cmdopts, sim_input_path)
@@ -188,7 +188,7 @@ class ExpCreator:
 
         cmds_file.write(xvfb_cmd + argos_cmd)
 
-    def __generate_random_seeds(self):
+    def _generate_random_seeds(self):
         """Generates random seeds for experiments to use."""
         try:
             return random.sample(range(self.random_seed_min, self.random_seed_max + 1),

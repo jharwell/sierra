@@ -84,7 +84,7 @@ class PhysicsEngines(IBaseVariable):
         logging.debug("Mapping %s physics engines of type %s to extents=%s",
                       self.n_engines,
                       self.engine_type,
-                      self.extents)
+                      [str(s) for s in self.extents])
         if not self.tag_adds:
             if self.n_engines == 1:
                 self.tag_adds = [self.__gen1_engines()]
@@ -149,9 +149,9 @@ class PhysicsEngines(IBaseVariable):
 
         adds = []
 
-        size_x = extent.dims[0] / n_engines_x
-        size_y = extent.dims[1] / n_engines_y
-        size_z = extent.dims[2]
+        size_x = extent.xsize() / n_engines_x
+        size_y = extent.ysize() / n_engines_y
+        size_z = extent.zsize()
 
         name = self.__gen_engine_name(engine_id)
 
@@ -168,19 +168,19 @@ class PhysicsEngines(IBaseVariable):
 
         # Engine lower X coord increasing as engine id increases
         if engine_id in forward_engines:
-            ll_x = extent.xmin + size_x * (engine_id % n_engines_x)
-            lr_x = extent.xmin + size_x * ((engine_id % n_engines_x) + 1)
+            ll_x = extent.ll.x + size_x * (engine_id % n_engines_x)
+            lr_x = extent.ll.x + size_x * ((engine_id % n_engines_x) + 1)
 
         else:  # Engine lower X coord increasing as engine id DECREASES
-            ll_x = extent.offset[0] + size_x * (n_engines_x - (engine_id % n_engines_x) - 1)
-            lr_x = extent.offset[0] + size_x * ((n_engines_x - (engine_id % n_engines_x) - 1) + 1)
+            ll_x = extent.ll.x + size_x * (n_engines_x - (engine_id % n_engines_x) - 1)
+            lr_x = extent.ll.x + size_x * ((n_engines_x - (engine_id % n_engines_x) - 1) + 1)
 
         ur_x = lr_x
         ul_x = ll_x
 
         # We use the max of # engines in X/Y to get the nice numbering/layout of engines.
-        ll_y = extent.ymin + size_y * (int(engine_id / max(n_engines_x, n_engines_y)))
-        ul_y = extent.ymin + size_y * (int(engine_id / max(n_engines_x, n_engines_y)) + 1)
+        ll_y = extent.ll.y + size_y * (int(engine_id / max(n_engines_x, n_engines_y)))
+        ul_y = extent.ll.y + size_y * (int(engine_id / max(n_engines_x, n_engines_y)) + 1)
 
         lr_y = ll_y
         ur_y = ul_y

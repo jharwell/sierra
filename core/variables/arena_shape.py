@@ -14,16 +14,19 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-import math
+# Core packages
 import typing as tp
+
+# 3rd party packages
+
+# Project packages
 from core.variables.base_variable import IBaseVariable
 from core.utils import ArenaExtent
-from core.vector import Vector3D
 
 kWALL_WIDTH = 0.4
 
 
-class RectangularArena(IBaseVariable):
+class ArenaShape(IBaseVariable):
 
     """
     Maps a list of desired arena dimensions specified in (X,Y) tuples to a list of sets of changes
@@ -47,10 +50,13 @@ class RectangularArena(IBaseVariable):
         if not self.attr_changes:
             self.attr_changes = [set([(".//arena",
                                        "size",
-                                       "{0}, {1}, {2}".format(extent.xspan(), extent.yspan(), extent.zspan())),
+                                       "{0}, {1}, {2}".format(extent.xsize(),
+                                                              extent.ysize(),
+                                                              extent.zsize())),
                                       (".//arena",
                                        "center",
-                                       "{0:.9f},{1:.9f},1".format(extent.xspan() / 2.0, extent.yspan() / 2.0)),
+                                       "{0:.9f},{1:.9f},1".format(extent.xsize() / 2.0,
+                                                                  extent.ysize() / 2.0)),
 
                                       # We restrict the places robots can spawn within the arena as
                                       # follows:
@@ -65,24 +71,24 @@ class RectangularArena(IBaseVariable):
                                       # - All robots start on the ground with Z=0.
                                       (".//arena/distribute/position",
                                        "max",
-                                       "{0:.9f}, {1:.9f}, 0".format(extent.xspan() - 2.0 * kWALL_WIDTH - 2.0,
-                                                                    extent.yspan() - 2.0 * kWALL_WIDTH - 2.0)),
+                                       "{0:.9f}, {1:.9f}, 0".format(extent.xsize() - 2.0 * kWALL_WIDTH - 2.0,
+                                                                    extent.ysize() - 2.0 * kWALL_WIDTH - 2.0)),
                                       (".//arena/distribute/position",
                                        "min",
                                        "{0:.9f}, {1:.9f}, 0".format(2.0 * kWALL_WIDTH + 2.0, 2.0 * kWALL_WIDTH + 2.0)),
 
                                       (".//arena/*[@id='wall_north']",
                                        "size",
-                                       "{0:.9f}, {1:.9f}, 0.5".format(extent.xspan(), kWALL_WIDTH)),
+                                       "{0:.9f}, {1:.9f}, 0.5".format(extent.xsize(), kWALL_WIDTH)),
 
                                       (".//arena/*[@id='wall_north']/body",
-                                       "position", "{0:.9f}, {1:.9f}, 0".format(extent.xspan() / 2.0, extent.yspan())),
+                                       "position", "{0:.9f}, {1:.9f}, 0".format(extent.xsize() / 2.0, extent.ysize())),
                                       (".//arena/*[@id='wall_south']",
                                        "size",
-                                       "{0:.9f}, {1:.9f}, 0.5".format(extent.xspan(), kWALL_WIDTH)),
+                                       "{0:.9f}, {1:.9f}, 0.5".format(extent.xsize(), kWALL_WIDTH)),
                                       (".//arena/*[@id='wall_south']/body",
                                        "position",
-                                       "{0:.9f}, 0, 0 ".format(extent.xspan() / 2.0)),
+                                       "{0:.9f}, 0, 0 ".format(extent.xsize() / 2.0)),
 
                                       # East wall needs to have its X coordinate offset by the width
                                       # of the wall / 2 in order to be centered on the boundary for
@@ -94,33 +100,19 @@ class RectangularArena(IBaseVariable):
                                       (".//arena/*[@id='wall_east']",
                                        "size",
                                        "{0:.9f}, {1:.9f}, 0.5".format(kWALL_WIDTH,
-                                                                      extent.yspan() + kWALL_WIDTH)),
+                                                                      extent.ysize() + kWALL_WIDTH)),
                                       (".//arena/*[@id='wall_east']/body",
                                        "position",
-                                       "{0:.9f}, {1:.9f}, 0".format(extent.xspan() - kWALL_WIDTH / 2.0,
-                                                                    extent.yspan() / 2.0)),
+                                       "{0:.9f}, {1:.9f}, 0".format(extent.xsize() - kWALL_WIDTH / 2.0,
+                                                                    extent.ysize() / 2.0)),
 
                                       (".//arena/*[@id='wall_west']",
                                        "size",
                                        "{0:.9f}, {1:.9f}, 0.5".format(kWALL_WIDTH,
-                                                                      extent.yspan() + kWALL_WIDTH)),
+                                                                      extent.ysize() + kWALL_WIDTH)),
                                       (".//arena/*[@id='wall_west']/body",
                                        "position",
-                                       "0, {0:.9f}, 0".format(extent.yspan() / 2.0)),
-
-                                      (".//arena_map/grid2D",
-                                       "dims",
-                                       "{0}, {1}, 2".format(extent.xspan(), extent.yspan())),
-                                      (".//perception/grid2D", "dims",
-                                       "{0}, {1}, 2".format(extent.xspan(), extent.yspan())),
-
-                                      (".//convergence/positional_entropy",
-                                       "horizon",
-                                       "0:{0:.9f}".format(math.sqrt(extent.xspan() ** 2 + extent.yspan() ** 2))),
-                                      (".//convergence/positional_entropy",
-                                       "horizon_delta",
-                                       "{0:.9f}".format(math.sqrt(extent.xspan() ** 2 + extent.yspan() ** 2) / 10.0)),
-                                      ])
+                                       "0, {0:.9f}, 0".format(extent.ysize() / 2.0))])
                                  for extent in self.extents]
         return self.attr_changes
 
@@ -131,29 +123,7 @@ class RectangularArena(IBaseVariable):
         return []
 
 
-class RectangularArenaTwoByOne(RectangularArena):
-    """
-    Define arenas that vary in size for each combination of extents in the specified X range and
-    Y range, where the X dimension is always twices as large as the Y dimension.
-    """
-
-    def __init__(self, x_range: range, y_range: range, z: int) -> None:
-        super().__init__([ArenaExtent(Vector3D(x, y, z)) for x in x_range for y in y_range])
-
-
-class SquareArena(RectangularArena):
-    """
-    Define arenas that vary in size for each combination of extents in the specified X range and
-    Y range, where the X and y extents are always equal.
-    """
-
-    def __init__(self, sqrange: range, z: int) -> None:
-        super().__init__([ArenaExtent(Vector3D(x, x, z)) for x in sqrange])
-
-
 __api__ = [
     'kWALL_WIDTH',
-    'RectangularArena',
-    'RectangularArenaTwoByOne',
-    'SquareArena',
+    'ArenaShape',
 ]

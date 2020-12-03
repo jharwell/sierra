@@ -1,3 +1,5 @@
+.. _ln-directory-structures:
+
 SIERRA Directory Structures
 ===========================
 

@@ -95,10 +95,10 @@ class PowerLawDistribution(BaseDistribution):
                        "{0}".format(2)),
                       (".//arena_map/blocks/distribution/powerlaw",
                        "pwr_max",
-                       "{0}".format(math.ceil(math.sqrt(self.arena_dim.xspan())))),
+                       "{0}".format(math.ceil(math.sqrt(self.arena_dim.xsize())))),
                       (".//arena_map/blocks/distribution/powerlaw",
                        "n_clusters",
-                       "{0}".format(self.arena_dim.xspan()))])
+                       "{0}".format(self.arena_dim.xsize()))])
         return changes
 
 

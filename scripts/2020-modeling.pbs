@@ -1,0 +1,84 @@
+#!/bin/bash -l
+#PBS -l walltime=24:00:00,nodes=32:ppn=24,pmem=2500mb
+#PBS -m abe
+#PBS -M harwe006@umn.edu
+
+################################################################################
+# Setup Simulation Environment                                                 #
+################################################################################
+# set -x
+
+# Initialize modules
+source /home/gini/shared/swarm/bin/msi-env-setup.sh
+
+# Add ARGoS libraries to system library search path, since they are in a
+# non-standard location
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SWARM_ROOT/$MSICLUSTER/lib/argos3
+
+# Set ARGoS library search path. Must contain both the ARGoS core libraries path
+# AND the fordyca library path.
+export ARGOS_PLUGIN_PATH=$SWARM_ROOT/$MSICLUSTER/lib/argos3:$HOME/git/fordyca/build/lib
+
+# Setup logging (maybe compiled out and unneeded, but maybe not)
+export LOG4CXX_CONFIGURATION=$HOME/git/fordyca/log4cxx.xml
+
+# From MSI docs: transfers all of the loaded modules to the compute nodes (not
+# inherited from the master/launch node when using GNU parallel)
+export PARALLEL="--workdir . --env PATH --env LD_LIBRARY_PATH --env
+LOADEDMODULES --env _LMFILES_ --env MODULE_VERSION --env MODULEPATH --env
+MODULEVERSION_STACK --env MODULESHOME --env OMP_DYNAMICS --env
+OMP_MAX_ACTIVE_LEVELS --env OMP_NESTED --env OMP_NUM_THREADS --env
+OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
+--env ARGOS_PLUGIN_PATH --env LOG4CXX_CONFIGURATION"
+
+################################################################################
+# Begin Experiments                                                            #
+################################################################################
+OUTPUT_ROOT=$HOME/exp/2020-modeling
+TIME_LONG=time_setup.T200000N1000
+
+if [ -n "$MSICLUSTER" ] # Running on MSI
+then
+    NSIMS=96
+    SCENARIOS_LIST=(SS.64x32 DS.44x22 RN.16x16 PL.16x16)
+    SCENARIOS=(${SCENARIOS_LIST[$PBS_ARRAYID]})
+    BASE_CMD="python3 sierra.py \
+                  --sierra-root=$OUTPUT_ROOT\
+                  --template-input-file=$HOME/git/sierra/templates/ideal.argos \
+                  --n-sims=$NSIMS\
+                  --physics-n-engines=4\
+                  --pipeline 1 2 3 4\
+                   --exp-graphs=inter\
+                  --project=fordyca\
+                  --hpc-env=msi \
+                  --no-verify-results\
+                  --gen-stddev\
+                  --exp-overwrite"
+else
+    NSIMS=8
+    SCENARIOS=(SS.64x32 DS.44x22 RN.16x16 PL.16x16)
+
+    BASE_CMD="python3 sierra.py \
+                  --sierra-root=$OUTPUT_ROOT\
+                  --template-input-file=$HOME/git/sierra/templates/ideal.argos \
+                  --n-sims=$NSIMS\
+                  --physics-n-engines=4\
+                  --pipeline 4\
+                  --exp-graphs=inter\
+                  --project=fordyca\
+                  --hpc-env=local \
+                  --n-robots=1\
+                  --gen-stddev\
+                  --no-verify-results\
+                  --exp-overwrite"
+fi
+
+cd $HOME/git/sierra
+for s in "${SCENARIOS[@]}"
+    do
+        $BASE_CMD --scenario=$s \
+                  --batch-criteria block_quantity.cube.Linear200 \
+                  --controller=d0.CRW \
+                  --time-setup=${TIME_LONG}
+
+    done

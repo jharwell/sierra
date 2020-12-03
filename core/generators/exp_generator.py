@@ -67,23 +67,23 @@ class ExpDefCommonGenerator:
         xml_luigi = XMLLuigi(self.template_input_file)
 
         # Setup library
-        self.__generate_library(xml_luigi)
+        self._generate_library(xml_luigi)
 
         # Setup simulation visualizations
-        self.__generate_visualization(xml_luigi)
+        self._generate_visualization(xml_luigi)
 
         # Setup threading
-        self.__generate_threading(xml_luigi)
+        self._generate_threading(xml_luigi)
 
         # Setup robot sensors/actuators
-        self.__generate_saa(xml_luigi)
+        self._generate_saa(xml_luigi)
 
         # Setup simulation time parameters
-        self.__generate_time(xml_luigi)
+        self._generate_time(xml_luigi)
 
         return xml_luigi
 
-    def __generate_saa(self, xml_luigi: XMLLuigi):
+    def _generate_saa(self, xml_luigi: XMLLuigi):
         """
         Generates XML changes to disable selected sensors/actuators, which are computationally
         expensive in large swarms, but not that costly if the # robots is small.
@@ -102,7 +102,7 @@ class ExpDefCommonGenerator:
             xml_luigi.tag_remove(".//sensors", "battery", noprint=True)
             xml_luigi.tag_remove(".//entity/*", "battery", noprint=True)
 
-    def __generate_time(self, xml_luigi: XMLLuigi):
+    def _generate_time(self, xml_luigi: XMLLuigi):
         """
         Generate XML changes to setup simulation time parameters.
 
@@ -119,7 +119,7 @@ class ExpDefCommonGenerator:
         with open(self.spec.exp_def_fpath, 'ab') as f:
             pickle.dump(tsetup_inst.gen_attr_changelist()[0], f)
 
-    def __generate_threading(self, xml_luigi: XMLLuigi):
+    def _generate_threading(self, xml_luigi: XMLLuigi):
         """
         Generates XML changes to set the # of cores for a simulation to use, which may be less than
         the total # available on the system, depending on the experiment definition and user
@@ -138,7 +138,7 @@ class ExpDefCommonGenerator:
                                   "n_threads",
                                   str(self.cmdopts["n_threads"]))
 
-    def __generate_library(self, xml_luigi: XMLLuigi):
+    def _generate_library(self, xml_luigi: XMLLuigi):
         """
         Generates XML changes to set the library that controllers and loop functions are sourced
         from to the name of the plugin passed on the cmdline. The ``__controller__`` tag is changed
@@ -155,7 +155,7 @@ class ExpDefCommonGenerator:
                               "library",
                               "lib" + self.cmdopts['project'])
 
-    def __generate_visualization(self, xml_luigi: XMLLuigi):
+    def _generate_visualization(self, xml_luigi: XMLLuigi):
         """
         Generates XML changes to remove visualization elements from input file, if configured to do
         so. This depends on cmdline parameters, as visualization definitions should be left in if
@@ -238,7 +238,7 @@ class BatchedExpDefGenerator:
         # Create and run generators
         defs = []
         for i in range(0, len(change_defs)):
-            generator = self.__create_exp_generator(i)
+            generator = self._create_exp_generator(i)
             defs.append(generator.generate())
             logging.debug("Generating scenario+controller changes from generator '%s' for exp%s",
                           self.cmdopts['joint_generator'],
@@ -246,7 +246,7 @@ class BatchedExpDefGenerator:
 
         return defs
 
-    def __create_exp_generator(self, exp_num: int):
+    def _create_exp_generator(self, exp_num: int):
         """
         Create the generator for a particular experiment from the scenario+controller definitions
         specified on the command line.

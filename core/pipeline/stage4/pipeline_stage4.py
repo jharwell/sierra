@@ -139,7 +139,7 @@ class PipelineStage4:
             self._run_rendering()
 
         if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'intra':
-            if len(self.models_intra) > 0:
+            if len(self.models_intra) > 0 and not self.cmdopts['models_disable']:
                 self._run_intra_models(batch_criteria)
 
             self._run_intra_graph_generation(batch_criteria)
@@ -149,7 +149,7 @@ class PipelineStage4:
         if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'inter':
             self._run_collation(batch_criteria)
 
-            if len(self.models_inter) > 0:
+            if len(self.models_inter) > 0 and not self.cmdopts['models_disable']:
                 self._run_inter_models(batch_criteria)
 
             self._run_inter_graph_generation(batch_criteria)

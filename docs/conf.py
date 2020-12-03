@@ -128,9 +128,9 @@ xref_links = {
                       "http://users.umiacs.umd.edu/~sarit/data/articles/rosenfeldetalbook06.pdf"),
     "FORDYCA": ("FORDYCA", "https://swarm-robotics-fordyca.readthedocs.io"),
     "SILICON": ("SILICON", "https://swarm-robotics-silicon.readthedocs.io"),
-    "COSM": ("FORDYCA", "https://swarm-robotics-cosm.readthedocs.io"),
-    "RCPPSW": ("SILICON", "https://swarm-robotics-rcppsw.readthedocs.io"),
-    "RCSW": ("SILICON", "https://swarm-robotics-rcsw.readthedocs.io"),
+    "COSM": ("COSM", "https://swarm-robotics-cosm.readthedocs.io"),
+    "RCPPSW": ("RCPPSWSILICON", "https://swarm-robotics-rcppsw.readthedocs.io"),
+    "RCSW": ("RCSW", "https://swarm-robotics-rcsw.readthedocs.io"),
     "LIBRA": ("LIBRA", "https://swarm-robotics-libra.readthedocs.io")
 }
 

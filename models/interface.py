@@ -26,8 +26,6 @@ import implements
 
 # Project packages
 from core.variables import batch_criteria as bc
-from core.graphs.heatmap import HeatmapSet
-import core.utils
 
 
 class IConcreteIntraExpModel1D(implements.Interface):
@@ -59,6 +57,14 @@ class IConcreteIntraExpModel1D(implements.Interface):
         :class:`~core.graphs.stacked_line_graph.StackedLineGraph` it is attached to.
         """
 
+    def previously_run(self, exp_num: int) -> bool:
+        """
+        Return if this model has previously been run on this invocation of SIERRA for the specified
+        experiment. This enables all models to only be evaluated once per invocation (which might be
+        very computationally expensive), even if they are later used as part of a larger more
+        complex model.
+        """
+
 
 class IConcreteIntraExpModel2D(implements.Interface):
     def run(self,
@@ -80,6 +86,14 @@ class IConcreteIntraExpModel2D(implements.Interface):
         """
         Return the stem of the filename for the ``.csv`` file the model is targeting, sans parent
         directory path.
+        """
+
+    def previously_run(self, exp_num: int) -> bool:
+        """
+        Return if this model has previously been run on this invocation of SIERRA for the specified
+        experiment. This enables all models to only be evaluated once per invocation (which might be
+        very computationally expensive), even if they are later used as part of a larger more
+        complex model.
         """
 
 
@@ -110,6 +124,13 @@ class IConcreteInterExpModel1D(implements.Interface):
         """
         Return the name of the model as it should appear on the legend of the target graph
         :class:`~core.graphs.stacked_line_graph.StackedLineGraph` it is attached to.
+        """
+
+    def previously_run(self) -> bool:
+        """
+        Return if this model has previously been run on this invocation of SIERRA. This enables all
+        models to only be evaluated once per invocation (which might be very computationally
+        expensive), even if they are later used as part of a larger more complex model.
         """
 
 

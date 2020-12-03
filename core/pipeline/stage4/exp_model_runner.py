@@ -23,12 +23,12 @@ import copy
 import logging
 
 # 3rd party packages
-import pandas as pd
 
 # Project packages
 import core.utils
 import core.variables.batch_criteria as bc
 from core.graphs.batch_ranged_graph import BatchRangedGraph
+from models.execution_record import ExecutionRecord
 
 
 class BatchedIntraExpModelRunner:
@@ -49,6 +49,9 @@ class BatchedIntraExpModelRunner:
         exp_to_run = core.utils.exp_range_calc(self.cmdopts,
                                                self.cmdopts['batch_output_root'],
                                                criteria)
+
+        records = ExecutionRecord()
+
         for i, exp in enumerate(exp_to_run):
             exp = os.path.split(exp)[1]
             cmdopts = copy.deepcopy(self.cmdopts)
@@ -61,7 +64,16 @@ class BatchedIntraExpModelRunner:
             core.utils.dir_create_checked(cmdopts['exp_model_root'], exist_ok=True)
 
             for model in self.models:
-                if not model.run_for_exp(criteria, cmdopts, i):
+                if not model.run_for_exp(criteria, cmdopts, i) or model.previously_run(i):
+                    logging.debug("Skip running intra-experiment model '%s' for exp%s",
+                                  model.config['pyfile'],
+                                  i)
+                    records.intra_record_add(model.config['pyfile'], i)
+                    continue
+                elif records.intra_record_exists(model.config['pyfile'], i):
+                    logging.debug("Retrieve results for previously run intra-experiment model '%s' for exp%s",
+                                  model.config['pyfile'],
+                                  i)
                     continue
 
                 # Run the model
@@ -107,8 +119,17 @@ class InterExpModelRunner:
         core.utils.dir_create_checked(cmdopts['batch_model_root'], exist_ok=True)
         core.utils.dir_create_checked(cmdopts['batch_collate_graph_root'], exist_ok=True)
 
+        records = ExecutionRecord()
+
         for model in self.models:
             if not model.run_for_batch(criteria, cmdopts):
+                logging.debug("Skip running inter-experiment model '%s",
+                              model.config['pyfile'])
+                records.inter_record_add(model.config['pyfile'])
+                continue
+            elif records.inter_record_exists(model.config['pyfile']):
+                logging.debug("Retrieve results for previously run inter-experiment model '%s'",
+                              model.config['pyfile'])
                 continue
 
             # Run the model
@@ -123,8 +144,6 @@ class InterExpModelRunner:
             if not os.path.exists(os.path.join(cmdopts['batch_collate_root'],
                                                model.target_csv_stem() + '.csv')):
                 logging.info("Generate graph for unattached model '%s'", model.config['pyfile'])
-                print(os.path.join(cmdopts["batch_collate_graph_root"],
-                                   model.target_csv_stem() + '.png'))
                 BatchRangedGraph(input_fpath=path_stem + '.csv',
                                  output_fpath=os.path.join(cmdopts["batch_collate_graph_root"],
                                                            model.target_csv_stem() + '.png'),
@@ -134,7 +153,6 @@ class InterExpModelRunner:
                                  xticks=criteria.graph_xticks(cmdopts)).generate()
 
             else:
-                print(path_stem)
                 # Write model .csv file
                 core.utils.pd_csv_write(df, path_stem + '.model', index=False)
 

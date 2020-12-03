@@ -35,6 +35,9 @@ from core.vector import Vector3D
 
 class ArenaExtent():
     """Representation of a 2D or 3D section/chunk/volume of the arena."""
+    @staticmethod
+    def from_corners(ll: Vector3D, ur: Vector3D) -> 'ArenaExtent':
+        return ArenaExtent(ur - ll, ll)
 
     def __init__(self, dims: Vector3D, origin: Vector3D = Vector3D()) -> None:
         self.origin = origin
@@ -45,18 +48,20 @@ class ArenaExtent():
         self.center = origin + dims / 2.0
 
     def contains(self, pt: Vector3D) -> bool:
+        if pt >= self.ll and pt <= self.ur:
+            print(pt >= self.ll, pt <= self.ur)
         return pt >= self.ll and pt <= self.ur
 
     def area(self) -> float:
         return self.dims.x * self.dims.y
 
-    def xspan(self):
+    def xsize(self):
         return self.dims.x
 
-    def yspan(self):
+    def ysize(self):
         return self.dims.y
 
-    def zspan(self):
+    def zsize(self):
         return self.dims.z
 
     def __str__(self) -> str:

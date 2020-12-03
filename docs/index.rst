@@ -10,6 +10,7 @@ Welcome to the documentation for SIERRA: the amazing swarm robotics automation t
    :maxdepth: 2
    :caption: Contents:
 
+   trial.rst
    setup/index.rst
    usage/index.rst
    contributing/index.rst
