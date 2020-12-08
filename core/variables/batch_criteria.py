@@ -323,9 +323,9 @@ class UnivarBatchCriteria(BatchCriteria):
             exp_def = core.utils.unpickle_exp_def(os.path.join(self.batch_input_root,
                                                                d,
                                                                "exp_def.pkl"))
-            for e in exp_def:
-                if e[0] == ".//arena/distribute/entity" and e[1] == "quantity":
-                    sizes.append(int(e[2]))
+            for path, attr, value in exp_def:
+                if path == ".//arena/distribute/entity" and attr == "quantity":
+                    sizes.append(int(value))
         return sizes
 
 

@@ -65,33 +65,33 @@ class BatchedIntraExpModelRunner:
 
             for model in self.models:
                 if not model.run_for_exp(criteria, cmdopts, i) or model.previously_run(i):
-                    logging.debug("Skip running intra-experiment model '%s' for exp%s",
-                                  model.config['pyfile'],
+                    logging.debug("Skip running intra-experiment model from '%s' for exp%s",
+                                  str(model),
                                   i)
                     records.intra_record_add(model.config['pyfile'], i)
                     continue
                 elif records.intra_record_exists(model.config['pyfile'], i):
                     logging.debug("Retrieve results for previously run intra-experiment model '%s' for exp%s",
-                                  model.config['pyfile'],
+                                  str(model),
                                   i)
                     continue
 
                 # Run the model
-                logging.debug("Run intra-experiment model '%s' for exp%s",
-                              model.config['pyfile'],
-                              i)
-                df = model.run(cmdopts, criteria, i)
-                path_stem = os.path.join(cmdopts['exp_model_root'],
-                                         model.target_csv_stem())
+                logging.debug("Run intra-experiment model '%s' for exp%s", str(model), i)
+                dfs = model.run(criteria, i, cmdopts)
+                for df, csv_stem in zip(dfs, model.target_csv_stems()):
+                    path_stem = os.path.join(cmdopts['exp_model_root'],
+                                             csv_stem)
 
-                # 1D dataframe -> line graph with legend
-                if len(df.index) == 1:
-                    # Write model legend file so the generated graph can find it
-                    with open(path_stem + '.legend', 'w') as f:
-                        f.write(model.legend_name())
+                    # 1D dataframe -> line graph with legend
+                    if len(df.index) == 1:
+                        # Write model legend file so the generated graph can find it
+                        with open(path_stem + '.legend', 'w') as f:
+                            legend = model.legend_names()[dfs.index(df)]
+                            f.write(legend)
 
-                # Write model .csv file
-                core.utils.pd_csv_write(df, path_stem + '.model', index=False)
+                    # Write model .csv file
+                    core.utils.pd_csv_write(df, path_stem + '.model', index=False)
 
 
 class InterExpModelRunner:
@@ -123,36 +123,22 @@ class InterExpModelRunner:
 
         for model in self.models:
             if not model.run_for_batch(criteria, cmdopts):
-                logging.debug("Skip running inter-experiment model '%s",
-                              model.config['pyfile'])
+                logging.debug("Skip running inter-experiment model '%s'",
+                              str(model))
                 records.inter_record_add(model.config['pyfile'])
                 continue
             elif records.inter_record_exists(model.config['pyfile']):
                 logging.debug("Retrieve results for previously run inter-experiment model '%s'",
-                              model.config['pyfile'])
+                              str(model))
                 continue
 
             # Run the model
-            logging.debug("Run inter-experiment model '%s'", model.config['pyfile'])
+            logging.debug("Run inter-experiment model '%s'", str(model))
 
-            df = model.run(cmdopts, criteria)
-            path_stem = os.path.join(cmdopts['batch_model_root'], model.target_csv_stem())
+            dfs = model.run(criteria, cmdopts)
+            for df, csv_stem in zip(dfs, model.target_csv_stems()):
+                path_stem = os.path.join(cmdopts['batch_model_root'], csv_stem)
 
-            # Write model .csv file
-            core.utils.pd_csv_write(df, path_stem + '.csv', index=False)
-
-            if not os.path.exists(os.path.join(cmdopts['batch_collate_root'],
-                                               model.target_csv_stem() + '.csv')):
-                logging.info("Generate graph for unattached model '%s'", model.config['pyfile'])
-                BatchRangedGraph(input_fpath=path_stem + '.csv',
-                                 output_fpath=os.path.join(cmdopts["batch_collate_graph_root"],
-                                                           model.target_csv_stem() + '.png'),
-                                 title='Model Error',
-                                 xlabel=criteria.graph_xlabel(cmdopts),
-                                 ylabel='error',
-                                 xticks=criteria.graph_xticks(cmdopts)).generate()
-
-            else:
                 # Write model .csv file
                 core.utils.pd_csv_write(df, path_stem + '.model', index=False)
 
@@ -160,4 +146,5 @@ class InterExpModelRunner:
                 if len(df.index) == 1:
                     # Write model legend file so the generated graph can find it
                     with open(path_stem + '.legend', 'w') as f:
-                        f.write(model.legend_name())
+                        legend = model.legend_names()[dfs.index(df)]
+                        f.write(legend)

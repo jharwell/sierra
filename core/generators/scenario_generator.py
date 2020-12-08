@@ -74,12 +74,13 @@ class ARGoSScenarioGenerator():
 
     def generate_n_robots(self, xml_luigi: XMLLuigi):
         """
-        Generate XML changes to setup # robots.
+        Generate XML changes to setup # robots if it was specified on the cmdline.
 
         Writes generated changes to the simulation definition pickle file.
         """
         if self.cmdopts['n_robots'] is None:
             return
+        print(self.cmdopts['n_robots'])
         chgs = population_size.PopulationSize.gen_attr_changelist_from_list(
             [self.cmdopts['n_robots']])
         for a in chgs[0]:

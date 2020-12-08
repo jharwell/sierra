@@ -18,7 +18,6 @@
 # Core packages
 import core.utils
 import matplotlib.pyplot as plt
-import os
 import logging
 import typing as tp
 

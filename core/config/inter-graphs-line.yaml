@@ -27,6 +27,7 @@ LN_fsm_interference:
       title: 'Average Robots Entering Interference (cumulative)'
       xlabel: 'Interval'
       ylabel: '# Robots'
+      batch: True
 
     - src_stem: fsm-interference-counts
       dest_stem: interference-exited-int-avg
@@ -41,6 +42,20 @@ LN_fsm_interference:
       title: 'Average Robots Exiting Interference (cumulative)'
       xlabel: 'Interval'
       ylabel: '# Robots'
+
+    - src_stem: fsm-interference-counts
+      dest_stem: interference-episodes-int-avg
+      col: int_avg_episodes
+      title: 'Average Interference Episodes (interval)'
+      xlabel: 'Interval'
+      ylabel: '# Episodes'
+
+    - src_stem: fsm-interference-counts
+      dest_stem: interference-in-cum-avg
+      col: cum_avg_episodes
+      title: 'Average Interference Episodes (cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Episodes'
 
     - src_stem: fsm-interference-counts
       dest_stem: interference-duration-int-avg

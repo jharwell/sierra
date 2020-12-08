@@ -22,7 +22,7 @@ import math
 # Project packages
 
 
-class Vector:
+class Vector3D:
     def __init__(self, x: float = 0, y: float = 0, z: float = 0):
         self.x = x
         self.y = y
@@ -79,12 +79,3 @@ class Vector:
     def normalize(self):
         length = self.length()
         return Vector3D((self.x / length), (self.y / length), (self.z / length))
-
-
-class Vector2D(Vector):
-    def __init__(self, x: float = 0, y: float = 0):
-        super().__init__(x, y)
-
-
-class Vector3D(Vector):
-    pass

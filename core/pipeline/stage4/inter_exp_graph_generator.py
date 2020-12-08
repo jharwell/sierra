@@ -114,7 +114,7 @@ class LinegraphsGenerator:
                                      output_fpath=os.path.join(self.cmdopts['batch_collate_graph_root'],
                                                                'BR-' + graph['dest_stem'] + '.png'),
                                      title=graph['title'],
-                                     xlabel=graph['xlabel'],
+                                     xlabel=criteria.graph_xlabel(self.cmdopts),
                                      ylabel=graph['ylabel'],
                                      xticks=criteria.graph_xticks(self.cmdopts),
                                      xtick_labels=criteria.graph_xticklabels(self.cmdopts),

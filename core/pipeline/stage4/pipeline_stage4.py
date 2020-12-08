@@ -18,15 +18,18 @@
 Contains main class implementing stage 4 of the experimental pipeline.
 """
 
+# Core packages
 import os
 import logging
 import typing as tp
 import time
 import datetime
 
+# 3rd party packages
 import yaml
 import matplotlib as mpl
 
+# Project packages
 from core.pipeline.stage4.graph_collator import MultithreadCollator
 from core.pipeline.stage4.intra_exp_graph_generator import BatchedIntraExpGraphGenerator
 from core.pipeline.stage4.exp_model_runner import BatchedIntraExpModelRunner
@@ -35,7 +38,6 @@ from core.pipeline.stage4.exp_model_runner import InterExpModelRunner
 from core.pipeline.stage4.inter_exp_graph_generator import InterExpGraphGenerator
 from core.pipeline.stage4.exp_video_renderer import BatchedExpVideoRenderer
 import core.plugin_manager
-import core.utils
 
 mpl.rcParams['lines.linewidth'] = 3
 mpl.rcParams['lines.markersize'] = 10

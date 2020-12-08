@@ -7,3 +7,4 @@ coloredlogs
 sympy
 singleton_decorator
 implements
+retry

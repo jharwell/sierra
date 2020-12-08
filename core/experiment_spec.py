@@ -38,6 +38,7 @@ class ExperimentSpec():
     - Pickle file path for the experiment
     - Arena dimensions for the experiment
     - Full scenario name
+    - Number of robots
     """
 
     def __init__(self, criteria, cmdopts: dict, exp_num: int) -> None:

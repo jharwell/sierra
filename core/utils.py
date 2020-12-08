@@ -28,6 +28,7 @@ import time
 # 3rd party packages
 import numpy as np
 import pandas as pd
+from retry import retry
 
 # Project packages
 from core.vector import Vector3D
@@ -153,28 +154,15 @@ def dir_create_checked(path: str, exist_ok: bool) -> None:
         raise
 
 
+@retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=0.100)  # type:ignore
 def pd_csv_read(path: str, **kwargs) -> pd.DataFrame:
-    count = 0
-    while count < 10:
-        try:
-            # Always specify the datatype so pandas does not have to infer it--much faster.
-            return pd.read_csv(path, sep=';', dtype=float, **kwargs)
-        except pd.errors.ParserError:
-            logging.warning("(Temporarily?) Failed to read %s", path)
-        count += 1
-    raise ValueError("Failed to read %s after 10 tries" % path)
+    # Always specify the datatype so pandas does not have to infer it--much faster.
+    return pd.read_csv(path, sep=';', dtype=float, float_precision='high', **kwargs)
 
 
+@retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=0.100)  # type:ignore
 def pd_csv_write(df: pd.DataFrame, path: str, **kwargs) -> None:
-    count = 0
-    while count < 10:
-        try:
-            df.to_csv(path, sep=';', **kwargs)
-            return
-        except pd.errors.ParserError:
-            logging.warning("(Temporarily?) Failed to write %s", path)
-        count += 1
-    raise ValueError("Failed to write %s after 10 tries" % path)
+    df.to_csv(path, sep=';', **kwargs)
 
 
 def path_exists(path: str) -> bool:
@@ -184,7 +172,7 @@ def path_exists(path: str) -> bool:
             res.append(True)
         else:
             res.append(False)
-            time.sleep(0.100)
+            time.sleep(0.001)
 
     return max(set(res), key=res.count)
 

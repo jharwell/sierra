@@ -19,6 +19,7 @@ during stage 4.
 """
 
 # Core packages
+import typing as tp
 
 # 3rd party packages
 import pandas as pd
@@ -30,12 +31,14 @@ from core.variables import batch_criteria as bc
 
 class IConcreteIntraExpModel1D(implements.Interface):
     def run(self,
-            cmdopts: dict,
             criteria: bc.IConcreteBatchCriteria,
-            exp_num: int) -> pd.DataFrame:
+            exp_num: int,
+            cmdopts: dict) -> tp.List[pd.DataFrame]:
         """
-        Run the model and generate a dataframe from the results, which should contain a single
-        column named ``model``.
+        Run the model and generate a list of dataframes, each targeting (potentially) different
+        graphs. All dataframes should contain a single column named ``model``, with each row of the
+        dataframe containing the model prediction at the simulation interval corresponding to the
+        row (e.g., row 7 contains the model prediction for simulation interval 7).
 
         """
 
@@ -45,24 +48,22 @@ class IConcreteIntraExpModel1D(implements.Interface):
         so models can be selectively executed with this function.
         """
 
-    def target_csv_stem(self) -> str:
+    def target_csv_stems(self) -> tp.List[str]:
         """
-        Return the stem of the filename for the ``.csv`` file the model is targeting, sans parent
-        directory path.
-        """
-
-    def legend_name(self) -> str:
-        """
-        Return the name of the model as it should appear on the legend of the target graph
-        :class:`~core.graphs.stacked_line_graph.StackedLineGraph` it is attached to.
+        Return a list of ``.csv`` file stems (sans directory path and extension) that the model is
+        targeting.
         """
 
-    def previously_run(self, exp_num: int) -> bool:
+    def legend_names(self) -> tp.List[str]:
         """
-        Return if this model has previously been run on this invocation of SIERRA for the specified
-        experiment. This enables all models to only be evaluated once per invocation (which might be
-        very computationally expensive), even if they are later used as part of a larger more
-        complex model.
+        Return a list of names that the model predictions as they should appear appear on the legend
+        of the target :class:`~core.graphs.stacked_line_graph.StackedLineGraph` they are each
+        attached to.
+        """
+
+    def __repr__(self) -> str:
+        """
+        Return the UUID string of the model name.
         """
 
 
@@ -70,10 +71,12 @@ class IConcreteIntraExpModel2D(implements.Interface):
     def run(self,
             cmdopts: dict,
             criteria: bc.IConcreteBatchCriteria,
-            exp_num: int) -> pd.DataFrame:
+            exp_num: int) -> tp.List[pd.DataFrame]:
         """
-        Run the model and generate a dataframe from the results, which should be a NxM grid (with N
-        not necessarily equal to M).
+        Run the model and generate a list of dataframes, each targeting (potentially) different
+        graphs. Each data frame should be a NxM grid (with N not necessarily equal to M). All
+        dataframes do not have to be the same dimensions.
+
         """
 
     def run_for_exp(self, criteria: bc.IConcreteBatchCriteria, cmdopts: dict, i: int) -> bool:
@@ -82,29 +85,28 @@ class IConcreteIntraExpModel2D(implements.Interface):
         so models can be selectively executed with this function.
         """
 
-    def target_csv_stem(self) -> str:
+    def target_csv_stems(self) -> tp.List[str]:
         """
-        Return the stem of the filename for the ``.csv`` file the model is targeting, sans parent
-        directory path.
+        Return a list of names that the model predictions as they should appear appear on the legend
+        of the target :class:`~core.graphs.stacked_line_graph.StackedLineGraph` they are each
+        attached to.
         """
 
-    def previously_run(self, exp_num: int) -> bool:
+    def __repr__(self) -> str:
         """
-        Return if this model has previously been run on this invocation of SIERRA for the specified
-        experiment. This enables all models to only be evaluated once per invocation (which might be
-        very computationally expensive), even if they are later used as part of a larger more
-        complex model.
+        Return the UUID string of the model name.
         """
 
 
 class IConcreteInterExpModel1D(implements.Interface):
     def run(self,
-            cmdopts: dict,
-            criteria: bc.IConcreteBatchCriteria) -> pd.DataFrame:
+            criteria: bc.IConcreteBatchCriteria,
+            cmdopts: dict) -> tp.List[pd.DataFrame]:
         """
-        Run the model and generate a dataframe from the results. If this is a 1D model, then the
-        dataframe should be a single row. If this is a 2D model, then the dataframe should be a NxM
-        grid (with N not necessarily equal to M).
+        Run the model and generate list of dataframes, each(potentially) targeting a different
+        graph. Each dataframe should contain a single row, with one column for the predicted value
+        of the model for each experiment in the batch.
+
         """
 
     def run_for_batch(self, criteria: bc.IConcreteBatchCriteria, cmdopts: dict) -> bool:
@@ -113,24 +115,24 @@ class IConcreteInterExpModel1D(implements.Interface):
         so models can be selectively executed with this function.
         """
 
-    def target_csv_stem(self) -> str:
+    def target_csv_stems(self) -> tp.List[str]:
         """
-        Return the stem of the filename for the ``.csv`` file the model is targeting, sans parent
-        directory path. Unlike intra-experiment models, inter-experiment models don't `have` to be
-        attached to a ``.csv``/graph pair generated by the current project.
+        Return a list of names that the model predictions as they should appear appear on the legend
+        of the target: class: `~core.graphs.batch_ranged_graph.BatchRangedGraph` they are each
+        attached to.
+
         """
 
-    def legend_name(self) -> str:
+    def legend_names(self) -> tp.List[str]:
         """
-        Return the name of the model as it should appear on the legend of the target graph
-        :class:`~core.graphs.stacked_line_graph.StackedLineGraph` it is attached to.
+        Return a list of names that the model predictions as they should appear appear on the legend
+        of the target: class: `~core.graphs.batch_ranged_graph.BatchRangedGraph` they are each
+        attached to.
         """
 
-    def previously_run(self) -> bool:
+    def __repr__(self) -> str:
         """
-        Return if this model has previously been run on this invocation of SIERRA. This enables all
-        models to only be evaluated once per invocation (which might be very computationally
-        expensive), even if they are later used as part of a larger more complex model.
+        Return the UUID string of the model name.
         """
 
 

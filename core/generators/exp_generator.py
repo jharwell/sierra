@@ -255,7 +255,7 @@ class BatchedExpDefGenerator:
             exp_num: Experiment number in the batch
         """
 
-        spec = ExperimentSpec(self.criteria, self.cmdopts, exp_num)
+        spec = ExperimentSpec(self.criteria, exp_num, self.cmdopts)
 
         scenario = gf.scenario_generator_create(controller=self.controller_name,
                                                 spec=spec,
