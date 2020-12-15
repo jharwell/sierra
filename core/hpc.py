@@ -30,8 +30,7 @@ import core.plugin_manager
 
 @singleton
 class HPCPluginManager(core.plugin_manager.DirectoryPluginManager):
-    def __init__(self):
-        super().__init__()
+    pass
 
 ################################################################################
 # Dispatchers

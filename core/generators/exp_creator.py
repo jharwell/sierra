@@ -193,9 +193,9 @@ class ExpCreator:
         try:
             return random.sample(range(self.random_seed_min, self.random_seed_max + 1),
                                  self.cmdopts["n_sims"])
-        except ValueError:
+        except ValueError as ve:
             # create a new error message that clarifies the previous one
-            raise ValueError("# seeds < # sims: change the random seed parameters")
+            raise ValueError("# seeds < # sims: change the random seed parameters") from ve
 
 
 class BatchedExpCreator:

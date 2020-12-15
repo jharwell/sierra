@@ -88,6 +88,8 @@ class PhysicsEngines(IBaseVariable):
         if not self.tag_adds:
             if self.n_engines == 1:
                 self.tag_adds = [self.__gen1_engines()]
+            elif self.n_engines == 2:
+                self.tag_adds = [self.__gen2_engines(s) for s in self.extents]
             elif self.n_engines == 4:
                 self.tag_adds = [self.__gen4_engines(s) for s in self.extents]
             elif self.n_engines == 6:
@@ -204,6 +206,23 @@ class PhysicsEngines(IBaseVariable):
         return [('.', 'physics_engines', {}),
                 (".//physics_engines", self.engine_type, {'id': name})]
 
+    def __gen2_engines(self, extent: ArenaExtent) -> tp.List:
+        """
+        Generate definitions for 2 2D or 3D physics engines for the specified extents.
+
+        Engines are layed out as follows in 2D, regardless if they are 2D or 3D engines:
+
+         0 1
+
+        Volume is *NOT* divided equally among engines, but rather each of the engines is extended up
+        to some maximum height in Z, forming a set of "silos".
+
+        """
+        return self.__gen_all_engines(extent,
+                                      n_engines_x=2,
+                                      n_engines_y=1,
+                                      forward_engines=[])
+
     def __gen4_engines(self, extent: ArenaExtent) -> tp.List:
         """
         Generate definitions for 4 2D or 3D physics engine for the specified extent.
@@ -313,6 +332,8 @@ class PhysicsEngines(IBaseVariable):
             return 'pm3d'
         elif self.engine_type == 'dynamics2d':
             return 'dyn2d'
+        else:
+            return None
 
 
 class PhysicsEngines2D(PhysicsEngines):

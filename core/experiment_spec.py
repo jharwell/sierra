@@ -38,10 +38,9 @@ class ExperimentSpec():
     - Pickle file path for the experiment
     - Arena dimensions for the experiment
     - Full scenario name
-    - Number of robots
     """
 
-    def __init__(self, criteria, cmdopts: dict, exp_num: int) -> None:
+    def __init__(self, criteria, exp_num: int, cmdopts: dict) -> None:
         self.exp_num = exp_num
         self.exp_input_root = os.path.join(cmdopts['batch_input_root'],
                                            criteria.gen_exp_dirnames(cmdopts)[exp_num])

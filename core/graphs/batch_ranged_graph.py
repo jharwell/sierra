@@ -83,7 +83,6 @@ class BatchRangedGraph:
 
         if self.model_fpath is not None and core.utils.path_exists(self.model_fpath):
             model_dfy = core.utils.pd_csv_read(self.model_fpath)
-
             if self.model_legend_fpath is not None and core.utils.path_exists(self.model_legend_fpath):
                 with open(self.model_legend_fpath, 'r') as f:
                     model_legend = f.readlines()[0]

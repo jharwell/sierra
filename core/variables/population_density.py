@@ -22,6 +22,7 @@ documentation.
 # Core packages
 import typing as tp
 import os
+import logging
 
 # 3rd party packages
 import implements
@@ -66,6 +67,9 @@ class PopulationConstantDensity(cd.ConstantDensity):
                         # least 1.
                         n_robots = int(max(1, extent.area() * (self.target_density / 100.0)))
                         changeset.add((".//arena/distribute/entity", "quantity", str(n_robots)))
+                        logging.debug("Calculated swarm size %d for arena dimensions %s",
+                                      n_robots,
+                                      str(extent))
                         break
 
             self.already_added = True
@@ -122,7 +126,7 @@ def factory(cli_arg: str,
         r = range(kw['arena_x'],
                   kw['arena_x'] + attr['cardinality'] * attr['arena_size_inc'],
                   attr['arena_size_inc'])
-        dims = [core.utils.ArenaExtent(Vector3D(x, x / 2, 0)) for x in r]
+        dims = [core.utils.ArenaExtent(Vector3D(x, int(x / 2), 0)) for x in r]
     elif kw['dist_type'] == "QS" or kw['dist_type'] == "RN" or kw['dist_type'] == 'PL':
         r = range(kw['arena_x'],
                   kw['arena_x'] + attr['cardinality'] * attr['arena_size_inc'],

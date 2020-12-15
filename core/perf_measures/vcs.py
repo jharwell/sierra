@@ -386,6 +386,7 @@ class CSRaw():
             return sm.curve_length_measure(exp_data, ideal_data)
         else:
             assert False, "Bad method {0}".format(method)
+            return None
 
     @staticmethod
     def __calc_dtw(exp_data,

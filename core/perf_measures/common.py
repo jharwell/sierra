@@ -32,13 +32,15 @@ from core.variables import batch_criteria as bc
 from core.graphs.heatmap import Heatmap
 from core.graphs.batch_ranged_graph import BatchRangedGraph
 
+################################################################################
+# Base Classes
+################################################################################
 
-class PerfLostInteractiveSwarmUnivar:
+
+class BasePerfLostInteractiveSwarm():
     r"""
-    Univariate calculator for the perforance lost per robot for a swarm of size N of `interacting`
-    robots, as oppopsed to a  swarm of size N of `non-interacting` robots.
-
-    Calculated as (taken from :xref:`Harwell2019`):
+    Calculate the performance lost due to inter-robot interference in an interactive swarm of
+    :math:`\mathcal{N}` robots.
 
     .. math::
        P_{lost}(N,\kappa,T) =
@@ -47,195 +49,63 @@ class PerfLostInteractiveSwarmUnivar:
            \frac{P(N,\kappa,T){t_{lost}^{N}} - {N}{P_{lost}(1,\kappa,T)}}{N} & \text{if N  $>$ 1}
        \end{cases}
 
-    Swarms exhibiting high levels of emergent behavior should have `positive` values of performance
-    loss (i.e. they performed `better` than a swarm of N independent robots).
+    Args:
+        perf1: The performance achieved by a single robot, :math:`P(1,\kappa,T)`.
 
-    Does not require the batch criteria to be
-    :class:`~core.variables.population_size.PopulationSize` derived, but if all experiments in a
-    batch have the same swarm size, then this calculation will be of limited use.
+        tlost1: The amount of time lost due to wall collision avoidance by a single robot,
+                :math:`t_{lost}^1`.
+
+        perfN: The performance achieved by :math:`\mathcal{N}` robots,
+               :math:`P(\mathcal{N},\kappa,T)`.
+
+        tlostN: The amount of time lost due to wall collision avoidance `and` inter-robot
+                interference in a swarm of :math:`\mathcal{N}` robots, :math:`t_{lost}^{N}`
+
+        n_robots: The number of robots in the swarm, :math:`\mathcal{N}`.
     """
 
-    def __init__(self,
-                 cmdopts: dict,
-                 inter_perf_csv: str,
-                 interference_count_csv: str) -> None:
-        self.cmdopts = cmdopts
-        self.batch_collate_root = cmdopts["batch_collate_root"]
-        self.inter_perf_stem = inter_perf_csv.split('.')[0]
-        self.interference_stem = interference_count_csv.split('.')[0]
+    @staticmethod
+    def kernel(perf1: float,
+               tlost1: float,
+               perfN: float,
+               tlostN: float,
+               n_robots: int) -> float:
 
-    def calculate(self, batch_criteria: bc.UnivarBatchCriteria):
-        # Get .csv with interference info
-        interference_path = os.path.join(
-            self.batch_collate_root, self.interference_stem + '.csv')
-        assert(core.utils.path_exists(interference_path)
-               ), "FATAL: {0} does not exist".format(interference_path)
-        interference_df = core.utils.pd_csv_read(interference_path)
+        plost1 = perf1 * tlost1
 
-        # Get .csv with performance info
-        perf_path = os.path.join(self.batch_collate_root, self.inter_perf_stem + '.csv')
-        assert(core.utils.path_exists(perf_path)), "FATAL: {0} does not exist".format(perf_path)
-        perf_df = core.utils.pd_csv_read(perf_path)
-
-        exp0_dirname = batch_criteria.gen_exp_dirnames(self.cmdopts)[0]
-
-        # Calculate the performatime lost per timestep for a swarm of size N due to collision
-        # avoidance interference
-        plost_n = self.__calc_plost_n(interference_df,
-                                      perf_df,
-                                      batch_criteria)
-        # By definition, no performance losses with 1 robot
-        plost_n.loc[0, exp0_dirname] = 0.0
-        return plost_n
-
-    def __calc_plost_n(self,
-                       interference_df: pd.DataFrame,
-                       perf_df: pd.DataFrame,
-                       batch_criteria: bc.UnivarBatchCriteria):
-        """
-        Calculated as follows for all swarm sizes N in the batch:
-
-        performance exp0 * tlost_1 (for exp0)
-
-        performance exp0 * (tlost_N - N * tlost_1) / N (else)
-        """
-        plost_n = pd.DataFrame(columns=perf_df.columns, index=[0])
-        exp0_dir = perf_df.columns[0]
-        scale_cols = [c for c in interference_df.columns if c not in [exp0_dir]]
-        populations = batch_criteria.populations(self.cmdopts)
-        plost_n[exp0_dir] = perf_df.tail(1)[exp0_dir] * (interference_df.tail(1)[exp0_dir])
-
-        perf_taili = perf_df.index[-1]
-        for c in scale_cols:
-            n_robots = populations[list(plost_n.columns).index(c)]
-
-            if perf_df.loc[perf_taili, c] == 0:
-                plost_n.loc[0, c] = math.inf
-            else:
-                plost_n.loc[0, c] = perf_df.loc[perf_taili, c] * (interference_df.loc[perf_taili, c] -
-                                                                  interference_df.loc[perf_taili, exp0_dir] * n_robots) / n_robots
-        return plost_n
+        if perfN == 0:
+            return math.inf  # No performance = 100% interactive loss
+        else:
+            return (perfN * tlostN - n_robots * plost1) / n_robots
 
 
-class PerfLostInteractiveSwarmBivar:
-    """
-    Bivariate calculator for the perforance lost per-robot for a swarm of size N of `interacting`
-    robots, as oppopsed to a  swarm of size N of `non-interacting` robots. See
-    :class:`~core.perf_measures.common.PerfLostInteractiveSwarmUnivar` for a description of the
-    mathematical calculations performed by this class.
-    """
-
-    def __init__(self,
-                 cmdopts: dict,
-                 inter_perf_csv: str,
-                 interference_count_csv: str) -> None:
-        self.cmdopts = cmdopts
-        self.batch_collate_root = cmdopts["batch_collate_root"]
-        self.inter_perf_stem = inter_perf_csv.split('.')[0]
-        self.interference_stem = interference_count_csv.split('.')[0]
-
-    def calculate(self, batch_criteria: bc.BivarBatchCriteria):
-        # Get .csv with interference info
-        interference_path = os.path.join(
-            self.batch_collate_root, self.interference_stem + '.csv')
-        assert(core.utils.path_exists(interference_path)
-               ), "FATAL: {0} does not exist".format(interference_path)
-        interference_df = core.utils.pd_csv_read(interference_path)
-
-        # Get .csv with performance info
-        perf_path = os.path.join(self.batch_collate_root, self.inter_perf_stem + '.csv')
-        assert(core.utils.path_exists(perf_path)), "FATAL: {0} does not exist".format(perf_path)
-        perf_df = core.utils.pd_csv_read(perf_path)
-
-        exp0_dirname = batch_criteria.gen_exp_dirnames(self.cmdopts)[0]
-
-        # Calculate the performatime lost per timestep for a swarm of size N due to collision
-        # avoidance interference
-        plost_n = self.__calc_plost_n(interference_df, perf_df, batch_criteria)
-
-        # By definition, no performance losses with 1 robot
-        plost_n.insert(0, exp0_dirname, 0.0)
-        return plost_n
-
-    def __calc_plost_n(self,
-                       interference_df: pd.DataFrame,
-                       perf_df: pd.DataFrame,
-                       batch_criteria: bc.BivarBatchCriteria):
-        """
-        Calculated as follows for all swarm sizes N in the batch:
-
-        performance exp0 * tlost_1 (for exp0)
-
-        performance exp0 * (tlost_N - N * tlost_1) / N (else)
-
-        This gives how much MORE performance was lost in the entire simulation as a result of a
-        swarm of size N, as opposed to a group of N robots that do not interact with each other,
-        only the arena walls.
-        """
-        plost_n = pd.DataFrame(columns=perf_df.columns, index=perf_df.index)
-        exp0_dir = perf_df.columns[0]
-        populations = batch_criteria.populations(self.cmdopts)
-
-        # Calc for exp(0,0)
-        t_lost0 = csv_3D_value_loc(interference_df,
-                                   0,  # exp0 = 1 robot
-                                   exp0_dir,
-                                   slice(-1, None))  # Last in temporal seq = cum avg
-        perf0 = csv_3D_value_loc(perf_df,
-                                 0,  # exp0 = 1 robot
-                                 exp0_dir,
-                                 slice(-1, None))  # Last in temporal seq = cum count
-
-        plost_n.iloc[0, 0] = float(perf0) * float(t_lost0)
-
-        # Calc for general case
-        for i in range(0, len(plost_n.index)):
-            for j in range(0, len(plost_n.columns)):
-                if i == 0 and plost_n.columns[j] == exp0_dir:  # exp(0,0)
-                    continue
-
-                n_blocks = csv_3D_value_iloc(perf_df,
-                                             i,
-                                             j,
-                                             slice(-1, None))
-
-                if n_blocks == 0:
-                    plost_n.iloc[i, j] = math.inf
-                else:
-                    t_lostN = csv_3D_value_iloc(interference_df,
-                                                # Last row = N robots
-                                                len(interference_df.index) - 1,
-                                                j,
-                                                slice(-1, None))  # Last in temporal seq = cum avg
-
-                    # We need to know which of the 2 variables was swarm size, in order to determine
-                    # the correct axis along which to compute the metric, which depends on
-                    # performance between adjacent swarm sizes.
-                    if isinstance(batch_criteria.criteria1, PopulationSize) or self.cmdopts['plot_primary_axis'] == '0':
-                        n_robots = populations[i][0]  # same population in all columns
-                    else:
-                        n_robots = populations[0][j]  # same population in all rows
-
-                    plost_n.iloc[i, j] = n_blocks * \
-                        (t_lostN - t_lost0 * float(n_robots)) / float(n_robots)
-
-        return plost_n
-
-
-class FractionalLosses:
-    """
+class BaseFractionalLosses:
+    r"""
     Base class for calculating the fractional performance losses of a swarm across a range of swarm
-    sizes. Does not do any calculations, but contains functionality and definitions common to both
-    :class:`~core.perf_measures.common.FractionalLossesUnivar` and
-    :class:`~core.perf_measures.common.FractionalLossesBivar`.
+    sizes.
+
+    Fractional performance losses are defined as:
+
+    .. math::
+       :label: pm-fractional-losses
+
+       FL(N,\kappa) = \frac{P_{lost}(N,\kappa,T)}{P(N,\kappa,T)}
+
+    (i.e the fraction of performance which has been lost due to inter-robot interference).
 
     """
+    @staticmethod
+    def kernel(perfN: float, plostN: float) -> float:
+        if plostN == 0:
+            return 1.0  # No performance = 100% fractional loss
+        else:
+            return round(plostN / perfN, 8)
 
     def __init__(self,
                  cmdopts: dict,
                  inter_perf_csv: str,
                  interference_count_csv: str,
-                 batch_criteria: bc.IConcreteBatchCriteria) -> None:
+                 criteria: bc.IConcreteBatchCriteria) -> None:
         self.cmdopts = cmdopts
         self.batch_collate_root = cmdopts["batch_collate_root"]
         self.inter_perf_csv = inter_perf_csv
@@ -246,7 +116,7 @@ class FractionalLosses:
         # Just need to get # timesteps per simulation which is the same for all
         # simulations/experiments, so we pick exp0 for simplicity to calculate
         exp_def = core.utils.unpickle_exp_def(os.path.join(cmdopts["batch_input_root"],
-                                                           batch_criteria.gen_exp_dirnames(
+                                                           criteria.gen_exp_dirnames(
                                                                self.cmdopts)[0],
                                                            "exp_def.pkl"))
 
@@ -259,87 +129,131 @@ class FractionalLosses:
                 ticks = int(float(value))
         self.duration = length * ticks
 
+################################################################################
+# Univariate Classes
+################################################################################
 
-class FractionalLossesUnivar(FractionalLosses):
-    r"""
-    Fractional losses calculation for univariate batch criteria. Fractional performance losses are
-    defined as:
 
-    .. math::
-       :label: pm-fractional-losses
+class PerfLostInteractiveSwarmUnivar(BasePerfLostInteractiveSwarm):
+    """
+    Calculated as follows for all swarm sizes N in the batch:
 
-       FL(N,\kappa) = \frac{P_{lost}(N,\kappa,T)}{P(N,\kappa,T)}
+    plost 1 robot = 0 # By definition
 
-    (i.e the fraction of performance which has been lost due to inter-robot interference).
+    plost N robots = :method:`~BasePerfLostInteractive.kernel()`.
+
+    This gives how much MORE performance was lost in the entire simulation as a result of a swarm of
+    size N, as opposed to a group of N robots that do not interact with each other, only the arena
+    walls. Swarms exhibiting high levels of emergent behavior should have `positive` values of
+    performance loss (i.e. they performed `better` than a swarm of N independent robots).
 
     Does not require the batch criteria to be
     :class:`~core.variables.population_size.PopulationSize` derived, but if all experiments in a
     batch have the same swarm size, then this calculation will be of limited use.
+
     """
 
-    def calculate(self, batch_criteria: bc.UnivarBatchCriteria):
-        # First calculate the performance lost due to inter-robot interference
-        plost_n = PerfLostInteractiveSwarmUnivar(self.cmdopts,
-                                                 self.inter_perf_csv,
-                                                 self.interference_count_csv).calculate(batch_criteria)
+    @staticmethod
+    def df_kernel(criteria: bc.UnivarBatchCriteria,
+                  cmdopts: dict,
+                  interference_df: pd.DataFrame,
+                  perf_df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Calculated as follows for all swarm sizes N in the batch:
 
+        performance exp0 * tlost_1 (for exp0)
+
+        performance exp0 * (tlost_N - N * tlost_1) / N (else)
+
+        This gives how much MORE performance was lost in the entire simulation as a result of a
+        swarm of size N, as opposed to a group of N robots that do not interact with each other,
+        only the arena walls.
+        """
+
+        plostN = pd.DataFrame(columns=perf_df.columns, index=[0])
+        exp0_dir = perf_df.columns[0]
+        populations = criteria.populations(cmdopts)
+
+        # Case 1: 1 robot/exp0
+        perf1 = perf_df.loc[perf_df.index[-1], exp0_dir]
+        tlost1 = interference_df.loc[interference_df.index[-1], exp0_dir]
+
+        # Case 2 : N>1 robots
+        scale_cols = [c for c in interference_df.columns if c not in [exp0_dir]]
+        perf_taili = perf_df.index[-1]
+
+        for c in scale_cols:
+            n_robots = populations[list(plostN.columns).index(c)]
+            perfN = perf_df.loc[perf_taili, c]
+            tlostN = interference_df.loc[perf_taili, c]
+
+            plostN.loc[0, c] = BasePerfLostInteractiveSwarm.kernel(perf1=perf1,
+                                                                   tlost1=tlost1,
+                                                                   perfN=perfN,
+                                                                   tlostN=tlostN,
+                                                                   n_robots=n_robots)
+
+        # By definition, no performance losses with 1 robot
+        plostN.loc[0, exp0_dir] = 0.0
+        return plostN
+
+    def __init__(self,
+                 cmdopts: dict,
+                 inter_perf_csv: str,
+                 interference_count_csv: str) -> None:
+        self.cmdopts = cmdopts
+        self.batch_collate_root = cmdopts["batch_collate_root"]
+        self.inter_perf_stem = inter_perf_csv.split('.')[0]
+        self.interference_stem = interference_count_csv.split('.')[0]
+
+    def from_batch(self, criteria: bc.UnivarBatchCriteria) -> pd.DataFrame:
         # Get .csv with interference info
         interference_path = os.path.join(
             self.batch_collate_root, self.interference_stem + '.csv')
         assert(core.utils.path_exists(interference_path)
                ), "FATAL: {0} does not exist".format(interference_path)
         interference_df = core.utils.pd_csv_read(interference_path)
+        interference_df = interference_df.tail(1)
 
         # Get .csv with performance info
         perf_path = os.path.join(self.batch_collate_root, self.inter_perf_stem + '.csv')
         assert(core.utils.path_exists(perf_path)), "FATAL: {0} does not exist".format(perf_path)
         perf_df = core.utils.pd_csv_read(perf_path)
+        perf_df = perf_df.tail(1)
 
-        exp0_dirname = batch_criteria.gen_exp_dirnames(self.cmdopts)[0]
-        scale_cols = [c for c in interference_df.columns if c not in [exp0_dirname]]
+        # Calculate the performatime lost per timestep for a swarm of size N due to collision
+        # avoidance interference
+        return self.df_kernel(criteria, self.cmdopts, interference_df, perf_df)
 
-        # Calculate fractional losses for all swarm sizes
-        fl_df = FractionalLossesUnivar.__calc_fl(perf_df, plost_n, scale_cols)
 
-        # By definition, no fractional losses with 1 robot
-        fl_df.insert(0, exp0_dirname, 0.0)
-        return fl_df
+class FractionalLossesUnivar(BaseFractionalLosses):
+    """
+    Fractional losses calculation for univariate batch criteria.
 
+    Does not require the batch criteria to be
+    :class:`~core.variables.population_size.PopulationSize` derived, but if all experiments in a
+    batch have the same swarm size, then this calculation will be of limited use.
+
+    """
     @staticmethod
-    def __calc_fl(perf_df: pd.DataFrame,
-                  plost_n: pd.DataFrame,
-                  scale_cols: tp.List[str]):
-        """
-        Calculate fractional losses as:
-
-        (performance lost with N robots / performance with N robots)
-
-        """
-        fl_df = pd.DataFrame(columns=scale_cols, index=[0])
+    def df_kernel(perf_df: pd.DataFrame, plostN: pd.DataFrame) -> pd.DataFrame:
+        fl_df = pd.DataFrame(columns=perf_df.columns, index=[0])
 
         perf_taili = perf_df.index[-1]
-        for c in scale_cols:
-            if (perf_df.loc[perf_taili, c] == 0):
-                fl_df.loc[0, c] = 1.0
-            else:
-                fl_df.loc[0, c] = round(plost_n.loc[0, c] / perf_df.loc[perf_taili, c], 4)
+        fl_df.iloc[0, 0] = 0.0  # By definition, no fractional losses in exp(0,0)
+
+        for i in range(1, len(fl_df.columns)):
+            c = fl_df.columns[i]
+            fl_df.loc[0, c] = BaseFractionalLosses.kernel(perf_df.loc[perf_taili, c],
+                                                          plostN.loc[0, c])
 
         return fl_df
 
-
-class FractionalLossesBivar(FractionalLosses):
-    """
-    Fractional losses calculation for bivariate batch criteria. See
-    :class:`~core.perf_measures.common.FractionalLossesUnivar` for a description of the mathematical
-    calculations performed by this class.
-
-    """
-
-    def calculate(self, batch_criteria: bc.BivarBatchCriteria):
+    def from_batch(self, criteria: bc.UnivarBatchCriteria) -> pd.DataFrame:
         # First calculate the performance lost due to inter-robot interference
-        plost_n = PerfLostInteractiveSwarmBivar(self.cmdopts,
+        plostN = PerfLostInteractiveSwarmUnivar(self.cmdopts,
                                                 self.inter_perf_csv,
-                                                self.interference_count_csv).calculate(batch_criteria)
+                                                self.interference_count_csv).from_batch(criteria)
 
         # Get .csv with performance info
         perf_path = os.path.join(self.batch_collate_root, self.inter_perf_stem + '.csv')
@@ -347,33 +261,7 @@ class FractionalLossesBivar(FractionalLosses):
         perf_df = core.utils.pd_csv_read(perf_path)
 
         # Calculate fractional losses for all swarm sizes
-        fl_df = FractionalLossesBivar.__calc_fl(perf_df, plost_n)
-
-        return fl_df
-
-    @staticmethod
-    def __calc_fl(perf_df: pd.DataFrame, plost_n: pd.DataFrame):
-        """
-        Calculate fractional losses as:
-
-        (performance lost with N robots / performance with N robots)
-
-        """
-        fl_df = pd.DataFrame(columns=perf_df.columns, index=perf_df.index)
-        exp0_dir = perf_df.columns[0]
-
-        for i in range(0, len(fl_df.index)):
-            for c in fl_df.columns:
-                if i == 0 and c == exp0_dir:  # exp(0,0)
-                    fl_df.loc[i, c] = 0.0  # By definition, no fractional losses in exp(0,0)
-                    continue
-
-                perf_N = csv_3D_value_loc(perf_df, i, c, slice(-1, None))
-                if perf_N == 0:
-                    fl_df.loc[i, c] = 1.0
-                else:
-                    fl_df.loc[i, c] = round(plost_n.loc[i, c] / perf_N, 4)
-        return fl_df
+        return self.df_kernel(perf_df, plostN)
 
 
 class WeightedPMUnivar():
@@ -398,7 +286,7 @@ class WeightedPMUnivar():
         self.ax2_alpha = ax2_alpha
         self.title = title
 
-    def generate(self, batch_criteria: bc.IConcreteBatchCriteria):
+    def generate(self, criteria: bc.IConcreteBatchCriteria):
         csv1_istem = os.path.join(self.cmdopts["batch_collate_root"], self.ax1_leaf)
         csv2_istem = os.path.join(self.cmdopts["batch_collate_root"], self.ax2_leaf)
         csv1_ipath = csv1_istem + '.csv'
@@ -418,15 +306,144 @@ class WeightedPMUnivar():
 
         core.utils.pd_csv_write(out_df, csv_ostem + '.csv', index=False)
 
-        xticks = batch_criteria.graph_xticks(self.cmdopts)
+        xticks = criteria.graph_xticks(self.cmdopts)
         len_diff = len(xticks) - len(out_df.columns)
 
         BatchRangedGraph(input_fpath=csv_ostem + '.csv',
                          output_fpath=png_ostem + '.png',
                          title=self.title,
                          ylabel="Value",
-                         xlabel=batch_criteria.graph_xlabel(self.cmdopts),
+                         xlabel=criteria.graph_xlabel(self.cmdopts),
                          xticks=xticks[len_diff:]).generate()
+
+################################################################################
+# Bivariate Classes
+################################################################################
+
+
+class PerfLostInteractiveSwarmBivar(BasePerfLostInteractiveSwarm):
+    """
+    Bivariate calculator for the perforance lost per-robot for a swarm of size N of `interacting`
+    robots, as oppopsed to a  swarm of size N of `non-interacting` robots. See
+    :class:`~core.perf_measures.common.PerfLostInteractiveSwarmUnivar` for a description of the
+    mathematical calculations performed by this class.
+    """
+    @staticmethod
+    def df_kernel(criteria: bc.BivarBatchCriteria,
+                  cmdopts: dict,
+                  interference_df: pd.DataFrame,
+                  perf_df: pd.DataFrame):
+        plostN = pd.DataFrame(columns=perf_df.columns, index=perf_df.index)
+        exp0_dir = perf_df.columns[0]
+        populations = criteria.populations(cmdopts)
+
+        # Calc for exp(0,0)
+        tlost1 = csv_3D_value_loc(interference_df,
+                                  0,  # exp0 = 1 robot
+                                  exp0_dir,
+                                  slice(-1, None))  # Last in temporal seq = cum avg
+        perf1 = csv_3D_value_loc(perf_df,
+                                 0,  # exp0 = 1 robot
+                                 exp0_dir,
+                                 slice(-1, None))  # Last in temporal seq = cum count
+
+        # Calc for general case
+        for i in range(0, len(plostN.index)):
+            for j in range(0, len(plostN.columns)):
+                if i == 0 and plostN.columns[j] == exp0_dir:  # exp(0,0)
+                    # By definition, no performance losses with 1 robot
+                    plostN.loc[i, exp0_dir] = 0.0
+                    continue
+
+                perfN = csv_3D_value_iloc(perf_df,
+                                          i,
+                                          j,
+                                          slice(-1, None))
+
+                tlostN = csv_3D_value_iloc(interference_df,
+                                           # Last row = N robots
+                                           len(interference_df.index) - 1,
+                                           j,
+                                           slice(-1, None))  # Last in temporal seq = cum avg
+
+                # We need to know which of the 2 variables was swarm size, in order to determine the
+                # correct axis along which to compute the metric, which depends on swarm size.
+                if isinstance(criteria.criteria1, PopulationSize) or cmdopts['plot_primary_axis'] == '0':
+                    n_robots = populations[i][0]  # same population in all columns
+                else:
+                    n_robots = populations[0][j]  # same population in all rows
+
+                plostN.loc[i, j] = BasePerfLostInteractiveSwarm.kernel(perf1=perf1,
+                                                                       tlost1=tlost1,
+                                                                       perfN=perfN,
+                                                                       tlostN=tlostN,
+                                                                       n_robots=n_robots)
+
+        return plostN
+
+    def __init__(self,
+                 cmdopts: dict,
+                 inter_perf_csv: str,
+                 interference_count_csv: str) -> None:
+        self.cmdopts = cmdopts
+        self.batch_collate_root = cmdopts["batch_collate_root"]
+        self.inter_perf_stem = inter_perf_csv.split('.')[0]
+        self.interference_stem = interference_count_csv.split('.')[0]
+
+    def from_batch(self, criteria: bc.BivarBatchCriteria):
+        # Get .csv with interference info
+        interference_path = os.path.join(
+            self.batch_collate_root, self.interference_stem + '.csv')
+        assert(core.utils.path_exists(interference_path)
+               ), "FATAL: {0} does not exist".format(interference_path)
+        interference_df = core.utils.pd_csv_read(interference_path)
+
+        # Get .csv with performance info
+        perf_path = os.path.join(self.batch_collate_root, self.inter_perf_stem + '.csv')
+        assert(core.utils.path_exists(perf_path)), "FATAL: {0} does not exist".format(perf_path)
+        perf_df = core.utils.pd_csv_read(perf_path)
+
+        # Calculate the performatime lost per timestep for a swarm of size N due to
+        # inter-robot interference
+        return self.df_kernel(criteria, self.cmdopts, interference_df, perf_df)
+
+
+class FractionalLossesBivar(BaseFractionalLosses):
+    """
+    Fractional losses calculation for bivariate batch criteria. See
+    :class:`~core.perf_measures.common.FractionalLossesUnivar` for a description of the mathematical
+    calculations performed by this class.
+
+    """
+    @staticmethod
+    def df_kernel(perf_df: pd.DataFrame, plostN: pd.DataFrame):
+        fl_df = pd.DataFrame(columns=perf_df.columns, index=perf_df.index)
+        exp0_dir = perf_df.columns[0]
+
+        for i in range(0, len(fl_df.index)):
+            for c in fl_df.columns:
+                if i == 0 and c == exp0_dir:  # exp(0,0)
+                    fl_df.loc[i, c] = 0.0  # By definition, no fractional losses in exp(0,0)
+                    continue
+
+                perfN = csv_3D_value_loc(perf_df, i, c, slice(-1, None))
+                fl_df.loc[i, c] = BaseFractionalLosses.kernel(perfN, plostN)
+
+        return fl_df
+
+    def from_batch(self, criteria: bc.BivarBatchCriteria):
+        # First calculate the performance lost due to inter-robot interference
+        plostN = PerfLostInteractiveSwarmBivar(self.cmdopts,
+                                               self.inter_perf_csv,
+                                               self.interference_count_csv).from_batch(criteria)
+
+        # Get .csv with performance info
+        perf_path = os.path.join(self.batch_collate_root, self.inter_perf_stem + '.csv')
+        assert(core.utils.path_exists(perf_path)), "FATAL: {0} does not exist".format(perf_path)
+        perf_df = core.utils.pd_csv_read(perf_path)
+
+        # Calculate fractional losses for all swarm sizes
+        return FractionalLossesBivar.kernel(perf_df, plostN)
 
 
 class WeightedPMBivar():
@@ -450,7 +467,7 @@ class WeightedPMBivar():
         self.ax2_alpha = ax2_alpha
         self.title = title
 
-    def generate(self, batch_criteria: bc.IConcreteBatchCriteria):
+    def generate(self, criteria: bc.IConcreteBatchCriteria):
         csv1_istem = os.path.join(self.cmdopts["batch_collate_root"], self.ax1_leaf)
         csv2_istem = os.path.join(self.cmdopts["batch_collate_root"], self.ax2_leaf)
         csv1_ipath = csv1_istem + '.csv'
@@ -469,8 +486,8 @@ class WeightedPMBivar():
         out_df = ax1_df * self.ax1_alpha + ax2_df * self.ax2_alpha
         core.utils.pd_csv_write(out_df, csv_ostem + '.csv', index=False)
 
-        xlabels = batch_criteria.graph_xticklabels(self.cmdopts)
-        ylabels = batch_criteria.graph_yticklabels(self.cmdopts)
+        xlabels = criteria.graph_xticklabels(self.cmdopts)
+        ylabels = criteria.graph_yticklabels(self.cmdopts)
 
         len_xdiff = len(xlabels) - len(out_df.index)
         len_ydiff = len(ylabels) - len(out_df.columns)
@@ -478,10 +495,10 @@ class WeightedPMBivar():
         Heatmap(input_fpath=csv_ostem + '.csv',
                 output_fpath=png_ostem + '.png',
                 title=self.title,
-                xlabel=batch_criteria.graph_xlabel(self.cmdopts),
-                ylabel=batch_criteria.graph_ylabel(self.cmdopts),
-                xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts)[len_xdiff:],
-                ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)[len_ydiff:]).generate()
+                xlabel=criteria.graph_xlabel(self.cmdopts),
+                ylabel=criteria.graph_ylabel(self.cmdopts),
+                xtick_labels=criteria.graph_xticklabels(self.cmdopts)[len_xdiff:],
+                ytick_labels=criteria.graph_yticklabels(self.cmdopts)[len_ydiff:]).generate()
 
 
 def csv_3D_value_loc(df, xslice, ycol, zslice):

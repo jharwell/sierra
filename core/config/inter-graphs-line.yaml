@@ -62,14 +62,16 @@ LN_fsm_interference:
       col: int_avg_interference_duration
       title: 'Average Interference Duration (interval)'
       xlabel: 'Interval'
-      ylabel: '# Robots'
+      ylabel: '# Timesteps'
 
     - src_stem: fsm-interference-counts
       dest_stem: interference-duration-cum-avg
       col: cum_avg_interference_duration
       title: 'Average Interference Duration (cumulative)'
       xlabel: 'Interval'
-      ylabel: '# Robots'
+      ylabel: '# Timesteps'
+      batch: True
+
 
 LN_spatial_movement:
   graphs:
@@ -217,6 +219,7 @@ LN_block_manip:
       title: 'Average Free Block Drop Events (Cumulative)'
       xlabel: 'Interval'
       ylabel: '# Drops'
+      batch: True
 
     - src_stem: block-manipulation
       dest_stem: block-manip-free-pickup-penalty-cum-avg

@@ -1,4 +1,5 @@
-# Copyright 2019 John Harwell, All rights reserved.
+# Copyright 2020 John Harwell, All rights reserved.
+#
 #  This file is part of SIERRA.
 #
 #  SIERRA is free software: you can redistribute it and/or modify it under the
@@ -13,4 +14,8 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-import core.plugin_manager
+# Core packages
+
+# 3rd party packages
+
+# Project packages

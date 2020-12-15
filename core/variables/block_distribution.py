@@ -79,9 +79,16 @@ class PowerLawDistribution(BaseDistribution):
 
         2020/7/29: As a first guess, I've set the following parameters:
 
-        - Min :math:`2^X` power to 2
-        - Max 2^X power to :math:`\sqrt{X}`
+        - Min :math:`2`
+        - Max :math:`2^k` where :math:`k=\lceil\sqrt{X}\rceil`
         - # clusters to :math:`X`
+
+        2020/12/14: Update parameters, because with a 504x504 arena, you get 504 clusters of
+        2^23x2^23 each, which causes a segfault. Now setting:
+
+        - Min :math:`2`
+        - Max :math:`2^k` where :math:`k=\lfloor\ln{X}\rfloor`
+        - # clusters to :math:`\lfloor\ln{X}\rfloor`
 
         where :math:`X` is the arena dimension (assumed to be square). Not all of the clusters will
         be able to be placed in all likelihood for many arena layouts, but this is a good
@@ -95,10 +102,10 @@ class PowerLawDistribution(BaseDistribution):
                        "{0}".format(2)),
                       (".//arena_map/blocks/distribution/powerlaw",
                        "pwr_max",
-                       "{0}".format(math.ceil(math.sqrt(self.arena_dim.xsize())))),
+                       "{0}".format(math.floor(math.log(self.arena_dim.xsize())))),
                       (".//arena_map/blocks/distribution/powerlaw",
                        "n_clusters",
-                       "{0}".format(self.arena_dim.xsize()))])
+                       "{0}".format(math.floor(math.log(self.arena_dim.xsize()))))])
         return changes
 
 

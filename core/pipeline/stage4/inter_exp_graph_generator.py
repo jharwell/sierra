@@ -162,9 +162,9 @@ class UnivarPerfMeasuresGenerator:
         raw_ylabel = self.main_config['perf']['raw_perf_ylabel']
 
         if batch_criteria.pm_query('raw'):
-            pmraw.RawUnivar(self.cmdopts, inter_perf_csv).generate(batch_criteria,
-                                                                   title=raw_title,
-                                                                   ylabel=raw_ylabel)
+            pmraw.RawUnivar(self.cmdopts, inter_perf_csv).from_batch(batch_criteria,
+                                                                     title=raw_title,
+                                                                     ylabel=raw_ylabel)
         if batch_criteria.pm_query('scalability'):
             pms.ScalabilityUnivarGenerator()(inter_perf_csv,
                                              interference_count_csv,
@@ -226,8 +226,8 @@ class BivarPerfMeasuresGenerator:
         raw_title = self.main_config['perf']['raw_perf_title']
 
         if batch_criteria.pm_query('raw'):
-            pmraw.RawBivar(self.cmdopts, inter_perf_csv=inter_perf_csv).generate(batch_criteria,
-                                                                                 title=raw_title)
+            pmraw.RawBivar(self.cmdopts, inter_perf_csv=inter_perf_csv).from_batch(batch_criteria,
+                                                                                   title=raw_title)
 
         if batch_criteria.pm_query('scalability'):
             pms.ScalabilityBivarGenerator()(inter_perf_csv,

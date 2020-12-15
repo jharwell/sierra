@@ -41,59 +41,51 @@ class RawUnivar:
     """
     kLeaf = 'PM-raw'
 
+    @staticmethod
+    def df_kernel(df_t: pd.DataFrame) -> pd.DataFrame:
+        df = pd.DataFrame(columns=df_t.columns, index=[0])
+
+        for col in df_t:
+            df[col] = df_t.loc[df_t.index[-1], col]
+
+        return df
+
     def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
         self.inter_perf_stem = inter_perf_csv.split('.')[0]
 
-    def generate(self, batch_criteria: bc.IConcreteBatchCriteria, title: str, ylabel: str):
+    def from_batch(self, criteria: bc.IConcreteBatchCriteria, title: str, ylabel: str):
         logging.info("Univariate raw performance from %s", self.cmdopts["batch_collate_root"])
 
         stddev_ipath = os.path.join(self.cmdopts["batch_collate_root"],
                                     self.inter_perf_stem + '.stddev')
-        stddev_opath = os.path.join(self.cmdopts["batch_collate_root"],
-                                    self.inter_perf_stem + ".stddev")
+        stddev_opath = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf + ".stddev")
         perf_ipath = os.path.join(self.cmdopts["batch_collate_root"], self.inter_perf_stem + '.csv')
-        perf_opath_stem = os.path.join(self.cmdopts["batch_collate_graph_root"], self.kLeaf)
+        perf_opath = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf + '.csv')
+        png_opath = os.path.join(self.cmdopts["batch_collate_graph_root"], self.kLeaf + '.png')
 
+        # We always calculate the metric
+        df = self.df_kernel(core.utils.pd_csv_read(perf_ipath))
+        core.utils.pd_csv_write(df, perf_opath, index=False)
+
+        # Stddev might not have been calculated in stage 3
         if core.utils.path_exists(stddev_ipath):
-            RawUnivar._gen_stddev(stddev_ipath, stddev_opath)
+            stddev_df = self.df_kernel(core.utils.pd_csv_read(stddev_ipath))
+            core.utils.pd_csv_write(stddev_df, stddev_opath, index=False)
 
-        RawUnivar._gen_csv(perf_ipath, perf_opath_stem + '.csv')
-
-        BatchRangedGraph(input_fpath=perf_opath_stem + '.csv',
-                         output_fpath=perf_opath_stem + '.png',
+        BatchRangedGraph(input_fpath=perf_opath,
+                         output_fpath=png_opath,
                          stddev_fpath=stddev_opath,
                          model_fpath=os.path.join(self.cmdopts['batch_model_root'],
-                                                  self.inter_perf_stem + '.model'),
+                                                  self.kLeaf + '.model'),
                          model_legend_fpath=os.path.join(self.cmdopts['batch_model_root'],
-                                                         self.inter_perf_stem + '.legend'),
+                                                         self.kLeaf + '.legend'),
                          title=title,
-                         xlabel=batch_criteria.graph_xlabel(self.cmdopts),
+                         xlabel=criteria.graph_xlabel(self.cmdopts),
                          ylabel=ylabel,
-                         xticks=batch_criteria.graph_xticks(self.cmdopts)).generate()
-
-    @staticmethod
-    def _gen_stddev(ipath: str, opath: str):
-        total_stddev_df = core.utils.pd_csv_read(ipath)
-        cum_stddev_df = pd.DataFrame(columns=total_stddev_df.columns)
-
-        for col in cum_stddev_df.columns:
-            cum_stddev_df[col] = total_stddev_df.tail(1)[col]
-
-        core.utils.pd_csv_write(cum_stddev_df, opath, index=False)
-
-    @staticmethod
-    def _gen_csv(ipath: str, opath: str):
-        assert(core.utils.path_exists(ipath)), "FATAL: {0} does not exist".format(ipath)
-        total_df = core.utils.pd_csv_read(ipath)
-        cum_df = pd.DataFrame(columns=total_df.columns)
-
-        for col in cum_df.columns:
-            cum_df[col] = total_df.tail(1)[col]
-
-        core.utils.pd_csv_write(cum_df, opath, index=False)
+                         xticks=criteria.graph_xticks(self.cmdopts)).generate()
 
 
 class RawBivar:
@@ -111,7 +103,7 @@ class RawBivar:
         self.cmdopts = copy.deepcopy(cmdopts)
         self.inter_perf_stem = inter_perf_csv.split('.')[0]
 
-    def generate(self, batch_criteria: bc.IConcreteBatchCriteria, title: str):
+    def from_batch(self, criteria: bc.IConcreteBatchCriteria, title: str):
         logging.info("Bivariate raw performance from %s", self.cmdopts["batch_collate_root"])
         stddev_ipath = os.path.join(self.cmdopts["batch_collate_root"],
                                     self.inter_perf_stem + '.stddev')
@@ -128,10 +120,10 @@ class RawBivar:
         Heatmap(input_fpath=perf_opath_stem + '.csv',
                 output_fpath=perf_opath_stem + '.png',
                 title=title,
-                xlabel=batch_criteria.graph_xlabel(self.cmdopts),
-                ylabel=batch_criteria.graph_ylabel(self.cmdopts),
-                xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
-                ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)).generate()
+                xlabel=criteria.graph_xlabel(self.cmdopts),
+                ylabel=criteria.graph_ylabel(self.cmdopts),
+                xtick_labels=criteria.graph_xticklabels(self.cmdopts),
+                ytick_labels=criteria.graph_yticklabels(self.cmdopts)).generate()
 
     @staticmethod
     def _gen_stddev(ipath: str, opath: str):

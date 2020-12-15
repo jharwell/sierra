@@ -13,7 +13,10 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-
+"""
+Base classes for defining the variables in SIERRA which are then used to define sets of experiments
+to run. See :ref:`ln-batch-criteria` for full documentation.
+"""
 # Core packages
 import os
 import pickle
@@ -209,7 +212,10 @@ class BatchCriteria():
             for c in exp:
                 if c[0] == ".//arena" and c[1] == "size":
                     x, y, z = c[2].split(',')
-                    dims.append(core.utils.ArenaExtent(Vector3D(float(x), float(y), float(z))))
+                    dims.append(core.utils.ArenaExtent(Vector3D(int(float(x)),
+                                                                int(float(y)),
+                                                                int(float(z)))))
+
         assert len(dims) > 0, "Scenario dimensions not contained in batch criteria"
         return dims
 
@@ -250,28 +256,7 @@ class BatchCriteria():
                      len(chg_defs[0]))
 
         for i, defi in enumerate(chg_defs):
-            exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
-            exp_input_root = os.path.join(self.batch_input_root,
-                                          str(exp_dirname))
-            logging.debug("Applying %s XML attribute changes from batch criteria generator '%s' for exp%s in %s",
-                          len(defi),
-                          self.cli_arg,
-                          i,
-                          exp_dirname)
-
-            core.utils.dir_create_checked(exp_input_root, exist_ok=cmdopts['exp_overwrite'])
-
-            for changes_i in defi:
-                try:
-                    path, attr, value = changes_i
-                except ValueError:
-                    logging.fatal("%s XML changes not a 3-tuple (path,attr,value)", changes_i)
-                    raise
-
-                xml_luigi.attr_change(path, attr, value)
-
-            xml_luigi.write(os.path.join(exp_input_root,
-                                         batch_config_leaf))
+            self._scaffold_expi(xml_luigi, defi, i, cmdopts, batch_config_leaf)
 
         n_exp_dirs = len(os.listdir(self.batch_input_root))
         if n_exps != n_exp_dirs:
@@ -285,6 +270,34 @@ class BatchCriteria():
             logging.fatal(msg2)
             logging.fatal(msg3)
             raise ValueError("Batch experiment size/# exp dir mismatch")
+
+    def _scaffold_expi(self,
+                       xml_luigi,
+                       defi,
+                       i: int,
+                       cmdopts: dict,
+                       batch_config_leaf: str) -> None:
+        exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
+        exp_input_root = os.path.join(self.batch_input_root,
+                                      str(exp_dirname))
+        logging.debug("Applying %s XML attribute changes from batch criteria generator '%s' for exp%s in %s",
+                      len(defi),
+                      self.cli_arg,
+                      i,
+                      exp_dirname)
+
+        core.utils.dir_create_checked(exp_input_root, exist_ok=cmdopts['exp_overwrite'])
+
+        for changes_i in defi:
+            try:
+                path, attr, value = changes_i
+            except ValueError:
+                logging.fatal("%s XML changes not a 3-tuple (path,attr,value)", changes_i)
+                raise
+            xml_luigi.attr_change(path, attr, value)
+
+        xml_luigi.write(os.path.join(exp_input_root,
+                                     batch_config_leaf))
 
 
 @implements.implements(IBatchCriteriaType)
@@ -433,6 +446,7 @@ class BivarBatchCriteria(BatchCriteria):
             return self.criteria2.exp_scenario_name(int(exp_num % len(self.criteria2.gen_attr_changelist())))
         else:
             assert False, "FATAL: bivariate batch criteria does not contain constant density"
+            return None
 
     def graph_xticks(self,
                      cmdopts: dict,
@@ -532,6 +546,7 @@ def factory(main_config: dict,
         return __bivar_factory(main_config, cmdopts, args.batch_criteria, scenario)
     else:
         assert False, "FATAL: 1 or 2 batch criterias must be specified on the cmdline"
+        return None
 
 
 def __univar_factory(main_config: dict,

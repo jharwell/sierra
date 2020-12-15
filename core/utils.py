@@ -49,8 +49,6 @@ class ArenaExtent():
         self.center = origin + dims / 2.0
 
     def contains(self, pt: Vector3D) -> bool:
-        if pt >= self.ll and pt <= self.ur:
-            print(pt >= self.ll, pt <= self.ur)
         return pt >= self.ll and pt <= self.ur
 
     def area(self) -> float:

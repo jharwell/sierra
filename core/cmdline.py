@@ -351,7 +351,7 @@ class CoreCmdline:
                              """ + self.stage_usage_doc([1]),
                              default='dynamics3d')
         physics.add_argument("--physics-n-engines",
-                             choices=[1, 4, 6, 8, 16, 24],
+                             choices=[1, 2, 4, 6, 8, 16, 24],
                              type=int,
                              help="""
 

@@ -28,7 +28,7 @@ import logging
 import core.utils
 import core.variables.batch_criteria as bc
 from core.graphs.batch_ranged_graph import BatchRangedGraph
-from models.execution_record import ExecutionRecord
+from core.models.execution_record import ExecutionRecord
 
 
 class BatchedIntraExpModelRunner:
@@ -138,7 +138,7 @@ class InterExpModelRunner:
             dfs = model.run(criteria, cmdopts)
             for df, csv_stem in zip(dfs, model.target_csv_stems()):
                 path_stem = os.path.join(cmdopts['batch_model_root'], csv_stem)
-
+                print(df, path_stem)
                 # Write model .csv file
                 core.utils.pd_csv_write(df, path_stem + '.model', index=False)
 

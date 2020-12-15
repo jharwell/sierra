@@ -69,9 +69,9 @@ class IConcreteIntraExpModel1D(implements.Interface):
 
 class IConcreteIntraExpModel2D(implements.Interface):
     def run(self,
-            cmdopts: dict,
             criteria: bc.IConcreteBatchCriteria,
-            exp_num: int) -> tp.List[pd.DataFrame]:
+            exp_num: int,
+            cmdopts: dict) -> tp.List[pd.DataFrame]:
         """
         Run the model and generate a list of dataframes, each targeting (potentially) different
         graphs. Each data frame should be a NxM grid (with N not necessarily equal to M). All

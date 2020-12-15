@@ -24,7 +24,7 @@ import logging
 
 from core.graphs.stacked_line_graph import StackedLineGraph
 from core.graphs.heatmap import Heatmap
-from models.graphs import IntraExpModel2DGraphSet
+from core.models.graphs import IntraExpModel2DGraphSet
 from core.pipeline.stage4.flexibility_plots import FlexibilityPlotsCSVGenerator, FlexibilityPlotsDefinitionsGenerator
 import core.utils
 

@@ -44,7 +44,7 @@ class Vector3D:
         return Vector3D((self.x * o.x) + (self.y * o.y) + (self.z * o.z))
 
     def __truediv__(self, o):
-        if isinstance(o, float) or isinstance(o, int):
+        if isinstance(o, (float, int)):
             return Vector3D((self.x / o), (self.y / o), (self.z / o))
         else:
             raise NotImplementedError
