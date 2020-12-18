@@ -75,7 +75,8 @@ class PopulationSize(bc.UnivarBatchCriteria):
             exp_dirs = self.gen_exp_dirnames(cmdopts)
 
         ret = list(map(float, self.populations(cmdopts, exp_dirs)))
-        if cmdopts['plot_log_xaxis']:
+
+        if cmdopts['plot_log_xscale']:
             return [int(math.log2(x)) for x in ret]
         else:
             return ret
@@ -87,8 +88,8 @@ class PopulationSize(bc.UnivarBatchCriteria):
         return list(map(str, self.graph_xticks(cmdopts, exp_dirs)))
 
     def graph_xlabel(self, cmdopts: dict) -> str:
-        if cmdopts['plot_log_xaxis']:
-            return r"$\log_{2}$(Swarm Size)"
+        if cmdopts['plot_log_xscale']:
+            return r"$\log$(Swarm Size)"
 
         return "Swarm Size"
 

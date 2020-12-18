@@ -39,7 +39,7 @@ def __sierra_run_default(args):
 
     logging.info("Controller=%s, Scenario=%s", controller, scenario)
     cmdopts = rdg.from_cmdline(args)
-    pipeline = Pipeline(args, controller, scenario, cmdopts)
+    pipeline = Pipeline(args, controller, cmdopts)
     pipeline.run()
 
 
@@ -90,7 +90,7 @@ def __sierra_run():
     if 5 not in args.pipeline:
         __sierra_run_default(args)
     else:
-        pipeline = Pipeline(args, None, None, None)
+        pipeline = Pipeline(args, None, {})
         pipeline.run()
 
 

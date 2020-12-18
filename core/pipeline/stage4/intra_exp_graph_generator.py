@@ -189,7 +189,7 @@ class LinegraphsGenerator:
             # For each graph in each category
             for graph in category['graphs']:
                 output_fpath = os.path.join(self.exp_graph_root,
-                                            graph['dest_stem'] + '-LN.png')
+                                            graph['dest_stem'] + '-LN' + core.config.kImageExt)
                 try:
                     StackedLineGraph(input_fpath=os.path.join(self.exp_avgd_root,
                                                               graph['src_stem'] + '.csv'),
@@ -204,7 +204,8 @@ class LinegraphsGenerator:
                                      title=graph['title'],
                                      legend=graph['legend'],
                                      xlabel=graph['xlabel'],
-                                     ylabel=graph['ylabel']).generate()
+                                     ylabel=graph['ylabel'],
+                                     logyscale=self.cmdopts['plot_log_yscale']).generate()
                 except KeyError:
                     raise KeyError('Check that the generated {0}.csv file contains the columns {1}'.format(
                         graph['src_stem'],
@@ -249,7 +250,7 @@ class HeatmapsGenerator:
                     input_fpath = os.path.join(self.exp_avgd_root,
                                                graph['src_stem'] + '.csv')
                     output_fpath = os.path.join(self.exp_graph_root,
-                                                graph['src_stem'] + '-HM.png')
+                                                graph['src_stem'] + '-HM' + core.config.kImageExt)
 
                     Heatmap(input_fpath=input_fpath,
                             output_fpath=output_fpath,

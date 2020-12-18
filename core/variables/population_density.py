@@ -23,6 +23,7 @@ documentation.
 import typing as tp
 import os
 import logging
+import math
 
 # 3rd party packages
 import implements
@@ -83,25 +84,27 @@ class PopulationConstantDensity(cd.ConstantDensity):
     def graph_xticks(self,
                      cmdopts: dict,
                      exp_dirs: tp.List[str] = None) -> tp.List[float]:
-        areas = []
+
         if exp_dirs is None:
             exp_dirs = self.gen_exp_dirnames(cmdopts)
 
-        for d in exp_dirs:
-            pickle_fpath = os.path.join(self.batch_input_root,
-                                        d,
-                                        "exp_def.pkl")
-            exp_def = core.utils.unpickle_exp_def(pickle_fpath)
-            areas.append(core.utils.extract_arena_dims(exp_def).area())
-        return areas
+        ret = list(map(int, self.populations(cmdopts, exp_dirs)))
+
+        if cmdopts['plot_log_xscale']:
+            return [int(math.log2(x)) for x in ret]
+        else:
+            return ret
 
     def graph_xticklabels(self,
                           cmdopts: dict,
                           exp_dirs: tp.List[str] = None) -> tp.List[str]:
-        return [str(int(self.target_density / 100.0 * x)) for x in self.graph_xticks(cmdopts, exp_dirs)]
+        return list(map(str, self.graph_xticks(cmdopts, exp_dirs)))
 
     def graph_xlabel(self, cmdopts: dict) -> str:
-        return r"Population Size"
+        if cmdopts['plot_log_xscale']:
+            return r"$\log$(Swarm Size)"
+
+        return r"Swarm Size"
 
     def pm_query(self, pm: str) -> bool:
         return pm in ['raw', 'scalability', 'self-org']

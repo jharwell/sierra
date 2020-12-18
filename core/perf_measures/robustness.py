@@ -17,12 +17,15 @@
 Classes for measuring the robustness of a swarm configuration in various ways.
 """
 
+# Core packages
 import os
 import copy
 import logging
 
+# 3rd party packages
 import pandas as pd
 
+# Project packages
 from core.graphs.batch_ranged_graph import BatchRangedGraph
 from core.perf_measures import vcs
 import core.variables.batch_criteria as bc
@@ -83,13 +86,14 @@ class RobustnessSAAUnivar:
 
         BatchRangedGraph(input_fpath=stem_opath + '.csv',
                          output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
-                                                   self.kLeaf + ".png"),
+                                                   self.kLeaf + core.config.kImageExt),
                          title="Swarm Robustness (SAA)",
                          xlabel=criteria.graph_xlabel(self.cmdopts),
                          ylabel=vcs.method_ylabel(self.cmdopts["rperf_cs_method"],
                                                   'robustness_saa'),
                          xticks=criteria.graph_xticks(self.cmdopts),
-                         xtick_labels=criteria.graph_xticklabels(self.cmdopts)).generate()
+                         xtick_labels=criteria.graph_xticklabels(self.cmdopts),
+                         logyscale=self.cmdopts['plot_log_yscale']).generate()
 
 
 class RobustnessPDUnivar:
@@ -141,12 +145,13 @@ class RobustnessPDUnivar:
 
         BatchRangedGraph(input_fpath=stem_opath + '.csv',
                          output_fpath=os.path.join(
-                             self.cmdopts["batch_collate_graph_root"], self.kLeaf + ".png"),
+                             self.cmdopts["batch_collate_graph_root"], self.kLeaf + core.config.kImageExt),
                          title="Swarm Robustness (Population Dynamics)",
                          xlabel=criteria.graph_xlabel(self.cmdopts),
                          ylabel="Robustness Value",
                          xticks=criteria.graph_xticks(self.cmdopts),
-                         xtick_labels=criteria.graph_xticklabels(self.cmdopts)).generate()
+                         xtick_labels=criteria.graph_xticklabels(self.cmdopts),
+                         logyscale=self.cmdopts['plot_log_yscale']).generate()
 
 
 class RobustnessUnivarGenerator:
@@ -240,7 +245,7 @@ class RobustnessSAABivar:
 
         Scatterplot2D(input_fpath=opath,
                       output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
-                                                self.kLeaf + "-vs-perf.png"),
+                                                self.kLeaf + "-vs-perf" + core.config.kImageExt),
                       title='Swarm Robustness (SAA) vs. Performance',
                       xcol='robustness-saa',
                       ycol='perf',
@@ -267,7 +272,7 @@ class RobustnessSAABivar:
 
         Heatmap(input_fpath=opath_stem + '.csv',
                 output_fpath=os.path.join(
-                    self.cmdopts["batch_collate_graph_root"], self.kLeaf + ".png"),
+                    self.cmdopts["batch_collate_graph_root"], self.kLeaf + core.config.kImageExt),
                 title='Swarm Robustness (SAA)',
                 xlabel=criteria.graph_xlabel(self.cmdopts),
                 ylabel=criteria.graph_ylabel(self.cmdopts),
@@ -352,7 +357,7 @@ class RobustnessPDBivar:
 
         Scatterplot2D(input_fpath=opath,
                       output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
-                                                self.kLeaf + "-vs-perf.png"),
+                                                self.kLeaf + "-vs-perf" + core.config.kImageExt),
                       title='Swarm Robustness (Fluctuating Population) vs. Performance',
                       xcol='robustness-size',
                       ycol='perf',
@@ -379,7 +384,7 @@ class RobustnessPDBivar:
 
         Heatmap(input_fpath=opath_stem + '.csv',
                 output_fpath=os.path.join(
-                    self.cmdopts["batch_collate_graph_root"], self.kLeaf + ".png"),
+                    self.cmdopts["batch_collate_graph_root"], self.kLeaf + core.config.kImageExt),
                 title='Swarm Robustness (Fluctuating Populations)',
                 xlabel=criteria.graph_xlabel(self.cmdopts),
                 ylabel=criteria.graph_ylabel(self.cmdopts),

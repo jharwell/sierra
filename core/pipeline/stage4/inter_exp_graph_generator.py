@@ -19,10 +19,14 @@
 Classes for generating graphs across experiments in a batch.
 """
 
+# Core packages
 import os
 import copy
 import logging
 
+# 3rd party packages
+
+# Project packages
 import core.perf_measures.scalability as pms
 import core.perf_measures.self_organization as pmso
 import core.perf_measures.raw as pmraw
@@ -32,6 +36,7 @@ import core.utils
 from core.graphs.stacked_line_graph import StackedLineGraph
 from core.graphs.batch_ranged_graph import BatchRangedGraph
 from core.variables import batch_criteria as bc
+import core.config
 
 
 class InterExpGraphGenerator:
@@ -112,12 +117,13 @@ class LinegraphsGenerator:
                                      model_legend_fpath=os.path.join(self.cmdopts['batch_model_root'],
                                                                      graph['dest_stem'] + '.legend'),
                                      output_fpath=os.path.join(self.cmdopts['batch_collate_graph_root'],
-                                                               'BR-' + graph['dest_stem'] + '.png'),
+                                                               'BR-' + graph['dest_stem'] + core.config.kImageExt),
                                      title=graph['title'],
                                      xlabel=criteria.graph_xlabel(self.cmdopts),
                                      ylabel=graph['ylabel'],
                                      xticks=criteria.graph_xticks(self.cmdopts),
                                      xtick_labels=criteria.graph_xticklabels(self.cmdopts),
+                                     logyscale=self.cmdopts['plot_log_yscale'],
                                      legend=['Empirical Data']).generate()
                 else:
                     StackedLineGraph(input_fpath=os.path.join(self.cmdopts['batch_collate_root'],
@@ -129,12 +135,13 @@ class LinegraphsGenerator:
                                      model_legend_fpath=os.path.join(self.cmdopts['batch_model_root'],
                                                                      graph['dest_stem'] + '.legend'),
                                      output_fpath=os.path.join(self.cmdopts['batch_collate_graph_root'],
-                                                               'SLN-' + graph['dest_stem'] + '.png'),
+                                                               'SLN-' + graph['dest_stem'] + core.config.kImageExt),
                                      cols=None,
                                      title=graph['title'],
                                      legend=None,
                                      xlabel=graph['xlabel'],
-                                     ylabel=graph['ylabel']).generate()
+                                     ylabel=graph['ylabel'],
+                                     logyscale=self.cmdopts['plot_log_yscale']).generate()
 
 
 class UnivarPerfMeasuresGenerator:

@@ -19,6 +19,7 @@ Classes for rendering frames (1) captured by ARGoS during simulation, (2) genera
 of SIERRA.
 """
 
+# Core packages
 import os
 import subprocess
 import logging
@@ -27,7 +28,9 @@ import multiprocessing as mp
 import queue
 import copy
 
+# 3rd party packages
 
+# Project packages
 import core.utils
 
 
@@ -114,12 +117,13 @@ class BatchedExpVideoRenderer:
 
 class ExpVideoRenderer:
     """
-    Render all frames (.png files) in a specified input directory to a video file via ffmpeg, output
-    according to configuration.
+    Render all frames (.png/.jpg/etc files) in a specified input directory to a video file via
+    ffmpeg, output according to configuration.
 
     Arguments:
         main_config: Parsed dictionary of main YAML configuration.
         render_opts: Dictionary of render options.
+
     """
 
     def __call__(self, main_config: dict, render_opts: tp.Dict[str, str]) -> None:
@@ -133,7 +137,7 @@ class ExpVideoRenderer:
                "-pattern_type",
                "glob",
                "-i",
-               "'" + os.path.join(render_opts['image_dir'], "*.png") + "'"]
+               "'" + os.path.join(render_opts['image_dir'], "*" + core.config.kImageExt) + "'"]
         cmd.extend(opts)
         cmd.extend([os.path.join(render_opts['output_dir'],
                                  render_opts['ofile_leaf'])])

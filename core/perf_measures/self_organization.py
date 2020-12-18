@@ -19,12 +19,15 @@ Measures for swarm self-organization/emergence in univariate and bivariate batch
 """
 
 
+# Core packages
 import os
 import copy
 import logging
 
+# 3rd party packages
 import pandas as pd
 
+# Project packages
 from core.graphs.batch_ranged_graph import BatchRangedGraph
 from core.graphs.heatmap import Heatmap
 from core.perf_measures import common
@@ -32,6 +35,7 @@ from core.variables import batch_criteria as bc
 from core.variables import population_size
 from core.variables import population_density
 import core.utils
+import core.config
 
 ################################################################################
 # Base Classes
@@ -302,11 +306,12 @@ class FLMarginalUnivar(BaseFLMarginal):
                          model_legend_fpath=os.path.join(self.cmdopts['batch_model_root'],
                                                          self.kLeaf + '.legend'),
                          output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
-                                                   self.kLeaf + ".png"),
+                                                   self.kLeaf + core.config.kImageExt),
                          title="Swarm Self-Organization via Marginal Sub-Linear Performance Losses",
                          xlabel=criteria.graph_xlabel(self.cmdopts),
                          ylabel="Value",
-                         xticks=criteria.graph_xticks(self.cmdopts)).generate()
+                         xticks=criteria.graph_xticks(self.cmdopts),
+                         logyscale=self.cmdopts['plot_log_yscale']).generate()
 
 
 class FLInteractiveUnivar(BaseFLInteractive):
@@ -388,11 +393,12 @@ class FLInteractiveUnivar(BaseFLInteractive):
                          model_legend_fpath=os.path.join(self.cmdopts['batch_model_root'],
                                                          self.kLeaf + '.legend'),
                          output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
-                                                   self.kLeaf + ".png"),
+                                                   self.kLeaf + core.config.kImageExt),
                          title="Swarm Self-Organization via Sub-Linear Performance Losses Through Interaction",
                          xlabel=criteria.graph_xlabel(self.cmdopts),
                          ylabel="Value",
-                         xticks=criteria.graph_xticks(self.cmdopts)).generate()
+                         xticks=criteria.graph_xticks(self.cmdopts),
+                         logyscale=self.cmdopts['plot_log_yscale']).generate()
 
 
 class PGMarginalUnivar(BasePGMarginal):
@@ -472,11 +478,12 @@ class PGMarginalUnivar(BasePGMarginal):
                          model_legend_fpath=os.path.join(self.cmdopts['batch_model_root'],
                                                          self.kLeaf + '.legend'),
                          output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
-                                                   self.kLeaf + '.png'),
+                                                   self.kLeaf + core.config.kImageExt),
                          title="Swarm Self-Organization via Marginal Performance Gains",
                          xlabel=criteria.graph_xlabel(self.cmdopts),
                          ylabel="Value",
-                         xticks=criteria.graph_xticks(self.cmdopts)).generate()
+                         xticks=criteria.graph_xticks(self.cmdopts),
+                         logyscale=self.cmdopts['plot_log_yscale']).generate()
 
 
 class PGInteractiveUnivar(BasePGInteractive):
@@ -554,11 +561,12 @@ class PGInteractiveUnivar(BasePGInteractive):
                                                          self.kLeaf + '.legend'),
 
                          output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
-                                                   self.kLeaf + '.png'),
+                                                   self.kLeaf + core.config.kImageExt),
                          title="Swarm Self-Organization via Performance Gains Through Interaction",
                          xlabel=criteria.graph_xlabel(self.cmdopts),
                          ylabel="Value",
-                         xticks=criteria.graph_xticks(self.cmdopts)).generate()
+                         xticks=criteria.graph_xticks(self.cmdopts),
+                         logyscale=self.cmdopts['plot_log_yscale']).generate()
 
 
 class SelfOrgUnivarGenerator:
@@ -667,7 +675,7 @@ class FLMarginalBivar(BaseFLMarginal):
 
         Heatmap(input_fpath=stem_path + '.csv',
                 output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
-                                          self.kLeaf + ".png"),
+                                          self.kLeaf + core.config.kImageExt),
                 title="Swarm Self-Organization via Marginal Sub-Linear Performance Losses",
                 xlabel=criteria.graph_xlabel(self.cmdopts),
                 ylabel=criteria.graph_ylabel(self.cmdopts),
@@ -744,7 +752,7 @@ class FLInteractiveBivar(BaseFLInteractive):
 
         Heatmap(input_fpath=stem_path + '.csv',
                 output_fpath=os.path.join(
-                    self.cmdopts["batch_collate_graph_root"], self.kLeaf + ".png"),
+                    self.cmdopts["batch_collate_graph_root"], self.kLeaf + core.config.kImageExt),
                 title="Swarm Self-Organization via Sub-Linear Performance Losses",
                 xlabel=criteria.graph_xlabel(self.cmdopts),
                 ylabel=criteria.graph_ylabel(self.cmdopts),
@@ -836,7 +844,7 @@ class PGMarginalBivar(BasePGMarginal):
 
         Heatmap(input_fpath=stem_path + '.csv',
                 output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
-                                          self.kLeaf + ".png"),
+                                          self.kLeaf + core.config.kImageExt),
                 title="Swarm Self-Organization via Marginal Performance Gains",
                 xlabel=criteria.graph_xlabel(self.cmdopts),
                 ylabel=criteria.graph_ylabel(self.cmdopts),
@@ -923,7 +931,7 @@ class PGInteractiveBivar(BasePGInteractive):
 
         Heatmap(input_fpath=stem_path + '.csv',
                 output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
-                                          self.kLeaf + ".png"),
+                                          self.kLeaf + core.config.kImageExt),
                 title="Swarm Self-Organization via Performance Gains Through Interaction",
                 xlabel=criteria.graph_xlabel(self.cmdopts),
                 ylabel=criteria.graph_ylabel(self.cmdopts),

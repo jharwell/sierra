@@ -28,7 +28,6 @@ import logging
 import core.utils
 import core.variables.batch_criteria as bc
 from core.graphs.batch_ranged_graph import BatchRangedGraph
-from core.models.execution_record import ExecutionRecord
 
 
 class BatchedIntraExpModelRunner:
@@ -50,8 +49,6 @@ class BatchedIntraExpModelRunner:
                                                self.cmdopts['batch_output_root'],
                                                criteria)
 
-        records = ExecutionRecord()
-
         for i, exp in enumerate(exp_to_run):
             exp = os.path.split(exp)[1]
             cmdopts = copy.deepcopy(self.cmdopts)
@@ -66,12 +63,6 @@ class BatchedIntraExpModelRunner:
             for model in self.models:
                 if not model.run_for_exp(criteria, cmdopts, i) or model.previously_run(i):
                     logging.debug("Skip running intra-experiment model from '%s' for exp%s",
-                                  str(model),
-                                  i)
-                    records.intra_record_add(model.config['pyfile'], i)
-                    continue
-                elif records.intra_record_exists(model.config['pyfile'], i):
-                    logging.debug("Retrieve results for previously run intra-experiment model '%s' for exp%s",
                                   str(model),
                                   i)
                     continue
@@ -119,16 +110,9 @@ class InterExpModelRunner:
         core.utils.dir_create_checked(cmdopts['batch_model_root'], exist_ok=True)
         core.utils.dir_create_checked(cmdopts['batch_collate_graph_root'], exist_ok=True)
 
-        records = ExecutionRecord()
-
         for model in self.models:
             if not model.run_for_batch(criteria, cmdopts):
                 logging.debug("Skip running inter-experiment model '%s'",
-                              str(model))
-                records.inter_record_add(model.config['pyfile'])
-                continue
-            elif records.inter_record_exists(model.config['pyfile']):
-                logging.debug("Retrieve results for previously run inter-experiment model '%s'",
                               str(model))
                 continue
 

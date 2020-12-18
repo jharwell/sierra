@@ -108,7 +108,7 @@ class CoreCmdline:
     Project plugins should inherit from this class and add to its arguments as necessary. The
     following arguments **MUST** be added (or SIERRA will probably crash):
 
-    - ``--controllers``
+    - ``--controller``
 
     Attributes:
         parser:: class: `argparse.ArgumentParser`. Holds non stage-specific arguments.
@@ -647,17 +647,36 @@ class CoreCmdline:
                         default='sigmoid')
 
         # Plotting options
-        self.stage4.add_argument("--plot-log-xaxis",
+        self.stage4.add_argument("--plot-log-xscale",
                                  help="""
 
-                                 Place the set of X values used to generate intra- and inter-experiment into the
-                                 logarithmic (base 2) space. Mainly useful when the batch criteria involves large swarm
+                                 Place the set of X values used to generate intra- and inter-experiment graphs into the
+                                 logarithmic space. Mainly useful when the batch criteria involves large swarm
                                  sizes, so that the plots are more readable.
 
                                  """ +
 
-                                 self.bc_applicable_doc([':ref:`Population Size <ln-bc-population-size>`']) +
-                                 self.stage_usage_doc([4]),
+                                 self.graphs_applicable_doc([':class:`~core.graphs.batch_ranged_graph.BatchRangedGraph`']) +
+                                 self.bc_applicable_doc([':ref:`Population Density <ln-bc-population-density>`',
+                                                         ':ref:`Population Size <ln-bc-population-size>`']) +
+                                 self.stage_usage_doc([4, 5]),
+                                 action='store_true')
+
+        self.stage4.add_argument("--plot-log-yscale",
+                                 help="""
+
+                                 Place the set of Y values used to generate intra- and inter-experiment graphs into the
+                                 logarithmic space. Mainly useful when the batch criteria involves large swarm
+                                 sizes, so that the plots are more readable.
+
+
+                                 """ +
+
+                                 self.graphs_applicable_doc([':class:`~core.graphs.batch_ranged_graph.BatchRangedGraph`',
+                                                             ':class:`~core.graphs.stacked_line_graph.StackedLineGraph`']) +
+                                 self.bc_applicable_doc([':ref:`Population Size <ln-bc-population-size>`',
+                                                         ':ref:`Population Density <ln-bc-population-density>`']) +
+                                 self.stage_usage_doc([4, 5]),
                                  action='store_true')
 
         self.stage4.add_argument("--plot-regression-lines",
@@ -666,6 +685,7 @@ class CoreCmdline:
                                  For all 2D generated scatterplots, plot a linear regression line and the equation of
                                  the line to the legend. """ +
 
+                                 self.graphs_applicable_doc([':class:`~core.graphs.batch_ranged_graph.BatchRangedGraph`']) +
                                  self.bc_applicable_doc([':ref:`SAA Noise <ln-bc-saa-noise>`']) +
                                  self.stage_usage_doc([4]))
 
@@ -673,9 +693,8 @@ class CoreCmdline:
                                  help="""
 
 
-                                 For all heatmaps generated from performance measures, this option allows you to
-                                 override the primary axis, which is normally it is computed based on the batch
-                                 criteria.
+                                 This option allows you to override the primary axis, which is normally it is computed
+                                 based on the batch criteria.
 
                                  For example, if the first batch criteria swarm population size, then swarm scalability
                                  metrics will be computed by COMPUTING across .csv rows and PRJECTING down the columns
@@ -686,7 +705,9 @@ class CoreCmdline:
 
                                  0=rows
                                  1=columns
-                                 """ + self.stage_usage_doc([4]),
+                                 """ +
+                                 self.graphs_applicable_doc([':class:`~core.graphs.heatmap.Heatmap`']) +
+                                 self.stage_usage_doc([4]),
                                  default=None)
 
         # Model options
@@ -768,10 +789,9 @@ class CoreCmdline:
         rendering.add_argument("--render-cmd-opts",
                                help="""
 
-                               Specify the ffmpeg options to appear between the specification of the input ``.png``
-                               files and the specification of the output file. The default is suitable for use with
-                               ARGoS frame grabbing set to a frames size of 1600x1200 to output a reasonable quality
-                               video.
+                               Specify the ffmpeg options to appear between the specification of the input image files
+                               and the specification of the output file. The default is suitable for use with ARGoS
+                               frame grabbing set to a frames size of 1600x1200 to output a reasonable quality video.
 
                                """ + self.stage_usage_doc([4]),
                                default="-r 10 -s:v 800x600 -c:v libx264 -crf 25 -filter:v scale=-2:956 -pix_fmt yuv420p")
@@ -821,6 +841,16 @@ class CoreCmdline:
         """
         Define cmdline arguments for stage 5.
         """
+        self.stage5.add_argument("--controllers-list",
+                                 help="""
+
+                                 Comma separated list of controllers to compare within `` < sierra root > ``.
+
+                                 The first controller in this list will be used for as the controller of primary
+                                 interest if ``--comparison-type`` is passed.
+
+                                 """ + self.stage_usage_doc([5]))
+
         self.stage5.add_argument("--controllers-legend",
                                  help="""
 
@@ -830,6 +860,41 @@ class CoreCmdline:
 
                                  """ + self.stage_usage_doc([5],
                                                             "If omitted: the raw controller names will be used."))
+
+        self.stage5.add_argument("--scenarios-list",
+                                 help="""
+
+                                 Comma separated list of scenarios to compare ``--controller`` across within `` < sierra
+                                 root > ``.
+
+                                 """ + self.stage_usage_doc([5]))
+
+        self.stage5.add_argument("--scenarios-legend",
+                                 help="""
+
+                                 Comma separated list of names to use on the legend for the generated inter-scenario
+                                 controller comparison graphs(if applicable), specified in the same order as the
+                                 `--scenarios-list`.
+
+                                 """ + self.stage_usage_doc([5],
+                                                            "If omitted: the raw scenario names will be used."))
+        self.stage5.add_argument("--scenario-comparison",
+                                 help="""
+
+                                 Perform a comparison of ``--controller`` across `--scenarios-list` (univariate batch
+                                 criteria only).
+                                 """ + self.stage_usage_doc([5],
+                                                            "Either ``--scenario-comparison`` or ``--controller-comparison`` must be passed."),
+                                 action='store_true')
+
+        self.stage5.add_argument("--controller-comparison",
+                                 help="""
+
+                                 Perform a comparison of ``--controllers-list`` across all scenarios at least one
+                                 controller has been run on..
+                                 """ + self.stage_usage_doc([5],
+                                                            "Either ``- -scenario-comparison`` or ``--controller-comparison`` must be passed."),
+                                 action='store_true')
 
         self.stage5.add_argument("--comparison-type",
                                  choices=['raw1D', 'raw2D', 'raw3D', 'scale2D',
@@ -908,17 +973,7 @@ class CoreCmdline:
                                  """ + self.stage_usage_doc([5]),
                                  action='store_true')
 
-        self.stage5.add_argument("--controllers-list",
-                                 help="""
-
-                                 Comma separated list of controllers to compare within `` < sierra root > ``.
-
-                                 The first controller in this list will be used for as the controller of primary
-                                 interest if ``--comparison-type`` is passed.
-
-                                 """ + self.stage_usage_doc([5]))
-
-    @staticmethod
+    @ staticmethod
     def cs_methods_doc():
         return r"""
 
@@ -958,14 +1013,19 @@ class CoreCmdline:
           - Normalized domain: N/A.
         """
 
-    @staticmethod
+    @ staticmethod
     def stage_usage_doc(stages: tp.List[int], omitted: str = "If omitted: N/A.") -> str:
-        return "\n.. admonition:: Stage usage\n\n   Used by stage{" + ",".join(map(str, stages)) + "}; can be omitted otherwise. " + omitted + "\n"
+        return "\n.. ADMONITION:: Stage usage\n\n   Used by stage{" + ",".join(map(str, stages)) + "}; can be omitted otherwise. " + omitted + "\n"
 
-    @staticmethod
+    @ staticmethod
     def bc_applicable_doc(criteria: tp.List[str]) -> str:
         lst = "".join(map(lambda bc: "   - " + bc + "\n", criteria))
         return "\n.. ADMONITION:: Applicable batch criteria\n\n" + lst + "\n"
+
+    @ staticmethod
+    def graphs_applicable_doc(graphs: tp.List[str]) -> str:
+        lst = "".join(map(lambda graph: "   - " + graph + "\n", graphs))
+        return "\n.. ADMONITION:: Applicable graphs\n\n" + lst + "\n"
 
 
 class CoreCmdlineValidator():
@@ -1002,6 +1062,8 @@ class CoreCmdlineValidator():
         if 5 in args.pipeline:
             assert args.bc_univar or args.bc_bivar, \
                 '--bc-univar or --bc-bivar is required for stage 5'
+            assert args.scenario_comparison or args.controller_comparison,\
+                '--scenario-comparison or --controller-comparison required for stage 5'
 
 
 def sphinx_cmdline_core():

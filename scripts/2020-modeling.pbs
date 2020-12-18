@@ -35,8 +35,10 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 # Begin Experiments                                                            #
 ################################################################################
 OUTPUT_ROOT=$HOME/exp/2020-modeling
-TIME_LONG=time_setup.T200000N1000
+TIME_LONG=time_setup.T100000N1000
 TIME_SHORT=time_setup.T5000
+DENSITY=1p0
+CARDINALITY=C8
 
 if [ -n "$MSICLUSTER" ] # Running on MSI
 then
@@ -48,24 +50,23 @@ then
                   --template-input-file=$HOME/git/sierra/templates/ideal.argos \
                   --n-sims=$NSIMS\
                   --physics-n-engines=1\
-                  --pipeline 1 2 3 4\
-                   --exp-graphs=inter\
+                  --exp-graphs=inter\
                   --project=fordyca\
                   --hpc-env=msi \
                   --no-verify-results\
                   --gen-stddev\
-                  --exp-overwrite"
+                  --exp-overwrite\
+                  --time-setup=${TIME_LONG}"
 else
-    NSIMS=8
-    # SCENARIOS=(SS.16x8 DS.16x8 RN.8x8)
-    SCENARIOS=(PL.8x8)
-
+    TASK="$1"
+    NSIMS=48
+    SCENARIOS=(SS.16x8 DS.16x8 RN.8x8 PL.8x8)
     BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT\
                   --template-input-file=$HOME/git/sierra/templates/ideal.argos \
                   --n-sims=$NSIMS\
+                  --controller=d0.CRW\
                   --physics-n-engines=2\
-                  --pipeline 4\
                   --exp-graphs=inter\
                   --project=fordyca\
                   --hpc-env=local --log-level=DEBUG\
@@ -78,15 +79,36 @@ else
 fi
 
 cd $HOME/git/sierra
-for s in "${SCENARIOS[@]}"
-    do
-        # $BASE_CMD --scenario=$s \
-        #           --batch-criteria block_quantity.cube.Linear200 \
-        #           --controller=d0.CRW\
-        #           --n-robots=1
 
-        $BASE_CMD --scenario=$s \
-                  --batch-criteria population_density.CD1p0.I16.C16 \
-                  --controller=d0.CRW
+if [ "$TASK" == "exp" ] || [ "$TASK" == "all" ]; then
 
-    done
+   for s in "${SCENARIOS[@]}"
+   do
+       $BASE_CMD --scenario=$s \
+                 --pipeline 4\
+                 --batch-criteria population_density.CD${DENSITY}.I32.${CARDINALITY}
+
+   done
+fi
+
+if [ "$TASK" == "comp" ] || [ "$TASK" == "all" ]; then
+    $BASE_CMD --scenario=$s \
+              --pipeline 5\
+              --batch-criteria population_density.CD${DENSITY}.I32.${CARDINALITY} \
+              --bc-univar\
+              --scenario-comp\
+              --scenarios-list=SS.16x8,DS.16x8\
+              --plot-log-xscale\
+              --plot-log-yscale\
+              --scenarios-legend="SS","DS"
+
+    $BASE_CMD --scenario=$s \
+              --pipeline 5\
+              --batch-criteria population_density.CD${DENSITY}.I32.${CARDINALITY} \
+              --bc-univar\
+              --scenario-comp\
+              --scenarios-list=RN.8x8,PL.8x8\
+              --plot-log-xscale\
+              --plot-log-yscale\
+              --scenarios-legend="RN","PL"
+fi

@@ -43,7 +43,7 @@ from core.pipeline.stage5.pipeline_stage5 import PipelineStage5
 class Pipeline:
     "Implements SIERRA's 5 stage pipeline."
 
-    def __init__(self, args, controller, scenario, cmdopts) -> None:
+    def __init__(self, args, controller, cmdopts) -> None:
         self.args = args
         self.cmdopts = {
             # general
@@ -91,7 +91,8 @@ class Pipeline:
             'project_no_yaml_LN': self.args.project_no_yaml_LN,
             'project_no_yaml_HM': self.args.project_no_yaml_HM,
             'project_rendering': self.args.project_rendering,
-            'plot_log_xaxis': self.args.plot_log_xaxis,
+            'plot_log_xscale': self.args.plot_log_xscale,
+            'plot_log_yscale': self.args.plot_log_yscale,
             'plot_regression_lines': self.args.plot_regression_lines,
             'plot_primary_axis': self.args.plot_primary_axis,
             'pm_scalability_normalize': self.args.pm_scalability_normalize,
@@ -105,6 +106,10 @@ class Pipeline:
             # stage 5
             'controllers_list': self.args.controllers_list,
             'controllers_legend': self.args.controllers_legend,
+            'scenarios_list': self.args.scenarios_list,
+            'scenarios_legend': self.args.scenarios_legend,
+            'scenario_comparison': self.args.scenario_comparison,
+            'controller_comparison': self.args.controller_comparison,
             'comparison_type': self.args.comparison_type,
             'transpose_graphs': self.args.transpose_graphs,
         }

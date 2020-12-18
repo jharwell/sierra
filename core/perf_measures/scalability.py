@@ -18,14 +18,17 @@
 Measures for swarm scalability in univariate and bivariate batched experiments.
 """
 
+# Core packages
 import os
 import copy
 import logging
 import math
 import typing as tp
 
-import pandas as pd  # type: ignore
+# 3rd party packages
+import pandas as pd
 
+# Project packages
 from core.graphs.batch_ranged_graph import BatchRangedGraph
 from core.graphs.heatmap import Heatmap
 from core.perf_measures import common
@@ -33,6 +36,7 @@ from core.variables import batch_criteria as bc
 from core.variables import population_size
 from core.variables import population_density
 import core.utils
+import core.config
 
 ################################################################################
 # Base Classes
@@ -146,8 +150,8 @@ class InterRobotInterferenceUnivar:
                                           self.interference_duration_stem)
         count_csv_ostem = os.path.join(self.cmdopts["batch_collate_root"], self.kCountLeaf)
         duration_csv_ostem = os.path.join(self.cmdopts["batch_collate_root"], self.kDurationLeaf)
-        count_png_ostem = os.path.join(self.cmdopts["batch_collate_graph_root"], self.kCountLeaf)
-        duration_png_ostem = os.path.join(
+        count_img_ostem = os.path.join(self.cmdopts["batch_collate_graph_root"], self.kCountLeaf)
+        duration_img_ostem = os.path.join(
             self.cmdopts["batch_collate_graph_root"], self.kDurationLeaf)
 
         count_df = self.df_kernel(core.utils.pd_csv_read(count_csv_istem + '.csv'))
@@ -159,18 +163,20 @@ class InterRobotInterferenceUnivar:
         core.utils.pd_csv_write(duration_df, duration_csv_ostem + '.csv', index=False)
 
         BatchRangedGraph(input_fpath=count_csv_ostem + '.csv',
-                         output_fpath=count_png_ostem + '.png',
+                         output_fpath=count_img_ostem + core.config.kImageExt,
                          title="Swarm Inter-Robot Interference Counts",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="Average # Robots",
-                         xticks=batch_criteria.graph_xticks(self.cmdopts)).generate()
+                         xticks=batch_criteria.graph_xticks(self.cmdopts),
+                         logyscale=self.cmdopts['plot_log_yscale']).generate()
 
         BatchRangedGraph(input_fpath=duration_csv_ostem + '.csv',
-                         output_fpath=duration_png_ostem + '.png',
+                         output_fpath=duration_img_ostem + core.config.kImageExt,
                          title="Swarm Average Inter-Robot Interference Duration",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel="# Timesteps",
-                         xticks=batch_criteria.graph_xticks(self.cmdopts)).generate()
+                         xticks=batch_criteria.graph_xticks(self.cmdopts),
+                         logyscale=self.cmdopts['plot_log_yscale']).generate()
 
 
 class NormalizedEfficiencyUnivar(BaseNormalizedEfficiency):
@@ -230,11 +236,12 @@ class NormalizedEfficiencyUnivar(BaseNormalizedEfficiency):
                          model_legend_fpath=os.path.join(self.cmdopts['batch_model_root'],
                                                          self.kLeaf + '.legend'),
                          output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
-                                                   self.kLeaf + ".png"),
+                                                   self.kLeaf + core.config.kImageExt),
                          title="Swarm Efficiency (normalized)",
                          xlabel=criteria.graph_xlabel(self.cmdopts),
                          ylabel="Efficiency",
-                         xticks=criteria.graph_xticks(self.cmdopts)).generate()
+                         xticks=criteria.graph_xticks(self.cmdopts),
+                         logyscale=self.cmdopts['plot_log_yscale']).generate()
 
 
 class ParallelFractionUnivar(BaseParallelFraction):
@@ -308,12 +315,13 @@ class ParallelFractionUnivar(BaseParallelFraction):
                          model_legend_fpath=os.path.join(self.cmdopts['batch_model_root'],
                                                          self.kLeaf + '.legend'),
                          output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
-                                                   self.kLeaf + ".png"),
+                                                   self.kLeaf + core.config.kImageExt),
                          title="Swarm Parallel Performance Fraction",
                          xlabel=criteria.graph_xlabel(self.cmdopts),
                          xtick_labels=criteria.graph_xticklabels(self.cmdopts),
                          ylabel="",
-                         xticks=criteria.graph_xticks(self.cmdopts)).generate()
+                         xticks=criteria.graph_xticks(self.cmdopts),
+                         logyscale=self.cmdopts['plot_log_yscale']).generate()
 
 
 class ScalabilityUnivarGenerator:
@@ -374,8 +382,8 @@ class InterRobotInterferenceBivar:
                                           self.interference_duration_stem)
         count_csv_ostem = os.path.join(self.cmdopts["batch_collate_root"], self.kCountLeaf)
         duration_csv_ostem = os.path.join(self.cmdopts["batch_collate_root"], self.kDurationLeaf)
-        count_png_ostem = os.path.join(self.cmdopts["batch_collate_graph_root"], self.kCountLeaf)
-        duration_png_ostem = os.path.join(self.cmdopts["batch_collate_graph_root"],
+        count_img_ostem = os.path.join(self.cmdopts["batch_collate_graph_root"], self.kCountLeaf)
+        duration_img_ostem = os.path.join(self.cmdopts["batch_collate_graph_root"],
                                           self.kDurationLeaf)
 
         count_idf = core.utils.pd_csv_read(count_csv_istem + '.csv')
@@ -387,7 +395,7 @@ class InterRobotInterferenceBivar:
         core.utils.pd_csv_write(duration_odf, duration_csv_ostem + '.csv', index=False)
 
         Heatmap(input_fpath=count_csv_ostem + ".csv",
-                output_fpath=count_png_ostem + ".png",
+                output_fpath=count_img_ostem + core.config.kImageExt,
                 title='Swarm Inter-Robot Interference Counts',
                 xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                 ylabel=batch_criteria.graph_ylabel(self.cmdopts),
@@ -395,7 +403,7 @@ class InterRobotInterferenceBivar:
                 ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)).generate()
 
         Heatmap(input_fpath=duration_csv_ostem + ".csv",
-                output_fpath=duration_png_ostem + ".png",
+                output_fpath=duration_img_ostem + core.config.kImageExt,
                 title='Swarm Average Inter-Robot Interference Duration',
                 xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                 ylabel=batch_criteria.graph_ylabel(self.cmdopts),
@@ -456,7 +464,7 @@ class NormalizedEfficiencyBivar(BaseNormalizedEfficiency):
 
         Heatmap(input_fpath=ostem + '.csv',
                 output_fpath=os.path.join(
-                    self.cmdopts["batch_collate_graph_root"], self.kLeaf + ".png"),
+                    self.cmdopts["batch_collate_graph_root"], self.kLeaf + core.config.kImageExt),
                 title='Swarm Efficiency (Normalized)',
                 xlabel=criteria.graph_xlabel(self.cmdopts),
                 ylabel=criteria.graph_ylabel(self.cmdopts),
@@ -557,7 +565,7 @@ class ParallelFractionBivar(BaseParallelFraction):
 
         Heatmap(input_fpath=ostem + '.csv',
                 output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
-                                          self.kLeaf + ".png"),
+                                          self.kLeaf + core.config.kImageExt),
                 title="Swarm Parallel Performance Fraction",
                 xlabel=criteria.graph_xlabel(self.cmdopts),
                 ylabel=criteria.graph_ylabel(self.cmdopts),

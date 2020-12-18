@@ -22,6 +22,7 @@ import os
 # Project packages
 from core.graphs.heatmap import HeatmapSet
 import core.utils
+import core.config
 
 
 class IntraExpModel2DGraphSet():
@@ -55,21 +56,21 @@ class IntraExpModel2DGraphSet():
         data_ipath = os.path.join(self.exp_avgd_root,
                                   self.target_stem + '.csv')
         data_opath = os.path.join(self.exp_graph_root,
-                                  self.target_stem + '-HM.png')
+                                  self.target_stem + '-HM' + core.config.kImageExt)
         stddev_ipath = os.path.join(self.exp_avgd_root,
                                     self.target_stem + '.stddev')
         stddev_opath = os.path.join(self.exp_graph_root,
-                                    self.target_stem + '-HM-stddev.png')
+                                    self.target_stem + '-HM-stddev' + core.config.kImageExt)
 
         model_ipath = os.path.join(self.exp_model_root,
                                    self.target_stem + '.model')
         model_opath = os.path.join(self.exp_graph_root,
-                                   self.target_stem + '-HM-model.png')
+                                   self.target_stem + '-HM-model' + core.config.kImageExt)
 
         model_error_ipath = os.path.join(self.exp_model_root,
                                          self.target_stem + '-HM-model-error.csv')
         model_error_opath = os.path.join(self.exp_graph_root,
-                                         self.target_stem + '-HM-model-error.png')
+                                         self.target_stem + '-HM-model-error' + core.config.kImageExt)
 
         # Write the error .csv to the filesystem
         data_df = core.utils.pd_csv_read(data_ipath)

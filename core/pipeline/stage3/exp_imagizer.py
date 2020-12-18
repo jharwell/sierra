@@ -18,14 +18,19 @@
 Classes for creating image files from averaged ``.csv`` files for experiments.
 """
 
+# Core packages
 import os
 import logging
 import typing as tp
 import multiprocessing as mp
 import queue
 
+# 3rd party packages
+
+# Project packages
 from core.graphs.heatmap import Heatmap
 import core.utils
+import core.config
 
 
 class BatchedExpImagizer:
@@ -111,7 +116,7 @@ class ExpImagizer:
                 stem, _ = os.path.splitext(csv)
                 Heatmap(input_fpath=os.path.join(path, csv),
                         output_fpath=os.path.join(imagize_opts['output_root'],
-                                                  stem + '.png'),
+                                                  stem + core.config.kImageExt),
                         title=match['title'],
                         xlabel='X',
                         ylabel='Y').generate()

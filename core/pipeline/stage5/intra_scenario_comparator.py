@@ -19,6 +19,7 @@ Classes for handling univariate and bivariate controller comparisons within a se
 stage5 of the experimental pipeline.
 """
 
+# Core packages
 import os
 import copy
 import logging
@@ -27,14 +28,17 @@ import re
 import typing as tp
 import argparse
 
+# 3rd party packages
 import pandas as pd
 
+# Project packages
 from core.graphs.batch_ranged_graph import BatchRangedGraph
 from core.graphs.stacked_surface_graph import StackedSurfaceGraph
 from core.graphs.heatmap import Heatmap, DualHeatmap
 from core.variables import batch_criteria as bc
 import core.root_dirpath_generator as rdg
 import core.utils
+import core.config
 
 
 class UnivarIntraScenarioComparator:
@@ -182,12 +186,13 @@ class UnivarIntraScenarioComparator:
 
         BatchRangedGraph(inputy_stem_fpath=csv_stem_opath,
                          output_fpath=os.path.join(self.cc_graph_root,
-                                                   dest_stem) + '-' + batch_leaf + ".png",
+                                                   dest_stem) + '-' + batch_leaf + core.config.kImageExt,
                          title=title,
                          xlabel=criteria.graph_xlabel(cmdopts),
                          ylabel=label,
                          xtick_labels=xtick_labels[criteria.inter_exp_graphs_exclude_exp0():],
                          xticks=xticks[criteria.inter_exp_graphs_exclude_exp0():],
+                         logyscale=cmdopts['plot_log_yscale'],
                          legend=legend).generate()
 
     def __gen_csv(self,
@@ -440,9 +445,10 @@ class BivarIntraScenarioComparator:
             opath_stem = csv_stem_root + "_{0}{1}".format(0, i)
             core.utils.pd_csv_write(plot_df, opath_stem + ".csv", index=False)
 
+            opath = os.path.join(self.cc_graph_root,
+                                 dest_stem) + '-' + scenario + "_{0}{1}".format(0, i) + core.config.kImageExt
             Heatmap(input_fpath=opath_stem + ".csv",
-                    output_fpath=os.path.join(self.cc_graph_root,
-                                              dest_stem) + '-' + scenario + "_{0}{1}".format(0, i) + ".png",
+                    output_fpath=opath,
                     title=title,
                     transpose=self.cmdopts['transpose_graphs'],
                     zlabel=self.__gen_zaxis_label(label, comp_type),
@@ -473,9 +479,10 @@ class BivarIntraScenarioComparator:
             csv_stem_root + '*.csv') if re.search('_[0-9]+', f)]
 
         for _ in range(0, len(paths)):
+            opath = os.path.join(self.cc_graph_root,
+                                 dest_stem) + '-' + scenario + core.config.kImageExt
             DualHeatmap(input_stem_pattern=csv_stem_root,
-                        output_fpath=os.path.join(self.cc_graph_root,
-                                                  dest_stem) + '-' + scenario + ".png",
+                        output_fpath=opath,
                         title=title,
                         zlabel=self.__gen_zaxis_label(label, comp_type),
                         xlabel=batch_criteria.graph_xlabel(cmdopts),
@@ -499,9 +506,10 @@ class BivarIntraScenarioComparator:
         each controllers into :attribute:`self.cc_csv_root`.
         """
         csv_stem_root = os.path.join(self.cc_csv_root, dest_stem + "-" + scenario)
+        opath = os.path.join(self.cc_graph_root,
+                             dest_stem) + '-' + scenario + core.config.kImageExt
         StackedSurfaceGraph(input_stem_pattern=csv_stem_root,
-                            output_fpath=os.path.join(self.cc_graph_root,
-                                                      dest_stem) + '-' + scenario + ".png",
+                            output_fpath=opath,
                             title=title,
                             ylabel=batch_criteria.graph_xlabel(cmdopts),
                             xlabel=batch_criteria.graph_ylabel(cmdopts),

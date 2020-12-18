@@ -7,19 +7,27 @@ If you just want to try SIERRA out with a pre-existing project without first
 defining your own, the steps to do so are:
 
 #. Build the code for the :xref:`FORDYCA` project, following the steps
-   `here <https://swarm-robotics-fordyca.readthedocs.io/en/latest/setup/build.html>`_, 
-   making sure to build an optimized version of the code (debug code will work
-   too, but be really slow).
+   `here <https://swarm-robotics-fordyca.readthedocs.io/en/latest/setup/build.html>`_.
+
+   .. IMPORTANT:: Make sure you to build an optimized version of the code by
+                  passing ``--opt`` to the bootstrap script. For `most` use
+                  cases, that is the only additional option you will need.
+
+#. Setup the :xref:`FORDYCA` runtime environment, following the steps `here
+   <https://swarm-robotics-fordyca.readthedocs.io/en/latest/setup/local-runtime.html>`_,
+   and make sure (1) ``argos3`` is found by your shell, (2) you can launch the
+   FORDYCA demo ARGoS simulation.
 
 #. Clone the SIERRA repo, and checkout the ``devel`` branch::
 
      mkdir $HOME/research
-     git clone https:://github.com/swarm-robotics/fordyca.git $HOME/research/sierra
+     git clone https://github.com/swarm-robotics/fordyca.git $HOME/research/sierra
      cd $HOME/research/sierra
      git checkout devel
 
 #. From the SIERRA repo root, install python dependencies with ``pip3``::
 
+     pip3 install --upgrade pip
      pip3 install -r requirements/common.txt
 
 #. Install OS packages:
@@ -30,7 +38,7 @@ defining your own, the steps to do so are:
    project and checkout the ``devel`` branch::
 
      mkdir projects
-     git clone https:://github.com/swarm-robotics/sierra-plugin-fordyca.git projects/fordyca
+     git clone https://github.com/swarm-robotics/sierra-plugin-fordyca.git projects/fordyca
      cd projects/fordyca
      git checkout devel
 

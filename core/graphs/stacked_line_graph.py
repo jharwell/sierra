@@ -20,6 +20,7 @@ import core.utils
 import matplotlib.pyplot as plt
 import logging
 import typing as tp
+import copy
 
 # 3rd party packages
 import pandas as pd
@@ -53,6 +54,7 @@ class StackedLineGraph:
                  ylabel: str,
                  legend: tp.List[str] = None,
                  cols: tp.List[str] = None,
+                 logyscale: bool = False,
                  stddev_fpath=None,
                  model_fpath: str = None,
                  model_legend_fpath: str = None) -> None:
@@ -65,6 +67,7 @@ class StackedLineGraph:
 
         self.legend = legend
         self.cols = cols
+        self.logyscale = logyscale
 
         self.model_fpath = model_fpath
         self.model_legend_fpath = model_legend_fpath
@@ -79,6 +82,7 @@ class StackedLineGraph:
         data_df = core.utils.pd_csv_read(self.input_fpath)
         stddev_df = None
         model_df = None
+        model_legend = []
 
         if self.stddev_fpath is not None and core.utils.path_exists(self.stddev_fpath):
             stddev_df = core.utils.pd_csv_read(self.stddev_fpath)
@@ -88,11 +92,9 @@ class StackedLineGraph:
 
             if self.model_legend_fpath is not None and core.utils.path_exists(self.model_legend_fpath):
                 with open(self.model_legend_fpath, 'r') as f:
-                    model_legend = f.readlines()[0]
+                    model_legend = f.read().splitlines()
             else:
-                model_legend = 'Model prediction'
-        else:
-            model_legend = None
+                logging.warning("No valid legend file for model '%s' found", self.model_fpath)
 
         # Plot specified columns from dataframe.
         if self.cols is None:
@@ -101,6 +103,9 @@ class StackedLineGraph:
         else:
             ncols = max(1, int(len(self.cols) / 3.0))
             ax = self._plot_selected_cols(data_df, stddev_df, self.cols, model_df)
+
+        if self.logyscale:
+            plt.yscale('symlog')
         ax.tick_params(labelsize=12)
 
         # Add legend. Should have ~3 entries per column, in order to maximize real estate on tightly
@@ -160,12 +165,13 @@ class StackedLineGraph:
     def _plot_legend(self, ax, model_legend: str, ncols: int):
         # If the legend is not specified, then we assume this is not a graph that will contain any
         # models.
-        if self.legend is not None:
-            if model_legend is not None:
+        legend = copy.deepcopy(self.legend)
+        if self.legend:
+            if model_legend:
                 ncols += 1
-                self.legend.append(model_legend)
+                legend.extend(model_legend)
 
-            lines, labels = ax.get_legend_handles_labels()
+            lines, _ = ax.get_legend_handles_labels()
             ax.legend(lines, self.legend, loc=9, bbox_to_anchor=(
                 0.5, -0.1), ncol=ncols, fontsize=14)
         else:

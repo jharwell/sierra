@@ -19,17 +19,21 @@ Measures for raw swarm performance in foraging tasks, according to whatever thei
 measure in univariate and bivariate batched experiments.
 
 """
-
+# Core packages
 import os
 import copy
 import logging
 import pandas as pd
 
+# 3rd party packages
+
+# Project packages
 from core.graphs.batch_ranged_graph import BatchRangedGraph
 from core.graphs.heatmap import Heatmap
 import core.perf_measures as pm
 import core.variables.batch_criteria as bc
 import core.utils
+import core.config
 
 
 class RawUnivar:
@@ -64,7 +68,8 @@ class RawUnivar:
         stddev_opath = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf + ".stddev")
         perf_ipath = os.path.join(self.cmdopts["batch_collate_root"], self.inter_perf_stem + '.csv')
         perf_opath = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf + '.csv')
-        png_opath = os.path.join(self.cmdopts["batch_collate_graph_root"], self.kLeaf + '.png')
+        img_opath = os.path.join(
+            self.cmdopts["batch_collate_graph_root"], self.kLeaf + core.config.kImageExt)
 
         # We always calculate the metric
         df = self.df_kernel(core.utils.pd_csv_read(perf_ipath))
@@ -76,7 +81,7 @@ class RawUnivar:
             core.utils.pd_csv_write(stddev_df, stddev_opath, index=False)
 
         BatchRangedGraph(input_fpath=perf_opath,
-                         output_fpath=png_opath,
+                         output_fpath=img_opath,
                          stddev_fpath=stddev_opath,
                          model_fpath=os.path.join(self.cmdopts['batch_model_root'],
                                                   self.kLeaf + '.model'),
@@ -85,7 +90,8 @@ class RawUnivar:
                          title=title,
                          xlabel=criteria.graph_xlabel(self.cmdopts),
                          ylabel=ylabel,
-                         xticks=criteria.graph_xticks(self.cmdopts)).generate()
+                         xticks=criteria.graph_xticks(self.cmdopts),
+                         logyscale=self.cmdopts['plot_log_yscale']).generate()
 
 
 class RawBivar:
@@ -118,7 +124,7 @@ class RawBivar:
         RawBivar._gen_csv(perf_ipath, perf_opath_stem + '.csv')
 
         Heatmap(input_fpath=perf_opath_stem + '.csv',
-                output_fpath=perf_opath_stem + '.png',
+                output_fpath=perf_opath_stem + core.config.kImageExt,
                 title=title,
                 xlabel=criteria.graph_xlabel(self.cmdopts),
                 ylabel=criteria.graph_ylabel(self.cmdopts),

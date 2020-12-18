@@ -17,20 +17,24 @@
 Common calculations used by multiple performance measures.
 """
 
+# Core packages
 import os
 import math
 import copy
 import typing as tp
 import logging
 
+# 3rd party packages
 import pandas as pd
 import numpy as np
 
+# Project packages
 import core.utils
 from core.variables.population_size import PopulationSize
 from core.variables import batch_criteria as bc
 from core.graphs.heatmap import Heatmap
 from core.graphs.batch_ranged_graph import BatchRangedGraph
+import core.config
 
 ################################################################################
 # Base Classes
@@ -293,7 +297,7 @@ class WeightedPMUnivar():
         csv2_ipath = csv2_istem + '.csv'
 
         csv_ostem = os.path.join(self.cmdopts["batch_collate_root"], self.output_leaf)
-        png_ostem = os.path.join(self.cmdopts["batch_collate_graph_root"], self.output_leaf)
+        img_ostem = os.path.join(self.cmdopts["batch_collate_graph_root"], self.output_leaf)
 
         if not core.utils.path_exists(csv1_ipath) or not core.utils.path_exists(csv2_ipath):
             logging.debug("Not generating univariate weighted performance measure: %s or %s does not exist",
@@ -310,11 +314,12 @@ class WeightedPMUnivar():
         len_diff = len(xticks) - len(out_df.columns)
 
         BatchRangedGraph(input_fpath=csv_ostem + '.csv',
-                         output_fpath=png_ostem + '.png',
+                         output_fpath=img_ostem + core.config.kImageExt,
                          title=self.title,
                          ylabel="Value",
                          xlabel=criteria.graph_xlabel(self.cmdopts),
-                         xticks=xticks[len_diff:]).generate()
+                         xticks=xticks[len_diff:],
+                         logyscale=self.cmdopts['plot_log_yscale']).generate()
 
 ################################################################################
 # Bivariate Classes
@@ -474,7 +479,7 @@ class WeightedPMBivar():
         csv2_ipath = csv2_istem + '.csv'
 
         csv_ostem = os.path.join(self.cmdopts["batch_collate_root"], self.output_leaf)
-        png_ostem = os.path.join(self.cmdopts["batch_collate_graph_root"], self.output_leaf)
+        img_ostem = os.path.join(self.cmdopts["batch_collate_graph_root"], self.output_leaf)
 
         if not core.utils.path_exists(csv1_ipath) or not core.utils.path_exists(csv2_ipath):
             logging.debug("Not generating bivariate weighted performance measure: %s or %s does not exist",
@@ -493,7 +498,7 @@ class WeightedPMBivar():
         len_ydiff = len(ylabels) - len(out_df.columns)
 
         Heatmap(input_fpath=csv_ostem + '.csv',
-                output_fpath=png_ostem + '.png',
+                output_fpath=img_ostem + core.config.kImageExt,
                 title=self.title,
                 xlabel=criteria.graph_xlabel(self.cmdopts),
                 ylabel=criteria.graph_ylabel(self.cmdopts),

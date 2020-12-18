@@ -15,15 +15,22 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
 
-
-import core.utils
+# Core packages
 import os
 import logging
+import typing as tp
+import copy
 
+# 3rd party packages
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import matplotlib as mpl
+
+# Project packages
+import core.utils
+
+
 mpl.rcParams['lines.linewidth'] = 3
 mpl.rcParams['lines.markersize'] = 10
 mpl.use('Agg')
@@ -65,8 +72,9 @@ class BatchRangedGraph:
 
         self.xtick_labels = kwargs.get('xtick_labels', None)
         self.xticks = kwargs['xticks']
-        self.legend = kwargs.get('legend', None)
+        self.legend = kwargs.get('legend', [])
         self.polynomial_fit = kwargs.get('polynomial_fit', -1)
+        self.logyscale = kwargs.get('logyscale', False)
 
     def generate(self):
         if not core.utils.path_exists(self.input_fpath):
@@ -75,8 +83,14 @@ class BatchRangedGraph:
             return
 
         data_dfy = core.utils.pd_csv_read(self.input_fpath)
+        assert len(data_dfy.values) <= self.kMaxRows, \
+            "FATAL: Too many rows to make unique line styles/colors/markers: {0} > {1}".format(
+                len(data_dfy.values),
+                self.kMaxRows)
+
         stddev_dfy = None
         model_dfy = None
+        model_legend = []
 
         if self.stddev_fpath is not None and core.utils.path_exists(self.stddev_fpath):
             stddev_dfy = core.utils.pd_csv_read(self.stddev_fpath)
@@ -85,17 +99,14 @@ class BatchRangedGraph:
             model_dfy = core.utils.pd_csv_read(self.model_fpath)
             if self.model_legend_fpath is not None and core.utils.path_exists(self.model_legend_fpath):
                 with open(self.model_legend_fpath, 'r') as f:
-                    model_legend = f.readlines()[0]
+                    model_legend = f.read().splitlines()
             else:
-                model_legend = 'Model prediction'
-        else:
-            model_legend = None
+                logging.warning("No valid legend file for model '%s' found", self.model_fpath)
 
         fig, ax = plt.subplots()
-        ax.tick_params(labelsize=12)
-        assert len(data_dfy.values) <= BatchRangedGraph.kMaxRows, \
-            "FATAL: Too many rows to make unique line styles/colors/markers: {0} > {1}".format(
-                len(data_dfy.values), BatchRangedGraph.kMaxRows)
+
+        if self.logyscale:
+            ax.set_yscale('symlog')
 
         # Plot lines
         self._plot_lines(data_dfy, model_dfy)
@@ -164,20 +175,19 @@ class BatchRangedGraph:
                              data_dfy.values[i] + 2 * stddev_dfy.values[i], alpha=0.25)
 
     def _plot_ticks(self, ax):
+        ax.tick_params(labelsize=12)
+
         # For ordered, qualitative data
         if self.xtick_labels is not None:
             ax.set_xticks(self.xticks)
             ax.set_xticklabels(self.xtick_labels, rotation='vertical')
 
-    def _plot_legend(self, model_legend: str):
-        if model_legend is not None:
-            if self.legend is not None:
-                self.legend.append(model_legend)
-            legend = self.legend
-        else:
-            legend = self.legend
+    def _plot_legend(self, model_legend: tp.List[str]):
+        legend = copy.deepcopy(self.legend)
+        if model_legend:
+            legend.extend(model_legend)
 
-        if legend is not None:
+        if legend:
             plt.legend(legend, fontsize=14, ncol=max(1, int(len(legend) / 3.0)))
 
 
