@@ -575,6 +575,9 @@ class SelfOrgUnivarGenerator:
     experiments within the same scenario from collated .csv datain various ways.
     """
 
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(__name__)
+
     def __call__(self,
                  cmdopts: dict,
                  inter_perf_csv: str,
@@ -582,7 +585,7 @@ class SelfOrgUnivarGenerator:
                  alpha_S: float,
                  alpha_T: float,
                  criteria: bc.IConcreteBatchCriteria):
-        logging.info("Univariate self-organization from %s", cmdopts["batch_collate_root"])
+        self.logger.info("Univariate self-organization from %s", cmdopts["batch_collate_root"])
 
         FLMarginalUnivar(cmdopts, inter_perf_csv, interference_count_csv).from_batch(criteria)
         FLInteractiveUnivar(cmdopts, inter_perf_csv, interference_count_csv).from_batch(criteria)
@@ -945,6 +948,9 @@ class SelfOrgBivarGenerator:
     experiments within the same scenario from collated .csv data in various ways.
     """
 
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(__name__)
+
     def __call__(self,
                  cmdopts: dict,
                  inter_perf_csv: str,
@@ -952,7 +958,7 @@ class SelfOrgBivarGenerator:
                  alpha_S: float,
                  alpha_T: float,
                  criteria: bc.IConcreteBatchCriteria):
-        logging.info("Bivariate self-organization from %s", cmdopts["batch_collate_root"])
+        self.logger.info("Bivariate self-organization from %s", cmdopts["batch_collate_root"])
 
         FLMarginalBivar(cmdopts, inter_perf_csv, interference_count_csv).from_batch(criteria)
         FLInteractiveBivar(cmdopts, inter_perf_csv, interference_count_csv).from_batch(criteria)

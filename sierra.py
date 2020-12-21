@@ -45,14 +45,16 @@ def __sierra_run_default(args):
 
 def __sierra_run():
     # check python version
-    if sys.version_info < (3, 0):
-        raise RuntimeError("Python 3.x must be used to run this code.")
+
+    if sys.version_info < (3, 6):
+        raise RuntimeError("Python >= 3.6 must be used to run SIERRA.")
 
     bootstrap_args, other_args = cmd.BootstrapCmdline().parser.parse_known_args()
 
     # Get nice colored logging output!
-    coloredlogs.install(fmt='%(asctime)s %(levelname)s - %(message)s',
+    coloredlogs.install(fmt='%(asctime)s %(name)s %(levelname)s - %(message)s',
                         level=eval("logging." + bootstrap_args.log_level))
+    logger = logging.getLogger(__name__)
 
     # Load non-project directory plugins
     pm = core.plugin_manager.DirectoryPluginManager()
@@ -61,18 +63,18 @@ def __sierra_run():
         pm.load_plugin(plugin)
 
     # Load HPC plugins
-    logging.info("Loading HPC plugins")
+    logger.info("Loading HPC plugins")
     pm = hpc.HPCPluginManager()
     pm.initialize(os.path.join(os.getcwd(), 'plugins', 'hpc'))
     for plugin in pm.available_plugins():
         pm.load_plugin(plugin)
 
-    logging.info("Loading cmdline extensions from project '%s'", bootstrap_args.project)
+    logger.info("Loading cmdline extensions from project '%s'", bootstrap_args.project)
     try:
         module = __import__("projects.{0}.cmdline".format(bootstrap_args.project),
                             fromlist=["*"])
     except ModuleNotFoundError:
-        logging.fatal("Project '%s' not found", bootstrap_args.project)
+        logger.fatal("Project '%s' not found", bootstrap_args.project)
         raise
 
     args = module.Cmdline().parser.parse_args(other_args)

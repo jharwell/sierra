@@ -75,11 +75,12 @@ class BatchRangedGraph:
         self.legend = kwargs.get('legend', [])
         self.polynomial_fit = kwargs.get('polynomial_fit', -1)
         self.logyscale = kwargs.get('logyscale', False)
+        self.logger = logging.getLogger(__name__)
 
     def generate(self):
         if not core.utils.path_exists(self.input_fpath):
-            logging.debug("Not generating batch ranged graph: %s does not exist",
-                          self.input_fpath)
+            self.logger.debug("Not generating batch ranged graph: %s does not exist",
+                              self.input_fpath)
             return
 
         data_dfy = core.utils.pd_csv_read(self.input_fpath)
@@ -133,16 +134,27 @@ class BatchRangedGraph:
         fig.savefig(self.output_fpath, bbox_inches='tight', dpi=100)
         plt.close(fig)  # Prevent memory accumulation (fig.clf() does not close everything)
 
-    def _plot_lines(self, data_dfy, model_dfy):
-        line_styles = [':', '--', '.-', '-', ':', '--', '.-', '-']
+    def _plot_lines(self, data_dfy: pd.DataFrame, model_dfy: pd.DataFrame):
+        line_styles = ['-', '--', '.-', ':', '-', '--', '.-', ':']
         mark_styles = ['o', '^', 's', 'x', 'o', '^', 's', 'x']
         colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red',
                   'tab:brown', 'tab:pink', 'tab:gray', 'tab:olive']
 
         for i in range(0, len(data_dfy.values)):
-            plt.plot(self.xticks, data_dfy.values[i], line_styles[i],
+            # Plot data, including polynomial fit line if configured
+            plt.plot(self.xticks,
+                     data_dfy.values[i],
+                     line_styles[i] if model_dfy is None else '-',
                      marker=mark_styles[i],
                      color=colors[i])
+
+            # Plot model prediction(s)
+            if model_dfy is not None:
+                plt.plot(self.xticks,
+                         model_dfy.values[i],
+                         '--',
+                         marker=mark_styles[i],
+                         color=colors[i + len(data_dfy.index)])
 
             if -1 != self.polynomial_fit:
                 coeffs = np.polyfit(self.xticks, data_dfy.values[i], self.polynomial_fit)
@@ -150,17 +162,6 @@ class BatchRangedGraph:
                 x_new = np.linspace(self.xticks[0], self.xticks[-1], 50)
                 y_new = ffit(x_new)
                 plt.plot(x_new, y_new, line_styles[i])
-
-        if model_dfy is None:
-            return
-
-        offset = len(data_dfy.values)
-        for j in range(0, len(data_dfy.values)):
-            plt.plot(self.xticks,
-                     model_dfy.values[j],
-                     line_styles[j + offset],
-                     marker=mark_styles[j + offset],
-                     color=colors[j + offset])
 
     def _plot_errorbars(self, xticks, data_dfy: pd.DataFrame, stddev_dfy: pd.DataFrame):
         """
@@ -183,9 +184,10 @@ class BatchRangedGraph:
             ax.set_xticklabels(self.xtick_labels, rotation='vertical')
 
     def _plot_legend(self, model_legend: tp.List[str]):
-        legend = copy.deepcopy(self.legend)
+        legend = self.legend
+
         if model_legend:
-            legend.extend(model_legend)
+            legend = [val for pair in zip(self.legend, model_legend) for val in pair]
 
         if legend:
             plt.legend(legend, fontsize=14, ncol=max(1, int(len(legend) / 3.0)))

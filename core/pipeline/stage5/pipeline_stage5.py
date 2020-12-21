@@ -59,6 +59,8 @@ class PipelineStage5:
         self.stage5_config = yaml.load(open(os.path.join(self.cmdopts['project_config_root'],
                                                          'stage5.yaml')),
                                        yaml.FullLoader)
+        self.logger = logging.getLogger(__name__)
+
         if self.cmdopts['controllers_list'] is not None:
             self.controllers = self.cmdopts['controllers_list'].split(',')
         else:
@@ -129,7 +131,7 @@ class PipelineStage5:
 
         self._verify_controllers(self.controllers, cli_args)
 
-        logging.info("Stage5: Inter-batch controller comparison of %s...", self.controllers)
+        self.logger.info("Stage5: Inter-batch controller comparison of %s...", self.controllers)
 
         if cli_args.bc_univar:
             comparator = intrasc.UnivarIntraScenarioComparator(self.controllers,
@@ -150,7 +152,7 @@ class PipelineStage5:
                    legend=legend,
                    comp_type=self.cmdopts['comparison_type'])
 
-        logging.info("Stage5: Inter-batch controller comparison complete")
+        self.logger.info("Stage5: Inter-batch controller comparison complete")
 
     def _run_sc(self, cli_args):
         # Use nice scenario names on graph legends if configured
@@ -159,9 +161,9 @@ class PipelineStage5:
         else:
             legend = self.scenarios
 
-        logging.info("Stage5: Inter-batch  comparison of %s across %s...",
-                     self.cmdopts['controller'],
-                     self.scenarios)
+        self.logger.info("Stage5: Inter-batch  comparison of %s across %s...",
+                         self.cmdopts['controller'],
+                         self.scenarios)
 
         assert cli_args.bc_univar,\
             "FATAL: inter-scenario controller comparison only valid for univariate batch criteria"
@@ -177,9 +179,9 @@ class PipelineStage5:
         comparator(graphs=self.stage5_config['inter_scenario']['graphs'],
                    legend=legend)
 
-        logging.info("Stage5: Inter-batch  comparison of %s across %s complete",
-                     self.cmdopts['controller'],
-                     self.scenarios)
+        self.logger.info("Stage5: Inter-batch  comparison of %s across %s complete",
+                         self.cmdopts['controller'],
+                         self.scenarios)
 
     def _verify_controllers(self, controllers, cli_args):
         """
@@ -211,9 +213,9 @@ class PipelineStage5:
                                                  self.main_config['sierra']['collate_csv_leaf'])
 
                     if scenario in collate_root1 and scenario not in collate_root2:
-                        logging.warning("%s does not exist in %s", scenario, collate_root2)
+                        self.logger.warning("%s does not exist in %s", scenario, collate_root2)
                     if scenario in collate_root2 and scenario not in collate_root1:
-                        logging.warning("%s does not exist in %s", scenario, collate_root1)
+                        self.logger.warning("%s does not exist in %s", scenario, collate_root1)
 
 
 __api__ = [

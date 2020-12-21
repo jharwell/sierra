@@ -45,6 +45,7 @@ class ExperimentSpec():
         self.exp_input_root = os.path.join(cmdopts['batch_input_root'],
                                            criteria.gen_exp_dirnames(cmdopts)[exp_num])
         self.exp_def_fpath = os.path.join(self.exp_input_root, "exp_def.pkl")
+        self.logger = logging.getLogger(__name__)
 
         from_bivar_bc1 = False
         from_bivar_bc2 = False
@@ -62,18 +63,18 @@ class ExperimentSpec():
         if from_univar_bc:
             self.arena_dim = criteria.arena_dims()[exp_num]
             self.scenario_name = criteria.exp_scenario_name(exp_num)
-            logging.debug("Obtained scenario dimensions '%s' from univariate batch criteria",
-                          self.arena_dim)
+            self.logger.debug("Obtained scenario dimensions '%s' from univariate batch criteria",
+                              self.arena_dim)
         elif from_bivar_bc1 or from_bivar_bc2:
             self.arena_dim = criteria.arena_dims()[exp_num]
-            logging.debug("Obtained scenario dimensions '%s' bivariate batch criteria",
-                          self.arena_dim)
+            self.logger.debug("Obtained scenario dimensions '%s' bivariate batch criteria",
+                              self.arena_dim)
             self.scenario_name = criteria.exp_scenario_name(exp_num)
         else:  # Defaultc case: scenario dimensions read from cmdline
             kw = sgp.ScenarioGeneratorParser.reparse_str(cmdopts['scenario'])
             self.arena_dim = ArenaExtent(Vector3D(kw['arena_x'], kw['arena_y'], kw['arena_z']))
-            logging.debug("Read scenario dimensions %s from cmdline spec",
-                          self.arena_dim)
+            self.logger.debug("Read scenario dimensions %s from cmdline spec",
+                              self.arena_dim)
 
             self.scenario_name = cmdopts['scenario']
 

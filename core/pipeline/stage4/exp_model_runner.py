@@ -41,6 +41,7 @@ class BatchedIntraExpModelRunner:
     def __init__(self, cmdopts: dict, models: list) -> None:
         self.cmdopts = cmdopts
         self.models = models
+        self.logger = logging.getLogger(__name__)
 
     def __call__(self,
                  main_config: dict,
@@ -62,13 +63,13 @@ class BatchedIntraExpModelRunner:
 
             for model in self.models:
                 if not model.run_for_exp(criteria, cmdopts, i) or model.previously_run(i):
-                    logging.debug("Skip running intra-experiment model from '%s' for exp%s",
-                                  str(model),
-                                  i)
+                    self.logger.debug("Skip running intra-experiment model from '%s' for exp%s",
+                                      str(model),
+                                      i)
                     continue
 
                 # Run the model
-                logging.debug("Run intra-experiment model '%s' for exp%s", str(model), i)
+                self.logger.debug("Run intra-experiment model '%s' for exp%s", str(model), i)
                 dfs = model.run(criteria, i, cmdopts)
                 for df, csv_stem in zip(dfs, model.target_csv_stems()):
                     path_stem = os.path.join(cmdopts['exp_model_root'],
@@ -96,6 +97,7 @@ class InterExpModelRunner:
     def __init__(self, cmdopts: dict, models: list) -> None:
         self.cmdopts = cmdopts
         self.models = models
+        self.logger = logging.getLogger(__name__)
 
     def __call__(self,
                  main_config: dict,
@@ -112,12 +114,12 @@ class InterExpModelRunner:
 
         for model in self.models:
             if not model.run_for_batch(criteria, cmdopts):
-                logging.debug("Skip running inter-experiment model '%s'",
-                              str(model))
+                self.logger.debug("Skip running inter-experiment model '%s'",
+                                  str(model))
                 continue
 
             # Run the model
-            logging.debug("Run inter-experiment model '%s'", str(model))
+            self.logger.debug("Run inter-experiment model '%s'", str(model))
 
             dfs = model.run(criteria, cmdopts)
             for df, csv_stem in zip(dfs, model.target_csv_stems()):

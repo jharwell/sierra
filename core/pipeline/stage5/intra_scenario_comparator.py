@@ -77,6 +77,7 @@ class UnivarIntraScenarioComparator:
         self.cmdopts = cmdopts
         self.cli_args = cli_args
         self.main_config = main_config
+        self.logger = logging.getLogger(__name__)
 
     def __call__(self,
                  graphs: dict,
@@ -103,8 +104,8 @@ class UnivarIntraScenarioComparator:
                     found = True
                     break
             if not found:
-                logging.warning("Did not find scenario to compare in for criteria %s",
-                                self.cli_args.batch_criteria)
+                self.logger.warning("Did not find scenario to compare in for criteria %s",
+                                    self.cli_args.batch_criteria)
 
     def __leaf_select(self, candidate: str) -> bool:
         """
@@ -130,9 +131,9 @@ class UnivarIntraScenarioComparator:
                                                        self.cmdopts['project'],
                                                        controller)) if batch_leaf in d]
             if len(dirs) == 0:
-                logging.warning("Controller %s was not run on experiment %s",
-                                controller,
-                                batch_leaf)
+                self.logger.warning("Controller %s was not run on experiment %s",
+                                    controller,
+                                    batch_leaf)
                 continue
 
             batch_leaf = dirs[0]
@@ -218,7 +219,7 @@ class UnivarIntraScenarioComparator:
         # Some experiments might not generate the necessary performance measure .csvs for graph
         # generation, which is OK.
         if not core.utils.path_exists(csv_ipath):
-            logging.warning("%s missing for controller %s", csv_ipath, controller)
+            self.logger.warning("%s missing for controller %s", csv_ipath, controller)
             return
 
         if core.utils.path_exists(csv_opath_stem + '.csv'):
@@ -275,6 +276,7 @@ class BivarIntraScenarioComparator:
         self.cmdopts = cmdopts
         self.cli_args = cli_args
         self.main_config = main_config
+        self.logger = logging.getLogger(__name__)
 
     def __call__(self,
                  graphs: dict,
@@ -305,8 +307,8 @@ class BivarIntraScenarioComparator:
                     found = True
                     break
             if not found:
-                logging.warning("Did not find scenario to compare in for criteria %s",
-                                self.cli_args.batch_criteria)
+                self.logger.warning("Did not find scenario to compare in for criteria %s",
+                                    self.cli_args.batch_criteria)
 
     def __leaf_select(self, candidate: str) -> bool:
         """
@@ -336,9 +338,9 @@ class BivarIntraScenarioComparator:
                                                        self.cmdopts['project'],
                                                        controller)) if batch_leaf in d]
             if len(dirs) == 0:
-                logging.warning("Controller %s was not run on scenario %s",
-                                controller,
-                                batch_leaf)
+                self.logger.warning("Controller %s was not run on scenario %s",
+                                    controller,
+                                    batch_leaf)
                 continue
 
             batch_leaf = dirs[0]
@@ -557,7 +559,7 @@ class BivarIntraScenarioComparator:
         # Some experiments might not generate the necessary performance measure .csvs for
         # graph generation, which is OK.
         if not core.utils.path_exists(csv_ipath):
-            logging.warning("%s missing for controller %s", csv_ipath, controller)
+            self.logger.warning("%s missing for controller %s", csv_ipath, controller)
             return
 
         df = core.utils.pd_csv_read(csv_ipath)

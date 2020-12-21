@@ -72,11 +72,12 @@ class StackedLineGraph:
         self.model_fpath = model_fpath
         self.model_legend_fpath = model_legend_fpath
         self.stddev_fpath = stddev_fpath
+        self.logger = logging.getLogger(__name__)
 
     def generate(self):
         if not core.utils.path_exists(self.input_fpath):
-            logging.debug("Not generating stacked line graph: %s does not exist",
-                          self.input_fpath)
+            self.logger.debug("Not generating stacked line graph: %s does not exist",
+                              self.input_fpath)
             return
 
         data_df = core.utils.pd_csv_read(self.input_fpath)
@@ -165,14 +166,14 @@ class StackedLineGraph:
     def _plot_legend(self, ax, model_legend: str, ncols: int):
         # If the legend is not specified, then we assume this is not a graph that will contain any
         # models.
-        legend = copy.deepcopy(self.legend)
         if self.legend:
+            legend = copy.deepcopy(self.legend)
             if model_legend:
                 ncols += 1
                 legend.extend(model_legend)
 
             lines, _ = ax.get_legend_handles_labels()
-            ax.legend(lines, self.legend, loc=9, bbox_to_anchor=(
+            ax.legend(lines, legend, loc=9, bbox_to_anchor=(
                 0.5, -0.1), ncol=ncols, fontsize=14)
         else:
             ax.legend(loc=9, bbox_to_anchor=(0.5, -0.1), ncol=ncols, fontsize=14)

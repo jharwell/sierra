@@ -164,13 +164,16 @@ class RobustnessUnivarGenerator:
     - Weighted SAA robustness+population dynamics robustness
     """
 
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(__name__)
+
     def __call__(self,
                  cmdopts: dict,
                  main_config: dict,
                  alpha_SAA: float,
                  alpha_PD: float,
                  batch_criteria: bc.IConcreteBatchCriteria):
-        logging.info("Univariate robustness from %s", cmdopts["batch_collate_root"])
+        self.logger.info("Univariate robustness from %s", cmdopts["batch_collate_root"])
 
         inter_perf_csv = main_config['perf']['inter_perf_csv']
 
@@ -442,13 +445,16 @@ class RobustnessBivarGenerator:
     - Weighted SAA robustness+population dynamics robustness
     """
 
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(__name__)
+
     def __call__(self,
                  cmdopts: dict,
                  main_config: dict,
                  alpha_SAA: float,
                  alpha_PD: float,
                  batch_criteria: bc.IConcreteBatchCriteria):
-        logging.info("Bivariate robustness from %s", cmdopts["batch_collate_root"])
+        self.logger.info("Bivariate robustness from %s", cmdopts["batch_collate_root"])
 
         inter_perf_csv = main_config['perf']['inter_perf_csv']
 

@@ -54,11 +54,13 @@ def scenario_generator_create(spec: ExperimentSpec, controller, **kwargs):
         assert res is not None, "Bad block distribution in {0}".format(spec.scenario_name)
         abbrev = res.group(0)
         cmdopts = kwargs['cmdopts']
+
+        self.logger = logging.getLogger(__name__)
         try:
             path = 'projects.{0}.generators.scenario_generators'.format(cmdopts['project'])
             module = __import__(path, fromlist=["*"])
         except ModuleNotFoundError:
-            logging.exception("module %s must exist!", path)
+            self.logger.exception("module %s must exist!", path)
             raise
 
         self.scenario_generator = getattr(module, abbrev + 'Generator')(controller=controller,
@@ -84,6 +86,7 @@ def controller_generator_create(controller, config_root, cmdopts):
         self.config = yaml.load(open(os.path.join(config_root, 'controllers.yaml')),
                                 yaml.FullLoader)
         self.category, self.name = controller.split('.')
+        self.logger = logging.getLogger(__name__)
 
     def generate(self, exp_def: XMLLuigi):
         """
@@ -97,8 +100,8 @@ def controller_generator_create(controller, config_root, cmdopts):
                                     t[2],
                                     cmdopts['argos_rendering'] is False)
         except KeyError:
-            logging.fatal("Loop functions category '%s' not found in YAML configuration",
-                          self.category)
+            self.logger.fatal("Loop functions category '%s' not found in YAML configuration",
+                              self.category)
             raise
 
         # Setup controller
@@ -108,9 +111,9 @@ def controller_generator_create(controller, config_root, cmdopts):
                     for t in controller['xml']['attr_change']:
                         exp_def.tag_change(t[0], t[1], t[2])
         except KeyError:
-            logging.fatal("Controller category '%s' or name '%s' not found in YAML configuration",
-                          self.category,
-                          self.name)
+            self.logger.fatal("Controller category '%s' or name '%s' not found in YAML configuration",
+                              self.category,
+                              self.name)
             raise
 
         return exp_def

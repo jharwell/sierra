@@ -98,10 +98,13 @@ class ExpImagizer:
         imagize_opts: Dictionary of imagizing options.
     """
 
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(__name__)
+
     def __call__(self, HM_config: dict, imagize_opts: tp.Dict[str, str]) -> None:
         path = os.path.join(imagize_opts['csv_dir_root'], imagize_opts['csv_dir'])
 
-        logging.info("Imagizing .csvs in %s...", path)
+        self.logger.info("Imagizing .csvs in %s...", path)
 
         for csv in os.listdir(path):
             # For each category of heatmaps we are generating
@@ -122,6 +125,6 @@ class ExpImagizer:
                         ylabel='Y').generate()
 
             else:
-                logging.error("No match for graph with src_stem=%s found",
-                              imagize_opts['csv_dir'])
+                self.logger.error("No match for graph with src_stem=%s found",
+                                  imagize_opts['csv_dir'])
                 raise NotImplementedError

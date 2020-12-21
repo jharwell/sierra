@@ -14,32 +14,30 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
-HPC plugin for running SIERRA on the MSI supercomputing institute at the University of Minnesota.
+HPC plugin for running SIERRA on HPC clusters using the TORQUE-PBS scheduler.
 """
 import os
 
 
 def env_configure(args):
     """
-    Configure SIERRA for HPC at MSI by reading environment variables and modifying the parsed
+    Configure SIERRA for HPC by reading environment variables and modifying the parsed
     cmdline arguments. Uses the following environment variables (if any of them are not defined an
     assertion will be triggered):
 
     - ``PBS_NUM_PPN``
     - ``PBS_NODEFILE``
     - ``PBS_NUM_NODES``
-    - ``MSICLUSTER``
+    - ``PBS_JOBID``
+    - ``SIERRA_ARCH``
     """
-    environs = ['mesabi', 'mangi']
 
-    keys = ['MSICLUSTER', 'PBS_NUM_PPN', 'PBS_NUM_NODES', 'PBS_NODEFILE']
+    keys = ['PBS_NUM_PPN', 'PBS_NUM_NODES', 'PBS_NODEFILE', 'PBS_JOBID', 'SIERRA_ARCH']
 
     for k in keys:
         assert k in os.environ,\
-            "FATAL: Attempt to run SIERRA in non-MSI environment: '{0}' not found".format(k)
+            "FATAL: Attempt to run SIERRA in non-TORQUE environment: '{0}' not found".format(k)
 
-    assert os.environ['MSICLUSTER'] in environs,\
-        "FATAL: Unknown MSI cluster '{0}'".format(os.environ['MSICLUSTER'])
     assert args.n_sims >= int(os.environ['PBS_NUM_NODES']),\
         "FATAL: Too few simulations requested: {0} < {1}".format(args.n_sims,
                                                                  os.environ['PBS_NUM_NODES'])
@@ -60,22 +58,23 @@ def env_configure(args):
 
 def argos_cmd_generate(input_fpath: str):
     """
-    Generate the ARGoS cmd to run in the MSI environment, given the path to an input file. Dependent
-    on which MSI cluster you are running on, so that different versions compiled for different
-    architectures/machines that exist on the same filesystem can easily be run, so the
-    ``MSICLUSTER`` variable is used to determine the name of the ARGoS executable via
-    ``argos3-$MSICLUSTER``.
+    Generate the ARGoS cmd to run in the TORQUE environment, given the path to an input
+    file. Dependent on which TORQUE cluster you are running on, so that different versions compiled
+    for different architectures/machines that exist on the same filesystem can easily be run, so the
+    ``SIERRA_ARCH`` variable is used to determine the name of the ARGoS executable via
+    ``argos3-$SIERRA_ARCH``.
+
     """
 
     return 'argos3-' + \
-        os.environ['MSICLUSTER'] + \
+        os.environ['SIERRA_ARCH'] + \
         ' -c "{0}" --log-file /dev/null --logerr-file /dev/null\n'.format(input_fpath)
 
 
 def gnu_parallel_cmd_generate(parallel_opts: dict):
     """
     Given a dictionary containing job information, generate the cmd to correctly invoke GNU Parallel
-    on MSI.
+    on a TORQUE managed cluster.
 
     Args:
         parallel_opts: Dictionary containing:

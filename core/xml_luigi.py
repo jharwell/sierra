@@ -48,6 +48,7 @@ class XMLLuigi:
 
         self.tree = ET.parse(input_filepath)
         self.root = self.tree.getroot()
+        self.logger = logging.getLogger(__name__)
 
     def write(self, filepath=None):
         """Write the XML stored in the object to an output filepath."""
@@ -82,7 +83,7 @@ class XMLLuigi:
             el.attrib[attr] = value
         else:
             if not noprint:
-                logging.warning("No attribute '%s' found in node '%s'", attr, path)
+                self.logger.warning("No attribute '%s' found in node '%s'", attr, path)
 
     def has_tag(self, path: str) -> bool:
         return self.root.find(path) is not None
@@ -100,14 +101,14 @@ class XMLLuigi:
         """
         el = self.root.find(path)
         if el is None:
-            logging.warning("Parent node '%s' not found", path)
+            self.logger.warning("Parent node '%s' not found", path)
             return
 
         for child in el:
             if child.tag == tag:
                 child.tag = value
                 return
-        logging.warning("No such element '%s' found in '%s'", tag, path)
+        self.logger.warning("No such element '%s' found in '%s'", tag, path)
 
     def tag_remove(self, path: str, tag: str, noprint: bool = False) -> None:
         """
@@ -128,7 +129,7 @@ class XMLLuigi:
                 return
 
         if not noprint:
-            logging.warning("No victim '%s' found in parent '%s'", tag, path)
+            self.logger.warning("No victim '%s' found in parent '%s'", tag, path)
 
     def tag_add(self, path, tag, attr=dict()):
         """

@@ -45,6 +45,7 @@ class Pipeline:
 
     def __init__(self, args, controller, cmdopts) -> None:
         self.args = args
+        self.logger = logging.getLogger(__name__)
         self.cmdopts = {
             # general
             'sierra_root': self.args.sierra_root,
@@ -124,8 +125,8 @@ class Pipeline:
             self.cmdopts.update(cmdopts)
             module = __import__("projects.{0}.cmdline".format(self.cmdopts['project']),
                                 fromlist=["*"])
-            logging.debug("Updating cmdopts for cmdline extensions from project '%s'",
-                          self.cmdopts['project'])
+            self.logger.debug("Updating cmdopts for cmdline extensions from project '%s'",
+                              self.cmdopts['project'])
             module.Cmdline.cmdopts_update(self.args, self.cmdopts)
 
         self.cmdopts['plugin_root'] = 'plugins'
@@ -142,7 +143,7 @@ class Pipeline:
                                                            'main.yaml')),
                                          yaml.FullLoader)
         except FileNotFoundError:
-            logging.exception("%s/main.yaml must exist!", self.cmdopts['project_config_root'])
+            self.logger.exception("%s/main.yaml must exist!", self.cmdopts['project_config_root'])
             raise
 
         if 5 not in self.args.pipeline:

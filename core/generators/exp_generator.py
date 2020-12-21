@@ -227,6 +227,7 @@ class BatchedExpDefGenerator:
         self.scenario_basename = scenario_basename
         self.criteria = criteria
         self.cmdopts = cmdopts
+        self.logger = logging.getLogger(__name__)
 
     def generate_defs(self) -> tp.List[core.xml_luigi.XMLLuigi]:
         """
@@ -240,9 +241,9 @@ class BatchedExpDefGenerator:
         for i in range(0, len(change_defs)):
             generator = self._create_exp_generator(i)
             defs.append(generator.generate())
-            logging.debug("Generating scenario+controller changes from generator '%s' for exp%s",
-                          self.cmdopts['joint_generator'],
-                          i)
+            self.logger.debug("Generating scenario+controller changes from generator '%s' for exp%s",
+                              self.cmdopts['joint_generator'],
+                              i)
 
         return defs
 

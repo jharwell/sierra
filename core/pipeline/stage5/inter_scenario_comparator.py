@@ -81,6 +81,7 @@ class UnivarInterScenarioComparator:
         self.cmdopts = cmdopts
         self.cli_args = cli_args
         self.main_config = main_config
+        self.logger = logging.getLogger(__name__)
 
     def __call__(self, graphs: dict, legend: tp.List[str]) -> None:
         # Obtain the list of simulation results directories to draw from.
@@ -100,8 +101,10 @@ class UnivarInterScenarioComparator:
                                                    batch_leaf=leaf,
                                                    legend=legend)
                 else:
-                    logging.debug("Skipping scenario in '%s': not on scenario list",
-                                  leaf)
+                    self.logger.debug("Skipping '%s': not in scenario list %s/does not match %s",
+                                      leaf,
+                                      self.scenarios,
+                                      self.cli_args.batch_criteria)
 
     def _leaf_select(self, candidate: str) -> bool:
         """Determine if a scenario that the controller has been run on in the past is part of the
@@ -109,8 +112,11 @@ class UnivarInterScenarioComparator:
         compared across all scenarios it has ever been run on).
 
         """,
-        _, scenario, _ = rdg.parse_batch_leaf(candidate)
-        return scenario in self.scenarios
+        template_stem, scenario, _ = rdg.parse_batch_leaf(candidate)
+        leaf = rdg.gen_batch_leaf(criteria=self.cli_args.batch_criteria,
+                                  scenario=scenario,
+                                  template_stem=template_stem)
+        return leaf in candidate and scenario in self.scenarios
 
     def _compare_across_scenarios(self,
                                   cmdopts: dict,
@@ -127,6 +133,7 @@ class UnivarInterScenarioComparator:
                                    batch_leaf=batch_leaf,
                                    controller=self.controller)
         cmdopts.update(paths)
+
         # For each scenario, we have to create the batch criteria for it, because they
         # are all different.
 
@@ -209,55 +216,51 @@ class UnivarInterScenarioComparator:
         model_ipath_stem = os.path.join(cmdopts['batch_model_root'], src_stem)
         model_opath_stem = os.path.join(self.sc_model_root, dest_stem + "-" + self.controller)
 
-        opath_stem = os.path.join(self.sc_csv_root,
-                                  dest_stem + "-" + self.controller)
+        opath_stem = os.path.join(self.sc_csv_root, dest_stem + "-" + self.controller)
 
         # Some experiments might not generate the necessary performance measure .csvs for graph
         # generation, which is OK.
         if not core.utils.path_exists(csv_ipath):
-            logging.warning("%s missing for controller %s", csv_ipath, self.controller)
+            self.logger.warning("%s missing for controller %s", csv_ipath, self.controller)
             return
 
         # Collect performance measure results. Append to existing dataframe if it exists, otherwise
         # start a new one.
-        if core.utils.path_exists(opath_stem + '.csv'):
-            cum_df = core.utils.pd_csv_read(opath_stem + '.csv')
-        else:
-            cum_df = pd.DataFrame()
-
-        t = core.utils.pd_csv_read(csv_ipath)
-        cum_df = cum_df.append(t)
-
-        core.utils.pd_csv_write(cum_df, opath_stem + '.csv', index=False)
+        data_df = self._accum_df(csv_ipath, opath_stem + '.csv')
+        core.utils.pd_csv_write(data_df, opath_stem + '.csv', index=False)
 
         # Collect performance results stddev. Append to existing dataframe if it exists, otherwise
         # start a new one.
-        if core.utils.path_exists(opath_stem + '.stddev'):
-            cum_stddev_df = core.utils.pd_csv_read(opath_stem + '.stddev')
-        else:
-            cum_stddev_df = pd.DataFrame()
-
-        if core.utils.path_exists(stddev_ipath):
-            t = core.utils.pd_csv_read(stddev_ipath)
-            cum_stddev_df = cum_stddev_df.append(t)
-            core.utils.pd_csv_write(cum_stddev_df, opath_stem + '.stddev', index=False)
+        stddev_df = self._accum_df(stddev_ipath, opath_stem + '.stddev')
+        if stddev_df is not None:
+            core.utils.pd_csv_write(stddev_df, opath_stem + '.stddev', index=False)
 
         # Collect performance results models and legends. Append to existing dataframes if they
         # exist, otherwise start new ones.
-        if core.utils.path_exists(model_opath_stem + '.model'):
-            model_df = core.utils.pd_csv_read(model_opath_stem + '.model')
-        else:
-            model_df = pd.DataFrame()
 
-        if core.utils.path_exists(model_ipath_stem + '.model'):
-            t = core.utils.pd_csv_read(model_ipath_stem + '.model')
-            model_df = model_df.append(t)
+        model_df = self._accum_df(model_ipath_stem + '.model', model_opath_stem + '.model')
+        if model_df is not None:
             core.utils.pd_csv_write(model_df, model_opath_stem + '.model', index=False)
 
             with open(model_opath_stem + '.legend', 'a') as f:
                 _, scenario, _ = rdg.parse_batch_leaf(batch_leaf)
                 kw = sgp.ScenarioGeneratorParser.reparse_str(scenario)
                 f.write("{0} prediction\n".format(kw['dist_type']))
+
+    def _accum_df(self, ipath: str, opath: str) -> pd.DataFrame:
+        # Collect performance measure results. Append to existing dataframe if it exists, otherwise
+        # start a new one.
+        if core.utils.path_exists(opath):
+            cum_df = core.utils.pd_csv_read(opath)
+        else:
+            cum_df = pd.DataFrame()
+
+        if core.utils.path_exists(ipath):
+            t = core.utils.pd_csv_read(ipath)
+            cum_df = cum_df.append(t)
+            return cum_df
+
+        return None
 
 
 __api__ = ['UnivarInterScenarioComparator']

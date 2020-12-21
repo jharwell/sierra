@@ -51,6 +51,7 @@ class PopulationConstantDensity(cd.ConstantDensity):
     def __init__(self, *args, **kwargs):
         cd.ConstantDensity.__init__(self, *args, **kwargs)
         self.already_added = False
+        self.logger = logging.getLogger(__name__)
 
     def gen_attr_changelist(self) -> list:
         """
@@ -68,9 +69,9 @@ class PopulationConstantDensity(cd.ConstantDensity):
                         # least 1.
                         n_robots = int(max(1, extent.area() * (self.target_density / 100.0)))
                         changeset.add((".//arena/distribute/entity", "quantity", str(n_robots)))
-                        logging.debug("Calculated swarm size %d for arena dimensions %s",
-                                      n_robots,
-                                      str(extent))
+                        self.logger.debug("Calculated swarm size %d for arena dimensions %s",
+                                          n_robots,
+                                          str(extent))
                         break
 
             self.already_added = True
@@ -88,10 +89,10 @@ class PopulationConstantDensity(cd.ConstantDensity):
         if exp_dirs is None:
             exp_dirs = self.gen_exp_dirnames(cmdopts)
 
-        ret = list(map(int, self.populations(cmdopts, exp_dirs)))
+        ret = list(map(float, self.populations(cmdopts, exp_dirs)))
 
         if cmdopts['plot_log_xscale']:
-            return [int(math.log2(x)) for x in ret]
+            return [math.log2(x) for x in ret]
         else:
             return ret
 

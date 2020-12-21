@@ -37,15 +37,18 @@ class PipelineStage2:
 
     """
 
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(__name__)
+
     def run(self, cmdopts: dict, batch_criteria: bc.BatchCriteria):
         if cmdopts['argos_rendering']:
-            logging.info('Stage2: ARGoS frame grabbing enabled')
+            self.logger.info('Stage2: ARGoS frame grabbing enabled')
 
         start = time.time()
         BatchedExpRunner(cmdopts, batch_criteria)()
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
-        logging.info("Stage2: Execution complete in %s", str(sec))
+        self.logger.info("Stage2: Execution complete in %s", str(sec))
 
 
 __api__ = [

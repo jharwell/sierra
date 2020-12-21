@@ -49,6 +49,7 @@ class BatchedExpRunner:
 
         self.batch_exp_root = os.path.abspath(self.cmdopts['batch_input_root'])
         self.exec_exp_range = self.cmdopts['exp_range']
+        self.logger = logging.getLogger(__name__)
 
     def __call__(self):
         """
@@ -74,7 +75,7 @@ class BatchedExpRunner:
         n_jobs = self.cmdopts['exec_jobs_per_node']
 
         s = "Stage2: Running batched experiment in %s: sims_per_exp=%s,threads_per_sim=%s,n_jobs=%s"
-        logging.info(s, self.batch_exp_root, n_sims, n_threads_per_sim, n_jobs)
+        self.logger.info(s, self.batch_exp_root, n_sims, n_threads_per_sim, n_jobs)
 
         exp_all = [os.path.join(self.batch_exp_root, d)
                    for d in self.criteria.gen_exp_dirnames(self.cmdopts)]
@@ -110,6 +111,7 @@ class ExpRunner:
         self.exp_input_root = os.path.abspath(exp_input_root)
         self.exp_num = exp_num
         self.hpc_env = hpc_env
+        self.logger = logging.getLogger(__name__)
 
     def __call__(self, n_jobs: int, exec_resume: bool) -> None:
         """
@@ -122,7 +124,7 @@ class ExpRunner:
 
         """
 
-        logging.info('Running exp%s in %s...', self.exp_num, self.exp_input_root)
+        self.logger.info('Running exp%s in %s...', self.exp_num, self.exp_input_root)
         sys.stdout.flush()
 
         start = time.time()
@@ -147,9 +149,9 @@ class ExpRunner:
         # Catch the exception but do not raise it again so that additional experiments can still be
         # run if possible
         except subprocess.CalledProcessError as e:
-            logging.error("Experiment failed! return code=%s", e.returncode)
-            logging.error(e.output)
+            self.logger.error("Experiment failed! return code=%s", e.returncode)
+            self.logger.error(e.output)
 
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
-        logging.info('Exp%s elapsed time: %s', self.exp_num, str(sec))
+        self.logger.info('Exp%s elapsed time: %s', self.exp_num, str(sec))

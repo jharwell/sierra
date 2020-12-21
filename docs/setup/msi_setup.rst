@@ -43,9 +43,9 @@ development/debugging on MSI.
 
    .. IMPORTANT:: ANYTIME you log into an MSI node (login or compute) to
                   build/run ANYTHING you MUST source this script otherwise
-                  things will (probably) not work. This includes if you ran the
-                  script on a login node and then started an interactive session
-                  via job submission with ``-I`` (the environment is NOT
+                  things might not work. This includes if you ran the script on
+                  a login node and then started an interactive session via job
+                  submission with ``-p interactive`` (the environment is NOT
                   inherited).
 
 #. On an MSI login node (can be any type, as the filesystem is shared across all
@@ -60,20 +60,18 @@ development/debugging on MSI.
 #. On an MSI login node (can be any type, as the filesystem is shared across all
    clusters), run the bash script to clone the project::
 
-     /home/gini/shared/swarm/bin/msi-clone-all.sh $HOME/git
+     /home/gini/shared/swarm/bin/msi-fordyca-clone.sh
 
-   The 1st argument is the path (relative or absolute) to the location where you
-   want the project repos to live (they will all be cloned into that level).
-
-   If you need to checkout a particular branch in the repo you can do that after
-   running the script (or copy the script and modify it to do this automatically
-   if you are going to be doing a lot of work on MSI).
+   If you need to checkout a particular branch in the FORDYCA repo you can do
+   that by passing ``--fbranch <branch>`` to the script. To see all the options
+   it accepts, pass ``--help`` (the defaults will be OK for most people).
 
 #. On an MSI login node, get an interactive job session so you can build your
    selected project and its dependencies natively to the cluster you will be
    running on (gangi/mesabi) for maximum speed::
 
-     qsub -I -lwalltime=1:00:00,nodes=1:ppn=8,mem=20gb
+     srun -N 1 --ntasks-per-node=4  --mem-per-cpu=1gb -t 1:00:00 -p interactive --pty bash
+
 
    The above command, when it returns, will give you 1 hour of time on an actual
    compute node. You know you are running/building on a compute node rather than
@@ -84,11 +82,9 @@ development/debugging on MSI.
    that you may want to tweak the cmake defines in the script, or use your own
    script, depending on what types of experiments you are running)::
 
-     /home/gini/shared/swarm/bin/msi-build-default.sh $HOME/git 8
+     /home/gini/shared/swarm/bin/msi-fordyca-build.sh
 
-   * 1st arg: The root directory where all where cloned into with the
-     ``msi-clone-all.sh`` script. In the example above, this is ``$HOME/git``.
-
-   * 2nd arg: How many cores to use when building (should be the same # as the
-     ppn when you submitted your interactive job session. In the example above
-     this is 8.
+   The build script accepts a number of arguments, which you can see with
+   ``--help`` (the defaults will be OK for most people). You may need to pass
+   ``--cores`` if you have reserved `less` than the full number of available
+   cores on the machine your interactive session is running on.

@@ -135,6 +135,7 @@ class ExpCSVAverager:
         # to be formatted like: self.input_name_format.format(name, experiment_number)
         format_base = "{}_{}"
         self.output_name_format = format_base + "_output"
+        self.logger = logging.getLogger(__name__)
 
     def __call__(self):
         if not self.avg_opts['no_verify_results']:
@@ -144,7 +145,7 @@ class ExpCSVAverager:
     def _average_csvs(self):
         """Averages the CSV files found in the output save path"""
 
-        logging.info('Averaging results in %s...', self.exp_output_root)
+        self.logger.info('Averaging results in %s...', self.exp_output_root)
 
         # Maps (unique .csv stem, optional parent dir) to the averaged dataframe
         csvs = {}
@@ -199,9 +200,9 @@ class ExpCSVAverager:
             csv_concat = pd.concat(csvs[csv_fname])
             if (self.invert_perf and csv_fname[0] in self.intra_perf_csv):
                 csv_concat[self.intra_perf_col] = 1.0 / csv_concat[self.intra_perf_col]
-                logging.debug("Inverted performance column: df stem=%s,col=%s",
-                              csv_fname[0],
-                              self.intra_perf_col)
+                self.logger.debug("Inverted performance column: df stem=%s,col=%s",
+                                  csv_fname[0],
+                                  self.intra_perf_col)
 
             by_row_index = csv_concat.groupby(csv_concat.index)
 
@@ -242,7 +243,7 @@ class ExpCSVAverager:
                                      self.main_config,
                                      self.videos_leaf)
 
-        logging.info('Verifying results in %s...', self.exp_output_root)
+        self.logger.info('Verifying results in %s...', self.exp_output_root)
 
         for exp1 in experiments:
             csv_root1 = os.path.join(self.exp_output_root,
@@ -263,8 +264,8 @@ class ExpCSVAverager:
 
                     # .csvs for rendering that we don't verify (for now...)
                     if os.path.isdir(path1) or os.path.isdir(path2):
-                        logging.debug("Not verifying %s: contains rendering data",
-                                      path1)
+                        self.logger.debug("Not verifying %s: contains rendering data",
+                                          path1)
                         continue
 
                     assert (core.utils.path_exists(path1) and core.utils.path_exists(path2)),\

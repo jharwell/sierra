@@ -59,7 +59,7 @@ setup(
         "singleton_decorator"
         "implements"
         "retry"],
-
+    python_requires=">=3.6",
     entry_points={
         "console_scripts": [
             "sierra=sierra.__main__:__sierra_run",

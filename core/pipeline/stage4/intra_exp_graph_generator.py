@@ -41,6 +41,7 @@ class BatchedIntraExpGraphGenerator:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
+        self.logger = logging.getLogger(__name__)
 
     def __call__(self,
                  main_config: dict,
@@ -107,7 +108,7 @@ class IntraExpGraphGenerator:
            generate heatmaps for each experiment in the batch.
         """
         if self.cmdopts['gen_vc_plots'] and batch_criteria.is_univar():
-            logging.info('Flexibility plots from %s', self.cmdopts['exp_output_root'])
+            self.logger.info('Flexibility plots from %s', self.cmdopts['exp_output_root'])
             FlexibilityPlotsCSVGenerator(self.main_config, self.cmdopts)(batch_criteria)
 
         LN_targets, HM_targets = self.__calc_intra_targets()
@@ -147,10 +148,10 @@ class IntraExpGraphGenerator:
                     extra_graphs = FlexibilityPlotsDefinitionsGenerator()()
 
         LN_keys = [k for k in self.LN_config if k in keys]
-        logging.debug("Enabled linegraph categories: %s", LN_keys)
+        self.logger.debug("Enabled linegraph categories: %s", LN_keys)
 
         HM_keys = [k for k in self.HM_config if k in keys]
-        logging.debug("Enabled heatmap categories: %s", HM_keys)
+        self.logger.debug("Enabled heatmap categories: %s", HM_keys)
 
         LN_targets = [self.LN_config[k] for k in LN_keys]
         LN_targets.append({'graphs': extra_graphs})
@@ -182,7 +183,7 @@ class LinegraphsGenerator:
         self.targets = targets
 
     def generate(self):
-        logging.info("Linegraphs from %s", self.exp_avgd_root)
+        self.logger.info("Linegraphs from %s", self.exp_avgd_root)
 
         # For each category of linegraphs we are generating
         for category in self.targets:
@@ -233,7 +234,7 @@ class HeatmapsGenerator:
         self.targets = targets
 
     def generate(self):
-        logging.info("Heatmaps from %s", self.exp_avgd_root)
+        self.logger.info("Heatmaps from %s", self.exp_avgd_root)
 
         # For each category of heatmaps we are generating
         for category in self.targets:

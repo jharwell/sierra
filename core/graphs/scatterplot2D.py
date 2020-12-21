@@ -16,6 +16,7 @@
 #
 
 
+import core.utils
 import os
 import logging
 
@@ -24,8 +25,6 @@ import sympy
 import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Agg')
-
-import core.utils
 
 
 class Scatterplot2D:
@@ -45,11 +44,12 @@ class Scatterplot2D:
         self.xcol = kwargs['xcol']
         self.ycol = kwargs['ycol']
         self.regression = kwargs.get('regression', False)
+        self.logger = logging.getLogger(__name__)
 
     def generate(self):
         if not core.utils.path_exists(self.input_fpath):
-            logging.debug("Not generating 2D scatterplot: %s does not exist",
-                          self.input_fpath)
+            self.logger.debug("Not generating 2D scatterplot: %s does not exist",
+                              self.input_fpath)
             return
 
         # Read .csv and scaffold graph

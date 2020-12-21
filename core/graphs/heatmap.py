@@ -68,9 +68,11 @@ class Heatmap:
             self.xtick_labels = xtick_labels
             self.ytick_labels = ytick_labels
 
+        self.logger = logging.getLogger(__name__)
+
     def generate(self):
         if not core.utils.path_exists(self.input_fpath):
-            logging.debug("Not generating heatmap: %s does not exist", self.input_fpath)
+            self.logger.debug("Not generating heatmap: %s does not exist", self.input_fpath)
             return
 
         # Read .csv and create raw heatmap from default configuration
@@ -185,14 +187,15 @@ class DualHeatmap:
         self.ylabel = kwargs.get('ylabel', None)
         self.xtick_labels = kwargs.get('xtick_labels', None)
         self.ytick_labels = kwargs.get('ytick_labels', None)
+        self.logger = logging.getLogger(__name__)
 
     def generate(self):
         dfs = [core.utils.pd_csv_read(f) for f in glob.glob(
             self.input_stem_pattern + '*.csv') if re.search('_[0-9]+', f)]
 
         if not dfs or len(dfs) != DualHeatmap.kCardinality:
-            logging.debug("Not generating dual heatmap graph: %s did not match %s .csv files",
-                          self.input_stem_pattern, DualHeatmap.kCardinality)
+            self.logger.debug("Not generating dual heatmap graph: %s did not match %s .csv files",
+                              self.input_stem_pattern, DualHeatmap.kCardinality)
             return
 
         # Scaffold graph
