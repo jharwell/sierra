@@ -238,6 +238,7 @@ class BatchedExpCreator:
         self.batch_output_root = batch_output_root
         self.criteria = criteria
         self.cmdopts = cmdopts
+        self.logger = logging.getLogger(__name__)
 
     def create(self, generator):
         core.utils.dir_create_checked(self.batch_input_root, self.cmdopts['exp_overwrite'])
@@ -257,7 +258,7 @@ class BatchedExpCreator:
         defs = generator.generate_defs()
 
         for i, defi in enumerate(defs):
-            logging.debug("Applying generated scenario+controller changes to exp%s", i)
+            self.logger.debug("Applying generated scenario+controller changes to exp%s", i)
             exp_output_root = os.path.join(self.batch_output_root,
                                            self.criteria.gen_exp_dirnames(self.cmdopts)[i])
             exp_input_root = os.path.join(self.batch_input_root,

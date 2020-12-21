@@ -24,7 +24,7 @@ experiment.
   among batch roots anytime the batch criteria or scenario change.
 
 - The batch input root. All input files will be generated under this root directory. Named ``<batch
-  experiment root>/exp-inputs``. 
+  experiment root>/exp-inputs``.
 
 - The batch output root. All output files will accrue under this root
   directory. Each experiment will get their own directory in this root for its outputs to

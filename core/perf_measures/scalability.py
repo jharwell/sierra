@@ -330,13 +330,16 @@ class ScalabilityUnivarGenerator:
     experiments within the same scenario from collated .csv datain various ways.
     """
 
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(__name__)
+
     def __call__(self,
                  inter_perf_csv: str,
                  interference_count_csv: str,
                  interference_duration_csv: str,
                  cmdopts: dict,
                  criteria: bc.IConcreteBatchCriteria):
-        logging.info("Univariate scalability from %s", cmdopts["batch_collate_root"])
+        self.logger.info("From %s", cmdopts["batch_collate_root"])
 
         InterRobotInterferenceUnivar(cmdopts, interference_count_csv,
                                      interference_duration_csv).from_batch(criteria)
@@ -579,13 +582,16 @@ class ScalabilityBivarGenerator:
     experiments within the same scenario from collated .csv data in various ways.
     """
 
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(__name__)
+
     def __call__(self,
                  inter_perf_csv: str,
                  interference_count_csv: str,
                  interference_duration_csv: str,
                  cmdopts: dict,
                  criteria: bc.IConcreteBatchCriteria):
-        logging.info("Bivariate scalability from %s", cmdopts["batch_collate_root"])
+        self.logger.info("From %s", cmdopts["batch_collate_root"])
 
         NormalizedEfficiencyBivar(cmdopts, inter_perf_csv).from_batch(criteria)
 

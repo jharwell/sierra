@@ -46,6 +46,9 @@ class PipelineStage3:
     This stage is idempotent.
     """
 
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(__name__)
+
     def run(self, main_config: dict, cmdopts: dict, criteria: bc.IConcreteBatchCriteria):
         self.__run_averaging(main_config, cmdopts, criteria)
 
@@ -58,8 +61,8 @@ class PipelineStage3:
                                             'intra-graphs-hm.yaml')
 
             if core.utils.path_exists(project_intra_HM):
-                logging.info("Stage3: Loading additional intra-experiment heatmap config for project '%s'",
-                             cmdopts['project'])
+                self.logger.info("Loading additional intra-experiment heatmap config for project '%s'",
+                                 cmdopts['project'])
                 project_dict = yaml.load(open(project_intra_HM), yaml.FullLoader)
                 for category in project_dict:
                     if category not in intra_HM_config:
@@ -71,23 +74,23 @@ class PipelineStage3:
 
     # Private functions
     def __run_averaging(self, main_config, cmdopts, criteria):
-        logging.info("Stage3: Averaging batched experiment outputs in %s...",
-                     cmdopts['batch_output_root'])
+        self.logger.info("Averaging batched experiment outputs in %s...",
+                         cmdopts['batch_output_root'])
         start = time.time()
         BatchedExpCSVAverager(main_config, cmdopts, cmdopts['batch_output_root'])(criteria)
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
-        logging.info("Stage3: Averaging complete in %s", str(sec))
+        self.logger.info("Averaging complete in %s", str(sec))
 
     def __run_imagizing(self, main_config: dict, intra_HM_config: dict, cmdopts: dict):
-        logging.info("Stage3: Imagizing .csvs...")
+        self.logger.info("Imagizing .csvs...")
         start = time.time()
         BatchedExpImagizer()(main_config,
                              intra_HM_config,
                              cmdopts['batch_output_root'])
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
-        logging.info("Stage3: Imagizing complete: %s", str(sec))
+        self.logger.info("Imagizing complete: %s", str(sec))
 
 
 __api__ = [

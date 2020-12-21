@@ -17,13 +17,16 @@
 Main module/entry point for SIERRA, the helpful command line swarm-robotic automation tool.
 """
 
+# Core packages
 import logging
 import sys
 from collections.abc import Iterable
 import os
 
+# 3rd party packages
 import coloredlogs
 
+# Project packages
 import core.cmdline as cmd
 import core.hpc as hpc
 from core.pipeline.pipeline import Pipeline
@@ -33,66 +36,69 @@ import core.root_dirpath_generator as rdg
 import core.plugin_manager
 
 
-def __sierra_run_default(args):
-    controller = ControllerGeneratorParser()(args)
-    scenario = ScenarioGeneratorParser(args).parse_cmdline()
+class SIERRA():
+    def __init__(self) -> None:
 
-    logging.info("Controller=%s, Scenario=%s", controller, scenario)
-    cmdopts = rdg.from_cmdline(args)
-    pipeline = Pipeline(args, controller, cmdopts)
-    pipeline.run()
+        # check python version
+        if sys.version_info < (3, 6):
+            raise RuntimeError("Python >= 3.6 must be used to run SIERRA.")
 
+        bootstrap_args, other_args = cmd.BootstrapCmdline().parser.parse_known_args()
 
-def __sierra_run():
-    # check python version
-    if sys.version_info < (3, 0):
-        raise RuntimeError("Python 3.x must be used to run this code.")
+        # Get nice colored logging output!
+        coloredlogs.install(fmt='%(asctime)s %(levelname)s %(name)s  - %(message)s',
+                            level=eval("logging." + bootstrap_args.log_level))
 
-    bootstrap_args, other_args = cmd.BootstrapCmdline().parser.parse_known_args()
+        self.logger = logging.getLogger(__name__)
 
-    # Get nice colored logging output!
-    coloredlogs.install(fmt='%(asctime)s %(levelname)s - %(message)s',
-                        level=eval("logging." + bootstrap_args.log_level))
+        # Load non-project directory plugins
+        pm = core.plugin_manager.DirectoryPluginManager()
+        pm.initialize(os.path.join(os.getcwd(), 'plugins'))
+        for plugin in pm.available_plugins():
+            pm.load_plugin(plugin)
 
-    # Load non-project directory plugins
-    pm = core.plugin_manager.DirectoryPluginManager()
-    pm.initialize(os.path.join(os.getcwd(), 'plugins'))
-    for plugin in pm.available_plugins():
-        pm.load_plugin(plugin)
+        # Load HPC plugins
+        self.logger.info("Loading HPC plugins")
+        pm = hpc.HPCPluginManager()
+        pm.initialize(os.path.join(os.getcwd(), 'plugins', 'hpc'))
+        for plugin in pm.available_plugins():
+            pm.load_plugin(plugin)
 
-    # Load HPC plugins
-    logging.info("Loading HPC plugins")
-    pm = hpc.HPCPluginManager()
-    pm.initialize(os.path.join(os.getcwd(), 'plugins', 'hpc'))
-    for plugin in pm.available_plugins():
-        pm.load_plugin(plugin)
+        # Load project cmdline extensions
+        self.logger.info("Loading cmdline extensions from project '%s'", bootstrap_args.project)
+        try:
+            module = __import__("projects.{0}.cmdline".format(bootstrap_args.project),
+                                fromlist=["*"])
+        except ModuleNotFoundError:
+            self.logger.fatal("Project '%s' not found", bootstrap_args.project)
+            raise
 
-    logging.info("Loading cmdline extensions from project '%s'", bootstrap_args.project)
-    try:
-        module = __import__("projects.{0}.cmdline".format(bootstrap_args.project),
-                            fromlist=["*"])
-    except ModuleNotFoundError:
-        logging.fatal("Project '%s' not found", bootstrap_args.project)
-        raise
+        # Validate cmdline args
+        self.args = module.Cmdline().parser.parse_args(other_args)
+        module.CmdlineValidator()(self.args)
 
-    args = module.Cmdline().parser.parse_args(other_args)
-    module.CmdlineValidator()(args)
+        self.args = hpc.EnvConfigurer()(bootstrap_args.hpc_env, self.args)
+        self.args.__dict__['project'] = bootstrap_args.project
 
-    args = hpc.EnvConfigurer()(bootstrap_args.hpc_env, args)
-    args.__dict__['project'] = bootstrap_args.project
+    def __call__(self) -> None:
+        # If only 1 pipeline stage is passed, then the list of stages to run is parsed as a non-iterable
+        # integer, which can cause the generator to fail to be created. So make it iterable in that
+        # case as well.
+        if not isinstance(self.args.pipeline, Iterable):
+            self.args.pipeline = [self.args.pipeline]
 
-    # If only 1 pipeline stage is passed, then the list of stages to run is parsed as a non-iterable
-    # integer, which can cause the generator to fail to be created. So make it iterable in that
-    # case as well.
-    if not isinstance(args.pipeline, Iterable):
-        args.pipeline = [args.pipeline]
+        if 5 not in self.args.pipeline:
+            controller = ControllerGeneratorParser()(self.args)
+            scenario = ScenarioGeneratorParser(self.args).parse_cmdline()
 
-    if 5 not in args.pipeline:
-        __sierra_run_default(args)
-    else:
-        pipeline = Pipeline(args, None, {})
-        pipeline.run()
+            self.logger.info("Controller=%s, Scenario=%s", controller, scenario)
+            cmdopts = rdg.from_cmdline(self.args)
+            pipeline = Pipeline(self.args, controller, cmdopts)
+            pipeline.run()
+        else:
+            pipeline = Pipeline(self.args, None, {})
+            pipeline.run()
 
 
 if __name__ == "__main__":
-    __sierra_run()
+    SIERRA()()

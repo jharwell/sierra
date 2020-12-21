@@ -274,7 +274,7 @@
             arena_resolution="0.2"
             dist_type="single_source">
           <manifest
-              n_cube="1200"
+              n_cube="1600"
               n_ramp="0"
               unit_dim="0.2"
               />

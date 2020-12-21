@@ -142,13 +142,16 @@ class FlexibilityUnivarGenerator:
     - Weight reactivity+adaptability
     """
 
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(__name__)
+
     def __call__(self,
                  cmdopts: dict,
                  main_config: dict,
                  alpha_SAA: float,
                  alpha_PD: float,
                  batch_criteria: bc.IConcreteBatchCriteria):
-        logging.info("Univariate flexbility from %s", cmdopts["batch_collate_root"])
+        self.logger.info("From %s", cmdopts["batch_collate_root"])
 
         ReactivityUnivar(cmdopts).generate(main_config, batch_criteria)
         AdaptabilityUnivar(cmdopts).generate(main_config, batch_criteria)
@@ -333,13 +336,16 @@ class FlexibilityBivarGenerator:
     - Weight reactivity+adaptability
     """
 
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(__name__)
+
     def __call__(self,
                  cmdopts: dict,
                  main_config: dict,
                  alpha_SAA: float,
                  alpha_PD: float,
                  criteria: bc.IConcreteBatchCriteria):
-        logging.info("Bivariate flexbility from %s", cmdopts["batch_collate_root"])
+        self.logger.info("From %s", cmdopts["batch_collate_root"])
 
         inter_perf_csv = main_config['perf']['inter_perf_csv']
 

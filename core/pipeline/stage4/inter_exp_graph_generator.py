@@ -63,6 +63,7 @@ class InterExpGraphGenerator:
         self.cmdopts["batch_collate_graph_root"] = os.path.abspath(os.path.join(self.cmdopts['batch_graph_root'],
                                                                                 collate_graph_leaf))
         core.utils.dir_create_checked(self.cmdopts['batch_collate_graph_root'], exist_ok=True)
+        self.logger = logging.getLogger(__name__)
 
     def __call__(self, criteria: bc.IConcreteBatchCriteria):
         """
@@ -100,9 +101,10 @@ class LinegraphsGenerator:
     def __init__(self, cmdopts: dict, targets: dict) -> None:
         self.cmdopts = cmdopts
         self.targets = targets
+        self.logger = logging.getLogger(__name__)
 
     def generate(self, criteria: bc.IConcreteBatchCriteria):
-        logging.info("Linegraphs from %s", self.cmdopts['batch_collate_root'])
+        self.logger.info("Linegraphs from %s", self.cmdopts['batch_collate_root'])
         # For each category of linegraphs we are generating
         for category in self.targets:
             # For each graph in each category

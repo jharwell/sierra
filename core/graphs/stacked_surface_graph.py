@@ -16,6 +16,7 @@
 #
 
 
+import core.utils
 import os
 import glob
 import re
@@ -26,8 +27,6 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 mpl.use('Agg')
-
-import core.utils
 
 
 class StackedSurfaceGraph:
@@ -55,14 +54,15 @@ class StackedSurfaceGraph:
         self.xtick_labels = kwargs['xtick_labels']
         self.ytick_labels = kwargs['ytick_labels']
         self.comp_type = kwargs['comp_type']
+        self.logger = logging.getLogger(__name__)
 
     def generate(self):
         dfs = [core.utils.pd_csv_read(f) for f in glob.glob(
             self.input_stem_pattern + '*.csv') if re.search('_[0-9]+', f)]
 
         if not dfs:  # empty list
-            logging.debug("Not generating stacked surface graph: %s did not match any .csv files",
-                          self.input_stem_pattern)
+            self.logger.debug("Not generating stacked surface graph: %s did not match any .csv files",
+                              self.input_stem_pattern)
             return
 
         assert len(dfs) <= StackedSurfaceGraph.kMaxSurfaces,\

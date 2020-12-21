@@ -36,11 +36,12 @@ class UnivarGraphCollator:
     def __init__(self, main_config: dict, cmdopts: dict) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
+        self.logger = logging.getLogger(__name__)
 
     def __call__(self, batch_criteria, target: dict, collate_root: str) -> None:
-        logging.info("Stage4: Collating univariate files from batch in %s for graph '%s'...",
-                     self.cmdopts['batch_output_root'],
-                     target['src_stem'])
+        self.logger.info("Stage4: Collating univariate files from batch in %s for graph '%s'...",
+                         self.cmdopts['batch_output_root'],
+                         target['src_stem'])
 
         data_df_new = pd.DataFrame(columns=batch_criteria.gen_exp_dirnames(self.cmdopts))
         stddev_df_new = pd.DataFrame(columns=batch_criteria.gen_exp_dirnames(self.cmdopts))
@@ -67,9 +68,9 @@ class UnivarGraphCollator:
                                                               target['dest_stem'] + '.csv'),
                                     index=False)
         elif any([v for v in csv_src_exists]):
-            logging.warning("Not all experiments in %s produced '%s.csv'",
-                            self.cmdopts['batch_output_root'],
-                            target['src_stem'])
+            self.logger.warning("Not all experiments in %s produced '%s.csv'",
+                                self.cmdopts['batch_output_root'],
+                                target['src_stem'])
 
         if all([v for v in csv_src_exists]) and not stddev_df_new.empty:
             core.utils.pd_csv_write(stddev_df_new, os.path.join(collate_root,
@@ -134,11 +135,12 @@ class BivarGraphCollator:
     def __init__(self, main_config: dict, cmdopts: dict) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
+        self.logger = logging.getLogger(__name__)
 
     def __call__(self, batch_criteria, target: dict, collate_root: str) -> None:
-        logging.info("Stage4: Collating bivariate files from batch in %s for graph '%s'...",
-                     self.cmdopts['batch_output_root'],
-                     target['src_stem'])
+        self.logger.info("Stage4: Collating bivariate files from batch in %s for graph '%s'...",
+                         self.cmdopts['batch_output_root'],
+                         target['src_stem'])
 
         exp_dirs = core.utils.exp_range_calc(
             self.cmdopts, self.cmdopts['batch_output_root'], batch_criteria)
@@ -179,9 +181,9 @@ class BivarGraphCollator:
 
                                     index=False)
         elif any([v for v in csv_src_exists]):
-            logging.warning("Not all experiments in %s produced '%s.csv'",
-                            self.cmdopts['batch_output_root'],
-                            target['src_stem'])
+            self.logger.warning("Not all experiments in %s produced '%s.csv'",
+                                self.cmdopts['batch_output_root'],
+                                target['src_stem'])
 
         if all([v for v in csv_src_exists]) and not stddev_df_new.empty:
             core.utils.pd_csv_write(stddev_df_new, os.path.join(collate_root,

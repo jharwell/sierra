@@ -41,6 +41,7 @@ class BatchedIntraExpGraphGenerator:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
+        self.logger = logging.getLogger(__name__)
 
     def __call__(self,
                  main_config: dict,
@@ -93,6 +94,7 @@ class IntraExpGraphGenerator:
         self.LN_config = LN_config
         self.HM_config = HM_config
         self.controller_config = controller_config
+        self.logger = logging.getLogger(__name__)
 
         core.utils.dir_create_checked(self.cmdopts["exp_graph_root"], exist_ok=True)
 
@@ -107,22 +109,16 @@ class IntraExpGraphGenerator:
            generate heatmaps for each experiment in the batch.
         """
         if self.cmdopts['gen_vc_plots'] and batch_criteria.is_univar():
-            logging.info('Flexibility plots from %s', self.cmdopts['exp_output_root'])
+            self.logger.info('Flexibility plots from %s', self.cmdopts['exp_output_root'])
             FlexibilityPlotsCSVGenerator(self.main_config, self.cmdopts)(batch_criteria)
 
         LN_targets, HM_targets = self.__calc_intra_targets()
 
         if not self.cmdopts['project_no_yaml_LN']:
-            LinegraphsGenerator(self.cmdopts['exp_avgd_root'],
-                                self.cmdopts["exp_graph_root"],
-                                self.cmdopts['exp_model_root'],
-                                LN_targets).generate()
+            LinegraphsGenerator(self.cmdopts, LN_targets).generate()
 
         if not self.cmdopts['project_no_yaml_HM']:
-            HeatmapsGenerator(self.cmdopts['exp_avgd_root'],
-                              self.cmdopts["exp_graph_root"],
-                              self.cmdopts["exp_model_root"],
-                              HM_targets).generate()
+            HeatmapsGenerator(self.cmdopts, HM_targets).generate()
 
     def __calc_intra_targets(self):
         """
@@ -147,10 +143,10 @@ class IntraExpGraphGenerator:
                     extra_graphs = FlexibilityPlotsDefinitionsGenerator()()
 
         LN_keys = [k for k in self.LN_config if k in keys]
-        logging.debug("Enabled linegraph categories: %s", LN_keys)
+        self.logger.debug("Enabled linegraph categories: %s", LN_keys)
 
         HM_keys = [k for k in self.HM_config if k in keys]
-        logging.debug("Enabled heatmap categories: %s", HM_keys)
+        self.logger.debug("Enabled heatmap categories: %s", HM_keys)
 
         LN_targets = [self.LN_config[k] for k in LN_keys]
         LN_targets.append({'graphs': extra_graphs})
@@ -170,19 +166,17 @@ class LinegraphsGenerator:
                  generated.
     """
 
-    def __init__(self,
-                 exp_avgd_root: str,
-                 exp_graph_root: str,
-                 exp_model_root: str,
-                 targets: list) -> None:
+    def __init__(self, cmdopts: dict, targets: list) -> None:
 
-        self.exp_avgd_root = exp_avgd_root
-        self.exp_graph_root = exp_graph_root
-        self.exp_model_root = exp_model_root
+        self.exp_avgd_root = cmdopts['exp_avgd_root']
+        self.exp_graph_root = cmdopts["exp_graph_root"]
+        self.exp_model_root = cmdopts["exp_model_root"]
+        self.log_yscale = cmdopts['plot_log_yscale']
         self.targets = targets
+        self.logger = logging.getLogger(__name__)
 
     def generate(self):
-        logging.info("Linegraphs from %s", self.exp_avgd_root)
+        self.logger.info("Linegraphs from %s", self.exp_avgd_root)
 
         # For each category of linegraphs we are generating
         for category in self.targets:
@@ -205,7 +199,7 @@ class LinegraphsGenerator:
                                      legend=graph['legend'],
                                      xlabel=graph['xlabel'],
                                      ylabel=graph['ylabel'],
-                                     logyscale=self.cmdopts['plot_log_yscale']).generate()
+                                     logyscale=self.log_yscale).generate()
                 except KeyError:
                     raise KeyError('Check that the generated {0}.csv file contains the columns {1}'.format(
                         graph['src_stem'],
@@ -222,18 +216,16 @@ class HeatmapsGenerator:
                  generated.
     """
 
-    def __init__(self,
-                 exp_avgd_root: str,
-                 exp_graph_root: str,
-                 exp_model_root: str, targets: list) -> None:
+    def __init__(self, cmdopts: dict, targets: list) -> None:
 
-        self.exp_avgd_root = exp_avgd_root
-        self.exp_graph_root = exp_graph_root
-        self.exp_model_root = exp_model_root
+        self.exp_avgd_root = cmdopts['exp_avgd_root']
+        self.exp_graph_root = cmdopts["exp_graph_root"]
+        self.exp_model_root = cmdopts["exp_model_root"]
         self.targets = targets
+        self.logger = logging.getLogger(__name__)
 
     def generate(self):
-        logging.info("Heatmaps from %s", self.exp_avgd_root)
+        self.logger.info("Heatmaps from %s", self.exp_avgd_root)
 
         # For each category of heatmaps we are generating
         for category in self.targets:

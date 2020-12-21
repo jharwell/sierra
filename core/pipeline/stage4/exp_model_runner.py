@@ -41,6 +41,7 @@ class BatchedIntraExpModelRunner:
     def __init__(self, cmdopts: dict, models: list) -> None:
         self.cmdopts = cmdopts
         self.models = models
+        self.logger = logging.getLogger(__name__)
 
     def __call__(self,
                  main_config: dict,
@@ -52,23 +53,29 @@ class BatchedIntraExpModelRunner:
         for i, exp in enumerate(exp_to_run):
             exp = os.path.split(exp)[1]
             cmdopts = copy.deepcopy(self.cmdopts)
+
+            cmdopts["exp0_output_root"] = os.path.join(cmdopts["batch_output_root"], exp)
+            cmdopts["exp0_avgd_root"] = os.path.join(cmdopts["exp0_output_root"],
+                                                     main_config['sierra']['avg_output_leaf'])
+
             cmdopts["exp_input_root"] = os.path.join(self.cmdopts['batch_input_root'], exp)
             cmdopts["exp_output_root"] = os.path.join(self.cmdopts['batch_output_root'], exp)
             cmdopts["exp_graph_root"] = os.path.join(self.cmdopts['batch_graph_root'], exp)
             cmdopts["exp_avgd_root"] = os.path.join(cmdopts["exp_output_root"],
                                                     main_config['sierra']['avg_output_leaf'])
             cmdopts["exp_model_root"] = os.path.join(cmdopts['batch_model_root'], exp)
+
             core.utils.dir_create_checked(cmdopts['exp_model_root'], exist_ok=True)
 
             for model in self.models:
-                if not model.run_for_exp(criteria, cmdopts, i) or model.previously_run(i):
-                    logging.debug("Skip running intra-experiment model from '%s' for exp%s",
-                                  str(model),
-                                  i)
+                if not model.run_for_exp(criteria, cmdopts, i):
+                    self.logger.debug("Skip running intra-experiment model from '%s' for exp%s",
+                                      str(model),
+                                      i)
                     continue
 
                 # Run the model
-                logging.debug("Run intra-experiment model '%s' for exp%s", str(model), i)
+                self.logger.debug("Run intra-experiment model '%s' for exp%s", str(model), i)
                 dfs = model.run(criteria, i, cmdopts)
                 for df, csv_stem in zip(dfs, model.target_csv_stems()):
                     path_stem = os.path.join(cmdopts['exp_model_root'],
@@ -96,6 +103,7 @@ class InterExpModelRunner:
     def __init__(self, cmdopts: dict, models: list) -> None:
         self.cmdopts = cmdopts
         self.models = models
+        self.logger = logging.getLogger(__name__)
 
     def __call__(self,
                  main_config: dict,
@@ -107,17 +115,18 @@ class InterExpModelRunner:
                                                                      main_config['sierra']['collate_csv_leaf']))
         cmdopts["batch_collate_graph_root"] = os.path.abspath(os.path.join(self.cmdopts['batch_graph_root'],
                                                                            main_config['sierra']['collate_graph_leaf']))
+
         core.utils.dir_create_checked(cmdopts['batch_model_root'], exist_ok=True)
         core.utils.dir_create_checked(cmdopts['batch_collate_graph_root'], exist_ok=True)
 
         for model in self.models:
             if not model.run_for_batch(criteria, cmdopts):
-                logging.debug("Skip running inter-experiment model '%s'",
-                              str(model))
+                self.logger.debug("Skip running inter-experiment model '%s'",
+                                  str(model))
                 continue
 
             # Run the model
-            logging.debug("Run inter-experiment model '%s'", str(model))
+            self.logger.debug("Run inter-experiment model '%s'", str(model))
 
             dfs = model.run(criteria, cmdopts)
             for df, csv_stem in zip(dfs, model.target_csv_stems()):

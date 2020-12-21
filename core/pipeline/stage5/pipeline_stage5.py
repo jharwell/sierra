@@ -59,40 +59,44 @@ class PipelineStage5:
         self.stage5_config = yaml.load(open(os.path.join(self.cmdopts['project_config_root'],
                                                          'stage5.yaml')),
                                        yaml.FullLoader)
+        self.logger = logging.getLogger(__name__)
+
         if self.cmdopts['controllers_list'] is not None:
             self.controllers = self.cmdopts['controllers_list'].split(',')
+            self.output_roots = {
+                # We add the controller list to the directory path for the .csv and graph directories so
+                # that multiple runs of stage5 with different controller sets do not overwrite each
+                # other (i.e. make stage5 idempotent).
+                'cc_graphs': os.path.join(self.cmdopts['sierra_root'],
+                                          self.cmdopts['project'],
+                                          '+'.join(self.controllers) + "-cc-graphs"),
+                'cc_csvs': os.path.join(self.cmdopts['sierra_root'],
+                                        self.cmdopts['project'],
+                                        '+'.join(self.controllers) + "-cc-csvs"),
+            }
+
         else:
             self.controllers = []
 
         if self.cmdopts['scenarios_list'] is not None:
             self.scenarios = self.cmdopts['scenarios_list'].split(',')
+            self.output_roots = {
+                # We add the scenario list to the directory path for the .csv and graph directories so
+                # that multiple runs of stage5 with different scenario sets do not overwrite each other
+                # (i.e. make stage5 idempotent).
+                'sc_graphs': os.path.join(self.cmdopts['sierra_root'],
+                                          self.cmdopts['project'],
+                                          '+'.join(self.scenarios) + "-sc-graphs"),
+                'sc_csvs': os.path.join(self.cmdopts['sierra_root'],
+                                        self.cmdopts['project'],
+                                        '+'.join(self.scenarios) + "-sc-csvs"),
+                'sc_models': os.path.join(self.cmdopts['sierra_root'],
+                                          self.cmdopts['project'],
+                                          '+'.join(self.scenarios) + "-sc-models"),
+            }
+
         else:
             self.scenarios = []
-
-        self.output_roots = {
-            # We add the controller list to the directory path for the .csv and graph directories so
-            # that multiple runs of stage5 with different controller sets do not overwrite each
-            # other (i.e. make stage5 idempotent).
-            'cc_graphs': os.path.join(self.cmdopts['sierra_root'],
-                                      self.cmdopts['project'],
-                                      '+'.join(self.controllers) + "-cc-graphs"),
-            'cc_csvs': os.path.join(self.cmdopts['sierra_root'],
-                                    self.cmdopts['project'],
-                                    '+'.join(self.controllers) + "-cc-csvs"),
-
-            # We add the scenario list to the directory path for the .csv and graph directories so
-            # that multiple runs of stage5 with different scenario sets do not overwrite each other
-            # (i.e. make stage5 idempotent).
-            'sc_graphs': os.path.join(self.cmdopts['sierra_root'],
-                                      self.cmdopts['project'],
-                                      '+'.join(self.scenarios) + "-sc-graphs"),
-            'sc_csvs': os.path.join(self.cmdopts['sierra_root'],
-                                    self.cmdopts['project'],
-                                    '+'.join(self.scenarios) + "-sc-csvs"),
-            'sc_models': os.path.join(self.cmdopts['sierra_root'],
-                                      self.cmdopts['project'],
-                                      '+'.join(self.scenarios) + "-sc-models"),
-        }
 
     def run(self, cli_args):
         """
@@ -129,7 +133,7 @@ class PipelineStage5:
 
         self._verify_controllers(self.controllers, cli_args)
 
-        logging.info("Stage5: Inter-batch controller comparison of %s...", self.controllers)
+        self.logger.info("Inter-batch controller comparison of %s...", self.controllers)
 
         if cli_args.bc_univar:
             comparator = intrasc.UnivarIntraScenarioComparator(self.controllers,
@@ -150,7 +154,7 @@ class PipelineStage5:
                    legend=legend,
                    comp_type=self.cmdopts['comparison_type'])
 
-        logging.info("Stage5: Inter-batch controller comparison complete")
+        self.logger.info("Inter-batch controller comparison complete")
 
     def _run_sc(self, cli_args):
         # Use nice scenario names on graph legends if configured
@@ -159,9 +163,9 @@ class PipelineStage5:
         else:
             legend = self.scenarios
 
-        logging.info("Stage5: Inter-batch  comparison of %s across %s...",
-                     self.cmdopts['controller'],
-                     self.scenarios)
+        self.logger.info("Inter-batch  comparison of %s across %s...",
+                         self.cmdopts['controller'],
+                         self.scenarios)
 
         assert cli_args.bc_univar,\
             "FATAL: inter-scenario controller comparison only valid for univariate batch criteria"
@@ -177,9 +181,9 @@ class PipelineStage5:
         comparator(graphs=self.stage5_config['inter_scenario']['graphs'],
                    legend=legend)
 
-        logging.info("Stage5: Inter-batch  comparison of %s across %s complete",
-                     self.cmdopts['controller'],
-                     self.scenarios)
+        self.logger.info("Inter-batch  comparison of %s across %s complete",
+                         self.cmdopts['controller'],
+                         self.scenarios)
 
     def _verify_controllers(self, controllers, cli_args):
         """
@@ -211,9 +215,9 @@ class PipelineStage5:
                                                  self.main_config['sierra']['collate_csv_leaf'])
 
                     if scenario in collate_root1 and scenario not in collate_root2:
-                        logging.warning("%s does not exist in %s", scenario, collate_root2)
+                        self.logger.warning("%s does not exist in %s", scenario, collate_root2)
                     if scenario in collate_root2 and scenario not in collate_root1:
-                        logging.warning("%s does not exist in %s", scenario, collate_root1)
+                        self.logger.warning("%s does not exist in %s", scenario, collate_root1)
 
 
 __api__ = [

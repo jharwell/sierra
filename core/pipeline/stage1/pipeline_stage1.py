@@ -19,6 +19,7 @@ Contains main class implementing stage  of the experimental pipeline.
 """
 
 import logging
+
 from core.generators.exp_generator import BatchedExpDefGenerator
 from core.generators.exp_creator import BatchedExpCreator
 
@@ -46,20 +47,21 @@ class PipelineStage1:
 
         self.cmdopts = cmdopts
         self.criteria = criteria
+        self.logger = logging.getLogger(__name__)
 
     def run(self):
         """
         Run stage 1 of the experiment pipeline.
         """
 
-        logging.info("Stage1: Generating input files for batched experiment in %s...",
-                     self.cmdopts['batch_input_root'])
-        logging.debug("Using '%s'", self.cmdopts['time_setup'])
+        self.logger.info("Generating input files for batched experiment in %s...",
+                         self.cmdopts['batch_root'])
+        self.logger.debug("Using '%s'", self.cmdopts['time_setup'])
         self.creator.create(self.generator)
 
-        logging.info("Stage1: %d input files generated in %d experiments.",
-                     self.cmdopts['n_sims'] * len(self.criteria.gen_attr_changelist()),
-                     len(self.criteria.gen_attr_changelist()))
+        self.logger.info("%d input files generated in %d experiments.",
+                         self.cmdopts['n_sims'] * len(self.criteria.gen_attr_changelist()),
+                         len(self.criteria.gen_attr_changelist()))
 
 
 __api__ = [

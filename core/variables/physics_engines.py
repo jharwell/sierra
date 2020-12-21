@@ -59,12 +59,13 @@ class PhysicsEngines(IBaseVariable):
         self.layout = layout
         self.extents = extents
         self.tag_adds = []  # type: tp.List
-
         # If we are given multiple extents to map, we need to divide the specified # of engines
         # among them.
         self.n_engines = int(self.n_engines / float(len(self.extents)))
         assert self.layout == 'uniform_grid2D',\
             "FATAL: Only uniform_grid2D physics engine layout currently supported"
+
+        self.logger = logging.getLogger(__name__)
 
     def gen_attr_changelist(self):
         """
@@ -81,10 +82,10 @@ class PhysicsEngines(IBaseVariable):
         return [set([(".", "./physics_engines")])]
 
     def gen_tag_addlist(self) -> tp.List:
-        logging.debug("Mapping %s physics engines of type %s to extents=%s",
-                      self.n_engines,
-                      self.engine_type,
-                      [str(s) for s in self.extents])
+        self.logger.debug("Mapping %s physics engines of type %s to extents=%s",
+                          self.n_engines,
+                          self.engine_type,
+                          [str(s) for s in self.extents])
         if not self.tag_adds:
             if self.n_engines == 1:
                 self.tag_adds = [self.__gen1_engines()]

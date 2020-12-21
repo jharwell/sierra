@@ -126,10 +126,13 @@ class ExpVideoRenderer:
 
     """
 
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(__name__)
+
     def __call__(self, main_config: dict, render_opts: tp.Dict[str, str]) -> None:
-        logging.info("Rendering images in %s,ofile_leaf=%s...",
-                     render_opts['image_dir'],
-                     render_opts['ofile_leaf'])
+        self.logger.info("Rendering images in %s,ofile_leaf=%s...",
+                         render_opts['image_dir'],
+                         render_opts['ofile_leaf'])
         opts = render_opts['cmd_opts'].split(' ')
 
         cmd = ["ffmpeg",

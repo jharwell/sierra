@@ -66,38 +66,59 @@ class BootstrapCmdline:
 
                                  - ``local`` - This will direct SIERRA to run all experiments on the local machine it is
                                    launched from using GNU parallel. The # simultaneous simulations will be determined
-                                   by:
+                                   by::
 
-                                   # cores on machine / # physics engines
+                                      # cores on machine / # physics engines
 
                                    If more simulations are requested than can be run in parallel, SIERRA will start
                                    additional simulations as currently running simulations finish.
 
-                                 - ``msi`` - The directs SIERRA to run experiments spread across multiple allocated
-                                   nodes in the MSI computing environment.
+                                 - ``pbs`` - The directs SIERRA to run experiments spread across multiple allocated
+                                   nodes in an HPC computing environment managed by TORQUE-PBS.
 
-                                   The following environment variables are used/must be defined:
+                                   The following PBS environment variables are used/must be defined (see TOQUE-PBS docs
+                                   for meaning):
 
-                                   - ``PBS_NUM_PPN`` - Infer  # threads and # physics engines per simulation
-                                     # simulations to run, along with ``PBS_NUM_NODES``.
+                                   - ``PBS_NUM_PPN``
+                                   - ``PBS_NUM_NODES``
+                                   - ``PBS_NODEFILE``
+                                   - ``PBS_JOBID``
 
-                                   - ``MSICLUSTER`` - Determine the names of ARGoS executables, so that in HPC
-                                     environments with multiple clusters with different architectures ARGoS can be
-                                     compiled natively for each for maximum performance.
+                                   ``PBS_NODEFILE`` and ``PBS_JOBID`` are used to configure simulation launches.
+                                   ``PBS_NUM_PPN`` and ``PBS_NUM_NODES`` are used to infer # threads and # physics
+                                   engines per simulation # simulations to run.
 
-                                 - ``PBS_NODEFILE`` and ``PBS_JOBID`` - Used to configure simulation launches.
+                                 - ``slurm`` - The directs SIERRA to run experiments spread across multiple allocated
+                                   nodes in an HPC computing environment managed by SLURM.
+
+                                   The following SLURM environment variables are used/must be defined (see SLURM docs
+                                   for meaning):
+
+                                   - ``SLURM_CPUS_ON_NODE``
+                                   - ``SLURM_JOB_NUM_NODES``
+                                   - ``SLURM_JOB_NODELIST``
+                                   - ``SLURM_JOB_ID``
+
+                                   ``SLURM_JOB_NODE_LIST`` and ``SLURM_JOB_ID`` are used to configure simulation
+                                   launches.  ``SLURM_CPUS_ON_NODE`` and ``SLURM_JOB_NUM_NODES`` are used to infer #
+                                   threads and # physics engines per simulation # simulations to run.
 
                                  - ``adhoc`` - This will direct SIERRA to run experiments on an ad-hoc network of
                                    computers. The only requirement is that they `must` share a common filesystem for
                                    whatever ``--sierra-root`` is.
 
                                    The following environment variables are used to compute the # threads, # physics
-                                   engines, and # simulations to run:
+                                   engines, and # simulations to run, and must be defined:
 
                                    - ``ADHOC_NODEFILE`` - Points to a file suitable for passing to GNU parallel via
                                      --sshloginfile.
 
-                                 """,
+                                 .. IMPORTANT:: For ``pbs`` and ``slurm`` HPC environments, the ``SIERRA_ARCH``
+                                                environment variable must also be defined. It is used to determine the
+                                                names of ARGoS executables via ``argos3-$SIERRA_ARCH``, so that in HPC
+                                                environments with multiple queues/sub-clusters with different
+                                                architectures ARGoS can be compiled natively for each for maximum
+                                                performance.  """,
                                  default='local')
 
 

@@ -46,6 +46,7 @@ class ARGoSScenarioGenerator():
         self.spec = spec
         self.cmdopts = cmdopts
         self.kwargs = kwargs
+        self.logger = logging.getLogger(__name__)
 
     def generate(self):
         return exp_generator.ExpDefCommonGenerator(spec=self.spec,
@@ -80,7 +81,7 @@ class ARGoSScenarioGenerator():
         """
         if self.cmdopts['n_robots'] is None:
             return
-        print(self.cmdopts['n_robots'])
+
         chgs = population_size.PopulationSize.gen_attr_changelist_from_list(
             [self.cmdopts['n_robots']])
         for a in chgs[0]:
@@ -90,8 +91,8 @@ class ARGoSScenarioGenerator():
         with open(self.spec.exp_def_fpath, 'ab') as f:
             pickle.dump(chgs[0], f)
 
-    @staticmethod
-    def generate_physics(exp_def: XMLLuigi,
+    def generate_physics(self,
+                         exp_def: XMLLuigi,
                          cmdopts: dict,
                          engine_type: str,
                          n_engines: int,
@@ -111,7 +112,7 @@ class ARGoSScenarioGenerator():
         # Valid to have 0 engines here if 2D/3D were mixed but only 1 engine was specified for the
         # whole simulation.
         if n_engines == 0:
-            logging.warning("0 engines of type %s specified", engine_type)
+            self.logger.warning("0 engines of type %s specified", engine_type)
             return
 
         pe = physics_engines.factory(engine_type, n_engines, cmdopts, extents)

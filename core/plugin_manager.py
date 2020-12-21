@@ -31,6 +31,7 @@ class BasePluginManager():
     def __init__(self):
         self.plugin_root = ''
         self.loaded = None
+        self.logger = logging.getLogger(__name__)
 
     def initialize(self, plugin_root):
         self.plugin_root = plugin_root
@@ -51,7 +52,7 @@ class BasePluginManager():
         """
         plugins = self.available_plugins()
         if name not in plugins:
-            logging.error("Cannot locate plugin '%s'", name)
+            self.logger.error("Cannot locate plugin '%s'", name)
             raise Exception("Cannot locate plugin '%s'" % name)
 
         if name not in self.loaded:
@@ -63,14 +64,18 @@ class BasePluginManager():
                 'spec': plugins[name]['spec'],
                 'module': module
             }
-            logging.debug("Loaded plugin '%s'", os.path.join(self.plugin_root, name))
+            self.logger.debug("Loaded plugin '%s'", os.path.join(self.plugin_root, name))
         else:
-            logging.warning("Plugin '%s' already loaded", name)
+            self.logger.warning("Plugin '%s' already loaded", name)
 
         return self.loaded[name]['module']
 
     def get_plugin(self, name: str):
-        return self.loaded[name]['module']
+        try:
+            return self.loaded[name]['module']
+        except KeyError:
+            self.logger.critical("No such plugin '%s'", name)
+            raise
 
 
 class FilePluginManager(BasePluginManager):

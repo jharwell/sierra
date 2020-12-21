@@ -178,6 +178,7 @@ class BatchCriteria():
 
         self.cat_str = cli_arg.split('.')[0]
         self.def_str = '.'.join(cli_arg.split('.')[1:])
+        self.logger = logging.getLogger(__name__)
 
     # Stub out IBaseVariable because all concrete batch criteria only implement a subset of them.
 
@@ -251,9 +252,9 @@ class BatchCriteria():
         chg_defs = list(self.gen_attr_changelist())
         n_exps = len(chg_defs)
 
-        logging.info("Scaffolding experiments from batch criteria '%s' by modifying %s XML tags",
-                     self.cli_arg,
-                     len(chg_defs[0]))
+        self.logger.info("Scaffolding experiments from batch criteria '%s' by modifying %s XML tags",
+                         self.cli_arg,
+                         len(chg_defs[0]))
 
         for i, defi in enumerate(chg_defs):
             self._scaffold_expi(xml_luigi, defi, i, cmdopts, batch_config_leaf)
@@ -266,9 +267,10 @@ class BatchCriteria():
                 self.batch_input_root)
             msg3 = "(2) Sharing {0} between different batch criteria".format(
                 self.batch_input_root)
-            logging.fatal(msg1)
-            logging.fatal(msg2)
-            logging.fatal(msg3)
+
+            self.logger.critical(msg1)
+            self.logger.critical(msg2)
+            self.logger.critical(msg3)
             raise ValueError("Batch experiment size/# exp dir mismatch")
 
     def _scaffold_expi(self,
@@ -280,11 +282,11 @@ class BatchCriteria():
         exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
         exp_input_root = os.path.join(self.batch_input_root,
                                       str(exp_dirname))
-        logging.debug("Applying %s XML attribute changes from batch criteria generator '%s' for exp%s in %s",
-                      len(defi),
-                      self.cli_arg,
-                      i,
-                      exp_dirname)
+        self.logger.debug("Applying %s XML attribute changes from batch criteria generator '%s' for exp%s in %s",
+                          len(defi),
+                          self.cli_arg,
+                          i,
+                          exp_dirname)
 
         core.utils.dir_create_checked(exp_input_root, exist_ok=cmdopts['exp_overwrite'])
 
@@ -292,7 +294,7 @@ class BatchCriteria():
             try:
                 path, attr, value = changes_i
             except ValueError:
-                logging.fatal("%s XML changes not a 3-tuple (path,attr,value)", changes_i)
+                self.logger.exception("%s XML changes not a 3-tuple (path,attr,value)", changes_i)
                 raise
             xml_luigi.attr_change(path, attr, value)
 

@@ -38,6 +38,7 @@ class ScenarioGeneratorParser:
     def __init__(self, args) -> None:
         self.args = args
         self.scenario = None
+        self.logger = logging.getLogger(__name__)
 
     def parse_cmdline(self):
         """
@@ -48,8 +49,8 @@ class ScenarioGeneratorParser:
             return None
 
         # Scenario specified on cmdline
-        logging.info("Parse scenario generator from cmdline specification '%s'",
-                     self.args.scenario)
+        self.logger.info("Parse scenario generator from cmdline specification '%s'",
+                         self.args.scenario)
 
         res1 = re.search('[SDQPR][SSSLN]', self.args.scenario)
         assert res1 is not None,\
