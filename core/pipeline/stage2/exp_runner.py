@@ -140,11 +140,7 @@ class ExpRunner:
         }
         try:
             cmd = core.hpc.GNUParallelCmdGenerator()(self.hpc_env, parallel_opts)
-            subprocess.run(cmd,
-                           shell=True,
-                           check=True,
-                           stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE)
+            subprocess.run(cmd, shell=True, check=True)
 
         # Catch the exception but do not raise it again so that additional experiments can still be
         # run if possible

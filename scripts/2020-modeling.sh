@@ -117,23 +117,21 @@ if [ "$TASK" == "exp" ] || [ "$TASK" == "all" ]; then
 fi
 
 if [ "$TASK" == "comp" ] || [ "$TASK" == "all" ]; then
+    criteria=population_density.CD1p0.I32.${CARDINALITY}
+
     $BASE_CMD --scenario=$s \
               --pipeline 5\
-              --batch-criteria population_density.CD${DENSITY}.I32.${CARDINALITY} \
+              --batch-criteria $criteria\
               --bc-univar\
-              --scenario-comp\
+              --scenario-comparison\
               --scenarios-list=SS.16x8,DS.16x8\
-              --plot-log-xscale\
-              --plot-log-yscale\
               --scenarios-legend="SS","DS"
 
     $BASE_CMD --scenario=$s \
               --pipeline 5\
-              --batch-criteria population_density.CD${DENSITY}.I32.${CARDINALITY} \
+              --batch-criteria $criteria\
               --bc-univar\
-              --scenario-comp\
+              --scenario-comparison\
               --scenarios-list=RN.8x8,PL.8x8\
-              --plot-log-xscale\
-              --plot-log-yscale\
               --scenarios-legend="RN","PL"
 fi

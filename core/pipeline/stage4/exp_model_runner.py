@@ -53,12 +53,18 @@ class BatchedIntraExpModelRunner:
         for i, exp in enumerate(exp_to_run):
             exp = os.path.split(exp)[1]
             cmdopts = copy.deepcopy(self.cmdopts)
+
+            cmdopts["exp0_output_root"] = os.path.join(cmdopts["batch_output_root"], exp)
+            cmdopts["exp0_avgd_root"] = os.path.join(cmdopts["exp0_output_root"],
+                                                     main_config['sierra']['avg_output_leaf'])
+
             cmdopts["exp_input_root"] = os.path.join(self.cmdopts['batch_input_root'], exp)
             cmdopts["exp_output_root"] = os.path.join(self.cmdopts['batch_output_root'], exp)
             cmdopts["exp_graph_root"] = os.path.join(self.cmdopts['batch_graph_root'], exp)
             cmdopts["exp_avgd_root"] = os.path.join(cmdopts["exp_output_root"],
                                                     main_config['sierra']['avg_output_leaf'])
             cmdopts["exp_model_root"] = os.path.join(cmdopts['batch_model_root'], exp)
+
             core.utils.dir_create_checked(cmdopts['exp_model_root'], exist_ok=True)
 
             for model in self.models:
@@ -109,6 +115,7 @@ class InterExpModelRunner:
                                                                      main_config['sierra']['collate_csv_leaf']))
         cmdopts["batch_collate_graph_root"] = os.path.abspath(os.path.join(self.cmdopts['batch_graph_root'],
                                                                            main_config['sierra']['collate_graph_leaf']))
+
         core.utils.dir_create_checked(cmdopts['batch_model_root'], exist_ok=True)
         core.utils.dir_create_checked(cmdopts['batch_collate_graph_root'], exist_ok=True)
 

@@ -56,7 +56,8 @@ defining your own, the steps to do so are:
         --scenario=SS.12x6\
         --batch-criteria population_size.Log64\
         --n-blocks=20\
-        --exp-overwrite
+        --exp-overwrite\
+        --models-disable
 
    This will run a batch of 7 experiments using a correlated random walk robot
    controller (CRW), across which the swarm size will be varied from 1..64, by

@@ -95,7 +95,8 @@ class StackedLineGraph:
                 with open(self.model_legend_fpath, 'r') as f:
                     model_legend = f.read().splitlines()
             else:
-                logging.warning("No valid legend file for model '%s' found", self.model_fpath)
+                self.logger.warning("No legend file for model '%s' found", self.model_fpath)
+                model_legend = ['Model Prediction']
 
         # Plot specified columns from dataframe.
         if self.cols is None:

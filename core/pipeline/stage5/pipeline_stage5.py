@@ -63,38 +63,40 @@ class PipelineStage5:
 
         if self.cmdopts['controllers_list'] is not None:
             self.controllers = self.cmdopts['controllers_list'].split(',')
+            self.output_roots = {
+                # We add the controller list to the directory path for the .csv and graph directories so
+                # that multiple runs of stage5 with different controller sets do not overwrite each
+                # other (i.e. make stage5 idempotent).
+                'cc_graphs': os.path.join(self.cmdopts['sierra_root'],
+                                          self.cmdopts['project'],
+                                          '+'.join(self.controllers) + "-cc-graphs"),
+                'cc_csvs': os.path.join(self.cmdopts['sierra_root'],
+                                        self.cmdopts['project'],
+                                        '+'.join(self.controllers) + "-cc-csvs"),
+            }
+
         else:
             self.controllers = []
 
         if self.cmdopts['scenarios_list'] is not None:
             self.scenarios = self.cmdopts['scenarios_list'].split(',')
+            self.output_roots = {
+                # We add the scenario list to the directory path for the .csv and graph directories so
+                # that multiple runs of stage5 with different scenario sets do not overwrite each other
+                # (i.e. make stage5 idempotent).
+                'sc_graphs': os.path.join(self.cmdopts['sierra_root'],
+                                          self.cmdopts['project'],
+                                          '+'.join(self.scenarios) + "-sc-graphs"),
+                'sc_csvs': os.path.join(self.cmdopts['sierra_root'],
+                                        self.cmdopts['project'],
+                                        '+'.join(self.scenarios) + "-sc-csvs"),
+                'sc_models': os.path.join(self.cmdopts['sierra_root'],
+                                          self.cmdopts['project'],
+                                          '+'.join(self.scenarios) + "-sc-models"),
+            }
+
         else:
             self.scenarios = []
-
-        self.output_roots = {
-            # We add the controller list to the directory path for the .csv and graph directories so
-            # that multiple runs of stage5 with different controller sets do not overwrite each
-            # other (i.e. make stage5 idempotent).
-            'cc_graphs': os.path.join(self.cmdopts['sierra_root'],
-                                      self.cmdopts['project'],
-                                      '+'.join(self.controllers) + "-cc-graphs"),
-            'cc_csvs': os.path.join(self.cmdopts['sierra_root'],
-                                    self.cmdopts['project'],
-                                    '+'.join(self.controllers) + "-cc-csvs"),
-
-            # We add the scenario list to the directory path for the .csv and graph directories so
-            # that multiple runs of stage5 with different scenario sets do not overwrite each other
-            # (i.e. make stage5 idempotent).
-            'sc_graphs': os.path.join(self.cmdopts['sierra_root'],
-                                      self.cmdopts['project'],
-                                      '+'.join(self.scenarios) + "-sc-graphs"),
-            'sc_csvs': os.path.join(self.cmdopts['sierra_root'],
-                                    self.cmdopts['project'],
-                                    '+'.join(self.scenarios) + "-sc-csvs"),
-            'sc_models': os.path.join(self.cmdopts['sierra_root'],
-                                      self.cmdopts['project'],
-                                      '+'.join(self.scenarios) + "-sc-models"),
-        }
 
     def run(self, cli_args):
         """

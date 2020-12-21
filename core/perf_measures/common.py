@@ -472,6 +472,7 @@ class WeightedPMBivar():
         self.ax1_alpha = ax1_alpha
         self.ax2_alpha = ax2_alpha
         self.title = title
+        self.logger = logging.getLogger(__name__)
 
     def generate(self, criteria: bc.IConcreteBatchCriteria):
         csv1_istem = os.path.join(self.cmdopts["batch_collate_root"], self.ax1_leaf)
@@ -483,8 +484,8 @@ class WeightedPMBivar():
         img_ostem = os.path.join(self.cmdopts["batch_collate_graph_root"], self.output_leaf)
 
         if not core.utils.path_exists(csv1_ipath) or not core.utils.path_exists(csv2_ipath):
-            logging.debug("Not generating bivariate weighted performance measure: %s or %s does not exist",
-                          csv1_ipath, csv2_ipath)
+            self.logger.debug("Not generating bivariate weighted performance measure: %s or %s does not exist",
+                              csv1_ipath, csv2_ipath)
             return
 
         ax1_df = core.utils.pd_csv_read(csv1_istem + '.csv')

@@ -26,15 +26,15 @@ development/debugging on MSI.
    logged into a ``mesabi`` login node (this is different than a ``mesabi``
    compute node).
 
-   A similar check for ``gangi`` via the following commands, run from your
+   A similar check for ``mangi`` via the following commands, run from your
    laptop on a UMN computer/UMN wifi (will not work from outside UMN campus
    without a VPN)::
 
      ssh <x500>@login.msi.umn.edu
-     ssh gangi.msi.umn.edu
+     ssh mangi.msi.umn.edu
 
-   If the commands are successful, you have logged into a ``gangi`` login node
-   (this is different than a ``gangi`` compute node).
+   If the commands are successful, you have logged into a ``mangi`` login node
+   (this is different than a ``mangi`` compute node).
 
 #. Once you can login, you can begin the setup by sourcing the environment
    definitions::
@@ -68,14 +68,16 @@ development/debugging on MSI.
 
 #. On an MSI login node, get an interactive job session so you can build your
    selected project and its dependencies natively to the cluster you will be
-   running on (gangi/mesabi) for maximum speed::
+   running on (mangi/mesabi) for maximum speed::
+
+     srun -N 1 --ntasks-per-node=4  --mem-per-cpu=1gb -t 1:00:00 -p interactive --pty bash
 
      srun -N 1 --ntasks-per-node=4  --mem-per-cpu=1gb -t 1:00:00 -p interactive --pty bash
 
 
    The above command, when it returns, will give you 1 hour of time on an actual
    compute node. You know you are running/building on a compute node rather than
-   a login node on gangi/mesabi when the hostname is ``cnXXXX`` rather than
+   a login node on mangi/mesabi when the hostname is ``cnXXXX`` rather than
    ``lnXXXX``.
 
 #. In your interactive session run the bash script to build the project (note

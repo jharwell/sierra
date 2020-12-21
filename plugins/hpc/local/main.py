@@ -74,7 +74,7 @@ def gnu_parallel_cmd_generate(parallel_opts: dict):
         resume = '--resume-failed'
 
     return 'cd {0} &&' \
-        'parallel {1} --jobs {2} --results {0} --joblog {3} --no-notice < "{4}"'.format(
+        'parallel --eta {1} --jobs {2} --results {0} --joblog {3} --no-notice < "{4}"'.format(
             parallel_opts['jobroot_path'],
             resume,
             parallel_opts['n_jobs'],
