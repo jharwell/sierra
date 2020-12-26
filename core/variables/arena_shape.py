@@ -18,15 +18,18 @@
 import typing as tp
 
 # 3rd party packages
+import implements
 
 # Project packages
 from core.variables.base_variable import IBaseVariable
 from core.utils import ArenaExtent
+from core.xml_luigi import XMLAttrChange, XMLAttrChangeSet, XMLTagRmList, XMLTagAddList
 
 kWALL_WIDTH = 0.4
 
 
-class ArenaShape(IBaseVariable):
+@implements.implements(IBaseVariable)
+class ArenaShape():
 
     """
     Maps a list of desired arena dimensions specified in (X,Y) tuples to a list of sets of changes
@@ -42,84 +45,85 @@ class ArenaShape(IBaseVariable):
         self.extents = extents
         self.attr_changes = []  # type: tp.List
 
-    def gen_attr_changelist(self) -> list:
+    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         """
         Generate list of sets of changes necessary to make to the input file to correctly set up the
-        simulation with the specified area size/shape.
+        simulation with the specified arena.
         """
         if not self.attr_changes:
-            self.attr_changes = [set([(".//arena",
-                                       "size",
-                                       "{0}, {1}, {2}".format(extent.xsize(),
-                                                              extent.ysize(),
-                                                              extent.zsize())),
-                                      (".//arena",
-                                       "center",
-                                       "{0:.9f},{1:.9f},1".format(extent.xsize() / 2.0,
-                                                                  extent.ysize() / 2.0)),
+            for extent in self.extents:
+                chgs = XMLAttrChangeSet(XMLAttrChange(".//arena",
+                                                      "size",
+                                                      "{0}, {1}, {2}".format(extent.xsize(),
+                                                                             extent.ysize(),
+                                                                             extent.zsize())),
+                                        XMLAttrChange(".//arena",
+                                                      "center",
+                                                      "{0:.9f},{1:.9f},1".format(extent.xsize() / 2.0,
+                                                                                 extent.ysize() / 2.0)),
 
-                                      # We restrict the places robots can spawn within the arena as
-                                      # follows:
-                                      #
-                                      # - Subtract width of the walls so that robots do not spawn
-                                      #   inside walls (which ARGoS seems to allow?).
-                                      #
-                                      # - Subtract a little bit more so robots don't get into weird
-                                      #   states by being near arena boundaries on the first
-                                      #   timestep.
-                                      #
-                                      # - All robots start on the ground with Z=0.
-                                      (".//arena/distribute/position",
-                                       "max",
-                                       "{0:.9f}, {1:.9f}, 0".format(extent.xsize() - 2.0 * kWALL_WIDTH - 2.0,
-                                                                    extent.ysize() - 2.0 * kWALL_WIDTH - 2.0)),
-                                      (".//arena/distribute/position",
-                                       "min",
-                                       "{0:.9f}, {1:.9f}, 0".format(2.0 * kWALL_WIDTH + 2.0, 2.0 * kWALL_WIDTH + 2.0)),
+                                        # We restrict the places robots can spawn within the arena as
+                                        # follows:
+                                        #
+                                        # - Subtract width of the walls so that robots do not spawn
+                                        #   inside walls (which ARGoS seems to allow?).
+                                        #
+                                        # - Subtract a little bit more so robots don't get into weird
+                                        #   states by being near arena boundaries on the first
+                                        #   timestep.
+                                        #
+                                        # - All robots start on the ground with Z=0.
+                                        XMLAttrChange(".//arena/distribute/position",
+                                                      "max",
+                                                      "{0:.9f}, {1:.9f}, 0".format(extent.xsize() - 2.0 * kWALL_WIDTH - 2.0,
+                                                                                   extent.ysize() - 2.0 * kWALL_WIDTH - 2.0)),
+                                        XMLAttrChange(".//arena/distribute/position",
+                                                      "min",
+                                                      "{0:.9f}, {1:.9f}, 0".format(2.0 * kWALL_WIDTH + 2.0, 2.0 * kWALL_WIDTH + 2.0)),
 
-                                      (".//arena/*[@id='wall_north']",
-                                       "size",
-                                       "{0:.9f}, {1:.9f}, 0.5".format(extent.xsize(), kWALL_WIDTH)),
+                                        XMLAttrChange(".//arena/*[@id='wall_north']",
+                                                      "size",
+                                                      "{0:.9f}, {1:.9f}, 0.5".format(extent.xsize(), kWALL_WIDTH)),
 
-                                      (".//arena/*[@id='wall_north']/body",
-                                       "position", "{0:.9f}, {1:.9f}, 0".format(extent.xsize() / 2.0, extent.ysize())),
-                                      (".//arena/*[@id='wall_south']",
-                                       "size",
-                                       "{0:.9f}, {1:.9f}, 0.5".format(extent.xsize(), kWALL_WIDTH)),
-                                      (".//arena/*[@id='wall_south']/body",
-                                       "position",
-                                       "{0:.9f}, 0, 0 ".format(extent.xsize() / 2.0)),
+                                        XMLAttrChange(".//arena/*[@id='wall_north']/body",
+                                                      "position", "{0:.9f}, {1:.9f}, 0".format(extent.xsize() / 2.0, extent.ysize())),
+                                        XMLAttrChange(".//arena/*[@id='wall_south']",
+                                                      "size",
+                                                      "{0:.9f}, {1:.9f}, 0.5".format(extent.xsize(), kWALL_WIDTH)),
+                                        XMLAttrChange(".//arena/*[@id='wall_south']/body",
+                                                      "position",
+                                                      "{0:.9f}, 0, 0 ".format(extent.xsize() / 2.0)),
 
-                                      # East wall needs to have its X coordinate offset by the width
-                                      # of the wall / 2 in order to be centered on the boundary for
-                                      # the arena. This is necessary to ensure that the maximum X
-                                      # coordinate that robots can access is LESS than the upper
-                                      # boundary of physics engines incident along the east wall.
-                                      #
-                                      # I think this is a bug in ARGoS.
-                                      (".//arena/*[@id='wall_east']",
-                                       "size",
-                                       "{0:.9f}, {1:.9f}, 0.5".format(kWALL_WIDTH,
-                                                                      extent.ysize() + kWALL_WIDTH)),
-                                      (".//arena/*[@id='wall_east']/body",
-                                       "position",
-                                       "{0:.9f}, {1:.9f}, 0".format(extent.xsize() - kWALL_WIDTH / 2.0,
-                                                                    extent.ysize() / 2.0)),
+                                        # East wall needs to have its X coordinate offset by the width
+                                        # of the wall / 2 in order to be centered on the boundary for
+                                        # the arena. This is necessary to ensure that the maximum X
+                                        # coordinate that robots can access is LESS than the upper
+                                        # boundary of physics engines incident along the east wall.
+                                        #
+                                        # I think this is a bug in ARGoS.
+                                        XMLAttrChange(".//arena/*[@id='wall_east']",
+                                                      "size",
+                                                      "{0:.9f}, {1:.9f}, 0.5".format(kWALL_WIDTH,
+                                                                                     extent.ysize() + kWALL_WIDTH)),
+                                        XMLAttrChange(".//arena/*[@id='wall_east']/body",
+                                                      "position",
+                                                      "{0:.9f}, {1:.9f}, 0".format(extent.xsize() - kWALL_WIDTH / 2.0,
+                                                                                   extent.ysize() / 2.0)),
 
-                                      (".//arena/*[@id='wall_west']",
-                                       "size",
-                                       "{0:.9f}, {1:.9f}, 0.5".format(kWALL_WIDTH,
-                                                                      extent.ysize() + kWALL_WIDTH)),
-                                      (".//arena/*[@id='wall_west']/body",
-                                       "position",
-                                       "0, {0:.9f}, 0".format(extent.ysize() / 2.0))])
-                                 for extent in self.extents]
+                                        XMLAttrChange(".//arena/*[@id='wall_west']",
+                                                      "size",
+                                                      "{0:.9f}, {1:.9f}, 0.5".format(kWALL_WIDTH,
+                                                                                     extent.ysize() + kWALL_WIDTH)),
+                                        XMLAttrChange(".//arena/*[@id='wall_west']/body",
+                                                      "position",
+                                                      "0, {0:.9f}, 0".format(extent.ysize() / 2.0)))
+                self.attr_changes.append(chgs)
         return self.attr_changes
 
-    def gen_tag_rmlist(self) -> list:
+    def gen_tag_rmlist(self) -> tp.List[XMLTagRmList]:
         return []
 
-    def gen_tag_addlist(self) -> list:
+    def gen_tag_addlist(self) -> tp.List[XMLTagAddList]:
         return []
 
 

@@ -19,8 +19,128 @@ Wrapper around :class:`xml.etree.ElementTree` which contains a small set of func
 manipulating XML files.
 """
 
-import xml.etree.ElementTree as ET
+# Core packages
 import logging
+import typing as tp
+import pickle
+
+# 3rd party packages
+
+# Project packages
+import xml.etree.ElementTree as ET
+
+
+class XMLAttrChange():
+    def __init__(self, path: str, attr: str, value: tp.Union[str, int, float]) -> None:
+        self.path = path
+        self.attr = attr
+        self.value = str(value)
+
+    def __iter__(self):
+        yield from [self.path, self.attr, self.value]
+
+    def __repr__(self) -> str:
+        return self.path + '/' + self.attr + ': ' + str(self.value)
+
+
+class XMLTagRm():
+    def __init__(self, path: str, tag: str):
+        self.path = path
+        self.tag = tag
+
+    def __iter__(self):
+        yield from [self.path, self.tag]
+
+
+class XMLTagAdd():
+    def __init__(self, path: str, tag: str, attr: dict = dict()):
+        self.path = path
+        self.tag = tag
+        self.attr = attr
+
+    def __iter__(self):
+        yield from [self.path, self.tag, self.attr]
+
+
+class XMLAttrChangeSet():
+    @staticmethod
+    def unpickle(fpath: str) -> 'XMLAttrChangeSet':
+        """
+        Read in all the different sets of parameter changes that were pickled to make crucial parts
+        of the experiment definition easily accessible. I don't know how many there are, so go until
+        you get an exception.
+
+        """
+        try:
+            with open(fpath, 'rb') as f:
+                exp_def = XMLAttrChangeSet()
+                while True:
+                    exp_def |= XMLAttrChangeSet(*pickle.load(f))
+        except EOFError:
+            pass
+        return exp_def
+
+    def __init__(self, *args: XMLAttrChange) -> None:
+        self.changes = set(args)
+
+    def __len__(self) -> int:
+        return len(self.changes)
+
+    def __iter__(self) -> tp.Iterator[XMLAttrChange]:
+        return iter(self.changes)
+
+    def __ior__(self, other: 'XMLAttrChangeSet') -> 'XMLAttrChangeSet':
+        self.changes |= other.changes
+        return self
+
+    def __or__(self, other: 'XMLAttrChangeSet') -> 'XMLAttrChangeSet':
+        new = XMLAttrChangeSet(*self.changes)
+        new |= other
+        return new
+
+    def __repr__(self) -> str:
+        return str(self.changes)
+
+    def add(self, chg: XMLAttrChange) -> None:
+        self.changes.add(chg)
+
+    def pickle(self, fpath: str) -> None:
+        with open(fpath, 'ab') as f:
+            pickle.dump(self.changes, f)
+
+
+class XMLTagRmList():
+    def __init__(self, *args: XMLTagRm) -> None:
+        self.rms = list(args)
+
+    def __len__(self) -> int:
+        return len(self.rms)
+
+    def __iter__(self) -> tp.Iterator[XMLTagRm]:
+        return iter(self.rms)
+
+    def extend(self, other: 'XMLTagRmList') -> None:
+        self.rms.extend(other.rms)
+
+    def append(self, other: XMLTagRm) -> None:
+        self.rms.append(other)
+
+
+class XMLTagAddList():
+    def __init__(self, *args: XMLTagAdd) -> None:
+        self.adds = list(args)
+
+    def __len__(self) -> int:
+        return len(self.adds)
+
+    def __iter__(self) -> tp.Iterator[XMLTagAdd]:
+        return iter(self.adds)
+
+    def extend(self, other: 'XMLTagAddList') -> None:
+        self.adds.extend(other.adds)
+
+    def append(self, other: XMLTagAdd) -> None:
+        self.adds.append(other)
 
 
 class InvalidElementError(RuntimeError):
@@ -142,4 +262,10 @@ class XMLLuigi:
 __api__ = [
     'InvalidElementError',
     'XMLLuigi',
+    'XMLAttrChange',
+    'XMLAttrChangeSet',
+    'XMLTagAdd',
+    'XMLTagAddList',
+    'XMLTagRm',
+    'XMLTagRmList'
 ]

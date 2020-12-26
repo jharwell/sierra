@@ -1,4 +1,4 @@
-.. _ln-msi-setup:
+.. _ln-hpc-msi-setup:
 
 MSI Setup
 =========
@@ -6,7 +6,7 @@ MSI Setup
 .. IMPORTANT::
    Prior to executing these steps you should:
 
-   #. Have completed the :ref:`ln-local-setup` guide.
+   #. Have completed the :ref:`ln-hpc-local-setup` guide.
    #. Have read through :ref:`ln-usage` guide, and gotten **CORRECT** results
       on some small scale experiments of interest on your local machine.
 

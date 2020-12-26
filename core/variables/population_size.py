@@ -18,12 +18,17 @@ Classes for the population size batch criteria. See :ref:`ln-bc-population-size`
 documentation.
 """
 
+# Core packages
 import typing as tp
 import re
 import math
+
+# 3rd party packages
 import implements
 
+# Project packages
 from core.variables import batch_criteria as bc
+from core.xml_luigi import XMLAttrChange, XMLAttrChangeSet
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
@@ -40,6 +45,11 @@ class PopulationSize(bc.UnivarBatchCriteria):
 
     """
 
+    @staticmethod
+    def gen_attr_changelist_from_list(sizes: list) -> tp.List[XMLAttrChangeSet]:
+        return [XMLAttrChangeSet(XMLAttrChange(".//arena/distribute/entity", "quantity", str(s)),
+                                 XMLAttrChange(".//population_dynamics", "max_size", str(4 * s))) for s in sizes]
+
     def __init__(self,
                  cli_arg: str,
                  main_config: tp.Dict[str, str],
@@ -49,7 +59,7 @@ class PopulationSize(bc.UnivarBatchCriteria):
         self.size_list = size_list
         self.attr_changes = []  # type: tp.List
 
-    def gen_attr_changelist(self) -> list:
+    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         """
         Generate list of sets of changes for swarm sizes to define a batch experiment.
 
@@ -99,13 +109,8 @@ class PopulationSize(bc.UnivarBatchCriteria):
     def inter_exp_graphs_exclude_exp0(self) -> bool:
         return False
 
-    @staticmethod
-    def gen_attr_changelist_from_list(size_list: list) -> tp.List:
-        return [set([(".//arena/distribute/entity", "quantity", str(s)),
-                     (".//population_dynamics", "max_size", str(4 * s))]) for s in size_list]
 
-
-class PopulationSizeParser():
+class Parser():
     """
     Enforces the cmdline definition of the :class:`PopulationSize` batch criteria defined in
     :ref:`ln-bc-population-size`.
@@ -145,7 +150,7 @@ def factory(cli_arg: str,
     Factory to create :class:`PopulationSize` derived classes from the command line definition.
 
     """
-    attr = PopulationSizeParser()(cli_arg)
+    attr = Parser()(cli_arg)
 
     def gen_max_sizes():
         """

@@ -48,11 +48,10 @@ def env_configure(args):
     # For HPC, we want to use the the maximum # of simultaneous jobs per node such that
     # there is no thread oversubscription. We also always want to allocate each physics
     # engine its own thread for maximum performance, per the original ARGoS paper.
-    if args.exec_jobs_per_node is None:
-        args.exec_jobs_per_node = int(float(args.n_sims) / n_nodes)
+    if args.exec_sims_per_node is None:
+        args.exec_sims_per_node = int(float(args.n_sims) / n_nodes)
 
-    args.physics_n_engines = int(ppn / args.exec_jobs_per_node)
-    args.__dict__['n_threads'] = args.physics_n_engines
+    args.physics_n_engines = int(ppn / args.exec_sims_per_node)
 
 
 def argos_cmd_generate(input_fpath: str):
@@ -68,14 +67,6 @@ def gnu_parallel_cmd_generate(parallel_opts: dict):
     """
     Given a dictionary containing job information, generate the cmd to correctly invoke GNU Parallel
     in the ad-hoc environment.
-
-    Args:
-        parallel_opts: Dictionary containing:
-                       - jobroot_path - The root directory for the batch experiment.
-                       - exec_resume - Is this a resume of a previously run experiment?
-                       - n_jobs - How many parallel jobs are allowed per node?
-                       - joblog_path - The logfile for GNU parallel output.
-                       - cmdfile_path - The file containing the ARGoS cmds to run.
     """
 
     jobid = os.getpid()
@@ -84,9 +75,9 @@ def gnu_parallel_cmd_generate(parallel_opts: dict):
 
     resume = ''
     # This can't be --resume, because then GNU parallel looks at the results directory, and if there
-    # is stuff in it, assumes that the job finished...
+    # is stuff in it, (apparently) assumes that the job finished...
     if parallel_opts['exec_resume']:
-        resume = '--resume-faileb'
+        resume = '--resume-failed'
 
     return 'sort -u $ADHOC_NODEFILE > {0} && ' \
         'parallel {2} --jobs {1} --results {4} --joblog {3} --sshloginfile {0} --workdir {4} < "{5}"'.format(

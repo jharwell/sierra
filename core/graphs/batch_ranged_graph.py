@@ -79,7 +79,8 @@ class BatchRangedGraph:
 
     def generate(self):
         if not core.utils.path_exists(self.input_fpath):
-            self.logger.debug("Not generating batch ranged graph: %s does not exist",
+            self.logger.debug("Not generating %s: %s does not exist",
+                              self.output_fpath,
                               self.input_fpath)
             return
 

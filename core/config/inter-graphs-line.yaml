@@ -133,47 +133,34 @@ LN_spatial_movement:
 
 LN_block_acq:
   graphs:
-    - src_stem: block-acquisition
-      dest_stem: block-acquisition-int-avg
+    - src_stem: block-acq-counts
+      dest_stem: block-acq-counts-int-avg
       col: int_avg_acquiring_goal
       title: 'Average Robots Acquiring Blocks (interval)'
       xlabel: 'Interval'
       ylabel: '# Robots'
 
-    - src_stem: block-acquisition
+    - src_stem: block-acq-counts
       col: int_avg_vectoring_to_goal
-      dest_stem: block-acquisition-vectoring-int-avg
+      dest_stem: block-acq-counts-vectoring-int-avg
       title: 'Average Robots Vectoring To Blocks (interval)'
       xlabel: 'Interval'
       ylabel: '# Robots'
 
-    - src_stem: block-acquisition
-      col: int_avg_exploring_for_goal
-      dest_stem: block-acquisition-exploring-int-avg
-      title: 'Average Robots Exploring For Blocks (interval)'
-      xlabel: 'Interval'
-      ylabel: '# Robots'
-
-    - src_stem: block-acquisition
+    - src_stem: block-acq-counts
       col: cum_avg_acquiring_goal
-      dest_stem: block-acquisition-cum-avg
+      dest_stem: block-acq-counts-cum-avg
       title: 'Average Robots Acquiring Blocks (cumulative)'
       xlabel: 'Interval'
       ylabel: '# Robots'
 
-    - src_stem: block-acquisition
+    - src_stem: block-acq-counts
       col: cum_avg_vectoring_to_goal
-      dest_stem: block-acquisition-vectoring-cum-avg
+      dest_stem: block-acq-counts-vectoring-cum-avg
       title: 'Average Robots Vectoring To Blocks (cumulative)'
       xlabel: 'Interval'
       ylabel: '# Robots'
 
-    - src_stem: block-acquisition
-      col: cum_avg_exploring_for_goal
-      dest_stem: block-acquisition-exploring-cum-avg
-      title: 'Average Robots Exploring For Blocks (cumulative)'
-      xlabel: 'Interval'
-      ylabel: '# Robots'
 
 LN_block_manip:
   graphs:

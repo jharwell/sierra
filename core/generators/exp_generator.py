@@ -113,11 +113,10 @@ class ExpDefCommonGenerator:
         tsetup_inst = getattr(setup, "factory")(self.cmdopts["time_setup"])()
 
         for a in tsetup_inst.gen_attr_changelist()[0]:
-            xml_luigi.attr_change(a[0], a[1], a[2], True)
+            xml_luigi.attr_change(a.path, a.attr, a.value, True)
 
         # Write time setup info to file for later retrieval
-        with open(self.spec.exp_def_fpath, 'ab') as f:
-            pickle.dump(tsetup_inst.gen_attr_changelist()[0], f)
+        tsetup_inst.gen_attr_changelist()[0].pickle(self.spec.exp_def_fpath)
 
     def _generate_threading(self, xml_luigi: XMLLuigi):
         """
@@ -130,13 +129,13 @@ class ExpDefCommonGenerator:
 
         xml_luigi.attr_change(".//system",
                               "threads",
-                              str(self.cmdopts["n_threads"]))
+                              str(self.cmdopts["physics_n_engines"]))
 
         # This whole tree can be missing and that's fine
         if xml_luigi.has_tag(".//loop_functions/convergence"):
             xml_luigi.attr_change(".//loop_functions/convergence",
                                   "n_threads",
-                                  str(self.cmdopts["n_threads"]))
+                                  str(self.cmdopts["physics_n_engines"]))
 
     def _generate_library(self, xml_luigi: XMLLuigi):
         """
@@ -170,10 +169,10 @@ class ExpDefCommonGenerator:
             rms = cams.gen_tag_rmlist()[0]
             if rms:
                 for r in rms:
-                    xml_luigi.tag_remove(r[0], r[1], True)  # OK if camera stuff isn't there
+                    xml_luigi.tag_remove(r.path, r.tag, True)  # OK if camera stuff isn't there
 
             for a in cams.gen_tag_addlist()[0]:
-                xml_luigi.tag_add(a[0], a[1], a[2])
+                xml_luigi.tag_add(a.path, a.tag, a.attr)
 
 
 class BatchedExpDefGenerator:

@@ -1,4 +1,4 @@
-.. _ln-local-setup:
+.. _ln-hpc-local-setup:
 
 Local Setup
 ===========
@@ -31,8 +31,3 @@ SIERRA to do so are outlined below.
    no project installed. The repository should be cloned into a directory with
    the EXACT name you want it to be callable with on the cmdline via
    ``--project``.
-
-   Projects known to work with SIERRA/have reasonably well defined plugins are::
-
-   - :xref:`FORDYCA`: `<https://github.com/swarm-robotics/sierra-plugin-fordyca.git>`_
-   - :xref:`SILICON`:  `<https://github.com/swarm-robotics/sierra-plugin-silicon.git>`_

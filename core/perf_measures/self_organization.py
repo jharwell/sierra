@@ -229,7 +229,7 @@ class FLMarginalUnivar(BaseFLMarginal):
     """
     Calculates the self-organization of the swarm configuration across a univariate batched set of
     experiments within the same scenario from collated ``.csv`` data using marginal fractional
-    performance losses due to inter-robot interference (See :func:`calc_self_org_mfl()`).
+    performance losses due to inter-robot interference (See :class:`BaseFLMarginal`).
 
     Generates a :class:`~core.graphs.batch_ranged_graph.BatchRangedGraph` across swarm sizes of self
     organization using :class:`~core.perf_measures.common.FractionalLossesUnivar`.
@@ -319,7 +319,7 @@ class FLInteractiveUnivar(BaseFLInteractive):
     Calculates the self-organization of the swarm configuration across a univariate batched set of
     experiments within the same scenario from collated ``.csv`` data using fractional
     performance losses due to interative inter-robot interference vs. independent action (See
-    :func:`calc_self_org_ifl()`).
+    :class:`BaseFLInteractive`).
 
     Generates a :class:`~core.graphs.batch_ranged_graph.BatchRangedGraph` across swarm sizes of self
     organization using :class:`~core.perf_measures.common.FractionalLossesUnivar`.
@@ -491,7 +491,7 @@ class PGInteractiveUnivar(BasePGInteractive):
     Calculates the self-organization of the swarm configuration across a univariate batched set of
     experiments within the same scenario from collated ``.csv`` data using superlinear increases in
     performance between a swarm of :math:`N` interactive vs. independent robots.
-    See :func:`calc_self_org_ipg()`).
+    See :class:`BasePGInteractive`.
 
     Generates a :class:`~core.graphs.batch_ranged_graph.BatchRangedGraph` across swarm sizes of self
     organization.
@@ -612,7 +612,7 @@ class FLMarginalBivar(BaseFLMarginal):
     """
     Calculates the self-organization of the swarm configuration across a bivariate batched set of
     experiments within the same scenario from collated ``.csv`` data using fractional performance
-    losses due to inter-robot interference (See :meth:`calc_self_org_mfl`).
+    losses due to inter-robot interference (See :class:`BaseFLMarginal`).
 
     Generates a :class:`~core.graphs.heatmap.Heatmap` across swarm sizes of self organization from
     :class:`~core.perf_measures.common.FractionalLossesBivar` data.
@@ -691,7 +691,7 @@ class FLInteractiveBivar(BaseFLInteractive):
     Calculates the self-organization of the swarm configuration across a bivariate batched set of
     experiments within the same scenario from collated ``.csv`` data using fractional performance
     losses due to interactive inter-robot interference vs independent action  (See
-    :meth:`calc_self_org_ifl`).
+    :class:`BaseFLInteractive`).
 
     Generates a :class:`~core.graphs.heatmap.Heatmap` across swarm sizes of self organization from
     :class:`~core.perf_measures.common.FractionalLossesBivar` data.
@@ -769,7 +769,7 @@ class PGMarginalBivar(BasePGMarginal):
     experiments within the same scenario from collated ``.csv`` data using superlinear increases in
     performance between adjacent swarm size (e.g. for two swarms of size :math:`N`, :math:`2N`, a 2X
     increase in performance is expected, and more than this indicates emergent behavior).
-    See :func:`calc_self_org_mpg()`).
+    See :class:`BasePGMarginal`).
 
     Generates a :class:`~core.graphs.heatmap.Heatmap` across swarm sizes of self organization.
 
@@ -860,7 +860,7 @@ class PGInteractiveBivar(BasePGInteractive):
     Calculates the self-organization of the swarm configuration across a bivariate batched set of
     experiments within the same scenario from collated ``.csv`` data using superlinear increases in
     performance between a swarm of :math:`N` interacting vs. indpendently acting robots.
-    See :func:`calc_self_org_ipg()`).
+    See :class:`BasePGInteractive`).
 
     Generates a :class:`~core.graphs.heatmap.Heatmap` across swarm sizes of self organization.
 
@@ -984,7 +984,7 @@ class SelfOrgBivarGenerator:
 
 __api__ = [
     'BaseFLInteractive',
-    'BaseFLMarginal'
+    'BaseFLMarginal',
     'BasePGInteractive',
     'BasePGMarginal',
     'FLMarginalUnivar',

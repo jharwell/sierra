@@ -201,7 +201,8 @@
             output_interval="1000"
             block_acq_counts="block-acq-counts"
             fsm_interference_counts="fsm-interference-counts"
-            block_transport="block-transport"
+            block_transporter="block-transporter"
+            block_transportee="block-transportee"
             block_manipulation="block-manipulation"
             spatial_movement='spatial-movement'
             cache_acq_counts="cache-acq-counts"
@@ -274,7 +275,7 @@
             arena_resolution="0.2"
             dist_type="single_source">
           <manifest
-              n_cube="1600"
+              n_cube="20000"
               n_ramp="0"
               unit_dim="0.2"
               />

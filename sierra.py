@@ -46,7 +46,7 @@ class SIERRA():
         bootstrap_args, other_args = cmd.BootstrapCmdline().parser.parse_known_args()
 
         # Get nice colored logging output!
-        coloredlogs.install(fmt='%(asctime)s %(levelname)s %(name)s  - %(message)s',
+        coloredlogs.install(fmt='%(asctime)s %(levelname)s %(name)s - %(message)s',
                             level=eval("logging." + bootstrap_args.log_level))
 
         self.logger = logging.getLogger(__name__)

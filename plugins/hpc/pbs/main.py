@@ -27,33 +27,25 @@ def env_configure(args):
 
     - ``PBS_NUM_PPN``
     - ``PBS_NODEFILE``
-    - ``PBS_NUM_NODES``
     - ``PBS_JOBID``
     - ``SIERRA_ARCH``
     """
 
-    keys = ['PBS_NUM_PPN', 'PBS_NUM_NODES', 'PBS_NODEFILE', 'PBS_JOBID', 'SIERRA_ARCH']
+    keys = ['PBS_NUM_PPN', 'PBS_NODEFILE', 'PBS_JOBID', 'SIERRA_ARCH']
 
     for k in keys:
         assert k in os.environ,\
-            "FATAL: Attempt to run SIERRA in non-TORQUE environment: '{0}' not found".format(k)
+            "FATAL: Attempt to run SIERRA in non-PBS environment: '{0}' not found".format(k)
 
-    assert args.n_sims >= int(os.environ['PBS_NUM_NODES']),\
-        "FATAL: Too few simulations requested: {0} < {1}".format(args.n_sims,
-                                                                 os.environ['PBS_NUM_NODES'])
-    assert args.n_sims % int(os.environ['PBS_NUM_NODES']) == 0,\
-        "FATAL: # simulations ({0}) not a multiple of # nodes ({1})".format(args.n_sims,
-                                                                            os.environ['PBS_NUM_NODES'])
+    assert args.exec_sims_per_node is not None, "FATAL: --exec-sims-per-node is required"
 
     # For HPC, we want to use the the maximum # of simultaneous jobs per node such that
     # there is no thread oversubscription. We also always want to allocate each physics
     # engine its own thread for maximum performance, per the original ARGoS paper.
-    if args.exec_jobs_per_node is None:
-        args.exec_jobs_per_node = int(float(args.n_sims) / int(os.environ['PBS_NUM_NODES']))
-
-    args.physics_n_engines = int(
-        float(os.environ['PBS_NUM_PPN']) / args.exec_jobs_per_node)
-    args.__dict__['n_threads'] = args.physics_n_engines
+    #
+    # However, PBS does not have an environment variable for # jobs/node, so we have to rely on the
+    # user to set this appropriately.
+    args.physics_n_engines = int(float(os.environ['PBS_NUM_PPN']) / args.exec_sims_per_node)
 
 
 def argos_cmd_generate(input_fpath: str):
@@ -75,14 +67,6 @@ def gnu_parallel_cmd_generate(parallel_opts: dict):
     """
     Given a dictionary containing job information, generate the cmd to correctly invoke GNU Parallel
     on a TORQUE managed cluster.
-
-    Args:
-        parallel_opts: Dictionary containing:
-                       - jobroot_path - The root directory for the batch experiment.
-                       - exec_resume - Is this a resume of a previously run experiment?
-                       - n_jobs - How many parallel jobs are allowed per node?
-                       - joblog_path - The logfile for GNU parallel output.
-                       - cmdfile_path - The file containing the ARGoS cmds to run.
     """
     jobid = os.environ['PBS_JOBID']
     nodelist = os.path.join(parallel_opts['jobroot_path'],
@@ -90,7 +74,7 @@ def gnu_parallel_cmd_generate(parallel_opts: dict):
 
     resume = ''
     # This can't be --resume, because then GNU parallel looks at the results directory, and if there
-    # is stuff in it, assumes that the job finished...
+    # is stuff in it, (apparently) assumes that the job finished...
     if parallel_opts['exec_resume']:
         resume = '--resume-failed'
 

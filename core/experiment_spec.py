@@ -27,6 +27,7 @@ from core.variables import constant_density
 from core.utils import ArenaExtent
 import core.generators.scenario_generator_parser as sgp
 from core.vector import Vector3D
+import core.config
 
 
 class ExperimentSpec():
@@ -44,7 +45,8 @@ class ExperimentSpec():
         self.exp_num = exp_num
         self.exp_input_root = os.path.join(cmdopts['batch_input_root'],
                                            criteria.gen_exp_dirnames(cmdopts)[exp_num])
-        self.exp_def_fpath = os.path.join(self.exp_input_root, "exp_def.pkl")
+        self.exp_def_fpath = os.path.join(self.exp_input_root,
+                                          core.config.kPickleLeaf)
         self.logger = logging.getLogger(__name__)
 
         from_bivar_bc1 = False

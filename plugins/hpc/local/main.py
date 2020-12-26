@@ -32,16 +32,14 @@ def env_configure(args):
         assert args.physics_n_engines is not None,\
             'FATAL: --physics-n-engines is required for --hpc-env=local when running stage{1,2}'
 
-    args.__dict__['n_threads'] = args.physics_n_engines
-
     if any(s in args.pipeline for s in [1, 2]):
-        if args.exec_jobs_per_node is None:
-            args.exec_jobs_per_node = min(args.n_sims,
+        if args.exec_sims_per_node is None:
+            args.exec_sims_per_node = min(args.n_sims,
                                           max(1,
-                                              int(multiprocessing.cpu_count() / float(args.n_threads))))
+                                              int(multiprocessing.cpu_count() / float(args.physics_n_engines))))
 
     else:
-        args.exec_jobs_per_node = 0
+        args.exec_sims_per_node = 0
 
 
 def argos_cmd_generate(input_fpath: str):
@@ -69,7 +67,7 @@ def gnu_parallel_cmd_generate(parallel_opts: dict):
     resume = ''
 
     # This can't be --resume, because then GNU parallel looks at the results directory, and if there
-    # is stuff in it, assumes that the job finished...
+    # is stuff in it, (apparently) assumes that the job finished...
     if parallel_opts['exec_resume']:
         resume = '--resume-failed'
 

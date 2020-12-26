@@ -51,6 +51,14 @@ class GNUParallelCmdGenerator():
     """
     Dispatcher to generate the GNU Parallel cmd SIERRA will use to run experiments in the specified
     HPC environment.
+
+    Passes the following dictionary to the configured HPC plugin:
+    - jobroot_path - The root directory for the batch experiment.
+    - exec_resume - Is this a resume of a previously run experiment?
+    - n_jobs - How many parallel jobs are allowed per node?
+    - joblog_path - The logfile for GNU parallel output.
+    - cmdfile_path - The file containing the ARGoS cmds to run.
+
     """
 
     def __call__(self, hpc_env: str, parallel_opts: dict) -> str:
@@ -83,7 +91,7 @@ class EnvConfigurer():
 
 class EnvChecker():
     """
-    Verify the configured HPC environment before running any experiments.
+    Verify the configured HPC environment before running any experiments during stage 2.
     """
 
     def __call__(self):

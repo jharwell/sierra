@@ -131,7 +131,7 @@ class InterExpModelRunner:
             dfs = model.run(criteria, cmdopts)
             for df, csv_stem in zip(dfs, model.target_csv_stems()):
                 path_stem = os.path.join(cmdopts['batch_model_root'], csv_stem)
-                print(df, path_stem)
+
                 # Write model .csv file
                 core.utils.pd_csv_write(df, path_stem + '.model', index=False)
 

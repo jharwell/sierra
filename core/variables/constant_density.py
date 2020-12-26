@@ -65,12 +65,12 @@ class ConstantDensity(UnivarBatchCriteria):
                                                 str(dims.zsize())])
 
 
-class ConstantDensityParser():
+class Parser():
     """
     Enforces the cmdline definition of a :class:`ConstantDensity` derived batche criteria.
     """
 
-    def parse(self, cli_arg: str) -> dict:
+    def __call__(self, cli_arg: str) -> dict:
         """
         Returns:
             Dictionary with keys:

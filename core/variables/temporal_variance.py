@@ -18,15 +18,20 @@ Classes for the temporal variance batch criteria. See :ref:`ln-bc-tv` for usage 
 
 """
 
+# Core packages
 import math
 import typing as tp
 import logging
+
+# 3rd party packages
 import implements
 
+# Project packages
 import core.variables.batch_criteria as bc
 from core.variables.population_size import PopulationSize
 from core.perf_measures import vcs
 from core.variables.temporal_variance_parser import TemporalVarianceParser
+from core.xml_luigi import XMLAttrChange, XMLAttrChangeSet
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
@@ -59,21 +64,31 @@ class TemporalVariance(bc.UnivarBatchCriteria):
         self.population = population
         self.attr_changes = []  # type: tp.List
 
-    def gen_attr_changelist(self) -> list:
+    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         """
         Generate a list of sets of changes necessary to make to the input file to correctly set up
         the simulation with the specified temporal variances.
         """
         if not self.attr_changes:
-            self.attr_changes = [set([("{0}/waveform".format(v[0]), "type", str(v[1])),
-                                      ("{0}/waveform".format(v[0]), "frequency", str(v[2])),
-                                      ("{0}/waveform".format(v[0]), "amplitude", str(v[3])),
-                                      ("{0}/waveform".format(v[0]), "offset", str(v[4])),
-                                      ("{0}/waveform".format(v[0]), "phase", str(v[5]))]) for v in self.variances]
+            self.attr_changes = [XMLAttrChangeSet(XMLAttrChange("{0}/waveform".format(v[0]),
+                                                                "type",
+                                                                str(v[1])),
+                                                  XMLAttrChange("{0}/waveform".format(v[0]),
+                                                                "frequency",
+                                                                str(v[2])),
+                                                  XMLAttrChange("{0}/waveform".format(v[0]),
+                                                                "amplitude",
+                                                                str(v[3])),
+                                                  XMLAttrChange("{0}/waveform".format(v[0]),
+                                                                "offset",
+                                                                str(v[4])),
+                                                  XMLAttrChange("{0}/waveform".format(v[0]),
+                                                                "phase",
+                                                                str(v[5]))) for v in self.variances]
 
             # Swarm size is optional. It can be (1) controlled via this variable, (2) controlled by
-            # another variable in a bivariate batch criteria, (3) not controlled at all. For (2), (3),
-            # the swarm size can be None.
+            # another variable in a bivariate batch criteria, (3) not controlled at all. For (2),
+            # (3), the swarm size can be None.
             if self.population is not None:
                 size_chgs = PopulationSize(self.cli_arg,
                                            self.main_config,

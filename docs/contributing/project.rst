@@ -1,3 +1,5 @@
+.. _ln-contrib-project:
+
 How to Add A New Project
 ========================
 

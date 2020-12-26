@@ -55,7 +55,6 @@ class Pipeline:
             'hpc_env': args.hpc_env,
             'argos_rendering': self.args.argos_rendering,
             "n_sims": args.n_sims,
-            "n_threads": args.n_threads,
             'n_blocks': args.n_blocks,
             'n_robots': args.n_robots,
             'project_imagizing': self.args.project_imagizing,
@@ -74,7 +73,7 @@ class Pipeline:
 
             # stage 2
             'exec_resume': self.args.exec_resume,
-            'exec_jobs_per_node': self.args.exec_jobs_per_node,
+            'exec_sims_per_node': self.args.exec_sims_per_node,
 
             # stage 3
             'no_verify_results': self.args.no_verify_results,

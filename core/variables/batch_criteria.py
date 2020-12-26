@@ -19,7 +19,6 @@ to run. See :ref:`ln-batch-criteria` for full documentation.
 """
 # Core packages
 import os
-import pickle
 import logging
 import typing as tp
 
@@ -31,6 +30,8 @@ import core.utils
 import core.xml_luigi
 from core.variables import constant_density, base_variable
 from core.vector import Vector3D
+from core.xml_luigi import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList
+import core.config
 
 
 class IConcreteBatchCriteria(implements.Interface):
@@ -182,13 +183,13 @@ class BatchCriteria():
 
     # Stub out IBaseVariable because all concrete batch criteria only implement a subset of them.
 
-    def gen_attr_changelist(self) -> list:
+    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         return []
 
-    def gen_tag_rmlist(self) -> list:
+    def gen_tag_rmlist(self) -> tp.List[XMLTagRmList]:
         return []
 
-    def gen_tag_addlist(self) -> list:
+    def gen_tag_addlist(self) -> tp.List[XMLTagAddList]:
         return []
 
     def gen_exp_dirnames(self, cmdopts: dict) -> tp.List[str]:
@@ -211,8 +212,8 @@ class BatchCriteria():
         dims = []
         for exp in self.gen_attr_changelist():
             for c in exp:
-                if c[0] == ".//arena" and c[1] == "size":
-                    x, y, z = c[2].split(',')
+                if c.path == ".//arena" and c.attr == "size":
+                    x, y, z = c.value.split(',')
                     dims.append(core.utils.ArenaExtent(Vector3D(int(float(x)),
                                                                 int(float(y)),
                                                                 int(float(z)))))
@@ -230,9 +231,10 @@ class BatchCriteria():
         defs = list(self.gen_attr_changelist())
         for i, exp_def in enumerate(defs):
             exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
-            pkl_path = os.path.join(self.batch_input_root, exp_dirname, 'exp_def.pkl')
-            with open(pkl_path, 'ab') as f:
-                pickle.dump(exp_def, f)
+            pkl_path = os.path.join(self.batch_input_root,
+                                    exp_dirname,
+                                    core.config.kPickleLeaf)
+            exp_def.pickle(pkl_path)
 
     def scaffold_exps(self,
                       xml_luigi: core.xml_luigi.XMLLuigi,
@@ -249,7 +251,7 @@ class BatchCriteria():
 
         """
         assert len(self.gen_tag_addlist()) == 0, "FATAL: Batch criteria cannot add XML tags"
-        chg_defs = list(self.gen_attr_changelist())
+        chg_defs = self.gen_attr_changelist()
         n_exps = len(chg_defs)
 
         self.logger.info("Scaffolding experiments from batch criteria '%s' by modifying %s XML tags",
@@ -275,7 +277,7 @@ class BatchCriteria():
 
     def _scaffold_expi(self,
                        xml_luigi,
-                       defi,
+                       defi: XMLAttrChangeSet,
                        i: int,
                        cmdopts: dict,
                        batch_config_leaf: str) -> None:
@@ -290,16 +292,10 @@ class BatchCriteria():
 
         core.utils.dir_create_checked(exp_input_root, exist_ok=cmdopts['exp_overwrite'])
 
-        for changes_i in defi:
-            try:
-                path, attr, value = changes_i
-            except ValueError:
-                self.logger.exception("%s XML changes not a 3-tuple (path,attr,value)", changes_i)
-                raise
-            xml_luigi.attr_change(path, attr, value)
+        for chgsi in defi:
+            xml_luigi.attr_change(chgsi.path, chgsi.attr, chgsi.value)
 
-        xml_luigi.write(os.path.join(exp_input_root,
-                                     batch_config_leaf))
+        xml_luigi.write(os.path.join(exp_input_root, batch_config_leaf))
 
 
 @implements.implements(IBatchCriteriaType)
@@ -335,12 +331,12 @@ class UnivarBatchCriteria(BatchCriteria):
             dirs = self.gen_exp_dirnames(cmdopts)
 
         for d in dirs:
-            exp_def = core.utils.unpickle_exp_def(os.path.join(self.batch_input_root,
-                                                               d,
-                                                               "exp_def.pkl"))
-            for path, attr, value in exp_def:
-                if path == ".//arena/distribute/entity" and attr == "quantity":
-                    sizes.append(int(value))
+            exp_def = XMLAttrChangeSet.unpickle(os.path.join(self.batch_input_root,
+                                                             d,
+                                                             core.config.kPickleLeaf))
+            for chg in exp_def:
+                if chg.path == ".//arena/distribute/entity" and chg.attr == "quantity":
+                    sizes.append(int(chg.value))
         return sizes
 
 
@@ -420,9 +416,9 @@ class BivarBatchCriteria(BatchCriteria):
             "FATAL: Criteria defines both XML attribute changes and XML tag additions"
 
         for d in dirs:
-            exp_def = core.utils.unpickle_exp_def(os.path.join(self.batch_input_root,
-                                                               d,
-                                                               "exp_def.pkl"))
+            exp_def = XMLAttrChangeSet.unpickle(os.path.join(self.batch_input_root,
+                                                             d,
+                                                             core.config.kPickleLeaf))
             for path, attr, value in exp_def:
                 if not (path == ".//arena/distribute/entity" and attr == "quantity"):
                     continue
@@ -559,13 +555,22 @@ def __univar_factory(main_config: dict,
     Construct a batch criteria object from a single cmdline argument.
     """
     category = cli_arg.split('.')[0]
-    module = __import__("core.variables.{0}".format(category), fromlist=["*"])
+    path = 'projects.{0}.variables.{1}'.format(cmdopts['project'], category)
+
+    # First, see if the variable is part of the project plugin
+    if core.utils.module_exists(path):
+        module = __import__(path, fromlist=["*"])
+    else:  # If that does not work, it must be part of the core
+        path = 'core.variables.{0}'.format(category)
+        module = __import__(path, fromlist=["*"])
+
     ret = getattr(module, "factory")(cli_arg,
                                      main_config,
                                      cmdopts['batch_input_root'],
                                      scenario=scenario)()
-    logging.info("Create univariate batch criteria '%s'",
-                 ret.__class__.__name__)
+    logging.info("Create univariate batch criteria '%s' from '%s'",
+                 ret.__class__.__name__,
+                 path)
     return ret
 
 
@@ -577,7 +582,7 @@ def __bivar_factory(main_config: dict,
     criteria2 = __univar_factory(main_config, cmdopts, cli_arg[1], scenario)
     ret = BivarBatchCriteria(criteria1, criteria2)
 
-    logging.info("Created BivariateBatchCriteria from %s,%s",
+    logging.info("Created bivariate batch criteria from %s,%s",
                  ret.criteria1.__class__.__name__,
                  ret.criteria2.__class__.__name__)
 

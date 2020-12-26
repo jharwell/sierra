@@ -21,7 +21,6 @@ documentation.
 
 # Core packages
 import typing as tp
-import os
 import logging
 import math
 
@@ -34,6 +33,7 @@ import core.generators.scenario_generator_parser as sgp
 import core.utils
 import core.variables.batch_criteria as bc
 from core.vector import Vector3D
+from core.xml_luigi import XMLAttrChange, XMLAttrChangeSet
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
@@ -53,7 +53,7 @@ class PopulationConstantDensity(cd.ConstantDensity):
         self.already_added = False
         self.logger = logging.getLogger(__name__)
 
-    def gen_attr_changelist(self) -> list:
+    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         """
         Generate list of sets of changes to input file to set the # robots for a set of arena
         sizes such that the swarm density is constant. Robots are approximated as point masses.
@@ -68,7 +68,9 @@ class PopulationConstantDensity(cd.ConstantDensity):
                         # ARGoS won't start if there are 0 robots, so you always need to put at
                         # least 1.
                         n_robots = int(max(1, extent.area() * (self.target_density / 100.0)))
-                        changeset.add((".//arena/distribute/entity", "quantity", str(n_robots)))
+                        changeset.add(XMLAttrChange(".//arena/distribute/entity",
+                                                    "quantity",
+                                                    str(n_robots)))
                         self.logger.debug("Calculated swarm size %d for arena dimensions %s",
                                           n_robots,
                                           str(extent))
@@ -123,7 +125,7 @@ def factory(cli_arg: str,
     definition of batch criteria.
 
     """
-    attr = cd.ConstantDensityParser().parse(cli_arg)
+    attr = cd.Parser()(cli_arg)
     kw = sgp.ScenarioGeneratorParser.reparse_str(kwargs['scenario'])
 
     if kw['dist_type'] == "SS" or kw['dist_type'] == "DS":

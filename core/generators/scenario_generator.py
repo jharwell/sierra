@@ -62,16 +62,15 @@ class ARGoSScenarioGenerator():
         # We check for attributes before modification because if we are not rendering video, then we
         # get a bunch of spurious warnings about deleted tags/attributes.
         for a in shape.gen_attr_changelist()[0]:
-            if exp_def.has_tag(a[0]):
-                exp_def.attr_change(a[0], a[1], a[2])
+            if exp_def.has_tag(a.path):
+                exp_def.attr_change(a.path, a.attr, a.value)
 
-        with open(self.spec.exp_def_fpath, 'ab') as f:
-            pickle.dump(shape.gen_attr_changelist()[0], f)
+        shape.gen_attr_changelist()[0].pickle(self.spec.exp_def_fpath)
 
         rms = shape.gen_tag_rmlist()
         if rms:  # non-empty
-            for a in rms[0]:
-                exp_def.tag_remove(a[0], a[1])
+            for r in rms[0]:
+                exp_def.tag_remove(r.path, r.tag)
 
     def generate_n_robots(self, xml_luigi: XMLLuigi):
         """
@@ -85,11 +84,10 @@ class ARGoSScenarioGenerator():
         chgs = population_size.PopulationSize.gen_attr_changelist_from_list(
             [self.cmdopts['n_robots']])
         for a in chgs[0]:
-            xml_luigi.attr_change(a[0], a[1], a[2], True)
+            xml_luigi.attr_change(a.path, a.attr, a.value, True)
 
-        # Write time setup info to file for later retrieval
-        with open(self.spec.exp_def_fpath, 'ab') as f:
-            pickle.dump(chgs[0], f)
+        # Write # robots info to file for later retrieval
+        chgs[0].pickle(self.spec.exp_def_fpath)
 
     def generate_physics(self,
                          exp_def: XMLLuigi,
@@ -119,12 +117,12 @@ class ARGoSScenarioGenerator():
 
         if remove_defs:
             for a in pe.gen_tag_rmlist()[0]:
-                exp_def.tag_remove(a[0], a[1])
+                exp_def.tag_remove(a.path, a.tag)
 
-        for a in pe.gen_tag_addlist()[0]:
-            exp_def.tag_add(a[0], a[1], a[2])
+        for r in pe.gen_tag_addlist()[0]:
+            exp_def.tag_add(r.path, r.tag, r.attr)
 
 
 __api__ = [
-    'BaseScenarioGenerator',
+    'ARGoSScenarioGenerator',
 ]

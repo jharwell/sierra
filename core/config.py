@@ -24,3 +24,5 @@ Contains all SIERRA hard-coded configuration in one place.
 # Project packages
 
 kImageExt = '.jpg'
+
+kPickleLeaf = 'exp_def.pkl'
