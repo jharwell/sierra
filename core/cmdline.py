@@ -64,61 +64,20 @@ class BootstrapCmdline:
                                  Valid values can be any folder name under the ``plugins`` directory, but the ones that
                                  come with SIERRA are:
 
-                                 - ``local`` - This will direct SIERRA to run all experiments on the local machine it is
-                                   launched from using GNU parallel. The # simultaneous simulations will be determined
-                                   by::
-
-                                      # cores on machine / # physics engines
-
-                                   If more simulations are requested than can be run in parallel, SIERRA will start
-                                   additional simulations as currently running simulations finish.
+                                 - ``local`` - This directs SIERRA to run experiments on the local machine. See
+                                   :ref:`ln-hpc-plugin-local` for a detailed description.
 
                                  - ``pbs`` - The directs SIERRA to run experiments spread across multiple allocated
-                                   nodes in an HPC computing environment managed by TORQUE-PBS.
-
-                                   The following PBS environment variables are used/must be defined (see TOQUE-PBS docs
-                                   for meaning):
-
-                                   - ``PBS_NUM_PPN``
-                                   - ``PBS_NUM_NODES``
-                                   - ``PBS_NODEFILE``
-                                   - ``PBS_JOBID``
-
-                                   ``PBS_NODEFILE`` and ``PBS_JOBID`` are used to configure simulation launches.
-                                   ``PBS_NUM_PPN`` and ``PBS_NUM_NODES`` are used to infer # threads and # physics
-                                   engines per simulation # simulations to run.
+                                   nodes in an HPC computing environment managed by TORQUE-PBS. See
+                                   :ref:`ln-hpc-plugin-pbs` for a detailed description.
 
                                  - ``slurm`` - The directs SIERRA to run experiments spread across multiple allocated
-                                   nodes in an HPC computing environment managed by SLURM.
-
-                                   The following SLURM environment variables are used/must be defined (see SLURM docs
-                                   for meaning):
-
-                                   - ``SLURM_CPUS_ON_NODE``
-                                   - ``SLURM_JOB_NUM_NODES``
-                                   - ``SLURM_JOB_NODELIST``
-                                   - ``SLURM_JOB_ID``
-
-                                   ``SLURM_JOB_NODE_LIST`` and ``SLURM_JOB_ID`` are used to configure simulation
-                                   launches.  ``SLURM_CPUS_ON_NODE`` and ``SLURM_JOB_NUM_NODES`` are used to infer #
-                                   threads and # physics engines per simulation # simulations to run.
+                                   nodes in an HPC computing environment managed by SLURM. See
+                                   :ref:`ln-hpc-plugin-slurm` for a detailed description.
 
                                  - ``adhoc`` - This will direct SIERRA to run experiments on an ad-hoc network of
-                                   computers. The only requirement is that they `must` share a common filesystem for
-                                   whatever ``--sierra-root`` is.
-
-                                   The following environment variables are used to compute the # threads, # physics
-                                   engines, and # simulations to run, and must be defined:
-
-                                   - ``ADHOC_NODEFILE`` - Points to a file suitable for passing to GNU parallel via
-                                     --sshloginfile.
-
-                                 .. IMPORTANT:: For ``pbs`` and ``slurm`` HPC environments, the ``SIERRA_ARCH``
-                                                environment variable must also be defined. It is used to determine the
-                                                names of ARGoS executables via ``argos3-$SIERRA_ARCH``, so that in HPC
-                                                environments with multiple queues/sub-clusters with different
-                                                architectures ARGoS can be compiled natively for each for maximum
-                                                performance.  """,
+                                   computers. See :ref:`ln-hpc-plugin-adhoc` for a detailed description.
+                                 """,
                                  default='local')
 
 
@@ -371,16 +330,17 @@ class CoreCmdline:
 
                              """ + self.stage_usage_doc([1]),
                              default='dynamics3d')
+
         physics.add_argument("--physics-n-engines",
                              choices=[1, 2, 4, 6, 8, 16, 24],
                              type=int,
                              help="""
 
-                             # of physics engines to use during simulation (yay ARGoS!). If N > 1, the Defines the
-                             engines will be tiled in a uniform grid within the arena (X and Y spacing may not be the
-                             same depending on dimensions and how many engines are chosen, however), extending upward in
-                             Z to the height specified by ``--scenario`` (i.e., forming a set of "silos" rather that
-                             equal volumetric extents).
+                             # of physics engines to use during simulation (yay ARGoS!). If N > 1, the engines will be
+                             tiled in a uniform grid within the arena (X and Y spacing may not be the same depending on
+                             dimensions and how many engines are chosen, however), extending upward in Z to the height
+                             specified by ``--scenario`` (i.e., forming a set of "silos" rather that equal volumetric
+                             extents).
 
                              If 2D and 3D physics engines are mixed, then half of the specified # of engines will be
                              allocated among all arena extents cumulatively managed by each type of engine. For example,
@@ -491,14 +451,13 @@ class CoreCmdline:
                                  action='store_true',
                                  default=False)
 
-        self.stage2.add_argument("--exec-jobs-per-node",
+        self.stage2.add_argument("--exec-sims-per-node",
                                  help="""
 
-                                 Specify the maximum number of parallel jobs for GNU parallel. By default this is
-                                 computed from the selected HPC environment, which assumes that the SIERRA process has
-                                 full usage/control of the nodes it is running on (i.e. no need to play fair with other
-                                 users). However, this might not be the case, in which case this options enables user
-                                 override of the default behavior.
+                                 Specify the maximum number of parallel simulations to run. By default this is computed
+                                 from the selected HPC environment for maximum throughput given the desired ``--n-sims``
+                                 and CPUs/allocated node. However, for some environments being able to
+                                 override the computed default can be useful.
 
                                  """ + self.stage_usage_doc([2]),
                                  type=int,

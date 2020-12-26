@@ -203,36 +203,10 @@
             fsm_interference_counts="fsm-interference-counts"
             block_transporter="block-transporter"
             block_transportee="block-transportee"
-            block_manipulation="block-manipulation"
-            spatial_movement='spatial-movement'
-            cache_acq_counts="cache-acq-counts"
-            cache_utilization="cache-utilization"
-            cache_lifecycle="cache-lifecycle"
-            cache_site_selection="cache-site-selection"
-            task_execution_generalist="task-execution-generalist"
-            task_execution_collector="task-execution-collector"
-            task_execution_harvester="task-execution-harvester"
-            task_execution_cache_starter="task-execution-cache_starter"
-            task_execution_cache_finisher="task-execution-cache_finisher"
-            task_execution_cache_transferer="task-execution-cache_transferer"
-            task_execution_cache_collector="task-execution-cache_collector"
-            task_tab_generalist="task-tab-generalist"
-            task_tab_collector="task-tab-collector"
-            task_tab_harvester="task-tab-harvester"
-            task_distribution="task-distribution"
-            block_clusters="block-clusters"
-            perception_dpo="perception-dpo"
-            tv_population="tv-population"
-            tv_environment="tv-environment"/>
+            block_manipulation="block-manipulation"/>
 
         <truncate output_interval="10"
                   fsm_interference_locs2D="fsm-interference-locs2D"
-                  block_acq_explore_locs2D="block-acq-explore-locs2D"
-                  block_acq_locs2D="block-acq-locs2D"
-                  cache_acq_locs2D="cache-acq-locs2D"
-                  cache_acq_explore_locs2D="cache-acq-explore-locs2D"
-                  cache_acq_vector_locs2D="cache-acq-vector-locs2D"
-                  cache_locations="cache-locations"
                   swarm_dist2D_pos="swarm-dist-pos2D"/>
       </metrics>
     </output>
@@ -275,7 +249,7 @@
             arena_resolution="0.2"
             dist_type="single_source">
           <manifest
-              n_cube="20000"
+              n_cube="15000"
               n_ramp="0"
               unit_dim="0.2"
               />

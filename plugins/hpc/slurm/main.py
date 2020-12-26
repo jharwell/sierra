@@ -16,7 +16,14 @@
 """
 HPC plugin for running SIERRA on HPC clusters using the SLURM scheduler.
 """
+
+# Core packages
 import os
+import re
+
+# 3rd party packages
+
+# Project packages
 
 
 def env_configure(args):
@@ -25,39 +32,43 @@ def env_configure(args):
     arguments. Uses the following environment variables (if any of them are not defined an assertion
     will be triggered):
 
-    - ``SLURM_CPUS_ON_NODE``
+    - ``SLURM_CPUS_PER_TASK``
+    - ``SLURM_TASKS_PER_NODE``
     - ``SLURM_JOB_NODELIST``
-    - ``SLURM_JOB_NUM_NODES``
     - ``SLURM_JOB_ID``
     - ``SLURM_ARCH``
 
     """
-    keys = ['SLURM_CPUS_ON_NODE',
+    keys = ['SLURM_CPUS_PER_TASK',
+            'SLURM_TASKS_PER_NODE',
             'SLURM_JOB_NODELIST',
-            'SLURM_JOB_NUM_NODES',
             'SLURM_JOB_ID',
             'SIERRA_ARCH']
 
     for k in keys:
         assert k in os.environ,\
-            "FATAL: Attempt to run SIERRA in non-SLURM environment: '{0}' not found".format(k)
-
-    assert args.n_sims >= int(os.environ['SLURM_JOB_NUM_NODES']),\
-        "FATAL: Too few simulations requested: {0} < {1}".format(args.n_sims,
-                                                                 os.environ['SLURM_JOB_NUM_NODES'])
-    assert args.n_sims % int(os.environ['SLURM_JOB_NUM_NODES']) == 0,\
-        "FATAL: # simulations ({0}) not a multiple of # nodes ({1})".format(args.n_sims,
-                                                                            os.environ['SLURM_JOB_NUM_NODES'])
+            "FATAL: Attempt to run SIERRA in bad SLURM environment: '{0}' not found".format(k)
 
     # For HPC, we want to use the the maximum # of simultaneous jobs per node such that
     # there is no thread oversubscription. We also always want to allocate each physics
     # engine its own thread for maximum performance, per the original ARGoS paper.
-    if args.exec_jobs_per_node is None:
-        args.exec_jobs_per_node = int(float(args.n_sims) / int(os.environ['SLURM_JOB_NUM_NODES']))
+    #
+    # We rely on the user to request their job intelligently so that SLURM_TASKS_PER_NODE is
+    # appropriate.
+    if args.exec_sims_per_node is None:
+        # SLURM_TASKS_PER_NODE can be set to things like '1(x32),3', indicating that not all nodes
+        # will run the same # of tasks. SIERRA expects all nodes to have the same # tasks allocated
+        # to each (i.e., a homogeneous allocation), so we check for this.
+        assert "," not in os.environ['SLURM_TASKS_PER_NODE'], \
+            "FATAL: SLURM_TASKS_PER_NODE not homogeneous"
 
-    args.physics_n_engines = int(
-        float(os.environ['SLURM_CPUS_ON_NODE']) / args.exec_jobs_per_node)
-    args.__dict__['n_threads'] = args.physics_n_engines
+        res = re.search("^[^\(]+", os.environ['SLURM_TASKS_PER_NODE'])
+        assert res is not None, \
+            "FATAL: Unexpected format in SLURM_TASKS_PER_NODE: '{0}'".format(
+                os.environ['SLURM_TASKS_PER_NODE'])
+        args.exec_sims_per_node = int(res.group(0))
+
+    args.physics_n_engines = int(os.environ['SLURM_CPUS_PER_TASK'])
 
 
 def argos_cmd_generate(input_fpath: str):
@@ -78,14 +89,6 @@ def gnu_parallel_cmd_generate(parallel_opts: dict):
     """
     Given a dictionary containing job information, generate the cmd to correctly invoke GNU Parallel
     on MSI.
-
-    Args:
-        parallel_opts: Dictionary containing:
-                       - jobroot_path - The root directory for the batch experiment.
-                       - exec_resume - Is this a resume of a previously run experiment?
-                       - n_jobs - How many parallel jobs are allowed per node?
-                       - joblog_path - The logfile for GNU parallel output.
-                       - cmdfile_path - The file containing the ARGoS cmds to run.
     """
     jobid = os.environ['SLURM_JOB_ID']
     nodelist = os.path.join(parallel_opts['jobroot_path'],
@@ -93,11 +96,11 @@ def gnu_parallel_cmd_generate(parallel_opts: dict):
 
     resume = ''
     # This can't be --resume, because then GNU parallel looks at the results directory, and if there
-    # is stuff in it, assumes that the job finished...
+    # is stuff in it, (apparently) assumes that the job finished...
     if parallel_opts['exec_resume']:
         resume = '--resume-failed'
 
-    return 'scontrol show hostname ${SLURM_JOB_NODELIST} > {0} && ' +\
+    return 'scontrol show hostnames $SLURM_JOB_NODELIST > {0} && ' \
         'parallel {2} --jobs {1} --results {4} --joblog {3} --sshloginfile {0} --workdir {4} < "{5}"'.format(
             nodelist,
             parallel_opts['n_jobs'],

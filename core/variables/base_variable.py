@@ -14,7 +14,14 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
+# Core packages
+import typing as tp
+
+# 3rd party packages
 import implements
+
+# Project packages
+from core.xml_luigi import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList
 
 
 class IBaseVariable(implements.Interface):
@@ -23,13 +30,13 @@ class IBaseVariable(implements.Interface):
     must implement.
     """
 
-    def gen_attr_changelist(self) -> list:
+    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         """Generate list of sets for changing attributes in the template input XML file."""
 
-    def gen_tag_rmlist(self) -> list:
+    def gen_tag_rmlist(self) -> tp.List[XMLTagRmList]:
         """Generate list of sets for removing tags in the template input XML file."""
 
-    def gen_tag_addlist(self) -> list:
+    def gen_tag_addlist(self) -> tp.List[XMLTagAddList]:
         """
         Generate list of sets for adding tags (and possibly attributes) in the template input
         XML file.

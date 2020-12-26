@@ -1,8 +1,8 @@
 #!/bin/bash -l
-#SBATCH --time=4:00:00
-#SBATCH --ntasks-per-node=1
-#SBATCH --ncputs-per-task=24
-#SBATCH --mem=2gb
+#SBATCH --time=12:00:00
+#SBATCH --nodes 32
+#SBATCH --cpus-per-task=24
+#SBATCH --mem-per-cpu=2G
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=harwe006@umn.edu
 #SBATCH --output=R-%x.%j.out
@@ -13,11 +13,17 @@
 # Setup Simulation Environment                                                 #
 ################################################################################
 # set -x
-export SIERRA_ROOT=$HOME/git/sierra
-export FORDYCA_ROOT=$HOME/git/fordyca
 
 # Initialize modules
 source /home/gini/shared/swarm/bin/msi-env-setup.sh
+
+if [ -n "$MSIARCH" ]; then # Running on MSI
+    export SIERRA_ROOT=$HOME/research/$MSIARCH/sierra
+    export FORDYCA_ROOT=$HOME/research/$MSIARCH/fordyca
+else
+    export SIERRA_ROOT=$HOME/git/sierra
+    export FORDYCA_ROOT=$HOME/git/fordyca
+fi
 
 # Add ARGoS libraries to system library search path, since they are in a
 # non-standard location
@@ -47,80 +53,56 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 # Begin Experiments                                                            #
 ################################################################################
 OUTPUT_ROOT=$HOME/exp/2020-modeling
-TIME_LONG=time_setup.T100000N1000
+TIME_LONG=time_setup.T20000
 TIME_SHORT=time_setup.T5000
-DENSITY=1p0
-CARDINALITY=C8
+DENSITY=CD1p0
+CARDINALITY=C16
+SIZEINC=I72
+SCENARIOS_LIST=(SS.16x8 DS.16x8 RN.8x8 PL.8x8)
+NSIMS=32
 
-TASK="$1"
-
-if [ -n "$MSIARCH" ]; then # Running on MSI
-    NSIMS=96
-    SCENARIOS=(SS.16x8 DS.16x8 RN.8x8 PL.8x8)
-    BASE_CMD="python3 sierra.py \
+SIERRA_BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT\
-                  --template-input-file=$SIERRA_ROOT/templates/ideal.argos \
+                  --template-input-file=$SIERRA_ROOT/templates/2020-modeling.argos \
                   --n-sims=$NSIMS\
                   --controller=d0.CRW\
                   --project=fordyca\
-                  --hpc-env=slurm \
-                  --no-verify-results\
+                  --log-level=DEBUG\
+                  --pipeline 1\
                   --gen-stddev\
                   --exp-overwrite\
                   --time-setup=${TIME_LONG}"
+if [ -n "$MSIARCH" ]; then # Running on MSI
+    SCENARIOS=(${SCENARIOS_LIST[$SLURM_ARRAY_TASK_ID]})
+    TASK="exp"
+    SIERRA_CMD="$SIERRA_BASE_CMD --hpc-env=slurm"
+    echo "********************************************************************************\n"
+    echo  squeue -j $SLURM_JOB_ID -o "%.9i %.9P %.8j %.8u %.2t %.10M %.6D %S %e"
+    echo "********************************************************************************\n"
+
 else
-    NSIMS=48
-    # SCENARIOS=(SS.16x8 DS.16x8 RN.8x8 PL.8x8)
-    SCENARIOS=(PL.8x8)
-    BASE_CMD="python3 sierra.py \
-                  --sierra-root=$OUTPUT_ROOT\
-                  --template-input-file=$SIERRA_ROOT/templates/ideal.argos \
-                  --n-sims=$NSIMS\
-                  --controller=d0.CRW\
-                  --physics-n-engines=4\
-                  --project=fordyca\
-                  --hpc-env=local --log-level=DEBUG\
-                  --gen-stddev\
-                  --no-verify-results\
-                  --exp-overwrite\
-                  --time-setup=${TIME_SHORT}"
-
-
+    SCENARIOS=("${SCENARIOS_LIST[@]}")
+    TASK="$1"
+    SIERRA_CMD="$SIERRA_BASE_CMD \
+                 --hpc-env=local\
+                 --physics-n-engines=16"
 fi
 
 cd $SIERRA_ROOT
 
 if [ "$TASK" == "exp" ] || [ "$TASK" == "all" ]; then
 
-    PIPELINE="1 2 3 4"
     for s in "${SCENARIOS[@]}"
     do
-        $BASE_CMD --scenario=$s \
-                  --pipeline $PIPELINE\
-                  --batch-criteria population_density.CD1p0.I32.${CARDINALITY}
-
-        $BASE_CMD --scenario=$s \
-                  --pipeline $PIPELINE\
-                  --batch-criteria population_density.CD2p0.I32.${CARDINALITY}
-
-        $BASE_CMD --scenario=$s \
-                  --pipeline $PIPELINE\
-                  --batch-criteria population_density.CD3p0.I32.${CARDINALITY}
-
-        $BASE_CMD --scenario=$s \
-                  --pipeline $PIPELINE\
-                  --batch-criteria population_density.CD4p0.I32.${CARDINALITY}
-
-        $BASE_CMD --scenario=$s \
-                  --pipeline $PIPELINE\
-                  --batch-criteria population_density.CD5p0.I32.${CARDINALITY}
+        $SIERRA_CMD --scenario=$s \
+                  --batch-criteria population_density.${DENSITY}.${SIZEINC}.${CARDINALITY}
     done
 fi
 
 if [ "$TASK" == "comp" ] || [ "$TASK" == "all" ]; then
-    criteria=population_density.CD1p0.I32.${CARDINALITY}
+    criteria=population_density.CD1p0.${SIZEINC}.${CARDINALITY}
 
-    $BASE_CMD --scenario=$s \
+    $SIERRA_CMD --scenario=$s \
               --pipeline 5\
               --batch-criteria $criteria\
               --bc-univar\
@@ -128,7 +110,7 @@ if [ "$TASK" == "comp" ] || [ "$TASK" == "all" ]; then
               --scenarios-list=SS.16x8,DS.16x8\
               --scenarios-legend="SS","DS"
 
-    $BASE_CMD --scenario=$s \
+    $SIERRA_CMD --scenario=$s \
               --pipeline 5\
               --batch-criteria $criteria\
               --bc-univar\

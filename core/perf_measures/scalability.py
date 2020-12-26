@@ -183,7 +183,7 @@ class NormalizedEfficiencyUnivar(BaseNormalizedEfficiency):
     r"""
     Univariate calculator for per-robot efficiency for each experiment in a batch
     (intra-experiment measure; no comparison across experiments in a batch is performed). See
-    :func:`efficiency_calculate()` for calculations.
+    :class:`BaseNormalizedEfficiency` for calculations.
     """
     kLeaf = 'PM-scalability-efficiency'
 
@@ -248,7 +248,7 @@ class ParallelFractionUnivar(BaseParallelFraction):
     r"""
     Calculates the scalability of the swarm configuration across a univariate batched set of
     experiments within the same scenario from collated ``.csv`` data using the Karp-Flatt metric
-    (See :func:`parallel_fraction_calculate()`).
+    (See :class:`BaseParallelFraction`).
 
     Does not require the batch criteria to be
     :class:`~core.variables.population_size.PopulationSize` derived, but if all experiments in a
@@ -418,7 +418,7 @@ class NormalizedEfficiencyBivar(BaseNormalizedEfficiency):
     """
     Bivariate calculator for per-robot efficiency for each experiment in a batch
     (intra-experiment measure; no comparison across experiments in a batch is performed). See
-    :func:`efficiency_calculate()` for calculations.
+    :class:`BaseNormalizedEfficiency` for calculations.
     """
     kLeaf = 'PM-scalability-efficiency'
 
@@ -479,7 +479,7 @@ class ParallelFractionBivar(BaseParallelFraction):
     """
     Calculates the scalability of the swarm configuration across a bivariate batched set of
     experiments within the same scenario from collated ``.csv`` data using the Karp-Flatt metric
-    (See :func:`parallel_fraction_calculate()`).
+    (See :class:`BaseParallelFraction`).
 
     Does not require the batch criteria to be
     :class:`~core.variables.population_size.PopulationSize` derived, but if all experiments in a
@@ -605,12 +605,10 @@ class ScalabilityBivarGenerator:
 __api__ = [
     'InterRobotInterferenceUnivar',
     'NormalizedEfficiencyUnivar',
-    'FractionalMaintenanceUnivar',
     'ParallelFractionUnivar',
     'InterRobotInterferenceBivar',
     'NormalizedEfficiencyBivar',
-    'FractionalMaintenanceBivar',
     'ParallelFractionBivar',
-    'efficiency_calculate',
-    'parallel_fraction_calculate'
+    'BaseParallelFraction',
+    'BaseNormalizedEfficiency'
 ]

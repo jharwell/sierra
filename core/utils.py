@@ -19,7 +19,6 @@ Miscellaneous classes/functions used in mutiple places but that don't really fit
 """
 
 # Core packages
-import pickle
 import os
 import logging
 import typing as tp
@@ -108,22 +107,6 @@ class ReLu():
         return max(0, self.x)
 
 
-def unpickle_exp_def(exp_def_fpath):
-    """
-    Read in all the different sets of parameter changes that were pickled to make
-    crucial parts of the experiment definition easily accessible. I don't know how
-    many there are, so go until you get an exception.
-    """
-    try:
-        with open(exp_def_fpath, 'rb') as f:
-            exp_def = set()
-            while True:
-                exp_def = exp_def | pickle.load(f)
-    except EOFError:
-        pass
-    return exp_def
-
-
 def extract_arena_dims(exp_def) -> ArenaExtent:
     for path, attr, value in exp_def:
         if path == ".//arena" and attr == "size":
@@ -203,7 +186,15 @@ def exp_range_calc(cmdopts: dict, root_dir: str, criteria) -> tp.List[str]:
     return exp_all
 
 
+def module_exists(name: str):
+    try:
+        mod = __import__(name)
+    except ImportError:
+        return False
+    else:
+        return True
+
+
 __api__ = [
     'ArenaExtent',
-    'unpickle_exp_def'
 ]

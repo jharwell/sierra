@@ -18,14 +18,18 @@ Classes for the SAA noise batch criteria. See :ref:`ln-bc-saa-noise` for usage d
 
 """
 
+# Core packages
 import re
 import typing as tp
 
+# 3rd party packages
 import implements
 import numpy as np
 
+# Project packages
 import core.variables.batch_criteria as bc
 from core.variables.population_size import PopulationSize
+from core.xml_luigi import XMLAttrChange, XMLAttrChangeSet
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
@@ -60,14 +64,17 @@ class SAANoise(bc.UnivarBatchCriteria):
         self.noise_type = noise_type
         self.attr_changes = []  # type: tp.List
 
-    def gen_attr_changelist(self) -> list:
+    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         """
         Generate a list of sets of changes necessary to make to the input file to correctly set up
         the simulation with the specified noise ranges.
         """
         if not self.attr_changes:
-            self.attr_changes = [{(v2[0], v2[1], v2[2]) for v2 in v1} for v1 in self.variances]
+            self.attr_changes = [XMLAttrChangeSet(*{XMLAttrChange(v2[0],
+                                                                  v2[1],
+                                                                  v2[2]) for v2 in v1}) for v1 in self.variances]
 
+            print(self.attr_changes)
             # Swarm size is optional. It can be (1) controlled via this variable, (2) controlled by
             # another variable in a bivariate batch criteria, (3) not controlled at all. For (2),
             # (3), the swarm size can be None.
@@ -175,7 +182,7 @@ class SAANoise(bc.UnivarBatchCriteria):
         return True
 
 
-class SAANoiseParser():
+class Parser():
     """
     Enforces the cmdline definition of the :class:`SAANoise` batch criteria defined in
     :ref:`ln-bc-saa-noise`.
@@ -221,7 +228,7 @@ def factory(cli_arg: str, main_config: dict, batch_input_root: str, **kwargs):
     batch criteria.
 
     """
-    attr = SAANoiseParser()(cli_arg)
+    attr = Parser()(cli_arg)
 
     def gen_variances(attr: dict):
 
@@ -242,8 +249,7 @@ def factory(cli_arg: str, main_config: dict, batch_input_root: str, **kwargs):
         }
 
         if any(v == attr['noise_type'] for v in ['sensors', 'actuators']):
-            configured_sources = {attr['noise_type']
-                : main_config['perf']['robustness'][attr['noise_type']]}
+            configured_sources = {attr['noise_type']: main_config['perf']['robustness'][attr['noise_type']]}
         else:
             configured_sources = {
                 'actuators': main_config['perf']['robustness'].get('actuators', {}),

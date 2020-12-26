@@ -28,9 +28,15 @@ Examples:
     ``T2000N100``: Simulation will be 2000 seconds long, 100 datapoints (1 every 20 seconds).
 """
 
+# Core packages
 import typing as tp
 
+# 3rd party packages
+import implements
+
+# Project packages
 from core.variables.base_variable import IBaseVariable
+from core.xml_luigi import XMLAttrChangeSet, XMLAttrChange, XMLTagRmList, XMLTagAddList
 
 k1D_DATA_POINTS = 50
 """
@@ -49,7 +55,8 @@ Default # times each controller will be run per second in simulation.
 """
 
 
-class TimeSetup(IBaseVariable):
+@implements.implements(IBaseVariable)
+class TimeSetup():
     """
     Defines the simulation duration, metric collection interval.
 
@@ -63,23 +70,30 @@ class TimeSetup(IBaseVariable):
         self.metric_interval = metric_interval
         self.attr_changes = []  # type: tp.List
 
-    def gen_attr_changelist(self):
+    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         if not self.attr_changes:
-            self.attr_changes = [set([
-                (".//experiment", "length", "{0}".format(self.sim_duration)),
-                (".//experiment", "ticks_per_second", "{0}".format(kTICKS_PER_SECOND)),
-                (".//output/metrics/append", "output_interval", "{0}".format(self.metric_interval)),
-                (".//output/metrics/truncate", "output_interval",
-                 "{0}".format(self.metric_interval)),
-                (".//output/metrics/create", "output_interval",
-                 "{0}".format(max(1, self.metric_interval / kND_DATA_DIVISOR)))
-            ])]
+            self.attr_changes = [XMLAttrChangeSet(XMLAttrChange(".//experiment",
+                                                                "length",
+                                                                "{0}".format(self.sim_duration)),
+                                                  XMLAttrChange(".//experiment",
+                                                                "ticks_per_second",
+                                                                "{0}".format(kTICKS_PER_SECOND)),
+                                                  XMLAttrChange(".//output/metrics/append",
+                                                                "output_interval",
+                                                                "{0}".format(self.metric_interval)),
+                                                  XMLAttrChange(".//output/metrics/truncate",
+                                                                "output_interval",
+                                                                "{0}".format(self.metric_interval)),
+                                                  XMLAttrChange(".//output/metrics/create",
+                                                                "output_interval",
+                                                                "{0}".format(max(1, self.metric_interval / kND_DATA_DIVISOR)))
+                                                  )]
         return self.attr_changes
 
-    def gen_tag_rmlist(self):
+    def gen_tag_rmlist(self) -> tp.List[XMLTagRmList]:
         return []
 
-    def gen_tag_addlist(self):
+    def gen_tag_addlist(self) -> tp.List[XMLTagAddList]:
         return []
 
 
@@ -88,7 +102,7 @@ class TInterval(TimeSetup):
         super().__init__(int(1000 / kTICKS_PER_SECOND), int(1000 / k1D_DATA_POINTS))
 
 
-class TimeSetupParser():
+class Parser():
     """
     Enforces the cmdline definition of time setup criteria.
     """
@@ -96,8 +110,8 @@ class TimeSetupParser():
     def __call__(self, time_str: str) -> tp.Dict[str, int]:
         ret = {}
 
-        ret.update(TimeSetupParser.duration_parse(time_str))
-        ret.update(TimeSetupParser.n_datapoints_parse(time_str))
+        ret.update(Parser.duration_parse(time_str))
+        ret.update(Parser.n_datapoints_parse(time_str))
         return ret
 
     @staticmethod
@@ -130,7 +144,7 @@ def factory(time_str: str) -> TimeSetup:
     """
     Factory to create :class:`TimeSetup` derived classes from the command line definition.
     """
-    attr = TimeSetupParser()(time_str.split(".")[1])
+    attr = Parser()(time_str.split(".")[1])
 
     def __init__(self) -> None:
         TimeSetup.__init__(self,

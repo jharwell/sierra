@@ -18,13 +18,19 @@ Classes for the population dynamics batch criteria. See :ref:`ln-bc-population-d
 documentation.
 """
 
+# Core packages
 import typing as tp
 import os
+
+# 3rd party packages
 import implements
 
+# Project packages
 from core.variables import batch_criteria as bc
 import core.utils
 import core.variables.dynamics_parser as dp
+from core.xml_luigi import XMLAttrChange, XMLAttrChangeSet
+import core.config
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
@@ -52,7 +58,7 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
         self.dynamics = dynamics
         self.attr_changes = []  # type: tp.List
 
-    def gen_attr_changelist(self) -> list:
+    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         """
         Generate list of sets of changes for population dynamics.
         """
@@ -60,9 +66,9 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
         # round/truncate unecessarily, because that can change behavior in statistical equilibrium.
         if not self.attr_changes:  # empty
             for d in self.dynamics:
-                self.attr_changes.append({(".//temporal_variance/population_dynamics",
-                                           t[0],
-                                           str('%3.9f' % t[1])) for t in d})
+                self.attr_changes.append(XMLAttrChangeSet(*{XMLAttrChange(".//temporal_variance/population_dynamics",
+                                                                          t[0],
+                                                                          str('%3.9f' % t[1])) for t in d}))
         return self.attr_changes
 
     def gen_exp_dirnames(self, cmdopts: dict) -> list:
@@ -78,9 +84,9 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
         ticks = []
 
         for d in exp_dirs:
-            exp_def = core.utils.unpickle_exp_def(os.path.join(self.batch_input_root,
-                                                               d,
-                                                               'exp_def.pkl'))
+            exp_def = XMLAttrChangeSet.unpickle(os.path.join(self.batch_input_root,
+                                                             d,
+                                                             core.config.kPickleLeaf))
             # If we had pure death dynamics, the tasked swarm time is 0 in the steady state, so we
             # use lambda_d as the ticks instead, which is somewhat more meaningful.
             if self.is_pure_death_dynamics():

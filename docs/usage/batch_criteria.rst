@@ -393,14 +393,14 @@ Task Allocation Policy
 
 Cmdline Syntax
 ^^^^^^^^^^^^^^
-``ta_policy_set.All[.Z{population}]``
+``ta_policy_set.all[.Z{population}]``
 
 ``population`` - The swarm size to use (optional)
 
 Examples:
 
-- ``All.Z16``: All possible task allocation policies with swarms of size 16.
-- ``All``: All possible task allocation policies; swarm size not modified.
+- ``all.Z16``: All possible task allocation policies with swarms of size 16.
+- ``all``: All possible task allocation policies; swarm size not modified.
 
 
 .. _ln-bc-saa-noise:

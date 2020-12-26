@@ -108,8 +108,8 @@ autoapi_modules = {
     'core.xml_luigi': {'output': 'api/core'},
     'core.utils': {'output': 'api/core'},
     'core.experiment_spec': {'output': 'api/core'},
-    'models.interface': {'output': 'api/models'},
-    'models.graphs': {'output': 'api/models'},
+    'core.models.interface': {'output': 'api/core/models'},
+    'core.models.graphs': {'output': 'api/core/models'},
     'plugins.hpc': {'output': 'api/plugins/hpc'}
 }
 

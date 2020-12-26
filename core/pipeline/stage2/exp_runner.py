@@ -68,11 +68,11 @@ class BatchedExpRunner:
                             Xvfb processes that get run for each simulation after all experiments
                             are finished.
         """
-        n_threads_per_sim = self.cmdopts['n_threads']
+        n_threads_per_sim = self.cmdopts['physics_n_engines']
         n_sims = self.cmdopts['n_sims']
         exec_resume = self.cmdopts['exec_resume']
         with_rendering = self.cmdopts['argos_rendering']
-        n_jobs = self.cmdopts['exec_jobs_per_node']
+        n_jobs = self.cmdopts['exec_sims_per_node']
 
         s = "Running batched experiment in '%s': sims_per_exp=%s,threads_per_sim=%s,n_jobs=%s"
         self.logger.info(s, self.cmdopts['batch_root'], n_sims, n_threads_per_sim, n_jobs)

@@ -35,6 +35,7 @@ from core.variables import batch_criteria as bc
 from core.graphs.heatmap import Heatmap
 from core.graphs.batch_ranged_graph import BatchRangedGraph
 import core.config
+from core.xml_luigi import XMLAttrChangeSet
 
 ################################################################################
 # Base Classes
@@ -119,10 +120,9 @@ class BaseFractionalLosses:
 
         # Just need to get # timesteps per simulation which is the same for all
         # simulations/experiments, so we pick exp0 for simplicity to calculate
-        exp_def = core.utils.unpickle_exp_def(os.path.join(cmdopts["batch_input_root"],
-                                                           criteria.gen_exp_dirnames(
-                                                               self.cmdopts)[0],
-                                                           "exp_def.pkl"))
+        exp_def = XMLAttrChangeSet.unpickle(os.path.join(cmdopts["batch_input_root"],
+                                                         criteria.gen_exp_dirnames(self.cmdopts)[0],
+                                                         core.config.kPickleLeaf))
 
         # Integers always seem to be pickled as floats, so you can't convert directly without an
         # exception.
@@ -144,7 +144,7 @@ class PerfLostInteractiveSwarmUnivar(BasePerfLostInteractiveSwarm):
 
     plost 1 robot = 0 # By definition
 
-    plost N robots = :method:`~BasePerfLostInteractive.kernel()`.
+    plost N robots = :meth:`~BasePerfLostInteractive.kernel()`.
 
     This gives how much MORE performance was lost in the entire simulation as a result of a swarm of
     size N, as opposed to a group of N robots that do not interact with each other, only the arena
@@ -527,7 +527,6 @@ def csv_3D_value_iloc(df, xslice, yslice, zslice):
 __api__ = [
     'PerfLostInteractiveSwarmUnivar',
     'PerfLostInteractiveSwarmBivar',
-    'FractionalLosses',
     'FractionalLossesUnivar',
     'FractionalLossesBivar',
 ]
