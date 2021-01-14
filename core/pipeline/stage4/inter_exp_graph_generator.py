@@ -126,7 +126,7 @@ class LinegraphsGenerator:
                                      xticks=criteria.graph_xticks(self.cmdopts),
                                      xtick_labels=criteria.graph_xticklabels(self.cmdopts),
                                      logyscale=self.cmdopts['plot_log_yscale'],
-                                     legend=['Empirical Data']).generate()
+                                     large_text=self.cmdopts['plot_large_text']).generate()
                 else:
                     StackedLineGraph(input_fpath=os.path.join(self.cmdopts['batch_collate_root'],
                                                               graph['dest_stem'] + '.csv'),

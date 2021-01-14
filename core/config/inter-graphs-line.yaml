@@ -13,6 +13,7 @@ LN_fsm_interference:
       title: 'Average Robots Experiencing Interference (cumulative)'
       xlabel: 'Interval'
       ylabel: '# Robots'
+      batch: True
 
     - src_stem: fsm-interference-counts
       dest_stem: interference-entered-int-avg
@@ -27,7 +28,6 @@ LN_fsm_interference:
       title: 'Average Robots Entering Interference (cumulative)'
       xlabel: 'Interval'
       ylabel: '# Robots'
-      batch: True
 
     - src_stem: fsm-interference-counts
       dest_stem: interference-exited-int-avg
@@ -70,7 +70,6 @@ LN_fsm_interference:
       title: 'Average Interference Duration (cumulative)'
       xlabel: 'Interval'
       ylabel: '# Timesteps'
-      batch: True
 
 
 LN_spatial_movement:
@@ -148,6 +147,13 @@ LN_block_acq:
       ylabel: '# Robots'
 
     - src_stem: block-acq-counts
+      col: int_avg_true_exploring_for_goal
+      dest_stem: block-acq-counts-true-exploring-int-avg
+      title: 'Average Robots Exploring For Blocks (interval)'
+      xlabel: 'Interval'
+      ylabel: '# Robots'
+
+    - src_stem: block-acq-counts
       col: cum_avg_acquiring_goal
       dest_stem: block-acq-counts-cum-avg
       title: 'Average Robots Acquiring Blocks (cumulative)'
@@ -161,6 +167,12 @@ LN_block_acq:
       xlabel: 'Interval'
       ylabel: '# Robots'
 
+    - src_stem: block-acq-counts
+      col: cum_avg_true_exploring_for_goal
+      dest_stem: block-acq-counts-exploring-cum-avg
+      title: 'Average Robots Exploring For Blocks (cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Robots'
 
 LN_block_manip:
   graphs:
@@ -198,7 +210,6 @@ LN_block_manip:
       title: 'Average Free Block Pickup Events (Cumulative)'
       xlabel: 'Interval'
       ylabel: '# Pickups'
-      batch: True
 
     - src_stem: block-manipulation
       dest_stem: block-manip-free-drop-events-cum-avg

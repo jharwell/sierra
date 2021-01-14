@@ -94,7 +94,8 @@ class RobustnessSAAUnivar:
                                                   'robustness_saa'),
                          xticks=criteria.graph_xticks(self.cmdopts),
                          xtick_labels=criteria.graph_xticklabels(self.cmdopts),
-                         logyscale=self.cmdopts['plot_log_yscale']).generate()
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class RobustnessPDUnivar:
@@ -152,7 +153,8 @@ class RobustnessPDUnivar:
                          ylabel="Robustness Value",
                          xticks=criteria.graph_xticks(self.cmdopts),
                          xtick_labels=criteria.graph_xticklabels(self.cmdopts),
-                         logyscale=self.cmdopts['plot_log_yscale']).generate()
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class RobustnessUnivarGenerator:

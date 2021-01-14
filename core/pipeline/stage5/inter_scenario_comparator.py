@@ -85,10 +85,22 @@ class UnivarInterScenarioComparator:
 
     def __call__(self, graphs: dict, legend: tp.List[str]) -> None:
         # Obtain the list of simulation results directories to draw from.
-
         batch_leaves = os.listdir(os.path.join(self.cmdopts['sierra_root'],
                                                self.cmdopts['project'],
                                                self.controller))
+
+        # The FS gives us batch leaves which might not be in the same order as the list of specified
+        # scenarios, so we:
+        #
+        # 1. Remove all batch leaves which do not have a counterpart in the scenario list we are
+        #    comparing across.
+        # 2. Do matching to get the indices of the batch leaves relative to the list, and then sort
+        #    it.
+        batch_leaves = [leaf for leaf in batch_leaves for s in self.scenarios if s in leaf]
+        indices = [self.scenarios.index(s)
+                   for leaf in batch_leaves for s in self.scenarios if s in leaf]
+        batch_leaves = [leaf for s, leaf in sorted(zip(indices, batch_leaves),
+                                                   key=lambda pair: pair[0])]
 
         # For each controller comparison graph we are interested in, generate it using data from all
         # scenarios
@@ -177,9 +189,9 @@ class UnivarInterScenarioComparator:
                          title=title,
                          xlabel=criteria.graph_xlabel(cmdopts),
                          ylabel=label,
-                         xtick_labels=xtick_labels[criteria.inter_exp_graphs_exclude_exp0():],
                          xticks=xticks[criteria.inter_exp_graphs_exclude_exp0():],
                          logyscale=cmdopts['plot_log_yscale'],
+                         large_text=cmdopts['plot_large_text'],
                          legend=legend).generate()
 
     def _gen_csv(self,
@@ -226,38 +238,45 @@ class UnivarInterScenarioComparator:
 
         # Collect performance measure results. Append to existing dataframe if it exists, otherwise
         # start a new one.
-        data_df = self._accum_df(csv_ipath, opath_stem + '.csv')
+        data_df = self._accum_df(csv_ipath, opath_stem + '.csv', src_stem)
         core.utils.pd_csv_write(data_df, opath_stem + '.csv', index=False)
 
         # Collect performance results stddev. Append to existing dataframe if it exists, otherwise
         # start a new one.
-        stddev_df = self._accum_df(stddev_ipath, opath_stem + '.stddev')
+        stddev_df = self._accum_df(stddev_ipath, opath_stem + '.stddev', src_stem)
         if stddev_df is not None:
             core.utils.pd_csv_write(stddev_df, opath_stem + '.stddev', index=False)
 
         # Collect performance results models and legends. Append to existing dataframes if they
         # exist, otherwise start new ones.
-
-        model_df = self._accum_df(model_ipath_stem + '.model', model_opath_stem + '.model')
+        model_df = self._accum_df(model_ipath_stem + '.model',
+                                  model_opath_stem + '.model',
+                                  src_stem)
         if model_df is not None:
             core.utils.pd_csv_write(model_df, model_opath_stem + '.model', index=False)
-
             with open(model_opath_stem + '.legend', 'a') as f:
                 _, scenario, _ = rdg.parse_batch_leaf(batch_leaf)
                 kw = sgp.ScenarioGeneratorParser.reparse_str(scenario)
-                f.write("{0} prediction\n".format(kw['dist_type']))
+                f.write("{0} Prediction\n".format(kw['dist_type']))
 
-    def _accum_df(self, ipath: str, opath: str) -> pd.DataFrame:
-        # Collect performance measure results. Append to existing dataframe if it exists, otherwise
-        # start a new one.
+    def _accum_df(self, ipath: str, opath: str, src_stem: str) -> pd.DataFrame:
         if core.utils.path_exists(opath):
             cum_df = core.utils.pd_csv_read(opath)
         else:
-            cum_df = pd.DataFrame()
+            cum_df = None
 
         if core.utils.path_exists(ipath):
             t = core.utils.pd_csv_read(ipath)
-            cum_df = cum_df.append(t)
+            if cum_df is None:
+                cum_df = pd.DataFrame(columns=t.columns)
+
+            if len(t.index) != 1:
+                self.logger.warning("'%s.csv' is a collated inter-experiment csv, not a summary inter-experiment csv:  # rows %s != 1",
+                                    src_stem,
+                                    len(t.index))
+                self.logger.warning("Truncating '%s.csv' to last row", src_stem)
+
+            cum_df = cum_df.append(t.loc[t.index[-1], t.columns.to_list()])
             return cum_df
 
         return None

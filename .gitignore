@@ -111,3 +111,4 @@ projects/*
 # MSI
 *.pbs.e*
 *.pbs.o*
+R-*

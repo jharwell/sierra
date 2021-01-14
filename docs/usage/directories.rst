@@ -86,7 +86,7 @@ When SIERRA runs, it creates a directory structure under whatever was passed as
 ``--sierra-root``. For the purposes of explanation, I will use the following
 partial SIERRA option set to explain the experiment tree::
 
-  --sierra-root=~/exp --controller=CATEGORY.my_controller --scenario=SS.12x6 --batch-criteria=population_size_.Log8 --n-sims=4 --template-input-file=~/my-template.argos --plugin=fordyca
+  --sierra-root=~/exp --controller=CATEGORY.my_controller --scenario=SS.12x6 --batch-criteria=population_size.Log8 --n-sims=4 --template-input-file=~/my-template.argos --plugin=fordyca
 
 
 This invocation will cause SIERRA to create the following directory structure as

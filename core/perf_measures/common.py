@@ -221,6 +221,7 @@ class PerfLostInteractiveSwarmUnivar(BasePerfLostInteractiveSwarm):
 
         # Get .csv with performance info
         perf_path = os.path.join(self.batch_collate_root, self.inter_perf_stem + '.csv')
+
         assert(core.utils.path_exists(perf_path)), "FATAL: {0} does not exist".format(perf_path)
         perf_df = core.utils.pd_csv_read(perf_path)
         perf_df = perf_df.tail(1)
@@ -312,6 +313,7 @@ class WeightedPMUnivar():
         core.utils.pd_csv_write(out_df, csv_ostem + '.csv', index=False)
 
         xticks = criteria.graph_xticks(self.cmdopts)
+        xtick_labels = criteria.graph_xticklabels(self.cmdopts)
         len_diff = len(xticks) - len(out_df.columns)
 
         BatchRangedGraph(input_fpath=csv_ostem + '.csv',
@@ -320,7 +322,8 @@ class WeightedPMUnivar():
                          ylabel="Value",
                          xlabel=criteria.graph_xlabel(self.cmdopts),
                          xticks=xticks[len_diff:],
-                         logyscale=self.cmdopts['plot_log_yscale']).generate()
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
 ################################################################################
 # Bivariate Classes

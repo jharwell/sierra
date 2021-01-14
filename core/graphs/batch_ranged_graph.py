@@ -26,10 +26,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import matplotlib as mpl
+import matplotlib.ticker as mticker
 
 # Project packages
 import core.utils
-
+import core.config
 
 mpl.rcParams['lines.linewidth'] = 3
 mpl.rcParams['lines.markersize'] = 10
@@ -59,22 +60,44 @@ class BatchRangedGraph:
     # Maximum # of rows that the input .csv to guarantee unique colors
     kMaxRows = 8
 
-    def __init__(self, **kwargs) -> None:
-        self.input_fpath = kwargs['input_fpath']
+    def __init__(self,
+                 input_fpath: str,
+                 output_fpath: str,
+                 title: str,
+                 xlabel: str,
+                 ylabel: str,
+                 xticks: tp.List[float],
+                 xtick_labels: tp.List[str] = None,
+                 large_text: bool = False,
+                 legend: tp.List[str] = ['Empirical Data'],
+                 logyscale: bool = False,
+                 stddev_fpath=None,
+                 model_fpath: str = None,
+                 model_legend_fpath: str = None,
+                 polynomial_fit: int = -1) -> None:
 
-        self.stddev_fpath = kwargs.get('stddev_fpath', None)
-        self.model_fpath = kwargs.get('model_fpath', None)
-        self.model_legend_fpath = kwargs.get('model_legend_fpath', None)
-        self.output_fpath = os.path.abspath(kwargs['output_fpath'])
-        self.title = kwargs['title']
-        self.xlabel = kwargs['xlabel']
-        self.ylabel = kwargs['ylabel']
+        # Required arguments
+        self.input_fpath = input_fpath
+        self.output_fpath = output_fpath
+        self.title = title
+        self.xlabel = xlabel
+        self.ylabel = ylabel
+        self.xticks = xticks
 
-        self.xtick_labels = kwargs.get('xtick_labels', None)
-        self.xticks = kwargs['xticks']
-        self.legend = kwargs.get('legend', [])
-        self.polynomial_fit = kwargs.get('polynomial_fit', -1)
-        self.logyscale = kwargs.get('logyscale', False)
+        # Optional arguments
+        if large_text:
+            self.text_size = core.config.kGraphTextSizeLarge
+        else:
+            self.text_size = core.config.kGraphTextSizeSmall
+
+        self.xtick_labels = xtick_labels
+        self.stddev_fpath = stddev_fpath
+        self.model_fpath = model_fpath
+        self.model_legend_fpath = model_legend_fpath
+        self.legend = legend
+        self.polynomial_fit = polynomial_fit
+        self.logyscale = logyscale
+
         self.logger = logging.getLogger(__name__)
 
     def generate(self):
@@ -108,9 +131,6 @@ class BatchRangedGraph:
 
         fig, ax = plt.subplots()
 
-        if self.logyscale:
-            ax.set_yscale('symlog')
-
         # Plot lines
         self._plot_lines(data_dfy, model_dfy)
 
@@ -121,14 +141,14 @@ class BatchRangedGraph:
         self._plot_errorbars(self.xticks, data_dfy, stddev_dfy)
 
         # Add X,Y labelsg
-        plt.ylabel(self.ylabel, fontsize=18)
-        plt.xlabel(self.xlabel, fontsize=18)
+        plt.ylabel(self.ylabel, fontsize=self.text_size['xyz_label'])
+        plt.xlabel(self.xlabel, fontsize=self.text_size['xyz_label'])
 
         # Add ticks
         self._plot_ticks(ax)
 
         # Add title
-        plt.title(self.title, fontsize=24)
+        plt.title(self.title, fontsize=self.text_size['title'])
 
         # Output figure
         fig = ax.get_figure()
@@ -178,7 +198,14 @@ class BatchRangedGraph:
                              data_dfy.values[i] + 2 * stddev_dfy.values[i], alpha=0.25)
 
     def _plot_ticks(self, ax):
-        ax.tick_params(labelsize=12)
+        if self.logyscale:
+            ax.set_yscale('symlog', base=2)
+            # Use scientific or decimal notation--whichever has fewer chars
+            ax.yaxis.set_minor_formatter(mticker.ScalarFormatter())
+
+            # ax.yaxis.set_major_formatter(mticker.FormatStrFormatter("%.02g"))
+
+        ax.tick_params(labelsize=self.text_size['tick_label'])
 
         # For ordered, qualitative data
         if self.xtick_labels is not None:
@@ -191,8 +218,9 @@ class BatchRangedGraph:
         if model_legend:
             legend = [val for pair in zip(self.legend, model_legend) for val in pair]
 
-        if legend:
-            plt.legend(legend, fontsize=14, ncol=max(1, int(len(legend) / 3.0)))
+        plt.legend(legend,
+                   fontsize=self.text_size['legend_label'],
+                   ncol=max(1, int(len(legend) / 3.0)))
 
 
 __api__ = [

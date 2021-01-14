@@ -21,19 +21,13 @@
                   library="foo">
       <actuators>
         <differential_steering implementation="default" />
-        <leds implementation="default" medium="leds" />
-        <range_and_bearing implementation="default" />
       </actuators>
       <sensors>
         <positioning implementation="default"/>
-
         <differential_steering implementation="default"/>
         <footbot_proximity implementation="default" show_rays="true"/>
         <footbot_light implementation="rot_z_only" show_rays="false"/>
         <footbot_motor_ground implementation="rot_z_only"/>
-        <range_and_bearing implementation="medium" medium="rab" />
-        <colored_blob_omnidirectional_camera implementation="rot_z_only"
-                                             medium="leds"/>
       </sensors>
       <params>
         <rng seed="123"/>
@@ -41,112 +35,9 @@
           output_root="output"
           output_dir="__current_date__"
           />
-        <perception
-            los_dim="0.4">
-          <grid2D resolution="0.2"
-                dims="12, 6, 2"/>
-          <pheromone rho="0.00001"
-                     repeat_deposit="false"/>
-        </perception>
-        <task_executive
-            update_exec_ests="true"
-            update_interface_ests="true"
-            />
-        <task_alloc
-            policy="stoch_nbhd1">
-          <task_abort>
-            <src_sigmoid_sel
-                input_src="exec">
-              <sigmoid_sel
-                  method="harwell2018">
-                <sigmoid reactivity="8"
-                         offset="3.0"
-                         gamma="1.0"/>
-              </sigmoid_sel>
-              </src_sigmoid_sel>
-          </task_abort>
-          <task_exec_estimates
-              seed_enabled="true"
-              generalist="2000:4000"
-              collector="1000:2000"
-              harvester="1000:2000"
-              cache_starter="1000:2000"
-              cache_finisher="1000:2000"
-              cache_collector="1000:2000"
-              cache_transferer="1000:2000">
-            <ema alpha="0.5"/>
-          </task_exec_estimates>
-
-          <epsilon_greedy epsilon="0.4"
-                          regret_bound="linear"/>
-          <ucb1 gamma="1000"/>
-          <stoch_nbhd1
-              tab_init_policy="max_depth">
-            <task_partition
-                always_partition="false"
-                never_partition="false">
-              <src_sigmoid_sel
-                  input_src="exec">
-                <sigmoid_sel
-                    method="pini2011">
-                  <sigmoid
-                      reactivity="8.0"
-                      offset="1.25"
-                      gamma="1.25"/>
-                </sigmoid_sel>
-              </src_sigmoid_sel>
-            </task_partition>
-            <subtask_sel>
-              <src_sigmoid_sel
-                  input_src="exec">
-                <sigmoid_sel
-                    method="harwell2018">
-                  <sigmoid
-                      reactivity="4.0"
-                      offset="1.25"
-                      gamma="1.0"/>
-                </sigmoid_sel>
-              </src_sigmoid_sel>
-            </subtask_sel>
-            <tab_sel>
-              <src_sigmoid_sel
-                  input_src="exec">
-                <sigmoid_sel
-                    method="harwell2019">
-                  <sigmoid
-                      reactivity="6.0"
-                      offset="1.0"
-                      gamma="1.0"/>
-                </sigmoid_sel>
-              </src_sigmoid_sel>
-            </tab_sel>
-          </stoch_nbhd1>
-        </task_alloc>
         <nest dims="1.0, 4.0" center="2, 3" />
-        <block_sel_matrix>
-          <block_priorities
-              cube="1.0"
-              ramp="1.0"
-              />
-          <pickup_policy
-              policy="cluster_proximity"
-              prox_dist="2.0"
-              />
-        </block_sel_matrix>
-        <cache_sel_matrix
-            cache_prox_dist="3.2"
-            nest_prox_dist="3.0"
-            block_prox_dist="1.0"
-            site_xrange="2:10"
-            site_yrange="2.5:3">
-          <pickup_policy
-              policy="cache_size"
-              timestep="20000"
-              cache_size="3"/>
-        </cache_sel_matrix>
         <exploration
-            block_strategy="CRW"
-            cache_strategy="ledtaxis_search"/>
+            block_strategy="CRW"/>
         <sensing_subsystemQ3D>
           <!-- -5pi/6 : 5pi/6 -->
           <proximity_sensor fov="-2.61:2.61"
@@ -159,9 +50,6 @@
             <!-- BLOCK: Blocks are black. -->
             <block range="-0.05:0.05"
                    consensus="4"/>
-            <!-- CACHE: Caches are dark gray. -->
-            <cache range="0.3:0.5"
-                   consensus="3"/>
           </ground_sensor>
         </sensing_subsystemQ3D>
         <actuation_subsystem2D>
@@ -204,47 +92,18 @@
             block_transporter="block-transporter"
             block_transportee="block-transportee"
             block_clusters="block-clusters"
+            spatial_movement='spatial-movement'
             block_manipulation="block-manipulation"/>
       </metrics>
     </output>
-    <temporal_variance>
-      <env_dynamics>
-        <blocks>
-          <manipulation_penalty>
-            <waveform
-                type="Null"
-                frequency="0.01"
-                amplitude="50"
-                offset="50"
-                phase="0"/>
-          </manipulation_penalty>
-          <carry_throttle>
-            <waveform
-                type="Null"
-                frequency="100"
-                amplitude="0.4"
-                offset="0.1"
-                phase="0"/>
-          </carry_throttle>
-        </blocks>
-      </env_dynamics>
-      <population_dynamics
-          birth_mu="0.0"
-          death_lambda="0.0"
-          malfunction_lambda="0.000"
-          max_size="0"
-          repair_mu="0.000"/>
-    </temporal_variance>
-
     <arena_map>
       <grid2D resolution="0.2"
             dims="12, 6, 2"/>
       <blocks>
-        <motion policy="Null"
-                random_walk_prob="0.0"/>
         <distribution
             arena_resolution="0.2"
-            dist_type="single_source">
+            dist_type="single_source"
+            strict_success="false">
           <manifest
               n_cube="15000"
               n_ramp="0"
@@ -261,22 +120,6 @@
         <nest dims="1.0, 4.0" center="2, 3" />
         </nests>
     </arena_map>
-    <caches dimension="1.2">
-      <static enable="true"
-              size="2"
-              respawn_scale_factor="0.05"/>
-      <dynamic enable="true"
-               min_dist="1.2"
-               min_blocks="2"
-               robot_drop_only="false"/>
-
-    </caches>
-
-    <visualization robot_id="true"
-                   robot_los="true"
-                   robot_task="true"
-                   block_id="false"
-                   />
   </loop_functions>
 
   <!-- *********************** -->
@@ -305,9 +148,8 @@
       <position method="uniform" min="1,1,0.5" max="10,5,0.5" />
       <orientation method="uniform" min="0,0,0" max="360,0,0" />
       <entity quantity="16" max_trials="1000">
-        <foot-bot id="fb" omnidirectional_camera_aperture="89.5">
+        <foot-bot id="fb">
           <controller config="ffc" />
-          <battery model= "time_motion"/>
         </foot-bot>
       </entity>
     </distribute>
@@ -325,7 +167,5 @@
   <!-- * Media * -->
   <!-- ********* -->
   <media>
-    <range_and_bearing id="rab" />
-    <led id="leds"/>
   </media>
 </argos-configuration>

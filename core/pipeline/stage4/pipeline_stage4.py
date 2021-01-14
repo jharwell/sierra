@@ -258,7 +258,6 @@ class PipelineStage4:
         need to be collated/what graphs should be generated.
         """
         keys = []
-        extra_graphs = []
         for category in list(self.controller_config.keys()):
             if category not in self.cmdopts['controller']:
                 continue
@@ -274,7 +273,6 @@ class PipelineStage4:
 
         filtered_keys = [k for k in self.inter_LN_config if k in keys]
         targets = [self.inter_LN_config[k] for k in filtered_keys]
-        targets.append({'graphs': extra_graphs})
 
         self.logger.debug("Enabled linegraph categories: %s", filtered_keys)
         return targets
@@ -313,7 +311,7 @@ class PipelineStage4:
                                                batch_criteria)
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
-        self.logger.info("inter-experiment models finished in %s", str(sec))
+        self.logger.info("Inter-experiment models finished in %s", str(sec))
 
     def _run_intra_graph_generation(self, batch_criteria):
         """

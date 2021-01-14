@@ -82,6 +82,34 @@ LN_spatial_movement:
       xlabel: 'Interval'
       ylabel: 'Velocity (cm/s)'
 
+LN_block_acq:
+  graphs:
+    - src_stem: block-acq-counts
+      dest_stem: block-acq-counts
+      cols:
+        # - int_avg_acquiring_goal
+        # - cum_avg_acquiring_goal
+        # - int_avg_vectoring_to_goal
+        # - cum_avg_vectoring_to_goal
+        # - int_avg_vectoring_to_goal
+        # - cum_avg_vectoring_to_goal
+        - int_avg_true_exploring_for_goal
+        - cum_avg_true_exploring_for_goal
+        # - int_avg_false_exploring_for_goal
+        # - cum_avg_false_exploring_for_goal
+      title: 'Swarm Block Acquisition'
+      legend:
+        # - 'Average # Robots Acquiring Blocks (Interval)'
+        # - 'Average # Robots Acquiring Blocks (Cumulative)'
+        # - 'Average # Robots Vectoring To Blocks (Interval)'
+        # - 'Average # Robots Vectoring To Blocks (Cumulative)'
+        - 'Average # Robots Exploring For Blocks (Interval)'
+        - 'Average # Robots Exploring For Blocks (Cumulative)'
+      #   - 'Average # Robots Falsely Exploring For Blocks (Interval)'
+      #   - 'Average # Robots Falsely Exploring For Blocks (Cumulative)'
+      xlabel: 'Interval'
+      ylabel: '# Robots'
+
 
 LN_convergence:
   graphs:

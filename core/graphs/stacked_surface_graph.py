@@ -15,17 +15,23 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
 
-
-import core.utils
+# Core packages
 import os
 import glob
 import re
 import logging
+import typing as tp
 
+# 3rd party packages
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+
+# Project packages
+import core.config
+import core.utils
+
 mpl.use('Agg')
 
 
@@ -42,18 +48,35 @@ class StackedSurfaceGraph:
     """
     kMaxSurfaces = 4
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self,
+                 input_stem_pattern: str,
+                 output_fpath: str,
+                 title: str,
+                 legend: tp.List[str],
+                 xlabel: str,
+                 ylabel: str,
+                 zlabel: str,
+                 xtick_labels: tp.List[str],
+                 ytick_labels: tp.List[str],
+                 comp_type: str,
+                 large_text: bool = False) -> None:
 
-        self.input_stem_pattern = os.path.abspath(kwargs['input_stem_pattern'])
-        self.output_fpath = kwargs['output_fpath']
-        self.title = kwargs['title']
-        self.legend = kwargs['legend']
-        self.xlabel = kwargs['xlabel']
-        self.ylabel = kwargs['ylabel']
-        self.zlabel = kwargs['zlabel']
-        self.xtick_labels = kwargs['xtick_labels']
-        self.ytick_labels = kwargs['ytick_labels']
-        self.comp_type = kwargs['comp_type']
+        self.input_stem_pattern = os.path.abspath(input_stem_pattern)
+        self.output_fpath = output_fpath
+        self.title = title
+        self.legend = legend
+        self.xlabel = xlabel
+        self.ylabel = ylabel
+        self.zlabel = zlabel
+        self.xtick_labels = xtick_labels
+        self.ytick_labels = ytick_labels
+        self.comp_type = comp_type
+
+        if large_text:
+            self.text_size = core.config.kGraphTextSizeLarge
+        else:
+            self.text_size = core.config.kGraphTextSizeSmall
+
         self.logger = logging.getLogger(__name__)
 
     def generate(self):
@@ -120,22 +143,12 @@ class StackedSurfaceGraph:
         Plot ticks and tick labels. If the labels are numerical and the numbers are too large, force
         scientific notation (the ``rcParam`` way of doing this does not seem to work...)
         """
-        ax.tick_params(labelsize=12)
+        ax.tick_params(labelsize=self.text_size['tick_label'])
         ax.set_xticks(xvals)
         ax.set_xticklabels(self.xtick_labels, rotation='vertical')
 
-        if isinstance(self.xtick_labels[0], (int, float)):
-            x_format = ax.get_xaxis().get_major_formatter()
-            if any([len(str(x)) > 5 for x in x_format.seq]):
-                x_format.seq = ["{:2.2e}".format(float(s)) for s in x_format.seq]
-
         ax.set_yticks(yvals)
         ax.set_yticklabels(self.ytick_labels, rotation='vertical')
-
-        if isinstance(self.ytick_labels[0], (int, float)):
-            y_format = ax.get_yaxis().get_major_formatter()
-            if any([len(str(y)) > 5 for y in y_format.seq]):
-                y_format.seq = ["{:2.2e}".format(float(s)) for s in y_format.seq]
 
     def __plot_legend(self, ax, cmap_handles, handler_map):
         # Legend should have ~3 entries per column, in order to maximize real estate on tightly
@@ -146,14 +159,14 @@ class StackedSurfaceGraph:
                   loc=9,
                   bbox_to_anchor=(0.5, -0.1),
                   ncol=len(self.legend),
-                  fontsize=14)
+                  fontsize=self.text_size['legend_label'])
 
     def __plot_labels(self, ax):
         max_xlen = max([len(str(l)) for l in self.xtick_labels])
         max_ylen = max([len(str(l)) for l in self.ytick_labels])
-        ax.set_xlabel('\n' * max_xlen + self.xlabel, fontsize=18)
-        ax.set_ylabel('\n' * max_ylen + self.ylabel, fontsize=18)
-        ax.set_zlabel('\n' + self.zlabel, fontsize=18)
+        ax.set_xlabel('\n' * max_xlen + self.xlabel, fontsize=self.text_size['xyz_label'])
+        ax.set_ylabel('\n' * max_ylen + self.ylabel, fontsize=self.text_size['xyz_label'])
+        ax.set_zlabel('\n' + self.zlabel, fontsize=self.text_size['xyz_label'])
 
     def __save_figs(self, fig, ax):
         """
@@ -167,9 +180,9 @@ class StackedSurfaceGraph:
             # leaf of that for manipulation to add the angle of the view right before the file
             # extension.
             path, leaf = os.path.split(self.output_fpath)
-            leaf = leaf.split('.')
-            leaf = ''.join(leaf[0:-2]) + '_' + str(angle) + '.' + leaf[-1]
-            fig.savefig(os.path.join(path, leaf), bbox_inches='tight', dpi=100, pad_inches=0)
+            components = leaf.split('.')
+            fname = ''.join(leaf[0:-2]) + '_' + str(angle) + '.' + components[-1]
+            fig.savefig(os.path.join(path, fname), bbox_inches='tight', dpi=100, pad_inches=0)
             plt.close(fig)  # Prevent memory accumulation (fig.clf() does not close everything)
 
 

@@ -1,0 +1,259 @@
+#!/bin/bash -l
+#PBS -l walltime=24:00:00,nodes=32:ppn=24,pmem=2500mb
+#PBS -m abe
+#PBS -M harwe006@umn.edu
+
+################################################################################
+# Setup Simulation Environment                                                 #
+################################################################################
+# set -x
+
+# Initialize modules
+source /home/gini/shared/swarm/bin/msi-env-setup.sh
+
+# Add ARGoS libraries to system library search path, since they are in a
+# non-standard location
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SWARM_ROOT/$MSICLUSTER/lib/argos3
+
+# Set ARGoS library search path. Must contain both the ARGoS core libraries path
+# AND the fordyca library path.
+export ARGOS_PLUGIN_PATH=$SWARM_ROOT/$MSICLUSTER/lib/argos3:$HOME/git/fordyca/build/lib
+
+# Setup logging (maybe compiled out and unneeded, but maybe not)
+export LOG4CXX_CONFIGURATION=$HOME/git/fordyca/log4cxx.xml
+
+# From MSI docs: transfers all of the loaded modules to the compute nodes (not
+# inherited from the master/launch node when using GNU parallel)
+export PARALLEL="--workdir . --env PATH --env LD_LIBRARY_PATH --env
+LOADEDMODULES --env _LMFILES_ --env MODULE_VERSION --env MODULEPATH --env
+MODULEVERSION_STACK --env MODULESHOME --env OMP_DYNAMICS --env
+OMP_MAX_ACTIVE_LEVELS --env OMP_NESTED --env OMP_NUM_THREADS --env
+OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
+--env ARGOS_PLUGIN_PATH --env LOG4CXX_CONFIGURATION"
+
+################################################################################
+# Begin Experiments                                                            #
+################################################################################
+OUTPUT_ROOT=$HOME/exp/sc1
+TIME_SHORT=time_setup.T50000N1000
+TIME_LONG=time_setup.T200000N1000
+
+TASKS=("scalability" "flexibility" "robustness")
+CARDINALITY=C8
+
+if [ -n "$MSICLUSTER" ] # Running on MSI
+then
+    NSIMS=96
+    Y=$(($PBS_ARRAYID % 3)) # This is the task
+    X=$(($PBS_ARRAYID / 3)) # This is the controller
+    CONTROLLERS_LIST=(depth0.CRW depth0.DPO depth1.BITD_DPO depth2.BIRTD_DPO)
+    CONTROLLERS=(${CONTROLLERS_LIST[$X]})
+    TASK=${TASKS[$Y]}
+    BASE_CMD="python3 sierra.py \
+                  --sierra-root=$OUTPUT_ROOT\
+                  --template-input-file=$HOME/git/sierra-sc1/templates/2020-journal-sc1.argos \
+                  --n-sims=$NSIMS\
+                  --physics-n-engines=4\
+                  --pipeline 1 2 3 4\
+                   --exp-graphs=inter\
+                  --project=fordyca\
+                  --hpc-env=hpc_msi \
+                  --no-verify-results\
+                  --exp-overwrite"
+else
+    TASK="$1"
+    NSIMS=8
+    CONTROLLERS=(depth0.CRW depth0.DPO depth1.BITD_DPO depth2.BIRTD_DPO)
+    BASE_CMD="python3 sierra.py \
+                  --sierra-root=$OUTPUT_ROOT\
+                  --template-input-file=$HOME/git/sierra-sc1/templates/2020-journal-sc1.argos \
+                  --n-sims=$NSIMS\
+                  --physics-n-engines=4\
+                  --pipeline 1 2 3 4\
+                  --exp-graphs=inter\
+                  --project=fordyca\
+                  --hpc-env=hpc_local \
+                  --exp-overwrite"
+
+fi
+
+cd $HOME/git/sierra-sc1
+
+# Scalability/emergence analysis
+if [ "$TASK" == "scalability" ] || [ "$TASK" == "emergence" ] || [ "$TASK" == "all" ]
+then
+    for c in "${CONTROLLERS[@]}"
+    do
+        $BASE_CMD --scenario=SS.32x16 \
+                  --batch-criteria population_size.Log128 \
+                  --controller=${c} \
+                  --n-blocks=128\
+                  --time-setup=${TIME_SHORT}\
+                  --plot-log-xaxis
+
+
+        $BASE_CMD --scenario=RN.48x48 \
+                  --batch-criteria population_size.Log512 \
+                  --controller=${c} \
+                  --n-blocks=512\
+                  --time-setup=${TIME_SHORT}\
+                  --plot-log-xaxis
+
+        $BASE_CMD --scenario=RN.96x96 \
+                  --batch-criteria population_size.Log2048 \
+                  --controller=${c} \
+                  --n-blocks=2048\
+                  --time-setup=${TIME_SHORT}\
+                  --plot-log-xaxis
+
+    done
+fi
+
+# Flexibility analysis
+if [ "$TASK" == "flexibility" ] || [ "$TASK" == "all" ]
+then
+    for c in "${CONTROLLERS[@]}"
+    do
+        $BASE_CMD --scenario=SS.32x16 \
+                  --batch-criteria temporal_variance.BCSquare.Z50 \
+                  --controller=${c}\
+                  --n-blocks=50\
+                  --time-setup=${TIME_SHORT}
+
+
+        $BASE_CMD --scenario=RN.48x48 \
+                  --batch-criteria temporal_variance.BCSquare.Z200\
+                  --controller=${c} \
+                  --n-blocks=200\
+                  --time-setup=${TIME_SHORT}
+
+    done
+fi
+
+# Robustness analysis
+if [ "$TASK" == "robustness" ] || [ "$TASK" == "all" ]
+then
+    for c in "${CONTROLLERS[@]}"
+    do
+        # Steady state population of 5 when total swarm size is 50 (repair queue
+        # steady state of 45)
+        # rho = 45/46
+
+        $BASE_CMD --scenario=SS.32x16 \
+                  --batch-criteria population_dynamics.${CARDINALITY}.F2p0.M0p001.R0p001022222\
+                  --controller=${c} \
+                  --n-blocks=50\
+                  --n-robots=50\
+                  --time-setup=${TIME_LONG}
+
+        $BASE_CMD --scenario=SS.32x16 \
+                  --batch-criteria saa_noise.all.${CARDINALITY}.Z50\
+                  --controller=${c} \
+                  --n-blocks=50\
+                  --n-robots=50\
+                  --time-setup=${TIME_SHORT}
+
+        # Steady state population of 20 when total swarm size is 200 (repair queue
+        # steady state of 180)
+        # rho = 180 / 181
+        $BASE_CMD --scenario=RN.48x48 \
+                  --batch-criteria population_dynamics.${CARDINALITY}.F2p0.M0p001.R0p001005556 \
+                  --controller=${c} \
+                  --n-blocks=200\
+                  --n-robots=200\
+                  --time-setup=${TIME_LONG}
+
+        $BASE_CMD --scenario=RN.48x48 \
+                  --batch-criteria saa_noise.all.${CARDINALITY}.Z200\
+                  --controller=${c} \
+                  --n-blocks=200\
+                  --n-robots=200\
+                  --time-setup=${TIME_SHORT}
+    done
+fi
+
+if [ "$TASK" == "comp" ] || [ "$TASK" == "all" ]
+then
+    STAGE5_CMD="python3 sierra.py \
+                  --project=fordyca\
+                  --pipeline 5\
+                  --sierra-root=$OUTPUT_ROOT"
+
+    # Generate scalability/emergence comparison graphs
+    $STAGE5_CMD --batch-criteria population_size.Log128 \
+                --bc-univar\
+                --plot-log-xaxis\
+                --controllers-list depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO\
+                --controllers-legend CRW,DPO,STOCH-N1M,STOCH-N1X
+
+    $STAGE5_CMD --batch-criteria population_size.Log128 \
+                --bc-univar\
+                --plot-log-xaxis\
+                --controllers-list depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO\
+                --controllers-legend DPO,STOCH-N1M,STOCH-N1X
+
+    $STAGE5_CMD --batch-criteria population_size.Log512 \
+                --bc-univar\
+                --plot-log-xaxis\
+                --controllers-list depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO\
+                --controllers-legend CRW,DPO,STOCH-N1M,STOCH-N1X
+
+    $STAGE5_CMD --batch-criteria population_size.Log512 \
+                --bc-univar\
+                --plot-log-xaxis\
+                --controllers-list depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO\
+                --controllers-legend DPO,STOCH-N1M,STOCH-N1X
+
+    $STAGE5_CMD --scenario=RN.96x96 \
+                --batch-criteria population_size.Log2048 \
+                --bc-univar\
+                --plot-log-xaxis\
+                --controllers-list depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO\
+                --controllers-legend CRW,DPO,STOCH-N1M,STOCH-N1X
+
+    # Generate flexibility comparison graphs
+    $STAGE5_CMD --batch-criteria temporal_variance.BCSquare.Z200\
+                --bc-univar\
+                --bc-undefined-exp0\
+                --controllers-list depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO\
+                --controllers-legend CRW,DPO,STOCH-N1M,STOCH-N1X
+
+    $STAGE5_CMD --batch-criteria temporal_variance.BCSquare.Z50\
+                --bc-univar\
+                --bc-undefined-exp0\
+                --controllers-list depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO\
+                --controllers-legend CRW,DPO,STOCH-N1M,STOCH-N1X
+
+    # Generate robustness comparison graphs
+    $STAGE5_CMD --batch-criteria population_dynamics.${CARDINALITY}.F2p0.M0p001.R0p001022222\
+                --bc-univar\
+                --controllers-list depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO\
+                --controllers-legend CRW,DPO,STOCH-N1M,STOCH-N1X
+
+    $STAGE5_CMD --batch-criteria population_dynamics.${CARDINALITY}.F2p0.M0p001.R0p001022222\
+                --bc-univar\
+                --controllers-list depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO\
+                --controllers-legend DPO,STOCH-N1M,STOCH-N1X
+
+    $STAGE5_CMD --batch-criteria saa_noise.all.${CARDINALITY}.Z50\
+                --bc-univar\
+                --controllers-list depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO\
+                --controllers-legend CRW,DPO,STOCH-N1M,STOCH-N1X
+
+    $STAGE5_CMD --batch-criteria population_dynamics.${CARDINALITY}.F2p0.M0p001.R0p001005556 \
+                --bc-univar\
+                --controllers-list depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO\
+                --controllers-legend CRW,DPO,STOCH-N1M,STOCH-N1X
+
+    $STAGE5_CMD --batch-criteria population_dynamics.${CARDINALITY}.F2p0.M0p001.R0p001005556 \
+                --bc-univar\
+                --controllers-list depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO\
+                --controllers-legend DPO,STOCH-N1M,STOCH-N1X
+
+    $STAGE5_CMD --batch-criteria saa_noise.all.${CARDINALITY}.Z200\
+                --bc-univar\
+                --controllers-list depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO\
+                --controllers-legend CRW,DPO,STOCH-N1M,STOCH-N1X
+
+
+fi

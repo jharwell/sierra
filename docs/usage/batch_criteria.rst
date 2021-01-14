@@ -3,18 +3,9 @@
 Batch Criteria
 ==============
 
-How get get SIERRA to DO stuff for you. A batch criteria can encompass a single
-variable definition (univariate), or be defined by two variables
-(bivariate). Each variable is a dimension along which one or more parameters in
-the template input file provided to sierra can be varied.
-
-Univariate batch criteria have one dimension, and so the graphs produced by them
-are (usually) linegraphs with a numerical representation of the range for the
-variable on the X axis, and some other quantity of interest on the Y.
-
-Bivariate batch criteria have two dimensions, and so the graphs produced by the
-are (usually) heatmaps with the first variable in the criteria on the X axis,
-the second on the Y, and the quantity of interest on the Z.
+See :term:`Batch Criteria` fo a detailed explanation of batch criteria, but the
+short version is that they are the core of SIERRA--how to get it to DO stuff for
+you.
 
 The SIERRA core defines the following batch criteria (additional criteria can be
 defined by the selected project):
@@ -38,7 +29,8 @@ independently. I have not tried all combinations, so YMMV.
    All batch criteria only *modify* existing XML attributes, and will not create
    new XML tags or attributes if they do not exist. So, any attribute under a
    given tag that will be modified by a batch criteria will need to exist in
-   whatever file you pass with ``--template-input-file``.
+   whatever file you pass with ``--template-input-file``. If a batch criteria
+   tries to modify a non-existent XML attribute, a warning will be issued.
 
 .. _ln-bc-population-size:
 

@@ -338,7 +338,7 @@ class PhysicsEngines():
         """
         return self._gen_engine_name_stem() + str(engine_id)
 
-    def _gen_engine_name_stem(self):
+    def _gen_engine_name_stem(self) -> str:
         """
         Generate the name stem for the specified engine type.
         """
@@ -349,7 +349,7 @@ class PhysicsEngines():
         elif self.engine_type == 'dynamics2d':
             return 'dyn2d'
         else:
-            return None
+            raise NotImplementedError
 
 
 class PhysicsEngines2D(PhysicsEngines):

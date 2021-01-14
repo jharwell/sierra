@@ -390,8 +390,8 @@ class CoreCmdline:
                             XML tags are removed if they exist:
 
                             - `.//actuators/leds`
-
-                            Note that the `.//media/led` tag is not removed regardless if this option is passed or not.
+                            - `.//medium/leds`
+                            - `.//sensors/colored_blob_omnidirectional_camera`
 
                             """ + self.stage_usage_doc([1]),
                             action="store_true",
@@ -627,71 +627,81 @@ class CoreCmdline:
                         default='sigmoid')
 
         # Plotting options
-        self.stage4.add_argument("--plot-log-xscale",
-                                 help="""
+        plots = self.parser.add_argument_group('Stage4: Plotting',
+                                               'Plotting options for stage4')
 
-                                 Place the set of X values used to generate intra- and inter-experiment graphs into the
-                                 logarithmic space. Mainly useful when the batch criteria involves large swarm
-                                 sizes, so that the plots are more readable.
+        plots.add_argument("--plot-log-xscale",
+                           help="""
 
-                                 """ +
+                           Place the set of X values used to generate intra- and inter-experiment graphs into the
+                           logarithmic space. Mainly useful when the batch criteria involves large swarm sizes, so that
+                           the plots are more readable.
 
-                                 self.graphs_applicable_doc([':class:`~core.graphs.batch_ranged_graph.BatchRangedGraph`']) +
-                                 self.bc_applicable_doc([':ref:`Population Density <ln-bc-population-density>`',
-                                                         ':ref:`Population Size <ln-bc-population-size>`']) +
-                                 self.stage_usage_doc([4, 5]),
-                                 action='store_true')
+                           """ +
 
-        self.stage4.add_argument("--plot-log-yscale",
-                                 help="""
+                           self.graphs_applicable_doc([':class:`~core.graphs.batch_ranged_graph.BatchRangedGraph`']) +
+                           self.bc_applicable_doc([':ref:`Population Density <ln-bc-population-density>`',
+                                                   ':ref:`Population Size <ln-bc-population-size>`']) +
+                           self.stage_usage_doc([4, 5]),
+                           action='store_true')
 
-                                 Place the set of Y values used to generate intra- and inter-experiment graphs into the
-                                 logarithmic space. Mainly useful when the batch criteria involves large swarm
-                                 sizes, so that the plots are more readable.
+        plots.add_argument("--plot-log-yscale",
+                           help="""
+
+                           Place the set of Y values used to generate intra- and inter-experiment graphs into the
+                           logarithmic space. Mainly useful when the batch criteria involves large swarm sizes, so that
+                           the plots are more readable.
+
+                           """ +
+
+                           self.graphs_applicable_doc([':class:`~core.graphs.batch_ranged_graph.BatchRangedGraph`',
+                                                       ':class:`~core.graphs.stacked_line_graph.StackedLineGraph`']) +
+                           self.bc_applicable_doc([':ref:`Population Size <ln-bc-population-size>`',
+                                                   ':ref:`Population Density <ln-bc-population-density>`']) +
+                           self.stage_usage_doc([4, 5]),
+                           action='store_true')
+
+        plots.add_argument("--plot-regression-lines",
+                           help="""
+
+                           For all 2D generated scatterplots, plot a linear regression line and the equation of the line
+                           to the legend. """ +
+
+                           self.graphs_applicable_doc([':class:`~core.graphs.batch_ranged_graph.BatchRangedGraph`']) +
+                           self.bc_applicable_doc([':ref:`SAA Noise <ln-bc-saa-noise>`']) +
+                           self.stage_usage_doc([4]))
+
+        plots.add_argument("--plot-primary-axis",
+                           help="""
 
 
-                                 """ +
+                           This option allows you to override the primary axis, which is normally it is computed
+                           based on the batch criteria.
 
-                                 self.graphs_applicable_doc([':class:`~core.graphs.batch_ranged_graph.BatchRangedGraph`',
-                                                             ':class:`~core.graphs.stacked_line_graph.StackedLineGraph`']) +
-                                 self.bc_applicable_doc([':ref:`Population Size <ln-bc-population-size>`',
-                                                         ':ref:`Population Density <ln-bc-population-density>`']) +
-                                 self.stage_usage_doc([4, 5]),
-                                 action='store_true')
+                           For example, if the first batch criteria swarm population size, then swarm scalability
+                           metrics will be calculated by COMPUTING across .csv rows and PRJECTING down the columns by
+                           default, since swarm size will only vary within a row. Passing a value of 1 to this option
+                           will override this calculation, which can be useful in bivariate batch criteria in which you
+                           are interested in the effect of the OTHER non-size criteria on various performance measures.
 
-        self.stage4.add_argument("--plot-regression-lines",
-                                 help="""
+                           0=rows
+                           1=columns
+                           """ +
+                           self.graphs_applicable_doc([':class:`~core.graphs.heatmap.Heatmap`']) +
+                           self.stage_usage_doc([4]),
+                           default=None)
 
-                                 For all 2D generated scatterplots, plot a linear regression line and the equation of
-                                 the line to the legend. """ +
+        plots.add_argument("--plot-large-text",
+                           help="""
 
-                                 self.graphs_applicable_doc([':class:`~core.graphs.batch_ranged_graph.BatchRangedGraph`']) +
-                                 self.bc_applicable_doc([':ref:`SAA Noise <ln-bc-saa-noise>`']) +
-                                 self.stage_usage_doc([4]))
-
-        self.stage4.add_argument("--plot-primary-axis",
-                                 help="""
-
-
-                                 This option allows you to override the primary axis, which is normally it is computed
-                                 based on the batch criteria.
-
-                                 For example, if the first batch criteria swarm population size, then swarm scalability
-                                 metrics will be computed by COMPUTING across .csv rows and PRJECTING down the columns
-                                 by default, since swarm size will only vary within a row. Passing a value of 1 to this
-                                 option will override this calculation, which can be useful in bivariate batch criteria
-                                 in which you are interested in the effect of the OTHER non-size criteria on various
-                                 performance measures.
-
-                                 0=rows
-                                 1=columns
-                                 """ +
-                                 self.graphs_applicable_doc([':class:`~core.graphs.heatmap.Heatmap`']) +
-                                 self.stage_usage_doc([4]),
-                                 default=None)
+                           This option specifies that the title, X/Y axis labels/tick labels will should be larger than
+                           the SIERRA default. This is useful when generating graphs suitable for two column paper
+                           format where the default text size for rendered graphs will be too small to see easily. The
+                           SIERRA defaults are generally fine for the one column/journal paper format.
+                           """,
+                           action='store_true')
 
         # Model options
-
         models = self.parser.add_argument_group('Stage4: Models',
                                                 'Model options for stage4')
         models.add_argument('--models-disable',

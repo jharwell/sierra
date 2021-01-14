@@ -63,10 +63,12 @@ class Pipeline:
 
             # stage 1
             'time_setup': self.args.time_setup,
+
             'physics_n_engines': self.args.physics_n_engines,
             "physics_engine_type2D": self.args.physics_engine_type2D,
             "physics_engine_type3D": self.args.physics_engine_type3D,
             "physics_iter_per_tick": self.args.physics_iter_per_tick,
+
             "with_robot_rab": self.args.with_robot_rab,
             "with_robot_leds": self.args.with_robot_leds,
             "with_robot_battery": self.args.with_robot_battery,
@@ -88,19 +90,24 @@ class Pipeline:
             'rperf_cs_method': self.args.rperf_cs_method,
             'exp_graphs': self.args.exp_graphs,
             'no_collate': self.args.no_collate,
+
             'project_no_yaml_LN': self.args.project_no_yaml_LN,
             'project_no_yaml_HM': self.args.project_no_yaml_HM,
             'project_rendering': self.args.project_rendering,
+
             'plot_log_xscale': self.args.plot_log_xscale,
             'plot_log_yscale': self.args.plot_log_yscale,
             'plot_regression_lines': self.args.plot_regression_lines,
             'plot_primary_axis': self.args.plot_primary_axis,
+            'plot_large_text': self.args.plot_large_text,
+
             'pm_scalability_normalize': self.args.pm_scalability_normalize,
             'pm_scalability_from_exp0': self.args.pm_scalability_from_exp0,
             'pm_self_org_normalize': self.args.pm_self_org_normalize,
             'pm_flexibility_normalize': self.args.pm_flexibility_normalize,
             'pm_robustness_normalize': self.args.pm_robustness_normalize,
             'pm_normalize_method': self.args.pm_normalize_method,
+
             'models_disable': self.args.models_disable,
 
             # stage 5

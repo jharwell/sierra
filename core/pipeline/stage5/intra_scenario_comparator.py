@@ -90,6 +90,19 @@ class UnivarIntraScenarioComparator:
                                                self.cmdopts['project'],
                                                self.controllers[0]))
 
+        # The FS gives us batch leaves which might not be in the same order as the list of specified
+        # scenarios, so we:
+        #
+        # 1. Remove all batch leaves which do not have a counterpart in the scenario list we are
+        #    comparing across.
+        # 2. Do matching to get the indices of the batch leaves relative to the list, and then sort
+        #    it.
+        batch_leaves = [leaf for leaf in batch_leaves for s in self.scenarios if s in leaf]
+        indices = [self.scenarios.index(s)
+                   for leaf in batch_leaves for s in self.scenarios if s in leaf]
+        batch_leaves = [leaf for s, leaf in sorted(zip(indices, batch_leaves),
+                                                   key=lambda pair: pair[0])]
+
         # For each controller comparison graph we are interested in, generate it using data from all
         # scenarios
         cmdopts = copy.deepcopy(self.cmdopts)
@@ -185,7 +198,7 @@ class UnivarIntraScenarioComparator:
         xticks = criteria.graph_xticks(cmdopts)
         xtick_labels = criteria.graph_xticklabels(cmdopts)
 
-        BatchRangedGraph(inputy_stem_fpath=csv_stem_opath,
+        BatchRangedGraph(input_fpath=csv_stem_opath + '.csv',
                          output_fpath=os.path.join(self.cc_graph_root,
                                                    dest_stem) + '-' + batch_leaf + core.config.kImageExt,
                          title=title,
@@ -194,6 +207,7 @@ class UnivarIntraScenarioComparator:
                          xtick_labels=xtick_labels[criteria.inter_exp_graphs_exclude_exp0():],
                          xticks=xticks[criteria.inter_exp_graphs_exclude_exp0():],
                          logyscale=cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text'],
                          legend=legend).generate()
 
     def __gen_csv(self,
