@@ -25,13 +25,9 @@ else
     export FORDYCA_ROOT=$HOME/git/fordyca
 fi
 
-# Add ARGoS libraries to system library search path, since they are in a
-# non-standard location
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SWARMROOT/$MSIARCH/lib/argos3
-
 # Set ARGoS library search path. Must contain both the ARGoS core libraries path
 # AND the fordyca library path.
-export ARGOS_PLUGIN_PATH=$SWARMROOT/$MSIARCH/lib/argos3:$FORDYCA_ROOT/build/lib
+export ARGOS_PLUGIN_PATH=$ARGOS_PLUGIN_PATH:$FORDYCA_ROOT/build/lib
 
 # Setup logging (maybe compiled out and unneeded, but maybe not)
 export LOG4CXX_CONFIGURATION=$FORDYCA_ROOT/log4cxx.xml
@@ -54,12 +50,12 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 ################################################################################
 OUTPUT_ROOT=$HOME/exp/2021-modeling
 TIME_LONG=time_setup.T20000
-TIME_SHORT=time_setup.T5000
 DENSITY=CD1p0
 CARDINALITY=C16
 SIZEINC=I72
 SCENARIOS_LIST=(SS.16x8 DS.16x8 RN.8x8 PL.8x8)
-NSIMS=32
+#SCENARIOS_LIST=(SS.16x8)
+NSIMS=4
 
 SIERRA_BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT\
@@ -68,10 +64,11 @@ SIERRA_BASE_CMD="python3 sierra.py \
                   --controller=d0.CRW\
                   --project=fordyca\
                   --log-level=INFO\
-                  --pipeline 1 --exp-range=$EXP_NUM:$EXP_NUM\
-                  --gen-stddev\
+                  --pipeline 4 --project-no-yaml-LN\
+                  --gen-stddev --log-level=DEBUG\
                   --exp-overwrite\
                   --time-setup=${TIME_LONG}"
+
 if [ -n "$MSIARCH" ]; then # Running on MSI
     # 4 scenarios, each one containing 16 experiments
     EXP_NUM=$(($SLURM_ARRAY_TASK_ID % 16)) # This is the experiment
@@ -79,7 +76,7 @@ if [ -n "$MSIARCH" ]; then # Running on MSI
     SCENARIOS=(${SCENARIOS_LIST[$SCENARIO_NUM]})
 
     TASK="exp"
-    SIERRA_CMD="$SIERRA_BASE_CMD --hpc-env=slurm"
+    SIERRA_CMD="$SIERRA_BASE_CMD --hpc-env=slurm --exp-range=$EXP_NUM:$EXP_NUM --exec-resume"
     echo "********************************************************************************\n"
     echo  squeue -j $SLURM_JOB_ID -o "%.9i %.9P %.8j %.8u %.2t %.10M %.6D %S %e"
     echo "********************************************************************************\n"
@@ -89,7 +86,11 @@ else
     TASK="$1"
     SIERRA_CMD="$SIERRA_BASE_CMD \
                  --hpc-env=local\
-                 --physics-n-engines=16"
+                 --no-verify-results\
+                 --exp-graphs=inter\
+                 --plot-large-text\
+                 --plot-log-xscale
+                 "
 fi
 
 cd $SIERRA_ROOT

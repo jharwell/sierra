@@ -16,8 +16,8 @@ Step by Step
 ------------
 
 The following steps outline things to do to get up and running with SIERRA, once
-you have completed the setup steps (either :ref:`ln-msi-setup` or
-:ref:`ln-local-setup`).
+you have completed the setup steps (either :ref:`ln-hpc-msi-setup` or
+:ref:`ln-hpc-local-setup`).
 
 #. Decide what variable you are interested in investigating by consulting
    :ref:`ln-batch-criteria` (i.e., what variable(s) you want to change across

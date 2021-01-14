@@ -64,6 +64,16 @@ class TimeSetup():
         sim_duration: The simulation duration in seconds, NOT timesteps.
         metric_interval: Base interval for metric collection.
     """
+    @staticmethod
+    def extract_explen(exp_def):
+        """
+        Extract and return the (experiment length in seconds) for the specified
+        experiment.
+        """
+        for path, attr, value in exp_def:
+            if 'experiment' in path and 'length' in attr:
+                return int(value)
+        return None
 
     def __init__(self, sim_duration: int, metric_interval: int) -> None:
         self.sim_duration = sim_duration

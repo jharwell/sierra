@@ -147,9 +147,6 @@ class ExpCSVAverager:
 
         self.logger.info('Averaging results: %s...', self.exp_output_root)
 
-        # Maps (unique .csv stem, optional parent dir) to the averaged dataframe
-        csvs = {}
-
         pattern = self.output_name_format.format(
             re.escape(self.avg_opts['template_input_leaf']), r'\d+')
 
@@ -160,7 +157,8 @@ class ExpCSVAverager:
         assert(all(re.match(pattern, s) for s in simulations)),\
             "FATAL: Not all directories in {0} are simulation runs".format(self.exp_output_root)
 
-        csvs = {}
+        # Maps (unique .csv stem, optional parent dir) to the averaged dataframe
+        csvs = dict()  # type: tp.Dict[tp.Tuple[str, str], tp.List]
         for sim in simulations:
             self._gather_csvs_from_sim(sim, csvs)
 
@@ -282,14 +280,14 @@ class ExpCSVAverager:
 
                     # Verify the length of all columns in both dataframes is the same
                     for c1 in df1.columns:
-                        assert(all(len(df1[c1]) == len(df1[c2])) for c2 in df1.columns),\
+                        assert(all(len(df1[c1]) == len(df1[c2]) for c2 in df1.columns)),\
                             "FATAL: Not all columns from {0} have same length".format(path1)
-                        assert(all(len(df1[c1]) == len(df2[c2])) for c2 in df1.columns),\
+                        assert(all(len(df1[c1]) == len(df2[c2]) for c2 in df1.columns)),\
                             "FATAL: Not all columns from {0} and {1} have same length".format(path1,
                                                                                               path2)
 
 
-def sim_dir_filter(exp_dirs: str, main_config: dict, videos_leaf: str) -> tp.List[str]:
+def sim_dir_filter(exp_dirs: tp.List[str], main_config: dict, videos_leaf: str) -> tp.List[str]:
     avgd_output_leaf = main_config['sierra']['avg_output_leaf']
     project_frames_leaf = main_config['sierra']['project_frames_leaf']
     argos_frames_leaf = main_config['sim']['argos_frames_leaf']

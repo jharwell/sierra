@@ -16,6 +16,7 @@
 
 # Core packages
 import math
+import typing as tp
 
 # 3rd party packages
 
@@ -28,54 +29,57 @@ class Vector3D:
         self.y = y
         self.z = z
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Vector3D):
+            raise NotImplementedError
+
         return self.x == other.x and self.y == other.y and self.z == other.z
 
-    def __len__(self):
+    def __len__(self) -> int:
         return int(self.length())
 
-    def __add__(self, o):
+    def __add__(self, o: 'Vector3D') -> 'Vector3D':
         return Vector3D((self.x + o.x), (self.y + o.y), (self.z + o.z))
 
-    def __sub__(self, o):
+    def __sub__(self, o: 'Vector3D') -> 'Vector3D':
         return Vector3D((self.x - o.x), (self.y - o.y), (self.z - o.z))
 
-    def __mul__(self, o):
+    def __mul__(self, o: 'Vector3D') -> 'Vector3D':
         return Vector3D((self.x * o.x) + (self.y * o.y) + (self.z * o.z))
 
-    def __truediv__(self, o):
+    def __truediv__(self, o: tp.Union[float, int]) -> 'Vector3D':
         if isinstance(o, (float, int)):
             return Vector3D((self.x / o), (self.y / o), (self.z / o))
         else:
             raise NotImplementedError
 
-    def __iadd__(self, o):
+    def __iadd__(self, o: 'Vector3D') -> 'Vector3D':
         self.x += o.x
         self.y += o.y
         self.z += o.z
         return self
 
-    def __isub__(self, o):
+    def __isub__(self, o: 'Vector3D') -> 'Vector3D':
         self.x -= o.x
         self.y -= o.y
         self.z -= o.z
         return self
 
-    def __ge__(self, other):
+    def __ge__(self, other: 'Vector3D') -> bool:
         return self.x >= other.x and self.y >= other.y and self.z >= other.z
 
-    def __le__(self, other):
+    def __le__(self, other: 'Vector3D') -> bool:
         return self.x <= other.x and self.y <= other.y and self.z <= other.z
 
-    def __neg__(self):
+    def __neg__(self) -> 'Vector3D':
         return Vector3D(-self.x, -self.y, -self.z)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return '({0},{1},{2})'.format(self.x, self.y, self.z)
 
-    def length(self):
+    def length(self) -> float:
         return math.sqrt((self.x * self.x) + (self.y * self.y) + (self.z * self.z))
 
-    def normalize(self):
+    def normalize(self) -> 'Vector3D':
         length = self.length()
         return Vector3D((self.x / length), (self.y / length), (self.z / length))

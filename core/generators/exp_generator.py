@@ -97,6 +97,8 @@ class ExpDefCommonGenerator:
 
         if not self.cmdopts["with_robot_leds"]:
             xml_luigi.tag_remove(".//actuators", "leds", noprint=True)
+            xml_luigi.tag_remove(".//sensors", "colored_blob_omnidirectional_camera", noprint=True)
+            xml_luigi.tag_remove(".//medium", "leds", noprint=True)
 
         if not self.cmdopts["with_robot_battery"]:
             xml_luigi.tag_remove(".//sensors", "battery", noprint=True)

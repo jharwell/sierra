@@ -49,9 +49,11 @@ class BatchedIntraExpModelRunner:
         exp_to_run = core.utils.exp_range_calc(self.cmdopts,
                                                self.cmdopts['batch_output_root'],
                                                criteria)
-
+        exp_dirnames = criteria.gen_exp_dirnames(self.cmdopts)
         for i, exp in enumerate(exp_to_run):
             exp = os.path.split(exp)[1]
+            exp_index = exp_dirnames.index(exp)
+
             cmdopts = copy.deepcopy(self.cmdopts)
 
             cmdopts["exp0_output_root"] = os.path.join(cmdopts["batch_output_root"], exp)
@@ -68,25 +70,27 @@ class BatchedIntraExpModelRunner:
             core.utils.dir_create_checked(cmdopts['exp_model_root'], exist_ok=True)
 
             for model in self.models:
-                if not model.run_for_exp(criteria, cmdopts, i):
+                if not model.run_for_exp(criteria, cmdopts, exp_index):
                     self.logger.debug("Skip running intra-experiment model from '%s' for exp%s",
                                       str(model),
-                                      i)
+                                      exp_index)
                     continue
 
                 # Run the model
-                self.logger.debug("Run intra-experiment model '%s' for exp%s", str(model), i)
-                dfs = model.run(criteria, i, cmdopts)
+                self.logger.debug("Run intra-experiment model '%s' for exp%s",
+                                  str(model),
+                                  exp_index)
+                dfs = model.run(criteria, exp_index, cmdopts)
                 for df, csv_stem in zip(dfs, model.target_csv_stems()):
-                    path_stem = os.path.join(cmdopts['exp_model_root'],
-                                             csv_stem)
+                    path_stem = os.path.join(cmdopts['exp_model_root'], csv_stem)
 
-                    # 1D dataframe -> line graph with legend
-                    if len(df.index) == 1:
-                        # Write model legend file so the generated graph can find it
-                        with open(path_stem + '.legend', 'w') as f:
-                            legend = model.legend_names()[dfs.index(df)]
-                            f.write(legend)
+                    # Write model legend file so the generated graph can find it
+                    with open(path_stem + '.legend', 'w') as f:
+                        for i, search in enumerate(dfs):
+                            if search.values.all() == df.values.all():
+                                legend = model.legend_names()[i]
+                                f.write(legend)
+                                break
 
                     # Write model .csv file
                     core.utils.pd_csv_write(df, path_stem + '.model', index=False)
@@ -139,5 +143,8 @@ class InterExpModelRunner:
                 if len(df.index) == 1:
                     # Write model legend file so the generated graph can find it
                     with open(path_stem + '.legend', 'w') as f:
-                        legend = model.legend_names()[dfs.index(df)]
-                        f.write(legend)
+                        for i, search in enumerate(dfs):
+                            if search.values.all() == df.values.all():
+                                legend = model.legend_names()[i]
+                                f.write(legend)
+                                break

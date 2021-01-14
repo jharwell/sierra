@@ -143,7 +143,7 @@ class InterRobotInterferenceUnivar:
         self.interference_count_stem = interference_count_csv.split('.')[0]
         self.interference_duration_stem = interference_duration_csv.split('.')[0]
 
-    def from_batch(self, batch_criteria: bc.IConcreteBatchCriteria):
+    def from_batch(self, criteria: bc.IConcreteBatchCriteria):
         count_csv_istem = os.path.join(self.cmdopts["batch_collate_root"],
                                        self.interference_count_stem)
         duration_csv_istem = os.path.join(self.cmdopts["batch_collate_root"],
@@ -165,18 +165,20 @@ class InterRobotInterferenceUnivar:
         BatchRangedGraph(input_fpath=count_csv_ostem + '.csv',
                          output_fpath=count_img_ostem + core.config.kImageExt,
                          title="Swarm Inter-Robot Interference Counts",
-                         xlabel=batch_criteria.graph_xlabel(self.cmdopts),
+                         xlabel=criteria.graph_xlabel(self.cmdopts),
                          ylabel="Average # Robots",
-                         xticks=batch_criteria.graph_xticks(self.cmdopts),
-                         logyscale=self.cmdopts['plot_log_yscale']).generate()
+                         xticks=criteria.graph_xticks(self.cmdopts),
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
         BatchRangedGraph(input_fpath=duration_csv_ostem + '.csv',
                          output_fpath=duration_img_ostem + core.config.kImageExt,
                          title="Swarm Average Inter-Robot Interference Duration",
-                         xlabel=batch_criteria.graph_xlabel(self.cmdopts),
+                         xlabel=criteria.graph_xlabel(self.cmdopts),
                          ylabel="# Timesteps",
-                         xticks=batch_criteria.graph_xticks(self.cmdopts),
-                         logyscale=self.cmdopts['plot_log_yscale']).generate()
+                         xticks=criteria.graph_xticks(self.cmdopts),
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class NormalizedEfficiencyUnivar(BaseNormalizedEfficiency):
@@ -241,7 +243,8 @@ class NormalizedEfficiencyUnivar(BaseNormalizedEfficiency):
                          xlabel=criteria.graph_xlabel(self.cmdopts),
                          ylabel="Efficiency",
                          xticks=criteria.graph_xticks(self.cmdopts),
-                         logyscale=self.cmdopts['plot_log_yscale']).generate()
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class ParallelFractionUnivar(BaseParallelFraction):
@@ -318,10 +321,10 @@ class ParallelFractionUnivar(BaseParallelFraction):
                                                    self.kLeaf + core.config.kImageExt),
                          title="Swarm Parallel Performance Fraction",
                          xlabel=criteria.graph_xlabel(self.cmdopts),
-                         xtick_labels=criteria.graph_xticklabels(self.cmdopts),
                          ylabel="",
                          xticks=criteria.graph_xticks(self.cmdopts),
-                         logyscale=self.cmdopts['plot_log_yscale']).generate()
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class ScalabilityUnivarGenerator:
@@ -378,7 +381,7 @@ class InterRobotInterferenceBivar:
         self.interference_count_stem = interference_count_csv.split('.')[0]
         self.interference_duration_stem = interference_duration_csv.split('.')[0]
 
-    def from_batch(self, batch_criteria: bc.IConcreteBatchCriteria):
+    def from_batch(self, criteria: bc.IConcreteBatchCriteria):
         count_csv_istem = os.path.join(self.cmdopts["batch_collate_root"],
                                        self.interference_count_stem)
         duration_csv_istem = os.path.join(self.cmdopts["batch_collate_root"],
@@ -400,18 +403,18 @@ class InterRobotInterferenceBivar:
         Heatmap(input_fpath=count_csv_ostem + ".csv",
                 output_fpath=count_img_ostem + core.config.kImageExt,
                 title='Swarm Inter-Robot Interference Counts',
-                xlabel=batch_criteria.graph_xlabel(self.cmdopts),
-                ylabel=batch_criteria.graph_ylabel(self.cmdopts),
-                xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
-                ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)).generate()
+                xlabel=criteria.graph_xlabel(self.cmdopts),
+                ylabel=criteria.graph_ylabel(self.cmdopts),
+                xtick_labels=criteria.graph_xticklabels(self.cmdopts),
+                ytick_labels=criteria.graph_yticklabels(self.cmdopts)).generate()
 
         Heatmap(input_fpath=duration_csv_ostem + ".csv",
                 output_fpath=duration_img_ostem + core.config.kImageExt,
                 title='Swarm Average Inter-Robot Interference Duration',
-                xlabel=batch_criteria.graph_xlabel(self.cmdopts),
-                ylabel=batch_criteria.graph_ylabel(self.cmdopts),
-                xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts),
-                ytick_labels=batch_criteria.graph_yticklabels(self.cmdopts)).generate()
+                xlabel=criteria.graph_xlabel(self.cmdopts),
+                ylabel=criteria.graph_ylabel(self.cmdopts),
+                xtick_labels=criteria.graph_xticklabels(self.cmdopts),
+                ytick_labels=criteria.graph_yticklabels(self.cmdopts)).generate()
 
 
 class NormalizedEfficiencyBivar(BaseNormalizedEfficiency):
@@ -489,12 +492,12 @@ class ParallelFractionBivar(BaseParallelFraction):
     kLeaf = 'PM-scalability-parallel-frac'
 
     @staticmethod
-    def df_kernel(batch_criteria: bc.IConcreteBatchCriteria,
+    def df_kernel(criteria: bc.IConcreteBatchCriteria,
                   cmdopts: dict,
                   perf_df: pd.DataFrame) -> pd.DataFrame:
         sc_df = pd.DataFrame(columns=perf_df.columns, index=perf_df.index)
 
-        sizes = batch_criteria.populations(cmdopts)
+        sizes = criteria.populations(cmdopts)
 
         for i in range(0, len(sc_df.index)):
             for j in range(0, len(sc_df.columns)):
@@ -506,7 +509,7 @@ class ParallelFractionBivar(BaseParallelFraction):
                 # We need to know which of the 2 variables was swarm size, in order to determine the
                 # correct dimension along which to compute the metric, which depends on performance
                 # between adjacent swarm sizes.
-                axis = core.utils.get_primary_axis(batch_criteria,
+                axis = core.utils.get_primary_axis(criteria,
                                                    [population_size.PopulationSize,
                                                     population_density.PopulationConstantDensity],
                                                    cmdopts)

@@ -30,7 +30,7 @@ class BasePluginManager():
 
     def __init__(self):
         self.plugin_root = ''
-        self.loaded = None
+        self.loaded = dict()
         self.logger = logging.getLogger(__name__)
 
     def initialize(self, plugin_root):

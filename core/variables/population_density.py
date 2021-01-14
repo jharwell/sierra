@@ -101,11 +101,11 @@ class PopulationConstantDensity(cd.ConstantDensity):
     def graph_xticklabels(self,
                           cmdopts: dict,
                           exp_dirs: tp.List[str] = None) -> tp.List[str]:
-        return list(map(str, self.graph_xticks(cmdopts, exp_dirs)))
+        return list(map(lambda x: str(round(x, 4)), self.graph_xticks(cmdopts, exp_dirs)))
 
     def graph_xlabel(self, cmdopts: dict) -> str:
         if cmdopts['plot_log_xscale']:
-            return r"$\log$(Swarm Size)"
+            return r"$\log_{2}$(Swarm Size)"
 
         return r"Swarm Size"
 

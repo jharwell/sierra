@@ -136,23 +136,25 @@ class PipelineStage5:
         self.logger.info("Inter-batch controller comparison of %s...", self.controllers)
 
         if cli_args.bc_univar:
-            comparator = intrasc.UnivarIntraScenarioComparator(self.controllers,
-                                                               self.output_roots['cc_csvs'],
-                                                               self.output_roots['cc_graphs'],
-                                                               self.cmdopts,
-                                                               cli_args,
-                                                               self.main_config)
-        else:
-            comparator = intrasc.BivarIntraScenarioComparator(self.controllers,
-                                                              self.output_roots['cc_csvs'],
-                                                              self.output_roots['cc_graphs'],
-                                                              self.cmdopts,
-                                                              cli_args,
-                                                              self.main_config)
-
-        comparator(graphs=self.stage5_config['intra_scenario']['graphs'],
+            univar = intrasc.UnivarIntraScenarioComparator(self.controllers,
+                                                           self.output_roots['cc_csvs'],
+                                                           self.output_roots['cc_graphs'],
+                                                           self.cmdopts,
+                                                           cli_args,
+                                                           self.main_config)
+            univar(graphs=self.stage5_config['intra_scenario']['graphs'],
                    legend=legend,
                    comp_type=self.cmdopts['comparison_type'])
+        else:
+            bivar = intrasc.BivarIntraScenarioComparator(self.controllers,
+                                                         self.output_roots['cc_csvs'],
+                                                         self.output_roots['cc_graphs'],
+                                                         self.cmdopts,
+                                                         cli_args,
+                                                         self.main_config)
+            bivar(graphs=self.stage5_config['intra_scenario']['graphs'],
+                  legend=legend,
+                  comp_type=self.cmdopts['comparison_type'])
 
         self.logger.info("Inter-batch controller comparison complete")
 

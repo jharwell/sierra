@@ -92,7 +92,8 @@ class RawUnivar:
                          xlabel=criteria.graph_xlabel(self.cmdopts),
                          ylabel=ylabel,
                          xticks=criteria.graph_xticks(self.cmdopts),
-                         logyscale=self.cmdopts['plot_log_yscale']).generate()
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class RawBivar:

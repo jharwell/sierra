@@ -15,16 +15,20 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
 
-
+# Core packages
+import core.config
 import core.utils
 import os
 import logging
 
+# 3rd party packages
 import numpy as np
 import sympy
 import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Agg')
+
+# Project packages
 
 
 class Scatterplot2D:
@@ -34,16 +38,31 @@ class Scatterplot2D:
     If the necessary `.csv` file does not exist, the graph is not generated.
     """
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self,
+                 input_fpath: str,
+                 output_fpath: str,
+                 title: str,
+                 xlabel: str,
+                 ylabel: str,
+                 xcol: str,
+                 ycol: str,
+                 large_text: bool = False,
+                 regression: bool = False) -> None:
 
-        self.input_fpath = os.path.abspath(kwargs['input_fpath'])
-        self.output_fpath = kwargs['output_fpath']
-        self.title = kwargs['title']
-        self.xlabel = kwargs['xlabel']
-        self.ylabel = kwargs['ylabel']
-        self.xcol = kwargs['xcol']
-        self.ycol = kwargs['ycol']
-        self.regression = kwargs.get('regression', False)
+        self.input_fpath = os.path.abspath(input_fpath)
+        self.output_fpath = output_fpath
+        self.title = title
+        self.xlabel = xlabel
+        self.ylabel = ylabel
+        self.xcol = xcol
+        self.ycol = ycol
+        self.regression = regression
+
+        if large_text:
+            self.text_size = core.config.kGraphTextSizeLarge
+        else:
+            self.text_size = core.config.kGraphTextSizeSmall
+
         self.logger = logging.getLogger(__name__)
 
     def generate(self):
@@ -61,12 +80,12 @@ class Scatterplot2D:
             self.__plot_regression(df)
 
         # Plot ticks and labels
-        ax.tick_params(labelsize=12)
-        ax.set_xlabel(self.xlabel, fontsize=18)
-        ax.set_ylabel(self.ylabel, fontsize=18)
+        ax.tick_params(labelsize=self.text_size['tick_label'])
+        ax.set_xlabel(self.xlabel, fontsize=self.text_size['xyz_label'])
+        ax.set_ylabel(self.ylabel, fontsize=self.text_size['xyz_label'])
 
         # Add title
-        ax.set_title(self.title, fontsize=24)
+        ax.set_title(self.title, fontsize=self.text_size['title'])
 
         # Output figure
         fig = ax.get_figure()
@@ -93,7 +112,7 @@ class Scatterplot2D:
         eqn = sum(sympy.S("{:6.2f}".format(v)) * xsym**i for i, v in enumerate(coeffs[::-1]))
         latex = sympy.printing.latex(eqn)
         plt.plot(x_new, y_new, label="${}$".format(latex))
-        plt.legend(fontsize=18)
+        plt.legend(fontsize=self.text_size['legend_label'])
 
 
 __api__ = [

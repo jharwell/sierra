@@ -49,7 +49,7 @@ class ReactivityUnivar:
     """
     kLeaf = 'PM-reactivity'
 
-    def __init__(self, cmdopts: tp.Dict[str, str]) -> None:
+    def __init__(self, cmdopts: dict) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us.
         self.cmdopts = copy.deepcopy(cmdopts)
@@ -84,7 +84,8 @@ class ReactivityUnivar:
                                                   'reactivity'),
                          xticks=batch_criteria.graph_xticks(self.cmdopts)[1:],
                          xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts)[1:],
-                         logyscale=self.cmdopts['plot_log_yscale']).generate()
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class AdaptabilityUnivar:
@@ -94,7 +95,7 @@ class AdaptabilityUnivar:
     """
     kLeaf = 'PM-adaptability'
 
-    def __init__(self, cmdopts: tp.Dict[str, str]) -> None:
+    def __init__(self, cmdopts: dict) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us.
         self.cmdopts = copy.deepcopy(cmdopts)
@@ -129,7 +130,8 @@ class AdaptabilityUnivar:
                                                   'adaptability'),
                          xticks=batch_criteria.graph_xticks(self.cmdopts)[1:],
                          xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts)[1:],
-                         logyscale=self.cmdopts['plot_log_yscale']).generate()
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class FlexibilityUnivarGenerator:

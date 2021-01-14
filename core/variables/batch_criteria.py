@@ -367,7 +367,7 @@ class BivarBatchCriteria(BatchCriteria):
     def is_univar(self) -> bool:
         return False
 
-    def gen_attr_changelist(self) -> list:
+    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         list1 = self.criteria1.gen_attr_changelist()
         list2 = self.criteria2.gen_attr_changelist()
         ret = []
@@ -378,7 +378,7 @@ class BivarBatchCriteria(BatchCriteria):
 
         return ret
 
-    def gen_tag_rmlist(self) -> list:
+    def gen_tag_rmlist(self) -> tp.List[XMLTagRmList]:
         ret = self.criteria1.gen_tag_rmlist()
         ret.extend(self.criteria2.gen_tag_rmlist())
         return ret

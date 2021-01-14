@@ -172,6 +172,8 @@ class LinegraphsGenerator:
         self.exp_graph_root = cmdopts["exp_graph_root"]
         self.exp_model_root = cmdopts["exp_model_root"]
         self.log_yscale = cmdopts['plot_log_yscale']
+        self.large_text = cmdopts['plot_large_text']
+
         self.targets = targets
         self.logger = logging.getLogger(__name__)
 
@@ -199,7 +201,8 @@ class LinegraphsGenerator:
                                      legend=graph['legend'],
                                      xlabel=graph['xlabel'],
                                      ylabel=graph['ylabel'],
-                                     logyscale=self.log_yscale).generate()
+                                     logyscale=self.log_yscale,
+                                     large_text=self.large_text).generate()
                 except KeyError:
                     raise KeyError('Check that the generated {0}.csv file contains the columns {1}'.format(
                         graph['src_stem'],
@@ -221,6 +224,8 @@ class HeatmapsGenerator:
         self.exp_avgd_root = cmdopts['exp_avgd_root']
         self.exp_graph_root = cmdopts["exp_graph_root"]
         self.exp_model_root = cmdopts["exp_model_root"]
+        self.large_text = cmdopts['plot_large_text']
+
         self.targets = targets
         self.logger = logging.getLogger(__name__)
 
@@ -248,7 +253,8 @@ class HeatmapsGenerator:
                             output_fpath=output_fpath,
                             title=graph['title'],
                             xlabel='X',
-                            ylabel='Y').generate()
+                            ylabel='Y',
+                            large_text=self.large_text).generate()
 
 
 __api__ = ['BatchedIntraExpGraphGenerator',

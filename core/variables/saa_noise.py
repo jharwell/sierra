@@ -74,7 +74,6 @@ class SAANoise(bc.UnivarBatchCriteria):
                                                                   v2[1],
                                                                   v2[2]) for v2 in v1}) for v1 in self.variances]
 
-            print(self.attr_changes)
             # Swarm size is optional. It can be (1) controlled via this variable, (2) controlled by
             # another variable in a bivariate batch criteria, (3) not controlled at all. For (2),
             # (3), the swarm size can be None.

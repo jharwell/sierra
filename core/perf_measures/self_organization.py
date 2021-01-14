@@ -311,7 +311,8 @@ class FLMarginalUnivar(BaseFLMarginal):
                          xlabel=criteria.graph_xlabel(self.cmdopts),
                          ylabel="Value",
                          xticks=criteria.graph_xticks(self.cmdopts),
-                         logyscale=self.cmdopts['plot_log_yscale']).generate()
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class FLInteractiveUnivar(BaseFLInteractive):
@@ -398,7 +399,8 @@ class FLInteractiveUnivar(BaseFLInteractive):
                          xlabel=criteria.graph_xlabel(self.cmdopts),
                          ylabel="Value",
                          xticks=criteria.graph_xticks(self.cmdopts),
-                         logyscale=self.cmdopts['plot_log_yscale']).generate()
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class PGMarginalUnivar(BasePGMarginal):
@@ -483,7 +485,8 @@ class PGMarginalUnivar(BasePGMarginal):
                          xlabel=criteria.graph_xlabel(self.cmdopts),
                          ylabel="Value",
                          xticks=criteria.graph_xticks(self.cmdopts),
-                         logyscale=self.cmdopts['plot_log_yscale']).generate()
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class PGInteractiveUnivar(BasePGInteractive):
@@ -566,7 +569,8 @@ class PGInteractiveUnivar(BasePGInteractive):
                          xlabel=criteria.graph_xlabel(self.cmdopts),
                          ylabel="Value",
                          xticks=criteria.graph_xticks(self.cmdopts),
-                         logyscale=self.cmdopts['plot_log_yscale']).generate()
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class SelfOrgUnivarGenerator:

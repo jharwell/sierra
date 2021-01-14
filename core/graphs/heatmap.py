@@ -15,7 +15,7 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
 
-
+# Core packages
 import os
 import textwrap
 import logging
@@ -23,12 +23,15 @@ import glob
 import re
 import typing as tp
 
+# 3rd party packages
 import numpy as np
 import matplotlib.pyplot as plt
 import mpl_toolkits.axes_grid1
 import pandas as pd
 
+# Project packages
 import core.utils
+import core.config
 
 
 class Heatmap:
@@ -45,21 +48,28 @@ class Heatmap:
                  title: str,
                  xlabel: str,
                  ylabel: str,
+                 large_text: bool = False,
                  xtick_labels: tp.List[str] = None,
                  ytick_labels: tp.List[str] = None,
                  transpose: bool = False,
                  zlabel: str = None,
                  interpolation: str = 'nearest') -> None:
+        # Required arguments
         self.input_fpath = input_fpath
         self.output_fpath = output_fpath
         self.title = '\n'.join(textwrap.wrap(title, 40))
+        self.xlabel = xlabel if transpose else ylabel
+        self.ylabel = ylabel if transpose else xlabel
+
+        # Optional arguments
+        if large_text:
+            self.text_size = core.config.kGraphTextSizeLarge
+        else:
+            self.text_size = core.config.kGraphTextSizeSmall
 
         self.transpose = transpose
         self.colorbar_label = zlabel
         self.interpolation = interpolation
-
-        self.xlabel = xlabel if self.transpose else ylabel
-        self.ylabel = ylabel if self.transpose else xlabel
 
         if not self.transpose:
             self.xtick_labels = ytick_labels
@@ -90,14 +100,14 @@ class Heatmap:
         plt.imshow(df, cmap='coolwarm', interpolation=self.interpolation)
 
         # Add labels
-        plt.xlabel(self.xlabel, fontsize=18)
-        plt.ylabel(self.ylabel, fontsize=18)
+        plt.xlabel(self.xlabel, fontsize=self.text_size['xyz_label'])
+        plt.ylabel(self.ylabel, fontsize=self.text_size['xyz_label'])
 
         # Add X,Y ticks
         self._plot_ticks(ax)
 
         # Add graph title
-        plt.title(self.title, fontsize=24)
+        plt.title(self.title, fontsize=self.text_size['title'])
 
         # Add colorbar
         self._plot_colorbar(ax)
@@ -116,29 +126,15 @@ class Heatmap:
             bar.ax.set_ylabel(self.colorbar_label)
 
     def _plot_ticks(self, ax):
-        ax.tick_params(labelsize=12)
+        ax.tick_params(labelsize=self.text_size['tick_label'])
 
         if self.xtick_labels is not None:
             ax.set_xticks(np.arange(len(self.xtick_labels)))
             ax.set_xticklabels(self.xtick_labels, rotation='vertical')
 
-            if isinstance(self.xtick_labels[0], (int, float)):
-                # If the labels are too long, then we force scientific notation. The rcParam way of
-                # doing this does not seem to have any effect...
-                x_format = ax.get_xaxis().get_major_formatter()
-                if any([len(str(x)) > 5 for x in x_format.seq]):
-                    x_format.seq = ["{:2.2e}".format(float(s)) for s in x_format.seq]
-
         if self.ytick_labels is not None:
             ax.set_yticks(np.arange(len(self.ytick_labels)))
             ax.set_yticklabels(self.ytick_labels)
-
-            if isinstance(self.ytick_labels[0], (int, float)):
-                # If the labels are too long, then we force scientific notation. The rcParam way of
-                # doing this does not seem to have any effect...
-                y_format = ax.get_yaxis().get_major_formatter()
-                if any([len(str(y)) > 5 for y in y_format.seq]):
-                    y_format.seq = ["{:2.2e}".format(float(s)) for s in y_format.seq]
 
 
 class HeatmapSet():
@@ -187,6 +183,13 @@ class DualHeatmap:
         self.ylabel = kwargs.get('ylabel', None)
         self.xtick_labels = kwargs.get('xtick_labels', None)
         self.ytick_labels = kwargs.get('ytick_labels', None)
+
+        # Optional arguments
+        if kwargs.get('large_text', False):
+            self.text_size = core.config.kGraphTextSizeLarge
+        else:
+            self.text_size = core.config.kGraphTextSizeSmall
+
         self.logger = logging.getLogger(__name__)
 
     def generate(self):
@@ -216,8 +219,10 @@ class DualHeatmap:
         ax2.yaxis.set_ticks_position('left')
 
         if self.legend is not None:
-            ax1.set_title("\n".join(textwrap.wrap(self.legend[0], 20)), size=20)
-            ax2.set_title("\n".join(textwrap.wrap(self.legend[1], 20)), size=20)
+            ax1.set_title("\n".join(textwrap.wrap(self.legend[0], 20)),
+                          size=self.text_size['legend_label'])
+            ax2.set_title("\n".join(textwrap.wrap(self.legend[1], 20)),
+                          size=self.text_size['legend_label'])
 
         # Add colorbar
         self._plot_colorbar(fig, im1, ax1)
@@ -249,25 +254,15 @@ class DualHeatmap:
         Plot ticks and tick labels. If the labels are numerical and the numbers are too large, force
         scientific notation (the ``rcParam`` way of doing this does not seem to work...)
         """
-        ax.tick_params(labelsize=12)
+        ax.tick_params(labelsize=self.text_size['tick_label'])
         ax.set_xticks(yvals)
         ax.set_xticklabels(self.ytick_labels, rotation='vertical')
-
-        if isinstance(self.xtick_labels[0], (int, float)):
-            x_format = ax.get_xaxis().get_major_formatter()
-            if any([len(str(x)) > 5 for x in x_format.seq]):
-                x_format.seq = ["{:2.2e}".format(float(s)) for s in x_format.seq]
 
         ax.set_yticks(xvals)
         ax.set_yticklabels(self.xtick_labels, rotation='horizontal')
 
-        if isinstance(self.ytick_labels[0], (int, float)):
-            y_format = ax.get_yaxis().get_major_formatter()
-            if any([len(str(y)) > 5 for y in y_format.seq]):
-                y_format.seq = ["{:2.2e}".format(float(s)) for s in y_format.seq]
-
     def _plot_labels(self, ax):
-        ax.set_ylabel(self.xlabel, fontsize=18)
+        ax.set_ylabel(self.xlabel, fontsize=self.text_size['xyz_label'])
         # ax.set_xlabel(self.ylabel, fontsize=18)
 
 

@@ -26,3 +26,16 @@ Contains all SIERRA hard-coded configuration in one place.
 kImageExt = '.jpg'
 
 kPickleLeaf = 'exp_def.pkl'
+
+kGraphTextSizeSmall = {
+    'title': 24,
+    'xyz_label': 18,
+    'tick_label': 12,
+    'legend_label': 18
+}
+kGraphTextSizeLarge = {
+    'title': 36,
+    'xyz_label': 24,
+    'tick_label': 24,
+    'legend_label': 32
+}

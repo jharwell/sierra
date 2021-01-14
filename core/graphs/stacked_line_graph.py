@@ -16,6 +16,7 @@
 #
 
 # Core packages
+import core.config
 import core.utils
 import matplotlib.pyplot as plt
 import logging
@@ -52,6 +53,7 @@ class StackedLineGraph:
                  title: str,
                  xlabel: str,
                  ylabel: str,
+                 large_text: bool = False,
                  legend: tp.List[str] = None,
                  cols: tp.List[str] = None,
                  logyscale: bool = False,
@@ -59,11 +61,18 @@ class StackedLineGraph:
                  model_fpath: str = None,
                  model_legend_fpath: str = None) -> None:
 
+        # Required arguments
         self.input_fpath = input_fpath
         self.output_fpath = output_fpath
         self.title = title
         self.xlabel = xlabel
         self.ylabel = ylabel
+
+        # Optional arguments
+        if large_text:
+            self.text_size = core.config.kGraphTextSizeLarge
+        else:
+            self.text_size = core.config.kGraphTextSizeSmall
 
         self.legend = legend
         self.cols = cols
@@ -109,18 +118,19 @@ class StackedLineGraph:
 
         if self.logyscale:
             plt.yscale('symlog')
-        ax.tick_params(labelsize=12)
+
+        ax.tick_params(labelsize=self.text_size['tick_label'])
 
         # Add legend. Should have ~3 entries per column, in order to maximize real estate on tightly
         # constrained papers.
         self._plot_legend(ax, model_legend, ncols)
 
         # Add title
-        ax.set_title(self.title, fontsize=24)
+        ax.set_title(self.title, fontsize=self.text_size['title'])
 
         # Add X,Y labels
-        ax.set_xlabel(self.xlabel, fontsize=18)
-        ax.set_ylabel(self.ylabel, fontsize=18)
+        ax.set_xlabel(self.xlabel, fontsize=self.text_size['xyz_label'])
+        ax.set_ylabel(self.ylabel, fontsize=self.text_size['xyz_label'])
 
         # Output figure
         fig = ax.get_figure()
@@ -165,20 +175,26 @@ class StackedLineGraph:
         plt.fill_between(data_df.index, data_df[col] - 2 * stddev_df[col],
                          data_df[col] + 2 * stddev_df[col], alpha=0.25)
 
-    def _plot_legend(self, ax, model_legend: str, ncols: int):
+    def _plot_legend(self, ax, model_legend: tp.List[str], ncols: int):
         # If the legend is not specified, then we assume this is not a graph that will contain any
         # models.
         if self.legend:
             legend = copy.deepcopy(self.legend)
             if model_legend:
-                ncols += 1
                 legend.extend(model_legend)
 
             lines, _ = ax.get_legend_handles_labels()
-            ax.legend(lines, legend, loc=9, bbox_to_anchor=(
-                0.5, -0.1), ncol=ncols, fontsize=14)
+            ax.legend(lines,
+                      legend,
+                      loc=9,
+                      bbox_to_anchor=(0.5, -0.1),
+                      ncol=ncols,
+                      fontsize=self.text_size['legend_label'])
         else:
-            ax.legend(loc=9, bbox_to_anchor=(0.5, -0.1), ncol=ncols, fontsize=14)
+            ax.legend(loc=9,
+                      bbox_to_anchor=(0.5, -0.1),
+                      ncol=ncols,
+                      fontsize=self.text_size['legend_label'])
 
 
 __api__ = [
