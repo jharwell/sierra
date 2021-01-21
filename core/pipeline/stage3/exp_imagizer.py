@@ -18,14 +18,19 @@
 Classes for creating image files from averaged ``.csv`` files for experiments.
 """
 
+# Core packages
 import os
 import logging
 import typing as tp
 import multiprocessing as mp
 import queue
 
+# 3rd party packages
+
+# Project packages
 from core.graphs.heatmap import Heatmap
 import core.utils
+import core.config
 
 
 class BatchedExpImagizer:
@@ -33,7 +38,7 @@ class BatchedExpImagizer:
     Generate the images for each experiment in the specified batch directory.
     """
 
-    def __call__(self, main_config: dict, HM_config: dict, batch_exp_root: str):
+    def __call__(self, main_config: dict, HM_config: dict, batch_exp_root: str) -> None:
         """
         Arguments:
             main_config: Parsed dictionary of main YAML configuration.
@@ -72,7 +77,7 @@ class BatchedExpImagizer:
         q.join()
 
     @staticmethod
-    def __thread_worker(q: mp.Queue, HM_config: dict):
+    def __thread_worker(q: mp.Queue, HM_config: dict) -> None:
         while True:
             # Wait for 3 seconds after the queue is empty before bailing
             try:
@@ -93,10 +98,13 @@ class ExpImagizer:
         imagize_opts: Dictionary of imagizing options.
     """
 
-    def __call__(self, HM_config: dict, imagize_opts: tp.Dict[str, str]):
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(__name__)
+
+    def __call__(self, HM_config: dict, imagize_opts: tp.Dict[str, str]) -> None:
         path = os.path.join(imagize_opts['csv_dir_root'], imagize_opts['csv_dir'])
 
-        logging.info("Imagizing .csvs in %s...", path)
+        self.logger.info("Imagizing .csvs in %s...", path)
 
         for csv in os.listdir(path):
             # For each category of heatmaps we are generating
@@ -111,12 +119,12 @@ class ExpImagizer:
                 stem, _ = os.path.splitext(csv)
                 Heatmap(input_fpath=os.path.join(path, csv),
                         output_fpath=os.path.join(imagize_opts['output_root'],
-                                                  stem + '.png'),
+                                                  stem + core.config.kImageExt),
                         title=match['title'],
                         xlabel='X',
                         ylabel='Y').generate()
 
             else:
-                logging.error("No match for graph with src_stem=%s found",
-                              imagize_opts['csv_dir'])
+                self.logger.error("No match for graph with src_stem=%s found",
+                                  imagize_opts['csv_dir'])
                 raise NotImplementedError

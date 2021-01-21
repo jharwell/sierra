@@ -23,7 +23,8 @@ import re
 
 class TemporalVarianceParser():
     """
-    Enforces the cmdline definition of the :class:`TemporalVariance` batch criteria.
+    Enforces the cmdline definition of the :class:`TemporalVariance` batch criteria described in
+    :ref:`ln-bc-temporal-variance` .
 
     """
 

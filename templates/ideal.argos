@@ -26,7 +26,7 @@
       </actuators>
       <sensors>
         <positioning implementation="default"/>
-          
+
         <differential_steering implementation="default"/>
         <footbot_proximity implementation="default" show_rays="true"/>
         <footbot_light implementation="rot_z_only" show_rays="false"/>
@@ -36,6 +36,7 @@
                                              medium="leds"/>
       </sensors>
       <params>
+        <rng seed="123"/>
         <output
           output_root="output"
           output_dir="__current_date__"
@@ -121,8 +122,8 @@
             </tab_sel>
           </stoch_nbhd1>
         </task_alloc>
-        <block_sel_matrix
-            nest="2.0, 3">
+        <nest dims="1.0, 4.0" center="2, 3" />
+        <block_sel_matrix>
           <block_priorities
               cube="1.0"
               ramp="1.0"
@@ -173,7 +174,7 @@
             <wander_force circle_distance="4.0"
                           circle_radius="100.0"
                           max_angle_delta="5"
-                          max="9"
+                          max="9.0"
                           interval="1"
                           normal_dist="false"/>
             <phototaxis_force max="8"/>
@@ -200,9 +201,10 @@
             output_interval="1000"
             block_acq_counts="block-acq-counts"
             fsm_interference_counts="fsm-interference-counts"
-            block_transport="block-transport"
+            block_transporter="block-transporter"
+            block_transportee="block-transportee"
             block_manipulation="block-manipulation"
-            fsm_movement='fsm-movement'
+            spatial_movement='spatial-movement'
             cache_acq_counts="cache-acq-counts"
             cache_utilization="cache-utilization"
             cache_lifecycle="cache-lifecycle"
@@ -218,14 +220,15 @@
             task_tab_collector="task-tab-collector"
             task_tab_harvester="task-tab-harvester"
             task_distribution="task-distribution"
+            block_clusters="block-clusters"
             perception_dpo="perception-dpo"
             tv_population="tv-population"
             tv_environment="tv-environment"/>
 
         <truncate output_interval="10"
-                  block_acq_locs="block-acq-locs"
                   fsm_interference_locs2D="fsm-interference-locs2D"
                   block_acq_explore_locs2D="block-acq-explore-locs2D"
+                  block_acq_locs2D="block-acq-locs2D"
                   cache_acq_locs2D="cache-acq-locs2D"
                   cache_acq_explore_locs2D="cache-acq-explore-locs2D"
                   cache_acq_vector_locs2D="cache-acq-vector-locs2D"
@@ -272,7 +275,7 @@
             arena_resolution="0.2"
             dist_type="single_source">
           <manifest
-              n_cube="64"
+              n_cube="20000"
               n_ramp="0"
               unit_dim="0.2"
               />

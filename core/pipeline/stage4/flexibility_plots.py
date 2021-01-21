@@ -55,17 +55,13 @@ class FlexibilityPlotsCSVGenerator:
     def __call__(self, batch_criteria: BatchCriteria):
         tv_attr = TemporalVarianceParser()(batch_criteria.def_str)
 
-        res = re.search("exp[0-9]+", self.cmdopts['output_root'])
+        res = re.search("exp[0-9]+", self.cmdopts['exp_output_root'])
         assert res is not None, "FATAL: Unexpected experiment output dir name '{0}'".format(
-            self.cmdopts['output_root'])
+            self.cmdopts['exp_output_root'])
 
-        # The output root we have here is our averaged output directory in the output root for the
-        # *current* experiment. Since adaptability/reactivity are generally inter-experiment
-        # measures, we need to 'reset' the output root we pass to the output root for the batched
-        # experiment.
-        output_root = self.cmdopts['output_root']
-        self.cmdopts['output_root'] = self.cmdopts['output_root'].split(res.group())[0]
+        output_root = self.cmdopts['exp_output_root']
         exp_num = int(res.group()[3:])
+
         adaptability = vcs.AdaptabilityCS(self.main_config,
                                           self.cmdopts,
                                           batch_criteria,

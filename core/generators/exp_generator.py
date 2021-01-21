@@ -26,12 +26,10 @@ import typing as tp
 import logging
 
 from core.xml_luigi import XMLLuigi
-from core.variables import batch_criteria as bc
-from core.variables import constant_density
+from core.variables import camera_timeline
 import core.generators.generator_factory as gf
-import core.generators.scenario_generator_parser as sgp
 import core.xml_luigi
-from core.utils import ArenaExtent
+from core.experiment_spec import ExperimentSpec
 
 
 class ExpDefCommonGenerator:
@@ -49,18 +47,17 @@ class ExpDefCommonGenerator:
     Attributes:
         template_input_file: Path(relative to current dir or absolute) to the template XML
                              configuration file.
-        exp_def_fname: Path to file to use for pickling experiment definitions.
         cmdopts: Dictionary containing parsed cmdline options.
     """
 
     def __init__(self,
+                 spec: ExperimentSpec,
                  template_input_file: str,
-                 exp_def_fpath: str,
                  cmdopts: dict) -> None:
 
         self.template_input_file = os.path.abspath(template_input_file)
         self.cmdopts = cmdopts
-        self.exp_def_fpath = exp_def_fpath
+        self.spec = spec
 
     def generate(self):
         """
@@ -70,23 +67,23 @@ class ExpDefCommonGenerator:
         xml_luigi = XMLLuigi(self.template_input_file)
 
         # Setup library
-        self.__generate_library(xml_luigi)
+        self._generate_library(xml_luigi)
 
         # Setup simulation visualizations
-        self.__generate_visualization(xml_luigi)
+        self._generate_visualization(xml_luigi)
 
         # Setup threading
-        self.__generate_threading(xml_luigi)
+        self._generate_threading(xml_luigi)
 
         # Setup robot sensors/actuators
-        self.__generate_saa(xml_luigi)
+        self._generate_saa(xml_luigi)
 
         # Setup simulation time parameters
-        self.__generate_time(xml_luigi, self.exp_def_fpath)
+        self._generate_time(xml_luigi)
 
         return xml_luigi
 
-    def __generate_saa(self, xml_luigi: XMLLuigi):
+    def _generate_saa(self, xml_luigi: XMLLuigi):
         """
         Generates XML changes to disable selected sensors/actuators, which are computationally
         expensive in large swarms, but not that costly if the # robots is small.
@@ -100,12 +97,14 @@ class ExpDefCommonGenerator:
 
         if not self.cmdopts["with_robot_leds"]:
             xml_luigi.tag_remove(".//actuators", "leds", noprint=True)
+            xml_luigi.tag_remove(".//sensors", "colored_blob_omnidirectional_camera", noprint=True)
+            xml_luigi.tag_remove(".//medium", "leds", noprint=True)
 
         if not self.cmdopts["with_robot_battery"]:
             xml_luigi.tag_remove(".//sensors", "battery", noprint=True)
             xml_luigi.tag_remove(".//entity/*", "battery", noprint=True)
 
-    def __generate_time(self, xml_luigi: XMLLuigi, exp_def_fpath: str):
+    def _generate_time(self, xml_luigi: XMLLuigi):
         """
         Generate XML changes to setup simulation time parameters.
 
@@ -116,13 +115,12 @@ class ExpDefCommonGenerator:
         tsetup_inst = getattr(setup, "factory")(self.cmdopts["time_setup"])()
 
         for a in tsetup_inst.gen_attr_changelist()[0]:
-            xml_luigi.attr_change(a[0], a[1], a[2], True)
+            xml_luigi.attr_change(a.path, a.attr, a.value, True)
 
         # Write time setup info to file for later retrieval
-        with open(exp_def_fpath, 'ab') as f:
-            pickle.dump(tsetup_inst.gen_attr_changelist()[0], f)
+        tsetup_inst.gen_attr_changelist()[0].pickle(self.spec.exp_def_fpath)
 
-    def __generate_threading(self, xml_luigi: XMLLuigi):
+    def _generate_threading(self, xml_luigi: XMLLuigi):
         """
         Generates XML changes to set the # of cores for a simulation to use, which may be less than
         the total # available on the system, depending on the experiment definition and user
@@ -133,15 +131,15 @@ class ExpDefCommonGenerator:
 
         xml_luigi.attr_change(".//system",
                               "threads",
-                              str(self.cmdopts["n_threads"]))
+                              str(self.cmdopts["physics_n_engines"]))
 
         # This whole tree can be missing and that's fine
         if xml_luigi.has_tag(".//loop_functions/convergence"):
             xml_luigi.attr_change(".//loop_functions/convergence",
                                   "n_threads",
-                                  str(self.cmdopts["n_threads"]))
+                                  str(self.cmdopts["physics_n_engines"]))
 
-    def __generate_library(self, xml_luigi: XMLLuigi):
+    def _generate_library(self, xml_luigi: XMLLuigi):
         """
         Generates XML changes to set the library that controllers and loop functions are sourced
         from to the name of the plugin passed on the cmdline. The ``__controller__`` tag is changed
@@ -158,16 +156,25 @@ class ExpDefCommonGenerator:
                               "library",
                               "lib" + self.cmdopts['project'])
 
-    def __generate_visualization(self, xml_luigi: XMLLuigi):
+    def _generate_visualization(self, xml_luigi: XMLLuigi):
         """
         Generates XML changes to remove visualization elements from input file, if configured to do
-        so. This dependent on cmdline parameters, as visualization definitions should be left in if
+        so. This depends on cmdline parameters, as visualization definitions should be left in if
         ARGoS should output simulation frames for video creation.
 
         Does not write generated changes to the simulation definition pickle file.
         """
         if not self.cmdopts["argos_rendering"]:
             xml_luigi.tag_remove(".", "./visualization", noprint=True)  # ARGoS visualizations
+        else:
+            cams = camera_timeline.factory(self.cmdopts, [self.cmdopts['arena_dim']])
+            rms = cams.gen_tag_rmlist()[0]
+            if rms:
+                for r in rms:
+                    xml_luigi.tag_remove(r.path, r.tag, True)  # OK if camera stuff isn't there
+
+            for a in cams.gen_tag_addlist()[0]:
+                xml_luigi.tag_add(a.path, a.tag, a.attr)
 
 
 class BatchedExpDefGenerator:
@@ -179,7 +186,7 @@ class BatchedExpDefGenerator:
         batch_config_template: Path (relative to current dir or absolute) to the root template
                                XML configuration file.
 
-        batch_generation_root: Root directory for all generated XML input files all experiments
+        batch_input_root: Root directory for all generated XML input files all experiments
                                should be stored (relative to current dir or absolute). Each
                                experiment will get a directory within this root to store the xml
                                input files for the simulation runs comprising an experiment;
@@ -210,17 +217,18 @@ class BatchedExpDefGenerator:
             os.path.basename(self.batch_config_template))
         self.batch_config_extension = None
 
-        self.batch_generation_root = os.path.abspath(cmdopts['generation_root'])
-        assert self.batch_generation_root.find(" ") == -1, \
+        self.batch_input_root = os.path.abspath(cmdopts['batch_input_root'])
+        assert self.batch_input_root.find(" ") == -1, \
             ("ARGoS (apparently) does not work with input file paths with spaces. Please make sure the " +
-             "batch generation root directory '{}' does not have any spaces in it").format(self.batch_generation_root)
+             "batch input root directory '{}' does not have any spaces in it").format(self.batch_input_root)
 
-        self.batch_output_root = os.path.abspath(cmdopts['output_root'])
+        self.batch_output_root = os.path.abspath(cmdopts['batch_output_root'])
 
         self.controller_name = controller_name
         self.scenario_basename = scenario_basename
         self.criteria = criteria
         self.cmdopts = cmdopts
+        self.logger = logging.getLogger(__name__)
 
     def generate_defs(self) -> tp.List[core.xml_luigi.XMLLuigi]:
         """
@@ -232,15 +240,15 @@ class BatchedExpDefGenerator:
         # Create and run generators
         defs = []
         for i in range(0, len(change_defs)):
-            generator = self.__create_exp_generator(i)
+            generator = self._create_exp_generator(i)
             defs.append(generator.generate())
-            logging.debug("Generating scenario+controller changes from generator '%s' for exp%s",
-                          self.cmdopts['joint_generator'],
-                          i)
+            self.logger.debug("Generating scenario+controller changes from generator '%s' for exp%s",
+                              self.cmdopts['joint_generator'],
+                              i)
 
         return defs
 
-    def __create_exp_generator(self, exp_num: int):
+    def _create_exp_generator(self, exp_num: int):
         """
         Create the generator for a particular experiment from the scenario+controller definitions
         specified on the command line.
@@ -248,46 +256,13 @@ class BatchedExpDefGenerator:
         Arguments:
             exp_num: Experiment number in the batch
         """
-        from_bivar_bc1 = False
-        from_bivar_bc2 = False
-        from_univar_bc = False
 
-        if self.criteria.is_bivar():
-            bivar = tp.cast(bc.BivarBatchCriteria, self.criteria)
-            from_bivar_bc1 = isinstance(bivar.criteria1, constant_density.ConstantDensity)
-            from_bivar_bc2 = isinstance(bivar.criteria2, constant_density.ConstantDensity)
-        else:
-            from_univar_bc = isinstance(self.criteria, constant_density.ConstantDensity)
-
-        # Need to get per-experiment arena dimensions from batch criteria, as they are different
-        # for each experiment
-        if from_univar_bc:
-            self.cmdopts["arena_dim"] = self.criteria.arena_dims()[exp_num]
-            eff_scenario_name = self.criteria.exp_scenario_name(exp_num)
-            logging.debug("Obtained scenario dimensions '%s' from univariate batch criteria",
-                          self.cmdopts['arena_dim'])
-        elif from_bivar_bc1 or from_bivar_bc2:
-            self.cmdopts["arena_dim"] = self.criteria.arena_dims()[exp_num]
-            logging.debug("Obtained scenario dimensions '%s' bivariate batch criteria",
-                          self.cmdopts['arena_dim'])
-            eff_scenario_name = self.criteria.exp_scenario_name(exp_num)
-        else:  # Defaultc case: scenario dimensions read from cmdline
-            kw = sgp.ScenarioGeneratorParser.reparse_str(self.scenario_basename)
-            self.cmdopts["arena_dim"] = ArenaExtent((kw['arena_x'], kw['arena_y'], kw['arena_z']))
-            logging.debug("Read scenario dimensions %s from cmdline spec",
-                          self.cmdopts['arena_dim'])
-
-            eff_scenario_name = self.scenario_basename
-
-        exp_generation_root = os.path.join(self.batch_generation_root,
-                                           self.criteria.gen_exp_dirnames(self.cmdopts)[exp_num])
+        spec = ExperimentSpec(self.criteria, exp_num, self.cmdopts)
 
         scenario = gf.scenario_generator_create(controller=self.controller_name,
-                                                scenario=eff_scenario_name,
-                                                template_input_file=os.path.join(exp_generation_root,
+                                                spec=spec,
+                                                template_input_file=os.path.join(spec.exp_input_root,
                                                                                  self.batch_config_leaf),
-                                                exp_def_fpath=os.path.join(exp_generation_root,
-                                                                           "exp_def.pkl"),
                                                 cmdopts=self.cmdopts)
 
         controller = gf.controller_generator_create(controller=self.controller_name,

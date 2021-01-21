@@ -47,8 +47,9 @@ class BatchedExpRunner:
         self.cmdopts = cmdopts
         self.criteria = criteria
 
-        self.batch_exp_root = os.path.abspath(self.cmdopts['generation_root'])
+        self.batch_exp_root = os.path.abspath(self.cmdopts['batch_input_root'])
         self.exec_exp_range = self.cmdopts['exp_range']
+        self.logger = logging.getLogger(__name__)
 
     def __call__(self):
         """
@@ -67,14 +68,14 @@ class BatchedExpRunner:
                             Xvfb processes that get run for each simulation after all experiments
                             are finished.
         """
-        n_threads_per_sim = self.cmdopts['n_threads']
+        n_threads_per_sim = self.cmdopts['physics_n_engines']
         n_sims = self.cmdopts['n_sims']
         exec_resume = self.cmdopts['exec_resume']
         with_rendering = self.cmdopts['argos_rendering']
-        n_jobs = self.cmdopts['n_jobs_per_node']
+        n_jobs = self.cmdopts['exec_sims_per_node']
 
-        s = "Stage2: Running batched experiment in %s: sims_per_exp=%s,threads_per_sim=%s,n_jobs=%s"
-        logging.info(s, self.batch_exp_root, n_sims, n_threads_per_sim, n_jobs)
+        s = "Running batched experiment in '%s': sims_per_exp=%s,threads_per_sim=%s,n_jobs=%s"
+        self.logger.info(s, self.cmdopts['batch_root'], n_sims, n_threads_per_sim, n_jobs)
 
         exp_all = [os.path.join(self.batch_exp_root, d)
                    for d in self.criteria.gen_exp_dirnames(self.cmdopts)]
@@ -99,19 +100,20 @@ class ExpRunner:
     in an HPC environment, or on the current local machine.
 
     Attributes:
-        exp_generation_root: Absolute path to the root directory for all generated simulation
+        exp_input_root: Absolute path to the root directory for all generated simulation
                              input files for the experiment (i.e. an experiment directory
                              within the batch experiment root).
         exp_num: Experiment number in the batch.
 
     """
 
-    def __init__(self, exp_generation_root: str, exp_num: int, hpc_env: str) -> None:
-        self.exp_generation_root = os.path.abspath(exp_generation_root)
+    def __init__(self, exp_input_root: str, exp_num: int, hpc_env: str) -> None:
+        self.exp_input_root = os.path.abspath(exp_input_root)
         self.exp_num = exp_num
         self.hpc_env = hpc_env
+        self.logger = logging.getLogger(__name__)
 
-    def __call__(self, n_jobs: int, exec_resume: bool):
+    def __call__(self, n_jobs: int, exec_resume: bool) -> None:
         """
         Runs the simulations for a single experiment in parallel.
 
@@ -122,7 +124,7 @@ class ExpRunner:
 
         """
 
-        logging.info('Running exp%s in %s...', self.exp_num, self.exp_generation_root)
+        self.logger.info("Running exp%s in '%s'", self.exp_num, self.exp_input_root)
         sys.stdout.flush()
 
         start = time.time()
@@ -130,26 +132,22 @@ class ExpRunner:
             # Root directory for the job. Chose the exp input directory rather than the output
             # directory in order to keep simulation outputs separate from those for the framework
             # used to run the experiments.
-            'jobroot_path': self.exp_generation_root,
-            'cmdfile_path': os.path.join(self.exp_generation_root, "commands.txt"),
-            'joblog_path': os.path.join(self.exp_generation_root, "parallel.log"),
+            'jobroot_path': self.exp_input_root,
+            'cmdfile_path': os.path.join(self.exp_input_root, "commands.txt"),
+            'joblog_path': os.path.join(self.exp_input_root, "parallel.log"),
             'exec_resume': exec_resume,
             'n_jobs': n_jobs
         }
         try:
             cmd = core.hpc.GNUParallelCmdGenerator()(self.hpc_env, parallel_opts)
-            subprocess.run(cmd,
-                           shell=True,
-                           check=True,
-                           stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE)
+            subprocess.run(cmd, shell=True, check=True)
 
         # Catch the exception but do not raise it again so that additional experiments can still be
         # run if possible
         except subprocess.CalledProcessError as e:
-            logging.error("Experiment failed! return code=%s", e.returncode)
-            logging.error(e.output)
+            self.logger.error("Experiment failed! rc=%s", e.returncode)
+            self.logger.error("Check outputs in %s for details", parallel_opts['jobroot_path'])
 
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
-        logging.info('Exp%s elapsed time: %s', self.exp_num, str(sec))
+        self.logger.info('Exp%s elapsed time: %s', self.exp_num, str(sec))

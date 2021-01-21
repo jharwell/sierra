@@ -18,12 +18,17 @@ Classes for the population size batch criteria. See :ref:`ln-bc-population-size`
 documentation.
 """
 
+# Core packages
 import typing as tp
 import re
 import math
+
+# 3rd party packages
 import implements
 
+# Project packages
 from core.variables import batch_criteria as bc
+from core.xml_luigi import XMLAttrChange, XMLAttrChangeSet
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
@@ -40,16 +45,21 @@ class PopulationSize(bc.UnivarBatchCriteria):
 
     """
 
+    @staticmethod
+    def gen_attr_changelist_from_list(sizes: list) -> tp.List[XMLAttrChangeSet]:
+        return [XMLAttrChangeSet(XMLAttrChange(".//arena/distribute/entity", "quantity", str(s)),
+                                 XMLAttrChange(".//population_dynamics", "max_size", str(4 * s))) for s in sizes]
+
     def __init__(self,
                  cli_arg: str,
                  main_config: tp.Dict[str, str],
-                 batch_generation_root: str,
+                 batch_input_root: str,
                  size_list: tp.List[int]) -> None:
-        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
+        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_input_root)
         self.size_list = size_list
         self.attr_changes = []  # type: tp.List
 
-    def gen_attr_changelist(self) -> list:
+    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         """
         Generate list of sets of changes for swarm sizes to define a batch experiment.
 
@@ -75,7 +85,8 @@ class PopulationSize(bc.UnivarBatchCriteria):
             exp_dirs = self.gen_exp_dirnames(cmdopts)
 
         ret = list(map(float, self.populations(cmdopts, exp_dirs)))
-        if cmdopts['plot_log_xaxis']:
+
+        if cmdopts['plot_log_xscale']:
             return [int(math.log2(x)) for x in ret]
         else:
             return ret
@@ -87,8 +98,8 @@ class PopulationSize(bc.UnivarBatchCriteria):
         return list(map(str, self.graph_xticks(cmdopts, exp_dirs)))
 
     def graph_xlabel(self, cmdopts: dict) -> str:
-        if cmdopts['plot_log_xaxis']:
-            return r"$\log_{2}$(Swarm Size)"
+        if cmdopts['plot_log_xscale']:
+            return r"$\log$(Swarm Size)"
 
         return "Swarm Size"
 
@@ -98,19 +109,19 @@ class PopulationSize(bc.UnivarBatchCriteria):
     def inter_exp_graphs_exclude_exp0(self) -> bool:
         return False
 
-    @staticmethod
-    def gen_attr_changelist_from_list(size_list: list):
-        return [set([(".//arena/distribute/entity", "quantity", str(s)),
-                     (".//population_dynamics", "max_size", str(4 * s))]) for s in size_list]
 
-
-class PopulationSizeParser():
+class Parser():
     """
-    Enforces the cmdline definition of the criteria described in the module docstring.
+    Enforces the cmdline definition of the :class:`PopulationSize` batch criteria defined in
+    :ref:`ln-bc-population-size`.
     """
 
-    def __call__(self, criteria_str) -> dict:
-        ret = {}
+    def __call__(self, criteria_str: str) -> dict:
+        ret = {
+            'max_size': int(),
+            'increment_type': str(),
+            'linear_increment': None
+        }  # type: tp.Dict[str, tp.Union[int, str, None]]
 
         # Parse increment type
         res = re.search("Log|Linear", criteria_str)
@@ -126,17 +137,20 @@ class PopulationSizeParser():
 
         # Set linear_increment if needed
         if ret['increment_type'] == 'Linear':
-            ret['linear_increment'] = int(ret['max_size'] / 10.0)
+            ret['linear_increment'] = int(ret['max_size'] / 10.0)  # type: ignore
 
         return ret
 
 
-def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_generation_root: str, **kwargs):
+def factory(cli_arg: str,
+            main_config: tp.Dict[str, str],
+            batch_input_root: str,
+            **kwargs) -> PopulationSize:
     """
-    Factory to create ``PopulationSize`` derived classes from the command line definition.
+    Factory to create :class:`PopulationSize` derived classes from the command line definition.
 
     """
-    attr = PopulationSizeParser()(cli_arg)
+    attr = Parser()(cli_arg)
 
     def gen_max_sizes():
         """
@@ -153,10 +167,10 @@ def factory(cli_arg: str, main_config: tp.Dict[str, str], batch_generation_root:
         PopulationSize.__init__(self,
                                 cli_arg,
                                 main_config,
-                                batch_generation_root,
+                                batch_input_root,
                                 gen_max_sizes())
 
-    return type(cli_arg,
+    return type(cli_arg,  # type: ignore
                 (PopulationSize,),
                 {"__init__": __init__})
 

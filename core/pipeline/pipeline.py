@@ -43,8 +43,9 @@ from core.pipeline.stage5.pipeline_stage5 import PipelineStage5
 class Pipeline:
     "Implements SIERRA's 5 stage pipeline."
 
-    def __init__(self, args, controller, scenario, cmdopts) -> None:
+    def __init__(self, args, controller, cmdopts) -> None:
         self.args = args
+        self.logger = logging.getLogger(__name__)
         self.cmdopts = {
             # general
             'sierra_root': self.args.sierra_root,
@@ -54,7 +55,6 @@ class Pipeline:
             'hpc_env': args.hpc_env,
             'argos_rendering': self.args.argos_rendering,
             "n_sims": args.n_sims,
-            "n_threads": args.n_threads,
             'n_blocks': args.n_blocks,
             'n_robots': args.n_robots,
             'project_imagizing': self.args.project_imagizing,
@@ -63,17 +63,19 @@ class Pipeline:
 
             # stage 1
             'time_setup': self.args.time_setup,
+
             'physics_n_engines': self.args.physics_n_engines,
             "physics_engine_type2D": self.args.physics_engine_type2D,
             "physics_engine_type3D": self.args.physics_engine_type3D,
             "physics_iter_per_tick": self.args.physics_iter_per_tick,
+
             "with_robot_rab": self.args.with_robot_rab,
             "with_robot_leds": self.args.with_robot_leds,
             "with_robot_battery": self.args.with_robot_battery,
 
             # stage 2
             'exec_resume': self.args.exec_resume,
-            'n_jobs_per_node': self.args.n_jobs_per_node,
+            'exec_sims_per_node': self.args.exec_sims_per_node,
 
             # stage 3
             'no_verify_results': self.args.no_verify_results,
@@ -88,10 +90,17 @@ class Pipeline:
             'rperf_cs_method': self.args.rperf_cs_method,
             'exp_graphs': self.args.exp_graphs,
             'no_collate': self.args.no_collate,
+
+            'project_no_yaml_LN': self.args.project_no_yaml_LN,
+            'project_no_yaml_HM': self.args.project_no_yaml_HM,
             'project_rendering': self.args.project_rendering,
-            'plot_log_xaxis': self.args.plot_log_xaxis,
+
+            'plot_log_xscale': self.args.plot_log_xscale,
+            'plot_log_yscale': self.args.plot_log_yscale,
             'plot_regression_lines': self.args.plot_regression_lines,
             'plot_primary_axis': self.args.plot_primary_axis,
+            'plot_large_text': self.args.plot_large_text,
+
             'pm_scalability_normalize': self.args.pm_scalability_normalize,
             'pm_scalability_from_exp0': self.args.pm_scalability_from_exp0,
             'pm_self_org_normalize': self.args.pm_self_org_normalize,
@@ -99,9 +108,15 @@ class Pipeline:
             'pm_robustness_normalize': self.args.pm_robustness_normalize,
             'pm_normalize_method': self.args.pm_normalize_method,
 
+            'models_disable': self.args.models_disable,
+
             # stage 5
             'controllers_list': self.args.controllers_list,
             'controllers_legend': self.args.controllers_legend,
+            'scenarios_list': self.args.scenarios_list,
+            'scenarios_legend': self.args.scenarios_legend,
+            'scenario_comparison': self.args.scenario_comparison,
+            'controller_comparison': self.args.controller_comparison,
             'comparison_type': self.args.comparison_type,
             'transpose_graphs': self.args.transpose_graphs,
         }
@@ -114,30 +129,33 @@ class Pipeline:
 
         if cmdopts is not None:
             self.cmdopts.update(cmdopts)
-            module = __import__("plugins.{0}.cmdline".format(self.cmdopts['project']),
+            module = __import__("projects.{0}.cmdline".format(self.cmdopts['project']),
                                 fromlist=["*"])
-            logging.debug("Updating cmdopts for cmdline extensions from project '%s'",
-                          self.cmdopts['project'])
+            self.logger.debug("Updating cmdopts for cmdline extensions from project '%s'",
+                              self.cmdopts['project'])
             module.Cmdline.cmdopts_update(self.args, self.cmdopts)
 
+        self.cmdopts['plugin_root'] = 'plugins'
         self.cmdopts['core_config_root'] = os.path.join('core', 'config')
-        self.cmdopts['project_config_root'] = os.path.join('plugins',
+        self.cmdopts['project_config_root'] = os.path.join('projects',
                                                            self.cmdopts['project'],
                                                            'config')
+        self.cmdopts['project_model_root'] = os.path.join('projects',
+                                                          self.cmdopts['project'],
+                                                          'models')
 
         try:
             self.main_config = yaml.load(open(os.path.join(self.cmdopts['project_config_root'],
                                                            'main.yaml')),
                                          yaml.FullLoader)
         except FileNotFoundError:
-            logging.exception("%s/main.yaml must exist!", self.cmdopts['project_config_root'])
+            self.logger.exception("%s/main.yaml must exist!", self.cmdopts['project_config_root'])
             raise
 
         if 5 not in self.args.pipeline:
             self.batch_criteria = bc.factory(self.main_config, self.cmdopts, self.args)
 
         self.controller = controller
-        self.scenario = scenario
 
     def run(self):
         """
@@ -145,7 +163,6 @@ class Pipeline:
         """
         if 1 in self.args.pipeline:
             PipelineStage1(self.controller,
-                           self.scenario,
                            self.batch_criteria,
                            self.cmdopts).run()
 

@@ -18,14 +18,18 @@ Classes for the SAA noise batch criteria. See :ref:`ln-bc-saa-noise` for usage d
 
 """
 
+# Core packages
 import re
 import typing as tp
 
+# 3rd party packages
 import implements
 import numpy as np
 
+# Project packages
 import core.variables.batch_criteria as bc
 from core.variables.population_size import PopulationSize
+from core.xml_luigi import XMLAttrChange, XMLAttrChangeSet
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
@@ -49,24 +53,26 @@ class SAANoise(bc.UnivarBatchCriteria):
     def __init__(self,
                  cli_arg: str,
                  main_config: tp.Dict[str, str],
-                 batch_generation_root: str,
+                 batch_input_root: str,
                  variances: list,
                  population: int,
                  noise_type: str) -> None:
-        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_generation_root)
+        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_input_root)
 
         self.variances = variances
         self.population = population
         self.noise_type = noise_type
         self.attr_changes = []  # type: tp.List
 
-    def gen_attr_changelist(self) -> list:
+    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         """
         Generate a list of sets of changes necessary to make to the input file to correctly set up
         the simulation with the specified noise ranges.
         """
         if not self.attr_changes:
-            self.attr_changes = [{(v2[0], v2[1], v2[2]) for v2 in v1} for v1 in self.variances]
+            self.attr_changes = [XMLAttrChangeSet(*{XMLAttrChange(v2[0],
+                                                                  v2[1],
+                                                                  v2[2]) for v2 in v1}) for v1 in self.variances]
 
             # Swarm size is optional. It can be (1) controlled via this variable, (2) controlled by
             # another variable in a bivariate batch criteria, (3) not controlled at all. For (2),
@@ -74,7 +80,7 @@ class SAANoise(bc.UnivarBatchCriteria):
             if self.population is not None:
                 size_chgs = PopulationSize(self.cli_arg,
                                            self.main_config,
-                                           self.batch_generation_root,
+                                           self.batch_input_root,
                                            [self.population]).gen_attr_changelist()[0]
                 for exp_chgs in self.attr_changes:
                     exp_chgs |= size_chgs
@@ -175,9 +181,10 @@ class SAANoise(bc.UnivarBatchCriteria):
         return True
 
 
-class SAANoiseParser():
+class Parser():
     """
-    Enforces the cmdline definition of the :class:`SAANoise` batch criteria.
+    Enforces the cmdline definition of the :class:`SAANoise` batch criteria defined in
+    :ref:`ln-bc-saa-noise`.
     """
 
     def __call__(self, criteria_str: str) -> dict:
@@ -214,13 +221,13 @@ class SAANoiseParser():
         return ret
 
 
-def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwargs):
+def factory(cli_arg: str, main_config: dict, batch_input_root: str, **kwargs):
     """
     Factory to create :class:`SAANoise` derived classes from the command line definition of
     batch criteria.
 
     """
-    attr = SAANoiseParser()(cli_arg)
+    attr = Parser()(cli_arg)
 
     def gen_variances(attr: dict):
 
@@ -322,7 +329,7 @@ def factory(cli_arg: str, main_config: dict, batch_generation_root: str, **kwarg
         SAANoise.__init__(self,
                           cli_arg,
                           main_config,
-                          batch_generation_root,
+                          batch_input_root,
                           gen_variances(attr),
                           attr.get("population", None),
                           attr['noise_type'])

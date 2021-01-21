@@ -18,14 +18,16 @@ Measures for swarm flexibility in univariate and bivariate batched experiments.
 
 """
 
-
+# Core packages
 import os
 import copy
 import logging
 import typing as tp
 
+# 3rd party packages
 import pandas as pd
 
+# Project packages
 from core.graphs.batch_ranged_graph import BatchRangedGraph
 from core.graphs.heatmap import Heatmap
 from core.perf_measures import vcs
@@ -33,6 +35,7 @@ import core.variables.batch_criteria as bc
 import core.perf_measures.common as common
 import core.variables.temporal_variance as tv
 import core.utils
+import core.config
 
 ################################################################################
 # Univariate Classes
@@ -44,9 +47,9 @@ class ReactivityUnivar:
     Calculates the reactivity of the swarm configuration across a univariate batched set of
     experiments within the same scenario from collated .csv data.
     """
-    kLeaf = 'pm-reactivity'
+    kLeaf = 'PM-reactivity'
 
-    def __init__(self, cmdopts: tp.Dict[str, str]) -> None:
+    def __init__(self, cmdopts: dict) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us.
         self.cmdopts = copy.deepcopy(cmdopts)
@@ -67,20 +70,22 @@ class ReactivityUnivar:
                                                          0,
                                                          i)()
 
-        stem_opath = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
+        stem_opath = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
 
         # Write .csv to file
         core.utils.pd_csv_write(df, stem_opath + '.csv', index=False)
 
-        BatchRangedGraph(inputy_stem_fpath=stem_opath,
-                         output_fpath=os.path.join(self.cmdopts["graph_root"],
-                                                   self.kLeaf + ".png"),
+        BatchRangedGraph(input_fpath=stem_opath + '.csv',
+                         output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
+                                                   self.kLeaf + core.config.kImageExt),
                          title="Swarm Reactivity",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel=vcs.method_ylabel(self.cmdopts["reactivity_cs_method"],
                                                   'reactivity'),
                          xticks=batch_criteria.graph_xticks(self.cmdopts)[1:],
-                         xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts)[1:]).generate()
+                         xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts)[1:],
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class AdaptabilityUnivar:
@@ -88,9 +93,9 @@ class AdaptabilityUnivar:
     Calculates the adaptability of the swarm configuration across a univariate batched set of
     experiments within the same scenario from collated .csv data.
     """
-    kLeaf = 'pm-adaptability'
+    kLeaf = 'PM-adaptability'
 
-    def __init__(self, cmdopts: tp.Dict[str, str]) -> None:
+    def __init__(self, cmdopts: dict) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us.
         self.cmdopts = copy.deepcopy(cmdopts)
@@ -111,20 +116,22 @@ class AdaptabilityUnivar:
                                                            0,
                                                            i)()
 
-        stem_opath = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
+        stem_opath = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
 
         # Write .csv to file
         core.utils.pd_csv_write(df, stem_opath + '.csv', index=False)
 
-        BatchRangedGraph(inputy_stem_fpath=stem_opath,
-                         output_fpath=os.path.join(self.cmdopts["graph_root"],
-                                                   self.kLeaf + ".png"),
+        BatchRangedGraph(input_fpath=stem_opath + '.csv',
+                         output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
+                                                   self.kLeaf + core.config.kImageExt),
                          title="Swarm Adaptability",
                          xlabel=batch_criteria.graph_xlabel(self.cmdopts),
                          ylabel=vcs.method_ylabel(self.cmdopts["adaptability_cs_method"],
                                                   'adaptability'),
                          xticks=batch_criteria.graph_xticks(self.cmdopts)[1:],
-                         xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts)[1:]).generate()
+                         xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts)[1:],
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class FlexibilityUnivarGenerator:
@@ -137,13 +144,16 @@ class FlexibilityUnivarGenerator:
     - Weight reactivity+adaptability
     """
 
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(__name__)
+
     def __call__(self,
                  cmdopts: dict,
                  main_config: dict,
                  alpha_SAA: float,
                  alpha_PD: float,
                  batch_criteria: bc.IConcreteBatchCriteria):
-        logging.info("Univariate flexbility from %s", cmdopts["collate_root"])
+        self.logger.info("From %s", cmdopts["batch_collate_root"])
 
         ReactivityUnivar(cmdopts).generate(main_config, batch_criteria)
         AdaptabilityUnivar(cmdopts).generate(main_config, batch_criteria)
@@ -171,7 +181,7 @@ class ReactivityBivar:
     experiments within the same scenario from collated .csv data.
 
     """
-    kLeaf = 'pm-reactivity'
+    kLeaf = 'PM-reactivity'
 
     def __init__(self, cmdopts: tp.Dict[str, str], inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -195,16 +205,17 @@ class ReactivityBivar:
         Returns:
            The path to the `.csv` file used to generate the heatmap.
         """
-        ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_csv)
+        ipath = os.path.join(self.cmdopts["batch_collate_root"], self.inter_perf_csv)
         raw_df = core.utils.pd_csv_read(ipath)
-        opath_stem = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
+        opath_stem = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
 
         # Generate heatmap dataframe and write to file
         df = self.__gen_heatmap_df(main_config, raw_df, criteria)
         core.utils.pd_csv_write(df, opath_stem + ".csv", index=False)
 
         Heatmap(input_fpath=opath_stem + '.csv',
-                output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),
+                output_fpath=os.path.join(
+                    self.cmdopts["batch_collate_graph_root"], self.kLeaf + core.config.kImageExt),
                 title='Swarm Reactivity',
                 xlabel=criteria.graph_xlabel(self.cmdopts),
                 ylabel=criteria.graph_ylabel(self.cmdopts),
@@ -246,7 +257,7 @@ class AdaptabilityBivar:
     experiments within the same scenario from collated .csv data.
 
     """
-    kLeaf = 'pm-adaptability'
+    kLeaf = 'PM-adaptability'
 
     def __init__(self, cmdopts: tp.Dict[str, str], inter_perf_csv: str) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
@@ -270,16 +281,17 @@ class AdaptabilityBivar:
         Returns:
            The path to the `.csv` file used to generate the heatmap.
         """
-        ipath = os.path.join(self.cmdopts["collate_root"], self.inter_perf_csv)
+        ipath = os.path.join(self.cmdopts["batch_collate_root"], self.inter_perf_csv)
         raw_df = core.utils.pd_csv_read(ipath)
-        opath_stem = os.path.join(self.cmdopts["collate_root"], self.kLeaf)
+        opath_stem = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
 
         # Generate heatmap dataframe and write to file
         df = self.__gen_heatmap_df(main_config, raw_df, criteria)
         core.utils.pd_csv_write(df, opath_stem + ".csv", index=False)
 
         Heatmap(input_fpath=opath_stem + '.csv',
-                output_fpath=os.path.join(self.cmdopts["graph_root"], self.kLeaf + ".png"),
+                output_fpath=os.path.join(
+                    self.cmdopts["batch_collate_graph_root"], self.kLeaf + core.config.kImageExt),
                 title='Swarm Adaptability',
                 xlabel=criteria.graph_xlabel(self.cmdopts),
                 ylabel=criteria.graph_ylabel(self.cmdopts),
@@ -326,13 +338,16 @@ class FlexibilityBivarGenerator:
     - Weight reactivity+adaptability
     """
 
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(__name__)
+
     def __call__(self,
                  cmdopts: dict,
                  main_config: dict,
                  alpha_SAA: float,
                  alpha_PD: float,
                  criteria: bc.IConcreteBatchCriteria):
-        logging.info("Bivariate flexbility from %s", cmdopts["collate_root"])
+        self.logger.info("From %s", cmdopts["batch_collate_root"])
 
         inter_perf_csv = main_config['perf']['inter_perf_csv']
 

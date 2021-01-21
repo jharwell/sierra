@@ -1,8 +1,0 @@
-[submodule "plugins/fordyca"]
-	path = plugins/fordyca
-	url = https://github.com/swarm-robotics/sierra-plugin-fordyca.git
-	branch = devel
-[submodule "plugins/silicon"]
-	path = plugins/silicon
-	url = https://github.com/swarm-robotics/sierra-plugin-silicon.git
-	branch = devel

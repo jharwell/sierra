@@ -106,8 +106,9 @@ ENV/
 .pytype
 
 # Plugins
-plugins/
+projects/*
 
 # MSI
 *.pbs.e*
 *.pbs.o*
+R-*

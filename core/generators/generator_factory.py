@@ -20,6 +20,7 @@ import logging
 import yaml
 
 from core.xml_luigi import XMLLuigi
+from core.experiment_spec import ExperimentSpec
 
 
 def joint_generator_create(controller, scenario):
@@ -42,32 +43,34 @@ def joint_generator_create(controller, scenario):
                             generate})()
 
 
-def scenario_generator_create(scenario, controller, **kwargs):
+def scenario_generator_create(spec: ExperimentSpec, controller, **kwargs):
     """
     Creates a scenario generator using arbitrary arena dimensions and with an arbitrary
     controller.
     """
 
     def __init__(self, **kwargs) -> None:
-        res = re.search('[SDQPR][SSSLN]', scenario)
-        assert res is not None, "Bad block distribution in {0}".format(scenario)
+        res = re.search('[SDQPR][SSSLN]', spec.scenario_name)
+        assert res is not None, "Bad block distribution in {0}".format(spec.scenario_name)
         abbrev = res.group(0)
         cmdopts = kwargs['cmdopts']
+
+        self.logger = logging.getLogger(__name__)
         try:
-            path = 'plugins.{0}.generators.scenario_generators'.format(cmdopts['project'])
+            path = 'projects.{0}.generators.scenario_generators'.format(cmdopts['project'])
             module = __import__(path, fromlist=["*"])
         except ModuleNotFoundError:
-            logging.exception("module %s must exist!", path)
+            self.logger.exception("module %s must exist!", path)
             raise
 
-        self.scenario_generator = getattr(module,
-                                          abbrev + 'Generator')(controller=controller,
-                                                                **kwargs)
+        self.scenario_generator = getattr(module, abbrev + 'Generator')(controller=controller,
+                                                                        spec=spec,
+                                                                        **kwargs)
 
     def generate(self):
         return self.scenario_generator.generate()
 
-    return type(scenario,
+    return type(spec.scenario_name,
                 (object,), {"__init__": __init__,
                             "generate": generate
                             })(**kwargs)
@@ -83,29 +86,36 @@ def controller_generator_create(controller, config_root, cmdopts):
         self.config = yaml.load(open(os.path.join(config_root, 'controllers.yaml')),
                                 yaml.FullLoader)
         self.category, self.name = controller.split('.')
+        self.logger = logging.getLogger(__name__)
 
     def generate(self, exp_def: XMLLuigi):
         """
         Generates all changes to the input file for the simulation (does not save)
         """
         # Setup loop functions
-        for t in self.config[self.category]['xml']['attr_change']:
-            exp_def.attr_change(t[0],
-                                t[1],
-                                t[2],
-                                cmdopts['argos_rendering'] is False)
+        try:
+            for t in self.config[self.category]['xml']['attr_change']:
+                exp_def.attr_change(t[0],
+                                    t[1],
+                                    t[2],
+                                    cmdopts['argos_rendering'] is False)
+        except KeyError:
+            self.logger.fatal("Loop functions category '%s' not found in YAML configuration",
+                              self.category)
+            raise
 
         # Setup controller
-        exists = False
-        for controller in self.config[self.category]['controllers']:
-            if controller['name'] == self.name:
-                exists = True
-                for t in controller['xml']['attr_change']:
-                    exp_def.tag_change(t[0], t[1], t[2])
+        try:
+            for controller in self.config[self.category]['controllers']:
+                if controller['name'] == self.name:
+                    for t in controller['xml']['attr_change']:
+                        exp_def.tag_change(t[0], t[1], t[2])
+        except KeyError:
+            self.logger.fatal("Controller category '%s' or name '%s' not found in YAML configuration",
+                              self.category,
+                              self.name)
+            raise
 
-        assert exists, \
-            "FATAL: '{0}' not found in controller YAML config under category '{1}'".format(self.name,
-                                                                                           self.category)
         return exp_def
 
     return type(controller,

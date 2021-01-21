@@ -19,14 +19,21 @@ Classes for the population density batch criteria. See :ref:`ln-bc-population-de
 documentation.
 """
 
+# Core packages
 import typing as tp
-import os
+import logging
+import math
+
+# 3rd party packages
 import implements
 
+# Project packages
 from core.variables import constant_density as cd
 import core.generators.scenario_generator_parser as sgp
 import core.utils
 import core.variables.batch_criteria as bc
+from core.vector import Vector3D
+from core.xml_luigi import XMLAttrChange, XMLAttrChangeSet
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
@@ -44,8 +51,9 @@ class PopulationConstantDensity(cd.ConstantDensity):
     def __init__(self, *args, **kwargs):
         cd.ConstantDensity.__init__(self, *args, **kwargs)
         self.already_added = False
+        self.logger = logging.getLogger(__name__)
 
-    def gen_attr_changelist(self) -> list:
+    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         """
         Generate list of sets of changes to input file to set the # robots for a set of arena
         sizes such that the swarm density is constant. Robots are approximated as point masses.
@@ -56,12 +64,16 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
                     if path == ".//arena" and attr == "size":
                         x, y, z = [int(float(_)) for _ in value.split(",")]
-                        extent = core.utils.ArenaExtent((x, y, z))
-                        # ARGoS won't start if there are 0 robots, so you always need to put at least
-                        # 1.
-                        n_robots = int(max(1, (extent.x() * extent.y())
-                                           * (self.target_density / 100.0)))
-                        changeset.add((".//arena/distribute/entity", "quantity", str(n_robots)))
+                        extent = core.utils.ArenaExtent(Vector3D(x, y, z))
+                        # ARGoS won't start if there are 0 robots, so you always need to put at
+                        # least 1.
+                        n_robots = int(max(1, extent.area() * (self.target_density / 100.0)))
+                        changeset.add(XMLAttrChange(".//arena/distribute/entity",
+                                                    "quantity",
+                                                    str(n_robots)))
+                        self.logger.debug("Calculated swarm size %d for arena dimensions %s",
+                                          n_robots,
+                                          str(extent))
                         break
 
             self.already_added = True
@@ -75,29 +87,27 @@ class PopulationConstantDensity(cd.ConstantDensity):
     def graph_xticks(self,
                      cmdopts: dict,
                      exp_dirs: tp.List[str] = None) -> tp.List[float]:
-        areas = []
+
         if exp_dirs is None:
             exp_dirs = self.gen_exp_dirnames(cmdopts)
 
-        for d in exp_dirs:
-            pickle_fpath = os.path.join(self.batch_generation_root,
-                                        d,
-                                        "exp_def.pkl")
-            exp_def = core.utils.unpickle_exp_def(pickle_fpath)
-            for path, attr, value in exp_def:
-                if path == ".//arena" and attr == "size":
-                    x, y, z = [int(float(_)) for _ in value.split(",")]
-                    extent = core.utils.ArenaExtent((x, y, z))
-                    areas.append(float((extent.x() * extent.y())))
-        return areas
+        ret = list(map(float, self.populations(cmdopts, exp_dirs)))
+
+        if cmdopts['plot_log_xscale']:
+            return [math.log2(x) for x in ret]
+        else:
+            return ret
 
     def graph_xticklabels(self,
                           cmdopts: dict,
                           exp_dirs: tp.List[str] = None) -> tp.List[str]:
-        return [str(int(self.target_density / 100.0 * x)) for x in self.graph_xticks(cmdopts, exp_dirs)]
+        return list(map(lambda x: str(round(x, 4)), self.graph_xticks(cmdopts, exp_dirs)))
 
     def graph_xlabel(self, cmdopts: dict) -> str:
-        return r"Population Size"
+        if cmdopts['plot_log_xscale']:
+            return r"$\log_{2}$(Swarm Size)"
+
+        return r"Swarm Size"
 
     def pm_query(self, pm: str) -> bool:
         return pm in ['raw', 'scalability', 'self-org']
@@ -108,27 +118,27 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
 def factory(cli_arg: str,
             main_config: tp.Dict[str, str],
-            batch_generation_root: str,
-            **kwargs):
+            batch_input_root: str,
+            **kwargs) -> PopulationConstantDensity:
     """
-    Factory to create ``ConstantDensity`` derived classes from the command line definition of batch
-    criteria.
+    Factory to create :class:`PopulationConstantDensity` derived classes from the command line
+    definition of batch criteria.
 
     """
-    attr = cd.ConstantDensityParser().parse(cli_arg)
+    attr = cd.Parser()(cli_arg)
     kw = sgp.ScenarioGeneratorParser.reparse_str(kwargs['scenario'])
 
     if kw['dist_type'] == "SS" or kw['dist_type'] == "DS":
         r = range(kw['arena_x'],
                   kw['arena_x'] + attr['cardinality'] * attr['arena_size_inc'],
                   attr['arena_size_inc'])
-        dims = [core.utils.ArenaExtent((x, int(x / 2), 0)) for x in r]
+        dims = [core.utils.ArenaExtent(Vector3D(x, int(x / 2), 0)) for x in r]
     elif kw['dist_type'] == "QS" or kw['dist_type'] == "RN" or kw['dist_type'] == 'PL':
         r = range(kw['arena_x'],
                   kw['arena_x'] + attr['cardinality'] * attr['arena_size_inc'],
                   attr['arena_size_inc'])
 
-        dims = [core.utils.ArenaExtent((x, x, 0)) for x in r]
+        dims = [core.utils.ArenaExtent(Vector3D(x, x, 0)) for x in r]
     else:
         raise NotImplementedError(
             "Unsupported block dstribution '{0}': Only SS,DS,QS,RN,PL supported".format(kw['dist_type']))
@@ -137,12 +147,12 @@ def factory(cli_arg: str,
         PopulationConstantDensity.__init__(self,
                                            cli_arg,
                                            main_config,
-                                           batch_generation_root,
+                                           batch_input_root,
                                            attr["target_density"],
                                            dims,
                                            kw['dist_type'])
 
-    return type(cli_arg,
+    return type(cli_arg,  # type: ignore
                 (PopulationConstantDensity,),
                 {"__init__": __init__})
 

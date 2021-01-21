@@ -49,7 +49,7 @@ class BatchedExpCSVAverager:
         self.cmdopts = cmdopts
         self.batch_output_root = batch_output_root
 
-    def __call__(self, criteria: bc.IConcreteBatchCriteria):
+    def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
 
         exp_to_avg = core.utils.exp_range_calc(self.cmdopts, self.batch_output_root, criteria)
 
@@ -71,14 +71,16 @@ class BatchedExpCSVAverager:
                 q.put(path)
 
         for i in range(0, mp.cpu_count()):
-            p = mp.Process(target=BatchedExpCSVAverager.__thread_worker,
+            p = mp.Process(target=BatchedExpCSVAverager._thread_worker,
                            args=(q, self.main_config, avg_opts))
             p.start()
 
         q.join()
 
     @staticmethod
-    def __thread_worker(q: mp.Queue, main_config: dict, avg_opts: tp.Dict[str, str]):
+    def _thread_worker(q: mp.Queue,
+                       main_config: dict,
+                       avg_opts: tp.Dict[str, str]) -> None:
         while True:
             # Wait for 3 seconds after the queue is empty before bailing
             try:
@@ -112,6 +114,7 @@ class ExpCSVAverager:
             os.path.basename(self.avg_opts['template_input_leaf']))
 
         self.exp_output_root = os.path.abspath(exp_output_root)
+        self.main_config = main_config
 
         self.avgd_output_leaf = main_config['sierra']['avg_output_leaf']
         self.avgd_output_root = os.path.join(self.exp_output_root,
@@ -132,38 +135,36 @@ class ExpCSVAverager:
         # to be formatted like: self.input_name_format.format(name, experiment_number)
         format_base = "{}_{}"
         self.output_name_format = format_base + "_output"
+        self.logger = logging.getLogger(__name__)
 
     def __call__(self):
         if not self.avg_opts['no_verify_results']:
-            self.__verify_exp()
-        self.__average_csvs()
+            self._verify_exp()
+        self._average_csvs()
 
-    def __average_csvs(self):
+    def _average_csvs(self):
         """Averages the CSV files found in the output save path"""
 
-        logging.info('Averaging results in %s...', self.exp_output_root)
-
-        # Maps (unique .csv stem, optional parent dir) to the averaged dataframe
-        csvs = {}
+        self.logger.info('Averaging results: %s...', self.exp_output_root)
 
         pattern = self.output_name_format.format(
             re.escape(self.avg_opts['template_input_leaf']), r'\d+')
 
-        # check to make sure all directories are simulation runs, skipping the directory within each
-        # experiment that the averaged data is placed in
-        simulations = [e for e in os.listdir(self.exp_output_root) if e not in [
-            self.avgd_output_leaf, self.project_frames_leaf, self.argos_frames_leaf, self. videos_leaf]]
+        # Check to make sure all directories are simulation runs, skipping directories as needed.
+        simulations = sim_dir_filter(os.listdir(self.exp_output_root),
+                                     self.main_config, self.videos_leaf)
 
         assert(all(re.match(pattern, s) for s in simulations)),\
             "FATAL: Not all directories in {0} are simulation runs".format(self.exp_output_root)
 
-        csvs = {}
+        # Maps (unique .csv stem, optional parent dir) to the averaged dataframe
+        csvs = dict()  # type: tp.Dict[tp.Tuple[str, str], tp.List]
         for sim in simulations:
-            self.__gather_csvs_from_sim(sim, csvs)
+            self._gather_csvs_from_sim(sim, csvs)
 
-        self.__average_csvs_within_exp(csvs)
+        self._average_csvs_within_exp(csvs)
 
-    def __gather_csvs_from_sim(self, sim: str, csvs: dict):
+    def _gather_csvs_from_sim(self, sim: str, csvs: dict) -> None:
         csv_root = os.path.join(self.exp_output_root, sim, self.sim_metrics_leaf)
 
         # The metrics folder should contain nothing but .csv files and directories. For all
@@ -173,6 +174,8 @@ class ExpCSVAverager:
             item_path = os.path.join(csv_root, item)
             if os.path.isfile(item_path):
                 df = core.utils.pd_csv_read(item_path, index_col=False)
+                if df.dtypes[0] == 'object':
+                    df[df.columns[0]] = df[df.columns[0]].apply(lambda x: float(x))
 
                 if (item, '') not in csvs:
                     csvs[(item, '')] = []
@@ -189,35 +192,42 @@ class ExpCSVAverager:
                         csvs[(csv_fname, item)] = []
                     csvs[(csv_fname, item)].append(df)
 
-    def __average_csvs_within_exp(self, csvs: dict):
+    def _average_csvs_within_exp(self, csvs: dict) -> None:
         # All CSV files with the same base name will be averaged together
         for csv_fname in csvs:
             csv_concat = pd.concat(csvs[csv_fname])
             if (self.invert_perf and csv_fname[0] in self.intra_perf_csv):
                 csv_concat[self.intra_perf_col] = 1.0 / csv_concat[self.intra_perf_col]
-                logging.debug("Inverted performance column: df stem=%s,col=%s",
-                              csv_fname[0],
-                              self.intra_perf_col)
+                self.logger.debug("Inverted performance column: df stem=%s,col=%s",
+                                  csv_fname[0],
+                                  self.intra_perf_col)
+
             by_row_index = csv_concat.groupby(csv_concat.index)
 
             csv_averaged = by_row_index.mean()
+
             if csv_fname[1] != '':
-                core.utils.dir_create_checked(os.path.join(self.avgd_output_root, csv_fname[1]),
+                core.utils.dir_create_checked(os.path.join(self.avgd_output_root,
+                                                           csv_fname[1]),
                                               exist_ok=True)
 
-            core.utils.pd_csv_write(csv_averaged, os.path.join(self.avgd_output_root, csv_fname[1], csv_fname[0]),
-
+            core.utils.pd_csv_write(csv_averaged,
+                                    os.path.join(self.avgd_output_root,
+                                                 csv_fname[1],
+                                                 csv_fname[0]),
                                     index=False)
 
             # Also write out stddev in order to calculate confidence intervals later
             if self.avg_opts['gen_stddev']:
-                csv_stddev = by_row_index.std().round(2)
-                csv_stddev_fname = csv_fname.split('.')[0] + '.stddev'
-                core.utils.pd_csv_write(csv_stddev, os.path.join(self.avgd_output_root, csv_stddev_fname),
-
+                csv_stddev = by_row_index.std().round(8)
+                csv_fname_stem = csv_fname[0].split('.')[0]
+                csv_stddev_fname = csv_fname_stem + '.stddev'
+                core.utils.pd_csv_write(csv_stddev,
+                                        os.path.join(self.avgd_output_root,
+                                                     csv_stddev_fname),
                                         index=False)
 
-    def __verify_exp(self):
+    def _verify_exp(self):
         """
         Verify the integrity of all simulations in an experiment.
 
@@ -227,10 +237,11 @@ class ExpCSVAverager:
         - All simulation ``.csv`` files have the same # rows/columns.
         - No simulation ``.csv``files contain NaNs.
         """
-        experiments = [exp for exp in os.listdir(self.exp_output_root) if exp not in [
-            self.avgd_output_leaf]]
+        experiments = sim_dir_filter(os.listdir(self.exp_output_root),
+                                     self.main_config,
+                                     self.videos_leaf)
 
-        logging.info('Verifying results in %s...', self.exp_output_root)
+        self.logger.info('Verifying results in %s...', self.exp_output_root)
 
         for exp1 in experiments:
             csv_root1 = os.path.join(self.exp_output_root,
@@ -251,8 +262,8 @@ class ExpCSVAverager:
 
                     # .csvs for rendering that we don't verify (for now...)
                     if os.path.isdir(path1) or os.path.isdir(path2):
-                        logging.debug("Not verifying %s: contains rendering data",
-                                      path1)
+                        self.logger.debug("Not verifying %s: contains rendering data",
+                                          path1)
                         continue
 
                     assert (core.utils.path_exists(path1) and core.utils.path_exists(path2)),\
@@ -269,8 +280,21 @@ class ExpCSVAverager:
 
                     # Verify the length of all columns in both dataframes is the same
                     for c1 in df1.columns:
-                        assert(all(len(df1[c1]) == len(df1[c2])) for c2 in df1.columns),\
+                        assert(all(len(df1[c1]) == len(df1[c2]) for c2 in df1.columns)),\
                             "FATAL: Not all columns from {0} have same length".format(path1)
-                        assert(all(len(df1[c1]) == len(df2[c2])) for c2 in df1.columns),\
+                        assert(all(len(df1[c1]) == len(df2[c2]) for c2 in df1.columns)),\
                             "FATAL: Not all columns from {0} and {1} have same length".format(path1,
                                                                                               path2)
+
+
+def sim_dir_filter(exp_dirs: tp.List[str], main_config: dict, videos_leaf: str) -> tp.List[str]:
+    avgd_output_leaf = main_config['sierra']['avg_output_leaf']
+    project_frames_leaf = main_config['sierra']['project_frames_leaf']
+    argos_frames_leaf = main_config['sim']['argos_frames_leaf']
+    models_leaf = main_config['sierra']['models_leaf']
+
+    return [e for e in exp_dirs if e not in [avgd_output_leaf,
+                                             project_frames_leaf,
+                                             argos_frames_leaf,
+                                             videos_leaf,
+                                             models_leaf]]

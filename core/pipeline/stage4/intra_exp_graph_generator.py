@@ -21,10 +21,10 @@ Classes for generating graphs within a single experiment in a batch.
 import os
 import copy
 import logging
-import typing as tp
 
 from core.graphs.stacked_line_graph import StackedLineGraph
 from core.graphs.heatmap import Heatmap
+from core.models.graphs import IntraExpModel2DGraphSet
 from core.pipeline.stage4.flexibility_plots import FlexibilityPlotsCSVGenerator, FlexibilityPlotsDefinitionsGenerator
 import core.utils
 
@@ -41,6 +41,7 @@ class BatchedIntraExpGraphGenerator:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
+        self.logger = logging.getLogger(__name__)
 
     def __call__(self,
                  main_config: dict,
@@ -51,20 +52,21 @@ class BatchedIntraExpGraphGenerator:
         """
         Generate all intra-experiment graphs for all experiments in the batch.
         """
-        batch_output_root = self.cmdopts["output_root"]
-        batch_graph_root = self.cmdopts["graph_root"]
-        batch_generation_root = self.cmdopts['generation_root']
-
-        exp_to_gen = core.utils.exp_range_calc(self.cmdopts, batch_output_root, batch_criteria)
+        exp_to_gen = core.utils.exp_range_calc(self.cmdopts,
+                                               self.cmdopts['batch_output_root'],
+                                               batch_criteria)
 
         for exp in exp_to_gen:
-
-            # Roots need to be modified for each experiment for correct behavior
+            exp = os.path.split(exp)[1]
             cmdopts = copy.deepcopy(self.cmdopts)
-            cmdopts["generation_root"] = os.path.join(batch_generation_root, exp)
-            cmdopts["output_root"] = os.path.join(batch_output_root, exp)
-            cmdopts["graph_root"] = os.path.join(batch_graph_root, exp)
-            if os.path.isdir(cmdopts["output_root"]) and main_config['sierra']['collate_csv_leaf'] != exp:
+            cmdopts["exp_input_root"] = os.path.join(self.cmdopts['batch_input_root'], exp)
+            cmdopts["exp_output_root"] = os.path.join(self.cmdopts['batch_output_root'], exp)
+            cmdopts["exp_graph_root"] = os.path.join(self.cmdopts['batch_graph_root'], exp)
+            cmdopts["exp_model_root"] = os.path.join(cmdopts['batch_model_root'], exp)
+            cmdopts["exp_avgd_root"] = os.path.join(cmdopts["exp_output_root"],
+                                                    main_config['sierra']['avg_output_leaf'])
+
+            if os.path.isdir(cmdopts["exp_output_root"]) and main_config['sierra']['collate_csv_leaf'] != exp:
                 IntraExpGraphGenerator(main_config,
                                        controller_config,
                                        LN_config,
@@ -76,7 +78,7 @@ class IntraExpGraphGenerator:
     """
     Generates graphs from averaged output data within a single experiment in a batch. Which graphs
     are generated is controlled by YAML configuration files parsed in
-    :class:`~pipeline.stage4.PipelineStage4`.
+    :class:`~core.pipeline.stage4.pipeline_stage4.PipelineStage4`.
     """
 
     def __init__(self,
@@ -92,35 +94,31 @@ class IntraExpGraphGenerator:
         self.LN_config = LN_config
         self.HM_config = HM_config
         self.controller_config = controller_config
+        self.logger = logging.getLogger(__name__)
 
-        self.cmdopts["output_root"] = os.path.join(self.cmdopts["output_root"],
-                                                   self.main_config['sierra']['avg_output_leaf'])
-
-        core.utils.dir_create_checked(self.cmdopts["graph_root"], exist_ok=True)
+        core.utils.dir_create_checked(self.cmdopts["exp_graph_root"], exist_ok=True)
 
     def __call__(self, batch_criteria):
         """
         Runs the following to generate graphs for each experiment in the batch:
 
-        #. :class:`~core.pipeline.pipeline_stage4.intra_exp_graph_generator.LinegraphsGenerator` to
+        #. :class:`~core.pipeline.stage4.intra_exp_graph_generator.LinegraphsGenerator` to
            generate linegraphs for each experiment in the batch.
 
-        #. :class:`~core.pipeline.pipeline_stage4.intra_exp_graph_generator.HeatmapsGenerator` to
+        #. :class:`~core.pipeline.stage4.intra_exp_graph_generator.HeatmapsGenerator` to
            generate heatmaps for each experiment in the batch.
         """
         if self.cmdopts['gen_vc_plots'] and batch_criteria.is_univar():
-            logging.info('Flexibility plots from %s', self.cmdopts['output_root'])
+            self.logger.info('Flexibility plots from %s', self.cmdopts['exp_output_root'])
             FlexibilityPlotsCSVGenerator(self.main_config, self.cmdopts)(batch_criteria)
 
         LN_targets, HM_targets = self.__calc_intra_targets()
 
-        LinegraphsGenerator(self.cmdopts["output_root"],
-                            self.cmdopts["graph_root"],
-                            LN_targets).generate()
+        if not self.cmdopts['project_no_yaml_LN']:
+            LinegraphsGenerator(self.cmdopts, LN_targets).generate()
 
-        HeatmapsGenerator(self.cmdopts["output_root"],
-                          self.cmdopts["graph_root"],
-                          HM_targets).generate()
+        if not self.cmdopts['project_no_yaml_HM']:
+            HeatmapsGenerator(self.cmdopts, HM_targets).generate()
 
     def __calc_intra_targets(self):
         """
@@ -145,10 +143,10 @@ class IntraExpGraphGenerator:
                     extra_graphs = FlexibilityPlotsDefinitionsGenerator()()
 
         LN_keys = [k for k in self.LN_config if k in keys]
-        logging.debug("Enabled linegraph categories: %s", LN_keys)
+        self.logger.debug("Enabled linegraph categories: %s", LN_keys)
 
         HM_keys = [k for k in self.HM_config if k in keys]
-        logging.debug("Enabled heatmap categories: %s", HM_keys)
+        self.logger.debug("Enabled heatmap categories: %s", HM_keys)
 
         LN_targets = [self.LN_config[k] for k in LN_keys]
         LN_targets.append({'graphs': extra_graphs})
@@ -157,77 +155,109 @@ class IntraExpGraphGenerator:
         return LN_targets, HM_targets
 
 
-class HeatmapsGenerator:
-    """
-    Generates heatmaps from averaged output data within a single experiment.
-
-    Attributes:
-        exp_output_root: Absolute path to root directory for experiment simulation outputs.
-        exp_output_root: Absolute path to root directory for experiment graph outputs.
-        targets: Dictionary of lists of dictionaries specifying what graphs should be
-                 generated.
-    """
-
-    def __init__(self, exp_output_root: str, exp_graph_root: str, targets: list) -> None:
-
-        self.exp_output_root = exp_output_root
-        self.exp_graph_root = exp_graph_root
-        self.targets = targets
-
-    def generate(self):
-        logging.info("Heatmaps from %s", self.exp_output_root)
-
-        # For each category of heatmaps we are generating
-        for category in self.targets:
-            # For each graph in each category
-            for graph in category['graphs']:
-                Heatmap(input_fpath=os.path.join(self.exp_output_root,
-                                                 graph['src_stem'] + '.csv'),
-                        output_fpath=os.path.join(self.exp_graph_root,
-                                                  graph['src_stem'] + '-hm.png'),
-                        title=graph['title'],
-                        xlabel='X',
-                        ylabel='Y').generate()
-
-
 class LinegraphsGenerator:
     """
     Generates linegraphs from averaged output data within a single experiment.
 
     Attributes:
-        exp_output_root: Absolute path to experiment simulation output directory.
+        exp_avgd_root: Absolute path to experiment simulation output directory.
         exp_graph_root: Absolute path to experiment graph output directory.
         targets: Dictionary of lists of dictionaries specifying what graphs should be
                  generated.
     """
 
-    def __init__(self, exp_output_root: str, exp_graph_root: str, targets: list) -> None:
+    def __init__(self, cmdopts: dict, targets: list) -> None:
 
-        self.exp_output_root = exp_output_root
-        self.exp_graph_root = exp_graph_root
+        self.exp_avgd_root = cmdopts['exp_avgd_root']
+        self.exp_graph_root = cmdopts["exp_graph_root"]
+        self.exp_model_root = cmdopts["exp_model_root"]
+        self.log_yscale = cmdopts['plot_log_yscale']
+        self.large_text = cmdopts['plot_large_text']
+
         self.targets = targets
+        self.logger = logging.getLogger(__name__)
 
     def generate(self):
-        logging.info("Linegraphs from %s", self.exp_output_root)
+        self.logger.info("Linegraphs from %s", self.exp_avgd_root)
 
         # For each category of linegraphs we are generating
         for category in self.targets:
             # For each graph in each category
             for graph in category['graphs']:
                 output_fpath = os.path.join(self.exp_graph_root,
-                                            graph['dest_stem'] + '.png')
+                                            'SLN-' + graph['dest_stem'] + core.config.kImageExt)
                 try:
-                    StackedLineGraph(input_stem_fpath=os.path.join(self.exp_output_root,
-                                                                   graph['src_stem']),
+                    StackedLineGraph(input_fpath=os.path.join(self.exp_avgd_root,
+                                                              graph['src_stem'] + '.csv'),
+                                     stddev_fpath=os.path.join(self.exp_avgd_root,
+                                                               graph['src_stem'] + '.stddev'),
+                                     model_fpath=os.path.join(self.exp_model_root,
+                                                              graph['dest_stem'] + '.model'),
+                                     model_legend_fpath=os.path.join(self.exp_model_root,
+                                                                     graph['dest_stem'] + '.legend'),
                                      output_fpath=output_fpath,
                                      cols=graph['cols'],
                                      title=graph['title'],
                                      legend=graph['legend'],
                                      xlabel=graph['xlabel'],
                                      ylabel=graph['ylabel'],
-                                     linestyles=graph.get('styles', None),
-                                     dashes=graph.get('dashes', None)).generate()
+                                     logyscale=self.log_yscale,
+                                     large_text=self.large_text).generate()
                 except KeyError:
                     raise KeyError('Check that the generated {0}.csv file contains the columns {1}'.format(
                         graph['src_stem'],
                         graph['cols']))
+
+
+class HeatmapsGenerator:
+    """
+    Generates heatmaps from averaged output data within a single experiment.
+
+    Attributes:
+        avgd_output_root: Absolute path to root directory for experiment simulation outputs.
+        targets: Dictionary of lists of dictionaries specifying what graphs should be
+                 generated.
+    """
+
+    def __init__(self, cmdopts: dict, targets: list) -> None:
+
+        self.exp_avgd_root = cmdopts['exp_avgd_root']
+        self.exp_graph_root = cmdopts["exp_graph_root"]
+        self.exp_model_root = cmdopts["exp_model_root"]
+        self.large_text = cmdopts['plot_large_text']
+
+        self.targets = targets
+        self.logger = logging.getLogger(__name__)
+
+    def generate(self):
+        self.logger.info("Heatmaps from %s", self.exp_avgd_root)
+
+        # For each category of heatmaps we are generating
+        for category in self.targets:
+            # For each graph in each category
+            for graph in category['graphs']:
+                if IntraExpModel2DGraphSet.model_exists(self.exp_model_root,
+                                                        graph['src_stem']):
+                    IntraExpModel2DGraphSet(self.exp_avgd_root,
+                                            self.exp_model_root,
+                                            self.exp_graph_root,
+                                            graph['src_stem'],
+                                            graph['title']).generate()
+                else:
+                    input_fpath = os.path.join(self.exp_avgd_root,
+                                               graph['src_stem'] + '.csv')
+                    output_fpath = os.path.join(self.exp_graph_root,
+                                                'HM-' + graph['src_stem'] + core.config.kImageExt)
+
+                    Heatmap(input_fpath=input_fpath,
+                            output_fpath=output_fpath,
+                            title=graph['title'],
+                            xlabel='X',
+                            ylabel='Y',
+                            large_text=self.large_text).generate()
+
+
+__api__ = ['BatchedIntraExpGraphGenerator',
+           'IntraExpGraphGenerator',
+           'LinegraphsGenerator',
+           'HeatmapsGenerator']

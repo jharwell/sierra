@@ -19,6 +19,7 @@ Classes for rendering frames (1) captured by ARGoS during simulation, (2) genera
 of SIERRA.
 """
 
+# Core packages
 import os
 import subprocess
 import logging
@@ -27,7 +28,9 @@ import multiprocessing as mp
 import queue
 import copy
 
+# 3rd party packages
 
+# Project packages
 import core.utils
 
 
@@ -36,7 +39,10 @@ class BatchedExpVideoRenderer:
     Render the video for each experiment in the specified batch directory in sequence.
     """
 
-    def __call__(self, main_config: dict, render_opts: tp.Dict[str, str], batch_exp_root: str):
+    def __call__(self,
+                 main_config: dict,
+                 render_opts: tp.Dict[str, str],
+                 batch_exp_root: str) -> None:
         """
         Arguments:
             main_config: Parsed dictionary of main YAML configuration.
@@ -69,20 +75,19 @@ class BatchedExpVideoRenderer:
 
             if render_opts['argos_rendering']:
                 opts = copy.deepcopy(render_opts)
-                opts['ofile_leaf'] = 'argos.mp4'
 
                 # ARGoS render targets are in <batch_output_root>/<exp>/<sim>/<argos_frames_leaf>,
                 # for all simulations in a given experiment (which can be a lot!).
-                for sim in os.listdir(exp_root):
+                for sim in self.__filter_sim_dirs(os.listdir(exp_root), main_config):
+                    opts['ofile_leaf'] = sim + '.mp4'
                     frames_root = os.path.join(exp_root,
                                                sim,
                                                main_config['sim']['argos_frames_leaf'])
-                    if main_config['sierra']['avg_output_leaf'] not in frames_root and \
-                            main_config['sierra']['project_frames_leaf'] not in frames_root:
-                        opts['image_dir'] = frames_root
-                        opts['output_dir'] = os.path.join(exp_root, 'videos')
-                        core.utils.dir_create_checked(opts['output_dir'], exist_ok=True)
-                        q.put(opts)
+                    opts['image_dir'] = frames_root
+                    opts['output_dir'] = os.path.join(exp_root, 'videos')
+
+                    core.utils.dir_create_checked(opts['output_dir'], exist_ok=True)
+                    q.put(copy.deepcopy(opts))
 
         # Render videos in parallel--waaayyyy faster
         for i in range(0, mp.cpu_count()):
@@ -93,7 +98,7 @@ class BatchedExpVideoRenderer:
         q.join()
 
     @staticmethod
-    def __thread_worker(q: mp.Queue, main_config: dict):
+    def __thread_worker(q: mp.Queue, main_config: dict) -> None:
         while True:
             # Wait for 3 seconds after the queue is empty before bailing
             try:
@@ -103,21 +108,31 @@ class BatchedExpVideoRenderer:
             except queue.Empty:
                 break
 
+    @staticmethod
+    def __filter_sim_dirs(sim_dirs: tp.List[str], main_config: dict) -> tp.List[str]:
+        return [s for s in sim_dirs if s not in [main_config['sierra']['avg_output_leaf'],
+                                                 main_config['sierra']['project_frames_leaf'],
+                                                 'videos']]
+
 
 class ExpVideoRenderer:
     """
-    Render all frames (.png files) in a specified input directory to a video file via ffmpeg, output
-    according to configuration.
+    Render all frames (.png/.jpg/etc files) in a specified input directory to a video file via
+    ffmpeg, output according to configuration.
 
     Arguments:
         main_config: Parsed dictionary of main YAML configuration.
         render_opts: Dictionary of render options.
+
     """
 
-    def __call__(self, main_config: dict, render_opts: tp.Dict[str, str]):
-        logging.info("Rendering images in %s,ofile_leaf=%s...",
-                     render_opts['image_dir'],
-                     render_opts['ofile_leaf'])
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(__name__)
+
+    def __call__(self, main_config: dict, render_opts: tp.Dict[str, str]) -> None:
+        self.logger.info("Rendering images in %s,ofile_leaf=%s...",
+                         render_opts['image_dir'],
+                         render_opts['ofile_leaf'])
         opts = render_opts['cmd_opts'].split(' ')
 
         cmd = ["ffmpeg",
@@ -125,7 +140,7 @@ class ExpVideoRenderer:
                "-pattern_type",
                "glob",
                "-i",
-               "'" + os.path.join(render_opts['image_dir'], "*.png") + "'"]
+               "'" + os.path.join(render_opts['image_dir'], "*" + core.config.kImageExt) + "'"]
         cmd.extend(opts)
         cmd.extend([os.path.join(render_opts['output_dir'],
                                  render_opts['ofile_leaf'])])
@@ -134,3 +149,6 @@ class ExpVideoRenderer:
                              stderr=subprocess.DEVNULL,
                              stdout=subprocess.DEVNULL)
         p.wait()
+
+
+__api__ = ['BatchedExpVideoRenderer', 'ExpVideoRenderer']

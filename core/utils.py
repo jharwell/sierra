@@ -18,44 +18,52 @@
 Miscellaneous classes/functions used in mutiple places but that don't really fit anywhere.
 """
 
-import pickle
+# Core packages
 import os
 import logging
 import typing as tp
 import time
 
+# 3rd party packages
 import numpy as np
 import pandas as pd
+from retry import retry
+
+# Project packages
+from core.vector import Vector3D
 
 
 class ArenaExtent():
     """Representation of a 2D or 3D section/chunk/volume of the arena."""
+    @staticmethod
+    def from_corners(ll: Vector3D, ur: Vector3D) -> 'ArenaExtent':
+        return ArenaExtent(ur - ll, ll)
 
-    def __init__(self,
-                 dims: tp.Tuple[int, int, int],
-                 offset: tuple = (0, 0, 0)) -> None:
-        self.offset = offset
+    def __init__(self, dims: Vector3D, origin: Vector3D = Vector3D()) -> None:
+        self.origin = origin
         self.dims = dims
+        self.ll = origin
+        self.ur = origin + dims
 
-        self.xmin = int(offset[0])
-        self.ymin = int(offset[1])
-        self.zmin = int(offset[2])
+        self.center = origin + dims / 2.0
 
-        self.xmax = offset[0] + int(dims[0])
-        self.ymax = offset[1] + int(dims[1])
-        self.zmax = offset[2] + int(dims[2])
+    def contains(self, pt: Vector3D) -> bool:
+        return pt >= self.ll and pt <= self.ur
 
-    def x(self):
-        return self.dims[0]
+    def area(self) -> float:
+        return self.dims.x * self.dims.y
 
-    def y(self):
-        return self.dims[1]
+    def xsize(self):
+        return self.dims.x
 
-    def z(self):
-        return self.dims[2]
+    def ysize(self):
+        return self.dims.y
+
+    def zsize(self):
+        return self.dims.z
 
     def __str__(self) -> str:
-        return str(self.dims) + '@' + str(self.offset)
+        return str(self.dims) + '@' + str(self.origin)
 
 
 class Sigmoid():
@@ -99,23 +107,17 @@ class ReLu():
         return max(0, self.x)
 
 
-def unpickle_exp_def(exp_def_fpath):
-    """
-    Read in all the different sets of parameter changes that were pickled to make
-    crucial parts of the experiment definition easily accessible. I don't know how
-    many there are, so go until you get an exception.
-    """
-    try:
-        with open(exp_def_fpath, 'rb') as f:
-            exp_def = set()
-            while True:
-                exp_def = exp_def | pickle.load(f)
-    except EOFError:
-        pass
-    return exp_def
+def extract_arena_dims(exp_def) -> ArenaExtent:
+    for path, attr, value in exp_def:
+        if path == ".//arena" and attr == "size":
+            x, y, z = value.split(',')
+            dims = Vector3D(float(x), float(y), float(z))
+            return ArenaExtent(dims)
+
+    return None  # type: ignore
 
 
-def scale_minmax(minval: float, maxval: float, val: float):
+def scale_minmax(minval: float, maxval: float, val: float) -> float:
     """
     Scale values from range [minval, maxval] -> [-1,1]
 
@@ -125,7 +127,7 @@ def scale_minmax(minval: float, maxval: float, val: float):
     return -1.0 + (val - minval) * (1 - (-1)) / (maxval - minval)
 
 
-def dir_create_checked(path: str, exist_ok: bool):
+def dir_create_checked(path: str, exist_ok: bool) -> None:
     try:
         os.makedirs(path, exist_ok=exist_ok)
     except FileExistsError:
@@ -133,44 +135,30 @@ def dir_create_checked(path: str, exist_ok: bool):
         raise
 
 
-def pd_csv_read(path: str, **kwargs):
-    count = 0
-    while count < 10:
-        try:
-            return pd.read_csv(path, sep=';', **kwargs)
-        except pd.errors.ParserError:
-            logging.warning("(Temporarily?) Failed to read %s", path)
-        count += 1
-    raise ValueError("Failed to read %s after 10 tries" % path)
+@retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=0.100)  # type:ignore
+def pd_csv_read(path: str, **kwargs) -> pd.DataFrame:
+    # Always specify the datatype so pandas does not have to infer it--much faster.
+    return pd.read_csv(path, sep=';', dtype=float, float_precision='high', **kwargs)
 
 
-def pd_csv_write(df: pd.DataFrame, path: str, **kwargs):
-    count = 0
-    while count < 10:
-        try:
-            df.to_csv(path, sep=';', **kwargs)
-            return
-        except pd.errors.ParserError:
-            logging.warning("(Temporarily?) Failed to write %s", path)
-        count += 1
-    raise ValueError("Failed to write %s after 10 tries" % path)
+@retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=0.100)  # type:ignore
+def pd_csv_write(df: pd.DataFrame, path: str, **kwargs) -> None:
+    df.to_csv(path, sep=';', **kwargs)
 
 
-def path_exists(path: str):
+def path_exists(path: str) -> bool:
     res = []
     for i in range(0, 10):
         if os.path.exists(path):
             res.append(True)
         else:
             res.append(False)
-            time.sleep(0.100)
+            time.sleep(0.001)
 
     return max(set(res), key=res.count)
 
 
-def get_primary_axis(criteria,
-                     primary_axis_bc: tp.List,
-                     cmdopts: dict):
+def get_primary_axis(criteria, primary_axis_bc: tp.List, cmdopts: dict) -> int:
     if cmdopts['plot_primary_axis'] == '0':
         return 0
     if cmdopts['plot_primary_axis'] == '1':
@@ -182,7 +170,7 @@ def get_primary_axis(criteria,
     return 1
 
 
-def exp_range_calc(cmdopts: dict, root_dir: str, criteria):
+def exp_range_calc(cmdopts: dict, root_dir: str, criteria) -> tp.List[str]:
     exp_all = [os.path.join(root_dir, d)
                for d in criteria.gen_exp_dirnames(cmdopts)]
 
@@ -198,7 +186,15 @@ def exp_range_calc(cmdopts: dict, root_dir: str, criteria):
     return exp_all
 
 
+def module_exists(name: str):
+    try:
+        mod = __import__(name)
+    except ImportError:
+        return False
+    else:
+        return True
+
+
 __api__ = [
     'ArenaExtent',
-    'unpickle_exp_def'
 ]

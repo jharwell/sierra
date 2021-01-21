@@ -18,55 +18,42 @@ import pickle
 import logging
 import typing as tp
 
-from core.variables import block_distribution, arena_shape
+from core.variables import arena_shape
 from core.variables import population_size
 from core.xml_luigi import XMLLuigi
 from core.generators import exp_generator
 from core.variables import physics_engines
 from core.utils import ArenaExtent as ArenaExtent
+from core.experiment_spec import ExperimentSpec
 
 
-class BaseScenarioGenerator():
+class ARGoSScenarioGenerator():
     """
-    Base class containing common functionality for generating XML changes for scenarios
-    definitions.
+    Base class containing common functionality for generating XML changes to the XML that ARGoS
+    defines independently of any project it is used with.
 
     Attributes:
         controller: The controller used for the experiment.
-        exp_def_fpath: Path to the pickle file to write generated XML changes to as needed for
-                       later retrieval.
         cmdopts: Dictionary of parsed cmdline parameters.
     """
 
     def __init__(self,
-                 exp_def_fpath: str,
+                 spec: ExperimentSpec,
                  controller: str,
                  cmdopts: dict,
                  **kwargs) -> None:
         self.controller = controller
-        self.exp_def_fpath = exp_def_fpath
+        self.spec = spec
         self.cmdopts = cmdopts
-        self.common_defs = exp_generator.ExpDefCommonGenerator(exp_def_fpath=exp_def_fpath,
-                                                               cmdopts=cmdopts,
-                                                               **kwargs)
+        self.kwargs = kwargs
+        self.logger = logging.getLogger(__name__)
 
-    @staticmethod
-    def generate_block_dist(exp_def: XMLLuigi,
-                            block_dist: block_distribution.BaseDistribution):
-        """
-        Generate XML changes for the specified block distribution.
+    def generate(self):
+        return exp_generator.ExpDefCommonGenerator(spec=self.spec,
+                                                   cmdopts=self.cmdopts,
+                                                   **self.kwargs).generate()
 
-        Does not write generated changes to the simulation definition pickle file.
-        """
-        for a in block_dist.gen_attr_changelist()[0]:
-            exp_def.attr_change(a[0], a[1], a[2])
-
-        rms = block_dist.gen_tag_rmlist()
-        if rms:  # non-empty
-            for a in rms[0]:
-                exp_def.tag_remove(a[0], a[1])
-
-    def generate_arena_shape(self, exp_def: XMLLuigi, shape: arena_shape.RectangularArena):
+    def generate_arena_shape(self, exp_def: XMLLuigi, shape: arena_shape.ArenaShape):
         """
         Generate XML changes for the specified arena shape.
 
@@ -75,64 +62,35 @@ class BaseScenarioGenerator():
         # We check for attributes before modification because if we are not rendering video, then we
         # get a bunch of spurious warnings about deleted tags/attributes.
         for a in shape.gen_attr_changelist()[0]:
-            if exp_def.has_tag(a[0]):
-                exp_def.attr_change(a[0], a[1], a[2])
+            if exp_def.has_tag(a.path):
+                exp_def.attr_change(a.path, a.attr, a.value)
 
-        with open(self.exp_def_fpath, 'ab') as f:
-            pickle.dump(shape.gen_attr_changelist()[0], f)
+        shape.gen_attr_changelist()[0].pickle(self.spec.exp_def_fpath)
 
         rms = shape.gen_tag_rmlist()
         if rms:  # non-empty
-            for a in rms[0]:
-                exp_def.tag_remove(a[0], a[1])
-
-    def generate_block_count(self, exp_def: XMLLuigi):
-        """
-        Generates XML changes for # blocks in the simulation. If specified on the cmdline, that
-        quantity is used. Otherwise, the # blocks specified in the manifest in the template input
-        file is used, and split evenly between ramp and cube blocks.
-
-        Writes generated changes to the simulation definition pickle file.
-        """
-        if self.cmdopts['n_blocks'] is not None:
-            n_blocks = self.cmdopts['n_blocks']
-        else:
-            n_blocks = int(exp_def.attr_get('.//manifest', 'n_cube')) + \
-                int(exp_def.attr_get('.//manifest', 'n_ramp'))
-
-        bd = block_distribution.Quantity([n_blocks])
-
-        for a in bd.gen_attr_changelist()[0]:
-            exp_def.attr_change(a[0], a[1], a[2])
-
-        rms = bd.gen_tag_rmlist()
-
-        if rms:  # non-empty
-            for a in rms[0]:
-                exp_def.tag_remove(a[0], a[1])
-
-        with open(self.exp_def_fpath, 'ab') as f:
-            pickle.dump(bd.gen_attr_changelist()[0], f)
+            for r in rms[0]:
+                exp_def.tag_remove(r.path, r.tag)
 
     def generate_n_robots(self, xml_luigi: XMLLuigi):
         """
-        Generate XML changes to setup # robots.
+        Generate XML changes to setup # robots if it was specified on the cmdline.
 
         Writes generated changes to the simulation definition pickle file.
         """
         if self.cmdopts['n_robots'] is None:
             return
+
         chgs = population_size.PopulationSize.gen_attr_changelist_from_list(
             [self.cmdopts['n_robots']])
         for a in chgs[0]:
-            xml_luigi.attr_change(a[0], a[1], a[2], True)
+            xml_luigi.attr_change(a.path, a.attr, a.value, True)
 
-        # Write time setup info to file for later retrieval
-        with open(self.exp_def_fpath, 'ab') as f:
-            pickle.dump(chgs[0], f)
+        # Write # robots info to file for later retrieval
+        chgs[0].pickle(self.spec.exp_def_fpath)
 
-    @staticmethod
-    def generate_physics(exp_def: XMLLuigi,
+    def generate_physics(self,
+                         exp_def: XMLLuigi,
                          cmdopts: dict,
                          engine_type: str,
                          n_engines: int,
@@ -152,209 +110,19 @@ class BaseScenarioGenerator():
         # Valid to have 0 engines here if 2D/3D were mixed but only 1 engine was specified for the
         # whole simulation.
         if n_engines == 0:
-            logging.warning("0 engines of type %s specified", engine_type)
+            self.logger.warning("0 engines of type %s specified", engine_type)
             return
 
         pe = physics_engines.factory(engine_type, n_engines, cmdopts, extents)
 
         if remove_defs:
             for a in pe.gen_tag_rmlist()[0]:
-                exp_def.tag_remove(a[0], a[1])
+                exp_def.tag_remove(a.path, a.tag)
 
-        for a in pe.gen_tag_addlist()[0]:
-            exp_def.tag_add(a[0], a[1], a[2])
-
-
-class SSGenerator(BaseScenarioGenerator):
-    """
-    Generates XML changes for single source foraging.
-
-    This includes:
-
-    - Rectangular 2x1 arena
-    - Single source block distribution
-    """
-
-    def __init__(self, *args, **kwargs) -> None:
-        BaseScenarioGenerator.__init__(self, *args, **kwargs)
-
-    def generate(self):
-        exp_def = self.common_defs.generate()
-        arena_dim = self.cmdopts["arena_dim"]
-
-        assert arena_dim.x() == 2 * arena_dim.y(),\
-            "FATAL: SS distribution requires a 2x1 arena: xdim={0},ydim={1}".format(arena_dim.x(),
-                                                                                    arena_dim.y())
-
-        self.generate_arena_shape(exp_def,
-                                  arena_shape.RectangularArenaTwoByOne(x_range=[arena_dim.x()],
-                                                                       y_range=[arena_dim.y()]))
-
-        # Generate and apply block distribution type definitions
-        super().generate_block_dist(exp_def, block_distribution.SingleSourceDistribution())
-
-        # Generate and apply # blocks definitions
-        self.generate_block_count(exp_def)
-
-        # Generate and apply robot count definitions
-        self.generate_n_robots(exp_def)
-
-        return exp_def
-
-
-class DSGenerator(BaseScenarioGenerator):
-    """
-    Generates XML changes for dual source foraging.
-
-    This includes:
-
-    - Rectangular 2x1 arena
-    - Dual source block distribution
-
-    """
-
-    def __init__(self, *args, **kwargs) -> None:
-        BaseScenarioGenerator.__init__(self, *args, **kwargs)
-
-    def generate(self):
-        exp_def = self.common_defs.generate()
-        arena_dim = self.cmdopts["arena_dim"]
-
-        assert arena_dim.x() == 2 * arena_dim.y(),\
-            "FATAL: DS distribution requires a 2x1 arena: xdim={0},ydim={1}".format(arena_dim.x(),
-                                                                                    arena_dim.y())
-
-        self.generate_arena_shape(exp_def,
-                                  arena_shape.RectangularArenaTwoByOne(x_range=[arena_dim.x()],
-                                                                       y_range=[arena_dim.y()]))
-
-        # Generate and apply block distribution type definitions
-        super().generate_block_dist(exp_def, block_distribution.DualSourceDistribution())
-
-        # Generate and apply # blocks definitions
-        self.generate_block_count(exp_def)
-
-        # Generate and apply robot count definitions
-        self.generate_n_robots(exp_def)
-
-        return exp_def
-
-
-class QSGenerator(BaseScenarioGenerator):
-    """
-    Generates XML changes for quad source foraging.
-
-    This includes:
-
-    - Square arena
-    - Quad source block distribution
-
-    """
-
-    def __init__(self, *args, **kwargs) -> None:
-        BaseScenarioGenerator.__init__(self, *args, **kwargs)
-
-    def generate(self):
-        exp_def = self.common_defs.generate()
-        arena_dim = self.cmdopts["arena_dim"]
-
-        assert arena_dim.x() == arena_dim.y(),\
-            "FATAL: QS distribution requires a square arena: xdim={0},ydim={1}".format(arena_dim.x(),
-                                                                                       arena_dim.y())
-
-        self.generate_arena_shape(exp_def, arena_shape.SquareArena(sqrange=[arena_dim.x()]))
-
-        # Generate and apply block distribution type definitions
-        source = block_distribution.QuadSourceDistribution()
-        super().generate_block_dist(exp_def, source)
-
-        # Generate and apply # blocks definitions
-        self.generate_block_count(exp_def)
-
-        # Generate and apply robot count definitions
-        self.generate_n_robots(exp_def)
-
-        return exp_def
-
-
-class PLGenerator(BaseScenarioGenerator):
-    """
-    Generates XML changes for powerlaw source foraging.
-
-    This includes:
-
-    - Square arena
-    - Powerlaw block distribution
-
-    Changes are *NOT* generated for the following:
-
-    - # robots
-
-    """
-
-    def __init__(self, *args, **kwargs) -> None:
-        BaseScenarioGenerator.__init__(self, *args, **kwargs)
-
-    def generate(self):
-        exp_def = self.common_defs.generate()
-        arena_dim = self.cmdopts["arena_dim"]
-
-        assert arena_dim.x() == arena_dim.y(),\
-            "FATAL: PL distribution requires a square arena: xdim={0},ydim={1}".format(arena_dim.x(),
-                                                                                       arena_dim.y())
-
-        self.generate_arena_shape(exp_def, arena_shape.SquareArena(sqrange=[arena_dim.x()]))
-
-        # Generate and apply block distribution type definitions
-        super().generate_block_dist(exp_def, block_distribution.PowerLawDistribution(arena_dim))
-
-        # Generate and apply # blocks definitions
-        self.generate_block_count(exp_def)
-
-        return exp_def
-
-
-class RNGenerator(BaseScenarioGenerator):
-    """
-    Generates XML changes for random foraging.
-
-    This includes:
-
-    - Square arena
-    - Random block distribution
-
-    """
-
-    def __init__(self, *args, **kwargs) -> None:
-        BaseScenarioGenerator.__init__(self, *args, **kwargs)
-
-    def generate(self):
-        exp_def = self.common_defs.generate()
-        arena_dim = self.cmdopts["arena_dim"]
-
-        assert arena_dim.x() == arena_dim.y(),\
-            "FATAL: RN distribution requires a square arena: xdim={0},ydim={1}".format(arena_dim.x(),
-                                                                                       arena_dim.y())
-
-        self.generate_arena_shape(exp_def, arena_shape.SquareArena(sqrange=[arena_dim.x()]))
-
-        # Generate and apply block distribution type definitions
-        super().generate_block_dist(exp_def, block_distribution.RandomDistribution())
-
-        # Generate and apply # blocks definitions
-        self.generate_block_count(exp_def)
-
-        # Generate and apply robot count definitions
-        self.generate_n_robots(exp_def)
-
-        return exp_def
+        for r in pe.gen_tag_addlist()[0]:
+            exp_def.tag_add(r.path, r.tag, r.attr)
 
 
 __api__ = [
-    'BaseScenarioGenerator',
-    'SSGenerator',
-    'DSGenerator',
-    'QSGenerator',
-    'PLGenerator',
-    'RNGenerator',
+    'ARGoSScenarioGenerator',
 ]

@@ -64,41 +64,21 @@ class BootstrapCmdline:
                                  Valid values can be any folder name under the ``plugins`` directory, but the ones that
                                  come with SIERRA are:
 
-                                 - ``hpc_local`` - This will direct SIERRA to run all experiments on the local machine it is
-                                   launched from using GNU parallel. The # simultaneous simulations will be determined
-                                   by:
+                                 - ``local`` - This directs SIERRA to run experiments on the local machine. See
+                                   :ref:`ln-hpc-plugin-local` for a detailed description.
 
-                                   # cores on machine / # physics engines
+                                 - ``pbs`` - The directs SIERRA to run experiments spread across multiple allocated
+                                   nodes in an HPC computing environment managed by TORQUE-PBS. See
+                                   :ref:`ln-hpc-plugin-pbs` for a detailed description.
 
-                                   If more simulations are requested than can be run in parallel, SIERRA will start
-                                   additional simulations as currently running simulations finish.
+                                 - ``slurm`` - The directs SIERRA to run experiments spread across multiple allocated
+                                   nodes in an HPC computing environment managed by SLURM. See
+                                   :ref:`ln-hpc-plugin-slurm` for a detailed description.
 
-                                 - ``hpc_msi`` - The directs SIERRA to run experiments spread across multiple allocated
-                                   nodes in the MSI computing environment.
-
-                                   The following environment variables are used/must be defined:
-
-                                   - ``PBS_NUM_PPN`` - Infer  # threads and # physics engines per simulation
-                                     # simulations to run, along with ``PBS_NUM_NODES``.
-
-                                   - ``MSICLUSTER`` - Determine the names of ARGoS executables, so that in HPC
-                                     environments with multiple clusters with different architectures ARGoS can be
-                                     compiled natively for each for maximum performance.
-
-                                 - ``PBS_NODEFILE`` and ``PBS_JOBID`` - Used to configure simulation launches.
-
-                                 - ``hpc_adhoc`` - This will direct SIERRA to run experiments on an ad-hoc network of
-                                   computers. The only requirement is that they `must` share a common filesystem for
-                                   whatever ``--sierra-root`` is.
-
-                                   The following environment variables are used to compute the # threads, # physics
-                                   engines, and # simulations to run:
-
-                                   - ``ADHOC_NODEFILE`` - Points to a file suitable for passing to GNU parallel via
-                                     --sshloginfile.
-
+                                 - ``adhoc`` - This will direct SIERRA to run experiments on an ad-hoc network of
+                                   computers. See :ref:`ln-hpc-plugin-adhoc` for a detailed description.
                                  """,
-                                 default='hpc_local')
+                                 default='local')
 
 
 class CoreCmdline:
@@ -108,7 +88,7 @@ class CoreCmdline:
     Project plugins should inherit from this class and add to its arguments as necessary. The
     following arguments **MUST** be added (or SIERRA will probably crash):
 
-    - ``--controllers``
+    - ``--controller``
 
     Attributes:
         parser:: class: `argparse.ArgumentParser`. Holds non stage-specific arguments.
@@ -235,11 +215,11 @@ class CoreCmdline:
                                  - Stage2: Run the batched experiment on a previously generated experiment. Part of
                                    default pipeline.
 
-                                 - Stage3: Process experimental results after running the batched experiment; some parts
-                                   of this can be done in parallel. Part of default pipeline.
+                                 - Stage3: Post-process experimental results after running the batched experiment; some
+                                   parts of this can be done in parallel. Part of default pipeline.
 
-                                 - Stage4: Perform graph generation after processing results for a batched
-                                   experiment. Part of default pipeline.
+                                 - Stage4: Perform deliverable generation after processing results for a batched
+                                   experiment, which can include shiny graphs and videos. Part of default pipeline.
 
                                  - Stage5: Perform graph generation for comparing controllers AFTER graph generation for
                                    batched experiments has been run. Not part of default pipeline.
@@ -268,6 +248,27 @@ class CoreCmdline:
                                  gets killed before it finishes running all experiments in the batch.
 
                                  """ + self.stage_usage_doc([2, 3, 4]))
+
+        self.parser.add_argument("--argos-rendering",
+                                 help="""
+
+                                 If passed, the ARGoS Qt/OpenGL visualization subtree should is not removed from
+                                 ``--template-input-file`` before generating experimental inputs. Otherwise, it is
+                                 removed if it exists.
+
+                                 Any files in the "frames" directory of each simulation (directory path set on a per
+                                 ``--project`` basis) will be rendered into a unique video file using ffmpeg (precise
+                                 command configurable), and output to a ``videos/<output_dir>`` in the output directory
+                                 of each simulation.
+
+                                 If this option is passed, then a 3D scenario specification should be also be specified
+                                 via ``--scenario``, otherwise camera placements will be very close to the ground, which
+                                 is not useful for larger arena/swarms.
+
+                                 This option assumes that[ffmpeg, Xvfb] programs can be found.
+
+                               """ + self.stage_usage_doc([1, 4]),
+                                 action='store_true')
 
         self.init_stage1()
         self.init_stage2()
@@ -329,16 +330,17 @@ class CoreCmdline:
 
                              """ + self.stage_usage_doc([1]),
                              default='dynamics3d')
+
         physics.add_argument("--physics-n-engines",
-                             choices=[1, 4, 6, 8, 16, 24],
+                             choices=[1, 2, 4, 6, 8, 16, 24],
                              type=int,
                              help="""
 
-                             # of physics engines to use during simulation (yay ARGoS!). If N > 1, the Defines the
-                             engines will be tiled in a uniform grid within the arena (X and Y spacing may not be the
-                             same depending on dimensions and how many engines are chosen, however), extending upward in
-                             Z to the height specified by ``--scenario`` (i.e., forming a set of "silos" rather that
-                             equal volumetric extents).
+                             # of physics engines to use during simulation (yay ARGoS!). If N > 1, the engines will be
+                             tiled in a uniform grid within the arena (X and Y spacing may not be the same depending on
+                             dimensions and how many engines are chosen, however), extending upward in Z to the height
+                             specified by ``--scenario`` (i.e., forming a set of "silos" rather that equal volumetric
+                             extents).
 
                              If 2D and 3D physics engines are mixed, then half of the specified # of engines will be
                              allocated among all arena extents cumulatively managed by each type of engine. For example,
@@ -388,8 +390,8 @@ class CoreCmdline:
                             XML tags are removed if they exist:
 
                             - `.//actuators/leds`
-
-                            Note that the `.//media/led` tag is not removed regardless if this option is passed or not.
+                            - `.//medium/leds`
+                            - `.//sensors/colored_blob_omnidirectional_camera`
 
                             """ + self.stage_usage_doc([1]),
                             action="store_true",
@@ -442,11 +444,24 @@ class CoreCmdline:
         self.stage2.add_argument("--exec-resume",
                                  help="""
 
-                                 Resume a batched experiment that was killed/stopped/etc last time SIERRA was run.
+                                 Resume a batched experiment that was killed/stopped/etc last time SIERRA was run. This
+                                 maps directly to GNU parallel's ``--resume-failed`` option.
 
                                  """ + self.stage_usage_doc([2]),
                                  action='store_true',
                                  default=False)
+
+        self.stage2.add_argument("--exec-sims-per-node",
+                                 help="""
+
+                                 Specify the maximum number of parallel simulations to run. By default this is computed
+                                 from the selected HPC environment for maximum throughput given the desired ``--n-sims``
+                                 and CPUs/allocated node. However, for some environments being able to
+                                 override the computed default can be useful.
+
+                                 """ + self.stage_usage_doc([2]),
+                                 type=int,
+                                 default=None)
 
     def init_stage3(self):
         """
@@ -486,10 +501,13 @@ class CoreCmdline:
 
                                  - ``intra`` - Generate intra-experiment graphs from the results of a single experiment
                                    within a batch, for each experiment in the batch (this can take a long time with
-                                   large batched experiments).
+                                   large batched experiments). If any intra-experiment models are defined and enabled,
+                                   those are run and the results placed on appropriate graphs.
 
                                  - ``inter`` - Generate inter-experiment graphs _across_ the results of all experiments
-                                   in a batch. These are very fast to generate, regardless of batch experiment size.
+                                   in a batch. These are very fast to generate, regardless of batch experiment size. If
+                                   any inter-experiment models are defined and enabled, those are run and the results
+                                   placed on appropriate graphs.
 
                                  - ``all`` - Generate all types of graphs.
 
@@ -506,121 +524,194 @@ class CoreCmdline:
                                  """,
                                  action='store_true')
 
+        self.stage4.add_argument("--project-no-yaml-LN",
+                                 help="""
+
+                                 Specify that the intra-experiment and inter-experiment linegraphs defined in project
+                                 YAML configuration should not be generated. Useful if you are working on something
+                                 which results in the generation of other types of graphs, and the generation of those
+                                 linegraphs is not currently needed only slows down your development cycle.
+
+                                 Performance measure, model linegraphs are still generated, if applicable.
+
+                                 """,
+                                 action='store_true')
+
+        self.stage4.add_argument("--project-no-yaml-HM",
+                                 help="""
+
+                                 Specify that the intra-experiment heatmaps defined in project YAML configuration should
+                                 not be generated. Useful if you are working on something which results in the
+                                 generation of other types of graphs, and the generation of heatmaps only slows down
+                                 your development cycle.
+
+                                 Model heatmaps are still generated, if applicable.
+                                 """,
+                                 action='store_true')
+
         # Performance measure calculation options
-        self.stage4.add_argument("--pm-scalability-from-exp0",
-                                 help="""
+        pm = self.parser.add_argument_group('Stage4: PM',
+                                            'Performance measure options for stage4')
 
-                                 If passed, then swarm scalability will be calculated based on the "speedup"
-                                 achieved by a swarm of size N in exp X relative to the performance in exp 0, as opposed
-                                 to the performance in exp X-1 (default).
-                                 """,
-                                 action='store_true')
+        pm.add_argument("--pm-scalability-from-exp0",
+                        help="""
 
-        self.stage4.add_argument("--pm-scalability-normalize",
-                                 help="""
+                        If passed, then swarm scalability will be calculated based on the "speedup" achieved by a swarm
+                        of size N in exp X relative to the performance in exp 0, as opposed to the performance in exp
+                        X-1 (default).
 
-                                 If passed, then swarm scalability will be normalized into [-1,1] via sigmoids (similar
-                                 to other performance measures), as opposed to raw values (default). This may make
-                                 graphs more or less readable/interpretable.
+                        """ + self.stage_usage_doc([4]),
+                        action='store_true')
 
-                                 """,
-                                 action='store_true')
+        pm.add_argument("--pm-scalability-normalize",
+                        help="""
 
-        self.stage4.add_argument("--pm-self-org-normalize",
-                                 help="""
+                        If passed, then swarm scalability will be normalized into [-1,1] via sigmoids (similar to other
+                        performance measures), as opposed to raw values (default). This may make graphs more or less
+                        readable/interpretable.
 
-                                 If passed, then swarm self-organization calculations will be normalized into [-1,1] via
-                                 sigmoids (similar to other performance measures), as opposed to raw values
-                                 (default). This may make graphs more or less readable/interpretable.
+                        """ + self.stage_usage_doc([4]),
+                        action='store_true')
 
-                                 """,
-                                 action='store_true')
+        pm.add_argument("--pm-self-org-normalize",
+                        help="""
 
-        self.stage4.add_argument("--pm-flexibility-normalize",
-                                 help="""
+                        If passed, then swarm self-organization calculations will be normalized into [-1,1] via sigmoids
+                        (similar to other performance measures), as opposed to raw values (default). This may make
+                        graphs more or less readable/interpretable.
 
-                                 If passed, then swarm flexibility calculations will be normalized into [-1,1] via
-                                 sigmoids (similar to other performance measures), as opposed to raw values
-                                 (default). This may make graphs more or less readable/interpretable; without
-                                 normalization, LOWER values are better.
+                        """,
+                        action='store_true')
 
-                                 """,
-                                 action='store_true')
+        pm.add_argument("--pm-flexibility-normalize",
+                        help="""
 
-        self.stage4.add_argument("--pm-robustness-normalize",
-                                 help="""
+                        If passed, then swarm flexibility calculations will be normalized into [-1,1] via sigmoids
+                        (similar to other performance measures), as opposed to raw values (default). This may make graphs
+                        more or less readable/interpretable; without normalization, LOWER values are better.
 
-                                 If passed, then swarm robustness calculations will be normalized into [-1,1] via
-                                 sigmoids (similar to other performance measures), as opposed to raw values
-                                 (default). This may make graphs more or less readable/interpretable.
+                       """ + self.stage_usage_doc([4]),
+                        action='store_true')
 
-                                 """,
-                                 action='store_true')
+        pm.add_argument("--pm-robustness-normalize",
+                        help="""
 
-        self.stage4.add_argument("--pm-all-normalize",
-                                 help="""
+                        If passed, then swarm robustness calculations will be normalized into [-1,1] via sigmoids
+                        (similar to other performance measures), as opposed to raw values (default). This may make
+                        graphs more or less readable/interpretable.
 
-                                 If passed, then swarm scalability, self-organization, flexibility, nand robustness
-                                 calculations will be normalized into [-1,1] via sigmoids (similar to other performance
-                                 measures), as opposed to raw values (default). This may make graphs more or less
-                                 readable/interpretable.
+                        """ + self.stage_usage_doc([4]),
+                        action='store_true')
 
-                                 """,
-                                 action='store_true')
-        self.stage4.add_argument("--pm-normalize-method",
-                                 choices=['sigmoid'],
-                                 help="""
+        pm.add_argument("--pm-all-normalize",
+                        help="""
 
-                                 The method to use for normalizing performance measure results,
-                                 where enabled:
+                        If passed, then swarm scalability, self-organization, flexibility, and robustness calculations
+                        will be normalized into [-1,1] via sigmoids (similar to other performance measures), as opposed
+                        to raw values (default). This may make graphs more or less readable/interpretable.
 
-                                 - ``sigmoid`` - Use a pair of sigmoids to normalize the results into
-                                   [-1, 1]. Can be used with all performance measures.
-                                 """,
-                                 default='sigmoid')
+                        """ + self.stage_usage_doc([4]),
+                        action='store_true')
+
+        pm.add_argument("--pm-normalize-method",
+                        choices=['sigmoid'],
+                        help="""
+
+                        The method to use for normalizing performance measure results,
+                        where enabled:
+
+                        - ``sigmoid`` - Use a pair of sigmoids to normalize the results into
+                          [-1, 1]. Can be used with all performance measures.
+
+                        """ + self.stage_usage_doc([4]),
+                        default='sigmoid')
 
         # Plotting options
-        self.stage4.add_argument("--plot-log-xaxis",
-                                 help="""
+        plots = self.parser.add_argument_group('Stage4: Plotting',
+                                               'Plotting options for stage4')
 
-                                 Place the set of X values used to generate intra- and inter-experiment into the
-                                 logarithmic (base 2) space. Mainly useful when the batch criteria involves large swarm
-                                 sizes, so that the plots are more readable.
+        plots.add_argument("--plot-log-xscale",
+                           help="""
 
-                                 """ +
+                           Place the set of X values used to generate intra- and inter-experiment graphs into the
+                           logarithmic space. Mainly useful when the batch criteria involves large swarm sizes, so that
+                           the plots are more readable.
 
-                                 self.bc_applicable_doc([':ref:`Population Size <ln-bc-population-size>`']) +
-                                 self.stage_usage_doc([4]),
-                                 action='store_true')
+                           """ +
 
-        self.stage4.add_argument("--plot-regression-lines",
-                                 help="""
+                           self.graphs_applicable_doc([':class:`~core.graphs.batch_ranged_graph.BatchRangedGraph`']) +
+                           self.bc_applicable_doc([':ref:`Population Density <ln-bc-population-density>`',
+                                                   ':ref:`Population Size <ln-bc-population-size>`']) +
+                           self.stage_usage_doc([4, 5]),
+                           action='store_true')
 
-                                 For all 2D generated scatterplots, plot a linear regression line and the equation of
-                                 the line to the legend. """ +
+        plots.add_argument("--plot-log-yscale",
+                           help="""
 
-                                 self.bc_applicable_doc([':ref:`SAA Noise <ln-bc-saa-noise>`']) +
-                                 self.stage_usage_doc([4]))
+                           Place the set of Y values used to generate intra- and inter-experiment graphs into the
+                           logarithmic space. Mainly useful when the batch criteria involves large swarm sizes, so that
+                           the plots are more readable.
 
-        self.stage4.add_argument("--plot-primary-axis",
-                                 help="""
+                           """ +
+
+                           self.graphs_applicable_doc([':class:`~core.graphs.batch_ranged_graph.BatchRangedGraph`',
+                                                       ':class:`~core.graphs.stacked_line_graph.StackedLineGraph`']) +
+                           self.bc_applicable_doc([':ref:`Population Size <ln-bc-population-size>`',
+                                                   ':ref:`Population Density <ln-bc-population-density>`']) +
+                           self.stage_usage_doc([4, 5]),
+                           action='store_true')
+
+        plots.add_argument("--plot-regression-lines",
+                           help="""
+
+                           For all 2D generated scatterplots, plot a linear regression line and the equation of the line
+                           to the legend. """ +
+
+                           self.graphs_applicable_doc([':class:`~core.graphs.batch_ranged_graph.BatchRangedGraph`']) +
+                           self.bc_applicable_doc([':ref:`SAA Noise <ln-bc-saa-noise>`']) +
+                           self.stage_usage_doc([4]))
+
+        plots.add_argument("--plot-primary-axis",
+                           help="""
 
 
-                                 For all heatmaps generated from performance measures, this option allows you to
-                                 override the primary axis, which is normally it is computed based on the batch
-                                 criteria.
+                           This option allows you to override the primary axis, which is normally it is computed
+                           based on the batch criteria.
 
-                                 For example, if the first batch criteria swarm population size, then swarm scalability
-                                 metrics will be computed by COMPUTING across .csv rows and PRJECTING down the columns
-                                 by default, since swarm size will only vary within a row. Passing a value of 1 to this
-                                 option will override this calculation, which can be useful in bivariate batch criteria
-                                 in which you are interested in the effect of the OTHER non-size criteria on various
-                                 performance measures.
+                           For example, if the first batch criteria swarm population size, then swarm scalability
+                           metrics will be calculated by COMPUTING across .csv rows and PRJECTING down the columns by
+                           default, since swarm size will only vary within a row. Passing a value of 1 to this option
+                           will override this calculation, which can be useful in bivariate batch criteria in which you
+                           are interested in the effect of the OTHER non-size criteria on various performance measures.
 
-                                 0=rows
-                                 1=columns
-                                 """ + self.stage_usage_doc([4]),
-                                 default=None)
+                           0=rows
+                           1=columns
+                           """ +
+                           self.graphs_applicable_doc([':class:`~core.graphs.heatmap.Heatmap`']) +
+                           self.stage_usage_doc([4]),
+                           default=None)
+
+        plots.add_argument("--plot-large-text",
+                           help="""
+
+                           This option specifies that the title, X/Y axis labels/tick labels will should be larger than
+                           the SIERRA default. This is useful when generating graphs suitable for two column paper
+                           format where the default text size for rendered graphs will be too small to see easily. The
+                           SIERRA defaults are generally fine for the one column/journal paper format.
+                           """,
+                           action='store_true')
+
+        # Model options
+        models = self.parser.add_argument_group('Stage4: Models',
+                                                'Model options for stage4')
+        models.add_argument('--models-disable',
+                            help="""
+
+                            Disables running of all models, even if they appear in the project
+                            config file.
+
+                            """,
+                            action="store_true")
 
         # Variance curve similarity options
         vcs = self.parser.add_argument_group('Stage4: VCS',
@@ -685,30 +776,12 @@ class CoreCmdline:
         rendering = self.parser.add_argument_group(
             'Stage4: Rendering', 'Rendering options for stage4')
 
-        rendering.add_argument("--argos-rendering",
-                               help="""
-
-                               If passed, the ARGoS Qt/OpenGL visualization subtree should is not removed from
-                               ``--template-input-file`` before generating experimental inputs. Otherwise, it is removed
-                               if it exists.
-
-                               Any files in the "frames" directory of each simulation(directory path set on a per
-                               ``--project`` basis) will be rendered into a unique video file with directory using ffmpeg
-                               (precise command configurable), and output to a ``videos/argos.mp4`` in the output
-                               directory of each simulation.
-
-                               This option assumes that[ffmpeg, Xvfb] programs can be found.
-
-                               """ + self.stage_usage_doc([1, 4]),
-                               action='store_true')
-
         rendering.add_argument("--render-cmd-opts",
                                help="""
 
-                               Specify the ffmpeg options to appear between the specification of the input ``.png``
-                               files and the specification of the output file. The default is suitable for use with
-                               ARGoS frame grabbing set to a frames size of 1600x1200 to output a reasonable quality
-                               video.
+                               Specify the ffmpeg options to appear between the specification of the input image files
+                               and the specification of the output file. The default is suitable for use with ARGoS
+                               frame grabbing set to a frames size of 1600x1200 to output a reasonable quality video.
 
                                """ + self.stage_usage_doc([4]),
                                default="-r 10 -s:v 800x600 -c:v libx264 -crf 25 -filter:v scale=-2:956 -pix_fmt yuv420p")
@@ -727,7 +800,7 @@ class CoreCmdline:
 
                                - A common stem with a unique numeric ID is required for each ``.csv`` must be present
                                  for each ``.csv``.
-p
+
                                - The directory name within `` < sim_metrics_leaf > `` must be the same as the stem for each
                                  ``.csv`` file in that directory. For example, if the directory name was
                                  ``swarm-distribution`` under `` < sim_metrics_leaf > `` then all ``.csv`` files within that
@@ -835,6 +908,16 @@ p
         """
         Define cmdline arguments for stage 5.
         """
+        self.stage5.add_argument("--controllers-list",
+                                 help="""
+
+                                 Comma separated list of controllers to compare within `` < sierra root > ``.
+
+                                 The first controller in this list will be used for as the controller of primary
+                                 interest if ``--comparison-type`` is passed.
+
+                                 """ + self.stage_usage_doc([5]))
+
         self.stage5.add_argument("--controllers-legend",
                                  help="""
 
@@ -844,6 +927,41 @@ p
 
                                  """ + self.stage_usage_doc([5],
                                                             "If omitted: the raw controller names will be used."))
+
+        self.stage5.add_argument("--scenarios-list",
+                                 help="""
+
+                                 Comma separated list of scenarios to compare ``--controller`` across within `` < sierra
+                                 root > ``.
+
+                                 """ + self.stage_usage_doc([5]))
+
+        self.stage5.add_argument("--scenarios-legend",
+                                 help="""
+
+                                 Comma separated list of names to use on the legend for the generated inter-scenario
+                                 controller comparison graphs(if applicable), specified in the same order as the
+                                 `--scenarios-list`.
+
+                                 """ + self.stage_usage_doc([5],
+                                                            "If omitted: the raw scenario names will be used."))
+        self.stage5.add_argument("--scenario-comparison",
+                                 help="""
+
+                                 Perform a comparison of ``--controller`` across `--scenarios-list` (univariate batch
+                                 criteria only).
+                                 """ + self.stage_usage_doc([5],
+                                                            "Either ``--scenario-comparison`` or ``--controller-comparison`` must be passed."),
+                                 action='store_true')
+
+        self.stage5.add_argument("--controller-comparison",
+                                 help="""
+
+                                 Perform a comparison of ``--controllers-list`` across all scenarios at least one
+                                 controller has been run on..
+                                 """ + self.stage_usage_doc([5],
+                                                            "Either ``- -scenario-comparison`` or ``--controller-comparison`` must be passed."),
+                                 action='store_true')
 
         self.stage5.add_argument("--comparison-type",
                                  choices=['raw1D', 'raw2D', 'raw3D', 'scale2D',
@@ -922,17 +1040,7 @@ p
                                  """ + self.stage_usage_doc([5]),
                                  action='store_true')
 
-        self.stage5.add_argument("--controllers-list",
-                                 help="""
-
-                                 Comma separated list of controllers to compare within `` < sierra root > ``.
-
-                                 The first controller in this list will be used for as the controller of primary
-                                 interest if ``--comparison-type`` is passed.
-
-                                 """ + self.stage_usage_doc([5]))
-
-    @staticmethod
+    @ staticmethod
     def cs_methods_doc():
         return r"""
 
@@ -972,14 +1080,19 @@ p
           - Normalized domain: N/A.
         """
 
-    @staticmethod
-    def stage_usage_doc(stages: tp.List[int], omitted: str = "If omitted: N/A."):
-        return "\n.. admonition:: Stage usage\n\n   Used by stage{" + ",".join(map(str, stages)) + "}; can be omitted otherwise. " + omitted + "\n"
+    @ staticmethod
+    def stage_usage_doc(stages: tp.List[int], omitted: str = "If omitted: N/A.") -> str:
+        return "\n.. ADMONITION:: Stage usage\n\n   Used by stage{" + ",".join(map(str, stages)) + "}; can be omitted otherwise. " + omitted + "\n"
 
-    @staticmethod
-    def bc_applicable_doc(criteria: tp.List[str]):
+    @ staticmethod
+    def bc_applicable_doc(criteria: tp.List[str]) -> str:
         lst = "".join(map(lambda bc: "   - " + bc + "\n", criteria))
         return "\n.. ADMONITION:: Applicable batch criteria\n\n" + lst + "\n"
+
+    @ staticmethod
+    def graphs_applicable_doc(graphs: tp.List[str]) -> str:
+        lst = "".join(map(lambda graph: "   - " + graph + "\n", graphs))
+        return "\n.. ADMONITION:: Applicable graphs\n\n" + lst + "\n"
 
 
 class CoreCmdlineValidator():
@@ -990,6 +1103,8 @@ class CoreCmdlineValidator():
 
     def __call__(self, args):
         assert len(args.batch_criteria) <= 2, "FATAL: Too many batch criteria passed"
+
+        assert args.sierra_root is not None, '--sierra-root is required for all stages'
 
         if len(args.batch_criteria) == 2:
             assert args.batch_criteria[0] != args.batch_criteria[1], \
@@ -1002,12 +1117,20 @@ class CoreCmdlineValidator():
         assert isinstance(args.batch_criteria, list), \
             'FATAL Batch criteria not passed as list on cmdline'
 
-        if any([1, 2]) in args.pipeline:
-            assert args.n_sims is not None, '--n-sims is required'
+        if any([1]) in args.pipeline:
+            assert args.n_sims is not None, '--n-sims is required for running stage 1'
+            assert args.template_input_file is not None, '--template-input-file is required for running stage 1'
+            assert args.scenario is not None, '--scenario is required for running stage 1'
+
+        if any([1, 2, 3, 4]) in args.pipeline:
+            assert len(args.batch_criteria) > 0, '--batch-criteria is required for running stages 1-4'
+            assert args.controller is not None, '--controller is required for running stages 1-4'
 
         if 5 in args.pipeline:
             assert args.bc_univar or args.bc_bivar, \
                 '--bc-univar or --bc-bivar is required for stage 5'
+            assert args.scenario_comparison or args.controller_comparison,\
+                '--scenario-comparison or --controller-comparison required for stage 5'
 
 
 def sphinx_cmdline_core():
@@ -1029,6 +1152,4 @@ def sphinx_cmdline_bootstrap():
 __api__ = [
     'BootstrapCmdline',
     'CoreCmdline',
-
-
 ]

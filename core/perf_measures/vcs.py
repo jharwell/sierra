@@ -31,7 +31,7 @@ from core.variables.batch_criteria import BatchCriteria
 from core.variables.temporal_variance_parser import TemporalVarianceParser
 
 
-def method_xlabel(method: str):
+def method_xlabel(method: str) -> str:
     """
     Return the X-label of the method used for calculating the curve similarity.
     """
@@ -45,7 +45,7 @@ def method_xlabel(method: str):
     return labels[method]
 
 
-def method_ylabel(method: str, arg):
+def method_ylabel(method: str, arg) -> str:
     """
     Return the Y-label of the method used for calculating the curve similarity.
 
@@ -87,7 +87,9 @@ class EnvironmentalCS():
         self.exp_num = exp_num
         self.main_config = main_config
 
-    def __call__(self, criteria: BatchCriteria, exp_dirs: tp.List[str] = None):
+    def __call__(self,
+                 criteria: BatchCriteria,
+                 exp_dirs: tp.List[str] = None) -> float:
         ideal_var_df = DataFrames.expx_var_df(self.cmdopts,
                                               criteria,
                                               exp_dirs,
@@ -244,7 +246,7 @@ class AdaptabilityCS():
         ideal_data[:, 1] = ideal_df[self.perf_csv_col].values
         return ideal_data, exp_data
 
-    def __call__(self, exp_dirs: tp.List[str] = None):
+    def __call__(self, exp_dirs: tp.List[str] = None) -> float:
         ideal_data, exp_data = self.calc_waveforms(exp_dirs)
 
         return CSRaw()(exp_data=exp_data,
@@ -369,7 +371,7 @@ class CSRaw():
                  ideal_data,
                  method: str,
                  normalize: tp.Optional[bool] = False,
-                 normalize_method: tp.Optional[str] = None):
+                 normalize_method: tp.Optional[str] = None) -> float:
         assert method is not None, "FATAL: Cannot compare curves without method"
 
         if method == "pcm":
@@ -383,6 +385,7 @@ class CSRaw():
         elif method == "curve_length":
             return sm.curve_length_measure(exp_data, ideal_data)
         else:
+            assert False, "Bad method {0}".format(method)
             return None
 
     @staticmethod
@@ -421,7 +424,7 @@ class DataFrames:
             dirs = exp_dirs
 
         try:
-            path = os.path.join(cmdopts['output_root'],
+            path = os.path.join(cmdopts['batch_exp_root'],
                                 dirs[exp_num],
                                 avg_output_leaf,
                                 tv_environment_csv)
@@ -444,7 +447,7 @@ class DataFrames:
             dirs = exp_dirs
 
         try:
-            path = os.path.join(cmdopts['output_root'],
+            path = os.path.join(cmdopts['batch_exp_root'],
                                 dirs[exp_num],
                                 avg_output_leaf,
                                 intra_perf_csv)

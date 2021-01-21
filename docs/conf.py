@@ -17,6 +17,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+import subprocess
 import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
@@ -104,8 +105,12 @@ autoapi_modules = {
     'core.pipeline': {'output': 'api/core'},
     'core.variables': {'output': 'api/core'},
     'core.graphs': {'output': 'api/core'},
-    'plugins.fordyca': {'output': 'api/plugins'},
-    'plugins.silicon': {'output': 'api/plugins'}
+    'core.xml_luigi': {'output': 'api/core'},
+    'core.utils': {'output': 'api/core'},
+    'core.experiment_spec': {'output': 'api/core'},
+    'core.models.interface': {'output': 'api/core/models'},
+    'core.models.graphs': {'output': 'api/core/models'},
+    'plugins.hpc': {'output': 'api/plugins/hpc'}
 }
 
 xref_links = {
@@ -123,6 +128,9 @@ xref_links = {
                       "http://users.umiacs.umd.edu/~sarit/data/articles/rosenfeldetalbook06.pdf"),
     "FORDYCA": ("FORDYCA", "https://swarm-robotics-fordyca.readthedocs.io"),
     "SILICON": ("SILICON", "https://swarm-robotics-silicon.readthedocs.io"),
+    "COSM": ("COSM", "https://swarm-robotics-cosm.readthedocs.io"),
+    "RCPPSW": ("RCPPSWSILICON", "https://swarm-robotics-rcppsw.readthedocs.io"),
+    "RCSW": ("RCSW", "https://swarm-robotics-rcsw.readthedocs.io"),
     "LIBRA": ("LIBRA", "https://swarm-robotics-libra.readthedocs.io")
 }
 
@@ -221,28 +229,33 @@ texinfo_documents = [
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}
+intersphinx_mapping = {'python3': ('https://docs.python.org/3', None),
+                       'numpy': ('https://numpy.org/doc/stable/', None),
+                       'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
+                       'matplotlib': ('https://matplotlib.org', None),
+                       'sphinx': ('https://www.sphinx-doc.org/en/stable/', None),
+                       'pandas': ('https://pandas.pydata.org/docs/', None),
+                       'implements': ('https://implements.readthedocs.io/en/latest/', None)
+                       }
 
 # HACK! The [FORDYCA, SILICON] plugin repos are needed to get the SIERRA docs to build, and
 # readthedocs doesn't support a nice way updating submodules to something other than the master
 # branch after SIERRA is switched from the master to the devel branch.
-import subprocess
-import os
 cwd = os.getcwd()
-if not os.path.exists(os.path.join(os.getcwd(), "../plugins/fordyca")):
+if not os.path.exists(os.path.join(os.getcwd(), "../projects/fordyca")):
     subprocess.run(["git",
                     "clone",
                     "https://github.com/swarm-robotics/sierra-plugin-fordyca",
-                    "../plugins/fordyca"])
-    os.chdir("../plugins/fordyca")
+                    "../projects/fordyca"])
+    os.chdir("../projects/fordyca")
     subprocess.run(["git", "checkout", "devel"])
     os.chdir(cwd)
 
-if not os.path.exists(os.path.join(os.getcwd(), "../plugins/silicon")):
+if not os.path.exists(os.path.join(os.getcwd(), "../projects/silicon")):
     subprocess.run(["git",
                     "clone",
                     "https://github.com/swarm-robotics/sierra-plugin-silicon",
-                    "../plugins/silicon"])
-    os.chdir("../plugins/silicon")
+                    "../projects/silicon"])
+    os.chdir("../projects/silicon")
     subprocess.run(["git", "checkout", "devel"])
     os.chdir(cwd)

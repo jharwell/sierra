@@ -3,18 +3,9 @@
 Batch Criteria
 ==============
 
-How get get SIERRA to DO stuff for you. A batch criteria can encompass a single
-variable definition (univariate), or be defined by two variables
-(bivariate). Each variable is a dimension along which one or more parameters in
-the template input file provided to sierra can be varied.
-
-Univariate batch criteria have one dimension, and so the graphs produced by them
-are (usually) linegraphs with a numerical representation of the range for the
-variable on the X axis, and some other quantity of interest on the Y.
-
-Bivariate batch criteria have two dimensions, and so the graphs produced by the
-are (usually) heatmaps with the first variable in the criteria on the X axis,
-the second on the Y, and the quantity of interest on the Z.
+See :term:`Batch Criteria` fo a detailed explanation of batch criteria, but the
+short version is that they are the core of SIERRA--how to get it to DO stuff for
+you.
 
 The SIERRA core defines the following batch criteria (additional criteria can be
 defined by the selected project):
@@ -22,6 +13,7 @@ defined by the selected project):
   - :ref:`Swarm Population Size <ln-bc-population-size>`
   - :ref:`Swarm Population Dynamics <ln-bc-population-dynamics>`
   - :ref:`Swarm Population Density <ln-bc-population-density>`
+  - :ref:`Block Quantity <ln-bc-block-quantity>`
   - :ref:`Block Density <ln-bc-block-density>`
   - :ref:`Block Motion Dynamics <ln-bc-block-motion-dynamics>`
   - :ref:`Temporal Variance <ln-bc-tv>`
@@ -37,7 +29,8 @@ independently. I have not tried all combinations, so YMMV.
    All batch criteria only *modify* existing XML attributes, and will not create
    new XML tags or attributes if they do not exist. So, any attribute under a
    given tag that will be modified by a batch criteria will need to exist in
-   whatever file you pass with ``--template-input-file``.
+   whatever file you pass with ``--template-input-file``. If a batch criteria
+   tries to modify a non-existent XML attribute, a warning will be issued.
 
 .. _ln-bc-population-size:
 
@@ -58,8 +51,8 @@ Cmdline Syntax
 - ``N`` - The maximum swarm size.
 
 Examples:
-    - ``static.Log1024``: Static swarm sizes 1...1024
-    - ``static.Linear1000``: Static swarm sizes 100...1000
+    - ``Log1024``: Static swarm sizes 1...1024
+    - ``Linear1000``: Static swarm sizes 100...1000
 
 .. _ln-bc-population-dynamics:
 
@@ -165,6 +158,32 @@ Examples:
 .. NOTE:: This criteria is for `constant` density of robots as swarm sizes
           increase. For `variable` robot density, use
           :ref:`ln-bc-population-size`.
+
+
+.. _ln-bc-block-quantity:
+
+Block Quantity
+--------------
+
+.. _ln-bc-block-quantity-cmdline:
+
+Cmdline Syntax
+^^^^^^^^^^^^^^
+``block_quantity.{block_type}.{increment_type}{N}``
+
+- ``block_type`` - ``cube`` or ``ramp``, depending on what type of blocks you
+  want to control the count of.
+
+- ``increment_type`` - {Log,Linear}. If ``Log``, then swarm sizes for each
+  experiment are distributed 1...N by powers of 2. If ``Linear`` then block
+  counts for each experiment are distributed linearly between 1...N, split evenly
+  into 10 different sizes.
+
+- ``N`` - The maximum block count.
+
+Examples:
+    - ``cube.Log1024``: Cube block counts 1...1024
+    - ``ramp.Linear1000``: Ramp block counts 100...1000
 
 
 .. _ln-bc-block-density:
@@ -366,14 +385,14 @@ Task Allocation Policy
 
 Cmdline Syntax
 ^^^^^^^^^^^^^^
-``ta_policy_set.All[.Z{population}]``
+``ta_policy_set.all[.Z{population}]``
 
 ``population`` - The swarm size to use (optional)
 
 Examples:
 
-- ``All.Z16``: All possible task allocation policies with swarms of size 16.
-- ``All``: All possible task allocation policies; swarm size not modified.
+- ``all.Z16``: All possible task allocation policies with swarms of size 16.
+- ``all``: All possible task allocation policies; swarm size not modified.
 
 
 .. _ln-bc-saa-noise:

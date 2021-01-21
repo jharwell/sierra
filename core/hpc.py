@@ -14,11 +14,23 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
-Dispatcher classes for the various HPC plugins that can be used with SIERRA for running
+Classes for the various HPC plugins that can be used with SIERRA for running
 experiments.
 """
+
+# Core packages
 import os
+
+# 3rd party packages
+from singleton_decorator import singleton
+
+# Project packages
 import core.plugin_manager
+
+
+@singleton
+class HPCPluginManager(core.plugin_manager.DirectoryPluginManager):
+    pass
 
 ################################################################################
 # Dispatchers
@@ -30,8 +42,8 @@ class ARGoSCmdGenerator():
     Dispatcher to generate the ARGoS cmd to run for a simulation, given its input file.
     """
 
-    def __call__(self, cmdopts: dict, input_fpath: str):
-        hpc = core.plugin_manager.PluginManager().get_plugin(cmdopts['hpc_env'])
+    def __call__(self, cmdopts: dict, input_fpath: str) -> str:
+        hpc = HPCPluginManager().get_plugin(cmdopts['hpc_env'])
         return hpc.argos_cmd_generate(input_fpath)
 
 
@@ -39,10 +51,18 @@ class GNUParallelCmdGenerator():
     """
     Dispatcher to generate the GNU Parallel cmd SIERRA will use to run experiments in the specified
     HPC environment.
+
+    Passes the following dictionary to the configured HPC plugin:
+    - jobroot_path - The root directory for the batch experiment.
+    - exec_resume - Is this a resume of a previously run experiment?
+    - n_jobs - How many parallel jobs are allowed per node?
+    - joblog_path - The logfile for GNU parallel output.
+    - cmdfile_path - The file containing the ARGoS cmds to run.
+
     """
 
-    def __call__(self, hpc_env: str, parallel_opts: dict):
-        hpc = core.plugin_manager.PluginManager().get_plugin(hpc_env)
+    def __call__(self, hpc_env: str, parallel_opts: dict) -> str:
+        hpc = HPCPluginManager().get_plugin(hpc_env)
         return hpc.gnu_parallel_cmd_generate(parallel_opts)
 
 
@@ -52,8 +72,8 @@ class XvfbCmdGenerator():
     rendering.
     """
 
-    def __call__(self, cmdopts: dict):
-        hpc = core.plugin_manager.PluginManager().get_plugin(cmdopts['hpc_env'])
+    def __call__(self, cmdopts: dict) -> str:
+        hpc = HPCPluginManager().get_plugin(cmdopts['hpc_env'])
         return hpc.xvfb_cmd_generate(cmdopts)
 
 
@@ -64,14 +84,14 @@ class EnvConfigurer():
 
     def __call__(self, hpc_env: str, args):
         args.__dict__['hpc_env'] = hpc_env
-        hpc = core.plugin_manager.PluginManager().get_plugin(hpc_env)
+        hpc = HPCPluginManager().get_plugin(hpc_env)
         hpc.env_configure(args)
         return args
 
 
 class EnvChecker():
     """
-    Verify the configured HPC environment before running any experiments.
+    Verify the configured HPC environment before running any experiments during stage 2.
     """
 
     def __call__(self):
