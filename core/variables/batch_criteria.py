@@ -54,6 +54,7 @@ class IConcreteBatchCriteria(implements.Interface):
             A list of values to use as the X axis tick values for graph generation.
 
         """
+        raise NotImplementedError
 
     def graph_xticklabels(self,
                           cmdopts: dict,
@@ -69,6 +70,7 @@ class IConcreteBatchCriteria(implements.Interface):
             A list of values to use as the X axis tick labels for graph generation.
 
         """
+        raise NotImplementedError
 
     def graph_xlabel(self, cmdopts: dict) -> str:
         """
@@ -76,6 +78,7 @@ class IConcreteBatchCriteria(implements.Interface):
             The X-label that should be used for the graphs of various performance measures across
             batch criteria.
         """
+        raise NotImplementedError
 
     def pm_query(self, pm: str) -> bool:
         """
@@ -87,6 +90,7 @@ class IConcreteBatchCriteria(implements.Interface):
             `True` if the specified pm should be generated for the current object, and
             `False` otherwise.
         """
+        raise NotImplementedError
 
     def inter_exp_graphs_exclude_exp0(self) -> bool:
         """
@@ -94,6 +98,7 @@ class IConcreteBatchCriteria(implements.Interface):
 
         Needed for correct stage5 comparison graph generation for univariate criteria.
         """
+        raise NotImplementedError
 
 
 class IBivarBatchCriteria(implements.Interface):
@@ -112,6 +117,7 @@ class IBivarBatchCriteria(implements.Interface):
             generation.
 
         """
+        raise NotImplementedError
 
     def graph_yticklabels(self,
                           cmdopts: dict,
@@ -127,6 +133,7 @@ class IBivarBatchCriteria(implements.Interface):
             A list of values to use as the Y axis tick labels for graph generation.
 
         """
+        raise NotImplementedError
 
     def graph_ylabel(self, cmdopts: dict) -> str:
         """
@@ -134,6 +141,7 @@ class IBivarBatchCriteria(implements.Interface):
             The Y-label that should be used for the graphs of various performance measures across
             batch criteria. Only needed by bivar batch criteria.
         """
+        raise NotImplementedError
 
 
 class IBatchCriteriaType(implements.Interface):

@@ -67,12 +67,12 @@ class PipelineStage5:
                 # We add the controller list to the directory path for the .csv and graph directories so
                 # that multiple runs of stage5 with different controller sets do not overwrite each
                 # other (i.e. make stage5 idempotent).
-                'cc_graphs': os.path.join(self.cmdopts['sierra_root'],
-                                          self.cmdopts['project'],
-                                          '+'.join(self.controllers) + "-cc-graphs"),
-                'cc_csvs': os.path.join(self.cmdopts['sierra_root'],
-                                        self.cmdopts['project'],
-                                        '+'.join(self.controllers) + "-cc-csvs"),
+                'graphs': os.path.join(self.cmdopts['sierra_root'],
+                                       self.cmdopts['project'],
+                                       '+'.join(self.controllers) + "-cc-graphs"),
+                'csvs': os.path.join(self.cmdopts['sierra_root'],
+                                     self.cmdopts['project'],
+                                     '+'.join(self.controllers) + "-cc-csvs"),
             }
 
         else:
@@ -84,15 +84,15 @@ class PipelineStage5:
                 # We add the scenario list to the directory path for the .csv and graph directories so
                 # that multiple runs of stage5 with different scenario sets do not overwrite each other
                 # (i.e. make stage5 idempotent).
-                'sc_graphs': os.path.join(self.cmdopts['sierra_root'],
-                                          self.cmdopts['project'],
-                                          '+'.join(self.scenarios) + "-sc-graphs"),
-                'sc_csvs': os.path.join(self.cmdopts['sierra_root'],
-                                        self.cmdopts['project'],
-                                        '+'.join(self.scenarios) + "-sc-csvs"),
-                'sc_models': os.path.join(self.cmdopts['sierra_root'],
-                                          self.cmdopts['project'],
-                                          '+'.join(self.scenarios) + "-sc-models"),
+                'graphs': os.path.join(self.cmdopts['sierra_root'],
+                                       self.cmdopts['project'],
+                                       '+'.join(self.scenarios) + "-sc-graphs"),
+                'csvs': os.path.join(self.cmdopts['sierra_root'],
+                                     self.cmdopts['project'],
+                                     '+'.join(self.scenarios) + "-sc-csvs"),
+                'models': os.path.join(self.cmdopts['sierra_root'],
+                                       self.cmdopts['project'],
+                                       '+'.join(self.scenarios) + "-sc-models"),
             }
 
         else:
@@ -137,8 +137,8 @@ class PipelineStage5:
 
         if cli_args.bc_univar:
             univar = intrasc.UnivarIntraScenarioComparator(self.controllers,
-                                                           self.output_roots['cc_csvs'],
-                                                           self.output_roots['cc_graphs'],
+                                                           self.output_roots['csvs'],
+                                                           self.output_roots['graphs'],
                                                            self.cmdopts,
                                                            cli_args,
                                                            self.main_config)
@@ -147,8 +147,8 @@ class PipelineStage5:
                    comp_type=self.cmdopts['comparison_type'])
         else:
             bivar = intrasc.BivarIntraScenarioComparator(self.controllers,
-                                                         self.output_roots['cc_csvs'],
-                                                         self.output_roots['cc_graphs'],
+                                                         self.output_roots['csvs'],
+                                                         self.output_roots['graphs'],
                                                          self.cmdopts,
                                                          cli_args,
                                                          self.main_config)
@@ -172,7 +172,7 @@ class PipelineStage5:
         assert cli_args.bc_univar,\
             "FATAL: inter-scenario controller comparison only valid for univariate batch criteria"
 
-        roots = {k: self.output_roots[k] for k in ('sc_csvs', 'sc_graphs', 'sc_models')}
+        roots = {k: self.output_roots[k] for k in ('csvs', 'graphs', 'models')}
         comparator = intersc.UnivarInterScenarioComparator(self.cmdopts['controller'],
                                                            self.scenarios,
                                                            roots,

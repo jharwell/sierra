@@ -1,19 +1,16 @@
-How to Add A New Intra-Experiment Graph Category
-================================================
+How to Activate New Intra-Experiment Graph Category
+===================================================
 
-If you add a new intra-experiment graph category, it will not automatically be
+If you added a new intra-experiment graph category, it will not automatically be
 used to generate graphs for existing or new controllers. You will need to modify
-the ``controllers.yaml`` file to specify which controllers your new category of
-graphs should be generated for.
+the ``<project_root>/config/controllers.yaml`` file to specify which controllers
+your new category of graphs should be generated for.
 
 How to Add A New Intra-Experiment Graph
 =======================================
 
 There are two types of intra-experiment graphs: linegraphs and heatmaps, and
 each has their own config file (details of each is below).
-
-**TEST YOUR NEW GRAPH TO VERIFY IT DOES NOT CRASH**. If it does, that likely
-means that the .csv file the graph is build from is not being generated properly.
 
 Linegraphs
 ----------

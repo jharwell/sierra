@@ -41,18 +41,21 @@ class IConcreteIntraExpModel1D(implements.Interface):
         row (e.g., row 7 contains the model prediction for simulation interval 7).
 
         """
+        raise NotImplementedError
 
     def run_for_exp(self, criteria: bc.IConcreteBatchCriteria, cmdopts: dict, i: int) -> bool:
         """
         Some models may only be valid/make sense to run for a subset of experiments within a batch,
         so models can be selectively executed with this function.
         """
+        raise NotImplementedError
 
     def target_csv_stems(self) -> tp.List[str]:
         """
         Return a list of ``.csv`` file stems (sans directory path and extension) that the model is
         targeting.
         """
+        raise NotImplementedError
 
     def legend_names(self) -> tp.List[str]:
         """
@@ -60,11 +63,13 @@ class IConcreteIntraExpModel1D(implements.Interface):
         of the target :class:`~core.graphs.stacked_line_graph.StackedLineGraph` they are each
         attached to.
         """
+        raise NotImplementedError
 
     def __repr__(self) -> str:
         """
         Return the UUID string of the model name.
         """
+        raise NotImplementedError
 
 
 class IConcreteIntraExpModel2D(implements.Interface):
@@ -78,12 +83,14 @@ class IConcreteIntraExpModel2D(implements.Interface):
         dataframes do not have to be the same dimensions.
 
         """
+        raise NotImplementedError
 
     def run_for_exp(self, criteria: bc.IConcreteBatchCriteria, cmdopts: dict, i: int) -> bool:
         """
         Some models may only be valid/make sense to run for a subset of experiments within a batch,
         so models can be selectively executed with this function.
         """
+        raise NotImplementedError
 
     def target_csv_stems(self) -> tp.List[str]:
         """
@@ -91,11 +98,13 @@ class IConcreteIntraExpModel2D(implements.Interface):
         of the target :class:`~core.graphs.stacked_line_graph.StackedLineGraph` they are each
         attached to.
         """
+        raise NotImplementedError
 
     def __repr__(self) -> str:
         """
         Return the UUID string of the model name.
         """
+        raise NotImplementedError
 
 
 class IConcreteInterExpModel1D(implements.Interface):
@@ -108,12 +117,14 @@ class IConcreteInterExpModel1D(implements.Interface):
         of the model for each experiment in the batch.
 
         """
+        raise NotImplementedError
 
     def run_for_batch(self, criteria: bc.IConcreteBatchCriteria, cmdopts: dict) -> bool:
         """
         Some models may only be valid/make sense to run for some batch criteria,
         so models can be selectively executed with this function.
         """
+        raise NotImplementedError
 
     def target_csv_stems(self) -> tp.List[str]:
         """
@@ -122,6 +133,7 @@ class IConcreteInterExpModel1D(implements.Interface):
         attached to.
 
         """
+        raise NotImplementedError
 
     def legend_names(self) -> tp.List[str]:
         """
@@ -129,11 +141,13 @@ class IConcreteInterExpModel1D(implements.Interface):
         of the target: class: `~core.graphs.batch_ranged_graph.BatchRangedGraph` they are each
         attached to.
         """
+        raise NotImplementedError
 
     def __repr__(self) -> str:
         """
         Return the UUID string of the model name.
         """
+        raise NotImplementedError
 
 
 __api__ = ['IConcreteIntraExpModel1D',

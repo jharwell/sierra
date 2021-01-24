@@ -27,8 +27,8 @@ import implements
 # Project packages
 from core.variables.base_variable import IBaseVariable
 from core.utils import ArenaExtent
-import core.variables.time_setup as time_setup
-from core.xml_luigi import XMLAttrChange, XMLAttrChangeSet, XMLTagRmList, XMLTagAddList, XMLTagRm, XMLTagAdd
+import core.variables.time_setup as ts
+from core.xml_luigi import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList, XMLTagRm, XMLTagAdd
 
 
 @implements.implements(IBaseVariable)
@@ -45,7 +45,7 @@ class CameraTimeline():
     # If this default changes in ARGoS, it will need to be updated here too.
     kARGOS_N_CAMERAS = 12
 
-    def __init__(self, tsetup: time_setup.TimeSetup, extents: tp.List[ArenaExtent]) -> None:
+    def __init__(self, tsetup: ts.ARGoSTimeSetup, extents: tp.List[ArenaExtent]) -> None:
         self.extents = extents
         self.tsetup = tsetup
 
@@ -69,7 +69,7 @@ class CameraTimeline():
         adds = XMLTagAddList(XMLTagAdd('./visualization/qt-opengl', 'camera', {}),
                              XMLTagAdd("./visualization/qt-opengl/camera", "placements", {}))
 
-        in_ticks = self.tsetup.sim_duration * time_setup.kTICKS_PER_SECOND
+        in_ticks = self.tsetup.duration * ts.kTICKS_PER_SECOND
         adds.append(XMLTagAdd('.//qt-opengl/camera', 'timeline', {'loop': str(in_ticks)}))
 
         for c in range(0, self.kARGOS_N_CAMERAS):
@@ -89,7 +89,7 @@ def factory(cmdopts: dict, extents: tp.List[ArenaExtent]) -> CameraTimeline:
     """
     Create cameras for a list of arena extents.
     """
-    return CameraTimeline(time_setup.factory(cmdopts["time_setup"]), extents)
+    return CameraTimeline(ts.factory(cmdopts["time_setup"]), extents)
 
 
 __api__ = [

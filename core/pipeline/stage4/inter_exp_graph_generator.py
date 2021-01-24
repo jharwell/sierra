@@ -138,12 +138,11 @@ class LinegraphsGenerator:
                                                                      graph['dest_stem'] + '.legend'),
                                      output_fpath=os.path.join(self.cmdopts['batch_collate_graph_root'],
                                                                'SLN-' + graph['dest_stem'] + core.config.kImageExt),
-                                     cols=None,
                                      title=graph['title'],
-                                     legend=None,
                                      xlabel=graph['xlabel'],
                                      ylabel=graph['ylabel'],
-                                     logyscale=self.cmdopts['plot_log_yscale']).generate()
+                                     logyscale=self.cmdopts['plot_log_yscale'],
+                                     large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class UnivarPerfMeasuresGenerator:

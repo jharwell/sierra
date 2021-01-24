@@ -56,8 +56,8 @@ def scenario_generator_create(spec: ExperimentSpec, controller, **kwargs):
         cmdopts = kwargs['cmdopts']
 
         self.logger = logging.getLogger(__name__)
+        path = 'projects.{0}.generators.scenario_generators'.format(cmdopts['project'])
         try:
-            path = 'projects.{0}.generators.scenario_generators'.format(cmdopts['project'])
             module = __import__(path, fromlist=["*"])
         except ModuleNotFoundError:
             self.logger.exception("module %s must exist!", path)

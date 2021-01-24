@@ -252,21 +252,11 @@ class CoreCmdline:
         self.parser.add_argument("--argos-rendering",
                                  help="""
 
-                                 If passed, the ARGoS Qt/OpenGL visualization subtree should is not removed from
-                                 ``--template-input-file`` before generating experimental inputs. Otherwise, it is
-                                 removed if it exists.
+                                 Enable ARGoS built in frame capture during stage 2+SIERRA rendering of captured frames
+                                 during stage 4. See :ref:`ln-usage-rendering` for full details.
 
-                                 Any files in the "frames" directory of each simulation (directory path set on a per
-                                 ``--project`` basis) will be rendered into a unique video file using ffmpeg (precise
-                                 command configurable), and output to a ``videos/<output_dir>`` in the output directory
-                                 of each simulation.
-
-                                 If this option is passed, then a 3D scenario specification should be also be specified
-                                 via ``--scenario``, otherwise camera placements will be very close to the ground, which
-                                 is not useful for larger arena/swarms.
-
-                                 This option assumes that[ffmpeg, Xvfb] programs can be found.
-
+                                 This option slows things down a LOT, so if you use it, ``--n-sims`` should probably be
+                                 low, unless you have gobs of computing power available.
                                """ + self.stage_usage_doc([1, 4]),
                                  action='store_true')
 
@@ -283,10 +273,8 @@ class CoreCmdline:
         self.stage1.add_argument("--time-setup",
                                  help="""
 
-                                 Defines simulation length, ticks per second. From this SIERRA computes:
-
-                                 - The output interval for each ``.csv`` of one-dimensional data generated during
-                                   simulation.
+                                 Defines simulation length, ticks per second, number of datapoints to capture/capture
+                                 interval for each simulation. See :ref:`ln-vars-ts` for a full description.
 
                                  """ + self.stage_usage_doc([1]),
                                  default="time_setup.T5000")
@@ -789,24 +777,9 @@ class CoreCmdline:
         rendering.add_argument("--project-imagizing",
                                help="""
 
-                               Projects can generate ``.csv`` files residing in subdirectories within the the
-                               `` < sim_metrics_leaf > `` directory(directory path set on a per ``--project`` basis) for
-                               each ARGoS simulation, in addition to generating ``.csv`` files residing directly in the
-                               `` < sim_metrics_leaf > `` directory. If this option is passed, then the ``.csv`` files
-                               residing each subdirectory under the `` < sim_metrics_leaf > `` directory(no recursive
-                               nesting is allowed) in each simulation are treated as snapshots of 2D or 3D data over
-                               time, and will be averaged together across simulations and then turn into image files
-                               suitable for video rendering in stage 4. The following restrictions apply:
-
-                               - A common stem with a unique numeric ID is required for each ``.csv`` must be present
-                                 for each ``.csv``.
-
-                               - The directory name within `` < sim_metrics_leaf > `` must be the same as the stem for each
-                                 ``.csv`` file in that directory. For example, if the directory name was
-                                 ``swarm-distribution`` under `` < sim_metrics_leaf > `` then all ``.csv`` files within that
-                                 directory must be named according to
-                                 ``swarm-distribution/swarm-distributionXXXXX.csv``, where XXXXX is any length numeric
-                                 prefix(possibly preceded by an underscore or dash).
+                               Enable generation of image files from ``.csv`` files captured during stage 2 and averaged
+                               during stage 3 for each experiment. See :ref:`ln-usage-rendering-project-imagizing` for
+                               details and restrictions.
 
                                .. IMPORTANT:: Averaging the image ``.csv`` files and generating the images for each
                                   experiment does not happen automatically as part of stage 3 because it can take a LONG
@@ -817,12 +790,13 @@ class CoreCmdline:
         rendering.add_argument("--project-rendering",
                                help="""
 
-                               Specify that the imagized ``.csv`` files previously created should be used to generate a
-                               set of a videos in `` < experiment root > /videos/<metric_dir_name > .mp4``. This does not
-                               happen automatically every time as part of stage 4 because it can take a LONG time and is
-                               idempotent.
+                               Enable generation of videos from imagized ``.csv`` files created as a result of
+                               ``--project-imagizing``. See :ref:`ln-usage-rendering-project` for details.
 
-                               This option assumes that[ffmpeg] programs can be found.
+                               .. IMPORTANT::
+
+                                  This does not happen automatically every time as part of stage 4 because it
+                                  can take a LONG time and is idempotent.
 
                                """ + self.stage_usage_doc([4]),
                                action='store_true')
@@ -1003,16 +977,16 @@ class CoreCmdline:
           - Normalized domain: N/A.
         """
 
-    @ staticmethod
+    @staticmethod
     def stage_usage_doc(stages: tp.List[int], omitted: str = "If omitted: N/A.") -> str:
         return "\n.. ADMONITION:: Stage usage\n\n   Used by stage{" + ",".join(map(str, stages)) + "}; can be omitted otherwise. " + omitted + "\n"
 
-    @ staticmethod
+    @staticmethod
     def bc_applicable_doc(criteria: tp.List[str]) -> str:
         lst = "".join(map(lambda bc: "   - " + bc + "\n", criteria))
         return "\n.. ADMONITION:: Applicable batch criteria\n\n" + lst + "\n"
 
-    @ staticmethod
+    @staticmethod
     def graphs_applicable_doc(graphs: tp.List[str]) -> str:
         lst = "".join(map(lambda graph: "   - " + graph + "\n", graphs))
         return "\n.. ADMONITION:: Applicable graphs\n\n" + lst + "\n"

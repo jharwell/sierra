@@ -16,15 +16,13 @@
 #
 
 # Core packages
-import os
 import logging
 import typing as tp
-import copy
 
 # 3rd party packages
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
+import matplotlib.pyplot as plt
 import matplotlib as mpl
 import matplotlib.ticker as mticker
 

@@ -142,8 +142,8 @@ def factory(cli_arg: str, main_config: dict, batch_input_root: str, **kwargs):
 
     def gen_variances(attr: dict):
 
+        amps_key = attr['variance_type'] + '_amp'
         try:
-            amps_key = attr['variance_type'] + '_amp'
             amps = main_config['perf']['flexibility'][amps_key]
             hzs = main_config['perf']['flexibility']['hz']
         except KeyError:

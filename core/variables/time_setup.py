@@ -15,17 +15,7 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Time Setup Definition:
-
-    T{duration}[N{# datapoints per simulation}
-
-    duration = Duration of simulation in seconds
-    # datapoints per simulation = # rows in each .csv for all metrics (i.e. the granularity)
-
-Examples:
-
-    ``T1000``: Simulation will be 1000 seconds long, default (50) # datapoints.
-    ``T2000N100``: Simulation will be 2000 seconds long, 100 datapoints (1 every 20 seconds).
+Classes for the ``--time-setup`` cmdline option. See :ref:`ln-vars-ts` for usage documentation.
 """
 
 # Core packages
@@ -38,6 +28,12 @@ import implements
 from core.variables.base_variable import IBaseVariable
 from core.xml_luigi import XMLAttrChangeSet, XMLAttrChange, XMLTagRmList, XMLTagAddList
 
+kTICKS_PER_SECOND = 5
+"""
+Default # times each controller will be run per second in simulation.
+"""
+
+
 k1D_DATA_POINTS = 50
 """
 Default # datapoints in each .csv of one-dimensional data.
@@ -49,20 +45,14 @@ Default divisor for the output interval for  each .csv of two- or three-dimensio
 compared to the output interval for 1D data.
 """
 
-kTICKS_PER_SECOND = 5
-"""
-Default # times each controller will be run per second in simulation.
-"""
-
 
 @implements.implements(IBaseVariable)
-class TimeSetup():
+class ARGoSTimeSetup():
     """
     Defines the simulation duration, metric collection interval.
 
     Attributes:
-        sim_duration: The simulation duration in seconds, NOT timesteps.
-        metric_interval: Base interval for metric collection.
+        duration: The simulation duration in seconds, NOT timesteps.
     """
     @staticmethod
     def extract_explen(exp_def):
@@ -75,28 +65,18 @@ class TimeSetup():
                 return int(value)
         return None
 
-    def __init__(self, sim_duration: int, metric_interval: int) -> None:
-        self.sim_duration = sim_duration
-        self.metric_interval = metric_interval
+    def __init__(self, duration: int) -> None:
+        self.duration = duration
         self.attr_changes = []  # type: tp.List
 
     def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         if not self.attr_changes:
             self.attr_changes = [XMLAttrChangeSet(XMLAttrChange(".//experiment",
                                                                 "length",
-                                                                "{0}".format(self.sim_duration)),
+                                                                "{0}".format(self.duration)),
                                                   XMLAttrChange(".//experiment",
                                                                 "ticks_per_second",
                                                                 "{0}".format(kTICKS_PER_SECOND)),
-                                                  XMLAttrChange(".//output/metrics/append",
-                                                                "output_interval",
-                                                                "{0}".format(self.metric_interval)),
-                                                  XMLAttrChange(".//output/metrics/truncate",
-                                                                "output_interval",
-                                                                "{0}".format(self.metric_interval)),
-                                                  XMLAttrChange(".//output/metrics/create",
-                                                                "output_interval",
-                                                                "{0}".format(max(1, self.metric_interval / kND_DATA_DIVISOR)))
                                                   )]
         return self.attr_changes
 
@@ -105,11 +85,6 @@ class TimeSetup():
 
     def gen_tag_addlist(self) -> tp.List[XMLTagAddList]:
         return []
-
-
-class TInterval(TimeSetup):
-    def __init__(self) -> None:
-        super().__init__(int(1000 / kTICKS_PER_SECOND), int(1000 / k1D_DATA_POINTS))
 
 
 class Parser():
@@ -132,9 +107,9 @@ class Parser():
         ret = {}
 
         if "N" in time_str:
-            ret["sim_duration"] = int(time_str.split("N")[0][1:])
+            ret["duration"] = int(time_str.split("N")[0][1:])
         else:
-            ret["sim_duration"] = int(time_str[1:])
+            ret["duration"] = int(time_str[1:])
         return ret
 
     @staticmethod
@@ -150,19 +125,20 @@ class Parser():
         return ret
 
 
-def factory(time_str: str) -> TimeSetup:
+def factory(cmdline: str) -> ARGoSTimeSetup:
     """
-    Factory to create :class:`TimeSetup` derived classes from the command line definition.
+    Factory to create :class:`ARGoSTimeSetup` derived classes from the command line definition.
+
+    Parameters:
+       cmdline: The value of ``--time-setup``
     """
-    attr = Parser()(time_str.split(".")[1])
+    attr = Parser()(cmdline.split(".")[1])
 
     def __init__(self) -> None:
-        TimeSetup.__init__(self,
-                           attr["sim_duration"],
-                           int(attr["sim_duration"] * kTICKS_PER_SECOND / attr["n_datapoints"]))
+        ARGoSTimeSetup.__init__(self, attr["duration"])
 
-    return type(time_str,  # type: ignore
-                (TimeSetup,),
+    return type(cmdline,  # type: ignore
+                (ARGoSTimeSetup,),
                 {"__init__": __init__})
 
 
@@ -170,6 +146,5 @@ __api__ = [
     'k1D_DATA_POINTS',
     'kND_DATA_DIVISOR',
     'kTICKS_PER_SECOND',
-    'TimeSetup',
-    'TInterval',
+    'ARGoSTimeSetup',
 ]

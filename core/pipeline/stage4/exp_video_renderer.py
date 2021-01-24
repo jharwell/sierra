@@ -32,6 +32,7 @@ import copy
 
 # Project packages
 import core.utils
+import core.config
 
 
 class BatchedExpVideoRenderer:

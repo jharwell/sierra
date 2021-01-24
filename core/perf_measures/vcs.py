@@ -392,7 +392,7 @@ class CSRaw():
     def __calc_dtw(exp_data,
                    ideal_data,
                    normalize: tp.Optional[bool],
-                   normalize_method: tp.Optional[str]):
+                   normalize_method: tp.Optional[str]) -> float:
         # Don't use the sm version--waaayyyy too slow
         dist, _ = fastdtw.fastdtw(exp_data, ideal_data)
 
@@ -407,7 +407,7 @@ class CSRaw():
                 # Lower distance is better, so invert the usual sigmoid signs to normalize into
                 # [-1,1], where higher values are better.
                 return core.utils.Sigmoid(-dist)() - core.utils.Sigmoid(dist)()
-            return None
+            raise NotImplementedError
 
 
 class DataFrames:
@@ -417,17 +417,17 @@ class DataFrames:
                     exp_dirs: tp.Optional[tp.List[str]],
                     avg_output_leaf: str,
                     tv_environment_csv: str,
-                    exp_num: int):
+                    exp_num: int) -> pd.DataFrame:
         if exp_dirs is None:
             dirs = criteria.gen_exp_dirnames(cmdopts)
         else:
             dirs = exp_dirs
 
+        path = os.path.join(cmdopts['batch_exp_root'],
+                            dirs[exp_num],
+                            avg_output_leaf,
+                            tv_environment_csv)
         try:
-            path = os.path.join(cmdopts['batch_exp_root'],
-                                dirs[exp_num],
-                                avg_output_leaf,
-                                tv_environment_csv)
             return core.utils.pd_csv_read(path)
         except (FileNotFoundError, IndexError):
             logging.fatal("%s does not exist for exp num %s",
@@ -440,17 +440,17 @@ class DataFrames:
                      exp_dirs: tp.Optional[tp.List[str]],
                      avg_output_leaf: str,
                      intra_perf_csv: str,
-                     exp_num: int):
+                     exp_num: int) -> pd.DataFrame:
         if exp_dirs is None:
             dirs = criteria.gen_exp_dirnames(cmdopts)
         else:
             dirs = exp_dirs
 
+        path = os.path.join(cmdopts['batch_exp_root'],
+                            dirs[exp_num],
+                            avg_output_leaf,
+                            intra_perf_csv)
         try:
-            path = os.path.join(cmdopts['batch_exp_root'],
-                                dirs[exp_num],
-                                avg_output_leaf,
-                                intra_perf_csv)
             return core.utils.pd_csv_read(path)
         except (FileNotFoundError, IndexError):
             logging.fatal("%s does not exist for exp num %s",

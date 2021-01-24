@@ -2,21 +2,25 @@ How to Add A New Intra-Experiment Model
 =======================================
 
 If you add a new intra-experiment model, it will not automatically be run during
-stage 4. You will need to modify the ``models.yaml`` file to enable your model.
+stage 4. You will need to modify the ``<project>/config/models.yaml`` file to
+enable your model.
 
 
-With ``models.yaml``, each model has the following YAML fields under a root
-``models`` dictionary:
+With ``<project>/config/models.yaml``, each model has the following YAML fields
+under a root ``models`` dictionary:
 
 - ``pyfile`` - The name of the python file with the ``models/`` directory for
   the project where the model name be found. This also serves as the name of the
   model within SIERRA.
 
+Each model specified in ``models.yaml`` can take any number of parameters of any
+type; they will be parsed and passed to the model constructor as part of
+``config``.
 
 Model File Requirements
 -----------------------
 
-#. All model files need to be placed in ``<project_root>/models``.
+#. All model files need to be placed in ``<project>/models``.
 
 #. Not all classes in a model ``.py`` must be models.
 

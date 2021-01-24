@@ -93,13 +93,13 @@ class UnivarIntraScenarioComparator:
         # The FS gives us batch leaves which might not be in the same order as the list of specified
         # scenarios, so we:
         #
-        # 1. Remove all batch leaves which do not have a counterpart in the scenario list we are
+        # 1. Remove all batch leaves which do not have a counterpart in the controller list we are
         #    comparing across.
         # 2. Do matching to get the indices of the batch leaves relative to the list, and then sort
         #    it.
-        batch_leaves = [leaf for leaf in batch_leaves for s in self.scenarios if s in leaf]
-        indices = [self.scenarios.index(s)
-                   for leaf in batch_leaves for s in self.scenarios if s in leaf]
+        batch_leaves = [leaf for leaf in batch_leaves for s in self.controllers if s in leaf]
+        indices = [self.controllers.index(s)
+                   for leaf in batch_leaves for s in self.controllers if s in leaf]
         batch_leaves = [leaf for s, leaf in sorted(zip(indices, batch_leaves),
                                                    key=lambda pair: pair[0])]
 

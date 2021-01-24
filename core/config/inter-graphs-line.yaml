@@ -13,7 +13,6 @@ LN_fsm_interference:
       title: 'Average Robots Experiencing Interference (cumulative)'
       xlabel: 'Interval'
       ylabel: '# Robots'
-      batch: True
 
     - src_stem: fsm-interference-counts
       dest_stem: interference-entered-int-avg
@@ -217,7 +216,6 @@ LN_block_manip:
       title: 'Average Free Block Drop Events (Cumulative)'
       xlabel: 'Interval'
       ylabel: '# Drops'
-      batch: True
 
     - src_stem: block-manipulation
       dest_stem: block-manip-free-pickup-penalty-cum-avg

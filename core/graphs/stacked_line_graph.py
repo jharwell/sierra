@@ -16,9 +16,6 @@
 #
 
 # Core packages
-import core.config
-import core.utils
-import matplotlib.pyplot as plt
 import logging
 import typing as tp
 import copy
@@ -26,10 +23,14 @@ import copy
 # 3rd party packages
 import pandas as pd
 import matplotlib
-matplotlib.use('Agg')
-plt.rcParams["axes.prop_cycle"] = plt.cycler("color", plt.cm.tab20.colors)
+import matplotlib.pyplot as plt
 
 # Project packages
+import core.config
+import core.utils
+
+matplotlib.use('Agg')
+plt.rcParams["axes.prop_cycle"] = plt.cycler("color", plt.cm.tab20.colors)
 
 
 class StackedLineGraph:
@@ -54,8 +55,8 @@ class StackedLineGraph:
                  xlabel: str,
                  ylabel: str,
                  large_text: bool = False,
-                 legend: tp.List[str] = None,
-                 cols: tp.List[str] = None,
+                 legend: tp.List[str] = [],
+                 cols: tp.List[str] = [],
                  logyscale: bool = False,
                  stddev_fpath=None,
                  model_fpath: str = None,
@@ -109,7 +110,7 @@ class StackedLineGraph:
                 model_legend = ['Model Prediction']
 
         # Plot specified columns from dataframe.
-        if self.cols is None:
+        if not self.cols:
             ncols = max(1, int(len(data_df.columns) / 3.0))
             ax = self._plot_selected_cols(data_df, stddev_df, data_df.columns, model_df)
         else:

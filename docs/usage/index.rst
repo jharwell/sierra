@@ -8,9 +8,11 @@ How To Use SIERRA
    :caption: Contents
 
    batch_criteria.rst
+   variables.rst
    cli.rst
    directories.rst
    msi.rst
+   rendering.rst
 
 Step by Step
 ------------

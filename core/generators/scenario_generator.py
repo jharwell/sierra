@@ -49,9 +49,9 @@ class ARGoSScenarioGenerator():
         self.logger = logging.getLogger(__name__)
 
     def generate(self):
-        return exp_generator.ExpDefCommonGenerator(spec=self.spec,
-                                                   cmdopts=self.cmdopts,
-                                                   **self.kwargs).generate()
+        return exp_generator.ARGoSExpDefGenerator(spec=self.spec,
+                                                  cmdopts=self.cmdopts,
+                                                  **self.kwargs).generate()
 
     def generate_arena_shape(self, exp_def: XMLLuigi, shape: arena_shape.ArenaShape):
         """

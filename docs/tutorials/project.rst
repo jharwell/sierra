@@ -1,4 +1,4 @@
-.. _ln-contrib-project:
+.. _ln-tutorial-project:
 
 How to Add A New Project
 ========================
