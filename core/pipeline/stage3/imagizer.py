@@ -31,38 +31,43 @@ import queue
 from core.graphs.heatmap import Heatmap
 import core.utils
 import core.config
+import core.variables.batch_criteria as bc
 
 
-class BatchedExpImagizer:
+class BatchExpParallelImagizer:
     """
     Generate the images for each experiment in the specified batch directory.
     """
 
-    def __call__(self, main_config: dict, HM_config: dict, batch_exp_root: str) -> None:
+    def __init__(self, main_config: dict, cmdopts: dict) -> None:
+        self.main_config = main_config
+        self.cmdopts = cmdopts
+
+    def __call__(self, HM_config: dict, criteria: bc.IConcreteBatchCriteria) -> None:
         """
         Arguments:
             main_config: Parsed dictionary of main YAML configuration.
             render_opts: Dictionary of render options.
             batch_exp_root: Root directory for the batch experiment.
         """
-        experiments = [d for d in os.listdir(batch_exp_root)
-                       if main_config['sierra']['collate_csv_leaf'] not in d]
+        exp_to_imagize = core.utils.exp_range_calc(self.cmdopts,
+                                                   self.cmdopts['batch_output_root'],
+                                                   criteria)
 
         q = mp.JoinableQueue()  # type: mp.JoinableQueue
 
-        for exp in experiments:
-            exp_root = os.path.join(batch_exp_root, exp)
-            avg_root = os.path.join(exp_root, main_config['sierra']['avg_output_leaf'])
-            for m in os.listdir(avg_root):
-                metrics_path = os.path.join(avg_root, m)
-                if os.path.isdir(metrics_path):
-                    imagize_output_root = os.path.join(batch_exp_root,
-                                                       exp,
-                                                       main_config['sierra']['project_frames_leaf'],
-                                                       m)
+        for exp in exp_to_imagize:
+            stat_root = os.path.join(self.cmdopts['batch_stat_root'], exp)
+            imagize_root = os.path.join(self.cmdopts['batch_imagize_root'], exp)
+
+            for leaf in os.listdir(stat_root):
+                candidate_path = os.path.join(stat_root, leaf)
+
+                if os.path.isdir(candidate_path):
+                    imagize_output_root = os.path.join(imagize_root, leaf)
                     imagize_opts = {
-                        'csv_dir_root': avg_root,
-                        'csv_dir': m,
+                        'csv_dir_root': stat_root,
+                        'csv_dir': candidate_path,
                         'output_root': imagize_output_root
                     }
 
@@ -70,14 +75,14 @@ class BatchedExpImagizer:
                     q.put(imagize_opts)
 
         for _ in range(0, mp.cpu_count()):
-            p = mp.Process(target=BatchedExpImagizer.__thread_worker,
+            p = mp.Process(target=BatchExpParallelImagizer._thread_worker,
                            args=(q, HM_config))
             p.start()
 
         q.join()
 
     @staticmethod
-    def __thread_worker(q: mp.Queue, HM_config: dict) -> None:
+    def _thread_worker(q: mp.Queue, HM_config: dict) -> None:
         while True:
             # Wait for 3 seconds after the queue is empty before bailing
             try:

@@ -466,15 +466,32 @@ class CoreCmdline:
                                  """ + self.stage_usage_doc([3]),
                                  action='store_true',
                                  default=False)
-        self.stage3.add_argument("--gen-stddev",
+        self.stage3.add_argument("--dist-stats",
+                                 choices=['none', 'conf95', 'bw'],
                                  help="""
 
-                                 If passed, then the standard deviation will be calculated from averaged data and error
-                                 bars will be included on *some* generated intra-experiment linegraphs during stage 4.
+                                 Specify what kinds of statistics, if any, should be calculated from the distribution of
+                                 experimental data for inclusion on graphs during stage 4:
 
-                                 """ + self.stage_usage_doc([3]),
-                                 action="store_true",
-                                 default=False)
+                                 - ``none`` - Only calculate and show raw mean on graphs.
+
+                                 - ``conf95`` - Calculate standard deviation of experimental distribution and show 95%
+                                   confidence interval on relevant graphs.
+
+                                 - ``bw`` - Calculate median, upper/lower quartiles, and whiskers of experimental
+                                   distribution for showing 95% confidence interval AND a short summary of the
+                                   distribution of the experimental data via box and whiskey plots. For the box and
+                                   whiskers plots, the upper/lower limits of the whiskers are set to the (5,95)
+                                   percentile.
+
+                                 - ``all`` - Effectively pass both ``conf95`` `and` ``bw``.
+
+                                 """
+                                 +
+                                 self.graphs_applicable_doc([':class:`~core.graphs.summary_line_graph95.SummaryLinegraph95`',
+                                                             ':class:`~core.graphs.stacked_line_graph.StackedLineGraph`'])
+                                 + self.stage_usage_doc([3]),
+                                 default='none')
 
     def init_stage4(self):
         """
@@ -626,7 +643,7 @@ class CoreCmdline:
 
                            """ +
 
-                           self.graphs_applicable_doc([':class:`~core.graphs.batch_ranged_graph.BatchRangedGraph`']) +
+                           self.graphs_applicable_doc([':class:`~core.graphs.summary_line_graph95.SummaryLinegraph95`']) +
                            self.bc_applicable_doc([':ref:`Population Density <ln-bc-population-density>`',
                                                    ':ref:`Population Size <ln-bc-population-size>`']) +
                            self.stage_usage_doc([4, 5]),
@@ -641,7 +658,7 @@ class CoreCmdline:
 
                            """ +
 
-                           self.graphs_applicable_doc([':class:`~core.graphs.batch_ranged_graph.BatchRangedGraph`',
+                           self.graphs_applicable_doc([':class:`~core.graphs.summary_line_graph95.SummaryLinegraph95`',
                                                        ':class:`~core.graphs.stacked_line_graph.StackedLineGraph`']) +
                            self.bc_applicable_doc([':ref:`Population Size <ln-bc-population-size>`',
                                                    ':ref:`Population Density <ln-bc-population-density>`']) +
@@ -654,7 +671,7 @@ class CoreCmdline:
                            For all 2D generated scatterplots, plot a linear regression line and the equation of the line
                            to the legend. """ +
 
-                           self.graphs_applicable_doc([':class:`~core.graphs.batch_ranged_graph.BatchRangedGraph`']) +
+                           self.graphs_applicable_doc([':class:`~core.graphs.summary_line_graph95.SummaryLinegraph95`']) +
                            self.bc_applicable_doc([':ref:`SAA Noise <ln-bc-saa-noise>`']) +
                            self.stage_usage_doc([4]))
 
@@ -1006,9 +1023,9 @@ class CoreCmdlineValidator():
             assert args.batch_criteria[0] != args.batch_criteria[1], \
                 "FATAL: Duplicate batch criteria passed"
 
-        if args.gen_stddev:
+        if args.dist_stats != 'none':
             assert len(args.batch_criteria) == 1, \
-                "FATAL: Stddev generation only supported with univariate batch criteria"
+                "FATAL: Statistics generation only supported with univariate batch criteria"
 
         assert isinstance(args.batch_criteria, list), \
             'FATAL Batch criteria not passed as list on cmdline'

@@ -34,7 +34,7 @@ import core.perf_measures.robustness as pmb
 import core.perf_measures.flexibility as pmf
 import core.utils
 from core.graphs.stacked_line_graph import StackedLineGraph
-from core.graphs.batch_ranged_graph import BatchRangedGraph
+from core.graphs.summary_line_graph95 import SummaryLinegraph95
 from core.variables import batch_criteria as bc
 import core.config
 
@@ -55,14 +55,7 @@ class InterExpGraphGenerator:
         self.main_config = main_config
         self.targets = targets
 
-        collate_csv_leaf = self.main_config['sierra']['collate_csv_leaf']
-        collate_graph_leaf = self.main_config['sierra']['collate_graph_leaf']
-
-        self.cmdopts['batch_collate_root'] = os.path.abspath(os.path.join(self.cmdopts['batch_output_root'],
-                                                                          collate_csv_leaf))
-        self.cmdopts["batch_collate_graph_root"] = os.path.abspath(os.path.join(self.cmdopts['batch_graph_root'],
-                                                                                collate_graph_leaf))
-        core.utils.dir_create_checked(self.cmdopts['batch_collate_graph_root'], exist_ok=True)
+        core.utils.dir_create_checked(self.cmdopts['batch_graph_collate_root'], exist_ok=True)
         self.logger = logging.getLogger(__name__)
 
     def __call__(self, criteria: bc.IConcreteBatchCriteria):
@@ -93,7 +86,7 @@ class LinegraphsGenerator:
     by this class ignore the ``--exp-range`` cmdline option.
 
     Attributes:
-      batch_collate_root: Absolute path to root directory for collated csvs.
+      batch_stat_collate_root: Absolute path to root directory for collated csvs.
       batch_graph_root: Absolute path to root directory where the generated graphs should be saved.
       targets: Dictionary of parsed YAML configuration controlling what graphs should be generated.
     """
@@ -104,39 +97,36 @@ class LinegraphsGenerator:
         self.logger = logging.getLogger(__name__)
 
     def generate(self, criteria: bc.IConcreteBatchCriteria):
-        self.logger.info("Linegraphs from %s", self.cmdopts['batch_collate_root'])
+        self.logger.info("Linegraphs from %s", self.cmdopts['batch_stat_collate_root'])
         # For each category of linegraphs we are generating
         for category in self.targets:
             # For each graph in each category
             for graph in category['graphs']:
-                if graph.get('batch', False):
-                    BatchRangedGraph(input_fpath=os.path.join(self.cmdopts['batch_collate_root'],
-                                                              graph['dest_stem'] + '.csv'),
-                                     stddev_fpath=os.path.join(self.cmdopts['batch_collate_root'],
-                                                               graph['dest_stem'] + '.stddev'),
-                                     model_fpath=os.path.join(self.cmdopts['batch_model_root'],
-                                                              graph['dest_stem'] + '.model'),
-                                     model_legend_fpath=os.path.join(self.cmdopts['batch_model_root'],
-                                                                     graph['dest_stem'] + '.legend'),
-                                     output_fpath=os.path.join(self.cmdopts['batch_collate_graph_root'],
-                                                               'BR-' + graph['dest_stem'] + core.config.kImageExt),
-                                     title=graph['title'],
-                                     xlabel=criteria.graph_xlabel(self.cmdopts),
-                                     ylabel=graph['ylabel'],
-                                     xticks=criteria.graph_xticks(self.cmdopts),
-                                     xtick_labels=criteria.graph_xticklabels(self.cmdopts),
-                                     logyscale=self.cmdopts['plot_log_yscale'],
-                                     large_text=self.cmdopts['plot_large_text']).generate()
+                if graph.get('summary', False):
+                    SummaryLinegraph95(stats_root=self.cmdopts['batch_stat_collate_root'],
+                                       input_stem=graph['dest_stem'],
+                                       output_fpath=os.path.join(self.cmdopts['batch_graph_collate_root'],
+                                                                 'SM95-' + graph['dest_stem'] + core.config.kImageExt),
+
+                                       stats=self.cmdopts['dist_stats'],
+                                       model_root=self.cmdopts['batch_model_root'],
+                                       title=graph['title'],
+                                       xlabel=criteria.graph_xlabel(self.cmdopts),
+                                       ylabel=graph['ylabel'],
+                                       xticks=criteria.graph_xticks(self.cmdopts),
+                                       xtick_labels=criteria.graph_xticklabels(self.cmdopts),
+                                       logyscale=self.cmdopts['plot_log_yscale'],
+                                       large_text=self.cmdopts['plot_large_text']).generate()
                 else:
-                    StackedLineGraph(input_fpath=os.path.join(self.cmdopts['batch_collate_root'],
+                    StackedLineGraph(input_fpath=os.path.join(self.cmdopts['batch_stat_collate_root'],
                                                               graph['dest_stem'] + '.csv'),
-                                     stddev_fpath=os.path.join(self.cmdopts['batch_collate_root'],
+                                     stddev_fpath=os.path.join(self.cmdopts['batch_stat_collate_root'],
                                                                graph['dest_stem'] + '.stddev'),
                                      model_fpath=os.path.join(self.cmdopts['batch_model_root'],
                                                               graph['dest_stem'] + '.model'),
                                      model_legend_fpath=os.path.join(self.cmdopts['batch_model_root'],
                                                                      graph['dest_stem'] + '.legend'),
-                                     output_fpath=os.path.join(self.cmdopts['batch_collate_graph_root'],
+                                     output_fpath=os.path.join(self.cmdopts['batch_graph_collate_root'],
                                                                'SLN-' + graph['dest_stem'] + core.config.kImageExt),
                                      title=graph['title'],
                                      xlabel=graph['xlabel'],
@@ -245,8 +235,8 @@ class BivarPerfMeasuresGenerator:
                                             batch_criteria)
 
         if batch_criteria.pm_query('self-org'):
-            alpha_S = self.main_config['perf']['emergence'].get('alpha_S', 0.5)
-            alpha_T = self.main_config['perf']['emergence'].get('alpha_T', 0.5)
+            alpha_S = self.main_config['perf'].get('emergence', {}).get('alpha_S', 0.5)
+            alpha_T = self.main_config['perf'].get('emergence', {}).get('alpha_T', 0.5)
 
             pmso.SelfOrgBivarGenerator()(self.cmdopts,
                                          inter_perf_csv,
@@ -256,8 +246,8 @@ class BivarPerfMeasuresGenerator:
                                          batch_criteria)
 
         if batch_criteria.pm_query('flexibility'):
-            alpha_R = self.main_config['perf']['flexibility'].get('alpha_R', 0.5)
-            alpha_S = self.main_config['perf']['flexibility'].get('alpha_A', 0.5)
+            alpha_R = self.main_config['perf'].get('flexibility', {}).get('alpha_R', 0.5)
+            alpha_S = self.main_config['perf'].get('flexibility', {}).get('alpha_A', 0.5)
             pmf.FlexibilityBivarGenerator()(self.cmdopts,
                                             self.main_config,
                                             alpha_R,
@@ -265,8 +255,8 @@ class BivarPerfMeasuresGenerator:
                                             batch_criteria)
 
         if batch_criteria.pm_query('robustness'):
-            alpha_SAA = self.main_config['perf']['robustness'].get('alpha_SAA', 0.5)
-            alpha_PD = self.main_config['perf']['robustness'].get('alpha_PD', 0.5)
+            alpha_SAA = self.main_config['perf'].get('robustness', {}).get('alpha_SAA', 0.5)
+            alpha_PD = self.main_config['perf'].get('emergence', {}).get('alpha_PD', 0.5)
             pmb.RobustnessBivarGenerator()(self.cmdopts,
                                            self.main_config,
                                            alpha_SAA,

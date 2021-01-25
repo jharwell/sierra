@@ -65,7 +65,7 @@ SIERRA_BASE_CMD="python3 sierra.py \
                   --project=fordyca\
                   --log-level=INFO\
                   --pipeline 4 --project-no-yaml-LN\
-                  --gen-stddev --log-level=DEBUG\
+                  --gen-stats --log-level=DEBUG\
                   --exp-overwrite\
                   --time-setup=${TIME_LONG}"
 

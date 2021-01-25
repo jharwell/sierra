@@ -10,10 +10,10 @@
 
 .. toctree::
 
-   core.graphs.batch_ranged_graph
    core.graphs.heatmap
    core.graphs.scatterplot2D
    core.graphs.stacked_line_graph
    core.graphs.stacked_surface_graph
+   core.graphs.summary_line_graph95
 
 .. currentmodule:: core.graphs

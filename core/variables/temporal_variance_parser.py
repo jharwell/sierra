@@ -58,7 +58,7 @@ class TemporalVarianceParser():
             # though that may be added in the future.
             'BC': "swarm_motion_throttle",
             'M': "swarm_motion_throttle",
-            'BM': "env_block_manip",
+            'BM': "block_manip_penalty",
 
         }
         # Parse variance type

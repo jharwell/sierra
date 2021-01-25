@@ -113,7 +113,12 @@ def regen_from_exp(sierra_rpath: str,
         'batch_input_root': gen_input_root(root),
         'batch_output_root': gen_output_root(root),
         'batch_graph_root': gen_graph_root(root),
-        'batch_model_root': gen_model_root(root)
+        'batch_model_root': gen_model_root(root),
+        'batch_stat_root': gen_statistics_root(root),
+        'batch_imagize_root': gen_imagize_root(root),
+        'batch_stat_collate_root': gen_stat_collate_root(root),
+        'batch_graph_collate_root': gen_graph_collate_root(root)
+
     }
 
 
@@ -131,6 +136,22 @@ def gen_graph_root(root: str) -> str:
 
 def gen_model_root(root: str) -> str:
     return os.path.join(root, "models")
+
+
+def gen_statistics_root(root: str) -> str:
+    return os.path.join(root, "statistics")
+
+
+def gen_imagize_root(root: str) -> str:
+    return os.path.join(root, "imagize")
+
+
+def gen_stat_collate_root(root: str) -> str:
+    return os.path.join(root, "statistics", "collated")
+
+
+def gen_graph_collate_root(root: str) -> str:
+    return os.path.join(root, "graphs", "collated")
 
 
 def gen_batch_root(sierra_rpath: str,

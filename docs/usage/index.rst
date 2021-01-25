@@ -9,8 +9,9 @@ How To Use SIERRA
 
    batch_criteria.rst
    variables.rst
+   pipeline.rst
    cli.rst
-   directories.rst
+   run_time_tree.rst
    msi.rst
    rendering.rst
 
@@ -28,11 +29,11 @@ you have completed the setup steps (either :ref:`ln-hpc-msi-setup` or
 #. Determine how to invoke SIERRA. At a minimum you need to tell it the
    following:
 
-   - What project plugin to load: ``--plugin``. This is used to:
+   - What project plugin to load: ``--project``. This is used to:
 
      - Compute the name of the library SIERRA will tell ARGoS to search for on
        ``ARGOS_PLUGIN_PATH`` when looking for controller and loop function
-       definitions. For example if you pass ``--plugin=foobar``, then SIERRA
+       definitions. For example if you pass ``--project=foobar``, then SIERRA
        will tell ARGoS to search for ``libfoobar.so`` on ``ARGOS_PLUGIN_PATH``.
 
      - Figure out the plugin directory to load graph and simulation processing
@@ -42,9 +43,7 @@ you have completed the setup steps (either :ref:`ln-hpc-msi-setup` or
 
    - How many copies of each simulation to run per experiment: ``--n-sims``.
 
-   - How many threads to use per simulation: ``--n-threads``.
-
-   - Where it is running/how to run experiments: ``--exec-method``.
+   - Where it is running/how to run experiments: ``--hpc-env``.
 
    - How long simulations should be: ``--time-setup``.
 
@@ -84,11 +83,6 @@ General Usage Tips
   #. Look at scripts under ``scripts/``, which are scripts I've used before on
      MSI (they might no longer work, but they do give you some idea of how to
      invoke SIERRA).
-
-- There are 5 pipeline stages, though only the first 4 will run automatically.
-
-- If you run stages individually, then before stage X will probably run
-  without crashing, you need to run stage X-1.
 
 - If you are running the :xref:`FORDYCA` project and using a ``quad_source``
   block distribution, the arena should be at least 16x16 (smaller arenas don't

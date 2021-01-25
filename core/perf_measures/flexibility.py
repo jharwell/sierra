@@ -28,7 +28,7 @@ import typing as tp
 import pandas as pd
 
 # Project packages
-from core.graphs.batch_ranged_graph import BatchRangedGraph
+from core.graphs.summary_line_graph95 import SummaryLinegraph95
 from core.graphs.heatmap import Heatmap
 from core.perf_measures import vcs
 import core.variables.batch_criteria as bc
@@ -70,22 +70,24 @@ class ReactivityUnivar:
                                                          0,
                                                          i)()
 
-        stem_opath = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
+        stem_opath = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf)
 
         # Write .csv to file
         core.utils.pd_csv_write(df, stem_opath + '.csv', index=False)
 
-        BatchRangedGraph(input_fpath=stem_opath + '.csv',
-                         output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
-                                                   self.kLeaf + core.config.kImageExt),
-                         title="Swarm Reactivity",
-                         xlabel=batch_criteria.graph_xlabel(self.cmdopts),
-                         ylabel=vcs.method_ylabel(self.cmdopts["reactivity_cs_method"],
-                                                  'reactivity'),
-                         xticks=batch_criteria.graph_xticks(self.cmdopts)[1:],
-                         xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts)[1:],
-                         logyscale=self.cmdopts['plot_log_yscale'],
-                         large_text=self.cmdopts['plot_large_text']).generate()
+        SummaryLinegraph95(stats_root=self.cmdopts['batch_stat_collate_root'],
+                           input_stem=self.kLeaf,
+                           stats=self.cmdopts['dist_stats'],
+                           output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
+                                                     self.kLeaf + core.config.kImageExt),
+                           title="Swarm Reactivity",
+                           xlabel=batch_criteria.graph_xlabel(self.cmdopts),
+                           ylabel=vcs.method_ylabel(self.cmdopts["reactivity_cs_method"],
+                                                    'reactivity'),
+                           xticks=batch_criteria.graph_xticks(self.cmdopts)[1:],
+                           xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts)[1:],
+                           logyscale=self.cmdopts['plot_log_yscale'],
+                           large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class AdaptabilityUnivar:
@@ -116,22 +118,24 @@ class AdaptabilityUnivar:
                                                            0,
                                                            i)()
 
-        stem_opath = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
+        stem_opath = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf)
 
         # Write .csv to file
         core.utils.pd_csv_write(df, stem_opath + '.csv', index=False)
 
-        BatchRangedGraph(input_fpath=stem_opath + '.csv',
-                         output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
-                                                   self.kLeaf + core.config.kImageExt),
-                         title="Swarm Adaptability",
-                         xlabel=batch_criteria.graph_xlabel(self.cmdopts),
-                         ylabel=vcs.method_ylabel(self.cmdopts["adaptability_cs_method"],
-                                                  'adaptability'),
-                         xticks=batch_criteria.graph_xticks(self.cmdopts)[1:],
-                         xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts)[1:],
-                         logyscale=self.cmdopts['plot_log_yscale'],
-                         large_text=self.cmdopts['plot_large_text']).generate()
+        SummaryLinegraph95(stats_root=self.cmdopts['batch_stat_collate_root'],
+                           input_stem=self.kLeaf,
+                           stats=self.cmdopts['dist_stats'],
+                           output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
+                                                     self.kLeaf + core.config.kImageExt),
+                           title="Swarm Adaptability",
+                           xlabel=batch_criteria.graph_xlabel(self.cmdopts),
+                           ylabel=vcs.method_ylabel(self.cmdopts["adaptability_cs_method"],
+                                                    'adaptability'),
+                           xticks=batch_criteria.graph_xticks(self.cmdopts)[1:],
+                           xtick_labels=batch_criteria.graph_xticklabels(self.cmdopts)[1:],
+                           logyscale=self.cmdopts['plot_log_yscale'],
+                           large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class FlexibilityUnivarGenerator:
@@ -153,7 +157,7 @@ class FlexibilityUnivarGenerator:
                  alpha_SAA: float,
                  alpha_PD: float,
                  batch_criteria: bc.IConcreteBatchCriteria):
-        self.logger.info("From %s", cmdopts["batch_collate_root"])
+        self.logger.info("From %s", cmdopts["batch_stat_collate_root"])
 
         ReactivityUnivar(cmdopts).generate(main_config, batch_criteria)
         AdaptabilityUnivar(cmdopts).generate(main_config, batch_criteria)
@@ -205,9 +209,9 @@ class ReactivityBivar:
         Returns:
            The path to the `.csv` file used to generate the heatmap.
         """
-        ipath = os.path.join(self.cmdopts["batch_collate_root"], self.inter_perf_csv)
+        ipath = os.path.join(self.cmdopts["batch_stat_collate_root"], self.inter_perf_csv)
         raw_df = core.utils.pd_csv_read(ipath)
-        opath_stem = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
+        opath_stem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf)
 
         # Generate heatmap dataframe and write to file
         df = self.__gen_heatmap_df(main_config, raw_df, criteria)
@@ -215,7 +219,7 @@ class ReactivityBivar:
 
         Heatmap(input_fpath=opath_stem + '.csv',
                 output_fpath=os.path.join(
-                    self.cmdopts["batch_collate_graph_root"], self.kLeaf + core.config.kImageExt),
+                    self.cmdopts["batch_graph_collate_root"], self.kLeaf + core.config.kImageExt),
                 title='Swarm Reactivity',
                 xlabel=criteria.graph_xlabel(self.cmdopts),
                 ylabel=criteria.graph_ylabel(self.cmdopts),
@@ -281,9 +285,9 @@ class AdaptabilityBivar:
         Returns:
            The path to the `.csv` file used to generate the heatmap.
         """
-        ipath = os.path.join(self.cmdopts["batch_collate_root"], self.inter_perf_csv)
+        ipath = os.path.join(self.cmdopts["batch_stat_collate_root"], self.inter_perf_csv)
         raw_df = core.utils.pd_csv_read(ipath)
-        opath_stem = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
+        opath_stem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf)
 
         # Generate heatmap dataframe and write to file
         df = self.__gen_heatmap_df(main_config, raw_df, criteria)
@@ -291,7 +295,7 @@ class AdaptabilityBivar:
 
         Heatmap(input_fpath=opath_stem + '.csv',
                 output_fpath=os.path.join(
-                    self.cmdopts["batch_collate_graph_root"], self.kLeaf + core.config.kImageExt),
+                    self.cmdopts["batch_graph_collate_root"], self.kLeaf + core.config.kImageExt),
                 title='Swarm Adaptability',
                 xlabel=criteria.graph_xlabel(self.cmdopts),
                 ylabel=criteria.graph_ylabel(self.cmdopts),
@@ -347,7 +351,7 @@ class FlexibilityBivarGenerator:
                  alpha_SAA: float,
                  alpha_PD: float,
                  criteria: bc.IConcreteBatchCriteria):
-        self.logger.info("From %s", cmdopts["batch_collate_root"])
+        self.logger.info("From %s", cmdopts["batch_stat_collate_root"])
 
         inter_perf_csv = main_config['perf']['inter_perf_csv']
 

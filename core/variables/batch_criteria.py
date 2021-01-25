@@ -242,7 +242,12 @@ class BatchCriteria():
             pkl_path = os.path.join(self.batch_input_root,
                                     exp_dirname,
                                     core.config.kPickleLeaf)
-            exp_def.pickle(pkl_path)
+            # Pickling of batch criteria experiment definitions is the FIRST set of changes to be
+            # pickled--all other changes come after. We append to the pickle file by default, which
+            # allows any number of additional sets of changes to be written, BUT that can also lead
+            # to errors if stage 1 is run multiple times before stage 4. So, we DELETE the pickle
+            # file for each experiment here to make stage 1 idempotent.
+            exp_def.pickle(pkl_path, delete=True)
 
     def scaffold_exps(self,
                       xml_luigi: core.xml_luigi.XMLLuigi,

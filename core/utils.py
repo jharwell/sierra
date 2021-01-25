@@ -138,12 +138,12 @@ def dir_create_checked(path: str, exist_ok: bool) -> None:
 @retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=0.100)  # type:ignore
 def pd_csv_read(path: str, **kwargs) -> pd.DataFrame:
     # Always specify the datatype so pandas does not have to infer it--much faster.
-    return pd.read_csv(path, sep=';', dtype=float, float_precision='high', **kwargs)
+    return pd.read_csv(path, sep=';', float_precision='high', **kwargs)
 
 
 @retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=0.100)  # type:ignore
 def pd_csv_write(df: pd.DataFrame, path: str, **kwargs) -> None:
-    df.to_csv(path, sep=';', **kwargs)
+    df.to_csv(path, sep=';', float_format='%.8f', **kwargs)
 
 
 def path_exists(path: str) -> bool:

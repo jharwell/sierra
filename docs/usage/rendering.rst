@@ -38,7 +38,7 @@ basis) for each ARGoS simulation, in addition to generating ``.csv`` files
 residing directly in the ``<sim_metrics_leaf>`` directory. SIERRA can render
 this ``.csv`` files into :ref:``~core.graphs.heatmap.Heatmap`` graphs.
 
-To enable, pass ``--project-imagizing`` during stage 4. When passed, the
+To enable, pass ``--project-imagizing`` during stage 3. When passed, the
 ``.csv`` files residing each subdirectory under the ``<sim_metrics_leaf>``
 directory (no recursive nesting is allowed) in each simulation are treated as
 snapshots of 2D or 3D data over time, and will be averaged together across

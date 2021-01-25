@@ -90,14 +90,14 @@ class Heatmap:
         self._plot_df(data_df, self.output_fpath)
 
     def _plot_df(self, df: pd.DataFrame, opath: str):
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(2, 2))
 
         # Transpose if requested
         if self.transpose:
             df = df.transpose()
 
         # Plot heatmap
-        plt.imshow(df, cmap='coolwarm', interpolation=self.interpolation)
+        plt.imshow(df, cmap='coolwarm', interpolation=self.interpolation, aspect='auto')
 
         # Add labels
         plt.xlabel(self.xlabel, fontsize=self.text_size['xyz_label'])
@@ -111,6 +111,7 @@ class Heatmap:
 
         # Add colorbar
         self._plot_colorbar(ax)
+        plt.tight_layout()
 
         # Output figure
         fig = ax.get_figure()

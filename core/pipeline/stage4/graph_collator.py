@@ -15,15 +15,40 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 
+# Core packages
 import os
 import logging
 import multiprocessing as mp
 import queue
 import typing as tp
 
+# 3rd party packages
 import pandas as pd
 
+# Project packages
 import core.utils
+import core.config
+
+
+class UnivarGraphCollationInfo():
+    def __init__(self,
+                 df_ext: str,
+                 ylabels: tp.List[str]) -> None:
+        self.df_ext = df_ext
+        self.df = pd.DataFrame(columns=ylabels)
+        self.all_srcs_exist = True
+        self.some_srcs_exist = False
+
+
+class BivarGraphCollationInfo():
+    def __init__(self,
+                 df_ext: str,
+                 xlabels: tp.List[str],
+                 ylabels: tp.List[str]) -> None:
+        self.df_ext = df_ext
+        self.df = pd.DataFrame(columns=ylabels, index=xlabels)
+        self.all_srcs_exist = True
+        self.some_srcs_exist = False
 
 
 class UnivarGraphCollator:
@@ -38,90 +63,56 @@ class UnivarGraphCollator:
         self.cmdopts = cmdopts
         self.logger = logging.getLogger(__name__)
 
-    def __call__(self, batch_criteria, target: dict, collate_root: str) -> None:
+    def __call__(self, criteria, target: dict, stat_collate_root: str) -> None:
         self.logger.info("Stage4: Collating univariate files from batch in %s for graph '%s'...",
                          self.cmdopts['batch_output_root'],
                          target['src_stem'])
 
-        data_df_new = pd.DataFrame(columns=batch_criteria.gen_exp_dirnames(self.cmdopts))
-        stddev_df_new = pd.DataFrame(columns=batch_criteria.gen_exp_dirnames(self.cmdopts))
+        exp_dirs = core.utils.exp_range_calc(self.cmdopts,
+                                             self.cmdopts['batch_output_root'],
+                                             criteria)
 
-        exp_dirs = core.utils.exp_range_calc(
-            self.cmdopts, self.cmdopts['batch_output_root'], batch_criteria)
-        csv_src_exists = [False for d in exp_dirs]
-        stddev_src_exists = [False for d in exp_dirs]
+        stats = [UnivarGraphCollationInfo(df_ext=core.config.kStatsExtensions[ext],
+                                          ylabels=[os.path.split(e)[1] for e in exp_dirs])
+                 for ext in core.config.kStatsExtensions.keys()]
 
         for i, diri in enumerate(exp_dirs):
             # We get full paths back from the exp dirs calculation, and we need to work with path
             # leaves
             diri = os.path.split(diri)[1]
-            csv_src_exists[i] = self.__collate_exp_csv_data(diri,
-                                                            target,
-                                                            data_df_new)
+            self._collate_exp(target, diri, stats)
 
-            stddev_src_exists[i] = self.__collate_exp_csv_stddev(diri,
-                                                                 target,
-                                                                 stddev_df_new)
+        for stat in stats:
+            if stat.all_srcs_exist:
+                core.utils.pd_csv_write(stat.df, os.path.join(stat_collate_root,
+                                                              target['dest_stem'] + stat.df_ext),
+                                        index=False)
+            elif not stat.all_srcs_exist and stat.some_srcs_exist:
+                self.logger.warning("Not all experiments in '%s' produced '%s%s'",
+                                    self.cmdopts['batch_output_root'],
+                                    target['src_stem'],
+                                    stat.df_ext)
 
-        if all([v for v in csv_src_exists]):
-            core.utils.pd_csv_write(data_df_new, os.path.join(collate_root,
-                                                              target['dest_stem'] + '.csv'),
-                                    index=False)
-        elif any([v for v in csv_src_exists]):
-            self.logger.warning("Not all experiments in %s produced '%s.csv'",
-                                self.cmdopts['batch_output_root'],
-                                target['src_stem'])
+    def _collate_exp(self, target: dict, exp_dir: str, stats: tp.List[UnivarGraphCollationInfo]) -> None:
+        exp_stat_root = os.path.join(self.cmdopts['batch_stat_root'], exp_dir)
 
-        if all([v for v in csv_src_exists]) and not stddev_df_new.empty:
-            core.utils.pd_csv_write(stddev_df_new, os.path.join(collate_root,
-                                                                target['dest_stem'] + '.stddev'),
-                                    index=False)
+        for stat in stats:
+            csv_ipath = os.path.join(exp_stat_root, target['src_stem'] + stat.df_ext)
+            if not core.utils.path_exists(csv_ipath):
+                stat.all_srcs_exist = False
+                continue
 
-    def __collate_exp_csv_data(self, exp_dir: str, target: dict, collated_df: pd.DataFrame) -> bool:
-        exp_output_root = os.path.join(self.cmdopts['batch_output_root'], exp_dir)
-        csv_ipath = os.path.join(exp_output_root,
-                                 self.main_config['sierra']['avg_output_leaf'],
-                                 target['src_stem'] + '.csv')
+            stat.some_srcs_exist = True
 
-        if not core.utils.path_exists(csv_ipath):
-            return False
+            data_df = core.utils.pd_csv_read(csv_ipath)
+            assert target['col'] in data_df.columns.values,\
+                "FATAL: {0} not in columns of {1}".format(target['col'],
+                                                          target['src_stem'] + stat.df_ext)
 
-        data_df = core.utils.pd_csv_read(csv_ipath)
-
-        assert target['col'] in data_df.columns.values,\
-            "FATAL: {0} not in columns of {1}".format(target['col'],
-                                                      target['src_stem'] + '.csv')
-
-        if target.get('batch', False):
-            collated_df.loc[0, exp_dir] = data_df.loc[data_df.index[-1], target['col']]
-        else:
-            collated_df[exp_dir] = data_df[target['col']]
-
-        return True
-
-    def __collate_exp_csv_stddev(self, exp_dir: str, target: dict, collated_df: pd.DataFrame) -> bool:
-        exp_output_root = os.path.join(self.cmdopts['batch_output_root'], exp_dir)
-        stddev_ipath = os.path.join(exp_output_root,
-                                    self.main_config['sierra']['avg_output_leaf'],
-                                    target['src_stem'] + '.stddev')
-
-        # Will not exist if the cmdline option to generate these files was not passed during
-        # stage 3.
-        if not core.utils.path_exists(stddev_ipath):
-            return False
-
-        stddev_df = core.utils.pd_csv_read(stddev_ipath)
-
-        assert target['col'] in stddev_df.columns.values,\
-            "FATAL: {0} not in columns of {1}".format(target['col'],
-                                                      target['src_stem'] + '.stddev')
-
-        if target.get('batch', False):
-            collated_df.loc[0, exp_dir] = stddev_df.loc[stddev_df.index[-1], target['col']]
-        else:
-            collated_df[exp_dir] = stddev_df[target['col']]
-
-        return True
+            if target.get('summary', False):
+                stat.df.loc[0, exp_dir] = data_df.loc[data_df.index[-1], target['col']]
+            else:
+                stat.df[exp_dir] = data_df[target['col']]
 
 
 class BivarGraphCollator:
@@ -137,13 +128,14 @@ class BivarGraphCollator:
         self.cmdopts = cmdopts
         self.logger = logging.getLogger(__name__)
 
-    def __call__(self, batch_criteria, target: dict, collate_root: str) -> None:
+    def __call__(self, criteria, target: dict, stat_collate_root: str) -> None:
         self.logger.info("Stage4: Collating bivariate files from batch in %s for graph '%s'...",
                          self.cmdopts['batch_output_root'],
                          target['src_stem'])
 
-        exp_dirs = core.utils.exp_range_calc(
-            self.cmdopts, self.cmdopts['batch_output_root'], batch_criteria)
+        exp_dirs = core.utils.exp_range_calc(self.cmdopts,
+                                             self.cmdopts['batch_output_root'],
+                                             criteria)
 
         # Because sets are used, if a sub-range of experiments are selected for collation, the
         # selected range has to be an even multiple of the # of experiments in the second batch
@@ -159,75 +151,48 @@ class BivarGraphCollator:
         xlabels = sorted(list(xlabels_set))
         ylabels = sorted(list(ylabels_set))
 
-        data_df_new = pd.DataFrame(columns=ylabels, index=xlabels)
-        stddev_df_new = pd.DataFrame()
-        csv_src_exists = [False for d in exp_dirs]
-        stddev_src_exists = [False for d in exp_dirs]
+        stats = [BivarGraphCollationInfo(df_ext=core.config.kStatsExtensions[ext],
+                                         xlabels=xlabels,
+                                         ylabels=ylabels)
+                 for ext in core.config.kStatsExtensions.keys()]
 
         for i, diri in enumerate(exp_dirs):
             # We get full paths back from the exp dirs calculation, and we need to work with path
             # leaves
             diri = os.path.split(diri)[1]
-            csv_src_exists[i] = self.__collate_exp_csv_data(diri,
-                                                            target,
-                                                            data_df_new)
+            self._collate_exp(target, diri, stats)
 
-            stddev_src_exists[i] = self.__collate_exp_csv_stddev(diri,
-                                                                 target,
-                                                                 stddev_df_new)
-        if all([v for v in csv_src_exists]):
-            core.utils.pd_csv_write(data_df_new, os.path.join(collate_root,
-                                                              target['dest_stem'] + '.csv'),
+        for stat in stats:
+            if stat.all_srcs_exist:
+                core.utils.pd_csv_write(stat.df, os.path.join(stat_collate_root,
+                                                              target['dest_stem'] + stat.df_ext),
+                                        index=False)
+            elif stat.some_srcs_exist:
+                self.logger.warning("Not all experiments in '%s' produced '%s%s'",
+                                    self.cmdopts['batch_output_root'],
+                                    target['src_stem'],
+                                    stat.df_ext)
 
-                                    index=False)
-        elif any([v for v in csv_src_exists]):
-            self.logger.warning("Not all experiments in %s produced '%s.csv'",
-                                self.cmdopts['batch_output_root'],
-                                target['src_stem'])
+    def _collate_exp(self,
+                     target: dict,
+                     exp_dir: str,
+                     stats: tp.List[BivarGraphCollationInfo]) -> None:
+        exp_stat_root = os.path.join(self.cmdopts['batch_stat_root'], exp_dir)
 
-        if all([v for v in csv_src_exists]) and not stddev_df_new.empty:
-            core.utils.pd_csv_write(stddev_df_new, os.path.join(collate_root,
-                                                                target['dest_stem'] + '.stddev'),
+        for stat in stats:
+            csv_ipath = os.path.join(exp_stat_root, target['src_stem'] + stat.df_ext)
+            if not core.utils.path_exists(csv_ipath):
+                stat.all_srcs_exist = False
+                continue
 
-                                    index=False)
+            stat.some_srcs_exist = True
 
-    def __collate_exp_csv_data(self, exp_dir: str, target: dict, collated_df: pd.DataFrame) -> bool:
-        exp_output_root = os.path.join(self.cmdopts['batch_output_root'], exp_dir)
-        csv_ipath = os.path.join(exp_output_root,
-                                 self.main_config['sierra']['avg_output_leaf'],
-                                 target['src_stem'] + '.csv')
-        if not core.utils.path_exists(csv_ipath):
-            return False
-
-        data_df = core.utils.pd_csv_read(csv_ipath)
-
-        assert target['col'] in data_df.columns.values,\
-            "FATAL: {0} not in columns of {1}".format(target['col'],
-                                                      target['src_stem'] + '.csv')
-        xlabel, ylabel = exp_dir.split('+')
-        collated_df.loc[xlabel, ylabel] = data_df[target['col']].to_numpy()
-        return True
-
-    def __collate_exp_csv_stddev(self, exp_dir: str, target: dict, collated_df: pd.DataFrame) -> bool:
-        exp_output_root = os.path.join(self.cmdopts['batch_output_root'], exp_dir)
-        stddev_ipath = os.path.join(exp_output_root,
-                                    self.main_config['sierra']['avg_output_leaf'],
-                                    target['src_stem'] + '.stddev')
-
-        # Will not exist if the cmdline option to generate these files was not passed during
-        # stage 3.
-        if not core.utils.path_exists(stddev_ipath):
-            return False
-
-        stddev_df = core.utils.pd_csv_read(stddev_ipath)
-
-        assert target['col'] in stddev_df.columns.values,\
-            "FATAL: {0} not in columns of {1}".format(target['col'],
-                                                      target['src_stem'] + '.stddev')
-
-        xlabel, ylabel = exp_dir.split('+')
-        collated_df.iloc[xlabel, ylabel] = stddev_df[target['col']]
-        return True
+            data_df = core.utils.pd_csv_read(csv_ipath)
+            assert target['col'] in data_df.columns.values,\
+                "FATAL: {0} not in columns of {1}".format(target['col'],
+                                                          target['src_stem'] + stat.df_ext)
+            xlabel, ylabel = exp_dir.split('+')
+            stat.df.loc[xlabel, ylabel] = data_df[target['col']].to_numpy()
 
 
 class MultithreadCollator():
@@ -243,11 +208,10 @@ class MultithreadCollator():
         self.main_config = main_config
         self.cmdopts = cmdopts
 
-        self.collate_root = os.path.join(self.cmdopts['batch_output_root'],
-                                         self.main_config['sierra']['collate_csv_leaf'])
-        core.utils.dir_create_checked(self.collate_root, exist_ok=True)
+        self.batch_stat_collate_root = self.cmdopts['batch_stat_collate_root']
+        core.utils.dir_create_checked(self.batch_stat_collate_root, exist_ok=True)
 
-    def __call__(self, batch_criteria, targets: dict) -> None:
+    def __call__(self, criteria, targets: dict) -> None:
         q = mp.JoinableQueue()  # type: mp.JoinableQueue
 
         # For each category of graphs we are generating
@@ -257,26 +221,26 @@ class MultithreadCollator():
                 q.put(graph)
 
         for i in range(0, mp.cpu_count()):
-            p = mp.Process(target=MultithreadCollator.__thread_worker,
+            p = mp.Process(target=MultithreadCollator._thread_worker,
                            args=(q,
                                  self.main_config,
                                  self.cmdopts,
-                                 self.collate_root,
-                                 batch_criteria))
+                                 self.batch_stat_collate_root,
+                                 criteria))
             p.start()
 
         q.join()
 
     @staticmethod
-    def __thread_worker(q: mp.Queue,
-                        main_config: dict,
-                        cmdopts: dict,
-                        collate_root: str,
-                        batch_criteria) -> None:
+    def _thread_worker(q: mp.Queue,
+                       main_config: dict,
+                       cmdopts: dict,
+                       stat_collate_root: str,
+                       criteria) -> None:
 
         collator = None  # type: tp.Any
 
-        if batch_criteria.is_univar():
+        if criteria.is_univar():
             collator = UnivarGraphCollator(main_config, cmdopts)
         else:
             collator = BivarGraphCollator(main_config, cmdopts)
@@ -285,7 +249,7 @@ class MultithreadCollator():
             # Wait for 3 seconds after the queue is empty before bailing
             try:
                 graph = q.get(True, 3)
-                collator(batch_criteria, graph, collate_root)
+                collator(criteria, graph, stat_collate_root)
                 q.task_done()
             except queue.Empty:
                 break

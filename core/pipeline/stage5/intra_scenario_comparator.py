@@ -32,7 +32,7 @@ import argparse
 import pandas as pd
 
 # Project packages
-from core.graphs.batch_ranged_graph import BatchRangedGraph
+from core.graphs.summary_line_graph95 import SummaryLinegraph95
 from core.graphs.stacked_surface_graph import StackedSurfaceGraph
 from core.graphs.heatmap import Heatmap, DualHeatmap
 from core.variables import batch_criteria as bc
@@ -190,25 +190,27 @@ class UnivarIntraScenarioComparator:
                     label: str,
                     legend: tp.List[str]) -> None:
         """
-        Generates a :class:`~core.graphs.batch_ranged_graph.BatchRangedGraph` comparing the
+        Generates a :class:`~core.graphs.summary_line_graph95.SummaryLinegraph95` comparing the
         specified controllers within the specified scenario after input files have been gathered
         from each controllers into ``cc-csvs/``.
         """
-        csv_stem_opath = os.path.join(self.cc_csv_root, dest_stem + "-" + batch_leaf)
+        istem = dest_stem + "-" + batch_leaf
         xticks = criteria.graph_xticks(cmdopts)
         xtick_labels = criteria.graph_xticklabels(cmdopts)
 
-        BatchRangedGraph(input_fpath=csv_stem_opath + '.csv',
-                         output_fpath=os.path.join(self.cc_graph_root,
-                                                   dest_stem) + '-' + batch_leaf + core.config.kImageExt,
-                         title=title,
-                         xlabel=criteria.graph_xlabel(cmdopts),
-                         ylabel=label,
-                         xtick_labels=xtick_labels[criteria.inter_exp_graphs_exclude_exp0():],
-                         xticks=xticks[criteria.inter_exp_graphs_exclude_exp0():],
-                         logyscale=cmdopts['plot_log_yscale'],
-                         large_text=self.cmdopts['plot_large_text'],
-                         legend=legend).generate()
+        SummaryLinegraph95(stats_root=self.cc_csv_root,
+                           input_stem=istem,
+                           output_fpath=os.path.join(self.cc_graph_root,
+                                                     dest_stem) + '-' + batch_leaf + core.config.kImageExt,
+                           stats=cmdopts['dist_stats'],
+                           title=title,
+                           xlabel=criteria.graph_xlabel(cmdopts),
+                           ylabel=label,
+                           xtick_labels=xtick_labels[criteria.inter_exp_graphs_exclude_exp0():],
+                           xticks=xticks[criteria.inter_exp_graphs_exclude_exp0():],
+                           logyscale=cmdopts['plot_log_yscale'],
+                           large_text=self.cmdopts['plot_large_text'],
+                           legend=legend).generate()
 
     def __gen_csv(self,
                   cmdopts: dict,

@@ -18,8 +18,17 @@ Contains all SIERRA hard-coded configuration in one place.
 """
 
 # Core packages
+import logging
 
 # 3rd party packages
+import matplotlib as mpl
+
+mpl.rcParams['lines.linewidth'] = 3
+mpl.rcParams['lines.markersize'] = 10
+mpl.rcParams['figure.max_open_warning'] = 10000
+mpl.rcParams['axes.formatter.limits'] = (-4, 4)
+logging.getLogger('matplotlib').setLevel(logging.WARNING)
+mpl.use('Agg')
 
 # Project packages
 
@@ -38,4 +47,21 @@ kGraphTextSizeLarge = {
     'xyz_label': 24,
     'tick_label': 24,
     'legend_label': 32
+}
+
+kStatsExtensions = {
+    # The default
+    'mean': '.csv',
+
+    # For calculating 95% confidence intervals
+    'stddev': '.stddev',
+
+    # For calculating box and whisker plots
+    'min': '.min',
+    'max': '.max',
+    'median': '.median',
+    'q1': '.q1',
+    'q3': '.q3',
+    'whislo': '.whislo',
+    'whishi': '.whishi'
 }

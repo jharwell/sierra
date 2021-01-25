@@ -18,16 +18,18 @@
 Contains main class implementing stage 3 of the experimental pipeline.
 """
 
-
+# Core packages
 import os
 import logging
-import typing as tp
 import time
 import datetime
+
+# 3rd party packages
 import yaml
 
-from core.pipeline.stage3.exp_csv_averager import BatchedExpCSVAverager
-from core.pipeline.stage3.exp_imagizer import BatchedExpImagizer
+# Project packages
+from core.pipeline.stage3.statistics_calculator import BatchExpParallelCalculator
+from core.pipeline.stage3.imagizer import BatchExpParallelImagizer
 import core.utils
 import core.variables.batch_criteria as bc
 
@@ -50,7 +52,7 @@ class PipelineStage3:
         self.logger = logging.getLogger(__name__)
 
     def run(self, main_config: dict, cmdopts: dict, criteria: bc.IConcreteBatchCriteria):
-        self.__run_averaging(main_config, cmdopts, criteria)
+        self._run_statistics(main_config, cmdopts, criteria)
 
         if cmdopts['project_imagizing']:
             intra_HM_config = yaml.load(open(os.path.join(cmdopts['core_config_root'],
@@ -70,24 +72,30 @@ class PipelineStage3:
                     else:
                         intra_HM_config[category]['graphs'].extend(project_dict[category]['graphs'])
 
-            self.__run_imagizing(main_config, intra_HM_config, cmdopts)
+            self._run_imagizing(main_config, intra_HM_config, cmdopts, criteria)
 
     # Private functions
-    def __run_averaging(self, main_config, cmdopts, criteria):
-        self.logger.info("Averaging batched experiment outputs in %s...",
+    def _run_statistics(self,
+                        main_config: dict,
+                        cmdopts: dict, criteria:
+                        bc.IConcreteBatchCriteria):
+        self.logger.info("Generating statistics from experiment outputs in %s...",
                          cmdopts['batch_output_root'])
         start = time.time()
-        BatchedExpCSVAverager(main_config, cmdopts, cmdopts['batch_output_root'])(criteria)
+        BatchExpParallelCalculator(main_config, cmdopts)(criteria)
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
-        self.logger.info("Averaging complete in %s", str(sec))
+        self.logger.info("Statistics generation complete in %s", str(sec))
 
-    def __run_imagizing(self, main_config: dict, intra_HM_config: dict, cmdopts: dict):
-        self.logger.info("Imagizing .csvs...")
+    def _run_imagizing(self,
+                       main_config: dict,
+                       intra_HM_config: dict,
+                       cmdopts: dict,
+                       criteria: bc.IConcreteBatchCriteria):
+        self.logger.info("Imagizing .csvs in %s...",
+                         cmdopts['batch_output_root'])
         start = time.time()
-        BatchedExpImagizer()(main_config,
-                             intra_HM_config,
-                             cmdopts['batch_output_root'])
+        BatchExpParallelImagizer(main_config, cmdopts)(intra_HM_config, criteria)
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         self.logger.info("Imagizing complete: %s", str(sec))

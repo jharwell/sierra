@@ -39,13 +39,13 @@ class IntraExpModel2DGraphSet():
         return os.path.exists(os.path.join(exp_model_root, target_stem + '.model'))
 
     def __init__(self,
-                 exp_avgd_root: str,
+                 exp_stat_root: str,
                  exp_model_root: str,
                  exp_graph_root: str,
                  target_stem: str,
                  target_title: str,
                  **kwargs):
-        self.exp_avgd_root = exp_avgd_root
+        self.exp_stat_root = exp_stat_root
         self.exp_model_root = exp_model_root
         self.exp_graph_root = exp_graph_root
         self.target_stem = target_stem
@@ -53,11 +53,11 @@ class IntraExpModel2DGraphSet():
         self.kwargs = kwargs
 
     def generate(self):
-        data_ipath = os.path.join(self.exp_avgd_root,
+        data_ipath = os.path.join(self.exp_stat_root,
                                   self.target_stem + '.csv')
         data_opath = os.path.join(self.exp_graph_root,
                                   self.target_stem + '-HM' + core.config.kImageExt)
-        stddev_ipath = os.path.join(self.exp_avgd_root,
+        stddev_ipath = os.path.join(self.exp_stat_root,
                                     self.target_stem + '.stddev')
         stddev_opath = os.path.join(self.exp_graph_root,
                                     self.target_stem + '-HM-stddev' + core.config.kImageExt)

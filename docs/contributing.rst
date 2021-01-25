@@ -32,3 +32,59 @@ outlined in :xref:`LIBRA`. For the static analysis step:
    Fix ANY errors your changes have introduced (there will probably still be
    errors in the my output, because cleaning up the code is always a work in
    progress).
+
+.. _ln-directory-structures:
+
+SIERRA Source Code Directory Structure
+--------------------------------------
+
+It is helpful to know how SIERRA is layed out, so it is easier to see how things
+fit together, and where to look for implementation details if (really `when`)
+SIERRA crashes. So here is the directory structure, as seen from the root of the
+repository.
+
+- ``core/`` - The parts of SIERRA which are (mostly) agnostic to the project
+  being run. This is not strictly true, as there are still many elements that
+  are tied to _my_ projects, but decoupling is an ongoing process.
+
+  - ``generators/`` - Generic controller and scenario generators used to modify
+    template ``.argos`` files to provide the setting/context for running
+    experiments with variables.
+
+  - ``graphs/`` - Generic code to generate graphs of different types.
+
+  - ``perf_measures/`` - Generic measures to compare performance of different
+    controllers across experiments.
+
+  - ``config/`` - Contains runtime configuration YAML files, used to fine tune
+    how SIERRA functions: what graphs to generate, what controllers are valid,
+    what graphs to generate for each controller, etc., which are common to all
+    projects.
+
+  - ``pipeline/`` - Core pipline code in 5 stages:
+
+    #. Generate inputs
+    #. Run experiments
+    #. Process results of running experiments (averaging, etc.)
+    #. Generate graphs within a single experiment and between
+       experiments in a batch.
+    #. Generate graphs comparing batched experiments (not part of
+       default pipeline).
+
+  - ``variables/`` - Genertic generators for experimental variables to modify
+    template ``.argos`` files in order to run experiments with a given
+    controller.
+
+- ``scripts/`` - Contains some ``.pbs`` scripts that can be run on MSI. Scripts
+  become outdated quickly as the code base for this project and its upstream
+  projects changes, so scripts should not be relied upon to work as is. Rather,
+  they should be used to gain insight into how to use sierra and how to craft
+  your own script.
+
+- ``templates/`` - Contains template ``.argos`` files. Really only necessary to
+  be able to change configuration that is not directly controllable via
+  generators, and the # of templates should be kept small.
+
+- ``docs/`` - Contains sphinx scaffolding/source code to generate these shiny
+  docs.
+

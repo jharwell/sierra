@@ -33,7 +33,7 @@ import core.utils
 from core.variables.population_size import PopulationSize
 from core.variables import batch_criteria as bc
 from core.graphs.heatmap import Heatmap
-from core.graphs.batch_ranged_graph import BatchRangedGraph
+from core.graphs.summary_line_graph95 import SummaryLinegraph95
 import core.config
 from core.xml_luigi import XMLAttrChangeSet
 
@@ -112,7 +112,7 @@ class BaseFractionalLosses:
                  interference_count_csv: str,
                  criteria: bc.IConcreteBatchCriteria) -> None:
         self.cmdopts = cmdopts
-        self.batch_collate_root = cmdopts["batch_collate_root"]
+        self.batch_stat_collate_root = cmdopts["batch_stat_collate_root"]
         self.inter_perf_csv = inter_perf_csv
         self.interference_count_csv = interference_count_csv
         self.inter_perf_stem = inter_perf_csv.split('.')[0]
@@ -206,21 +206,21 @@ class PerfLostInteractiveSwarmUnivar(BasePerfLostInteractiveSwarm):
                  inter_perf_csv: str,
                  interference_count_csv: str) -> None:
         self.cmdopts = cmdopts
-        self.batch_collate_root = cmdopts["batch_collate_root"]
+        self.batch_stat_collate_root = cmdopts["batch_stat_collate_root"]
         self.inter_perf_stem = inter_perf_csv.split('.')[0]
         self.interference_stem = interference_count_csv.split('.')[0]
 
     def from_batch(self, criteria: bc.UnivarBatchCriteria) -> pd.DataFrame:
         # Get .csv with interference info
         interference_path = os.path.join(
-            self.batch_collate_root, self.interference_stem + '.csv')
+            self.batch_stat_collate_root, self.interference_stem + '.csv')
         assert(core.utils.path_exists(interference_path)
                ), "FATAL: {0} does not exist".format(interference_path)
         interference_df = core.utils.pd_csv_read(interference_path)
         interference_df = interference_df.tail(1)
 
         # Get .csv with performance info
-        perf_path = os.path.join(self.batch_collate_root, self.inter_perf_stem + '.csv')
+        perf_path = os.path.join(self.batch_stat_collate_root, self.inter_perf_stem + '.csv')
 
         assert(core.utils.path_exists(perf_path)), "FATAL: {0} does not exist".format(perf_path)
         perf_df = core.utils.pd_csv_read(perf_path)
@@ -261,7 +261,7 @@ class FractionalLossesUnivar(BaseFractionalLosses):
                                                 self.interference_count_csv).from_batch(criteria)
 
         # Get .csv with performance info
-        perf_path = os.path.join(self.batch_collate_root, self.inter_perf_stem + '.csv')
+        perf_path = os.path.join(self.batch_stat_collate_root, self.inter_perf_stem + '.csv')
         assert(core.utils.path_exists(perf_path)), "FATAL: {0} does not exist".format(perf_path)
         perf_df = core.utils.pd_csv_read(perf_path)
 
@@ -293,13 +293,13 @@ class WeightedPMUnivar():
         self.logger = logging.getLogger(__name__)
 
     def generate(self, criteria: bc.IConcreteBatchCriteria):
-        csv1_istem = os.path.join(self.cmdopts["batch_collate_root"], self.ax1_leaf)
-        csv2_istem = os.path.join(self.cmdopts["batch_collate_root"], self.ax2_leaf)
+        csv1_istem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.ax1_leaf)
+        csv2_istem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.ax2_leaf)
         csv1_ipath = csv1_istem + '.csv'
         csv2_ipath = csv2_istem + '.csv'
 
-        csv_ostem = os.path.join(self.cmdopts["batch_collate_root"], self.output_leaf)
-        img_ostem = os.path.join(self.cmdopts["batch_collate_graph_root"], self.output_leaf)
+        csv_ostem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.output_leaf)
+        img_ostem = os.path.join(self.cmdopts["batch_graph_collate_root"], self.output_leaf)
 
         if not core.utils.path_exists(csv1_ipath) or not core.utils.path_exists(csv2_ipath):
             self.logger.debug("Not generating univariate weighted performance measure: %s or %s does not exist",
@@ -313,17 +313,17 @@ class WeightedPMUnivar():
         core.utils.pd_csv_write(out_df, csv_ostem + '.csv', index=False)
 
         xticks = criteria.graph_xticks(self.cmdopts)
-        xtick_labels = criteria.graph_xticklabels(self.cmdopts)
         len_diff = len(xticks) - len(out_df.columns)
 
-        BatchRangedGraph(input_fpath=csv_ostem + '.csv',
-                         output_fpath=img_ostem + core.config.kImageExt,
-                         title=self.title,
-                         ylabel="Value",
-                         xlabel=criteria.graph_xlabel(self.cmdopts),
-                         xticks=xticks[len_diff:],
-                         logyscale=self.cmdopts['plot_log_yscale'],
-                         large_text=self.cmdopts['plot_large_text']).generate()
+        SummaryLinegraph95(stats_root=self.cmdopts['batch_stat_collate_root'],
+                           input_stem=csv_ostem,
+                           output_fpath=img_ostem + core.config.kImageExt,
+                           title=self.title,
+                           ylabel="Value",
+                           xlabel=criteria.graph_xlabel(self.cmdopts),
+                           xticks=xticks[len_diff:],
+                           logyscale=self.cmdopts['plot_log_yscale'],
+                           large_text=self.cmdopts['plot_large_text']).generate()
 
 ################################################################################
 # Bivariate Classes
@@ -382,11 +382,11 @@ class PerfLostInteractiveSwarmBivar(BasePerfLostInteractiveSwarm):
                 else:
                     n_robots = populations[0][j]  # same population in all rows
 
-                plostN.loc[i, j] = BasePerfLostInteractiveSwarm.kernel(perf1=perf1,
-                                                                       tlost1=tlost1,
-                                                                       perfN=perfN,
-                                                                       tlostN=tlostN,
-                                                                       n_robots=n_robots)
+                plostN.iloc[i, j] = BasePerfLostInteractiveSwarm.kernel(perf1=perf1,
+                                                                        tlost1=tlost1,
+                                                                        perfN=perfN,
+                                                                        tlostN=tlostN,
+                                                                        n_robots=n_robots)
 
         return plostN
 
@@ -395,20 +395,20 @@ class PerfLostInteractiveSwarmBivar(BasePerfLostInteractiveSwarm):
                  inter_perf_csv: str,
                  interference_count_csv: str) -> None:
         self.cmdopts = cmdopts
-        self.batch_collate_root = cmdopts["batch_collate_root"]
+        self.batch_stat_collate_root = cmdopts["batch_stat_collate_root"]
         self.inter_perf_stem = inter_perf_csv.split('.')[0]
         self.interference_stem = interference_count_csv.split('.')[0]
 
     def from_batch(self, criteria: bc.BivarBatchCriteria):
         # Get .csv with interference info
         interference_path = os.path.join(
-            self.batch_collate_root, self.interference_stem + '.csv')
+            self.batch_stat_collate_root, self.interference_stem + '.csv')
         assert(core.utils.path_exists(interference_path)
                ), "FATAL: {0} does not exist".format(interference_path)
         interference_df = core.utils.pd_csv_read(interference_path)
 
         # Get .csv with performance info
-        perf_path = os.path.join(self.batch_collate_root, self.inter_perf_stem + '.csv')
+        perf_path = os.path.join(self.batch_stat_collate_root, self.inter_perf_stem + '.csv')
         assert(core.utils.path_exists(perf_path)), "FATAL: {0} does not exist".format(perf_path)
         perf_df = core.utils.pd_csv_read(perf_path)
 
@@ -425,7 +425,7 @@ class FractionalLossesBivar(BaseFractionalLosses):
 
     """
     @staticmethod
-    def df_kernel(perf_df: pd.DataFrame, plostN: pd.DataFrame):
+    def df_kernel(perf_df: pd.DataFrame, plost_df: pd.DataFrame):
         fl_df = pd.DataFrame(columns=perf_df.columns, index=perf_df.index)
         exp0_dir = perf_df.columns[0]
 
@@ -436,6 +436,7 @@ class FractionalLossesBivar(BaseFractionalLosses):
                     continue
 
                 perfN = csv_3D_value_loc(perf_df, i, c, slice(-1, None))
+                plostN = plost_df.loc[i, c]
                 fl_df.loc[i, c] = BaseFractionalLosses.kernel(perfN, plostN)
 
         return fl_df
@@ -447,12 +448,12 @@ class FractionalLossesBivar(BaseFractionalLosses):
                                                self.interference_count_csv).from_batch(criteria)
 
         # Get .csv with performance info
-        perf_path = os.path.join(self.batch_collate_root, self.inter_perf_stem + '.csv')
+        perf_path = os.path.join(self.batch_stat_collate_root, self.inter_perf_stem + '.csv')
         assert(core.utils.path_exists(perf_path)), "FATAL: {0} does not exist".format(perf_path)
         perf_df = core.utils.pd_csv_read(perf_path)
 
         # Calculate fractional losses for all swarm sizes
-        return FractionalLossesBivar.kernel(perf_df, plostN)
+        return FractionalLossesBivar.df_kernel(perf_df, plostN)
 
 
 class WeightedPMBivar():
@@ -478,13 +479,13 @@ class WeightedPMBivar():
         self.logger = logging.getLogger(__name__)
 
     def generate(self, criteria: bc.IConcreteBatchCriteria):
-        csv1_istem = os.path.join(self.cmdopts["batch_collate_root"], self.ax1_leaf)
-        csv2_istem = os.path.join(self.cmdopts["batch_collate_root"], self.ax2_leaf)
+        csv1_istem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.ax1_leaf)
+        csv2_istem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.ax2_leaf)
         csv1_ipath = csv1_istem + '.csv'
         csv2_ipath = csv2_istem + '.csv'
 
-        csv_ostem = os.path.join(self.cmdopts["batch_collate_root"], self.output_leaf)
-        img_ostem = os.path.join(self.cmdopts["batch_collate_graph_root"], self.output_leaf)
+        csv_ostem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.output_leaf)
+        img_ostem = os.path.join(self.cmdopts["batch_graph_collate_root"], self.output_leaf)
 
         if not core.utils.path_exists(csv1_ipath) or not core.utils.path_exists(csv2_ipath):
             self.logger.debug("Not generating bivariate weighted performance measure: %s or %s does not exist",
@@ -515,6 +516,7 @@ def csv_3D_value_loc(df, xslice, ycol, zslice):
     # When collated, the column of data is written as a numpy array to string, so we
     # have to reparse it as an actual array
     arr = np.fromstring(df.loc[xslice, ycol][1:-1], dtype=np.float, sep=' ')
+
     # The second index is an artifact of how numpy represents scalars (1 element arrays).
     return arr[zslice][0]
 
@@ -523,8 +525,24 @@ def csv_3D_value_iloc(df, xslice, yslice, zslice):
     # When collated, the column of data is written as a numpy array to string, so we
     # have to reparse it as an actual array
     arr = np.fromstring(df.iloc[xslice, yslice][1:-1], dtype=np.float, sep=' ')
+
     # The second index is an artifact of how numpy represents scalars (1 element arrays).
     return arr[zslice][0]
+
+
+def stats_prepare(cmdopts: dict,
+                  criteria: bc.IConcreteBatchCriteria,
+                  inter_perf_ileaf: str,
+                  oleaf: str,
+                  kernel) -> None:
+    for k in core.config.kStatsExtensions.keys():
+        stat_ipath = os.path.join(cmdopts["batch_stat_collate_root"],
+                                  inter_perf_ileaf + core.config.kStatsExtensions[k])
+        stat_opath = os.path.join(cmdopts["batch_stat_collate_root"],
+                                  oleaf + core.config.kStatsExtensions[k])
+        if core.utils.path_exists(stat_ipath):
+            stat_df = kernel(criteria, cmdopts, core.utils.pd_csv_read(stat_ipath))
+            core.utils.pd_csv_write(stat_df, stat_opath, index=False)
 
 
 __api__ = [

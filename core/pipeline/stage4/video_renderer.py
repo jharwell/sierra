@@ -35,7 +35,7 @@ import core.utils
 import core.config
 
 
-class BatchedExpVideoRenderer:
+class BatchExpParallelVideoRenderer:
     """
     Render the video for each experiment in the specified batch directory in sequence.
     """
@@ -79,7 +79,7 @@ class BatchedExpVideoRenderer:
 
                 # ARGoS render targets are in <batch_output_root>/<exp>/<sim>/<argos_frames_leaf>,
                 # for all simulations in a given experiment (which can be a lot!).
-                for sim in self.__filter_sim_dirs(os.listdir(exp_root), main_config):
+                for sim in self._filter_sim_dirs(os.listdir(exp_root), main_config):
                     opts['ofile_leaf'] = sim + '.mp4'
                     frames_root = os.path.join(exp_root,
                                                sim,
@@ -92,14 +92,14 @@ class BatchedExpVideoRenderer:
 
         # Render videos in parallel--waaayyyy faster
         for i in range(0, mp.cpu_count()):
-            p = mp.Process(target=BatchedExpVideoRenderer.__thread_worker,
+            p = mp.Process(target=BatchExpParallelVideoRenderer._thread_worker,
                            args=(q, main_config))
             p.start()
 
         q.join()
 
     @staticmethod
-    def __thread_worker(q: mp.Queue, main_config: dict) -> None:
+    def _thread_worker(q: mp.Queue, main_config: dict) -> None:
         while True:
             # Wait for 3 seconds after the queue is empty before bailing
             try:
@@ -110,9 +110,8 @@ class BatchedExpVideoRenderer:
                 break
 
     @staticmethod
-    def __filter_sim_dirs(sim_dirs: tp.List[str], main_config: dict) -> tp.List[str]:
-        return [s for s in sim_dirs if s not in [main_config['sierra']['avg_output_leaf'],
-                                                 main_config['sierra']['project_frames_leaf'],
+    def _filter_sim_dirs(sim_dirs: tp.List[str], main_config: dict) -> tp.List[str]:
+        return [s for s in sim_dirs if s not in [main_config['sierra']['project_frames_leaf'],
                                                  'videos']]
 
 

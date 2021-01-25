@@ -23,6 +23,7 @@ manipulating XML files.
 import logging
 import typing as tp
 import pickle
+import os
 
 # 3rd party packages
 
@@ -82,6 +83,7 @@ class XMLAttrChangeSet():
 
     def __init__(self, *args: XMLAttrChange) -> None:
         self.changes = set(args)
+        self.logger = logging.getLogger(__name__)
 
     def __len__(self) -> int:
         return len(self.changes)
@@ -104,7 +106,10 @@ class XMLAttrChangeSet():
     def add(self, chg: XMLAttrChange) -> None:
         self.changes.add(chg)
 
-    def pickle(self, fpath: str) -> None:
+    def pickle(self, fpath: str, delete: bool = False) -> None:
+        if delete and os.path.exists(fpath):
+            os.remove(fpath)
+
         with open(fpath, 'ab') as f:
             pickle.dump(self.changes, f)
 

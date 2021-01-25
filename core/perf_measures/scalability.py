@@ -29,7 +29,7 @@ import typing as tp
 import pandas as pd
 
 # Project packages
-from core.graphs.batch_ranged_graph import BatchRangedGraph
+from core.graphs.summary_line_graph95 import SummaryLinegraph95
 from core.graphs.heatmap import Heatmap
 from core.perf_measures import common
 from core.variables import batch_criteria as bc
@@ -144,15 +144,16 @@ class InterRobotInterferenceUnivar:
         self.interference_duration_stem = interference_duration_csv.split('.')[0]
 
     def from_batch(self, criteria: bc.IConcreteBatchCriteria):
-        count_csv_istem = os.path.join(self.cmdopts["batch_collate_root"],
+        count_csv_istem = os.path.join(self.cmdopts["batch_stat_collate_root"],
                                        self.interference_count_stem)
-        duration_csv_istem = os.path.join(self.cmdopts["batch_collate_root"],
+        duration_csv_istem = os.path.join(self.cmdopts["batch_stat_collate_root"],
                                           self.interference_duration_stem)
-        count_csv_ostem = os.path.join(self.cmdopts["batch_collate_root"], self.kCountLeaf)
-        duration_csv_ostem = os.path.join(self.cmdopts["batch_collate_root"], self.kDurationLeaf)
-        count_img_ostem = os.path.join(self.cmdopts["batch_collate_graph_root"], self.kCountLeaf)
+        count_csv_ostem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kCountLeaf)
+        duration_csv_ostem = os.path.join(
+            self.cmdopts["batch_stat_collate_root"], self.kDurationLeaf)
+        count_img_ostem = os.path.join(self.cmdopts["batch_graph_collate_root"], self.kCountLeaf)
         duration_img_ostem = os.path.join(
-            self.cmdopts["batch_collate_graph_root"], self.kDurationLeaf)
+            self.cmdopts["batch_graph_collate_root"], self.kDurationLeaf)
 
         count_df = self.df_kernel(core.utils.pd_csv_read(count_csv_istem + '.csv'))
         core.utils.pd_csv_write(count_df, count_csv_ostem + '.csv', index=False)
@@ -162,23 +163,27 @@ class InterRobotInterferenceUnivar:
         core.utils.pd_csv_write(duration_df, duration_csv_ostem + '.csv', index=False)
         core.utils.pd_csv_write(duration_df, duration_csv_ostem + '.csv', index=False)
 
-        BatchRangedGraph(input_fpath=count_csv_ostem + '.csv',
-                         output_fpath=count_img_ostem + core.config.kImageExt,
-                         title="Swarm Inter-Robot Interference Counts",
-                         xlabel=criteria.graph_xlabel(self.cmdopts),
-                         ylabel="Average # Robots",
-                         xticks=criteria.graph_xticks(self.cmdopts),
-                         logyscale=self.cmdopts['plot_log_yscale'],
-                         large_text=self.cmdopts['plot_large_text']).generate()
+        SummaryLinegraph95(stats_root=self.cmdopts['batch_stat_collate_root'],
+                           input_stem=self.kCountLeaf,
+                           stats=self.cmdopts['dist_stats'],
+                           output_fpath=count_img_ostem + core.config.kImageExt,
+                           title="Swarm Inter-Robot Interference Counts",
+                           xlabel=criteria.graph_xlabel(self.cmdopts),
+                           ylabel="Average # Robots",
+                           xticks=criteria.graph_xticks(self.cmdopts),
+                           logyscale=self.cmdopts['plot_log_yscale'],
+                           large_text=self.cmdopts['plot_large_text']).generate()
 
-        BatchRangedGraph(input_fpath=duration_csv_ostem + '.csv',
-                         output_fpath=duration_img_ostem + core.config.kImageExt,
-                         title="Swarm Average Inter-Robot Interference Duration",
-                         xlabel=criteria.graph_xlabel(self.cmdopts),
-                         ylabel="# Timesteps",
-                         xticks=criteria.graph_xticks(self.cmdopts),
-                         logyscale=self.cmdopts['plot_log_yscale'],
-                         large_text=self.cmdopts['plot_large_text']).generate()
+        SummaryLinegraph95(stats_root=self.cmdopts['batch_stat_collate_root'],
+                           input_stem=self.kDurationLeaf,
+                           stats=self.cmdopts['dist_stats'],
+                           output_fpath=duration_img_ostem + core.config.kImageExt,
+                           title="Swarm Average Inter-Robot Interference Duration",
+                           xlabel=criteria.graph_xlabel(self.cmdopts),
+                           ylabel="# Timesteps",
+                           xticks=criteria.graph_xticks(self.cmdopts),
+                           logyscale=self.cmdopts['plot_log_yscale'],
+                           large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class NormalizedEfficiencyUnivar(BaseNormalizedEfficiency):
@@ -208,43 +213,40 @@ class NormalizedEfficiencyUnivar(BaseNormalizedEfficiency):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
-        self.inter_perf_stem = inter_perf_csv.split('.')[0]
+        self.inter_perf_leaf = inter_perf_csv.split('.')[0]
 
     def from_batch(self, criteria: bc.IConcreteBatchCriteria):
         """
         Calculate efficiency metric for the given controller for each experiment in a
-        batch. If stddev or a model of the metric exists, they are plotted along with the calculated
-        metric.
+        batch. Calculated stats and/or metric model results are plotted along with the calculated
+        metric, if they exist.
         """
         # We always calculate the actual metric
-        perf_idf = core.utils.pd_csv_read(os.path.join(self.cmdopts["batch_collate_root"],
-                                                       self.inter_perf_stem + '.csv'))
+        perf_idf = core.utils.pd_csv_read(os.path.join(self.cmdopts["batch_stat_collate_root"],
+                                                       self.inter_perf_leaf + '.csv'))
         metric_odf = self.df_kernel(criteria, self.cmdopts, perf_idf)
-        ostem = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
+        ostem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf)
         core.utils.pd_csv_write(metric_odf, ostem + ".csv", index=False)
 
-        # Stddev might not have been calculated in stage 3
-        stddev_ipath = os.path.join(self.cmdopts["batch_collate_root"],
-                                    self.inter_perf_stem + '.stddev')
-        if core.utils.path_exists(stddev_ipath):
-            stddev_idf = core.utils.pd_csv_read(stddev_ipath)
-            stddev_odf = self.df_kernel(criteria, self.cmdopts, stddev_idf)
-            core.utils.pd_csv_write(stddev_odf, ostem + ".stddev", index=False)
+        common.stats_prepare(self.cmdopts,
+                             criteria,
+                             self.inter_perf_leaf,
+                             self.kLeaf,
+                             self.df_kernel)
 
-        BatchRangedGraph(input_fpath=ostem + '.csv',
-                         stddev_fpath=ostem + '.stddev',
-                         model_fpath=os.path.join(self.cmdopts['batch_model_root'],
-                                                  self.kLeaf + '.model'),
-                         model_legend_fpath=os.path.join(self.cmdopts['batch_model_root'],
-                                                         self.kLeaf + '.legend'),
-                         output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
-                                                   self.kLeaf + core.config.kImageExt),
-                         title="Swarm Efficiency (normalized)",
-                         xlabel=criteria.graph_xlabel(self.cmdopts),
-                         ylabel="Efficiency",
-                         xticks=criteria.graph_xticks(self.cmdopts),
-                         logyscale=self.cmdopts['plot_log_yscale'],
-                         large_text=self.cmdopts['plot_large_text']).generate()
+        SummaryLinegraph95(stats_root=self.cmdopts['batch_stat_collate_root'],
+                           input_stem=self.kLeaf,
+                           stats=self.cmdopts['dist_stats'],
+                           output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
+                                                     self.kLeaf + core.config.kImageExt),
+
+                           model_root=self.cmdopts['batch_model_root'],
+                           title="Swarm Efficiency (normalized)",
+                           xlabel=criteria.graph_xlabel(self.cmdopts),
+                           ylabel="Efficiency",
+                           xticks=criteria.graph_xticks(self.cmdopts),
+                           logyscale=self.cmdopts['plot_log_yscale'],
+                           large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class ParallelFractionUnivar(BaseParallelFraction):
@@ -264,7 +266,7 @@ class ParallelFractionUnivar(BaseParallelFraction):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
-        self.inter_perf_stem = inter_perf_csv.split('.')[0]
+        self.inter_perf_leaf = inter_perf_csv.split('.')[0]
 
     @staticmethod
     def df_kernel(criteria: bc.IConcreteBatchCriteria,
@@ -296,35 +298,31 @@ class ParallelFractionUnivar(BaseParallelFraction):
 
     def from_batch(self, criteria: bc.IConcreteBatchCriteria):
         # We always calculate the metric
-        perf_idf = core.utils.pd_csv_read(os.path.join(self.cmdopts["batch_collate_root"],
-                                                       self.inter_perf_stem + '.csv'))
+        perf_idf = core.utils.pd_csv_read(os.path.join(self.cmdopts["batch_stat_collate_root"],
+                                                       self.inter_perf_leaf + '.csv'))
         perf_odf = self.df_kernel(criteria, self.cmdopts, perf_idf)
-        ostem = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
+        ostem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf)
 
         core.utils.pd_csv_write(perf_odf, ostem + ".csv", index=False)
 
-        # Stddev might not have been calculated in stage 3
-        stddev_ipath = os.path.join(self.cmdopts["batch_collate_root"],
-                                    self.inter_perf_stem + '.stddev')
-        if core.utils.path_exists(stddev_ipath):
-            stddev_idf = core.utils.pd_csv_read(stddev_ipath)
-            stddev_odf = self.df_kernel(criteria, self.cmdopts, stddev_idf)
-            core.utils.pd_csv_write(stddev_odf, ostem + ".stddev", index=False)
+        common.stats_prepare(self.cmdopts,
+                             criteria,
+                             self.inter_perf_leaf,
+                             self.kLeaf,
+                             self.df_kernel)
 
-        BatchRangedGraph(input_fpath=ostem + '.csv',
-                         stddev_fpath=ostem + '.stddev',
-                         model_fpath=os.path.join(self.cmdopts['batch_model_root'],
-                                                  self.kLeaf + '.model'),
-                         model_legend_fpath=os.path.join(self.cmdopts['batch_model_root'],
-                                                         self.kLeaf + '.legend'),
-                         output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
-                                                   self.kLeaf + core.config.kImageExt),
-                         title="Swarm Parallel Performance Fraction",
-                         xlabel=criteria.graph_xlabel(self.cmdopts),
-                         ylabel="",
-                         xticks=criteria.graph_xticks(self.cmdopts),
-                         logyscale=self.cmdopts['plot_log_yscale'],
-                         large_text=self.cmdopts['plot_large_text']).generate()
+        SummaryLinegraph95(stats_root=self.cmdopts['batch_stat_collate_root'],
+                           input_stem=self.kLeaf,
+                           stats=self.cmdopts['dist_stats'],
+                           output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
+                                                     self.kLeaf + core.config.kImageExt),
+                           model_root=self.cmdopts['batch_model_root'],
+                           title="Swarm Parallel Performance Fraction",
+                           xlabel=criteria.graph_xlabel(self.cmdopts),
+                           ylabel="",
+                           xticks=criteria.graph_xticks(self.cmdopts),
+                           logyscale=self.cmdopts['plot_log_yscale'],
+                           large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class ScalabilityUnivarGenerator:
@@ -342,7 +340,7 @@ class ScalabilityUnivarGenerator:
                  interference_duration_csv: str,
                  cmdopts: dict,
                  criteria: bc.IConcreteBatchCriteria):
-        self.logger.info("From %s", cmdopts["batch_collate_root"])
+        self.logger.info("From %s", cmdopts["batch_stat_collate_root"])
 
         InterRobotInterferenceUnivar(cmdopts, interference_count_csv,
                                      interference_duration_csv).from_batch(criteria)
@@ -382,14 +380,15 @@ class InterRobotInterferenceBivar:
         self.interference_duration_stem = interference_duration_csv.split('.')[0]
 
     def from_batch(self, criteria: bc.IConcreteBatchCriteria):
-        count_csv_istem = os.path.join(self.cmdopts["batch_collate_root"],
+        count_csv_istem = os.path.join(self.cmdopts["batch_stat_collate_root"],
                                        self.interference_count_stem)
-        duration_csv_istem = os.path.join(self.cmdopts["batch_collate_root"],
+        duration_csv_istem = os.path.join(self.cmdopts["batch_stat_collate_root"],
                                           self.interference_duration_stem)
-        count_csv_ostem = os.path.join(self.cmdopts["batch_collate_root"], self.kCountLeaf)
-        duration_csv_ostem = os.path.join(self.cmdopts["batch_collate_root"], self.kDurationLeaf)
-        count_img_ostem = os.path.join(self.cmdopts["batch_collate_graph_root"], self.kCountLeaf)
-        duration_img_ostem = os.path.join(self.cmdopts["batch_collate_graph_root"],
+        count_csv_ostem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kCountLeaf)
+        duration_csv_ostem = os.path.join(
+            self.cmdopts["batch_stat_collate_root"], self.kDurationLeaf)
+        count_img_ostem = os.path.join(self.cmdopts["batch_graph_collate_root"], self.kCountLeaf)
+        duration_img_ostem = os.path.join(self.cmdopts["batch_graph_collate_root"],
                                           self.kDurationLeaf)
 
         count_idf = core.utils.pd_csv_read(count_csv_istem + '.csv')
@@ -445,7 +444,7 @@ class NormalizedEfficiencyBivar(BaseNormalizedEfficiency):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
-        self.inter_perf_stem = inter_perf_csv.split('.')[0]
+        self.inter_perf_leaf = inter_perf_csv.split('.')[0]
 
     def from_batch(self, criteria: bc.IConcreteBatchCriteria):
         """
@@ -453,24 +452,22 @@ class NormalizedEfficiencyBivar(BaseNormalizedEfficiency):
         batch.
         """
         # We always calculate the metric
-        perf_idf = core.utils.pd_csv_read(os.path.join(self.cmdopts["batch_collate_root"],
-                                                       self.inter_perf_stem + '.csv'))
+        perf_idf = core.utils.pd_csv_read(os.path.join(self.cmdopts["batch_stat_collate_root"],
+                                                       self.inter_perf_leaf + '.csv'))
         perf_odf = self.df_kernel(criteria, self.cmdopts, perf_idf)
-        ostem = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
+        ostem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf)
 
         core.utils.pd_csv_write(perf_odf, ostem + ".csv", index=False)
 
-        # Stddev might not have been calculated in stage 3
-        stddev_ipath = os.path.join(self.cmdopts["batch_collate_root"],
-                                    self.inter_perf_stem + '.stddev')
-        if core.utils.path_exists(stddev_ipath):
-            stddev_idf = core.utils.pd_csv_read(stddev_ipath)
-            stddev_odf = self.df_kernel(criteria, self.cmdopts, stddev_idf)
-            core.utils.pd_csv_write(stddev_odf, ostem + ".stddev", index=False)
+        common.stats_prepare(self.cmdopts,
+                             criteria,
+                             self.inter_perf_leaf,
+                             self.kLeaf,
+                             self.df_kernel)
 
         Heatmap(input_fpath=ostem + '.csv',
                 output_fpath=os.path.join(
-                    self.cmdopts["batch_collate_graph_root"], self.kLeaf + core.config.kImageExt),
+                    self.cmdopts["batch_graph_collate_root"], self.kLeaf + core.config.kImageExt),
                 title='Swarm Efficiency (Normalized)',
                 xlabel=criteria.graph_xlabel(self.cmdopts),
                 ylabel=criteria.graph_ylabel(self.cmdopts),
@@ -546,31 +543,29 @@ class ParallelFractionBivar(BaseParallelFraction):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
-        self.inter_perf_stem = inter_perf_csv.split('.')[0]
+        self.inter_perf_leaf = inter_perf_csv.split('.')[0]
 
     def from_batch(self, criteria: bc.IConcreteBatchCriteria):
         """
         Calculate efficiency metric for the given controller for each experiment in a
-        batch. If stddev or a model of the metric exists, they are plotted along with the calculated
-        metric.
+        batch. Calculated stats and/or metric model results are plotted along with the calculated
+        metric, if they exist.
         """
         # We always calculate the actual metric
-        perf_idf = core.utils.pd_csv_read(os.path.join(self.cmdopts["batch_collate_root"],
-                                                       self.inter_perf_stem + '.csv'))
+        perf_idf = core.utils.pd_csv_read(os.path.join(self.cmdopts["batch_stat_collate_root"],
+                                                       self.inter_perf_leaf + '.csv'))
         metric_odf = self.df_kernel(criteria, self.cmdopts, perf_idf)
-        ostem = os.path.join(self.cmdopts["batch_collate_root"], self.kLeaf)
+        ostem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf)
         core.utils.pd_csv_write(metric_odf, ostem + ".csv", index=False)
 
-        # Stddev might not have been calculated in stage 3
-        stddev_ipath = os.path.join(self.cmdopts["batch_collate_root"],
-                                    self.inter_perf_stem + '.stddev')
-        if core.utils.path_exists(stddev_ipath):
-            stddev_idf = core.utils.pd_csv_read(stddev_ipath)
-            stddev_odf = self.df_kernel(criteria, self.cmdopts, stddev_idf)
-            core.utils.pd_csv_write(stddev_odf, ostem + ".stddev", index=False)
+        common.stats_prepare(self.cmdopts,
+                             criteria,
+                             self.inter_perf_leaf,
+                             self.kLeaf,
+                             self.df_kernel)
 
         Heatmap(input_fpath=ostem + '.csv',
-                output_fpath=os.path.join(self.cmdopts["batch_collate_graph_root"],
+                output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
                                           self.kLeaf + core.config.kImageExt),
                 title="Swarm Parallel Performance Fraction",
                 xlabel=criteria.graph_xlabel(self.cmdopts),
@@ -594,7 +589,7 @@ class ScalabilityBivarGenerator:
                  interference_duration_csv: str,
                  cmdopts: dict,
                  criteria: bc.IConcreteBatchCriteria):
-        self.logger.info("From %s", cmdopts["batch_collate_root"])
+        self.logger.info("From %s", cmdopts["batch_stat_collate_root"])
 
         NormalizedEfficiencyBivar(cmdopts, inter_perf_csv).from_batch(criteria)
 

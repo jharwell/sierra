@@ -93,13 +93,11 @@ class EnvironmentalCS():
         ideal_var_df = DataFrames.expx_var_df(self.cmdopts,
                                               criteria,
                                               exp_dirs,
-                                              self.main_config['sierra']['avg_output_leaf'],
                                               self.main_config['perf']['tv_environment_csv'],
                                               0)
         expx_var_df = DataFrames.expx_var_df(self.cmdopts,
                                              criteria,
                                              exp_dirs,
-                                             self.main_config['sierra']['avg_output_leaf'],
                                              self.main_config['perf']['tv_environment_csv'],
                                              self.exp_num)
 
@@ -143,13 +141,11 @@ class RawPerfCS():
         ideal_perf_df = DataFrames.expx_perf_df(self.cmdopts,
                                                 criteria,
                                                 exp_dirs,
-                                                self.main_config['sierra']['avg_output_leaf'],
                                                 self.main_config['perf']['intra_perf_csv'],
                                                 self.ideal_num)
         expx_perf_df = DataFrames.expx_perf_df(self.cmdopts,
                                                criteria,
                                                exp_dirs,
-                                               self.main_config['sierra']['avg_output_leaf'],
                                                self.main_config['perf']['intra_perf_csv'],
                                                self.exp_num)
 
@@ -213,19 +209,16 @@ class AdaptabilityCS():
         ideal_perf_df = DataFrames.expx_perf_df(self.cmdopts,
                                                 self.criteria,
                                                 exp_dirs,
-                                                self.main_config['sierra']['avg_output_leaf'],
                                                 self.main_config['perf']['intra_perf_csv'],
                                                 self.ideal_num)
         ideal_var_df = DataFrames.expx_var_df(self.cmdopts,
                                               self.criteria,
                                               exp_dirs,
-                                              self.main_config['sierra']['avg_output_leaf'],
                                               self.main_config['perf']['tv_environment_csv'],
                                               self.ideal_num)
         expx_perf_df = DataFrames.expx_perf_df(self.cmdopts,
                                                self.criteria,
                                                exp_dirs,
-                                               self.main_config['sierra']['avg_output_leaf'],
                                                self.main_config['perf']['intra_perf_csv'],
                                                self.exp_num)
 
@@ -303,28 +296,25 @@ class ReactivityCS():
         experiment. Returns NP arrays rather than dataframes, because that is what the curve
         similarity measure calculator needs as input.
         """
+
         ideal_perf_df = DataFrames.expx_perf_df(self.cmdopts,
                                                 self.criteria,
                                                 exp_dirs,
-                                                self.main_config['sierra']['avg_output_leaf'],
                                                 self.main_config['perf']['intra_perf_csv'],
                                                 self.ideal_num)
         ideal_var_df = DataFrames.expx_var_df(self.cmdopts,
                                               self.criteria,
                                               exp_dirs,
-                                              self.main_config['sierra']['avg_output_leaf'],
                                               self.main_config['perf']['tv_environment_csv'],
                                               self.ideal_num)
         expx_perf_df = DataFrames.expx_perf_df(self.cmdopts,
                                                self.criteria,
                                                exp_dirs,
-                                               self.main_config['sierra']['avg_output_leaf'],
                                                self.main_config['perf']['intra_perf_csv'],
                                                self.exp_num)
         expx_var_df = DataFrames.expx_var_df(self.cmdopts,
                                              self.criteria,
                                              exp_dirs,
-                                             self.main_config['sierra']['avg_output_leaf'],
                                              self.main_config['perf']['tv_environment_csv'],
                                              self.exp_num)
 
@@ -415,7 +405,6 @@ class DataFrames:
     def expx_var_df(cmdopts: dict,
                     criteria: BatchCriteria,
                     exp_dirs: tp.Optional[tp.List[str]],
-                    avg_output_leaf: str,
                     tv_environment_csv: str,
                     exp_num: int) -> pd.DataFrame:
         if exp_dirs is None:
@@ -423,9 +412,8 @@ class DataFrames:
         else:
             dirs = exp_dirs
 
-        path = os.path.join(cmdopts['batch_exp_root'],
+        path = os.path.join(cmdopts['batch_stat_root'],
                             dirs[exp_num],
-                            avg_output_leaf,
                             tv_environment_csv)
         try:
             return core.utils.pd_csv_read(path)
@@ -438,7 +426,6 @@ class DataFrames:
     def expx_perf_df(cmdopts: dict,
                      criteria: BatchCriteria,
                      exp_dirs: tp.Optional[tp.List[str]],
-                     avg_output_leaf: str,
                      intra_perf_csv: str,
                      exp_num: int) -> pd.DataFrame:
         if exp_dirs is None:
@@ -446,9 +433,8 @@ class DataFrames:
         else:
             dirs = exp_dirs
 
-        path = os.path.join(cmdopts['batch_exp_root'],
+        path = os.path.join(cmdopts['batch_stat_root'],
                             dirs[exp_num],
-                            avg_output_leaf,
                             intra_perf_csv)
         try:
             return core.utils.pd_csv_read(path)

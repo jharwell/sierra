@@ -27,10 +27,9 @@ import logging
 # Project packages
 import core.utils
 import core.variables.batch_criteria as bc
-from core.graphs.batch_ranged_graph import BatchRangedGraph
 
 
-class BatchedIntraExpModelRunner:
+class IntraExpModelRunner:
     """
     Runs all enabled intra-experiment models for all experiments in a batch.
 
@@ -50,21 +49,21 @@ class BatchedIntraExpModelRunner:
                                                self.cmdopts['batch_output_root'],
                                                criteria)
         exp_dirnames = criteria.gen_exp_dirnames(self.cmdopts)
+
         for i, exp in enumerate(exp_to_run):
             exp = os.path.split(exp)[1]
             exp_index = exp_dirnames.index(exp)
 
             cmdopts = copy.deepcopy(self.cmdopts)
-
-            cmdopts["exp0_output_root"] = os.path.join(cmdopts["batch_output_root"], exp)
-            cmdopts["exp0_avgd_root"] = os.path.join(cmdopts["exp0_output_root"],
-                                                     main_config['sierra']['avg_output_leaf'])
+            cmdopts["exp0_output_root"] = os.path.join(self.cmdopts["batch_output_root"],
+                                                       exp_dirnames[0])
+            cmdopts["exp0_stat_root"] = os.path.join(self.cmdopts["batch_stat_root"],
+                                                     exp_dirnames[0])
 
             cmdopts["exp_input_root"] = os.path.join(self.cmdopts['batch_input_root'], exp)
             cmdopts["exp_output_root"] = os.path.join(self.cmdopts['batch_output_root'], exp)
             cmdopts["exp_graph_root"] = os.path.join(self.cmdopts['batch_graph_root'], exp)
-            cmdopts["exp_avgd_root"] = os.path.join(cmdopts["exp_output_root"],
-                                                    main_config['sierra']['avg_output_leaf'])
+            cmdopts["exp_stat_root"] = os.path.join(self.cmdopts["batch_stat_root"], exp)
             cmdopts["exp_model_root"] = os.path.join(cmdopts['batch_model_root'], exp)
 
             core.utils.dir_create_checked(cmdopts['exp_model_root'], exist_ok=True)
@@ -115,13 +114,8 @@ class InterExpModelRunner:
 
         cmdopts = copy.deepcopy(self.cmdopts)
 
-        cmdopts['batch_collate_root'] = os.path.abspath(os.path.join(self.cmdopts['batch_output_root'],
-                                                                     main_config['sierra']['collate_csv_leaf']))
-        cmdopts["batch_collate_graph_root"] = os.path.abspath(os.path.join(self.cmdopts['batch_graph_root'],
-                                                                           main_config['sierra']['collate_graph_leaf']))
-
         core.utils.dir_create_checked(cmdopts['batch_model_root'], exist_ok=True)
-        core.utils.dir_create_checked(cmdopts['batch_collate_graph_root'], exist_ok=True)
+        core.utils.dir_create_checked(cmdopts['batch_graph_collate_root'], exist_ok=True)
 
         for model in self.models:
             if not model.run_for_batch(criteria, cmdopts):

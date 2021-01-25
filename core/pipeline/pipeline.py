@@ -60,6 +60,7 @@ class Pipeline:
             'project_imagizing': self.args.project_imagizing,
             'exp_overwrite': self.args.exp_overwrite,
             'exp_range': self.args.exp_range,
+            'dist_stats': self.args.dist_stats,
 
             # stage 1
             'time_setup': self.args.time_setup,
@@ -79,7 +80,6 @@ class Pipeline:
 
             # stage 3
             'no_verify_results': self.args.no_verify_results,
-            'gen_stddev': self.args.gen_stddev,
             'render_cmd_opts': self.args.render_cmd_opts,
 
             # stage 4

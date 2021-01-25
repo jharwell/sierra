@@ -109,23 +109,6 @@ Root level dictionaries:
 .. code-block:: YAML
 
    sierra:
-
-     # The leaf directory under the compute batched experiment root where
-     # inter-experiment ``.csv`` files will be created as the results of
-     # individual experiments within the batch are collated #together. This key
-     # is mandatory for all simulations.
-     collate_csv_leaf: 'collated-csvs'
-
-     # The leaf directory under the ``graphs/`` directory within the batched
-     # experiment root where inter-experiment graphs created from the
-     # inter-experiment collated ``.csv`` files will be created. This key is
-     mandatory for all simulations.  collate_graph_leaf: 'collated-graphs'
-
-     # The leaf directory within the output directory for each experiment
-     # within the batch where the averaged ``.csv`` files for all simulations in
-     # the experiment will be placed. This key is mandatory for all simulations.
-     avg_output_leaf: 'averaged-output'
-
      # The directory within the output directory for each experiment within
      # the batch where the frames created from the ``.csv`` files created by the
      # selected project plugin will be stored for rendering. This key is
@@ -152,8 +135,8 @@ Root level dictionaries:
      # known a priori for all possible projects during stage 4).
      raw_perf_ylabel: '# Blocks'
 
-     # The ``.csv`` file under ``avg_output_leaf`` for each experiment which
-     # contains the performance information for the experiment.
+     # The ``.csv`` file under ``statistics_leaf`` for each experiment which
+     # contains the averaged performance information for the experiment.
      intra_perf_csv: 'block-transport.csv'
 
      # The ``.csv`` column within ``intra_perf_csv`` which is the
@@ -174,12 +157,12 @@ Root level dictionaries:
      # batch (1 per experiment).
      interference_duration_csv: 'interference-duration-cum-avg.csv'
 
-     # The ``.csv`` file under ``avg_output_leaf`` for each experiment
-     # which contains the applied environmental variances.
+     # The ``.csv`` file under ``statistics_leaf`` for each experiment
+     # which contains the average applied environmental variances.
      tv_environment_csv.: 'tv-environment.csv'
 
-     # The ``.csv``file under ``avg_output_leaf`` for each experiment which
-     # contains information about temporally fluctuating populations.
+     # The ``.csv``file under ``statistics_leaf`` for each experiment which
+     # contains averaged information about temporally fluctuating populations.
      tv_population_csv: 'tv-population.csv'
 
 ``perf.emergence`` sub-dictionary
@@ -380,8 +363,8 @@ Root level dictionaries: varies. Each root level dictionary must start with
 ---------------------------------
 
 See :ref:`ln-project-config-intra-graphs-line`. Each inter-experiment linegraph
-has an additional field ``batch`` which determines in the generated graph is a
-:class:`~core.graphs.batch_ranged_graph.BatchRangedGraph` or a
+has an additional field ``summary`` which determines in the generated graph is a
+:class:`~core.graphs.summary_line_graph95.SummaryLineGraph95` or a
 :class:`~core.graphs.stacked_line_graph.StackedLineGraph` (default if omitted).
 
 .. _ln-project-config-intra-graphs-hm:

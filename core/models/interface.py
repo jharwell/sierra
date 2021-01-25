@@ -129,7 +129,7 @@ class IConcreteInterExpModel1D(implements.Interface):
     def target_csv_stems(self) -> tp.List[str]:
         """
         Return a list of names that the model predictions as they should appear appear on the legend
-        of the target: class: `~core.graphs.batch_ranged_graph.BatchRangedGraph` they are each
+        of the target: class: `~core.graphs.summary_line_graph95.SummaryLinegraph95` they are each
         attached to.
 
         """
@@ -138,7 +138,7 @@ class IConcreteInterExpModel1D(implements.Interface):
     def legend_names(self) -> tp.List[str]:
         """
         Return a list of names that the model predictions as they should appear appear on the legend
-        of the target: class: `~core.graphs.batch_ranged_graph.BatchRangedGraph` they are each
+        of the target: class: `~core.graphs.summary_line_graph95.SummaryLinegraph95` they are each
         attached to.
         """
         raise NotImplementedError

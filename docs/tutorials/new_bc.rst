@@ -18,7 +18,7 @@ following to get it to work with SIERRA as a batch criteria:
    .. _ln-xpath: https://docs.python.org/2/library/xml.etree.elementtree.html
 
    In order to change attributes, add/remove tags, you will need to understand
-   the XPath syntax for search in XML files; tutorial is `here _ln-xpath_`.
+   the XPath syntax for search in XML files; tutorial is `here _ln-xpath`.
 
    ``get_attr_changelist()`` - Given whatever parameters that your variable was
    passed during initialization (e.g. the boundaries of a range you want to vary

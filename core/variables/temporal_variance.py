@@ -147,7 +147,7 @@ def factory(cli_arg: str, main_config: dict, batch_input_root: str, **kwargs):
             amps = main_config['perf']['flexibility'][amps_key]
             hzs = main_config['perf']['flexibility']['hz']
         except KeyError:
-            msg = "'hz' or '{0}' not found in flexibility section of main config file for project".format(
+            msg = "'hz' or '{0}' not found in 'flexibility' section of main config file for project".format(
                 amps_key)
             logging.fatal(msg)
             raise
