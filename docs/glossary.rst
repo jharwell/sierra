@@ -9,6 +9,20 @@ works/is designed the way it is, and to help you find your way around.
 
 .. glossary::
 
+   Project
+
+      The SIERRA plugin allowing you to use your compiled C++ library+ARGoS
+      within the SIERRA framework. A project is mainly a set of ``.yaml``
+      configuration files, project-specific :term:`Batch Criteria`, and some
+      utility classes which allow SIERRA to translate the ``--scenario``
+      argument passed on the cmdline to sets of XML changes as part of
+      :term:`Experiment` definition.
+
+      .. IMPORTANT:: All SIERRA project plugins must be linked under
+         ``projects/`` in the SIERRA repository to be found an runtime.
+
+      Specified via ``--project`` on the cmdline.
+
    Batch Criteria
 
       A `variable` you wish to used SIERRA to evaluate the effect of on swarm

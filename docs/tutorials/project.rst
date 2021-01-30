@@ -3,56 +3,78 @@
 How to Add A New Project
 ========================
 
-The argument to the cmdline option ``--project`` is added to the path
-``projects/<option>``, and the plugin directory tree must have the following
-structure and content (a subset of the SIERRA core directory structure):
+#. Create your project folder somewhere in the filesystem, and link it into
+   SIERRA via::
 
-- ``config/`` - Plugin YAML configuration root. within this directory, the following
-  files are used (not all files are required when running a stage that utilizes
-  them):
+     ln -s /path/to/your/project <sierra_repo>/projects/<project_name>
 
-  - ``main.yaml`` - Main SIERRA configuration file. This file is required for all
-    pipeline stages.
+   Note that ``<project_name>`` does not have to be the same as the name of the
+   folder on the filesystem.
 
-  - ``controllers.yaml`` - Configuration for controllers (input file/graph
-    generation). This file is required for all pipeline stages.
+   .. IMPORTANT:: SIERRA currently does not have a ``PATH`` inspired mechanism
+                  for finding projects specified via ``--project``, so if you
+                  don't link your project under ``projects/`` you will get a
+                  runtime error.
 
-  - ``intra-graphs-line.yaml`` - Configuration for intra-experiment
-    linegraphs. This file is optional. If it is present, graphs defined in it
-    will be added to those specified in ``core/config/intra-graphs-line.yaml``,
-    and will be generated if stage 4 is run.
+#. Create the following directory structure within your project directory (or
+   copy and modify the one from an existing project).
 
-  - ``intra-graphs-hm.yaml`` - Configuration for intra-experiment
-    heatmaps. This file is optional. If it is present, graphs defined in it will
-    be added to those specified in ``core/config/intra-graphs-hm.yaml``, and
-    will be generated if stage 4 is run.
+   - ``config/`` - Plugin YAML configuration root. within this directory, the following
+     files are used (not all files are required when running a stage that utilizes
+     them):
 
-  - ``inter-graphs.yaml`` - Configuration for inter-experiment graphs. This file
-    is optional. If it is present, graphs defined in it will be added to those
-    specified in ``core/config/inter-graphs-line.yaml``, and will be generated
-    if stage 4 is run.
+     - ``main.yaml`` - Main SIERRA configuration file. This file is required for all
+       pipeline stages. See :ref:`ln-project-config-main` for documentation.
 
-  - ``stage5.yaml`` - Configuration for stage5 controller comparisons. This file
-    is required if stage5 is run, and optional otherwise.
+   - ``controllers.yaml`` - Configuration for controllers (input file/graph
+       generation). This file is required for all pipeline stages.See
+       :ref:`ln-project-config-controllers` for documentation.
 
-  - ``models.yaml`` - Configuration for intra- and inter-experiment models. This
-    file is optional. If it is present, models defined and enabled in it will be
-    run before stage 4 intra- and/or inter-experiment graph generation, if stage
-    4 is run.
+     - ``intra-graphs-line.yaml`` - Configuration for intra-experiment
+       linegraphs. This file is optional. If it is present, graphs defined in it
+       will be added to those specified in ``core/config/intra-graphs-line.yaml``,
+       and will be generated if stage 4 is run. See
+       :ref:`ln-project-config-intra-graphs-line` for documentation.
 
-- ``generators/scenario_generators.py`` - Specifies extensions/specializations
-  of the foraging scenarios in the SIERRA core, as well as any other scenarios
-  the user would want to be able to pass via the ``--scenario`` cmdline
-  argument.
+     - ``intra-graphs-hm.yaml`` - Configuration for intra-experiment
+       heatmaps. This file is optional. If it is present, graphs defined in it will
+       be added to those specified in ``core/config/intra-graphs-hm.yaml``, and
+       will be generated if stage 4 is run. See
+       :ref:`ln-project-config-intra-graphs-hm` for documentation.
 
-- ``variables/`` - Additional variables (including batch criteria) defined by
-  the plugin/project that can be directly or indirectly used by the
-  ``--batch-criteria`` and ``--scenario`` cmdline arguments.
+     - ``inter-graphs.yaml`` - Configuration for inter-experiment graphs. This file
+       is optional. If it is present, graphs defined in it will be added to those
+       specified in ``core/config/inter-graphs-line.yaml``, and will be generated
+       if stage 4 is run. See
+       :ref:`ln-project-config-inter-graphs-line` for documentation.
 
-- ``cmdline.py`` - Specifies cmdline extensions specific to the plugin/project.
+     - ``stage5.yaml`` - Configuration for stage5 controller comparisons. This file
+       is required if stage5 is run, and optional otherwise. See
+       :ref:`ln-project-config-stage5` for documentation.
 
-Contents of ``config/main.yaml``
---------------------------------
+     - ``models.yaml`` - Configuration for intra- and inter-experiment
+       models. This file is optional. If it is present, models defined and
+       enabled in it will be run before stage 4 intra- and/or inter-experiment
+       graph generation, if stage 4 is run. See :ref:`ln-project-config-models`
+       for documentation.
+
+   - ``generators/scenario_generators.py`` - Specifies extensions/specializations
+     of the foraging scenarios in the SIERRA core, as well as any other scenarios
+     the user would want to be able to pass via the ``--scenario`` cmdline
+     argument.
+
+   - ``variables/`` - Additional variables (including batch criteria) defined by
+     the plugin/project that can be directly or indirectly used by the
+     ``--batch-criteria`` and ``--scenario`` cmdline arguments.
+
+   - ``cmdline.py`` - Specifies cmdline extensions specific to the plugin/project.
+
+#. Read the docs on what each of the configuration files is for.
+
+.. _ln-project-config-main:
+
+``config/main.yaml``
+--------------------
 
 Root level dictionaries:
 
@@ -197,8 +219,86 @@ See also :ref:`Flexibility config <ln-bc-tv-yaml-config>`.
 
 See :ref:`SAA noise config <ln-bc-saa-noise-yaml-config>`.
 
-Contents of ``config/models.yaml``
-----------------------------------
+.. _ln-project-config-controllers:
+
+``config/controllers.yaml``
+---------------------------
+
+Root level dictionaries: varies; project dependent. Each root level dictionary
+is treated as the name of a controller `category` when `--controller` is
+parsed. Within each category structure is:
+
+``<controller_category>`` dictionary
+####################################
+
+A complete category YAML configuration for a controller category ``mycategory``
+is as follows; components explained in the subsections that follow.
+
+.. code-block:: YAML
+
+   mycategory:
+     xml:
+       attr_change:
+         - ['.//loop-functions', 'label', 'my_category_loop_functions']
+         - ['.//qt-opengl/user_functions', 'label', 'my_category_qt_loop_functions']
+
+     controllers:
+       - name: Controller1
+         xml:
+           attr_change:
+             - ['.//controllers', '__controller___', 'MyController']
+         graphs_inherit:
+           - *base_graphs
+         graphs: &MyController_graphs
+           - GraphCategory1
+           - GraphCategory2
+
+``mycategory.xml`` sub-dictionary
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: YAML
+
+   # XML changes which should be made to the template `.argos` file for `all`
+   # controllers in the category. This is usually things like setting ARGoS loop
+   # functions appropriately, if required. Each change is formatted as a list:
+   # [parent tag, tag, value], each specified in the XPath syntax.
+   xml:
+     attr_change:
+       - ['.//loop-functions', 'label', 'my_category_loop_functions']
+       - ['.//qt-opengl/user_functions', 'label', 'my_category_qt_loop_functions']
+
+``mycategory.controllers`` sub-dictionary
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. code-block:: YAML
+
+   controllers:
+     - name: Controller1
+       xml:
+         attr_change:
+           - ['.//controllers', '__controller___', 'MyController']
+       graphs_inherit:
+         - *base_graphs
+       graphs: &MyController_graphs
+         - GraphCategory1
+         - GraphCategory2
+
+Under ``controllers`` is a list of controllers which can be passed as part of
+``--controller`` when invoking SIERRA, matched by ``name``. Any
+controller-specific XML attribute changes can be specified here, with the same
+syntax as the changes for the controller category.
+
+The ``graphs`` dictionary specifies a list of graph categories from inter- or
+intra-experiment ``.yaml`` configuration which should be generated for this
+controller, if the necessary input .csv files exist.
+
+Sets of graphs common to multiple controller categories can be inherited with
+the ``graphs_inherit`` dictionary; see the YAML docs for how to include named
+lists inside other lists.
+
+.. _ln-project-config-models:
+
+``config/models.yaml``
+----------------------
 
 Root level dictionaries:
 
@@ -221,10 +321,10 @@ Root level dictionaries:
      - pyfile: 'my_model2'
      - ...
 
-.. _ln-intra-graphs-line-yaml:
+.. _ln-project-config-intra-graphs-line:
 
-Contents of ``config/intra-graphs-line.yaml``
----------------------------------------------
+``config/intra-graphs-line.yaml``
+---------------------------------
 
 Root level dictionaries: varies. Each root level dictionary must start with
 ``LN_``.
@@ -273,16 +373,21 @@ Root level dictionaries: varies. Each root level dictionary must start with
      # The label of the Y-axis of the graph.
      - ylabel: 'Y'
 
-Contents of ``config/inter-graphs-line.yaml``
----------------------------------------------
 
-See :ref:`ln-intra-graphs-line-yaml`. Each inter-experiment linegraph has an
-additional field ``batch`` which determines in the generated graph is a
+.. _ln-project-config-inter-graphs-line:
+
+``config/inter-graphs-line.yaml``
+---------------------------------
+
+See :ref:`ln-project-config-intra-graphs-line`. Each inter-experiment linegraph
+has an additional field ``batch`` which determines in the generated graph is a
 :class:`~core.graphs.batch_ranged_graph.BatchRangedGraph` or a
 :class:`~core.graphs.stacked_line_graph.StackedLineGraph` (default if omitted).
 
-Contents of ``config/intra-graphs-hm.yaml``
----------------------------------------------
+.. _ln-project-config-intra-graphs-hm:
+
+``config/intra-graphs-hm.yaml``
+-------------------------------
 
 Root level dictionaries: varies. Each root level dictionary must start with
 ``HM_``.

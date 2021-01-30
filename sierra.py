@@ -70,7 +70,8 @@ class SIERRA():
             module = __import__("projects.{0}.cmdline".format(bootstrap_args.project),
                                 fromlist=["*"])
         except ModuleNotFoundError:
-            self.logger.fatal("Project '%s' not found", bootstrap_args.project)
+            self.logger.fatal(
+                "Project '%s' not found--is it a directory under '<sierra_repo>/projects/'?", bootstrap_args.project)
             raise
 
         # Validate cmdline args

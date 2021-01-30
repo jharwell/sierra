@@ -38,10 +38,9 @@ class BootstrapCmdline:
                                               formatter_class=HelpFormatter)
 
         self.parser.add_argument("--project",
-                                 choices=["fordyca", "silicon"],
                                  help="""
 
-                                 Specify which project to load.
+                                 Specify which :term:`Project` to load. 
 
                                  Use=stage[1,2,3,4,5].
                                  """)

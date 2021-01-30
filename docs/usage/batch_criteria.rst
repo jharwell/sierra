@@ -231,7 +231,7 @@ changes will be generated for it.
 
    In order to use this batch criteria, you **MUST** have the version of ARGoS
    from :ref:`Swarm Robotics
-   Research<https://github.com/swarm-robotics/argos3.git`. The version
+   Research<https://github.com/swarm-robotics/argos3.git`_. The version
    accessible on the ARGoS website does not have a consistent noise injection
    interface, making usage with this criteria impossible.
 
