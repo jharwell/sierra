@@ -14,6 +14,9 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
+"""
+Linegraph for summarizing the results of a batch experiment in different ways.
+"""
 
 # Core packages
 import os
@@ -32,11 +35,10 @@ import core.config
 import core.utils
 
 
-class SummaryLinegraph95:
+class SummaryLinegraph:
     """
     Generates a linegraph summarizing swarm behavior across a :term:`Batch Experiment`, possibly
-    showing the 95% confidence interval (hence the
-    name).
+    showing the 95% confidence interval or box and whisker plots, according to configuration.
 
     Attributes:
         stats_root: The absolute/relative path to the ``statistics/`` directory for the batch
@@ -65,8 +67,7 @@ class SummaryLinegraph95:
 
         logyscale: Should the Y axis be in the log2 domain ?
 
-        stats: The type of statistics to include on the graph. If ``conf95``,  95% confidence
-               interval will be plotted as a shaded region. Ignored otherwise.
+        stats: The type of statistics to include on the graph (from ``--dist-stats``).
 
         model_root: The absolute/relative path to the ``models/`` directory for the batch
                      experiment.
@@ -137,7 +138,7 @@ class SummaryLinegraph95:
         fig, ax = plt.subplots()
 
         # Plot lines
-        self._plot_lines(data_dfy, model)
+        self._plot_lines(data_dfy, models)
 
         # Add legend
         self._plot_legend(model)
@@ -158,8 +159,8 @@ class SummaryLinegraph95:
 
         # Output figure
         fig = ax.get_figure()
-        fig.set_size_inches(10, 10)
-        fig.savefig(self.output_fpath, bbox_inches='tight', dpi=100)
+        fig.set_size_inches(core.config.kGraphBaseSize, core.config.kGraphBaseSize)
+        fig.savefig(self.output_fpath, bbox_inches='tight', dpi=core.config.kGraphDPI)
         plt.close(fig)  # Prevent memory accumulation (fig.clf() does not close everything)
 
     def _plot_lines(self, data_dfy: pd.DataFrame, model: tp.Tuple[pd.DataFrame, tp.List[str]]):
@@ -184,12 +185,29 @@ class SummaryLinegraph95:
         """
         Plot statistics for all lines on the graph.
         """
-        if self.stats == 'conf95' and 'stddev' in stat_dfs.keys():
+        if (self.stats == 'all' or self.stats == 'conf95') and 'stddev' in stat_dfs.keys():
             for i in range(0, len(data_dfy.values)):
                 # 95% interval = 2 std stdeviations
                 plt.fill_between(xticks, data_dfy.values[i] - 2 * stat_dfs['stddev'].abs().values[i],
                                  data_dfy.values[i] + 2 * stat_dfs['stddev'].abs().values[i],
                                  alpha=0.50, color=self.kColors[i], interpolate=True)
+
+        elif self.stats == 'bw' and all(k in stat_dfs.keys() for k in ['whislo', 'whishi', 'median', 'q1', 'q3']):
+            boxes = []
+            for i in range(0, len(data_dfy.values)):
+                for j in range(0, len(data_dfy.columns)):
+                    boxes.append({
+                        'whislo': stat_dfs['whislo'].iloc[i, j],  # Bottom whisker position
+                        # First quartile (25th percentile)
+                        'q1': stat_dfs['q1'].iloc[i, j],
+                        # Median         (50th percentile)
+                        'med': stat_dfs['median'].iloc[i, j],
+                        # Third quartile (75th percentile)
+                        'q3': stat_dfs['q3'].iloc[i, j],
+                        'whishi': stat_dfs['whishi'].iloc[i, j],  # Top whisker position
+                        'fliers': []  # Ignoring outliers
+                    })
+                    ax.bxp(boxes, manage_ticks=False, positions=self.xticks)
 
     def _plot_ticks(self, ax):
         if self.logyscale:
@@ -228,7 +246,47 @@ class SummaryLinegraph95:
             else:
                 self.logger.warning("Stddev file not found for '%s'", self.input_stem)
 
-        return dfs
+        elif self.stats == 'bw':
+            whislo_ipath = os.path.join(self.stats_root,
+                                        self.input_stem + core.config.kStatsExtensions['whislo'])
+            whishi_ipath = os.path.join(self.stats_root,
+                                        self.input_stem + core.config.kStatsExtensions['whishi'])
+            median_ipath = os.path.join(self.stats_root,
+                                        self.input_stem + core.config.kStatsExtensions['median'])
+            q1_ipath = os.path.join(self.stats_root,
+                                    self.input_stem + core.config.kStatsExtensions['q1'])
+            q3_ipath = os.path.join(self.stats_root,
+                                    self.input_stem + core.config.kStatsExtensions['q3'])
+
+            bxp_ipath = os.path.join(self.stats_root,
+                                     self.input_stem + core.config.kStatsExtensions['bxp'])
+
+            if core.utils.path_exists(whislo_ipath):
+                dfs['whislo'] = core.utils.pd_csv_read(whislo_ipath)
+            else:
+                self.logger.warning("whislo file not found for '%s'", self.input_stem)
+
+            if core.utils.path_exists(whishi_ipath):
+                dfs['whishi'] = core.utils.pd_csv_read(whishi_ipath)
+            else:
+                self.logger.warning("whishi file not found for '%s'", self.input_stem)
+
+            if core.utils.path_exists(median_ipath):
+                dfs['median'] = core.utils.pd_csv_read(median_ipath)
+            else:
+                self.logger.warning("median file not found for '%s'", self.input_stem)
+
+            if core.utils.path_exists(q1_ipath):
+                dfs['q1'] = core.utils.pd_csv_read(q1_ipath)
+            else:
+                self.logger.warning("q1 file not found for '%s'", self.input_stem)
+
+            if core.utils.path_exists(q3_ipath):
+                dfs['q3'] = core.utils.pd_csv_read(q3_ipath)
+            else:
+                self.logger.warning("q3 file not found for '%s'", self.input_stem)
+
+            return dfs
 
     def _read_models(self) -> tp.Tuple[pd.DataFrame, tp.List[str]]:
         if self.model_root is not None:
@@ -249,5 +307,5 @@ class SummaryLinegraph95:
 
 
 __api__ = [
-    'SummaryLinegraph95'
+    'SummaryLinegraph'
 ]

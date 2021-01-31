@@ -4,7 +4,7 @@ Setup
 This page contains links to guides for setting up SIERRA in different HPC
 environments from a C++ library point of view. To setup the SIERRA python plugin
 for your project (specified on the cmdline via ``--project``, see
-:ref:`ln-contrib-project`).
+:ref:`ln-tutorial-project`).
 
 The general steps to integrate your project with SIERRA and a chosen HPC
 environment are:

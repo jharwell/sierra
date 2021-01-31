@@ -105,7 +105,7 @@ class PipelineStage4:
 
         Video generation: If images have previously been created, then the following is run:
 
-        #. :class:`~core.pipeline.stage4.exp_video_renderer.BatchExpParallelVideoRenderer` to render
+        #. :class:`~core.pipeline.stage4.video_renderer.BatchExpParallelVideoRenderer` to render
            videos for each experiment in the batch, or a subset.
 
         Intra-experiment graph generation: if intra-experiment graphs should be generated,
@@ -131,7 +131,7 @@ class PipelineStage4:
            to perform graph generation from collated ``.csv`` files.
         """
         if self.cmdopts['project_rendering'] or self.cmdopts['argos_rendering']:
-            self._run_rendering()
+            self._run_rendering(criteria)
 
         if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'intra':
             if criteria.is_univar() and len(self.models_intra) > 0 and not self.cmdopts['models_disable']:
@@ -270,19 +270,13 @@ class PipelineStage4:
         self.logger.debug("Enabled linegraph categories: %s", filtered_keys)
         return targets
 
-    def _run_rendering(self):
+    def _run_rendering(self, criteria):
         """
         Render captured ARGoS frames and/or frames created by imagizing in stage 3 into videos.
         """
-        render_opts = {
-            'cmd_opts': self.cmdopts['render_cmd_opts'],
-            'argos_rendering': self.cmdopts['argos_rendering'],
-            'project_rendering': self.cmdopts['project_rendering']
-        }
         self.logger.info("Rendering videos...")
         start = time.time()
-        BatchExpParallelVideoRenderer()(self.main_config, render_opts,
-                                        self.cmdopts['batch_output_root'])
+        BatchExpParallelVideoRenderer(self.main_config, self.cmdopts)(criteria)
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         self.logger.info("Rendering complete in %s", str(sec))

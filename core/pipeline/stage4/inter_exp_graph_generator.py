@@ -34,7 +34,7 @@ import core.perf_measures.robustness as pmb
 import core.perf_measures.flexibility as pmf
 import core.utils
 from core.graphs.stacked_line_graph import StackedLineGraph
-from core.graphs.summary_line_graph95 import SummaryLinegraph95
+from core.graphs.summary_line_graph import SummaryLinegraph
 from core.variables import batch_criteria as bc
 import core.config
 
@@ -62,13 +62,13 @@ class InterExpGraphGenerator:
         """
         Runs the following to generate graphs across experiments in the batch:
 
-        #. :class:`~core.pipeline.stage4.pipeline_stage4.inter_exp_graph_generator.LinegraphsGenerator`
+        #. :class:`~core.pipeline.stage4.inter_exp_graph_generator.LinegraphsGenerator`
            to generate linegraphs (univariate batch criteria only).
 
-        #. :class:`~core.pipeline.stage4.pipeline_stage4.inter_exp_graph_generator.UnivarPerfMeasuresGenerator`to
-           generate performance measures (univariate batch criteria only).
+        #. :class:`~core.pipeline.stage4.inter_exp_graph_generator.UnivarPerfMeasuresGenerator`
+           to performance measures (univariate batch criteria only).
 
-        #. :class:`~core.pipeline.stage4.pipeline_stage4.inter_exp_graph_generator.BivarPerfMeasuresGenerator`
+        #. :class:`~core.pipeline.stage4.inter_exp_graph_generator.BivarPerfMeasuresGenerator`
            to generate performance measures (bivariate batch criteria only).
         """
 
@@ -103,31 +103,28 @@ class LinegraphsGenerator:
             # For each graph in each category
             for graph in category['graphs']:
                 if graph.get('summary', False):
-                    SummaryLinegraph95(stats_root=self.cmdopts['batch_stat_collate_root'],
-                                       input_stem=graph['dest_stem'],
-                                       output_fpath=os.path.join(self.cmdopts['batch_graph_collate_root'],
-                                                                 'SM95-' + graph['dest_stem'] + core.config.kImageExt),
-
-                                       stats=self.cmdopts['dist_stats'],
-                                       model_root=self.cmdopts['batch_model_root'],
-                                       title=graph['title'],
-                                       xlabel=criteria.graph_xlabel(self.cmdopts),
-                                       ylabel=graph['ylabel'],
-                                       xticks=criteria.graph_xticks(self.cmdopts),
-                                       xtick_labels=criteria.graph_xticklabels(self.cmdopts),
-                                       logyscale=self.cmdopts['plot_log_yscale'],
-                                       large_text=self.cmdopts['plot_large_text']).generate()
-                else:
-                    StackedLineGraph(input_fpath=os.path.join(self.cmdopts['batch_stat_collate_root'],
-                                                              graph['dest_stem'] + '.csv'),
-                                     stddev_fpath=os.path.join(self.cmdopts['batch_stat_collate_root'],
-                                                               graph['dest_stem'] + '.stddev'),
-                                     model_fpath=os.path.join(self.cmdopts['batch_model_root'],
-                                                              graph['dest_stem'] + '.model'),
-                                     model_legend_fpath=os.path.join(self.cmdopts['batch_model_root'],
-                                                                     graph['dest_stem'] + '.legend'),
+                    SummaryLinegraph(stats_root=self.cmdopts['batch_stat_collate_root'],
+                                     input_stem=graph['dest_stem'],
                                      output_fpath=os.path.join(self.cmdopts['batch_graph_collate_root'],
-                                                               'SLN-' + graph['dest_stem'] + core.config.kImageExt),
+                                                               'SM-' + graph['dest_stem'] + core.config.kImageExt),
+                                     stats=self.cmdopts['dist_stats'],
+                                     model_root=self.cmdopts['batch_model_root'],
+                                     title=graph['title'],
+                                     xlabel=criteria.graph_xlabel(self.cmdopts),
+                                     ylabel=graph['ylabel'],
+                                     xticks=criteria.graph_xticks(self.cmdopts),
+                                     xtick_labels=criteria.graph_xticklabels(self.cmdopts),
+                                     logyscale=self.cmdopts['plot_log_yscale'],
+                                     large_text=self.cmdopts['plot_large_text']).generate()
+                else:
+                    StackedLineGraph(stats_root=self.cmdopts['batch_stat_collate_root'],
+                                     input_stem=graph['dest_stem'],
+                                     output_fpath=os.path.join(self.cmdopts['batch_graph_collate_root'],
+                                                               'SLN-' + graph['dest_stem'] +
+                                                               core.config.kImageExt),
+                                     stats=self.cmdopts['dist_stats'],
+                                     dashstyles=graph.get('dashes', []),
+                                     linestyles=graph.get('lines', []),
                                      title=graph['title'],
                                      xlabel=graph['xlabel'],
                                      ylabel=graph['ylabel'],

@@ -33,7 +33,7 @@ import core.utils
 from core.variables.population_size import PopulationSize
 from core.variables import batch_criteria as bc
 from core.graphs.heatmap import Heatmap
-from core.graphs.summary_line_graph95 import SummaryLinegraph95
+from core.graphs.summary_line_graph import SummaryLinegraph
 import core.config
 from core.xml_luigi import XMLAttrChangeSet
 
@@ -144,7 +144,7 @@ class PerfLostInteractiveSwarmUnivar(BasePerfLostInteractiveSwarm):
 
     plost 1 robot = 0 # By definition
 
-    plost N robots = :meth:`~BasePerfLostInteractive.kernel()`.
+    plost N robots = :class:`~BasePerfLostInteractiveSwarm`.kernel().
 
     This gives how much MORE performance was lost in the entire simulation as a result of a swarm of
     size N, as opposed to a group of N robots that do not interact with each other, only the arena
@@ -315,15 +315,15 @@ class WeightedPMUnivar():
         xticks = criteria.graph_xticks(self.cmdopts)
         len_diff = len(xticks) - len(out_df.columns)
 
-        SummaryLinegraph95(stats_root=self.cmdopts['batch_stat_collate_root'],
-                           input_stem=csv_ostem,
-                           output_fpath=img_ostem + core.config.kImageExt,
-                           title=self.title,
-                           ylabel="Value",
-                           xlabel=criteria.graph_xlabel(self.cmdopts),
-                           xticks=xticks[len_diff:],
-                           logyscale=self.cmdopts['plot_log_yscale'],
-                           large_text=self.cmdopts['plot_large_text']).generate()
+        SummaryLinegraph(stats_root=self.cmdopts['batch_stat_collate_root'],
+                         input_stem=csv_ostem,
+                         output_fpath=img_ostem + core.config.kImageExt,
+                         title=self.title,
+                         ylabel="Value",
+                         xlabel=criteria.graph_xlabel(self.cmdopts),
+                         xticks=xticks[len_diff:],
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
 ################################################################################
 # Bivariate Classes
@@ -540,9 +540,13 @@ def stats_prepare(cmdopts: dict,
                                   inter_perf_ileaf + core.config.kStatsExtensions[k])
         stat_opath = os.path.join(cmdopts["batch_stat_collate_root"],
                                   oleaf + core.config.kStatsExtensions[k])
-        if core.utils.path_exists(stat_ipath):
+        if core.utils.path_exists(stat_ipath) and core.config.kPickleExt not in stat_ipath:
             stat_df = kernel(criteria, cmdopts, core.utils.pd_csv_read(stat_ipath))
             core.utils.pd_csv_write(stat_df, stat_opath, index=False)
+        elif core.utils.path_exists(stat_ipath) and core.config.kPickleExt in stat_ipath:
+            stat_df = kernel(criteria, cmdopts, core.utils.pd_pickle_read(stat_ipath))
+
+            core.utils.pd_pickle_write(stat_df, stat_opath)
 
 
 __api__ = [
@@ -550,4 +554,6 @@ __api__ = [
     'PerfLostInteractiveSwarmBivar',
     'FractionalLossesUnivar',
     'FractionalLossesBivar',
+    'BasePerfLostInteractiveSwarm',
+    'BaseFractionalLosses'
 ]

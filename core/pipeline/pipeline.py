@@ -27,10 +27,14 @@ Container module for the 5 pipeline stages implemented by SIERRA:
    performance measures.
 """
 
+# Core packages
 import os
 import logging
+
+# 3rd party packages
 import yaml
 
+# Project packages
 import core.variables.batch_criteria as bc
 
 from core.pipeline.stage1.pipeline_stage1 import PipelineStage1
@@ -61,6 +65,7 @@ class Pipeline:
             'exp_overwrite': self.args.exp_overwrite,
             'exp_range': self.args.exp_range,
             'dist_stats': self.args.dist_stats,
+            'serial_processing': self.args.serial_processing,
 
             # stage 1
             'time_setup': self.args.time_setup,
@@ -73,6 +78,8 @@ class Pipeline:
             "with_robot_rab": self.args.with_robot_rab,
             "with_robot_leds": self.args.with_robot_leds,
             "with_robot_battery": self.args.with_robot_battery,
+
+            'camera_config': self.args.camera_config,
 
             # stage 2
             'exec_resume': self.args.exec_resume,
@@ -144,13 +151,7 @@ class Pipeline:
                                                           self.cmdopts['project'],
                                                           'models')
 
-        try:
-            self.main_config = yaml.load(open(os.path.join(self.cmdopts['project_config_root'],
-                                                           'main.yaml')),
-                                         yaml.FullLoader)
-        except FileNotFoundError:
-            self.logger.exception("%s/main.yaml must exist!", self.cmdopts['project_config_root'])
-            raise
+        self._load_config()
 
         if 5 not in self.args.pipeline:
             self.batch_criteria = bc.factory(self.main_config, self.cmdopts, self.args)
@@ -183,6 +184,28 @@ class Pipeline:
         if 5 in self.args.pipeline:
             PipelineStage5(self.main_config,
                            self.cmdopts).run(self.args)
+
+    def _load_config(self) -> None:
+        try:
+            self.main_config = yaml.load(open(os.path.join(self.cmdopts['project_config_root'],
+                                                           'main.yaml')),
+                                         yaml.FullLoader)
+        except FileNotFoundError:
+            self.logger.exception("%s/main.yaml must exist!", self.cmdopts['project_config_root'])
+            raise
+
+        try:
+            perf_config = yaml.load(open(os.path.join(self.cmdopts['project_config_root'],
+                                                      self.main_config['perf'])),
+                                    yaml.FullLoader)
+
+        except FileNotFoundError:
+            self.logger.exception("%s/%s must exist!",
+                                  self.cmdopts['project_config_root'],
+                                  self.main_config['perf'])
+            raise
+
+        self.main_config.update(perf_config)
 
 
 __api__ = [

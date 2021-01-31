@@ -29,11 +29,12 @@ import logging
 
 # Project packages
 from core.xml_luigi import XMLLuigi
-from core.variables import camera_timeline
+from core.variables import cameras
 import core.generators.generator_factory as gf
 import core.xml_luigi
 from core.experiment_spec import ExperimentSpec
 import core.variables.time_setup as ts
+import core.variables.rendering as rendering
 
 
 class ARGoSExpDefGenerator:
@@ -169,16 +170,26 @@ class ARGoSExpDefGenerator:
 
         Does not write generated changes to the simulation definition pickle file.
         """
+
         if not self.cmdopts["argos_rendering"]:
             xml_luigi.tag_remove(".", "./visualization", noprint=True)  # ARGoS visualizations
         else:
-            cams = camera_timeline.factory(self.cmdopts, [self.cmdopts['arena_dim']])
-            rms = cams.gen_tag_rmlist()[0]
-            if rms:
-                for r in rms:
-                    xml_luigi.tag_remove(r.path, r.tag, True)  # OK if camera stuff isn't there
+            # Rendering must be processing before cameras, because it deletes the <qt_opengl>
+            # tag if it exists, and then re-adds it.
+            render = rendering.factory(self.cmdopts)
 
-            for a in cams.gen_tag_addlist()[0]:
+            for r in render.gen_tag_rmlist()[0] or []:
+                xml_luigi.tag_remove(r.path, r.tag, True)  # OK if rendering stuff isn't there
+
+            for a in render.gen_tag_addlist()[0] or []:
+                xml_luigi.tag_add(a.path, a.tag, a.attr)
+
+            cams = cameras.factory(self.cmdopts, [self.spec.arena_dim])
+
+            for r in cams.gen_tag_rmlist()[0] or []:
+                xml_luigi.tag_remove(r.path, r.tag, True)  # OK if camera stuff isn't there
+
+            for a in cams.gen_tag_addlist()[0] or []:
                 xml_luigi.tag_add(a.path, a.tag, a.attr)
 
 

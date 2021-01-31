@@ -6,15 +6,15 @@ Trying Out SIERRA
 If you just want to try SIERRA out with a pre-existing project without first
 defining your own, the steps to do so are:
 
-#. Build the code for the :xref:`FORDYCA` project, following the steps
-   `here<https://swarm-robotics-fordyca.readthedocs.io/en/latest/setup/build.html>`_.
+#. Build the code for the :xref:`FORDYCA` project, following the `build steps
+   here <https://swarm-robotics-fordyca.readthedocs.io/en/latest/setup/build.html>`_.
 
    .. IMPORTANT:: Make sure you to build an optimized version of the code by
                   passing ``--opt`` to the bootstrap script. For `most` use
                   cases, that is the only additional option you will need.
 
-#. Setup the :xref:`FORDYCA` runtime environment, following the steps `here
-   <https://swarm-robotics-fordyca.readthedocs.io/en/latest/setup/local-runtime.html>`_,
+#. Setup the :xref:`FORDYCA` runtime environment, following the `setup steps here
+   <https://swarm-robotics-fordyca.readthedocs.io/setup/local-runtime.html>`_,
    and make sure (1) ``argos3`` is found by your shell, (2) you can launch the
    FORDYCA demo ARGoS simulation.
 

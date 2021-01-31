@@ -18,10 +18,15 @@ Experiment creation classes, taking an experiment definition `generated` by clas
 ``exp_generator.py`` and writing the experiment to the filesystem.
 """
 
+# Core packages
 import os
 import random
 import logging
+import shutil
 
+# 3rd party packages
+
+# Project packages
 from core.xml_luigi import XMLLuigi
 from core.variables import batch_criteria as bc
 
@@ -162,6 +167,7 @@ class ExpCreator:
 
             if self.cmdopts['argos_rendering']:
                 frames_fpath = os.path.join(self.exp_output_root, sim_output_dir, "frames")
+                assert shutil.which('Xvfb') is not None, "FATAL: Xvfb not found"
                 core.utils.dir_create_checked(frames_fpath, exist_ok=True)
 
         # Clear out commands file if it exists

@@ -142,8 +142,18 @@ def pd_csv_read(path: str, **kwargs) -> pd.DataFrame:
 
 
 @retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=0.100)  # type:ignore
+def pd_pickle_read(path: str) -> pd.DataFrame:
+    return pd.read_pickle(path)
+
+
+@retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=0.100)  # type:ignore
 def pd_csv_write(df: pd.DataFrame, path: str, **kwargs) -> None:
     df.to_csv(path, sep=';', float_format='%.8f', **kwargs)
+
+
+@retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=0.100)  # type:ignore
+def pd_pickle_write(df: pd.DataFrame, path: str) -> None:
+    df.to_pickle(path)
 
 
 def path_exists(path: str) -> bool:

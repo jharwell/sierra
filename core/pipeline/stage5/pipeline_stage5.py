@@ -18,15 +18,18 @@
 Contains main class implementing stage 5 of the experimental pipeline.
 """
 
+# Core packages
 import os
 import typing as tp
 import logging
+
+# 3rd party packages
 import yaml
 
+# Project packages
 from core.pipeline.stage5 import intra_scenario_comparator as intrasc
 from core.pipeline.stage5 import inter_scenario_comparator as intersc
 import core.root_dirpath_generator as rdg
-
 import core.utils
 
 
@@ -111,7 +114,7 @@ class PipelineStage5:
 
         If ``--scenario-comparison`` was passed:
 
-        # . :class:`~core.pipeline.stage5.inter_scenario_comparator.UnivarIntraScenarioComparator`
+        # . :class:`~core.pipeline.stage5.inter_scenario_comparator.UnivarInterScenarioComparator`
             (only valid for univariate batch criteria currently).
 
         """

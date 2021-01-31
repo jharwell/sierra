@@ -27,26 +27,27 @@ How to Add A New Project
        pipeline stages. See :ref:`ln-project-config-main` for documentation.
 
    - ``controllers.yaml`` - Configuration for controllers (input file/graph
-       generation). This file is required for all pipeline stages.See
-       :ref:`ln-project-config-controllers` for documentation.
+     generation). This file is required for all pipeline stages.See
+     :ref:`Controllers YAML config<ln-project-config-controllers>` for documentation.
 
      - ``intra-graphs-line.yaml`` - Configuration for intra-experiment
        linegraphs. This file is optional. If it is present, graphs defined in it
-       will be added to those specified in ``core/config/intra-graphs-line.yaml``,
-       and will be generated if stage 4 is run. See
-       :ref:`ln-project-config-intra-graphs-line` for documentation.
+       will be added to those specified in
+       ``core/config/intra-graphs-line.yaml``, and will be generated if stage 4
+       is run. See :ref:`Intra-experiment linegraphs YAML config
+       <ln-project-config-intra-graphs-line>` for documentation.
 
      - ``intra-graphs-hm.yaml`` - Configuration for intra-experiment
-       heatmaps. This file is optional. If it is present, graphs defined in it will
-       be added to those specified in ``core/config/intra-graphs-hm.yaml``, and
-       will be generated if stage 4 is run. See
-       :ref:`ln-project-config-intra-graphs-hm` for documentation.
+       heatmaps. This file is optional. If it is present, graphs defined in it
+       will be added to those specified in ``core/config/intra-graphs-hm.yaml``,
+       and will be generated if stage 4 is run. See :ref:`<Intra-experiment
+       heatmaps YAML config <ln-project-config-intra-graphs-hm>` for documentation.
 
-     - ``inter-graphs.yaml`` - Configuration for inter-experiment graphs. This file
-       is optional. If it is present, graphs defined in it will be added to those
-       specified in ``core/config/inter-graphs-line.yaml``, and will be generated
-       if stage 4 is run. See
-       :ref:`ln-project-config-inter-graphs-line` for documentation.
+     - ``inter-graphs.yaml`` - Configuration for inter-experiment graphs. This
+       file is optional. If it is present, graphs defined in it will be added to
+       those specified in ``core/config/inter-graphs-line.yaml``, and will be
+       generated if stage 4 is run. See :ref:`Inter-experiment lingraphs YAML
+       config <ln-project-config-inter-graphs-line>` for documentation.
 
      - ``stage5.yaml`` - Configuration for stage5 controller comparisons. This file
        is required if stage5 is run, and optional otherwise. See
@@ -76,25 +77,15 @@ How to Add A New Project
 ``config/main.yaml``
 --------------------
 
-Root level dictionaries:
+An example main configuration file:
 
-- ``sim`` - Configuration for each ARGoS simulation run. This dictionary is
-  mandatory for all simulations.
-
-- ``sierra`` - Configuration for SIERRA internals. This dictionary is mandatory
-  for all simulations.
-
-- ``perf`` - Configuration for performance measures. This dictionary is
-  mandatory for all simulations.
-
-``sim`` dictionary
-##################
 .. code-block:: YAML
 
+   # Configuration for each ARGoS simulation run. This dictionary is
+   # mandatory for all simulations.
    sim:
-
      # The directory within each simulation's working directory which will
-     # @ contain the metrics output as by the simulation. This key is mandatory
+     # contain the metrics output as by the simulation. This key is mandatory
      # for all simulations.
      sim_metrics_leaf: 'metrics'
 
@@ -104,20 +95,29 @@ Root level dictionaries:
      # if rendering/frame grabbing is not employed.
      argos_frames_leaf: 'frames'
 
-``sierra`` dictionary
-#####################
-.. code-block:: YAML
-
+   # Configuration for SIERRA internals. This dictionary is mandatory
+   # for all simulations.
    sierra:
      # The directory within the output directory for each experiment within
      # the batch where the frames created from the ``.csv`` files created by the
-     # selected project plugin will be stored for rendering. This key is
-     # currently mandatory for all simulations, even if rendering/frame grabbing
-     is not employed.
-     plugin_frames_leaf: 'plugin-frames'
+     # selected project will be stored for rendering. This key is currently
+     # mandatory for all simulations, even if rendering/frame grabbing is
+     # is not employed.
+     project_frames_leaf: 'project-frames'
+
+   # Configuration for performance measures. This key-value pair is mandatory
+   # for all simulations. The value is the location of the .yaml configuration
+   # file for performance measures. It is a separate config file so that multiple
+   # scenarios within a single project which define performance measures in
+   # different ways can be easily accomodated.
+   perf: 'perf-config.yaml'
+
 
 ``perf`` dictionary
 ###################
+
+Within the pointed-to .yaml file for ``perf`` configuration, the structure is:
+
 .. code-block:: YAML
 
    perf:
@@ -208,8 +208,10 @@ See :ref:`SAA noise config <ln-bc-saa-noise-yaml-config>`.
 ---------------------------
 
 Root level dictionaries: varies; project dependent. Each root level dictionary
-is treated as the name of a controller `category` when `--controller` is
-parsed. Within each category structure is:
+is treated as the name of a controller `category` when ``--controller`` is
+parsed. For example, if you pass ``--controller=mycategory.FizzBuzz`` to SIERRA,
+then you need to have a root level dictionary ``mycategory`` defined in
+``controllers.yaml``.
 
 ``<controller_category>`` dictionary
 ####################################
@@ -220,63 +222,48 @@ is as follows; components explained in the subsections that follow.
 .. code-block:: YAML
 
    mycategory:
+     # XML changes which should be made to the template `.argos` file for `all`
+     # controllers in the category. This is usually things like setting ARGoS loop
+     # functions appropriately, if required. Each change is formatted as a list:
+     # [parent tag, tag, value, each specified in the XPath syntax.
+     #
+     # This section can be omitted if not needed. If ``--argos-rendering`` is
+     # passed, then this section should be used to specify the QT visualization
+     # functions to use.
      xml:
        attr_change:
          - ['.//loop-functions', 'label', 'my_category_loop_functions']
          - ['.//qt-opengl/user_functions', 'label', 'my_category_qt_loop_functions']
 
+     # Under ``controllers`` is a list of controllers which can be passed as part
+     # of ``--controller`` when invoking SIERRA, matched by ``name``. Any
+     # controller-specific XML attribute changes can be specified here, with the
+     # same syntax as the changes for the controller category.
+
      controllers:
-       - name: Controller1
+       - name: FizzBuzz
          xml:
            attr_change:
-             - ['.//controllers', '__controller___', 'MyController']
+
+             # The ``__controller__`` tag in the template input file which is
+             # arbitrary, and any string will do. It's purpose is to allow the same
+             # template input file to be used by multiple controller types. If you
+             # don't need that, then you can omit the ``xml``/ ``attr_change`` tags
+             # in your configuration altogether.
+             - ['.//controllers', '__controller___', 'FizzBuzz']
+
+         # Sets of graphs common to multiple controller categories can be
+         # inherited with the ``graphs_inherit`` dictionary; see the YAML docs for
+         # details on how to include named lists inside other lists.
          graphs_inherit:
            - *base_graphs
+
+         # Specifies a list of graph categories from inter- or
+         # intra-experiment ``.yaml`` configuration which should be generated
+         # for this controller, if the necessary input .csv files exist.
          graphs: &MyController_graphs
            - GraphCategory1
            - GraphCategory2
-
-``mycategory.xml`` sub-dictionary
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. code-block:: YAML
-
-   # XML changes which should be made to the template `.argos` file for `all`
-   # controllers in the category. This is usually things like setting ARGoS loop
-   # functions appropriately, if required. Each change is formatted as a list:
-   # [parent tag, tag, value], each specified in the XPath syntax.
-   xml:
-     attr_change:
-       - ['.//loop-functions', 'label', 'my_category_loop_functions']
-       - ['.//qt-opengl/user_functions', 'label', 'my_category_qt_loop_functions']
-
-``mycategory.controllers`` sub-dictionary
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. code-block:: YAML
-
-   controllers:
-     - name: Controller1
-       xml:
-         attr_change:
-           - ['.//controllers', '__controller___', 'MyController']
-       graphs_inherit:
-         - *base_graphs
-       graphs: &MyController_graphs
-         - GraphCategory1
-         - GraphCategory2
-
-Under ``controllers`` is a list of controllers which can be passed as part of
-``--controller`` when invoking SIERRA, matched by ``name``. Any
-controller-specific XML attribute changes can be specified here, with the same
-syntax as the changes for the controller category.
-
-The ``graphs`` dictionary specifies a list of graph categories from inter- or
-intra-experiment ``.yaml`` configuration which should be generated for this
-controller, if the necessary input .csv files exist.
-
-Sets of graphs common to multiple controller categories can be inherited with
-the ``graphs_inherit`` dictionary; see the YAML docs for how to include named
-lists inside other lists.
 
 .. _ln-project-config-models:
 
@@ -295,14 +282,21 @@ Root level dictionaries:
 .. code-block:: YAML
 
    models:
+
      # The name of the python file under ``project/models`` containing one or
-     more models meeting the requirements of one of the model interfaces:
-     :class:`~models.IConcreteIntraExpModel1D`,
-            :class:`~models.IConcreteIntraExpModel2D`,
-                   :class:`~models.IConcreteInterExpModel1D`.
+     # more models meeting the requirements of one of the model interfaces:
+     # :class:`~models.IConcreteIntraExpModel1D`,
+     # :class:`~models.IConcreteIntraExpModel2D`,
+     # :class:`~models.IConcreteInterExpModel1D`.
+
      - pyfile: 'my_model1'
      - pyfile: 'my_model2'
+       model2_param1: 17
+       ...
      - ...
+
+Any other parameters/dictionaries/etc needed by a particular model can be added
+to the list above and they will be passed through to the model's constructor.
 
 .. _ln-project-config-intra-graphs-line:
 

@@ -27,12 +27,14 @@ import typing as tp
 import multiprocessing as mp
 import queue
 import copy
+import shutil
 
 # 3rd party packages
 
 # Project packages
 import core.utils
 import core.config
+import core.variables.batch_criteria as bc
 
 
 class BatchExpParallelVideoRenderer:
@@ -40,60 +42,72 @@ class BatchExpParallelVideoRenderer:
     Render the video for each experiment in the specified batch directory in sequence.
     """
 
-    def __call__(self,
-                 main_config: dict,
-                 render_opts: tp.Dict[str, str],
-                 batch_exp_root: str) -> None:
+    def __init__(self, main_config: dict, cmdopts: dict) -> None:
+        self.main_config = main_config
+        self.cmdopts = cmdopts
+
+    def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
         """
         Arguments:
             main_config: Parsed dictionary of main YAML configuration.
             render_opts: Dictionary of render options.
             batch_exp_root: Root directory for the batch experiment.
         """
-        experiments = [d for d in os.listdir(batch_exp_root)
-                       if main_config['sierra']['collate_csv_leaf'] not in d]
+        exp_to_render = core.utils.exp_range_calc(self.cmdopts,
+                                                  self.cmdopts['batch_output_root'],
+                                                  criteria)
+
         q = mp.JoinableQueue()  # type: mp.JoinableQueue
 
-        for exp in experiments:
-            exp_root = os.path.join(batch_exp_root, exp)
+        for exp in exp_to_render:
+            _, leaf = os.path.split(exp)
 
-            if render_opts['project_rendering']:
-                opts = copy.deepcopy(render_opts)
+            if self.cmdopts['project_rendering']:
 
-                frames_root = os.path.join(exp_root,
-                                           main_config['sierra']['project_frames_leaf'])
+                exp_imagize_root = os.path.join(self.cmdopts['batch_imagize_root'], leaf)
+
                 # Project render targets are in <averaged_output_root>/<metric_dir_name>, for all
                 # directories in <averaged_output_root>.
-                for d in os.listdir(frames_root):
-                    src_dir = os.path.join(frames_root, d)
-                    if os.path.isdir(src_dir):
-                        opts['image_dir'] = src_dir
-                        opts['output_dir'] = os.path.join(exp_root, 'videos')
-                        opts['ofile_leaf'] = d + '.mp4'
+                for d in os.listdir(exp_imagize_root):
+                    candidate = os.path.join(exp_imagize_root, d)
+                    if os.path.isdir(candidate):
+                        opts = {
+                            'input_dir': candidate,
+                            'output_dir': os.path.join(self.cmdopts['batch_video_root'],
+                                                       leaf),
+                            'ofile_leaf': d + core.config.kRenderFormat,
+                            'cmd_opts': self.cmdopts['render_cmd_opts']
+                        }
 
                         core.utils.dir_create_checked(opts['output_dir'], True)
                         q.put(opts)
 
-            if render_opts['argos_rendering']:
-                opts = copy.deepcopy(render_opts)
+            if self.cmdopts['argos_rendering']:
 
                 # ARGoS render targets are in <batch_output_root>/<exp>/<sim>/<argos_frames_leaf>,
                 # for all simulations in a given experiment (which can be a lot!).
-                for sim in self._filter_sim_dirs(os.listdir(exp_root), main_config):
-                    opts['ofile_leaf'] = sim + '.mp4'
-                    frames_root = os.path.join(exp_root,
-                                               sim,
-                                               main_config['sim']['argos_frames_leaf'])
-                    opts['image_dir'] = frames_root
-                    opts['output_dir'] = os.path.join(exp_root, 'videos')
-
+                for sim in self._filter_sim_dirs(os.listdir(exp), self.main_config):
+                    opts = {
+                        'ofile_leaf': sim + core.config.kRenderFormat,
+                        'input_dir': os.path.join(exp,
+                                                  sim,
+                                                  self.main_config['sim']['argos_frames_leaf']),
+                        'output_dir': os.path.join(self.cmdopts['batch_video_root'],
+                                                   leaf),
+                        'cmd_opts': self.cmdopts['render_cmd_opts']
+                    }
                     core.utils.dir_create_checked(opts['output_dir'], exist_ok=True)
                     q.put(copy.deepcopy(opts))
 
         # Render videos in parallel--waaayyyy faster
-        for i in range(0, mp.cpu_count()):
+        if self.cmdopts['serial_processing']:
+            parallelism = 1
+        else:
+            parallelism = mp.cpu_count()
+
+        for i in range(0, parallelism):
             p = mp.Process(target=BatchExpParallelVideoRenderer._thread_worker,
-                           args=(q, main_config))
+                           args=(q, self.main_config))
             p.start()
 
         q.join()
@@ -128,10 +142,11 @@ class ExpVideoRenderer:
 
     def __init__(self) -> None:
         self.logger = logging.getLogger(__name__)
+        assert shutil.which('ffmpeg') is not None, "FATAL: ffmpeg not found"
 
     def __call__(self, main_config: dict, render_opts: tp.Dict[str, str]) -> None:
         self.logger.info("Rendering images in %s,ofile_leaf=%s...",
-                         render_opts['image_dir'],
+                         render_opts['input_dir'],
                          render_opts['ofile_leaf'])
         opts = render_opts['cmd_opts'].split(' ')
 
@@ -140,10 +155,11 @@ class ExpVideoRenderer:
                "-pattern_type",
                "glob",
                "-i",
-               "'" + os.path.join(render_opts['image_dir'], "*" + core.config.kImageExt) + "'"]
+               "'" + os.path.join(render_opts['input_dir'], "*" + core.config.kImageExt) + "'"]
         cmd.extend(opts)
         cmd.extend([os.path.join(render_opts['output_dir'],
                                  render_opts['ofile_leaf'])])
+
         p = subprocess.Popen(' '.join(cmd),
                              shell=True,
                              stderr=subprocess.DEVNULL,
@@ -151,4 +167,4 @@ class ExpVideoRenderer:
         p.wait()
 
 
-__api__ = ['BatchedExpVideoRenderer', 'ExpVideoRenderer']
+__api__ = ['BatchExpParallelVideoRenderer', 'ExpVideoRenderer']

@@ -89,8 +89,8 @@ class Scatterplot2D:
 
         # Output figure
         fig = ax.get_figure()
-        fig.set_size_inches(10, 10)
-        fig.savefig(self.output_fpath, bbox_inches='tight', dpi=100)
+        fig.set_size_inches(core.config.kGraphBaseSize, core.config.kGraphBaseSize)
+        fig.savefig(self.output_fpath, bbox_inches='tight', dpi=core.config.kGraphDPI)
         plt.close(fig)  # Prevent memory accumulation (fig.clf() does not close everything)
 
     def __plot_regression(self, df):

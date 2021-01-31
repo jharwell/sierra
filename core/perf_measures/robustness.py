@@ -26,7 +26,7 @@ import logging
 import pandas as pd
 
 # Project packages
-from core.graphs.summary_line_graph95 import SummaryLinegraph95
+from core.graphs.summary_line_graph import SummaryLinegraph
 from core.perf_measures import vcs
 import core.variables.batch_criteria as bc
 from core.graphs.heatmap import Heatmap
@@ -85,7 +85,7 @@ class RobustnessSAAUnivar:
         # Write .csv to file
         core.utils.pd_csv_write(df, stem_opath + '.csv', index=False)
 
-        SummaryLinegraph95(stats_root=self.cmdopts['batch_stat_collate_root'],
+        SummaryLinegraph(stats_root=self.cmdopts['batch_stat_collate_root'],
                            input_stem=self.kLeaf,
                            stats=self.cmdopts['dist_stats'],
                            output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
@@ -147,7 +147,7 @@ class RobustnessPDUnivar:
         # Write .csv to file
         core.utils.pd_csv_write(df, stem_opath + '.csv', index=False)
 
-        SummaryLinegraph95(stats_root=self.cmdopts['batch_stat_collate_root'],
+        SummaryLinegraph(stats_root=self.cmdopts['batch_stat_collate_root'],
                            input_stem=self.kLeaf,
                            stats=self.cmdopts['dist_stats'],
                            output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
@@ -225,13 +225,13 @@ class RobustnessSAABivar:
         - :class:`~core.graphs.scatterplot2D.Scatterplot2D` of performance vs. robustness for
           regression purposes.
         """
-        csv_ipath = self.__gen_heatmap(main_config, criteria)
-        self.__gen_scatterplot(csv_ipath, criteria)
+        csv_ipath = self._gen_heatmap(main_config, criteria)
+        self._gen_scatterplot(csv_ipath, criteria)
 
-    def __gen_scatterplot(self, rob_ipath: str, criteria: bc.BivarBatchCriteria):
+    def _gen_scatterplot(self, rob_ipath: str, criteria: bc.BivarBatchCriteria):
         """
         Generate a :class:`~core.graphs.scatterplot2D.Scatterplot2D` graph of robustness
-        vs. performance AFTER the main robustness `.csv` has generated in :method:`__gen_heatmap()`
+        vs. performance AFTER the main robustness `.csv` has generated in :meth:`_gen_heatmap()`
         """
         perf_ipath = os.path.join(self.cmdopts["batch_stat_collate_root"], self.inter_perf_csv)
         opath = os.path.join(self.cmdopts['batch_stat_collate_root'], self.kLeaf + '-vs-perf.csv')
@@ -263,7 +263,7 @@ class RobustnessSAABivar:
                       xlabel='Robustness (SAA)',
                       ylabel=criteria.graph_ylabel(self.cmdopts)).generate()
 
-    def __gen_heatmap(self, main_config: dict, criteria: bc.IConcreteBatchCriteria):
+    def _gen_heatmap(self, main_config: dict, criteria: bc.IConcreteBatchCriteria):
         """
         Generate a robustness graph for a given controller in a given scenario by computing the
         value of the robustness metric for each experiment within the batch, and plot
@@ -277,7 +277,7 @@ class RobustnessSAABivar:
         opath_stem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf)
 
         # Generate heatmap dataframe and write to file
-        df = self.__gen_heatmap_df(main_config, raw_df, criteria)
+        df = self._gen_heatmap_df(main_config, raw_df, criteria)
         core.utils.pd_csv_write(df, opath_stem + ".csv", index=False)
 
         Heatmap(input_fpath=opath_stem + '.csv',
@@ -290,10 +290,10 @@ class RobustnessSAABivar:
                 ytick_labels=criteria.graph_yticklabels(self.cmdopts)).generate()
         return opath_stem + '.csv'
 
-    def __gen_heatmap_df(self,
-                         main_config: dict,
-                         raw_df: pd.DataFrame,
-                         criteria: bc.BivarBatchCriteria):
+    def _gen_heatmap_df(self,
+                        main_config: dict,
+                        raw_df: pd.DataFrame,
+                        criteria: bc.BivarBatchCriteria):
         df = pd.DataFrame(columns=raw_df.columns, index=raw_df.index)
 
         for i in range(0, len(df.index)):
@@ -336,13 +336,13 @@ class RobustnessPDBivar:
         - :class:`~core.graphs.scatterplot2D.Scatterplot2D` of performance vs. robustness for
           regression purposes.
         """
-        csv_ipath = self.__gen_heatmap(criteria)
-        self.__gen_scatterplot(csv_ipath, criteria)
+        csv_ipath = self._gen_heatmap(criteria)
+        self._gen_scatterplot(csv_ipath, criteria)
 
-    def __gen_scatterplot(self, rob_ipath: str, criteria: bc.BivarBatchCriteria):
+    def _gen_scatterplot(self, rob_ipath: str, criteria: bc.BivarBatchCriteria):
         """
         Generate a :class:`~core.graphs.scatterplot2D.Scatterplot2D` graph of robustness
-        vs. performance AFTER the main robustness `.csv` has generated in :method:`__gen_heatmap()`
+        vs. performance AFTER the main robustness `.csv` has generated in :meth:`__gen_heatmap()`
         """
         perf_ipath = os.path.join(self.cmdopts["batch_stat_collate_root"], self.inter_perf_csv)
         opath = os.path.join(self.cmdopts['batch_stat_collate_root'],

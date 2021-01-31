@@ -269,7 +269,7 @@ class ReactivityCS():
     def __init__(self,
                  main_config: dict,
                  cmdopts: dict,
-                 criteria: BatchCriteria,
+                 criteria: BatchCriteria,  # Must be TemporalVariance!
                  ideal_num: int,
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
@@ -329,14 +329,18 @@ class ReactivityCS():
         # the drop in penalties. Vice versa for an increase penalty in the experiment for a timestep
         # t vs. the amount imposed during the ideal conditions experiment.
         for i in ideal_perf_df[self.perf_csv_col].index:
-            if ideal_var_df.loc[i, self.var_csv_col] > expx_var_df.loc[i, self.var_csv_col]:
-                ideal_df.loc[i, self.perf_csv_col] = ideal_perf_df.loc[i, self.perf_csv_col] * \
-                    (ideal_var_df.loc[i, self.var_csv_col] / expx_var_df.loc[i, self.var_csv_col])
-            elif ideal_var_df.loc[i, self.var_csv_col] < expx_var_df.loc[i, self.var_csv_col]:
-                ideal_df.loc[i, self.perf_csv_col] = ideal_perf_df.loc[i, self.perf_csv_col] * \
-                    (ideal_var_df.loc[i, self.var_csv_col] / expx_var_df.loc[i, self.var_csv_col])
-            else:
-                ideal_df.loc[i, self.perf_csv_col] = expx_perf_df.loc[i, self.perf_csv_col]
+            ideal_var = ideal_var_df.loc[i, self.var_csv_col]
+            expx_var = expx_var_df.loc[i, self.var_csv_col]
+            ideal_perf = ideal_perf_df.loc[i, self.perf_csv_col]
+
+            if expx_var > ideal_var:
+                scale_factor = 1.0 - abs(expx_var - ideal_var)
+            elif expx_var <= ideal_var:
+                scale_factor = 1.0 + abs(expx_var - ideal_var)
+
+            ideal_df.loc[i, self.perf_csv_col] = ideal_perf * scale_factor
+
+            print("I: ", i, expx_var, ideal_var, ideal_df.loc[i, self.perf_csv_col])
 
         xlen = len(ideal_var_df[self.var_csv_col].values)
         exp_data = np.zeros((xlen, 2))
@@ -344,7 +348,7 @@ class ReactivityCS():
         exp_data[:, 1] = expx_perf_df[self.perf_csv_col].values
 
         ideal_data = np.zeros((xlen, 2))
-        ideal_data[:, 0] = expx_var_df['clock'].values
+        ideal_data[:, 0] = ideal_perf_df['clock'].values
         ideal_data[:, 1] = ideal_df[self.perf_csv_col].values
 
         return ideal_data, exp_data

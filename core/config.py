@@ -32,9 +32,17 @@ mpl.use('Agg')
 
 # Project packages
 
-kImageExt = '.jpg'
+kImageExt = '.png'
 
-kPickleLeaf = 'exp_def.pkl'
+kRenderFormat = '.mp4'
+
+kPickleExt = '.pkl'
+
+kPickleLeaf = 'exp_def' + kPickleExt
+
+kGraphDPI = 100
+
+kGraphBaseSize = 5  # inches
 
 kGraphTextSizeSmall = {
     'title': 24,
@@ -63,5 +71,9 @@ kStatsExtensions = {
     'q1': '.q1',
     'q3': '.q3',
     'whislo': '.whislo',
-    'whishi': '.whishi'
+    'whishi': '.whishi',
+
+    'bxp': '.bxp' + kPickleExt,
 }
+
+kKDE_MANUAL_BANDWIDTH = 0.01

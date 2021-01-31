@@ -29,7 +29,7 @@ import typing as tp
 import pandas as pd
 
 # Project packages
-from core.graphs.summary_line_graph95 import SummaryLinegraph95
+from core.graphs.summary_line_graph import SummaryLinegraph
 from core.graphs.heatmap import Heatmap
 from core.perf_measures import common
 from core.variables import batch_criteria as bc
@@ -163,27 +163,27 @@ class InterRobotInterferenceUnivar:
         core.utils.pd_csv_write(duration_df, duration_csv_ostem + '.csv', index=False)
         core.utils.pd_csv_write(duration_df, duration_csv_ostem + '.csv', index=False)
 
-        SummaryLinegraph95(stats_root=self.cmdopts['batch_stat_collate_root'],
-                           input_stem=self.kCountLeaf,
-                           stats=self.cmdopts['dist_stats'],
-                           output_fpath=count_img_ostem + core.config.kImageExt,
-                           title="Swarm Inter-Robot Interference Counts",
-                           xlabel=criteria.graph_xlabel(self.cmdopts),
-                           ylabel="Average # Robots",
-                           xticks=criteria.graph_xticks(self.cmdopts),
-                           logyscale=self.cmdopts['plot_log_yscale'],
-                           large_text=self.cmdopts['plot_large_text']).generate()
+        SummaryLinegraph(stats_root=self.cmdopts['batch_stat_collate_root'],
+                         input_stem=self.kCountLeaf,
+                         stats=self.cmdopts['dist_stats'],
+                         output_fpath=count_img_ostem + core.config.kImageExt,
+                         title="Swarm Inter-Robot Interference Counts",
+                         xlabel=criteria.graph_xlabel(self.cmdopts),
+                         ylabel="Average # Robots",
+                         xticks=criteria.graph_xticks(self.cmdopts),
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
-        SummaryLinegraph95(stats_root=self.cmdopts['batch_stat_collate_root'],
-                           input_stem=self.kDurationLeaf,
-                           stats=self.cmdopts['dist_stats'],
-                           output_fpath=duration_img_ostem + core.config.kImageExt,
-                           title="Swarm Average Inter-Robot Interference Duration",
-                           xlabel=criteria.graph_xlabel(self.cmdopts),
-                           ylabel="# Timesteps",
-                           xticks=criteria.graph_xticks(self.cmdopts),
-                           logyscale=self.cmdopts['plot_log_yscale'],
-                           large_text=self.cmdopts['plot_large_text']).generate()
+        SummaryLinegraph(stats_root=self.cmdopts['batch_stat_collate_root'],
+                         input_stem=self.kDurationLeaf,
+                         stats=self.cmdopts['dist_stats'],
+                         output_fpath=duration_img_ostem + core.config.kImageExt,
+                         title="Swarm Average Inter-Robot Interference Duration",
+                         xlabel=criteria.graph_xlabel(self.cmdopts),
+                         ylabel="# Timesteps",
+                         xticks=criteria.graph_xticks(self.cmdopts),
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class NormalizedEfficiencyUnivar(BaseNormalizedEfficiency):
@@ -198,8 +198,7 @@ class NormalizedEfficiencyUnivar(BaseNormalizedEfficiency):
     def df_kernel(criteria: bc.IConcreteBatchCriteria,
                   cmdopts: dict,
                   perf_df: pd.DataFrame) -> pd.DataFrame:
-        eff_df = pd.DataFrame(columns=perf_df.columns
-                              )
+        eff_df = pd.DataFrame(columns=perf_df.columns)
         populations = criteria.populations(cmdopts)
 
         for i in range(0, len(eff_df.columns)):
@@ -234,19 +233,19 @@ class NormalizedEfficiencyUnivar(BaseNormalizedEfficiency):
                              self.kLeaf,
                              self.df_kernel)
 
-        SummaryLinegraph95(stats_root=self.cmdopts['batch_stat_collate_root'],
-                           input_stem=self.kLeaf,
-                           stats=self.cmdopts['dist_stats'],
-                           output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
-                                                     self.kLeaf + core.config.kImageExt),
+        SummaryLinegraph(stats_root=self.cmdopts['batch_stat_collate_root'],
+                         input_stem=self.kLeaf,
+                         stats=self.cmdopts['dist_stats'],
+                         output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
+                                                   self.kLeaf + core.config.kImageExt),
 
-                           model_root=self.cmdopts['batch_model_root'],
-                           title="Swarm Efficiency (normalized)",
-                           xlabel=criteria.graph_xlabel(self.cmdopts),
-                           ylabel="Efficiency",
-                           xticks=criteria.graph_xticks(self.cmdopts),
-                           logyscale=self.cmdopts['plot_log_yscale'],
-                           large_text=self.cmdopts['plot_large_text']).generate()
+                         model_root=self.cmdopts['batch_model_root'],
+                         title="Swarm Efficiency (normalized)",
+                         xlabel=criteria.graph_xlabel(self.cmdopts),
+                         ylabel="Efficiency",
+                         xticks=criteria.graph_xticks(self.cmdopts),
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class ParallelFractionUnivar(BaseParallelFraction):
@@ -311,18 +310,18 @@ class ParallelFractionUnivar(BaseParallelFraction):
                              self.kLeaf,
                              self.df_kernel)
 
-        SummaryLinegraph95(stats_root=self.cmdopts['batch_stat_collate_root'],
-                           input_stem=self.kLeaf,
-                           stats=self.cmdopts['dist_stats'],
-                           output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
-                                                     self.kLeaf + core.config.kImageExt),
-                           model_root=self.cmdopts['batch_model_root'],
-                           title="Swarm Parallel Performance Fraction",
-                           xlabel=criteria.graph_xlabel(self.cmdopts),
-                           ylabel="",
-                           xticks=criteria.graph_xticks(self.cmdopts),
-                           logyscale=self.cmdopts['plot_log_yscale'],
-                           large_text=self.cmdopts['plot_large_text']).generate()
+        SummaryLinegraph(stats_root=self.cmdopts['batch_stat_collate_root'],
+                         input_stem=self.kLeaf,
+                         stats=self.cmdopts['dist_stats'],
+                         output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
+                                                   self.kLeaf + core.config.kImageExt),
+                         model_root=self.cmdopts['batch_model_root'],
+                         title="Swarm Parallel Performance Fraction",
+                         xlabel=criteria.graph_xlabel(self.cmdopts),
+                         ylabel="",
+                         xticks=criteria.graph_xticks(self.cmdopts),
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class ScalabilityUnivarGenerator:
@@ -424,7 +423,7 @@ class NormalizedEfficiencyBivar(BaseNormalizedEfficiency):
     """
     kLeaf = 'PM-scalability-efficiency'
 
-    @staticmethod
+    @ staticmethod
     def df_kernel(criteria: bc.IConcreteBatchCriteria,
                   cmdopts: dict,
                   raw_df: pd.DataFrame) -> pd.DataFrame:

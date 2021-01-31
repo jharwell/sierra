@@ -64,6 +64,9 @@ instance/
 # Sphinx documentation
 docs/_build/
 docs/api
+*.doctree
+*.png
+*.html
 
 # PyBuilder
 target/
@@ -109,6 +112,4 @@ ENV/
 projects/*
 
 # MSI
-*.pbs.e*
-*.pbs.o*
 R-*

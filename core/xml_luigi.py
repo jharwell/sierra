@@ -204,11 +204,17 @@ class XMLLuigi:
           value: The value to set the attribute to.
         """
         el = self.root.find(path)
-        if el is not None and self.has_tag(path) and attr in el.attrib:
-            el.attrib[attr] = value
-        else:
+        if el is None:
             if not noprint:
-                self.logger.warning("No attribute '%s' found in node '%s'", attr, path)
+                self.logger.warning("Node '%s' not found", path)
+            return
+
+        if attr not in el.attrib:
+            if not noprint:
+                self.logger.warning("Atribute '%s' not found in in path '%s'", attr, path)
+            return
+
+        el.attrib[attr] = value
 
     def has_tag(self, path: str) -> bool:
         return self.root.find(path) is not None
@@ -261,7 +267,12 @@ class XMLLuigi:
         Add the tag name as a child element of the element found by the specified path, giving it
         the initial set of specified attributes.
         """
-        ET.SubElement(self.root.find(path), tag, attr)
+        el = self.root.find(path)
+        if el is None:
+            self.logger.warning("Parent node '%s' not found", path)
+            return
+
+        ET.SubElement(el, tag, attr)
 
 
 __api__ = [

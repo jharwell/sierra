@@ -65,7 +65,7 @@ class BatchIntraExpGraphGenerator:
             cmdopts["exp_model_root"] = os.path.join(cmdopts['batch_model_root'], exp)
             cmdopts["exp_stat_root"] = os.path.join(cmdopts["batch_stat_root"], exp)
 
-            if os.path.isdir(cmdopts["exp_output_root"]) and main_config['sierra']['collate_csv_leaf'] != exp:
+            if os.path.isdir(cmdopts["exp_stat_root"]):
                 IntraExpGraphGenerator(main_config,
                                        controller_config,
                                        LN_config,
@@ -166,42 +166,33 @@ class LinegraphsGenerator:
     """
 
     def __init__(self, cmdopts: dict, targets: list) -> None:
-
-        self.exp_stat_root = cmdopts['exp_stat_root']
-        self.exp_graph_root = cmdopts["exp_graph_root"]
-        self.exp_model_root = cmdopts["exp_model_root"]
-        self.log_yscale = cmdopts['plot_log_yscale']
-        self.large_text = cmdopts['plot_large_text']
-
+        self.cmdopts = cmdopts
         self.targets = targets
         self.logger = logging.getLogger(__name__)
 
     def generate(self):
-        self.logger.info("Linegraphs from %s", self.exp_stat_root)
+        self.logger.info("Linegraphs from %s", self.cmdopts['exp_stat_root'])
 
         # For each category of linegraphs we are generating
         for category in self.targets:
             # For each graph in each category
             for graph in category['graphs']:
-                output_fpath = os.path.join(self.exp_graph_root,
+                output_fpath = os.path.join(self.cmdopts['exp_graph_root'],
                                             'SLN-' + graph['dest_stem'] + core.config.kImageExt)
                 try:
-                    StackedLineGraph(input_fpath=os.path.join(self.exp_stat_root,
-                                                              graph['src_stem'] + '.csv'),
-                                     stddev_fpath=os.path.join(self.exp_stat_root,
-                                                               graph['src_stem'] + '.stddev'),
-                                     model_fpath=os.path.join(self.exp_model_root,
-                                                              graph['dest_stem'] + '.model'),
-                                     model_legend_fpath=os.path.join(self.exp_model_root,
-                                                                     graph['dest_stem'] + '.legend'),
+                    StackedLineGraph(stats_root=self.cmdopts['exp_stat_root'],
+                                     input_stem=graph['src_stem'],
                                      output_fpath=output_fpath,
+                                     stats=self.cmdopts['dist_stats'],
+                                     dashstyles=graph.get('dashes', []),
+                                     linestyles=graph.get('styles', []),
                                      cols=graph['cols'],
                                      title=graph['title'],
                                      legend=graph['legend'],
                                      xlabel=graph['xlabel'],
                                      ylabel=graph['ylabel'],
-                                     logyscale=self.log_yscale,
-                                     large_text=self.large_text).generate()
+                                     logyscale=self.cmdopts['plot_log_yscale'],
+                                     large_text=self.cmdopts['plot_large_text']).generate()
                 except KeyError:
                     raise KeyError('Check that the generated {0}.csv file contains the columns {1}'.format(
                         graph['src_stem'],
@@ -256,7 +247,7 @@ class HeatmapsGenerator:
                             large_text=self.large_text).generate()
 
 
-__api__ = ['BatchedIntraExpGraphGenerator',
+__api__ = ['BatchIntraExpGraphGenerator',
            'IntraExpGraphGenerator',
            'LinegraphsGenerator',
            'HeatmapsGenerator']

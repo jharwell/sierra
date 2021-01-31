@@ -93,7 +93,7 @@ class StackedSurfaceGraph:
                                                                  StackedSurfaceGraph.kMaxSurfaces)
 
         # Scaffold graph
-        plt.figure(figsize=(10, 10))
+        plt.figure(figsize=(core.config.kGraphBaseSize, core.config.kGraphBaseSize))
         ax = plt.axes(projection='3d')
         x = np.arange(len(dfs[0].columns))
         y = dfs[0].index
@@ -182,7 +182,10 @@ class StackedSurfaceGraph:
             path, leaf = os.path.split(self.output_fpath)
             components = leaf.split('.')
             fname = ''.join(leaf[0:-2]) + '_' + str(angle) + '.' + components[-1]
-            fig.savefig(os.path.join(path, fname), bbox_inches='tight', dpi=100, pad_inches=0)
+            fig.savefig(os.path.join(path, fname),
+                        bbox_inches='tight',
+                        dpi=core.config.kGraphDPI,
+                        pad_inches=0)
             plt.close(fig)  # Prevent memory accumulation (fig.clf() does not close everything)
 
 

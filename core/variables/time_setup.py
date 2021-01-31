@@ -132,12 +132,13 @@ def factory(cmdline: str) -> ARGoSTimeSetup:
     Parameters:
        cmdline: The value of ``--time-setup``
     """
-    attr = Parser()(cmdline.split(".")[1])
+    name = cmdline.split(".")[1]
+    attr = Parser()(name)
 
     def __init__(self) -> None:
         ARGoSTimeSetup.__init__(self, attr["duration"])
 
-    return type(cmdline,  # type: ignore
+    return type(name,  # type: ignore
                 (ARGoSTimeSetup,),
                 {"__init__": __init__})
 

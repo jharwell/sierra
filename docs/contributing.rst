@@ -1,3 +1,5 @@
+.. _ln-contributing:
+
 Contributing
 ============
 

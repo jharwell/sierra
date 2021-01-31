@@ -40,7 +40,7 @@ class BootstrapCmdline:
         self.parser.add_argument("--project",
                                  help="""
 
-                                 Specify which :term:`Project` to load. 
+                                 Specify which :term:`Project` to load.
 
                                  Use=stage[1,2,3,4,5].
                                  """)
@@ -112,7 +112,7 @@ class CoreCmdline:
         self.stage2 = self.parser.add_argument_group(
             'Stage2: General options for running experiments')
         self.stage3 = self.parser.add_argument_group(
-            'Stage3: General options for preprocessing experiment results')
+            'Stage3: General options for eprocessing experiment results')
         self.stage4 = self.parser.add_argument_group(
             'Stage4: General options for generating graphs')
         self.stage5 = self.parser.add_argument_group(
@@ -259,6 +259,15 @@ class CoreCmdline:
                                """ + self.stage_usage_doc([1, 4]),
                                  action='store_true')
 
+        self.parser.add_argument("--serial-processing",
+                                 help="""
+
+                                 If TRUE, then results processing/graph generation will be performed serially, rather
+                                 than using parallellism where possible.
+
+                                 """ + self.stage_usage_doc([3, 4]),
+                                 action='store_true')
+
         self.init_stage1()
         self.init_stage2()
         self.init_stage3()
@@ -349,6 +358,35 @@ class CoreCmdline:
 
                              """ + self.stage_usage_doc([1]),
                              default=10)
+
+        # Rendering options
+        rendering = self.parser.add_argument_group('Stage1: Rendering',
+                                                   'Rendering options (stage1 only)')
+        rendering.add_argument("--camera-config",
+                               choices=['overhead',
+                                        'argos_static',
+                                        'argos_dynamic',
+                                        'sierra_static',
+                                        'sierra_dynamic'],
+                               help="""
+
+                               Select the camera configuration for simulation. Ignored unless ``--argos-rendering`` is
+                               passed. Valid values are:
+
+                               - ``overhead`` - Use a single overhead camera at the center of the aren looking straight
+                                 down at an appropriate height to see the whole arena.
+
+                               - ``argos_static`` - Use the default ARGoS camera configuration (12 cameras), cycling
+                                 through them periodically throughout simulation without interpolation.
+
+                               - ``sierra_static`` - Use the SIERRA ARGoS camera configuration (12 cameras), cycling
+                                 through them periodically throughout simulation without interpolation.
+
+                               - ``sierra_dynamic`` - Use the SIERRA ARGoS camera configuration (12 cameras), cycling
+                                 through them periodically throughout simulation with interpolation between positions.
+
+                                 """ + self.stage_usage_doc([1]),
+                               default='overhead')
 
         # Robot options
         robots = self.parser.add_argument_group('Stage1: Robots',
@@ -478,19 +516,14 @@ class CoreCmdline:
                                  - ``conf95`` - Calculate standard deviation of experimental distribution and show 95%
                                    confidence interval on relevant graphs.
 
-                                 - ``bw`` - Calculate median, upper/lower quartiles, and whiskers of experimental
-                                   distribution for showing 95% confidence interval AND a short summary of the
-                                   distribution of the experimental data via box and whiskey plots. For the box and
-                                   whiskers plots, the upper/lower limits of the whiskers are set to the (5,95)
-                                   percentile.
-
-                                 - ``all`` - Effectively pass both ``conf95`` `and` ``bw``.
+                                 - ``bw`` - Calculate statistics necessary to show box and whisker plots around each
+                                   point in the graph. :class:`~core.graphs.summary_line_graph.SummaryLinegraph` only.
 
                                  """
                                  +
-                                 self.graphs_applicable_doc([':class:`~core.graphs.summary_line_graph95.SummaryLinegraph95`',
+                                 self.graphs_applicable_doc([':class:`~core.graphs.summary_line_graph.SummaryLinegraph`',
                                                              ':class:`~core.graphs.stacked_line_graph.StackedLineGraph`'])
-                                 + self.stage_usage_doc([3]),
+                                 + self.stage_usage_doc([3, 4]),
                                  default='none')
 
     def init_stage4(self):
@@ -643,7 +676,7 @@ class CoreCmdline:
 
                            """ +
 
-                           self.graphs_applicable_doc([':class:`~core.graphs.summary_line_graph95.SummaryLinegraph95`']) +
+                           self.graphs_applicable_doc([':class:`~core.graphs.summary_line_graph.SummaryLinegraph`']) +
                            self.bc_applicable_doc([':ref:`Population Density <ln-bc-population-density>`',
                                                    ':ref:`Population Size <ln-bc-population-size>`']) +
                            self.stage_usage_doc([4, 5]),
@@ -658,7 +691,7 @@ class CoreCmdline:
 
                            """ +
 
-                           self.graphs_applicable_doc([':class:`~core.graphs.summary_line_graph95.SummaryLinegraph95`',
+                           self.graphs_applicable_doc([':class:`~core.graphs.summary_line_graph.SummaryLinegraph`',
                                                        ':class:`~core.graphs.stacked_line_graph.StackedLineGraph`']) +
                            self.bc_applicable_doc([':ref:`Population Size <ln-bc-population-size>`',
                                                    ':ref:`Population Density <ln-bc-population-density>`']) +
@@ -671,7 +704,7 @@ class CoreCmdline:
                            For all 2D generated scatterplots, plot a linear regression line and the equation of the line
                            to the legend. """ +
 
-                           self.graphs_applicable_doc([':class:`~core.graphs.summary_line_graph95.SummaryLinegraph95`']) +
+                           self.graphs_applicable_doc([':class:`~core.graphs.summary_line_graph.SummaryLinegraph`']) +
                            self.bc_applicable_doc([':ref:`SAA Noise <ln-bc-saa-noise>`']) +
                            self.stage_usage_doc([4]))
 
@@ -803,6 +836,7 @@ class CoreCmdline:
 
                                """ + self.stage_usage_doc([3, 4]),
                                action='store_true')
+
         rendering.add_argument("--project-rendering",
                                help="""
 
@@ -993,16 +1027,16 @@ class CoreCmdline:
           - Normalized domain: N/A.
         """
 
-    @staticmethod
+    @ staticmethod
     def stage_usage_doc(stages: tp.List[int], omitted: str = "If omitted: N/A.") -> str:
         return "\n.. ADMONITION:: Stage usage\n\n   Used by stage{" + ",".join(map(str, stages)) + "}; can be omitted otherwise. " + omitted + "\n"
 
-    @staticmethod
+    @ staticmethod
     def bc_applicable_doc(criteria: tp.List[str]) -> str:
         lst = "".join(map(lambda bc: "   - " + bc + "\n", criteria))
         return "\n.. ADMONITION:: Applicable batch criteria\n\n" + lst + "\n"
 
-    @staticmethod
+    @ staticmethod
     def graphs_applicable_doc(graphs: tp.List[str]) -> str:
         lst = "".join(map(lambda graph: "   - " + graph + "\n", graphs))
         return "\n.. ADMONITION:: Applicable graphs\n\n" + lst + "\n"
@@ -1010,8 +1044,8 @@ class CoreCmdline:
 
 class CoreCmdlineValidator():
     """
-    Validate the core command line arguments to ensure that the pipeline will work properly in all stages, given the
-    options that were passed.
+    Validate the core command line arguments to ensure that the pipeline will work properly in all
+    stages, given the options that were passed.
     """
 
     def __call__(self, args):
@@ -1023,9 +1057,9 @@ class CoreCmdlineValidator():
             assert args.batch_criteria[0] != args.batch_criteria[1], \
                 "FATAL: Duplicate batch criteria passed"
 
-        if args.dist_stats != 'none':
+        if args.dist_stats != 'none' and args.dist_stats != 'conf95':
             assert len(args.batch_criteria) == 1, \
-                "FATAL: Statistics generation only supported with univariate batch criteria"
+                "FATAL: 'bw' statistics generation only supported with univariate batch criteria"
 
         assert isinstance(args.batch_criteria, list), \
             'FATAL Batch criteria not passed as list on cmdline'

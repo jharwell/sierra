@@ -15,7 +15,9 @@ stage 2, and render the captured frames into nice videos during stage 4. To
 enable it, you must pass ``--argos-rendering`` on the
 cmdline. ``--argos-rendering`` assumes that:
 
-- ``ffmpeg, Xvfb`` are installed/can be found by the shell.
+- ``ffmpeg, Xvfb`` are installed/can be found by the shell. This is checked
+  during stage 3 if imagizing is run, and stage 1 when generating simulation
+  inputs, respectively.
 
 During stage 1 ``--argos-rendering`` causes the ARGoS Qt/OpenGL visualization
 subtree to be retained in the ``--template-input-file`` before generating
@@ -25,15 +27,22 @@ During stage 4, ``--argos-rendering`` causes `any` files in the "frames"
 directory of each simulation (directory path set on a per ``--project`` will) to
 be stitched together into a unique video file using ffmpeg (precise command
 configurable via ``--render-cmd-opts``), and output to
-``<simulation_root>/videos``.
+``<batch_root>/videos/<exp>``.
 
 .. _ln-usage-rendering-project-imagizing:
+
+.. IMPORTANT::
+
+   This does not happen automatically every time as part of stage 4 because it
+   can take a LONG time and is idempotent. You should only pass
+   ``--argos-rendering`` the first time you run stage 4 after running stage 3
+   (unless you are getting paid by the hour).
 
 Project Imagizing
 -----------------
 
-Projects can generate ``.csv`` files residing in subdirectories within the the
-``<sim_metrics_leaf>`` directory(directory path set on a per ``--project``
+Projects can generate ``.csv`` files residing in subdirectories within the
+``<sim_metrics_leaf>`` directory (directory path set on a per ``--project``
 basis) for each ARGoS simulation, in addition to generating ``.csv`` files
 residing directly in the ``<sim_metrics_leaf>`` directory. SIERRA can render
 this ``.csv`` files into :ref:``~core.graphs.heatmap.Heatmap`` graphs.
@@ -48,7 +57,7 @@ stage 4. The following restrictions apply:
 - A common stem with a unique numeric ID is required for each ``.csv`` must be present
   for each ``.csv``.
 
-- The directory name within ` <sim_metrics_leaf>`` must be the same as the stem
+- The directory name within ``<sim_metrics_leaf>`` must be the same as the stem
   for each ``.csv`` file in that directory. For example, if the directory name
   was ``swarm-distribution`` under ``<sim_metrics_leaf>`` then all ``.csv``
   files within that directory must be named according to
@@ -59,7 +68,9 @@ stage 4. The following restrictions apply:
 
    Averaging the image ``.csv`` files and generating the images for each
    experiment does not happen automatically as part of stage 3 because it can
-   take a LONG time and is idempotent.
+   take a LONG time and is idempotent. You should only pass
+   ``--project-imagizing`` the first time you run stage 3 after running stage 2
+   (unless you are getting paid by the hour).
 
 .. _ln-usage-rendering-project:
 
@@ -69,9 +80,11 @@ Project Rendering
 After running imagizing via ``--project-imagizing``, either on the same
 invocation or a previous one, SIERRA can take the imagized ``.csv`` files
 previously created should be used to generate a set of a videos in
-``<exp_root>/videos/<metric_dir_name>.mp4``.
+``<batch_root>/videos/<exp>``.
 
 .. IMPORTANT::
 
    This does not happen automatically every time as part of stage 4 because it
-   can take a LONG time and is idempotent.
+   can take a LONG time and is idempotent. You should only pass
+   ``--project-rendering`` the first time you run stage 4 after running stage 3
+   (unless you are getting paid by the hour).

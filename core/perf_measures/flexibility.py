@@ -28,7 +28,7 @@ import typing as tp
 import pandas as pd
 
 # Project packages
-from core.graphs.summary_line_graph95 import SummaryLinegraph95
+from core.graphs.summary_line_graph import SummaryLinegraph
 from core.graphs.heatmap import Heatmap
 from core.perf_measures import vcs
 import core.variables.batch_criteria as bc
@@ -75,7 +75,7 @@ class ReactivityUnivar:
         # Write .csv to file
         core.utils.pd_csv_write(df, stem_opath + '.csv', index=False)
 
-        SummaryLinegraph95(stats_root=self.cmdopts['batch_stat_collate_root'],
+        SummaryLinegraph(stats_root=self.cmdopts['batch_stat_collate_root'],
                            input_stem=self.kLeaf,
                            stats=self.cmdopts['dist_stats'],
                            output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
@@ -123,7 +123,7 @@ class AdaptabilityUnivar:
         # Write .csv to file
         core.utils.pd_csv_write(df, stem_opath + '.csv', index=False)
 
-        SummaryLinegraph95(stats_root=self.cmdopts['batch_stat_collate_root'],
+        SummaryLinegraph(stats_root=self.cmdopts['batch_stat_collate_root'],
                            input_stem=self.kLeaf,
                            stats=self.cmdopts['dist_stats'],
                            output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],

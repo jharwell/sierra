@@ -111,13 +111,23 @@ class Heatmap:
 
         # Add colorbar
         self._plot_colorbar(ax)
-        plt.tight_layout()
 
         # Output figure
+        self._set_graph_size(df, fig)
         fig = ax.get_figure()
-        fig.set_size_inches(10, 10)
-        fig.savefig(opath, bbox_inches='tight', dpi=100)
+
+        fig.savefig(opath, bbox_inches='tight', dpi=core.config.kGraphDPI)
         plt.close(fig)  # Prevent memory accumulation (fig.clf() does not close everything)
+
+    def _set_graph_size(self, df: pd.DataFrame, fig):
+        if len(df.index) > len(df.columns):
+            xsize = core.config.kGraphBaseSize
+            ysize = xsize * float(len(df.index)) / float(len(df.columns))
+        else:
+            ysize = core.config.kGraphBaseSize
+            xsize = ysize * float(len(df.columns)) / float(len(df.index))
+
+        fig.set_size_inches(xsize, ysize)
 
     def _plot_colorbar(self, ax):
         divider = mpl_toolkits.axes_grid1.make_axes_locatable(ax)
@@ -136,27 +146,6 @@ class Heatmap:
         if self.ytick_labels is not None:
             ax.set_yticks(np.arange(len(self.ytick_labels)))
             ax.set_yticklabels(self.ytick_labels)
-
-
-class HeatmapSet():
-    """
-    Generates a :class:`Heatmap` plot for each of the specified input/output path pairs.
-    """
-
-    def __init__(self,
-                 ipaths: tp.List[str],
-                 opaths: tp.List[str],
-                 titles: tp.List[str],
-                 **kwargs) -> None:
-        self.ipaths = ipaths
-        self.opaths = opaths
-        self.titles = titles
-        self.kwargs = kwargs
-
-    def generate(self):
-        for ipath, opath, title in zip(self.ipaths, self.opaths, self.titles):
-            hm = Heatmap(input_fpath=ipath, output_fpath=opath, title=title, **self.kwargs)
-            hm.generate()
 
 
 class DualHeatmap:
@@ -209,8 +198,8 @@ class DualHeatmap:
         x = dfs[0].index
 
         # Plot heatmaps
-        im1 = ax1.matshow(dfs[0], cmap='plasma', interpolation='none')
-        im2 = ax2.matshow(dfs[1], cmap='plasma', interpolation='none')
+        im1 = ax1.matshow(dfs[0], cmap='coolwarm', interpolation='none')
+        im2 = ax2.matshow(dfs[1], cmap='coolwarm', interpolation='none')
 
         # Add titles
         fig.suptitle(self.title, fontsize=24)
@@ -238,9 +227,8 @@ class DualHeatmap:
         self._plot_ticks(ax2, x, y)
 
         # Output figures
-        plt.tight_layout()
         fig.set_size_inches(10, 10)
-        fig.savefig(self.output_fpath, bbox_inches='tight', dpi=100)
+        fig.savefig(self.output_fpath, bbox_inches='tight', dpi=core.config.kGraphDPI)
         plt.close(fig)  # Prevent memory accumulation (fig.clf() does not close everything)
 
     def _plot_colorbar(self, fig, im, ax):
@@ -267,7 +255,29 @@ class DualHeatmap:
         # ax.set_xlabel(self.ylabel, fontsize=18)
 
 
+class HeatmapSet():
+    """
+    Generates a :class:`Heatmap` plot for each of the specified input/output path pairs.
+    """
+
+    def __init__(self,
+                 ipaths: tp.List[str],
+                 opaths: tp.List[str],
+                 titles: tp.List[str],
+                 **kwargs) -> None:
+        self.ipaths = ipaths
+        self.opaths = opaths
+        self.titles = titles
+        self.kwargs = kwargs
+
+    def generate(self):
+        for ipath, opath, title in zip(self.ipaths, self.opaths, self.titles):
+            hm = Heatmap(input_fpath=ipath, output_fpath=opath, title=title, **self.kwargs)
+            hm.generate()
+
+
 __api__ = [
     'Heatmap',
-    'DualHeatmap'
+    'DualHeatmap',
+    'HeatmapSet'
 ]

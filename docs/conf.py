@@ -84,7 +84,7 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'flycheck']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
@@ -98,6 +98,13 @@ nitpicky = True
 math_number_all = True
 math_eqref_format = 'Eq. {number}'
 
+nitpick_ignore = [
+    ('py:class', 'pandas.core.frame.DataFrame'),
+    ('py:class', 'argparse'),
+    ('py:class', 'implements.Interface'),
+    ('py:class', 'xml.etree.ElementTree'),
+    ('py:class', 'multiprocessing.context.BaseContext.Queue')
+]
 autoapi_modules = {
     'core.cmdline': {'output': 'api/core'},
     'core.perf_measures': {'output': 'api/core'},
@@ -108,11 +115,13 @@ autoapi_modules = {
     'core.xml_luigi': {'output': 'api/core'},
     'core.utils': {'output': 'api/core'},
     'core.experiment_spec': {'output': 'api/core'},
+    'core.vector': {'output': 'api/core'},
     'core.models.interface': {'output': 'api/core/models'},
     'core.models.graphs': {'output': 'api/core/models'},
     'plugins.hpc': {'output': 'api/plugins/hpc'}
 }
 
+autoapi_ignore = ['*flycheck*']
 xref_links = {
     "Harwell2020": ("Demystifying Emergent Intelligence and Its Effect on Performance in Large Swarms",
                     "http://ifaamas.org/Proceedings/aamas2020/pdfs/p474.pdf"),
@@ -259,3 +268,17 @@ if not os.path.exists(os.path.join(os.getcwd(), "../projects/silicon")):
     os.chdir("../projects/silicon")
     subprocess.run(["git", "checkout", "devel"])
     os.chdir(cwd)
+
+# This is the expected signature of the handler for this event, cf doc
+
+
+def autodoc_skip_member_handler(app, what, name, obj, skip, options):
+    # Basic approach; you might want a regex instead
+    return 'flycheck' in name
+
+# Automatically called by sphinx at startup
+
+
+def setup(app):
+    # Connect the autodoc-skip-member event from apidoc to the callback
+    app.connect('autodoc-skip-member', autodoc_skip_member_handler)

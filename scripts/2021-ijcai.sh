@@ -78,7 +78,7 @@ if [ -n "$MSIARCH" ]; then # Running on MSI
     TASK="exp"
     SIERRA_CMD="$SIERRA_BASE_CMD --hpc-env=slurm --exp-range=$EXP_NUM:$EXP_NUM --exec-resume"
     echo "********************************************************************************\n"
-    echo  squeue -j $SLURM_JOB_ID -o "%.9i %.9P %.8j %.8u %.2t %.10M %.6D %S %e"
+    echo  squeue -j $SLURM_ARRAY_TASK_ID -o "%.9i %.9P %.8j %.8u %.2t %.10M %.6D %S %e"
     echo "********************************************************************************\n"
 
 else

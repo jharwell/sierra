@@ -57,24 +57,31 @@ class BatchExpParallelImagizer:
         q = mp.JoinableQueue()  # type: mp.JoinableQueue
 
         for exp in exp_to_imagize:
-            stat_root = os.path.join(self.cmdopts['batch_stat_root'], exp)
-            imagize_root = os.path.join(self.cmdopts['batch_imagize_root'], exp)
+            _, leaf = os.path.split(exp)
 
-            for leaf in os.listdir(stat_root):
-                candidate_path = os.path.join(stat_root, leaf)
+            exp_stat_root = os.path.join(self.cmdopts['batch_stat_root'], leaf)
+            exp_imagize_root = os.path.join(self.cmdopts['batch_imagize_root'], leaf)
+
+            for item in os.listdir(exp_stat_root):
+                candidate_path = os.path.join(exp_stat_root, item)
 
                 if os.path.isdir(candidate_path):
-                    imagize_output_root = os.path.join(imagize_root, leaf)
+                    imagize_output_root = os.path.join(exp_imagize_root, item)
                     imagize_opts = {
-                        'csv_dir_root': stat_root,
-                        'csv_dir': candidate_path,
+                        'input_root': exp_stat_root,
+                        'graph_stem': item,
                         'output_root': imagize_output_root
                     }
 
                     core.utils.dir_create_checked(imagize_output_root, exist_ok=True)
                     q.put(imagize_opts)
 
-        for _ in range(0, mp.cpu_count()):
+        if self.cmdopts['serial_processing']:
+            parallelism = 1
+        else:
+            parallelism = mp.cpu_count()
+
+        for _ in range(0, parallelism):
             p = mp.Process(target=BatchExpParallelImagizer._thread_worker,
                            args=(q, HM_config))
             p.start()
@@ -107,7 +114,7 @@ class ExpImagizer:
         self.logger = logging.getLogger(__name__)
 
     def __call__(self, HM_config: dict, imagize_opts: tp.Dict[str, str]) -> None:
-        path = os.path.join(imagize_opts['csv_dir_root'], imagize_opts['csv_dir'])
+        path = os.path.join(imagize_opts['input_root'], imagize_opts['graph_stem'])
 
         self.logger.info("Imagizing .csvs in %s...", path)
 
@@ -117,12 +124,12 @@ class ExpImagizer:
             for category in HM_config:
                 # For each graph in each category
                 for graph in HM_config[category]['graphs']:
-                    if graph['src_stem'] == imagize_opts['csv_dir']:
+                    if graph['src_stem'] == imagize_opts['graph_stem']:
                         match = graph
 
             if match is not None:
                 stem, _ = os.path.splitext(csv)
-                Heatmap(input_fpath=os.path.join(path, csv),
+                Heatmap(input_fpath=os.path.join(path, stem + '.csv'),
                         output_fpath=os.path.join(imagize_opts['output_root'],
                                                   stem + core.config.kImageExt),
                         title=match['title'],
@@ -130,6 +137,5 @@ class ExpImagizer:
                         ylabel='Y').generate()
 
             else:
-                self.logger.error("No match for graph with src_stem=%s found",
-                                  imagize_opts['csv_dir'])
-                raise NotImplementedError
+                self.logger.warning("No match for graph with src_stem=%s found",
+                                    imagize_opts['graph_stem'])

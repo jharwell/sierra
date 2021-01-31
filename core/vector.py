@@ -24,6 +24,11 @@ import typing as tp
 
 
 class Vector3D:
+    """
+    Represents a point in 3D space and/or a directional vector in 3D space with some common
+    operations.
+    """
+
     def __init__(self, x: float = 0, y: float = 0, z: float = 0):
         self.x = x
         self.y = y
@@ -83,3 +88,6 @@ class Vector3D:
     def normalize(self) -> 'Vector3D':
         length = self.length()
         return Vector3D((self.x / length), (self.y / length), (self.z / length))
+
+
+__api__ = ['Vector3D']

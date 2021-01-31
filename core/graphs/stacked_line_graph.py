@@ -19,6 +19,7 @@
 import logging
 import typing as tp
 import copy
+import os
 
 # 3rd party packages
 import pandas as pd
@@ -49,7 +50,8 @@ class StackedLineGraph:
     """
 
     def __init__(self,
-                 input_fpath: str,
+                 stats_root: str,
+                 input_stem: str,
                  output_fpath: str,
                  title: str,
                  xlabel: str,
@@ -57,13 +59,16 @@ class StackedLineGraph:
                  large_text: bool = False,
                  legend: tp.List[str] = [],
                  cols: tp.List[str] = [],
+                 linestyles: tp.List[str] = [],
+                 dashstyles: tp.List[str] = [],
                  logyscale: bool = False,
                  stddev_fpath=None,
-                 model_fpath: str = None,
-                 model_legend_fpath: str = None) -> None:
+                 stats: str = 'none',
+                 model_root: str = None) -> None:
 
         # Required arguments
-        self.input_fpath = input_fpath
+        self.stats_root = stats_root
+        self.input_stem = input_stem
         self.output_fpath = output_fpath
         self.title = title
         self.xlabel = xlabel
@@ -78,53 +83,38 @@ class StackedLineGraph:
         self.legend = legend
         self.cols = cols
         self.logyscale = logyscale
-
-        self.model_fpath = model_fpath
-        self.model_legend_fpath = model_legend_fpath
+        self.linestyles = linestyles
+        self.dashstyles = dashstyles
+        self.stats = stats
+        self.model_root = model_root
         self.stddev_fpath = stddev_fpath
         self.logger = logging.getLogger(__name__)
 
     def generate(self):
-        if not core.utils.path_exists(self.input_fpath):
+        input_fpath = os.path.join(self.stats_root, self.input_stem +
+                                   core.config.kStatsExtensions['mean'])
+        if not core.utils.path_exists(input_fpath):
             self.logger.debug("Not generating %s: %s does not exist",
                               self.output_fpath,
-                              self.input_fpath)
+                              input_fpath)
             return
 
-        data_df = core.utils.pd_csv_read(self.input_fpath)
-        stddev_df = None
-        model_df = None
-        model_legend = []
+        data_df = core.utils.pd_csv_read(input_fpath)
 
-        if self.stddev_fpath is not None and core.utils.path_exists(self.stddev_fpath):
-            stddev_df = core.utils.pd_csv_read(self.stddev_fpath)
-
-        if self.model_fpath is not None and core.utils.path_exists(self.model_fpath):
-            model_df = core.utils.pd_csv_read(self.model_fpath)
-
-            if self.model_legend_fpath is not None and core.utils.path_exists(self.model_legend_fpath):
-                with open(self.model_legend_fpath, 'r') as f:
-                    model_legend = f.read().splitlines()
-            else:
-                self.logger.warning("No legend file for model '%s' found", self.model_fpath)
-                model_legend = ['Model Prediction']
+        model = self._read_models()
+        stat_dfs = self._read_stats()
 
         # Plot specified columns from dataframe.
         if not self.cols:
-            ncols = max(1, int(len(data_df.columns) / 3.0))
-            ax = self._plot_selected_cols(data_df, stddev_df, data_df.columns, model_df)
+            ncols = max(1, int(len(data_df.columns) / 2.0))
+            ax = self._plot_selected_cols(data_df, stat_dfs, data_df.columns, model)
         else:
-            ncols = max(1, int(len(self.cols) / 3.0))
-            ax = self._plot_selected_cols(data_df, stddev_df, self.cols, model_df)
+            ncols = max(1, int(len(self.cols) / 2.0))
+            ax = self._plot_selected_cols(data_df, stat_dfs, self.cols, model)
 
-        if self.logyscale:
-            plt.yscale('symlog')
+        self._plot_ticks(ax)
 
-        ax.tick_params(labelsize=self.text_size['tick_label'])
-
-        # Add legend. Should have ~3 entries per column, in order to maximize real estate on tightly
-        # constrained papers.
-        self._plot_legend(ax, model_legend, ncols)
+        self._plot_legend(ax, model[1], ncols)
 
         # Add title
         ax.set_title(self.title, fontsize=self.text_size['title'])
@@ -135,33 +125,51 @@ class StackedLineGraph:
 
         # Output figure
         fig = ax.get_figure()
-        fig.set_size_inches(10, 10)
-        fig.savefig(self.output_fpath, bbox_inches='tight', dpi=100)
+        fig.set_size_inches(core.config.kGraphBaseSize, core.config.kGraphBaseSize)
+        fig.savefig(self.output_fpath, bbox_inches='tight', dpi=core.config.kGraphDPI)
         plt.close(fig)  # Prevent memory accumulation (fig.clf() does not close everything)
+
+    def _plot_ticks(self, ax):
+        if self.logyscale:
+            plt.yscale('symlog')
+
+        ax.tick_params(labelsize=self.text_size['tick_label'])
 
     def _plot_selected_cols(self,
                             data_df: pd.DataFrame,
-                            stddev_df: pd.DataFrame,
+                            stat_dfs: tp.Dict[str, pd.DataFrame],
                             cols: tp.List[str],
-                            model_df: pd.DataFrame):
+                            model: tp.Tuple[pd.DataFrame, str]):
         """
         Plots selected columns in a dataframe, (possibly) including:
 
         - Errorbars
         - Models
+        - Custom line styles
+        - Custom dash styles
         """
         # Always plot the data
-        ax = data_df[cols].plot()
+        if not self.linestyles:
+            ax = data_df[cols].plot()
+            return ax
+        else:
+            if not self.dashstyles:
+                for c, s in zip(cols, self.linestyles):
+                    ax = data_df[c].plot(linestyle=s)
+                return ax
+            else:
+                for c, s, d in zip(cols, self.linestyles, self.dashstyles):
+                    ax = data_df[c].plot(linestyle=s, dashes=d)
+                return ax
 
         # Plot models if they have been computed
-        if model_df is not None:
-            model_df[model_df.columns].plot(ax=ax)
+        if model[0] is not None:
+            model[0][model[0].columns].plot(ax=ax)
 
         # Plot stddev if it has been computed
-        if stddev_df is not None:
+        if 'stddev' in stat_dfs.keys():
             for c in cols:
-                self._plot_col_errorbars(data_df, stddev_df, c)
-
+                self._plot_col_errorbars(data_df, stat_dfs['stddev'], c)
         return ax
 
     def _plot_col_errorbars(self,
@@ -171,12 +179,15 @@ class StackedLineGraph:
         """
         Plot the errorbars for a specific column in a dataframe.
         """
-        # plt.errorbar(data_df.index, data_df[c], xerr=0.5,
-        #              yerr=2 * stddev_df[c], linestyle = '')
-        plt.fill_between(data_df.index, data_df[col] - 2 * stddev_df[col],
-                         data_df[col] + 2 * stddev_df[col], alpha=0.25)
+        plt.fill_between(data_df.index,
+                         data_df[col] - 2 * stddev_df[col].abs(),
+                         data_df[col] + 2 * stddev_df[col].abs,
+                         alpha=0.50)
 
     def _plot_legend(self, ax, model_legend: tp.List[str], ncols: int):
+        # Should have ~3 entries per column, in order to maximize real estate on tightly
+        # constrained papers.
+
         # If the legend is not specified, then we assume this is not a graph that will contain any
         # models.
         if self.legend:
@@ -187,15 +198,44 @@ class StackedLineGraph:
             lines, _ = ax.get_legend_handles_labels()
             ax.legend(lines,
                       legend,
-                      loc=9,
-                      bbox_to_anchor=(0.5, -0.1),
+                      loc='lower center',
+                      bbox_to_anchor=(0.5, -0.5),
                       ncol=ncols,
                       fontsize=self.text_size['legend_label'])
         else:
-            ax.legend(loc=9,
-                      bbox_to_anchor=(0.5, -0.1),
+            ax.legend(loc='lower center',
+                      bbox_to_anchor=(0.5, -0.5),
                       ncol=ncols,
                       fontsize=self.text_size['legend_label'])
+
+    def _read_stats(self) -> tp.Dict[str, pd.DataFrame]:
+        dfs = {}
+        if self.stats == 'conf95':
+            stddev_ipath = os.path.join(self.stats_root,
+                                        self.input_stem + core.config.kStatsExtensions['stddev'])
+            if core.utils.path_exists(stddev_ipath):
+                dfs['stddev'] = core.utils.pd_csv_read(stddev_ipath)
+            else:
+                self.logger.warning("Stddev file not found for '%s'", self.input_stem)
+
+        return dfs
+
+    def _read_models(self) -> tp.Tuple[pd.DataFrame, tp.List[str]]:
+        if self.model_root is not None:
+            model_fpath = os.path.join(self.model_root, self.input_stem + '.model')
+            model_legend_fpath = os.path.join(self.model_root, self.input_stem + '.legend')
+            if core.utils.path_exists(model_fpath):
+                model = core.utils.pd_csv_read(model_fpath)
+                if core.utils.path_exists(model_legend_fpath):
+                    with open(model_legend_fpath, 'r') as f:
+                        model_legend = f.read().splitlines()
+                else:
+                    self.logger.warning("No legend file for model '%s' found", model_fpath)
+                    model_legend = ['Model Prediction']
+
+                return (model, model_legend)
+
+        return (None, [])
 
 
 __api__ = [

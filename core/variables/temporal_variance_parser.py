@@ -14,8 +14,9 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
-Parser for the :class:`TemporalVariance` batch criteria. This is its own file due to an otherwise
-circular import dependence between it and vcs.
+Parser for the :class:`~core.variables.temporal_variance.TemporalVariance` batch criteria. This
+is its own file due to an otherwise circular import dependence between it and ``vcs.py``.
+
 """
 
 import re

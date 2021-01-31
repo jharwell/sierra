@@ -3,7 +3,7 @@
 How To Run on MSI
 =================
 
-This assumes you have already successfully completed the :ref:`ln-msi-setup`
+This assumes you have already successfully completed the :ref:`ln-hpc-msi-setup`
 steps. If not--shoo! Go do that first.
 
 #. Now that you have gotten things setup on MSI, read the documentation for PBS

@@ -23,12 +23,12 @@ measure in univariate and bivariate batched experiments.
 import os
 import copy
 import logging
-import pandas as pd
 
 # 3rd party packages
+import pandas as pd
 
 # Project packages
-from core.graphs.summary_line_graph95 import SummaryLinegraph95
+from core.graphs.summary_line_graph import SummaryLinegraph
 from core.graphs.heatmap import Heatmap
 import core.perf_measures as pm
 import core.variables.batch_criteria as bc
@@ -48,7 +48,6 @@ class RawUnivar:
     @staticmethod
     def df_kernel(df_t: pd.DataFrame) -> pd.DataFrame:
         df = pd.DataFrame(columns=df_t.columns, index=[0])
-
         for col in df_t:
             df[col] = df_t.loc[df_t.index[-1], col]
 
@@ -67,8 +66,8 @@ class RawUnivar:
         perf_ipath = os.path.join(
             self.cmdopts["batch_stat_collate_root"], self.inter_perf_leaf + '.csv')
         perf_opath = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf + '.csv')
-        img_opath = os.path.join(
-            self.cmdopts["batch_graph_collate_root"], self.kLeaf + core.config.kImageExt)
+        img_opath = os.path.join(self.cmdopts["batch_graph_collate_root"],
+                                 self.kLeaf + core.config.kImageExt)
 
         # We always calculate the metric from experimental data
         df = self.df_kernel(core.utils.pd_csv_read(perf_ipath))
@@ -77,17 +76,17 @@ class RawUnivar:
         # We might calculate the metric from experiment statistics
         _stats_prepare(self.cmdopts, self.inter_perf_leaf, self.kLeaf, self.df_kernel)
 
-        SummaryLinegraph95(stats_root=self.cmdopts['batch_stat_collate_root'],
-                           input_stem=self.kLeaf,
-                           stats=self.cmdopts['dist_stats'],
-                           output_fpath=img_opath,
-                           model_root=self.cmdopts['batch_model_root'],
-                           title=title,
-                           xlabel=criteria.graph_xlabel(self.cmdopts),
-                           ylabel=ylabel,
-                           xticks=criteria.graph_xticks(self.cmdopts),
-                           logyscale=self.cmdopts['plot_log_yscale'],
-                           large_text=self.cmdopts['plot_large_text']).generate()
+        SummaryLinegraph(stats_root=self.cmdopts['batch_stat_collate_root'],
+                         input_stem=self.kLeaf,
+                         stats=self.cmdopts['dist_stats'],
+                         output_fpath=img_opath,
+                         model_root=self.cmdopts['batch_model_root'],
+                         title=title,
+                         xlabel=criteria.graph_xlabel(self.cmdopts),
+                         ylabel=ylabel,
+                         xticks=criteria.graph_xticks(self.cmdopts),
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
     def _stats_prepare(self) -> None:
         for k in core.config.kStatsExtensions.keys():
@@ -167,9 +166,12 @@ def _stats_prepare(cmdopts: dict,
         stat_opath = os.path.join(cmdopts["batch_stat_collate_root"],
                                   oleaf + core.config.kStatsExtensions[k])
 
-        if core.utils.path_exists(stat_ipath):
+        if core.utils.path_exists(stat_ipath) and core.config.kPickleExt not in stat_ipath:
             stat_df = kernel(core.utils.pd_csv_read(stat_ipath))
             core.utils.pd_csv_write(stat_df, stat_opath, index=False)
+        elif core.utils.path_exists(stat_ipath) and core.config.kPickleExt in stat_ipath:
+            stat_df = kernel(core.utils.pd_pickle_read(stat_ipath))
+            core.utils.pd_pickle_write(stat_df, stat_opath)
 
 
 __api__ = [

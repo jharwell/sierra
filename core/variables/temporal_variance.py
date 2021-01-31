@@ -56,10 +56,12 @@ class TemporalVariance(bc.UnivarBatchCriteria):
                  cli_arg: str,
                  main_config: tp.Dict[str, str],
                  batch_input_root: str,
+                 variance_type: str,
                  variances: list,
                  population: int) -> None:
         bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_input_root)
 
+        self.variance_type = variance_type
         self.variances = variances
         self.population = population
         self.attr_changes = []  # type: tp.List
@@ -98,6 +100,17 @@ class TemporalVariance(bc.UnivarBatchCriteria):
                     exp_chgs |= size_chgs
 
         return self.attr_changes
+
+    def calc_reactivity_scaling(self, ideal_var: float, expx_var: float) -> float:
+        # For motion throttling while robots carry blocks, the variances are always percents between
+        # 0 and 1.
+        if self.variance_type in ['BC', 'M']:
+            if expx_var > ideal_var:
+                return 1.0 - abs(expx_var - ideal_var)
+            elif expx_var <= ideal_var:
+                return 1.0 + abs(expx_var - ideal_var)
+        elif self.variance_type == 'BM':
+            return ideal_var / expx_var
 
     def graph_xticks(self,
                      cmdopts: dict,
@@ -152,28 +165,36 @@ def factory(cli_arg: str, main_config: dict, batch_input_root: str, **kwargs):
             logging.fatal(msg)
             raise
 
+        variances = [(attr["xml_parent_path"],
+                      "Constant",
+                      0.0,
+                      amps[0],
+                      0.0,
+                      0.0)]
         if any(v == attr["waveform_type"] for v in ["Sine", "Square", "Sawtooth"]):
-            variances = [(attr["xml_parent_path"],
-                          attr["waveform_type"],
-                          hz,
-                          amp,
-                          amp,
-                          0.0) for hz in hzs for amp in amps]
+
+            variances.extend([(attr["xml_parent_path"],
+                               attr["waveform_type"],
+                               hz,
+                               amp,
+                               amps[0],
+                               0.0) for hz in hzs for amp in amps[1:]])
+
         elif attr["waveform_type"] == "StepD":
-            variances = [(attr["xml_parent_path"],
-                          "Square",
-                          1 / (2 * attr["waveform_param"]),
-                          amp,
-                          0.0,
-                          0.0) for amp in amps]
+            variances.extend([(attr["xml_parent_path"],
+                               "Square",
+                               1 / (2 * attr["waveform_param"]),
+                               amp,
+                               0.0,
+                               0.0) for amp in amps[1:]])
 
         if attr["waveform_type"] == "StepU":
-            variances = [(attr["xml_parent_path"],
-                          "Square",
-                          1 / (2 * attr["waveform_param"]),
-                          amp,
-                          amp,
-                          math.pi) for amp in amps]
+            variances.extend([(attr["xml_parent_path"],
+                               "Square",
+                               1 / (2 * attr["waveform_param"]),
+                               amp,
+                               amp,
+                               math.pi) for amp in amps[1:]])
         return variances
 
     def __init__(self) -> None:
@@ -181,6 +202,7 @@ def factory(cli_arg: str, main_config: dict, batch_input_root: str, **kwargs):
                                   cli_arg,
                                   main_config,
                                   batch_input_root,
+                                  attr['variance_type'],
                                   gen_variances(attr),
                                   attr.get("population", None))
 

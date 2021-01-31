@@ -28,7 +28,7 @@ import logging
 import pandas as pd
 
 # Project packages
-from core.graphs.summary_line_graph95 import SummaryLinegraph95
+from core.graphs.summary_line_graph import SummaryLinegraph
 from core.graphs.heatmap import Heatmap
 from core.perf_measures import common
 from core.variables import batch_criteria as bc
@@ -232,7 +232,7 @@ class FLMarginalUnivar(BaseFLMarginal):
     experiments within the same scenario from collated ``.csv`` data using marginal fractional
     performance losses due to inter-robot interference (See :class:`BaseFLMarginal`).
 
-    Generates a :class:`~core.graphs.summary_line_graph95.SummaryLinegraph95` across swarm sizes of self
+    Generates a :class:`~core.graphs.summary_line_graph.SummaryLinegraph` across swarm sizes of self
     organization using :class:`~core.perf_measures.common.FractionalLossesUnivar`.
 
     Does not require the batch criteria to be
@@ -286,35 +286,41 @@ class FLMarginalUnivar(BaseFLMarginal):
 
         self.stats_prepare(criteria, ostem)
 
-        SummaryLinegraph95(stats_root=self.cmdopts['batch_stat_collate_root'],
-                           input_stem=self.kLeaf,
-                           stats=self.cmdopts['dist_stats'],
-                           output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
-                                                     self.kLeaf + core.config.kImageExt),
-                           model_root=self.cmdopts['batch_model_root'],
-                           title="Swarm Self-Organization via Marginal Sub-Linear Performance Losses",
-                           xlabel=criteria.graph_xlabel(self.cmdopts),
-                           ylabel="Value",
-                           xticks=criteria.graph_xticks(self.cmdopts),
-                           logyscale=self.cmdopts['plot_log_yscale'],
-                           large_text=self.cmdopts['plot_large_text']).generate()
+        SummaryLinegraph(stats_root=self.cmdopts['batch_stat_collate_root'],
+                         input_stem=self.kLeaf,
+                         stats=self.cmdopts['dist_stats'],
+                         output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
+                                                   self.kLeaf + core.config.kImageExt),
+                         model_root=self.cmdopts['batch_model_root'],
+                         title="Swarm Self-Organization via Marginal Sub-Linear Performance Losses",
+                         xlabel=criteria.graph_xlabel(self.cmdopts),
+                         ylabel="Value",
+                         xticks=criteria.graph_xticks(self.cmdopts),
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
     def stats_prepare(self, criteria: bc.IConcreteBatchCriteria, ostem: str) -> None:
-        # Stddev might not have been calculated in stage 3
-        perf_stddev_ipath = os.path.join(self.cmdopts["batch_stat_collate_root"],
-                                         self.inter_perf_leaf + '.stddev')
-        if core.utils.path_exists(perf_stddev_ipath):
-            int_count_stddev_ipath = os.path.join(self.cmdopts["batch_stat_collate_root"],
-                                                  self.interference_count_leaf + '.stddev')
-            perf_stddev = core.utils.pd_csv_read(perf_stddev_ipath)
-            interference_stddev = core.utils.pd_csv_read(int_count_stddev_ipath)
-            plostN_stddev = common.PerfLostInteractiveSwarmUnivar.df_kernel(criteria,
-                                                                            self.cmdopts,
-                                                                            interference_stddev,
-                                                                            perf_stddev)
-            stddev_fl = common.FractionalLossesUnivar.df_kernel(perf_stddev, plostN_stddev)
-            stddev_odf = self.df_kernel(criteria, self.cmdopts, stddev_fl)
-            core.utils.pd_csv_write(stddev_odf, ostem + ".stddev", index=False)
+        for k in core.config.kStatsExtensions.keys():
+            perf_ipath = os.path.join(self.cmdopts["batch_stat_collate_root"],
+                                      self.inter_perf_leaf + core.config.kStatsExtensions[k])
+            int_count_ipath = os.path.join(self.cmdopts["batch_stat_collate_root"],
+                                           self.interference_count_leaf + core.config.kStatsExtensions[k])
+            stat_opath = os.path.join(self.cmdopts["batch_stat_collate_root"],
+                                      ostem + core.config.kStatsExtensions[k])
+
+            # Stddev might not have been calculated in stage 3
+            if core.utils.path_exists(perf_ipath):
+                perf_stats = core.utils.pd_csv_read(perf_ipath)
+                interference = core.utils.pd_csv_read(int_count_ipath)
+                plostN = common.PerfLostInteractiveSwarmUnivar.df_kernel(criteria,
+                                                                         self.cmdopts,
+                                                                         interference,
+                                                                         perf_stats)
+                fl = common.FractionalLossesUnivar.df_kernel(perf_stats, plostN)
+                odf = self.df_kernel(criteria, self.cmdopts, fl)
+                core.utils.pd_csv_write(odf,
+                                        ostem + core.config.kStatsExtensions[k],
+                                        index=False)
 
 
 class FLInteractiveUnivar(BaseFLInteractive):
@@ -324,7 +330,7 @@ class FLInteractiveUnivar(BaseFLInteractive):
     performance losses due to interative inter-robot interference vs. independent action (See
     :class:`BaseFLInteractive`).
 
-    Generates a :class:`~core.graphs.summary_line_graph95.SummaryLinegraph95` across swarm sizes of self
+    Generates a :class:`~core.graphs.summary_line_graph.SummaryLinegraph` across swarm sizes of self
     organization using :class:`~core.perf_measures.common.FractionalLossesUnivar`.
 
     Does not require the batch criteria to be
@@ -373,34 +379,42 @@ class FLInteractiveUnivar(BaseFLInteractive):
         ostem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf)
         core.utils.pd_csv_write(df_new, ostem + ".csv", index=False)
 
-        # Stddev might not have been calculated in stage 3
-        perf_stddev_ipath = os.path.join(self.cmdopts["batch_stat_collate_root"],
-                                         self.inter_perf_leaf + '.stddev')
-        if core.utils.path_exists(perf_stddev_ipath):
-            int_count_stddev_ipath = os.path.join(self.cmdopts["batch_stat_collate_root"],
-                                                  self.interference_count_leaf + '.stddev')
-            perf_stddev = core.utils.pd_csv_read(perf_stddev_ipath)
-            interference_stddev = core.utils.pd_csv_read(int_count_stddev_ipath)
-            plostN_stddev = common.PerfLostInteractiveSwarmUnivar.df_kernel(criteria,
-                                                                            self.cmdopts,
-                                                                            interference_stddev,
-                                                                            perf_stddev)
-            stddev_fl = common.FractionalLossesUnivar.df_kernel(perf_stddev, plostN_stddev)
-            stddev_odf = self.df_kernel(criteria, self.cmdopts, stddev_fl)
-            core.utils.pd_csv_write(stddev_odf, ostem + ".stddev", index=False)
+        self.stats_prepare(criteria, ostem)
 
-        SummaryLinegraph95(stats_root=self.cmdopts['batch_stat_collate_root'],
-                           input_stem=self.kLeaf,
-                           stats=self.cmdopts['dist_stats'],
-                           output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
-                                                     self.kLeaf + core.config.kImageExt),
-                           model_root=self.cmdopts['batch_model_root'],
-                           title="Swarm Self-Organization via Sub-Linear Performance Losses Through Interaction",
-                           xlabel=criteria.graph_xlabel(self.cmdopts),
-                           ylabel="Value",
-                           xticks=criteria.graph_xticks(self.cmdopts),
-                           logyscale=self.cmdopts['plot_log_yscale'],
-                           large_text=self.cmdopts['plot_large_text']).generate()
+        SummaryLinegraph(stats_root=self.cmdopts['batch_stat_collate_root'],
+                         input_stem=self.kLeaf,
+                         stats=self.cmdopts['dist_stats'],
+                         output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
+                                                   self.kLeaf + core.config.kImageExt),
+                         model_root=self.cmdopts['batch_model_root'],
+                         title="Swarm Self-Organization via Sub-Linear Performance Losses Through Interaction",
+                         xlabel=criteria.graph_xlabel(self.cmdopts),
+                         ylabel="Value",
+                         xticks=criteria.graph_xticks(self.cmdopts),
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
+
+    def stats_prepare(self, criteria: bc.IConcreteBatchCriteria, ostem: str) -> None:
+        for k in core.config.kStatsExtensions.keys():
+            perf_ipath = os.path.join(self.cmdopts["batch_stat_collate_root"],
+                                      self.inter_perf_leaf + core.config.kStatsExtensions[k])
+            int_count_ipath = os.path.join(self.cmdopts["batch_stat_collate_root"],
+                                           self.interference_count_leaf + core.config.kStatsExtensions[k])
+            stat_opath = os.path.join(self.cmdopts["batch_stat_collate_root"],
+                                      ostem + core.config.kStatsExtensions[k])
+
+            if core.utils.path_exists(perf_ipath):
+                perf_stats = core.utils.pd_csv_read(perf_ipath)
+                interference = core.utils.pd_csv_read(int_count_ipath)
+                plostN = common.PerfLostInteractiveSwarmUnivar.df_kernel(criteria,
+                                                                         self.cmdopts,
+                                                                         interference,
+                                                                         perf_stats)
+                fl = common.FractionalLossesUnivar.df_kernel(perf_stats, plostN)
+                odf = self.df_kernel(criteria, self.cmdopts, fl)
+                core.utils.pd_csv_write(odf,
+                                        ostem + core.config.kStatsExtensions[k],
+                                        index=False)
 
 
 class PGMarginalUnivar(BasePGMarginal):
@@ -410,7 +424,7 @@ class PGMarginalUnivar(BasePGMarginal):
     performance between adjacent swarm size (e.g. for two swarms of size :math:`N`, :math:`2N`, a
     linear 2X increase in performance is expected, and more than this indicates emergent behavior).
 
-    Generates a :class:`~core.graphs.summary_line_graph95.SummaryLinegraph95` across swarm sizes of self
+    Generates a :class:`~core.graphs.summary_line_graph.SummaryLinegraph` across swarm sizes of self
     organization.
 
     Does not require the batch criteria to be
@@ -471,18 +485,18 @@ class PGMarginalUnivar(BasePGMarginal):
                              self.kLeaf,
                              self.df_kernel)
 
-        SummaryLinegraph95(stats_root=self.cmdopts['batch_stat_collate_root'],
-                           input_stem=self.kLeaf,
-                           stats=self.cmdopts['dist_stats'],
-                           output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
-                                                     self.kLeaf + core.config.kImageExt),
-                           model_root=self.cmdopts['batch_model_root'],
-                           title="Swarm Self-Organization via Marginal Performance Gains",
-                           xlabel=criteria.graph_xlabel(self.cmdopts),
-                           ylabel="Value",
-                           xticks=criteria.graph_xticks(self.cmdopts),
-                           logyscale=self.cmdopts['plot_log_yscale'],
-                           large_text=self.cmdopts['plot_large_text']).generate()
+        SummaryLinegraph(stats_root=self.cmdopts['batch_stat_collate_root'],
+                         input_stem=self.kLeaf,
+                         stats=self.cmdopts['dist_stats'],
+                         output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
+                                                   self.kLeaf + core.config.kImageExt),
+                         model_root=self.cmdopts['batch_model_root'],
+                         title="Swarm Self-Organization via Marginal Performance Gains",
+                         xlabel=criteria.graph_xlabel(self.cmdopts),
+                         ylabel="Value",
+                         xticks=criteria.graph_xticks(self.cmdopts),
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class PGInteractiveUnivar(BasePGInteractive):
@@ -492,7 +506,7 @@ class PGInteractiveUnivar(BasePGInteractive):
     performance between a swarm of :math:`N` interactive vs. independent robots.
     See :class:`BasePGInteractive`.
 
-    Generates a :class:`~core.graphs.summary_line_graph95.SummaryLinegraph95` across swarm sizes of self
+    Generates a :class:`~core.graphs.summary_line_graph.SummaryLinegraph` across swarm sizes of self
     organization.
 
     Does not require the batch criteria to be
@@ -551,19 +565,19 @@ class PGInteractiveUnivar(BasePGInteractive):
                              self.kLeaf,
                              self.df_kernel)
 
-        SummaryLinegraph95(stats_root=self.cmdopts['batch_stat_collate_root'],
-                           input_stem=self.kLeaf,
-                           stats=self.cmdopts['dist_stats'],
-                           output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
-                                                     self.kLeaf + core.config.kImageExt),
-                           model_root=self.cmdopts['batch_model_root'],
+        SummaryLinegraph(stats_root=self.cmdopts['batch_stat_collate_root'],
+                         input_stem=self.kLeaf,
+                         stats=self.cmdopts['dist_stats'],
+                         output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
+                                                   self.kLeaf + core.config.kImageExt),
+                         model_root=self.cmdopts['batch_model_root'],
 
-                           title="Swarm Self-Organization via Performance Gains Through Interaction",
-                           xlabel=criteria.graph_xlabel(self.cmdopts),
-                           ylabel="Value",
-                           xticks=criteria.graph_xticks(self.cmdopts),
-                           logyscale=self.cmdopts['plot_log_yscale'],
-                           large_text=self.cmdopts['plot_large_text']).generate()
+                         title="Swarm Self-Organization via Performance Gains Through Interaction",
+                         xlabel=criteria.graph_xlabel(self.cmdopts),
+                         ylabel="Value",
+                         xticks=criteria.graph_xticks(self.cmdopts),
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class SelfOrgUnivarGenerator:

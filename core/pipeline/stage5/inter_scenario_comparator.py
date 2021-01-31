@@ -23,18 +23,13 @@ stage5 of the experimental pipeline.
 import os
 import copy
 import logging
-import glob
-import re
 import typing as tp
-import argparse
 
 # 3rd party packages
 import pandas as pd
 
 # Project packages
-from core.graphs.summary_line_graph95 import SummaryLinegraph95
-from core.graphs.stacked_surface_graph import StackedSurfaceGraph
-from core.graphs.heatmap import Heatmap, DualHeatmap
+from core.graphs.summary_line_graph import SummaryLinegraph
 from core.variables import batch_criteria as bc
 import core.root_dirpath_generator as rdg
 import core.generators.scenario_generator_parser as sgp
@@ -171,7 +166,7 @@ class UnivarInterScenarioComparator:
                    label: str,
                    legend: tp.List[str]) -> None:
         """
-        Generates a :class:`~core.graphs.summary_line_graph95.SummaryLinegraph95` comparing the
+        Generates a :class:`~core.graphs.summary_line_graph.SummaryLinegraph` comparing the
         specified controller across specified scenarios.
         """
         istem = dest_stem + "-" + self.controller
@@ -179,7 +174,7 @@ class UnivarInterScenarioComparator:
             self.controller + core.config.kImageExt
         xticks = criteria.graph_xticks(cmdopts)
 
-        SummaryLinegraph95(stats_root=self.sc_csv_root,
+        SummaryLinegraph(stats_root=self.sc_csv_root,
                            input_stem=istem,
                            stats=cmdopts['dist_stats'],
                            output_fpath=img_opath,

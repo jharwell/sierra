@@ -59,7 +59,7 @@ class FlexibilityPlotsCSVGenerator:
         assert res is not None, "FATAL: Unexpected experiment output dir name '{0}'".format(
             self.cmdopts['exp_output_root'])
 
-        output_root = self.cmdopts['exp_output_root']
+        stat_root = self.cmdopts['exp_stat_root']
         exp_num = int(res.group()[3:])
 
         adaptability = vcs.AdaptabilityCS(self.main_config,
@@ -78,15 +78,34 @@ class FlexibilityPlotsCSVGenerator:
                                                 None,
                                                 self.main_config['perf']['intra_perf_csv'],
                                                 exp_num)[self.perf_csv_col].values
+
+        exp0_var = vcs.DataFrames.expx_var_df(self.cmdopts,
+                                              batch_criteria,
+                                              None,
+                                              self.main_config['perf']['tv_environment_csv'],
+                                              0)[tv_attr['variance_csv_col']]
+        # exp0_var = (exp0_var - exp0_var.min()) / (exp0_var.max(0) - exp0_var.min())
+
         expx_var = vcs.DataFrames.expx_var_df(self.cmdopts,
                                               batch_criteria,
                                               None,
                                               self.main_config['perf']['tv_environment_csv'],
-                                              exp_num)[tv_attr['variance_csv_col']].values
-        comp_expx_var = self._comparable_exp_variance(expx_var,
-                                                      tv_attr,
-                                                      expx_perf.max(),
-                                                      expx_perf.min())
+                                              exp_num)[tv_attr['variance_csv_col']]
+        # expx_var = (expx_var - expx_var.min()) / (expx_var.max() - expx_var.min())
+
+        expx_perf = vcs.DataFrames.expx_perf_df(self.cmdopts,
+                                                batch_criteria,
+                                                None,
+                                                self.main_config['perf']['intra_perf_csv'],
+                                                exp_num)[self.perf_csv_col]
+        # expx_perf = (expx_perf - expx_perf.min()) / (expx_perf.max(0) - expx_perf.min())
+
+        exp0_perf = vcs.DataFrames.expx_perf_df(self.cmdopts,
+                                                batch_criteria,
+                                                None,
+                                                self.main_config['perf']['intra_perf_csv'],
+                                                0)[self.perf_csv_col]
+        # exp0_perf = (exp0_perf - exp0_perf.min()) / (exp0_perf.max(0) - exp0_perf.min())
 
         df = pd.DataFrame(
             {
@@ -95,27 +114,15 @@ class FlexibilityPlotsCSVGenerator:
                                                      None,
                                                      self.main_config['perf']['intra_perf_csv'],
                                                      exp_num)['clock'].values,
-                'expx_perf': vcs.DataFrames.expx_perf_df(self.cmdopts,
-                                                         batch_criteria,
-                                                         None,
-                                                         self.main_config['perf']['intra_perf_csv'],
-                                                         exp_num)[self.perf_csv_col].values,
-                'expx_var': comp_expx_var,
-                'exp0_perf': vcs.DataFrames.expx_perf_df(self.cmdopts,
-                                                         batch_criteria,
-                                                         None,
-                                                         self.main_config['perf']['intra_perf_csv'],
-                                                         0)[self.perf_csv_col].values,
-                'exp0_var': vcs.DataFrames.expx_var_df(self.cmdopts,
-                                                       batch_criteria,
-                                                       None,
-                                                       self.main_config['perf']['tv_environment_csv'],
-                                                       0)[tv_attr['variance_csv_col']].values,
+                'expx_perf': expx_perf.values,
+                'expx_var': expx_var.values,
+                'exp0_perf': exp0_perf.values,
+                'exp0_var': exp0_var.values,
                 'ideal_reactivity': reactivity.calc_waveforms()[0][:, 1],
                 'ideal_adaptability': adaptability.calc_waveforms()[0][:, 1]
             }
         )
-        core.utils.pd_csv_write(df, os.path.join(output_root, 'flexibility-plots.csv'), index=False)
+        core.utils.pd_csv_write(df, os.path.join(stat_root, 'flexibility-plots.csv'), index=False)
 
     def _comparable_exp_variance(self, var_df, tv_attr, perf_max, perf_min):
         """
@@ -145,32 +152,26 @@ class FlexibilityPlotsDefinitionsGenerator():
     def __call__(self):
         return [
             {'src_stem': 'flexibility-plots',
-             'dest_stem': 'flexibility-plots-reactivity',
-             'cols': ['exp0_var', 'expx_var', 'exp0_perf', 'expx_perf', 'ideal_reactivity'],
-             'title': 'Observed vs. Ideal Reactivity Curves',
-             'legend': ['Ideal Conditions Applied Variance',
-                        'Experimental Conditions Applied Variance',
-                        'Ideal Conditions Performance',
-                        'Experimental Performance',
-                        'Ideal Reactivity'],
-             'xlabel': 'Interval',
-             'ylabel': 'Swarm Performance (# Blocks collected)',
-             'styles': ['-', '-', '-', '--', '-'],
-             'dashes': [(1000, 0), (1000, 0), (1000, 0), (1000, 0), (4, 5)]
+             'dest_stem': 'flexibility-plots-perf-curves',
+             'cols': ['exp0_perf', 'expx_perf', 'ideal_reactivity', 'ideal_adaptability'],
+             'title': 'Swarm Performance Curves',
+             'legend': [r'$P_{ideal}(\mathcal{N},\kappa,t)$',
+                        r'$P(\mathcal{N},\kappa,t)$',
+                        r'$P_{R^*}(\mathcal{N},\kappa,t)$',
+                        r'$P_{A^*}(\mathcal{N},\kappa,t)$'],
+             'xlabel': 'Time Interval',
+             'ylabel': 'Block Collection Rate',
+             'styles': ['-', '--', '-', '--'],
+             'dashes': [(1000, 0), (1000, 0), (4, 5), (8, 4)]
              },
-            {
-                'src_stem': 'flexibility-plots',
-                'dest_stem': 'flexibility-plots-adaptability',
-                'cols': ['exp0_var', 'expx_var', 'exp0_perf', 'expx_perf', 'ideal_adaptability', ],
-                'title': 'Observed vs. Ideal Adaptability Curves',
-                'legend': ['Ideal Conditions Applied Variance',
-                           'Experimental Conditions Applied Variance',
-                           'Ideal Conditions Performance',
-                           'Experimental Performance',
-                           'Ideal Adaptability'],
-                'xlabel': 'Interval',
-                'ylabel': 'Swarm Performance (# Blocks collected)',
-                'styles': ['-', '-', '-', '--', '-'],
-                'dashes': [(1000, 0), (1000, 0), (1000, 0), (1000, 0), (4, 5)]
-            },
+            {'src_stem': 'flexibility-plots',
+             'dest_stem': 'flexibility-plots-variance',
+             'cols': ['exp0_var', 'expx_var'],
+             'title': 'Environmental Variances',
+             'legend': [r'$I_{ec}(t)$', '$V_{dev}(t)$'],
+             'xlabel': 'Time Interval',
+             'ylabel': 'Throttling Percent',
+             'styles': ['-', '-'],
+             'dashes': [(1000, 0), (1000, 0)]
+             },
         ]

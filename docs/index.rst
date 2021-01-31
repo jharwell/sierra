@@ -13,6 +13,7 @@ Welcome to the documentation for SIERRA: the amazing swarm robotics automation t
    tutorials/index.rst
    setup/index.rst
    usage/index.rst
+   faq.rst
    glossary.rst
    api/api.rst
    contributing.rst

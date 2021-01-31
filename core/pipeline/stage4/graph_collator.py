@@ -31,6 +31,11 @@ import core.config
 
 
 class UnivarGraphCollationInfo():
+    """
+    Data class containing the collated ``.csv`` files for a particular graph for univariate batch
+    criteria.
+    """
+
     def __init__(self,
                  df_ext: str,
                  ylabels: tp.List[str]) -> None:
@@ -38,9 +43,15 @@ class UnivarGraphCollationInfo():
         self.df = pd.DataFrame(columns=ylabels)
         self.all_srcs_exist = True
         self.some_srcs_exist = False
+        self.is_pickle = False
 
 
 class BivarGraphCollationInfo():
+    """
+    Data class containing the collated ``.csv`` files for a particular graph for bivariate batch
+    criteria.
+    """
+
     def __init__(self,
                  df_ext: str,
                  xlabels: tp.List[str],
@@ -84,9 +95,14 @@ class UnivarGraphCollator:
 
         for stat in stats:
             if stat.all_srcs_exist:
-                core.utils.pd_csv_write(stat.df, os.path.join(stat_collate_root,
-                                                              target['dest_stem'] + stat.df_ext),
-                                        index=False)
+                if not stat.is_pickle:
+                    core.utils.pd_csv_write(stat.df, os.path.join(stat_collate_root,
+                                                                  target['dest_stem'] + stat.df_ext),
+                                            index=False)
+                else:
+                    core.utils.pd_pickle_write(stat.df,
+                                               os.path.join(stat_collate_root,
+                                                            target['dest_stem'] + stat.df_ext))
             elif not stat.all_srcs_exist and stat.some_srcs_exist:
                 self.logger.warning("Not all experiments in '%s' produced '%s%s'",
                                     self.cmdopts['batch_output_root'],
@@ -104,7 +120,12 @@ class UnivarGraphCollator:
 
             stat.some_srcs_exist = True
 
-            data_df = core.utils.pd_csv_read(csv_ipath)
+            if core.config.kPickleExt not in csv_ipath:
+                data_df = core.utils.pd_csv_read(csv_ipath)
+            else:
+                stat.is_pickle = True
+                data_df = core.utils.pd_pickle_read(csv_ipath)
+
             assert target['col'] in data_df.columns.values,\
                 "FATAL: {0} not in columns of {1}".format(target['col'],
                                                           target['src_stem'] + stat.df_ext)
@@ -164,9 +185,14 @@ class BivarGraphCollator:
 
         for stat in stats:
             if stat.all_srcs_exist:
-                core.utils.pd_csv_write(stat.df, os.path.join(stat_collate_root,
-                                                              target['dest_stem'] + stat.df_ext),
-                                        index=False)
+                if not stat.is_pickle:
+                    core.utils.pd_csv_write(stat.df, os.path.join(stat_collate_root,
+                                                                  target['dest_stem'] + stat.df_ext),
+                                            index=False)
+                else:
+                    core.utils.pd_pickle_write(stat.df, os.path.join(stat_collate_root,
+                                                                     target['dest_stem'] + stat.df_ext))
+
             elif stat.some_srcs_exist:
                 self.logger.warning("Not all experiments in '%s' produced '%s%s'",
                                     self.cmdopts['batch_output_root'],
@@ -187,7 +213,12 @@ class BivarGraphCollator:
 
             stat.some_srcs_exist = True
 
-            data_df = core.utils.pd_csv_read(csv_ipath)
+            if core.config.kPickleExt not in csv_ipath:
+                data_df = core.utils.pd_csv_read(csv_ipath)
+            else:
+                stat.is_pickle = True
+                data_df = core.utils.pd_pickle_read(csv_ipath)
+
             assert target['col'] in data_df.columns.values,\
                 "FATAL: {0} not in columns of {1}".format(target['col'],
                                                           target['src_stem'] + stat.df_ext)
@@ -220,7 +251,12 @@ class MultithreadCollator():
             for graph in category['graphs']:
                 q.put(graph)
 
-        for i in range(0, mp.cpu_count()):
+        if self.cmdopts['serial_processing']:
+            parallelism = 1
+        else:
+            parallelism = mp.cpu_count()
+
+        for i in range(0, parallelism):
             p = mp.Process(target=MultithreadCollator._thread_worker,
                            args=(q,
                                  self.main_config,
@@ -255,4 +291,7 @@ class MultithreadCollator():
                 break
 
 
-__api__ = ['UnivarGraphCollator', 'BivarGraphCollator']
+__api__ = ['UnivarGraphCollator',
+           'BivarGraphCollator',
+           'UnivarGraphCollationInfo',
+           'BivarGraphCollationInfo']

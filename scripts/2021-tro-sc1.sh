@@ -1,7 +1,13 @@
 #!/bin/bash -l
-#PBS -l walltime=24:00:00,nodes=32:ppn=24,pmem=2500mb
-#PBS -m abe
-#PBS -M harwe006@umn.edu
+#SBATCH --time=12:00:00
+#SBATCH --nodes 32
+#SBATCH --cpus-per-task=24
+#SBATCH --mem-per-cpu=2G
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=harwe006@umn.edu
+#SBATCH --output=R-%x.%j.out
+#SBATCH --error=R-%x.%j.err
+#SBATCH -J 2021-tro-sc1
 
 ################################################################################
 # Setup Simulation Environment                                                 #
@@ -11,16 +17,23 @@
 # Initialize modules
 source /home/gini/shared/swarm/bin/msi-env-setup.sh
 
-# Add ARGoS libraries to system library search path, since they are in a
-# non-standard location
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SWARM_ROOT/$MSICLUSTER/lib/argos3
+if [ -n "$MSIARCH" ]; then # Running on MSI
+    export SIERRA_ROOT=$HOME/research/$MSIARCH/sierra
+    export FORDYCA_ROOT=$HOME/research/$MSIARCH/fordyca
+else
+    export SIERRA_ROOT=$HOME/git/sierra
+    export FORDYCA_ROOT=$HOME/git/fordyca
+fi
 
 # Set ARGoS library search path. Must contain both the ARGoS core libraries path
 # AND the fordyca library path.
-export ARGOS_PLUGIN_PATH=$SWARM_ROOT/$MSICLUSTER/lib/argos3:$HOME/git/fordyca/build/lib
+export ARGOS_PLUGIN_PATH=$ARGOS_PLUGIN_PATH:$FORDYCA_ROOT
 
 # Setup logging (maybe compiled out and unneeded, but maybe not)
-export LOG4CXX_CONFIGURATION=$HOME/git/fordyca/log4cxx.xml
+export LOG4CXX_CONFIGURATION=$FORDYCA_ROOT/log4cxx.xml
+
+# Set SIERRA ARCH
+export SIERRA_ARCH=$MSIARCH
 
 # From MSI docs: transfers all of the loaded modules to the compute nodes (not
 # inherited from the master/launch node when using GNU parallel)
@@ -35,76 +48,84 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 # Begin Experiments                                                            #
 ################################################################################
 OUTPUT_ROOT=$HOME/exp/sc1
-TIME_SHORT=time_setup.T50000N1000
+TIME_SHORT=time_setup.T10000
+# TIME_SHORT=time_setup.T1000
 TIME_LONG=time_setup.T200000N1000
 
-TASKS=("scalability" "flexibility" "robustness")
+CONTROLLERS_LIST=(d0.CRW d0.DPO d1.BITD_DPO d2.BIRTD_DPO)
+TASKS=("scalability" "flexibility" "robustness_saa" "robustness_pd")
 CARDINALITY=C8
+NSIMS=16
 
-if [ -n "$MSICLUSTER" ] # Running on MSI
-then
-    NSIMS=96
-    Y=$(($PBS_ARRAYID % 3)) # This is the task
-    X=$(($PBS_ARRAYID / 3)) # This is the controller
-    CONTROLLERS_LIST=(depth0.CRW depth0.DPO depth1.BITD_DPO depth2.BIRTD_DPO)
-    CONTROLLERS=(${CONTROLLERS_LIST[$X]})
-    TASK=${TASKS[$Y]}
-    BASE_CMD="python3 sierra.py \
+SIERRA_BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT\
-                  --template-input-file=$HOME/git/sierra-sc1/templates/2020-journal-sc1.argos \
+                  --template-input-file=$SIERRA_ROOT/templates/2021-tro-sc1.argos \
                   --n-sims=$NSIMS\
-                  --physics-n-engines=4\
-                  --pipeline 1 2 3 4\
-                   --exp-graphs=inter\
-                  --project=fordyca\
-                  --hpc-env=hpc_msi \
-                  --no-verify-results\
-                  --exp-overwrite"
-else
-    TASK="$1"
-    NSIMS=8
-    CONTROLLERS=(depth0.CRW depth0.DPO depth1.BITD_DPO depth2.BIRTD_DPO)
-    BASE_CMD="python3 sierra.py \
-                  --sierra-root=$OUTPUT_ROOT\
-                  --template-input-file=$HOME/git/sierra-sc1/templates/2020-journal-sc1.argos \
-                  --n-sims=$NSIMS\
-                  --physics-n-engines=4\
-                  --pipeline 1 2 3 4\
+                  --pipeline 1 2 3 4 \
                   --exp-graphs=inter\
                   --project=fordyca\
-                  --hpc-env=hpc_local \
-                  --exp-overwrite"
+                  --dist-stats=conf95\
+                  --with-robot-leds \
+                  --exp-overwrite\
+                  --project-imagizing --project-rendering\
+                  --camera-config=sierra_dynamic\
+                  --exp-graphs=intra\
+                  --models-disable\
+                  --log-level=DEBUG --serial-processing\
+                  --exp-range=7:7
+                  "
 
+if [ -n "$MSIARCH" ] # Running on MSI
+then
+    # 4 controllers, 4 tasks
+    TASK_NUM=$(($SLURM_ARRAY_TASK_ID % 4)) # This is the experiment
+    CONTROLLER_NUM=$(($SLURM_ARRAY_TASK_ID / 4)) # This is the scenario
+    CONTROLLERS=(${CONTROLLERS_LIST[$X]})
+    TASK=${TASKS[$Y]}
+
+
+    SIERRA_CMD="$SIERRA_BASE_CMD --hpc-env=slurm"
+
+    echo "********************************************************************************\n"
+    echo  squeue -j $SLURM_ARRAY_TASK_ID -o "%.9i %.9P %.8j %.8u %.2t %.10M %.6D %S %e"
+    echo "********************************************************************************\n"
+else
+    TASK="$1"
+    CONTROLLERS=("${CONTROLLERS_LIST[@]}")
+
+    SIERRA_CMD="$SIERRA_BASE_CMD\
+                  --hpc-env=local\
+                  --physics-n-engines=1\
+                  --no-verify-results\
+                  --plot-large-text\
+                  --plot-log-xscale"
 fi
 
-cd $HOME/git/sierra-sc1
+cd $SIERRA_ROOT
 
 # Scalability/emergence analysis
 if [ "$TASK" == "scalability" ] || [ "$TASK" == "emergence" ] || [ "$TASK" == "all" ]
 then
     for c in "${CONTROLLERS[@]}"
     do
-        $BASE_CMD --scenario=SS.32x16 \
+        $SIERRA_CMD --scenario=SS.32x16 \
                   --batch-criteria population_size.Log128 \
                   --controller=${c} \
                   --n-blocks=128\
-                  --time-setup=${TIME_SHORT}\
-                  --plot-log-xaxis
+                  --time-setup=${TIME_SHORT}
 
 
-        $BASE_CMD --scenario=RN.48x48 \
-                  --batch-criteria population_size.Log512 \
-                  --controller=${c} \
-                  --n-blocks=512\
-                  --time-setup=${TIME_SHORT}\
-                  --plot-log-xaxis
+        # $SIERRA_CMD --scenario=RN.48x48 \
+        #           --batch-criteria population_size.Log512 \
+        #           --controller=${c} \
+        #           --n-blocks=512\
+        #           --time-setup=${TIME_SHORT}
 
-        $BASE_CMD --scenario=RN.96x96 \
-                  --batch-criteria population_size.Log2048 \
-                  --controller=${c} \
-                  --n-blocks=2048\
-                  --time-setup=${TIME_SHORT}\
-                  --plot-log-xaxis
+        # $SIERRA_CMD --scenario=RN.96x96 \
+        #           --batch-criteria population_size.Log2048 \
+        #           --controller=${c} \
+        #           --n-blocks=2048\
+        #           --time-setup=${TIME_SHORT}
 
     done
 fi
@@ -114,14 +135,14 @@ if [ "$TASK" == "flexibility" ] || [ "$TASK" == "all" ]
 then
     for c in "${CONTROLLERS[@]}"
     do
-        $BASE_CMD --scenario=SS.32x16 \
+        $SIERRA_CMD --scenario=SS.32x16 \
                   --batch-criteria temporal_variance.BCSquare.Z50 \
                   --controller=${c}\
                   --n-blocks=50\
                   --time-setup=${TIME_SHORT}
 
 
-        $BASE_CMD --scenario=RN.48x48 \
+        $SIERRA_CMD --scenario=RN.48x48 \
                   --batch-criteria temporal_variance.BCSquare.Z200\
                   --controller=${c} \
                   --n-blocks=200\
@@ -131,7 +152,7 @@ then
 fi
 
 # Robustness analysis
-if [ "$TASK" == "robustness" ] || [ "$TASK" == "all" ]
+if [ "$TASK" == "robustness_saa" ] || [ "$TASK" == "all" ]
 then
     for c in "${CONTROLLERS[@]}"
     do
@@ -139,31 +160,37 @@ then
         # steady state of 45)
         # rho = 45/46
 
-        $BASE_CMD --scenario=SS.32x16 \
+        $SIERRA_CMD --scenario=SS.32x16 \
                   --batch-criteria population_dynamics.${CARDINALITY}.F2p0.M0p001.R0p001022222\
                   --controller=${c} \
                   --n-blocks=50\
                   --n-robots=50\
                   --time-setup=${TIME_LONG}
 
-        $BASE_CMD --scenario=SS.32x16 \
+        $SIERRA_CMD --scenario=SS.32x16 \
                   --batch-criteria saa_noise.all.${CARDINALITY}.Z50\
                   --controller=${c} \
                   --n-blocks=50\
                   --n-robots=50\
                   --time-setup=${TIME_SHORT}
+    done
+fi
 
+if [ "$TASK" == "robustness_pd" ] || [ "$TASK" == "all" ]
+then
+    for c in "${CONTROLLERS[@]}"
+    do
         # Steady state population of 20 when total swarm size is 200 (repair queue
         # steady state of 180)
         # rho = 180 / 181
-        $BASE_CMD --scenario=RN.48x48 \
+        $SIERRA_CMD --scenario=RN.48x48 \
                   --batch-criteria population_dynamics.${CARDINALITY}.F2p0.M0p001.R0p001005556 \
                   --controller=${c} \
                   --n-blocks=200\
                   --n-robots=200\
                   --time-setup=${TIME_LONG}
 
-        $BASE_CMD --scenario=RN.48x48 \
+        $SIERRA_CMD --scenario=RN.48x48 \
                   --batch-criteria saa_noise.all.${CARDINALITY}.Z200\
                   --controller=${c} \
                   --n-blocks=200\
@@ -183,77 +210,77 @@ then
     $STAGE5_CMD --batch-criteria population_size.Log128 \
                 --bc-univar\
                 --plot-log-xaxis\
-                --controllers-list depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO\
-                --controllers-legend CRW,DPO,STOCH-N1M,STOCH-N1X
+                --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
+                --controllers-legend CRW,DPO,STOCHM,STOCHX
 
     $STAGE5_CMD --batch-criteria population_size.Log128 \
                 --bc-univar\
                 --plot-log-xaxis\
-                --controllers-list depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO\
-                --controllers-legend DPO,STOCH-N1M,STOCH-N1X
+                --controllers-list d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
+                --controllers-legend DPO,STOCHM,STOCHX
 
     $STAGE5_CMD --batch-criteria population_size.Log512 \
                 --bc-univar\
                 --plot-log-xaxis\
-                --controllers-list depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO\
-                --controllers-legend CRW,DPO,STOCH-N1M,STOCH-N1X
+                --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
+                --controllers-legend CRW,DPO,STOCHM,STOCHX
 
     $STAGE5_CMD --batch-criteria population_size.Log512 \
                 --bc-univar\
                 --plot-log-xaxis\
-                --controllers-list depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO\
-                --controllers-legend DPO,STOCH-N1M,STOCH-N1X
+                --controllers-list d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
+                --controllers-legend DPO,STOCHM,STOCHX
 
     $STAGE5_CMD --scenario=RN.96x96 \
                 --batch-criteria population_size.Log2048 \
                 --bc-univar\
                 --plot-log-xaxis\
-                --controllers-list depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO\
-                --controllers-legend CRW,DPO,STOCH-N1M,STOCH-N1X
+                --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
+                --controllers-legend CRW,DPO,STOCHM,STOCHX
 
     # Generate flexibility comparison graphs
     $STAGE5_CMD --batch-criteria temporal_variance.BCSquare.Z200\
                 --bc-univar\
                 --bc-undefined-exp0\
-                --controllers-list depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO\
-                --controllers-legend CRW,DPO,STOCH-N1M,STOCH-N1X
+                --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
+                --controllers-legend CRW,DPO,STOCHM,STOCHX
 
     $STAGE5_CMD --batch-criteria temporal_variance.BCSquare.Z50\
                 --bc-univar\
                 --bc-undefined-exp0\
-                --controllers-list depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO\
-                --controllers-legend CRW,DPO,STOCH-N1M,STOCH-N1X
+                --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
+                --controllers-legend CRW,DPO,STOCHM,STOCHX
 
     # Generate robustness comparison graphs
     $STAGE5_CMD --batch-criteria population_dynamics.${CARDINALITY}.F2p0.M0p001.R0p001022222\
                 --bc-univar\
-                --controllers-list depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO\
-                --controllers-legend CRW,DPO,STOCH-N1M,STOCH-N1X
+                --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
+                --controllers-legend CRW,DPO,STOCHM,STOCHX
 
     $STAGE5_CMD --batch-criteria population_dynamics.${CARDINALITY}.F2p0.M0p001.R0p001022222\
                 --bc-univar\
-                --controllers-list depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO\
-                --controllers-legend DPO,STOCH-N1M,STOCH-N1X
+                --controllers-list d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
+                --controllers-legend DPO,STOCHM,STOCHX
 
     $STAGE5_CMD --batch-criteria saa_noise.all.${CARDINALITY}.Z50\
                 --bc-univar\
-                --controllers-list depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO\
-                --controllers-legend CRW,DPO,STOCH-N1M,STOCH-N1X
+                --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
+                --controllers-legend CRW,DPO,STOCHM,STOCHX
 
     $STAGE5_CMD --batch-criteria population_dynamics.${CARDINALITY}.F2p0.M0p001.R0p001005556 \
                 --bc-univar\
-                --controllers-list depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO\
-                --controllers-legend CRW,DPO,STOCH-N1M,STOCH-N1X
+                --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
+                --controllers-legend CRW,DPO,STOCHM,STOCHX
 
     $STAGE5_CMD --batch-criteria population_dynamics.${CARDINALITY}.F2p0.M0p001.R0p001005556 \
                 --bc-univar\
-                --controllers-list depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO\
-                --controllers-legend DPO,STOCH-N1M,STOCH-N1X
+                --controllers-list d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
+                --controllers-legend DPO,STOCHM,STOCHX
 
     $STAGE5_CMD --batch-criteria saa_noise.all.${CARDINALITY}.Z200\
                 --bc-univar\
-                --controllers-list depth0.CRW,depth0.DPO,depth1.BITD_DPO,depth2.BIRTD_DPO\
-                --controllers-legend CRW,DPO,STOCH-N1M,STOCH-N1X
+                --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
+                --controllers-legend CRW,DPO,STOCHM,STOCHX
 
 
 fi

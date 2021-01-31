@@ -30,6 +30,7 @@ import queue
 # 3rd party packages
 import pandas as pd
 import matplotlib.cbook as mplcbook
+from statsmodels.nonparametric.kde import KDEUnivariate
 
 # Project packages
 import core.utils
@@ -76,7 +77,12 @@ class BatchExpParallelCalculator:
             stat_path = os.path.join(self.cmdopts['batch_stat_root'], leaf)
             q.put((output_path, stat_path))
 
-        for i in range(0, mp.cpu_count()):
+        if self.cmdopts['serial_processing']:
+            parallelism = 1
+        else:
+            parallelism = mp.cpu_count()
+
+        for i in range(0, parallelism):
             p = mp.Process(target=BatchExpParallelCalculator._thread_worker,
                            args=(q, self.main_config, avg_opts))
             p.start()
@@ -211,74 +217,68 @@ class ExpStatisticsCalculator:
                                   csv_fname[0],
                                   self.intra_perf_col)
 
+            csv_fpath_stem = os.path.join(self.stat_root, csv_fname[1], csv_fname[0].split('.')[0])
+
             # Create directory for averaged .csv files for imagizing later.
             if csv_fname[1] != '':
-                core.utils.dir_create_checked(os.path.join(self.stat_root, csv_fname[1]),
-                                              exist_ok=True)
+                core.utils.dir_create_checked(csv_fpath_stem, exist_ok=True)
 
             by_row_index = csv_concat.groupby(csv_concat.index)
-            csv_fname_stem = csv_fname[0].split('.')[0]
 
             # We always at least calculate the mean
             csv_mean = by_row_index.mean()
             core.utils.pd_csv_write(csv_mean,
-                                    os.path.join(self.stat_root,
-                                                 csv_fname[1],
-                                                 csv_fname[0]) + core.config.kStatsExtensions['mean'],
+                                    csv_fpath_stem + core.config.kStatsExtensions['mean'],
                                     index=False)
 
-            # Write out standard deviation to calculate confidence intervals later
-            if self.avg_opts['dist_stats'] == 'conf95' or self.avg_opts['dist_stats'] == 'all':
-                csv_stddev = by_row_index.std().round(8)
-                core.utils.pd_csv_write(csv_stddev,
-                                        os.path.join(self.stat_root,
-                                                     csv_fname_stem) + core.config.kStatsExtensions['stddev'],
-                                        index=False)
+            if self.avg_opts['dist_stats'] == 'conf95':
+                self._process_conf95(csv_fpath_stem, by_row_index)
+            elif self.avg_opts['dist_stats'] == 'bw':
+                self._process_bw(csv_fpath_stem, by_row_index)
 
-            # Write out min, max, median, q1, q2 to calculate boxplots later
-            if self.avg_opts['dist_stats'] == 'bw' or self.avg_opts['dist_stats'] == 'all':
+    def _process_conf95(self, csv_fpath_stem: str, by_row_index) -> None:
+        csv_stddev = by_row_index.std().round(8)
+        core.utils.pd_csv_write(csv_stddev,
+                                csv_fpath_stem + core.config.kStatsExtensions['stddev'],
+                                index=False)
 
-                csv_min = by_row_index.min().round(8)
-                csv_max = by_row_index.max().round(8)
-                csv_median = by_row_index.median().round(8)
-                csv_q1 = by_row_index.quantile(0.25).round(8)
-                csv_q3 = by_row_index.quantile(0.75).round(8)
+    def _process_bw(self, csv_fpath_stem: str, by_row_index) -> None:
+        csv_min = by_row_index.min().round(8)
+        csv_max = by_row_index.max().round(8)
+        csv_median = by_row_index.median().round(8)
+        csv_q1 = by_row_index.quantile(0.25).round(8)
+        csv_q3 = by_row_index.quantile(0.75).round(8)
 
-                csv_whislo = csv_q1 - 1.5 * (csv_q3 - csv_q1)
-                csv_whishi = csv_q3 + 1.5 * (csv_q3 - csv_q1)
+        csv_whislo = csv_q1 - 1.5 * (csv_q3 - csv_q1)
+        csv_whishi = csv_q3 + 1.5 * (csv_q3 - csv_q1)
 
-                core.utils.pd_csv_write(csv_min,
-                                        os.path.join(self.stat_root,
-                                                     csv_fname_stem + core.config.kStatsExtensions['mean']),
-                                        index=False)
+        core.utils.pd_csv_write(csv_max,
+                                os.path.join(self.stat_root,
+                                             csv_fpath_stem + core.config.kStatsExtensions['max']),
+                                index=False)
+        core.utils.pd_csv_write(csv_median,
+                                os.path.join(self.stat_root,
+                                             csv_fpath_stem + core.config.kStatsExtensions['median']),
+                                index=False)
+        core.utils.pd_csv_write(csv_q1,
+                                os.path.join(self.stat_root,
+                                             csv_fpath_stem + core.config.kStatsExtensions['q1']),
+                                index=False)
 
-                core.utils.pd_csv_write(csv_max,
-                                        os.path.join(self.stat_root,
-                                                     csv_fname_stem + core.config.kStatsExtensions['max']),
-                                        index=False)
-                core.utils.pd_csv_write(csv_median,
-                                        os.path.join(self.stat_root,
-                                                     csv_fname_stem + core.config.kStatsExtensions['median']),
-                                        index=False)
-                core.utils.pd_csv_write(csv_q1,
-                                        os.path.join(self.stat_root,
-                                                     csv_fname_stem + core.config.kStatsExtensions['q1']),
-                                        index=False)
+        core.utils.pd_csv_write(csv_q3,
+                                os.path.join(self.stat_root,
+                                             csv_fpath_stem + core.config.kStatsExtensions['q3']),
+                                index=False)
 
-                core.utils.pd_csv_write(csv_q3,
-                                        os.path.join(self.stat_root,
-                                                     csv_fname_stem + core.config.kStatsExtensions['q3']),
-                                        index=False)
+        core.utils.pd_csv_write(csv_whislo,
+                                os.path.join(self.stat_root,
+                                             csv_fpath_stem + core.config.kStatsExtensions['whislo']),
+                                index=False)
 
-                core.utils.pd_csv_write(csv_whislo,
-                                        os.path.join(self.stat_root,
-                                                     csv_fname_stem + core.config.kStatsExtensions['whislo']),
-                                        index=False)
-
-                core.utils.pd_csv_write(csv_whishi,
-                                        os.path.join(self.stat_root,
-                                                     csv_fname_stem + core.config.kStatsExtensions['whishi']),
-                                        index=False)
+        core.utils.pd_csv_write(csv_whishi,
+                                os.path.join(self.stat_root,
+                                             csv_fpath_stem + core.config.kStatsExtensions['whishi']),
+                                index=False)
 
     def _verify_exp(self):
         """
@@ -319,7 +319,7 @@ class ExpStatisticsCalculator:
                                           path1)
                         continue
 
-                    assert (core.utils.path_exists(path1) and core.utils.path_exists(path2)),\
+                    assert (core.utils.path_exists(path1) and core.utils.path_exists(path2)), \
                         "FATAL: Either {0} or {1} does not exist".format(path1, path2)
 
                     # Verify both dataframes have same # columns, and that column sets are identical
@@ -343,9 +343,7 @@ class ExpStatisticsCalculator:
 def sim_dir_filter(exp_dirs: tp.List[str], main_config: dict, videos_leaf: str) -> tp.List[str]:
     project_frames_leaf = main_config['sierra']['project_frames_leaf']
     argos_frames_leaf = main_config['sim']['argos_frames_leaf']
-    models_leaf = main_config['sierra']['models_leaf']
 
     return [e for e in exp_dirs if e not in [project_frames_leaf,
                                              argos_frames_leaf,
-                                             videos_leaf,
-                                             models_leaf]]
+                                             videos_leaf]]
