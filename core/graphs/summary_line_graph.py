@@ -1,6 +1,6 @@
 # Copyright 2018 John Harwell, All rights reserved.
 #
-#  This file is part of SIERRA.
+# This file is part of SIERRA.
 #
 #  SIERRA is free software: you can redistribute it and/or modify it under the
 #  terms of the GNU General Public License as published by the Free Software
@@ -138,7 +138,7 @@ class SummaryLinegraph:
         fig, ax = plt.subplots()
 
         # Plot lines
-        self._plot_lines(data_dfy, models)
+        self._plot_lines(data_dfy, model)
 
         # Add legend
         self._plot_legend(model)
@@ -169,7 +169,6 @@ class SummaryLinegraph:
             # Plot data
             plt.plot(self.xticks,
                      data_dfy.values[i],
-                     self.kLineStyles[i] if model[0] is None else '-',
                      marker=self.kMarkStyles[i],
                      color=self.kColors[i])
 
@@ -185,29 +184,36 @@ class SummaryLinegraph:
         """
         Plot statistics for all lines on the graph.
         """
-        if (self.stats == 'all' or self.stats == 'conf95') and 'stddev' in stat_dfs.keys():
+        if self.stats in ['conf95', 'all'] and 'stddev' in stat_dfs.keys():
             for i in range(0, len(data_dfy.values)):
                 # 95% interval = 2 std stdeviations
                 plt.fill_between(xticks, data_dfy.values[i] - 2 * stat_dfs['stddev'].abs().values[i],
                                  data_dfy.values[i] + 2 * stat_dfs['stddev'].abs().values[i],
                                  alpha=0.50, color=self.kColors[i], interpolate=True)
 
-        elif self.stats == 'bw' and all(k in stat_dfs.keys() for k in ['whislo', 'whishi', 'median', 'q1', 'q3']):
-            boxes = []
+        if self.stats in ['bw', 'all'] and all(k in stat_dfs.keys() for k in
+                                               ['whislo',
+                                                'whishi',
+                                                'median',
+                                                'q1',
+                                                'q3',
+                                                'cilo',
+                                                'cihi']):
             for i in range(0, len(data_dfy.values)):
+                boxes = []
                 for j in range(0, len(data_dfy.columns)):
                     boxes.append({
                         'whislo': stat_dfs['whislo'].iloc[i, j],  # Bottom whisker position
-                        # First quartile (25th percentile)
-                        'q1': stat_dfs['q1'].iloc[i, j],
-                        # Median         (50th percentile)
-                        'med': stat_dfs['median'].iloc[i, j],
-                        # Third quartile (75th percentile)
-                        'q3': stat_dfs['q3'].iloc[i, j],
                         'whishi': stat_dfs['whishi'].iloc[i, j],  # Top whisker position
-                        'fliers': []  # Ignoring outliers
+                        'q1': stat_dfs['q1'].iloc[i, j],          # First quartile (25th percentile)
+                        'med': stat_dfs['median'].iloc[i, j],     # Median         (50th percentile)
+                        'q3': stat_dfs['q3'].iloc[i, j],          # Third quartile (75th percentile)
+                        'cilo': stat_dfs['cilo'].iloc[i, j],      # Confidence interval lower bound
+                        'cihi': stat_dfs['cihi'].iloc[i, j],      # Confidence interval upper bound
+                        'fliers': []                              # Ignoring outliers
                     })
-                    ax.bxp(boxes, manage_ticks=False, positions=self.xticks)
+
+                ax.bxp(boxes, manage_ticks=False, positions=self.xticks, shownotches=True)
 
     def _plot_ticks(self, ax):
         if self.logyscale:
@@ -237,16 +243,16 @@ class SummaryLinegraph:
     def _read_stats(self) -> tp.Dict[str, list]:
         dfs = {}
 
-        if self.stats == 'conf95':
+        if self.stats == 'conf95' or self.stats == 'all':
             stddev_ipath = os.path.join(self.stats_root,
                                         self.input_stem + core.config.kStatsExtensions['stddev'])
 
             if core.utils.path_exists(stddev_ipath):
                 dfs['stddev'] = core.utils.pd_csv_read(stddev_ipath)
             else:
-                self.logger.warning("Stddev file not found for '%s'", self.input_stem)
+                self.logger.warning("stddev file not found for '%s'", self.input_stem)
 
-        elif self.stats == 'bw':
+        if self.stats == 'bw' or self.stats == 'all':
             whislo_ipath = os.path.join(self.stats_root,
                                         self.input_stem + core.config.kStatsExtensions['whislo'])
             whishi_ipath = os.path.join(self.stats_root,
@@ -258,8 +264,10 @@ class SummaryLinegraph:
             q3_ipath = os.path.join(self.stats_root,
                                     self.input_stem + core.config.kStatsExtensions['q3'])
 
-            bxp_ipath = os.path.join(self.stats_root,
-                                     self.input_stem + core.config.kStatsExtensions['bxp'])
+            cihi_ipath = os.path.join(self.stats_root,
+                                      self.input_stem + core.config.kStatsExtensions['cihi'])
+            cilo_ipath = os.path.join(self.stats_root,
+                                      self.input_stem + core.config.kStatsExtensions['cilo'])
 
             if core.utils.path_exists(whislo_ipath):
                 dfs['whislo'] = core.utils.pd_csv_read(whislo_ipath)
@@ -270,6 +278,16 @@ class SummaryLinegraph:
                 dfs['whishi'] = core.utils.pd_csv_read(whishi_ipath)
             else:
                 self.logger.warning("whishi file not found for '%s'", self.input_stem)
+
+            if core.utils.path_exists(cilo_ipath):
+                dfs['cilo'] = core.utils.pd_csv_read(cilo_ipath)
+            else:
+                self.logger.warning("cilo file not found for '%s'", self.input_stem)
+
+            if core.utils.path_exists(cihi_ipath):
+                dfs['cihi'] = core.utils.pd_csv_read(cihi_ipath)
+            else:
+                self.logger.warning("cihi file not found for '%s'", self.input_stem)
 
             if core.utils.path_exists(median_ipath):
                 dfs['median'] = core.utils.pd_csv_read(median_ipath)
@@ -286,7 +304,7 @@ class SummaryLinegraph:
             else:
                 self.logger.warning("q3 file not found for '%s'", self.input_stem)
 
-            return dfs
+        return dfs
 
     def _read_models(self) -> tp.Tuple[pd.DataFrame, tp.List[str]]:
         if self.model_root is not None:

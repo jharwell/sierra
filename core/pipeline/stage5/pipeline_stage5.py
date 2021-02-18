@@ -214,8 +214,8 @@ class PipelineStage5:
                                                project=self.cmdopts['project'],
                                                batch_leaf=batch_leaf,
                                                controller=t2)
-                    collate_root1 = opts1['batch_stat_collate_root_root']
-                    collate_root2 = opts2['batch_stat_collate_root_root']
+                    collate_root1 = opts1['batch_stat_collate_root']
+                    collate_root2 = opts2['batch_stat_collate_root']
 
                     if scenario in collate_root1 and scenario not in collate_root2:
                         self.logger.warning("%s does not exist in %s", scenario, collate_root2)

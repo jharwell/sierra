@@ -540,13 +540,9 @@ def stats_prepare(cmdopts: dict,
                                   inter_perf_ileaf + core.config.kStatsExtensions[k])
         stat_opath = os.path.join(cmdopts["batch_stat_collate_root"],
                                   oleaf + core.config.kStatsExtensions[k])
-        if core.utils.path_exists(stat_ipath) and core.config.kPickleExt not in stat_ipath:
+        if core.utils.path_exists(stat_ipath):
             stat_df = kernel(criteria, cmdopts, core.utils.pd_csv_read(stat_ipath))
             core.utils.pd_csv_write(stat_df, stat_opath, index=False)
-        elif core.utils.path_exists(stat_ipath) and core.config.kPickleExt in stat_ipath:
-            stat_df = kernel(criteria, cmdopts, core.utils.pd_pickle_read(stat_ipath))
-
-            core.utils.pd_pickle_write(stat_df, stat_opath)
 
 
 __api__ = [

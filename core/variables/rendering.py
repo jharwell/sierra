@@ -49,7 +49,7 @@ class ARGoSQTHeadlessRendering():
 
     def __init__(self, tsetup: ts.ARGoSTimeSetup) -> None:
         self.tsetup = tsetup
-        self.tag_adds = []
+        self.tag_adds = []  # type: tp.List[XMLTagAddList]
 
     def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         """
@@ -67,25 +67,25 @@ class ARGoSQTHeadlessRendering():
 
     def gen_tag_addlist(self) -> tp.List[XMLTagAddList]:
         if not self.tag_adds:
-            self.tag_adds = XMLTagAddList(XMLTagAdd('./visualization',
-                                                    'qt-opengl',
-                                                    {'autoplay': "true"}
-                                                    ),
-                                          XMLTagAdd('./visualization/qt-opengl',
-                                                    'frame_grabbing',
-                                                    {
-                                                        'directory': 'frames',
-                                                        'base_name': 'frame_',
-                                                        'format': core.config.kImageExt[1:],
-                                                        'headless_grabbing': "true",
-                                                        'headless_frame_size': "{0}".format(self.kFrameSize),
-                                                        'headless_frame_rate': "{0}".format(self.kFRAME_RATE),
-                                                    }),
-                                          XMLTagAdd('visualization/qt-opengl',
-                                                    'user_functions',
-                                                    {'label': '__empty__'}))
+            self.tag_adds = [XMLTagAddList(XMLTagAdd('./visualization',
+                                                     'qt-opengl',
+                                                     {'autoplay': "true"}
+                                                     ),
+                                           XMLTagAdd('./visualization/qt-opengl',
+                                                     'frame_grabbing',
+                                                     {
+                                                         'directory': 'frames',
+                                                         'base_name': 'frame_',
+                                                         'format': core.config.kImageExt[1:],
+                                                         'headless_grabbing': "true",
+                                                         'headless_frame_size': "{0}".format(self.kFrameSize),
+                                                         'headless_frame_rate': "{0}".format(self.kFRAME_RATE),
+                                                     }),
+                                           XMLTagAdd('visualization/qt-opengl',
+                                                     'user_functions',
+                                                     {'label': '__empty__'}))]
 
-        return [self.tag_adds]
+        return self.tag_adds
 
 
 def factory(cmdopts: dict) -> ARGoSQTHeadlessRendering:

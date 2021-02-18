@@ -19,15 +19,20 @@ Utility classes for generating definitions and ``.csv`` files for per-experiment
 by hooking into the intra-experiment graph generation.
 """
 
+# Core packages
 import os
 import copy
 import re
+
+# 3rd party packages
 import pandas as pd
 
+# Project packages
 from core.variables.temporal_variance_parser import TemporalVarianceParser
 from core.variables.batch_criteria import BatchCriteria
 import core.perf_measures.vcs as vcs
 import core.utils
+import core.config
 
 
 class FlexibilityPlotsCSVGenerator:
@@ -65,11 +70,13 @@ class FlexibilityPlotsCSVGenerator:
         adaptability = vcs.AdaptabilityCS(self.main_config,
                                           self.cmdopts,
                                           batch_criteria,
+                                          core.config.kStatsExtensions['mean'],
                                           0,
                                           exp_num)
         reactivity = vcs.ReactivityCS(self.main_config,
                                       self.cmdopts,
                                       batch_criteria,
+                                      core.config.kStatsExtensions['mean'],
                                       0,
                                       exp_num)
 

@@ -68,7 +68,7 @@ class Heatmap:
             self.text_size = core.config.kGraphTextSizeSmall
 
         self.transpose = transpose
-        self.colorbar_label = zlabel
+        self.zlabel = zlabel
         self.interpolation = interpolation
 
         if not self.transpose:
@@ -90,7 +90,7 @@ class Heatmap:
         self._plot_df(data_df, self.output_fpath)
 
     def _plot_df(self, df: pd.DataFrame, opath: str):
-        fig, ax = plt.subplots(figsize=(2, 2))
+        fig, ax = plt.subplots(figsize=(core.config.kGraphBaseSize, core.config.kGraphBaseSize))
 
         # Transpose if requested
         if self.transpose:
@@ -133,8 +133,9 @@ class Heatmap:
         divider = mpl_toolkits.axes_grid1.make_axes_locatable(ax)
         cax = divider.append_axes('right', size='5%', pad=0.05)
         bar = plt.colorbar(cax=cax)
-        if self.colorbar_label is not None:
-            bar.ax.set_ylabel(self.colorbar_label)
+
+        if self.zlabel is not None:
+            bar.ax.set_ylabel(self.zlabel)
 
     def _plot_ticks(self, ax):
         ax.tick_params(labelsize=self.text_size['tick_label'])
@@ -167,7 +168,7 @@ class DualHeatmap:
         self.output_fpath = kwargs['output_fpath']
         self.title = kwargs['title']
         self.legend = kwargs.get('legend', None)
-        self.colorbar_label = kwargs['zlabel']
+        self.zlabel = kwargs['zlabel']
 
         self.xlabel = kwargs.get('xlabel', None)
         self.ylabel = kwargs.get('ylabel', None)
@@ -192,17 +193,23 @@ class DualHeatmap:
             return
 
         # Scaffold graph
-        fig, axes = plt.subplots(ncols=2, figsize=(10, 10))
-        ax1, ax2 = axes
+        fig, axes = plt.subplots(ncols=2,
+                                 figsize=(core.config.kGraphBaseSize * 2.0,
+                                          core.config.kGraphBaseSize))
         y = np.arange(len(dfs[0].columns))
         x = dfs[0].index
+        ax1, ax2 = axes
+
+        # Find min, max so the shared colorbar makes sense
+        minval = min(dfs[0].min().min(), dfs[1].min().min())
+        maxval = max(dfs[0].max().max(), dfs[1].max().max())
 
         # Plot heatmaps
-        im1 = ax1.matshow(dfs[0], cmap='coolwarm', interpolation='none')
-        im2 = ax2.matshow(dfs[1], cmap='coolwarm', interpolation='none')
+        im1 = ax1.matshow(dfs[0], cmap='coolwarm', interpolation='none', vmin=minval, vmax=maxval)
+        im2 = ax2.matshow(dfs[1], cmap='coolwarm', interpolation='none', vmin=minval, vmax=maxval)
 
         # Add titles
-        fig.suptitle(self.title, fontsize=24)
+        fig.suptitle(self.title, fontsize=self.text_size['title'])
         ax1.xaxis.set_ticks_position('bottom')
         ax1.yaxis.set_ticks_position('left')
         ax2.xaxis.set_ticks_position('bottom')
@@ -214,45 +221,75 @@ class DualHeatmap:
             ax2.set_title("\n".join(textwrap.wrap(self.legend[1], 20)),
                           size=self.text_size['legend_label'])
 
-        # Add colorbar
-        self._plot_colorbar(fig, im1, ax1)
-        self._plot_colorbar(fig, im2, ax2)
+        # Add colorbar.
+        #
+        # Add, then remove the colorbar for the heatmap on the left so that they both end up the
+        # same size. Not pythonic, but it works.
+        self._plot_colorbar(fig, im1, ax1, remove=True)
+        self._plot_colorbar(fig, im2, ax2, remove=False)
 
-        # Add X,Y,Z labels
-        self._plot_labels(ax1)
-        self._plot_labels(ax2)
+        # Add X,Y,Z labels:
+        #
+        # - X labels are needed on both heatmaps.
+        # - Y label only needed on left heatmap.
+        self._plot_labels(ax1, xlabel=True, ylabel=True)
+        self._plot_labels(ax2, xlabel=True, ylabel=False)
 
-        # Add X,Y ticks
-        self._plot_ticks(ax1, x, y)
-        self._plot_ticks(ax2, x, y)
+        # Add X,Y ticks:
+        #
+        # - X tick labels needed on both heatmaps
+        # - Y tick labels only needed on left heatmap.
+        self._plot_ticks(ax1, x, y, xlabels=True, ylabels=True)
+        self._plot_ticks(ax2, x, y, xlabels=True, ylabels=False)
 
         # Output figures
-        fig.set_size_inches(10, 10)
+        fig.subplots_adjust(wspace=0.0, hspace=0.0)
         fig.savefig(self.output_fpath, bbox_inches='tight', dpi=core.config.kGraphDPI)
         plt.close(fig)  # Prevent memory accumulation (fig.clf() does not close everything)
 
-    def _plot_colorbar(self, fig, im, ax):
+    def _plot_colorbar(self, fig, im, ax, remove: bool):
         divider = mpl_toolkits.axes_grid1.make_axes_locatable(ax)
         cax = divider.append_axes('right', size='5%', pad=0.05)
-        bar = fig.colorbar(im, cax=cax)
-        if self.colorbar_label is not None:
-            bar.ax.set_ylabel(self.colorbar_label)
 
-    def _plot_ticks(self, ax, xvals, yvals):
+        bar = fig.colorbar(im, cax=cax)
+        if remove:
+            fig.delaxes(fig.axes[2])
+
+        # p0 = axes[0].get_position().get_points().flatten()
+        # p1 = axes[1].get_position().get_points().flatten()
+        # ax_cbar = fig.add_axes([p0[0], , p1[2] - p0[0], 0.05])
+        # bar = fig.colorbar(im, cax=ax_cbar, orientation='horizontal')
+
+        if self.zlabel is not None:
+            bar.ax.set_ylabel(self.zlabel, fontsize=self.text_size['xyz_label'])
+
+    def _plot_ticks(self, ax, xvals, yvals, xlabels: bool, ylabels: bool):
         """
         Plot ticks and tick labels. If the labels are numerical and the numbers are too large, force
         scientific notation (the ``rcParam`` way of doing this does not seem to work...)
         """
         ax.tick_params(labelsize=self.text_size['tick_label'])
-        ax.set_xticks(yvals)
-        ax.set_xticklabels(self.ytick_labels, rotation='vertical')
 
-        ax.set_yticks(xvals)
-        ax.set_yticklabels(self.xtick_labels, rotation='horizontal')
+        if xlabels:
+            ax.set_xticks(yvals)
+            ax.set_xticklabels(self.ytick_labels, rotation='vertical')
+        else:
+            ax.set_xticks([])
+            ax.set_xticklabels([])
 
-    def _plot_labels(self, ax):
-        ax.set_ylabel(self.xlabel, fontsize=self.text_size['xyz_label'])
-        # ax.set_xlabel(self.ylabel, fontsize=18)
+        if ylabels:
+            ax.set_yticks(xvals)
+            ax.set_yticklabels(self.xtick_labels, rotation='horizontal')
+        else:
+            ax.set_yticks([])
+            ax.set_yticklabels([])
+
+    def _plot_labels(self, ax, xlabel: bool, ylabel: bool):
+        if xlabel:
+            ax.set_xlabel(self.ylabel, fontsize=self.text_size['xyz_label'])
+
+        if ylabel:
+            ax.set_ylabel(self.xlabel, fontsize=self.text_size['xyz_label'])
 
 
 class HeatmapSet():

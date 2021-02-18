@@ -107,10 +107,13 @@ class TemporalVariance(bc.UnivarBatchCriteria):
         if self.variance_type in ['BC', 'M']:
             if expx_var > ideal_var:
                 return 1.0 - abs(expx_var - ideal_var)
-            elif expx_var <= ideal_var:
+            else:  # expx_var <= ideal_var:
                 return 1.0 + abs(expx_var - ideal_var)
         elif self.variance_type == 'BM':
             return ideal_var / expx_var
+
+        else:
+            return 0.0
 
     def graph_xticks(self,
                      cmdopts: dict,

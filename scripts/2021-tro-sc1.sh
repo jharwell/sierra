@@ -52,10 +52,10 @@ TIME_SHORT=time_setup.T10000
 # TIME_SHORT=time_setup.T1000
 TIME_LONG=time_setup.T200000N1000
 
-CONTROLLERS_LIST=(d0.CRW d0.DPO d1.BITD_DPO d2.BIRTD_DPO)
+CONTROLLERS_LIST=(d1.BITD_DPO)
 TASKS=("scalability" "flexibility" "robustness_saa" "robustness_pd")
 CARDINALITY=C8
-NSIMS=16
+NSIMS=12
 
 SIERRA_BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT\
@@ -64,14 +64,13 @@ SIERRA_BASE_CMD="python3 sierra.py \
                   --pipeline 1 2 3 4 \
                   --exp-graphs=inter\
                   --project=fordyca\
-                  --dist-stats=conf95\
+                  --dist-stats=none\
                   --with-robot-leds \
                   --exp-overwrite\
-                  --project-imagizing --project-rendering\
-                  --camera-config=sierra_dynamic\
-                  --exp-graphs=intra\
+                  --project-rendering --project-imagizing --serial-processing\
+                  --exp-graphs=none\
                   --models-disable\
-                  --log-level=DEBUG --serial-processing\
+                  --log-level=DEBUG\
                   --exp-range=7:7
                   "
 
@@ -108,18 +107,18 @@ if [ "$TASK" == "scalability" ] || [ "$TASK" == "emergence" ] || [ "$TASK" == "a
 then
     for c in "${CONTROLLERS[@]}"
     do
-        $SIERRA_CMD --scenario=SS.32x16 \
-                  --batch-criteria population_size.Log128 \
-                  --controller=${c} \
-                  --n-blocks=128\
-                  --time-setup=${TIME_SHORT}
-
-
-        # $SIERRA_CMD --scenario=RN.48x48 \
-        #           --batch-criteria population_size.Log512 \
+        # $SIERRA_CMD --scenario=SS.32x16 \
+        #           --batch-criteria population_size.Log128 \
         #           --controller=${c} \
-        #           --n-blocks=512\
+        #           --n-blocks=128\
         #           --time-setup=${TIME_SHORT}
+
+
+        $SIERRA_CMD --scenario=RN.48x48 \
+                  --batch-criteria population_size.Log512 \
+                  --controller=${c} \
+                  --n-blocks=512\
+                  --time-setup=${TIME_SHORT}
 
         # $SIERRA_CMD --scenario=RN.96x96 \
         #           --batch-criteria population_size.Log2048 \

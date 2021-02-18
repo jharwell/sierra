@@ -53,6 +53,7 @@ class ARGoSQTCameraTimeline():
                  cameras: str,
                  extents: tp.List[ArenaExtent]) -> None:
         self.interpolate = 'dynamic' in cameras
+
         if 'argos' in cameras:
             self.paradigm = 'argos'
         else:
@@ -60,7 +61,7 @@ class ARGoSQTCameraTimeline():
 
         self.extents = extents
         self.tsetup = tsetup
-        self.tag_adds = []
+        self.tag_adds = []  # type: tp.List[XMLTagAddList]
 
     def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         """
@@ -91,10 +92,10 @@ class ARGoSQTCameraTimeline():
                                           'keyframe',
                                           {
                                               'placement': str(index),
-                                              'step': str(in_ticks / self.kARGOS_N_CAMERAS * index)
+                                              'step': str(int(in_ticks / self.kARGOS_N_CAMERAS * c))
                                           }
                                           ))
-                    if self.interpolate and c < self.kARGOS_N_CAMERAS + 1:
+                    if self.interpolate and c < self.kARGOS_N_CAMERAS:
                         adds.append(XMLTagAdd('.//qt-opengl/camera/timeline', 'interpolate', {}))
 
             if self.paradigm == 'sierra':
@@ -122,9 +123,9 @@ class ARGoSQTCameraTimeline():
                                        )
                 adds.extend(cameras)
 
-            self.tag_adds = adds
+            self.tag_adds = [adds]
 
-        return [self.tag_adds]
+        return self.tag_adds
 
 
 @implements.implements(IBaseVariable)
@@ -140,7 +141,7 @@ class ARGoSQTCameraOverhead():
     def __init__(self,
                  extents: tp.List[ArenaExtent]) -> None:
         self.extents = extents
-        self.tag_adds = []
+        self.tag_adds = []  # type: tp.List[XMLTagAddList]
 
     def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         """
@@ -158,33 +159,36 @@ class ARGoSQTCameraOverhead():
 
     def gen_tag_addlist(self) -> tp.List[XMLTagAddList]:
         if not self.tag_adds:
-            self.tag_adds = XMLTagAddList(XMLTagAdd('./visualization/qt-opengl', 'camera', {}),
-                                          XMLTagAdd("./visualization/qt-opengl/camera", "placements", {}))
+            adds = XMLTagAddList(XMLTagAdd('./visualization/qt-opengl', 'camera', {}),
+                                 XMLTagAdd("./visualization/qt-opengl/camera", "placements", {}))
 
             for ext in self.extents:
                 height = max(ext.xsize(), ext.ysize()) * 0.75
-                self.tag_adds.append(XMLTagAdd('.//camera/placements',
-                                               'placement',
-                                               {
-                                                   'index': '0',
+                adds.append(XMLTagAdd('.//camera/placements',
+                                      'placement',
+                                      {
+                                          'index': '0',
                                                    'position': "{0}, {1}, {2}".format(ext.xsize() / 2.0,
                                                                                       ext.ysize() / 2.0,
                                                                                       height),
                                                    'look_at': "{0}, {1}, 0".format(ext.xsize() / 2.0,
                                                                                    ext.ysize() / 2.0),
-                                               }))
+                                      }))
+            self.tag_adds = [adds]
 
-        return [self.tag_adds]
+        return self.tag_adds
 
 
-def factory(cmdopts: dict, extents: tp.List[ArenaExtent]) -> ARGoSQTCameraTimeline:
+def factory(cmdopts: dict, extents: tp.List[ArenaExtent]):
     """
     Create cameras for a list of arena extents.
     """
     if cmdopts['camera_config'] == 'overhead':
         return ARGoSQTCameraOverhead(extents)
     else:
-        return ARGoSQTCameraTimeline(ts.factory(cmdopts["time_setup"])(), cmdopts['camera_config'], extents)
+        return ARGoSQTCameraTimeline(ts.factory(cmdopts["time_setup"])(),
+                                     cmdopts['camera_config'],
+                                     extents)
 
 
 __api__ = [

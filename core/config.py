@@ -42,7 +42,7 @@ kPickleLeaf = 'exp_def' + kPickleExt
 
 kGraphDPI = 100
 
-kGraphBaseSize = 5  # inches
+kGraphBaseSize = 5.0  # inches
 
 kGraphTextSizeSmall = {
     'title': 24,
@@ -72,8 +72,8 @@ kStatsExtensions = {
     'q3': '.q3',
     'whislo': '.whislo',
     'whishi': '.whishi',
+    'cilo': '.cilo',
+    'cihi': '.cihi',
 
     'bxp': '.bxp' + kPickleExt,
 }
-
-kKDE_MANUAL_BANDWIDTH = 0.01

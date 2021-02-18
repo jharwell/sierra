@@ -273,18 +273,7 @@ class FLMarginalUnivar(BaseFLMarginal):
         self.interference_count_leaf = interference_count_csv.split('.')[0]
 
     def from_batch(self, criteria: bc.IConcreteBatchCriteria) -> None:
-        # We always calculate the metric
-        perf_fl = common.FractionalLossesUnivar(self.cmdopts,
-                                                self.inter_perf_leaf + '.csv',
-                                                self.interference_count_leaf + '.csv',
-                                                criteria).from_batch(criteria)
-
-        perf_odf = self.df_kernel(criteria, self.cmdopts, perf_fl)
-        ostem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf)
-
-        core.utils.pd_csv_write(perf_odf, ostem + ".csv", index=False)
-
-        self.stats_prepare(criteria, ostem)
+        self._stats_prepare(criteria)
 
         SummaryLinegraph(stats_root=self.cmdopts['batch_stat_collate_root'],
                          input_stem=self.kLeaf,
@@ -299,16 +288,15 @@ class FLMarginalUnivar(BaseFLMarginal):
                          logyscale=self.cmdopts['plot_log_yscale'],
                          large_text=self.cmdopts['plot_large_text']).generate()
 
-    def stats_prepare(self, criteria: bc.IConcreteBatchCriteria, ostem: str) -> None:
+    def _stats_prepare(self, criteria: bc.IConcreteBatchCriteria) -> None:
         for k in core.config.kStatsExtensions.keys():
             perf_ipath = os.path.join(self.cmdopts["batch_stat_collate_root"],
                                       self.inter_perf_leaf + core.config.kStatsExtensions[k])
             int_count_ipath = os.path.join(self.cmdopts["batch_stat_collate_root"],
                                            self.interference_count_leaf + core.config.kStatsExtensions[k])
             stat_opath = os.path.join(self.cmdopts["batch_stat_collate_root"],
-                                      ostem + core.config.kStatsExtensions[k])
+                                      self.kLeaf + core.config.kStatsExtensions[k])
 
-            # Stddev might not have been calculated in stage 3
             if core.utils.path_exists(perf_ipath):
                 perf_stats = core.utils.pd_csv_read(perf_ipath)
                 interference = core.utils.pd_csv_read(int_count_ipath)
@@ -318,9 +306,7 @@ class FLMarginalUnivar(BaseFLMarginal):
                                                                          perf_stats)
                 fl = common.FractionalLossesUnivar.df_kernel(perf_stats, plostN)
                 odf = self.df_kernel(criteria, self.cmdopts, fl)
-                core.utils.pd_csv_write(odf,
-                                        ostem + core.config.kStatsExtensions[k],
-                                        index=False)
+                core.utils.pd_csv_write(odf, stat_opath, index=False)
 
 
 class FLInteractiveUnivar(BaseFLInteractive):
@@ -369,17 +355,7 @@ class FLInteractiveUnivar(BaseFLInteractive):
         self.interference_count_leaf = interference_count_csv.split('.')[0]
 
     def from_batch(self, criteria):
-        # We always calculate the metric
-        perf_fl = common.FractionalLossesUnivar(self.cmdopts,
-                                                self.inter_perf_leaf + '.csv',
-                                                self.interference_count_leaf + '.csv',
-                                                criteria).from_batch(criteria)
-
-        df_new = self.df_kernel(criteria, self.cmdopts, perf_fl)
-        ostem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf)
-        core.utils.pd_csv_write(df_new, ostem + ".csv", index=False)
-
-        self.stats_prepare(criteria, ostem)
+        self._stats_prepare(criteria)
 
         SummaryLinegraph(stats_root=self.cmdopts['batch_stat_collate_root'],
                          input_stem=self.kLeaf,
@@ -394,14 +370,14 @@ class FLInteractiveUnivar(BaseFLInteractive):
                          logyscale=self.cmdopts['plot_log_yscale'],
                          large_text=self.cmdopts['plot_large_text']).generate()
 
-    def stats_prepare(self, criteria: bc.IConcreteBatchCriteria, ostem: str) -> None:
+    def _stats_prepare(self, criteria: bc.IConcreteBatchCriteria) -> None:
         for k in core.config.kStatsExtensions.keys():
             perf_ipath = os.path.join(self.cmdopts["batch_stat_collate_root"],
                                       self.inter_perf_leaf + core.config.kStatsExtensions[k])
             int_count_ipath = os.path.join(self.cmdopts["batch_stat_collate_root"],
                                            self.interference_count_leaf + core.config.kStatsExtensions[k])
             stat_opath = os.path.join(self.cmdopts["batch_stat_collate_root"],
-                                      ostem + core.config.kStatsExtensions[k])
+                                      self.kLeaf + core.config.kStatsExtensions[k])
 
             if core.utils.path_exists(perf_ipath):
                 perf_stats = core.utils.pd_csv_read(perf_ipath)
@@ -412,9 +388,7 @@ class FLInteractiveUnivar(BaseFLInteractive):
                                                                          perf_stats)
                 fl = common.FractionalLossesUnivar.df_kernel(perf_stats, plostN)
                 odf = self.df_kernel(criteria, self.cmdopts, fl)
-                core.utils.pd_csv_write(odf,
-                                        ostem + core.config.kStatsExtensions[k],
-                                        index=False)
+                core.utils.pd_csv_write(odf, stat_opath, index=False)
 
 
 class PGMarginalUnivar(BasePGMarginal):
@@ -470,15 +444,6 @@ class PGMarginalUnivar(BasePGMarginal):
         Calculate marginal performance gain measure for the given controller for each experiment in
         a batch.
         """
-        # We always calculate the metric
-        perf_ipath = os.path.join(self.cmdopts["batch_stat_collate_root"],
-                                  self.inter_perf_leaf + '.csv')
-        perf_idf = core.utils.pd_csv_read(perf_ipath)
-        metric_df = self.df_kernel(criteria, self.cmdopts, perf_idf)
-        ostem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf)
-
-        core.utils.pd_csv_write(metric_df, ostem + ".csv", index=False)
-
         common.stats_prepare(self.cmdopts,
                              criteria,
                              self.inter_perf_leaf,
@@ -549,16 +514,6 @@ class PGInteractiveUnivar(BasePGInteractive):
         Calculate marginal performance gain measure for the given controller for each experiment in
         a batch.
         """
-        # We always calculate the metric
-        perf_ipath = os.path.join(self.cmdopts["batch_stat_collate_root"],
-                                  self.inter_perf_leaf + '.csv')
-        perf_idf = core.utils.pd_csv_read(perf_ipath)
-        metric_df = self.df_kernel(criteria, self.cmdopts, perf_idf)
-        ostem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf)
-
-        core.utils.pd_csv_write(metric_df, ostem + ".csv", index=False)
-
-        # Stddev might not have been calculated in stage 3
         common.stats_prepare(self.cmdopts,
                              criteria,
                              self.inter_perf_leaf,
@@ -673,19 +628,12 @@ class FLMarginalBivar(BaseFLMarginal):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
-        self.inter_perf_csv = inter_perf_csv
-        self.interference_count_csv = interference_count_csv
+        self.inter_perf_leaf = inter_perf_csv.split('.')[0]
+        self.interference_count_leaf = interference_count_csv.split('.')[0]
 
     def from_batch(self, criteria: bc.IConcreteBatchCriteria) -> None:
-        fl = common.FractionalLossesBivar(self.cmdopts,
-                                          self.inter_perf_csv,
-                                          self.interference_count_csv,
-                                          criteria).from_batch(criteria)
-
-        so_df = self.df_kernel(criteria, self.cmdopts, fl)
-
+        self._stats_prepare(criteria)
         stem_path = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf)
-        core.utils.pd_csv_write(so_df, stem_path + ".csv", index=False)
 
         Heatmap(input_fpath=stem_path + '.csv',
                 output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
@@ -695,6 +643,26 @@ class FLMarginalBivar(BaseFLMarginal):
                 ylabel=criteria.graph_ylabel(self.cmdopts),
                 xtick_labels=criteria.graph_xticklabels(self.cmdopts),
                 ytick_labels=criteria.graph_yticklabels(self.cmdopts)).generate()
+
+    def _stats_prepare(self, criteria: bc.IConcreteBatchCriteria) -> None:
+        for k in core.config.kStatsExtensions.keys():
+            perf_ipath = os.path.join(self.cmdopts["batch_stat_collate_root"],
+                                      self.inter_perf_leaf + core.config.kStatsExtensions[k])
+            int_count_ipath = os.path.join(self.cmdopts["batch_stat_collate_root"],
+                                           self.interference_count_leaf + core.config.kStatsExtensions[k])
+            stat_opath = os.path.join(self.cmdopts["batch_stat_collate_root"],
+                                      self.kLeaf + core.config.kStatsExtensions[k])
+
+            if core.utils.path_exists(perf_ipath):
+                perf_stats = core.utils.pd_csv_read(perf_ipath)
+                interference = core.utils.pd_csv_read(int_count_ipath)
+                plostN = common.PerfLostInteractiveSwarmBivar.df_kernel(criteria,
+                                                                        self.cmdopts,
+                                                                        interference,
+                                                                        perf_stats)
+                fl = common.FractionalLossesBivar.df_kernel(perf_stats, plostN)
+                odf = self.df_kernel(criteria, self.cmdopts, fl)
+                core.utils.pd_csv_write(odf, stat_opath, index=False)
 
 
 class FLInteractiveBivar(BaseFLInteractive):
@@ -716,7 +684,7 @@ class FLInteractiveBivar(BaseFLInteractive):
     """
     kLeaf = "PM-self-org-ifl"
 
-    @ staticmethod
+    @staticmethod
     def df_kernel(criteria: bc.IConcreteBatchCriteria,
                   cmdopts: dict,
                   fl: pd.DataFrame) -> pd.DataFrame:
@@ -751,18 +719,12 @@ class FLInteractiveBivar(BaseFLInteractive):
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
-        self.inter_perf_csv = inter_perf_csv
-        self.interference_count_csv = interference_count_csv
+        self.inter_perf_leaf = inter_perf_csv.split('.')[0]
+        self.interference_count_leaf = interference_count_csv.split('.')[0]
 
     def from_batch(self, criteria: bc.IConcreteBatchCriteria):
-        fl = common.FractionalLossesBivar(self.cmdopts,
-                                          self.inter_perf_csv,
-                                          self.interference_count_csv,
-                                          criteria).from_batch(criteria)
-        so_df = self.df_kernel(criteria, self.cmdopts, fl)
-
+        self._stats_prepare(criteria)
         stem_path = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf)
-        core.utils.pd_csv_write(so_df, stem_path + ".csv", index=False)
 
         Heatmap(input_fpath=stem_path + '.csv',
                 output_fpath=os.path.join(
@@ -772,6 +734,26 @@ class FLInteractiveBivar(BaseFLInteractive):
                 ylabel=criteria.graph_ylabel(self.cmdopts),
                 xtick_labels=criteria.graph_xticklabels(self.cmdopts),
                 ytick_labels=criteria.graph_yticklabels(self.cmdopts)).generate()
+
+    def _stats_prepare(self, criteria: bc.IConcreteBatchCriteria) -> None:
+        for k in core.config.kStatsExtensions.keys():
+            perf_ipath = os.path.join(self.cmdopts["batch_stat_collate_root"],
+                                      self.inter_perf_leaf + core.config.kStatsExtensions[k])
+            int_count_ipath = os.path.join(self.cmdopts["batch_stat_collate_root"],
+                                           self.interference_count_leaf + core.config.kStatsExtensions[k])
+            stat_opath = os.path.join(self.cmdopts["batch_stat_collate_root"],
+                                      self.kLeaf + core.config.kStatsExtensions[k])
+
+            if core.utils.path_exists(perf_ipath):
+                perf_stats = core.utils.pd_csv_read(perf_ipath)
+                interference = core.utils.pd_csv_read(int_count_ipath)
+                plostN = common.PerfLostInteractiveSwarmBivar.df_kernel(criteria,
+                                                                        self.cmdopts,
+                                                                        interference,
+                                                                        perf_stats)
+                fl = common.FractionalLossesBivar.df_kernel(perf_stats, plostN)
+                odf = self.df_kernel(criteria, self.cmdopts, fl)
+                core.utils.pd_csv_write(odf, stat_opath, index=False)
 
 
 class PGMarginalBivar(BasePGMarginal):
@@ -793,7 +775,7 @@ class PGMarginalBivar(BasePGMarginal):
     """
     kLeaf = "PM-self-org-mpg"
 
-    @ staticmethod
+    @staticmethod
     def df_kernel(criteria: bc.IConcreteBatchCriteria,
                   cmdopts: dict,
                   raw_df: pd.DataFrame) -> pd.DataFrame:
@@ -850,14 +832,13 @@ class PGMarginalBivar(BasePGMarginal):
         Calculate marginal performance gain metric for the given controller for each experiment in a
         batch.
         """
-
-        perf_ipath = os.path.join(self.cmdopts["batch_stat_collate_root"], self.inter_perf_leaf)
-        perf_df = core.utils.pd_csv_read(perf_ipath + '.csv')
+        common.stats_prepare(self.cmdopts,
+                             criteria,
+                             self.inter_perf_leaf,
+                             self.kLeaf,
+                             self.df_kernel)
 
         so_opath = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf)
-        so_df = self.df_kernel(criteria, self.cmdopts, perf_df)
-
-        core.utils.pd_csv_write(so_df, so_opath + ".csv", index=False)
 
         Heatmap(input_fpath=so_opath + '.csv',
                 output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
@@ -887,7 +868,7 @@ class PGInteractiveBivar(BasePGInteractive):
     """
     kLeaf = "PM-self-org-ipg"
 
-    @ staticmethod
+    @staticmethod
     def df_kernel(criteria: bc.IConcreteBatchCriteria,
                   cmdopts: dict,
                   raw_df: pd.DataFrame) -> pd.DataFrame:
@@ -940,13 +921,13 @@ class PGInteractiveBivar(BasePGInteractive):
         Calculate marginal performance gain metric for the given controller for each experiment in a
         batch.
         """
-        perf_ipath = os.path.join(self.cmdopts["batch_stat_collate_root"], self.inter_perf_leaf)
-        perf_df = core.utils.pd_csv_read(perf_ipath + '.csv')
+        common.stats_prepare(self.cmdopts,
+                             criteria,
+                             self.inter_perf_leaf,
+                             self.kLeaf,
+                             self.df_kernel)
 
         so_opath = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf)
-        so_df = self.df_kernel(criteria, self.cmdopts, perf_df)
-
-        core.utils.pd_csv_write(so_df, so_opath + ".csv", index=False)
 
         Heatmap(input_fpath=so_opath + '.csv',
                 output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],

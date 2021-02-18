@@ -22,8 +22,6 @@ Measures for swarm scalability in univariate and bivariate batched experiments.
 import os
 import copy
 import logging
-import math
-import typing as tp
 
 # 3rd party packages
 import pandas as pd
@@ -220,13 +218,6 @@ class NormalizedEfficiencyUnivar(BaseNormalizedEfficiency):
         batch. Calculated stats and/or metric model results are plotted along with the calculated
         metric, if they exist.
         """
-        # We always calculate the actual metric
-        perf_idf = core.utils.pd_csv_read(os.path.join(self.cmdopts["batch_stat_collate_root"],
-                                                       self.inter_perf_leaf + '.csv'))
-        metric_odf = self.df_kernel(criteria, self.cmdopts, perf_idf)
-        ostem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf)
-        core.utils.pd_csv_write(metric_odf, ostem + ".csv", index=False)
-
         common.stats_prepare(self.cmdopts,
                              criteria,
                              self.inter_perf_leaf,
@@ -297,13 +288,6 @@ class ParallelFractionUnivar(BaseParallelFraction):
 
     def from_batch(self, criteria: bc.IConcreteBatchCriteria):
         # We always calculate the metric
-        perf_idf = core.utils.pd_csv_read(os.path.join(self.cmdopts["batch_stat_collate_root"],
-                                                       self.inter_perf_leaf + '.csv'))
-        perf_odf = self.df_kernel(criteria, self.cmdopts, perf_idf)
-        ostem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf)
-
-        core.utils.pd_csv_write(perf_odf, ostem + ".csv", index=False)
-
         common.stats_prepare(self.cmdopts,
                              criteria,
                              self.inter_perf_leaf,
@@ -423,7 +407,7 @@ class NormalizedEfficiencyBivar(BaseNormalizedEfficiency):
     """
     kLeaf = 'PM-scalability-efficiency'
 
-    @ staticmethod
+    @staticmethod
     def df_kernel(criteria: bc.IConcreteBatchCriteria,
                   cmdopts: dict,
                   raw_df: pd.DataFrame) -> pd.DataFrame:
@@ -450,19 +434,12 @@ class NormalizedEfficiencyBivar(BaseNormalizedEfficiency):
         Calculate efficiency metric for the given controller for each experiment in a
         batch.
         """
-        # We always calculate the metric
-        perf_idf = core.utils.pd_csv_read(os.path.join(self.cmdopts["batch_stat_collate_root"],
-                                                       self.inter_perf_leaf + '.csv'))
-        perf_odf = self.df_kernel(criteria, self.cmdopts, perf_idf)
-        ostem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf)
-
-        core.utils.pd_csv_write(perf_odf, ostem + ".csv", index=False)
-
         common.stats_prepare(self.cmdopts,
                              criteria,
                              self.inter_perf_leaf,
                              self.kLeaf,
                              self.df_kernel)
+        ostem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf)
 
         Heatmap(input_fpath=ostem + '.csv',
                 output_fpath=os.path.join(
@@ -550,12 +527,7 @@ class ParallelFractionBivar(BaseParallelFraction):
         batch. Calculated stats and/or metric model results are plotted along with the calculated
         metric, if they exist.
         """
-        # We always calculate the actual metric
-        perf_idf = core.utils.pd_csv_read(os.path.join(self.cmdopts["batch_stat_collate_root"],
-                                                       self.inter_perf_leaf + '.csv'))
-        metric_odf = self.df_kernel(criteria, self.cmdopts, perf_idf)
         ostem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf)
-        core.utils.pd_csv_write(metric_odf, ostem + ".csv", index=False)
 
         common.stats_prepare(self.cmdopts,
                              criteria,

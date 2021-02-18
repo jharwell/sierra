@@ -26,6 +26,7 @@ import logging
 import multiprocessing as mp
 import typing as tp
 import queue
+import math
 
 # 3rd party packages
 import pandas as pd
@@ -221,7 +222,8 @@ class ExpStatisticsCalculator:
 
             # Create directory for averaged .csv files for imagizing later.
             if csv_fname[1] != '':
-                core.utils.dir_create_checked(csv_fpath_stem, exist_ok=True)
+                core.utils.dir_create_checked(os.path.join(self.stat_root, csv_fname[1]),
+                                              exist_ok=True)
 
             by_row_index = csv_concat.groupby(csv_concat.index)
 
@@ -231,9 +233,9 @@ class ExpStatisticsCalculator:
                                     csv_fpath_stem + core.config.kStatsExtensions['mean'],
                                     index=False)
 
-            if self.avg_opts['dist_stats'] == 'conf95':
+            if self.avg_opts['dist_stats'] in ['conf95', 'all']:
                 self._process_conf95(csv_fpath_stem, by_row_index)
-            elif self.avg_opts['dist_stats'] == 'bw':
+            elif self.avg_opts['dist_stats'] in ['bw', 'all']:
                 self._process_bw(csv_fpath_stem, by_row_index)
 
     def _process_conf95(self, csv_fpath_stem: str, by_row_index) -> None:
@@ -243,23 +245,27 @@ class ExpStatisticsCalculator:
                                 index=False)
 
     def _process_bw(self, csv_fpath_stem: str, by_row_index) -> None:
-        csv_min = by_row_index.min().round(8)
-        csv_max = by_row_index.max().round(8)
         csv_median = by_row_index.median().round(8)
         csv_q1 = by_row_index.quantile(0.25).round(8)
         csv_q3 = by_row_index.quantile(0.75).round(8)
 
-        csv_whislo = csv_q1 - 1.5 * (csv_q3 - csv_q1)
-        csv_whishi = csv_q3 + 1.5 * (csv_q3 - csv_q1)
+        iqr = (csv_q3 - csv_q1).abs()  # Inter-quartile range
+        csv_whislo = csv_q1 - 1.50 * iqr
+        csv_whishi = csv_q3 + 1.50 * iqr
 
-        core.utils.pd_csv_write(csv_max,
-                                os.path.join(self.stat_root,
-                                             csv_fpath_stem + core.config.kStatsExtensions['max']),
-                                index=False)
+        # The magic 1.57 is from the original paper:
+        #
+        # (Robert McGill, John W. Tukey and Wayne A. Larsen. Variations of Box Plots, The American
+        # Statistician, Vol. 32, No. 1 (Feb., 1978), pp. 12-16
+        n_sims = by_row_index.size().values[0]
+        csv_cilo = csv_median - 1.57 * iqr / math.sqrt(n_sims)
+        csv_cihi = csv_median + 1.57 * iqr / math.sqrt(n_sims)
+
         core.utils.pd_csv_write(csv_median,
                                 os.path.join(self.stat_root,
                                              csv_fpath_stem + core.config.kStatsExtensions['median']),
                                 index=False)
+
         core.utils.pd_csv_write(csv_q1,
                                 os.path.join(self.stat_root,
                                              csv_fpath_stem + core.config.kStatsExtensions['q1']),
@@ -278,6 +284,16 @@ class ExpStatisticsCalculator:
         core.utils.pd_csv_write(csv_whishi,
                                 os.path.join(self.stat_root,
                                              csv_fpath_stem + core.config.kStatsExtensions['whishi']),
+                                index=False)
+
+        core.utils.pd_csv_write(csv_cilo,
+                                os.path.join(self.stat_root,
+                                             csv_fpath_stem + core.config.kStatsExtensions['cilo']),
+                                index=False)
+
+        core.utils.pd_csv_write(csv_cihi,
+                                os.path.join(self.stat_root,
+                                             csv_fpath_stem + core.config.kStatsExtensions['cihi']),
                                 index=False)
 
     def _verify_exp(self):

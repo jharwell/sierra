@@ -505,7 +505,7 @@ class CoreCmdline:
                                  action='store_true',
                                  default=False)
         self.stage3.add_argument("--dist-stats",
-                                 choices=['none', 'conf95', 'bw'],
+                                 choices=['none', 'all', 'conf95', 'bw'],
                                  help="""
 
                                  Specify what kinds of statistics, if any, should be calculated from the distribution of
@@ -519,6 +519,8 @@ class CoreCmdline:
                                  - ``bw`` - Calculate statistics necessary to show box and whisker plots around each
                                    point in the graph. :class:`~core.graphs.summary_line_graph.SummaryLinegraph` only.
 
+                                 - ``all`` - Generate all possible statistics, and plot all possible
+                                   statistics on graphs.
                                  """
                                  +
                                  self.graphs_applicable_doc([':class:`~core.graphs.summary_line_graph.SummaryLinegraph`',
@@ -868,9 +870,8 @@ class CoreCmdline:
         self.stage5.add_argument("--controllers-legend",
                                  help="""
 
-                                 Comma separated list of names to use on the legend for the generated intra-scenario
-                                 controller comparison graphs(if applicable), specified in the same order as the
-                                 `--controllers-list`.
+                                 Comma separated list of names to use on the legend for the generated comparison graphs,
+                                 specified in the same order as the `--controllers-list`..
 
                                  """ + self.stage_usage_doc([5],
                                                             "If omitted: the raw controller names will be used."))
@@ -907,48 +908,56 @@ class CoreCmdline:
                                  Perform a comparison of ``--controllers-list`` across all scenarios at least one
                                  controller has been run on..
                                  """ + self.stage_usage_doc([5],
-                                                            "Either ``- -scenario-comparison`` or ``--controller-comparison`` must be passed."),
+                                                            "Either ``--scenario-comparison`` or ``--controller-comparison`` must be passed."),
                                  action='store_true')
 
         self.stage5.add_argument("--comparison-type",
-                                 choices=['raw1D', 'raw2D', 'raw3D', 'scale2D',
-                                          'scale3D', 'diff2D', 'diff3D'],
+                                 choices=['LNraw',
+                                          'HMraw', 'HMdiff', 'HMscale', 'HMdiff',
+                                          'SUraw', 'SUscale', 'SUdiff'],
                                  help="""
 
                                  Specify how controller comparisons should be performed.
 
                                  If the batch criteria is univariate, the options are:
 
-                                 - ``raw1D`` - Output raw 1D performance measures using linegraphs.
+                                 - ``LNraw`` - Output raw 1D performance measures using a single
+                                   :class:`~core.graphs.summary_line_graph.SummaryLinegraph` for each measure, with all
+                                   ``--controllers-list`` controllers shown on the same graph.
 
                                  If the batch criteria is bivariate, the options are:
 
-                                 - ``raw2D`` - Output raw 2D performance measures as a set of dual heatmaps comparing
-                                   all controllers against the controller of primary interest(one per pair).
+                                 - ``LNraw`` - Output raw performance measure as a set of
+                                   :class:`~core.graphs.summary_line_graph.SummaryLinegraph`, where each line graph is
+                                   constructed from the i-th row/column for the 2D dataframe for the performance results
+                                   for all controllers.
 
-                                 - ``diff2D`` - Subtract the performance measure of the controller of primary interest
+                                 - ``HMraw`` - Output raw 2D performance measures as a set of dual heatmaps comparing
+                                   all controllers against the controller of primary interest (one per pair).
+
+                                 - ``HMdiff`` - Subtract the performance measure of the controller of primary interest
                                    against all other controllers, pairwise, outputting one 2D heatmap per comparison.
 
-                                 - ``scale2D`` - Scale controller performance measures against those of the controller
+                                 - ``HMscale`` - Scale controller performance measures against those of the controller
                                    of primary interest by dividing, outputing one 2D heatmap per comparison.
 
-                                 - ``raw3D`` - Output raw 3D performance measures as a single, stacked 3D surface
-                                   plots comparing all controllers(identical plots, but view from different
-                                   angles). Uses ``--controllers-legend`` if passed for legend.
+                                 - ``SUraw`` - Output raw 3D performance measures as a single, stacked 3D surface
+                                   plots comparing all controllers (identical plots, but viewed from different
+                                   angles).
 
-                                 - ``scale3D`` - Scale controller performance measures against those of the controller
+                                 - ``SUscale`` - Scale controller performance measures against those of the controller
                                    of primary interest by dividing. This results in a single stacked 3D surface plots
-                                   comparing all controllers(identical plots, but view from different angles). Uses
-                                   ``--controllers-legend`` if passed for legend.
+                                   comparing all controllers (identical plots, but viewed from different angles).
 
-                                 - ``diff3D`` - Subtract the performance measure of the controller of primary interest
+                                 - ``SUdiff`` - Subtract the performance measure of the controller of primary interest
                                    from each controller(including the primary). This results in a set single stacked 3D
-                                   surface plots comparing all controllers(identical plots, but view from different
-                                   angles), in which the controller of primary interest forms an(X, Y) plane at
-                                   Z=0. Uses ``--controllers-legend`` if passed for legend.
+                                   surface plots comparing all controllers (identical plots, but viewed from different
+                                   angles), in which the controller of primary interest forms an(X, Y) plane at Z=0.
 
-                                 """ + self.stage_usage_doc([5]),
-                                 default='raw1D')
+
+                                 For all comparison types, ``--controllers-legend`` is used if passed for legend.
+
+                                 """ + self.stage_usage_doc([5]))
 
         self.stage5.add_argument("--bc-univar",
                                  help="""
@@ -1056,10 +1065,6 @@ class CoreCmdlineValidator():
         if len(args.batch_criteria) == 2:
             assert args.batch_criteria[0] != args.batch_criteria[1], \
                 "FATAL: Duplicate batch criteria passed"
-
-        if args.dist_stats != 'none' and args.dist_stats != 'conf95':
-            assert len(args.batch_criteria) == 1, \
-                "FATAL: 'bw' statistics generation only supported with univariate batch criteria"
 
         assert isinstance(args.batch_criteria, list), \
             'FATAL Batch criteria not passed as list on cmdline'

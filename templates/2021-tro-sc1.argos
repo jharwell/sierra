@@ -251,7 +251,6 @@
             task_tab_harvester="task-tab-harvester"
             task_distribution="task-distribution"
             block_clusters="block-clusters"
-            block_motion="block-motion"
             block_distributor="block-distributor"
             perception_dpo="perception-dpo"
             tv_population="tv-population"

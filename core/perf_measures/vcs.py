@@ -189,10 +189,12 @@ class AdaptabilityCS():
                  main_config: dict,
                  cmdopts: dict,
                  criteria: BatchCriteria,
+                 stat_ext: str,
                  ideal_num: int,
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
         self.criteria = criteria
+        self.stat_ext = stat_ext
         self.exp_num = exp_num
         self.ideal_num = ideal_num
         self.main_config = main_config
@@ -206,20 +208,23 @@ class AdaptabilityCS():
         experiment. Returns NP arrays rather than dataframes, because that is what the curve
         similarity measure calculator needs as input.
         """
+        intra_perf_leaf = self.main_config['perf']['intra_perf_csv'].split('.')[0]
+        tv_env_leaf = self.main_config['perf']['tv_environment_csv'].split('.')[0]
+
         ideal_perf_df = DataFrames.expx_perf_df(self.cmdopts,
                                                 self.criteria,
                                                 exp_dirs,
-                                                self.main_config['perf']['intra_perf_csv'],
+                                                intra_perf_leaf + self.stat_ext,
                                                 self.ideal_num)
         ideal_var_df = DataFrames.expx_var_df(self.cmdopts,
                                               self.criteria,
                                               exp_dirs,
-                                              self.main_config['perf']['tv_environment_csv'],
+                                              tv_env_leaf + '.csv',
                                               self.ideal_num)
         expx_perf_df = DataFrames.expx_perf_df(self.cmdopts,
                                                self.criteria,
                                                exp_dirs,
-                                               self.main_config['perf']['intra_perf_csv'],
+                                               intra_perf_leaf + self.stat_ext,
                                                self.exp_num)
 
         ideal_df = pd.DataFrame(index=ideal_var_df.index, columns=[self.perf_csv_col])
@@ -270,6 +275,7 @@ class ReactivityCS():
                  main_config: dict,
                  cmdopts: dict,
                  criteria: BatchCriteria,  # Must be TemporalVariance!
+                 stat_ext: str,
                  ideal_num: int,
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
@@ -277,6 +283,7 @@ class ReactivityCS():
 
         self.ideal_num = ideal_num
         self.exp_num = exp_num
+        self.stat_ext = stat_ext
         self.perf_csv_col = self.main_config['perf']['intra_perf_col']
         self.var_csv_col = TemporalVarianceParser()(criteria.cli_arg)['variance_csv_col']
         self.criteria = criteria
@@ -296,26 +303,28 @@ class ReactivityCS():
         experiment. Returns NP arrays rather than dataframes, because that is what the curve
         similarity measure calculator needs as input.
         """
+        intra_perf_leaf = self.main_config['perf']['intra_perf_csv'].split('.')[0]
+        tv_env_leaf = self.main_config['perf']['tv_environment_csv'].split('.')[0]
 
         ideal_perf_df = DataFrames.expx_perf_df(self.cmdopts,
                                                 self.criteria,
                                                 exp_dirs,
-                                                self.main_config['perf']['intra_perf_csv'],
+                                                intra_perf_leaf + self.stat_ext,
                                                 self.ideal_num)
         ideal_var_df = DataFrames.expx_var_df(self.cmdopts,
                                               self.criteria,
                                               exp_dirs,
-                                              self.main_config['perf']['tv_environment_csv'],
+                                              tv_env_leaf + '.csv',
                                               self.ideal_num)
         expx_perf_df = DataFrames.expx_perf_df(self.cmdopts,
                                                self.criteria,
                                                exp_dirs,
-                                               self.main_config['perf']['intra_perf_csv'],
+                                               intra_perf_leaf + self.stat_ext,
                                                self.exp_num)
         expx_var_df = DataFrames.expx_var_df(self.cmdopts,
                                              self.criteria,
                                              exp_dirs,
-                                             self.main_config['perf']['tv_environment_csv'],
+                                             tv_env_leaf + '.csv',
                                              self.exp_num)
 
         ideal_df = pd.DataFrame(index=ideal_var_df.index, columns=[self.perf_csv_col])
@@ -339,8 +348,6 @@ class ReactivityCS():
                 scale_factor = 1.0 + abs(expx_var - ideal_var)
 
             ideal_df.loc[i, self.perf_csv_col] = ideal_perf * scale_factor
-
-            print("I: ", i, expx_var, ideal_var, ideal_df.loc[i, self.perf_csv_col])
 
         xlen = len(ideal_var_df[self.var_csv_col].values)
         exp_data = np.zeros((xlen, 2))

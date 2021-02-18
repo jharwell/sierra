@@ -67,9 +67,8 @@ class RobustnessSAAUnivar:
         batch_exp_dirnames = criteria.gen_exp_dirnames(self.cmdopts)
 
         # Robustness is only defined for experiments > 0, as exp0 is assumed to be ideal conditions,
-        # so we have to slice. We use the reactivity curve similarity measure because we are
-        # interested in how closely the swarm's performnce under noise tracks that of ideal
-        # conditions. With perfect SAA robustness, they should track exactly.
+        # so we have to slice. We are interested in how closely the swarm's performnce under noise
+        # tracks that of ideal conditions; With perfect SAA robustness, they should match exactly.
 
         df = pd.DataFrame(columns=batch_exp_dirnames, index=[0])
         df[batch_exp_dirnames[0]] = kIDEAL_SAA_ROBUSTNESS
@@ -86,18 +85,18 @@ class RobustnessSAAUnivar:
         core.utils.pd_csv_write(df, stem_opath + '.csv', index=False)
 
         SummaryLinegraph(stats_root=self.cmdopts['batch_stat_collate_root'],
-                           input_stem=self.kLeaf,
-                           stats=self.cmdopts['dist_stats'],
-                           output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
-                                                     self.kLeaf + core.config.kImageExt),
-                           title="Swarm Robustness (SAA)",
-                           xlabel=criteria.graph_xlabel(self.cmdopts),
-                           ylabel=vcs.method_ylabel(self.cmdopts["rperf_cs_method"],
-                                                    'robustness_saa'),
-                           xticks=criteria.graph_xticks(self.cmdopts),
-                           xtick_labels=criteria.graph_xticklabels(self.cmdopts),
-                           logyscale=self.cmdopts['plot_log_yscale'],
-                           large_text=self.cmdopts['plot_large_text']).generate()
+                         input_stem=self.kLeaf,
+                         stats=self.cmdopts['dist_stats'],
+                         output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
+                                                   self.kLeaf + core.config.kImageExt),
+                         title="Swarm Robustness (SAA)",
+                         xlabel=criteria.graph_xlabel(self.cmdopts),
+                         ylabel=vcs.method_ylabel(self.cmdopts["rperf_cs_method"],
+                                                  'robustness_saa'),
+                         xticks=criteria.graph_xticks(self.cmdopts),
+                         xtick_labels=criteria.graph_xticklabels(self.cmdopts),
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class RobustnessPDUnivar:
@@ -148,17 +147,17 @@ class RobustnessPDUnivar:
         core.utils.pd_csv_write(df, stem_opath + '.csv', index=False)
 
         SummaryLinegraph(stats_root=self.cmdopts['batch_stat_collate_root'],
-                           input_stem=self.kLeaf,
-                           stats=self.cmdopts['dist_stats'],
-                           output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
-                                                     self.kLeaf + core.config.kImageExt),
-                           title="Swarm Robustness (Population Dynamics)",
-                           xlabel=criteria.graph_xlabel(self.cmdopts),
-                           ylabel="Robustness Value",
-                           xticks=criteria.graph_xticks(self.cmdopts),
-                           xtick_labels=criteria.graph_xticklabels(self.cmdopts),
-                           logyscale=self.cmdopts['plot_log_yscale'],
-                           large_text=self.cmdopts['plot_large_text']).generate()
+                         input_stem=self.kLeaf,
+                         stats=self.cmdopts['dist_stats'],
+                         output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
+                                                   self.kLeaf + core.config.kImageExt),
+                         title="Swarm Robustness (Population Dynamics)",
+                         xlabel=criteria.graph_xlabel(self.cmdopts),
+                         ylabel="Robustness Value",
+                         xticks=criteria.graph_xticks(self.cmdopts),
+                         xtick_labels=criteria.graph_xticklabels(self.cmdopts),
+                         logyscale=self.cmdopts['plot_log_yscale'],
+                         large_text=self.cmdopts['plot_large_text']).generate()
 
 
 class RobustnessUnivarGenerator:
@@ -342,7 +341,7 @@ class RobustnessPDBivar:
     def _gen_scatterplot(self, rob_ipath: str, criteria: bc.BivarBatchCriteria):
         """
         Generate a :class:`~core.graphs.scatterplot2D.Scatterplot2D` graph of robustness
-        vs. performance AFTER the main robustness `.csv` has generated in :meth:`__gen_heatmap()`
+        vs. performance AFTER the main robustness `.csv` has generated in :meth:`_gen_heatmap()`
         """
         perf_ipath = os.path.join(self.cmdopts["batch_stat_collate_root"], self.inter_perf_csv)
         opath = os.path.join(self.cmdopts['batch_stat_collate_root'],
@@ -375,7 +374,7 @@ class RobustnessPDBivar:
                       xlabel='Robustness Value',
                       ylabel=criteria.graph_ylabel(self.cmdopts)).generate()
 
-    def __gen_heatmap(self, criteria: bc.BivarBatchCriteria):
+    def _gen_heatmap(self, criteria: bc.BivarBatchCriteria):
         """
         Generate a robustness graph for a given controller in a given scenario by computing the
         value of the robustness metric for each experiment within the batch, and plot
@@ -389,7 +388,7 @@ class RobustnessPDBivar:
         opath_stem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf)
 
         # Generate heatmap dataframe and write to file
-        df = self.__gen_heatmap_df(raw_df, criteria)
+        df = self._gen_heatmap_df(raw_df, criteria)
         core.utils.pd_csv_write(df, opath_stem + ".csv", index=False)
 
         Heatmap(input_fpath=opath_stem + '.csv',
@@ -402,7 +401,7 @@ class RobustnessPDBivar:
                 ytick_labels=criteria.graph_yticklabels(self.cmdopts)).generate()
         return opath_stem + '.csv'
 
-    def __gen_heatmap_df(self, raw_df: pd.DataFrame, criteria: bc.BivarBatchCriteria):
+    def _gen_heatmap_df(self, raw_df: pd.DataFrame, criteria: bc.BivarBatchCriteria):
         df = pd.DataFrame(columns=raw_df.columns, index=raw_df.index)
 
         exp_dirnames = criteria.gen_exp_dirnames(self.cmdopts)

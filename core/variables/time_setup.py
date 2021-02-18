@@ -125,7 +125,7 @@ class Parser():
         return ret
 
 
-def factory(cmdline: str) -> ARGoSTimeSetup:
+def factory(cmdline: str):
     """
     Factory to create :class:`ARGoSTimeSetup` derived classes from the command line definition.
 

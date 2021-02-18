@@ -43,7 +43,6 @@ class UnivarGraphCollationInfo():
         self.df = pd.DataFrame(columns=ylabels)
         self.all_srcs_exist = True
         self.some_srcs_exist = False
-        self.is_pickle = False
 
 
 class BivarGraphCollationInfo():
@@ -95,14 +94,10 @@ class UnivarGraphCollator:
 
         for stat in stats:
             if stat.all_srcs_exist:
-                if not stat.is_pickle:
-                    core.utils.pd_csv_write(stat.df, os.path.join(stat_collate_root,
-                                                                  target['dest_stem'] + stat.df_ext),
-                                            index=False)
-                else:
-                    core.utils.pd_pickle_write(stat.df,
-                                               os.path.join(stat_collate_root,
-                                                            target['dest_stem'] + stat.df_ext))
+                core.utils.pd_csv_write(stat.df, os.path.join(stat_collate_root,
+                                                              target['dest_stem'] + stat.df_ext),
+                                        index=False)
+
             elif not stat.all_srcs_exist and stat.some_srcs_exist:
                 self.logger.warning("Not all experiments in '%s' produced '%s%s'",
                                     self.cmdopts['batch_output_root'],
@@ -120,11 +115,7 @@ class UnivarGraphCollator:
 
             stat.some_srcs_exist = True
 
-            if core.config.kPickleExt not in csv_ipath:
-                data_df = core.utils.pd_csv_read(csv_ipath)
-            else:
-                stat.is_pickle = True
-                data_df = core.utils.pd_pickle_read(csv_ipath)
+            data_df = core.utils.pd_csv_read(csv_ipath)
 
             assert target['col'] in data_df.columns.values,\
                 "FATAL: {0} not in columns of {1}".format(target['col'],
@@ -185,13 +176,9 @@ class BivarGraphCollator:
 
         for stat in stats:
             if stat.all_srcs_exist:
-                if not stat.is_pickle:
-                    core.utils.pd_csv_write(stat.df, os.path.join(stat_collate_root,
-                                                                  target['dest_stem'] + stat.df_ext),
-                                            index=False)
-                else:
-                    core.utils.pd_pickle_write(stat.df, os.path.join(stat_collate_root,
-                                                                     target['dest_stem'] + stat.df_ext))
+                core.utils.pd_csv_write(stat.df, os.path.join(stat_collate_root,
+                                                              target['dest_stem'] + stat.df_ext),
+                                        index=False)
 
             elif stat.some_srcs_exist:
                 self.logger.warning("Not all experiments in '%s' produced '%s%s'",
@@ -213,11 +200,7 @@ class BivarGraphCollator:
 
             stat.some_srcs_exist = True
 
-            if core.config.kPickleExt not in csv_ipath:
-                data_df = core.utils.pd_csv_read(csv_ipath)
-            else:
-                stat.is_pickle = True
-                data_df = core.utils.pd_pickle_read(csv_ipath)
+            data_df = core.utils.pd_csv_read(csv_ipath)
 
             assert target['col'] in data_df.columns.values,\
                 "FATAL: {0} not in columns of {1}".format(target['col'],

@@ -139,7 +139,7 @@ class StackedLineGraph:
                             data_df: pd.DataFrame,
                             stat_dfs: tp.Dict[str, pd.DataFrame],
                             cols: tp.List[str],
-                            model: tp.Tuple[pd.DataFrame, str]):
+                            model: tp.Tuple[pd.DataFrame, tp.List[str]]):
         """
         Plots selected columns in a dataframe, (possibly) including:
 
@@ -181,7 +181,7 @@ class StackedLineGraph:
         """
         plt.fill_between(data_df.index,
                          data_df[col] - 2 * stddev_df[col].abs(),
-                         data_df[col] + 2 * stddev_df[col].abs,
+                         data_df[col] + 2 * stddev_df[col].abs(),
                          alpha=0.50)
 
     def _plot_legend(self, ax, model_legend: tp.List[str], ncols: int):
