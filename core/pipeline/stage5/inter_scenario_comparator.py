@@ -24,6 +24,7 @@ import os
 import copy
 import logging
 import typing as tp
+import argparse
 
 # 3rd party packages
 import pandas as pd
@@ -64,9 +65,9 @@ class UnivarInterScenarioComparator:
                  controller: str,
                  scenarios: tp.List[str],
                  roots: tp.Dict[str, str],
-                 cmdopts: dict,
-                 cli_args,
-                 main_config: dict) -> None:
+                 cmdopts: tp.Dict[str, tp.Any],
+                 cli_args: argparse.Namespace,
+                 main_config: tp.Dict[str, tp.Any]) -> None:
         self.controller = controller
         self.scenarios = scenarios
         self.sc_graph_root = roots['sc_graphs']
@@ -78,7 +79,7 @@ class UnivarInterScenarioComparator:
         self.main_config = main_config
         self.logger = logging.getLogger(__name__)
 
-    def __call__(self, graphs: dict, legend: tp.List[str]) -> None:
+    def __call__(self, graphs: tp.List[tp.Dict[str, tp.Any]], legend: tp.List[str]) -> None:
         # Obtain the list of simulation results directories to draw from.
         batch_leaves = os.listdir(os.path.join(self.cmdopts['sierra_root'],
                                                self.cmdopts['project'],
@@ -126,8 +127,8 @@ class UnivarInterScenarioComparator:
         return leaf in candidate and scenario in self.scenarios
 
     def _compare_across_scenarios(self,
-                                  cmdopts: dict,
-                                  graph: dict,
+                                  cmdopts: tp.Dict[str, tp.Any],
+                                  graph: tp.Dict[str, tp.Any],
                                   batch_leaf: str,
                                   legend: tp.List[str]) -> None:
 
@@ -160,7 +161,7 @@ class UnivarInterScenarioComparator:
 
     def _gen_graph(self,
                    criteria: bc.IConcreteBatchCriteria,
-                   cmdopts: dict,
+                   cmdopts: tp.Dict[str, tp.Any],
                    dest_stem: str,
                    title: str,
                    label: str,
@@ -175,20 +176,20 @@ class UnivarInterScenarioComparator:
         xticks = criteria.graph_xticks(cmdopts)
 
         SummaryLinegraph(stats_root=self.sc_csv_root,
-                           input_stem=istem,
-                           stats=cmdopts['dist_stats'],
-                           output_fpath=img_opath,
-                           model_root=self.sc_model_root,
-                           title=title,
-                           xlabel=criteria.graph_xlabel(cmdopts),
-                           ylabel=label,
-                           xticks=xticks[criteria.inter_exp_graphs_exclude_exp0():],
-                           logyscale=cmdopts['plot_log_yscale'],
-                           large_text=cmdopts['plot_large_text'],
-                           legend=legend).generate()
+                         input_stem=istem,
+                         stats=cmdopts['dist_stats'],
+                         output_fpath=img_opath,
+                         model_root=self.sc_model_root,
+                         title=title,
+                         xlabel=criteria.graph_xlabel(cmdopts),
+                         ylabel=label,
+                         xticks=xticks[criteria.inter_exp_graphs_exclude_exp0():],
+                         logyscale=cmdopts['plot_log_yscale'],
+                         large_text=cmdopts['plot_large_text'],
+                         legend=legend).generate()
 
     def _gen_csv(self,
-                 cmdopts: dict,
+                 cmdopts: tp.Dict[str, tp.Any],
                  batch_leaf: str,
                  src_stem: str,
                  dest_stem: str) -> None:

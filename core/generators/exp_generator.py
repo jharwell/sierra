@@ -35,6 +35,7 @@ import core.xml_luigi
 from core.experiment_spec import ExperimentSpec
 import core.variables.time_setup as ts
 import core.variables.rendering as rendering
+import core.variables.batch_criteria as bc
 
 
 class ARGoSExpDefGenerator:
@@ -59,13 +60,13 @@ class ARGoSExpDefGenerator:
     def __init__(self,
                  spec: ExperimentSpec,
                  template_input_file: str,
-                 cmdopts: dict) -> None:
+                 cmdopts: tp.Dict[str, tp.Any]) -> None:
 
         self.template_input_file = os.path.abspath(template_input_file)
         self.cmdopts = cmdopts
         self.spec = spec
 
-    def generate(self):
+    def generate(self) -> XMLLuigi:
         """
         Generates XML changes to simulation input files that are common to all experiments.
         """
@@ -89,7 +90,7 @@ class ARGoSExpDefGenerator:
 
         return xml_luigi
 
-    def _generate_saa(self, xml_luigi: XMLLuigi):
+    def _generate_saa(self, xml_luigi: XMLLuigi) -> None:
         """
         Generates XML changes to disable selected sensors/actuators, which are computationally
         expensive in large swarms, but not that costly if the # robots is small.
@@ -110,7 +111,7 @@ class ARGoSExpDefGenerator:
             xml_luigi.tag_remove(".//sensors", "battery", noprint=True)
             xml_luigi.tag_remove(".//entity/*", "battery", noprint=True)
 
-    def _generate_time(self, xml_luigi: XMLLuigi):
+    def _generate_time(self, xml_luigi: XMLLuigi) -> None:
         """
         Generate XML changes to setup simulation time parameters.
 
@@ -126,7 +127,7 @@ class ARGoSExpDefGenerator:
         # Write time setup info to file for later retrieval
         inst.gen_attr_changelist()[0].pickle(self.spec.exp_def_fpath)
 
-    def _generate_threading(self, xml_luigi: XMLLuigi):
+    def _generate_threading(self, xml_luigi: XMLLuigi) -> None:
         """
         Generates XML changes to set the # of cores for a simulation to use, which may be less than
         the total # available on the system, depending on the experiment definition and user
@@ -145,7 +146,7 @@ class ARGoSExpDefGenerator:
                                   "n_threads",
                                   str(self.cmdopts["physics_n_engines"]))
 
-    def _generate_library(self, xml_luigi: XMLLuigi):
+    def _generate_library(self, xml_luigi: XMLLuigi) -> None:
         """
         Generates XML changes to set the library that controllers and loop functions are sourced
         from to the name of the plugin passed on the cmdline. The ``__controller__`` tag is changed
@@ -162,7 +163,7 @@ class ARGoSExpDefGenerator:
                               "library",
                               "lib" + self.cmdopts['project'])
 
-    def _generate_visualization(self, xml_luigi: XMLLuigi):
+    def _generate_visualization(self, xml_luigi: XMLLuigi) -> None:
         """
         Generates XML changes to remove visualization elements from input file, if configured to do
         so. This depends on cmdline parameters, as visualization definitions should be left in if
@@ -220,10 +221,10 @@ class BatchedExpDefGenerator:
 
     def __init__(self,
                  batch_config_template: str,
-                 criteria,
+                 criteria: bc.IConcreteBatchCriteria,
                  controller_name: str,
                  scenario_basename: str,
-                 cmdopts: dict) -> None:
+                 cmdopts: tp.Dict[str, tp.Any]) -> None:
         assert os.path.isfile(
             batch_config_template), \
             "The path '{}' (which should point to the main config file) did not point to a file".format(

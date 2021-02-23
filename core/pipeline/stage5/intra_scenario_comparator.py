@@ -67,7 +67,7 @@ class UnivarIntraScenarioComparator:
                  controllers: tp.List[str],
                  cc_csv_root: str,
                  cc_graph_root: str,
-                 cmdopts: dict,
+                 cmdopts: tp.Dict[str, tp.Any],
                  cli_args,
                  main_config: dict) -> None:
         self.controllers = controllers
@@ -80,7 +80,7 @@ class UnivarIntraScenarioComparator:
         self.logger = logging.getLogger(__name__)
 
     def __call__(self,
-                 graphs: dict,
+                 graphs: tp.List[tp.Dict[str, tp.Any]],
                  legend: tp.List[str],
                  comp_type: str) -> None:
         # Obtain the list of scenarios to use. We can just take the scenario list of the first
@@ -89,19 +89,6 @@ class UnivarIntraScenarioComparator:
         batch_leaves = os.listdir(os.path.join(self.cmdopts['sierra_root'],
                                                self.cmdopts['project'],
                                                self.controllers[0]))
-
-        # The FS gives us batch leaves which might not be in the same order as the list of specified
-        # scenarios, so we:
-        #
-        # 1. Remove all batch leaves which do not have a counterpart in the controller list we are
-        #    comparing across.
-        # 2. Do matching to get the indices of the batch leaves relative to the list, and then sort
-        #    it.
-        batch_leaves = [leaf for leaf in batch_leaves for s in self.controllers if s in leaf]
-        indices = [self.controllers.index(s)
-                   for leaf in batch_leaves for s in self.controllers if s in leaf]
-        batch_leaves = [leaf for s, leaf in sorted(zip(indices, batch_leaves),
-                                                   key=lambda pair: pair[0])]
 
         # For each controller comparison graph we are interested in, generate it using data from all
         # scenarios
@@ -134,8 +121,8 @@ class UnivarIntraScenarioComparator:
         return leaf in candidate
 
     def _compare_in_scenario(self,
-                             cmdopts: dict,
-                             graph: dict,
+                             cmdopts: tp.Dict[str, tp.Any],
+                             graph: tp.Dict[str, tp.Any],
                              batch_leaf: str,
                              legend: tp.List[str]) -> None:
 
@@ -179,10 +166,11 @@ class UnivarIntraScenarioComparator:
                         dest_stem=graph['dest_stem'],
                         title=graph['title'],
                         label=graph['label'],
+                        exclude_exp0=graph['exclude_exp0'],
                         legend=legend)
 
     def _gen_csv(self,
-                 cmdopts: dict,
+                 cmdopts: tp.Dict[str, tp.Any],
                  batch_leaf: str,
                  controller: str,
                  src_stem: str,
@@ -192,7 +180,7 @@ class UnivarIntraScenarioComparator:
         (1 per controller).
         """
 
-        ipath = os.path.join(cmdopts['batch_stat_collate_root'], src_stem)
+        ipath = os.path.join(cmdopts['batch_stat_collate_root'], src_stem + '.csv')
 
         # Some experiments might not generate the necessary performance measure .csvs for graph
         # generation, which is OK.
@@ -209,10 +197,11 @@ class UnivarIntraScenarioComparator:
     def _gen_graph(self,
                    batch_leaf: str,
                    criteria: bc.IConcreteBatchCriteria,
-                   cmdopts: dict,
+                   cmdopts: tp.Dict[str, tp.Any],
                    dest_stem: str,
                    title: str,
                    label: str,
+                   exclude_exp0: bool,
                    legend: tp.List[str]) -> None:
         """
         Generates a :class:`~core.graphs.summary_line_graph.SummaryLinegraph` comparing the
@@ -226,6 +215,7 @@ class UnivarIntraScenarioComparator:
         opath = os.path.join(self.cc_graph_root,
                              opath_leaf + core.config.kImageExt)
 
+        print(xticks, xtick_labels)
         SummaryLinegraph(stats_root=self.cc_csv_root,
                          input_stem=opath_leaf,
                          output_fpath=opath,
@@ -233,8 +223,8 @@ class UnivarIntraScenarioComparator:
                          title=title,
                          xlabel=criteria.graph_xlabel(cmdopts),
                          ylabel=label,
-                         xtick_labels=xtick_labels[criteria.inter_exp_graphs_exclude_exp0():],
-                         xticks=xticks[criteria.inter_exp_graphs_exclude_exp0():],
+                         xtick_labels=xtick_labels[exclude_exp0:],
+                         xticks=xticks[exclude_exp0:],
                          logyscale=cmdopts['plot_log_yscale'],
                          large_text=self.cmdopts['plot_large_text'],
                          legend=legend).generate()
@@ -264,9 +254,9 @@ class BivarIntraScenarioComparator:
                  controllers: tp.List[str],
                  cc_csv_root: str,
                  cc_graph_root: str,
-                 cmdopts: dict,
+                 cmdopts: tp.Dict[str, tp.Any],
                  cli_args: argparse.Namespace,
-                 main_config: dict) -> None:
+                 main_config: tp.Dict[str, tp.Any]) -> None:
         self.controllers = controllers
         self.cc_csv_root = cc_csv_root
         self.cc_graph_root = cc_graph_root
@@ -276,13 +266,13 @@ class BivarIntraScenarioComparator:
         self.logger = logging.getLogger(__name__)
 
     def __call__(self,
-                 graphs: dict,
+                 graphs: tp.List[tp.Dict[str, tp.Any]],
                  legend: tp.List[str],
                  comp_type: str) -> None:
 
         # Obtain the list of scenarios to use. We can just take the scenario list of the first
         # controllers, because we have already checked that all controllers executed the same set
-        # scenarios
+        # scenarios.
         batch_leaves = os.listdir(os.path.join(self.cmdopts['sierra_root'],
                                                self.cmdopts['project'],
                                                self.controllers[0]))
@@ -317,8 +307,8 @@ class BivarIntraScenarioComparator:
         return leaf in candidate
 
     def _compare_in_scenario(self,
-                             cmdopts: dict,
-                             graph: dict,
+                             cmdopts: tp.Dict[str, tp.Any],
+                             graph: tp.Dict[str, tp.Any],
                              batch_leaf: str,
                              legend: tp.List[str],
                              comp_type: str) -> None:
@@ -397,7 +387,7 @@ class BivarIntraScenarioComparator:
                               comp_type=comp_type)
 
     def _gen_csvs_for_2D_or_3D(self,
-                               cmdopts: dict,
+                               cmdopts: tp.Dict[str, tp.Any],
                                batch_leaf: str,
                                controller: str,
                                src_stem: str,
@@ -434,7 +424,7 @@ class BivarIntraScenarioComparator:
         core.utils.pd_csv_write(df, csv_opath_stem + '.csv', index=False)
 
     def _gen_csvs_for_1D(self,
-                         cmdopts: dict,
+                         cmdopts: tp.Dict[str, tp.Any],
                          batch_leaf: str,
                          controller: str,
                          src_stem: str,
@@ -468,7 +458,7 @@ class BivarIntraScenarioComparator:
     def _gen_graphs1D(self,
                       batch_leaf: str,
                       criteria: bc.BivarBatchCriteria,
-                      cmdopts: dict,
+                      cmdopts: tp.Dict[str, tp.Any],
                       dest_stem: str,
                       title: str,
                       label: str,
@@ -497,7 +487,7 @@ class BivarIntraScenarioComparator:
     def _gen_graphs2D(self,
                       batch_leaf: str,
                       criteria: bc.BivarBatchCriteria,
-                      cmdopts: dict,
+                      cmdopts: tp.Dict[str, tp.Any],
                       dest_stem: str,
                       title: str,
                       label: str,
@@ -524,7 +514,7 @@ class BivarIntraScenarioComparator:
     def _gen_paired_heatmaps(self,
                              batch_leaf: str,
                              criteria: bc.BivarBatchCriteria,
-                             cmdopts: dict,
+                             cmdopts: tp.Dict[str, tp.Any],
                              dest_stem: str,
                              title: str,
                              label: str,
@@ -568,7 +558,7 @@ class BivarIntraScenarioComparator:
     def _gen_dual_heatmaps(self,
                            batch_leaf: str,
                            criteria: bc.BivarBatchCriteria,
-                           cmdopts: dict,
+                           cmdopts: tp.Dict[str, tp.Any],
                            dest_stem: str,
                            title: str,
                            label: str,
@@ -583,7 +573,6 @@ class BivarIntraScenarioComparator:
 
         opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, None)
         csv_pattern_root = os.path.join(self.cc_csv_root, opath_leaf)
-        print(csv_pattern_root)
         paths = [f for f in glob.glob(csv_pattern_root + '*.csv') if re.search('_[0-9]+', f)]
 
         for i in range(0, len(paths)):
@@ -603,7 +592,7 @@ class BivarIntraScenarioComparator:
     def _gen_graph3D(self,
                      batch_leaf: str,
                      criteria: bc.BivarBatchCriteria,
-                     cmdopts: dict,
+                     cmdopts: tp.Dict[str, tp.Any],
                      dest_stem: str,
                      title: str,
                      zlabel: str,

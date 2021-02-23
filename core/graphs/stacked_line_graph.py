@@ -57,14 +57,14 @@ class StackedLineGraph:
                  xlabel: str,
                  ylabel: str,
                  large_text: bool = False,
-                 legend: tp.List[str] = [],
-                 cols: tp.List[str] = [],
-                 linestyles: tp.List[str] = [],
-                 dashstyles: tp.List[str] = [],
+                 legend: tp.Optional[tp.List[str]] = None,
+                 cols: tp.Optional[tp.List[str]] = None,
+                 linestyles: tp.Optional[tp.List[str]] = None,
+                 dashstyles: tp.Optional[tp.List[str]] = None,
                  logyscale: bool = False,
                  stddev_fpath=None,
                  stats: str = 'none',
-                 model_root: str = None) -> None:
+                 model_root: tp.Optional[str] = None) -> None:
 
         # Required arguments
         self.stats_root = stats_root
@@ -90,7 +90,7 @@ class StackedLineGraph:
         self.stddev_fpath = stddev_fpath
         self.logger = logging.getLogger(__name__)
 
-    def generate(self):
+    def generate(self) -> None:
         input_fpath = os.path.join(self.stats_root, self.input_stem +
                                    core.config.kStatsExtensions['mean'])
         if not core.utils.path_exists(input_fpath):
@@ -105,7 +105,7 @@ class StackedLineGraph:
         stat_dfs = self._read_stats()
 
         # Plot specified columns from dataframe.
-        if not self.cols:
+        if self.cols is None:
             ncols = max(1, int(len(data_df.columns) / 2.0))
             ax = self._plot_selected_cols(data_df, stat_dfs, data_df.columns, model)
         else:
@@ -129,7 +129,7 @@ class StackedLineGraph:
         fig.savefig(self.output_fpath, bbox_inches='tight', dpi=core.config.kGraphDPI)
         plt.close(fig)  # Prevent memory accumulation (fig.clf() does not close everything)
 
-    def _plot_ticks(self, ax):
+    def _plot_ticks(self, ax) -> None:
         if self.logyscale:
             plt.yscale('symlog')
 
@@ -149,18 +149,14 @@ class StackedLineGraph:
         - Custom dash styles
         """
         # Always plot the data
-        if not self.linestyles:
+        if self.linestyles is None and self.dashstyles is None:
             ax = data_df[cols].plot()
-            return ax
-        else:
-            if not self.dashstyles:
-                for c, s in zip(cols, self.linestyles):
-                    ax = data_df[c].plot(linestyle=s)
-                return ax
-            else:
-                for c, s, d in zip(cols, self.linestyles, self.dashstyles):
-                    ax = data_df[c].plot(linestyle=s, dashes=d)
-                return ax
+        elif self.dashstyles is None and self.linestyles is not None:
+            for c, s in zip(cols, self.linestyles):
+                ax = data_df[c].plot(linestyle=s)
+        elif self.dashstyles is not None and self.linestyles is not None:
+            for c, s, d in zip(cols, self.linestyles, self.dashstyles):
+                ax = data_df[c].plot(linestyle=s, dashes=d)
 
         # Plot models if they have been computed
         if model[0] is not None:
@@ -175,7 +171,7 @@ class StackedLineGraph:
     def _plot_col_errorbars(self,
                             data_df: pd.DataFrame,
                             stddev_df: pd.DataFrame,
-                            col: str):
+                            col: str) -> None:
         """
         Plot the errorbars for a specific column in a dataframe.
         """
@@ -184,13 +180,13 @@ class StackedLineGraph:
                          data_df[col] + 2 * stddev_df[col].abs(),
                          alpha=0.50)
 
-    def _plot_legend(self, ax, model_legend: tp.List[str], ncols: int):
+    def _plot_legend(self, ax, model_legend: tp.List[str], ncols: int) -> None:
         # Should have ~3 entries per column, in order to maximize real estate on tightly
         # constrained papers.
 
         # If the legend is not specified, then we assume this is not a graph that will contain any
         # models.
-        if self.legend:
+        if self.legend is not None:
             legend = copy.deepcopy(self.legend)
             if model_legend:
                 legend.extend(model_legend)
@@ -210,7 +206,7 @@ class StackedLineGraph:
 
     def _read_stats(self) -> tp.Dict[str, pd.DataFrame]:
         dfs = {}
-        if self.stats == 'conf95':
+        if self.stats in ['conf95', 'all']:
             stddev_ipath = os.path.join(self.stats_root,
                                         self.input_stem + core.config.kStatsExtensions['stddev'])
             if core.utils.path_exists(stddev_ipath):

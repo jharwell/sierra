@@ -23,12 +23,14 @@ by hooking into the intra-experiment graph generation.
 import os
 import copy
 import re
+import typing as tp
 
 # 3rd party packages
 import pandas as pd
 
 # Project packages
 from core.variables.temporal_variance_parser import TemporalVarianceParser
+from core.variables.temporal_variance import TemporalVariance
 from core.variables.batch_criteria import BatchCriteria
 import core.perf_measures.vcs as vcs
 import core.utils
@@ -52,13 +54,15 @@ class FlexibilityPlotsCSVGenerator:
                       source of the performance waveforms to generate definitions for.
     """
 
-    def __init__(self, main_config: dict, cmdopts: dict) -> None:
+    def __init__(self,
+                 main_config: tp.Dict[str, tp.Any],
+                 cmdopts: tp.Dict[str, tp.Any]) -> None:
         self.cmdopts = copy.deepcopy(cmdopts)
         self.main_config = main_config
         self.perf_csv_col = main_config['perf']['intra_perf_col']
 
-    def __call__(self, batch_criteria: BatchCriteria):
-        tv_attr = TemporalVarianceParser()(batch_criteria.def_str)
+    def __call__(self, criteria: TemporalVariance) -> None:
+        tv_attr = TemporalVarianceParser()(criteria.def_str)
 
         res = re.search("exp[0-9]+", self.cmdopts['exp_output_root'])
         assert res is not None, "FATAL: Unexpected experiment output dir name '{0}'".format(
@@ -69,55 +73,47 @@ class FlexibilityPlotsCSVGenerator:
 
         adaptability = vcs.AdaptabilityCS(self.main_config,
                                           self.cmdopts,
-                                          batch_criteria,
-                                          core.config.kStatsExtensions['mean'],
-                                          0,
-                                          exp_num)
+                                          criteria)
         reactivity = vcs.ReactivityCS(self.main_config,
                                       self.cmdopts,
-                                      batch_criteria,
-                                      core.config.kStatsExtensions['mean'],
+                                      criteria,
                                       0,
                                       exp_num)
 
         expx_perf = vcs.DataFrames.expx_perf_df(self.cmdopts,
-                                                batch_criteria,
+                                                criteria,
                                                 None,
                                                 self.main_config['perf']['intra_perf_csv'],
                                                 exp_num)[self.perf_csv_col].values
 
         exp0_var = vcs.DataFrames.expx_var_df(self.cmdopts,
-                                              batch_criteria,
+                                              criteria,
                                               None,
-                                              self.main_config['perf']['tv_environment_csv'],
+                                              self.main_config['perf']['intra_tv_environment_csv'],
                                               0)[tv_attr['variance_csv_col']]
-        # exp0_var = (exp0_var - exp0_var.min()) / (exp0_var.max(0) - exp0_var.min())
 
         expx_var = vcs.DataFrames.expx_var_df(self.cmdopts,
-                                              batch_criteria,
+                                              criteria,
                                               None,
-                                              self.main_config['perf']['tv_environment_csv'],
+                                              self.main_config['perf']['intra_tv_environment_csv'],
                                               exp_num)[tv_attr['variance_csv_col']]
-        # expx_var = (expx_var - expx_var.min()) / (expx_var.max() - expx_var.min())
 
         expx_perf = vcs.DataFrames.expx_perf_df(self.cmdopts,
-                                                batch_criteria,
+                                                criteria,
                                                 None,
                                                 self.main_config['perf']['intra_perf_csv'],
                                                 exp_num)[self.perf_csv_col]
-        # expx_perf = (expx_perf - expx_perf.min()) / (expx_perf.max(0) - expx_perf.min())
 
         exp0_perf = vcs.DataFrames.expx_perf_df(self.cmdopts,
-                                                batch_criteria,
+                                                criteria,
                                                 None,
                                                 self.main_config['perf']['intra_perf_csv'],
                                                 0)[self.perf_csv_col]
-        # exp0_perf = (exp0_perf - exp0_perf.min()) / (exp0_perf.max(0) - exp0_perf.min())
 
         df = pd.DataFrame(
             {
                 'clock': vcs.DataFrames.expx_perf_df(self.cmdopts,
-                                                     batch_criteria,
+                                                     criteria,
                                                      None,
                                                      self.main_config['perf']['intra_perf_csv'],
                                                      exp_num)['clock'].values,
@@ -125,29 +121,11 @@ class FlexibilityPlotsCSVGenerator:
                 'expx_var': expx_var.values,
                 'exp0_perf': exp0_perf.values,
                 'exp0_var': exp0_var.values,
-                'ideal_reactivity': reactivity.calc_waveforms()[0][:, 1],
-                'ideal_adaptability': adaptability.calc_waveforms()[0][:, 1]
+                'ideal_reactivity': reactivity.waveforms_for_example_plots()[0][:, 1],
+                'ideal_adaptability': adaptability.waveforms_for_example_plots(0, exp_num)[0][:, 1]
             }
         )
         core.utils.pd_csv_write(df, os.path.join(stat_root, 'flexibility-plots.csv'), index=False)
-
-    def _comparable_exp_variance(self, var_df, tv_attr, perf_max, perf_min):
-        """
-        Return the applied variance for an experiment that is directly comparable to the performance
-        curves for the experiment via inversion. Not all curve similarity measures are scaling
-        invariant, so we need to scale the variance waveform to within the min/max bounds of the
-        performance curve we will be comparing against.
-        """
-        # The applied variance needs to be inverted in order to calculate curve similarity, because
-        # the applied variance is a penalty, and as the penalties go UP, performance goes DOWN. Not
-        # inverting the variance would therefore be unlikely to provide any correlation, and any it
-        # did provide would be ridiculously counter intuitive. Inversion makes it comparable to
-        # observed performance curves.
-        #
-        # So, invert the variance waveform by subtracting its y offset, reflecting it about the
-        # x-axis, and then re-adding the y offset.
-        #
-        return (perf_max - perf_min) * (var_df - var_df.min()) / (var_df.max() - var_df.min()) + perf_min
 
 
 class FlexibilityPlotsDefinitionsGenerator():
@@ -156,7 +134,7 @@ class FlexibilityPlotsDefinitionsGenerator():
     from a YAML file.
     """
 
-    def __call__(self):
+    def __call__(self) -> tp.List[tp.Dict[str, tp.Any]]:
         return [
             {'src_stem': 'flexibility-plots',
              'dest_stem': 'flexibility-plots-perf-curves',

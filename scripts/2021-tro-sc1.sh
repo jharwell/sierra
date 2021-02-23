@@ -47,31 +47,27 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 ################################################################################
 # Begin Experiments                                                            #
 ################################################################################
-OUTPUT_ROOT=$HOME/exp/sc1
-TIME_SHORT=time_setup.T10000
-# TIME_SHORT=time_setup.T1000
-TIME_LONG=time_setup.T200000N1000
+OUTPUT_ROOT=$HOME/exp/2021-tro-sc1
+TIME=time_setup.T20000
 
-CONTROLLERS_LIST=(d1.BITD_DPO)
+CONTROLLERS_LIST=(d0.CRW d0.DPO d1.BITD_DPO d2.BIRTD_DPO)
 TASKS=("scalability" "flexibility" "robustness_saa" "robustness_pd")
 CARDINALITY=C8
-NSIMS=12
+NSIMS=8
 
 SIERRA_BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT\
                   --template-input-file=$SIERRA_ROOT/templates/2021-tro-sc1.argos \
                   --n-sims=$NSIMS\
-                  --pipeline 1 2 3 4 \
-                  --exp-graphs=inter\
+                  --pipeline 1 2 3 4\
+                  --exp-graphs=inter --project-no-yaml-LN\
                   --project=fordyca\
-                  --dist-stats=none\
+                  --dist-stats=all\
                   --with-robot-leds \
                   --exp-overwrite\
-                  --project-rendering --project-imagizing --serial-processing\
-                  --exp-graphs=none\
                   --models-disable\
-                  --log-level=DEBUG\
-                  --exp-range=7:7
+                  --log-level=DEBUG
+                  --no-verify-results
                   "
 
 if [ -n "$MSIARCH" ] # Running on MSI
@@ -94,10 +90,8 @@ else
 
     SIERRA_CMD="$SIERRA_BASE_CMD\
                   --hpc-env=local\
-                  --physics-n-engines=1\
-                  --no-verify-results\
-                  --plot-large-text\
-                  --plot-log-xscale"
+                  --physics-n-engines=2
+                  "
 fi
 
 cd $SIERRA_ROOT
@@ -107,25 +101,17 @@ if [ "$TASK" == "scalability" ] || [ "$TASK" == "emergence" ] || [ "$TASK" == "a
 then
     for c in "${CONTROLLERS[@]}"
     do
-        # $SIERRA_CMD --scenario=SS.32x16 \
-        #           --batch-criteria population_size.Log128 \
-        #           --controller=${c} \
-        #           --n-blocks=128\
-        #           --time-setup=${TIME_SHORT}
-
+        $SIERRA_CMD --scenario=SS.32x16 \
+                    --batch-criteria population_size.Log128 \
+                    --controller=${c} \
+                    --n-blocks=512\
+                    --time-setup=${TIME}
 
         $SIERRA_CMD --scenario=RN.48x48 \
-                  --batch-criteria population_size.Log512 \
-                  --controller=${c} \
-                  --n-blocks=512\
-                  --time-setup=${TIME_SHORT}
-
-        # $SIERRA_CMD --scenario=RN.96x96 \
-        #           --batch-criteria population_size.Log2048 \
-        #           --controller=${c} \
-        #           --n-blocks=2048\
-        #           --time-setup=${TIME_SHORT}
-
+                      --batch-criteria population_size.Log512 \
+                      --controller=${c} \
+                      --n-blocks=2048\
+                      --time-setup=${TIME}
     done
 fi
 
@@ -134,18 +120,17 @@ if [ "$TASK" == "flexibility" ] || [ "$TASK" == "all" ]
 then
     for c in "${CONTROLLERS[@]}"
     do
-        $SIERRA_CMD --scenario=SS.32x16 \
-                  --batch-criteria temporal_variance.BCSquare.Z50 \
-                  --controller=${c}\
-                  --n-blocks=50\
-                  --time-setup=${TIME_SHORT}
-
+        # $SIERRA_CMD --scenario=SS.32x16 \
+        #             --batch-criteria temporal_variance.BCSquare.Z50 \
+        #             --controller=${c}\
+        #             --n-blocks=200\
+        #             --time-setup=${TIME}
 
         $SIERRA_CMD --scenario=RN.48x48 \
-                  --batch-criteria temporal_variance.BCSquare.Z200\
-                  --controller=${c} \
-                  --n-blocks=200\
-                  --time-setup=${TIME_SHORT}
+                      --batch-criteria temporal_variance.BCSquare.Z200\
+                      --controller=${c} \
+                      --n-blocks=800\
+                      --time-setup=${TIME}
 
     done
 fi
@@ -155,23 +140,21 @@ if [ "$TASK" == "robustness_saa" ] || [ "$TASK" == "all" ]
 then
     for c in "${CONTROLLERS[@]}"
     do
-        # Steady state population of 5 when total swarm size is 50 (repair queue
-        # steady state of 45)
-        # rho = 45/46
 
         $SIERRA_CMD --scenario=SS.32x16 \
-                  --batch-criteria population_dynamics.${CARDINALITY}.F2p0.M0p001.R0p001022222\
-                  --controller=${c} \
-                  --n-blocks=50\
-                  --n-robots=50\
-                  --time-setup=${TIME_LONG}
+                    --batch-criteria saa_noise.all.${CARDINALITY}.Z50\
+                    --controller=${c} \
+                    --n-blocks=200\
+                    --n-robots=50\
+                    --time-setup=${TIME}
 
-        $SIERRA_CMD --scenario=SS.32x16 \
-                  --batch-criteria saa_noise.all.${CARDINALITY}.Z50\
-                  --controller=${c} \
-                  --n-blocks=50\
-                  --n-robots=50\
-                  --time-setup=${TIME_SHORT}
+        $SIERRA_CMD --scenario=RN.48x48 \
+                    --batch-criteria saa_noise.all.${CARDINALITY}.Z200\
+                    --controller=${c} \
+                    --n-blocks=800\
+                    --n-robots=200\
+                    --time-setup=${TIME}
+
     done
 fi
 
@@ -179,22 +162,26 @@ if [ "$TASK" == "robustness_pd" ] || [ "$TASK" == "all" ]
 then
     for c in "${CONTROLLERS[@]}"
     do
+        # Steady state population of 5 when total swarm size is 50 (repair queue
+        # steady state of 45)
+        # rho = 45/46
+        $SIERRA_CMD --scenario=SS.32x16 \
+                    --batch-criteria population_dynamics.${CARDINALITY}.F1p0.M0p001.R0p001022222\
+                    --controller=${c} \
+                    --n-blocks=200\
+                    --n-robots=50\
+                    --time-setup=${TIME}
+
         # Steady state population of 20 when total swarm size is 200 (repair queue
         # steady state of 180)
         # rho = 180 / 181
         $SIERRA_CMD --scenario=RN.48x48 \
-                  --batch-criteria population_dynamics.${CARDINALITY}.F2p0.M0p001.R0p001005556 \
-                  --controller=${c} \
-                  --n-blocks=200\
-                  --n-robots=200\
-                  --time-setup=${TIME_LONG}
+                    --batch-criteria population_dynamics.${CARDINALITY}.F1p0.M0p001.R0p001005556 \
+                    --controller=${c} \
+                    --n-blocks=800\
+                    --n-robots=200\
+                    --time-setup=${TIME}
 
-        $SIERRA_CMD --scenario=RN.48x48 \
-                  --batch-criteria saa_noise.all.${CARDINALITY}.Z200\
-                  --controller=${c} \
-                  --n-blocks=200\
-                  --n-robots=200\
-                  --time-setup=${TIME_SHORT}
     done
 fi
 
@@ -203,81 +190,50 @@ then
     STAGE5_CMD="python3 sierra.py \
                   --project=fordyca\
                   --pipeline 5\
+                  --controller-comparison\
+                  --plot-large-text\
+                  --plot-log-xscale\
+                  --dist-stats=conf95\
+                  --bc-univar\
                   --sierra-root=$OUTPUT_ROOT"
 
     # Generate scalability/emergence comparison graphs
     $STAGE5_CMD --batch-criteria population_size.Log128 \
-                --bc-univar\
-                --plot-log-xaxis\
-                --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
-                --controllers-legend CRW,DPO,STOCHM,STOCHX
-
-    $STAGE5_CMD --batch-criteria population_size.Log128 \
-                --bc-univar\
-                --plot-log-xaxis\
-                --controllers-list d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
-                --controllers-legend DPO,STOCHM,STOCHX
+                    --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
+                    --controllers-legend CRW,DPO,STOCHM,STOCHX
 
     $STAGE5_CMD --batch-criteria population_size.Log512 \
-                --bc-univar\
-                --plot-log-xaxis\
-                --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
-                --controllers-legend CRW,DPO,STOCHM,STOCHX
-
-    $STAGE5_CMD --batch-criteria population_size.Log512 \
-                --bc-univar\
-                --plot-log-xaxis\
-                --controllers-list d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
-                --controllers-legend DPO,STOCHM,STOCHX
+                    --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
+                    --controllers-legend CRW,DPO,STOCHM,STOCHX
 
     $STAGE5_CMD --scenario=RN.96x96 \
-                --batch-criteria population_size.Log2048 \
-                --bc-univar\
-                --plot-log-xaxis\
-                --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
-                --controllers-legend CRW,DPO,STOCHM,STOCHX
+                    --batch-criteria population_size.Log2048 \
+                    --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
+                    --controllers-legend CRW,DPO,STOCHM,STOCHX
 
     # Generate flexibility comparison graphs
     $STAGE5_CMD --batch-criteria temporal_variance.BCSquare.Z200\
-                --bc-univar\
-                --bc-undefined-exp0\
-                --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
-                --controllers-legend CRW,DPO,STOCHM,STOCHX
+                    --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
+                    --controllers-legend CRW,DPO,STOCHM,STOCHX
 
     $STAGE5_CMD --batch-criteria temporal_variance.BCSquare.Z50\
-                --bc-univar\
-                --bc-undefined-exp0\
-                --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
-                --controllers-legend CRW,DPO,STOCHM,STOCHX
+                    --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
+                    --controllers-legend CRW,DPO,STOCHM,STOCHX
 
     # Generate robustness comparison graphs
-    $STAGE5_CMD --batch-criteria population_dynamics.${CARDINALITY}.F2p0.M0p001.R0p001022222\
-                --bc-univar\
+    $STAGE5_CMD --batch-criteria population_dynamics.${CARDINALITY}.F1p0.M0p001.R0p001022222\
                 --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
                 --controllers-legend CRW,DPO,STOCHM,STOCHX
-
-    $STAGE5_CMD --batch-criteria population_dynamics.${CARDINALITY}.F2p0.M0p001.R0p001022222\
-                --bc-univar\
-                --controllers-list d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
-                --controllers-legend DPO,STOCHM,STOCHX
 
     $STAGE5_CMD --batch-criteria saa_noise.all.${CARDINALITY}.Z50\
-                --bc-univar\
                 --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
                 --controllers-legend CRW,DPO,STOCHM,STOCHX
 
-    $STAGE5_CMD --batch-criteria population_dynamics.${CARDINALITY}.F2p0.M0p001.R0p001005556 \
-                --bc-univar\
+    $STAGE5_CMD --batch-criteria population_dynamics.${CARDINALITY}.F1p0.M0p001.R0p001005556 \
                 --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
                 --controllers-legend CRW,DPO,STOCHM,STOCHX
-
-    $STAGE5_CMD --batch-criteria population_dynamics.${CARDINALITY}.F2p0.M0p001.R0p001005556 \
-                --bc-univar\
-                --controllers-list d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
-                --controllers-legend DPO,STOCHM,STOCHX
 
     $STAGE5_CMD --batch-criteria saa_noise.all.${CARDINALITY}.Z200\
-                --bc-univar\
                 --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
                 --controllers-legend CRW,DPO,STOCHM,STOCHX
 

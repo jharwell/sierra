@@ -14,11 +14,16 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
+# Core packages
 import os
 import re
 import logging
+import typing as tp
+
+# 3rd party packages
 import yaml
 
+# Project packages
 from core.xml_luigi import XMLLuigi
 from core.experiment_spec import ExperimentSpec
 
@@ -43,7 +48,9 @@ def joint_generator_create(controller, scenario):
                             generate})()
 
 
-def scenario_generator_create(spec: ExperimentSpec, controller, **kwargs):
+def scenario_generator_create(spec: ExperimentSpec,
+                              controller,
+                              **kwargs):
     """
     Creates a scenario generator using arbitrary arena dimensions and with an arbitrary
     controller.
@@ -76,7 +83,9 @@ def scenario_generator_create(spec: ExperimentSpec, controller, **kwargs):
                             })(**kwargs)
 
 
-def controller_generator_create(controller, config_root, cmdopts):
+def controller_generator_create(controller: str,
+                                config_root: str,
+                                cmdopts: tp.Dict[str, tp.Any]):
     """
     Creates a controller generator from the cmdline specification that exists in one of
     the configuration files.

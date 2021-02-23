@@ -26,7 +26,8 @@ import implements
 
 # Project packages
 from core.variables.base_variable import IBaseVariable
-from core.xml_luigi import XMLAttrChangeSet, XMLAttrChange, XMLTagRmList, XMLTagAddList
+from core.xml_luigi import XMLAttrChangeSet, XMLAttrChange, XMLTagRmList, XMLTagAddList, XMLLuigi
+
 
 kTICKS_PER_SECOND = 5
 """
@@ -55,7 +56,7 @@ class ARGoSTimeSetup():
         duration: The simulation duration in seconds, NOT timesteps.
     """
     @staticmethod
-    def extract_explen(exp_def):
+    def extract_explen(exp_def: XMLAttrChangeSet) -> tp.Optional[int]:
         """
         Extract and return the (experiment length in seconds) for the specified
         experiment.
@@ -67,7 +68,7 @@ class ARGoSTimeSetup():
 
     def __init__(self, duration: int) -> None:
         self.duration = duration
-        self.attr_changes = []  # type: tp.List
+        self.attr_changes = []  # type: tp.List[XMLAttrChangeSet]
 
     def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         if not self.attr_changes:
@@ -100,7 +101,7 @@ class Parser():
         return ret
 
     @staticmethod
-    def duration_parse(time_str: str) -> dict:
+    def duration_parse(time_str: str) -> tp.Dict[str, int]:
         """
         Parse the simulation duration.
         """
@@ -113,7 +114,7 @@ class Parser():
         return ret
 
     @staticmethod
-    def n_datapoints_parse(time_str: str) -> dict:
+    def n_datapoints_parse(time_str: str) -> tp.Dict[str, int]:
         """
         Parse the  # datapoints that will be present in each .csv.
         """
@@ -125,7 +126,7 @@ class Parser():
         return ret
 
 
-def factory(cmdline: str):
+def factory(cmdline: str) -> ARGoSTimeSetup:
     """
     Factory to create :class:`ARGoSTimeSetup` derived classes from the command line definition.
 
@@ -135,12 +136,12 @@ def factory(cmdline: str):
     name = cmdline.split(".")[1]
     attr = Parser()(name)
 
-    def __init__(self) -> None:
+    def __init__(self: ARGoSTimeSetup) -> None:
         ARGoSTimeSetup.__init__(self, attr["duration"])
 
-    return type(name,  # type: ignore
+    return type(name,
                 (ARGoSTimeSetup,),
-                {"__init__": __init__})
+                {"__init__": __init__})  # type: ignore
 
 
 __api__ = [

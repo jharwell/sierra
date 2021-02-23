@@ -13,6 +13,8 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
+import typing as tp
+import argparse
 
 
 class ControllerGeneratorParser:
@@ -28,8 +30,8 @@ class ControllerGeneratorParser:
       that case, None is returned.
     """
 
-    def __call__(self, args):
+    def __call__(self, args: argparse.Namespace) -> tp.Optional[str]:
         if args.controller is None:
             return None
 
-        return args.controller
+        return args.controller  # type: ignore

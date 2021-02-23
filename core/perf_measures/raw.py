@@ -21,8 +21,8 @@ measure in univariate and bivariate batched experiments.
 """
 # Core packages
 import os
-import copy
 import logging
+import typing as tp
 
 # 3rd party packages
 import pandas as pd
@@ -34,47 +34,55 @@ import core.perf_measures as pm
 import core.variables.batch_criteria as bc
 import core.utils
 import core.config
+import core.stat_kernels
+import core.perf_measures.common as pmcommon
 
 
-class RawUnivar:
+class BaseSteadyStateRaw:
+    kLeaf = 'PM-ss-raw'
+
+    @staticmethod
+    def df_kernel(collated: tp.Dict[str, pd.DataFrame]) -> tp.Dict[str, pd.DataFrame]:
+
+        dfs = {}
+        for exp in collated.keys():
+            dfs[exp] = pd.DataFrame(columns=collated[exp].columns,
+                                    index=[0])  # Steady state
+
+            for col in collated[exp].columns:
+                dfs[exp][col] = collated[exp].loc[collated[exp].index[-1], col]
+
+        return dfs
+
+
+class SteadyStateRawUnivar(BaseSteadyStateRaw):
     """
-    Generates a :class:`~core.graphs.stacked_line_graph.StackedLineGraph` from the cumulative raw
+    Generates a :class:`~core.graphs.summary_line_graph.SummaryLineGraph` from the raw
     performance count of the swarm configuration across a univariate batched set of experiments
     within the same scenario from collated ``.csv`` data.
 
     """
-    kLeaf = 'PM-raw'
 
-    @staticmethod
-    def df_kernel(df_t: pd.DataFrame) -> pd.DataFrame:
-        df = pd.DataFrame(columns=df_t.columns, index=[0])
-        for col in df_t:
-            df[col] = df_t.loc[df_t.index[-1], col]
-
-        return df
-
-    def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
-        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
-        # are generated after us
-        self.cmdopts = copy.deepcopy(cmdopts)
-        self.inter_perf_leaf = inter_perf_csv.split('.')[0]
+    def __init__(self, cmdopts: tp.Dict[str, tp.Any], perf_csv: str, perf_col: str) -> None:
+        self.cmdopts = cmdopts
+        self.perf_leaf = perf_csv.split('.')[0]
+        self.perf_col = perf_col
         self.logger = logging.getLogger(__name__)
 
-    def from_batch(self, criteria: bc.IConcreteBatchCriteria, title: str, ylabel: str):
+    def from_batch(self, criteria: bc.IConcreteBatchCriteria, title: str, ylabel: str) -> None:
         self.logger.info("From %s", self.cmdopts["batch_stat_collate_root"])
 
-        perf_ipath = os.path.join(
-            self.cmdopts["batch_stat_collate_root"], self.inter_perf_leaf + '.csv')
-        perf_opath = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf + '.csv')
         img_opath = os.path.join(self.cmdopts["batch_graph_collate_root"],
                                  self.kLeaf + core.config.kImageExt)
 
-        # We always calculate the metric from experimental data
-        df = self.df_kernel(core.utils.pd_csv_read(perf_ipath))
-        core.utils.pd_csv_write(df, perf_opath, index=False)
+        dfs = pmcommon.gather_collated_sim_dfs(self.cmdopts,
+                                               criteria,
+                                               self.perf_leaf,
+                                               self.perf_col)
+        pm_dfs = self.df_kernel(dfs)
 
-        # We might calculate the metric from experiment statistics
-        _stats_prepare(self.cmdopts, self.inter_perf_leaf, self.kLeaf, self.df_kernel)
+        # Calculate summary statistics for the performance measure
+        pmcommon.univar_distribution_prepare(self.cmdopts, criteria, self.kLeaf, pm_dfs, False)
 
         SummaryLinegraph(stats_root=self.cmdopts['batch_stat_collate_root'],
                          input_stem=self.kLeaf,
@@ -88,65 +96,40 @@ class RawUnivar:
                          logyscale=self.cmdopts['plot_log_yscale'],
                          large_text=self.cmdopts['plot_large_text']).generate()
 
-    def _stats_prepare(self) -> None:
-        for k in core.config.kStatsExtensions.keys():
-            stat_ipath = os.path.join(self.cmdopts["batch_stat_collate_root"],
-                                      self.inter_perf_leaf + core.config.kStatsExtensions[k])
-            stat_opath = os.path.join(self.cmdopts["batch_stat_collate_root"],
-                                      self.kLeaf + core.config.kStatsExtensions[k])
-            if core.utils.path_exists(stat_ipath):
-                stat_df = self.df_kernel(core.utils.pd_csv_read(stat_ipath))
-                core.utils.pd_csv_write(stat_df, stat_opath, index=False)
 
-
-class RawBivar:
+class SteadyStateRawBivar(BaseSteadyStateRaw):
     """
-    Generates a :class:`core.graphs.heatmap.Heatmap` from the cumulative raw performance count of
-    the swarm configuration across a bivariate batched set of experiments within the same scenario
-    from collated ``.csv`` data.
+    Generates a :class:`core.graphs.heatmap.Heatmap` from the raw performance count of the swarm
+    configuration across a bivariate batched set of experiments within the same scenario from
+    collated ``.csv`` data.
 
     """
-    kLeaf = 'PM-raw'
 
-    @staticmethod
-    def df_kernel(df_t: pd.DataFrame) -> pd.DataFrame:
-        df = pd.DataFrame(columns=df_t.columns, index=df_t.index)
-
-        for i in range(0, len(df_t.index)):
-            for j in range(0, len(df_t.columns)):
-                df.iloc[i, j] = pm.common.csv_3D_value_iloc(df_t,
-                                                            i,
-                                                            j,
-                                                            slice(-1, None))
-
-        return df
-
-    def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
-        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
-        # are generated after us
-        self.cmdopts = copy.deepcopy(cmdopts)
-        self.inter_perf_leaf = inter_perf_csv.split('.')[0]
+    def __init__(self, cmdopts: tp.Dict[str, tp.Any], perf_csv: str, perf_col: str) -> None:
+        self.cmdopts = cmdopts
+        self.perf_leaf = perf_csv.split('.')[0]
+        self.perf_col = perf_col
         self.logger = logging.getLogger(__name__)
 
-    def from_batch(self, criteria: bc.IConcreteBatchCriteria, title: str):
+    def from_batch(self, criteria: bc.IConcreteBatchCriteria, title: str) -> None:
         self.logger.info("From %s", self.cmdopts["batch_stat_collate_root"])
 
-        perf_ipath = os.path.join(self.cmdopts["batch_stat_collate_root"],
-                                  self.inter_perf_leaf + core.config.kStatsExtensions['mean'])
-        perf_opath = os.path.join(self.cmdopts["batch_graph_collate_root"],
+        img_opath = os.path.join(self.cmdopts["batch_graph_collate_root"],
+                                 self.kLeaf + core.config.kImageExt)
+
+        dfs = pmcommon.gather_collated_sim_dfs(
+            self.cmdopts, criteria, self.perf_leaf, self.perf_col)
+        pm_dfs = self.df_kernel(dfs)
+
+        # Calculate summary statistics for the performance measure
+        pmcommon.bivar_distribution_prepare(self.cmdopts, criteria, self.kLeaf, pm_dfs, False)
+
+        stat_opath = os.path.join(self.cmdopts["batch_stat_collate_root"],
                                   self.kLeaf + core.config.kStatsExtensions['mean'])
         img_opath = os.path.join(self.cmdopts["batch_graph_collate_root"],
                                  self.kLeaf + core.config.kImageExt)
 
-        # We always calculate the metric from experimental data
-        df = self.df_kernel(core.utils.pd_csv_read(perf_ipath))
-
-        core.utils.pd_csv_write(df, perf_opath, index=False)
-
-        # We might calculate the metric from experiment statistics
-        _stats_prepare(self.cmdopts, self.inter_perf_leaf, self.kLeaf, self.df_kernel)
-
-        Heatmap(input_fpath=perf_opath,
+        Heatmap(input_fpath=stat_opath,
                 output_fpath=img_opath,
                 title=title,
                 xlabel=criteria.graph_xlabel(self.cmdopts),
@@ -155,23 +138,7 @@ class RawBivar:
                 ytick_labels=criteria.graph_yticklabels(self.cmdopts)).generate()
 
 
-def _stats_prepare(cmdopts: dict,
-                   inter_perf_ileaf: str,
-                   oleaf: str,
-                   kernel) -> None:
-
-    for k in core.config.kStatsExtensions.keys():
-        stat_ipath = os.path.join(cmdopts["batch_stat_collate_root"],
-                                  inter_perf_ileaf + core.config.kStatsExtensions[k])
-        stat_opath = os.path.join(cmdopts["batch_stat_collate_root"],
-                                  oleaf + core.config.kStatsExtensions[k])
-
-        if core.utils.path_exists(stat_ipath):
-            stat_df = kernel(core.utils.pd_csv_read(stat_ipath))
-            core.utils.pd_csv_write(stat_df, stat_opath, index=False)
-
-
 __api__ = [
-    'RawUnivar',
-    'RawBivar'
+    'SteadyStateRawUnivar',
+    'SteadyStateRawBivar'
 ]

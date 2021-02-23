@@ -30,6 +30,8 @@ Container module for the 5 pipeline stages implemented by SIERRA:
 # Core packages
 import os
 import logging
+import argparse
+import typing as tp
 
 # 3rd party packages
 import yaml
@@ -47,7 +49,10 @@ from core.pipeline.stage5.pipeline_stage5 import PipelineStage5
 class Pipeline:
     "Implements SIERRA's 5 stage pipeline."
 
-    def __init__(self, args, controller, cmdopts) -> None:
+    def __init__(self,
+                 args: argparse.Namespace,
+                 controller: str,
+                 cmdopts: tp.Dict[str, tp.Any]) -> None:
         self.args = args
         self.logger = logging.getLogger(__name__)
         self.cmdopts = {
@@ -65,7 +70,8 @@ class Pipeline:
             'exp_overwrite': self.args.exp_overwrite,
             'exp_range': self.args.exp_range,
             'dist_stats': self.args.dist_stats,
-            'serial_processing': self.args.serial_processing,
+            'no_collate': self.args.no_collate,
+
 
             # stage 1
             'time_setup': self.args.time_setup,
@@ -88,6 +94,8 @@ class Pipeline:
             # stage 3
             'no_verify_results': self.args.no_verify_results,
             'render_cmd_opts': self.args.render_cmd_opts,
+            'processing_mem_limit': self.args.processing_mem_limit,
+            'serial_processing': self.args.serial_processing,
 
             # stage 4
             'envc_cs_method': self.args.envc_cs_method,
@@ -96,7 +104,6 @@ class Pipeline:
             'adaptability_cs_method': self.args.adaptability_cs_method,
             'rperf_cs_method': self.args.rperf_cs_method,
             'exp_graphs': self.args.exp_graphs,
-            'no_collate': self.args.no_collate,
 
             'project_no_yaml_LN': self.args.project_no_yaml_LN,
             'project_no_yaml_HM': self.args.project_no_yaml_HM,
@@ -158,7 +165,7 @@ class Pipeline:
 
         self.controller = controller
 
-    def run(self):
+    def run(self) -> None:
         """
         Run pipeline stages as configured.
         """
@@ -168,13 +175,11 @@ class Pipeline:
                            self.cmdopts).run()
 
         if 2 in self.args.pipeline:
-            PipelineStage2().run(self.cmdopts,
-                                 self.batch_criteria)
+            PipelineStage2(self.cmdopts).run(self.batch_criteria)
 
         if 3 in self.args.pipeline:
-            PipelineStage3().run(self.main_config,
-                                 self.cmdopts,
-                                 self.batch_criteria)
+            PipelineStage3(self.main_config,
+                           self.cmdopts).run(self.batch_criteria)
 
         if 4 in self.args.pipeline:
             PipelineStage4(self.main_config,

@@ -19,6 +19,7 @@ computers you happen to have laying around in the lab).
 """
 import os
 import math
+import typing as tp
 
 
 def env_configure(args):
@@ -41,7 +42,6 @@ def env_configure(args):
         lines = f.readlines()
         n_nodes = len(lines)
 
-        ppn = math.inf
         for line in lines:
             ppn = min(ppn, int(line.split('/')[0]))
 
@@ -89,5 +89,5 @@ def gnu_parallel_cmd_generate(parallel_opts: dict):
             parallel_opts['cmdfile_path'])
 
 
-def xvfb_cmd_generate(cmdopts: dict):
+def xvfb_cmd_generate(cmdopts: tp.Dict[str, tp.Any]):
     return ''

@@ -17,18 +17,22 @@
 Classes and functions for computing the similarity between various temporal curves.
 """
 
+# Core packages
 import os
 import typing as tp
 import logging
 
+# 3rd party packages
 import fastdtw
 import pandas as pd
 import numpy as np
 import similaritymeasures as sm
 
+# Project packages
 import core.utils
-from core.variables.batch_criteria import BatchCriteria
+import core.variables.batch_criteria as bc
 from core.variables.temporal_variance_parser import TemporalVarianceParser
+from core.variables.temporal_variance import TemporalVariance
 
 
 def method_xlabel(method: str) -> str:
@@ -45,7 +49,7 @@ def method_xlabel(method: str) -> str:
     return labels[method]
 
 
-def method_ylabel(method: str, arg) -> str:
+def method_ylabel(method: str, arg: tp.Any) -> str:
     """
     Return the Y-label of the method used for calculating the curve similarity.
 
@@ -80,25 +84,25 @@ class EnvironmentalCS():
     """
 
     def __init__(self,
-                 main_config: dict,
-                 cmdopts: dict,
+                 main_config: tp.Dict[str, tp.Any],
+                 cmdopts: tp.Dict[str, tp.Any],
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
         self.exp_num = exp_num
         self.main_config = main_config
 
     def __call__(self,
-                 criteria: BatchCriteria,
-                 exp_dirs: tp.List[str] = None) -> float:
+                 criteria: TemporalVariance,
+                 exp_dirs: tp.Optional[tp.List[str]] = None) -> float:
         ideal_var_df = DataFrames.expx_var_df(self.cmdopts,
                                               criteria,
                                               exp_dirs,
-                                              self.main_config['perf']['tv_environment_csv'],
+                                              self.main_config['perf']['intra_tv_environment_csv'],
                                               0)
         expx_var_df = DataFrames.expx_var_df(self.cmdopts,
                                              criteria,
                                              exp_dirs,
-                                             self.main_config['perf']['tv_environment_csv'],
+                                             self.main_config['perf']['intra_tv_environment_csv'],
                                              self.exp_num)
 
         attr = TemporalVarianceParser()(criteria.cli_arg)
@@ -128,37 +132,21 @@ class RawPerfCS():
     """
 
     def __init__(self,
-                 main_config: dict,
-                 cmdopts: dict,
-                 ideal_num: int,
-                 exp_num: int) -> None:
+                 main_config: tp.Dict[str, tp.Any],
+                 cmdopts: tp.Dict[str, tp.Any]) -> None:
         self.cmdopts = cmdopts
-        self.ideal_num = ideal_num
-        self.exp_num = exp_num
         self.main_config = main_config
 
-    def __call__(self, criteria: BatchCriteria, exp_dirs: tp.List[str] = None) -> float:
-        ideal_perf_df = DataFrames.expx_perf_df(self.cmdopts,
-                                                criteria,
-                                                exp_dirs,
-                                                self.main_config['perf']['intra_perf_csv'],
-                                                self.ideal_num)
-        expx_perf_df = DataFrames.expx_perf_df(self.cmdopts,
-                                               criteria,
-                                               exp_dirs,
-                                               self.main_config['perf']['intra_perf_csv'],
-                                               self.exp_num)
+    def from_batch(self, ideal_perf_df: pd.DataFrame, expx_perf_df: pd.DataFrame) -> float:
 
-        intra_perf_col = self.main_config['perf']['intra_perf_col']
-
-        xlen = len(expx_perf_df[intra_perf_col].values)
+        xlen = len(expx_perf_df.index)
         exp_data = np.zeros((xlen, 2))
-        exp_data[:, 0] = expx_perf_df["clock"].values
-        exp_data[:, 1] = expx_perf_df[intra_perf_col].values
+        exp_data[:, 0] = expx_perf_df.index
+        exp_data[:, 1] = expx_perf_df.values
 
         ideal_data = np.zeros((xlen, 2))
-        ideal_data[:, 0] = ideal_perf_df["clock"].values
-        ideal_data[:, 1] = ideal_perf_df[intra_perf_col].values
+        ideal_data[:, 0] = ideal_perf_df.index
+        ideal_data[:, 1] = ideal_perf_df.values
 
         return CSRaw()(exp_data=exp_data,
                        ideal_data=ideal_data,
@@ -186,72 +174,100 @@ class AdaptabilityCS():
     """
 
     def __init__(self,
-                 main_config: dict,
-                 cmdopts: dict,
-                 criteria: BatchCriteria,
-                 stat_ext: str,
-                 ideal_num: int,
-                 exp_num: int) -> None:
+                 main_config: tp.Dict[str, tp.Any],
+                 cmdopts: tp.Dict[str, tp.Any],
+                 criteria: TemporalVariance) -> None:
         self.cmdopts = cmdopts
         self.criteria = criteria
-        self.stat_ext = stat_ext
-        self.exp_num = exp_num
-        self.ideal_num = ideal_num
         self.main_config = main_config
 
         self.perf_csv_col = main_config['perf']['intra_perf_col']
         self.var_csv_col = TemporalVarianceParser()(self.criteria.cli_arg)['variance_csv_col']
+        self.perf_leaf = self.main_config['perf']['intra_perf_csv'].split('.')[0]
+        self.tv_env_leaf = self.main_config['perf']['intra_tv_environment_csv'].split('.')[0]
 
-    def calc_waveforms(self, exp_dirs: tp.List[str] = None):
-        """
-        Calculates the (ideal performance, experimental performance) comparable waveforms for the
-        experiment. Returns NP arrays rather than dataframes, because that is what the curve
-        similarity measure calculator needs as input.
-        """
-        intra_perf_leaf = self.main_config['perf']['intra_perf_csv'].split('.')[0]
-        tv_env_leaf = self.main_config['perf']['tv_environment_csv'].split('.')[0]
-
-        ideal_perf_df = DataFrames.expx_perf_df(self.cmdopts,
-                                                self.criteria,
-                                                exp_dirs,
-                                                intra_perf_leaf + self.stat_ext,
-                                                self.ideal_num)
-        ideal_var_df = DataFrames.expx_var_df(self.cmdopts,
-                                              self.criteria,
-                                              exp_dirs,
-                                              tv_env_leaf + '.csv',
-                                              self.ideal_num)
-        expx_perf_df = DataFrames.expx_perf_df(self.cmdopts,
-                                               self.criteria,
-                                               exp_dirs,
-                                               intra_perf_leaf + self.stat_ext,
-                                               self.exp_num)
-
-        ideal_df = pd.DataFrame(index=ideal_var_df.index, columns=[self.perf_csv_col])
-
-        # The performance curve of an adaptable system should resist all changes in the
-        # environment, and be the same as exp0
-        ideal_df[self.perf_csv_col] = ideal_perf_df[self.perf_csv_col]
-
-        xlen = len(ideal_var_df[self.var_csv_col].values)
-
-        exp_data = np.zeros((xlen, 2))
-        exp_data[:, 0] = expx_perf_df['clock'].values
-        exp_data[:, 1] = expx_perf_df[self.perf_csv_col].values
-
-        ideal_data = np.zeros((xlen, 2))
-        ideal_data[:, 0] = expx_perf_df['clock'].values
-        ideal_data[:, 1] = ideal_df[self.perf_csv_col].values
-        return ideal_data, exp_data
-
-    def __call__(self, exp_dirs: tp.List[str] = None) -> float:
-        ideal_data, exp_data = self.calc_waveforms(exp_dirs)
+    def from_batch(self,
+                   ideal_num: int,
+                   ideal_perf_df: pd.DataFrame,
+                   expx_perf_df: pd.DataFrame,
+                   exp_dirs: tp.Optional[tp.List[str]] = None) -> float:
+        ideal_data, exp_data = self._waveforms_from_batch(ideal_num,
+                                                          ideal_perf_df,
+                                                          expx_perf_df,
+                                                          exp_dirs)
 
         return CSRaw()(exp_data=exp_data,
                        ideal_data=ideal_data,
                        method=self.cmdopts["adaptability_cs_method"],
                        normalize=self.cmdopts['pm_flexibility_normalize'],
                        normalize_method=self.cmdopts['pm_normalize_method'])
+
+    def waveforms_for_example_plots(self,
+                                    ideal_num: int,
+                                    exp_num: int,
+                                    exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.Tuple[np.ndarray, np.ndarray]:
+        # This function was called for generating plots, and we can safely operate on averaged
+        # performance data.
+        ideal_perf_df = DataFrames.expx_perf_df(self.cmdopts,
+                                                self.criteria,
+                                                exp_dirs,
+                                                self.perf_leaf +
+                                                core.config.kStatsExtensions['mean'],
+                                                ideal_num)
+
+        expx_perf_df = DataFrames.expx_perf_df(self.cmdopts,
+                                               self.criteria,
+                                               exp_dirs,
+                                               self.perf_leaf +
+                                               core.config.kStatsExtensions['mean'],
+                                               exp_num)
+
+        return self._calc_waveforms(ideal_num, ideal_perf_df, expx_perf_df, exp_dirs)
+
+    def _waveforms_from_batch(self,
+                              ideal_num: int,
+                              ideal_perf_df: pd.DataFrame,
+                              expx_perf_df: pd.DataFrame,
+                              exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.Tuple[np.ndarray, np.ndarray]:
+
+        return self._calc_waveforms(ideal_num, ideal_perf_df, expx_perf_df, exp_dirs)
+
+    def _calc_waveforms(self,
+                        ideal_num: int,
+                        ideal_perf_df: pd.DataFrame,
+                        expx_perf_df: pd.DataFrame,
+                        exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.Tuple[np.ndarray, np.ndarray]:
+        """
+        Calculates the (ideal performance, experimental performance) comparable waveforms for the
+        experiment. Returns NP arrays rather than dataframes, because that is what the curve
+        similarity measure calculator needs as input.
+        """
+
+        # Variance can always be read from the averaged outputs, because the same variance was
+        # applied to all simulations.
+        ideal_var_df = DataFrames.expx_var_df(self.cmdopts,
+                                              self.criteria,
+                                              exp_dirs,
+                                              self.tv_env_leaf +
+                                              core.config.kStatsExtensions['mean'],
+                                              ideal_num)
+
+        ideal_df = pd.DataFrame(index=ideal_var_df.index, columns=[self.perf_csv_col])
+
+        # The performance curve of an adaptable system should resist all changes in the
+        # environment, and be the same as exp0
+        ideal_df = ideal_perf_df
+
+        xlen = len(ideal_var_df[self.var_csv_col].values)
+
+        exp_data = np.zeros((xlen, 2))
+        exp_data[:, 0] = ideal_var_df['clock'].values
+        exp_data[:, 1] = expx_perf_df.values
+
+        ideal_data = np.zeros((xlen, 2))
+        ideal_data[:, 0] = ideal_var_df['clock'].values
+        ideal_data[:, 1] = ideal_df.values
+        return ideal_data, exp_data
 
 
 class ReactivityCS():
@@ -272,24 +288,29 @@ class ReactivityCS():
     """
 
     def __init__(self,
-                 main_config: dict,
-                 cmdopts: dict,
-                 criteria: BatchCriteria,  # Must be TemporalVariance!
-                 stat_ext: str,
+                 main_config: tp.Dict[str, tp.Any],
+                 cmdopts: tp.Dict[str, tp.Any],
+                 criteria: TemporalVariance,
                  ideal_num: int,
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
         self.main_config = main_config
-
+        self.criteria = criteria
         self.ideal_num = ideal_num
         self.exp_num = exp_num
-        self.stat_ext = stat_ext
+
         self.perf_csv_col = self.main_config['perf']['intra_perf_col']
         self.var_csv_col = TemporalVarianceParser()(criteria.cli_arg)['variance_csv_col']
-        self.criteria = criteria
+        self.perf_leaf = self.main_config['perf']['intra_perf_csv'].split('.')[0]
+        self.tv_env_leaf = self.main_config['perf']['intra_tv_environment_csv'].split('.')[0]
 
-    def __call__(self, exp_dirs: tp.List[str] = None) -> float:
-        ideal_data, exp_data = self.calc_waveforms(exp_dirs)
+    def from_batch(self,
+                   ideal_perf_df: pd.DataFrame,
+                   expx_perf_df: pd.DataFrame,
+                   exp_dirs: tp.Optional[tp.List[str]] = None) -> float:
+        ideal_data, exp_data = self._waveforms_from_batch(ideal_perf_df,
+                                                          expx_perf_df,
+                                                          exp_dirs)
 
         return CSRaw()(exp_data=exp_data,
                        ideal_data=ideal_data,
@@ -297,34 +318,58 @@ class ReactivityCS():
                        normalize=self.cmdopts['pm_flexibility_normalize'],
                        normalize_method=self.cmdopts['pm_normalize_method'])
 
-    def calc_waveforms(self, exp_dirs: tp.List[str] = None):
+    def waveforms_for_example_plots(self,
+                                    exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.Tuple[np.ndarray, np.ndarray]:
+        # This function was called for generating plots, and we can safely operate on averaged
+        # performance data.
+        ideal_perf_df = DataFrames.expx_perf_df(self.cmdopts,
+                                                self.criteria,
+                                                exp_dirs,
+                                                self.perf_leaf +
+                                                core.config.kStatsExtensions['mean'],
+                                                self.ideal_num)
+
+        expx_perf_df = DataFrames.expx_perf_df(self.cmdopts,
+                                               self.criteria,
+                                               exp_dirs,
+                                               self.perf_leaf +
+                                               core.config.kStatsExtensions['mean'],
+                                               self.exp_num)
+
+        return self._calc_waveforms(ideal_perf_df[self.perf_csv_col],
+                                    expx_perf_df[self.perf_csv_col],
+                                    exp_dirs)
+
+    def _waveforms_from_batch(self,
+                              ideal_perf_df: pd.DataFrame,
+                              expx_perf_df: pd.DataFrame,
+                              exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.Tuple[np.ndarray, np.ndarray]:
+
+        return self._calc_waveforms(ideal_perf_df, expx_perf_df, exp_dirs)
+
+    def _calc_waveforms(self,
+                        ideal_perf_df: pd.DataFrame,
+                        expx_perf_df: pd.DataFrame,
+                        exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.Tuple[np.ndarray, np.ndarray]:
         """
         Calculates the (ideal performance, experimental performance) comparable waveforms for the
         experiment. Returns NP arrays rather than dataframes, because that is what the curve
         similarity measure calculator needs as input.
         """
-        intra_perf_leaf = self.main_config['perf']['intra_perf_csv'].split('.')[0]
-        tv_env_leaf = self.main_config['perf']['tv_environment_csv'].split('.')[0]
 
-        ideal_perf_df = DataFrames.expx_perf_df(self.cmdopts,
-                                                self.criteria,
-                                                exp_dirs,
-                                                intra_perf_leaf + self.stat_ext,
-                                                self.ideal_num)
+        # Variance can always be read from the averaged outputs, because the same variance was
+        # applied to all simulations.
         ideal_var_df = DataFrames.expx_var_df(self.cmdopts,
                                               self.criteria,
                                               exp_dirs,
-                                              tv_env_leaf + '.csv',
+                                              self.tv_env_leaf +
+                                              core.config.kStatsExtensions['mean'],
                                               self.ideal_num)
-        expx_perf_df = DataFrames.expx_perf_df(self.cmdopts,
-                                               self.criteria,
-                                               exp_dirs,
-                                               intra_perf_leaf + self.stat_ext,
-                                               self.exp_num)
         expx_var_df = DataFrames.expx_var_df(self.cmdopts,
                                              self.criteria,
                                              exp_dirs,
-                                             tv_env_leaf + '.csv',
+                                             self.tv_env_leaf +
+                                             core.config.kStatsExtensions['mean'],
                                              self.exp_num)
 
         ideal_df = pd.DataFrame(index=ideal_var_df.index, columns=[self.perf_csv_col])
@@ -337,26 +382,23 @@ class ReactivityCS():
         # observed to increase by an amount proportional to that difference, as the system reacts
         # the drop in penalties. Vice versa for an increase penalty in the experiment for a timestep
         # t vs. the amount imposed during the ideal conditions experiment.
-        for i in ideal_perf_df[self.perf_csv_col].index:
+        for i in ideal_perf_df.index:
             ideal_var = ideal_var_df.loc[i, self.var_csv_col]
             expx_var = expx_var_df.loc[i, self.var_csv_col]
-            ideal_perf = ideal_perf_df.loc[i, self.perf_csv_col]
+            ideal_perf = ideal_perf_df.iloc[i]
 
-            if expx_var > ideal_var:
-                scale_factor = 1.0 - abs(expx_var - ideal_var)
-            elif expx_var <= ideal_var:
-                scale_factor = 1.0 + abs(expx_var - ideal_var)
+            scale_factor = self.criteria.calc_reactivity_scaling(ideal_var, expx_var)
 
             ideal_df.loc[i, self.perf_csv_col] = ideal_perf * scale_factor
 
         xlen = len(ideal_var_df[self.var_csv_col].values)
         exp_data = np.zeros((xlen, 2))
-        exp_data[:, 0] = expx_perf_df['clock'].values
-        exp_data[:, 1] = expx_perf_df[self.perf_csv_col].values
+        exp_data[:, 0] = ideal_var_df['clock'].values
+        exp_data[:, 1] = expx_perf_df.iloc[:].values
 
         ideal_data = np.zeros((xlen, 2))
-        ideal_data[:, 0] = ideal_perf_df['clock'].values
-        ideal_data[:, 1] = ideal_df[self.perf_csv_col].values
+        ideal_data[:, 0] = ideal_var_df['clock'].values
+        ideal_data[:, 1] = ideal_df.loc[:, self.perf_csv_col].values
 
         return ideal_data, exp_data
 
@@ -368,32 +410,31 @@ class CSRaw():
     """
 
     def __call__(self,
-                 exp_data,
-                 ideal_data,
+                 exp_data: np.ndarray,
+                 ideal_data: np.ndarray,
                  method: str,
                  normalize: tp.Optional[bool] = False,
                  normalize_method: tp.Optional[str] = None) -> float:
         assert method is not None, "FATAL: Cannot compare curves without method"
 
         if method == "pcm":
-            return sm.pcm(exp_data, ideal_data)
+            return sm.pcm(exp_data, ideal_data)  # type: ignore
         elif method == "area_between":
-            return sm.area_between_two_curves(exp_data, ideal_data)
+            return sm.area_between_two_curves(exp_data, ideal_data)  # type: ignore
         elif method == "frechet":
-            return sm.frechet_dist(exp_data, ideal_data)
+            return sm.frechet_dist(exp_data, ideal_data)  # type: ignore
         elif method == "dtw":
-            return CSRaw.__calc_dtw(exp_data, ideal_data, normalize, normalize_method)
+            return CSRaw._calc_dtw(exp_data, ideal_data, normalize, normalize_method)
         elif method == "curve_length":
-            return sm.curve_length_measure(exp_data, ideal_data)
+            return sm.curve_length_measure(exp_data, ideal_data)  # type: ignore
         else:
             assert False, "Bad method {0}".format(method)
-            return None
 
     @staticmethod
-    def __calc_dtw(exp_data,
-                   ideal_data,
-                   normalize: tp.Optional[bool],
-                   normalize_method: tp.Optional[str]) -> float:
+    def _calc_dtw(exp_data,
+                  ideal_data,
+                  normalize: tp.Optional[bool],
+                  normalize_method: tp.Optional[str]) -> float:
         # Don't use the sm version--waaayyyy too slow
         dist, _ = fastdtw.fastdtw(exp_data, ideal_data)
 
@@ -401,8 +442,7 @@ class CSRaw():
             # You can't normalize [0,infinity) into [0,1], where HIGHER values now are better (even
             # if it is more intuitive this way), because the maxval can be different for different
             # controllers, resulting in apples to oranges comparisons in stage 5.
-            return dist
-
+            return dist  # type: ignore
         else:
             if normalize_method == 'sigmoid':
                 # Lower distance is better, so invert the usual sigmoid signs to normalize into
@@ -413,8 +453,8 @@ class CSRaw():
 
 class DataFrames:
     @staticmethod
-    def expx_var_df(cmdopts: dict,
-                    criteria: BatchCriteria,
+    def expx_var_df(cmdopts: tp.Dict[str, tp.Any],
+                    criteria: TemporalVariance,
                     exp_dirs: tp.Optional[tp.List[str]],
                     tv_environment_csv: str,
                     exp_num: int) -> pd.DataFrame:
@@ -434,8 +474,8 @@ class DataFrames:
                           exp_num)
 
     @staticmethod
-    def expx_perf_df(cmdopts: dict,
-                     criteria: BatchCriteria,
+    def expx_perf_df(cmdopts: tp.Dict[str, tp.Any],
+                     criteria: TemporalVariance,
                      exp_dirs: tp.Optional[tp.List[str]],
                      intra_perf_csv: str,
                      exp_num: int) -> pd.DataFrame:

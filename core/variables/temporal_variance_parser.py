@@ -20,6 +20,7 @@ is its own file due to an otherwise circular import dependence between it and ``
 """
 
 import re
+import typing as tp
 
 
 class TemporalVarianceParser():
@@ -29,7 +30,7 @@ class TemporalVarianceParser():
 
     """
 
-    def __call__(self, criteria_str: str) -> dict:
+    def __call__(self, criteria_str: str) -> tp.Dict[str, tp.Any]:
         """
         Returns:
             Dictionary with the following keys:

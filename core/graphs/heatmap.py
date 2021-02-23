@@ -49,10 +49,10 @@ class Heatmap:
                  xlabel: str,
                  ylabel: str,
                  large_text: bool = False,
-                 xtick_labels: tp.List[str] = None,
-                 ytick_labels: tp.List[str] = None,
+                 xtick_labels: tp.Optional[tp.List[str]] = None,
+                 ytick_labels: tp.Optional[tp.List[str]] = None,
                  transpose: bool = False,
-                 zlabel: str = None,
+                 zlabel: tp.Optional[str] = None,
                  interpolation: str = 'nearest') -> None:
         # Required arguments
         self.input_fpath = input_fpath
@@ -80,7 +80,7 @@ class Heatmap:
 
         self.logger = logging.getLogger(__name__)
 
-    def generate(self):
+    def generate(self) -> None:
         if not core.utils.path_exists(self.input_fpath):
             self.logger.debug("Not generating heatmap: %s does not exist", self.input_fpath)
             return
@@ -89,7 +89,7 @@ class Heatmap:
         data_df = core.utils.pd_csv_read(self.input_fpath)
         self._plot_df(data_df, self.output_fpath)
 
-    def _plot_df(self, df: pd.DataFrame, opath: str):
+    def _plot_df(self, df: pd.DataFrame, opath: str) -> None:
         fig, ax = plt.subplots(figsize=(core.config.kGraphBaseSize, core.config.kGraphBaseSize))
 
         # Transpose if requested
@@ -119,7 +119,7 @@ class Heatmap:
         fig.savefig(opath, bbox_inches='tight', dpi=core.config.kGraphDPI)
         plt.close(fig)  # Prevent memory accumulation (fig.clf() does not close everything)
 
-    def _set_graph_size(self, df: pd.DataFrame, fig):
+    def _set_graph_size(self, df: pd.DataFrame, fig) -> None:
         if len(df.index) > len(df.columns):
             xsize = core.config.kGraphBaseSize
             ysize = xsize * float(len(df.index)) / float(len(df.columns))
@@ -129,7 +129,7 @@ class Heatmap:
 
         fig.set_size_inches(xsize, ysize)
 
-    def _plot_colorbar(self, ax):
+    def _plot_colorbar(self, ax) -> None:
         divider = mpl_toolkits.axes_grid1.make_axes_locatable(ax)
         cax = divider.append_axes('right', size='5%', pad=0.05)
         bar = plt.colorbar(cax=cax)
@@ -137,7 +137,7 @@ class Heatmap:
         if self.zlabel is not None:
             bar.ax.set_ylabel(self.zlabel)
 
-    def _plot_ticks(self, ax):
+    def _plot_ticks(self, ax) -> None:
         ax.tick_params(labelsize=self.text_size['tick_label'])
 
         if self.xtick_labels is not None:
@@ -183,7 +183,7 @@ class DualHeatmap:
 
         self.logger = logging.getLogger(__name__)
 
-    def generate(self):
+    def generate(self) -> None:
         dfs = [core.utils.pd_csv_read(f) for f in glob.glob(
             self.input_stem_pattern + '*.csv') if re.search('_[0-9]+', f)]
 
@@ -247,7 +247,7 @@ class DualHeatmap:
         fig.savefig(self.output_fpath, bbox_inches='tight', dpi=core.config.kGraphDPI)
         plt.close(fig)  # Prevent memory accumulation (fig.clf() does not close everything)
 
-    def _plot_colorbar(self, fig, im, ax, remove: bool):
+    def _plot_colorbar(self, fig, im, ax, remove: bool) -> None:
         divider = mpl_toolkits.axes_grid1.make_axes_locatable(ax)
         cax = divider.append_axes('right', size='5%', pad=0.05)
 
@@ -263,7 +263,7 @@ class DualHeatmap:
         if self.zlabel is not None:
             bar.ax.set_ylabel(self.zlabel, fontsize=self.text_size['xyz_label'])
 
-    def _plot_ticks(self, ax, xvals, yvals, xlabels: bool, ylabels: bool):
+    def _plot_ticks(self, ax, xvals, yvals, xlabels: bool, ylabels: bool) -> None:
         """
         Plot ticks and tick labels. If the labels are numerical and the numbers are too large, force
         scientific notation (the ``rcParam`` way of doing this does not seem to work...)
@@ -284,7 +284,7 @@ class DualHeatmap:
             ax.set_yticks([])
             ax.set_yticklabels([])
 
-    def _plot_labels(self, ax, xlabel: bool, ylabel: bool):
+    def _plot_labels(self, ax, xlabel: bool, ylabel: bool) -> None:
         if xlabel:
             ax.set_xlabel(self.ylabel, fontsize=self.text_size['xyz_label'])
 
@@ -307,7 +307,7 @@ class HeatmapSet():
         self.titles = titles
         self.kwargs = kwargs
 
-    def generate(self):
+    def generate(self) -> None:
         for ipath, opath, title in zip(self.ipaths, self.opaths, self.titles):
             hm = Heatmap(input_fpath=ipath, output_fpath=opath, title=title, **self.kwargs)
             hm.generate()

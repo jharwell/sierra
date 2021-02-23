@@ -268,13 +268,23 @@ class CoreCmdline:
                                  """ + self.stage_usage_doc([3, 4]),
                                  action='store_true')
 
+        self.stage4.add_argument("--no-collate",
+                                 help="""
+
+                                 Specify that no collation of data across experiments within a batch (stage 4) or across
+                                 simulations within an experiment (stage 3) should be performed. Useful if collation
+                                 takes a long time and multiple types of stage 4 outputs are desired.
+
+                                 """ + self.stage_usage_doc([3, 4]),
+                                 action='store_true')
+
         self.init_stage1()
         self.init_stage2()
         self.init_stage3()
         self.init_stage4()
         self.init_stage5()
 
-    def init_stage1(self):
+    def init_stage1(self) -> None:
         """
         Define cmdline arguments for stage 1.
         """
@@ -462,7 +472,7 @@ class CoreCmdline:
                             type=int,
                             default=None)
 
-    def init_stage2(self):
+    def init_stage2(self) -> None:
         """
         Define cmdline arguments for stage 2.
         """
@@ -488,7 +498,7 @@ class CoreCmdline:
                                  type=int,
                                  default=None)
 
-    def init_stage3(self):
+    def init_stage3(self) -> None:
         """
         Define cmdline arguments for stage 3.
         """
@@ -504,6 +514,7 @@ class CoreCmdline:
                                  """ + self.stage_usage_doc([3]),
                                  action='store_true',
                                  default=False)
+
         self.stage3.add_argument("--dist-stats",
                                  choices=['none', 'all', 'conf95', 'bw'],
                                  help="""
@@ -528,7 +539,16 @@ class CoreCmdline:
                                  + self.stage_usage_doc([3, 4]),
                                  default='none')
 
-    def init_stage4(self):
+        self.stage3.add_argument("--processing-mem-limit",
+                                 help="""
+
+
+                                 Specify, as a percent in [0,100], how much memory SIERRA should try to limit itself to using.
+
+                                 """ + self.stage_usage_doc([3, 4]),
+                                 default=90)
+
+    def init_stage4(self) -> None:
         """
         Define cmdline arguments for stage 4.
         """
@@ -555,13 +575,6 @@ class CoreCmdline:
 
                                  """ + self.stage_usage_doc([4]),
                                  default='all')
-        self.stage4.add_argument("--no-collate",
-                                 help="""
-                                 Specify that no collation of data from experiments within a batch should be
-                                 performed. Useful if collation takes a long time and multiple types of stage 4 outputs
-                                 are desired.
-                                 """,
-                                 action='store_true')
 
         self.stage4.add_argument("--project-no-yaml-LN",
                                  help="""
@@ -853,7 +866,7 @@ class CoreCmdline:
                                """ + self.stage_usage_doc([4]),
                                action='store_true')
 
-    def init_stage5(self):
+    def init_stage5(self) -> None:
         """
         Define cmdline arguments for stage 5.
         """
@@ -996,8 +1009,8 @@ class CoreCmdline:
                                  """ + self.stage_usage_doc([5]),
                                  action='store_true')
 
-    @ staticmethod
-    def cs_methods_doc():
+    @staticmethod
+    def cs_methods_doc() -> str:
         return r"""
 
         The following methods can be specified. Note that each some methods have a defined normalized domain, and some do
@@ -1036,16 +1049,16 @@ class CoreCmdline:
           - Normalized domain: N/A.
         """
 
-    @ staticmethod
+    @staticmethod
     def stage_usage_doc(stages: tp.List[int], omitted: str = "If omitted: N/A.") -> str:
         return "\n.. ADMONITION:: Stage usage\n\n   Used by stage{" + ",".join(map(str, stages)) + "}; can be omitted otherwise. " + omitted + "\n"
 
-    @ staticmethod
+    @staticmethod
     def bc_applicable_doc(criteria: tp.List[str]) -> str:
         lst = "".join(map(lambda bc: "   - " + bc + "\n", criteria))
         return "\n.. ADMONITION:: Applicable batch criteria\n\n" + lst + "\n"
 
-    @ staticmethod
+    @staticmethod
     def graphs_applicable_doc(graphs: tp.List[str]) -> str:
         lst = "".join(map(lambda graph: "   - " + graph + "\n", graphs))
         return "\n.. ADMONITION:: Applicable graphs\n\n" + lst + "\n"
@@ -1057,7 +1070,7 @@ class CoreCmdlineValidator():
     stages, given the options that were passed.
     """
 
-    def __call__(self, args):
+    def __call__(self, args) -> None:
         assert len(args.batch_criteria) <= 2, "FATAL: Too many batch criteria passed"
 
         assert args.sierra_root is not None, '--sierra-root is required for all stages'
@@ -1085,7 +1098,7 @@ class CoreCmdlineValidator():
                 '--scenario-comparison or --controller-comparison required for stage 5'
 
 
-def sphinx_cmdline_core():
+def sphinx_cmdline_core() -> argparse.ArgumentParser:
     """
     Return a handle to the core cmdline object for SIERRA in order for sphinx to autogenerate nice
     documentation from it.
@@ -1093,7 +1106,7 @@ def sphinx_cmdline_core():
     return CoreCmdline().parser
 
 
-def sphinx_cmdline_bootstrap():
+def sphinx_cmdline_bootstrap() -> argparse.ArgumentParser:
     """
     Return a handle to the bootstrap cmdline object for SIERRA in order for sphinx to autogenerate
     nice documentation from it.

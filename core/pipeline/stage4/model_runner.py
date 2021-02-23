@@ -21,6 +21,8 @@ Classes for running project-specific models in a general purpose way within a ba
 import os
 import copy
 import logging
+import typing as tp
+import core.models.interface
 
 # 3rd party packages
 
@@ -37,13 +39,16 @@ class IntraExpModelRunner:
         cmdopts: Dictionary of parsed cmdline attributes.
     """
 
-    def __init__(self, cmdopts: dict, models: list) -> None:
+    def __init__(self,
+                 cmdopts: tp.Dict[str, tp.Any],
+                 models: tp.List[tp.Union[core.models.interface.IConcreteIntraExpModel1D,
+                                          core.models.interface.IConcreteIntraExpModel2D]]) -> None:
         self.cmdopts = cmdopts
         self.models = models
         self.logger = logging.getLogger(__name__)
 
     def __call__(self,
-                 main_config: dict,
+                 main_config: tp.Dict[str, tp.Any],
                  criteria: bc.IConcreteBatchCriteria) -> None:
         exp_to_run = core.utils.exp_range_calc(self.cmdopts,
                                                self.cmdopts['batch_output_root'],
@@ -103,13 +108,15 @@ class InterExpModelRunner:
         cmdopts: Dictionary of parsed cmdline attributes.
     """
 
-    def __init__(self, cmdopts: dict, models: list) -> None:
+    def __init__(self,
+                 cmdopts: tp.Dict[str, tp.Any],
+                 models: tp.List[core.models.interface.IConcreteInterExpModel1D]) -> None:
         self.cmdopts = cmdopts
         self.models = models
         self.logger = logging.getLogger(__name__)
 
     def __call__(self,
-                 main_config: dict,
+                 main_config: tp.Dict[str, tp.Any],
                  criteria: bc.IConcreteBatchCriteria) -> None:
 
         cmdopts = copy.deepcopy(self.cmdopts)

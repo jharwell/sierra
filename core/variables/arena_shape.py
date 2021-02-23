@@ -43,7 +43,7 @@ class ArenaShape():
 
     def __init__(self, extents: tp.List[ArenaExtent]) -> None:
         self.extents = extents
-        self.attr_changes = []  # type: tp.List
+        self.attr_changes = []  # type: tp.List[XMLAttrChangeSet]
 
     def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         """

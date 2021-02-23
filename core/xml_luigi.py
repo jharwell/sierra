@@ -164,7 +164,7 @@ class XMLLuigi:
                          file. (Defaults to overwriting the input file.)
     """
 
-    def __init__(self, input_filepath: str, output_filepath: str = None) -> None:
+    def __init__(self, input_filepath: str, output_filepath: tp.Union[None, str] = None) -> None:
         if output_filepath is None:
             output_filepath = input_filepath
 
@@ -262,7 +262,7 @@ class XMLLuigi:
         if not noprint:
             self.logger.warning("No victim '%s' found in parent '%s'", tag, path)
 
-    def tag_add(self, path, tag, attr=dict()):
+    def tag_add(self, path, tag, attr=dict()) -> None:
         """
         Add the tag name as a child element of the element found by the specified path, giving it
         the initial set of specified attributes.

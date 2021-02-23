@@ -40,7 +40,7 @@ class ARGoSScenarioGenerator():
     def __init__(self,
                  spec: ExperimentSpec,
                  controller: str,
-                 cmdopts: dict,
+                 cmdopts: tp.Dict[str, tp.Any],
                  **kwargs) -> None:
         self.controller = controller
         self.spec = spec
@@ -48,12 +48,12 @@ class ARGoSScenarioGenerator():
         self.kwargs = kwargs
         self.logger = logging.getLogger(__name__)
 
-    def generate(self):
+    def generate(self) -> XMLLuigi:
         return exp_generator.ARGoSExpDefGenerator(spec=self.spec,
                                                   cmdopts=self.cmdopts,
                                                   **self.kwargs).generate()
 
-    def generate_arena_shape(self, exp_def: XMLLuigi, shape: arena_shape.ArenaShape):
+    def generate_arena_shape(self, exp_def: XMLLuigi, shape: arena_shape.ArenaShape) -> None:
         """
         Generate XML changes for the specified arena shape.
 
@@ -72,7 +72,7 @@ class ARGoSScenarioGenerator():
             for r in rms[0]:
                 exp_def.tag_remove(r.path, r.tag)
 
-    def generate_n_robots(self, xml_luigi: XMLLuigi):
+    def generate_n_robots(self, xml_luigi: XMLLuigi) -> None:
         """
         Generate XML changes to setup # robots if it was specified on the cmdline.
 
@@ -91,11 +91,11 @@ class ARGoSScenarioGenerator():
 
     def generate_physics(self,
                          exp_def: XMLLuigi,
-                         cmdopts: dict,
+                         cmdopts: tp.Dict[str, tp.Any],
                          engine_type: str,
                          n_engines: int,
                          extents: tp.List[ArenaExtent],
-                         remove_defs: bool = True):
+                         remove_defs: bool = True) -> None:
         """
         Generates XML changes for the specified physics engines configuration for the
         simulation.

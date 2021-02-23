@@ -39,7 +39,7 @@ import logging
 import typing as tp
 
 
-def from_cmdline(args):
+def from_cmdline(args) -> tp.Dict[str, str]:
     """
     Generates the directory paths for the root directories for a single batched experiment directly
     from cmdline arguments.
@@ -58,7 +58,7 @@ def from_cmdline(args):
                           args.controller)
 
 
-def parse_batch_leaf(root: str) -> tp.Tuple[str, str, list]:
+def parse_batch_leaf(root: str) -> tp.Tuple[str, str, tp.List[str]]:
     """
     Parse a batch root into (template input file basename, scenario, batch criteria list) string
     components as they would have been specified on the cmdline.
@@ -66,7 +66,7 @@ def parse_batch_leaf(root: str) -> tp.Tuple[str, str, list]:
     template_stem = ''.join(root.split('-')[0])
     scenario_and_bc = root.split('-')[1].split('+')
     scenario = scenario_and_bc[0]
-    bc = scenario_and_bc[1:]  # type: tp.Union[tp.List,str]
+    bc = scenario_and_bc[1:]  # type: tp.Union[tp.List[str],str]
 
     if not isinstance(bc, list):  # Univariate batch criteria
         bc = [bc]
@@ -85,7 +85,7 @@ def gen_batch_leaf(criteria: tp.List[str],
 def regen_from_exp(sierra_rpath: str,
                    project: str,
                    batch_leaf: str,
-                   controller: str) -> dict:
+                   controller: str) -> tp.Dict[str, str]:
     """
     Re-generates the directory paths for the root directories for a single batched experiment from a
     previously created batch experiment (i.e. something that was generated with
@@ -119,7 +119,6 @@ def regen_from_exp(sierra_rpath: str,
         'batch_video_root': gen_video_root(root),
         'batch_stat_collate_root': gen_stat_collate_root(root),
         'batch_graph_collate_root': gen_graph_collate_root(root)
-
     }
 
 

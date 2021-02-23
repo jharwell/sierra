@@ -65,7 +65,7 @@ class Scatterplot2D:
 
         self.logger = logging.getLogger(__name__)
 
-    def generate(self):
+    def generate(self) -> None:
         if not core.utils.path_exists(self.input_fpath):
             self.logger.debug("Not generating 2D scatterplot: %s does not exist",
                               self.input_fpath)
@@ -77,7 +77,7 @@ class Scatterplot2D:
 
         # Plot regression line
         if self.regression:
-            self.__plot_regression(df)
+            self._plot_regression(df)
 
         # Plot ticks and labels
         ax.tick_params(labelsize=self.text_size['tick_label'])
@@ -93,7 +93,7 @@ class Scatterplot2D:
         fig.savefig(self.output_fpath, bbox_inches='tight', dpi=core.config.kGraphDPI)
         plt.close(fig)  # Prevent memory accumulation (fig.clf() does not close everything)
 
-    def __plot_regression(self, df):
+    def _plot_regression(self, df):
         # slope, intercept, r_value, p_value, std_err = stats.linregress(df.loc[:, self.xcol],
         #                                                                df.loc[:, self.ycol])
         # x_new = np.linspace(df[self.xcol].min(), df[self.xcol].max(), 50)
@@ -118,48 +118,3 @@ class Scatterplot2D:
 __api__ = [
     'Scatterplot2D'
 ]
-
-# if self.stats == 'bw':
-#     whislo_ipath = os.path.join(self.stats_root,
-#                                 self.input_stem + core.config.kStatsExtensions['whislo'])
-#     whishi_ipath = os.path.join(self.stats_root,
-#                                 self.input_stem + core.config.kStatsExtensions['whishi'])
-#     median_ipath = os.path.join(self.stats_root,
-#                                 self.input_stem + core.config.kStatsExtensions['median'])
-#     q1_ipath = os.path.join(self.stats_root,
-#                             self.input_stem + core.config.kStatsExtensions['q1'])
-#     q3_ipath = os.path.join(self.stats_root,
-#                             self.input_stem + core.config.kStatsExtensions['q3'])
-
-#     if core.utils.path_exists(whislo_ipath):
-#         dfs['whislo'] = core.utils.pd_csv_read(whislo_ipath)
-
-#     if core.utils.path_exists(whishi_ipath):
-#         dfs['whishi'] = core.utils.pd_csv_read(whishi_ipath)
-
-#     if core.utils.path_exists(median_ipath):
-#         dfs['median'] = core.utils.pd_csv_read(median_ipath)
-
-#     if core.utils.path_exists(q1_ipath):
-#         dfs['q1'] = core.utils.pd_csv_read(q1_ipath)
-
-#     if core.utils.path_exists(q3_ipath):
-#         dfs['q3'] = core.utils.pd_csv_read(q3_ipath)
-
-# elif self.stats == 'bw':
-#     boxes = []
-#     for i in range(0, len(data_dfy.values)):
-#         for j in range(0, len(data_dfy.values[0])):
-#             boxes.append({
-#                 'whislo': stat_dfs['whislo'].iloc[i, j],  # Bottom whisker position
-#                 # First quartile (25th percentile)
-#                 'q1': stat_dfs['q1'].iloc[i, j],
-#                 # Median         (50th percentile)
-#                 'med': stat_dfs['median'].iloc[i, j],
-#                 # Third quartile (75th percentile)
-#                 'q3': stat_dfs['q3'].iloc[i, j],
-#                 'whishi': stat_dfs['whishi'].iloc[i, j],  # Top whisker position
-#                 'fliers': []
-#             })
-#         print(boxes)
-#         ax.bxp(boxes, manage_ticks=False)

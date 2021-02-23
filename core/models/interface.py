@@ -33,7 +33,7 @@ class IConcreteIntraExpModel1D(implements.Interface):
     def run(self,
             criteria: bc.IConcreteBatchCriteria,
             exp_num: int,
-            cmdopts: dict) -> tp.List[pd.DataFrame]:
+            cmdopts: tp.Dict[str, tp.Any]) -> tp.List[pd.DataFrame]:
         """
         Run the model and generate a list of dataframes, each targeting (potentially) different
         graphs. All dataframes should contain a single column named ``model``, with each row of the
@@ -43,7 +43,7 @@ class IConcreteIntraExpModel1D(implements.Interface):
         """
         raise NotImplementedError
 
-    def run_for_exp(self, criteria: bc.IConcreteBatchCriteria, cmdopts: dict, i: int) -> bool:
+    def run_for_exp(self, criteria: bc.IConcreteBatchCriteria, cmdopts: tp.Dict[str, tp.Any], i: int) -> bool:
         """
         Some models may only be valid/make sense to run for a subset of experiments within a batch,
         so models can be selectively executed with this function.
@@ -76,7 +76,7 @@ class IConcreteIntraExpModel2D(implements.Interface):
     def run(self,
             criteria: bc.IConcreteBatchCriteria,
             exp_num: int,
-            cmdopts: dict) -> tp.List[pd.DataFrame]:
+            cmdopts: tp.Dict[str, tp.Any]) -> tp.List[pd.DataFrame]:
         """
         Run the model and generate a list of dataframes, each targeting (potentially) different
         graphs. Each data frame should be a NxM grid (with N not necessarily equal to M). All
@@ -85,7 +85,7 @@ class IConcreteIntraExpModel2D(implements.Interface):
         """
         raise NotImplementedError
 
-    def run_for_exp(self, criteria: bc.IConcreteBatchCriteria, cmdopts: dict, i: int) -> bool:
+    def run_for_exp(self, criteria: bc.IConcreteBatchCriteria, cmdopts: tp.Dict[str, tp.Any], i: int) -> bool:
         """
         Some models may only be valid/make sense to run for a subset of experiments within a batch,
         so models can be selectively executed with this function.
@@ -110,7 +110,7 @@ class IConcreteIntraExpModel2D(implements.Interface):
 class IConcreteInterExpModel1D(implements.Interface):
     def run(self,
             criteria: bc.IConcreteBatchCriteria,
-            cmdopts: dict) -> tp.List[pd.DataFrame]:
+            cmdopts: tp.Dict[str, tp.Any]) -> tp.List[pd.DataFrame]:
         """
         Run the model and generate list of dataframes, each(potentially) targeting a different
         graph. Each dataframe should contain a single row, with one column for the predicted value
@@ -119,7 +119,7 @@ class IConcreteInterExpModel1D(implements.Interface):
         """
         raise NotImplementedError
 
-    def run_for_batch(self, criteria: bc.IConcreteBatchCriteria, cmdopts: dict) -> bool:
+    def run_for_batch(self, criteria: bc.IConcreteBatchCriteria, cmdopts: tp.Dict[str, tp.Any]) -> bool:
         """
         Some models may only be valid/make sense to run for some batch criteria,
         so models can be selectively executed with this function.

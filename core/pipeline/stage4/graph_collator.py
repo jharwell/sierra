@@ -28,6 +28,7 @@ import pandas as pd
 # Project packages
 import core.utils
 import core.config
+import core.variables.batch_criteria as bc
 
 
 class UnivarGraphCollationInfo():
@@ -68,7 +69,7 @@ class UnivarGraphCollator:
     file.
     """
 
-    def __init__(self, main_config: dict, cmdopts: dict) -> None:
+    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, tp.Any]) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
         self.logger = logging.getLogger(__name__)
@@ -82,9 +83,20 @@ class UnivarGraphCollator:
                                              self.cmdopts['batch_output_root'],
                                              criteria)
 
-        stats = [UnivarGraphCollationInfo(df_ext=core.config.kStatsExtensions[ext],
-                                          ylabels=[os.path.split(e)[1] for e in exp_dirs])
-                 for ext in core.config.kStatsExtensions.keys()]
+        if self.cmdopts['dist_stats'] in ['conf95', 'all']:
+            exts = [core.config.kStatsExtensions['mean'], core.config.kStatsExtensions['stddev']]
+        elif self.cmdopts['dist_stats'] in ['bw', 'all']:
+            exts = [core.config.kStatsExtensions['min'],
+                    core.config.kStatsExtensions['max'],
+                    core.config.kStatsExtensions['mean'],
+                    core.config.kStatsExtensions['whislo'],
+                    core.config.kStatsExtensions['whishi'],
+                    core.config.kStatsExtensions['cilo'],
+                    core.config.kStatsExtensions['cihi'],
+                    core.config.kStatsExtensions['median']]
+
+        stats = [UnivarGraphCollationInfo(df_ext=ext,
+                                          ylabels=[os.path.split(e)[1] for e in exp_dirs]) for ext in exts]
 
         for i, diri in enumerate(exp_dirs):
             # We get full paths back from the exp dirs calculation, and we need to work with path
@@ -135,12 +147,12 @@ class BivarGraphCollator:
 
     """
 
-    def __init__(self, main_config: dict, cmdopts: dict) -> None:
+    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, tp.Any]) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
         self.logger = logging.getLogger(__name__)
 
-    def __call__(self, criteria, target: dict, stat_collate_root: str) -> None:
+    def __call__(self, criteria: bc.IConcreteBatchCriteria, target: dict, stat_collate_root: str) -> None:
         self.logger.info("Stage4: Collating bivariate files from batch in %s for graph '%s'...",
                          self.cmdopts['batch_output_root'],
                          target['src_stem'])
@@ -149,24 +161,23 @@ class BivarGraphCollator:
                                              self.cmdopts['batch_output_root'],
                                              criteria)
 
-        # Because sets are used, if a sub-range of experiments are selected for collation, the
-        # selected range has to be an even multiple of the # of experiments in the second batch
-        # criteria, or inter-experiment graph generation won't work (the final .csv is always an MxN
-        # grid).
-        xlabels_set = set()
-        ylabels_set = set()
-        for e in exp_dirs:
-            pair = os.path.split(e)[1].split('+')
-            xlabels_set.add(pair[0])
-            ylabels_set.add(pair[1])
+        xlabels, ylabels = core.utils.bivar_exp_labels_calc(exp_dirs)
 
-        xlabels = sorted(list(xlabels_set))
-        ylabels = sorted(list(ylabels_set))
+        if self.cmdopts['dist_stats'] in ['conf95', 'all']:
+            exts = [core.config.kStatsExtensions['mean'], core.config.kStatsExtensions['stddev']]
+        elif self.cmdopts['dist_stats'] in ['bw', 'all']:
+            exts = [core.config.kStatsExtensions['min'],
+                    core.config.kStatsExtensions['max'],
+                    core.config.kStatsExtensions['mean'],
+                    core.config.kStatsExtensions['whislo'],
+                    core.config.kStatsExtensions['whishi'],
+                    core.config.kStatsExtensions['cilo'],
+                    core.config.kStatsExtensions['cihi'],
+                    core.config.kStatsExtensions['median']]
 
-        stats = [BivarGraphCollationInfo(df_ext=core.config.kStatsExtensions[ext],
+        stats = [BivarGraphCollationInfo(df_ext=ext,
                                          xlabels=xlabels,
-                                         ylabels=ylabels)
-                 for ext in core.config.kStatsExtensions.keys()]
+                                         ylabels=ylabels) for ext in exts]
 
         for i, diri in enumerate(exp_dirs):
             # We get full paths back from the exp dirs calculation, and we need to work with path
@@ -209,7 +220,7 @@ class BivarGraphCollator:
             stat.df.loc[xlabel, ylabel] = data_df[target['col']].to_numpy()
 
 
-class MultithreadCollator():
+class GraphParallelCollator():
     """
     Generates collated ``.csv`` files from the averaged ``.csv`` files present in a batch of
     experiments for univariate or bivariate batch criteria. Each collated ``.csv`` file will have
@@ -218,14 +229,18 @@ class MultithreadCollator():
 
     """
 
-    def __init__(self, main_config: dict, cmdopts: dict) -> None:
+    def __init__(self,
+                 main_config: tp.Dict[str, tp.Dict[str, tp.Any]],
+                 cmdopts: tp.Dict[str, tp.Any]) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
 
         self.batch_stat_collate_root = self.cmdopts['batch_stat_collate_root']
         core.utils.dir_create_checked(self.batch_stat_collate_root, exist_ok=True)
 
-    def __call__(self, criteria, targets: dict) -> None:
+    def __call__(self,
+                 criteria: bc.IConcreteBatchCriteria,
+                 targets: tp.List[tp.Dict[str, tp.Any]]) -> None:
         q = mp.JoinableQueue()  # type: mp.JoinableQueue
 
         # For each category of graphs we are generating
@@ -240,7 +255,7 @@ class MultithreadCollator():
             parallelism = mp.cpu_count()
 
         for i in range(0, parallelism):
-            p = mp.Process(target=MultithreadCollator._thread_worker,
+            p = mp.Process(target=GraphParallelCollator._thread_worker,
                            args=(q,
                                  self.main_config,
                                  self.cmdopts,
@@ -253,7 +268,7 @@ class MultithreadCollator():
     @staticmethod
     def _thread_worker(q: mp.Queue,
                        main_config: dict,
-                       cmdopts: dict,
+                       cmdopts: tp.Dict[str, tp.Any],
                        stat_collate_root: str,
                        criteria) -> None:
 

@@ -79,7 +79,7 @@ class StackedSurfaceGraph:
 
         self.logger = logging.getLogger(__name__)
 
-    def generate(self):
+    def generate(self) -> None:
         dfs = [core.utils.pd_csv_read(f) for f in glob.glob(
             self.input_stem_pattern + '*.csv') if re.search('_[0-9]+', f)]
 
@@ -108,26 +108,26 @@ class StackedSurfaceGraph:
                                       [HandlerColormap(c, num_stripes=8) for c in colors]))
 
         # Plot surfaces
-        self.__plot_surfaces(X, Y, ax, colors, dfs)
+        self._plot_surfaces(X, Y, ax, colors, dfs)
 
         # Add title
         ax.set_title(self.title, fontsize=24)
 
         # Add X,Y,Z labels
-        self.__plot_labels(ax)
+        self._plot_labels(ax)
 
         # Add X,Y ticks
-        self.__plot_ticks(ax, x, y)
+        self._plot_ticks(ax, x, y)
 
         # Add legend
-        self.__plot_legend(ax, legend_cmap_handles, legend_handler_map)
+        self._plot_legend(ax, legend_cmap_handles, legend_handler_map)
 
         # Output figures
         fig = ax.get_figure()
         fig.set_size_inches(10, 10)
-        self.__save_figs(fig, ax)
+        self._save_figs(fig, ax)
 
-    def __plot_surfaces(self, X, Y, ax, colors, dfs):
+    def _plot_surfaces(self, X, Y, ax, colors, dfs):
         ax.plot_surface(X, Y, dfs[0], cmap=colors[0])
         for i in range(1, len(dfs)):
             if self.comp_type == 'raw':
@@ -138,7 +138,7 @@ class StackedSurfaceGraph:
                 plot_df = dfs[i] - dfs[0]
             ax.plot_surface(X, Y, plot_df, cmap=colors[i], alpha=0.5)
 
-    def __plot_ticks(self, ax, xvals, yvals):
+    def _plot_ticks(self, ax, xvals, yvals):
         """
         Plot ticks and tick labels. If the labels are numerical and the numbers are too large, force
         scientific notation (the ``rcParam`` way of doing this does not seem to work...)
@@ -150,7 +150,7 @@ class StackedSurfaceGraph:
         ax.set_yticks(yvals)
         ax.set_yticklabels(self.ytick_labels, rotation='vertical')
 
-    def __plot_legend(self, ax, cmap_handles, handler_map):
+    def _plot_legend(self, ax, cmap_handles, handler_map):
         # Legend should have ~3 entries per column, in order to maximize real estate on tightly
         # constrained papers.
         ax.legend(handles=cmap_handles,
@@ -161,14 +161,14 @@ class StackedSurfaceGraph:
                   ncol=len(self.legend),
                   fontsize=self.text_size['legend_label'])
 
-    def __plot_labels(self, ax):
+    def _plot_labels(self, ax):
         max_xlen = max([len(str(l)) for l in self.xtick_labels])
         max_ylen = max([len(str(l)) for l in self.ytick_labels])
         ax.set_xlabel('\n' * max_xlen + self.xlabel, fontsize=self.text_size['xyz_label'])
         ax.set_ylabel('\n' * max_ylen + self.ylabel, fontsize=self.text_size['xyz_label'])
         ax.set_zlabel('\n' + self.zlabel, fontsize=self.text_size['xyz_label'])
 
-    def __save_figs(self, fig, ax):
+    def _save_figs(self, fig, ax):
         """
         Save multiple rotated copies of the same figure. Necessary for automation of 3D figure
         generation, because you can't really know a priori what views are going to give the best

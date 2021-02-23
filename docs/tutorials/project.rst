@@ -98,12 +98,6 @@ An example main configuration file:
    # Configuration for SIERRA internals. This dictionary is mandatory
    # for all simulations.
    sierra:
-     # The directory within the output directory for each experiment within
-     # the batch where the frames created from the ``.csv`` files created by the
-     # selected project will be stored for rendering. This key is currently
-     # mandatory for all simulations, even if rendering/frame grabbing is
-     # is not employed.
-     project_frames_leaf: 'project-frames'
 
    # Configuration for performance measures. This key-value pair is mandatory
    # for all simulations. The value is the location of the .yaml configuration
@@ -164,38 +158,6 @@ Within the pointed-to .yaml file for ``perf`` configuration, the structure is:
      # The ``.csv``file under ``statistics_leaf`` for each experiment which
      # contains averaged information about temporally fluctuating populations.
      tv_population_csv: 'tv-population.csv'
-
-``perf.emergence`` sub-dictionary
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The sub-dictionary is optional.
-
-.. code-block:: YAML
-
-   emergence:
-     # The weighting factor for task-based emergent self-organization. If it
-     # omitted it defaults to 1.0
-     alpha_T: 1.0
-
-     # The weighting factor for spatial emergent self-organization. If it is
-     # omitted it defaults to 1.0
-     alpha_S: 1.0
-
-``perf.flexibility`` sub-dictionary
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. code-block:: YAML
-
-   flexibility:
-     # The weighting factor for the reactivity axis of flexibility. If it
-     # omitted it defaults to 1.0.
-     alpha_R: 1.0
-
-     # The weighting factor for the adaptability axis of flexibility. If it is
-     # omitted it defaults to 1.0.
-     alpha_A: 1.0
-
-See also :ref:`Flexibility config <ln-bc-tv-yaml-config>`.
 
 ``perf.robustness`` sub-dictionary
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

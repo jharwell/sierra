@@ -42,7 +42,7 @@ class BatchExpParallelVideoRenderer:
     Render the video for each experiment in the specified batch directory in sequence.
     """
 
-    def __init__(self, main_config: dict, cmdopts: dict) -> None:
+    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, tp.Any]) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
 
@@ -125,8 +125,7 @@ class BatchExpParallelVideoRenderer:
 
     @staticmethod
     def _filter_sim_dirs(sim_dirs: tp.List[str], main_config: dict) -> tp.List[str]:
-        return [s for s in sim_dirs if s not in [main_config['sierra']['project_frames_leaf'],
-                                                 'videos']]
+        return [s for s in sim_dirs if s not in ['videos']]
 
 
 class ExpVideoRenderer:

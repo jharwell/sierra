@@ -23,6 +23,7 @@ Classes for generating graphs across experiments in a batch.
 import os
 import copy
 import logging
+import typing as tp
 
 # 3rd party packages
 
@@ -48,7 +49,10 @@ class InterExpGraphGenerator:
 
     """
 
-    def __init__(self, main_config: dict, cmdopts: dict, targets: dict) -> None:
+    def __init__(self,
+                 main_config: tp.Dict[str, tp.Any],
+                 cmdopts: tp.Dict[str, tp.Any],
+                 targets: tp.List[tp.Dict[str, tp.Any]]) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
@@ -58,7 +62,7 @@ class InterExpGraphGenerator:
         core.utils.dir_create_checked(self.cmdopts['batch_graph_collate_root'], exist_ok=True)
         self.logger = logging.getLogger(__name__)
 
-    def __call__(self, criteria: bc.IConcreteBatchCriteria):
+    def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
         """
         Runs the following to generate graphs across experiments in the batch:
 
@@ -91,12 +95,14 @@ class LinegraphsGenerator:
       targets: Dictionary of parsed YAML configuration controlling what graphs should be generated.
     """
 
-    def __init__(self, cmdopts: dict, targets: dict) -> None:
+    def __init__(self,
+                 cmdopts: tp.Dict[str, tp.Any],
+                 targets: tp.List[tp.Dict[str, tp.Any]]) -> None:
         self.cmdopts = cmdopts
         self.targets = targets
         self.logger = logging.getLogger(__name__)
 
-    def generate(self, criteria: bc.IConcreteBatchCriteria):
+    def generate(self, criteria: bc.IConcreteBatchCriteria) -> None:
         self.logger.info("Linegraphs from %s", self.cmdopts['batch_stat_collate_root'])
         # For each category of linegraphs we are generating
         for category in self.targets:
@@ -123,8 +129,8 @@ class LinegraphsGenerator:
                                                                'SLN-' + graph['dest_stem'] +
                                                                core.config.kImageExt),
                                      stats=self.cmdopts['dist_stats'],
-                                     dashstyles=graph.get('dashes', []),
-                                     linestyles=graph.get('lines', []),
+                                     dashstyles=graph.get('dashes', None),
+                                     linestyles=graph.get('lines', None),
                                      title=graph['title'],
                                      xlabel=graph['xlabel'],
                                      ylabel=graph['ylabel'],
@@ -143,58 +149,45 @@ class UnivarPerfMeasuresGenerator:
         main_config: Dictionary of parsed main YAML config.
     """
 
-    def __init__(self, main_config, cmdopts) -> None:
+    def __init__(self,
+                 main_config: tp.Dict[str, tp.Any],
+                 cmdopts: tp.Dict[str, tp.Any]) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
         self.main_config = main_config
 
-    def __call__(self, criteria: bc.IConcreteBatchCriteria):
-        inter_perf_csv = self.main_config['perf']['inter_perf_csv']
-        interference_count_csv = self.main_config['perf']['interference_count_csv']
-        interference_duration_csv = self.main_config['perf']['interference_duration_csv']
+    def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
+        perf_csv = self.main_config['perf']['intra_perf_csv']
+        perf_col = self.main_config['perf']['intra_perf_col']
+        interference_csv = self.main_config['perf']['intra_interference_csv']
+        interference_col = self.main_config['perf']['intra_interference_col']
         raw_title = self.main_config['perf']['raw_perf_title']
         raw_ylabel = self.main_config['perf']['raw_perf_ylabel']
 
         if criteria.pm_query('raw'):
-            pmraw.RawUnivar(self.cmdopts, inter_perf_csv).from_batch(criteria,
-                                                                     title=raw_title,
-                                                                     ylabel=raw_ylabel)
+            pmraw.SteadyStateRawUnivar(self.cmdopts, perf_csv, perf_col).from_batch(criteria,
+                                                                                    title=raw_title,
+                                                                                    ylabel=raw_ylabel)
         if criteria.pm_query('scalability'):
-            pms.ScalabilityUnivarGenerator()(inter_perf_csv,
-                                             interference_count_csv,
-                                             interference_duration_csv,
-                                             self.cmdopts,
-                                             criteria)
+            pms.ScalabilityUnivarGenerator()(perf_csv, perf_col, self.cmdopts, criteria)
 
         if criteria.pm_query('self-org'):
-            alpha_S = self.main_config['perf'].get('emergence', {}).get('alpha_S', 1.0)
-            alpha_T = self.main_config['perf'].get('emergence', {}).get('alpha_T', 1.0)
-
             pmso.SelfOrgUnivarGenerator()(self.cmdopts,
-                                          inter_perf_csv,
-                                          interference_count_csv,
-                                          alpha_S,
-                                          alpha_T,
+                                          perf_csv,
+                                          perf_col,
+                                          interference_csv,
+                                          interference_col,
                                           criteria)
 
         if criteria.pm_query('flexibility'):
-            alpha_R = self.main_config['perf'].get('flexibility', {}).get('alpha_R', 1.0)
-            alpha_S = self.main_config['perf'].get('flexibility', {}).get('alpha_A', 1.0)
             pmf.FlexibilityUnivarGenerator()(self.cmdopts,
                                              self.main_config,
-                                             inter_perf_csv,
-                                             alpha_R,
-                                             alpha_S,
                                              criteria)
 
-        if criteria.pm_query('robustness'):
-            alpha_SAA = self.main_config['perf'].get('robustness', {}).get('alpha_SAA', 1.0)
-            alpha_PD = self.main_config['perf'].get('robustness', {}).get('alpha_PD', 1.0)
+        if criteria.pm_query('robustness_pd') or criteria.pm_query('robustness_saa'):
             pmb.RobustnessUnivarGenerator()(self.cmdopts,
                                             self.main_config,
-                                            alpha_SAA,
-                                            alpha_PD,
                                             criteria)
 
 
@@ -209,57 +202,46 @@ class BivarPerfMeasuresGenerator:
         main_config: Dictionary of parsed main YAML config.
     """
 
-    def __init__(self, main_config, cmdopts) -> None:
+    def __init__(self,
+                 main_config: tp.Dict[str, tp.Any],
+                 cmdopts: tp.Dict[str, tp.Any]) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
         self.main_config = main_config
 
-    def __call__(self, criteria):
-        inter_perf_csv = self.main_config['perf']['inter_perf_csv']
-        interference_count_csv = self.main_config['perf']['interference_count_csv']
-        interference_duration_csv = self.main_config['perf']['interference_duration_csv']
+    def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
+        perf_csv = self.main_config['perf']['intra_perf_csv']
+        perf_col = self.main_config['perf']['intra_perf_col']
+        interference_csv = self.main_config['perf']['intra_interference_csv']
+        interference_col = self.main_config['perf']['intra_interference_col']
         raw_title = self.main_config['perf']['raw_perf_title']
 
         if criteria.pm_query('raw'):
-            pmraw.RawBivar(self.cmdopts, inter_perf_csv=inter_perf_csv).from_batch(criteria,
-                                                                                   title=raw_title)
+            pmraw.SteadyStateRawBivar(self.cmdopts,
+                                      perf_csv=perf_csv,
+                                      perf_col=perf_col).from_batch(criteria,
+                                                                    title=raw_title)
 
         if criteria.pm_query('scalability'):
-            pms.ScalabilityBivarGenerator()(inter_perf_csv,
-                                            interference_count_csv,
-                                            interference_duration_csv,
-                                            self.cmdopts,
-                                            criteria)
+            pms.ScalabilityBivarGenerator()(perf_csv, perf_col, self.cmdopts, criteria)
 
         if criteria.pm_query('self-org'):
-            alpha_S = self.main_config['perf'].get('emergence', {}).get('alpha_S', 0.5)
-            alpha_T = self.main_config['perf'].get('emergence', {}).get('alpha_T', 0.5)
-
             pmso.SelfOrgBivarGenerator()(self.cmdopts,
-                                         inter_perf_csv,
-                                         interference_count_csv,
-                                         alpha_S,
-                                         alpha_T,
+                                         perf_csv,
+                                         perf_col,
+                                         interference_csv,
+                                         interference_col,
                                          criteria)
 
         if criteria.pm_query('flexibility'):
-            alpha_R = self.main_config['perf'].get('flexibility', {}).get('alpha_R', 0.5)
-            alpha_S = self.main_config['perf'].get('flexibility', {}).get('alpha_A', 0.5)
             pmf.FlexibilityBivarGenerator()(self.cmdopts,
                                             self.main_config,
-                                            inter_perf_csv,
-                                            alpha_R,
-                                            alpha_S,
                                             criteria)
 
         if criteria.pm_query('robustness'):
-            alpha_SAA = self.main_config['perf'].get('robustness', {}).get('alpha_SAA', 0.5)
-            alpha_PD = self.main_config['perf'].get('emergence', {}).get('alpha_PD', 0.5)
             pmb.RobustnessBivarGenerator()(self.cmdopts,
                                            self.main_config,
-                                           alpha_SAA,
-                                           alpha_PD,
                                            criteria)
 
 

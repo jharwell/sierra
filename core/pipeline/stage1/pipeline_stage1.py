@@ -18,10 +18,16 @@
 Contains main class implementing stage  of the experimental pipeline.
 """
 
+# Core packges
 import logging
+import typing as tp
 
+# 3rd party packages
+
+# Project packages
 from core.generators.exp_generator import BatchedExpDefGenerator
 from core.generators.exp_creator import BatchedExpCreator
+import core.variables.batch_criteria as bc
 
 
 class PipelineStage1:
@@ -33,7 +39,10 @@ class PipelineStage1:
 
     """
 
-    def __init__(self, controller, criteria, cmdopts: dict) -> None:
+    def __init__(self,
+                 controller: str,
+                 criteria: bc.IConcreteBatchCriteria,
+                 cmdopts: tp.Dict[str, tp.Any]) -> None:
         self.generator = BatchedExpDefGenerator(batch_config_template=cmdopts['template_input_file'],
                                                 controller_name=controller,
                                                 scenario_basename=cmdopts['scenario'],
@@ -49,7 +58,7 @@ class PipelineStage1:
         self.criteria = criteria
         self.logger = logging.getLogger(__name__)
 
-    def run(self):
+    def run(self) -> None:
         """
         Run stage 1 of the experiment pipeline.
         """

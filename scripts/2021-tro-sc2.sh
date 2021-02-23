@@ -48,13 +48,13 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 # Begin Experiments                                                            #
 ################################################################################
 CONTROLLERS=(d0.CRW d0.DPO d1.BITD_DPO d2.BIRTD_DPO)
-OUTPUT_ROOT=$HOME/exp/sc2
-DENSITY=5p0 # 1280 robots max with cardinality = 10
-N_BLOCKS=1280
+OUTPUT_ROOT=$HOME/exp/2021-tro-sc2
+DENSITY=5p0 # 1036 robots with cardinality = 5
+N_BLOCKS=4000
 BLOCK_DIST=PL
-CARDINALITY=8
-TIME_SHORT=time_setup.T50000N1000
-TIME_LONG=time_setup.T200000N1000
+XCARDINALITY=3
+YCARDINALITY=8
+TIME=time_setup.T20000N100
 TASKS=("scalability" "flexibility" "robustness_pd" "robustness_saa")
 NSIMS=4
 
@@ -62,25 +62,22 @@ SIERRA_BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT\
                   --template-input-file=$SIERRA_ROOT/templates/2021-tro-sc2.argos \
                   --n-sims=$NSIMS\
-                  --pipeline 1 2\
+                  --pipeline 1\
                   --exp-graphs=inter\
                   --project=fordyca\
                   --dist-stats=conf95\
                   --with-robot-leds \
                   --exp-overwrite\
-                  --argos-rendering\
-                  --camera-config=overhead\
-                  --exp-graphs=intra\
+                  --exp-graphs=inter --project-no-yaml-LN\
                   --models-disable\
                   --log-level=DEBUG\
-                  --exp-range=8:8
                   "
 
 if [ -n "$MSIARCH" ] # Running on MSI
 then
-    Y=$(($PBS_ARRAYID % 3)) # This is the task
-    X=$(($PBS_ARRAYID / 3)) # This is the controller
-    CONTROLLERS_LIST=(d0.CRW d0.DPO d1.BITD_DPO d2.BIRTD_DPO)
+    # 4 controllers, 4 tasks
+    TASK_NUM=$(($SLURM_ARRAY_TASK_ID % 4)) # This is the experiment
+    CONTROLLER_NUM=$(($SLURM_ARRAY_TASK_ID / 4)) # This is the scenario
     CONTROLLERS=(${CONTROLLERS_LIST[$X]})
     TASK=${TASKS[$Y]}
 
@@ -105,10 +102,10 @@ then
     for c in "${CONTROLLERS[@]}"
     do
         $SIERRA_CMD --scenario=${BLOCK_DIST}.16x16 \
-                  --batch-criteria population_density.CD${DENSITY}.I16.C${CARDINALITY} block_motion_dynamics.C${CARDINALITY}.F25p0.RW0p001\
+                  --batch-criteria population_density.CD${DENSITY}.I32.C${XCARDINALITY} block_motion_dynamics.C${YCARDINALITY}.F25p0.RW0p001\
                   --controller=${c} \
                   --n-blocks=${N_BLOCKS}\
-                  --time-setup=${TIME_SHORT}
+                  --time-setup=${TIME}
 
     done
 fi
@@ -119,10 +116,10 @@ then
     for c in "${CONTROLLERS[@]}"
     do
         $SIERRA_CMD --scenario=${BLOCK_DIST}.16x16 \
-                  --batch-criteria  population_density.CD${DENSITY}.I16.C${CARDINALITY} temporal_variance.MSine\
+                  --batch-criteria  population_density.CD${DENSITY}.I32.C${XCARDINALITY} temporal_variance.MSine\
                   --controller=${c}\
                   --n-blocks=${N_BLOCKS}\
-                  --time-setup=${TIME_SHORT}
+                  --time-setup=${TIME}
 
     done
 fi
@@ -136,10 +133,10 @@ then
         # dynamics to this to have a stable queueing system and get graph axis
         # ticks that are well defined.
         $SIERRA_CMD --scenario=${BLOCK_DIST}.16x16 \
-                  --batch-criteria  population_density.CD${DENSITY}.I16.C${CARDINALITY} population_dynamics.C${CARDINALITY}.F2p0.D0p0001 \
+                  --batch-criteria  population_density.CD${DENSITY}.I32.C${XCARDINALITY} population_dynamics.C${YCARDINALITY}.F2p0.D0p0001 \
                   --controller=${c} \
                   --n-blocks=${N_BLOCKS}\
-                  --time-setup=${TIME_LONG}
+                  --time-setup=${TIME}
     done
 fi
 
@@ -148,9 +145,9 @@ then
     for c in "${CONTROLLERS[@]}"
     do
         $SIERRA_CMD --scenario=${BLOCK_DIST}.16x16 \
-                  --batch-criteria  population_density.CD${DENSITY}.I16.C${CARDINALITY} saa_noise.all.C${CARDINALITY}\
+                  --batch-criteria  population_density.CD${DENSITY}.I32.C${XCARDINALITY} saa_noise.all.C${YCARDINALITY}\
                   --controller=${c} \
                   --n-blocks=${N_BLOCKS}\
-                  --time-setup=${TIME_SHORT}
+                  --time-setup=${TIME}
     done
 fi
