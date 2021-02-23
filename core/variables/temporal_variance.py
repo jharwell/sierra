@@ -57,14 +57,19 @@ class TemporalVariance(bc.UnivarBatchCriteria):
                  main_config: tp.Dict[str, str],
                  batch_input_root: str,
                  variance_type: str,
-                 variances: list,
+                 variances: tp.List[tp.Tuple[str,
+                                             str,
+                                             float,
+                                             tp.Any,
+                                             float,
+                                             float]],
                  population: int) -> None:
         bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_input_root)
 
         self.variance_type = variance_type
         self.variances = variances
         self.population = population
-        self.attr_changes = []  # type: tp.List
+        self.attr_changes = []  # type: tp.List[XMLAttrChangeSet]
 
     def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         """
@@ -116,8 +121,8 @@ class TemporalVariance(bc.UnivarBatchCriteria):
             return 0.0
 
     def graph_xticks(self,
-                     cmdopts: dict,
-                     exp_dirs: tp.List[str] = None) -> tp.List[float]:
+                     cmdopts: tp.Dict[str, tp.Any],
+                     exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
 
         # If exp_dirs is passed, then we have been handed a subset of the total # of directories in
         # the batch exp root, and so n_exp() will return more experiments than we actually
@@ -131,14 +136,14 @@ class TemporalVariance(bc.UnivarBatchCriteria):
                 for x in range(0, m)]
 
     def graph_xticklabels(self,
-                          cmdopts: dict,
-                          exp_dirs: tp.List[str] = None) -> tp.List[str]:
+                          cmdopts: tp.Dict[str, tp.Any],
+                          exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
         return list(map(str, self.graph_xticks(cmdopts, exp_dirs)))
 
-    def graph_xlabel(self, cmdopts: dict) -> str:
+    def graph_xlabel(self, cmdopts: tp.Dict[str, tp.Any]) -> str:
         return vcs.method_xlabel(cmdopts["envc_cs_method"])
 
-    def gen_exp_dirnames(self, cmdopts: dict) -> tp.List[str]:
+    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, tp.Any]) -> tp.List[str]:
         return ['exp' + str(x) for x in range(0, len(self.gen_attr_changelist()))]
 
     def pm_query(self, pm: str) -> bool:
@@ -148,7 +153,10 @@ class TemporalVariance(bc.UnivarBatchCriteria):
         return True
 
 
-def factory(cli_arg: str, main_config: dict, batch_input_root: str, **kwargs):
+def factory(cli_arg: str,
+            main_config: tp.Dict[str, tp.Any],
+            batch_input_root: str,
+            **kwargs) -> TemporalVariance:
     """
     Factory to create :class:`TemporalVariance` derived classes from the command line definition of
     batch criteria.
@@ -156,7 +164,12 @@ def factory(cli_arg: str, main_config: dict, batch_input_root: str, **kwargs):
     """
     attr = TemporalVarianceParser()(cli_arg)
 
-    def gen_variances(attr: dict):
+    def gen_variances(attr: tp.Dict[str, tp.Any]) -> tp.List[tp.Tuple[str,
+                                                                      str,
+                                                                      float,
+                                                                      tp.Any,
+                                                                      float,
+                                                                      float]]:
 
         amps_key = attr['variance_type'] + '_amp'
         try:
@@ -180,7 +193,7 @@ def factory(cli_arg: str, main_config: dict, batch_input_root: str, **kwargs):
                                attr["waveform_type"],
                                hz,
                                amp,
-                               amps[0],
+                               amp,
                                0.0) for hz in hzs for amp in amps[1:]])
 
         elif attr["waveform_type"] == "StepD":
@@ -200,7 +213,7 @@ def factory(cli_arg: str, main_config: dict, batch_input_root: str, **kwargs):
                                math.pi) for amp in amps[1:]])
         return variances
 
-    def __init__(self) -> None:
+    def __init__(self: TemporalVariance) -> None:
         TemporalVariance.__init__(self,
                                   cli_arg,
                                   main_config,
@@ -211,7 +224,7 @@ def factory(cli_arg: str, main_config: dict, batch_input_root: str, **kwargs):
 
     return type(cli_arg,
                 (TemporalVariance,),
-                {"__init__": __init__})
+                {"__init__": __init__})   # type: ignore
 
 
 __api__ = [

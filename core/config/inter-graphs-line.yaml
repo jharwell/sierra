@@ -168,7 +168,7 @@ LN_block_acq:
 
     - src_stem: block-acq-counts
       col: cum_avg_true_exploring_for_goal
-      dest_stem: block-acq-counts-exploring-cum-avg
+      dest_stem: block-acq-counts-true-exploring-cum-avg
       title: 'Average Robots Exploring For Blocks (cumulative)'
       xlabel: 'Interval'
       ylabel: '# Robots'

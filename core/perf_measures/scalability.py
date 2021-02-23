@@ -14,14 +14,24 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""
+r"""
 Measures for swarm scalability in univariate and bivariate batched experiments.
+
+. IMPORTANT:: The calculations performed by classes in this module make the following assumptions:
+
+               - Different swarm sizes are used for at least `some` experiments in the batch.
+
+               - exp0 has $\mathcal{N}=1$
+
+               If these assumptions are violated, the calculations may still have some
+               value/utility, but it will be reduced.
 """
 
 # Core packages
 import os
-import copy
 import logging
+import typing as tp
+import math
 
 # 3rd party packages
 import pandas as pd
@@ -29,7 +39,7 @@ import pandas as pd
 # Project packages
 from core.graphs.summary_line_graph import SummaryLinegraph
 from core.graphs.heatmap import Heatmap
-from core.perf_measures import common
+import core.perf_measures.common as pmcommon
 from core.variables import batch_criteria as bc
 from core.variables import population_size
 from core.variables import population_density
@@ -41,7 +51,7 @@ import core.config
 ################################################################################
 
 
-class BaseParallelFraction():
+class BaseSteadyStateParallelFraction():
     r"""
     Given a swarm exhibiting speedup :math:`X` with :math:`m_i>1` robots relative to a swarm with
     fewer (:math:`N_1`) robots, compute the serial fraction :math:`e` of the swarm's
@@ -73,12 +83,14 @@ class BaseParallelFraction():
 
     Inspired by :xref:`Harwell2019`.
     """
+    kLeaf = 'PM-ss-scalability-parallel-frac'
+
     @staticmethod
     def kernel(speedup_i: float,
                n_robots_i: int,
                n_robots_iminus1: int,
                normalize: bool,
-               normalize_method: str):
+               normalize_method: str) -> tp.Optional[float]:
         if n_robots_i > 1:
             size_ratio = float(n_robots_i) / float(n_robots_iminus1)
             e = (1.0 / speedup_i - 1.0 / size_ratio) / (1 - 1.0 / size_ratio)
@@ -96,7 +108,7 @@ class BaseParallelFraction():
             return theta
 
 
-class BaseNormalizedEfficiency():
+class BaseSteadyStateNormalizedEfficiency():
     r"""
     Calculate for per-robot efficiency.
 
@@ -108,8 +120,10 @@ class BaseNormalizedEfficiency():
 
     From :xref:`Hecker2015`.
     """
+    kLeaf = 'PM-ss-scalability-efficiency'
+
     @staticmethod
-    def kernel(perf_i: float, n_robots_i: int):
+    def kernel(perf_i: float, n_robots_i: int) -> float:
         return perf_i / float(n_robots_i)
 
 ################################################################################
@@ -117,112 +131,53 @@ class BaseNormalizedEfficiency():
 ################################################################################
 
 
-class InterRobotInterferenceUnivar:
-    """
-    Univariate calculator for the per-robot inter-robot interference for each experiment in a batch.
-
-    """
-    kCountLeaf = 'PM-scalability-interference-count'
-    kDurationLeaf = 'PM-scalability-interference-duration'
-
-    @staticmethod
-    def df_kernel(df_t: pd.DataFrame) -> pd.DataFrame:
-        df = pd.DataFrame(columns=df_t.columns, index=[0])
-
-        for col in df_t:
-            df[col] = df_t.loc[df_t.index[-1], col]
-
-        return df
-
-    def __init__(self, cmdopts: dict,
-                 interference_count_csv: str,
-                 interference_duration_csv: str) -> None:
-        self.cmdopts = copy.deepcopy(cmdopts)
-        self.interference_count_stem = interference_count_csv.split('.')[0]
-        self.interference_duration_stem = interference_duration_csv.split('.')[0]
-
-    def from_batch(self, criteria: bc.IConcreteBatchCriteria):
-        count_csv_istem = os.path.join(self.cmdopts["batch_stat_collate_root"],
-                                       self.interference_count_stem)
-        duration_csv_istem = os.path.join(self.cmdopts["batch_stat_collate_root"],
-                                          self.interference_duration_stem)
-        count_csv_ostem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kCountLeaf)
-        duration_csv_ostem = os.path.join(
-            self.cmdopts["batch_stat_collate_root"], self.kDurationLeaf)
-        count_img_ostem = os.path.join(self.cmdopts["batch_graph_collate_root"], self.kCountLeaf)
-        duration_img_ostem = os.path.join(
-            self.cmdopts["batch_graph_collate_root"], self.kDurationLeaf)
-
-        count_df = self.df_kernel(core.utils.pd_csv_read(count_csv_istem + '.csv'))
-        core.utils.pd_csv_write(count_df, count_csv_ostem + '.csv', index=False)
-        core.utils.pd_csv_write(count_df, count_csv_ostem + '.csv', index=False)
-
-        duration_df = self.df_kernel(core.utils.pd_csv_read(duration_csv_istem + '.csv'))
-        core.utils.pd_csv_write(duration_df, duration_csv_ostem + '.csv', index=False)
-        core.utils.pd_csv_write(duration_df, duration_csv_ostem + '.csv', index=False)
-
-        SummaryLinegraph(stats_root=self.cmdopts['batch_stat_collate_root'],
-                         input_stem=self.kCountLeaf,
-                         stats=self.cmdopts['dist_stats'],
-                         output_fpath=count_img_ostem + core.config.kImageExt,
-                         title="Swarm Inter-Robot Interference Counts",
-                         xlabel=criteria.graph_xlabel(self.cmdopts),
-                         ylabel="Average # Robots",
-                         xticks=criteria.graph_xticks(self.cmdopts),
-                         logyscale=self.cmdopts['plot_log_yscale'],
-                         large_text=self.cmdopts['plot_large_text']).generate()
-
-        SummaryLinegraph(stats_root=self.cmdopts['batch_stat_collate_root'],
-                         input_stem=self.kDurationLeaf,
-                         stats=self.cmdopts['dist_stats'],
-                         output_fpath=duration_img_ostem + core.config.kImageExt,
-                         title="Swarm Average Inter-Robot Interference Duration",
-                         xlabel=criteria.graph_xlabel(self.cmdopts),
-                         ylabel="# Timesteps",
-                         xticks=criteria.graph_xticks(self.cmdopts),
-                         logyscale=self.cmdopts['plot_log_yscale'],
-                         large_text=self.cmdopts['plot_large_text']).generate()
-
-
-class NormalizedEfficiencyUnivar(BaseNormalizedEfficiency):
+class SteadyStateNormalizedEfficiencyUnivar(BaseSteadyStateNormalizedEfficiency):
     r"""
     Univariate calculator for per-robot efficiency for each experiment in a batch
     (intra-experiment measure; no comparison across experiments in a batch is performed). See
-    :class:`BaseNormalizedEfficiency` for calculations.
+    :class:`BaseSteadyStateNormalizedEfficiency` for calculations.
     """
-    kLeaf = 'PM-scalability-efficiency'
 
     @staticmethod
     def df_kernel(criteria: bc.IConcreteBatchCriteria,
-                  cmdopts: dict,
-                  perf_df: pd.DataFrame) -> pd.DataFrame:
-        eff_df = pd.DataFrame(columns=perf_df.columns)
+                  cmdopts: tp.Dict[str, tp.Any],
+                  collated_perf: tp.Dict[str, pd.DataFrame]) -> tp.Dict[pd.DataFrame, str]:
         populations = criteria.populations(cmdopts)
+        sc_dfs = {}
 
-        for i in range(0, len(eff_df.columns)):
-            n_robots = populations[i]
-            col = eff_df.columns[i]
-            perf_N = perf_df.tail(1)[col]
-            eff_df[col] = BaseNormalizedEfficiency.kernel(perf_N, n_robots)
-        return eff_df
+        for i in range(0, criteria.n_exp()):
+            n_robots_x = populations[i]
+            expx = list(collated_perf.keys())[i]
+            expx_perf_df = collated_perf[expx]
+            sc_dfs[expx] = pd.DataFrame(columns=collated_perf[expx].columns,
+                                        index=[0])  # Steady state
 
-    def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
-        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
-        # are generated after us
-        self.cmdopts = copy.deepcopy(cmdopts)
-        self.inter_perf_leaf = inter_perf_csv.split('.')[0]
+            for sim in expx_perf_df.columns:
+                perfN = expx_perf_df.loc[expx_perf_df.index[-1], sim]
+                sc_dfs[expx].loc[0, sim] = BaseSteadyStateNormalizedEfficiency.kernel(perfN,
+                                                                                      n_robots_x)
 
-    def from_batch(self, criteria: bc.IConcreteBatchCriteria):
+        return sc_dfs
+
+    def __init__(self, cmdopts: tp.Dict[str, tp.Any], perf_csv: str, perf_col: str) -> None:
+        self.cmdopts = cmdopts
+        self.perf_leaf = perf_csv.split('.')[0]
+        self.perf_col = perf_col
+
+    def from_batch(self, criteria: bc.IConcreteBatchCriteria) -> None:
         """
         Calculate efficiency metric for the given controller for each experiment in a
         batch. Calculated stats and/or metric model results are plotted along with the calculated
         metric, if they exist.
         """
-        common.stats_prepare(self.cmdopts,
-                             criteria,
-                             self.inter_perf_leaf,
-                             self.kLeaf,
-                             self.df_kernel)
+        dfs = pmcommon.gather_collated_sim_dfs(self.cmdopts,
+                                               criteria,
+                                               self.perf_leaf,
+                                               self.perf_col)
+        pm_dfs = self.df_kernel(criteria, self.cmdopts, dfs)
+
+        # Calculate summary statistics for the performance measure
+        pmcommon.univar_distribution_prepare(self.cmdopts, criteria, self.kLeaf, pm_dfs, False)
 
         SummaryLinegraph(stats_root=self.cmdopts['batch_stat_collate_root'],
                          input_stem=self.kLeaf,
@@ -239,60 +194,61 @@ class NormalizedEfficiencyUnivar(BaseNormalizedEfficiency):
                          large_text=self.cmdopts['plot_large_text']).generate()
 
 
-class ParallelFractionUnivar(BaseParallelFraction):
+class SteadyStateParallelFractionUnivar(BaseSteadyStateParallelFraction):
     r"""
     Calculates the scalability of the swarm configuration across a univariate batched set of
     experiments within the same scenario from collated ``.csv`` data using the Karp-Flatt metric
-    (See :class:`BaseParallelFraction`).
-
-    Does not require the batch criteria to be
-    :class:`~core.variables.population_size.PopulationSize` derived, but if all experiments in a
-    batch have the same swarm size, then this calculation will be of limited use.
-
+    (See :class:`BaseSteadyStateParallelFraction`).
     """
-    kLeaf = 'PM-scalability-parallel-frac'
 
-    def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
-        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
-        # are generated after us
-        self.cmdopts = copy.deepcopy(cmdopts)
-        self.inter_perf_leaf = inter_perf_csv.split('.')[0]
+    def __init__(self, cmdopts: tp.Dict[str, tp.Any], perf_csv: str, perf_col: str) -> None:
+        self.cmdopts = cmdopts
+        self.perf_leaf = perf_csv.split('.')[0]
+        self.perf_col = perf_col
 
     @staticmethod
     def df_kernel(criteria: bc.IConcreteBatchCriteria,
-                  cmdopts: dict,
-                  perf_df: pd.DataFrame) -> pd.DataFrame:
-        res_df = pd.DataFrame(columns=perf_df.columns, index=[0])
-        sizes = criteria.populations(cmdopts)
+                  cmdopts: tp.Dict[str, tp.Any],
+                  collated_perf: tp.Dict[str, pd.DataFrame]) -> tp.Dict[str, pd.DataFrame]:
+        populations = criteria.populations(cmdopts)
+        size = len(criteria.gen_attr_changelist())
+        sc_dfs = {}
 
-        idx = perf_df.index[-1]
+        for i in range(1, size):
+            expx = list(collated_perf.keys())[i]
+            expx_df = collated_perf[expx]
 
-        for i in range(0, len(perf_df.columns)):
-            perf_i = perf_df.loc[idx, perf_df.columns[i]]
-            n_robots_i = sizes[i]
+            exp_iminus1 = list(collated_perf.keys())[i - 1]
+            exp_iminus1_df = collated_perf[exp_iminus1]
 
-            if cmdopts['pm_scalability_from_exp0']:
-                n_robots_iminus1 = sizes[0]
-                perf_iminus1 = perf_df.loc[idx, perf_df.columns[0]]
-            else:
-                n_robots_iminus1 = sizes[i - 1]
-                perf_iminus1 = perf_df.loc[idx, perf_df.columns[i - 1]]
+            sc_dfs[expx] = pd.DataFrame(columns=collated_perf[expx].columns,
+                                        index=[0])  # Steady state
 
-            speedup_i = perf_i / perf_iminus1
-            res_df[res_df.columns[i]] = BaseParallelFraction.kernel(speedup_i=speedup_i,
-                                                                    n_robots_i=n_robots_i,
-                                                                    n_robots_iminus1=n_robots_iminus1,
-                                                                    normalize=cmdopts['pm_scalability_normalize'],
-                                                                    normalize_method=cmdopts['pm_normalize_method'])
-        return res_df
+            for sim in collated_perf[expx].columns:
+                perf_i = expx_df.loc[expx_df.index[-1], sim]
+                n_robots_i = populations[i]
 
-    def from_batch(self, criteria: bc.IConcreteBatchCriteria):
-        # We always calculate the metric
-        common.stats_prepare(self.cmdopts,
-                             criteria,
-                             self.inter_perf_leaf,
-                             self.kLeaf,
-                             self.df_kernel)
+                perf_iminus1 = exp_iminus1_df.loc[exp_iminus1_df.index[-1], sim]
+                n_robots_iminus1 = populations[i - 1]
+
+                speedup_i = perf_i / perf_iminus1
+
+                sc_dfs[expx].loc[0, sim] = BaseSteadyStateParallelFraction.kernel(speedup_i=speedup_i,
+                                                                                  n_robots_i=n_robots_i,
+                                                                                  n_robots_iminus1=n_robots_iminus1,
+                                                                                  normalize=cmdopts['pm_scalability_normalize'],
+                                                                                  normalize_method=cmdopts['pm_normalize_method'])
+        return sc_dfs
+
+    def from_batch(self, criteria: bc.IConcreteBatchCriteria) -> None:
+        dfs = pmcommon.gather_collated_sim_dfs(self.cmdopts,
+                                               criteria,
+                                               self.perf_leaf,
+                                               self.perf_col)
+        pm_dfs = self.df_kernel(criteria, self.cmdopts, dfs)
+
+        # Calculate summary statistics for the performance measure
+        pmcommon.univar_distribution_prepare(self.cmdopts, criteria, self.kLeaf, pm_dfs, True)
 
         SummaryLinegraph(stats_root=self.cmdopts['batch_stat_collate_root'],
                          input_stem=self.kLeaf,
@@ -303,7 +259,7 @@ class ParallelFractionUnivar(BaseParallelFraction):
                          title="Swarm Parallel Performance Fraction",
                          xlabel=criteria.graph_xlabel(self.cmdopts),
                          ylabel="",
-                         xticks=criteria.graph_xticks(self.cmdopts),
+                         xticks=criteria.graph_xticks(self.cmdopts)[1:],
                          logyscale=self.cmdopts['plot_log_yscale'],
                          large_text=self.cmdopts['plot_large_text']).generate()
 
@@ -318,132 +274,75 @@ class ScalabilityUnivarGenerator:
         self.logger = logging.getLogger(__name__)
 
     def __call__(self,
-                 inter_perf_csv: str,
-                 interference_count_csv: str,
-                 interference_duration_csv: str,
-                 cmdopts: dict,
-                 criteria: bc.IConcreteBatchCriteria):
+                 perf_csv: str,
+                 perf_col: str,
+                 cmdopts: tp.Dict[str, tp.Any],
+                 criteria: bc.IConcreteBatchCriteria) -> None:
         self.logger.info("From %s", cmdopts["batch_stat_collate_root"])
 
-        InterRobotInterferenceUnivar(cmdopts, interference_count_csv,
-                                     interference_duration_csv).from_batch(criteria)
-        NormalizedEfficiencyUnivar(cmdopts, inter_perf_csv).from_batch(criteria)
-        ParallelFractionUnivar(cmdopts, inter_perf_csv).from_batch(criteria)
+        SteadyStateNormalizedEfficiencyUnivar(cmdopts, perf_csv, perf_col).from_batch(criteria)
+        SteadyStateParallelFractionUnivar(cmdopts, perf_csv, perf_col).from_batch(criteria)
 
 ################################################################################
 # Bivariate Classes
 ################################################################################
 
 
-class InterRobotInterferenceBivar:
-    """
-    Bivariate calculator for the per-robot inter-robot interference for each experiment in a batch.
-
-    """
-    kCountLeaf = 'PM-scalability-interference-count'
-    kDurationLeaf = 'PM-scalability-interference-duration'
-
-    @staticmethod
-    def df_kernel(raw_df: pd.DataFrame) -> pd.DataFrame:
-        eff_df = pd.DataFrame(columns=raw_df.columns,
-                              index=raw_df.index)
-        for i in range(0, len(eff_df.index)):
-            for j in range(0, len(eff_df.columns)):
-                eff_df.iloc[i, j] = common.csv_3D_value_iloc(raw_df,
-                                                             i,
-                                                             j,
-                                                             slice(-1, None))
-        return eff_df
-
-    def __init__(self, cmdopts: dict,
-                 interference_count_csv: str,
-                 interference_duration_csv: str) -> None:
-        self.cmdopts = copy.deepcopy(cmdopts)
-        self.interference_count_stem = interference_count_csv.split('.')[0]
-        self.interference_duration_stem = interference_duration_csv.split('.')[0]
-
-    def from_batch(self, criteria: bc.IConcreteBatchCriteria):
-        count_csv_istem = os.path.join(self.cmdopts["batch_stat_collate_root"],
-                                       self.interference_count_stem)
-        duration_csv_istem = os.path.join(self.cmdopts["batch_stat_collate_root"],
-                                          self.interference_duration_stem)
-        count_csv_ostem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kCountLeaf)
-        duration_csv_ostem = os.path.join(
-            self.cmdopts["batch_stat_collate_root"], self.kDurationLeaf)
-        count_img_ostem = os.path.join(self.cmdopts["batch_graph_collate_root"], self.kCountLeaf)
-        duration_img_ostem = os.path.join(self.cmdopts["batch_graph_collate_root"],
-                                          self.kDurationLeaf)
-
-        count_idf = core.utils.pd_csv_read(count_csv_istem + '.csv')
-        count_odf = self.df_kernel(count_idf)
-        core.utils.pd_csv_write(count_odf, count_csv_ostem + '.csv', index=False)
-
-        duration_idf = core.utils.pd_csv_read(duration_csv_istem + '.csv')
-        duration_odf = self.df_kernel(duration_idf)
-        core.utils.pd_csv_write(duration_odf, duration_csv_ostem + '.csv', index=False)
-
-        Heatmap(input_fpath=count_csv_ostem + ".csv",
-                output_fpath=count_img_ostem + core.config.kImageExt,
-                title='Swarm Inter-Robot Interference Counts',
-                xlabel=criteria.graph_xlabel(self.cmdopts),
-                ylabel=criteria.graph_ylabel(self.cmdopts),
-                xtick_labels=criteria.graph_xticklabels(self.cmdopts),
-                ytick_labels=criteria.graph_yticklabels(self.cmdopts)).generate()
-
-        Heatmap(input_fpath=duration_csv_ostem + ".csv",
-                output_fpath=duration_img_ostem + core.config.kImageExt,
-                title='Swarm Average Inter-Robot Interference Duration',
-                xlabel=criteria.graph_xlabel(self.cmdopts),
-                ylabel=criteria.graph_ylabel(self.cmdopts),
-                xtick_labels=criteria.graph_xticklabels(self.cmdopts),
-                ytick_labels=criteria.graph_yticklabels(self.cmdopts)).generate()
-
-
-class NormalizedEfficiencyBivar(BaseNormalizedEfficiency):
+class SteadyStateNormalizedEfficiencyBivar(BaseSteadyStateNormalizedEfficiency):
     """
     Bivariate calculator for per-robot efficiency for each experiment in a batch
     (intra-experiment measure; no comparison across experiments in a batch is performed). See
-    :class:`BaseNormalizedEfficiency` for calculations.
+    :class:`BaseSteadyStateNormalizedEfficiency` for calculations.
     """
-    kLeaf = 'PM-scalability-efficiency'
-
     @staticmethod
     def df_kernel(criteria: bc.IConcreteBatchCriteria,
-                  cmdopts: dict,
-                  raw_df: pd.DataFrame) -> pd.DataFrame:
-        eff_df = pd.DataFrame(columns=raw_df.columns,
-                              index=raw_df.index)
+                  cmdopts: tp.Dict[str, tp.Any],
+                  collated_perf: tp.Dict[str, pd.DataFrame]) -> tp.Dict[str, pd.DataFrame]:
+
+        xsize = len(criteria.criteria1.gen_attr_changelist())
+        ysize = len(criteria.criteria2.gen_attr_changelist())
         populations = criteria.populations(cmdopts)
-        for i in range(0, len(eff_df.index)):
-            for j in range(0, len(eff_df.columns)):
-                perf_i = common.csv_3D_value_iloc(raw_df,
-                                                  i,
-                                                  j,
-                                                  slice(-1, None))
-                eff_df.iloc[i, j] = BaseNormalizedEfficiency.kernel(perf_i, populations[i][j])
-        return eff_df
+        sc_dfs = {}
 
-    def __init__(self, cmdopts: dict, inter_perf_csv: str) -> None:
-        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
-        # are generated after us
-        self.cmdopts = copy.deepcopy(cmdopts)
-        self.inter_perf_leaf = inter_perf_csv.split('.')[0]
+        for i in range(0, xsize):
+            for j in range(0, ysize):
+                expx = list(collated_perf.keys())[i * ysize + j]
+                expx_df = collated_perf[expx]
+                sc_dfs[expx] = pd.DataFrame(columns=collated_perf[expx].columns,
+                                            index=[0])  # Steady state
 
-    def from_batch(self, criteria: bc.IConcreteBatchCriteria):
+                for sim in expx_df.columns:
+                    perf_x = expx_df.loc[expx_df.index[-1], sim]  # steady state
+                    sc_dfs[expx].loc[0, sim] = BaseSteadyStateNormalizedEfficiency.kernel(perf_x,
+                                                                                          populations[i][j])
+        return sc_dfs
+
+    def __init__(self, cmdopts: tp.Dict[str, tp.Any], perf_csv: str, perf_col: str) -> None:
+        self.cmdopts = cmdopts
+        self.perf_leaf = perf_csv.split('.')[0]
+        self.perf_col = perf_col
+
+    def from_batch(self, criteria: bc.IConcreteBatchCriteria) -> None:
         """
         Calculate efficiency metric for the given controller for each experiment in a
         batch.
         """
-        common.stats_prepare(self.cmdopts,
-                             criteria,
-                             self.inter_perf_leaf,
-                             self.kLeaf,
-                             self.df_kernel)
-        ostem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf)
+        dfs = pmcommon.gather_collated_sim_dfs(self.cmdopts,
+                                               criteria,
+                                               self.perf_leaf,
+                                               self.perf_col)
+        pm_dfs = self.df_kernel(criteria, self.cmdopts, dfs)
 
-        Heatmap(input_fpath=ostem + '.csv',
-                output_fpath=os.path.join(
-                    self.cmdopts["batch_graph_collate_root"], self.kLeaf + core.config.kImageExt),
+        # Calculate summary statistics for the performance measure
+        pmcommon.bivar_distribution_prepare(self.cmdopts, criteria, self.kLeaf, pm_dfs, False)
+
+        ipath = os.path.join(self.cmdopts["batch_stat_collate_root"],
+                             self.kLeaf + core.config.kStatsExtensions['mean'])
+        opath = os.path.join(self.cmdopts["batch_graph_collate_root"],
+                             self.kLeaf + core.config.kImageExt)
+
+        Heatmap(input_fpath=ipath,
+                output_fpath=opath,
                 title='Swarm Efficiency (Normalized)',
                 xlabel=criteria.graph_xlabel(self.cmdopts),
                 ylabel=criteria.graph_ylabel(self.cmdopts),
@@ -451,98 +350,97 @@ class NormalizedEfficiencyBivar(BaseNormalizedEfficiency):
                 ytick_labels=criteria.graph_yticklabels(self.cmdopts)).generate()
 
 
-class ParallelFractionBivar(BaseParallelFraction):
+class SteadyStateParallelFractionBivar(BaseSteadyStateParallelFraction):
     """
     Calculates the scalability of the swarm configuration across a bivariate batched set of
     experiments within the same scenario from collated ``.csv`` data using the Karp-Flatt metric
-    (See :class:`BaseParallelFraction`).
-
-    Does not require the batch criteria to be
-    :class:`~core.variables.population_size.PopulationSize` derived, but if all experiments in a
-    batch have the same swarm size, then this calculation will be of limited use.
-
+    (See :class:`BaseSteadyStateParallelFraction`).
     """
-    kLeaf = 'PM-scalability-parallel-frac'
-
     @staticmethod
     def df_kernel(criteria: bc.IConcreteBatchCriteria,
-                  cmdopts: dict,
-                  perf_df: pd.DataFrame) -> pd.DataFrame:
-        sc_df = pd.DataFrame(columns=perf_df.columns, index=perf_df.index)
+                  cmdopts: tp.Dict[str, tp.Any],
+                  axis: int,
+                  collated_perf: tp.Dict[str, pd.DataFrame]) -> tp.Dict[str, pd.DataFrame]:
 
-        sizes = criteria.populations(cmdopts)
+        populations = criteria.populations(cmdopts)
+        xsize = len(criteria.criteria1.gen_attr_changelist())
+        ysize = len(criteria.criteria2.gen_attr_changelist())
+        sc_dfs = {}
 
-        for i in range(0, len(sc_df.index)):
-            for j in range(0, len(sc_df.columns)):
-                perf_x = common.csv_3D_value_iloc(perf_df,
-                                                  i,
-                                                  j,
-                                                  slice(-1, None))
-                n_robots_x = sizes[i][j]
-                # We need to know which of the 2 variables was swarm size, in order to determine the
-                # correct dimension along which to compute the metric, which depends on performance
-                # between adjacent swarm sizes.
-                axis = core.utils.get_primary_axis(criteria,
-                                                   [population_size.PopulationSize,
-                                                    population_density.PopulationConstantDensity],
-                                                   cmdopts)
-                if axis == 0:
-                    perf_xminus1 = common.csv_3D_value_iloc(perf_df,
-                                                            i - 1,
-                                                            j,
-                                                            slice(-1, None))
+        for i in range(axis == 0, xsize):
+            for j in range(axis == 1, ysize):
+                expx = list(collated_perf.keys())[i * ysize + j]
+                expx_df = collated_perf[expx]
+                sc_dfs[expx] = pd.DataFrame(columns=collated_perf[expx].columns,
+                                            index=[0])  # Steady state
+                for sim in expx_df.columns:
+                    perf_x = expx_df.loc[expx_df.index[-1], sim]  # steady state
 
-                    if cmdopts['pm_scalability_from_exp0']:
-                        n_robots_xminus1 = sizes[0][j]
+                    n_robots_x = populations[i][j]
+
+                    if axis == 0:
+                        exp_xminus1 = list(collated_perf.keys())[(i - 1) * ysize + j]
+                        n_robots_xminus1 = populations[i - 1][j]
                     else:
-                        n_robots_xminus1 = sizes[i - 1][j]
-                else:
-                    perf_xminus1 = common.csv_3D_value_iloc(perf_df,
-                                                            i,
-                                                            j - 1,
-                                                            slice(-1, None))
-                    if cmdopts['pm_scalability_from_exp0']:
-                        n_robots_xminus1 = sizes[0][j]
+                        exp_xminus1 = list(collated_perf.keys())[i * ysize + j - 1]
+                        n_robots_xminus1 = populations[i][j - 1]
+
+                    exp_xminus1_df = collated_perf[exp_xminus1]
+                    perf_xminus1 = exp_xminus1_df.loc[exp_xminus1_df.index[-1], sim]  # steady state
+
+                    if perf_xminus1 == 0:
+                        speedup_i = math.inf
                     else:
-                        n_robots_xminus1 = sizes[i][j - 1]
+                        speedup_i = perf_x / perf_xminus1
+                    parallel_frac = BaseSteadyStateParallelFraction.kernel(speedup_i=speedup_i,
+                                                                           n_robots_i=n_robots_x,
+                                                                           n_robots_iminus1=n_robots_xminus1,
+                                                                           normalize=cmdopts['pm_scalability_normalize'],
+                                                                           normalize_method=cmdopts['pm_normalize_method'])
+                    sc_dfs[expx].loc[0, sim] = parallel_frac
 
-                speedup_i = perf_x / perf_xminus1
-                sc_df.iloc[i, j] = BaseParallelFraction.kernel(speedup_i=speedup_i,
-                                                               n_robots_i=n_robots_x,
-                                                               n_robots_iminus1=n_robots_xminus1,
-                                                               normalize=cmdopts['pm_scalability_normalize'],
-                                                               normalize_method=cmdopts['pm_normalize_method'])
+        return sc_dfs
 
-        return sc_df
+    def __init__(self, cmdopts: tp.Dict[str, tp.Any], perf_csv: str, perf_col: str) -> None:
+        self.cmdopts = cmdopts
+        self.perf_leaf = perf_csv.split('.')[0]
+        self.perf_col = perf_col
 
-    def __init__(self, cmdopts, inter_perf_csv) -> None:
-        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
-        # are generated after us
-        self.cmdopts = copy.deepcopy(cmdopts)
-        self.inter_perf_leaf = inter_perf_csv.split('.')[0]
-
-    def from_batch(self, criteria: bc.IConcreteBatchCriteria):
+    def from_batch(self, criteria: bc.IConcreteBatchCriteria) -> None:
         """
         Calculate efficiency metric for the given controller for each experiment in a
         batch. Calculated stats and/or metric model results are plotted along with the calculated
         metric, if they exist.
         """
-        ostem = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf)
+        dfs = pmcommon.gather_collated_sim_dfs(self.cmdopts,
+                                               criteria,
+                                               self.perf_leaf,
+                                               self.perf_col)
+        # We need to know which of the 2 variables was swarm size, in order to determine
+        # the correct dimension along which to compute the metric, which depends on
+        # performance between adjacent swarm sizes.
 
-        common.stats_prepare(self.cmdopts,
-                             criteria,
-                             self.inter_perf_leaf,
-                             self.kLeaf,
-                             self.df_kernel)
+        axis = core.utils.get_primary_axis(criteria,
+                                           [population_size.PopulationSize,
+                                            population_density.PopulationConstantDensity],
+                                           self. cmdopts)
+        pm_dfs = self.df_kernel(criteria, self.cmdopts, axis, dfs)
 
-        Heatmap(input_fpath=ostem + '.csv',
-                output_fpath=os.path.join(self.cmdopts["batch_graph_collate_root"],
-                                          self.kLeaf + core.config.kImageExt),
+        # Calculate summary statistics for the performance measure
+        pmcommon.bivar_distribution_prepare(self.cmdopts, criteria, self.kLeaf, pm_dfs, True, axis)
+
+        ipath = os.path.join(self.cmdopts["batch_stat_collate_root"],
+                             self.kLeaf + core.config.kStatsExtensions['mean'])
+        opath = os.path.join(self.cmdopts["batch_graph_collate_root"],
+                             self.kLeaf + core.config.kImageExt)
+
+        Heatmap(input_fpath=ipath,
+                output_fpath=opath,
                 title="Swarm Parallel Performance Fraction",
                 xlabel=criteria.graph_xlabel(self.cmdopts),
                 ylabel=criteria.graph_ylabel(self.cmdopts),
-                xtick_labels=criteria.graph_xticklabels(self.cmdopts),
-                ytick_labels=criteria.graph_yticklabels(self.cmdopts)).generate()
+                xtick_labels=criteria.graph_xticklabels(self.cmdopts)[axis == 0:],
+                ytick_labels=criteria.graph_yticklabels(self.cmdopts)[axis == 1:]).generate()
 
 
 class ScalabilityBivarGenerator:
@@ -555,29 +453,22 @@ class ScalabilityBivarGenerator:
         self.logger = logging.getLogger(__name__)
 
     def __call__(self,
-                 inter_perf_csv: str,
-                 interference_count_csv: str,
-                 interference_duration_csv: str,
-                 cmdopts: dict,
-                 criteria: bc.IConcreteBatchCriteria):
+                 perf_csv: str,
+                 perf_col: str,
+                 cmdopts: tp.Dict[str, tp.Any],
+                 criteria: bc.IConcreteBatchCriteria) -> None:
         self.logger.info("From %s", cmdopts["batch_stat_collate_root"])
 
-        NormalizedEfficiencyBivar(cmdopts, inter_perf_csv).from_batch(criteria)
+        SteadyStateNormalizedEfficiencyBivar(cmdopts, perf_csv, perf_col).from_batch(criteria)
 
-        InterRobotInterferenceBivar(cmdopts,
-                                    interference_count_csv,
-                                    interference_duration_csv).from_batch(criteria)
-
-        ParallelFractionBivar(cmdopts, inter_perf_csv).from_batch(criteria)
+        SteadyStateParallelFractionBivar(cmdopts, perf_csv, perf_col).from_batch(criteria)
 
 
 __api__ = [
-    'InterRobotInterferenceUnivar',
-    'NormalizedEfficiencyUnivar',
-    'ParallelFractionUnivar',
-    'InterRobotInterferenceBivar',
-    'NormalizedEfficiencyBivar',
-    'ParallelFractionBivar',
-    'BaseParallelFraction',
-    'BaseNormalizedEfficiency'
+    'SteadyStateNormalizedEfficiencyUnivar',
+    'SteadyStateParallelFractionUnivar',
+    'SteadyStateNormalizedEfficiencyBivar',
+    'SteadyStateParallelFractionBivar',
+    'BaseSteadyStateParallelFraction',
+    'BaseSteadyStateNormalizedEfficiency'
 ]

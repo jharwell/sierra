@@ -36,8 +36,13 @@
           output_dir="__current_date__"
           />
         <nest dims="1.0, 4.0" center="2, 3" />
-        <exploration
-            block_strategy="CRW"/>
+        <strategy>
+          <explore
+              block_strategy="CRW"/>
+          <nest_acq
+              strategy="random_thresh"/>
+        </strategy>
+
         <sensing_subsystemQ3D>
           <!-- -5pi/6 : 5pi/6 -->
           <proximity_sensor fov="-2.61:2.61"

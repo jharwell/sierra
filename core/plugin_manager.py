@@ -17,10 +17,18 @@
 SUPER DUPER simple plugin managers for being able to add stuff to SIERRA without having to modify
 the core.
 """
+# Core packages
 import importlib.util
+import importlib
 import os
 import logging
+import typing as tp
+
+
+# 3rd party packages
 from singleton_decorator import singleton
+
+# Project packages
 
 
 class BasePluginManager():
@@ -28,12 +36,12 @@ class BasePluginManager():
     Base class for common functionality.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.plugin_root = ''
         self.loaded = dict()
         self.logger = logging.getLogger(__name__)
 
-    def initialize(self, plugin_root):
+    def initialize(self, plugin_root: str) -> None:
         self.plugin_root = plugin_root
         self.loaded = dict()
 
@@ -83,7 +91,7 @@ class FilePluginManager(BasePluginManager):
     A simple plugin manager where plugins are ``.py`` `files` within a root plugin directory.
     """
 
-    def available_plugins(self):
+    def available_plugins(self) -> tp.Dict[str, tp.Dict[str, importlib.machinery.ModuleSpec]]:
         """
         Returns a dictionary of plugins available in the configured plugin root.
         """
@@ -104,11 +112,11 @@ class DirectoryPluginManager(BasePluginManager):
     A simple plugin manager where plugins are `directories` found in a root plugin directory.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.main_module = 'foo'
 
-    def initialize(self, plugin_root):
+    def initialize(self, plugin_root: str) -> None:
         super().initialize(plugin_root)
         self.main_module = 'main'
 

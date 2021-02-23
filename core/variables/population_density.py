@@ -48,7 +48,7 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         cd.ConstantDensity.__init__(self, *args, **kwargs)
         self.already_added = False
         self.logger = logging.getLogger(__name__)
@@ -80,13 +80,13 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
         return self.attr_changes
 
-    def gen_exp_dirnames(self, cmdopts: dict) -> tp.List[str]:
+    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, tp.Any]) -> tp.List[str]:
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
     def graph_xticks(self,
-                     cmdopts: dict,
-                     exp_dirs: tp.List[str] = None) -> tp.List[float]:
+                     cmdopts: tp.Dict[str, tp.Any],
+                     exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
 
         if exp_dirs is None:
             exp_dirs = self.gen_exp_dirnames(cmdopts)
@@ -99,11 +99,11 @@ class PopulationConstantDensity(cd.ConstantDensity):
             return ret
 
     def graph_xticklabels(self,
-                          cmdopts: dict,
-                          exp_dirs: tp.List[str] = None) -> tp.List[str]:
+                          cmdopts: tp.Dict[str, tp.Any],
+                          exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
         return list(map(lambda x: str(round(x, 4)), self.graph_xticks(cmdopts, exp_dirs)))
 
-    def graph_xlabel(self, cmdopts: dict) -> str:
+    def graph_xlabel(self, cmdopts: tp.Dict[str, tp.Any]) -> str:
         if cmdopts['plot_log_xscale']:
             return r"$\log_{2}$(Swarm Size)"
 
@@ -132,13 +132,13 @@ def factory(cli_arg: str,
         r = range(kw['arena_x'],
                   kw['arena_x'] + attr['cardinality'] * attr['arena_size_inc'],
                   attr['arena_size_inc'])
-        dims = [core.utils.ArenaExtent(Vector3D(x, int(x / 2), 0)) for x in r]
+        dims = [core.utils.ArenaExtent(Vector3D(x, int(x / 2), kw['arena_z'])) for x in r]
     elif kw['dist_type'] == "QS" or kw['dist_type'] == "RN" or kw['dist_type'] == 'PL':
         r = range(kw['arena_x'],
                   kw['arena_x'] + attr['cardinality'] * attr['arena_size_inc'],
                   attr['arena_size_inc'])
 
-        dims = [core.utils.ArenaExtent(Vector3D(x, x, 0)) for x in r]
+        dims = [core.utils.ArenaExtent(Vector3D(x, x, kw['arena_z'])) for x in r]
     else:
         raise NotImplementedError(
             "Unsupported block dstribution '{0}': Only SS,DS,QS,RN,PL supported".format(kw['dist_type']))

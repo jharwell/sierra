@@ -65,7 +65,7 @@ class PhysicsEngines():
         self.iter_per_tick = iter_per_tick
         self.layout = layout
         self.extents = extents
-        self.tag_adds = []  # type: tp.List
+        self.tag_adds = []  # type: tp.List[XMLTagAddList]
         # If we are given multiple extents to map, we need to divide the specified # of engines
         # among them.
         self.n_engines = int(self.n_engines / float(len(self.extents)))
@@ -392,7 +392,7 @@ class PhysicsEngines3D(PhysicsEngines):
 
 def factory(engine_type: str,
             n_engines: int,
-            cmdopts: dict,
+            cmdopts: tp.Dict[str, tp.Any],
             extents: tp.List[ArenaExtent]) -> PhysicsEngines:
     """
     Create a physics engine mapping onto a list of arena extents for 2D or 3D

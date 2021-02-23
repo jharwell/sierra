@@ -75,16 +75,16 @@ class Sigmoid():
 
     """
 
-    def __init__(self, x: float):
+    def __init__(self, x: float) -> None:
         self.x = x
 
-    def __call__(self):
+    def __call__(self) -> float:
         if self.x < 0:
             # Equivalent, and numerically stable for large negative exponents. If you don't case the
             # sigmoid, you get overflow errors at runtime.
-            return 1.0 - 1.0 / (1 + np.exp(self.x))
+            return 1.0 - 1.0 / (1 + np.exp(self.x))  # type: ignore
         else:
-            return 1.0 / (1 + np.exp(-self.x))
+            return 1.0 / (1 + np.exp(-self.x))  # type: ignore
 
 
 class ReLu():
@@ -163,7 +163,7 @@ def path_exists(path: str) -> bool:
     return max(set(res), key=res.count)
 
 
-def get_primary_axis(criteria, primary_axis_bc: tp.List, cmdopts: dict) -> int:
+def get_primary_axis(criteria, primary_axis_bc: tp.List, cmdopts: tp.Dict[str, tp.Any]) -> int:
     if cmdopts['plot_primary_axis'] == '0':
         return 0
     if cmdopts['plot_primary_axis'] == '1':
@@ -175,7 +175,7 @@ def get_primary_axis(criteria, primary_axis_bc: tp.List, cmdopts: dict) -> int:
     return 1
 
 
-def exp_range_calc(cmdopts: dict, root_dir: str, criteria) -> tp.List[str]:
+def exp_range_calc(cmdopts: tp.Dict[str, tp.Any], root_dir: str, criteria) -> tp.List[str]:
     exp_all = [os.path.join(root_dir, d)
                for d in criteria.gen_exp_dirnames(cmdopts)]
 
@@ -189,6 +189,24 @@ def exp_range_calc(cmdopts: dict, root_dir: str, criteria) -> tp.List[str]:
         return exp_all[min_exp: max_exp + 1]
 
     return exp_all
+
+
+def bivar_exp_labels_calc(exp_dirs: tp.List[str]) -> tp.Tuple[tp.List[str], tp.List[str]]:
+    # Because sets are used, if a sub-range of experiments are selected for collation, the
+    # selected range has to be an even multiple of the # of experiments in the second batch
+    # criteria, or inter-experiment graph generation won't work (the final .csv is always an MxN
+    # grid).
+    xlabels_set = set()
+    ylabels_set = set()
+    for e in exp_dirs:
+        pair = os.path.split(e)[1].split('+')
+        xlabels_set.add(pair[0])
+        ylabels_set.add(pair[1])
+
+    xlabels = sorted(list(xlabels_set))
+    ylabels = sorted(list(ylabels_set))
+
+    return (xlabels, ylabels)
 
 
 def module_exists(name: str):

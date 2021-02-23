@@ -23,6 +23,7 @@ import os
 import random
 import logging
 import shutil
+import typing as tp
 
 # 3rd party packages
 
@@ -52,7 +53,7 @@ class SimDefUniqueGenerator:
                  sim_num: int,
                  exp_output_root: str,
                  sim_output_dir: str,
-                 cmdopts: dict) -> None:
+                 cmdopts: tp.Dict[str, tp.Any]) -> None:
 
         self.exp_output_root = exp_output_root
         self.sim_output_dir = sim_output_dir
@@ -121,7 +122,7 @@ class ExpCreator:
                  template_input_file: str,
                  exp_input_root: str,
                  exp_output_root: str,
-                 cmdopts: dict) -> None:
+                 cmdopts: tp.Dict[str, tp.Any]) -> None:
 
         # will get the main name and extension of the config file (without the full absolute path)
         self.main_input_name, self.main_input_extension = os.path.splitext(
@@ -234,7 +235,7 @@ class BatchedExpCreator:
                  batch_input_root: str,
                  batch_output_root: str,
                  criteria: bc.BatchCriteria,
-                 cmdopts: dict) -> None:
+                 cmdopts: tp.Dict[str, tp.Any]) -> None:
 
         self.batch_config_template = batch_config_template
         self.batch_config_leaf, _ = os.path.splitext(
@@ -246,7 +247,7 @@ class BatchedExpCreator:
         self.cmdopts = cmdopts
         self.logger = logging.getLogger(__name__)
 
-    def create(self, generator):
+    def create(self, generator) -> None:
         core.utils.dir_create_checked(self.batch_input_root, self.cmdopts['exp_overwrite'])
 
         # Scaffold the batched experiment, creating experiment directories and writing template XML

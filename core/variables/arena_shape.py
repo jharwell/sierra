@@ -43,7 +43,7 @@ class ArenaShape():
 
     def __init__(self, extents: tp.List[ArenaExtent]) -> None:
         self.extents = extents
-        self.attr_changes = []  # type: tp.List
+        self.attr_changes = []  # type: tp.List[XMLAttrChangeSet]
 
     def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         """
@@ -118,6 +118,7 @@ class ArenaShape():
                                                       "position",
                                                       "0, {0:.9f}, 0".format(extent.ysize() / 2.0)))
                 self.attr_changes.append(chgs)
+
         return self.attr_changes
 
     def gen_tag_rmlist(self) -> tp.List[XMLTagRmList]:

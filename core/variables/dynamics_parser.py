@@ -15,6 +15,7 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 import re
+import typing as tp
 
 
 class DynamicsParser():
@@ -22,7 +23,10 @@ class DynamicsParser():
     Base class for some dynamics parsers to reduce code duplication.
     """
 
-    def specs_dict(self):
+    def __init__(self) -> None:
+        pass
+
+    def specs_dict(self) -> tp.Dict[str, tp.Any]:
         raise NotImplementedError
 
     def __call__(self,

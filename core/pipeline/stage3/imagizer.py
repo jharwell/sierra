@@ -39,7 +39,7 @@ class BatchExpParallelImagizer:
     Generate the images for each experiment in the specified batch directory.
     """
 
-    def __init__(self, main_config: dict, cmdopts: dict) -> None:
+    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, tp.Any]) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
 

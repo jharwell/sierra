@@ -70,7 +70,7 @@ class Parser():
     Enforces the cmdline definition of a :class:`ConstantDensity` derived batche criteria.
     """
 
-    def __call__(self, cli_arg: str) -> dict:
+    def __call__(self, cli_arg: str) -> tp.Dict[str, tp.Any]:
         """
         Returns:
             Dictionary with keys:

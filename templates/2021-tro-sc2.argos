@@ -56,11 +56,6 @@
                  stddev="0"
                  mean="0"/>
         </footbot_motor_ground>
-        <colored_blob_omnidirectional_camera implementation="rot_z_only"
-                                             medium="leds">
-          <noise model="none"
-                 stddev="0"/>
-        </colored_blob_omnidirectional_camera>
       </sensors>
       <params>
         <rng seed="123"/>
@@ -114,9 +109,9 @@
                 <sigmoid_sel
                     method="pini2011">
                   <sigmoid
-                      reactivity="0.5"
-                      offset="1.0"
-                      gamma="1.0"/> <!-- d1 = 1.75 -->
+                      reactivity="__empty__"
+                      offset="1.25"
+                      gamma="__empty__"/>
                 </sigmoid_sel>
               </src_sigmoid_sel>
             </task_partition>
@@ -125,10 +120,10 @@
                   input_src="exec">
                 <sigmoid_sel
                     method="harwell2018">
-                    <!-- d1 reactivity= 0.5 --> <sigmoid
-                      reactivity="4.0"
-                      offset="1.0"
-                      gamma="1.0"/> <!-- d1 = 0.75 -->
+                  <sigmoid
+                      reactivity="__empty__"
+                      offset="1.25"
+                      gamma="__empty__"/>
                 </sigmoid_sel>
               </src_sigmoid_sel>
             </subtask_sel>
@@ -138,9 +133,9 @@
                 <sigmoid_sel
                     method="harwell2019">
                   <sigmoid
-                      reactivity="1.0"
-                      offset="1.0"
-                      gamma="1.0"/> <!-- offset=3.0,gamma=0.5,reactive=0.5 -->
+                      reactivity="4.0"
+                      offset="3.0"
+                      gamma="0.5"/>
                 </sigmoid_sel>
               </src_sigmoid_sel>
             </tab_sel>
@@ -161,20 +156,21 @@
             cache_prox_dist="3.2"
             nest_prox_dist="3.0"
             block_prox_dist="1.0"
+            new_cache_tol="1.2"
             site_xrange="2:10"
             site_yrange="2.5:3">
           <pickup_policy
-              policy="Null"
-              timestep="20000"
+              policy="__empty__"
+              timestep="500"
               cache_size="3"/>
         </cache_sel_matrix>
-         <strategy>
-         <explore
-             block_strategy="CRW"
-             cache_strategy="ledtaxis_search"/>
-         <nest_acq
-             strategy="wander"/>
-         </strategy>
+        <strategy>
+          <explore
+              block_strategy="CRW"
+              cache_strategy="likelihood_search"/>
+          <nest_acq
+              strategy="wander_random_thresh"/>
+        </strategy>
 
         <sensing_subsystemQ3D>
           <!-- -5pi/6 : 5pi/6 -->
@@ -260,6 +256,7 @@
                   block_acq_locs2D="block-acq-locs2D"
                   fsm_interference_locs2D="fsm-interference-locs2D"
                   block_acq_explore_locs2D="block-acq-explore-locs2D"
+                  block_acq_vector_locs2D="block-acq-vector-locs2D"
                   cache_acq_locs2D="cache-acq-locs2D"
                   cache_acq_explore_locs2D="cache-acq-explore-locs2D"
                   cache_acq_vector_locs2D="cache-acq-vector-locs2D"
@@ -327,13 +324,16 @@
         </distribution>
       </blocks>
       <nests>
-        <nest dims="1.0, 4.0" center="2, 3" />
+        <nest dims="1.0, 4.0"
+              center="2, 3"
+              light_height="5.0"
+              light_intensity="5.0"/>
         </nests>
     </arena_map>
     <caches dimension="1.2">
       <static enable="true"
-              size="10"
-              respawn_scale_factor="1.0"/>
+              size="2"
+              respawn_scale_factor="0.05"/>
       <dynamic enable="true"
                min_dist="1.2"
                min_blocks="2"

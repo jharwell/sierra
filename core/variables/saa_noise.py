@@ -62,7 +62,7 @@ class SAANoise(bc.UnivarBatchCriteria):
         self.variances = variances
         self.population = population
         self.noise_type = noise_type
-        self.attr_changes = []  # type: tp.List
+        self.attr_changes = []  # type: tp.List[XMLAttrChangeSet]
 
     def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         """
@@ -88,34 +88,37 @@ class SAANoise(bc.UnivarBatchCriteria):
         return self.attr_changes
 
     def graph_xticks(self,
-                     cmdopts: dict,
-                     exp_dirs: tp.List[str] = None) -> tp.List[float]:
+                     cmdopts: tp.Dict[str, tp.Any],
+                     exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
         xticks_range = []
 
-        if self.__gaussian_sources():
+        if self._gaussian_sources():
             if self.main_config['perf']['robustness']['gaussian_ticks_src'] == 'mean':
                 xticks_range = self.main_config['perf']['robustness']['gaussian_ticks_mean_range']
             else:
                 xticks_range = self.main_config['perf']['robustness']['gaussian_ticks_stddev_range']
-        elif self.__uniform_sources():
+        elif self._uniform_sources():
             xticks_range = self.main_config['perf']['robustness']['uniform_ticks_range']
 
         # If exp_dirs is passed, then we have been handed a subset of the total # of directories in
         # the batch exp root, and so n_exp() will return more experiments than we actually
         # have. This behavior is needed to correctly extract x/y values for bivariate experiments.
+        #
+        # We use range() instead of the actual SAA noise values so that this batch criteria works
+        # well with box and whisker plots around each data point.
         if exp_dirs is not None:
-            return np.linspace(xticks_range[0], xticks_range[1], num=len(exp_dirs))
+            return [float(i) for i in range(len(exp_dirs))]
         else:
-            return np.linspace(xticks_range[0], xticks_range[1], num=len(self.variances))
+            return [float(i) for i in range(len(self.variances))]
 
     def graph_xticklabels(self,
-                          cmdopts: dict,
-                          exp_dirs: tp.List[str] = None) -> tp.List[str]:
+                          cmdopts: tp.Dict[str, tp.Any],
+                          exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
 
-        if self.__uniform_sources():
+        if self._uniform_sources():
             xticks = self.graph_xticks(cmdopts, exp_dirs)
             return ["U(-{0},{0})".format(round(t, 3)) for t in xticks]
-        elif self.__gaussian_sources():
+        elif self._gaussian_sources():
             mean_xticks = []
             stddev_xticks = []
 
@@ -138,29 +141,34 @@ class SAANoise(bc.UnivarBatchCriteria):
                                             xticks_stddev_range[1],
                                             num=len(self.variances))
 
-            levels = zip(mean_xticks, stddev_xticks)
-            return ["G({0},{1})".format(round(mean, 3), round(stddev, 3)) for mean, stddev in levels]
+            if self.main_config['perf']['robustness']['gaussian_labels_show'] == 'stddev':
+                return ["{0}".format(round(stddev, 3)) for stddev in stddev_xticks]
+            elif self.main_config['perf']['robustness']['gaussian_labels_show'] == 'mean':
+                return ["{0}".format(round(mean, 3)) for mean in mean_xticks]
+            else:
+                levels = zip(mean_xticks, stddev_xticks)
+                return ["G({0},{1})".format(round(mean, 3), round(stddev, 3)) for mean, stddev in levels]
         else:
             return []
 
-    def graph_xlabel(self, cmdopts: dict) -> str:
-        labels = {
-            'sensors': 'Sensor Noise',
-            'actuators': 'Actuator Noise',
-            'all': 'Sensor And Actuator Noise'
-        }
-        return labels[self.noise_type]
+    def graph_xlabel(self, cmdopts: tp.Dict[str, tp.Any]) -> str:
+        if self.main_config['perf']['robustness']['gaussian_labels_show'] == 'stddev':
+            return r'Noise $\sigma$'
+        elif self.main_config['perf']['robustness']['gaussian_labels_show'] == 'mean':
+            return r'Noise $\mu$'
+        else:
+            return 'Noise Distribution'
 
-    def gen_exp_dirnames(self, cmdopts: dict) -> tp.List[str]:
+    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, tp.Any]) -> tp.List[str]:
         return ['exp' + str(x) for x in range(0, len(self.gen_attr_changelist()))]
 
     def pm_query(self, pm: str) -> bool:
-        return pm in ['raw', 'robustness']
+        return pm in ['raw', 'robustness_saa']
 
     def inter_exp_graphs_exclude_exp0(self) -> bool:
-        return False
+        return True
 
-    def __uniform_sources(self):
+    def _uniform_sources(self) -> bool:
         """
         Return TRUE if all noise sources are uniform.
         """
@@ -170,7 +178,7 @@ class SAANoise(bc.UnivarBatchCriteria):
                     return False
         return True
 
-    def __gaussian_sources(self):
+    def _gaussian_sources(self) -> bool:
         """
         Return TRUE if all noise sources are gaussian.
         """
@@ -187,7 +195,7 @@ class Parser():
     :ref:`ln-bc-saa-noise`.
     """
 
-    def __call__(self, criteria_str: str) -> dict:
+    def __call__(self, criteria_str: str) -> tp.Dict[str, tp.Any]:
         """
         Returns:
             Dictionary with the following keys:
@@ -221,7 +229,7 @@ class Parser():
         return ret
 
 
-def factory(cli_arg: str, main_config: dict, batch_input_root: str, **kwargs):
+def factory(cli_arg: str, main_config: tp.Dict[str, tp.Any], batch_input_root: str, **kwargs):
     """
     Factory to create :class:`SAANoise` derived classes from the command line definition of
     batch criteria.
@@ -229,7 +237,7 @@ def factory(cli_arg: str, main_config: dict, batch_input_root: str, **kwargs):
     """
     attr = Parser()(cli_arg)
 
-    def gen_variances(attr: dict):
+    def gen_variances(attr: tp.Dict[str, tp.Any]):
 
         xml_parents = {
             'sensors': {
@@ -292,7 +300,9 @@ def factory(cli_arg: str, main_config: dict, batch_input_root: str, **kwargs):
 
         return by_exp
 
-    def configure_device(xml_config: tuple, dev_noise_config: dict, by_src: list):
+    def configure_device(xml_config: tuple,
+                         dev_noise_config: tp.Dict[str, tp.Any],
+                         by_src: list):
         xml_parent = xml_config[0]
         xml_child_tags = xml_config[1]
 

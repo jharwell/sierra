@@ -22,6 +22,7 @@ Linegraph for summarizing the results of a batch experiment in different ways.
 import os
 import typing as tp
 import logging
+import textwrap
 
 # 3rd party packages
 import matplotlib.ticker as mticker
@@ -88,12 +89,12 @@ class SummaryLinegraph:
                  xlabel: str,
                  ylabel: str,
                  xticks: tp.List[float],
-                 xtick_labels: tp.List[str] = None,
+                 xtick_labels: tp.Optional[tp.List[str]] = None,
                  large_text: bool = False,
                  legend: tp.List[str] = ['Empirical Data'],
                  logyscale: bool = False,
                  stats: str = 'none',
-                 model_root: str = None) -> None:
+                 model_root: tp.Optional[str] = None) -> None:
 
         # Required arguments
         self.stats_root = stats_root
@@ -118,7 +119,7 @@ class SummaryLinegraph:
 
         self.logger = logging.getLogger(__name__)
 
-    def generate(self):
+    def generate(self) -> None:
         input_fpath = os.path.join(self.stats_root, self.input_stem +
                                    core.config.kStatsExtensions['mean'])
         if not core.utils.path_exists(input_fpath):
@@ -163,7 +164,7 @@ class SummaryLinegraph:
         fig.savefig(self.output_fpath, bbox_inches='tight', dpi=core.config.kGraphDPI)
         plt.close(fig)  # Prevent memory accumulation (fig.clf() does not close everything)
 
-    def _plot_lines(self, data_dfy: pd.DataFrame, model: tp.Tuple[pd.DataFrame, tp.List[str]]):
+    def _plot_lines(self, data_dfy: pd.DataFrame, model: tp.Tuple[pd.DataFrame, tp.List[str]]) -> None:
 
         for i in range(0, len(data_dfy.values)):
             # Plot data
@@ -180,7 +181,11 @@ class SummaryLinegraph:
                          marker=self.kMarkStyles[i],
                          color=self.kColors[i + len(data_dfy.index)])
 
-    def _plot_stats(self, ax, xticks, data_dfy: pd.DataFrame, stat_dfs: tp.Dict[str, pd.DataFrame]):
+    def _plot_stats(self,
+                    ax,
+                    xticks,
+                    data_dfy: pd.DataFrame,
+                    stat_dfs: tp.Dict[str, pd.DataFrame]) -> None:
         """
         Plot statistics for all lines on the graph.
         """
@@ -189,7 +194,7 @@ class SummaryLinegraph:
                 # 95% interval = 2 std stdeviations
                 plt.fill_between(xticks, data_dfy.values[i] - 2 * stat_dfs['stddev'].abs().values[i],
                                  data_dfy.values[i] + 2 * stat_dfs['stddev'].abs().values[i],
-                                 alpha=0.50, color=self.kColors[i], interpolate=True)
+                                 alpha=0.25, color=self.kColors[i], interpolate=True)
 
         if self.stats in ['bw', 'all'] and all(k in stat_dfs.keys() for k in
                                                ['whislo',
@@ -215,7 +220,7 @@ class SummaryLinegraph:
 
                 ax.bxp(boxes, manage_ticks=False, positions=self.xticks, shownotches=True)
 
-    def _plot_ticks(self, ax):
+    def _plot_ticks(self, ax) -> None:
         if self.logyscale:
             ax.set_yscale('symlog', base=2)
             # Use scientific or decimal notation--whichever has fewer chars
@@ -230,7 +235,7 @@ class SummaryLinegraph:
             ax.set_xticks(self.xticks)
             ax.set_xticklabels(self.xtick_labels, rotation='vertical')
 
-    def _plot_legend(self, model: tp.Tuple[pd.DataFrame, tp.List[str]]):
+    def _plot_legend(self, model: tp.Tuple[pd.DataFrame, tp.List[str]]) -> None:
         legend = self.legend
 
         if model[1]:

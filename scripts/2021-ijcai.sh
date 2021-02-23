@@ -48,14 +48,15 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 ################################################################################
 # Begin Experiments                                                            #
 ################################################################################
-OUTPUT_ROOT=$HOME/exp/2021-modeling
+OUTPUT_ROOT=$HOME/exp/2021-ijcai-long
 TIME_LONG=time_setup.T20000
 DENSITY=CD1p0
 CARDINALITY=C16
 SIZEINC=I72
 SCENARIOS_LIST=(SS.16x8 DS.16x8 RN.8x8 PL.8x8)
-#SCENARIOS_LIST=(SS.16x8)
-NSIMS=4
+# SCENARIOS_LIST=(SS.16x8 DS.16x8)
+# SCENARIOS_LIST=(RN.8x8)
+NSIMS=32
 
 SIERRA_BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT\
@@ -65,7 +66,8 @@ SIERRA_BASE_CMD="python3 sierra.py \
                   --project=fordyca\
                   --log-level=INFO\
                   --pipeline 4 --project-no-yaml-LN\
-                  --gen-stats --log-level=DEBUG\
+                  --dist-stats=conf95\
+                  --log-level=DEBUG\
                   --exp-overwrite\
                   --time-setup=${TIME_LONG}"
 
@@ -78,7 +80,7 @@ if [ -n "$MSIARCH" ]; then # Running on MSI
     TASK="exp"
     SIERRA_CMD="$SIERRA_BASE_CMD --hpc-env=slurm --exp-range=$EXP_NUM:$EXP_NUM --exec-resume"
     echo "********************************************************************************\n"
-    echo  squeue -j $SLURM_ARRAY_TASK_ID -o "%.9i %.9P %.8j %.8u %.2t %.10M %.6D %S %e"
+    squeue -j $SLURM_ARRAY_TASK_ID -o "%.9i %.9P %.8j %.8u %.2t %.10M %.6D %S %e"
     echo "********************************************************************************\n"
 
 else
@@ -89,7 +91,9 @@ else
                  --no-verify-results\
                  --exp-graphs=inter\
                  --plot-large-text\
-                 --plot-log-xscale
+                 --physics-n-engines=4\
+                 --plot-log-xscale\
+                 --plot-log-yscale
                  "
 fi
 

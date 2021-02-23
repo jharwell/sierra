@@ -20,7 +20,6 @@ Measures for swarm flexibility in univariate and bivariate batched experiments.
 
 # Core packages
 import os
-import copy
 import logging
 import typing as tp
 
@@ -32,58 +31,80 @@ from core.graphs.summary_line_graph import SummaryLinegraph
 from core.graphs.heatmap import Heatmap
 from core.perf_measures import vcs
 import core.variables.batch_criteria as bc
-import core.perf_measures.common as common
+import core.perf_measures.common as pmcommon
 import core.variables.temporal_variance as tv
 import core.utils
 import core.config
+
+
+class BaseSteadyStateReactivity:
+    kLeaf = 'PM-ss-reactivity'
+
+
+class BaseSteadyStateAdaptability:
+    kLeaf = 'PM-ss-adaptability'
 
 ################################################################################
 # Univariate Classes
 ################################################################################
 
 
-class ReactivityUnivar:
+class SteadyStateReactivityUnivar(BaseSteadyStateReactivity):
     """
     Calculates the reactivity of the swarm configuration across a univariate batched set of
     experiments within the same scenario from collated .csv data.
     """
-    kLeaf = 'PM-reactivity'
 
     @staticmethod
-    def df_kernel(criteria: bc.BivarBatchCriteria,
-                  main_config: dict,
-                  cmdopts: dict,
-                  stat_ext: str,
-                  raw_df: pd.DataFrame):
+    def df_kernel(criteria: bc.IConcreteBatchCriteria,
+                  main_config: tp.Dict[str, tp.Any],
+                  cmdopts: tp.Dict[str, tp.Any],
+                  collated_perf: tp.Dict[str, pd.DataFrame]) -> tp.Dict[pd.DataFrame, str]:
+        rt_dfs = {}
 
-        df = pd.DataFrame(columns=raw_df.columns[1:], index=[0])
+        exp0 = list(collated_perf.keys())[0]
+        exp0_perf_df = collated_perf[exp0]
 
-        for i in range(len(raw_df.columns)):
-            df[df.columns[i]] = vcs.ReactivityCS(main_config,
-                                                 cmdopts,
-                                                 criteria,
-                                                 stat_ext,
-                                                 0,
-                                                 i + 1)()
-        return df
+        for i in range(1, criteria.n_exp()):
+            expx = list(collated_perf.keys())[i]
+            expx_perf_df = collated_perf[expx]
+            rt_dfs[expx] = pd.DataFrame(columns=collated_perf[expx].columns[1:],
+                                        index=[0])  # Steady state
 
-    def __init__(self, main_config: dict, cmdopts: dict, inter_perf_csv: str) -> None:
+            for sim in expx_perf_df.columns:
+                reactivity = vcs.ReactivityCS(main_config,
+                                              cmdopts,
+                                              criteria,
+                                              ideal_num=0,
+                                              exp_num=i).from_batch(ideal_perf_df=exp0_perf_df[sim],
+                                                                    expx_perf_df=expx_perf_df[sim])
+                rt_dfs[expx].loc[0, sim] = reactivity
+
+        return rt_dfs
+
+    def __init__(self,
+                 main_config: tp.Dict[str, tp.Any],
+                 cmdopts: tp.Dict[str, tp.Any],
+                 perf_csv: str,
+                 perf_col: str) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
-        self.inter_perf_leaf = inter_perf_csv.split('.')[0]
+        self.perf_leaf = perf_csv.split('.')[0]
+        self.perf_col = perf_col
 
-    def from_batch(self, criteria: bc.IConcreteBatchCriteria):
+    def from_batch(self, criteria: bc.IConcreteBatchCriteria) -> None:
         """
         Calculate the reactivity metric for a given controller within a specific scenario, and
         generate a graph of the result.
         """
+        dfs = pmcommon.gather_collated_sim_dfs(self.cmdopts,
+                                               criteria,
+                                               self.perf_leaf,
+                                               self.perf_col)
+        pm_dfs = self.df_kernel(criteria, self.main_config, self.cmdopts, dfs)
 
-        _stats_prepare(self.main_config,
-                       self.cmdopts,
-                       criteria,
-                       self.inter_perf_leaf,
-                       self.kLeaf,
-                       self.df_kernel)
+        # Calculate summary statistics for the performance measure
+        pmcommon.univar_distribution_prepare(self.cmdopts, criteria, self.kLeaf, pm_dfs, True)
 
         opath = os.path.join(self.cmdopts["batch_graph_collate_root"],
                              self.kLeaf + core.config.kImageExt)
@@ -102,48 +123,60 @@ class ReactivityUnivar:
                          large_text=self.cmdopts['plot_large_text']).generate()
 
 
-class AdaptabilityUnivar:
+class SteadyStateAdaptabilityUnivar(BaseSteadyStateAdaptability):
     """
     Calculates the adaptability of the swarm configuration across a univariate batched set of
     experiments within the same scenario from collated .csv data.
     """
-    kLeaf = 'PM-adaptability'
-
     @staticmethod
-    def df_kernel(criteria: bc.BivarBatchCriteria,
-                  main_config: dict,
-                  cmdopts: dict,
-                  stat_ext: str,
-                  raw_df: pd.DataFrame):
+    def df_kernel(criteria: bc.IConcreteBatchCriteria,
+                  main_config: tp.Dict[str, tp.Any],
+                  cmdopts: tp.Dict[str, tp.Any],
+                  collated_perf: tp.Dict[str, pd.DataFrame]) -> tp.Dict[pd.DataFrame, str]:
+        ad_dfs = {}
 
-        df = pd.DataFrame(columns=raw_df.columns[1:], index=[0])
+        exp0 = list(collated_perf.keys())[0]
+        exp0_perf_df = collated_perf[exp0]
 
-        for i in range(len(raw_df.columns)):
-            df[df.columns[i]] = vcs.AdaptabilityCS(main_config,
-                                                   cmdopts,
-                                                   criteria,
-                                                   stat_ext,
-                                                   0,
-                                                   i + 1)()
-        return df
+        for i in range(1, criteria.n_exp()):
+            expx = list(collated_perf.keys())[i]
+            expx_perf_df = collated_perf[expx]
+            ad_dfs[expx] = pd.DataFrame(columns=collated_perf[expx].columns[1:],
+                                        index=[0])  # Steady state
 
-    def __init__(self, main_config: dict, cmdopts: dict, inter_perf_csv: str) -> None:
+            for sim in expx_perf_df.columns:
+                adaptability = vcs.AdaptabilityCS(main_config,
+                                                  cmdopts,
+                                                  criteria).from_batch(ideal_num=0,
+                                                                       ideal_perf_df=exp0_perf_df[sim],
+                                                                       expx_perf_df=expx_perf_df[sim])
+                ad_dfs[expx].loc[0, sim] = adaptability
+
+        return ad_dfs
+
+    def __init__(self,
+                 main_config: tp.Dict[str, tp.Any],
+                 cmdopts: tp.Dict[str, tp.Any],
+                 perf_csv: str,
+                 perf_col: str) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
-        self.inter_perf_leaf = inter_perf_csv.split('.')[0]
+        self.perf_leaf = perf_csv.split('.')[0]
+        self.perf_col = perf_col
 
-    def from_batch(self, criteria: bc.IConcreteBatchCriteria):
+    def from_batch(self, criteria: bc.IConcreteBatchCriteria) -> None:
         """
         Calculate the adaptability metric for a given controller within a specific scenario, and
         generate a graph of the result.
         """
+        dfs = pmcommon.gather_collated_sim_dfs(self.cmdopts,
+                                               criteria,
+                                               self.perf_leaf,
+                                               self.perf_col)
+        pm_dfs = self.df_kernel(criteria, self.main_config, self.cmdopts, dfs)
 
-        _stats_prepare(self.main_config,
-                       self.cmdopts,
-                       criteria,
-                       self.inter_perf_leaf,
-                       self.kLeaf,
-                       self.df_kernel)
+        # Calculate summary statistics for the performance measure
+        pmcommon.univar_distribution_prepare(self.cmdopts, criteria, self.kLeaf, pm_dfs, True)
 
         opath = os.path.join(self.cmdopts["batch_graph_collate_root"],
                              self.kLeaf + core.config.kImageExt)
@@ -169,174 +202,216 @@ class FlexibilityUnivarGenerator:
 
     - Reactivity
     - Adaptability
-    - Weight reactivity+adaptability
     """
 
     def __init__(self) -> None:
         self.logger = logging.getLogger(__name__)
 
     def __call__(self,
-                 cmdopts: dict,
-                 main_config: dict,
-                 inter_perf_csv: str,
-                 alpha_SAA: float,
-                 alpha_PD: float,
-                 criteria: bc.IConcreteBatchCriteria):
+                 cmdopts: tp.Dict[str, tp.Any],
+                 main_config: tp.Dict[str, tp.Any],
+                 criteria: bc.IConcreteBatchCriteria) -> None:
         self.logger.info("From %s", cmdopts["batch_stat_collate_root"])
+        perf_csv = main_config['perf']['intra_perf_csv']
+        perf_col = main_config['perf']['intra_perf_col']
 
-        ReactivityUnivar(main_config, cmdopts, inter_perf_csv).from_batch(criteria)
-        AdaptabilityUnivar(main_config, cmdopts, inter_perf_csv).from_batch(criteria)
-
-        title1 = r'Swarm Flexbility '
-        title2 = r'($\alpha_{{F_{{R}}}}={0},\alpha_{{F_{{A}}}}={1}$)'.format(alpha_SAA,
-                                                                             alpha_PD)
-        w = common.WeightedPMUnivar(cmdopts=cmdopts,
-                                    output_leaf='PM-flexibility',
-                                    ax1_leaf=ReactivityUnivar.kLeaf,
-                                    ax2_leaf=AdaptabilityUnivar.kLeaf,
-                                    ax1_alpha=alpha_SAA,
-                                    ax2_alpha=alpha_PD,
-                                    title=title1 + title2)
-        w.generate(criteria)
+        SteadyStateReactivityUnivar(main_config, cmdopts, perf_csv, perf_col).from_batch(criteria)
+        SteadyStateAdaptabilityUnivar(main_config, cmdopts, perf_csv, perf_col).from_batch(criteria)
 
 ################################################################################
 # Bivariate Classes
 ################################################################################
 
 
-class ReactivityBivar:
+class SteadyStateReactivityBivar(BaseSteadyStateReactivity):
     """
     Calculates the reactivity of the swarm configuration across a bivariate batched set of
     experiments within the same scenario from collated .csv data.
 
     """
-    kLeaf = 'PM-reactivity'
 
     @staticmethod
-    def df_kernel(criteria: bc.BivarBatchCriteria,
-                  main_config: dict,
-                  cmdopts: dict,
-                  stat_ext: str,
-                  raw_df: pd.DataFrame) -> pd.DataFrame:
-        df = pd.DataFrame(columns=raw_df.columns, index=raw_df.index)
+    def df_kernel(criteria: bc.IConcreteBatchCriteria,
+                  main_config: tp.Dict[str, tp.Any],
+                  cmdopts: tp.Dict[str, tp.Any],
+                  axis: int,
+                  collated_perf: tp.Dict[str, pd.DataFrame]) -> tp.Dict[str, pd.DataFrame]:
+        xsize = len(criteria.criteria1.gen_attr_changelist())
+        ysize = len(criteria.criteria2.gen_attr_changelist())
         exp_dirs = criteria.gen_exp_dirnames(cmdopts)
+        rt_dfs = {}
 
-        for i in range(0, len(df.index)):
-            for j in range(0, len(df.columns)):
-                # We need to know which of the 2 variables was temporal variance, in order to
-                # determine the correct dimension along which to compute the metric.
-                if isinstance(criteria.criteria1, tv.TemporalVariance) or cmdopts['plot_primary_axis'] == '0':
-                    val = vcs.ReactivityCS(main_config,
-                                           cmdopts,
-                                           criteria,
-                                           stat_ext,
-                                           j,  # exp0 in first row with i=0
-                                           i)(exp_dirs)
-                else:
-                    val = vcs.ReactivityCS(main_config,
-                                           cmdopts,
-                                           criteria,
-                                           stat_ext,
-                                           i * len(df.columns),  # exp0 in first col with j=0
-                                           i * len(df.columns) + j)(exp_dirs)
+        for i in range(axis == 0, xsize):
+            for j in range(axis == 1, ysize):
+                expx = list(collated_perf.keys())[i * ysize + j]
+                expx_perf_df = collated_perf[expx]
+                rt_dfs[expx] = pd.DataFrame(columns=collated_perf[expx].columns,
+                                            index=[0])  # Steady state
+                for sim in expx_perf_df.columns:
+                    if axis == 0:
+                        exp_ideal = list(collated_perf.keys())[j]  # exp0 in first row with i=0
+                        ideal_perf_df = collated_perf[exp_ideal]
 
-                df.iloc[i, j] = val
-        return df
+                        reactivity = vcs.ReactivityCS(main_config,
+                                                      cmdopts,
+                                                      criteria,
+                                                      ideal_num=j,
+                                                      exp_num=i).from_batch(ideal_perf_df=ideal_perf_df[sim],
+                                                                            expx_perf_df=expx_perf_df[sim],
+                                                                            exp_dirs=exp_dirs)
+                    else:
+                        # exp0 in first col with j=0
+                        exp_ideal = list(collated_perf.keys())[i * ysize]
+                        ideal_perf_df = collated_perf[exp_ideal]
 
-    def __init__(self, main_config: dict, cmdopts: dict, inter_perf_csv: str) -> None:
+                        if axis == 0:
+                            reactivity = vcs.ReactivityCS(main_config,
+                                                          cmdopts,
+                                                          criteria.criteria1,
+                                                          ideal_num=i * ysize,
+                                                          exp_num=i * ysize + j).from_batch(ideal_perf_df=ideal_perf_df[sim],
+                                                                                            expx_perf_df=expx_perf_df[sim],
+                                                                                            exp_dirs=exp_dirs)
+                        else:
+                            reactivity = vcs.ReactivityCS(main_config,
+                                                          cmdopts,
+                                                          criteria.criteria2,
+                                                          ideal_num=i * ysize,
+                                                          exp_num=i * ysize + j).from_batch(ideal_perf_df=ideal_perf_df[sim],
+                                                                                            expx_perf_df=expx_perf_df[sim],
+                                                                                            exp_dirs=exp_dirs)
+                    rt_dfs[expx].loc[0, sim] = reactivity
+
+        return rt_dfs
+
+    def __init__(self,
+                 main_config: tp.Dict[str, tp.Any],
+                 cmdopts: tp.Dict[str, tp.Any],
+                 perf_csv: str,
+                 perf_col: str) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
-        self.inter_perf_leaf = inter_perf_csv.split('.')[0]
+        self.perf_leaf = perf_csv.split('.')[0]
+        self.perf_col = perf_col
 
-    def from_batch(self, criteria: bc.IConcreteBatchCriteria):
+    def from_batch(self, criteria: bc.IConcreteBatchCriteria) -> None:
         """
         Generate a reactivity graph for a given controller in a given scenario by computing the
         value of the reactivity metric for each experiment within the batch, and plot
         a :class:`~core.graphs.heatmap.Heatmap` of the reactivity variable vs. the other one.
-
-        Returns:
-           The path to the `.csv` file used to generate the heatmap.
         """
-        _stats_prepare(self.main_config,
-                       self.cmdopts,
-                       criteria,
-                       self.inter_perf_leaf,
-                       self.kLeaf,
-                       self.df_kernel)
+        dfs = pmcommon.gather_collated_sim_dfs(self.cmdopts,
+                                               criteria,
+                                               self.perf_leaf,
+                                               self.perf_col)
+        # We need to know which of the 2 variables was temporal variance, in order to
+        # determine the correct dimension along which to compute the metric.
+        axis = core.utils.get_primary_axis(criteria,
+                                           [tv.TemporalVariance],
+                                           self.cmdopts)
 
-        ipath = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf + '.csv')
+        pm_dfs = self.df_kernel(criteria, self.main_config, self.cmdopts, axis, dfs)
+
+        # Calculate summary statistics for the performance measure
+        pmcommon.bivar_distribution_prepare(self.cmdopts, criteria, self.kLeaf, pm_dfs, True, axis)
+
+        ipath = os.path.join(self.cmdopts["batch_stat_collate_root"],
+                             self.kLeaf + core.config.kStatsExtensions['mean'])
         opath = os.path.join(self.cmdopts["batch_graph_collate_root"],
                              self.kLeaf + core.config.kImageExt)
+
+        axis = core.utils.get_primary_axis(criteria, [tv.TemporalVariance], self.cmdopts)
 
         Heatmap(input_fpath=ipath,
                 output_fpath=opath,
                 title='Swarm Reactivity',
                 xlabel=criteria.graph_xlabel(self.cmdopts),
                 ylabel=criteria.graph_ylabel(self.cmdopts),
-                xtick_labels=criteria.graph_xticklabels(self.cmdopts),
-                ytick_labels=criteria.graph_yticklabels(self.cmdopts)).generate()
+                xtick_labels=criteria.graph_xticklabels(self.cmdopts)[axis == 0:],
+                ytick_labels=criteria.graph_yticklabels(self.cmdopts)[axis == 1:]).generate()
 
 
-class AdaptabilityBivar:
+class SteadyStateAdaptabilityBivar(BaseSteadyStateAdaptability):
     """
     Calculates the adaptability of the swarm configuration across a bivariate batched set of
     experiments within the same scenario from collated .csv data.
 
     """
-    kLeaf = 'PM-adaptability'
-
     @staticmethod
-    def df_kernel(criteria: bc.BivarBatchCriteria,
-                  main_config: dict,
-                  cmdopts: dict,
-                  stat_ext: str,
-                  raw_df: pd.DataFrame) -> pd.DataFrame:
-        df = pd.DataFrame(columns=raw_df.columns, index=raw_df.index)
-
+    def df_kernel(criteria: bc.IConcreteBatchCriteria,
+                  main_config: tp.Dict[str, tp.Any],
+                  cmdopts: tp.Dict[str, tp.Any],
+                  axis: int,
+                  collated_perf: tp.Dict[str, pd.DataFrame]) -> tp.Dict[str, pd.DataFrame]:
+        xsize = len(criteria.criteria1.gen_attr_changelist())
+        ysize = len(criteria.criteria2.gen_attr_changelist())
         exp_dirs = criteria.gen_exp_dirnames(cmdopts)
+        ad_dfs = {}
 
-        for i in range(0, len(df.index)):
-            for j in range(0, len(df.columns)):
-                # We need to know which of the 2 variables was temporal variance, in order to
-                # determine the correct dimension along which to compute the metric.
-                if isinstance(criteria.criteria1, tv.TemporalVariance) or cmdopts['plot_primary_axis'] == '0':
-                    val = vcs.AdaptabilityCS(main_config,
-                                             cmdopts,
-                                             criteria,
-                                             stat_ext,
-                                             j,  # exp0 in first row with i=0
-                                             i)(exp_dirs)
-                else:
-                    val = vcs.AdaptabilityCS(main_config,
-                                             cmdopts,
-                                             criteria,
-                                             stat_ext,
-                                             i * len(df.columns),  # exp0 in first col with j=0
-                                             i * len(df.columns) + j)(exp_dirs)
+        for i in range(axis == 0, xsize):
+            for j in range(axis == 1, ysize):
+                expx = list(collated_perf.keys())[i * ysize + j]
+                expx_perf_df = collated_perf[expx]
+                ad_dfs[expx] = pd.DataFrame(columns=collated_perf[expx].columns,
+                                            index=[0])  # Steady state
+                for sim in expx_perf_df.columns:
+                    if axis == 0:
+                        exp_ideal = list(collated_perf.keys())[j]  # exp0 in first row with i=0
+                        ideal_perf_df = collated_perf[exp_ideal]
 
-                df.iloc[i, j] = val
+                        adaptability = vcs.AdaptabilityCS(main_config,
+                                                          cmdopts,
+                                                          criteria).from_batch(ideal_num=j,
+                                                                               ideal_perf_df=ideal_perf_df[sim],
+                                                                               expx_perf_df=expx_perf_df[sim],
+                                                                               exp_dirs=exp_dirs)
+                    else:
+                        # exp0 in first col with j=0
+                        exp_ideal = list(collated_perf.keys())[i * ysize]
+                        ideal_perf_df = collated_perf[exp_ideal]
 
-        return df
+                        adaptability = vcs.AdaptabilityCS(main_config,
+                                                          cmdopts,
+                                                          criteria).from_batch(ideal_num=i * ysize,
+                                                                               ideal_perf_df=ideal_perf_df[sim],
+                                                                               expx_perf_df=expx_perf_df[sim],
+                                                                               exp_dirs=exp_dirs)
+                    ad_dfs[expx].loc[0, sim] = adaptability
+        return ad_dfs
 
-    def __init__(self, main_config: dict, cmdopts: dict, inter_perf_csv: str) -> None:
+    def __init__(self,
+                 main_config: tp.Dict[str, tp.Any],
+                 cmdopts: tp.Dict[str, tp.Any],
+                 perf_csv: str,
+                 perf_col: str) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
-        self.inter_perf_leaf = inter_perf_csv.split('.')[0]
+        self.perf_leaf = perf_csv.split('.')[0]
+        self.perf_col = perf_col
 
-    def from_batch(self, criteria: bc.IConcreteBatchCriteria):
+    def from_batch(self, criteria: bc.IConcreteBatchCriteria) -> None:
         """
         Generate a adaptability graph for a given controller in a given scenario by computing the
         value of the adaptability metric for each experiment within the batch, and plot
-        a :class:`~core.graphs.heatmap.Heatmap` of the adaptability variable vs. the other one.
+        a: class: `~core.graphs.heatmap.Heatmap` of the adaptability variable vs. the other one.
         """
-        _stats_prepare(self.main_config,
-                       self.cmdopts,
-                       criteria,
-                       self.inter_perf_leaf,
-                       self.kLeaf,
-                       self.df_kernel)
+        dfs = pmcommon.gather_collated_sim_dfs(self.cmdopts,
+                                               criteria,
+                                               self.perf_leaf,
+                                               self.perf_col)
+        # We need to know which of the 2 variables was temporal variance, in order to
+        # determine the correct dimension along which to compute the metric.
+        axis = core.utils.get_primary_axis(criteria,
+                                           [tv.TemporalVariance],
+                                           self.cmdopts)
 
-        ipath = os.path.join(self.cmdopts["batch_stat_collate_root"], self.kLeaf + '.csv')
+        pm_dfs = self.df_kernel(criteria, self.main_config, self.cmdopts, axis, dfs)
+
+        # Calculate summary statistics for the performance measure
+        pmcommon.bivar_distribution_prepare(self.cmdopts, criteria, self.kLeaf, pm_dfs, True, axis)
+
+        ipath = os.path.join(self.cmdopts["batch_stat_collate_root"],
+                             self.kLeaf + core.config.kStatsExtensions['mean'])
         opath = os.path.join(self.cmdopts["batch_graph_collate_root"],
                              self.kLeaf + core.config.kImageExt)
 
@@ -345,8 +420,8 @@ class AdaptabilityBivar:
                 title='Swarm Adaptability',
                 xlabel=criteria.graph_xlabel(self.cmdopts),
                 ylabel=criteria.graph_ylabel(self.cmdopts),
-                xtick_labels=criteria.graph_xticklabels(self.cmdopts),
-                ytick_labels=criteria.graph_yticklabels(self.cmdopts)).generate()
+                xtick_labels=criteria.graph_xticklabels(self.cmdopts)[axis == 0:],
+                ytick_labels=criteria.graph_yticklabels(self.cmdopts)[axis == 1:]).generate()
 
 
 class FlexibilityBivarGenerator:
@@ -356,58 +431,26 @@ class FlexibilityBivarGenerator:
 
     - Reactivity
     - Adaptability
-    - Weight reactivity+adaptability
     """
 
     def __init__(self) -> None:
         self.logger = logging.getLogger(__name__)
 
     def __call__(self,
-                 cmdopts: dict,
-                 main_config: dict,
-                 inter_perf_csv: str,
-                 alpha_SAA: float,
-                 alpha_PD: float,
-                 criteria: bc.IConcreteBatchCriteria):
+                 cmdopts: tp.Dict[str, tp.Any],
+                 main_config: tp.Dict[str, tp.Any],
+                 criteria: bc.IConcreteBatchCriteria) -> None:
         self.logger.info("From %s", cmdopts["batch_stat_collate_root"])
+        perf_csv = main_config['perf']['intra_perf_csv']
+        perf_col = main_config['perf']['intra_perf_col']
 
-        ReactivityBivar(main_config, cmdopts, inter_perf_csv).from_batch(criteria)
-        AdaptabilityBivar(main_config, cmdopts, inter_perf_csv).from_batch(criteria)
-
-        title1 = 'Swarm Flexbility '
-        title2 = r'($\alpha_{{F_{{R}}}}={0},\alpha_{{F_{{A}}}}={1}$)'.format(alpha_SAA,
-                                                                             alpha_PD)
-        w = common.WeightedPMBivar(cmdopts=cmdopts,
-                                   output_leaf='pm-flexibility',
-                                   ax1_leaf=ReactivityBivar.kLeaf,
-                                   ax2_leaf=AdaptabilityBivar.kLeaf,
-                                   ax1_alpha=alpha_SAA,
-                                   ax2_alpha=alpha_PD,
-                                   title=title1 + title2)
-        w.generate(criteria)
-
-
-def _stats_prepare(main_config: dict,
-                   cmdopts: dict,
-                   criteria: bc.IConcreteBatchCriteria,
-                   inter_perf_ileaf: str,
-                   oleaf: str,
-                   kernel) -> None:
-    for k in core.config.kStatsExtensions.keys():
-        stat_ipath = os.path.join(cmdopts["batch_stat_collate_root"],
-                                  inter_perf_ileaf + core.config.kStatsExtensions[k])
-        stat_opath = os.path.join(cmdopts["batch_stat_collate_root"],
-                                  oleaf + core.config.kStatsExtensions[k])
-        if core.utils.path_exists(stat_ipath):
-            stat_df = kernel(criteria,
-                             main_config,
-                             cmdopts,
-                             core.config.kStatsExtensions[k],
-                             core.utils.pd_csv_read(stat_ipath))
-            core.utils.pd_csv_write(stat_df, stat_opath, index=False)
+        SteadyStateReactivityBivar(main_config, cmdopts, perf_csv, perf_col).from_batch(criteria)
+        SteadyStateAdaptabilityBivar(main_config, cmdopts, perf_csv, perf_col).from_batch(criteria)
 
 
 __api__ = [
-    'AdaptabilityUnivar',
-    'ReactivityUnivar'
+    'SteadyStateAdaptabilityUnivar',
+    'SteadyStateReactivityUnivar',
+    'SteadyStateAdaptabilityBivar',
+    'SteadyStateReactivityBivar'
 ]

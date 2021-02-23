@@ -179,14 +179,14 @@ class ARGoSQTCameraOverhead():
         return self.tag_adds
 
 
-def factory(cmdopts: dict, extents: tp.List[ArenaExtent]):
+def factory(cmdopts: tp.Dict[str, tp.Any], extents: tp.List[ArenaExtent]):
     """
     Create cameras for a list of arena extents.
     """
     if cmdopts['camera_config'] == 'overhead':
         return ARGoSQTCameraOverhead(extents)
     else:
-        return ARGoSQTCameraTimeline(ts.factory(cmdopts["time_setup"])(),
+        return ARGoSQTCameraTimeline(ts.factory(cmdopts["time_setup"])(),  # type: ignore
                                      cmdopts['camera_config'],
                                      extents)
 

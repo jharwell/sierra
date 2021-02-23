@@ -41,7 +41,7 @@ class ExperimentSpec():
     - Full scenario name
     """
 
-    def __init__(self, criteria, exp_num: int, cmdopts: dict) -> None:
+    def __init__(self, criteria: bc.IConcreteBatchCriteria, exp_num: int, cmdopts: tp.Dict[str, tp.Any]) -> None:
         self.exp_num = exp_num
         self.exp_input_root = os.path.join(cmdopts['batch_input_root'],
                                            criteria.gen_exp_dirnames(cmdopts)[exp_num])
@@ -72,6 +72,7 @@ class ExperimentSpec():
             self.logger.debug("Read scenario dimensions '%s' bivariate batch criteria",
                               self.arena_dim)
             self.scenario_name = criteria.exp_scenario_name(exp_num)
+
         else:  # Defaultc case: scenario dimensions read from cmdline
             kw = sgp.ScenarioGeneratorParser.reparse_str(cmdopts['scenario'])
             self.arena_dim = ArenaExtent(Vector3D(kw['arena_x'], kw['arena_y'], kw['arena_z']))

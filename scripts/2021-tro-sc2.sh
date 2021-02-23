@@ -1,7 +1,8 @@
 #!/bin/bash -l
-#SBATCH --time=12:00:00
-#SBATCH --nodes 32
-#SBATCH --cpus-per-task=24
+#SBATCH --time=24:00:00
+#SBATCH --nodes 8
+#SBATCH --tasks-per-node=12
+#SBATCH --cpus-per-task=2
 #SBATCH --mem-per-cpu=2G
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=harwe006@umn.edu
@@ -27,7 +28,7 @@ fi
 
 # Set ARGoS library search path. Must contain both the ARGoS core libraries path
 # AND the fordyca library path.
-export ARGOS_PLUGIN_PATH=$ARGOS_PLUGIN_PATH:$FORDYCA_ROOT
+export ARGOS_PLUGIN_PATH=$ARGOS_PLUGIN_PATH:$FORDYCA_ROOT/build/lib
 
 # Setup logging (maybe compiled out and unneeded, but maybe not)
 export LOG4CXX_CONFIGURATION=$FORDYCA_ROOT/log4cxx.xml
@@ -47,51 +48,53 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 ################################################################################
 # Begin Experiments                                                            #
 ################################################################################
-CONTROLLERS=(d0.CRW d0.DPO d1.BITD_DPO d2.BIRTD_DPO)
-OUTPUT_ROOT=$HOME/exp/sc2
-DENSITY=5p0 # 1280 robots max with cardinality = 10
-N_BLOCKS=1280
+OUTPUT_ROOT=$HOME/exp/2021-tro-sc2
+DENSITY=5p0 # 1036 robots with cardinality = 5
+N_BLOCKS=4000
 BLOCK_DIST=PL
-CARDINALITY=8
-TIME_SHORT=time_setup.T50000N1000
-TIME_LONG=time_setup.T200000N1000
+XCARDINALITY=3
+YCARDINALITY=8
+TIME=time_setup.T50000
 TASKS=("scalability" "flexibility" "robustness_pd" "robustness_saa")
-NSIMS=4
+NSIMS=96
+CONTROLLERS_LIST=(d0.CRW d0.DPO d1.BITD_DPO d2.BIRTD_DPO)
 
 SIERRA_BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT\
                   --template-input-file=$SIERRA_ROOT/templates/2021-tro-sc2.argos \
                   --n-sims=$NSIMS\
-                  --pipeline 1 2\
+                  --pipeline 1\
                   --exp-graphs=inter\
                   --project=fordyca\
                   --dist-stats=conf95\
-                  --with-robot-leds \
                   --exp-overwrite\
-                  --argos-rendering\
-                  --camera-config=overhead\
-                  --exp-graphs=intra\
+                  --exp-graphs=inter --project-no-yaml-LN\
                   --models-disable\
-                  --log-level=DEBUG\
-                  --exp-range=8:8
+                  --with-robot-leds\
+                  --log-level=DEBUG --exec-resume\
                   "
 
 if [ -n "$MSIARCH" ] # Running on MSI
 then
-    Y=$(($PBS_ARRAYID % 3)) # This is the task
-    X=$(($PBS_ARRAYID / 3)) # This is the controller
-    CONTROLLERS_LIST=(d0.CRW d0.DPO d1.BITD_DPO d2.BIRTD_DPO)
-    CONTROLLERS=(${CONTROLLERS_LIST[$X]})
-    TASK=${TASKS[$Y]}
+
+    # 4 controllers, 4 tasks
+    TASK_NUM=$(($SLURM_ARRAY_TASK_ID % 4)) # This is the experiment
+    CONTROLLER_NUM=$(($SLURM_ARRAY_TASK_ID / 4)) # This is the scenario
+    CONTROLLERS=(${CONTROLLERS_LIST[$CONTROLLER_NUM]})
+    TASK=${TASKS[$TASK_NUM]}
 
     SIERRA_CMD="$SIERRA_BASE_CMD --hpc-env=slurm"
+    echo "********************************************************************************\n"
+    squeue -j $SLURM_JOB_ID[$SLURM_ARRAY_TASK_ID] -o "%.9i %.9P %.8j %.8u %.2t %.10M %.6D %S %e"
+    echo "********************************************************************************\n"
+
 else
-    CONTROLLERS=(d0.CRW d0.DPO d1.BITD_DPO d2.BIRTD_DPO)
+    CONTROLLERS=("${CONTROLLERS_LIST[@]}")
     TASK="$1"
 
     SIERRA_CMD="$SIERRA_BASE_CMD\
                   --hpc-env=local\
-                  --physics-n-engines=4\
+                  --physics-n-engines=2\
                   --no-verify-results\
                   --plot-large-text\
                   --plot-log-xscale"
@@ -99,16 +102,16 @@ fi
 
 cd $SIERRA_ROOT
 
-# # Scalability/emergence analysis
+# Scalability/emergence analysis
 if [ "$TASK" == "scalability" ] || [ "$TASK" == "emergence" ] || [ "$TASK" == "all" ]
 then
     for c in "${CONTROLLERS[@]}"
     do
-        $SIERRA_CMD --scenario=${BLOCK_DIST}.16x16 \
-                  --batch-criteria population_density.CD${DENSITY}.I16.C${CARDINALITY} block_motion_dynamics.C${CARDINALITY}.F25p0.RW0p001\
+        $SIERRA_CMD --scenario=${BLOCK_DIST}.16x16x2 \
+                  --batch-criteria population_density.CD${DENSITY}.I32.C${XCARDINALITY} block_motion_dynamics.C${YCARDINALITY}.F25p0.RW0p001\
                   --controller=${c} \
                   --n-blocks=${N_BLOCKS}\
-                  --time-setup=${TIME_SHORT}
+                  --time-setup=${TIME}
 
     done
 fi
@@ -118,39 +121,71 @@ if [ "$TASK" == "flexibility" ] || [ "$TASK" == "all" ]
 then
     for c in "${CONTROLLERS[@]}"
     do
-        $SIERRA_CMD --scenario=${BLOCK_DIST}.16x16 \
-                  --batch-criteria  population_density.CD${DENSITY}.I16.C${CARDINALITY} temporal_variance.MSine\
+        $SIERRA_CMD --scenario=${BLOCK_DIST}.16x16x2 \
+                  --batch-criteria population_density.CD${DENSITY}.I32.C${XCARDINALITY} temporal_variance.MSine\
                   --controller=${c}\
                   --n-blocks=${N_BLOCKS}\
-                  --time-setup=${TIME_SHORT}
+                  --time-setup=${TIME}
 
     done
 fi
 
 # Robustness analysis.
-if [ "$TASK" == "robustness_pd" ] || [ "$TASK" == "all" ]
-then
-    for c in "${CONTROLLERS[@]}"
-    do
-        # Depending on what Maria/reviewers say, I might have to add birth
-        # dynamics to this to have a stable queueing system and get graph axis
-        # ticks that are well defined.
-        $SIERRA_CMD --scenario=${BLOCK_DIST}.16x16 \
-                  --batch-criteria  population_density.CD${DENSITY}.I16.C${CARDINALITY} population_dynamics.C${CARDINALITY}.F2p0.D0p0001 \
-                  --controller=${c} \
-                  --n-blocks=${N_BLOCKS}\
-                  --time-setup=${TIME_LONG}
-    done
-fi
-
 if [ "$TASK" == "robustness_saa" ] || [ "$TASK" == "all" ]
 then
     for c in "${CONTROLLERS[@]}"
     do
-        $SIERRA_CMD --scenario=${BLOCK_DIST}.16x16 \
-                  --batch-criteria  population_density.CD${DENSITY}.I16.C${CARDINALITY} saa_noise.all.C${CARDINALITY}\
+        $SIERRA_CMD --scenario=${BLOCK_DIST}.16x16x2 \
+                    --batch-criteria population_density.CD${DENSITY}.I32.C${XCARDINALITY} saa_noise.all.C${YCARDINALITY}\
+                    --controller=${c} \
+                    --n-blocks=${N_BLOCKS}\
+                    --time-setup=${TIME}
+    done
+fi
+
+if [ "$TASK" == "robustness_pd" ] || [ "$TASK" == "all" ]
+then
+    for c in "${CONTROLLERS[@]}"
+    do
+        $SIERRA_CMD --scenario=${BLOCK_DIST}.16x16x2 \
+                  --batch-criteria population_density.CD${DENSITY}.I32.C${XCARDINALITY} population_dynamics.C${YCARDINALITY}.F2p0.D0p0001 \
                   --controller=${c} \
                   --n-blocks=${N_BLOCKS}\
-                  --time-setup=${TIME_SHORT}
+                  --time-setup=${TIME}
     done
+fi
+
+if [ "$TASK" == "comp" ] || [ "$TASK" == "all" ]
+then
+    STAGE5_CMD="python3 sierra.py \
+                  --project=fordyca\
+                  --pipeline 5\
+                  --controller-comparison\
+                  --comparison-type=LNraw\
+                  --plot-large-text\
+                  --plot-log-xscale\
+                  --dist-stats=conf95\
+                  --bc-bivar\
+                  --sierra-root=$OUTPUT_ROOT"
+
+    # Generate scalability/emergence comparison graphs
+    $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I32.C${XCARDINALITY} block_motion_dynamics.C${YCARDINALITY}.F25p0.RW0p001\
+                    --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
+                    --controllers-legend CRW,DPO,STOCHM,STOCHX
+
+    # Generate flexibility comparison graphs
+    $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I32.C${XCARDINALITY} temporal_variance.MSine\
+                --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
+                    --controllers-legend CRW,DPO,STOCHM,STOCHX
+
+    # Generate robustness comparison graphs
+    $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I32.C${XCARDINALITY} population_dynamics.C${YCARDINALITY}.F2p0.D0p0001 \
+                --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
+                --controllers-legend CRW,DPO,STOCHM,STOCHX
+
+    $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I32.C${XCARDINALITY} saa_noise.all.C${YCARDINALITY}\
+                --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
+                --controllers-legend CRW,DPO,STOCHM,STOCHX
+
+
 fi

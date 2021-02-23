@@ -56,7 +56,7 @@ class PipelineStage5:
 
     """
 
-    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, str]) -> None:
+    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, tp.Any]) -> None:
         self.cmdopts = cmdopts
         self.main_config = main_config
         self.stage5_config = yaml.load(open(os.path.join(self.cmdopts['project_config_root'],
@@ -101,7 +101,7 @@ class PipelineStage5:
         else:
             self.scenarios = []
 
-    def run(self, cli_args):
+    def run(self, cli_args) -> None:
         """
         Runs stage 5 of the experimental pipeline.
 

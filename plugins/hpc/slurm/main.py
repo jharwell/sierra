@@ -20,6 +20,7 @@ HPC plugin for running SIERRA on HPC clusters using the SLURM scheduler.
 # Core packages
 import os
 import re
+import typing as tp
 
 # 3rd party packages
 
@@ -110,7 +111,7 @@ def gnu_parallel_cmd_generate(parallel_opts: dict):
             parallel_opts['cmdfile_path'])
 
 
-def xvfb_cmd_generate(cmdopts: dict):
+def xvfb_cmd_generate(cmdopts: tp.Dict[str, tp.Any]):
     return ''
 
 

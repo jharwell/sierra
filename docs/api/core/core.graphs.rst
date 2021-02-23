@@ -14,6 +14,6 @@
    core.graphs.scatterplot2D
    core.graphs.stacked_line_graph
    core.graphs.stacked_surface_graph
-   core.graphs.summary_line_graph95
+   core.graphs.summary_line_graph
 
 .. currentmodule:: core.graphs

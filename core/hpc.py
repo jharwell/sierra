@@ -20,6 +20,7 @@ experiments.
 
 # Core packages
 import os
+import typing as tp
 
 # 3rd party packages
 from singleton_decorator import singleton
@@ -42,9 +43,9 @@ class ARGoSCmdGenerator():
     Dispatcher to generate the ARGoS cmd to run for a simulation, given its input file.
     """
 
-    def __call__(self, cmdopts: dict, input_fpath: str) -> str:
+    def __call__(self, cmdopts: tp.Dict[str, tp.Any], input_fpath: str) -> str:
         hpc = HPCPluginManager().get_plugin(cmdopts['hpc_env'])
-        return hpc.argos_cmd_generate(input_fpath)
+        return hpc.argos_cmd_generate(input_fpath)  # type: ignore
 
 
 class GNUParallelCmdGenerator():
@@ -61,9 +62,9 @@ class GNUParallelCmdGenerator():
 
     """
 
-    def __call__(self, hpc_env: str, parallel_opts: dict) -> str:
+    def __call__(self, hpc_env: str, parallel_opts: tp.Dict[str, tp.Any]) -> str:
         hpc = HPCPluginManager().get_plugin(hpc_env)
-        return hpc.gnu_parallel_cmd_generate(parallel_opts)
+        return hpc.gnu_parallel_cmd_generate(parallel_opts)  # type: ignore
 
 
 class XvfbCmdGenerator():
@@ -72,9 +73,9 @@ class XvfbCmdGenerator():
     rendering.
     """
 
-    def __call__(self, cmdopts: dict) -> str:
+    def __call__(self, cmdopts: tp.Dict[str, tp.Any]) -> str:
         hpc = HPCPluginManager().get_plugin(cmdopts['hpc_env'])
-        return hpc.xvfb_cmd_generate(cmdopts)
+        return hpc.xvfb_cmd_generate(cmdopts)  # type: ignore
 
 
 class EnvConfigurer():
@@ -94,7 +95,7 @@ class EnvChecker():
     Verify the configured HPC environment before running any experiments during stage 2.
     """
 
-    def __call__(self):
+    def __call__(self) -> None:
         # Verify environment
         assert os.environ.get(
             "ARGOS_PLUGIN_PATH") is not None, ("FATAL: You must have ARGOS_PLUGIN_PATH defined")

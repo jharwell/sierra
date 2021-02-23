@@ -88,12 +88,12 @@ class ARGoSQTHeadlessRendering():
         return self.tag_adds
 
 
-def factory(cmdopts: dict) -> ARGoSQTHeadlessRendering:
+def factory(cmdopts: tp.Dict[str, tp.Any]) -> ARGoSQTHeadlessRendering:
     """
     Setups up ARGoS QT headless rendering for a the specified simulation duration.
     """
 
-    return ARGoSQTHeadlessRendering(ts.factory(cmdopts["time_setup"])())
+    return ARGoSQTHeadlessRendering(ts.factory(cmdopts["time_setup"])())  # type: ignore
 
 
 __api__ = [

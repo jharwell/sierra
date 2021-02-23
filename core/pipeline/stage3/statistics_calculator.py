@@ -22,21 +22,21 @@ for all experiments in a :term:`Batch Experiment`.
 # Core packages
 import os
 import re
-import logging
 import multiprocessing as mp
 import typing as tp
 import queue
-import math
+import time
+import logging
 
 # 3rd party packages
 import pandas as pd
-import matplotlib.cbook as mplcbook
-from statsmodels.nonparametric.kde import KDEUnivariate
+import psutil
 
 # Project packages
 import core.utils
 import core.variables.batch_criteria as bc
 import core.config
+import core.stat_kernels
 
 
 class BatchExpParallelCalculator:
@@ -50,7 +50,7 @@ class BatchExpParallelCalculator:
                            absolute).
     """
 
-    def __init__(self, main_config: dict, cmdopts: dict):
+    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, tp.Any]):
         self.main_config = main_config
         self.cmdopts = cmdopts
 
@@ -68,233 +68,210 @@ class BatchExpParallelCalculator:
             'no_verify_results': self.cmdopts['no_verify_results'],
             'dist_stats': self.cmdopts['dist_stats'],
             'project_imagizing': self.cmdopts['project_imagizing'],
+            'processing_mem_limit': self.cmdopts['processing_mem_limit']
         }
 
-        q = mp.JoinableQueue()  # type: mp.JoinableQueue
+        if self.cmdopts['serial_processing']:
+            n_gatherers = 1
+            n_processors = 1
+        else:
+            n_gatherers = int(mp.cpu_count() * 0.25)
+            n_processors = int(mp.cpu_count() * 0.75)
+
+        pool = mp.Pool(processes=n_gatherers + n_processors)
+
+        m = mp.Manager()
+        gatherq = m.Queue()
+        processq = m.Queue()
 
         for exp in exp_to_avg:
             _, leaf = os.path.split(exp)
-            output_path = os.path.join(self.cmdopts['batch_output_root'], leaf)
-            stat_path = os.path.join(self.cmdopts['batch_stat_root'], leaf)
-            q.put((output_path, stat_path))
+            gatherq.put((self.cmdopts['batch_output_root'], leaf))
 
-        if self.cmdopts['serial_processing']:
-            parallelism = 1
-        else:
-            parallelism = mp.cpu_count()
+        # Start some threads gathering .csvs first to get things rolling.
+        gathered = [pool.apply_async(BatchExpParallelCalculator._gather_worker,
+                                     (gatherq,
+                                      processq,
+                                      self.main_config,
+                                      avg_opts)) for i in range(0, n_gatherers)]
 
-        for i in range(0, parallelism):
-            p = mp.Process(target=BatchExpParallelCalculator._thread_worker,
-                           args=(q, self.main_config, avg_opts))
-            p.start()
+        processed = [pool.apply_async(BatchExpParallelCalculator._process_worker,
+                                      (processq,
+                                       self.main_config,
+                                       self.cmdopts['batch_stat_root'],
+                                       avg_opts)) for i in range(0, n_processors)]
 
-        q.join()
+        # To capture the otherwise silent crashes when something goes wrong in worker threads. Any
+        # assertions will show and any exceptions will be re-raised.
+        [g.get() for g in gathered]
+        [p.get() for p in processed]
+
+        pool.close()
+        pool.join()
 
     @staticmethod
-    def _thread_worker(q: mp.Queue,
+    def _gather_worker(gatherq: mp.Queue,
+                       processq: mp.Queue,
                        main_config: dict,
                        avg_opts: tp.Dict[str, str]) -> None:
         while True:
             # Wait for 3 seconds after the queue is empty before bailing
             try:
-                output_path, stat_path = q.get(True, 3)
-                ExpStatisticsCalculator(main_config, avg_opts, output_path, stat_path)()
-                q.task_done()
+                batch_output_root, exp = gatherq.get(True, 3)
+                ExpCSVGatherer(main_config, avg_opts, batch_output_root, exp, processq)()
+                gatherq.task_done()
+
+            except queue.Empty:
+                break
+
+    @staticmethod
+    def _process_worker(processq: mp.Queue,
+                        main_config: dict,
+                        batch_stat_root: str,
+                        avg_opts: tp.Dict[str, str]) -> None:
+        while True:
+            # Wait for 3 seconds after the queue is empty before bailing
+            try:
+                item = processq.get(True, 3)
+
+                key = list(item.keys())[0]
+                ExpStatisticsCalculator(main_config,
+                                        avg_opts,
+                                        batch_stat_root,
+                                        key,
+                                        item[key])()
+                processq.task_done()
             except queue.Empty:
                 break
 
 
-class ExpStatisticsCalculator:
-    """Generate statistics from all of :term:`Output .csv` files from a set of
-    :term:`Simulations<Simulation>` within a single :term:`Experiment`.
+class ExpCSVGatherer:
+    """Gather all :term:`Output .csv` files from a set of :term:`Simulations<Simulation>` within a
+    single :term:`Experiment`.
 
     Attributes:
         main_config: Parsed dictionary of main YAML configuration.
         template_input_leaf: Leaf(i.e. no preceding path to the template XML configuration file
                                   for the experiment.
         no_verify: Should result verification be skipped?
-        exp_output_root: Directory for averaged .csv output(relative to current dir or
-                         absolute).
 
     """
 
     def __init__(self,
                  main_config: dict,
-                 avg_opts: dict,
-                 exp_output_root: str,
-                 exp_stat_root: str) -> None:
-        self.avg_opts = avg_opts
+                 gather_opts: dict,
+                 batch_output_root: str,
+                 exp_leaf: str,
+                 processq: mp.Queue) -> None:
+        self.processq = processq
+        self.gather_opts = gather_opts
 
         # will get the main name and extension of the config file (without the full absolute path)
-        self.template_input_fname = os.path.basename(self.avg_opts['template_input_leaf'])
+        self.template_input_fname = os.path.basename(self.gather_opts['template_input_leaf'])
 
-        self.exp_output_root = os.path.abspath(exp_output_root)
+        self.exp_leaf = exp_leaf
+        self.exp_output_root = os.path.join(batch_output_root, exp_leaf)
         self.main_config = main_config
 
-        self.stat_root = exp_stat_root
         self.sim_metrics_leaf = main_config['sim']['sim_metrics_leaf']
-        self.project_frames_leaf = main_config['sierra']['project_frames_leaf']
-        self.argos_frames_leaf = main_config['sim']['argos_frames_leaf']
         self.videos_leaf = 'videos'
-        self.project_imagize = avg_opts['project_imagizing']
-
-        # To support inverted performance measures where smaller is better
-        self.invert_perf = main_config['perf']['inverted']
-        self.intra_perf_csv = main_config['perf']['intra_perf_csv']
-        self.intra_perf_col = main_config['perf']['intra_perf_col']
-
-        core.utils.dir_create_checked(self.stat_root, exist_ok=True)
+        self.project_imagize = gather_opts['project_imagizing']
 
         # to be formatted like: self.input_name_format.format(name, experiment_number)
         format_base = "{}_{}"
         self.output_name_format = format_base + "_output"
+
         self.logger = logging.getLogger(__name__)
 
     def __call__(self):
-        if not self.avg_opts['no_verify_results']:
-            self._verify_exp()
-        self._process_csvs()
-
-    def _process_csvs(self):
         """Process the CSV files found in the output save path"""
+        if not self.gather_opts['no_verify_results']:
+            self._verify_exp()
 
-        self.logger.info('Processing results: %s...', self.exp_output_root)
+        self.logger.info('Processing .csvs: %s...', self.exp_leaf)
 
-        pattern = self.output_name_format.format(re.escape(self.avg_opts['template_input_leaf']),
+        pattern = self.output_name_format.format(re.escape(self.gather_opts['template_input_leaf']),
                                                  r'\d+')
 
-        # Check to make sure all directories are simulation runs, skipping directories as needed.
-        simulations = sim_dir_filter(os.listdir(self.exp_output_root),
-                                     self.main_config,
-                                     self.videos_leaf)
+        simulations = os.listdir(self.exp_output_root)
 
         assert(all(re.match(pattern, s) for s in simulations)),\
             "FATAL: Extraneous files/not all dirs in '{0}' are simulation runs".format(
                 self.exp_output_root)
 
         # Maps (unique .csv stem, optional parent dir) to the averaged dataframe
-        csvs = dict()  # type: tp.Dict[tp.Tuple[str, str], tp.List]
-        for sim in simulations:
-            self._gather_csvs_from_sim(sim, csvs)
+        to_gather = self._calc_gather_items(simulations[0])
 
-        self._process_csvs_within_exp(csvs)
+        for item in to_gather:
+            self._wait_for_memory()
+            gathered = self._gather_item_from_sims(item, simulations)
+            # Put gathered .csv list  in the process queue
 
-    def _gather_csvs_from_sim(self, sim: str, csvs: dict) -> None:
-        csv_root = os.path.join(self.exp_output_root, sim, self.sim_metrics_leaf)
+            self.processq.put(gathered)
+
+        self.logger.debug("Enqueued %s items from %s for processing",
+                          len(to_gather),
+                          self.exp_leaf)
+
+    def _calc_gather_items(self, sim0: str) -> tp.List[tp.Tuple[str, str, str]]:
+        sim_output_root = os.path.join(self.exp_output_root, sim0, self.sim_metrics_leaf)
+        to_gather = []
 
         # The metrics folder should contain nothing but .csv files and directories. For all
         # directories it contains, they each should contain nothing but .csv files (these are
         # for video rendering later).
-        for item in os.listdir(csv_root):
-            item_path = os.path.join(csv_root, item)
+        for item in os.listdir(sim_output_root):
+            item_path = os.path.join(sim_output_root, item)
             item_stem = os.path.splitext(item)[0]
+
             if os.path.isfile(item_path):
-                df = core.utils.pd_csv_read(item_path, index_col=False)
-                if df.dtypes[0] == 'object':
-                    df[df.columns[0]] = df[df.columns[0]].apply(lambda x: float(x))
-
-                if (item_stem, '') not in csvs:
-                    csvs[(item_stem, '')] = []
-
-                csvs[(item_stem, '')].append(df)
+                to_gather.append((self.exp_leaf, item_stem, ''))
             else:
                 # This takes FOREVER, so only do it if we absolutely need to
                 if not self.project_imagize:
                     continue
-                for csv_fname in os.listdir(item_path):
-                    csv_path = os.path.join(item_path, csv_fname)
-                    df = core.utils.pd_csv_read(csv_path, index_col=False)
-                    if (csv_fname, item_stem) not in csvs:
-                        csvs[(csv_fname, item_stem)] = []
-                    csvs[(csv_fname, item_stem)].append(df)
 
-    def _process_csvs_within_exp(self, csvs: dict) -> None:
-        # All CSV files with the same base name will be processed together
-        for csv_fname in csvs:
-            csv_concat = pd.concat(csvs[csv_fname])
-            if (self.invert_perf and csv_fname[0] in self.intra_perf_csv):
-                csv_concat[self.intra_perf_col] = 1.0 / csv_concat[self.intra_perf_col]
-                self.logger.debug("Inverted performance column: df stem=%s,col=%s",
-                                  csv_fname[0],
-                                  self.intra_perf_col)
+                for csv in os.listdir(item_path):
+                    to_gather.append((self.exp_leaf, csv, item_stem))
+        return to_gather
 
-            csv_fpath_stem = os.path.join(self.stat_root, csv_fname[1], csv_fname[0].split('.')[0])
+    def _gather_item_from_sims(self,
+                               item: tp.Tuple[str, str, str],
+                               simulations: tp.List[str]) -> tp.Dict[tp.Tuple[str, str, str],
+                                                                     tp.List[pd.DataFrame]]:
+        exp_leaf, csv_stem, dir_leaf = item
+        gathered = dict()  # type: tp.Dict[tp.Tuple[str, str, str], pd.DataFrame]
 
-            # Create directory for averaged .csv files for imagizing later.
-            if csv_fname[1] != '':
-                core.utils.dir_create_checked(os.path.join(self.stat_root, csv_fname[1]),
-                                              exist_ok=True)
+        for sim in simulations:
+            sim_output_root = os.path.join(self.exp_output_root, sim, self.sim_metrics_leaf)
 
-            by_row_index = csv_concat.groupby(csv_concat.index)
+            if dir_leaf != '':
+                item_path = os.path.join(sim_output_root, dir_leaf, csv_stem)
+            else:
+                item_path = os.path.join(sim_output_root, dir_leaf, csv_stem + '.csv')
 
-            # We always at least calculate the mean
-            csv_mean = by_row_index.mean()
-            core.utils.pd_csv_write(csv_mean,
-                                    csv_fpath_stem + core.config.kStatsExtensions['mean'],
-                                    index=False)
+            df = core.utils.pd_csv_read(item_path, index_col=False)
+            if df.dtypes[0] == 'object':
+                df[df.columns[0]] = df[df.columns[0]].apply(lambda x: float(x))
 
-            if self.avg_opts['dist_stats'] in ['conf95', 'all']:
-                self._process_conf95(csv_fpath_stem, by_row_index)
-            elif self.avg_opts['dist_stats'] in ['bw', 'all']:
-                self._process_bw(csv_fpath_stem, by_row_index)
+            if item not in gathered:
+                gathered[item] = []
 
-    def _process_conf95(self, csv_fpath_stem: str, by_row_index) -> None:
-        csv_stddev = by_row_index.std().round(8)
-        core.utils.pd_csv_write(csv_stddev,
-                                csv_fpath_stem + core.config.kStatsExtensions['stddev'],
-                                index=False)
+            gathered[item].append(df)
 
-    def _process_bw(self, csv_fpath_stem: str, by_row_index) -> None:
-        csv_median = by_row_index.median().round(8)
-        csv_q1 = by_row_index.quantile(0.25).round(8)
-        csv_q3 = by_row_index.quantile(0.75).round(8)
+        return gathered
 
-        iqr = (csv_q3 - csv_q1).abs()  # Inter-quartile range
-        csv_whislo = csv_q1 - 1.50 * iqr
-        csv_whishi = csv_q3 + 1.50 * iqr
+    def _wait_for_memory(self):
+        while True:
+            mem = psutil.virtual_memory()
+            avail = mem.available / mem.total
+            free_percent = avail * 100
+            free_limit = 100 - int(self.gather_opts['processing_mem_limit'])
 
-        # The magic 1.57 is from the original paper:
-        #
-        # (Robert McGill, John W. Tukey and Wayne A. Larsen. Variations of Box Plots, The American
-        # Statistician, Vol. 32, No. 1 (Feb., 1978), pp. 12-16
-        n_sims = by_row_index.size().values[0]
-        csv_cilo = csv_median - 1.57 * iqr / math.sqrt(n_sims)
-        csv_cihi = csv_median + 1.57 * iqr / math.sqrt(n_sims)
+            if free_percent >= free_limit:
+                return
 
-        core.utils.pd_csv_write(csv_median,
-                                os.path.join(self.stat_root,
-                                             csv_fpath_stem + core.config.kStatsExtensions['median']),
-                                index=False)
-
-        core.utils.pd_csv_write(csv_q1,
-                                os.path.join(self.stat_root,
-                                             csv_fpath_stem + core.config.kStatsExtensions['q1']),
-                                index=False)
-
-        core.utils.pd_csv_write(csv_q3,
-                                os.path.join(self.stat_root,
-                                             csv_fpath_stem + core.config.kStatsExtensions['q3']),
-                                index=False)
-
-        core.utils.pd_csv_write(csv_whislo,
-                                os.path.join(self.stat_root,
-                                             csv_fpath_stem + core.config.kStatsExtensions['whislo']),
-                                index=False)
-
-        core.utils.pd_csv_write(csv_whishi,
-                                os.path.join(self.stat_root,
-                                             csv_fpath_stem + core.config.kStatsExtensions['whishi']),
-                                index=False)
-
-        core.utils.pd_csv_write(csv_cilo,
-                                os.path.join(self.stat_root,
-                                             csv_fpath_stem + core.config.kStatsExtensions['cilo']),
-                                index=False)
-
-        core.utils.pd_csv_write(csv_cihi,
-                                os.path.join(self.stat_root,
-                                             csv_fpath_stem + core.config.kStatsExtensions['cihi']),
-                                index=False)
+            time.sleep(1)
 
     def _verify_exp(self):
         """
@@ -306,9 +283,7 @@ class ExpStatisticsCalculator:
         - All simulation ``.csv`` files have the same # rows/columns.
         - No simulation ``.csv``files contain NaNs.
         """
-        experiments = sim_dir_filter(os.listdir(self.exp_output_root),
-                                     self.main_config,
-                                     self.videos_leaf)
+        experiments = os.listdir(self.exp_output_root)
 
         self.logger.info('Verifying results in %s...', self.exp_output_root)
 
@@ -335,7 +310,7 @@ class ExpStatisticsCalculator:
                                           path1)
                         continue
 
-                    assert (core.utils.path_exists(path1) and core.utils.path_exists(path2)), \
+                    assert (core.utils.path_exists(path1) and core.utils.path_exists(path2)),\
                         "FATAL: Either {0} or {1} does not exist".format(path1, path2)
 
                     # Verify both dataframes have same # columns, and that column sets are identical
@@ -356,10 +331,78 @@ class ExpStatisticsCalculator:
                                                                                               path2)
 
 
-def sim_dir_filter(exp_dirs: tp.List[str], main_config: dict, videos_leaf: str) -> tp.List[str]:
-    project_frames_leaf = main_config['sierra']['project_frames_leaf']
-    argos_frames_leaf = main_config['sim']['argos_frames_leaf']
+class ExpStatisticsCalculator:
+    """Generate statistics from all of :term:`Output .csv` files from a set of
+    :term:`Simulations<Simulation>` within a single :term:`Experiment`.
 
-    return [e for e in exp_dirs if e not in [project_frames_leaf,
-                                             argos_frames_leaf,
-                                             videos_leaf]]
+    .. IMPORTANT:: You *CANNOT* use logging ANYWHERE during processing .csv files. Why ? I *think*
+       because of a bug in the logging module itself. If you get unlucky enough to spawn the process
+       which enters the __call__() method in this class while another logging statement is in
+       progress (and is therefore holding an internal logging module lock), then the underlying
+       fork() call will copy the lock in the acquired state. Then, when this class goes to try to
+       log something, it deadlocks with itself.
+
+       You also can't just create loggers with unique names, as this seems to be something like the
+       GIL, but for the logging module. Sometimes python sucks.
+
+    Attributes:
+        main_config: Parsed dictionary of main YAML configuration.
+        template_input_leaf: Leaf(i.e. no preceding path to the template XML configuration file
+                                  for the experiment.
+        no_verify: Should result verification be skipped?
+        exp_output_root: Directory for averaged .csv output(relative to current dir or
+                         absolute).
+
+    """
+
+    def __init__(self,
+                 main_config: dict,
+                 avg_opts: dict,
+                 batch_stat_root: str,
+                 gathered_key: tp.Tuple[str, str, str],
+                 gathered_dfs: tp.List[pd.DataFrame]) -> None:
+        self.avg_opts = avg_opts
+        self.gathered_key = gathered_key
+        self.gathered_dfs = gathered_dfs
+
+        # will get the main name and extension of the config file (without the full absolute path)
+        self.template_input_fname = os.path.basename(self.avg_opts['template_input_leaf'])
+
+        self.main_config = main_config
+
+        self.stat_root = os.path.join(batch_stat_root, gathered_key[0])
+        self.project_imagize = avg_opts['project_imagizing']
+
+        self.intra_perf_csv = main_config['perf']['intra_perf_csv']
+        self.intra_perf_col = main_config['perf']['intra_perf_col']
+
+        core.utils.dir_create_checked(self.stat_root, exist_ok=True)
+
+        # to be formatted like: self.input_name_format.format(name, experiment_number)
+        format_base = "{}_{}"
+        self.output_name_format = format_base + "_output"
+
+    def __call__(self):
+        # All CSV files with the same base name will be processed together
+        exp_leaf, csv_fname, dir_leaf = self.gathered_key
+
+        csv_concat = pd.concat(self.gathered_dfs)
+
+        # Create directory for averaged .csv files for imagizing later.
+        if dir_leaf != '':
+            core.utils.dir_create_checked(os.path.join(self.stat_root, dir_leaf),
+                                          exist_ok=True)
+
+        by_row_index = csv_concat.groupby(csv_concat.index)
+
+        if self.avg_opts['dist_stats'] in ['conf95', 'all']:
+            dfs = core.stat_kernels.conf95.from_groupby(by_row_index)
+            for ext in dfs.keys():
+                opath = os.path.join(self.stat_root, dir_leaf, csv_fname + ext)
+                core.utils.pd_csv_write(dfs[ext], opath, index=False)
+
+        if self.avg_opts['dist_stats'] in ['bw', 'all']:
+            dfs = core.stat_kernels.bw.from_groupby(by_row_index)
+            for ext in dfs.keys():
+                opath = os.path.join(self.stat_root, dir_leaf, csv_fname + ext)
+                core.utils.pd_csv_write(dfs[ext], opath, index=False)

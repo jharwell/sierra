@@ -23,12 +23,14 @@ import os
 import logging
 import time
 import datetime
+import typing as tp
 
 # 3rd party packages
 import yaml
 
 # Project packages
 from core.pipeline.stage3.statistics_calculator import BatchExpParallelCalculator
+from core.pipeline.stage3.sim_collator import SimulationParallelCollator
 from core.pipeline.stage3.imagizer import BatchExpParallelImagizer
 import core.utils
 import core.variables.batch_criteria as bc
@@ -48,23 +50,26 @@ class PipelineStage3:
     This stage is idempotent.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, tp.Any]) -> None:
         self.logger = logging.getLogger(__name__)
+        self.main_config = main_config
+        self.cmdopts = cmdopts
 
-    def run(self, main_config: dict, cmdopts: dict, criteria: bc.IConcreteBatchCriteria):
-        self._run_statistics(main_config, cmdopts, criteria)
+    def run(self, criteria: bc.IConcreteBatchCriteria) -> None:
+        self._run_statistics(self.main_config, self.cmdopts, criteria)
+        self._run_sim_collation(self.main_config, self.cmdopts, criteria)
 
-        if cmdopts['project_imagizing']:
-            intra_HM_config = yaml.load(open(os.path.join(cmdopts['core_config_root'],
+        if self.cmdopts['project_imagizing']:
+            intra_HM_config = yaml.load(open(os.path.join(self.cmdopts['core_config_root'],
                                                           'intra-graphs-hm.yaml')),
                                         yaml.FullLoader)
 
-            project_intra_HM = os.path.join(cmdopts['project_config_root'],
+            project_intra_HM = os.path.join(self.cmdopts['project_config_root'],
                                             'intra-graphs-hm.yaml')
 
             if core.utils.path_exists(project_intra_HM):
                 self.logger.info("Loading additional intra-experiment heatmap config for project '%s'",
-                                 cmdopts['project'])
+                                 self.cmdopts['project'])
                 project_dict = yaml.load(open(project_intra_HM), yaml.FullLoader)
                 for category in project_dict:
                     if category not in intra_HM_config:
@@ -72,12 +77,12 @@ class PipelineStage3:
                     else:
                         intra_HM_config[category]['graphs'].extend(project_dict[category]['graphs'])
 
-            self._run_imagizing(main_config, intra_HM_config, cmdopts, criteria)
+            self._run_imagizing(self.main_config, intra_HM_config, self.cmdopts, criteria)
 
     # Private functions
     def _run_statistics(self,
                         main_config: dict,
-                        cmdopts: dict, criteria:
+                        cmdopts: tp.Dict[str, tp.Any], criteria:
                         bc.IConcreteBatchCriteria):
         self.logger.info("Generating statistics from experiment outputs in %s...",
                          cmdopts['batch_output_root'])
@@ -87,10 +92,22 @@ class PipelineStage3:
         sec = datetime.timedelta(seconds=elapsed)
         self.logger.info("Statistics generation complete in %s", str(sec))
 
+    def _run_sim_collation(self,
+                           main_config: dict,
+                           cmdopts: tp.Dict[str, tp.Any], criteria:
+                           bc.IConcreteBatchCriteria):
+        self.logger.info("Collating simulation outputs into %s...",
+                         cmdopts['batch_stat_collate_root'])
+        start = time.time()
+        SimulationParallelCollator(main_config, cmdopts)(criteria)
+        elapsed = int(time.time() - start)
+        sec = datetime.timedelta(seconds=elapsed)
+        self.logger.info("Simulation output collation complete in %s", str(sec))
+
     def _run_imagizing(self,
                        main_config: dict,
                        intra_HM_config: dict,
-                       cmdopts: dict,
+                       cmdopts: tp.Dict[str, tp.Any],
                        criteria: bc.IConcreteBatchCriteria):
         self.logger.info("Imagizing .csvs in %s...",
                          cmdopts['batch_output_root'])

@@ -46,7 +46,7 @@ class PopulationSize(bc.UnivarBatchCriteria):
     """
 
     @staticmethod
-    def gen_attr_changelist_from_list(sizes: list) -> tp.List[XMLAttrChangeSet]:
+    def gen_attr_changelist_from_list(sizes: tp.List[int]) -> tp.List[XMLAttrChangeSet]:
         return [XMLAttrChangeSet(XMLAttrChange(".//arena/distribute/entity", "quantity", str(s)),
                                  XMLAttrChange(".//population_dynamics", "max_size", str(4 * s))) for s in sizes]
 
@@ -54,10 +54,10 @@ class PopulationSize(bc.UnivarBatchCriteria):
                  cli_arg: str,
                  main_config: tp.Dict[str, str],
                  batch_input_root: str,
-                 size_list: tp.List[int]) -> None:
+                 size_list: tp.List[float]) -> None:
         bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_input_root)
         self.size_list = size_list
-        self.attr_changes = []  # type: tp.List
+        self.attr_changes = []  # type: tp.List[XMLAttrChangeSet]
 
     def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         """
@@ -73,13 +73,13 @@ class PopulationSize(bc.UnivarBatchCriteria):
             self.attr_changes = PopulationSize.gen_attr_changelist_from_list(self.size_list)
         return self.attr_changes
 
-    def gen_exp_dirnames(self, cmdopts: dict) -> list:
+    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, tp.Any]) -> tp.List[str]:
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
     def graph_xticks(self,
-                     cmdopts: dict,
-                     exp_dirs: tp.List[str] = None) -> tp.List[float]:
+                     cmdopts: tp.Dict[str, tp.Any],
+                     exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
 
         if exp_dirs is None:
             exp_dirs = self.gen_exp_dirnames(cmdopts)
@@ -92,12 +92,12 @@ class PopulationSize(bc.UnivarBatchCriteria):
             return ret
 
     def graph_xticklabels(self,
-                          cmdopts: dict,
-                          exp_dirs: tp.List[str] = None) -> tp.List[str]:
+                          cmdopts: tp.Dict[str, tp.Any],
+                          exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
 
         return list(map(str, self.graph_xticks(cmdopts, exp_dirs)))
 
-    def graph_xlabel(self, cmdopts: dict) -> str:
+    def graph_xlabel(self, cmdopts: tp.Dict[str, tp.Any]) -> str:
         if cmdopts['plot_log_xscale']:
             return r"$\log$(Swarm Size)"
 
@@ -116,7 +116,7 @@ class Parser():
     :ref:`ln-bc-population-size`.
     """
 
-    def __call__(self, criteria_str: str) -> dict:
+    def __call__(self, criteria_str: str) -> tp.Dict[str, tp.Any]:
         ret = {
             'max_size': int(),
             'increment_type': str(),
@@ -152,7 +152,7 @@ def factory(cli_arg: str,
     """
     attr = Parser()(cli_arg)
 
-    def gen_max_sizes():
+    def gen_max_sizes() -> tp.List[float]:
         """
         Generates the maximum swarm sizes for each experiment in a batch.
         """
@@ -161,7 +161,7 @@ def factory(cli_arg: str,
         elif attr["increment_type"] == 'Log':
             return [2 ** x for x in range(0, int(math.log2(attr["max_size"])) + 1)]
         else:
-            return None
+            assert False
 
     def __init__(self) -> None:
         PopulationSize.__init__(self,

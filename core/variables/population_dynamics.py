@@ -31,6 +31,7 @@ import core.utils
 import core.variables.dynamics_parser as dp
 from core.xml_luigi import XMLAttrChange, XMLAttrChangeSet
 import core.config
+from core.xml_luigi import XMLLuigi
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
@@ -52,11 +53,11 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
                  main_config: tp.Dict[str, str],
                  batch_input_root: str,
                  dynamics_types: tp.List[str],
-                 dynamics: tp.List[tp.Set[tp.Tuple[str, int]]]) -> None:
+                 dynamics: tp.List[tp.Set[tp.Tuple[str, float]]]) -> None:
         bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_input_root)
         self.dynamics_types = dynamics_types
         self.dynamics = dynamics
-        self.attr_changes = []  # type: tp.List
+        self.attr_changes = []  # type: tp.List[XMLAttrChangeSet]
 
     def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         """
@@ -71,58 +72,77 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
                                                                           str('%3.9f' % t[1])) for t in d}))
         return self.attr_changes
 
-    def gen_exp_dirnames(self, cmdopts: dict) -> list:
+    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, tp.Any]) -> list:
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
     def graph_xticks(self,
-                     cmdopts: dict,
-                     exp_dirs: tp.List[str] = None) -> tp.List[float]:
+                     cmdopts: tp.Dict[str, tp.Any],
+                     exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
+        # If exp_dirs is passed, then we have been handed a subset of the total # of directories in
+        # the batch exp root, and so n_exp() will return more experiments than we actually
+        # have. This behavior is needed to correctly extract x/y values for bivariate experiments.
+        #
+        # We use range() instead of the actual PD values so that this batch criteria works
+        # well with box and whisker plots around each data point. This is OK because we also
+        # the generation of the range of values that become the xticks, and we KNOW they are
+        # linearly spaced.
+        if exp_dirs is None:
+            exp_dirs = self.gen_exp_dirnames(cmdopts)
+
+        return [float(i) for i in range(len(exp_dirs))]
+
+    def graph_xticklabels(self,
+                          cmdopts: tp.Dict[str, tp.Any],
+                          exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
+
         if exp_dirs is None:
             exp_dirs = self.gen_exp_dirnames(cmdopts)
 
         ticks = []
 
+        exp0_def = XMLAttrChangeSet.unpickle(os.path.join(self.batch_input_root,
+                                                          exp_dirs[0],
+                                                          core.config.kPickleLeaf))
+        T_Sbar0 = PopulationDynamics.calc_untasked_swarm_system_time(exp0_def)
+
         for d in exp_dirs:
             exp_def = XMLAttrChangeSet.unpickle(os.path.join(self.batch_input_root,
                                                              d,
                                                              core.config.kPickleLeaf))
+
             # If we had pure death dynamics, the tasked swarm time is 0 in the steady state, so we
             # use lambda_d as the ticks instead, which is somewhat more meaningful.
             if self.is_pure_death_dynamics():
                 lambda_d, _, _, _ = PopulationDynamics.extract_rate_params(exp_def)
                 ticks.append(lambda_d)
             else:
-                TS, T = PopulationDynamics.calc_tasked_swarm_time(exp_def)
-                ticks.append(round(TS / T, 4))
+                T_Sbar = PopulationDynamics.calc_untasked_swarm_system_time(exp_def)
 
-        return ticks
+                ticks.append(round(T_Sbar0 / T_Sbar, 4))
 
-    def graph_xticklabels(self,
-                          cmdopts: dict,
-                          exp_dirs: tp.List[str] = None) -> tp.List[str]:
-        return list(map(str, self.graph_xticks(cmdopts, exp_dirs)))
+        return list(map(str, ticks))
 
-    def graph_xlabel(self, cmdopts: dict) -> str:
+    def graph_xlabel(self, cmdopts: tp.Dict[str, tp.Any]) -> str:
         if self.is_pure_death_dynamics():
             return "Death Rate"
         else:
-            return "Average Fraction of Time Robots Allocated To Task"
+            return "Population Variance"
 
-    def graph_ylabel(self, cmdopts: dict) -> str:
+    def graph_ylabel(self, cmdopts: tp.Dict[str, tp.Any]) -> str:
         return "Superlinearity"
 
     def pm_query(self, pm: str) -> bool:
-        return pm in ['raw', 'robustness']
+        return pm in ['raw', 'robustness_pd']
 
     def inter_exp_graphs_exclude_exp0(self) -> bool:
-        return False
+        return True
 
-    def is_pure_death_dynamics(self):
+    def is_pure_death_dynamics(self) -> bool:
         return 'D' in self.dynamics_types and 'B' not in self.dynamics_types
 
     @staticmethod
-    def calc_tasked_swarm_time(exp_def):
+    def calc_untasked_swarm_system_time(exp_def: XMLAttrChangeSet) -> float:
         explen, expticks = PopulationDynamics.extract_explen(exp_def)
         T = explen * expticks
         lambda_d, mu_b, lambda_m, mu_r = PopulationDynamics.extract_rate_params(exp_def)
@@ -131,20 +151,30 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
         # tasked swarm" calculation is only valid for stable queueing systems, with well defined
         # arrival and service rates (i.e. not 0 and not infinite).
         if lambda_d > 0.0 and mu_b == 0.0:
-            return (0, T)
+            return T
 
         # mu/lambda for combined queue
         lambda_Sbar = lambda_d + lambda_m
         mu_Sbar = mu_b + mu_r
 
+        # L_Sbar = # Robots NOT currently in the swarm S.
         try:
-            TSbar = 1 / (mu_Sbar - lambda_Sbar) - 1 / mu_Sbar
-            return (T - TSbar, T)
+            rho_Sbar = lambda_Sbar / mu_Sbar
         except ZeroDivisionError:
-            return (T, T)
+            return 0.0
+
+        L_Sbar = rho_Sbar ** 2 / (1 - rho_Sbar)
+
+        # W_Sbar = waiting time in the Sbar queue.
+        W_Sbar = L_Sbar / lambda_Sbar
+
+        # W = waiting time in Sbar system (includes service time), and therefore time NOT in S.
+        W = W_Sbar + 1 / mu_Sbar
+
+        return W
 
     @staticmethod
-    def extract_rate_params(exp_def):
+    def extract_rate_params(exp_def) -> tp.Tuple[float, float, float, float]:
         """
         Extract and return the (death, birth, malfunction, and repair) rate parameters for use in
         calculating queueing theoretic limits for the specified experiment. If any of them were not
@@ -170,7 +200,7 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
         return (death_lambda, birth_mu, malfunction_lambda, repair_mu)
 
     @staticmethod
-    def extract_explen(exp_def):
+    def extract_explen(exp_def) -> tp.Tuple[int, int]:
         """
         Extract and return the (experiment length in seconds, ticks per second) for the specified
         experiment for use in calculating queueing theoretic limits.
@@ -190,7 +220,7 @@ class PopulationDynamicsParser(dp.DynamicsParser):
     :ref:`ln-bc-population-dynamics`.
     """
 
-    def specs_dict(self):
+    def specs_dict(self) -> tp.Dict[str, str]:
         return {'B': 'birth_mu',
                 'D': 'death_lambda',
                 'M': 'malfunction_lambda',
@@ -199,8 +229,7 @@ class PopulationDynamicsParser(dp.DynamicsParser):
 
 
 def factory(cli_arg: str,
-            main_config:
-            tp.Dict[str, str],
+            main_config: tp.Dict[str, tp.Any],
             batch_input_root: str,
             **kwargs) -> PopulationDynamics:
     """
@@ -209,25 +238,9 @@ def factory(cli_arg: str,
     """
     attr = PopulationDynamicsParser()(cli_arg)
 
-    def gen_dynamics():
-        # ideal conditions = no dynamics
-        dynamics = [{(d[0], 0.0) for d in attr['dynamics']}]
-
-        nonzero = [{(d[0], d[1] + d[1] * x * float(attr['factor']))
-                    for d in attr['dynamics']} for x in range(1, attr['cardinality'])]
-
-        pure_death = ['D'] == attr['dynamics_types']
-        pure_birth = ['B'] == attr['dynamics_types']
-        pure_malfunction = ['M'] == attr['dynamics_types']
-
-        # We reverse the generated dynamics, because as the gap between the lambda/mu grows, robots
-        # will process through the queue MORE quickly, which will lead to MORE stable swarms as we
-        # go from exp0...expN rather than the other way around, but ONLY if we have a stable
-        # queueing system. If we have some type of pure dynamics, then we don't need to  do this.
-        if not (pure_death or pure_birth or pure_malfunction):
-            nonzero.reverse()
-
-        dynamics.extend(nonzero)
+    def gen_dynamics() -> tp.List[tp.Set[tp.Tuple[str, float]]]:
+        dynamics = [{(d[0], d[1] + d[1] * x * float(attr['factor']))
+                     for d in attr['dynamics']} for x in range(0, attr['cardinality'])]
         return dynamics
 
     def __init__(self) -> None:

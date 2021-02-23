@@ -18,13 +18,18 @@ Classes for running and single and batched experiments via the configured method
 the cmdline (usually GNU parallel).
 """
 
+# Core packages
 import os
 import subprocess
 import time
 import sys
 import logging
 import datetime
+import typing as tp
 
+# 3rd party packages
+
+# Project packages
 from core.variables import batch_criteria as bc
 import core.hpc
 
@@ -43,7 +48,7 @@ class BatchedExpRunner:
 
     """
 
-    def __init__(self, cmdopts: dict, criteria: bc.BatchCriteria) -> None:
+    def __init__(self, cmdopts: tp.Dict[str, tp.Any], criteria: bc.BatchCriteria) -> None:
         self.cmdopts = cmdopts
         self.criteria = criteria
 
@@ -51,7 +56,7 @@ class BatchedExpRunner:
         self.exec_exp_range = self.cmdopts['exp_range']
         self.logger = logging.getLogger(__name__)
 
-    def __call__(self):
+    def __call__(self) -> None:
         """
         Runs experiments in the batch according to configuration.
 

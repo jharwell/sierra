@@ -18,15 +18,20 @@
 Classes for generating graphs within a single experiment in a batch.
 """
 
+# Core packages
 import os
 import copy
 import logging
+import typing as tp
 
+# 3rd party packages
+
+# Project packages
 from core.graphs.stacked_line_graph import StackedLineGraph
 from core.graphs.heatmap import Heatmap
 from core.models.graphs import IntraExpModel2DGraphSet
-from core.pipeline.stage4.flexibility_plots import FlexibilityPlotsCSVGenerator, FlexibilityPlotsDefinitionsGenerator
 import core.utils
+import core.variables.batch_criteria as bc
 
 
 class BatchIntraExpGraphGenerator:
@@ -37,24 +42,24 @@ class BatchIntraExpGraphGenerator:
         cmdopts: Dictionary of parsed cmdline attributes.
     """
 
-    def __init__(self, cmdopts: dict) -> None:
+    def __init__(self, cmdopts: tp.Dict[str, tp.Any]) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
         self.logger = logging.getLogger(__name__)
 
     def __call__(self,
-                 main_config: dict,
-                 controller_config: dict,
-                 LN_config: dict,
-                 HM_config: dict,
-                 batch_criteria):
+                 main_config: tp.Dict[str, tp.Any],
+                 controller_config: tp.Dict[str, tp.Any],
+                 LN_config: tp.Dict[str, tp.Any],
+                 HM_config: tp.Dict[str, tp.Any],
+                 criteria: bc.IConcreteBatchCriteria) -> None:
         """
         Generate all intra-experiment graphs for all experiments in the batch.
         """
         exp_to_gen = core.utils.exp_range_calc(self.cmdopts,
                                                self.cmdopts['batch_output_root'],
-                                               batch_criteria)
+                                               criteria)
 
         for exp in exp_to_gen:
             exp = os.path.split(exp)[1]
@@ -70,7 +75,7 @@ class BatchIntraExpGraphGenerator:
                                        controller_config,
                                        LN_config,
                                        HM_config,
-                                       cmdopts)(batch_criteria)
+                                       cmdopts)(criteria)
 
 
 class IntraExpGraphGenerator:
@@ -81,11 +86,11 @@ class IntraExpGraphGenerator:
     """
 
     def __init__(self,
-                 main_config: dict,
-                 controller_config: dict,
-                 LN_config: dict,
-                 HM_config: dict,
-                 cmdopts: dict) -> None:
+                 main_config: tp.Dict[str, tp.Any],
+                 controller_config: tp.Dict[str, tp.Any],
+                 LN_config: tp.Dict[str, tp.Any],
+                 HM_config: tp.Dict[str, tp.Any],
+                 cmdopts: tp.Dict[str, tp.Any]) -> None:
         # Copy because we are modifying it and don't want to mess up the arguments for graphs that
         # are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
@@ -97,7 +102,7 @@ class IntraExpGraphGenerator:
 
         core.utils.dir_create_checked(self.cmdopts["exp_graph_root"], exist_ok=True)
 
-    def __call__(self, batch_criteria):
+    def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
         """
         Runs the following to generate graphs for each experiment in the batch:
 
@@ -107,9 +112,10 @@ class IntraExpGraphGenerator:
         #. :class:`~core.pipeline.stage4.intra_exp_graph_generator.HeatmapsGenerator` to
            generate heatmaps for each experiment in the batch.
         """
-        if self.cmdopts['gen_vc_plots'] and batch_criteria.is_univar():
+        if self.cmdopts['gen_vc_plots'] and criteria.is_univar():
             self.logger.info('Flexibility plots from %s', self.cmdopts['exp_output_root'])
-            FlexibilityPlotsCSVGenerator(self.main_config, self.cmdopts)(batch_criteria)
+            from core.pipeline.stage4.flexibility_plots import FlexibilityPlotsCSVGenerator
+            FlexibilityPlotsCSVGenerator(self.main_config, self.cmdopts)(criteria)
 
         LN_targets, HM_targets = self.__calc_intra_targets()
 
@@ -119,7 +125,8 @@ class IntraExpGraphGenerator:
         if not self.cmdopts['project_no_yaml_HM']:
             HeatmapsGenerator(self.cmdopts, HM_targets).generate()
 
-    def __calc_intra_targets(self):
+    def __calc_intra_targets(self) -> tp.Tuple[tp.List[tp.Dict[str, tp.Any]],
+                                               tp.List[tp.Dict[str, tp.Any]]]:
         """
         Use YAML configuration for controller the controller and intra-experiment graphs to
         calculate what graphs should be generated.
@@ -139,6 +146,7 @@ class IntraExpGraphGenerator:
                     for inherit in controller['graphs_inherit']:
                         keys.extend(inherit)   # optional
                 if self.cmdopts['gen_vc_plots']:  # optional
+                    from core.pipeline.stage4.flexibility_plots import FlexibilityPlotsDefinitionsGenerator
                     extra_graphs = FlexibilityPlotsDefinitionsGenerator()()
 
         LN_keys = [k for k in self.LN_config if k in keys]
@@ -165,12 +173,14 @@ class LinegraphsGenerator:
                  generated.
     """
 
-    def __init__(self, cmdopts: dict, targets: list) -> None:
+    def __init__(self,
+                 cmdopts: tp.Dict[str, tp.Any],
+                 targets: tp.List[tp.Dict[str, tp.Any]]) -> None:
         self.cmdopts = cmdopts
         self.targets = targets
         self.logger = logging.getLogger(__name__)
 
-    def generate(self):
+    def generate(self) -> None:
         self.logger.info("Linegraphs from %s", self.cmdopts['exp_stat_root'])
 
         # For each category of linegraphs we are generating
@@ -209,7 +219,9 @@ class HeatmapsGenerator:
                  generated.
     """
 
-    def __init__(self, cmdopts: dict, targets: list) -> None:
+    def __init__(self,
+                 cmdopts: tp.Dict[str, tp.Any],
+                 targets: tp.List[tp.Dict[str, tp.Any]]) -> None:
 
         self.exp_stat_root = cmdopts['exp_stat_root']
         self.exp_graph_root = cmdopts["exp_graph_root"]
@@ -219,7 +231,7 @@ class HeatmapsGenerator:
         self.targets = targets
         self.logger = logging.getLogger(__name__)
 
-    def generate(self):
+    def generate(self) -> None:
         self.logger.info("Heatmaps from %s", self.exp_stat_root)
 
         # For each category of heatmaps we are generating
