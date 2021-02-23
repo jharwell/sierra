@@ -175,7 +175,7 @@
              block_strategy="CRW"
              cache_strategy="likelihood_search"/>
          <nest_acq
-             strategy="wander"/>
+             strategy="wander_random_thresh"/>
          </strategy>
 
         <sensing_subsystemQ3D>

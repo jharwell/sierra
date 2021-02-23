@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #SBATCH --time=12:00:00
-#SBATCH --nodes 32
+#SBATCH --nodes 8
 #SBATCH --cpus-per-task=24
 #SBATCH --mem-per-cpu=2G
 #SBATCH --mail-type=ALL
@@ -73,8 +73,8 @@ SIERRA_BASE_CMD="python3 sierra.py \
 if [ -n "$MSIARCH" ] # Running on MSI
 then
     # 4 controllers, 4 tasks
-    TASK_NUM=$(($SLURM_ARRAY_TASK_ID % 4)) # This is the experiment
-    CONTROLLER_NUM=$(($SLURM_ARRAY_TASK_ID / 4)) # This is the scenario
+    TASK_NUM=$(($SLURM_ARRAY_TASK_ID % 4)) # This is the task
+    CONTROLLER_NUM=$(($SLURM_ARRAY_TASK_ID / 4)) # This is the controller
     CONTROLLERS=(${CONTROLLERS_LIST[$X]})
     TASK=${TASKS[$Y]}
 

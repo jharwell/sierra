@@ -141,8 +141,13 @@ class SAANoise(bc.UnivarBatchCriteria):
                                             xticks_stddev_range[1],
                                             num=len(self.variances))
 
-            levels = zip(mean_xticks, stddev_xticks)
-            return ["G({0},{1})".format(round(mean, 3), round(stddev, 3)) for mean, stddev in levels]
+            if self.main_config['perf']['robustness']['gaussian_labels_show'] == 'stddev':
+                return ["{0}".format(round(stddev, 3)) for stddev in stddev_xticks]
+            elif self.main_config['perf']['robustness']['gaussian_labels_show'] == 'mean':
+                return ["{0}".format(round(mean, 3)) for mean in mean_xticks]
+            else:
+                levels = zip(mean_xticks, stddev_xticks)
+                return ["G({0},{1})".format(round(mean, 3), round(stddev, 3)) for mean, stddev in levels]
         else:
             return []
 
