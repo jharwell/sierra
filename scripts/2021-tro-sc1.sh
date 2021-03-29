@@ -1,14 +1,14 @@
 #!/bin/bash -l
-#SBATCH --time=12:00:00
-#SBATCH --nodes 8
-#SBATCH --tasks-per-node=12
+#SBATCH --time=24:00:00
+#SBATCH --nodes 1
+#SBATCH --tasks-per-node=64
 #SBATCH --cpus-per-task=2
 #SBATCH --mem-per-cpu=2G
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=harwe006@umn.edu
 #SBATCH --output=R-%x.%j.out
 #SBATCH --error=R-%x.%j.err
-#SBATCH -J 2021-tro-sc1
+#SBATCH -J 2021-tro-sc1-3
 
 ################################################################################
 # Setup Simulation Environment                                                 #
@@ -48,8 +48,8 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 ################################################################################
 # Begin Experiments                                                            #
 ################################################################################
-OUTPUT_ROOT=$HOME/exp/2021-tro-sc1
-TIME=time_setup.T50000
+OUTPUT_ROOT=$HOME/exp/2021-tro-sc1-3
+TIME=time_setup.T10000
 
 CONTROLLERS_LIST=(d0.CRW d0.DPO d1.BITD_DPO d2.BIRTD_DPO)
 TASKS=("scalability" "flexibility" "robustness_saa" "robustness_pd")
@@ -60,12 +60,13 @@ SIERRA_BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT\
                   --template-input-file=$SIERRA_ROOT/templates/2021-tro-sc1.argos \
                   --n-sims=$NSIMS\
-                  --pipeline 1 2 3 4\
+                  --pipeline 1 2\
                   --exp-graphs=inter --project-no-yaml-LN\
                   --project=fordyca\
                   --dist-stats=conf95\
                   --exp-overwrite\
                   --models-disable\
+                  --with-robot-leds\
                   --log-level=DEBUG\
                   --no-verify-results
                   "
@@ -79,7 +80,7 @@ then
     TASK=${TASKS[$TASK_NUM]}
 
 
-    SIERRA_CMD="$SIERRA_BASE_CMD --hpc-env=slurm"
+    SIERRA_CMD="$SIERRA_BASE_CMD --hpc-env=slurm --exec-resume"
 
     echo "********************************************************************************\n"
     squeue -j $SLURM_JOB_ID[$SLURM_ARRAY_TASK_ID] -o "%.9i %.9P %.8j %.8u %.2t %.10M %.6D %S %e"
@@ -90,7 +91,7 @@ else
 
     SIERRA_CMD="$SIERRA_BASE_CMD\
                   --hpc-env=local\
-                  --physics-n-engines=2
+                  --physics-n-engines=4
                   "
 fi
 
@@ -126,11 +127,11 @@ then
                     --n-blocks=200\
                     --time-setup=${TIME}
 
-        # $SIERRA_CMD --scenario=RN.48x48x2 \
-        #               --batch-criteria temporal_variance.BCSquare.Z200\
-        #               --controller=${c} \
-        #               --n-blocks=800\
-        #               --time-setup=${TIME}
+        $SIERRA_CMD --scenario=RN.48x48x2 \
+                      --batch-criteria temporal_variance.BCSquare.Z200\
+                      --controller=${c} \
+                      --n-blocks=800\
+                      --time-setup=${TIME}
 
     done
 fi

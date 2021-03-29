@@ -40,6 +40,8 @@
                      stddev="0"
                      mean="0"/>
         </differential_steering>
+        <colored_blob_omnidirectional_camera implementation="rot_z_only"
+                                             medium="leds" />
 
         <footbot_proximity implementation="default">
           <noise model="none"
@@ -252,16 +254,16 @@
             tv_population="tv-population"
             tv_environment="tv-environment"/>
 
-        <truncate output_interval="100"
-                  block_acq_locs2D="block-acq-locs2D"
-                  fsm_interference_locs2D="fsm-interference-locs2D"
-                  block_acq_explore_locs2D="block-acq-explore-locs2D"
-                  block_acq_vector_locs2D="block-acq-vector-locs2D"
-                  cache_acq_locs2D="cache-acq-locs2D"
-                  cache_acq_explore_locs2D="cache-acq-explore-locs2D"
-                  cache_acq_vector_locs2D="cache-acq-vector-locs2D"
-                  cache_locations="cache-locations"
-                  swarm_dist2D_pos="swarm-dist-pos2D"/>
+        <!-- <truncate output_interval="100" -->
+        <!--           block_acq_locs2D="block-acq-locs2D" -->
+        <!--           fsm_interference_locs2D="fsm-interference-locs2D" -->
+        <!--           block_acq_explore_locs2D="block-acq-explore-locs2D" -->
+        <!--           block_acq_vector_locs2D="block-acq-vector-locs2D" -->
+        <!--           cache_acq_locs2D="cache-acq-locs2D" -->
+        <!--           cache_acq_explore_locs2D="cache-acq-explore-locs2D" -->
+        <!--           cache_acq_vector_locs2D="cache-acq-vector-locs2D" -->
+        <!--           cache_locations="cache-locations" -->
+        <!--           swarm_dist2D_pos="swarm-dist-pos2D"/> -->
       </metrics>
     </output>
     <temporal_variance>
@@ -330,7 +332,8 @@
               light_intensity="5.0"/>
         </nests>
     </arena_map>
-    <caches dimension="1.2">
+    <caches dimension="1.2"
+            strict_constraints="false">
       <static enable="true"
               size="2"
               respawn_scale_factor="0.05"/>
