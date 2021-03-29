@@ -156,7 +156,7 @@ class CoreCmdline:
                                  default="<home directory>/exp")
 
         self.parser.add_argument("--scenario",
-                                 metavar="<block dist>.AxB[xC]",
+                                 metavar="<block dist>.AxBxC",
                                  help="""
 
                                  Which scenario the swarm comprised of robots running the controller specified via
@@ -175,8 +175,7 @@ class CoreCmdline:
                                  - ``PL`` - Power law
 
                                  A,B,C are the scenario X,Y,Z dimensions respectively (which can be any postive INTEGER
-                                 values). The X,Y dimensions are required, the Z dimension is optional and defaults to
-                                 1 if omitted.
+                                 values). All dimensions are required. 
 
                                  """ + self.stage_usage_doc([1, 2, 3, 4]))
 

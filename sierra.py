@@ -90,7 +90,7 @@ class SIERRA():
 
         if 5 not in self.args.pipeline:
             controller = ControllerGeneratorParser()(self.args)
-            scenario = ScenarioGeneratorParser(self.args).parse_cmdline()
+            scenario = ScenarioGeneratorParser().to_scenario_name(self.args)
 
             self.logger.info("Controller=%s, Scenario=%s", controller, scenario)
             cmdopts = rdg.from_cmdline(self.args)

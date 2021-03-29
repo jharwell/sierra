@@ -74,7 +74,7 @@ class ExperimentSpec():
             self.scenario_name = criteria.exp_scenario_name(exp_num)
 
         else:  # Defaultc case: scenario dimensions read from cmdline
-            kw = sgp.ScenarioGeneratorParser.reparse_str(cmdopts['scenario'])
+            kw = sgp.ScenarioGeneratorParser().to_dict(cmdopts['scenario'])
             self.arena_dim = ArenaExtent(Vector3D(kw['arena_x'], kw['arena_y'], kw['arena_z']))
             self.logger.debug("Read scenario dimensions %s from cmdline spec",
                               self.arena_dim)

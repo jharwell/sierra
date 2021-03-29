@@ -251,7 +251,7 @@ class UnivarInterScenarioComparator:
             core.utils.pd_csv_write(model_df, model_opath_stem + '.model', index=False)
             with open(model_opath_stem + '.legend', 'a') as f:
                 _, scenario, _ = rdg.parse_batch_leaf(batch_leaf)
-                kw = sgp.ScenarioGeneratorParser.reparse_str(scenario)
+                kw = sgp.ScenarioGeneratorParser().to_dict(scenario)
                 f.write("{0} Prediction\n".format(kw['dist_type']))
 
     def _accum_df(self, ipath: str, opath: str, src_stem: str) -> pd.DataFrame:

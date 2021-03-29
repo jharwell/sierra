@@ -53,7 +53,7 @@ defining your own, the steps to do so are:
         --physics-n-engines=1\
         --time-setup=time_setup.T10000\
         --controller=d0.CRW\
-        --scenario=SS.12x6\
+        --scenario=SS.12x6x1\
         --batch-criteria population_size.Log64\
         --n-blocks=20\
         --exp-overwrite\

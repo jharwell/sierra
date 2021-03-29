@@ -24,62 +24,52 @@ class ScenarioGeneratorParser:
     Parse the scenario specification from cmdline arguments; used later to
     create generator classes to make modifications to template input files.
 
-    Format for pair is <scenario>.AxB[xC]
+    Format for pair is <scenario>.AxBxC
 
     <scenario> can be one of [SS,DS,QS,PL,RN]. A,B,C are the scenario dimensions.
 
-    The Z dimension (C) is optional. If it is omitted, 1.0 is used.
+    The Z dimension (C) is not optional (even for 2D simulations), due to how ARGoS handles LEDs
+    internally.
 
     Return:
-        Parsed scenario specification, unless missing from the command line altogether; this can occur
-        if the user is only running stage [4,5], and is not an error. In that case, None is returned.
+        Parsed scenario specification, unless missing from the command line altogether; this can
+        occur if the user is only running stage [4,5], and is not an error. In that case, None is
+        returned.
     """
 
-    def __init__(self, args) -> None:
-        self.args = args
+    def __init__(self) -> None:
         self.scenario = None
         self.logger = logging.getLogger(__name__)
 
-    def parse_cmdline(self):
+    def to_scenario_name(self, args):
         """
         Parse the scenario generator from cmdline arguments into a string.
         """
         # Stage 5
-        if self.args.scenario is None:
+        if args.scenario is None:
             return None
 
         # Scenario specified on cmdline
         self.logger.info("Parse scenario generator from cmdline specification '%s'",
-                         self.args.scenario)
+                         args.scenario)
 
-        res1 = re.search('[SDQPR][SSSLN]', self.args.scenario)
+        res1 = re.search('[SDQPR][SSSLN]', args.scenario)
         assert res1 is not None,\
-            "FATAL: Bad block distribution specification in '{0}'".format(self.args.scenario)
-        res2 = re.search('[0-9]+x[0-9]+x[0-9]+', self.args.scenario)
-
-        if res2 is None:  # 2D simulation
-            res2 = re.search('[0-9]+x[0-9]+', self.args.scenario)
+            "FATAL: Bad block distribution specification in '{0}'".format(args.scenario)
+        res2 = re.search('[0-9]+x[0-9]+x[0-9]+', args.scenario)
 
         assert res2 is not None,\
-            "FATAL: Bad arena_dim specification in '{0}'".format(self.args.scenario)
+            "FATAL: Bad arena_dim specification in '{0}'".format(args.scenario)
 
         self.scenario = res1.group(0) + "." + res2.group(0)
         return self.scenario
 
-    @staticmethod
-    def reparse_str(scenario):
+    def to_dict(self, scenario: str):
         """
         Given a string (presumably a result of an earlier cmdline parse), parse it into a dictionary
-        of components: arena_x, arena_y, dist_type
+        of components: arena_x, arena_y, arena_z, dist_type
         """
-        # Try parsing a 3D scenario dimension specification, and if that does not work, then it must
-        # be a 2D scenario specification.
-        try:
-            x, y, z = scenario.split('+')[0].split('.')[1].split('x')
-        except ValueError:
-            x, y = scenario.split('+')[0].split('.')[1].split('x')
-            z = 2.0
-
+        x, y, z = scenario.split('+')[0].split('.')[1].split('x')
         dist_type = scenario.split('.')[0]
 
         return {

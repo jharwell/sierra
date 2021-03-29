@@ -126,7 +126,7 @@ def factory(cli_arg: str,
 
     """
     attr = cd.Parser()(cli_arg)
-    kw = sgp.ScenarioGeneratorParser.reparse_str(kwargs['scenario'])
+    kw = sgp.ScenarioGeneratorParser().to_dict(kwargs['scenario'])
 
     if kw['dist_type'] == "SS" or kw['dist_type'] == "DS":
         r = range(kw['arena_x'],
