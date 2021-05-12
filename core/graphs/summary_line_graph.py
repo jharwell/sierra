@@ -22,7 +22,6 @@ Linegraph for summarizing the results of a batch experiment in different ways.
 import os
 import typing as tp
 import logging
-import textwrap
 
 # 3rd party packages
 import matplotlib.ticker as mticker
@@ -148,7 +147,7 @@ class SummaryLinegraph:
         stat_dfs = self._read_stats()
         self._plot_stats(ax, self.xticks, data_dfy, stat_dfs)
 
-        # Add X,Y labelsg
+        # Add X,Y labels
         plt.ylabel(self.ylabel, fontsize=self.text_size['xyz_label'])
         plt.xlabel(self.xlabel, fontsize=self.text_size['xyz_label'])
 
@@ -165,8 +164,14 @@ class SummaryLinegraph:
         plt.close(fig)  # Prevent memory accumulation (fig.clf() does not close everything)
 
     def _plot_lines(self, data_dfy: pd.DataFrame, model: tp.Tuple[pd.DataFrame, tp.List[str]]) -> None:
-
         for i in range(0, len(data_dfy.values)):
+            assert len(data_dfy.values[i]) == len(self.xticks),\
+                "FATAL: Length mismatch between xticks,data: {0} vs {1}/{2} vs {3}".format(
+                len(data_dfy.values[i]),
+                len(self.xticks),
+                data_dfy.values[i],
+                self.xticks)
+
             # Plot data
             plt.plot(self.xticks,
                      data_dfy.values[i],

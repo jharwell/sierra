@@ -175,7 +175,7 @@ class CoreCmdline:
                                  - ``PL`` - Power law
 
                                  A,B,C are the scenario X,Y,Z dimensions respectively (which can be any postive INTEGER
-                                 values). All dimensions are required. 
+                                 values). All dimensions are required.
 
                                  """ + self.stage_usage_doc([1, 2, 3, 4]))
 
@@ -723,20 +723,28 @@ class CoreCmdline:
                            self.stage_usage_doc([4]))
 
         plots.add_argument("--plot-primary-axis",
+                           type=int,
                            help="""
 
 
-                           This option allows you to override the primary axis, which is normally it is computed
+                           This option allows you to override the primary axis, which is normally is computed
                            based on the batch criteria.
 
-                           For example, if the first batch criteria swarm population size, then swarm scalability
-                           metrics will be calculated by COMPUTING across .csv rows and PRJECTING down the columns by
-                           default, since swarm size will only vary within a row. Passing a value of 1 to this option
-                           will override this calculation, which can be useful in bivariate batch criteria in which you
-                           are interested in the effect of the OTHER non-size criteria on various performance measures.
+                           For example, in a bivariate batch criteria composed of
 
-                           0=rows
-                           1=columns
+                           - :ref:`Swarm Population Size <ln-bc-population-size>` on the X axis (rows)
+                           - :ref:`SAA Noise <ln-bc-saa-noise>` on the Y axis (columns)
+
+                           Swarm scalability metrics will be calculated by `computing` across .csv rows and `projecting`
+                           down the columns by default, since swarm size will only vary within a row. Passing a value of
+                           1 to this option will override this calculation, which can be useful in bivariate batch
+                           criteria in which you are interested in the effect of the OTHER non-size criteria on various
+                           performance measures.
+
+                           0=criteria of interest varies across `rows`.
+                           1=criteria of interest varies across `columns`.
+
+                           This option only affects :class:`~core.variables.batch_criteria.BivarBatchCriteria`.
                            """ +
                            self.graphs_applicable_doc([':class:`~core.graphs.heatmap.Heatmap`']) +
                            self.stage_usage_doc([4]),

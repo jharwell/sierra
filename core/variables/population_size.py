@@ -106,9 +106,6 @@ class PopulationSize(bc.UnivarBatchCriteria):
     def pm_query(self, pm: str) -> bool:
         return pm in ['raw', 'scalability', 'self-org']
 
-    def inter_exp_graphs_exclude_exp0(self) -> bool:
-        return False
-
 
 class Parser():
     """

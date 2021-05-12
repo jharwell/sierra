@@ -173,7 +173,7 @@ then
                   --sierra-root=$OUTPUT_ROOT"
 
     # Generate scalability/emergence comparison graphs
-    $STAGE5_CMD --batch-criteria block_motion_dynamics.C${YCARDINALITY1}.F25p0.RW0p001 population_density.CD${DENSITY}.I32.C${XCARDINALITY1}\
+    $STAGE5_CMD --batch-criteria block_motion_dynamics.C${YCARDINALITY1}.F25p0.RW0p001 population_density.CD${DENSITY}.I16.C${XCARDINALITY1}\
                     --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
                     --controllers-legend CRW,DPO,STOCHM,STOCHX
 

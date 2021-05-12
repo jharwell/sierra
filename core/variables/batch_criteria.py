@@ -93,14 +93,6 @@ class IConcreteBatchCriteria(implements.Interface):
         """
         raise NotImplementedError
 
-    def inter_exp_graphs_exclude_exp0(self) -> bool:
-        """
-        Do the inter-experiment graphs for this batch criteria exclude exp0 ?
-
-        Needed for correct stage5 comparison graph generation for univariate criteria.
-        """
-        raise NotImplementedError
-
 
 class IBivarBatchCriteria(implements.Interface):
     def graph_yticks(self,
@@ -231,9 +223,7 @@ class BatchCriteria():
         return dims
 
     def n_exp(self) -> int:
-        exps = [i for i in os.listdir(self.batch_input_root) if
-                os.path.isdir(os.path.join(self.batch_input_root, i))]
-        return len(exps)
+        return len(self.gen_attr_changelist())
 
     def pickle_exp_defs(self, cmdopts: tp.Dict[str, tp.Any]) -> None:
         defs = list(self.gen_attr_changelist())
@@ -423,10 +413,12 @@ class BivarBatchCriteria(BatchCriteria):
         sizes = [[0 for col in self.criteria2.gen_exp_dirnames(
             cmdopts)] for row in self.criteria1.gen_exp_dirnames(cmdopts)]
 
-        n_chgs = len(self.criteria2.gen_attr_changelist())
-        n_adds = len(self.criteria2.gen_tag_addlist())
+        n_chgs1 = len(self.criteria1.gen_attr_changelist())
+        n_adds1 = len(self.criteria1.gen_tag_addlist())
+        n_chgs2 = len(self.criteria2.gen_attr_changelist())
+        n_adds2 = len(self.criteria2.gen_tag_addlist())
 
-        assert n_chgs == 0 or n_adds == 0,\
+        assert (n_chgs1 == 0 or n_adds1 == 0) and (n_chgs2 == 0 or n_adds2 == 0),\
             "FATAL: Criteria defines both XML attribute changes and XML tag additions"
 
         for d in dirs:
@@ -437,8 +429,8 @@ class BivarBatchCriteria(BatchCriteria):
                 if not (path == ".//arena/distribute/entity" and attr == "quantity"):
                     continue
                 index = dirs.index(d)
-                i = int(index / (n_chgs + n_adds))
-                j = index % (n_chgs + n_adds)
+                i = int(index / (n_chgs2 + n_adds2))
+                j = index % (n_chgs2 + n_adds2)
                 sizes[i][j] = int(value)
 
         return sizes

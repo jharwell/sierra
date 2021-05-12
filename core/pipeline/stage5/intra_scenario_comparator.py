@@ -97,6 +97,9 @@ class UnivarIntraScenarioComparator:
             found = False
             for leaf in batch_leaves:
                 if self._leaf_select(leaf):
+                    self.logger.debug("Generating graph %s from scenario '%s'",
+                                      graph,
+                                      leaf)
                     self._compare_in_scenario(cmdopts=cmdopts,
                                               graph=graph,
                                               batch_leaf=leaf,
@@ -154,11 +157,13 @@ class UnivarIntraScenarioComparator:
 
             criteria = bc.factory(self.main_config, cmdopts, self.cli_args, scenario)
 
-            self._gen_csv(cmdopts=cmdopts,
-                          batch_leaf=batch_leaf,
+            self._gen_csv(batch_leaf=batch_leaf,
+                          criteria=criteria,
+                          cmdopts=cmdopts,
                           controller=controller,
                           src_stem=graph['src_stem'],
-                          dest_stem=graph['dest_stem'])
+                          dest_stem=graph['dest_stem'],
+                          inc_exps=graph.get('include_exp', None))
 
             self._gen_graph(batch_leaf=batch_leaf,
                             criteria=criteria,
@@ -166,20 +171,22 @@ class UnivarIntraScenarioComparator:
                             dest_stem=graph['dest_stem'],
                             title=graph['title'],
                             label=graph['label'],
-                            exclude_exp0=graph['exclude_exp0'],
+                            inc_exps=graph.get('include_exp', None),
                             legend=legend)
 
     def _gen_csv(self,
-                 cmdopts: tp.Dict[str, tp.Any],
                  batch_leaf: str,
+                 criteria: bc.IConcreteBatchCriteria,
+                 cmdopts: tp.Dict[str, tp.Any],
                  controller: str,
                  src_stem: str,
-                 dest_stem: str) -> None:
+                 dest_stem: str,
+                 inc_exps: tp.Optional[str]) -> None:
         """
-        Helper function for generating a set of .csv files for use in intra-scenario graph generation
-        (1 per controller).
+        Helper function for generating a set of .csv files for use in intra-scenario graph
+        generation (1 per controller).
         """
-
+        self.logger.debug("Gathering data for '%s' from %s -> %s", controller, src_stem, dest_stem)
         ipath = os.path.join(cmdopts['batch_stat_collate_root'], src_stem + '.csv')
 
         # Some experiments might not generate the necessary performance measure .csvs for graph
@@ -188,12 +195,12 @@ class UnivarIntraScenarioComparator:
             self.logger.warning("%s missing for controller %s", ipath, controller)
             return
 
-        _stats_prepare(ipath_stem=cmdopts['batch_stat_collate_root'],
-                       ipath_leaf=src_stem,
-                       opath_stem=self.cc_csv_root,
-                       opath_leaf=LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, None),
-                       index=0,
-                       exclude_exp0=False)
+        preparer = StatsPreparer(ipath_stem=cmdopts['batch_stat_collate_root'],
+                                 ipath_leaf=src_stem,
+                                 opath_stem=self.cc_csv_root,
+                                 n_exp=criteria.n_exp())
+        opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, None)
+        preparer.across_rows(opath_leaf=opath_leaf, index=0, inc_exps=inc_exps)
 
     def _gen_graph(self,
                    batch_leaf: str,
@@ -202,7 +209,7 @@ class UnivarIntraScenarioComparator:
                    dest_stem: str,
                    title: str,
                    label: str,
-                   exclude_exp0: bool,
+                   inc_exps: tp.Optional[slice],
                    legend: tp.List[str]) -> None:
         """
         Generates a :class:`~core.graphs.summary_line_graph.SummaryLinegraph` comparing the
@@ -213,9 +220,14 @@ class UnivarIntraScenarioComparator:
 
         xticks = criteria.graph_xticks(cmdopts)
         xtick_labels = criteria.graph_xticklabels(cmdopts)
-        opath = os.path.join(self.cc_graph_root,
-                             opath_leaf + core.config.kImageExt)
 
+        if inc_exps is not None:
+            xtick_labels = core.utils.exp_include_filter(inc_exps, xtick_labels, criteria.n_exp())
+            xticks = core.utils.exp_include_filter(inc_exps, xticks, criteria.n_exp())
+
+        opath = os.path.join(self.cc_graph_root, opath_leaf + core.config.kImageExt)
+
+        print(xtick_labels, xticks)
         SummaryLinegraph(stats_root=self.cc_csv_root,
                          input_stem=opath_leaf,
                          output_fpath=opath,
@@ -223,8 +235,8 @@ class UnivarIntraScenarioComparator:
                          title=title,
                          xlabel=criteria.graph_xlabel(cmdopts),
                          ylabel=label,
-                         xtick_labels=xtick_labels[exclude_exp0:],
-                         xticks=xticks[exclude_exp0:],
+                         xtick_labels=xtick_labels,
+                         xticks=xticks,
                          logyscale=cmdopts['plot_log_yscale'],
                          large_text=self.cmdopts['plot_large_text'],
                          legend=legend).generate()
@@ -282,6 +294,9 @@ class BivarIntraScenarioComparator:
             found = False
             for leaf in batch_leaves:
                 if self._leaf_select(leaf):
+                    self.logger.debug("Generating graph %s from scenario '%s'",
+                                      graph,
+                                      leaf)
                     self._compare_in_scenario(cmdopts=cmdopts,
                                               graph=graph,
                                               batch_leaf=leaf,
@@ -350,7 +365,9 @@ class BivarIntraScenarioComparator:
                                       controller=controller,
                                       batch_leaf=batch_leaf,
                                       src_stem=graph['src_stem'],
-                                      dest_stem=graph['dest_stem'])
+                                      dest_stem=graph['dest_stem'],
+                                      primary_axis=graph['primary_axis'],
+                                      inc_exps=graph.get('include_exp', None))
 
             elif 'HM' in comp_type or 'SU' in comp_type:
                 self._gen_csvs_for_2D_or_3D(cmdopts=cmdopts,
@@ -366,7 +383,8 @@ class BivarIntraScenarioComparator:
                                dest_stem=graph['dest_stem'],
                                title=graph['title'],
                                label=graph['label'],
-                               exclude_exp0=graph['exclude_exp0'],
+                               primary_axis=graph['primary_axis'],
+                               inc_exps=graph.get('include_exp', None),
                                legend=legend)
         elif 'HM' in comp_type:
             self._gen_graphs2D(batch_leaf=batch_leaf,
@@ -408,6 +426,8 @@ class BivarIntraScenarioComparator:
         controllers, so we do it unconditionally here to handle both cases.
 
         """
+        self.logger.debug("Gathering data for '%s' from %s -> %s", controller, src_stem, dest_stem)
+
         csv_ipath = os.path.join(cmdopts['batch_stat_collate_root'], src_stem + ".csv")
 
         # Some experiments might not generate the necessary performance measure .csvs for
@@ -431,7 +451,9 @@ class BivarIntraScenarioComparator:
                          batch_leaf: str,
                          controller: str,
                          src_stem: str,
-                         dest_stem: str) -> None:
+                         dest_stem: str,
+                         primary_axis: int,
+                         inc_exps: tp.Optional[str]) -> None:
         """
         Helper function for generating a set of .csv files for use in intra-scenario graph
         generation. Because we are targeting linegraphs, we draw the the i-th row/col (as
@@ -439,6 +461,8 @@ class BivarIntraScenarioComparator:
         a new .csv file which can be given to
         :class:`~core.graphs.summary_line_graph.SummaryLinegraph`.
         """
+        self.logger.debug("Gathering data for '%s' from %s -> %s", controller, src_stem, dest_stem)
+
         csv_ipath = os.path.join(cmdopts['batch_stat_collate_root'], src_stem + ".csv")
 
         # Some experiments might not generate the necessary performance measure .csvs for
@@ -447,17 +471,34 @@ class BivarIntraScenarioComparator:
             self.logger.warning("%s missing for controller '%s'", csv_ipath, controller)
             return
 
-        n_rows = len(core.utils.pd_csv_read(os.path.join(cmdopts['batch_stat_collate_root'],
-                                                         src_stem + ".csv")).index)
+        if primary_axis == 0:
+            preparer = StatsPreparer(ipath_stem=cmdopts['batch_stat_collate_root'],
+                                     ipath_leaf=src_stem,
+                                     opath_stem=self.cc_csv_root,
+                                     n_exp=criteria.criteria2.n_exp())
 
-        for i in range(0, n_rows):
-            opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, [i])
-            _stats_prepare(ipath_stem=cmdopts['batch_stat_collate_root'],
-                           ipath_leaf=src_stem,
-                           opath_stem=self.cc_csv_root,
-                           opath_leaf=opath_leaf,
-                           exclude_exp0=criteria.criteria2.inter_exp_graphs_exclude_exp0(),
-                           index=i)
+            n_rows = len(core.utils.pd_csv_read(os.path.join(cmdopts['batch_stat_collate_root'],
+                                                             src_stem + ".csv")).index)
+            for i in range(0, n_rows):
+                opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, [i])
+                preparer.across_rows(opath_leaf=opath_leaf, index=i, inc_exps=inc_exps)
+        else:
+            preparer = StatsPreparer(ipath_stem=cmdopts['batch_stat_collate_root'],
+                                     ipath_leaf=src_stem,
+                                     opath_stem=self.cc_csv_root,
+                                     n_exp=criteria.criteria1.n_exp())
+
+            exp_dirs = criteria.gen_exp_dirnames(cmdopts)
+            xlabels, ylabels = core.utils.bivar_exp_labels_calc(exp_dirs)
+            xlabels = core.utils.exp_include_filter(inc_exps, xlabels, criteria.criteria1.n_exp())
+
+            for col in ylabels:
+                col_index = ylabels.index(col)
+                opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, [col_index])
+                preparer.across_cols(opath_leaf=opath_leaf,
+                                     col_index=col_index,
+                                     all_cols=xlabels,
+                                     inc_exps=inc_exps)
 
     def _gen_graphs1D(self,
                       batch_leaf: str,
@@ -466,7 +507,8 @@ class BivarIntraScenarioComparator:
                       dest_stem: str,
                       title: str,
                       label: str,
-                      exclude_exp0: bool,
+                      primary_axis: int,
+                      inc_exps: tp.Optional[str],
                       legend: tp.List[str]) -> None:
         oleaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, None)
         csv_stem_root = os.path.join(self.cc_csv_root, oleaf)
@@ -475,8 +517,25 @@ class BivarIntraScenarioComparator:
         for i in range(0, len(paths)):
             opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, [i])
             img_opath = os.path.join(self.cc_graph_root, opath_leaf + core.config.kImageExt)
-            xticks = criteria.graph_yticks(cmdopts)[exclude_exp0:]
-            xtick_labels = criteria.graph_yticklabels(cmdopts)[exclude_exp0:]
+
+            if primary_axis == 0:
+                n_exp = criteria.criteria1.n_exp()
+                xticks = core.utils.exp_include_filter(inc_exps,
+                                                       criteria.graph_yticks(cmdopts),
+                                                       n_exp)
+                xtick_labels = core.utils.exp_include_filter(inc_exps,
+                                                             criteria.graph_yticklabels(cmdopts),
+                                                             n_exp)
+                xlabel = criteria.graph_ylabel(cmdopts)
+            else:
+                n_exp = criteria.criteria2.n_exp()
+                xticks = core.utils.exp_include_filter(inc_exps,
+                                                       criteria.graph_xticks(cmdopts),
+                                                       n_exp)
+                xtick_labels = core.utils.exp_include_filter(inc_exps,
+                                                             criteria.graph_xticklabels(cmdopts),
+                                                             n_exp)
+                xlabel = criteria.graph_xlabel(cmdopts)
 
             SummaryLinegraph(stats_root=self.cc_csv_root,
                              input_stem=opath_leaf,
@@ -484,7 +543,7 @@ class BivarIntraScenarioComparator:
                              output_fpath=img_opath,
                              model_root=cmdopts['batch_model_root'],
                              title=title,
-                             xlabel=criteria.graph_ylabel(cmdopts),
+                             xlabel=xlabel,
                              ylabel=label,
                              xticks=xticks,
                              xtick_labels=xtick_labels,
@@ -639,46 +698,127 @@ class BivarIntraScenarioComparator:
         return label
 
 
-def _stats_prepare(ipath_stem: str,
-                   ipath_leaf: str,
-                   opath_stem: str,
-                   opath_leaf: str,
-                   exclude_exp0: bool,
-                   index: int) -> None:
+class StatsPreparer():
+    """
+    Prepare statistics generated from controllers for graph generation by collating from
+    the collated stats for each individual controller. If the batch criteria is univariate, then
+    only :meth:`across_rows` is valid; for bivariate batch criteria, either :meth:`across_rows` or
+    :meth:`across_cols` is valid, depending on what the primary axis is.
+    """
 
-    for k in core.config.kStatsExtensions.keys():
-        stat_ipath = os.path.join(ipath_stem,
-                                  ipath_leaf + core.config.kStatsExtensions[k])
-        stat_opath = os.path.join(opath_stem,
-                                  opath_leaf + core.config.kStatsExtensions[k])
-        df = _accum_df_by_row(stat_ipath, stat_opath, index, exclude_exp0)
+    def __init__(self,
+                 ipath_stem: str,
+                 ipath_leaf: str,
+                 opath_stem: str,
+                 n_exp: int):
+        self.ipath_stem = ipath_stem
+        self.ipath_leaf = ipath_leaf
+        self.opath_stem = opath_stem
+        self.n_exp = n_exp
 
-        if df is not None:
-            core.utils.pd_csv_write(df,
-                                    os.path.join(opath_stem,
-                                                 opath_leaf + core.config.kStatsExtensions[k]),
-                                    index=False)
+    def across_cols(self,
+                    opath_leaf: str,
+                    all_cols: tp.List[str],
+                    col_index: int,
+                    inc_exps: tp.Optional[str]) -> None:
+        """
+        The criteria of interest varies across the rows of controller .csvs. We take row `index`
+        from a given dataframe and take the rows specified by the `inc_exps` and append them to a
+        results dataframe column-wise, which we then write the file system.
+        """
+        for k in core.config.kStatsExtensions.keys():
+            stat_ipath = os.path.join(self.ipath_stem,
+                                      self.ipath_leaf + core.config.kStatsExtensions[k])
+            stat_opath = os.path.join(self.opath_stem,
+                                      opath_leaf + core.config.kStatsExtensions[k])
+            df = self._accum_df_by_col(stat_ipath, stat_opath, all_cols, col_index, inc_exps)
 
+            if df is not None:
+                core.utils.pd_csv_write(df,
+                                        os.path.join(self.opath_stem,
+                                                     opath_leaf + core.config.kStatsExtensions[k]),
+                                        index=False)
 
-def _accum_df_by_row(ipath: str,
-                     opath: str,
-                     index: int,
-                     exclude_exp0: bool) -> pd.DataFrame:
-    if core.utils.path_exists(opath):
-        cum_df = core.utils.pd_csv_read(opath)
-    else:
-        cum_df = None
+    def across_rows(self, opath_leaf: str, index: int, inc_exps: tp.Optional[str]) -> None:
+        """
+        The criteria of interest varies across the columns of controller .csvs. We take row `index`
+        from a given dataframe and take the columns specified by the `inc_exps` and append them to a
+        results dataframe row-wise, which we then write the file system.
+        """
+        for k in core.config.kStatsExtensions.keys():
+            stat_ipath = os.path.join(self.ipath_stem,
+                                      self.ipath_leaf + core.config.kStatsExtensions[k])
+            stat_opath = os.path.join(self.opath_stem,
+                                      opath_leaf + core.config.kStatsExtensions[k])
+            df = self._accum_df_by_row(stat_ipath, stat_opath, index, inc_exps)
 
-    if core.utils.path_exists(ipath):
-        t = core.utils.pd_csv_read(ipath)
+            if df is not None:
+                core.utils.pd_csv_write(df,
+                                        os.path.join(self.opath_stem,
+                                                     opath_leaf + core.config.kStatsExtensions[k]),
+                                        index=False)
 
-        if cum_df is None:
-            cum_df = pd.DataFrame(columns=t.columns)
+    def _accum_df_by_col(self,
+                         ipath: str,
+                         opath: str,
+                         all_cols: tp.List[str],
+                         col_index: int,
+                         inc_exps: tp.Optional[str]) -> pd.DataFrame:
+        if core.utils.path_exists(opath):
+            cum_df = core.utils.pd_csv_read(opath)
+        else:
+            cum_df = None
 
-        cum_df = cum_df.append(t.loc[index, :])
-        return cum_df
+        if core.utils.path_exists(ipath):
+            t = core.utils.pd_csv_read(ipath)
 
-    return None
+            if inc_exps is not None:
+                cols_from_index = core.utils.exp_include_filter(inc_exps, list(t.index), self.n_exp)
+            else:
+                cols_from_index = slice(None, None, None)
+
+            if cum_df is None:
+                cum_df = pd.DataFrame(columns=all_cols)
+
+            # We need to turn each column of the .csv on the filesystem into a row in the .csv which
+            # we want to write out, so we transpose, fix the index, and then set the columns of the
+            # new transposed dataframe.
+            tp_df = t.transpose()
+            tp_df = tp_df.reset_index(drop=True)
+            tp_df = tp_df[cols_from_index]
+            tp_df.columns = all_cols
+
+            cum_df = cum_df.append(tp_df.loc[col_index, :])
+            return cum_df
+
+        return None
+
+    def _accum_df_by_row(self,
+                         ipath: str,
+                         opath: str,
+                         index: int,
+                         inc_exps: tp.Optional[str]) -> pd.DataFrame:
+        if core.utils.path_exists(opath):
+            cum_df = core.utils.pd_csv_read(opath)
+        else:
+            cum_df = None
+
+        if core.utils.path_exists(ipath):
+            t = core.utils.pd_csv_read(ipath)
+
+            if inc_exps is not None:
+                cols = core.utils.exp_include_filter(inc_exps, list(t.columns), self.n_exp)
+            else:
+                cols = t.columns
+
+            if cum_df is None:
+                cum_df = pd.DataFrame(columns=cols)
+
+            cum_df = cum_df.append(t.loc[index, cols])
+
+            return cum_df
+
+        return None
 
 
 class LeafGenerator():

@@ -214,8 +214,9 @@ class BivarGraphCollator:
             data_df = core.utils.pd_csv_read(csv_ipath)
 
             assert target['col'] in data_df.columns.values,\
-                "FATAL: {0} not in columns of {1}".format(target['col'],
-                                                          target['src_stem'] + stat.df_ext)
+                "FATAL: {0} not in columns of {1}, which has {2}".format(target['col'],
+                                                                         csv_ipath,
+                                                                         data_df.columns)
             xlabel, ylabel = exp_dir.split('+')
             stat.df.loc[xlabel, ylabel] = data_df[target['col']].to_numpy()
 

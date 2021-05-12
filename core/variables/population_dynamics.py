@@ -135,9 +135,6 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
     def pm_query(self, pm: str) -> bool:
         return pm in ['raw', 'robustness_pd']
 
-    def inter_exp_graphs_exclude_exp0(self) -> bool:
-        return True
-
     def is_pure_death_dynamics(self) -> bool:
         return 'D' in self.dynamics_types and 'B' not in self.dynamics_types
 

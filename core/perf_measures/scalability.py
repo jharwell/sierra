@@ -93,10 +93,12 @@ class BaseSteadyStateParallelFraction():
                normalize_method: str) -> tp.Optional[float]:
         if n_robots_i > 1:
             size_ratio = float(n_robots_i) / float(n_robots_iminus1)
-            e = (1.0 / speedup_i - 1.0 / size_ratio) / (1 - 1.0 / size_ratio)
+            if speedup_i == math.inf:
+                speedup_i = 1.0
+
+            e = (speedup_i - 1.0 / size_ratio) / (1.0 - 1.0 / size_ratio)
         else:
             e = 1.0
-
         theta = 1.0 - e
 
         if normalize:
@@ -392,6 +394,7 @@ class SteadyStateParallelFractionBivar(BaseSteadyStateParallelFraction):
                         speedup_i = math.inf
                     else:
                         speedup_i = perf_x / perf_xminus1
+
                     parallel_frac = BaseSteadyStateParallelFraction.kernel(speedup_i=speedup_i,
                                                                            n_robots_i=n_robots_x,
                                                                            n_robots_iminus1=n_robots_xminus1,

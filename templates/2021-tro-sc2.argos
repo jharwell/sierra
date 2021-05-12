@@ -248,6 +248,7 @@
             task_tab_harvester="task-tab-harvester"
             task_distribution="task-distribution"
             block_motion="block-motion"
+            block_clusters="block-clusters"
             block_distributor="block-distributor"
             tv_population="tv-population"
             tv_environment="tv-environment"/>

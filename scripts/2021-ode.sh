@@ -48,19 +48,19 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 ################################################################################
 # Begin Experiments                                                            #
 ################################################################################
-OUTPUT_ROOT=$HOME/exp/test/2021-ijcai-new
-TIME_LONG=time_setup.T20000
+OUTPUT_ROOT=$HOME/exp/test/2021-ode-3
+TIME_LONG=time_setup.T200000
 DENSITY=CD1p0
 CARDINALITY=C16
 SIZEINC=I16
 SCENARIOS_LIST=(SS.16x8x2 DS.16x8x2 RN.8x8x2 PL.8x8x2)
 # SCENARIOS_LIST=(SS.16x8 DS.16x8)
-SCENARIOS_LIST=(PL.8x8x2)
+# SCENARIOS_LIST=(PL.8x8x2)
 NSIMS=32
 
 SIERRA_BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT\
-                  --template-input-file=$SIERRA_ROOT/templates/2021-ijcai.argos \
+                  --template-input-file=$SIERRA_ROOT/templates/2021-ode.argos \
                   --n-sims=$NSIMS\
                   --controller=d0.CRW\
                   --project=fordyca\
@@ -92,7 +92,7 @@ else
                  --no-verify-results\
                  --exp-graphs=inter\
                  --plot-large-text\
-                 --physics-n-engines=4\
+                 --physics-n-engines=12\
                  --plot-log-xscale\
                  --plot-log-yscale
                  "

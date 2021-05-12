@@ -164,9 +164,10 @@ def path_exists(path: str) -> bool:
 
 
 def get_primary_axis(criteria, primary_axis_bc: tp.List, cmdopts: tp.Dict[str, tp.Any]) -> int:
-    if cmdopts['plot_primary_axis'] == '0':
+    if cmdopts['plot_primary_axis'] == 0:
         return 0
-    if cmdopts['plot_primary_axis'] == '1':
+
+    if cmdopts['plot_primary_axis'] == 1:
         return 1
 
     if any([isinstance(criteria.criteria1, elt) for elt in primary_axis_bc]):
@@ -189,6 +190,33 @@ def exp_range_calc(cmdopts: tp.Dict[str, tp.Any], root_dir: str, criteria) -> tp
         return exp_all[min_exp: max_exp + 1]
 
     return exp_all
+
+
+def exp_include_filter(inc_spec: str, target: tp.List, n_exps: int):
+    """
+    Takes a input list, and returns the sublist specified by the inc_spec (of the form
+    [x:y]). inc_spec is an `absolute` specification; if a given performance measure excludes exp0
+    then that case is handled internally so that array/list shapes work out when generating graphs
+    if this function is used consistently everywhere.
+    """
+    if inc_spec is None:
+        start = None
+        end = None
+    else:
+        r = inc_spec.split(':')
+        start = int(r[0])
+        if r[1] == '':
+            end = len(target)
+        else:
+            end = int(r[1])
+
+        print(r, target, start, end, n_exps)
+        if len(target) < n_exps:  # Handle perf measures which exclude exp0 by default
+            start -= 1
+
+        print(r, target, start, end, n_exps)
+    print(target[slice(start, end, None)])
+    return target[slice(start, end, None)]
 
 
 def bivar_exp_labels_calc(exp_dirs: tp.List[str]) -> tp.Tuple[tp.List[str], tp.List[str]]:

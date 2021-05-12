@@ -176,7 +176,7 @@ class SteadyStatePerfLostInteractiveSwarmUnivar(BaseSteadyStatePerfLostInteracti
         swarm of size N, as opposed to a group of N robots that do not interact with each other,
         only the arena walls.
         """
-        n_exp = len(criteria.gen_attr_changelist())
+        n_exp = criteria.n_exp()
         populations = criteria.populations(cmdopts)
         plostn_dfs = {}
 
@@ -238,7 +238,7 @@ class SteadyStateFLUnivar(BaseSteadyStateFL):
     def df_kernel(criteria: bc.IConcreteBatchCriteria,
                   collated_perf: tp.Dict[str, pd.DataFrame],
                   collated_plost: tp.Dict[str, pd.DataFrame]) -> tp.Dict[str, pd.DataFrame]:
-        n_exp = len(criteria.gen_attr_changelist())
+        n_exp = criteria.n_exp()
         fl_dfs = {}
 
         exp0 = list(collated_perf.keys())[0]

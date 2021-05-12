@@ -54,13 +54,13 @@ TIME=time_setup.T10000
 CONTROLLERS_LIST=(d0.CRW d0.DPO d1.BITD_DPO d2.BIRTD_DPO)
 TASKS=("scalability" "flexibility" "robustness_saa" "robustness_pd")
 CARDINALITY=C8
-NSIMS=96
+NSIMS=192
 
 SIERRA_BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT\
                   --template-input-file=$SIERRA_ROOT/templates/2021-tro-sc1.argos \
                   --n-sims=$NSIMS\
-                  --pipeline 1 2\
+                  --pipeline 3 4 \
                   --exp-graphs=inter --project-no-yaml-LN\
                   --project=fordyca\
                   --dist-stats=conf95\
@@ -196,6 +196,7 @@ then
                   --plot-log-xscale\
                   --dist-stats=conf95\
                   --bc-univar\
+                  --log-level=DEBUG\
                   --sierra-root=$OUTPUT_ROOT"
 
     # Generate scalability/emergence comparison graphs

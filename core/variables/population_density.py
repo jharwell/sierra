@@ -112,9 +112,6 @@ class PopulationConstantDensity(cd.ConstantDensity):
     def pm_query(self, pm: str) -> bool:
         return pm in ['raw', 'scalability', 'self-org']
 
-    def inter_exp_graphs_exclude_exp0(self) -> bool:
-        return False
-
 
 def factory(cli_arg: str,
             main_config: tp.Dict[str, str],
