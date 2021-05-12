@@ -247,9 +247,7 @@
             task_tab_collector="task-tab-collector"
             task_tab_harvester="task-tab-harvester"
             task_distribution="task-distribution"
-            block_clusters="block-clusters"
             block_distributor="block-distributor"
-            perception_dpo="perception-dpo"
             tv_population="tv-population"
             tv_environment="tv-environment"/>
 

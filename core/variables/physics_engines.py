@@ -104,6 +104,8 @@ class PhysicsEngines():
                 self.tag_adds = [self._gen6_engines(s) for s in self.extents]
             elif self.n_engines == 8:
                 self.tag_adds = [self._gen8_engines(s) for s in self.extents]
+            elif self.n_engines == 12:
+                self.tag_adds = [self._gen12_engines(s) for s in self.extents]
             elif self.n_engines == 16:
                 self.tag_adds = [self._gen16_engines(s) for s in self.extents]
             elif self.n_engines == 24:
@@ -230,9 +232,8 @@ class PhysicsEngines():
 
          0 1
 
-        Volume is *NOT* divided equally among engines, but rather each of the engines is extended up
-        to some maximum height in Z, forming a set of "silos".
-
+        Volume is *NOT* divided equally among 3D engines, but rather each of the engines is extended
+        up to some maximum height in Z, forming a set of "silos".
         """
         return self._gen_all_engines(extent,
                                      n_engines_x=2,
@@ -241,15 +242,15 @@ class PhysicsEngines():
 
     def _gen4_engines(self, extent: ArenaExtent) -> XMLTagAddList:
         """
-        Generate definitions for 4 2D or 3D physics engine for the specified extent.
+        Generate definitions for 4 2D or 3D physics engines for the specified extent.
 
         Engines are layed out as follows in 2D, regardless if they are 2D or 3D engines:
 
          3 2
          0 1
 
-        Volume is *NOT* divided equally among engines, but rather each of the engines is extended up
-        to some maximum height in Z, forming a set of "silos".
+        Volume is *NOT* divided equally among 3D engines, but rather each of the engines is extended
+        up to some maximum height in Z, forming a set of "silos".
         """
         return self._gen_all_engines(extent,
                                      n_engines_x=2,
@@ -258,15 +259,15 @@ class PhysicsEngines():
 
     def _gen6_engines(self, extent: ArenaExtent) -> XMLTagAddList:
         """
-        Generate definitions for 6 2D or 3D physics engine for the specified extent.
+        Generate definitions for 6 2D or 3D physics engines for the specified extent.
 
         Engines are layed out as follows in 2D, regardless if they are 2D or 3D engines:
 
          5 4 3
          0 1 2
 
-        Volume is *NOT* divided equally among engines, but rather each of the engines is extended up
-        to some maximum height in Z, forming a set of "silos".
+        Volume is *NOT* divided equally among 3D engines, but rather each of the engines is extended
+        up to some maximum height in Z, forming a set of "silos".
         """
         return self._gen_all_engines(extent,
                                      n_engines_x=3,
@@ -275,7 +276,7 @@ class PhysicsEngines():
 
     def _gen8_engines(self, extent: ArenaExtent) -> XMLTagAddList:
         """
-        Generate definitions for 8 2D or 3D physics engine for the specified pair of (X,Y) arena
+        Generate definitions for 8 2D or 3D physics engines for the specified pair of (X,Y) arena
         extents with a uniform grid layout.
 
         The 2D layout is:
@@ -283,17 +284,36 @@ class PhysicsEngines():
         7 6 5 4
         0 1 2 3
 
-        Volume is *NOT* divided equally among engines, but rather each of the engines is extended up
-        to some maximum height in Z, forming a set of "silos".
+        Volume is *NOT* divided equally among 3D engines, but rather each of the engines is extended
+        up to some maximum height in Z, forming a set of "silos".
         """
         return self._gen_all_engines(extent,
                                      n_engines_x=4,
                                      n_engines_y=2,
                                      forward_engines=[0, 1, 2, 3])
 
+    def _gen12_engines(self, extent: ArenaExtent) -> XMLTagAddList:
+        """
+        Generate definitions for 12 2D or 3D physics engines for the specified pair of (X,Y) arena
+        extents with a uniform grid layout.
+
+        The 2D layout is:
+
+        8  9  10 11
+        7  6  5  4
+        0  1  2  3
+
+        Volume is *NOT* divided equally among 3D engines, but rather each of the engines is extended
+        up to some maximum height in Z, forming a set of "silos".
+        """
+        return self._gen_all_engines(extent,
+                                     n_engines_x=4,
+                                     n_engines_y=3,
+                                     forward_engines=[0, 1, 2, 3, 8, 9, 10, 11])
+
     def _gen16_engines(self, extent: ArenaExtent) -> XMLTagAddList:
         """
-        Generate definitions for 16 2D or 3D physics engine for the specified pair of (X,Y) arena
+        Generate definitions for 16 2D or 3D physics engines for the specified pair of (X,Y) arena
         extents with a uniform grid layout.
 
         The 2D layout is:
@@ -303,8 +323,8 @@ class PhysicsEngines():
         7  6  5  4
         0  1  2  3
 
-        Volume is *NOT* divided equally among engines, but rather each of the engines is extended up
-        to some maximum height in Z, forming a set of "silos".
+        Volume is *NOT* divided equally among 3D engines, but rather each of the engines is extended
+        up to some maximum height in Z, forming a set of "silos".
         """
         return self._gen_all_engines(extent,
                                      n_engines_x=4,
@@ -313,7 +333,7 @@ class PhysicsEngines():
 
     def _gen24_engines(self, extent: ArenaExtent) -> XMLTagAddList:
         """
-        Generate definitions for 16 2D or 3D physics engine for the specified pair of (X,Y) arena
+        Generate definitions for 16 2D or 3D physics engines for the specified pair of (X,Y) arena
         extents with a uniform grid layout.
 
         The 2D layout is:
@@ -323,8 +343,8 @@ class PhysicsEngines():
         11  10  9  8  7  6
         0   1   2  3  4  5
 
-        Volume is *NOT* divided equally among engines, but rather each of the engines is extended up
-        to some maximum height in Z, forming a set of "silos".
+        Volume is *NOT* divided equally among 3D engines, but rather each of the engines is extended
+        up to some maximum height in Z, forming a set of "silos".
         """
         return self._gen_all_engines(extent,
                                      n_engines_x=6,
