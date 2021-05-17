@@ -104,6 +104,14 @@
             block_manipulation="block-manipulation"/>
       </metrics>
     </output>
+    <temporal_variance>
+      <env_dynamics>
+        <blocks>
+          <manipulation_penalty
+            unique_finish="true"/>
+          </blocks>
+      </env_dynamics>
+    </temporal_variance>
     <arena_map>
       <grid2D resolution="0.2"
             dims="12, 6, 2"/>

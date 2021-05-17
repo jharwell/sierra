@@ -42,7 +42,8 @@ from core.graphs.heatmap import Heatmap
 import core.perf_measures.common as pmcommon
 from core.variables import batch_criteria as bc
 from core.variables import population_size
-from core.variables import population_density
+from core.variables import population_constant_density as pcd
+from core.variables import population_variable_density as pvd
 import core.utils
 import core.config
 
@@ -703,7 +704,8 @@ class SteadyStateFLMarginalBivar(BaseSteadyStateFLMarginal):
         # performance between adjacent swarm sizes.
         axis = core.utils.get_primary_axis(criteria,
                                            [population_size.PopulationSize,
-                                            population_density.PopulationConstantDensity],
+                                            pcd.PopulationConstantDensity,
+                                            pvd.PopulationVariableDensity],
                                            self.cmdopts)
 
         pm_dfs = self.df_kernel(criteria, self.cmdopts, axis, fl)
@@ -809,7 +811,8 @@ class SteadyStateFLInteractiveBivar(BaseSteadyStateFLInteractive):
         # performance between adjacent swarm sizes.
         axis = core.utils.get_primary_axis(criteria,
                                            [population_size.PopulationSize,
-                                            population_density.PopulationConstantDensity],
+                                            pcd.PopulationConstantDensity,
+                                            pvd.PopulationVariableDensity],
                                            self.cmdopts)
 
         pm_dfs = self.df_kernel(criteria, self.cmdopts, axis, fl)
@@ -907,7 +910,8 @@ class SteadyStatePGMarginalBivar(BaseSteadyStatePGMarginal):
         # performance between adjacent swarm sizes.
         axis = core.utils.get_primary_axis(criteria,
                                            [population_size.PopulationSize,
-                                            population_density.PopulationConstantDensity],
+                                            pcd.PopulationConstantDensity,
+                                            pvd.PopulationVariableDensity],
                                            self.cmdopts)
 
         pm_dfs = self.df_kernel(criteria, self.cmdopts, axis, dfs)
@@ -994,7 +998,8 @@ class SteadyStatePGInteractiveBivar(BaseSteadyStatePGInteractive):
         # performance between adjacent swarm sizes.
         axis = core.utils.get_primary_axis(criteria,
                                            [population_size.PopulationSize,
-                                            population_density.PopulationConstantDensity],
+                                            pcd.PopulationConstantDensity,
+                                            pvd.PopulationVariableDensity],
                                            self.cmdopts)
         pm_dfs = self.df_kernel(criteria, self.cmdopts, axis, dfs)
 

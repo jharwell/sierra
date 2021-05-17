@@ -85,7 +85,6 @@ class PopulationSize(bc.UnivarBatchCriteria):
             exp_dirs = self.gen_exp_dirnames(cmdopts)
 
         ret = list(map(float, self.populations(cmdopts, exp_dirs)))
-
         if cmdopts['plot_log_xscale']:
             return [int(math.log2(x)) for x in ret]
         else:

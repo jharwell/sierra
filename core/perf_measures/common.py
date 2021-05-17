@@ -37,7 +37,8 @@ from core.graphs.summary_line_graph import SummaryLinegraph
 import core.config
 from core.xml_luigi import XMLAttrChangeSet
 from core.variables import population_size
-from core.variables import population_density
+from core.variables import population_constant_density as pcd
+from core.variables import population_variable_density as pvd
 import core.stat_kernels
 
 ################################################################################
@@ -290,7 +291,8 @@ class SteadyStatePerfLostInteractiveSwarmBivar(BaseSteadyStatePerfLostInteractiv
         # performance between adjacent swarm sizes.
         axis = core.utils.get_primary_axis(criteria,
                                            [population_size.PopulationSize,
-                                            population_density.PopulationConstantDensity],
+                                            pcd.PopulationConstantDensity,
+                                            pvd.PopulationVariableDensity],
                                            cmdopts)
 
         for i in range(0, xsize):
@@ -355,7 +357,8 @@ class SteadyStateFLBivar(BaseSteadyStateFL):
         # performance between adjacent swarm sizes.
         axis = core.utils.get_primary_axis(criteria,
                                            [population_size.PopulationSize,
-                                            population_density.PopulationConstantDensity],
+                                            pcd.PopulationConstantDensity,
+                                            pvd.PopulationVariableDensity],
                                            cmdopts)
         for i in range(0, xsize):
             for j in range(0, ysize):

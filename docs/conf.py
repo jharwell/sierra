@@ -138,7 +138,7 @@ xref_links = {
     "FORDYCA": ("FORDYCA", "https://swarm-robotics-fordyca.readthedocs.io"),
     "SILICON": ("SILICON", "https://swarm-robotics-silicon.readthedocs.io"),
     "COSM": ("COSM", "https://swarm-robotics-cosm.readthedocs.io"),
-    "RCPPSW": ("RCPPSWSILICON", "https://swarm-robotics-rcppsw.readthedocs.io"),
+    "RCPPSW": ("RCPPSW", "https://swarm-robotics-rcppsw.readthedocs.io"),
     "RCSW": ("RCSW", "https://swarm-robotics-rcsw.readthedocs.io"),
     "LIBRA": ("LIBRA", "https://swarm-robotics-libra.readthedocs.io")
 }

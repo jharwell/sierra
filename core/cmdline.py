@@ -691,7 +691,7 @@ class CoreCmdline:
                            """ +
 
                            self.graphs_applicable_doc([':class:`~core.graphs.summary_line_graph.SummaryLinegraph`']) +
-                           self.bc_applicable_doc([':ref:`Population Density <ln-bc-population-density>`',
+                           self.bc_applicable_doc([':ref:`Constant Population Density <ln-bc-constant-population-density>`',
                                                    ':ref:`Population Size <ln-bc-population-size>`']) +
                            self.stage_usage_doc([4, 5]),
                            action='store_true')
@@ -708,7 +708,7 @@ class CoreCmdline:
                            self.graphs_applicable_doc([':class:`~core.graphs.summary_line_graph.SummaryLinegraph`',
                                                        ':class:`~core.graphs.stacked_line_graph.StackedLineGraph`']) +
                            self.bc_applicable_doc([':ref:`Population Size <ln-bc-population-size>`',
-                                                   ':ref:`Population Density <ln-bc-population-density>`']) +
+                                                   ':ref:`Population Constant Density <ln-bc-population-constant-density>`']) +
                            self.stage_usage_doc([4, 5]),
                            action='store_true')
 
@@ -1103,6 +1103,9 @@ class CoreCmdlineValidator():
                 '--bc-univar or --bc-bivar is required for stage 5'
             assert args.scenario_comparison or args.controller_comparison,\
                 '--scenario-comparison or --controller-comparison required for stage 5'
+            if args.scenario_comparison:
+                assert args.controller is not None,\
+                    '--centroller is required for --scenario-comparison'
 
 
 def sphinx_cmdline_core() -> argparse.ArgumentParser:

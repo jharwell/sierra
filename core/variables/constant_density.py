@@ -67,7 +67,7 @@ class ConstantDensity(UnivarBatchCriteria):
 
 class Parser():
     """
-    Enforces the cmdline definition of a :class:`ConstantDensity` derived batche criteria.
+    Enforces the cmdline definition of a :class:`ConstantDensity` derived batch criteria.
     """
 
     def __call__(self, cli_arg: str) -> tp.Dict[str, tp.Any]:
@@ -79,14 +79,10 @@ class Parser():
 
         """
         ret = {}
-        # Need to have 1 dot/2 parts
+        # Need to have 3 dot/4 parts
         assert len(cli_arg.split('.')) == 4,\
-            "Bad criteria formatting in criteria '{0}': must have 3 sections, separated by '.'".format(
+            "Bad criteria formatting in criteria '{0}': must have 4 sections, separated by '.'".format(
                 cli_arg)
-
-        # Parse type
-        t = cli_arg.split('.')[1][:2]
-        assert t == "CD", "FATAL: Only constant density supported"
 
         # Parse density
         density = cli_arg.split('.')[1]

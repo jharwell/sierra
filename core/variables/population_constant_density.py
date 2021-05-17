@@ -1,4 +1,4 @@
-# Copyright 2018 John Harwell, All rights reserved.
+# Copyright 2021 John Harwell, All rights reserved.
 #
 #  This file is part of SIERRA.
 #
@@ -15,8 +15,9 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
 """
-Classes for the population density batch criteria. See :ref:`ln-bc-population-density` for usage
-documentation.
+Classes for the constant population density batch criteria. See
+:ref:`ln-bc-population-constant-density` for usage documentation.
+
 """
 
 # Core packages
@@ -71,9 +72,9 @@ class PopulationConstantDensity(cd.ConstantDensity):
                         changeset.add(XMLAttrChange(".//arena/distribute/entity",
                                                     "quantity",
                                                     str(n_robots)))
-                        self.logger.debug("Calculated swarm size %d for arena dimensions %s",
+                        self.logger.debug("Calculated swarm size=%d for extent=%s,density=%s",
                                           n_robots,
-                                          str(extent))
+                                          str(extent), self.target_density)
                         break
 
             self.already_added = True
@@ -92,6 +93,9 @@ class PopulationConstantDensity(cd.ConstantDensity):
             exp_dirs = self.gen_exp_dirnames(cmdopts)
 
         ret = list(map(float, self.populations(cmdopts, exp_dirs)))
+
+        print(ret)
+        print([math.log2(x) for x in ret])
 
         if cmdopts['plot_log_xscale']:
             return [math.log2(x) for x in ret]
@@ -119,7 +123,7 @@ def factory(cli_arg: str,
             **kwargs) -> PopulationConstantDensity:
     """
     Factory to create :class:`PopulationConstantDensity` derived classes from the command line
-    definition of batch criteria.
+    definition.
 
     """
     attr = cd.Parser()(cli_arg)

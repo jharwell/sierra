@@ -42,7 +42,8 @@ from core.graphs.heatmap import Heatmap
 import core.perf_measures.common as pmcommon
 from core.variables import batch_criteria as bc
 from core.variables import population_size
-from core.variables import population_density
+from core.variables import population_constant_density as pcd
+from core.variables import population_variable_density as pvd
 import core.utils
 import core.config
 
@@ -96,7 +97,12 @@ class BaseSteadyStateParallelFraction():
             if speedup_i == math.inf:
                 speedup_i = 1.0
 
-            e = (speedup_i - 1.0 / size_ratio) / (1.0 - 1.0 / size_ratio)
+            # If the two swarm sizes we are computing scalability for are the
+            # same, then e becomes 1.0 via L'Hospital's rule.
+            if size_ratio == 1.0:
+                e = 1.0
+            else:
+                e = (speedup_i - 1.0 / size_ratio) / (1.0 - 1.0 / size_ratio)
         else:
             e = 1.0
         theta = 1.0 - e
@@ -425,7 +431,8 @@ class SteadyStateParallelFractionBivar(BaseSteadyStateParallelFraction):
 
         axis = core.utils.get_primary_axis(criteria,
                                            [population_size.PopulationSize,
-                                            population_density.PopulationConstantDensity],
+                                            pcd.PopulationConstantDensity,
+                                            pvd.PopulationVariableDensity],
                                            self. cmdopts)
         pm_dfs = self.df_kernel(criteria, self.cmdopts, axis, dfs)
 

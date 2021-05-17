@@ -14,9 +14,13 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
 
-
+# Core packages
 import re
 import logging
+
+# 3rd party packages
+
+# Project packages
 
 
 class ScenarioGeneratorParser:

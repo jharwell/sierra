@@ -1,8 +1,8 @@
 #!/bin/bash -l
 #SBATCH --time=24:00:00
 #SBATCH --nodes 8
-#SBATCH --tasks-per-node=12
-#SBATCH --cpus-per-task=2
+#SBATCH --tasks-per-node=6
+#SBATCH --cpus-per-task=4
 #SBATCH --mem-per-cpu=2G
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=harwe006@umn.edu
@@ -65,15 +65,17 @@ SIERRA_BASE_CMD="python3 sierra.py \
                   --sierra-root=$OUTPUT_ROOT\
                   --template-input-file=$SIERRA_ROOT/templates/2021-tro-sc2.argos \
                   --n-sims=$NSIMS\
-                  --pipeline 1\
+                  --pipeline 1 2\
                   --exp-graphs=inter\
                   --project=fordyca\
                   --dist-stats=conf95\
                   --exp-overwrite\
-                  --exp-graphs=inter --project-no-yaml-LN\
+                  --exp-graphs=inter\
+                  --project-no-yaml-LN\
                   --models-disable\
                   --with-robot-leds\
-                  --log-level=DEBUG --exec-resume\
+                  --log-level=DEBUG\
+                  --exec-resume\
                   "
 
 if [ -n "$MSIARCH" ] # Running on MSI
@@ -110,7 +112,7 @@ then
     for c in "${CONTROLLERS[@]}"
     do
         $SIERRA_CMD --scenario=${BLOCK_DIST}.16x16x2 \
-                    --batch-criteria block_motion_dynamics.C${XCARDINALITY1}.F25p0.RW0p001 population_density.CD${DENSITY}.I16.C${YCARDINALITY1} \
+                    --batch-criteria block_motion_dynamics.C${XCARDINALITY1}.F25p0.RW0p001 population_constant_density.${DENSITY}.I16.C${YCARDINALITY1} \
                     --controller=${c} \
                     --n-blocks=${N_BLOCKS}\
                     --time-setup=${TIME}
@@ -123,10 +125,9 @@ then
     for c in "${CONTROLLERS[@]}"
     do
         $SIERRA_CMD --scenario=${BLOCK_DIST}.16x16x2 \
-                  --batch-criteria population_density.CD${DENSITY}.I32.C${XCARDINALITY2} temporal_variance.MSine\
+                  --batch-criteria population_constant_density.${DENSITY}.I32.C${XCARDINALITY2} temporal_variance.MSine\
                   --controller=${c}\
                   --n-blocks=${N_BLOCKS}\
-                  --plot-primary-axis=1\
                   --time-setup=${TIME}
 
     done
@@ -138,10 +139,9 @@ then
     for c in "${CONTROLLERS[@]}"
     do
         $SIERRA_CMD --scenario=${BLOCK_DIST}.16x16x2 \
-                    --batch-criteria population_density.CD${DENSITY}.I32.C${XCARDINALITY2} saa_noise.all.C${YCARDINALITY2}\
+                    --batch-criteria population_constant_density.${DENSITY}.I32.C${XCARDINALITY2} saa_noise.all.C${YCARDINALITY2}\
                     --controller=${c} \
                     --n-blocks=${N_BLOCKS}\
-                    --plot-primary-axis=1\
                     --time-setup=${TIME}
     done
 fi
@@ -151,10 +151,9 @@ then
     for c in "${CONTROLLERS[@]}"
     do
         $SIERRA_CMD --scenario=${BLOCK_DIST}.16x16x2 \
-                  --batch-criteria population_density.CD${DENSITY}.I32.C${XCARDINALITY2} population_dynamics.C${YCARDINALITY2}.F2p0.D0p0001 \
+                  --batch-criteria population_constant_density.${DENSITY}.I32.C${XCARDINALITY2} population_dynamics.C${YCARDINALITY2}.F2p0.D0p0001 \
                   --controller=${c} \
                   --n-blocks=${N_BLOCKS}\
-                  --plot-primary-axis=1\
                   --time-setup=${TIME}
     done
 fi
@@ -173,21 +172,21 @@ then
                   --sierra-root=$OUTPUT_ROOT"
 
     # Generate scalability/emergence comparison graphs
-    $STAGE5_CMD --batch-criteria block_motion_dynamics.C${YCARDINALITY1}.F25p0.RW0p001 population_density.CD${DENSITY}.I16.C${XCARDINALITY1}\
+    $STAGE5_CMD --batch-criteria block_motion_dynamics.C${YCARDINALITY1}.F25p0.RW0p001 population_constant_density.${DENSITY}.I16.C${XCARDINALITY1}\
                     --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
                     --controllers-legend CRW,DPO,STOCHM,STOCHX
 
     # Generate flexibility comparison graphs
-    $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I32.C${XCARDINALITY2} temporal_variance.MSine\
+    $STAGE5_CMD --batch-criteria population_constant_density.${DENSITY}.I32.C${XCARDINALITY2} temporal_variance.MSine\
                 --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
                     --controllers-legend CRW,DPO,STOCHM,STOCHX
 
     # Generate robustness comparison graphs
-    $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I32.C${XCARDINALITY2} population_dynamics.C${YCARDINALITY2}.F2p0.D0p0001 \
+    $STAGE5_CMD --batch-criteria population_constant_density.${DENSITY}.I32.C${XCARDINALITY2} population_dynamics.C${YCARDINALITY2}.F2p0.D0p0001 \
                 --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
                 --controllers-legend CRW,DPO,STOCHM,STOCHX
 
-    $STAGE5_CMD --batch-criteria population_density.CD${DENSITY}.I32.C${XCARDINALITY2} saa_noise.all.C${YCARDINALITY2}\
+    $STAGE5_CMD --batch-criteria population_constant_density.${DENSITY}.I32.C${XCARDINALITY2} saa_noise.all.C${YCARDINALITY2}\
                 --controllers-list d0.CRW,d0.DPO,d1.BITD_DPO,d2.BIRTD_DPO\
                 --controllers-legend CRW,DPO,STOCHM,STOCHX
 

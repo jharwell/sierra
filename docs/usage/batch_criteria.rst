@@ -11,7 +11,8 @@ The SIERRA core defines the following batch criteria (additional criteria can be
 defined by the selected project):
 
   - :ref:`Swarm Population Size <ln-bc-population-size>`
-  - :ref:`Swarm Population Density <ln-bc-population-density>`
+  - :ref:`Swarm Constant Population Density <ln-bc-population-constant-density>`
+  - :ref:`Swarm Variable Population Density <ln-bc-population-variable-density>`
   - :ref:`Temporal Variance <ln-bc-tv>`
   - :ref:`SAA Noise <ln-bc-saa-noise>`
 
@@ -48,34 +49,60 @@ Examples:
     - ``Log1024``: Static swarm sizes 1...1024
     - ``Linear1000``: Static swarm sizes 100...1000
 
-.. _ln-bc-population-density:
+.. _ln-bc-population-constant-density:
 
 
-Swarm Population Density
-------------------------
+Swarm Constant Population Density
+---------------------------------
 
-.. _ln-bc-population-density-cmdline:
+.. _ln-bc-population-constant-density-cmdline:
 
 Cmdline Syntax
 ^^^^^^^^^^^^^^
-``population_density.CD{density}.I{Arena Size Increment}.C{cardinality}``
+``population_constant_density.{density}.I{Arena Size Increment}.C{cardinality}``
 
 - ``density`` - <integer>p<integer> (i.e. 5p0 for 5.0)
 
-- ``Arena Size Increment`` - Size in meters that the X and Y dimensions should
-  increase by in between experiments. Larger values here will result in larger
-  arenas and more robots being simulated at a given density. Must be an integer.
+  - ``Arena Size Increment`` - Size in meters that the X and Y dimensions should
+increase by in between experiments. Larger values here will result in larger
+arenas and more robots being simulated at a given density. Must be an integer.
 
 - ``cardinality`` How many experiments should be generated?
 
-Examples:
-    - ``CD1p0.I16.C4``: Constant density of 1.0. Arena dimensions will increase by
-      16 in both X and Y for each experiment in the batch (4 total).
+  Examples:
+  - ``1p0.I16.C4``: Constant density of 1.0. Arena dimensions will increase by
+    16 in both X and Y for each experiment in the batch (4 total).
 
-.. NOTE:: This criteria is for `constant` density of robots as swarm sizes
-          increase. For `variable` robot density, use
-          :ref:`ln-bc-population-size`.
+    .. NOTE:: This criteria is for `constant` density of robots as swarm sizes
+              increase. For `variable` robot density, use
+              :ref:`ln-bc-population-size` or
+              :ref:`ln-bc-population-variable-density`.
 
+.. _ln-bc-population-variable-density:
+
+
+Swarm Variabe Population Density
+--------------------------------
+
+.. _ln-bc-population-variable-density-cmdline:
+
+Cmdline Syntax
+^^^^^^^^^^^^^^
+``population_variable_density.{density_min}.{density_max}.C{cardinality}``
+
+- ``density_min`` - <integer>p<integer> (i.e. 5p0 for 5.0)
+
+- ``density_max`` - <integer>p<integer> (i.e. 5p0 for 5.0)
+
+- ``cardinality`` How many experiments should be generated? Densities for each
+  experiment will be linearly spaced between the min and max densities.
+
+  Examples:
+  - ``1p0.4p0.C4``: Densities of 1.0,2.0,3.0,4.0.
+
+    .. NOTE:: This criteria is for `variable` density of robots as swarm sizes
+              increase. For `constant` robot density, use
+              :ref:`ln-bc-population-constant-density`.
 
 
 .. _ln-bc-tv:
