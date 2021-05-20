@@ -25,8 +25,8 @@ following to get it to work with SIERRA as a batch criteria:
    it within), produce a list of sets, where each set is all changes that need
    to be made to the .argos template file in order to set the value of your
    variable to something. Each change is a
-   :class:`~core.xml_luigi.XMLAttrChange` object, that takes the following
-   arguments in its constructor:
+   :class:`~sierra.core.xml_luigi.XMLAttrChange` object, that takes the
+   following arguments in its constructor:
 
    #. XPath search path for the **parent** of the attribute that you want to
       modify.
@@ -40,8 +40,8 @@ following to get it to work with SIERRA as a batch criteria:
    tags that need to be removed from the .argos template file in order to set
    the value of your variable to something.
 
-   Each change is a :class:`~core.xml_luigi.XMLTagRm` object that takes the
-   following arguments in its constructor:
+   Each change is a :class:`~sierra.core.xml_luigi.XMLTagRm` object that takes
+   the following arguments in its constructor:
 
    #. XPath search path for the **parent** of the tag that you want to
       remove.
@@ -52,8 +52,8 @@ following to get it to work with SIERRA as a batch criteria:
    passed during initialization, generate a list of sets, where each set is all
    tags that need to be added to the .argos template file.
 
-   Each change is a :class:`~core.xml_luigi.XMLTagAdd` object that takes the
-   following arguments in its constructor:
+   Each change is a :class:`~sierra.core.xml_luigi.XMLTagAdd` object that takes
+   the following arguments in its constructor:
 
    #. XPath search path for the **parent** of the tag that you want to
       add.

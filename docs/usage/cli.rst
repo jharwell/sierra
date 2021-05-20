@@ -11,12 +11,12 @@ is, option batch criteria applicability is only documented for options which
 apply to a subset of the available :ref:`Batch Criteria <ln-batch-criteria>`.
 
 .. argparse::
-   :filename: ../core/cmdline.py
+   :filename: ../sierra//core/cmdline.py
    :func: sphinx_cmdline_bootstrap
    :prog: cmdline.py
 
 .. argparse::
-   :filename: ../core/cmdline.py
+   :filename: ../sierra/core/cmdline.py
    :func: sphinx_cmdline_core
    :prog: cmdline.py
 

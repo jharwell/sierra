@@ -3,3 +3,4 @@ sphinx-argparse
 sphinxcontrib-napoleon
 sphinx-rtd-theme
 autoapi
+psutil

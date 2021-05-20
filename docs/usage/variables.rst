@@ -19,7 +19,8 @@ Cmdline Syntax
 
 - ``n_datapoints`` - # datapoints per simulation, to be captured; the capture
   interval (if configurable) should be adjusted in the
-  :class:`~core.variables.time_setup` derived class for the ``--project``.
+  :class:`~sierra.core.variables.time_setup` derived class for the
+  ``--project``.
 
 Examples:
 

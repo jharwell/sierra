@@ -64,12 +64,13 @@ Cmdline Syntax
 - ``density`` - <integer>p<integer> (i.e. 5p0 for 5.0)
 
   - ``Arena Size Increment`` - Size in meters that the X and Y dimensions should
-increase by in between experiments. Larger values here will result in larger
-arenas and more robots being simulated at a given density. Must be an integer.
+    increase by in between experiments. Larger values here will result in larger
+    arenas and more robots being simulated at a given density. Must be an
+    integer.
 
 - ``cardinality`` How many experiments should be generated?
 
-  Examples:
+Examples:
   - ``1p0.I16.C4``: Constant density of 1.0. Arena dimensions will increase by
     16 in both X and Y for each experiment in the batch (4 total).
 

@@ -30,17 +30,17 @@ readme = (here / "README.md").read_text()
 
 # This call to setup() does all the work
 setup(
-    name="realpython-reader",
+    name="sierra",
     version="1.0.0",
-    description="Swarm robotics end-to-end experimental pipeline automation using the ARGoS simulator",
+    description="Swarm robotics end-to-end experimental pipeline automation using ARGoS",
     long_description=readme,
     long_description_content_type="text/markdown",
     url="https://github.com/swarm-robotics/sierra",
     author="John Harwell",
     author_email="john.r.harwell@gmail.com",
-    license="GPLv3",
+    license="GPLv3+",
     classifiers=[
-        "License :: OSI Approved :: GPLv3",
+        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Programming Language :: Python :: 3",
         "Development Status :: 4 - Beta",
         "Intended Audience :: Science/Research",
@@ -62,7 +62,7 @@ setup(
     python_requires=">=3.6",
     entry_points={
         "console_scripts": [
-            "sierra=sierra.__main__:__sierra_run",
+            "sierra=sierra.main:__main__",
         ]
     },
 )

@@ -31,15 +31,15 @@ configurable via ``--render-cmd-opts``), and output to
 
 .. _ln-usage-rendering-project-imagizing:
 
+Project Imagizing
+-----------------
+
 .. IMPORTANT::
 
    This does not happen automatically every time as part of stage 4 because it
    can take a LONG time and is idempotent. You should only pass
    ``--argos-rendering`` the first time you run stage 4 after running stage 3
    (unless you are getting paid by the hour).
-
-Project Imagizing
------------------
 
 Projects can generate ``.csv`` files residing in subdirectories within the
 ``<sim_metrics_leaf>`` directory (directory path set on a per ``--project``

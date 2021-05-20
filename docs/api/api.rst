@@ -5,23 +5,23 @@ SIERRA Core
 -----------
 .. toctree::
 
-   core/core.cmdline.rst
-   core/core.vector.rst
-   core/core.experiment_spec.rst
-   core/core.xml_luigi.rst
-   core/core.utils.rst
+   core/sierra.core.cmdline.rst
+   core/sierra.core.vector.rst
+   core/sierra.core.experiment_spec.rst
+   core/sierra.core.xml_luigi.rst
+   core/sierra.core.utils.rst
 
-   core/core.perf_measures.rst
-   core/core.generators.rst
-   core/core.pipeline.rst
-   core/core.variables.rst
-   core/core.graphs.rst
-   core/models/core.models.interface.rst
-   core/models/core.models.graphs.rst
+   core/perf_measures/sierra.core.perf_measures.rst
+   core/generators/sierra.core.generators.rst
+   core/pipeline/sierra.core.pipeline.rst
+   core/variables/sierra.core.variables.rst
+   core/graphs/sierra.core.graphs.rst
+   core/models/sierra.core.models.interface.rst
+   core/models/sierra.core.models.graphs.rst
 
 Plugins
 -------
 
 .. toctree::
 
-   plugins/hpc/plugins.hpc.rst
+   plugins/hpc/sierra.plugins.hpc.rst

@@ -320,8 +320,9 @@ Root level dictionaries: varies. Each root level dictionary must start with
 
 See :ref:`ln-project-config-intra-graphs-line`. Each inter-experiment linegraph
 has an additional field ``summary`` which determines in the generated graph is a
-:class:`~core.graphs.summary_line_graph95.SummaryLineGraph95` or a
-:class:`~core.graphs.stacked_line_graph.StackedLineGraph` (default if omitted).
+:class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph` or a
+:class:`~sierra.core.graphs.stacked_line_graph.StackedLineGraph` (default if
+omitted).
 
 .. _ln-project-config-intra-graphs-hm:
 

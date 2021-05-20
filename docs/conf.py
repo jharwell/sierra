@@ -106,19 +106,19 @@ nitpick_ignore = [
     ('py:class', 'multiprocessing.context.BaseContext.Queue')
 ]
 autoapi_modules = {
-    'core.cmdline': {'output': 'api/core'},
-    'core.perf_measures': {'output': 'api/core'},
-    'core.generators': {'output': 'api/core'},
-    'core.pipeline': {'output': 'api/core'},
-    'core.variables': {'output': 'api/core'},
-    'core.graphs': {'output': 'api/core'},
-    'core.xml_luigi': {'output': 'api/core'},
-    'core.utils': {'output': 'api/core'},
-    'core.experiment_spec': {'output': 'api/core'},
-    'core.vector': {'output': 'api/core'},
-    'core.models.interface': {'output': 'api/core/models'},
-    'core.models.graphs': {'output': 'api/core/models'},
-    'plugins.hpc': {'output': 'api/plugins/hpc'}
+    'sierra.core.cmdline': {'output': 'api/core'},
+    'sierra.core.perf_measures': {'output': 'api/core/perf_measures'},
+    'sierra.core.generators': {'output': 'api/core/generators'},
+    'sierra.core.pipeline': {'output': 'api/core/pipeline'},
+    'sierra.core.variables': {'output': 'api/core/variables'},
+    'sierra.core.graphs': {'output': 'api/core/graphs'},
+    'sierra.core.xml_luigi': {'output': 'api/core'},
+    'sierra.core.utils': {'output': 'api/core'},
+    'sierra.core.experiment_spec': {'output': 'api/core'},
+    'sierra.core.vector': {'output': 'api/core'},
+    'sierra.core.models.interface': {'output': 'api/core/models'},
+    'sierra.core.models.graphs': {'output': 'api/core/models'},
+    'sierra.plugins.hpc': {'output': 'api/plugins/hpc'}
 }
 
 autoapi_ignore = ['*flycheck*']
@@ -260,6 +260,20 @@ if not os.path.exists(os.path.join(os.getcwd(), "../projects/fordyca")):
     subprocess.run(["git", "checkout", "devel"])
     os.chdir(cwd)
 
+if not os.path.exists(os.path.join(os.getcwd(), "../projects/titan")):
+    subprocess.run(["git",
+                    "clone",
+                    "https://github.com/swarm-robotics/sierra-plugin-titan",
+                    "../projects/titan"])
+    os.chdir("../projects/titan")
+    subprocess.run(["git", "checkout", "devel"])
+    os.chdir(cwd)
+    os.chdir("..")
+    print(sys.path)
+    subprocess.run(['ls', '-alh', '.'])
+    subprocess.run(['ls', '-alh', 'projects'])
+    subprocess.run(["python3", "-m", "projects.titan.__init__.py"])
+    os.chdir("docs")
 if not os.path.exists(os.path.join(os.getcwd(), "../projects/silicon")):
     subprocess.run(["git",
                     "clone",
@@ -268,6 +282,7 @@ if not os.path.exists(os.path.join(os.getcwd(), "../projects/silicon")):
     os.chdir("../projects/silicon")
     subprocess.run(["git", "checkout", "devel"])
     os.chdir(cwd)
+
 
 # This is the expected signature of the handler for this event, cf doc
 
