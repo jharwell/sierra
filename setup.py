@@ -31,7 +31,7 @@ readme = (here / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="sierra",
-    version="1.0.0",
+    version="1.0.1",
     description="Swarm robotics end-to-end experimental pipeline automation using ARGoS",
     long_description=readme,
     long_description_content_type="text/markdown",
@@ -39,6 +39,7 @@ setup(
     author="John Harwell",
     author_email="john.r.harwell@gmail.com",
     license="GPLv3+",
+    platforms=['linux', 'osx'],
     classifiers=[
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Programming Language :: Python :: 3",

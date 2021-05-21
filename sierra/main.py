@@ -42,7 +42,8 @@ class SIERRA():
         if sys.version_info < (3, 6):
             raise RuntimeError("Python >= 3.6 must be used to run SIERRA.")
 
-        bootstrap_args, other_args = cmd.BootstrapCmdline().parser.parse_known_args()
+        bootstrap = cmd.BootstrapCmdline()
+        bootstrap_args, other_args = bootstrap.parser.parse_known_args()
 
         # Get nice colored logging output!
         coloredlogs.install(fmt='%(asctime)s %(levelname)s %(name)s - %(message)s',
@@ -76,7 +77,9 @@ class SIERRA():
         module = pm.module_load(path)
 
         # Validate cmdline args
-        self.args = module.Cmdline().parser.parse_args(other_args)
+        self.args = module.Cmdline(bootstrap.parser,
+                                   [-1, 1, 2, 3, 4, 5],
+                                   False).parser.parse_args(other_args)
         module.CmdlineValidator()(self.args)
 
         self.args = hpc.EnvConfigurer()(bootstrap_args.hpc_env, self.args)

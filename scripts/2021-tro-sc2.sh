@@ -61,11 +61,11 @@ TASKS=("scalability" "flexibility" "robustness_pd" "robustness_saa")
 NSIMS=96
 CONTROLLERS_LIST=(d0.CRW d0.DPO d1.BITD_DPO d2.BIRTD_DPO)
 
-SIERRA_BASE_CMD="python3 sierra.py \
+SIERRA_BASE_CMD="python3 main.py \
                   --sierra-root=$OUTPUT_ROOT\
                   --template-input-file=$SIERRA_ROOT/templates/2021-tro-sc2.argos \
                   --n-sims=$NSIMS\
-                  --pipeline 1 2\
+                  --pipeline 1\
                   --exp-graphs=inter\
                   --project=fordyca\
                   --dist-stats=conf95\
@@ -160,7 +160,7 @@ fi
 
 if [ "$TASK" == "comp" ] || [ "$TASK" == "all" ]
 then
-    STAGE5_CMD="python3 sierra.py \
+    STAGE5_CMD="python3 main.py \
                   --project=fordyca\
                   --pipeline 5\
                   --controller-comparison\

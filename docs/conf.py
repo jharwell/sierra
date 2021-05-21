@@ -62,7 +62,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Sierra'
-copyright = '2019, John Harwell'
+copyright = '2021, John Harwell'
 author = 'John Harwell'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -220,7 +220,9 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('usage/cli', 'sierra', 'Sierra Documentation',
+    ('usage/cli', 'sierra-cli', 'Sierra CLI Documentation',
+     [author], 1),
+    ('usage/variables', 'sierra-variables', 'Sierra CLI',
      [author], 1)
 ]
 
