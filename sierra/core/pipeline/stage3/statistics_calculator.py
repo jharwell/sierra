@@ -39,6 +39,16 @@ import sierra.core.config
 import sierra.core.stat_kernels
 
 
+class GatherSpec:
+    def __init__(self, exp_leaf: str, csv_stem: str, csv_leaf: str):
+        self.exp_leaf = exp_leaf
+        self.csv_stem = csv_stem
+        self.csv_leaf = csv_leaf
+
+    def for_imagizing(self):
+        return self.csv_stem != ''
+
+
 class BatchExpParallelCalculator:
     """
     Averages the .csv output files for each experiment in the specified batch directory in parallel.
@@ -57,8 +67,8 @@ class BatchExpParallelCalculator:
     def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
 
         exp_to_avg = sierra.core.utils.exp_range_calc(self.cmdopts,
-                                               self.cmdopts['batch_output_root'],
-                                               criteria)
+                                                      self.cmdopts['batch_output_root'],
+                                                      criteria)
 
         template_input_leaf, _ = os.path.splitext(
             os.path.basename(self.cmdopts['template_input_file']))
@@ -213,7 +223,7 @@ class ExpCSVGatherer:
                           len(to_gather),
                           self.exp_leaf)
 
-    def _calc_gather_items(self, sim0: str) -> tp.List[tp.Tuple[str, str, str]]:
+    def _calc_gather_items(self, sim0: str) -> tp.List[GatherSpec]:
         sim_output_root = os.path.join(self.exp_output_root, sim0, self.sim_metrics_leaf)
         to_gather = []
 
@@ -222,33 +232,34 @@ class ExpCSVGatherer:
         # for video rendering later).
         for item in os.listdir(sim_output_root):
             item_path = os.path.join(sim_output_root, item)
-            item_stem = os.path.splitext(item)[0]
+            csv_leaf = os.path.splitext(item)[0]
 
             if os.path.isfile(item_path):
-                to_gather.append((self.exp_leaf, item_stem, ''))
+                to_gather.append(GatherSpec(self.exp_leaf, '', csv_leaf))
             else:
                 # This takes FOREVER, so only do it if we absolutely need to
                 if not self.project_imagize:
                     continue
 
-                for csv in os.listdir(item_path):
-                    to_gather.append((self.exp_leaf, csv, item_stem))
+                for csv_fname in os.listdir(item_path):
+                    no_ext = os.path.splitext(csv_fname)[0]
+                    to_gather.append(GatherSpec(self.exp_leaf, csv_leaf, no_ext))
+
         return to_gather
 
     def _gather_item_from_sims(self,
-                               item: tp.Tuple[str, str, str],
-                               simulations: tp.List[str]) -> tp.Dict[tp.Tuple[str, str, str],
+                               item: GatherSpec,
+                               simulations: tp.List[str]) -> tp.Dict[GatherSpec,
                                                                      tp.List[pd.DataFrame]]:
-        exp_leaf, csv_stem, dir_leaf = item
-        gathered = dict()  # type: tp.Dict[tp.Tuple[str, str, str], pd.DataFrame]
+        gathered = dict()  # type: tp.Dict[GatherSpec, pd.DataFrame]
 
         for sim in simulations:
             sim_output_root = os.path.join(self.exp_output_root, sim, self.sim_metrics_leaf)
 
-            if dir_leaf != '':
-                item_path = os.path.join(sim_output_root, dir_leaf, csv_stem)
+            if item.for_imagizing():
+                item_path = os.path.join(sim_output_root, item.csv_stem, item.csv_leaf + '.csv')
             else:
-                item_path = os.path.join(sim_output_root, dir_leaf, csv_stem + '.csv')
+                item_path = os.path.join(sim_output_root, item.csv_leaf + '.csv')
 
             df = sierra.core.utils.pd_csv_read(item_path, index_col=False)
             if df.dtypes[0] == 'object':
@@ -359,10 +370,10 @@ class ExpStatisticsCalculator:
                  main_config: dict,
                  avg_opts: dict,
                  batch_stat_root: str,
-                 gathered_key: tp.Tuple[str, str, str],
+                 gather_spec: GatherSpec,
                  gathered_dfs: tp.List[pd.DataFrame]) -> None:
         self.avg_opts = avg_opts
-        self.gathered_key = gathered_key
+        self.gather_spec = gather_spec
         self.gathered_dfs = gathered_dfs
 
         # will get the main name and extension of the config file (without the full absolute path)
@@ -370,8 +381,7 @@ class ExpStatisticsCalculator:
 
         self.main_config = main_config
 
-        self.stat_root = os.path.join(batch_stat_root, gathered_key[0])
-        self.project_imagize = avg_opts['project_imagizing']
+        self.stat_root = os.path.join(batch_stat_root, self.gather_spec.exp_leaf)
 
         self.intra_perf_csv = main_config['perf']['intra_perf_csv']
         self.intra_perf_col = main_config['perf']['intra_perf_col']
@@ -383,26 +393,27 @@ class ExpStatisticsCalculator:
         self.output_name_format = format_base + "_output"
 
     def __call__(self):
-        # All CSV files with the same base name will be processed together
-        exp_leaf, csv_fname, dir_leaf = self.gathered_key
-
         csv_concat = pd.concat(self.gathered_dfs)
 
         # Create directory for averaged .csv files for imagizing later.
-        if dir_leaf != '':
-            sierra.core.utils.dir_create_checked(os.path.join(self.stat_root, dir_leaf),
-                                          exist_ok=True)
+        if self.gather_spec.for_imagizing:
+            sierra.core.utils.dir_create_checked(os.path.join(self.stat_root,
+                                                              self.gather_spec.csv_stem),
+                                                 exist_ok=True)
 
         by_row_index = csv_concat.groupby(csv_concat.index)
 
+        if self.avg_opts['dist_stats'] in ['none', 'all']:
+            dfs = sierra.core.stat_kernels.mean.from_groupby(by_row_index)
+
         if self.avg_opts['dist_stats'] in ['conf95', 'all']:
             dfs = sierra.core.stat_kernels.conf95.from_groupby(by_row_index)
-            for ext in dfs.keys():
-                opath = os.path.join(self.stat_root, dir_leaf, csv_fname + ext)
-                sierra.core.utils.pd_csv_write(dfs[ext], opath, index=False)
 
         if self.avg_opts['dist_stats'] in ['bw', 'all']:
             dfs = sierra.core.stat_kernels.bw.from_groupby(by_row_index)
-            for ext in dfs.keys():
-                opath = os.path.join(self.stat_root, dir_leaf, csv_fname + ext)
-                sierra.core.utils.pd_csv_write(dfs[ext], opath, index=False)
+
+        for ext in dfs.keys():
+            opath = os.path.join(self.stat_root,
+                                 self.gather_spec.csv_stem,
+                                 self.gather_spec.csv_leaf + ext)
+            sierra.core.utils.pd_csv_write(dfs[ext], opath, index=False)

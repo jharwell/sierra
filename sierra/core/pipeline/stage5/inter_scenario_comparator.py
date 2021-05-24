@@ -254,7 +254,7 @@ class UnivarInterScenarioComparator:
                 sgp = pm.module_load_tiered(cmdopts['project'],
                                             'generators.scenario_generator_parser')
                 kw = sgp.ScenarioGeneratorParser().to_dict(scenario)
-                f.write("{0} Prediction\n".format(kw['dist_type']))
+                f.write("{0} Prediction\n".format(kw['scenario_tag']))
 
     def _accum_df(self, ipath: str, opath: str, src_stem: str) -> pd.DataFrame:
         if sierra.core.utils.path_exists(opath):

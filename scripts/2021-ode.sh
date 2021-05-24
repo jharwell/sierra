@@ -76,15 +76,15 @@ CD_SIZEINC_LARGE=I72
 CD_CRITERIA_LARGE=population_constant_density.${CD_LARGE}.${CD_SIZEINC_LARGE}.${CD_CARDINALITY_LARGE}
 VD_CRITERIA_LARGE=population_variable_density.${VD_MIN_LARGE}.${VD_MAX_LARGE}.${VD_CARDINALITY_LARGE}
 
-SCENARIOS_LIST_CD=(SS.16x8x2 DS.16x8x2 RN.8x8x2 PL.8x8x2)
-# SCENARIOS_LIST_CD=(SS.16x8x2 DS.16x8x2 )
-SCENARIOS_LIST_VD_SMALL=(SS.32x16x2 DS.32x16x2 RN.16x16x2 PL.16x16x2)
-# SCENARIOS_LIST_VD_SMALL=(SS.32x16x2 DS.32x16x2)
+# SCENARIOS_LIST_CD=(SS.16x8x2 DS.16x8x2 RN.8x8x2 PL.8x8x2)
+SCENARIOS_LIST_CD=(SS.16x8x2 DS.16x8x2 )
+# SCENARIOS_LIST_VD_SMALL=(SS.32x16x2 DS.32x16x2 RN.16x16x2 PL.16x16x2)
+SCENARIOS_LIST_VD_SMALL=(SS.32x16x2 DS.32x16x2)
 SCENARIOS_LIST_VD_LARGE=(SS.256x128x2 DS.256x128x2 RN.256x256x2 PL.256x256x2)
 
-NSIMS=92
+NSIMS=192
 
-SIERRA_BASE_CMD="python3 sierra.py \
+SIERRA_BASE_CMD="python3 main.py \
                   --sierra-root=$OUTPUT_ROOT\
                   --template-input-file=$SIERRA_ROOT/templates/2021-ode.argos \
                   --n-sims=$NSIMS\
@@ -167,7 +167,7 @@ if [ "$TASK" == "large" ] || [ "$TASK" == "all" ]; then
 fi
 
 if [ "$TASK" == "comp" ] || [ "$TASK" == "all" ]; then
-    STAGE5_CMD="python3 sierra.py \
+    STAGE5_CMD="python3 main.py \
                   --project=fordyca\
                   --pipeline 5\
                   --scenario-comparison\

@@ -32,6 +32,7 @@ import sierra.core.variables.dynamics_parser as dp
 from sierra.core.xml_luigi import XMLAttrChange, XMLAttrChangeSet
 import sierra.core.config
 from sierra.core.xml_luigi import XMLLuigi
+import sierra.core.variables.time_setup as ts
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
@@ -140,8 +141,8 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
 
     @staticmethod
     def calc_untasked_swarm_system_time(exp_def: XMLAttrChangeSet) -> float:
-        explen, expticks = PopulationDynamics.extract_explen(exp_def)
-        T = explen * expticks
+        params = ts.ARGoSTimeSetup.extract_time_params(exp_def)
+        T = params['T_in_secs'] * params['ticks_per_sec']
         lambda_d, mu_b, lambda_m, mu_r = PopulationDynamics.extract_rate_params(exp_def)
 
         # Pure death dynamics with a service rate of infinity. The "how long is a robot part of a
@@ -195,20 +196,6 @@ class PopulationDynamics(bc.UnivarBatchCriteria):
                 repair_mu = float(value)
 
         return (death_lambda, birth_mu, malfunction_lambda, repair_mu)
-
-    @staticmethod
-    def extract_explen(exp_def) -> tp.Tuple[int, int]:
-        """
-        Extract and return the (experiment length in seconds, ticks per second) for the specified
-        experiment for use in calculating queueing theoretic limits.
-        """
-        for path, attr, value in exp_def:
-            if 'experiment' in path:
-                if 'length' in attr:
-                    explen = int(value)
-                if 'ticks_per_second' in attr:
-                    expticks = int(value)
-        return (explen, expticks)
 
 
 class PopulationDynamicsParser(dp.DynamicsParser):

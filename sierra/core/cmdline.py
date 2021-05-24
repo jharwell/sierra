@@ -321,9 +321,9 @@ class CoreCmdline(BaseCmdline):
                                  description.
 
                                  """ + self.stage_usage_doc([1]),
-                                default="time_setup.T{0}.K{1}.N{2}".format(config.kDURATION_DEFAULT,
-                                                                           config.kTICKS_PER_SECOND_DEFAULT,
-                                                                           config.k1D_DATA_POINTS_DEFAULT))
+                                default="time_setup.T{0}.K{1}.N{2}".format(config.kARGoS['duration'],
+                                                                           config.kARGoS['ticks_per_second'],
+                                                                           config.kSimulationData['n_datapoints_1D']))
 
         # Physics engines options
         physics = self.parser.add_argument_group('Stage1: Physics',
@@ -758,7 +758,7 @@ class CoreCmdline(BaseCmdline):
                            performance measures.
 
                            0=criteria of interest varies across `rows`.
-                           
+
                            1=criteria of interest varies across `columns`.
 
                            This option only affects :class:`~sierra.core.variables.batch_criteria.BivarBatchCriteria`.

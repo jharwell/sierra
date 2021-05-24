@@ -31,6 +31,7 @@ from sierra.core.variables.base_variable import IBaseVariable
 from sierra.core.utils import ArenaExtent
 import sierra.core.variables.time_setup as ts
 from sierra.core.xml_luigi import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList, XMLTagRm, XMLTagAdd
+import sierra.core.config
 
 
 @implements.implements(IBaseVariable)
@@ -82,7 +83,7 @@ class ARGoSQTCameraTimeline():
             adds = XMLTagAddList(XMLTagAdd('./visualization/qt-opengl', 'camera', {}),
                                  XMLTagAdd("./visualization/qt-opengl/camera", "placements", {}))
 
-            in_ticks = self.tsetup.duration * ts.kTICKS_PER_SECOND
+            in_ticks = self.tsetup.duration * sierra.core.config.kARGoS['ticks_per_second']
             adds.append(XMLTagAdd('.//qt-opengl/camera', 'timeline', {'loop': str(in_ticks)}))
 
             for ext in self.extents:

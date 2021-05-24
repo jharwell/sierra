@@ -76,17 +76,12 @@ kStatsExtensions = {
     'cihi': '.cihi',
 }
 
-kDURATION_DEFAULT = 5000
-"""
-Default simulation duration in seconds.
-"""
+kARGoS = {
+    'duration': 5000,  # seconds
+    'ticks_per_second': 5
+}
 
-kTICKS_PER_SECOND_DEFAULT = 5
-"""
-Default # times each controller will be run per second in simulation.
-"""
-
-k1D_DATA_POINTS_DEFAULT = 50
-"""
-Default # datapoints in each .csv of one-dimensional data.
-"""
+kSimulationData = {
+    # Default # datapoints in each .csv of one-dimensional data.
+    'n_datapoints_1D': 50
+}

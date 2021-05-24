@@ -41,6 +41,22 @@ class conf95:
         return ret
 
 
+class mean:
+    @staticmethod
+    def from_groupby(groupby: pd.core.groupby.generic.DataFrameGroupBy) -> tp.Dict[str,
+                                                                                   pd.DataFrame]:
+        return _mean_kernel(groupby, groupby=True)
+
+    @staticmethod
+    def from_pm(dfs: tp.Dict[str, pd.DataFrame]) -> tp.Dict[str, pd.DataFrame]:
+        ret = {}
+
+        for exp in dfs.keys():
+            ret[exp] = _mean_kernel(dfs[exp], groupby=False)
+
+        return ret
+
+
 class bw:
     @staticmethod
     def from_groupby(groupby: pd.core.groupby.generic.DataFrameGroupBy) -> tp.Dict[str, pd.DataFrame]:
@@ -66,6 +82,19 @@ def _conf95_kernel(df_like, groupby: bool) -> tp.Dict[str, pd.DataFrame]:
     return {
         sierra.core.config.kStatsExtensions['mean']: df_like.mean().round(8),
         sierra.core.config.kStatsExtensions['stddev']: df_like.std().round(8)
+    }
+
+
+def _mean_kernel(df_like, groupby: bool) -> tp.Dict[str, pd.DataFrame]:
+    # This is (apparently?) a bug in pandas: if the dataframe only has a single row, then passing
+    # axis=1 when calculating mean, median, etc., does not work, as the functions do NOT do their
+    # calculating across the single row, but instead just take the value of the last colum in the
+    # row. Converting the dataframe to a series fixes this.
+    if not groupby:
+        df_like = df_like.iloc[0, :]
+
+    return {
+        sierra.core.config.kStatsExtensions['mean']: df_like.mean().round(8)
     }
 
 

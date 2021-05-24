@@ -51,8 +51,8 @@ class BatchExpParallelImagizer:
             batch_exp_root: Root directory for the batch experiment.
         """
         exp_to_imagize = sierra.core.utils.exp_range_calc(self.cmdopts,
-                                                   self.cmdopts['batch_output_root'],
-                                                   criteria)
+                                                          self.cmdopts['batch_output_root'],
+                                                          criteria)
 
         q = mp.JoinableQueue()  # type: mp.JoinableQueue
 

@@ -253,16 +253,16 @@
             tv_population="tv-population"
             tv_environment="tv-environment"/>
 
-        <create output_interval="100"
-                  block_acq_locs2D="block-acq-locs2D"
-                  fsm_interference_locs2D="fsm-interference-locs2D"
-                  block_acq_explore_locs2D="block-acq-explore-locs2D"
-                  block_acq_vector_locs2D="block-acq-vector-locs2D"
-                  cache_acq_locs2D="cache-acq-locs2D"
-                  cache_acq_explore_locs2D="cache-acq-explore-locs2D"
-                  cache_acq_vector_locs2D="cache-acq-vector-locs2D"
-                  cache_locations="cache-locations"
-                  swarm_dist2D_pos="swarm-dist-pos2D"/>
+        <create output_interval="10"
+                block_acq_locs2D="block-acq-locs2D"
+                fsm_interference_locs2D="fsm-interference-locs2D"
+                block_acq_explore_locs2D="block-acq-explore-locs2D"
+                block_acq_vector_locs2D="block-acq-vector-locs2D"
+                cache_acq_locs2D="cache-acq-locs2D"
+                cache_acq_explore_locs2D="cache-acq-explore-locs2D"
+                cache_acq_vector_locs2D="cache-acq-vector-locs2D"
+                cache_locations="cache-locations"
+                swarm_dist2D_pos="swarm-dist-pos2D"/>
       </metrics>
     </output>
     <temporal_variance>
@@ -405,7 +405,7 @@
                        headless_frame_size="1600x1200"
                        headless_frame_rate="10"
                        />
-      <user_functions label="depth0_qt_user_functions" />
+      <user_functions label="d0_qt_user_functions" />
     </qt-opengl>
   </visualization>
 

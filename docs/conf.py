@@ -220,10 +220,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('usage/cli', 'sierra-cli', 'Sierra CLI Documentation',
+    ('usage/cli', 'sierra-cli', 'The SIERRA Command Line Interface',
      [author], 1),
-    ('usage/variables', 'sierra-variables', 'Sierra CLI',
-     [author], 1)
 ]
 
 

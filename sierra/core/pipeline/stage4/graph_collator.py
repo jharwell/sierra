@@ -80,20 +80,22 @@ class UnivarGraphCollator:
                          target['src_stem'])
 
         exp_dirs = sierra.core.utils.exp_range_calc(self.cmdopts,
-                                             self.cmdopts['batch_output_root'],
-                                             criteria)
+                                                    self.cmdopts['batch_output_root'],
+                                                    criteria)
+
+        # Always do the mean, even if stats are disabled
+        exts = [sierra.core.config.kStatsExtensions['mean']]
 
         if self.cmdopts['dist_stats'] in ['conf95', 'all']:
-            exts = [sierra.core.config.kStatsExtensions['mean'], sierra.core.config.kStatsExtensions['stddev']]
-        elif self.cmdopts['dist_stats'] in ['bw', 'all']:
-            exts = [sierra.core.config.kStatsExtensions['min'],
-                    sierra.core.config.kStatsExtensions['max'],
-                    sierra.core.config.kStatsExtensions['mean'],
-                    sierra.core.config.kStatsExtensions['whislo'],
-                    sierra.core.config.kStatsExtensions['whishi'],
-                    sierra.core.config.kStatsExtensions['cilo'],
-                    sierra.core.config.kStatsExtensions['cihi'],
-                    sierra.core.config.kStatsExtensions['median']]
+            exts.extend([sierra.core.config.kStatsExtensions['stddev']])
+        if self.cmdopts['dist_stats'] in ['bw', 'all']:
+            exts.extend([sierra.core.config.kStatsExtensions['min'],
+                         sierra.core.config.kStatsExtensions['max'],
+                         sierra.core.config.kStatsExtensions['whislo'],
+                         sierra.core.config.kStatsExtensions['whishi'],
+                         sierra.core.config.kStatsExtensions['cilo'],
+                         sierra.core.config.kStatsExtensions['cihi'],
+                         sierra.core.config.kStatsExtensions['median']])
 
         stats = [UnivarGraphCollationInfo(df_ext=ext,
                                           ylabels=[os.path.split(e)[1] for e in exp_dirs]) for ext in exts]
@@ -107,8 +109,8 @@ class UnivarGraphCollator:
         for stat in stats:
             if stat.all_srcs_exist:
                 sierra.core.utils.pd_csv_write(stat.df, os.path.join(stat_collate_root,
-                                                              target['dest_stem'] + stat.df_ext),
-                                        index=False)
+                                                                     target['dest_stem'] + stat.df_ext),
+                                               index=False)
 
             elif not stat.all_srcs_exist and stat.some_srcs_exist:
                 self.logger.warning("Not all experiments in '%s' produced '%s%s'",
@@ -158,13 +160,14 @@ class BivarGraphCollator:
                          target['src_stem'])
 
         exp_dirs = sierra.core.utils.exp_range_calc(self.cmdopts,
-                                             self.cmdopts['batch_output_root'],
-                                             criteria)
+                                                    self.cmdopts['batch_output_root'],
+                                                    criteria)
 
         xlabels, ylabels = sierra.core.utils.bivar_exp_labels_calc(exp_dirs)
 
         if self.cmdopts['dist_stats'] in ['conf95', 'all']:
-            exts = [sierra.core.config.kStatsExtensions['mean'], sierra.core.config.kStatsExtensions['stddev']]
+            exts = [sierra.core.config.kStatsExtensions['mean'],
+                    sierra.core.config.kStatsExtensions['stddev']]
         elif self.cmdopts['dist_stats'] in ['bw', 'all']:
             exts = [sierra.core.config.kStatsExtensions['min'],
                     sierra.core.config.kStatsExtensions['max'],
@@ -188,8 +191,8 @@ class BivarGraphCollator:
         for stat in stats:
             if stat.all_srcs_exist:
                 sierra.core.utils.pd_csv_write(stat.df, os.path.join(stat_collate_root,
-                                                              target['dest_stem'] + stat.df_ext),
-                                        index=False)
+                                                                     target['dest_stem'] + stat.df_ext),
+                                               index=False)
 
             elif stat.some_srcs_exist:
                 self.logger.warning("Not all experiments in '%s' produced '%s%s'",

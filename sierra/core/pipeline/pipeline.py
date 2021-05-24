@@ -157,8 +157,8 @@ class Pipeline:
                               self.cmdopts['project'])
             module.Cmdline.cmdopts_update(self.args, self.cmdopts)
 
-        self.cmdopts['plugin_root'] = 'plugins'
-        self.cmdopts['core_config_root'] = os.path.join('core', 'config')
+        self.cmdopts['plugin_root'] = os.path.join('sierra', 'plugins')
+        self.cmdopts['core_config_root'] = os.path.join('sierra', 'core', 'config')
         self.cmdopts['project_config_root'] = os.path.join('projects',
                                                            self.cmdopts['project'],
                                                            'config')

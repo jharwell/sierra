@@ -40,19 +40,28 @@ class ARGoSTimeSetup():
         duration: The simulation duration in seconds, NOT timesteps.
     """
     @staticmethod
-    def extract_explen(exp_def: XMLAttrChangeSet) -> tp.Optional[int]:
+    def extract_time_params(exp_def: XMLAttrChangeSet) -> tp.Dict[str, int]:
         """
-        Extract and return the (experiment length in seconds) for the specified
+        Extract and return the length (in seconds), ticks_per_second for the specified
         experiment.
         """
+        ret = {
+            'T_in_secs': int(),
+            'ticks_per_sec': int()
+        }
+
         for path, attr, value in exp_def:
-            if 'experiment' in path and 'length' in attr:
-                return int(value)
-        return None
+            if 'experiment' in path:
+                if 'length' in attr:
+                    ret['T_in_secs'] = int(value)
+                if 'ticks_per_second' in attr:
+                    ret['ticks_per_sec'] = int(value)
+
+        return ret
 
     def __init__(self, duration: int, n_datapoints: int, n_ticks_per_sec: int) -> None:
         self.duration = duration
-        self.n_datapoints: n_datapoints
+        self.n_datapoints = n_datapoints
         self.n_ticks_per_sec = n_ticks_per_sec
         self.attr_changes = []  # type: tp.List[XMLAttrChangeSet]
 
@@ -96,14 +105,14 @@ class Parser():
         if res is not None:
             ret['n_datapoints'] = int(res.group(0)[1:])
         else:
-            ret['n_datapoints'] = config.k1D_DATA_POINTS_DEFAULT
+            ret['n_datapoints'] = config.kSimulationData['n_datapoints_1D']
 
         # Parse # ticks per second for controllers, which can be absent
         res = re.search(r"K\d+", arg)
         if res is not None:
             ret['n_ticks_per_sec'] = int(res.group(0)[1:])
         else:
-            ret['n_ticks_per_sec'] = config.kTICKS_PER_SECOND_DEFAULT
+            ret['n_ticks_per_sec'] = config.kARGoS['ticks_per_second']
 
         return ret
 

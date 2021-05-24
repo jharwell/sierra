@@ -31,7 +31,7 @@ readme = (here / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="sierra",
-    version="1.0.1",
+    version="1.0.3",
     description="Swarm robotics end-to-end experimental pipeline automation using ARGoS",
     long_description=readme,
     long_description_content_type="text/markdown",
@@ -48,22 +48,23 @@ setup(
     ],
     packages=find_packages(exclude=("projects")),
     include_package_data=True,
+    data_files=[('man/man1', ['docs/_build/man/sierra-cli.1'])],
     install_requires=[
-        "pyyaml"
-        "pandas"
-        "matplotlib"
-        "sympy"
+        "pyyaml",
+        "pandas",
+        "matplotlib",
+        "sympy",
 
-        "similaritymeasures"
-        "fastdtw"
-        "coloredlogs"
-        "singleton_decorator"
-        "implements"
+        "similaritymeasures",
+        "fastdtw",
+        "coloredlogs",
+        "singleton_decorator",
+        "implements",
         "retry"],
     python_requires=">=3.6",
     entry_points={
         "console_scripts": [
-            "sierra=sierra.main:__main__",
+            "sierra-cli=sierra.main:__main__",
         ]
     },
 )

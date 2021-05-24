@@ -15,16 +15,16 @@ General Options
    :func: sphinx_cmdline_multistage
    :prog: sierra
 
-Stage1
-------
+Stage1: Generating Experiments
+------------------------------
 
 .. argparse::
    :filename: ../sierra/core/cmdline.py
    :func: sphinx_cmdline_stage1
    :prog: sierra
 
-Stage2
-------
+Stage2: Running Experiments
+---------------------------
 
 .. argparse::
    :filename: ../sierra/core/cmdline.py
@@ -32,8 +32,8 @@ Stage2
    :prog: sierra
 
 
-Stage3
-------
+Stage3: Processing Experiment Results
+-------------------------------------
 
 .. argparse::
    :filename: ../sierra/core/cmdline.py
@@ -41,16 +41,16 @@ Stage3
    :prog: sierra
 
 
-Stage4
-------
+Stage4: Deliverable Generation
+------------------------------
 
 .. argparse::
    :filename: ../sierra/core/cmdline.py
    :func: sphinx_cmdline_stage4
    :prog: sierra
 
-Stage1
-------
+Stage5: Comparing Controllers
+-----------------------------
 
 .. argparse::
    :filename: ../sierra/core/cmdline.py
@@ -59,12 +59,18 @@ Stage1
 
 
 FORDYCA Project Command Line Extensions
----------------------------------------
+=======================================
+
+General Options
+---------------
 
 .. argparse::
    :filename: ../projects/fordyca/cmdline.py
    :func: sphinx_cmdline_multistage
    :prog: sierra
+
+Stage1: Generating Experiments
+------------------------------
 
 .. argparse::
    :filename: ../projects/fordyca/cmdline.py
@@ -72,12 +78,18 @@ FORDYCA Project Command Line Extensions
    :prog: sierra
 
 SILICON Project Command Line Extensions
----------------------------------------
+=======================================
+
+General Options
+---------------
 
 .. argparse::
    :filename: ../projects/silicon/cmdline.py
    :func: sphinx_cmdline_multistage
    :prog: sierra
+
+Stage1: Generating Experiments
+------------------------------
 
 .. argparse::
    :filename: ../projects/silicon/cmdline.py
