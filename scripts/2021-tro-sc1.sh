@@ -48,7 +48,7 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 ################################################################################
 # Begin Experiments                                                            #
 ################################################################################
-OUTPUT_ROOT=$HOME/exp/2021-tro-sc1-3
+OUTPUT_ROOT=$HOME/exp/2021-tro-sc1-video
 TIME=time_setup.T10000
 
 CONTROLLERS_LIST=(d0.CRW d0.DPO d1.BITD_DPO d2.BIRTD_DPO)
@@ -56,19 +56,20 @@ TASKS=("scalability" "flexibility" "robustness_saa" "robustness_pd")
 CARDINALITY=C8
 NSIMS=192
 
-SIERRA_BASE_CMD="python3 sierra.py \
+SIERRA_BASE_CMD="python3 main.py \
                   --sierra-root=$OUTPUT_ROOT\
                   --template-input-file=$SIERRA_ROOT/templates/2021-tro-sc1.argos \
-                  --n-sims=$NSIMS\
-                  --pipeline 3 4 \
-                  --exp-graphs=inter --project-no-yaml-LN\
+                  --pipeline 1 2 3 4 \
+                  --exp-graphs=inter\
+                  --project-no-yaml-LN\
                   --project=fordyca\
                   --dist-stats=conf95\
                   --exp-overwrite\
                   --models-disable\
                   --with-robot-leds\
                   --log-level=DEBUG\
-                  --no-verify-results
+                  --no-verify-results\
+                  --n-sims=$NSIMS
                   "
 
 if [ -n "$MSIARCH" ] # Running on MSI
@@ -96,6 +97,48 @@ else
 fi
 
 cd $SIERRA_ROOT
+
+# Generate and render videos
+if [ "$TASK" == "argos-videos" ]
+then
+    for c in "${CONTROLLERS[@]}"
+    do
+        $SIERRA_CMD --scenario=SS.32x16x2 \
+                    --batch-criteria population_size.Log128 --exp-range=7:7\
+                    --argos-rendering --camera-config=sierra_dynamic\
+                    --no-collate\
+                    --n-sims=4\
+                    --exp-graphs=none\
+                    --controller=${c}\
+                    --n-blocks=512
+
+    done
+fi
+
+# Generate and render videos
+if [ "$TASK" == "project-videos" ]
+then
+    for c in "${CONTROLLERS[@]}"
+    do
+        $SIERRA_CMD --scenario=SS.32x16x2 \
+                    --batch-criteria population_size.Log128 --exp-range=7:7\
+                    --project-imagizing --project-rendering\
+                    --no-collate\
+                    --n-sims=16\
+                    --exp-graphs=none\
+                    --controller=${c}\
+                    --n-blocks=512
+
+        $SIERRA_CMD --scenario=RN.48x48x2 \
+                    --batch-criteria population_size.Log512 --exp-range=8:8\
+                    --project-imagizing --project-rendering\
+                    --no-collate\
+                    --n-sims=16\
+                    --exp-graphs=none\
+                    --controller=${c} \
+                    --n-blocks=2048
+    done
+fi
 
 # Scalability/emergence analysis
 if [ "$TASK" == "scalability" ] || [ "$TASK" == "emergence" ] || [ "$TASK" == "all" ]
@@ -188,7 +231,7 @@ fi
 
 if [ "$TASK" == "comp" ] || [ "$TASK" == "all" ]
 then
-    STAGE5_CMD="python3 sierra.py \
+    STAGE5_CMD="python3 main.py \
                   --project=fordyca\
                   --pipeline 5\
                   --controller-comparison\

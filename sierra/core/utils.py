@@ -210,12 +210,9 @@ def exp_include_filter(inc_spec: str, target: tp.List, n_exps: int):
         else:
             end = int(r[1])
 
-        print(r, target, start, end, n_exps)
         if len(target) < n_exps:  # Handle perf measures which exclude exp0 by default
             start -= 1
 
-        print(r, target, start, end, n_exps)
-    print(target[slice(start, end, None)])
     return target[slice(start, end, None)]
 
 

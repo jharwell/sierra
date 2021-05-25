@@ -38,6 +38,7 @@ import numpy as np
 import sierra.core.utils
 import sierra.core.variables.batch_criteria as bc
 import sierra.core.config
+import sierra.core.storage as storage
 
 
 class SimulationParallelCollator:
@@ -67,29 +68,40 @@ class SimulationParallelCollator:
         for exp in os.listdir(self.cmdopts['batch_output_root']):
             gatherq.put((self.cmdopts['batch_output_root'], exp))
 
-        for _ in range(0, n_gatherers):
-            pool.apply_async(SimulationParallelCollator._gather_worker,
-                             (gatherq,
-                              processq,
-                              self.main_config))
+        gathered = [pool.apply_async(SimulationParallelCollator._gather_worker,
+                                     (gatherq,
+                                      processq,
+                                      self.main_config,
+                                      self.cmdopts['storage_medium'])) for _ in range(0, n_gatherers)]
 
-        for _ in range(0, n_processors):
-            pool.apply_async(SimulationParallelCollator._process_worker,
-                             (processq,
-                              self.main_config,
-                              self.cmdopts['batch_stat_collate_root']))
+        processed = [pool.apply_async(SimulationParallelCollator._process_worker,
+                                      (processq,
+                                       self.main_config,
+                                       self.cmdopts['batch_stat_collate_root'],
+                                       self.cmdopts['storage_medium'])) for _ in range(0, n_processors)]
+
+        # To capture the otherwise silent crashes when something goes wrong in worker threads. Any
+        # assertions will show and any exceptions will be re-raised.
+        [g.get() for g in gathered]
+        [p.get() for p in processed]
+
         pool.close()
         pool.join()
 
     @staticmethod
     def _gather_worker(gatherq: mp.Queue,
                        processq: mp.Queue,
-                       main_config: dict) -> None:
+                       main_config: dict,
+                       storage_medium: str) -> None:
         while True:
             # Wait for 3 seconds after the queue is empty before bailing
             try:
                 batch_output_root, exp = gatherq.get(True, 3)
-                SimulationCSVGatherer(main_config, batch_output_root, exp, processq)()
+                SimulationCSVGatherer(main_config,
+                                      batch_output_root,
+                                      exp,
+                                      storage_medium,
+                                      processq)()
                 gatherq.task_done()
 
             except queue.Empty:
@@ -98,7 +110,8 @@ class SimulationParallelCollator:
     @staticmethod
     def _process_worker(processq: mp.Queue,
                         main_config: dict,
-                        batch_stat_pm_root: str) -> None:
+                        batch_stat_pm_root: str,
+                        storage_medium) -> None:
         while True:
             # Wait for 3 seconds after the queue is empty before bailing
             try:
@@ -109,6 +122,7 @@ class SimulationParallelCollator:
                 SimulationCollator(main_config,
                                    batch_stat_pm_root,
                                    exp_leaf,
+                                   storage_medium,
                                    gathered_sims,
                                    gathered_dfs)()
                 processq.task_done()
@@ -126,10 +140,12 @@ class SimulationCSVGatherer:
                  main_config: dict,
                  batch_output_root: str,
                  exp_leaf: str,
+                 storage_medium: str,
                  processq: mp.Queue) -> None:
         self.processq = processq
 
         self.exp_leaf = exp_leaf
+        self.storage_medium = storage_medium
         self.exp_output_root = os.path.join(batch_output_root, exp_leaf)
         self.main_config = main_config
 
@@ -157,12 +173,13 @@ class SimulationCSVGatherer:
 
         sim_output_root = os.path.join(self.exp_output_root, sim, self.sim_metrics_leaf)
 
-        perf_df = sierra.core.utils.pd_csv_read(os.path.join(sim_output_root, intra_perf_leaf + '.csv'),
-                                         index_col=False)
+        reader = storage.DataFrameReader(self.storage_medium)
+        perf_df = reader(os.path.join(sim_output_root, intra_perf_leaf + '.csv'),
+                         index_col=False)
 
-        interference_df = sierra.core.utils.pd_csv_read(os.path.join(sim_output_root,
-                                                              intra_interference_leaf + '.csv'),
-                                                 index_col=False)
+        interference_df = reader(os.path.join(sim_output_root,
+                                              intra_interference_leaf + '.csv'),
+                                 index_col=False)
 
         return {
             (intra_perf_leaf, intra_perf_col): perf_df[intra_perf_col],
@@ -179,9 +196,11 @@ class SimulationCollator:
                  main_config: dict,
                  batch_stat_collate_root: str,
                  exp_leaf: str,
+                 storage_medium: str,
                  gathered_sims: tp.List[str],
                  gathered_dfs: tp.List[tp.Dict[tp.Tuple[str, str], pd.DataFrame]]) -> None:
         self.exp_leaf = exp_leaf
+        self.storage_medium = storage_medium
         self.gathered_sims = gathered_sims
         self.gathered_dfs = gathered_dfs
 
@@ -196,7 +215,6 @@ class SimulationCollator:
 
     def __call__(self):
         collated = {}
-
         for sim in self.gathered_sims:
             sim_dfs = self.gathered_dfs[self.gathered_sims.index(sim)]
             for csv_leaf, col in sim_dfs.keys():
@@ -219,7 +237,8 @@ class SimulationCollator:
 
         for (csv_leaf, col) in collated.keys():
 
-            sierra.core.utils.pd_csv_write(collated[(csv_leaf, col)],
-                                    os.path.join(self.batch_stat_collate_root,
-                                                 self.exp_leaf + '-' + csv_leaf + '-' + col + '.csv'),
-                                    index=False)
+            writer = storage.DataFrameWriter(self.storage_medium)
+            writer(collated[(csv_leaf, col)],
+                   os.path.join(self.batch_stat_collate_root,
+                                self.exp_leaf + '-' + csv_leaf + '-' + col + '.csv'),
+                   index=False)

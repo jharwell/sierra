@@ -10,13 +10,15 @@ Welcome to the documentation for SIERRA: the amazing swarm robotics automation t
    :maxdepth: 2
    :caption: Contents:
 
-   tutorials/index.rst
-   setup/index.rst
-   usage/index.rst
-   faq.rst
-   glossary.rst
-   api/api.rst
-   contributing.rst
+   src/quickstart.rst
+   src/tutorials/index.rst
+   src/hpc/index.rst
+
+   src/usage/index.rst
+   src/faq.rst
+   src/contributing.rst
+   src/glossary.rst
+   src/api.rst
 
 SIERRA has been used for results generation in the following papers:
 

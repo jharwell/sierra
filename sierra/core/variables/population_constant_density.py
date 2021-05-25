@@ -94,9 +94,6 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
         ret = list(map(float, self.populations(cmdopts, exp_dirs)))
 
-        print(ret)
-        print([math.log2(x) for x in ret])
-
         if cmdopts['plot_log_xscale']:
             return [math.log2(x) for x in ret]
         else:

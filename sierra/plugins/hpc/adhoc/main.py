@@ -28,17 +28,17 @@ def env_configure(args):
     cmdline arguments. Uses the following environment variables (if any of them are not defined an
     assertion will be triggered):
 
-    - ``ADHOC_NODEFILE``
+    - ``SIERRA_ADHOC_NODEFILE``
 
     """
 
-    keys = ['ADHOC_NODEFILE']
+    keys = ['SIERRA_ADHOC_NODEFILE']
 
     for k in keys:
         assert k in os.environ,\
             "FATAL: Attempt to run SIERRA in non-ADHOC environment: '{0}' not found".format(k)
 
-    with open(os.environ['ADHOC_NODEFILE'], 'r') as f:
+    with open(os.environ['SIERRA_ADHOC_NODEFILE'], 'r') as f:
         lines = f.readlines()
         n_nodes = len(lines)
 
@@ -79,7 +79,7 @@ def gnu_parallel_cmd_generate(parallel_opts: dict):
     if parallel_opts['exec_resume']:
         resume = '--resume-failed'
 
-    return 'sort -u $ADHOC_NODEFILE > {0} && ' \
+    return 'sort -u $SIERRA_ADHOC_NODEFILE > {0} && ' \
         'parallel {2} --jobs {1} --results {4} --joblog {3} --sshloginfile {0} --workdir {4} < "{5}"'.format(
             nodelist,
             parallel_opts['n_jobs'],

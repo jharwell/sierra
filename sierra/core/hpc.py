@@ -21,12 +21,15 @@ experiments.
 # Core packages
 import os
 import typing as tp
+import subprocess
+import shutil
 
 # 3rd party packages
 from singleton_decorator import singleton
 
 # Project packages
 import sierra.core.plugin_manager
+import sierra.core.config
 
 
 @singleton
@@ -96,9 +99,22 @@ class EnvChecker():
     """
 
     def __call__(self) -> None:
-        # Verify environment
-        assert os.environ.get(
-            "ARGOS_PLUGIN_PATH") is not None, ("FATAL: You must have ARGOS_PLUGIN_PATH defined")
+        # Check we can find ARGoS
+        if not shutil.which('argos3'):
+            assert False, "FATAL: Cannot find argos3"
+
+        p = subprocess.Popen(['argos3', '-v'],
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
+        stdout, _ = p.communicate()
+
+        # Check ARGoS version
+        assert sierra.core.config.kARGoS['min_version'] in str(stdout),\
+            "FATAL: ARGoS >= 3.0.0-beta59 required to use SIERRA"
+
+        # Check ARGoS plugin path is defined
+        assert os.environ.get("ARGOS_PLUGIN_PATH") is not None, \
+            "FATAL: You must have ARGOS_PLUGIN_PATH defined"
 
 
 __api__ = [

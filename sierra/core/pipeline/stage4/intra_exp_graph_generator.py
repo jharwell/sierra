@@ -58,8 +58,8 @@ class BatchIntraExpGraphGenerator:
         Generate all intra-experiment graphs for all experiments in the batch.
         """
         exp_to_gen = sierra.core.utils.exp_range_calc(self.cmdopts,
-                                               self.cmdopts['batch_output_root'],
-                                               criteria)
+                                                      self.cmdopts['batch_output_root'],
+                                                      criteria)
 
         for exp in exp_to_gen:
             exp = os.path.split(exp)[1]
@@ -194,8 +194,8 @@ class LinegraphsGenerator:
                                      input_stem=graph['src_stem'],
                                      output_fpath=output_fpath,
                                      stats=self.cmdopts['dist_stats'],
-                                     dashstyles=graph.get('dashes', []),
-                                     linestyles=graph.get('styles', []),
+                                     dashstyles=graph.get('dashes', None),
+                                     linestyles=graph.get('styles', None),
                                      cols=graph['cols'],
                                      title=graph['title'],
                                      legend=graph['legend'],

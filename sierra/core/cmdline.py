@@ -62,7 +62,7 @@ class BootstrapCmdline(BaseCmdline):
                                               usage=argparse.SUPPRESS)
 
         bootstrap = self.parser.add_argument_group('Bootstrap options',
-                                                   'Options for bootstrapping SIERRA')
+                                                   'Bare-bones options for bootstrapping SIERRA')
 
         bootstrap.add_argument("--project",
                                help="""
@@ -91,18 +91,18 @@ class BootstrapCmdline(BaseCmdline):
                                  that come with SIERRA are:
 
                                  - ``local`` - This directs SIERRA to run experiments on the local machine. See
-                                   :ref:`ln-hpc-plugin-local` for a detailed description.
+                                   :ref:`src/hpc/plugins:Local` for a detailed description.
 
                                  - ``pbs`` - The directs SIERRA to run experiments spread across multiple allocated
                                    nodes in an HPC computing environment managed by TORQUE-PBS. See
-                                   :ref:`ln-hpc-plugin-pbs` for a detailed description.
+                                   :ref:`src/hpc/plugins:PBS` for a detailed description.
 
                                  - ``slurm`` - The directs SIERRA to run experiments spread across multiple allocated
                                    nodes in an HPC computing environment managed by SLURM. See
-                                   :ref:`ln-hpc-plugin-slurm` for a detailed description.
+                                   :ref:`src/hpc/plugins:SLURM` for a detailed description.
 
                                  - ``adhoc`` - This will direct SIERRA to run experiments on an ad-hoc network of
-                                   computers. See :ref:`ln-hpc-plugin-adhoc` for a detailed description.
+                                   computers. See :ref:`src/hpc/plugins:Adhoc` for a detailed description.
                                  """,
                                default='local')
 
@@ -147,17 +147,17 @@ class CoreCmdline(BaseCmdline):
                                                   usage=argparse.SUPPRESS)
 
         self.multistage = self.parser.add_argument_group('Multi-stage options',
-                                                         'Options which are used in multiple stages')
+                                                         'Options which are used in multiple pipeline stages')
         self.stage1 = self.parser.add_argument_group(
-            'Stage1: General options for generating experiments')
+            'General options for generating experiments')
         self.stage2 = self.parser.add_argument_group(
-            'Stage2: General options for running experiments')
+            'General options for running experiments')
         self.stage3 = self.parser.add_argument_group(
-            'Stage3: General options for eprocessing experiment results')
+            'General options for eprocessing experiment results')
         self.stage4 = self.parser.add_argument_group(
-            'Stage4: General options for generating graphs')
+            'General options for generating graphs')
         self.stage5 = self.parser.add_argument_group(
-            'Stage5: General options for controller comparison')
+            'General options for controller comparison')
 
     def __init_multistage(self) -> None:
 
@@ -291,7 +291,8 @@ class CoreCmdline(BaseCmdline):
                                  result of a single experiment within a batch.
 
                                  If ``--hpc-env`` is something other than ``local`` then it will be used to determine #
-                                 jobs/HPC node, # physics engines/simulation, and # threads/simulation.
+                                 # physics engines/simulation, and # threads/simulation.
+                                 jobs/HPC node,
 
                                  """ + self.stage_usage_doc([1, 2]))
 
@@ -316,9 +317,9 @@ class CoreCmdline(BaseCmdline):
         experiment.add_argument("--time-setup",
                                 help="""
 
-                                 Defines simulation length, ticks per second for the experiment, # of datapoints to
-                                 capture/capture interval for each simulation. See :ref:`ln-vars-ts` for a full
-                                 description.
+                                 Defines simulation length, ticks per second for the experiment (<experiment> tag), # of
+                                 datapoints to capture/capture interval for each simulation. See :ref:`ln-vars-ts` for a
+                                 full description.
 
                                  """ + self.stage_usage_doc([1]),
                                 default="time_setup.T{0}.K{1}.N{2}".format(config.kARGoS['duration'],
@@ -326,8 +327,7 @@ class CoreCmdline(BaseCmdline):
                                                                            config.kSimulationData['n_datapoints_1D']))
 
         # Physics engines options
-        physics = self.parser.add_argument_group('Stage1: Physics',
-                                                 'ARGoS physics engine options')
+        physics = self.parser.add_argument_group('Stage1: Configuring ARGoS physics engines')
 
         physics.add_argument("--physics-engine-type2D",
                              choices=['dynamics2d'],
@@ -373,6 +373,18 @@ class CoreCmdline(BaseCmdline):
                              If ``--hpc-env`` is something other than ``local`` then the # physics engines will be
                              computed from the HPC environment, and the cmdline value (if any) will be ignored.
 
+                             .. IMPORTANT:: When using multiple physics engines, always make sure that ``# engines /
+                                arena dimension`` (X **AND** Y dimensions) is always a rational number. That is,
+
+                                - 24 engines in a ``12x12`` arena will be fine, because ``12/24=0.5``, which can be
+                                  represented reasonably well in floating point.
+
+                                - 24 engines in a ``16x16`` arena will not be fine, because ``16/24=0.666667``, which
+                                  will very likely result in rounding errors and ARGoS being unable to initialize the
+                                  space because it can't place arena walls.
+
+                                This is enforced by SIERRA.
+
                              """ + self.stage_usage_doc([1]))
         physics.add_argument("--physics-iter-per-tick",
                              type=int,
@@ -386,8 +398,9 @@ class CoreCmdline(BaseCmdline):
                              default=10)
 
         # Rendering options
-        rendering = self.parser.add_argument_group('Stage1: Rendering',
-                                                   'Rendering options (see also stage4 rendering options)')
+        rendering = self.parser.add_argument_group(
+            'Stage1: Rendering (see also stage4 rendering options)')
+
         rendering.add_argument("--camera-config",
                                choices=['overhead',
                                         'argos_static',
@@ -415,8 +428,7 @@ class CoreCmdline(BaseCmdline):
                                default='overhead')
 
         # Robot options
-        robots = self.parser.add_argument_group('Stage1: Robots',
-                                                'Robot configuration options')
+        robots = self.parser.add_argument_group('Stage1: Configure robots')
 
         robots.add_argument("--with-robot-rab",
                             help="""
@@ -461,21 +473,6 @@ class CoreCmdline(BaseCmdline):
                             """ + self.stage_usage_doc([1]),
                             action="store_true",
                             default=False)
-
-        robots.add_argument("--n-blocks",
-                            help="""
-
-                            # blocks that should be used in the simulation (evenly split between cube and ramp). Can
-                            The
-                            be used to override batch criteria, or to supplement experiments that do not set it so that
-                            manual modification of input file is unneccesary.
-
-                            This option is strongly tied to foraging, and will likely be moved out of core SIERRA
-                            functionality in a future version.
-
-                            """ + self.stage_usage_doc([1]),
-                            type=int,
-                            default=None)
 
         robots.add_argument("--n-robots",
                             help="""
@@ -530,6 +527,23 @@ class CoreCmdline(BaseCmdline):
                                  """ + self.stage_usage_doc([3]),
                                  action='store_true',
                                  default=False)
+
+        self.stage3.add_argument("--storage-medium",
+                                 choices=['csv'],
+                                 help="""
+
+                                 Specify the storage medium for ARGoS simulation outputs, so that SIERRA can select an
+                                 appropriate plugin to read them. Any plugin under ``plugins/storage`` can be used, but
+                                 the ones that come with SIERRA are:
+
+                                 ``csv`` - Simulation outputs are stored in a per-simulation directory as one or more
+                                           ``.csv`` files.
+
+
+                                 Regardless of the value of this option, SIERRA always generates ``.csv`` files as it
+                                 runs and averages outputs, generates graphs, etc.
+                                 """ + self.stage_usage_doc([3]),
+                                 default='csv')
 
         self.stage3.add_argument("--dist-stats",
                                  choices=['none', 'all', 'conf95', 'bw'],
@@ -587,8 +601,8 @@ class CoreCmdline(BaseCmdline):
 
                                  - ``all`` - Generate all types of graphs.
 
-                                 - ``none`` - Skip graph generation; provided to skip graph generation if video outputs
-                                   are desired instead.
+                                 - ``none`` - Skip graph generation; provided to skip graph generation if only video
+                                   outputs are desired.
 
                                  """ + self.stage_usage_doc([4]),
                                  default='all')
@@ -634,9 +648,8 @@ class CoreCmdline(BaseCmdline):
         pm.add_argument("--pm-scalability-normalize",
                         help="""
 
-                        If passed, then swarm scalability will be normalized into [-1,1] via sigmoids (similar to other
-                        performance measures), as opposed to raw values (default). This may make graphs more or less
-                        readable/interpretable.
+                        If passed, then swarm scalability will be normalized into [-1,1] via ``--pm-normalize-method``,
+                        as opposed to raw values (default). This may make graphs more or less readable/interpretable.
 
                         """ + self.stage_usage_doc([4]),
                         action='store_true')
@@ -644,9 +657,9 @@ class CoreCmdline(BaseCmdline):
         pm.add_argument("--pm-self-org-normalize",
                         help="""
 
-                        If passed, then swarm self-organization calculations will be normalized into [-1,1] via sigmoids
-                        (similar to other performance measures), as opposed to raw values (default). This may make
-                        graphs more or less readable/interpretable.
+                        If passed, then swarm self-organization calculations will be normalized into [-1,1] via
+                        ``--pm-normalize-method``, as opposed to raw values (default). This may make graphs more or less
+                        readable/interpretable.
 
                         """,
                         action='store_true')
@@ -654,9 +667,10 @@ class CoreCmdline(BaseCmdline):
         pm.add_argument("--pm-flexibility-normalize",
                         help="""
 
-                        If passed, then swarm flexibility calculations will be normalized into [-1,1] via sigmoids
-                        (similar to other performance measures), as opposed to raw values (default). This may make graphs
-                        more or less readable/interpretable; without normalization, LOWER values are better.
+                        If passed, then swarm flexibility calculations will be normalized into [-1,1] via
+                        ``--pm-normalize-method``, as opposed to raw values (default), and HIGHER values will be
+                        better. This may make graphs more or less readable/interpretable; without normalization, LOWER
+                        values are better.
 
                        """ + self.stage_usage_doc([4]),
                         action='store_true')
@@ -664,9 +678,9 @@ class CoreCmdline(BaseCmdline):
         pm.add_argument("--pm-robustness-normalize",
                         help="""
 
-                        If passed, then swarm robustness calculations will be normalized into [-1,1] via sigmoids
-                        (similar to other performance measures), as opposed to raw values (default). This may make
-                        graphs more or less readable/interpretable.
+                        If passed, then swarm robustness calculations will be normalized into [-1,1] via
+                        ``--pm-normalize-method``, as opposed to raw values (default). This may make graphs more or less
+                        readable/interpretable.
 
                         """ + self.stage_usage_doc([4]),
                         action='store_true')
@@ -675,8 +689,8 @@ class CoreCmdline(BaseCmdline):
                         help="""
 
                         If passed, then swarm scalability, self-organization, flexibility, and robustness calculations
-                        will be normalized into [-1,1] via sigmoids (similar to other performance measures), as opposed
-                        to raw values (default). This may make graphs more or less readable/interpretable.
+                        will be normalized into [-1,1] via ``--pm-normalize-method``, as opposed to raw values
+                        (default). This may make graphs more or less readable/interpretable.
 
                         """ + self.stage_usage_doc([4]),
                         action='store_true')
@@ -685,17 +699,16 @@ class CoreCmdline(BaseCmdline):
                         choices=['sigmoid'],
                         help="""
 
-                        The method to use for normalizing performance measure results,
-                        where enabled:
+                        The method to use for normalizing performance measure results, where enabled:
 
-                        - ``sigmoid`` - Use a pair of sigmoids to normalize the results into
-                          [-1, 1]. Can be used with all performance measures.
+                        - ``sigmoid`` - Use a pair of sigmoids to normalize the results into [-1, 1]. Can be used with
+                          all performance measures.
 
                         """ + self.stage_usage_doc([4]),
                         default='sigmoid')
 
         # Plotting options
-        plots = self.parser.add_argument_group('Stage4: Plotting')
+        plots = self.parser.add_argument_group('Plotting')
 
         plots.add_argument("--plot-log-xscale",
                            help="""
@@ -735,7 +748,7 @@ class CoreCmdline(BaseCmdline):
                            to the legend. """ +
 
                            self.graphs_applicable_doc([':class:`~sierra.core.graphs.summary_line_graph.SummaryLinegraph`']) +
-                           self.bc_applicable_doc([':ref:`SAA Noise <ln-bc-saa-noise>`']) +
+                           self.bc_applicable_doc([]) +
                            self.stage_usage_doc([4]))
 
         plots.add_argument("--plot-primary-axis",
@@ -770,27 +783,24 @@ class CoreCmdline(BaseCmdline):
         plots.add_argument("--plot-large-text",
                            help="""
 
-                           This option specifies that the title, X/Y axis labels/tick labels will should be larger than
-                           the SIERRA default. This is useful when generating graphs suitable for two column paper
-                           format where the default text size for rendered graphs will be too small to see easily. The
-                           SIERRA defaults are generally fine for the one column/journal paper format.
-                           """,
+                           This option specifies that the title, X/Y axis labels/tick labels should be larger than the
+                           SIERRA default. This is useful when generating graphs suitable for two column paper format
+                           where the default text size for rendered graphs will be too small to see easily. The SIERRA
+                           defaults are generally fine for the one column/journal paper format.  """,
                            action='store_true')
 
         # Model options
-        models = self.parser.add_argument_group('Stage4: Models')
+        models = self.parser.add_argument_group('Models')
         models.add_argument('--models-disable',
                             help="""
 
-                            Disables running of all models, even if they appear in the project
-                            config file.
+                            Disables running of all models, even if they appear in the project config file.
 
                             """,
                             action="store_true")
 
         # Variance curve similarity options
-        vcs = self.parser.add_argument_group('Stage4: VCS',
-                                             'Variance Curve Similarity options for stage4')
+        vcs = self.parser.add_argument_group('Variance Curve Similarity (VCS)')
 
         vcs.add_argument("--gen-vc-plots",
                          help="""
@@ -815,7 +825,7 @@ class CoreCmdline(BaseCmdline):
                          help="""
 
                          Environmental conditions curve similarity method. Specify the method to use to calculate the
-                         similarity between curves of applied variance(non-ideal conditions) and ideal conditions
+                         similarity between curves of applied variance (non-ideal conditions) and ideal conditions
                          (exp0). """ +
                          self.cs_methods_doc() +
                          self.bc_applicable_doc([':ref:`Temporal Variance <ln-bc-tv>`']) +
@@ -848,8 +858,7 @@ class CoreCmdline(BaseCmdline):
                          default="dtw")
 
         # Rendering options
-        rendering = self.parser.add_argument_group(
-            'Stage4: Rendering (see also stage1 rendering options)')
+        rendering = self.parser.add_argument_group('Rendering (see also stage1 rendering options)')
 
         rendering.add_argument("--render-cmd-opts",
                                help="""
@@ -896,7 +905,7 @@ class CoreCmdline(BaseCmdline):
         self.stage5.add_argument("--controllers-list",
                                  help="""
 
-                                 Comma separated list of controllers to compare within `` < sierra root > ``.
+                                 Comma separated list of controllers to compare within ``--sierra-root``.
 
                                  The first controller in this list will be used for as the controller of primary
                                  interest if ``--comparison-type`` is passed.
@@ -915,8 +924,8 @@ class CoreCmdline(BaseCmdline):
         self.stage5.add_argument("--scenarios-list",
                                  help="""
 
-                                 Comma separated list of scenarios to compare ``--controller`` across within `` < sierra
-                                 root > ``.
+                                 Comma separated list of scenarios to compare ``--controller`` across within
+                                 ``--sierra-root``.
 
                                  """ + self.stage_usage_doc([5]))
 
@@ -1000,7 +1009,7 @@ class CoreCmdline(BaseCmdline):
 
                                  Specify that the batch criteria is univariate. This cannot be deduced from the command
                                  line ``--batch-criteria`` argument in all cases because we are comparing controllers
-                                 `across` scenarios, and each scenario(potentially) has a different batch criteria
+                                 `across` scenarios, and each scenario (potentially) has a different batch criteria
                                  definition, which will result in (potentially) erroneous comparisons if we don't
                                  re-generate the batch criteria for each scenaro we compare controllers within.
 
@@ -1012,7 +1021,7 @@ class CoreCmdline(BaseCmdline):
 
                                  Specify that the batch criteria is bivariate. This cannot be deduced from the command
                                  line ``--batch-criteria`` argument in all cases because we are comparing controllers
-                                 `across` scenarios, and each scenario(potentially) has a different batch criteria
+                                 `across` scenarios, and each scenario (potentially) has a different batch criteria
                                  definition, which will result in (potentially) erroneous comparisons if we don't
                                  re-generate the batch criteria for each scenaro we compare controllers in .
 
@@ -1042,7 +1051,7 @@ class CoreCmdline(BaseCmdline):
 
         - ``pcm`` - Partial Curve Mapping(Witowski2012)
 
-          - Intrinsic domain:: math: `[0, \infty)`. Lower values indicate greater similarity.
+          - Intrinsic domain: math: `[0, \infty)`. Lower values indicate greater similarity.
 
           - Normalized domain: N/A.
 
@@ -1064,7 +1073,7 @@ class CoreCmdline(BaseCmdline):
 
           - Normalized domain: [0, 1]. Higher values indicate greater similarity.
 
-        - ``curve_length`` - Arc-length distance along the curve from the origin of(applied - ideal)
+        - ``curve_length`` - Arc-length distance along the curve from the origin of (applied - ideal)
           curve(Andrade-campos2009).
 
           - Intrinsic domain::math:`[0, \infty)`.

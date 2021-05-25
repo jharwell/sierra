@@ -19,4 +19,4 @@
 # 3rd party packages
 
 # Project packages
-import sierra.core.cmdline
+from . import cmdline

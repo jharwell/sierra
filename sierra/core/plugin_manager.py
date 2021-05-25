@@ -143,7 +143,6 @@ class ModelPluginManager(FilePluginManager):
 
 
 def module_exists(name: str):
-    # print(sys.modules.keys())
     try:
         mod = __import__(name)
     except ImportError:

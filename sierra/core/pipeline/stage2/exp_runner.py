@@ -94,18 +94,21 @@ class BatchedExpRunner:
         exp_all = [os.path.join(self.batch_exp_root, d)
                    for d in self.criteria.gen_exp_dirnames(self.cmdopts)]
 
-        exp_to_run = sierra.core.utils.exp_range_calc(self.cmdopts, self.batch_exp_root, self.criteria)
+        exp_to_run = sierra.core.utils.exp_range_calc(
+            self.cmdopts, self.batch_exp_root, self.criteria)
 
         # Verify environment is OK before running anything
-        sierra.core.hpc.EnvChecker()
+        sierra.core.hpc.EnvChecker()()
 
         for exp in exp_to_run:
             runner = ExpRunner(exp, exp_all.index(exp), self.cmdopts['hpc_env'], exec_times_fpath)
             runner(n_jobs, exec_resume)
 
-        # Cleanup Xvfb processes which were started in the background
+        # Cleanup Xvfb processes which were started in the background. If SIERRA was run with
+        # --exec-resume, then there may be no Xvfb processes to kill, so we can't (in general) check
+        # the return code
         if with_rendering:
-            subprocess.run(['killall', 'Xvfb'], check=True)
+            subprocess.run(['killall', 'Xvfb'], check=False)
 
 
 class ExpRunner:

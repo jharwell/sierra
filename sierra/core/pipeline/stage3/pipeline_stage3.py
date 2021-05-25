@@ -96,13 +96,14 @@ class PipelineStage3:
                            main_config: dict,
                            cmdopts: tp.Dict[str, tp.Any], criteria:
                            bc.IConcreteBatchCriteria):
-        self.logger.info("Collating simulation outputs into %s...",
-                         cmdopts['batch_stat_collate_root'])
-        start = time.time()
-        SimulationParallelCollator(main_config, cmdopts)(criteria)
-        elapsed = int(time.time() - start)
-        sec = datetime.timedelta(seconds=elapsed)
-        self.logger.info("Simulation output collation complete in %s", str(sec))
+        if not self.cmdopts['no_collate']:
+            self.logger.info("Collating simulation outputs into %s...",
+                             cmdopts['batch_stat_collate_root'])
+            start = time.time()
+            SimulationParallelCollator(main_config, cmdopts)(criteria)
+            elapsed = int(time.time() - start)
+            sec = datetime.timedelta(seconds=elapsed)
+            self.logger.info("Simulation output collation complete in %s", str(sec))
 
     def _run_imagizing(self,
                        main_config: dict,

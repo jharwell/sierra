@@ -29,6 +29,7 @@ import coloredlogs
 # Project packages
 import sierra.core.cmdline as cmd
 import sierra.core.hpc as hpc
+import sierra.core.storage as storage
 from sierra.core.pipeline.pipeline import Pipeline
 from sierra.core.generators.controller_generator_parser import ControllerGeneratorParser
 import sierra.core.root_dirpath_generator as rdg
@@ -53,18 +54,19 @@ class SIERRA():
 
         sierra_root = os.path.dirname(os.path.abspath(__file__))
 
-        # Load non-project directory plugins
-        dpm = pm.DirectoryPluginManager()
-        dpm.initialize(os.path.join(sierra_root, 'plugins'))
-        for plugin in dpm.available_plugins():
-            dpm.load_plugin(plugin)
-
         # Load HPC plugins
         self.logger.info("Loading HPC plugins")
         hpc_pm = hpc.HPCPluginManager()
         hpc_pm.initialize(os.path.join(sierra_root, 'plugins', 'hpc'))
         for plugin in hpc_pm.available_plugins():
             hpc_pm.load_plugin(plugin)
+
+        # Load storage plugins
+        self.logger.info("Loading storage plugins")
+        storage_pm = storage.StoragePluginManager()
+        storage_pm.initialize(os.path.join(sierra_root, 'plugins', 'storage'))
+        for plugin in storage_pm.available_plugins():
+            storage_pm.load_plugin(plugin)
 
         # Load project cmdline extensions
         self.logger.info("Loading cmdline extensions from project '%s'", bootstrap_args.project)

@@ -19,5 +19,5 @@
 # 3rd party packages
 
 # Project packages
-import sierra.core as core
-import sierra.plugins as plugins
+from . import core
+from . import plugins

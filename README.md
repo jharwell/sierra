@@ -41,7 +41,9 @@ will need to defined a project plugin, as described in the documentation
 [here](https://swarm-robotics-sierra.readthedocs.io/en/latest/).
 
 # Requirements
-You need python 3.6 or later to run SIERRA.
+
+- python 3.6 or later.
+- ARGoS 3.0.0-beta59 or later.
 
 # License
 This project is licensed under GPL 3.0. See [LICENSE](LICENSE.md).

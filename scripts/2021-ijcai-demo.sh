@@ -17,11 +17,11 @@ BASE_CMD="python3 main.py \
         --template-input-file=$SIERRA/templates/2021-ijcai-demo.argos \
         --project=fordyca\
         --physics-n-engines=1\
+        --time-setup=time_setup.T1000\
         --batch-criteria population_size.Log8\
         --exp-overwrite\
         --models-disable\
         --no-verify-results\
-        --log-level=DEBUG\
         --with-robot-leds"
 
 ################################################################################
@@ -30,7 +30,7 @@ BASE_CMD="python3 main.py \
 if [ "$TASK" == "demo1" ]; then
     $BASE_CMD --controller=d0.CRW\
               --scenario=SS.12x6x2\
-              --n-sims=24
+              --n-sims=16 --exec-resume --dist-stats=bw
 fi
 
 ################################################################################

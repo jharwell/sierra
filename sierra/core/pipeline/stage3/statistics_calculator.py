@@ -37,6 +37,7 @@ import sierra.core.utils
 import sierra.core.variables.batch_criteria as bc
 import sierra.core.config
 import sierra.core.stat_kernels
+import sierra.core.storage as storage
 
 
 class GatherSpec:
@@ -78,7 +79,8 @@ class BatchExpParallelCalculator:
             'no_verify_results': self.cmdopts['no_verify_results'],
             'dist_stats': self.cmdopts['dist_stats'],
             'project_imagizing': self.cmdopts['project_imagizing'],
-            'processing_mem_limit': self.cmdopts['processing_mem_limit']
+            'processing_mem_limit': self.cmdopts['processing_mem_limit'],
+            'storage_medium': self.cmdopts['storage_medium']
         }
 
         if self.cmdopts['serial_processing']:
@@ -261,7 +263,9 @@ class ExpCSVGatherer:
             else:
                 item_path = os.path.join(sim_output_root, item.csv_leaf + '.csv')
 
-            df = sierra.core.utils.pd_csv_read(item_path, index_col=False)
+            reader = storage.DataFrameReader(self.gather_opts['storage_medium'])
+            df = reader(item_path, index_col=False)
+
             if df.dtypes[0] == 'object':
                 df[df.columns[0]] = df[df.columns[0]].apply(lambda x: float(x))
 
@@ -325,8 +329,10 @@ class ExpCSVGatherer:
                         "FATAL: Either {0} or {1} does not exist".format(path1, path2)
 
                     # Verify both dataframes have same # columns, and that column sets are identical
-                    df1 = sierra.core.utils.pd_csv_read(path1)
-                    df2 = sierra.core.utils.pd_csv_read(path2)
+                    reader = storage.DataFrameReader(self.gather_opts['storage_medium'])
+                    df1 = reader(path1)
+                    df2 = reader(path2)
+
                     assert (len(df1.columns) == len(df2.columns)), \
                         "FATAL: Dataframes from {0} and {1} do not have same # columns".format(
                             path1, path2)
@@ -416,4 +422,5 @@ class ExpStatisticsCalculator:
             opath = os.path.join(self.stat_root,
                                  self.gather_spec.csv_stem,
                                  self.gather_spec.csv_leaf + ext)
-            sierra.core.utils.pd_csv_write(dfs[ext], opath, index=False)
+            writer = storage.DataFrameWriter(self.avg_opts['storage_medium'])
+            writer(dfs[ext], opath, index=False)

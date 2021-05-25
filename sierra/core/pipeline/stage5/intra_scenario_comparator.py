@@ -228,7 +228,6 @@ class UnivarIntraScenarioComparator:
 
         opath = os.path.join(self.cc_graph_root, opath_leaf + sierra.core.config.kImageExt)
 
-        print(xtick_labels, xticks)
         SummaryLinegraph(stats_root=self.cc_csv_root,
                          input_stem=opath_leaf,
                          output_fpath=opath,

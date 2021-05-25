@@ -41,6 +41,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.ifconfig',
               'sphinx.ext.viewcode',
               'sphinx.ext.inheritance_diagram',
+              'sphinx.ext.autosectionlabel',
               'sphinxarg.ext',
               'xref',
               'sphinx_rtd_theme',
@@ -135,6 +136,7 @@ xref_links = {
                    "https://www.cs.unm.edu/~wjust/CS523/S2018/Readings/Hecker_Beyond_Pheromones_Swarm_Intelligence.pdf"),
     "Rosenfeld2006": ("Rosenfeld2006",
                       "http://users.umiacs.umd.edu/~sarit/data/articles/rosenfeldetalbook06.pdf"),
+    "SIERRA_GITHUB": ("https://github.com:swarm-robotics/sierra.git", "https://github.com:swarm-robotics/sierra.git"),
     "FORDYCA": ("FORDYCA", "https://swarm-robotics-fordyca.readthedocs.io"),
     "SILICON": ("SILICON", "https://swarm-robotics-silicon.readthedocs.io"),
     "COSM": ("COSM", "https://swarm-robotics-cosm.readthedocs.io"),
@@ -219,11 +221,12 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
+autosectionlabel_prefix_document = True
 man_pages = [
-    ('usage/cli', 'sierra-cli', 'The SIERRA Command Line Interface',
-     [author], 1),
+    ('man/sierra-cli', 'sierra-cli', 'The SIERRA Command Line Interface', [author], 1),
+    ('man/sierra-msi', 'sierra-msi', 'How to use SIERRA on MSI', [author], 1),
+    ('man/sierra', 'sierra', 'Swarm Intelligence Reusable ARGoS Automation (SIERRA)', [author], 1)
 ]
-
 
 # -- Options for Texinfo output -------------------------------------------
 
@@ -269,7 +272,6 @@ if not os.path.exists(os.path.join(os.getcwd(), "../projects/titan")):
     subprocess.run(["git", "checkout", "devel"])
     os.chdir(cwd)
     os.chdir("..")
-    print(sys.path)
     subprocess.run(['ls', '-alh', '.'])
     subprocess.run(['ls', '-alh', 'projects'])
     subprocess.run(["python3", "-m", "projects.titan.__init__.py"])

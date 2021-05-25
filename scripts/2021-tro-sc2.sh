@@ -58,7 +58,7 @@ YCARDINALITY1=8
 YCARDINALITY2=8
 TIME=time_setup.T10000
 TASKS=("scalability" "flexibility" "robustness_pd" "robustness_saa")
-NSIMS=96
+NSIMS=192
 CONTROLLERS_LIST=(d0.CRW d0.DPO d1.BITD_DPO d2.BIRTD_DPO)
 
 SIERRA_BASE_CMD="python3 main.py \

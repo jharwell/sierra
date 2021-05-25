@@ -97,6 +97,7 @@ class Pipeline:
             'render_cmd_opts': self.args.render_cmd_opts,
             'processing_mem_limit': self.args.processing_mem_limit,
             'serial_processing': self.args.serial_processing,
+            'storage_medium': self.args.storage_medium,
 
             # stage 4
             'envc_cs_method': self.args.envc_cs_method,

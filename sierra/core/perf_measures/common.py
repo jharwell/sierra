@@ -404,13 +404,16 @@ def univar_distribution_prepare(cmdopts: tp.Dict[str, tp.Any],
                                 pm_dfs: tp.Dict[str, pd.DataFrame],
                                 exclude_exp0: bool) -> None:
 
+    if cmdopts['dist_stats'] in ['none', 'all']:
+        dist_dfs = sierra.core.stat_kernels.mean.from_pm(pm_dfs)
+
     if cmdopts['dist_stats'] in ['conf95', 'all']:
         dist_dfs = sierra.core.stat_kernels.conf95.from_pm(pm_dfs)
-        _univar_distribution_do_prepare(cmdopts, criteria, oleaf, dist_dfs, exclude_exp0)
 
     if cmdopts['dist_stats'] in ['bw', 'all']:
         dist_dfs = sierra.core.stat_kernels.bw.from_pm(pm_dfs)
-        _univar_distribution_do_prepare(cmdopts, criteria, oleaf, dist_dfs, exclude_exp0)
+
+    _univar_distribution_do_prepare(cmdopts, criteria, oleaf, dist_dfs, exclude_exp0)
 
 
 def bivar_distribution_prepare(cmdopts: tp.Dict[str, tp.Any],
@@ -420,13 +423,16 @@ def bivar_distribution_prepare(cmdopts: tp.Dict[str, tp.Any],
                                exclude_exp0: bool,
                                axis: tp.Optional[int] = None) -> None:
 
+    if cmdopts['dist_stats'] in ['none', 'all']:
+        dist_dfs = sierra.core.stat_kernels.mean.from_pm(pm_dfs)
+
     if cmdopts['dist_stats'] in ['conf95', 'all']:
         dist_dfs = sierra.core.stat_kernels.conf95.from_pm(pm_dfs)
-        _bivar_distribution_do_prepare(cmdopts, criteria, oleaf, dist_dfs, exclude_exp0, axis)
 
     if cmdopts['dist_stats'] in ['bw', 'all']:
         dist_dfs = sierra.core.stat_kernels.bw.from_pm(pm_dfs)
-        _bivar_distribution_do_prepare(cmdopts, criteria, oleaf, dist_dfs, exclude_exp0, axis)
+
+    _bivar_distribution_do_prepare(cmdopts, criteria, oleaf, dist_dfs, exclude_exp0, axis)
 
 
 def _univar_distribution_do_prepare(cmdopts: tp.Dict[str, tp.Any],
