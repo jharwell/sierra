@@ -224,8 +224,8 @@ latex_documents = [
 autosectionlabel_prefix_document = True
 man_pages = [
     ('man/sierra-cli', 'sierra-cli', 'The SIERRA Command Line Interface', [author], 1),
-    ('man/sierra-msi', 'sierra-msi', 'How to use SIERRA on MSI', [author], 1),
-    ('man/sierra', 'sierra', 'Swarm Intelligence Reusable ARGoS Automation (SIERRA)', [author], 1)
+    ('man/sierra-msi', 'sierra-msi', 'How to use SIERRA on MSI', [author], 7),
+    ('man/sierra', 'sierra', 'Swarm Intelligence Reusable ARGoS Automation (SIERRA)', [author], 7)
 ]
 
 # -- Options for Texinfo output -------------------------------------------

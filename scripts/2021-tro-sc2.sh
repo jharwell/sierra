@@ -8,7 +8,7 @@
 #SBATCH --mail-user=harwe006@umn.edu
 #SBATCH --output=R-%x.%j.out
 #SBATCH --error=R-%x.%j.err
-#SBATCH -J 2021-tro-sc2-3
+#SBATCH -J 2021-tro-sc2-4
 
 ################################################################################
 # Setup Simulation Environment                                                 #
@@ -48,7 +48,7 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 ################################################################################
 # Begin Experiments                                                            #
 ################################################################################
-OUTPUT_ROOT=$HOME/exp/2021-tro-sc2-3
+OUTPUT_ROOT=$HOME/exp/2021-tro-sc2-4
 DENSITY=5p0
 N_BLOCKS=4000
 BLOCK_DIST=PL

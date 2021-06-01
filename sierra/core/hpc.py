@@ -98,14 +98,26 @@ class EnvChecker():
     Verify the configured HPC environment before running any experiments during stage 2.
     """
 
+    def __init__(self, hpc_env: str):
+        self.hpc_env = hpc_env
+
     def __call__(self) -> None:
         # Check we can find ARGoS
-        if not shutil.which('argos3'):
-            assert False, "FATAL: Cannot find argos3"
+        if self.hpc_env in ['local', 'adhoc']:
+            argos3 = 'argos3'
+        elif self.hpc_env in ['pbs', 'slurm']:
+            arch = os.environ.get('SIERRA_ARCH')
+            argos3 = 'argos3-{0}'.format(arch)
+        else:
+            assert False, "FATAL: Bad HPC env {0}".format(self.hpc_env)
 
-        p = subprocess.Popen(['argos3', '-v'],
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
+        if shutil.which(argos3):
+            p = subprocess.Popen([argos3, '-v'],
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
+        else:
+            assert False, "FATAL: Cannot find {0}".format(argos3)
+
         stdout, _ = p.communicate()
 
         # Check ARGoS version

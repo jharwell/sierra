@@ -1,8 +1,8 @@
 .. _ln-usage-cli:
 
-======================
+**********************
 Command Line Interface
-======================
+**********************
 
 Unless an option says otherwise, it is applicable to all batch criteria. That
 is, option batch criteria applicability is only documented for options which

@@ -1,21 +1,20 @@
 .. _ln-batch-criteria:
 
-==============
-Batch Criteria
-==============
+***********************
+Batch Criteria Overview
+***********************
 
 See :term:`Batch Criteria` fo a detailed explanation of batch criteria, but the
 short version is that they are the core of SIERRA--how to get it to DO stuff for
-you.
+you. SIERRA defines the following :term:`Batch Criteria` variables which you can
+use to define experiments; :term:`Projects <Project>` can define their own as
+well (see :ref:`ln-tutorials-project`).
 
-The SIERRA core defines the following batch criteria (additional criteria can be
-defined by the selected project):
-
-  - :ref:`Swarm Population Size <ln-bc-population-size>`
-  - :ref:`Swarm Constant Population Density <ln-bc-population-constant-density>`
-  - :ref:`Swarm Variable Population Density <ln-bc-population-variable-density>`
-  - :ref:`Temporal Variance <ln-bc-tv>`
-  - :ref:`SAA Noise <ln-bc-saa-noise>`
+- :ref:`Swarm Population Size <ln-bc-population-size>`
+- :ref:`Swarm Constant Population Density <ln-bc-population-constant-density>`
+- :ref:`Swarm Variable Population Density <ln-bc-population-variable-density>`
+- :ref:`Temporal Variance <ln-bc-tv>`
+- :ref:`SAA Noise <ln-bc-saa-noise>`
 
 You *should* be able to combine any two of the criteria above, or use them
 independently. I have not tried all combinations, so YMMV.
@@ -28,15 +27,26 @@ independently. I have not tried all combinations, so YMMV.
    whatever file you pass with ``--template-input-file``. If a batch criteria
    tries to modify a non-existent XML attribute, a warning will be issued.
 
+Core Batch Criteria
+===================
+
+
 .. _ln-bc-population-size:
 
 Swarm Population Size
-=====================
+---------------------
+
+Changing the swarm size to investigate behavior across scales within a static
+arena size (i.e., variable density). This criteria is functionally identical to
+:ref:`ln-bc-population-variable-density` in terms of changes to the template XML
+file, but has a different semantic meaning which can make generated deliverables
+more immediately understandable, depending on the context of what is being
+investigated (e.g., swarm size vs. swarm density on the X axis).
 
 .. _ln-bc-population-size-cmdline:
 
 Cmdline Syntax
---------------
+^^^^^^^^^^^^^^
 ``population_size.{increment_type}{N}``
 
 - ``increment_type`` - {Log,Linear}. If ``Log``, then swarm sizes for each
@@ -54,12 +64,16 @@ Examples:
 
 
 Swarm Constant Population Density
-=================================
+---------------------------------
+
+Changing the swarm size and arena size together to maintain the same swarm
+size/arena size ratio to investigate behavior across scales.
 
 .. _ln-bc-population-constant-density-cmdline:
 
 Cmdline Syntax
---------------
+^^^^^^^^^^^^^^
+
 ``population_constant_density.{density}.I{Arena Size Increment}.C{cardinality}``
 
 - ``density`` - <integer>p<integer> (i.e. 5p0 for 5.0)
@@ -83,13 +97,21 @@ Examples:
 .. _ln-bc-population-variable-density:
 
 
-Swarm Variabe Population Density
-================================
+Swarm Variable Population Density
+---------------------------------
+
+Changing the swarm size to investigate behavior across scales within a static
+arena size. This criteria is functionally identical to
+:ref:`ln-bc-population-size` in terms of changes to the template XML file, but
+has a different semantic meaning which can make generated deliverables more
+immediately understandable, depending on the context of what is being
+investigated (e.g., swarm density vs. swarm size on the X axis).
 
 .. _ln-bc-population-variable-density-cmdline:
 
 Cmdline Syntax
---------------
+^^^^^^^^^^^^^^
+
 ``population_variable_density.{density_min}.{density_max}.C{cardinality}``
 
 - ``density_min`` - <integer>p<integer> (i.e. 5p0 for 5.0)
@@ -110,7 +132,12 @@ Cmdline Syntax
 .. _ln-bc-tv:
 
 Temporal Variance
-=================
+-----------------
+
+Injecting waveforms into the swarm's environment which affect the individual
+robot behavior to simulate changing outdoor conditions, changing object
+sizes/weights, etc.
+
 
 .. NOTE::
 
@@ -125,17 +152,19 @@ Temporal Variance
 .. _ln-bc-tv-cmdline:
 
 Cmdline Syntax
---------------
+^^^^^^^^^^^^^^
 
 ``temporal_variance.{variance_type}{waveform_type}[step_time][.Z{population}]``
 
-- ``variance_type`` - [BC,BM].
+- ``variance_type`` - [BC,BM,M].
 
   - ``BC`` - Apply motion throttling to robot speed when it is carrying a
     block according to the specified waveform.
 
   - ``BM`` - Apply the specified waveform when calculating robot block
     manipulation penalties (pickup, drop, etc.).
+
+  - ``M`` - Apply the specified waveform to robot motion unconditionally.
 
 - ``waveform_type`` - {Sine,Square,Sawtooth,Step{U,D},Constant}.
 
@@ -165,40 +194,51 @@ list - 1).
 .. _ln-bc-tv-yaml-config:
 
 YAML Config
------------
+^^^^^^^^^^^
+
 .. code-block:: YAML
 
    perf:
      ...
      flexibility:
-       # The range of Hz to use for generated waveforms. Applies to Sine, Sawtooth, Square
-       # waves. There is no limit for the length of the list.
+       # The range of Hz to use for generated waveforms. Applies to Sine,
+       # Sawtooth, Square waves. There is no limit for the length of the list.
        hz:
          - frequency1
          - frequency2
          - frequency3
          - ...
-       # The range of block manipulation penalties to use if that is the type of applied temporal
-       # variance (BM). Specified in timesteps. There is no limit for the length of the list.
+       # The range of block manipulation penalties to use if that is the type of
+       # applied temporal variance (BM). Specified in timesteps. There is no
+       # limit for the length of the list.
        BM_amp:
          - penalty1
          - penalty2
          - penalty3
          - ...
-      # The range of block carry penalties to use if that is the type of applied temporal variance
-      # (BC). Specified as percent slowdown: [0.0, 1.0]. There is no limit for the length of the
-      # list.
+      # The range of block carry penalties to use if that is the type of applied
+      # temporal variance (BC). Specified as percent slowdown: [0.0, 1.0]. There
+      #is no limit for the length of the list.
       BC_amp:
          - percent1
          - percent2
          - percent3
          - ...
 
+      # The range of motion throttle penalties to use if that is the type of
+      # applied temporal variance (M). Specified as percent slowdown: [0.0,
+      # 1.0]. There is no limit for the length of the list.
+      M_amp:
+         - percent1
+         - percent2
+         - percent3
+         - ...
+
 Experiment Definitions
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 - exp0 - Ideal conditions, which is a ``Constant`` waveform with amplitude
-  ``BC_amp[0]``, or ``BM_amp[0]``, depending.
+  ``BC_amp[0]``, ``BM_amp[0]``, ``M_amp[0]`` depending.
 
 - exp1-expN
 
@@ -208,19 +248,28 @@ Experiment Definitions
   - Cardinality of ``|hz|`` * ``|BC_amp|`` if the variance type is ``BC`` and
     the waveform type is Sine, Square, or Sawtooth.
 
+  - Cardinality of ``|hz|`` * ``|M_amp|`` if the variance type is ``M`` and
+    the waveform type is Sine, Square, or Sawtooth.
+
   - Cardinality of ``|BM_amp|`` if the variance type is ``BM`` and the waveform
     type is StepU, StepD.
 
   - Cardinality of ``|BC_amp|`` if the variance type is ``BC`` and the waveform
     type is StepU, StepD.
 
+  - Cardinality of ``|M_amp|`` if the variance type is ``M`` and the waveform
+    type is StepU, StepD.
+
 .. _ln-bc-saa-noise:
 
 Sensor and Actuator Noise
-=========================
+-------------------------
+
+Inject sensor and/or actuator noise into the swarm.
 
 Cmdline Syntax
---------------
+^^^^^^^^^^^^^^
+
 ``saa_noise.{category}.C{cardinality}[.Z{population}]``
 
 - ``category`` - [sensors,actuators,all]
@@ -263,33 +312,32 @@ changes will be generated for it.
    The version accessible on the ARGoS website does not have a consistent noise
    injection interface, making usage with this criteria impossible.
 
-.. NOTE::
 
-   Some of the flexibility config via applied temporal variance is very FORDYCA
-   specific; hopefully this will change in the future, or be pushed down to a
-   project-specific extension of a base flexibility class.
+The following sensors can be affected (dependent on your chosen robot's
+capabilities in ARGoS):
+
+- light
+- proximity
+- ground
+- steering
+- position
+
+The following actuators can be affected (dependent on your chosen robot's
+capabilities in ARGoS):
+
+- steering
 
 .. _ln-bc-saa-noise-yaml-config:
 
 YAML Config
------------
+^^^^^^^^^^^
 
 For all sensors and actuators to which noise should be applied, the noise model
 and dependent parameters must be specified (i.e. if a given sensor or sensor is
 present in the config, all config items for it are mandatory).
 
-For a ``uniform`` model, the ``range`` attribute is required, and defines the
--[level, level] distribution.  For example, setting ``range: [0.0,0.1]`` with
-``cardinality=1`` will result in two experiments with uniform noise
-distributions of ``[0.0, 0.0]``, and ``[-0.1, 0.1]``.
 
-For a ``gaussian`` model, the ``stddev_range`` and ``mean_range`` attributes are
-required.  For example, setting ``stddev_range: [0.0,1.0]`` and ``mean_range:
-[0.0, 0.0]`` with ``cardinality=2`` will result in two experiments with Guassian
-noise distributions of ``Gaussian(0,0)``, ``Gaussian(0, 0.5)``, and ``Gaussian(0,
-1.0)``.
-
-The appropriate ticks_range attribute is required, as there is no way to
+The appropriate ``ticks_range`` attribute is required, as there is no way to
 calculate in general what the correct range of X values for generated graphs
 should be, because some sensors/actuators may have different
 assumptions/requirements about noise application than others. For example, the
@@ -304,14 +352,32 @@ compute what the ticks should be for a given experiment.
    perf:
      ...
      robustness:
+       # For ``uniform`` models, the ``uniform_ticks_range`` attributes are
+       # required.
        uniform_ticks_range: [0.0, 0.1]
+
+       # For ``gaussian`` models, the ``gaussian_ticks_stddev_range`` and
+       # ``gaussian_ticks_mean_range`` attributes are required.
        gaussian_ticks_mean_range: [0.0, 0.1]
        gaussian_ticks_stddev_range: [0.0, 0.0]
 
+       # For ``gaussian`` models, the ``gaussian_labels_show``,
+       # ``gaussian_ticks_src`` attributes are required, and control what is
+       # shown for the xticks/xlabels: the mean or stddev values.
+       gaussian_ticks_src: stddev
+       gaussian_labels_show: stddev
+
+       # The sensors to inject noise into. All shown sensors are optional. If
+       # omitted, they will not be affected by noise injection.
        sensors:
          light:
            model: uniform
+
+           # For a ``uniform`` model, the ``range`` attribute is required, and
+           # defines the -[level, level] distribution that injected noise will be
+           # drawn from.
            range: [0.0, 0.4]
+
          proximity:
            model: gaussian
            stddev_range: [0.0, 0.1]
@@ -327,16 +393,32 @@ compute what the ticks should be for a given experiment.
            model: uniform
            range: [0.0, 0.1]
 
+         # The actuators to inject noise into. All shown actuators are optional. If
+         # omitted, they will not be affected by noise injection.
          actuators:
            steering: # applied to [noise_factor]
              model: uniform
              range: [0.95, 1.05]
 
+Uniform Noise Injection Examples
+""""""""""""""""""""""""""""""""
+
+- ``range: [0.0,0.1]`` with ``cardinality=1`` will result in two experiments
+  with uniform noise distributions of ``[0.0, 0.0]``, and ``[-0.1, 0.1]``.
+
+Gaussian Noise Injection Examples
+"""""""""""""""""""""""""""""""""
+
+- ``stddev_range: [0.0,1.0]`` and ``mean_range: [0.0, 0.0]`` with
+  ``cardinality=2`` will result in two experiments with Guassian noise
+  distributions of ``Gaussian(0,0)``, ``Gaussian(0, 0.5)``, and ``Gaussian(0,
+  1.0)``.
+
 Experiment Definitions
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 - exp0 - Ideal conditions, in which noise will be applied to the specified
   sensors and/or actuators at the lower bound of the specified ranges for each.
 
 - exp1-expN - Increasing levels of noise, using the cardinality specified on the
-  command line.
+  command line and the distribution type specified in YAML configuration.

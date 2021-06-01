@@ -79,7 +79,7 @@ kStatsExtensions = {
 kARGoS = {
     'duration': 5000,  # seconds
     'ticks_per_second': 5,
-    'min_version': '3.0.0-beta59'
+    'min_version': '3.0.0-beta53'
 }
 
 kSimulationData = {

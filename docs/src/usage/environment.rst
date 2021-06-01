@@ -1,7 +1,8 @@
 .. _ln-env-vars:
 
+*********************
 Environment Variables
-=====================
+*********************
 
 .. envvar:: SIERRA_PLUGIN_PATH
 

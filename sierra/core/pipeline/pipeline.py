@@ -65,7 +65,6 @@ class Pipeline:
             'hpc_env': args.hpc_env,
             'argos_rendering': self.args.argos_rendering,
             "n_sims": args.n_sims,
-            'n_blocks': args.n_blocks,
             'n_robots': args.n_robots,
             'project_imagizing': self.args.project_imagizing,
             'exp_overwrite': self.args.exp_overwrite,

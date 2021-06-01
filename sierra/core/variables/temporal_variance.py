@@ -184,6 +184,7 @@ def factory(cli_arg: str,
                       amps[0],
                       0.0,
                       0.0)]
+
         if any(v == attr["waveform_type"] for v in ["Sine", "Square", "Sawtooth"]):
 
             variances.extend([(attr["xml_parent_path"],

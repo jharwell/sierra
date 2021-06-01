@@ -1,20 +1,20 @@
 SIERRA Pipeline
----------------
+===============
 
 When invoked SIERRA will run one or more stages of its execution path, as
 specified via ``--pipeline`` on the cmdline. Only the first 4 pipeline stages
-run automatically. The pipeline stages are:
+will run by default. The pipeline stages are:
 
 
 Stage 1: Experiment Generation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------
 
 SIERRA generates the :term:`Batch Experiment` definition from the template
 input file, :term:`Batch Criteria`, and other command line options. Part of
-default pipeline.
+the default pipeline.
 
 Stage 2: Experiment Execution
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------------
 
 SIERRA runs a previously generated :term:`Batch Experiment`. Exactly which batch
 experiment SIERRA runs is determined by:
@@ -30,7 +30,7 @@ SIERRA can run the experiment on any :ref:`HPC plugin <src/hpc/plugins:High
 Performance Computing (HPC) Plugins>`.  Part of default pipeline.
 
 Stage 3: Experiment Post-Processing
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------------------
 
 SIERRA post-processes experimental results after running the batched experiment;
 some parts of this can be done in parallel. This includes one or more of:
@@ -39,12 +39,12 @@ some parts of this can be done in parallel. This includes one or more of:
   generation in stage 4. See :ref:`ln-usage-statistics` for details.
 
 - Creating images from project ``.csv`` files for rendering in stage 4. See
-  :ref:`ln-usage-rendering-project-imagizing` for details.
+  :ref:`ln-usage-rendering-project` for details.
 
 Part of default pipeline.
 
 Stage 4: Deliverable Generation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-------------------------------
 
 SIERRA performs deliverable generation after processing results for a batched
 experiment, which can include shiny graphs and videos. See
@@ -53,7 +53,7 @@ experiment, which can include shiny graphs and videos. See
 Part of default pipeline.
 
 Stage 5: Graph Genertion for Controller Comparison
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------------------------------
 
 SIERRA perform graph generation for comparing controllers AFTER graph generation
 for batched experiments has been run. Not part of default pipeline.

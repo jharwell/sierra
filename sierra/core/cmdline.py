@@ -24,7 +24,7 @@ import typing as tp
 # 3rd party packages
 
 # Project packages
-import sierra.core.config as config
+from sierra.core import config
 
 
 class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawTextHelpFormatter):
@@ -59,6 +59,7 @@ class BootstrapCmdline(BaseCmdline):
         self.parser = argparse.ArgumentParser(prog='sierra',
                                               formatter_class=HelpFormatter,
                                               add_help=False,
+                                              allow_abbrev=False,
                                               usage=argparse.SUPPRESS)
 
         bootstrap = self.parser.add_argument_group('Bootstrap options',
@@ -114,52 +115,56 @@ class CoreCmdline(BaseCmdline):
 
     def __init__(self, bootstrap: tp.Optional[argparse.ArgumentParser], stages: tp.List[int]) -> None:
         self.scaffold_cli(bootstrap)
-        self.init_cli(stages)
+        self.init_cli(stages, False)
 
-    def init_cli(self, stages: tp.List[int]):
+    def init_cli(self, stages: tp.List[int], for_sphinx: bool):
         if -1 in stages:
-            self.__init_multistage()
+            self.init_multistage(for_sphinx)
 
         if 1 in stages:
-            self.__init_stage1()
+            self.init_stage1(for_sphinx)
 
         if 2 in stages:
-            self.__init_stage2()
+            self.init_stage2(for_sphinx)
 
         if 3 in stages:
-            self.__init_stage3()
+            self.init_stage3(for_sphinx)
 
         if 4 in stages:
-            self.__init_stage4()
+            self.init_stage4(for_sphinx)
 
         if 5 in stages:
-            self.__init_stage5()
+            self.init_stage5(for_sphinx)
 
     def scaffold_cli(self, bootstrap: tp.Optional[argparse.ArgumentParser]) -> None:
         if bootstrap is not None:
             self.parser = argparse.ArgumentParser(prog='SIERRA',
                                                   formatter_class=HelpFormatter,
                                                   parents=[bootstrap],
+                                                  allow_abbrev=False,
                                                   usage=argparse.SUPPRESS)
         else:
             self.parser = argparse.ArgumentParser(prog='SIERRA',
                                                   formatter_class=HelpFormatter,
+                                                  allow_abbrev=False,
                                                   usage=argparse.SUPPRESS)
 
         self.multistage = self.parser.add_argument_group('Multi-stage options',
                                                          'Options which are used in multiple pipeline stages')
         self.stage1 = self.parser.add_argument_group(
-            'General options for generating experiments')
+            'Stage1: General options for generating experiments')
         self.stage2 = self.parser.add_argument_group(
-            'General options for running experiments')
+            'Stage2: General options for running experiments')
         self.stage3 = self.parser.add_argument_group(
-            'General options for eprocessing experiment results')
+            'Stage3: General options for eprocessing experiment results')
         self.stage4 = self.parser.add_argument_group(
-            'General options for generating graphs')
+            'Stage4: General options for generating graphs')
         self.stage5 = self.parser.add_argument_group(
-            'General options for controller comparison')
+            'Stage5: General options for controller comparison')
 
-    def __init_multistage(self) -> None:
+    def init_multistage(self, for_sphinx: bool) -> None:
+        if for_sphinx:
+            return
 
         self.multistage.add_argument("--template-input-file",
                                      metavar="filepath",
@@ -306,10 +311,12 @@ class CoreCmdline(BaseCmdline):
                                  """ + self.stage_usage_doc([3, 4]),
                                      action='store_true')
 
-    def __init_stage1(self) -> None:
+    def init_stage1(self, for_sphinx: bool) -> None:
         """
         Define cmdline arguments for stage 1.
         """
+        if for_sphinx:
+            return
 
         # Experiment options
         experiment = self.parser.add_argument_group('Stage1: Experiment setup')
@@ -428,7 +435,7 @@ class CoreCmdline(BaseCmdline):
                                default='overhead')
 
         # Robot options
-        robots = self.parser.add_argument_group('Stage1: Configure robots')
+        robots = self.parser.add_argument_group('Stage1: Configuring robots')
 
         robots.add_argument("--with-robot-rab",
                             help="""
@@ -452,9 +459,9 @@ class CoreCmdline(BaseCmdline):
                             ``--template-input-file`` before generating experimental inputs. Otherwise, the following
                             XML tags are removed if they exist:
 
-                            - `.//actuators/leds`
-                            - `.//medium/leds`
-                            - `.//sensors/colored_blob_omnidirectional_camera`
+                            - ``.//actuators/leds``
+                            - ``.//medium/leds``
+                            - ``.//sensors/colored_blob_omnidirectional_camera``
 
                             """ + self.stage_usage_doc([1]),
                             action="store_true",
@@ -485,10 +492,13 @@ class CoreCmdline(BaseCmdline):
                             type=int,
                             default=None)
 
-    def __init_stage2(self) -> None:
+    def init_stage2(self, for_sphinx: bool) -> None:
         """
         Define cmdline arguments for stage 2.
         """
+        if for_sphinx:
+            return
+
         self.stage2.add_argument("--exec-resume",
                                  help="""
 
@@ -511,10 +521,13 @@ class CoreCmdline(BaseCmdline):
                                  type=int,
                                  default=None)
 
-    def __init_stage3(self) -> None:
+    def init_stage3(self, for_sphinx: bool) -> None:
         """
         Define cmdline arguments for stage 3.
         """
+        if for_sphinx:
+            return
+
         self.stage3.add_argument('--no-verify-results',
                                  help="""
 
@@ -579,10 +592,13 @@ class CoreCmdline(BaseCmdline):
                                  """ + self.stage_usage_doc([3, 4]),
                                  default=90)
 
-    def __init_stage4(self) -> None:
+    def init_stage4(self, for_sphinx: bool) -> None:
         """
         Define cmdline arguments for stage 4.
         """
+        if for_sphinx:
+            return
+
         self.stage4.add_argument("--exp-graphs",
                                  choices=['intra', 'inter', 'all', 'none'],
                                  help="""
@@ -633,7 +649,7 @@ class CoreCmdline(BaseCmdline):
                                  action='store_true')
 
         # Performance measure calculation options
-        pm = self.parser.add_argument_group('Stage4: Summary Performance Measures')
+        pm = self.parser.add_argument_group('Stage4: Summary Performance Measure Options')
 
         pm.add_argument("--pm-scalability-from-exp0",
                         help="""
@@ -708,7 +724,7 @@ class CoreCmdline(BaseCmdline):
                         default='sigmoid')
 
         # Plotting options
-        plots = self.parser.add_argument_group('Plotting')
+        plots = self.parser.add_argument_group('Stage4: Plotting Options')
 
         plots.add_argument("--plot-log-xscale",
                            help="""
@@ -800,7 +816,7 @@ class CoreCmdline(BaseCmdline):
                             action="store_true")
 
         # Variance curve similarity options
-        vcs = self.parser.add_argument_group('Variance Curve Similarity (VCS)')
+        vcs = self.parser.add_argument_group('Stage4: Variance Curve Similarity (VCS) Options')
 
         vcs.add_argument("--gen-vc-plots",
                          help="""
@@ -858,7 +874,8 @@ class CoreCmdline(BaseCmdline):
                          default="dtw")
 
         # Rendering options
-        rendering = self.parser.add_argument_group('Rendering (see also stage1 rendering options)')
+        rendering = self.parser.add_argument_group(
+            'Stage4: Rendering (see also stage1 rendering options)')
 
         rendering.add_argument("--render-cmd-opts",
                                help="""
@@ -874,12 +891,8 @@ class CoreCmdline(BaseCmdline):
                                help="""
 
                                Enable generation of image files from ``.csv`` files captured during stage 2 and averaged
-                               during stage 3 for each experiment. See :ref:`ln-usage-rendering-project-imagizing` for
-                               details and restrictions.
-
-                               .. IMPORTANT:: Averaging the image ``.csv`` files and generating the images for each
-                                  experiment does not happen automatically as part of stage 3 because it can take a LONG
-                                  time and is idempotent.
+                               during stage 3 for each experiment. See :ref:`ln-usage-rendering-project` for details and
+                               restrictions.
 
                                """ + self.stage_usage_doc([3, 4]),
                                action='store_true')
@@ -890,18 +903,16 @@ class CoreCmdline(BaseCmdline):
                                Enable generation of videos from imagized ``.csv`` files created as a result of
                                ``--project-imagizing``. See :ref:`ln-usage-rendering-project` for details.
 
-                               .. IMPORTANT::
-
-                                  This does not happen automatically every time as part of stage 4 because it
-                                  can take a LONG time and is idempotent.
-
                                """ + self.stage_usage_doc([4]),
                                action='store_true')
 
-    def __init_stage5(self) -> None:
+    def init_stage5(self, for_sphinx: bool) -> None:
         """
         Define cmdline arguments for stage 5.
         """
+        if for_sphinx:
+            return
+
         self.stage5.add_argument("--controllers-list",
                                  help="""
 

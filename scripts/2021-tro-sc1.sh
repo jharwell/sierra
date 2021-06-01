@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #SBATCH --time=24:00:00
-#SBATCH --nodes 8
+#SBATCH --nodes 32
 #SBATCH --tasks-per-node=6
 #SBATCH --cpus-per-task=4
 #SBATCH --mem-per-cpu=2G
@@ -8,7 +8,7 @@
 #SBATCH --mail-user=harwe006@umn.edu
 #SBATCH --output=R-%x.%j.out
 #SBATCH --error=R-%x.%j.err
-#SBATCH -J 2021-tro-sc1-3
+#SBATCH -J 2021-tro-sc1-4
 
 ################################################################################
 # Setup Simulation Environment                                                 #
@@ -48,7 +48,7 @@ OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
 ################################################################################
 # Begin Experiments                                                            #
 ################################################################################
-OUTPUT_ROOT=$HOME/exp/2021-tro-sc1-video
+OUTPUT_ROOT=$HOME/exp/2021-tro-sc1-4
 TIME=time_setup.T10000
 
 CONTROLLERS_LIST=(d0.CRW d0.DPO d1.BITD_DPO d2.BIRTD_DPO)

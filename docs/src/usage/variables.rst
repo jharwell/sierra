@@ -1,18 +1,21 @@
 .. _ln-vars:
 
+Externally Configurable SIERRA Variables
+========================================
+
 Non-:term:`Batch Criteria` variables which you can use to configure
 simulations. All batch criteria are variables, but not all variables are batch
 criteria.
 
-The SIERRA core defines the additional non-:term:`Batch Criteria` variables
-which you can use to configure simulations.
-
-  - :ref:`Time Setup <ln-vars-ts>`
+- :ref:`Time Setup <ln-vars-ts>`
 
 .. _ln-vars-ts:
 
 Time Setup
 ----------
+
+Configure simulation time: length, controller cadence, and how many datapoints
+to capture per simulation.
 
 .. _ln-vars-ts-cmdline:
 

@@ -1,3 +1,5 @@
+.. _ln-tutorials-project:
+
 =============================
 Creating a New SIERRA Project
 =============================

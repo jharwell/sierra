@@ -1,6 +1,7 @@
 #!/bin/bash -l
-#SBATCH --time=12:00:00
-#SBATCH --nodes 32
+#SBATCH --time=24:00:00
+#SBATCH --nodes 8
+#SBATCH --tasks-per-node=4
 #SBATCH --cpus-per-task=16
 #SBATCH --mem-per-cpu=2G
 #SBATCH --mail-type=ALL
@@ -76,10 +77,8 @@ CD_SIZEINC_LARGE=I72
 CD_CRITERIA_LARGE=population_constant_density.${CD_LARGE}.${CD_SIZEINC_LARGE}.${CD_CARDINALITY_LARGE}
 VD_CRITERIA_LARGE=population_variable_density.${VD_MIN_LARGE}.${VD_MAX_LARGE}.${VD_CARDINALITY_LARGE}
 
-# SCENARIOS_LIST_CD=(SS.16x8x2 DS.16x8x2 RN.8x8x2 PL.8x8x2)
-SCENARIOS_LIST_CD=(SS.16x8x2 DS.16x8x2 )
-# SCENARIOS_LIST_VD_SMALL=(SS.32x16x2 DS.32x16x2 RN.16x16x2 PL.16x16x2)
-SCENARIOS_LIST_VD_SMALL=(SS.32x16x2 DS.32x16x2)
+SCENARIOS_LIST_CD=(SS.16x8x2 DS.16x8x2 RN.8x8x2 PL.8x8x2)
+SCENARIOS_LIST_VD_SMALL=(SS.32x16x2 DS.32x16x2 RN.16x16x2 PL.16x16x2)
 SCENARIOS_LIST_VD_LARGE=(SS.256x128x2 DS.256x128x2 RN.256x256x2 PL.256x256x2)
 
 NSIMS=192
@@ -91,8 +90,10 @@ SIERRA_BASE_CMD="python3 main.py \
                   --controller=d0.CRW\
                   --project=fordyca\
                   --log-level=INFO\
-                  --pipeline 1 2 3 4 --project-no-yaml-LN\
-                  --dist-stats=conf95 --exec-resume\
+                  --pipeline 1 2 3 4\
+                  --project-no-yaml-LN\
+                  --dist-stats=conf95 \
+                  --exec-resume\
                   --with-robot-leds\
                   --log-level=DEBUG\
                   --exp-overwrite"
@@ -104,7 +105,6 @@ if [ -n "$MSIARCH" ]; then # Running on MSI
     SCENARIOS_CD=(${SCENARIOS_LIST_CD[$SCENARIO_NUM]})
     SCENARIOS_VD_SMALL=(${SCENARIOS_LIST_VD_SMALL[$SCENARIO_NUM]})
     SCENARIOS_VD_LARGE=(${SCENARIOS_LIST_VD_LARGE[$SCENARIO_NUM]})
-
     TASK="exp"
     SIERRA_CMD="$SIERRA_BASE_CMD --hpc-env=slurm --exp-range=$EXP_NUM:$EXP_NUM --exec-resume"
     echo "********************************************************************************\n"
@@ -125,7 +125,7 @@ fi
 
 cd $SIERRA_ROOT
 
-if [ "$TASK" == "small" ] || [ "$TASK" == "all" ]; then
+if [ "$TASK" == "small" ] || [ "$TASK" == "exp" ]; then
 
     for s in "${SCENARIOS_VD_SMALL[@]}"
     do
@@ -146,7 +146,7 @@ if [ "$TASK" == "small" ] || [ "$TASK" == "all" ]; then
     done
 fi
 
-if [ "$TASK" == "large" ] || [ "$TASK" == "all" ]; then
+if [ "$TASK" == "large" ] || [ "$TASK" == "exp" ]; then
 
     for s in "${SCENARIOS_VD_LARGE[@]}"
     do
@@ -166,7 +166,7 @@ if [ "$TASK" == "large" ] || [ "$TASK" == "all" ]; then
     done
 fi
 
-if [ "$TASK" == "comp" ] || [ "$TASK" == "all" ]; then
+if [ "$TASK" == "comp" ]; then
     STAGE5_CMD="python3 main.py \
                   --project=fordyca\
                   --pipeline 5\

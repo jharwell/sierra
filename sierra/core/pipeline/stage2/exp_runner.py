@@ -98,7 +98,7 @@ class BatchedExpRunner:
             self.cmdopts, self.batch_exp_root, self.criteria)
 
         # Verify environment is OK before running anything
-        sierra.core.hpc.EnvChecker()()
+        sierra.core.hpc.EnvChecker(self.cmdopts['hpc_env'])()
 
         for exp in exp_to_run:
             runner = ExpRunner(exp, exp_all.index(exp), self.cmdopts['hpc_env'], exec_times_fpath)
