@@ -1,0 +1,191 @@
+<?xml version="1.0" ?>
+
+<argos-configuration>
+
+  <!-- ************************* -->
+  <!-- * General configuration * -->
+  <!-- ************************* -->
+  <framework>
+    <system threads="0"
+            method="balance_quantity"/>
+    <experiment length="10000"
+                ticks_per_second="5"
+                random_seed="123" />
+  </framework>
+  <!-- *************** -->
+  <!-- * Controllers * -->
+  <!-- *************** -->
+  <controllers>
+
+    <__controller__ id="ffc"
+                  library="foo">
+      <actuators>
+        <differential_steering implementation="default" />
+      </actuators>
+      <sensors>
+        <positioning implementation="default"/>
+        <differential_steering implementation="default"/>
+        <footbot_proximity implementation="default" show_rays="true"/>
+        <footbot_light implementation="rot_z_only" show_rays="false"/>
+        <footbot_motor_ground implementation="rot_z_only"/>
+        <colored_blob_omnidirectional_camera implementation="rot_z_only"
+                                             medium="leds"/>
+
+      </sensors>
+      <params>
+        <rng seed="123"/>
+        <output
+          output_root="output"
+          output_dir="__current_date__"
+          />
+        <nest dims="1.0, 4.0" center="2, 3" />
+        <strategy>
+          <explore
+              block_strategy="CRW"/>
+          <nest_acq
+              strategy="random_thresh"/>
+        </strategy>
+
+        <sensing_subsystemQ3D>
+          <!-- -5pi/6 : 5pi/6 -->
+          <proximity_sensor fov="-2.61:2.61"
+                            delta="0.1" />
+
+          <ground_sensor>
+            <!-- NEST: The nest is a relatively light gray. -->
+            <nest range="0.6:0.8"
+                  consensus="3"/>
+            <!-- BLOCK: Blocks are black. -->
+            <block range="-0.05:0.05"
+                   consensus="4"/>
+          </ground_sensor>
+        </sensing_subsystemQ3D>
+        <actuation_subsystem2D>
+          <force_calculator>
+            <avoidance_force lookahead="0.5"
+                             max="8"/>
+            <arrival_force slowing_radius="0.2"
+                           slowing_speed_min="1.0"
+                           max="8"/>
+            <wander_force circle_distance="4.0"
+                          circle_radius="100.0"
+                          max_angle_delta="5"
+                          max="9.0"
+                          interval="1"
+                          normal_dist="false"/>
+            <phototaxis_force max="8"/>
+          </force_calculator>
+
+          <diff_drive soft_turn_max="15"
+                      max_speed="10.0" />
+        </actuation_subsystem2D>
+      </params>
+    </__controller__>
+
+  </controllers>
+
+  <!-- ****************** -->
+  <!-- * Loop functions * -->
+  <!-- ****************** -->
+  <loop_functions library="foo"
+                  label="depth2_loop_functions">
+    <output output_root="output"
+            output_dir="__current_date__">
+      <metrics
+          output_dir="metrics">
+        <append
+            output_interval="1000"
+            block_acq_counts="block-acq-counts"
+            fsm_interference_counts="fsm-interference-counts"
+            block_transporter="block-transporter"
+            block_transportee="block-transportee"
+            block_clusters="block-clusters"
+            spatial_movement='spatial-movement'
+            block_manipulation="block-manipulation"/>
+      </metrics>
+    </output>
+    <temporal_variance>
+      <env_dynamics>
+        <blocks>
+          <manipulation_penalty
+            unique_finish="true"/>
+          </blocks>
+      </env_dynamics>
+    </temporal_variance>
+    <arena_map>
+      <grid2D resolution="0.2"
+            dims="12, 6, 2"/>
+      <blocks>
+        <distribution
+            arena_resolution="0.2"
+            dist_type="single_source"
+            strict_success="false">
+          <manifest
+              n_cube="15000"
+              n_ramp="0"
+              unit_dim="0.2"
+              />
+          <powerlaw
+              pwr_min="2"
+              pwr_max="7"
+              n_clusters="10"
+              />
+        </distribution>
+      </blocks>
+      <nests>
+        <nest dims="1.0, 4.0"
+              center="2, 3"
+              light_height="5.0"
+              light_intensity="5.0"/>
+        </nests>
+    </arena_map>
+  </loop_functions>
+
+  <!-- *********************** -->
+  <!-- * Arena configuration * -->
+  <!-- *********************** -->
+  <arena size="12, 6, 2" center="6,3,1">
+
+    <floor id="floor"
+           source="loop_functions"
+           pixels_per_meter="50" />
+
+    <box id="wall_north" size="12,0.1,0.5" movable="false">
+      <body position="6,6,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_south" size="12,0.1,0.5" movable="false">
+      <body position="6,0,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_east" size="0.1,6,0.5" movable="false">
+      <body position="12,3,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_west" size="0.1,6,0.5" movable="false">
+      <body position="0,3,0" orientation="0,0,0" />
+    </box>
+
+    <distribute>
+      <position method="uniform" min="1,1,0.5" max="10,5,0.5" />
+      <orientation method="uniform" min="0,0,0" max="360,0,0" />
+      <entity quantity="16" max_trials="1000">
+        <foot-bot id="fb">
+          <controller config="ffc" />
+        </foot-bot>
+      </entity>
+    </distribute>
+
+  </arena>
+
+  <!-- ******************* -->
+  <!-- * Physics engines * -->
+  <!-- ******************* -->
+  <physics_engines>
+    <dynamics2d id="dyn2d" />
+  </physics_engines>
+
+  <!-- ********* -->
+  <!-- * Media * -->
+  <!-- ********* -->
+  <media>
+    <led id="leds"/>
+  </media>
+</argos-configuration>

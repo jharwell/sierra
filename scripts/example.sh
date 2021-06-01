@@ -30,7 +30,7 @@ python3 sierra.py \
         --hpc-env=local\
         --physics-n-engines=1\
         --controller=d0.CRW\
-        --scenario=SS.12x6\
+        --scenario=SS.12x6x1\
         --batch-criteria population_size.Log64\
         --n-blocks=20\
         --time-setup=time_setup.T10000\

@@ -30,39 +30,41 @@ readme = (here / "README.md").read_text()
 
 # This call to setup() does all the work
 setup(
-    name="realpython-reader",
-    version="1.0.0",
-    description="Swarm robotics end-to-end experimental pipeline automation using the ARGoS simulator",
+    name="sierra",
+    version="1.0.3",
+    description="Swarm robotics end-to-end experimental pipeline automation using ARGoS",
     long_description=readme,
     long_description_content_type="text/markdown",
     url="https://github.com/swarm-robotics/sierra",
     author="John Harwell",
     author_email="john.r.harwell@gmail.com",
-    license="GPLv3",
+    license="GPLv3+",
+    platforms=['linux', 'osx'],
     classifiers=[
-        "License :: OSI Approved :: GPLv3",
+        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Programming Language :: Python :: 3",
         "Development Status :: 4 - Beta",
         "Intended Audience :: Science/Research",
     ],
     packages=find_packages(exclude=("projects")),
     include_package_data=True,
+    data_files=[('man/man1', ['docs/_build/man/sierra-cli.1'])],
     install_requires=[
-        "pyyaml"
-        "pandas"
-        "matplotlib"
-        "sympy"
+        "pyyaml",
+        "pandas",
+        "matplotlib",
+        "sympy",
 
-        "similaritymeasures"
-        "fastdtw"
-        "coloredlogs"
-        "singleton_decorator"
-        "implements"
+        "similaritymeasures",
+        "fastdtw",
+        "coloredlogs",
+        "singleton_decorator",
+        "implements",
         "retry"],
     python_requires=">=3.6",
     entry_points={
         "console_scripts": [
-            "sierra=sierra.__main__:__sierra_run",
+            "sierra-cli=sierra.main:__main__",
         ]
     },
 )

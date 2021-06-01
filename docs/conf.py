@@ -41,6 +41,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.ifconfig',
               'sphinx.ext.viewcode',
               'sphinx.ext.inheritance_diagram',
+              'sphinx.ext.autosectionlabel',
               'sphinxarg.ext',
               'xref',
               'sphinx_rtd_theme',
@@ -62,7 +63,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Sierra'
-copyright = '2019, John Harwell'
+copyright = '2021, John Harwell'
 author = 'John Harwell'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -84,7 +85,7 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'flycheck']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
@@ -98,21 +99,30 @@ nitpicky = True
 math_number_all = True
 math_eqref_format = 'Eq. {number}'
 
+nitpick_ignore = [
+    ('py:class', 'pandas.core.frame.DataFrame'),
+    ('py:class', 'argparse'),
+    ('py:class', 'implements.Interface'),
+    ('py:class', 'xml.etree.ElementTree'),
+    ('py:class', 'multiprocessing.context.BaseContext.Queue')
+]
 autoapi_modules = {
-    'core.cmdline': {'output': 'api/core'},
-    'core.perf_measures': {'output': 'api/core'},
-    'core.generators': {'output': 'api/core'},
-    'core.pipeline': {'output': 'api/core'},
-    'core.variables': {'output': 'api/core'},
-    'core.graphs': {'output': 'api/core'},
-    'core.xml_luigi': {'output': 'api/core'},
-    'core.utils': {'output': 'api/core'},
-    'core.experiment_spec': {'output': 'api/core'},
-    'core.models.interface': {'output': 'api/core/models'},
-    'core.models.graphs': {'output': 'api/core/models'},
-    'plugins.hpc': {'output': 'api/plugins/hpc'}
+    'sierra.core.cmdline': {'output': 'api/core'},
+    'sierra.core.perf_measures': {'output': 'api/core/perf_measures'},
+    'sierra.core.generators': {'output': 'api/core/generators'},
+    'sierra.core.pipeline': {'output': 'api/core/pipeline'},
+    'sierra.core.variables': {'output': 'api/core/variables'},
+    'sierra.core.graphs': {'output': 'api/core/graphs'},
+    'sierra.core.xml_luigi': {'output': 'api/core'},
+    'sierra.core.utils': {'output': 'api/core'},
+    'sierra.core.experiment_spec': {'output': 'api/core'},
+    'sierra.core.vector': {'output': 'api/core'},
+    'sierra.core.models.interface': {'output': 'api/core/models'},
+    'sierra.core.models.graphs': {'output': 'api/core/models'},
+    'sierra.plugins.hpc': {'output': 'api/plugins/hpc'}
 }
 
+autoapi_ignore = ['*flycheck*']
 xref_links = {
     "Harwell2020": ("Demystifying Emergent Intelligence and Its Effect on Performance in Large Swarms",
                     "http://ifaamas.org/Proceedings/aamas2020/pdfs/p474.pdf"),
@@ -126,10 +136,11 @@ xref_links = {
                    "https://www.cs.unm.edu/~wjust/CS523/S2018/Readings/Hecker_Beyond_Pheromones_Swarm_Intelligence.pdf"),
     "Rosenfeld2006": ("Rosenfeld2006",
                       "http://users.umiacs.umd.edu/~sarit/data/articles/rosenfeldetalbook06.pdf"),
+    "SIERRA_GITHUB": ("https://github.com:swarm-robotics/sierra.git", "https://github.com:swarm-robotics/sierra.git"),
     "FORDYCA": ("FORDYCA", "https://swarm-robotics-fordyca.readthedocs.io"),
     "SILICON": ("SILICON", "https://swarm-robotics-silicon.readthedocs.io"),
     "COSM": ("COSM", "https://swarm-robotics-cosm.readthedocs.io"),
-    "RCPPSW": ("RCPPSWSILICON", "https://swarm-robotics-rcppsw.readthedocs.io"),
+    "RCPPSW": ("RCPPSW", "https://swarm-robotics-rcppsw.readthedocs.io"),
     "RCSW": ("RCSW", "https://swarm-robotics-rcsw.readthedocs.io"),
     "LIBRA": ("LIBRA", "https://swarm-robotics-libra.readthedocs.io")
 }
@@ -210,11 +221,12 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
+autosectionlabel_prefix_document = True
 man_pages = [
-    ('usage/cli', 'sierra', 'Sierra Documentation',
-     [author], 1)
+    ('man/sierra-cli', 'sierra-cli', 'The SIERRA Command Line Interface', [author], 1),
+    ('man/sierra-msi', 'sierra-msi', 'How to use SIERRA on MSI', [author], 1),
+    ('man/sierra', 'sierra', 'Swarm Intelligence Reusable ARGoS Automation (SIERRA)', [author], 1)
 ]
-
 
 # -- Options for Texinfo output -------------------------------------------
 
@@ -251,6 +263,19 @@ if not os.path.exists(os.path.join(os.getcwd(), "../projects/fordyca")):
     subprocess.run(["git", "checkout", "devel"])
     os.chdir(cwd)
 
+if not os.path.exists(os.path.join(os.getcwd(), "../projects/titan")):
+    subprocess.run(["git",
+                    "clone",
+                    "https://github.com/swarm-robotics/sierra-plugin-titan",
+                    "../projects/titan"])
+    os.chdir("../projects/titan")
+    subprocess.run(["git", "checkout", "devel"])
+    os.chdir(cwd)
+    os.chdir("..")
+    subprocess.run(['ls', '-alh', '.'])
+    subprocess.run(['ls', '-alh', 'projects'])
+    subprocess.run(["python3", "-m", "projects.titan.__init__.py"])
+    os.chdir("docs")
 if not os.path.exists(os.path.join(os.getcwd(), "../projects/silicon")):
     subprocess.run(["git",
                     "clone",
@@ -259,3 +284,18 @@ if not os.path.exists(os.path.join(os.getcwd(), "../projects/silicon")):
     os.chdir("../projects/silicon")
     subprocess.run(["git", "checkout", "devel"])
     os.chdir(cwd)
+
+
+# This is the expected signature of the handler for this event, cf doc
+
+
+def autodoc_skip_member_handler(app, what, name, obj, skip, options):
+    # Basic approach; you might want a regex instead
+    return 'flycheck' in name
+
+# Automatically called by sphinx at startup
+
+
+def setup(app):
+    # Connect the autodoc-skip-member event from apidoc to the callback
+    app.connect('autodoc-skip-member', autodoc_skip_member_handler)
