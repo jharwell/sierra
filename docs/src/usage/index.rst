@@ -1,3 +1,5 @@
+.. _ln-usage:
+
 =================
 How To Use SIERRA
 =================
@@ -17,7 +19,7 @@ How To Use SIERRA
    environment.rst
 
 General Usage Tips
-------------------
+==================
 
 - The best ways to figure out what SIERRA can do are:
 

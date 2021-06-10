@@ -6,4 +6,5 @@ SIERRA Tutorials
    :caption: Contents:
 
    project/index.rst
+   plugin/index.rst
    trial.rst

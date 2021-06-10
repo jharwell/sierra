@@ -42,8 +42,8 @@ will need to defined a project plugin, as described in the documentation
 
 # Requirements
 
-- python 3.6 or later.
-- ARGoS 3.0.0-beta59 or later.
+- python >= 3.6.
+- ARGoS >= 3.0.0-beta59.
 
 # License
 This project is licensed under GPL 3.0. See [LICENSE](LICENSE.md).

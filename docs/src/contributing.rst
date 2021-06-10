@@ -1,3 +1,5 @@
+.. _ln-contributing:
+
 ============
 Contributing
 ============
@@ -34,8 +36,6 @@ outlined in :xref:`LIBRA`. For the static analysis step:
    errors in the my output, because cleaning up the code is always a work in
    progress).
 
-.. _ln-directory-structures:
-
 SIERRA Source Code Directory Structure
 ======================================
 
@@ -64,7 +64,7 @@ repository.
       what graphs to generate for each controller, etc., which are common to all
       projects.
 
-    - ``pipeline/`` - Core pipline code in 5 stages (see :ref:`SIERRA Pipeline`)
+    - ``pipeline/`` - Core pipline code in 5 stages (see :ref:`ln-usage-pipeline`)
 
     - ``variables/`` - Genertic generators for experimental variables to modify
       template ``.argos`` files in order to run experiments with a given

@@ -16,14 +16,14 @@
 """
 Container module for the 5 pipeline stages implemented by SIERRA:
 
-#. Generate a set of XML configuration files from a template suitable for
+# . Generate a set of XML configuration files from a template suitable for
    input into ARGoS that contain user-specified modifications.
-#. Run the specified  # of experiments in parallel using GNU Parallel on
+# . Run the specified  # of experiments in parallel using GNU Parallel on
    the provided set of hosts on MSI (or on a single personal computer for testing).
-#. Average the .csv results of the simulation runs together.
-#. Generate a user-defined set of graphs based on the averaged results for each
+# . Average the .csv results of the simulation runs together.
+# . Generate a user-defined set of graphs based on the averaged results for each
    experiment, and possibly across experiments for batches.
-#. Compare controllers that have been tested with the same experiment batch across different
+# . Compare controllers that have been tested with the same experiment batch across different
    performance measures.
 """
 
@@ -147,24 +147,23 @@ class Pipeline:
 
             # Load additional cmdline options from project. This is mandatory, because all projects
             # have to defined --controller and --scenario at a minimum.
-            path = "projects.{0}.cmdline".format(self.cmdopts['project'])
-            if not pm.module_exists(path):
-                self.logger.exception("module %s must exist!", path)
-                raise NotImplementedError
-
-            module = pm.module_load(path)
             self.logger.debug("Updating cmdopts for cmdline extensions from project '%s'",
                               self.cmdopts['project'])
+            path = "projects.{0}.cmdline".format(self.cmdopts['project'])
+            module = pm.module_load(path)
+
             module.Cmdline.cmdopts_update(self.args, self.cmdopts)
 
         self.cmdopts['plugin_root'] = os.path.join('sierra', 'plugins')
         self.cmdopts['core_config_root'] = os.path.join('sierra', 'core', 'config')
-        self.cmdopts['project_config_root'] = os.path.join('projects',
-                                                           self.cmdopts['project'],
-                                                           'config')
-        self.cmdopts['project_model_root'] = os.path.join('projects',
-                                                          self.cmdopts['project'],
-                                                          'models')
+
+        env = os.environ.get('SIERRA_PROJECT_PATH')
+        for root in env.split(os.pathsep):
+            path = os.path.join(root, 'projects', self.cmdopts['project'])
+            if os.path.exists(path):
+                self.cmdopts['project_config_root'] = os.path.join(path, 'config')
+                self.cmdopts['project_model_root'] = os.path.join(path, 'models')
+                break
 
         self._load_config()
 
@@ -199,6 +198,8 @@ class Pipeline:
                            self.cmdopts).run(self.args)
 
     def _load_config(self) -> None:
+        self.logger.debug("Loading project config from '%s'", self.cmdopts['project_config_root'])
+
         try:
             self.main_config = yaml.load(open(os.path.join(self.cmdopts['project_config_root'],
                                                            'main.yaml')),

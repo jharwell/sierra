@@ -54,28 +54,30 @@ class SIERRA():
 
         sierra_root = os.path.dirname(os.path.abspath(__file__))
 
-        # Load HPC plugins
-        self.logger.info("Loading HPC plugins")
-        hpc_pm = hpc.HPCPluginManager()
-        hpc_pm.initialize(os.path.join(sierra_root, 'plugins', 'hpc'))
-        for plugin in hpc_pm.available_plugins():
-            hpc_pm.load_plugin(plugin)
+        # Load plugins
+        self.logger.info("Loading plugins")
+        plugin_core_path = [os.path.join(sierra_root, 'plugins', 'hpc'),
+                            os.path.join(sierra_root, 'plugins', 'storage')]
+        plugin_search_path = plugin_core_path
+        env = os.environ.get('SIERRA_PLUGIN_PATH')
+        if env is not None:
+            plugin_search_path += env.split(os.pathsep)
 
-        # Load storage plugins
-        self.logger.info("Loading storage plugins")
-        storage_pm = storage.StoragePluginManager()
-        storage_pm.initialize(os.path.join(sierra_root, 'plugins', 'storage'))
-        for plugin in storage_pm.available_plugins():
-            storage_pm.load_plugin(plugin)
+        manager = pm.SIERRAPluginManager(plugin_search_path)
+        manager.initialize()
+
+        for plugin in manager.available_plugins():
+            manager.load_plugin(plugin)
+
+        # Update PYTHONPATH with SIERRA_PROJECT_PATH
+        env = os.environ.get('SIERRA_PROJECT_PATH')
+        if env is not None:
+            sys.path.extend(env.split(os.pathsep))
 
         # Load project cmdline extensions
-        self.logger.info("Loading cmdline extensions from project '%s'", bootstrap_args.project)
-        path = "projects.{0}.cmdline".format(bootstrap_args.project)
-
-        if not pm.module_exists(path):
-            self.logger.exception("Module %s must exist!", path)
-            raise ImportError
-
+        project = bootstrap_args.project
+        self.logger.info("Loading cmdline extensions from project '%s'", project)
+        path = "projects.{0}.cmdline".format(project)
         module = pm.module_load(path)
 
         # Validate cmdline args
@@ -85,7 +87,7 @@ class SIERRA():
         module.CmdlineValidator()(self.args)
 
         self.args = hpc.EnvConfigurer()(bootstrap_args.hpc_env, self.args)
-        self.args.__dict__['project'] = bootstrap_args.project
+        self.args.__dict__['project'] = project
 
     def __call__(self) -> None:
         # If only 1 pipeline stage is passed, then the list of stages to run is parsed as a non-iterable

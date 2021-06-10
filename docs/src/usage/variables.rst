@@ -36,15 +36,16 @@ Cmdline Syntax
 
 Examples:
 
-- ``T1000``: Simulation will be 1,000 seconds long and have 1,000*5=5,000
-  timesteps, with default (50) # datapoints.
+- ``time_setup.T1000``: Simulation will be 1,000 seconds long and have
+  1,000*5=5,000 timesteps, with default (50) # datapoints.
 
-- ``T2000.N100``: Simulation will be 2,000 seconds long and have 2,000*5=10,000
-  timesteps, with 100 datapoints (1 every 20 seconds/100 timesteps).
+- ``time_setup.T2000.N100``: Simulation will be 2,000 seconds long and have
+  2,000*5=10,000 timesteps, with 100 datapoints (1 every 20 seconds/100
+  timesteps).
 
-- ``T10000.K10``: Simulation will be 10,000 seconds long, and have
+- ``time_setup.T10000.K10``: Simulation will be 10,000 seconds long, and have
   10,000*10=100,000 timesteps with default (50) # datapoints.
 
-- ``T10000.K10.N100``: Simulation will be 10,000 seconds long, and have
-  10,000*10=100,000 timesteps, with 100 datapoints (one every 100 seconds/1,000
-  timesteps).
+- ``time_setup.T10000.K10.N100``: Simulation will be 10,000 seconds long, and
+  have 10,000*10=100,000 timesteps, with 100 datapoints (one every 100
+  seconds/1,000 timesteps).

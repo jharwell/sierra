@@ -6,9 +6,8 @@ HPC Cluster Setup
 
 This setup applies to the following SIERRA HPC cluster environments:
 
-- PBS: :ref:`plugins:PBS`
-
-- SLURM: :ref:`plugins:SLURM`
+- PBS: :ref:`ln-hpc-plugins-pbs`
+- SLURM: :ref:`ln-hpc-plugins-slurm`
 
 The steps to properly configure the C++ libraries for ARGoS and your project for
 use with SIERRA in one of the above environments are:
@@ -45,7 +44,7 @@ Once ARGoS/your C++ code has been built, you can setup SIERRA:
    the EXACT name you want it to be callable with on the cmdline via
    ``--project``.
 
-#. Read the documentation for :docs:`HPC plugins <plugins>`, and select and
+#. Read the documentation for :doc:`HPC plugins <plugins>`, and select and
    appropriate plugin to use. Be sure to define all necessary environment
    variables!!
 

@@ -217,8 +217,8 @@ class BatchCriteria():
                 if c.path == ".//arena" and c.attr == "size":
                     x, y, z = c.value.split(',')
                     dims.append(sierra.core.utils.ArenaExtent(Vector3D(int(float(x)),
-                                                                int(float(y)),
-                                                                int(float(z)))))
+                                                                       int(float(y)),
+                                                                       int(float(z)))))
 
         assert len(dims) > 0, "Scenario dimensions not contained in batch criteria"
         return dims
@@ -457,8 +457,8 @@ class BivarBatchCriteria(BatchCriteria):
                      exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
         dirs = []
         all_dirs = sierra.core.utils.exp_range_calc(cmdopts,
-                                             cmdopts['batch_output_root'],
-                                             self)
+                                                    cmdopts['batch_output_root'],
+                                                    self)
 
         for c1 in self.criteria1.gen_exp_dirnames(cmdopts):
             for x in all_dirs:
@@ -474,8 +474,8 @@ class BivarBatchCriteria(BatchCriteria):
                      exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
         dirs = []
         all_dirs = sierra.core.utils.exp_range_calc(cmdopts,
-                                             cmdopts['batch_output_root'],
-                                             self)
+                                                    cmdopts['batch_output_root'],
+                                                    self)
 
         for c2 in self.criteria2.gen_exp_dirnames(cmdopts):
             for y in all_dirs:
@@ -491,8 +491,8 @@ class BivarBatchCriteria(BatchCriteria):
                           exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
         dirs = []
         all_dirs = sierra.core.utils.exp_range_calc(cmdopts,
-                                             cmdopts['batch_output_root'],
-                                             self)
+                                                    cmdopts['batch_output_root'],
+                                                    self)
 
         for c1 in self.criteria1.gen_exp_dirnames(cmdopts):
             for x in all_dirs:
@@ -508,8 +508,8 @@ class BivarBatchCriteria(BatchCriteria):
                           exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
         dirs = []
         all_dirs = sierra.core.utils.exp_range_calc(cmdopts,
-                                             cmdopts['batch_output_root'],
-                                             self)
+                                                    cmdopts['batch_output_root'],
+                                                    self)
 
         for c2 in self.criteria2.gen_exp_dirnames(cmdopts):
             for y in all_dirs:
@@ -562,7 +562,7 @@ def __univar_factory(main_config: tp.Dict[str, tp.Any],
     category = cli_arg.split('.')[0]
     path = 'variables.{0}'.format(category)
 
-    module = pm.load_bc(cmdopts, category)
+    module = pm.bc_load(cmdopts, category)
 
     ret = getattr(module, "factory")(cli_arg,
                                      main_config,

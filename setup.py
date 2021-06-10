@@ -26,7 +26,7 @@ from setuptools import setup, find_packages
 here = pathlib.Path(__file__).parent
 
 # The text of the README file
-readme = (here / "README.md").read_text()
+readme = (here / "docs/src/description.rst").read_text()
 
 # This call to setup() does all the work
 setup(

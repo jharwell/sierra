@@ -133,3 +133,10 @@ works/is designed the way it is, and to help you find your way around.
       empirical data from simulations, or not, as needed. Intended to generate
       predictions of `something` which can then be plotted against empirical
       results for comparison.
+
+   Plugin
+
+      A python package/module living in a directory on
+      :envvar:`SIERRA_PLUGIN_PATH` which contains functionality to extend SIERRA
+      without modifying its core (i.e., customization of different parts of the
+      pipeline).

@@ -34,6 +34,9 @@ class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawTextHelp
 
 
 class BaseCmdline:
+    """
+    The base cmdline class for SIERRA cmdline options containing reusable functions.
+    """
     @staticmethod
     def stage_usage_doc(stages: tp.List[int], omitted: str = "If omitted: N/A.") -> str:
         return "\n.. ADMONITION:: Stage usage\n\n   Used by stage{" + ",".join(map(str, stages)) + "}; can be omitted otherwise. " + omitted + "\n"
@@ -91,21 +94,22 @@ class BootstrapCmdline(BaseCmdline):
                                  Valid values can be any folder name under the ``plugins/hpc`` directory, but the ones
                                  that come with SIERRA are:
 
-                                 - ``local`` - This directs SIERRA to run experiments on the local machine. See
-                                   :ref:`src/hpc/plugins:Local` for a detailed description.
+                                 - ``hpc.local`` - This directs SIERRA to run experiments on the local machine. See
+                                   :ref:`ln-hpc-plugins-local` for a detailed description.
 
-                                 - ``pbs`` - The directs SIERRA to run experiments spread across multiple allocated
+                                 - ``hpc.pbs`` - The directs SIERRA to run experiments spread across multiple allocated
                                    nodes in an HPC computing environment managed by TORQUE-PBS. See
-                                   :ref:`src/hpc/plugins:PBS` for a detailed description.
+                                   :ref:`ln-hpc-plugins-pbs` for a detailed description.
 
-                                 - ``slurm`` - The directs SIERRA to run experiments spread across multiple allocated
-                                   nodes in an HPC computing environment managed by SLURM. See
-                                   :ref:`src/hpc/plugins:SLURM` for a detailed description.
+                                 - ``hpc.slurm`` - The directs SIERRA to run experiments spread across multiple
+                                   allocated nodes in an HPC computing environment managed by SLURM. See
+                                   :ref:`ln-hpc-plugins-slurm` for a detailed description.
 
-                                 - ``adhoc`` - This will direct SIERRA to run experiments on an ad-hoc network of
-                                   computers. See :ref:`src/hpc/plugins:Adhoc` for a detailed description.
-                                 """,
-                               default='local')
+                                 - ``hpc.adhoc`` - This will direct SIERRA to run experiments on an ad-hoc network of
+                                   computers. See :ref:`ln-hpc-plugins-adhoc` for a detailed description.
+
+                               """,
+                               default='hpc.local')
 
 
 class CoreCmdline(BaseCmdline):
@@ -542,21 +546,21 @@ class CoreCmdline(BaseCmdline):
                                  default=False)
 
         self.stage3.add_argument("--storage-medium",
-                                 choices=['csv'],
+                                 choices=['storage.csv'],
                                  help="""
 
                                  Specify the storage medium for ARGoS simulation outputs, so that SIERRA can select an
                                  appropriate plugin to read them. Any plugin under ``plugins/storage`` can be used, but
                                  the ones that come with SIERRA are:
 
-                                 ``csv`` - Simulation outputs are stored in a per-simulation directory as one or more
-                                           ``.csv`` files.
+                                 ``storage.csv`` - Simulation outputs are stored in a per-simulation directory as one or
+                                                   more ``.csv`` files.
 
 
                                  Regardless of the value of this option, SIERRA always generates ``.csv`` files as it
                                  runs and averages outputs, generates graphs, etc.
                                  """ + self.stage_usage_doc([3]),
-                                 default='csv')
+                                 default='storage.csv')
 
         self.stage3.add_argument("--dist-stats",
                                  choices=['none', 'all', 'conf95', 'bw'],
@@ -1155,6 +1159,7 @@ def sphinx_cmdline_stage5():
 
 
 __api__ = [
+    'BaseCmdline',
     'BootstrapCmdline',
     'CoreCmdline',
 ]

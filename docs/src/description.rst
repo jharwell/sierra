@@ -12,8 +12,8 @@ Automated pipeline currently contains:
 2. Running all simulations in parallel. Supports multiple HPC environments such
    as:
 
-   - [SLURM](https://slurm.schedmd.com/documentation.html).
-   - [Torque/MOAB](http://docs.adaptivecomputing.com/torque/5-0-1/help.htm#topics/torque/0-intro/torquewelcome.htm%3FTocPath%3DWelcome%7C_____0).
+   - `SLURM <https://slurm.schedmd.com/documentation.html>`_.
+   - `Torque/MOAB <http://docs.adaptivecomputing.com/torque/5-0-1/help.htm#topics/torque/0-intro/torquewelcome.htm%3FTocPath%3DWelcome%7C_____0>`_.
    - ADHOC (suitable for a miscellaneous collection of networked compute nodes
      for a research group).
    - Local machine (for testing).

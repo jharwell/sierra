@@ -9,15 +9,17 @@ different HPC environments so that ARGoS experiments can be run efficiently on
 whatever computational resources a researcher has access to. Supported
 environments that come with SIERRA are:
 
-- :ref:`src/hpc/plugins:Local`
-- :ref:`src/hpc/plugins:PBS`
-- :ref:`src/hpc/plugins:SLURM`
-- :ref:`src/hpc/plugins:Adhoc`
+- :ref:`ln-hpc-plugins-local`
+- :ref:`ln-hpc-plugins-pbs`
+- :ref:`ln-hpc-plugins-slurm`
+- :ref:`ln-hpc-plugins-adhoc`
+
+.. _ln-hpc-plugins-local:
 
 Local
 =====
 
-This HPC environment can be selected via ``--hpc-env=local``.
+This HPC environment can be selected via ``--hpc-env=hpc.local``.
 
 This is the default HPC environment in which SIERRA will all experiments on the
 same computer from which it was launched using GNU parallel.  The # simultaneous
@@ -33,10 +35,12 @@ simulations finish.
 No additional configuration/environment variables are needed with this HPC
 environment for use with SIERRA.
 
+.. _ln-hpc-plugins-pbs:
+
 PBS
 ===
 
-This HPC environment can be selected via ``--hpc-env=pbs``.
+This HPC environment can be selected via ``--hpc-env=hpc.pbs``.
 
 In this HPC environment, SIERRA will run experiments spread across multiple
 allocated nodes by a PBS compatible scheduler such as Moab. SIERRA makes the
@@ -84,12 +88,14 @@ the PBS HPC environment:
 - :envvar:`SIERRA_ARCH`
 - :envvar:`PARALLEL`
 
+.. _ln-hpc-plugins-slurm:
+
 SLURM
 =====
 
 `<https://slurm.schedmd.com/documentation.html>`_
 
-This HPC environment can be selected via ``--hpc-env=slurm``.
+This HPC environment can be selected via ``--hpc-env=hpc.slurm``.
 
 In this HPC environment, SIERRA will run experiments spread across multiple
 allocated nodes by the SLURM scheduler Moab. SIERRA makes the following
@@ -136,10 +142,12 @@ the SLURM HPC environment:
 - :envvar:`SIERRA_ARCH`
 - :envvar:`PARALLEL`
 
+.. _ln-hpc-plugins-adhoc:
+
 Adhoc
 =====
 
-This HPC environment can be selected via ``--hpc-env=adhoc``.
+This HPC environment can be selected via ``--hpc-env=hpc.adhoc``.
 
 In this HPC environment, SIERRA will run experiments spread across an ad-hoc
 network of compute nodes. SIERRA makes the following assumptions about the

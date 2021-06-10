@@ -27,3 +27,4 @@ Plugins
 .. toctree::
 
    ../api/plugins/hpc/sierra.plugins.hpc.rst
+   ../api/plugins/storage/sierra.plugins.storage.rst

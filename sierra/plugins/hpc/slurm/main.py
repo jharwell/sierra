@@ -29,8 +29,7 @@ import typing as tp
 
 def env_configure(args):
     """
-    Configure SIERRA for HPC by reading environment variables and modifying the parsed cmdline
-    arguments. Uses the following environment variables (if any of them are not defined an assertion
+    Uses the following environment variables (if any of them are not defined an assertion
     will be triggered):
 
     - ``SLURM_CPUS_PER_TASK``
@@ -74,11 +73,12 @@ def env_configure(args):
 
 def argos_cmd_generate(input_fpath: str):
     """
-    Generate the ARGoS cmd to run in the MSI environment, given the path to an input file. Dependent
-    on which MSI cluster you are running on, so that different versions compiled for different
-    architectures/machines that exist on the same filesystem can easily be run, so the
+    Generate the ARGoS cmd to run in the SLURM environment, given the path to an input
+    file. Dependent on which cluster you are running on, so that different versions compiled for
+    different architectures/machines that exist on the same filesystem can easily be run, so the
     ``SIERRA_ARCH`` variable is used to determine the name of the ARGoS executable via
     ``argos3-$SIERRA_ARCH``.
+
     """
 
     return 'argos3-' + \

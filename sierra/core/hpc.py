@@ -23,18 +23,16 @@ import os
 import typing as tp
 import subprocess
 import shutil
+import re
 
 # 3rd party packages
 from singleton_decorator import singleton
+import packaging.version
 
 # Project packages
-import sierra.core.plugin_manager
+import sierra.core.plugin_manager as pm
 import sierra.core.config
 
-
-@singleton
-class HPCPluginManager(sierra.core.plugin_manager.DirectoryPluginManager):
-    pass
 
 ################################################################################
 # Dispatchers
@@ -47,7 +45,7 @@ class ARGoSCmdGenerator():
     """
 
     def __call__(self, cmdopts: tp.Dict[str, tp.Any], input_fpath: str) -> str:
-        hpc = HPCPluginManager().get_plugin(cmdopts['hpc_env'])
+        hpc = pm.SIERRAPluginManager().get_plugin(cmdopts['hpc_env'])
         return hpc.argos_cmd_generate(input_fpath)  # type: ignore
 
 
@@ -66,7 +64,7 @@ class GNUParallelCmdGenerator():
     """
 
     def __call__(self, hpc_env: str, parallel_opts: tp.Dict[str, tp.Any]) -> str:
-        hpc = HPCPluginManager().get_plugin(hpc_env)
+        hpc = pm.SIERRAPluginManager().get_plugin(hpc_env)
         return hpc.gnu_parallel_cmd_generate(parallel_opts)  # type: ignore
 
 
@@ -77,7 +75,7 @@ class XvfbCmdGenerator():
     """
 
     def __call__(self, cmdopts: tp.Dict[str, tp.Any]) -> str:
-        hpc = HPCPluginManager().get_plugin(cmdopts['hpc_env'])
+        hpc = pm.SIERRAPluginManager().get_plugin(cmdopts['hpc_env'])
         return hpc.xvfb_cmd_generate(cmdopts)  # type: ignore
 
 
@@ -88,7 +86,7 @@ class EnvConfigurer():
 
     def __call__(self, hpc_env: str, args):
         args.__dict__['hpc_env'] = hpc_env
-        hpc = HPCPluginManager().get_plugin(hpc_env)
+        hpc = pm.SIERRAPluginManager().get_plugin(hpc_env)
         hpc.env_configure(args)
         return args
 
@@ -103,26 +101,31 @@ class EnvChecker():
 
     def __call__(self) -> None:
         # Check we can find ARGoS
-        if self.hpc_env in ['local', 'adhoc']:
+        if self.hpc_env in ['hpc.local', 'hpc.adhoc']:
             argos3 = 'argos3'
-        elif self.hpc_env in ['pbs', 'slurm']:
+        elif self.hpc_env in ['hpc.pbs', 'hpc.slurm']:
             arch = os.environ.get('SIERRA_ARCH')
             argos3 = 'argos3-{0}'.format(arch)
         else:
             assert False, "FATAL: Bad HPC env {0}".format(self.hpc_env)
 
         if shutil.which(argos3):
-            p = subprocess.Popen([argos3, '-v'],
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE)
+            result = subprocess.run(' '.join([argos3, '-v']),
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE,
+                                    shell=True)
         else:
             assert False, "FATAL: Cannot find {0}".format(argos3)
 
-        stdout, _ = p.communicate()
-
         # Check ARGoS version
-        assert sierra.core.config.kARGoS['min_version'] in str(stdout),\
-            "FATAL: ARGoS >= 3.0.0-beta59 required to use SIERRA"
+        res = re.search(r'beta[0-9]+', result.stdout.decode('utf-8'))
+        assert res is not None, "FATAL: ARGOS_VERSION not in -v output"
+
+        version = packaging.version.parse(res.group(0))
+        min_version = packaging.version.parse(sierra.core.config.kARGoS['min_version'])
+
+        assert version >= min_version,\
+            "FATAL: ARGoS version {0} < min required {1}".format(version, min_version)
 
         # Check ARGoS plugin path is defined
         assert os.environ.get("ARGOS_PLUGIN_PATH") is not None, \
@@ -135,4 +138,6 @@ __api__ = [
     'XvfbCmdGenerator',
     'GNUParallelCmdGenerator',
     'ARGoSCmdGenerator'
+
+
 ]

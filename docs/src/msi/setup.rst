@@ -10,7 +10,7 @@ MSI Setup
    #. Gotten **CORRECT** results on some small scale experiments of interest on
       your local machine.
 
-   You really, *really* **really**, don't want to be trying to do
+   You really, *really*, **really**, don't want to be trying to do
    development/debugging on MSI.
 
 Workflow

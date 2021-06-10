@@ -41,7 +41,6 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.ifconfig',
               'sphinx.ext.viewcode',
               'sphinx.ext.inheritance_diagram',
-              'sphinx.ext.autosectionlabel',
               'sphinxarg.ext',
               'xref',
               'sphinx_rtd_theme',
@@ -87,6 +86,19 @@ language = None
 # This patterns also effect to html_static_path and html_extra_path
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'flycheck']
 
+if 'html' in sys.argv:
+    exclude_patterns.extend(['man'])
+elif 'man' in sys.argv:
+    exclude_patterns.extend(['api',
+                             'src/projects'
+                             'src/tutorials',
+                             'src/api.rst',
+                             'src/contributing.rst',
+                             'src/quickstart.rst',
+                             'src/faq.rst',
+                             'src/glossary.rst',
+                             'src/usage/index.rst'])
+
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
@@ -119,7 +131,8 @@ autoapi_modules = {
     'sierra.core.vector': {'output': 'api/core'},
     'sierra.core.models.interface': {'output': 'api/core/models'},
     'sierra.core.models.graphs': {'output': 'api/core/models'},
-    'sierra.plugins.hpc': {'output': 'api/plugins/hpc'}
+    'sierra.plugins.hpc': {'output': 'api/plugins/hpc'},
+    'sierra.plugins.storage': {'output': 'api/plugins/storage'}
 }
 
 autoapi_ignore = ['*flycheck*']
@@ -225,6 +238,7 @@ autosectionlabel_prefix_document = True
 man_pages = [
     ('man/sierra-cli', 'sierra-cli', 'The SIERRA Command Line Interface', [author], 1),
     ('man/sierra-msi', 'sierra-msi', 'How to use SIERRA on MSI', [author], 7),
+    ('man/sierra-rendering', 'sierra-rendering', 'SIERRA Rendering', [author], 7),
     ('man/sierra', 'sierra', 'Swarm Intelligence Reusable ARGoS Automation (SIERRA)', [author], 7)
 ]
 
@@ -249,42 +263,6 @@ intersphinx_mapping = {'python3': ('https://docs.python.org/3', None),
                        'pandas': ('https://pandas.pydata.org/docs/', None),
                        'implements': ('https://implements.readthedocs.io/en/latest/', None)
                        }
-
-# HACK! The [FORDYCA, SILICON] plugin repos are needed to get the SIERRA docs to build, and
-# readthedocs doesn't support a nice way updating submodules to something other than the master
-# branch after SIERRA is switched from the master to the devel branch.
-cwd = os.getcwd()
-if not os.path.exists(os.path.join(os.getcwd(), "../projects/fordyca")):
-    subprocess.run(["git",
-                    "clone",
-                    "https://github.com/swarm-robotics/sierra-plugin-fordyca",
-                    "../projects/fordyca"])
-    os.chdir("../projects/fordyca")
-    subprocess.run(["git", "checkout", "devel"])
-    os.chdir(cwd)
-
-if not os.path.exists(os.path.join(os.getcwd(), "../projects/titan")):
-    subprocess.run(["git",
-                    "clone",
-                    "https://github.com/swarm-robotics/sierra-plugin-titan",
-                    "../projects/titan"])
-    os.chdir("../projects/titan")
-    subprocess.run(["git", "checkout", "devel"])
-    os.chdir(cwd)
-    os.chdir("..")
-    subprocess.run(['ls', '-alh', '.'])
-    subprocess.run(['ls', '-alh', 'projects'])
-    subprocess.run(["python3", "-m", "projects.titan.__init__.py"])
-    os.chdir("docs")
-if not os.path.exists(os.path.join(os.getcwd(), "../projects/silicon")):
-    subprocess.run(["git",
-                    "clone",
-                    "https://github.com/swarm-robotics/sierra-plugin-silicon",
-                    "../projects/silicon"])
-    os.chdir("../projects/silicon")
-    subprocess.run(["git", "checkout", "devel"])
-    os.chdir(cwd)
-
 
 # This is the expected signature of the handler for this event, cf doc
 

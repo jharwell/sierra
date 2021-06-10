@@ -1,14 +1,18 @@
-.. _ln-tutorials-project:
+.. _ln-tutorials-project-project:
 
 =============================
 Creating a New SIERRA Project
 =============================
 
-#. Create the directory which will hold your :term:`Project`.
+#. Create the directory which will hold your :term:`Project`, in a directory
+   named ``projects``. ``projects`` must be on on :envvar:`SIERRA_PROJECT_PATH`
+   (or alternatively, :envvar:`PYTHONPATH`) or SIERRA won't be able to find
+   it. You should use :envvar:`SIERRA_PROJECT_PATH` though, because it is more
+   self-documenting.
 
-   .. IMPORTANT:: The parent directory for your project must be on
-                  :envvar:`SIERRA_PROJECT_PATH` or SIERRA won't be able to find
-                  it.
+   So if your project is ``proj-awesome``, then it needs be under ``projects``
+   as ``projects/proj-awesome``, and the path to ``projects`` needs to be on
+   :envvar:`SIERRA_PROJECT_PATH`.
 
 #. Create the following directory structure within your project directory (or
    copy and modify the one from an existing project).

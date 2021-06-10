@@ -15,6 +15,7 @@
 # Set paths
 FORDYCA=$HOME/git/fordyca
 SIERRA=$HOME/git/sierra
+export SIERRA_PLUGIN_PATH=$HOME/git/sierra-titan
 
 ################################################################################
 # Begin Experiments                                                            #

@@ -57,8 +57,8 @@ Cmdline Syntax
 - ``N`` - The maximum swarm size.
 
 Examples:
-    - ``Log1024``: Static swarm sizes 1...1024
-    - ``Linear1000``: Static swarm sizes 100...1000
+    - ``population_size.Log1024``: Static swarm sizes 1...1024
+    - ``population_size.Linear1000``: Static swarm sizes 100...1000
 
 .. _ln-bc-population-constant-density:
 
@@ -68,6 +68,12 @@ Swarm Constant Population Density
 
 Changing the swarm size and arena size together to maintain the same swarm
 size/arena size ratio to investigate behavior across scales.
+
+.. NOTE:: This criteria is for `constant` density of robots as swarm sizes
+          increase. For `variable` robot density, use
+          :ref:`ln-bc-population-size` or
+          :ref:`ln-bc-population-variable-density`.
+
 
 .. _ln-bc-population-constant-density-cmdline:
 
@@ -86,13 +92,9 @@ Cmdline Syntax
 - ``cardinality`` How many experiments should be generated?
 
 Examples:
-  - ``1p0.I16.C4``: Constant density of 1.0. Arena dimensions will increase by
-    16 in both X and Y for each experiment in the batch (4 total).
-
-    .. NOTE:: This criteria is for `constant` density of robots as swarm sizes
-              increase. For `variable` robot density, use
-              :ref:`ln-bc-population-size` or
-              :ref:`ln-bc-population-variable-density`.
+  - ``population_constant_density.1p0.I16.C4``: Constant density of 1.0. Arena
+    dimensions will increase by 16 in both X and Y for each experiment in the
+    batch (4 total).
 
 .. _ln-bc-population-variable-density:
 
@@ -106,6 +108,10 @@ arena size. This criteria is functionally identical to
 has a different semantic meaning which can make generated deliverables more
 immediately understandable, depending on the context of what is being
 investigated (e.g., swarm density vs. swarm size on the X axis).
+
+.. NOTE:: This criteria is for `variable` density of robots as swarm sizes
+          increase. For `constant` robot density, use
+          :ref:`ln-bc-population-constant-density`.
 
 .. _ln-bc-population-variable-density-cmdline:
 
@@ -122,12 +128,7 @@ Cmdline Syntax
   experiment will be linearly spaced between the min and max densities.
 
   Examples:
-  - ``1p0.4p0.C4``: Densities of 1.0,2.0,3.0,4.0.
-
-    .. NOTE:: This criteria is for `variable` density of robots as swarm sizes
-              increase. For `constant` robot density, use
-              :ref:`ln-bc-population-constant-density`.
-
+  - ``population_variable_density.1p0.4p0.C4``: Densities of 1.0,2.0,3.0,4.0.
 
 .. _ln-bc-tv:
 
@@ -174,13 +175,14 @@ Cmdline Syntax
 
 Examples:
 
-- ``BCSine.Z16`` - Block carry sinusoidal variance in a swarm of size 16.
+- ``temporal_variance.BCSine.Z16`` - Block carry sinusoidal variance in a swarm
+  of size 16.
 
-- ``BCStep50000.Z32`` - Block carry step variance switch at 50000 timesteps in a
-  swarm of size 32.
+- ``temporal_variance.BCStep50000.Z32`` - Block carry step variance switch at
+  50000 timesteps in a swarm of size 32.
 
-- ``BCStep50000`` - Block carry step variance switching at 50000 timesteps;
-  swarm size not modified.
+- ``temporal_variance.BCStep50000`` - Block carry step variance switching at
+  50000 timesteps; swarm size not modified.
 
 The frequency, amplitude, offset, and phase of the waveforms is set via the
 ``main.yaml`` configuration file for a project (not an easy way to specify
@@ -291,12 +293,14 @@ Cmdline Syntax
 
 Examples:
 
-- ``sensors.C4.Z16``: 4 levels of noise applied to all sensors in a swarm of
-  size 16.
-- ``actuators.C3.Z32``: 3 levels of noise applied to all actuators in a swarm of
-  size 32.
-- ``all.C10``: 10 levels of noise applied to both sensors and actuators; swarm size not
-  modified.
+- ``saa_noise.sensors.C4.Z16``: 4 levels of noise applied to all sensors in a
+  swarm of size 16.
+
+- ``saa_noise.actuators.C3.Z32``: 3 levels of noise applied to all actuators in
+  a swarm of size 32.
+
+- ``saa_noise.all.C10``: 10 levels of noise applied to both sensors and
+  actuators; swarm size not modified.
 
 The values for the min, max noise levels for each sensor which are used along
 with ``cardinality`` to define the set of noise ranges to test are set via the

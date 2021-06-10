@@ -6,7 +6,7 @@ After developing the C++ code for your project, you need to link it with
 SIERRA. To do that, you need to:
 
 #. Setup the SIERRA :term:`Project` for your C++ code by following
-   :ref:`ln-tutorials-project`.
+   :ref:`ln-tutorials-project-project`.
 
 #. Figure out which HPC environment SIERRA supports matches your available
    hardware: :ref:`ln-hpc-plugins`, and following the appropriate setup guide.
@@ -24,14 +24,17 @@ SIERRA. To do that, you need to:
 #. Determine how to invoke SIERRA. At a minimum you need to tell it the
    following:
 
-   - What project plugin to load: ``--project``. This is used to:
+   - What project to load: ``--project``. This must be live under a directory
+     named ``projects`` which must be on :envvar:`SIERRA_PROJECT_PATH`. This is
+     used to:
 
      - Compute the name of the library SIERRA will tell ARGoS to search for on
-       ``ARGOS_PLUGIN_PATH`` when looking for controller and loop function
+       :envvar:`ARGOS_PLUGIN_PATH` when looking for controller and loop function
        definitions. For example if you pass ``--project=foobar``, then SIERRA
-       will tell ARGoS to search for ``libfoobar.so`` on ``ARGOS_PLUGIN_PATH``.
+       will tell ARGoS to search for ``libfoobar.so`` on
+       :envvar:`ARGOS_PLUGIN_PATH`.
 
-     - Figure out the plugin directory to load graph and simulation processing
+     - Figure out the directory to load graph and simulation processing
        configuration from.
 
    - What template input file to use: ``--template-input-file``.
@@ -44,8 +47,8 @@ SIERRA. To do that, you need to:
 
    - What controller to run: ``--controller``.
 
-   - What what block distribution type to use, and how large the arena should be:
-     ``--scenario``.
+   - How large the arena should be, what block distribution type to use (for
+     example), etc. ``--scenario``. :term:`Project` dependent.
 
    - What you are investigating; that is, what variable are you interested in
      varying: ``--batch-criteria`` (you read :ref:`ln-batch-criteria`, right?).
@@ -56,8 +59,8 @@ SIERRA. To do that, you need to:
    doing anything substantial.
 
    Full documentation of all command line options it accepts is in
-   :ref:`ln-cli`, and there are many useful options that SIERRA accepts, so
-   skimming the CLI docs is **very** worthwhile.
+   :ref:`ln-usage-cli`, and there are many useful options that SIERRA accepts,
+   so skimming the CLI docs is **very** worthwhile.
 
 #. Learn SIERRA's runtime :ref:`ln-runtime-exp-tree`. When running, SIERRA will
    create a (rather) large directory structure for you, so reading the docs is

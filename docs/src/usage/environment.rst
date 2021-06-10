@@ -1,4 +1,4 @@
-.. _ln-env-vars:
+.. _ln-usage-env-vars:
 
 *********************
 Environment Variables
@@ -19,9 +19,17 @@ Environment Variables
 
    Used for locating projects; all projects specifiable with ``--project`` are
    directories found within the directories on this path. For example, if you
-   have a project ``/home/$USER/git/myproject``, then ``/home/$USER/git`` must
-   be on ``SIERRA_PROJECT_PATH`` in order for you to be able to specify
-   ``--project=myproject``. This variable is used in stages 1-5.
+   have a project ``/home/$USER/git/projects/myproject``, then
+   ``/home/$USER/git`` must be on ``SIERRA_PROJECT_PATH`` in order for you to be
+   able to specify ``--project=myproject``. This variable is used in stages 1-5.
+
+   You *cannot* just put the parent directory of your project on
+   :envvar:`PYTHONPATH` because SIERRA uses this path for other things
+   internally (e.g., computing the paths to YAML config files).
+
+.. envvar:: PYTHONPATH
+
+   Used for locating projects per the usual python mechanisms.
 
 .. envvar:: ARGOS_PLUGIN_PATH
 
@@ -44,7 +52,7 @@ Environment Variables
    requirements.
 
    Used by SIERRA to configure experiments during stage 1,2; if it is not
-   defined and ``--hpc-env=adhoc`` is set SIERRA will throw an error.
+   defined and ``--hpc-env=hpc.adhoc`` is set SIERRA will throw an error.
 
 .. envvar:: PARALLEL
 
@@ -58,6 +66,8 @@ Environment Variables
      MODULEVERSION_STACK --env MODULESHOME --env OMP_DYNAMICS --env
      OMP_MAX_ACTIVE_LEVELS --env OMP_NESTED --env OMP_NUM_THREADS --env
      OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
-     --env ARGOS_PLUGIN_PATH --env SIERRA_ARCH"
+     --env ARGOS_PLUGIN_PATH --env SIERRA_ARCH --env SIERRA_PLUGIN_PATH --env
+     SIERRA_PROJECT_PATH"
 
-   Should be a good starting point. Only used if SIERRA is run on a cluster.
+   Should be a good starting point. Only used if SIERRA is run on a cluster with
+   ``hpc_env=hpc.slurm|hpc.pbs``.

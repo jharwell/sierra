@@ -106,7 +106,7 @@ if [ -n "$MSIARCH" ]; then # Running on MSI
     SCENARIOS_VD_SMALL=(${SCENARIOS_LIST_VD_SMALL[$SCENARIO_NUM]})
     SCENARIOS_VD_LARGE=(${SCENARIOS_LIST_VD_LARGE[$SCENARIO_NUM]})
     TASK="exp"
-    SIERRA_CMD="$SIERRA_BASE_CMD --hpc-env=slurm --exp-range=$EXP_NUM:$EXP_NUM --exec-resume"
+    SIERRA_CMD="$SIERRA_BASE_CMD --hpc-env=hpc.slurm --exp-range=$EXP_NUM:$EXP_NUM --exec-resume"
     echo "********************************************************************************\n"
     squeue -j $SLURM_ARRAY_TASK_ID -o "%.9i %.9P %.8j %.8u %.2t %.10M %.6D %S %e"
     echo "********************************************************************************\n"

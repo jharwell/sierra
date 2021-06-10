@@ -13,7 +13,7 @@
         (add-to-list 'projectile-globally-ignored-file-suffixes "*.pkl")
         (add-to-list 'projectile-globally-ignored-file-suffixes "*.png")
         (add-to-list 'projectile-globally-ignored-file-suffixes "*.doctree")
-        (add-to-list 'grep-find-ignored-directories "*.docs/_build/html")
+        (add-to-list 'grep-find-ignored-directories "docs/_build/")
         (add-to-list 'grep-find-ignored-files "*.html")
         (add-to-list 'grep-find-ignored-files "*.png")
         (add-to-list 'grep-find-ignored-files "*.doctree")

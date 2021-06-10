@@ -59,32 +59,34 @@ Cmdline Syntax
    for death dynamics.
 
 Examples:
-    - ``C10.F2p0.B0p001``: 10 levels of population variability applied using a
-      pure birth process with a 0.001 parameter, which will be linearly varied
-      in [0.001,0.001*2.0*10]. For all experiments, the initial swarm is not
-      controlled directly; the value in template input file will be used if
-      swarm size is not set by another variable.
-
-    - ``C4.F3p0.D0p001``: 4 levels of population variability applied using a
-      pure death process with a 0.001 parameter, which will be linearly varied
-      in [0.001,0.001*3.0*4]. For all experiments, the initial swarm size is not
-      controlled directly; the value in template input file will be used if
-      swarm size is not set by another variable.
-
-    - ``C8.F4p0.B0p001.D0p005``: 8 levels of population variability applied
-      using a birth-death process with a 0.001 parameter for birth and a 0.005
-      parameter for death, which will be linearly varied in [0.001,0.001*4.0*8]
-      and [0.005, 0.005*4.0*8] respectively. For all experiments, the initial
-      swarm is not controlled directly; the value in the template input file
-      will be used if swarm size is is not set by another variable.
-
-    - ``C2.F1p5.M0p001.R0p005``: 2 levels of population variability applied
-      using a malfunction-repair process with a 0.001 parameter for malfunction
-      and a 0.005 parameter for repair which will be linearly varied in [0.001,
-      0.001*1.5*2] and [0.005, 0.005*1.5*2] respectively. For all experiments,
-      the initial swarm size is not controlled directly; the value in the
+    - ``population_dynamics.C10.F2p0.B0p001``: 10 levels of population
+      variability applied using a pure birth process with a 0.001 parameter,
+      which will be linearly varied in [0.001,0.001*2.0*10]. For all
+      experiments, the initial swarm is not controlled directly; the value in
       template input file will be used if swarm size is not set by another
       variable.
+
+    - ``population_dynamics.C4.F3p0.D0p001``: 4 levels of population variability
+      applied using a pure death process with a 0.001 parameter, which will be
+      linearly varied in [0.001,0.001*3.0*4]. For all experiments, the initial
+      swarm size is not controlled directly; the value in template input file
+      will be used if swarm size is not set by another variable.
+
+    - ``population_dynamics.C8.F4p0.B0p001.D0p005``: 8 levels of population
+      variability applied using a birth-death process with a 0.001 parameter for
+      birth and a 0.005 parameter for death, which will be linearly varied in
+      [0.001,0.001*4.0*8] and [0.005, 0.005*4.0*8] respectively. For all
+      experiments, the initial swarm is not controlled directly; the value in
+      the template input file will be used if swarm size is is not set by
+      another variable.
+
+    - ``population_dynamics.C2.F1p5.M0p001.R0p005``: 2 levels of population
+      variability applied using a malfunction-repair process with a 0.001
+      parameter for malfunction and a 0.005 parameter for repair which will be
+      linearly varied in [0.001, 0.001*1.5*2] and [0.005, 0.005*1.5*2]
+      respectively. For all experiments, the initial swarm size is not
+      controlled directly; the value in the template input file will be used if
+      swarm size is not set by another variable.
 
 
 .. _ln-bc-block-quantity:
@@ -109,8 +111,9 @@ Cmdline Syntax
 - ``N`` - The maximum block count.
 
 Examples:
-    - ``cube.Log1024``: Cube block counts 1...1024
-    - ``ramp.Linear1000``: Ramp block counts 100...1000
+    - ``block_quantity.cube.Log1024``: Cube block counts 1...1024
+
+    - ``block_quantity.ramp.Linear1000``: Ramp block counts 100...1000
 
 
 .. _ln-bc-block-density:
@@ -132,8 +135,9 @@ Cmdline Syntax
 - ``cardinality`` How many experiments should be generated?
 
 Examples:
-    - ``CD1p0.I16.C4``: Constant density of 1.0. Arena dimensions will increase by
-      16 in both X and Y for each experiment in the batch (4 total).
+    - ``block_density.CD1p0.I16.C4``: Constant density of 1.0. Arena dimensions
+      will increase by 16 in both X and Y for each experiment in the batch (4
+      total).
 
 .. _ln-bc-block-motion-dynamics:
 
@@ -161,11 +165,14 @@ Cmdline Syntax
 
 
 Examples:
-    - ``C10.F2p0.RW0p001``: 10 levels of block motion variability applied using
-      a random walk with a 0.001 probability for each block each timestep, which
-      will be linearly varied in [0.001,0.001*2.0*10]. For all experiments, the
-      initial swarm is not controlled directly; the value in template input file
-      will be used if swarm size is not set by another variable.
+    - ``block_motion_dynamics.C10.F2p0.RW0p001``: 10 levels of block motion
+      variability applied using a random walk with a 0.001 probability for each
+      block each timestep, which will be linearly varied in
+      [0.001,0.001*2.0*10]. For all experiments, the initial swarm is not
+      controlled directly; the value in template input file will be used if
+      swarm size is not set by another variable.
+
+.. _ln-bc-oracle:
 
 Oracle
 ======
@@ -187,14 +194,14 @@ Cmdline Syntax
 
 Examples:
 
-- ``entities.Z16`` - All permutations of oracular information about entities in
-  the arena, run with swarms of size 16.
+- ``oracle.entities.Z16`` - All permutations of oracular information about
+  entities in the arena, run with swarms of size 16.
 
-- ``tasks.Z8`` - All permutations of oracular information about tasks in the
-  arena, run with swarms of size 8.
+- ``oracle.tasks.Z8`` - All permutations of oracular information about tasks in
+  the arena, run with swarms of size 8.
 
-- ``entities`` - All permuntations of oracular information of entities in the
-  arena (swarm size is not modified).
+- ``oracle.entities`` - All permuntations of oracular information of entities in
+  the arena (swarm size is not modified).
 
 .. _ln-bc-ta-policy-set:
 
@@ -209,5 +216,8 @@ Cmdline Syntax
 
 Examples:
 
-- ``all.Z16``: All possible task allocation policies with swarms of size 16.
-- ``all``: All possible task allocation policies; swarm size not modified.
+- ``ta_policy_set.all.Z16``: All possible task allocation policies with swarms
+  of size 16.
+
+- ``ta_policy_set.all``: All possible task allocation policies; swarm size not
+  modified.

@@ -1,3 +1,5 @@
+.. _ln-usage-pipeline:
+
 SIERRA Pipeline
 ===============
 
@@ -26,8 +28,8 @@ experiment SIERRA runs is determined by:
 - ``--batch-criteria``
 
 
-SIERRA can run the experiment on any :ref:`HPC plugin <src/hpc/plugins:High
-Performance Computing (HPC) Plugins>`.  Part of default pipeline.
+SIERRA can run the experiment on any :ref:`HPC plugin <ln-hpc-plugins>`.  Part
+of default pipeline.
 
 Stage 3: Experiment Post-Processing
 -----------------------------------

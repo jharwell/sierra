@@ -108,8 +108,5 @@ ENV/
 # pytype
 .pytype
 
-# Plugins
-projects
-
 # MSI
 R-*
