@@ -31,19 +31,25 @@ class IBaseVariable(implements.Interface):
     """
 
     def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
-        """Generate list of sets for changing attributes in the template input XML file."""
+        """Generate a list of sets of XML attributes to change in the template input XML file."""
         raise NotImplementedError
 
     def gen_tag_rmlist(self) -> tp.List[XMLTagRmList]:
-        """Generate list of sets for removing tags in the template input XML file."""
+        """Generate a list of lists of XML tags to remove from the template input XML file."""
         raise NotImplementedError
 
     def gen_tag_addlist(self) -> tp.List[XMLTagAddList]:
         """
-        Generate list of sets for adding tags (and possibly attributes) in the template input
-        XML file.
+        Generate a list of lists of XML tags (and possibly child attributes) to add to the template
+        input XML file.
         """
         raise NotImplementedError
+
+    def gen_files(self) -> None:
+        """
+        Generate one or more new files which will (presumably) be referenced in the template input
+        file by path.
+        """
 
 
 __api__ = [

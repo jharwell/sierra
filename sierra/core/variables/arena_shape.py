@@ -38,7 +38,7 @@ class ArenaShape():
     this file should be used instead.
 
     Attributes:
-        extents: List of (X, Y, Z) tuples of arena size.
+        extents: List of arena extents.
     """
 
     def __init__(self, extents: tp.List[ArenaExtent]) -> None:
@@ -59,8 +59,9 @@ class ArenaShape():
                                                                              extent.zsize())),
                                         XMLAttrChange(".//arena",
                                                       "center",
-                                                      "{0:.9f},{1:.9f},1".format(extent.xsize() / 2.0,
-                                                                                 extent.ysize() / 2.0)),
+                                                      "{0:.9f},{1:.9f},{2}".format(extent.xsize() / 2.0,
+                                                                                   extent.ysize() / 2.0,
+                                                                                   extent.zsize() / 2.0)),
 
                                         # We restrict the places robots can spawn within the arena as
                                         # follows:
@@ -126,6 +127,9 @@ class ArenaShape():
 
     def gen_tag_addlist(self) -> tp.List[XMLTagAddList]:
         return []
+
+    def gen_files(self) -> None:
+        pass
 
 
 __api__ = [

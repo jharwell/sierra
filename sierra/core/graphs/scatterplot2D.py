@@ -25,8 +25,6 @@ import logging
 import numpy as np
 import sympy
 import matplotlib.pyplot as plt
-import matplotlib
-matplotlib.use('Agg')
 
 # Project packages
 

@@ -13,7 +13,6 @@ SIERRA Core
    ../api/core/sierra.core.xml_luigi.rst
    ../api/core/sierra.core.utils.rst
 
-   ../api/core/perf_measures/sierra.core.perf_measures.rst
    ../api/core/generators/sierra.core.generators.rst
    ../api/core/pipeline/sierra.core.pipeline.rst
    ../api/core/variables/sierra.core.variables.rst

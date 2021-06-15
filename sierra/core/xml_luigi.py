@@ -52,6 +52,9 @@ class XMLTagRm():
     def __iter__(self):
         yield from [self.path, self.tag]
 
+    def __repr__(self) -> str:
+        return self.path + '/' + self.tag
+
 
 class XMLTagAdd():
     def __init__(self, path: str, tag: str, attr: dict = dict()):
@@ -61,6 +64,9 @@ class XMLTagAdd():
 
     def __iter__(self):
         yield from [self.path, self.tag, self.attr]
+
+    def __repr__(self) -> str:
+        return self.path + '/' + self.tag + ': ' + str(self.attr)
 
 
 class XMLAttrChangeSet():
@@ -124,11 +130,21 @@ class XMLTagRmList():
     def __iter__(self) -> tp.Iterator[XMLTagRm]:
         return iter(self.rms)
 
+    def __repr__(self) -> str:
+        return str(self.rms)
+
     def extend(self, other: 'XMLTagRmList') -> None:
         self.rms.extend(other.rms)
 
     def append(self, other: XMLTagRm) -> None:
         self.rms.append(other)
+
+    def pickle(self, fpath: str, delete: bool = False) -> None:
+        if delete and os.path.exists(fpath):
+            os.remove(fpath)
+
+        with open(fpath, 'ab') as f:
+            pickle.dump(self.rms, f)
 
 
 class XMLTagAddList():
@@ -141,11 +157,24 @@ class XMLTagAddList():
     def __iter__(self) -> tp.Iterator[XMLTagAdd]:
         return iter(self.adds)
 
+    def __repr__(self) -> str:
+        return str(self.adds)
+
     def extend(self, other: 'XMLTagAddList') -> None:
         self.adds.extend(other.adds)
 
     def append(self, other: XMLTagAdd) -> None:
         self.adds.append(other)
+
+    def prepend(self, other: XMLTagAdd) -> None:
+        self.adds.insert(0, other)
+
+    def pickle(self, fpath: str, delete: bool = False) -> None:
+        if delete and os.path.exists(fpath):
+            os.remove(fpath)
+
+        with open(fpath, 'ab') as f:
+            pickle.dump(self.adds, f)
 
 
 class InvalidElementError(RuntimeError):
@@ -253,26 +282,34 @@ class XMLLuigi:
         """
 
         parent = self.root.find(path)
-        if parent is not None:
-            victim = parent.find(tag)
-            if victim is not None:
-                parent.remove(victim)
-                return
+        if parent is None:
+            if not noprint:
+                self.logger.warning("Parent node '%s' not found", path)
+            return
 
-        if not noprint:
-            self.logger.warning("No victim '%s' found in parent '%s'", tag, path)
+        victim = parent.find(tag)
+        if victim is None:
+            if not noprint:
+                self.logger.warning("No victim '%s' found in parent '%s'", tag, path)
+            return
 
-    def tag_add(self, path, tag, attr=dict()) -> None:
+        parent.remove(victim)
+
+    def tag_add(self, path, tag, attr=dict(), noprint: bool = False) -> None:
         """
         Add the tag name as a child element of the element found by the specified path, giving it
         the initial set of specified attributes.
         """
-        el = self.root.find(path)
-        if el is None:
-            self.logger.warning("Parent node '%s' not found", path)
+        parent = self.root.find(path)
+        if parent is None:
+            if not noprint:
+                self.logger.warning("Parent node '%s' not found", path)
             return
 
-        ET.SubElement(el, tag, attr)
+        # Use ET.Element instead of ET.SubElement so that child nodes with the same 'tag' don't
+        # overwrite each other.
+        child = ET.Element(tag, attrib=attr)
+        parent.append(child)
 
 
 __api__ = [

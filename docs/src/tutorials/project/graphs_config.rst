@@ -14,6 +14,9 @@ This page has the following sections:
 - How to "activate" the new graph so that it will be generated from simulation
   outputs where applicable.
 
+- How to generate additional graphs during stage 4 beyond those possible with
+  the SIERRA core.
+
 Create A New Graph Category
 ===========================
 
@@ -48,6 +51,13 @@ structures.
 
 .. IMPORTANT:: The ``graphs`` dictionary `must` be at the root of all ``.yaml``
                files containing graph configuration.
+
+
+.. IMPORTANT:: Because SIERRA tells matplotlib to use LaTeX internally to
+               generate graph labels, titles, etc., the standard LaTeX character
+               restrictions within strings apply to all fields (e.g., '#' is
+               illegal but '\#' is OK).
+
 
 Add A New Intra-Experiment Graph To An Existing Category
 ========================================================
@@ -169,3 +179,28 @@ If you added a new :term:`Graph Category`, it will not automatically be used to
 generate graphs for existing or new controllers. You will need to modify the
 ``<project>/config/controllers.yaml`` file to specify which controllers your new
 category of graphs should be generated for. See :doc:`main_config` for details.
+
+
+How to Generate Additional Graphs
+=================================
+
+This can be done by extending
+:class:`~sierra.core.pipeline.stage4.inter_exp_graph_generator.InterExpGraphGenerator`. Create
+``<project>/pipeline/stage4/inter_exp_graph_generator.py`` and define a
+``InterExpGraphGenerator`` class which inherits from
+:class:`~sierra.core.pipeline.stage4.inter_exp_graph_generator.InterExpGraphGenerator`. It's
+constructor must be::
+
+  def __init__(self,
+               main_config: tp.Dict[str, tp.Any],
+               cmdopts: tp.Dict[str, tp.Any],
+               targets: tp.List[tp.Dict[str, tp.Any]]) -> None:
+
+And it must define::
+
+  def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
+
+
+SIERRA will then use this class when generating graphs during stage 4. You
+probably should call ``super().__call__(criteria)`` in the ``__call__()`` you
+define, but you don't have to.

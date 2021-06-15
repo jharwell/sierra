@@ -120,7 +120,6 @@ nitpick_ignore = [
 ]
 autoapi_modules = {
     'sierra.core.cmdline': {'output': 'api/core'},
-    'sierra.core.perf_measures': {'output': 'api/core/perf_measures'},
     'sierra.core.generators': {'output': 'api/core/generators'},
     'sierra.core.pipeline': {'output': 'api/core/pipeline'},
     'sierra.core.variables': {'output': 'api/core/variables'},
@@ -237,7 +236,6 @@ latex_documents = [
 autosectionlabel_prefix_document = True
 man_pages = [
     ('man/sierra-cli', 'sierra-cli', 'The SIERRA Command Line Interface', [author], 1),
-    ('man/sierra-msi', 'sierra-msi', 'How to use SIERRA on MSI', [author], 7),
     ('man/sierra-rendering', 'sierra-rendering', 'SIERRA Rendering', [author], 7),
     ('man/sierra', 'sierra', 'Swarm Intelligence Reusable ARGoS Automation (SIERRA)', [author], 7)
 ]

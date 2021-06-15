@@ -194,6 +194,9 @@ class BatchCriteria():
     def gen_tag_addlist(self) -> tp.List[XMLTagAddList]:
         return []
 
+    def gen_files(self) -> None:
+        pass
+
     def gen_exp_dirnames(self, cmdopts: tp.Dict[str, tp.Any]) -> tp.List[str]:
         """
         Generate list of strings from the current changelist to use for directory names within a

@@ -82,6 +82,9 @@ class ARGoSTimeSetup():
     def gen_tag_addlist(self) -> tp.List[XMLTagAddList]:
         return []
 
+    def gen_files(self) -> None:
+        pass
+
 
 class Parser():
     """

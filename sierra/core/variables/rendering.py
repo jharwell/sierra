@@ -88,6 +88,9 @@ class ARGoSQTHeadlessRendering():
 
         return self.tag_adds
 
+    def gen_files(self) -> None:
+        pass
+
 
 def factory(cmdopts: tp.Dict[str, tp.Any]) -> ARGoSQTHeadlessRendering:
     """

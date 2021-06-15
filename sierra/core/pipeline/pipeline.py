@@ -157,10 +157,14 @@ class Pipeline:
         self.cmdopts['plugin_root'] = os.path.join('sierra', 'plugins')
         self.cmdopts['core_config_root'] = os.path.join('sierra', 'core', 'config')
 
-        env = os.environ.get('SIERRA_PROJECT_PATH')
+        env = os.environ.get('SIERRA_PROJECT_PATH', None)
+        assert env is not None, "SIERRA_PROJECT_PATH must be defined"
+
         for root in env.split(os.pathsep):
             path = os.path.join(root, 'projects', self.cmdopts['project'])
             if os.path.exists(path):
+                self.cmdopts['projects_root'] = root
+                self.cmdopts['project_root'] = path
                 self.cmdopts['project_config_root'] = os.path.join(path, 'config')
                 self.cmdopts['project_model_root'] = os.path.join(path, 'models')
                 break
@@ -177,9 +181,9 @@ class Pipeline:
         Run pipeline stages as configured.
         """
         if 1 in self.args.pipeline:
-            PipelineStage1(self.controller,
-                           self.batch_criteria,
-                           self.cmdopts).run()
+            PipelineStage1(self.cmdopts,
+                           self.controller,
+                           self.batch_criteria).run()
 
         if 2 in self.args.pipeline:
             PipelineStage2(self.cmdopts).run(self.batch_criteria)

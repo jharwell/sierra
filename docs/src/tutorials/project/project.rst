@@ -24,9 +24,9 @@ Creating a New SIERRA Project
      - ``main.yaml`` - Main SIERRA configuration file. This file is required for all
        pipeline stages. See :doc:`main_config` for documentation.
 
-   - ``controllers.yaml`` - Configuration for controllers (input file/graph
-     generation). This file is required for all pipeline stages. See
-     :doc:`main_config` for documentation.
+     - ``controllers.yaml`` - Configuration for controllers (input file/graph
+       generation). This file is required for all pipeline stages. See
+       :doc:`main_config` for documentation.
 
      - ``intra-graphs-line.yaml`` - Configuration for intra-experiment
        linegraphs. This file is optional. If it is present, graphs defined in it
@@ -55,10 +55,18 @@ Creating a New SIERRA Project
        enabled in it will be run before stage 4 intra- and/or inter-experiment
        graph generation, if stage 4 is run. See :doc:`models` for documentation.
 
-   - ``generators/scenario_generators.py`` - Specifies extensions/specializations
-     of the foraging scenarios in the SIERRA core, as well as any other scenarios
-     the user would want to be able to pass via the ``--scenario`` cmdline
-     argument.
+   - ``generators/``
+
+     - ``scenario_generators.py`` - Specifies classes and functions to enable
+       SIERRA to generate XML file modifications to the
+       ``--template-input-file`` based on what is passed as ``--scenario`` on
+       the cmdline. This file is required. See
+       :ref:`ln-tutorials-project-scenario-config` for documentation.
+
+     - ``exp_generators.py`` - Contains extensions to the per-simulation
+       configuration that SIERRA performs. See
+       :ref:`ln-tutorials-project-sim_config` for documentation. This file is
+       optional.
 
    - ``variables/`` - Additional variables (including batch criteria) defined by
      the plugin/project that can be directly or indirectly used by the
@@ -75,10 +83,18 @@ Creating a New SIERRA Project
 #. Define graphs to be generated from simulation outputs by following
    :doc:`graphs_config`.
 
+#. Setup your ``--template-input-file`` appropriately by following
+   :doc:`template_input_file`.
+
 Optional Steps
 ==============
 
 #. Define additional batch criteria to investigate variables of interest
-   specific to your project by following :ref:`ln-tutorials-new-bc`.
+   specific to your project by following :ref:`ln-tutorials-project-new-bc`.
 
-#. Define one or more :term:`Models <Model>` to run to compare with empirical data.
+#. Define one or more :term:`Models <Model>` to run to compare with empirical
+   data.
+
+#. Add additional per-simulation configuration such as unique output directory
+   names, random seeds (if you don't use the ARGoS one), etc. SIERRA can't set
+   stuff like this up in a project agnostic way.

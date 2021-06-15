@@ -115,6 +115,9 @@ class PhysicsEngines():
 
         return self.tag_adds
 
+    def gen_files(self) -> None:
+        pass
+
     def _gen_all_engines(self,
                          extent: ArenaExtent,
                          n_engines_x: int,

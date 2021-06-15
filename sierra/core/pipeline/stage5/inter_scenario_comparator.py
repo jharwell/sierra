@@ -155,7 +155,7 @@ class UnivarInterScenarioComparator:
         self._gen_graph(criteria=criteria,
                         cmdopts=cmdopts,
                         dest_stem=graph['dest_stem'],
-                        exclude_exp0=graph['exclude_exp0'],
+                        inc_exps=graph.get('include_exp', None),
                         title=graph['title'],
                         label=graph['label'],
                         legend=legend)
@@ -164,7 +164,7 @@ class UnivarInterScenarioComparator:
                    criteria: bc.IConcreteBatchCriteria,
                    cmdopts: tp.Dict[str, tp.Any],
                    dest_stem: str,
-                   exclude_exp0: bool,
+                   inc_exps: tp.Optional[slice],
                    title: str,
                    label: str,
                    legend: tp.List[str]) -> None:
@@ -176,6 +176,15 @@ class UnivarInterScenarioComparator:
         img_opath = os.path.join(self.sc_graph_root, dest_stem) + '-' + \
             self.controller + sierra.core.config.kImageExt
 
+        xticks = criteria.graph_xticks(cmdopts)
+        xtick_labels = criteria.graph_xticklabels(cmdopts)
+
+        if inc_exps is not None:
+            xtick_labels = sierra.core.utils.exp_include_filter(inc_exps,
+                                                                xtick_labels,
+                                                                criteria.n_exp())
+            xticks = sierra.core.utils.exp_include_filter(inc_exps, xticks, criteria.n_exp())
+
         SummaryLinegraph(stats_root=self.sc_csv_root,
                          input_stem=istem,
                          stats=cmdopts['dist_stats'],
@@ -184,7 +193,8 @@ class UnivarInterScenarioComparator:
                          title=title,
                          xlabel=criteria.graph_xlabel(cmdopts),
                          ylabel=label,
-                         xticks=criteria.graph_xticks(cmdopts)[exclude_exp0:],
+                         xticks=xticks,
+                         xtick_labels=xtick_labels,
                          logyscale=cmdopts['plot_log_yscale'],
                          large_text=cmdopts['plot_large_text'],
                          legend=legend).generate()

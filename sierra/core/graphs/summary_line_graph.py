@@ -72,13 +72,8 @@ class SummaryLinegraph:
         model_root: The absolute/relative path to the ``models/`` directory for the batch
                      experiment.
     """
-    # Maximum # of rows that the input .csv to guarantee unique colors
-    kMaxRows = 8
-
     kLineStyles = ['-', '--', '.-', ':', '-', '--', '.-', ':']
     kMarkStyles = ['o', '^', 's', 'x', 'o', '^', 's', 'x']
-    kColors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red',
-               'tab:brown', 'tab:pink', 'tab:gray', 'tab:olive']
 
     def __init__(self,
                  stats_root: str,
@@ -128,11 +123,6 @@ class SummaryLinegraph:
             return
 
         data_dfy = sierra.core.utils.pd_csv_read(input_fpath)
-        assert len(data_dfy.values) <= self.kMaxRows, \
-            "FATAL: Too many rows to make unique line styles/self.kColors/markers: {0} > {1}".format(
-                len(data_dfy.values),
-                self.kMaxRows)
-
         model = self._read_models()
 
         fig, ax = plt.subplots()
@@ -176,7 +166,7 @@ class SummaryLinegraph:
             plt.plot(self.xticks,
                      data_dfy.values[i],
                      marker=self.kMarkStyles[i],
-                     color=self.kColors[i])
+                     color="C{}".format(i))
 
             # Plot model prediction(s)
             if model[0] is not None:
@@ -184,7 +174,7 @@ class SummaryLinegraph:
                          model[0].values[i],
                          '--',
                          marker=self.kMarkStyles[i],
-                         color=self.kColors[i + len(data_dfy.index)])
+                         color="C{}".format(i + len(data_dfy.index)))
 
     def _plot_stats(self,
                     ax,
@@ -199,7 +189,7 @@ class SummaryLinegraph:
                 # 95% interval = 2 std stdeviations
                 plt.fill_between(xticks, data_dfy.values[i] - 2 * stat_dfs['stddev'].abs().values[i],
                                  data_dfy.values[i] + 2 * stat_dfs['stddev'].abs().values[i],
-                                 alpha=0.25, color=self.kColors[i], interpolate=True)
+                                 alpha=0.25, color="C{}".format(i), interpolate=True)
 
         if self.stats in ['bw', 'all'] and all(k in stat_dfs.keys() for k in
                                                ['whislo',

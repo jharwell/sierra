@@ -128,6 +128,9 @@ class ARGoSQTCameraTimeline():
 
         return self.tag_adds
 
+    def gen_files(self) -> None:
+        pass
+
 
 @implements.implements(IBaseVariable)
 class ARGoSQTCameraOverhead():
@@ -178,6 +181,9 @@ class ARGoSQTCameraOverhead():
             self.tag_adds = [adds]
 
         return self.tag_adds
+
+    def gen_files(self) -> None:
+        pass
 
 
 def factory(cmdopts: tp.Dict[str, tp.Any], extents: tp.List[ArenaExtent]):

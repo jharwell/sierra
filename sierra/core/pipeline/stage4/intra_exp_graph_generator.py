@@ -25,6 +25,7 @@ import logging
 import typing as tp
 
 # 3rd party packages
+import json
 
 # Project packages
 from sierra.core.graphs.stacked_line_graph import StackedLineGraph
@@ -190,15 +191,16 @@ class LinegraphsGenerator:
                 output_fpath = os.path.join(self.cmdopts['exp_graph_root'],
                                             'SLN-' + graph['dest_stem'] + sierra.core.config.kImageExt)
                 try:
+                    self.logger.trace('\n' + json.dumps(graph, indent=4))
                     StackedLineGraph(stats_root=self.cmdopts['exp_stat_root'],
                                      input_stem=graph['src_stem'],
                                      output_fpath=output_fpath,
                                      stats=self.cmdopts['dist_stats'],
                                      dashstyles=graph.get('dashes', None),
                                      linestyles=graph.get('styles', None),
-                                     cols=graph['cols'],
+                                     cols=graph.get('cols', None),
                                      title=graph['title'],
-                                     legend=graph['legend'],
+                                     legend=graph.get('legend', None),
                                      xlabel=graph['xlabel'],
                                      ylabel=graph['ylabel'],
                                      logyscale=self.cmdopts['plot_log_yscale'],
@@ -238,6 +240,7 @@ class HeatmapsGenerator:
         for category in self.targets:
             # For each graph in each category
             for graph in category['graphs']:
+                self.logger.trace('\n' + json.dumps(graph, indent=4))
                 if IntraExpModel2DGraphSet.model_exists(self.exp_model_root,
                                                         graph['src_stem']):
                     IntraExpModel2DGraphSet(self.exp_stat_root,

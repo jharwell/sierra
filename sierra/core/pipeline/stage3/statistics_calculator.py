@@ -411,7 +411,6 @@ class ExpStatisticsCalculator:
 
         if self.avg_opts['dist_stats'] in ['none', 'all']:
             dfs = sierra.core.stat_kernels.mean.from_groupby(by_row_index)
-
         if self.avg_opts['dist_stats'] in ['conf95', 'all']:
             dfs = sierra.core.stat_kernels.conf95.from_groupby(by_row_index)
 
@@ -423,4 +422,5 @@ class ExpStatisticsCalculator:
                                  self.gather_spec.csv_stem,
                                  self.gather_spec.csv_leaf + ext)
             writer = storage.DataFrameWriter(self.avg_opts['storage_medium'])
+
             writer(dfs[ext], opath, index=False)

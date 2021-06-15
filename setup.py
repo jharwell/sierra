@@ -26,7 +26,7 @@ from setuptools import setup, find_packages
 here = pathlib.Path(__file__).parent
 
 # The text of the README file
-readme = (here / "docs/src/description.rst").read_text()
+readme = (here / "README.md").read_text()
 
 # This call to setup() does all the work
 setup(
@@ -48,7 +48,10 @@ setup(
     ],
     packages=find_packages(exclude=("projects")),
     include_package_data=True,
-    data_files=[('man/man1', ['docs/_build/man/sierra-cli.1'])],
+    data_files=[('man/man1', ['docs/_build/man/sierra-cli.1']),
+                ('man/man1', ['docs/_build/man/sierra-rendering.7']),
+                ('man/man1', ['docs/_build/man/sierra.7'])],
+
     install_requires=[
         "pyyaml",
         "pandas",
@@ -64,7 +67,7 @@ setup(
     python_requires=">=3.6",
     entry_points={
         "console_scripts": [
-            "sierra-cli=sierra.main:__main__",
+            "sierra-cli=sierra.main:main",
         ]
     },
 )

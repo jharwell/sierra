@@ -90,14 +90,15 @@ class Heatmap:
         self._plot_df(data_df, self.output_fpath)
 
     def _plot_df(self, df: pd.DataFrame, opath: str) -> None:
-        fig, ax = plt.subplots(figsize=(sierra.core.config.kGraphBaseSize, sierra.core.config.kGraphBaseSize))
+        fig, ax = plt.subplots(figsize=(sierra.core.config.kGraphBaseSize,
+                               sierra.core.config.kGraphBaseSize))
 
         # Transpose if requested
         if self.transpose:
             df = df.transpose()
 
         # Plot heatmap
-        plt.imshow(df, cmap='coolwarm', interpolation=self.interpolation, aspect='auto')
+        plt.imshow(df, interpolation=self.interpolation, aspect='auto')
 
         # Add labels
         plt.xlabel(self.xlabel, fontsize=self.text_size['xyz_label'])

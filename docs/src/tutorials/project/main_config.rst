@@ -29,22 +29,15 @@ An example main configuration file:
      # for all simulations.
      sim_metrics_leaf: 'metrics'
 
-     # The directory within each simulation's working directory which will
-     # contain the frames output by ARGoS during simulation, if frame grabbing
-     # is configured. This key is currently mandatory for all simulations, even
-     # if rendering/frame grabbing is not employed.
-     argos_frames_leaf: 'frames'
-
    # Configuration for SIERRA internals. This dictionary is mandatory
    # for all simulations.
    sierra:
-
-   # Configuration for performance measures. This key-value pair is mandatory
-   # for all simulations. The value is the location of the .yaml configuration
-   # file for performance measures. It is a separate config file so that multiple
-   # scenarios within a single project which define performance measures in
-   # different ways can be easily accomodated.
-   perf: 'perf-config.yaml'
+     # Configuration for performance measures. This key-value pair is mandatory
+     # for all simulations. The value is the location of the .yaml
+     # configuration file for performance measures. It is a separate config
+     # file so that multiple scenarios within a single project which define
+     # performance measures in  different ways can be easily accomodated.
+     perf: 'perf-config.yaml'
 
 Summary Performance Measures Configuration File
 ===============================================
@@ -66,7 +59,7 @@ Within the pointed-to .yaml file for ``perf`` configuration, the structure is:
 
      # The Y label for graphs of raw swarm performance (cannot be
      # known a priori for all possible projects during stage 4).
-     raw_perf_ylabel: '# Blocks'
+     raw_perf_ylabel: '\# Blocks'
 
      # The ``.csv`` file under ``statistics_leaf`` for each experiment which
      # contains the averaged performance information for the experiment.
@@ -89,19 +82,6 @@ Within the pointed-to .yaml file for ``perf`` configuration, the structure is:
      # robot experiencing inter-robot interference for each experiment in the
      # batch (1 per experiment).
      interference_duration_csv: 'interference-duration-cum-avg.csv'
-
-     # The ``.csv`` file under ``sim_metrics_leaf`` for each experiment
-     # which contains the applied environmental variances.
-     tv_environment_csv: 'tv-environment.csv'
-
-     # The ``.csv``file under ``sim_metrics_leaf`` for each experiment which
-     # contains information about temporally fluctuating populations.
-     tv_population_csv: 'tv-population.csv'
-
-``perf.robustness`` sub-dictionary
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-See :ref:`SAA noise config <ln-bc-saa-noise-yaml-config>`.
 
 Controllers Configuration File: ``config/controllers.yaml``
 ===========================================================
@@ -131,10 +111,10 @@ specific to the ``FizzBuzz`` controller.
      - LN_MyCategory2
 
    mycategory:
-     # XML changes which should be made to the template `.argos` file for `all`
-     # controllers in the category. This is usually things like setting ARGoS loop
-     # functions appropriately, if required. Each change is formatted as a list:
-     # [parent tag, tag, value] each specified in the XPath syntax.
+     # XML changes which should be made to the template ``.argos`` file for
+     # *all* controllers in the category. This is usually things like setting
+     # ARGoS loop functions appropriately, if required. Each change is formatted
+     # as a list: [parent tag, tag, value] each specified in the XPath syntax.
      #
      # This section can be omitted if not needed. If ``--argos-rendering`` is
      # passed, then this section should be used to specify the QT visualization
@@ -154,11 +134,12 @@ specific to the ``FizzBuzz`` controller.
          xml:
            attr_change:
 
-             # The ``__controller__`` tag in the template input file is arbitrary,
-             # and any string will do. It's purpose is to allow the same template
-             # input file to be used by multiple controller types. If you don't
-             # need that, then you can omit the ``xml``/ ``attr_change`` tags in
-             # your configuration altogether.
+             # The ``__controller__`` tag in the ``--template-input-file`` is
+             # REQUIRED. It's purpose is to allow the same template input file to
+             # be used by multiple controller types and to allow SIERRA to
+             # automatically populate the library name that ARGoS will look for to
+             # find the controller # C++ code based on the ``--project`` name .
+
              - ['.//controllers', '__controller___', 'FizzBuzz']
 
          # Sets of graphs common to multiple controller categories can be

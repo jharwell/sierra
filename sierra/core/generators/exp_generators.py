@@ -21,7 +21,6 @@ handled here.
 
 # Core packages
 import os
-import pickle
 import typing as tp
 import logging
 
@@ -36,6 +35,8 @@ from sierra.core.experiment_spec import ExperimentSpec
 import sierra.core.variables.time_setup as ts
 import sierra.core.variables.rendering as rendering
 import sierra.core.variables.batch_criteria as bc
+import sierra.core.utils as utils
+import sierra.core.config as config
 
 
 class ARGoSExpDefGenerator:
@@ -71,26 +72,26 @@ class ARGoSExpDefGenerator:
         Generates XML changes to simulation input files that are common to all experiments.
         """
         # create an object that will edit the XML file
-        xml_luigi = XMLLuigi(self.template_input_file)
+        exp_def = XMLLuigi(self.template_input_file)
 
         # Setup library
-        self._generate_library(xml_luigi)
+        self._generate_library(exp_def)
 
         # Setup simulation visualizations
-        self._generate_visualization(xml_luigi)
+        self._generate_visualization(exp_def)
 
         # Setup threading
-        self._generate_threading(xml_luigi)
+        self._generate_threading(exp_def)
 
         # Setup robot sensors/actuators
-        self._generate_saa(xml_luigi)
+        self._generate_saa(exp_def)
 
         # Setup simulation time parameters
-        self._generate_time(xml_luigi)
+        self._generate_time(exp_def)
 
-        return xml_luigi
+        return exp_def
 
-    def _generate_saa(self, xml_luigi: XMLLuigi) -> None:
+    def _generate_saa(self, exp_def: XMLLuigi) -> None:
         """
         Generates XML changes to disable selected sensors/actuators, which are computationally
         expensive in large swarms, but not that costly if the # robots is small.
@@ -98,35 +99,33 @@ class ARGoSExpDefGenerator:
         Does not write generated changes to the simulation definition pickle file.
         """
         if not self.cmdopts["with_robot_rab"]:
-            xml_luigi.tag_remove(".//media", "range_and_bearing", noprint=True)
-            xml_luigi.tag_remove(".//actuators", "range_and_bearing", noprint=True)
-            xml_luigi.tag_remove(".//sensors", "range_and_bearing", noprint=True)
+            exp_def.tag_remove(".//media", "range_and_bearing", noprint=True)
+            exp_def.tag_remove(".//actuators", "range_and_bearing", noprint=True)
+            exp_def.tag_remove(".//sensors", "range_and_bearing", noprint=True)
 
         if not self.cmdopts["with_robot_leds"]:
-            xml_luigi.tag_remove(".//actuators", "leds", noprint=True)
-            xml_luigi.tag_remove(".//sensors", "colored_blob_omnidirectional_camera", noprint=True)
-            xml_luigi.tag_remove(".//media", "led", noprint=True)
+            exp_def.tag_remove(".//actuators", "leds", noprint=True)
+            exp_def.tag_remove(".//sensors", "colored_blob_omnidirectional_camera", noprint=True)
+            exp_def.tag_remove(".//media", "led", noprint=True)
 
         if not self.cmdopts["with_robot_battery"]:
-            xml_luigi.tag_remove(".//sensors", "battery", noprint=True)
-            xml_luigi.tag_remove(".//entity/*", "battery", noprint=True)
+            exp_def.tag_remove(".//sensors", "battery", noprint=True)
+            exp_def.tag_remove(".//entity/*", "battery", noprint=True)
 
-    def _generate_time(self, xml_luigi: XMLLuigi) -> None:
+    def _generate_time(self, exp_def: XMLLuigi) -> None:
         """
         Generate XML changes to setup simulation time parameters.
 
         Writes generated changes to the simulation definition pickle file.
         """
-        tsetup = __import__("sierra.core.variables.time_setup", fromlist=["*"])
-        inst = getattr(tsetup, "factory")(self.cmdopts["time_setup"])()
+        tsetup = ts.factory(self.cmdopts["time_setup"])()
 
-        for a in inst.gen_attr_changelist()[0]:
-            xml_luigi.attr_change(a.path, a.attr, a.value, True)
+        adds, rms, chgs = utils.apply_to_expdef(tsetup, exp_def)
 
         # Write time setup info to file for later retrieval
-        inst.gen_attr_changelist()[0].pickle(self.spec.exp_def_fpath)
+        utils.pickle_modifications(adds, rms, chgs, self.spec.exp_def_fpath)
 
-    def _generate_threading(self, xml_luigi: XMLLuigi) -> None:
+    def _generate_threading(self, exp_def: XMLLuigi) -> None:
         """
         Generates XML changes to set the # of cores for a simulation to use, which may be less than
         the total # available on the system, depending on the experiment definition and user
@@ -135,11 +134,11 @@ class ARGoSExpDefGenerator:
         Does not write generated changes to the simulation definition pickle file.
         """
 
-        xml_luigi.attr_change(".//system",
-                              "threads",
-                              str(self.cmdopts["physics_n_engines"]))
+        exp_def.attr_change(".//system",
+                            "threads",
+                            str(self.cmdopts["physics_n_engines"]))
 
-    def _generate_library(self, xml_luigi: XMLLuigi) -> None:
+    def _generate_library(self, exp_def: XMLLuigi) -> None:
         """
         Generates XML changes to set the library that controllers and loop functions are sourced
         from to the name of the plugin passed on the cmdline. The ``__controller__`` tag is changed
@@ -149,14 +148,14 @@ class ARGoSExpDefGenerator:
 
         Does not write generated changes to the simulation definition pickle file.
         """
-        xml_luigi.attr_change(".//loop_functions",
-                              "library",
-                              "lib" + self.cmdopts['project'])
-        xml_luigi.attr_change(".//__controller__",
-                              "library",
-                              "lib" + self.cmdopts['project'])
+        exp_def.attr_change(".//loop_functions",
+                            "library",
+                            "lib" + self.cmdopts['project'])
+        exp_def.attr_change(".//__controller__",
+                            "library",
+                            "lib" + self.cmdopts['project'])
 
-    def _generate_visualization(self, xml_luigi: XMLLuigi) -> None:
+    def _generate_visualization(self, exp_def: XMLLuigi) -> None:
         """
         Generates XML changes to remove visualization elements from input file, if configured to do
         so. This depends on cmdline parameters, as visualization definitions should be left in if
@@ -166,25 +165,73 @@ class ARGoSExpDefGenerator:
         """
 
         if not self.cmdopts["argos_rendering"]:
-            xml_luigi.tag_remove(".", "./visualization", noprint=True)  # ARGoS visualizations
+            exp_def.tag_remove(".", "./visualization", noprint=True)  # ARGoS visualizations
         else:
             # Rendering must be processing before cameras, because it deletes the <qt_opengl>
             # tag if it exists, and then re-adds it.
             render = rendering.factory(self.cmdopts)
-
-            for r in render.gen_tag_rmlist()[0] or []:
-                xml_luigi.tag_remove(r.path, r.tag, True)  # OK if rendering stuff isn't there
-
-            for a in render.gen_tag_addlist()[0] or []:
-                xml_luigi.tag_add(a.path, a.tag, a.attr)
+            utils.apply_to_expdef(render, exp_def, True)
 
             cams = cameras.factory(self.cmdopts, [self.spec.arena_dim])
+            utils.apply_to_expdef(cams, exp_def, True)
 
-            for r in cams.gen_tag_rmlist()[0] or []:
-                xml_luigi.tag_remove(r.path, r.tag, True)  # OK if camera stuff isn't there
 
-            for a in cams.gen_tag_addlist()[0] or []:
-                xml_luigi.tag_add(a.path, a.tag, a.attr)
+class SimDefUniqueGenerator:
+    """
+    Generate XML changes unique to a simulation within an experiment.
+
+    These include:
+    - Random seeds for each simulation.
+    - Output directories for each simulation.
+
+    Attributes:
+        sim_num: The simulation # in the experiment.
+        sim_output_dir: Directory for simulation outputs in experiment root.
+        cmdopts: Dictionary containing parsed cmdline options.
+    """
+
+    def __init__(self,
+                 sim_num: int,
+                 exp_output_root: str,
+                 sim_output_dir: str,
+                 cmdopts: tp.Dict[str, tp.Any]) -> None:
+
+        self.exp_output_root = exp_output_root
+        self.sim_output_dir = sim_output_dir
+        self.cmdopts = cmdopts
+        self.sim_num = sim_num
+
+    @staticmethod
+    def _generate_random(exp_def, random_seed):
+        """
+        Generate XML changes for random seeding for a specific simulation in an experiment during
+        the input generation process.
+        """
+
+        # set the random seed in the config file
+        exp_def.attr_change(".//experiment", "random_seed", str(random_seed))
+        if exp_def.has_tag('.//params/rng'):
+            exp_def.attr_change(".//params/rng", "seed", str(random_seed))
+        else:
+            exp_def.tag_add(".//params", "rng", {"seed": str(random_seed)})
+
+    def generate(self, exp_def: XMLLuigi, random_seeds):
+        # Setup simulation random seed
+        self._generate_random(exp_def, random_seeds[self.sim_num])
+
+        # Setup simulation rendering output
+        self._generate_rendering(exp_def)
+
+    def _generate_rendering(self, exp_def: XMLLuigi):
+        """
+        Generates XML changes for setting up rendering for a specific simulation
+        """
+        frames_fpath = os.path.join(self.exp_output_root,
+                                    self.sim_output_dir,
+                                    config.kARGoSFramesLeaf)
+        exp_def.attr_change(
+            ".//qt-opengl/frame_grabbing",
+            "directory", frames_fpath, noprint=True)  # probably will not be present
 
 
 class BatchedExpDefGenerator:
@@ -206,8 +253,8 @@ class BatchedExpDefGenerator:
                            absolute). Each experiment will get a directory 'exp<n>' in this
                            directory for its outputs.
 
-        criteria: :class:`~sierra.core.variables.batch_criteria.BatchCriteria` derived object instance
-                  created from cmdline definition.
+        criteria: :class:`~sierra.core.variables.batch_criteria.BatchCriteria` derived object
+                  instance created from cmdline definition.
         controller_name: Name of controller generator to use.
         scenario_basename: Name of scenario generator to use.
     """
@@ -218,10 +265,9 @@ class BatchedExpDefGenerator:
                  controller_name: str,
                  scenario_basename: str,
                  cmdopts: tp.Dict[str, tp.Any]) -> None:
-        assert os.path.isfile(
-            batch_config_template), \
-            "The path '{}' (which should point to the main config file) did not point to a file".format(
-                batch_config_template)
+        assert os.path.isfile(batch_config_template),\
+            "'{0}' is not a valid file".format(batch_config_template)
+
         self.batch_config_template = os.path.abspath(batch_config_template)
         self.batch_config_leaf, _ = os.path.splitext(
             os.path.basename(self.batch_config_template))
@@ -288,5 +334,6 @@ class BatchedExpDefGenerator:
 
 __api__ = [
     'ARGoSExpDefGenerator',
+    'SimDefUniqueGenerator',
     'BatchedExpDefGenerator',
 ]

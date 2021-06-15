@@ -76,7 +76,7 @@ class BootstrapCmdline(BaseCmdline):
                                """ + self.stage_usage_doc([1, 2, 3, 4, 5]))
 
         bootstrap.add_argument("--log-level",
-                               choices=["INFO", "DEBUG"],
+                               choices=["INFO", "DEBUG", "TRACE"],
                                help="""
 
                                  The level of logging to use when running SIERRA.
@@ -174,32 +174,35 @@ class CoreCmdline(BaseCmdline):
                                      metavar="filepath",
                                      help="""
 
-                                 The template ``.argos`` input file for the batched experiment.
+                                     The template ``.argos`` input file for the batched experiment. Beyond the ARGoS
+                                     requirements, the content of the file can be any valid XML, with the exception of
+                                     the SIERRA requirements detailed in
+                                     :ref:`ln-tutorials-project-template-input-file`.
 
-                                 """ + self.stage_usage_doc([1, 2, 3, 4]))
+                                     """ + self.stage_usage_doc([1, 2, 3, 4]))
 
         self.multistage.add_argument("--exp-overwrite",
                                      help="""
 
-                                 When SIERRA calculates the batch experiment root ( or any child path in the batch
-                                 experiment root) during stage{1, 2}, if the calculated path already exists it is treated
-                                 as a fatal error and no modifications to the filesystem are performed. This flag
-                                 overwrides the default behavior. Provided to avoid accidentally overwrite input/output
-                                 files for an experiment, forcing the user to be explicit with potentially dangerous
-                                 actions.
+                                     When SIERRA calculates the batch experiment root ( or any child path in the batch
+                                     experiment root) during stage{1, 2}, if the calculated path already exists it is
+                                     treated as a fatal error and no modifications to the filesystem are performed. This
+                                     flag overwrides the default behavior. Provided to avoid accidentally overwrite
+                                     input/output files for an experiment, forcing the user to be explicit with
+                                     potentially dangerous actions.
 
-                                 """ + self.stage_usage_doc([1, 2]),
+                                     """ + self.stage_usage_doc([1, 2]),
                                      action='store_true')
 
         self.multistage.add_argument("--sierra-root",
                                      metavar="dirpath",
                                      help="""
 
-                                 Root directory for all SIERRA generated/created files.
+                                     Root directory for all SIERRA generated/created files.
 
-                                 Subdirectories for controllers, scenarios, experiment/simulation
-                                 inputs/outputs will be created in this directory as needed. Can persist
-                                 between invocations of SIERRA.
+                                     Subdirectories for controllers, scenarios, experiment/simulation inputs/outputs
+                                     will be created in this directory as needed. Can persist between invocations of
+                                     SIERRA.
 
                                  """ + self.stage_usage_doc([1, 2, 3, 4, 5]),
                                      default="<home directory>/exp")
@@ -208,20 +211,21 @@ class CoreCmdline(BaseCmdline):
                                      metavar="[<category>.<definition>,...]",
                                      help="""
 
-                                 Definition of criteria(s) to use to define the experiment.
+                                     Definition of criteria(s) to use to define the experiment.
 
-                                 Specified as a list of 0 or 1 space separated strings, each with the following
-                                 general structure:
+                                     Specified as a list of 0 or 1 space separated strings, each with the following
+                                     general structure:
 
-                                 ``<category>.<definition>``
+                                     ``<category>.<definition>``
 
-                                 ``<category>`` must be a filename from the ``core/variables/`` directory, and
-                                 ``<definition>`` must be a parsable name (according to the requirements of the criteria
-                                 defined by the parser for ``<category>``).
+                                     ``<category>`` must be a filename from the ``core/variables/`` or from a
+                                     ``--project`` ``<project>/variables/`` directory, and ``<definition>`` must be a
+                                     parsable namne (according to the requirements of the criteria defined by the parser
+                                     for ``<category>``).
 
-                                 Not all files within the ``core/variables/`` directory contain classes which can be
-                                 used as top level batch criteria; see the :ref:`ln-batch-criteria` docs for the ones
-                                 that can.
+                                     Not all files within the ``core/variables/`` directory contain classes which can be
+                                     used as top level batch criteria; see the :ref:`ln-batch-criteria` docs for the
+                                     ones that can.
 
                                  """ + self.stage_usage_doc([1, 2, 3, 4, 5]),
                                      nargs='+',
@@ -230,30 +234,31 @@ class CoreCmdline(BaseCmdline):
         self.multistage.add_argument("--pipeline",
                                      metavar="stages",
                                      help="""
-                                 Define which stages of the experimental pipeline to run:
 
-                                 - Stage1: Generate the experiment definition from the template input file, batch
-                                   criteria, and other command line options. Part of default pipeline.
+                                     Define which stages of the experimental pipeline to run:
 
-                                 - Stage2: Run the batched experiment on a previously generated experiment. Part of
-                                   default pipeline.
+                                     - Stage1: Generate the experiment definition from the template input file, batch
+                                       criteria, and other command line options. Part of default pipeline.
 
-                                 - Stage3: Post-process experimental results after running the batched experiment; some
-                                   parts of this can be done in parallel. Part of default pipeline.
+                                    - Stage2: Run the batched experiment on a previously generated experiment. Part of
+                                      default pipeline.
 
-                                 - Stage4: Perform deliverable generation after processing results for a batched
-                                   experiment, which can include shiny graphs and videos. Part of default pipeline.
+                                    - Stage3: Post-process experimental results after running the batched experiment;
+                                      some parts of this can be done in parallel. Part of default pipeline.
 
-                                 - Stage5: Perform graph generation for comparing controllers AFTER graph generation for
-                                   batched experiments has been run. Not part of default pipeline.
+                                    - Stage4: Perform deliverable generation after processing results for a batched
+                                      experiment, which can include shiny graphs and videos. Part of default pipeline.
 
-                                   .. IMPORTANT:: It is assumed that if stage5 is run that the # experiments and
-                                      batch criteria are the same for all controllers that will be compared. If this is
-                                      not true then weird things may or may not happen. Some level of checking and
-                                      verification is performed prior to comparison, but this functionality is alpha
-                                      quality at best.
+                                    - Stage5: Perform graph generation for comparing controllers AFTER graph generation
+                                      for batched experiments has been run. Not part of default pipeline.
 
-                                 """,
+                                      .. IMPORTANT:: It is assumed that if stage5 is run that the # experiments and
+                                         batch criteria are the same for all controllers that will be compared. If this
+                                         is not true then weird things may or may not happen. Some level of checking and
+                                         verification is performed prior to comparison, but this functionality is alpha
+                                         quality at best.
+
+                                     """,
                                      type=int,
                                      nargs='*',
                                      default=[1, 2, 3, 4]
@@ -261,33 +266,34 @@ class CoreCmdline(BaseCmdline):
         self.multistage.add_argument("--exp-range",
                                      help="""
 
-                                 Set the experiment numbers from the batch to run, average, generate intra-experiment
-                                 graphs from, or generate inter-experiment graphs from (0 based). Specified in the form
-                                 ``min_exp_num:max_exp_num``. If omitted, runs, averages, and generates intra-experiment
-                                 and inter-experiment performance measure graphs for all experiments in the batch
-                                 (default behavior).
+                                    Set the experiment numbers from the batch to run, average, generate intra-experiment
+                                    graphs from, or generate inter-experiment graphs from (0 based). Specified in the
+                                    form ``min_exp_num:max_exp_num``. If omitted, runs, averages, and generates
+                                    intra-experiment and inter-experiment performance measure graphs for all experiments
+                                    in the batch (default behavior).
 
-                                 This is useful to re-run part of a batched experiment in HPC environments if SIERRA
-                                 gets killed before it finishes running all experiments in the batch.
+                                    This is useful to re-run part of a batched experiment in HPC environments if SIERRA
+                                    gets killed before it finishes running all experiments in the batch.
 
                                  """ + self.stage_usage_doc([2, 3, 4]))
 
         self.multistage.add_argument("--argos-rendering",
                                      help="""
 
-                                 Enable ARGoS built in frame capture during stage 2+SIERRA rendering of captured frames
-                                 during stage 4. See :ref:`ln-usage-rendering` for full details.
+                                    Enable ARGoS built in frame capture during stage 2+SIERRA rendering of captured
+                                    frames during stage 4. See :ref:`ln-usage-rendering` for full details.
 
-                                 This option slows things down a LOT, so if you use it, ``--n-sims`` should probably be
-                                 low, unless you have gobs of computing power available.
-                               """ + self.stage_usage_doc([1, 4]),
+                                    This option slows things down a LOT, so if you use it, ``--n-sims`` should probably
+                                    be low, unless you have gobs of computing power available.
+
+                                    """ + self.stage_usage_doc([1, 4]),
                                      action='store_true')
 
         self.multistage.add_argument("--serial-processing",
                                      help="""
 
-                                 If TRUE, then results processing/graph generation will be performed serially, rather
-                                 than using parallellism where possible.
+                                    If TRUE, then results processing/graph generation will be performed serially, rather
+                                    than using parallellism where possible.
 
                                  """ + self.stage_usage_doc([3, 4]),
                                      action='store_true')
@@ -296,23 +302,22 @@ class CoreCmdline(BaseCmdline):
                                      type=int,
                                      help="""
 
-                                 The # of simulations that will be run and their results averaged to form the
-                                 result of a single experiment within a batch.
+                                    The # of simulations that will be run and their results averaged to form the result
+                                    of a single experiment within a batch.
 
-                                 If ``--hpc-env`` is something other than ``local`` then it will be used to determine #
-                                 # physics engines/simulation, and # threads/simulation.
-                                 jobs/HPC node,
+                                    If ``--hpc-env`` is something other than ``local`` then it will be used to determine
+                                    # # physics engines/simulation, and # threads/simulation.  jobs/HPC node,
 
-                                 """ + self.stage_usage_doc([1, 2]))
+                                     """ + self.stage_usage_doc([1, 2]))
 
         self.multistage.add_argument("--no-collate",
                                      help="""
 
-                                 Specify that no collation of data across experiments within a batch (stage 4) or across
-                                 simulations within an experiment (stage 3) should be performed. Useful if collation
-                                 takes a long time and multiple types of stage 4 outputs are desired.
+                                    Specify that no collation of data across experiments within a batch (stage 4) or
+                                    across simulations within an experiment (stage 3) should be performed. Useful if
+                                    collation takes a long time and multiple types of stage 4 outputs are desired.
 
-                                 """ + self.stage_usage_doc([3, 4]),
+                                     """ + self.stage_usage_doc([3, 4]),
                                      action='store_true')
 
     def init_stage1(self, for_sphinx: bool) -> None:
@@ -328,9 +333,9 @@ class CoreCmdline(BaseCmdline):
         experiment.add_argument("--time-setup",
                                 help="""
 
-                                 Defines simulation length, ticks per second for the experiment (<experiment> tag), # of
-                                 datapoints to capture/capture interval for each simulation. See :ref:`ln-vars-ts` for a
-                                 full description.
+                                Defines simulation length, ticks per second for the experiment (<experiment> tag), # of
+                                datapoints to capture/capture interval for each simulation. See :ref:`ln-vars-ts` for a
+                                full description.
 
                                  """ + self.stage_usage_doc([1]),
                                 default="time_setup.T{0}.K{1}.N{2}".format(config.kARGoS['duration'],
@@ -652,81 +657,6 @@ class CoreCmdline(BaseCmdline):
                                  """,
                                  action='store_true')
 
-        # Performance measure calculation options
-        pm = self.parser.add_argument_group('Stage4: Summary Performance Measure Options')
-
-        pm.add_argument("--pm-scalability-from-exp0",
-                        help="""
-
-                        If passed, then swarm scalability will be calculated based on the "speedup" achieved by a swarm
-                        of size N in exp X relative to the performance in exp 0, as opposed to the performance in exp
-                        X-1 (default).
-
-                        """ + self.stage_usage_doc([4]),
-                        action='store_true')
-
-        pm.add_argument("--pm-scalability-normalize",
-                        help="""
-
-                        If passed, then swarm scalability will be normalized into [-1,1] via ``--pm-normalize-method``,
-                        as opposed to raw values (default). This may make graphs more or less readable/interpretable.
-
-                        """ + self.stage_usage_doc([4]),
-                        action='store_true')
-
-        pm.add_argument("--pm-self-org-normalize",
-                        help="""
-
-                        If passed, then swarm self-organization calculations will be normalized into [-1,1] via
-                        ``--pm-normalize-method``, as opposed to raw values (default). This may make graphs more or less
-                        readable/interpretable.
-
-                        """,
-                        action='store_true')
-
-        pm.add_argument("--pm-flexibility-normalize",
-                        help="""
-
-                        If passed, then swarm flexibility calculations will be normalized into [-1,1] via
-                        ``--pm-normalize-method``, as opposed to raw values (default), and HIGHER values will be
-                        better. This may make graphs more or less readable/interpretable; without normalization, LOWER
-                        values are better.
-
-                       """ + self.stage_usage_doc([4]),
-                        action='store_true')
-
-        pm.add_argument("--pm-robustness-normalize",
-                        help="""
-
-                        If passed, then swarm robustness calculations will be normalized into [-1,1] via
-                        ``--pm-normalize-method``, as opposed to raw values (default). This may make graphs more or less
-                        readable/interpretable.
-
-                        """ + self.stage_usage_doc([4]),
-                        action='store_true')
-
-        pm.add_argument("--pm-all-normalize",
-                        help="""
-
-                        If passed, then swarm scalability, self-organization, flexibility, and robustness calculations
-                        will be normalized into [-1,1] via ``--pm-normalize-method``, as opposed to raw values
-                        (default). This may make graphs more or less readable/interpretable.
-
-                        """ + self.stage_usage_doc([4]),
-                        action='store_true')
-
-        pm.add_argument("--pm-normalize-method",
-                        choices=['sigmoid'],
-                        help="""
-
-                        The method to use for normalizing performance measure results, where enabled:
-
-                        - ``sigmoid`` - Use a pair of sigmoids to normalize the results into [-1, 1]. Can be used with
-                          all performance measures.
-
-                        """ + self.stage_usage_doc([4]),
-                        default='sigmoid')
-
         # Plotting options
         plots = self.parser.add_argument_group('Stage4: Plotting Options')
 
@@ -818,64 +748,6 @@ class CoreCmdline(BaseCmdline):
 
                             """,
                             action="store_true")
-
-        # Variance curve similarity options
-        vcs = self.parser.add_argument_group('Stage4: Variance Curve Similarity (VCS) Options')
-
-        vcs.add_argument("--gen-vc-plots",
-                         help="""
-
-                          Generate plots of ideal vs. observed swarm [reactivity, adaptability] for each experiment in
-                          the batch.""" +
-                         self.bc_applicable_doc([':ref:`Temporal Variance <ln-bc-tv>`']) +
-                         self.stage_usage_doc([4]),
-                         action="store_true")
-
-        vcs.add_argument("--rperf-cs-method",
-                         help="""
-
-                         Raw Performance curve similarity method. Specify the method to use to calculate the similarity
-                         between raw performance curves from non-ideal conditions and ideal conditions (exp0). """ +
-                         self.cs_methods_doc() +
-                         self.bc_applicable_doc([':ref:`SAA Noise <ln-bc-saa-noise>`']) +
-                         self.stage_usage_doc([4]),
-                         choices=["pcm", "area_between", "frechet", "dtw", "curve_length"],
-                         default="dtw")
-        vcs.add_argument("--envc-cs-method",
-                         help="""
-
-                         Environmental conditions curve similarity method. Specify the method to use to calculate the
-                         similarity between curves of applied variance (non-ideal conditions) and ideal conditions
-                         (exp0). """ +
-                         self.cs_methods_doc() +
-                         self.bc_applicable_doc([':ref:`Temporal Variance <ln-bc-tv>`']) +
-                         self.stage_usage_doc([4]),
-                         choices=["pcm", "area_between", "frechet", "dtw", "curve_length"],
-                         default="dtw")
-
-        vcs.add_argument("--reactivity-cs-method",
-                         help="""
-
-                         Reactivity calculatation curve similarity method. Specify the method to use to calculate the
-                         similarity between the inverted applied variance curve for a simulation and the corrsponding
-                         performance curve. """ +
-                         self.cs_methods_doc() +
-                         self.bc_applicable_doc([':ref:`Temporal Variance <ln-bc-tv>`']) +
-                         self.stage_usage_doc([4]),
-                         choices=["pcm", "area_between", "frechet", "dtw", "curve_length"],
-                         default="dtw")
-
-        vcs.add_argument("--adaptability-cs-method",
-                         help="""
-
-                         Adaptability calculatation curve similarity method. Specify the method to use to calculate the
-                         similarity between the inverted applied variance curve for a simulation and the corrsponding
-                         performance curve.""" +
-                         self.cs_methods_doc() +
-                         self.bc_applicable_doc([':ref:`Temporal Variance <ln-bc-tv>`']) +
-                         self.stage_usage_doc([4]),
-                         choices=["pcm", "area_between", "frechet", "dtw", "curve_length"],
-                         default="dtw")
 
         # Rendering options
         rendering = self.parser.add_argument_group(

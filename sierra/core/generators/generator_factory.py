@@ -58,18 +58,14 @@ def scenario_generator_create(spec: ExperimentSpec,
     """
 
     def __init__(self, **kwargs) -> None:
-        res = re.search('[SDQPR][SSSLN]', spec.scenario_name)
-        assert res is not None, "Bad block distribution in {0}".format(spec.scenario_name)
-        abbrev = res.group(0)
         cmdopts = kwargs['cmdopts']
-
         self.logger = logging.getLogger(__name__)
         module = pm.module_load_tiered(cmdopts['project'],
                                        'generators.scenario_generators')
-
-        self.scenario_generator = getattr(module, abbrev + 'Generator')(controller=controller,
-                                                                        spec=spec,
-                                                                        **kwargs)
+        generator_name = module.gen_generator_name(spec.scenario_name)
+        self.scenario_generator = getattr(module, generator_name)(controller=controller,
+                                                                  spec=spec,
+                                                                  **kwargs)
 
     def generate(self):
         return self.scenario_generator.generate()

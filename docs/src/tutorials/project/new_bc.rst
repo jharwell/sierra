@@ -1,4 +1,4 @@
-.. _ln-tutorials-new-bc:
+.. _ln-tutorials-project-new-bc:
 
 ===========================
 Create A New Batch Criteria

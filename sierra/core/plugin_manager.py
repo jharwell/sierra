@@ -23,6 +23,7 @@ import importlib
 import os
 import logging
 import typing as tp
+import sys
 
 # 3rd party packages
 from singleton_decorator import singleton
@@ -220,24 +221,24 @@ def bc_load(cmdopts: tp.Dict[str, tp.Any], category: str):
 def module_load_tiered(project: str, path: str):
     # First, see if the requested module is a project
     if module_exists(path):
-        logging.debug("Using project path '%s'", path)
+        logging.trace("Using project path '%s'", path)
         return module_load(path)
 
     # First, see if the requested module is part of the project plugin
     plugin_path = 'projects.{0}.{1}'.format(project, path)
     if module_exists(plugin_path):
-        logging.debug("Using project plugin path '%s'", plugin_path)
+        logging.trace("Using project plugin path '%s'", plugin_path)
         return module_load(plugin_path)
     else:
-        logging.debug("Project plugin path '%s' does not exist", plugin_path)
+        logging.trace("Project plugin path '%s' does not exist", plugin_path)
 
     # If that didn't work, then check the SIERRA core
     core_path = 'sierra.core.{0}'.format(path)
     if module_exists(core_path):
-        logging.debug("Using SIERRA core path '%s'", core_path)
+        logging.trace("Using SIERRA core path '%s'", core_path)
         return module_load(core_path)
     else:
-        logging.debug("SIERRA core path '%s' does not exist", core_path)
+        logging.trace("SIERRA core path '%s' does not exist", core_path)
 
     # Module does not exist
-    raise ImportError(path)
+    raise ImportError('project: {0} path: {1} sys.path: {2}', project, path, sys.path)

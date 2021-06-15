@@ -2,6 +2,20 @@
 SIERRA Quickstart
 =================
 
+First, setup SIERRA itself:
+
+#. From the SIERRA repo root, install python dependencies with ``pip3``::
+
+     pip3 install --upgrade pip
+     pip3 install -r requirements/common.txt
+
+#. Install OS packages (ubuntu package names shown):
+
+   - ``parallel``
+   - ``cm-super``
+   - ``texlive-fonts-recommended``
+   - ``texlive-latex-extra``
+
 After developing the C++ code for your project, you need to link it with
 SIERRA. To do that, you need to:
 
@@ -37,7 +51,8 @@ SIERRA. To do that, you need to:
      - Figure out the directory to load graph and simulation processing
        configuration from.
 
-   - What template input file to use: ``--template-input-file``.
+   - What template input file to use: ``--template-input-file``. See
+     :ref:`ln-tutorials-project-template-input-file` for requirements.
 
    - How many copies of each simulation to run per experiment: ``--n-sims``.
 
@@ -61,6 +76,10 @@ SIERRA. To do that, you need to:
    Full documentation of all command line options it accepts is in
    :ref:`ln-usage-cli`, and there are many useful options that SIERRA accepts,
    so skimming the CLI docs is **very** worthwhile.
+
+   .. IMPORTANT:: Do not try to run SIERRA with a debug build of whatever
+                  project you are using (:xref:`FORDYCA`, :xref:`SILICON`,
+                  etc). It will work but be obnoxiously/irritatingly slow.
 
 #. Learn SIERRA's runtime :ref:`ln-runtime-exp-tree`. When running, SIERRA will
    create a (rather) large directory structure for you, so reading the docs is

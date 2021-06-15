@@ -20,16 +20,10 @@ Classes for the various storage plugins that can be used with SIERRA for reading
 # Core packages
 
 # 3rd party packages
-from singleton_decorator import singleton
 import pandas as pd
 
 # Project packages
-import sierra.core.plugin_manager
-
-
-@singleton
-class StoragePluginManager(sierra.core.plugin_manager.DirectoryPluginManager):
-    pass
+import sierra.core.plugin_manager as pm
 
 ################################################################################
 # Dispatchers
@@ -45,7 +39,7 @@ class DataFrameWriter():
         self.medium = medium
 
     def __call__(self, df: pd.DataFrame, path: str, **kwargs) -> None:
-        storage = StoragePluginManager().get_plugin(self.medium)
+        storage = pm.SIERRAPluginManager().get_plugin(self.medium)
         return storage.df_write(df, path, **kwargs)  # type: ignore
 
 
@@ -59,7 +53,7 @@ class DataFrameReader():
         self.medium = medium
 
     def __call__(self, path: str, **kwargs) -> pd.DataFrame:
-        storage = StoragePluginManager().get_plugin(self.medium)
+        storage = pm.SIERRAPluginManager().get_plugin(self.medium)
         return storage.df_read(path, **kwargs)  # type: ignore
 
 

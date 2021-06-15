@@ -23,15 +23,11 @@ import os
 
 # 3rd party packages
 import pandas as pd
-import matplotlib
 import matplotlib.pyplot as plt
 
 # Project packages
 import sierra.core.config
 import sierra.core.utils
-
-matplotlib.use('Agg')
-plt.rcParams["axes.prop_cycle"] = plt.cycler("color", plt.cm.tab20.colors)
 
 
 class StackedLineGraph:

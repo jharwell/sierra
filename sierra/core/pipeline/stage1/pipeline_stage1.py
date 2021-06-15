@@ -25,7 +25,7 @@ import typing as tp
 # 3rd party packages
 
 # Project packages
-from sierra.core.generators.exp_generator import BatchedExpDefGenerator
+from sierra.core.generators.exp_generators import BatchedExpDefGenerator
 from sierra.core.generators.exp_creator import BatchedExpCreator
 import sierra.core.variables.batch_criteria as bc
 
@@ -40,9 +40,9 @@ class PipelineStage1:
     """
 
     def __init__(self,
+                 cmdopts: tp.Dict[str, tp.Any],
                  controller: str,
-                 criteria: bc.IConcreteBatchCriteria,
-                 cmdopts: tp.Dict[str, tp.Any]) -> None:
+                 criteria: bc.IConcreteBatchCriteria) -> None:
         self.generator = BatchedExpDefGenerator(batch_config_template=cmdopts['template_input_file'],
                                                 controller_name=controller,
                                                 scenario_basename=cmdopts['scenario'],

@@ -24,7 +24,6 @@ from collections.abc import Iterable
 import os
 
 # 3rd party packages
-import coloredlogs
 
 # Project packages
 import sierra.core.cmdline as cmd
@@ -34,6 +33,7 @@ from sierra.core.pipeline.pipeline import Pipeline
 from sierra.core.generators.controller_generator_parser import ControllerGeneratorParser
 import sierra.core.root_dirpath_generator as rdg
 import sierra.core.plugin_manager as pm
+import sierra.core.logging
 
 
 class SIERRA():
@@ -46,9 +46,8 @@ class SIERRA():
         bootstrap = cmd.BootstrapCmdline()
         bootstrap_args, other_args = bootstrap.parser.parse_known_args()
 
-        # Get nice colored logging output!
-        coloredlogs.install(fmt='%(asctime)s %(levelname)s %(name)s - %(message)s',
-                            level=eval("logging." + bootstrap_args.log_level))
+        # Setup logging customizations
+        sierra.core.logging.initialize(bootstrap_args.log_level)
 
         self.logger = logging.getLogger(__name__)
 
@@ -72,7 +71,9 @@ class SIERRA():
         # Update PYTHONPATH with SIERRA_PROJECT_PATH
         env = os.environ.get('SIERRA_PROJECT_PATH')
         if env is not None:
-            sys.path.extend(env.split(os.pathsep))
+            # 2021/07/19: If you put the entries at the end of sys.path it doesn't work for some
+            # reason...
+            sys.path = list(sys.path[0]) + env.split(os.pathsep) + sys.path[1:]
 
         # Load project cmdline extensions
         project = bootstrap_args.project
@@ -109,3 +110,11 @@ class SIERRA():
         else:
             pipeline = Pipeline(self.args, None, {})
             pipeline.run()
+
+
+def main():
+    SIERRA()()
+
+
+if __name__ == "__main__":
+    main()

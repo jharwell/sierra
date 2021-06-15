@@ -16,11 +16,9 @@ Welcome to the documentation for SIERRA: the amazing swarm robotics automation t
    src/tutorials/index.rst
 
    src/hpc/index.rst
-   src/msi/index.rst
 
    src/usage/index.rst
 
-   src/projects/index.rst
    src/faq.rst
    src/contributing.rst
    src/glossary.rst

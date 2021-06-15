@@ -29,7 +29,7 @@ class Vector3D:
     operations.
     """
 
-    def __init__(self, x: float = 0, y: float = 0, z: float = 0):
+    def __init__(self, x=0, y=0, z=0):
         self.x = x
         self.y = y
         self.z = z
@@ -39,6 +39,9 @@ class Vector3D:
             raise NotImplementedError
 
         return self.x == other.x and self.y == other.y and self.z == other.z
+
+    def __hash__(self) -> int:
+        return hash((self.x, self.y, self.z))
 
     def __len__(self) -> int:
         return int(self.length())

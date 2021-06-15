@@ -14,17 +14,23 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-import pickle
+# Core packages
 import logging
 import typing as tp
 
+# 3rd party packages
+
+# Project packages
 from sierra.core.variables import arena_shape
 from sierra.core.variables import population_size
 from sierra.core.xml_luigi import XMLLuigi
-from sierra.core.generators import exp_generator
 from sierra.core.variables import physics_engines
 from sierra.core.utils import ArenaExtent as ArenaExtent
 from sierra.core.experiment_spec import ExperimentSpec
+import sierra.core.variables.rendering as rendering
+import sierra.core.variables.time_setup as ts
+import sierra.core.utils as scutils
+from sierra.core.variables import cameras
 
 
 class ARGoSScenarioGenerator():
@@ -45,13 +51,33 @@ class ARGoSScenarioGenerator():
         self.controller = controller
         self.spec = spec
         self.cmdopts = cmdopts
+        self.template_input_file = kwargs['template_input_file']
         self.kwargs = kwargs
         self.logger = logging.getLogger(__name__)
 
     def generate(self) -> XMLLuigi:
-        return exp_generator.ARGoSExpDefGenerator(spec=self.spec,
-                                                  cmdopts=self.cmdopts,
-                                                  **self.kwargs).generate()
+        """
+        Generates XML changes to simulation input files that are common to all experiments.
+        """
+        # create an object that will edit the XML file
+        exp_def = XMLLuigi(self.template_input_file)
+
+        # Setup library
+        self._generate_library(exp_def)
+
+        # Setup simulation visualizations
+        self._generate_visualization(exp_def)
+
+        # Setup threading
+        self._generate_threading(exp_def)
+
+        # Setup robot sensors/actuators
+        self._generate_saa(exp_def)
+
+        # Setup simulation time parameters
+        self._generate_time(exp_def)
+
+        return exp_def
 
     def generate_arena_shape(self, exp_def: XMLLuigi, shape: arena_shape.ArenaShape) -> None:
         """
@@ -59,18 +85,9 @@ class ARGoSScenarioGenerator():
 
         Writes generated changes to the simulation definition pickle file.
         """
-        # We check for attributes before modification because if we are not rendering video, then we
-        # get a bunch of spurious warnings about deleted tags/attributes.
-        for a in shape.gen_attr_changelist()[0]:
-            if exp_def.has_tag(a.path):
-                exp_def.attr_change(a.path, a.attr, a.value)
+        rms, adds, chgs = scutils.apply_to_expdef(shape, exp_def)
 
-        shape.gen_attr_changelist()[0].pickle(self.spec.exp_def_fpath)
-
-        rms = shape.gen_tag_rmlist()
-        if rms:  # non-empty
-            for r in rms[0]:
-                exp_def.tag_remove(r.path, r.tag)
+        scutils.pickle_modifications(rms, adds, chgs, self.spec.exp_def_fpath)
 
     def generate_n_robots(self, xml_luigi: XMLLuigi) -> None:
         """
@@ -115,12 +132,91 @@ class ARGoSScenarioGenerator():
 
         pe = physics_engines.factory(engine_type, n_engines, cmdopts, extents)
 
-        if remove_defs:
-            for a in pe.gen_tag_rmlist()[0]:
-                exp_def.tag_remove(a.path, a.tag)
+        scutils.apply_to_expdef(pe, exp_def)
 
-        for r in pe.gen_tag_addlist()[0]:
-            exp_def.tag_add(r.path, r.tag, r.attr)
+    def _generate_saa(self, exp_def: XMLLuigi) -> None:
+        """
+        Generates XML changes to disable selected sensors/actuators, which are computationally
+        expensive in large swarms, but not that costly if the # robots is small.
+
+        Does not write generated changes to the simulation definition pickle file.
+        """
+        if not self.cmdopts["with_robot_rab"]:
+            exp_def.tag_remove(".//media", "range_and_bearing", noprint=True)
+            exp_def.tag_remove(".//actuators", "range_and_bearing", noprint=True)
+            exp_def.tag_remove(".//sensors", "range_and_bearing", noprint=True)
+
+        if not self.cmdopts["with_robot_leds"]:
+            exp_def.tag_remove(".//actuators", "leds", noprint=True)
+            exp_def.tag_remove(".//sensors", "colored_blob_omnidirectional_camera", noprint=True)
+            exp_def.tag_remove(".//media", "led", noprint=True)
+
+        if not self.cmdopts["with_robot_battery"]:
+            exp_def.tag_remove(".//sensors", "battery", noprint=True)
+            exp_def.tag_remove(".//entity/*", "battery", noprint=True)
+
+    def _generate_time(self, exp_def: XMLLuigi) -> None:
+        """
+        Generate XML changes to setup simulation time parameters.
+
+        Writes generated changes to the simulation definition pickle file.
+        """
+        tsetup = ts.factory(self.cmdopts["time_setup"])()
+
+        adds, rms, chgs = scutils.apply_to_expdef(tsetup, exp_def)
+
+        # Write time setup info to file for later retrieval
+        scutils.pickle_modifications(adds, rms, chgs, self.spec.exp_def_fpath)
+
+    def _generate_threading(self, exp_def: XMLLuigi) -> None:
+        """
+        Generates XML changes to set the # of cores for a simulation to use, which may be less than
+        the total # available on the system, depending on the experiment definition and user
+        preferences.
+
+        Does not write generated changes to the simulation definition pickle file.
+        """
+
+        exp_def.attr_change(".//system",
+                            "threads",
+                            str(self.cmdopts["physics_n_engines"]))
+
+    def _generate_library(self, exp_def: XMLLuigi) -> None:
+        """
+        Generates XML changes to set the library that controllers and loop functions are sourced
+        from to the name of the plugin passed on the cmdline. The ``__controller__`` tag is changed
+        during stage 1, but since this function is called as part of common def generation, it
+        happens BEFORE that, and so this is OK. If, for some reason that assumption becomes invalid,
+        a warning will be issued about a non-existent XML path, so it won't be a silent error.
+
+        Does not write generated changes to the simulation definition pickle file.
+        """
+        exp_def.attr_change(".//loop_functions",
+                            "library",
+                            "lib" + self.cmdopts['project'])
+        exp_def.attr_change(".//__controller__",
+                            "library",
+                            "lib" + self.cmdopts['project'])
+
+    def _generate_visualization(self, exp_def: XMLLuigi) -> None:
+        """
+        Generates XML changes to remove visualization elements from input file, if configured to do
+        so. This depends on cmdline parameters, as visualization definitions should be left in if
+        ARGoS should output simulation frames for video creation.
+
+        Does not write generated changes to the simulation definition pickle file.
+        """
+
+        if not self.cmdopts["argos_rendering"]:
+            exp_def.tag_remove(".", "./visualization", noprint=True)  # ARGoS visualizations
+        else:
+            # Rendering must be processing before cameras, because it deletes the <qt_opengl>
+            # tag if it exists, and then re-adds it.
+            render = rendering.factory(self.cmdopts)
+            scutils.apply_to_expdef(render, exp_def, True)
+
+            cams = cameras.factory(self.cmdopts, [self.spec.arena_dim])
+            scutils.apply_to_expdef(cams, exp_def, True)
 
 
 __api__ = [

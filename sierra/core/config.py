@@ -22,15 +22,36 @@ import logging
 
 # 3rd party packages
 import matplotlib as mpl
+import matplotlib.pyplot as plt
 
+
+# Project packages
+
+################################################################################
+# Matplotlib Configuration
+################################################################################
 mpl.rcParams['lines.linewidth'] = 3
 mpl.rcParams['lines.markersize'] = 10
 mpl.rcParams['figure.max_open_warning'] = 10000
 mpl.rcParams['axes.formatter.limits'] = (-4, 4)
+
+# Use latex to render all math, so that it matches how the math renders in papers.
+mpl.rcParams['text.usetex'] = True
+
+# mpl.rcParams["axes.prop_cycle"] = plt.cycler("color", plt.cm.tab20.colors)
+
+# Turn off MPL messages when the log level is set to DEBUG. Otherwise you get HUNDREDS.
 logging.getLogger('matplotlib').setLevel(logging.WARNING)
+
+# Set MPL backend (headless for non-interactive use)
 mpl.use('Agg')
 
-# Project packages
+# Set MPL style
+mpl.style.use('seaborn-colorblind')
+
+################################################################################
+# General Configuration
+################################################################################
 
 kImageExt = '.png'
 
@@ -39,6 +60,8 @@ kRenderFormat = '.mp4'
 kPickleExt = '.pkl'
 
 kPickleLeaf = 'exp_def' + kPickleExt
+
+kARGoSFramesLeaf = 'frames'
 
 kGraphDPI = 100
 

@@ -32,8 +32,6 @@ from mpl_toolkits.mplot3d import Axes3D
 import sierra.core.config
 import sierra.core.utils
 
-mpl.use('Agg')
-
 
 class StackedSurfaceGraph:
     """

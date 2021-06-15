@@ -1,5 +1,6 @@
 .. _ln-trial:
 
+=================
 Trying Out SIERRA
 =================
 
@@ -30,26 +31,31 @@ defining your own, the steps to do so are:
      pip3 install --upgrade pip
      pip3 install -r requirements/common.txt
 
-#. Install OS packages:
+#. Install OS packages (ubuntu package names shown):
 
-   - GNU parallel (``sudo apt-get install parallel`` on ubuntu)
+   - ``parallel``
+   - ``cm-super``
+   - ``texlive-fonts-recommended``
+   - ``texlive-latex-extra``
 
-#. From the SIERRA repo root, clone the SIERRA project plugin for the FORDYCA
-   project and checkout the ``devel`` branch::
+#. Clone the TITERRA project plugin and checkout the ``devel`` branch::
 
-     mkdir projects
-     git clone https://github.com/swarm-robotics/sierra-plugin-fordyca.git projects/fordyca
-     cd projects/fordyca
+     cd $HOME/research
+     git clone https://github.com/swarm-robotics/titerra.git
      git checkout devel
+
+#. Set :envvar:`SIERRA_PROJECT_PATH`::
+
+     export SIERRA_PROJECT_PATH=$HOME/research/titerra
 
 #. From the SIERRA repo root, run SIERRA::
 
-     python3 sierra.py \
+     python3 main.py \
         --sierra-root=$HOME/exp\
         --template-input-file=templates/ideal.argos \
         --n-sims=3\
         --project=fordyca\
-        --hpc-env=local\
+        --hpc-env=hpc.local\
         --physics-n-engines=1\
         --time-setup=time_setup.T10000\
         --controller=d0.CRW\

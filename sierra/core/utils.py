@@ -31,6 +31,7 @@ from retry import retry
 
 # Project packages
 from sierra.core.vector import Vector3D
+from sierra.core.xml_luigi import XMLLuigi, XMLAttrChangeSet, XMLTagAddList, XMLTagRmList
 
 
 class ArenaExtent():
@@ -40,7 +41,7 @@ class ArenaExtent():
         return ArenaExtent(ur - ll, ll)
 
     def __init__(self, dims: Vector3D, origin: Vector3D = Vector3D()) -> None:
-        self.origin = origin
+        self._origin = origin
         self.dims = dims
         self.ll = origin
         self.ur = origin + dims
@@ -53,17 +54,20 @@ class ArenaExtent():
     def area(self) -> float:
         return self.dims.x * self.dims.y
 
-    def xsize(self):
+    def xsize(self) -> int:
         return self.dims.x
 
-    def ysize(self):
+    def ysize(self) -> int:
         return self.dims.y
 
-    def zsize(self):
+    def zsize(self) -> int:
         return self.dims.z
 
+    def origin(self) -> Vector3D:
+        return self._origin
+
     def __str__(self) -> str:
-        return str(self.dims) + '@' + str(self.origin)
+        return str(self.dims) + '@' + str(self._origin)
 
 
 class Sigmoid():
@@ -232,6 +236,50 @@ def bivar_exp_labels_calc(exp_dirs: tp.List[str]) -> tp.Tuple[tp.List[str], tp.L
     ylabels = sorted(list(ylabels_set))
 
     return (xlabels, ylabels)
+
+
+def apply_to_expdef(var, exp_def: XMLLuigi, noprint: bool = False) -> tp.Tuple[XMLTagAddList,
+                                                                               XMLTagRmList,
+                                                                               XMLAttrChangeSet]:
+    rms = var.gen_tag_rmlist()
+    adds = var.gen_tag_addlist()
+    chgs = var.gen_attr_changelist()
+    if rms:
+        rms = rms[0]
+        for r in rms:
+            exp_def.tag_remove(r.path, r.tag, noprint)
+    else:
+        rms = None
+
+    if adds:
+        adds = adds[0]
+        for a in adds:
+            exp_def.tag_add(a.path, a.tag, a.attr, noprint)
+    else:
+        adds = None
+
+    if chgs:
+        chgs = chgs[0]
+        for c in chgs:
+            exp_def.attr_change(c.path, c.attr, c.value, noprint)
+    else:
+        chgs = None
+
+    return rms, adds, chgs
+
+
+def pickle_modifications(rms: tp.Optional[XMLTagAddList],
+                         adds: tp.Optional[XMLTagRmList],
+                         chgs: tp.Optional[XMLAttrChangeSet],
+                         path: str) -> None:
+    if rms is not None:
+        rms.pickle(path)
+
+    if adds is not None:
+        adds.pickle(path)
+
+    if chgs is not None:
+        chgs.pickle(path)
 
 
 __api__ = [

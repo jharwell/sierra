@@ -26,13 +26,9 @@ import logging
 import typing as tp
 
 # 3rd party packages
+import json
 
 # Project packages
-import sierra.core.perf_measures.scalability as pms
-import sierra.core.perf_measures.self_organization as pmso
-import sierra.core.perf_measures.raw as pmraw
-import sierra.core.perf_measures.robustness as pmb
-import sierra.core.perf_measures.flexibility as pmf
 import sierra.core.utils
 from sierra.core.graphs.stacked_line_graph import StackedLineGraph
 from sierra.core.graphs.summary_line_graph import SummaryLinegraph
@@ -43,9 +39,12 @@ import sierra.core.config
 class InterExpGraphGenerator:
     """
     Generates graphs from collated ``.csv`` files across experiments in a batch. Which graphs are
-    generated is controlled by (1) YAML configuration files parsed in
-    :class:`~sierra.core.pipeline.stage4.pipeline_stage4.PipelineStage4` (2) which batch criteria was used
-    (for performance measures).
+    generated can be controlled by:
+
+    #. YAML configuration files parsed in
+    :class:`~sierra.core.pipeline.stage4.pipeline_stage4.PipelineStage4`
+
+    #. The batch criteria was used (if this class is extended in a ``--project``).
 
     """
 
@@ -59,7 +58,8 @@ class InterExpGraphGenerator:
         self.main_config = main_config
         self.targets = targets
 
-        sierra.core.utils.dir_create_checked(self.cmdopts['batch_graph_collate_root'], exist_ok=True)
+        sierra.core.utils.dir_create_checked(
+            self.cmdopts['batch_graph_collate_root'], exist_ok=True)
         self.logger = logging.getLogger(__name__)
 
     def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
@@ -68,20 +68,11 @@ class InterExpGraphGenerator:
 
         #. :class:`~sierra.core.pipeline.stage4.inter_exp_graph_generator.LinegraphsGenerator`
            to generate linegraphs (univariate batch criteria only).
-
-        #. :class:`~sierra.core.pipeline.stage4.inter_exp_graph_generator.UnivarPerfMeasuresGenerator`
-           to performance measures (univariate batch criteria only).
-
-        #. :class:`~sierra.core.pipeline.stage4.inter_exp_graph_generator.BivarPerfMeasuresGenerator`
-           to generate performance measures (bivariate batch criteria only).
         """
 
         if criteria.is_univar():
             if not self.cmdopts['project_no_yaml_LN']:
                 LinegraphsGenerator(self.cmdopts, self.targets).generate(criteria)
-            UnivarPerfMeasuresGenerator(self.main_config, self.cmdopts)(criteria)
-        else:
-            BivarPerfMeasuresGenerator(self.main_config, self.cmdopts)(criteria)
 
 
 class LinegraphsGenerator:
@@ -108,6 +99,7 @@ class LinegraphsGenerator:
         for category in self.targets:
             # For each graph in each category
             for graph in category['graphs']:
+                self.logger.trace('\n' + json.dumps(graph, indent=4))
                 if graph.get('summary', False):
                     SummaryLinegraph(stats_root=self.cmdopts['batch_stat_collate_root'],
                                      input_stem=graph['dest_stem'],
@@ -138,114 +130,5 @@ class LinegraphsGenerator:
                                      large_text=self.cmdopts['plot_large_text']).generate()
 
 
-class UnivarPerfMeasuresGenerator:
-    """
-    Generates performance measures from collated .csv data across a batch of experiments. Which
-    measures are generated is controlled by the batch criteria used for the experiment. Univariate
-    batch criteria only.
-
-    Attributes:
-        cmdopts: Dictionary of parsed cmdline options.
-        main_config: Dictionary of parsed main YAML config.
-    """
-
-    def __init__(self,
-                 main_config: tp.Dict[str, tp.Any],
-                 cmdopts: tp.Dict[str, tp.Any]) -> None:
-        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
-        # are generated after us
-        self.cmdopts = copy.deepcopy(cmdopts)
-        self.main_config = main_config
-
-    def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
-        perf_csv = self.main_config['perf']['intra_perf_csv']
-        perf_col = self.main_config['perf']['intra_perf_col']
-        interference_csv = self.main_config['perf']['intra_interference_csv']
-        interference_col = self.main_config['perf']['intra_interference_col']
-        raw_title = self.main_config['perf']['raw_perf_title']
-        raw_ylabel = self.main_config['perf']['raw_perf_ylabel']
-
-        if criteria.pm_query('raw'):
-            pmraw.SteadyStateRawUnivar(self.cmdopts, perf_csv, perf_col).from_batch(criteria,
-                                                                                    title=raw_title,
-                                                                                    ylabel=raw_ylabel)
-        if criteria.pm_query('scalability'):
-            pms.ScalabilityUnivarGenerator()(perf_csv, perf_col, self.cmdopts, criteria)
-
-        if criteria.pm_query('self-org'):
-            pmso.SelfOrgUnivarGenerator()(self.cmdopts,
-                                          perf_csv,
-                                          perf_col,
-                                          interference_csv,
-                                          interference_col,
-                                          criteria)
-
-        if criteria.pm_query('flexibility'):
-            pmf.FlexibilityUnivarGenerator()(self.cmdopts,
-                                             self.main_config,
-                                             criteria)
-
-        if criteria.pm_query('robustness_pd') or criteria.pm_query('robustness_saa'):
-            pmb.RobustnessUnivarGenerator()(self.cmdopts,
-                                            self.main_config,
-                                            criteria)
-
-
-class BivarPerfMeasuresGenerator:
-    """
-    Generates performance measures from collated .csv data across a batch of experiments. Which
-    measures are generated is controlled by the batch criteria used for the experiment. Bivariate
-    batch criteria only.
-
-    Attributes:
-        cmdopts: Dictionary of parsed cmdline options.
-        main_config: Dictionary of parsed main YAML config.
-    """
-
-    def __init__(self,
-                 main_config: tp.Dict[str, tp.Any],
-                 cmdopts: tp.Dict[str, tp.Any]) -> None:
-        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
-        # are generated after us
-        self.cmdopts = copy.deepcopy(cmdopts)
-        self.main_config = main_config
-
-    def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
-        perf_csv = self.main_config['perf']['intra_perf_csv']
-        perf_col = self.main_config['perf']['intra_perf_col']
-        interference_csv = self.main_config['perf']['intra_interference_csv']
-        interference_col = self.main_config['perf']['intra_interference_col']
-        raw_title = self.main_config['perf']['raw_perf_title']
-
-        if criteria.pm_query('raw'):
-            pmraw.SteadyStateRawBivar(self.cmdopts,
-                                      perf_csv=perf_csv,
-                                      perf_col=perf_col).from_batch(criteria,
-                                                                    title=raw_title)
-
-        if criteria.pm_query('scalability'):
-            pms.ScalabilityBivarGenerator()(perf_csv, perf_col, self.cmdopts, criteria)
-
-        if criteria.pm_query('self-org'):
-            pmso.SelfOrgBivarGenerator()(self.cmdopts,
-                                         perf_csv,
-                                         perf_col,
-                                         interference_csv,
-                                         interference_col,
-                                         criteria)
-
-        if criteria.pm_query('flexibility'):
-            pmf.FlexibilityBivarGenerator()(self.cmdopts,
-                                            self.main_config,
-                                            criteria)
-
-        if criteria.pm_query('robustness_pd') or criteria.pm_query('robustness_saa'):
-            pmb.RobustnessBivarGenerator()(self.cmdopts,
-                                           self.main_config,
-                                           criteria)
-
-
 __api__ = ['InterExpGraphGenerator',
-           'BivarPerfMeasuresGenerator',
-           'UnivarPerfMeasuresGenerator',
            'LinegraphsGenerator']

@@ -37,8 +37,9 @@ from sierra.core.pipeline.stage4.model_runner import InterExpModelRunner
 import sierra.core.variables.batch_criteria as bc
 
 from sierra.core.pipeline.stage4.video_renderer import BatchExpParallelVideoRenderer
-import sierra.core.plugin_manager
+import sierra.core.plugin_manager as pm
 import sierra.core.config
+from sierra.core.pipeline.stage4.yaml_config_loader import YAMLConfigLoader
 
 
 class PipelineStage4:
@@ -97,8 +98,15 @@ class PipelineStage4:
                                                              'controllers.yaml')),
                                            yaml.FullLoader)
         self.logger = logging.getLogger(__name__)
-        self._load_LN_config()
-        self._load_HM_config()
+
+        # Load YAML config
+        loader = pm.module_load_tiered(self.cmdopts['project'],
+                                       'pipeline.stage4.yaml_config_loader')
+        config = loader.YAMLConfigLoader()(self.cmdopts)
+        self.intra_LN_config = config['intra_LN']
+        self.intra_HM_config = config['intra_HM']
+        self.inter_LN_config = config['inter_LN']
+
         self._load_models()
 
     def run(self, criteria: bc.IConcreteBatchCriteria) -> None:
@@ -163,18 +171,18 @@ class PipelineStage4:
         self.logger.info("Loading models for project '%s'", self.cmdopts['project'])
 
         self.models_config = yaml.load(open(project_models), yaml.FullLoader)
-        pm = sierra.core.plugin_manager.ModelPluginManager()
-        pm.initialize(os.path.join(self.cmdopts['project_model_root']))
+        models_pm = pm.ModelPluginManager(self.cmdopts['project_model_root'])
+        models_pm.initialize()
 
         # All models present in the .yaml file are enabled/set to run unconditionally
-        for module_name in pm.available_plugins():
+        for module_name in models_pm.available_plugins():
             # No models specified--nothing to do
             if self.models_config.get('models') is None or self.models_config['models'] is None:
                 continue
 
             for conf in self.models_config['models']:
                 if conf['pyfile'] == module_name:
-                    module = pm.load_plugin(module_name)
+                    module = models_pm.load_plugin(module_name)
                     for avail in module.available_models('intra'):
                         model = getattr(module, avail)(self.main_config, conf)
                         self.models_intra.append(model)
@@ -193,60 +201,33 @@ class PipelineStage4:
                              self.cmdopts['project'])
 
     def _load_LN_config(self) -> None:
-        self.inter_LN_config = yaml.load(open(os.path.join(self.cmdopts['core_config_root'],
-                                                           'inter-graphs-line.yaml')),
-                                         yaml.FullLoader)
-        self.intra_LN_config = yaml.load(open(os.path.join(self.cmdopts['core_config_root'],
-                                                           'intra-graphs-line.yaml')),
-                                         yaml.FullLoader)
+        self.inter_LN_config = {}
+        self.intra_LN_config = {}
         project_inter_LN = os.path.join(self.cmdopts['project_config_root'],
                                         'inter-graphs-line.yaml')
         project_intra_LN = os.path.join(self.cmdopts['project_config_root'],
                                         'intra-graphs-line.yaml')
 
         if sierra.core.utils.path_exists(project_intra_LN):
-            self.logger.info("Loading additional intra-experiment linegraph config for project '%s'",
+            self.logger.info("Loading intra-experiment linegraph config for project '%s'",
                              self.cmdopts['project'])
-            project_dict = yaml.load(open(project_intra_LN), yaml.FullLoader)
-
-            for category in project_dict:
-                if category not in self.intra_LN_config:
-                    self.intra_LN_config.update({category: project_dict[category]})
-                else:
-                    self.intra_LN_config[category]['graphs'].extend(
-                        project_dict[category]['graphs'])
-
-                self.intra_LN_config.update({category: project_dict[category]})
+            self.inter_LN_config = yaml.load(open(project_intra_LN), yaml.FullLoader)
 
         if sierra.core.utils.path_exists(project_inter_LN):
-            self.logger.info("Loading additional inter-experiment linegraph config for project '%s'",
+            self.logger.info("Loading inter-experiment linegraph config for project '%s'",
                              self.cmdopts['project'])
-            project_dict = yaml.load(open(project_inter_LN), yaml.FullLoader)
-            for category in project_dict:
-                if category not in self.inter_LN_config:
-                    self.inter_LN_config.update({category: project_dict[category]})
-                else:
-                    self.inter_LN_config[category]['graphs'].extend(
-                        project_dict[category]['graphs'])
+            self.intra_LN_config = yaml.load(open(project_inter_LN), yaml.FullLoader)
 
     def _load_HM_config(self) -> None:
-        self.intra_HM_config = yaml.load(open(os.path.join(self.cmdopts['core_config_root'],
-                                                           'intra-graphs-hm.yaml')),
-                                         yaml.FullLoader)
+        self.intra_HM_config = {}
 
         project_intra_HM = os.path.join(self.cmdopts['project_config_root'],
                                         'intra-graphs-hm.yaml')
 
         if sierra.core.utils.path_exists(project_intra_HM):
-            self.logger.info("Loading additional intra-experiment heatmap config for project '%s'",
+            self.logger.info("Loading intra-experiment heatmap config for project '%s'",
                              self.cmdopts['project'])
-            project_dict = yaml.load(open(project_intra_HM), yaml.FullLoader)
-            for category in project_dict:
-                if category not in self.intra_HM_config:
-                    self.intra_HM_config.update({category: project_dict[category]})
-                else:
-                    self.intra_HM_config[category]['graphs'].extend(
-                        project_dict[category]['graphs'])
+            self.intra_HM_config = yaml.load(open(project_intra_HM), yaml.FullLoader)
 
     def _calc_inter_LN_targets(self) -> tp.List[tp.Dict[str, tp.Any]]:
         """
@@ -338,7 +319,10 @@ class PipelineStage4:
 
         self.logger.info("Generating inter-experiment graphs...")
         start = time.time()
-        InterExpGraphGenerator(self.main_config, self.cmdopts, targets)(criteria)
+
+        generator = pm.module_load_tiered(self.cmdopts['project'],
+                                          'pipeline.stage4.inter_exp_graph_generator')
+        generator.InterExpGraphGenerator(self.main_config, self.cmdopts, targets)(criteria)
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         self.logger.info("Inter-experiment graph generation complete: %s", str(sec))
