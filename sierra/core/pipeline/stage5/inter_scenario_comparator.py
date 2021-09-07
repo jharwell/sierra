@@ -156,7 +156,7 @@ class UnivarInterScenarioComparator:
                         cmdopts=cmdopts,
                         dest_stem=graph['dest_stem'],
                         inc_exps=graph.get('include_exp', None),
-                        title=graph['title'],
+                        title=graph.get('title', None),
                         label=graph['label'],
                         legend=legend)
 

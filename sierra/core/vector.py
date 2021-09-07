@@ -83,6 +83,9 @@ class Vector3D:
         return Vector3D(-self.x, -self.y, -self.z)
 
     def __str__(self) -> str:
+        return self.__repr__()
+
+    def __repr__(self) -> str:
         return '({0},{1},{2})'.format(self.x, self.y, self.z)
 
     def length(self) -> float:

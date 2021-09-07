@@ -423,4 +423,4 @@ class ExpStatisticsCalculator:
                                  self.gather_spec.csv_leaf + ext)
             writer = storage.DataFrameWriter(self.avg_opts['storage_medium'])
 
-            writer(dfs[ext], opath, index=False)
+            writer(dfs[ext].fillna(0), opath, index=False)

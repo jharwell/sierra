@@ -78,7 +78,7 @@ class InterExpGraphGenerator:
 class LinegraphsGenerator:
     """
     Generates linegraphs from collated .csv data across a batch of experiments. The graphs generated
-    by this class ignore the ``--exp-range`` cmdline option.
+    by this class respect the ``--exp-range`` cmdline option.
 
     Attributes:
       batch_stat_collate_root: Absolute path to root directory for collated csvs.

@@ -157,10 +157,10 @@ class SummaryLinegraph:
         for i in range(0, len(data_dfy.values)):
             assert len(data_dfy.values[i]) == len(self.xticks),\
                 "FATAL: Length mismatch between xticks,data: {0} vs {1}/{2} vs {3}".format(
-                len(data_dfy.values[i]),
-                len(self.xticks),
-                data_dfy.values[i],
-                self.xticks)
+                    len(self.xticks),
+                    len(data_dfy.values[i]),
+                    self.xticks,
+                    data_dfy.values[i])
 
             # Plot data
             plt.plot(self.xticks,
@@ -170,8 +170,18 @@ class SummaryLinegraph:
 
             # Plot model prediction(s)
             if model[0] is not None:
+                # The model might be of different dimensions than the data. If so, truncate it to
+                # fit.
+                if len(self.xticks) < len(model[0].values[i]):
+                    self.logger.warning("Truncating model: model/data lengths disagree: %s vs. %s",
+                                        len(model[0].values[i]),
+                                        len(self.xticks))
+                    xvals = model[0].values[i][:len(self.xticks)]
+                else:
+                    xvals = model[0].values[i]
+
                 plt.plot(self.xticks,
-                         model[0].values[i],
+                         xvals,
                          '--',
                          marker=self.kMarkStyles[i],
                          color="C{}".format(i + len(data_dfy.index)))
@@ -217,10 +227,10 @@ class SummaryLinegraph:
 
     def _plot_ticks(self, ax) -> None:
         if self.logyscale:
-            ax.set_yscale('symlog', base=2)
-            # Use scientific or decimal notation--whichever has fewer chars
+            ax.set_yscale('symlog', basey=2)
             ax.yaxis.set_minor_formatter(mticker.ScalarFormatter())
 
+            # Use scientific or decimal notation--whichever has fewer chars
             # ax.yaxis.set_major_formatter(mticker.FormatStrFormatter("%.02g"))
 
         ax.tick_params(labelsize=self.text_size['tick_label'])
@@ -308,8 +318,11 @@ class SummaryLinegraph:
 
     def _read_models(self) -> tp.Tuple[pd.DataFrame, tp.List[str]]:
         if self.model_root is not None:
+            self.logger.trace("Model root='%s',stem='%s'", self.model_root, self.input_stem)
+
             model_fpath = os.path.join(self.model_root, self.input_stem + '.model')
             model_legend_fpath = os.path.join(self.model_root, self.input_stem + '.legend')
+
             if sierra.core.utils.path_exists(model_fpath):
                 model = sierra.core.utils.pd_csv_read(model_fpath)
                 if sierra.core.utils.path_exists(model_legend_fpath):

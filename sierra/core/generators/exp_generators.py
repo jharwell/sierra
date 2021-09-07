@@ -120,10 +120,10 @@ class ARGoSExpDefGenerator:
         """
         tsetup = ts.factory(self.cmdopts["time_setup"])()
 
-        adds, rms, chgs = utils.apply_to_expdef(tsetup, exp_def)
+        _, adds, chgs = utils.apply_to_expdef(tsetup, exp_def)
 
         # Write time setup info to file for later retrieval
-        utils.pickle_modifications(adds, rms, chgs, self.spec.exp_def_fpath)
+        utils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)
 
     def _generate_threading(self, exp_def: XMLLuigi) -> None:
         """

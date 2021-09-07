@@ -24,6 +24,7 @@ import typing as tp
 
 # 3rd party packages
 import pandas as pd
+import json
 
 # Project packages
 import sierra.core.utils
@@ -78,6 +79,7 @@ class UnivarGraphCollator:
         self.logger.info("Stage4: Collating univariate files from batch in %s for graph '%s'...",
                          self.cmdopts['batch_output_root'],
                          target['src_stem'])
+        self.logger.trace(json.dumps(target, indent=4))
 
         exp_dirs = sierra.core.utils.exp_range_calc(self.cmdopts,
                                                     self.cmdopts['batch_output_root'],
@@ -158,6 +160,7 @@ class BivarGraphCollator:
         self.logger.info("Stage4: Collating bivariate files from batch in %s for graph '%s'...",
                          self.cmdopts['batch_output_root'],
                          target['src_stem'])
+        self.logger.trace(json.dumps(target, indent=4))
 
         exp_dirs = sierra.core.utils.exp_range_calc(self.cmdopts,
                                                     self.cmdopts['batch_output_root'],

@@ -85,9 +85,9 @@ class ARGoSScenarioGenerator():
 
         Writes generated changes to the simulation definition pickle file.
         """
-        rms, adds, chgs = scutils.apply_to_expdef(shape, exp_def)
+        _, adds, chgs = scutils.apply_to_expdef(shape, exp_def)
 
-        scutils.pickle_modifications(rms, adds, chgs, self.spec.exp_def_fpath)
+        scutils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)
 
     def generate_n_robots(self, xml_luigi: XMLLuigi) -> None:
         """
@@ -163,10 +163,10 @@ class ARGoSScenarioGenerator():
         """
         tsetup = ts.factory(self.cmdopts["time_setup"])()
 
-        adds, rms, chgs = scutils.apply_to_expdef(tsetup, exp_def)
+        _, adds, chgs = scutils.apply_to_expdef(tsetup, exp_def)
 
         # Write time setup info to file for later retrieval
-        scutils.pickle_modifications(adds, rms, chgs, self.spec.exp_def_fpath)
+        scutils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)
 
     def _generate_threading(self, exp_def: XMLLuigi) -> None:
         """

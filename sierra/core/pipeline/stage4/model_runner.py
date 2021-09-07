@@ -51,8 +51,8 @@ class IntraExpModelRunner:
                  main_config: tp.Dict[str, tp.Any],
                  criteria: bc.IConcreteBatchCriteria) -> None:
         exp_to_run = sierra.core.utils.exp_range_calc(self.cmdopts,
-                                               self.cmdopts['batch_output_root'],
-                                               criteria)
+                                                      self.cmdopts['batch_output_root'],
+                                                      criteria)
         exp_dirnames = criteria.gen_exp_dirnames(self.cmdopts)
 
         for i, exp in enumerate(exp_to_run):
@@ -134,6 +134,7 @@ class InterExpModelRunner:
             self.logger.debug("Run inter-experiment model '%s'", str(model))
 
             dfs = model.run(criteria, cmdopts)
+
             for df, csv_stem in zip(dfs, model.target_csv_stems()):
                 path_stem = os.path.join(cmdopts['batch_model_root'], csv_stem)
 

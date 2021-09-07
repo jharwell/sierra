@@ -80,8 +80,8 @@ def _conf95_kernel(df_like, groupby: bool) -> tp.Dict[str, pd.DataFrame]:
         df_like = df_like.iloc[0, :]
 
     return {
-        sierra.core.config.kStatsExtensions['mean']: df_like.mean().round(8),
-        sierra.core.config.kStatsExtensions['stddev']: df_like.std().round(8)
+        sierra.core.config.kStatsExtensions['mean']: df_like.mean().round(8).fillna(0),
+        sierra.core.config.kStatsExtensions['stddev']: df_like.std().round(8).fillna(0)
     }
 
 
@@ -94,7 +94,7 @@ def _mean_kernel(df_like, groupby: bool) -> tp.Dict[str, pd.DataFrame]:
         df_like = df_like.iloc[0, :]
 
     return {
-        sierra.core.config.kStatsExtensions['mean']: df_like.mean().round(8)
+        sierra.core.config.kStatsExtensions['mean']: df_like.mean().round(8).fillna(0)
     }
 
 

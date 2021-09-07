@@ -238,8 +238,8 @@ def bivar_exp_labels_calc(exp_dirs: tp.List[str]) -> tp.Tuple[tp.List[str], tp.L
     return (xlabels, ylabels)
 
 
-def apply_to_expdef(var, exp_def: XMLLuigi, noprint: bool = False) -> tp.Tuple[XMLTagAddList,
-                                                                               XMLTagRmList,
+def apply_to_expdef(var, exp_def: XMLLuigi, noprint: bool = False) -> tp.Tuple[XMLTagRmList,
+                                                                               XMLTagAddList,
                                                                                XMLAttrChangeSet]:
     rms = var.gen_tag_rmlist()
     adds = var.gen_tag_addlist()
@@ -268,13 +268,9 @@ def apply_to_expdef(var, exp_def: XMLLuigi, noprint: bool = False) -> tp.Tuple[X
     return rms, adds, chgs
 
 
-def pickle_modifications(rms: tp.Optional[XMLTagAddList],
-                         adds: tp.Optional[XMLTagRmList],
+def pickle_modifications(adds: tp.Optional[XMLTagAddList],
                          chgs: tp.Optional[XMLAttrChangeSet],
                          path: str) -> None:
-    if rms is not None:
-        rms.pickle(path)
-
     if adds is not None:
         adds.pickle(path)
 

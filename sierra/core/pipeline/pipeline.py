@@ -111,6 +111,7 @@ class Pipeline:
             'project_rendering': self.args.project_rendering,
 
             'plot_log_xscale': self.args.plot_log_xscale,
+            'plot_enumerated_xscale': self.args.plot_enumerated_xscale,
             'plot_log_yscale': self.args.plot_log_yscale,
             'plot_regression_lines': self.args.plot_regression_lines,
             'plot_primary_axis': self.args.plot_primary_axis,

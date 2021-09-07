@@ -238,7 +238,7 @@ class SimulationCollator:
         for (csv_leaf, col) in collated.keys():
 
             writer = storage.DataFrameWriter(self.storage_medium)
-            writer(collated[(csv_leaf, col)],
+            writer(collated[(csv_leaf, col)].fillna(0),
                    os.path.join(self.batch_stat_collate_root,
                                 self.exp_leaf + '-' + csv_leaf + '-' + col + '.csv'),
                    index=False)

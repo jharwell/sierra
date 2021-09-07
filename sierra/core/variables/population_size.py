@@ -79,8 +79,11 @@ class PopulationSize(bc.UnivarBatchCriteria):
             exp_dirs = self.gen_exp_dirnames(cmdopts)
 
         ret = list(map(float, self.populations(cmdopts, exp_dirs)))
+
         if cmdopts['plot_log_xscale']:
             return [int(math.log2(x)) for x in ret]
+        elif cmdopts['plot_enumerated_xscale']:
+            return [i for i in range(0, len(ret))]
         else:
             return ret
 
@@ -88,7 +91,12 @@ class PopulationSize(bc.UnivarBatchCriteria):
                           cmdopts: tp.Dict[str, tp.Any],
                           exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
 
-        return list(map(str, self.graph_xticks(cmdopts, exp_dirs)))
+        if exp_dirs is None:
+            exp_dirs = self.gen_exp_dirnames(cmdopts)
+
+        ret = map(float, self.populations(cmdopts, exp_dirs))
+
+        return list(map(lambda x: str(int(round(x, 4))), ret))
 
     def graph_xlabel(self, cmdopts: tp.Dict[str, tp.Any]) -> str:
         if cmdopts['plot_log_xscale']:
