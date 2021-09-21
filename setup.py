@@ -46,11 +46,15 @@ setup(
         "Development Status :: 4 - Beta",
         "Intended Audience :: Science/Research",
     ],
-    packages=find_packages(exclude=("projects")),
+
+    packages=['sierra', 'sierra.core', 'sierra.plugins'],
+    package_dir={"sierra": "sierra",
+                 'sierra.core': 'sierra/core',
+                 'sierra.plugins': 'sierra/plugins'},
     include_package_data=True,
-    data_files=[('man/man1', ['docs/_build/man/sierra-cli.1']),
-                ('man/man1', ['docs/_build/man/sierra-rendering.7']),
-                ('man/man1', ['docs/_build/man/sierra.7'])],
+    data_files=[('share/man/man1', ['docs/_build/man/sierra-cli.1']),
+                ('share/man/man7', ['docs/_build/man/sierra-rendering.7']),
+                ('share/man/man7', ['docs/_build/man/sierra.7'])],
 
     install_requires=[
         "pyyaml",

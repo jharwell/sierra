@@ -30,7 +30,7 @@ Generally speaking, SIERRA is very conservative, and uses lots of assert()s to
 verify its internal state and the state of a given experiment at a given step of
 execution before proceeding to the next step. SIERRA should rarely crash with a
 cryptic interpreter error message/exception, but if it does, please report it so
-I can create a better error message.
+I can fix it and/or create a better error message.
 
 
 
@@ -49,5 +49,4 @@ See Also
 ********
 
 - :manpage:`sierra-cli`
-- :manpage:`sierra-msi`
 - :manpage:`sierra-rendering`
