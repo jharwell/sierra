@@ -37,13 +37,15 @@ def env_configure(args):
     - ``SLURM_JOB_NODELIST``
     - ``SLURM_JOB_ID``
     - ``SLURM_ARCH``
+    - ``PARALLEL``
 
     """
     keys = ['SLURM_CPUS_PER_TASK',
             'SLURM_TASKS_PER_NODE',
             'SLURM_JOB_NODELIST',
             'SLURM_JOB_ID',
-            'SIERRA_ARCH']
+            'SIERRA_ARCH',
+            'PARALLEL']
 
     for k in keys:
         assert k in os.environ,\

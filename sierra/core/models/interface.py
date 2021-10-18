@@ -129,7 +129,7 @@ class IConcreteInterExpModel1D(implements.Interface):
     def target_csv_stems(self) -> tp.List[str]:
         """
         Return a list of names that the model predictions as they should appear appear on the legend
-        of the target: class: `~sierra.core.graphs.summary_line_graph.SummaryLinegraph` they are each
+        of the target: class: `~sierra.core.graphs.summary_line_graph.SummaryLineGraph` they are each
         attached to.
 
         """
@@ -138,7 +138,7 @@ class IConcreteInterExpModel1D(implements.Interface):
     def legend_names(self) -> tp.List[str]:
         """
         Return a list of names that the model predictions as they should appear appear on the legend
-        of the target: class: `~sierra.core.graphs.summary_line_graph.SummaryLinegraph` they are each
+        of the target: class: `~sierra.core.graphs.summary_line_graph.SummaryLineGraph` they are each
         attached to.
         """
         raise NotImplementedError

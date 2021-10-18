@@ -3,29 +3,53 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to the documentation for SIERRA: the amazing swarm robotics automation tool!
-====================================================================================
+======================
+SIERRA's Documentation
+======================
 
 .. include:: src/description.rst
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
+   :hidden:
    :caption: Contents:
 
    src/quickstart.rst
+
+   src/package.rst
+
+   src/usage/index.rst
+
    src/tutorials/index.rst
+
+   src/c++-lib-requirements.rst
+   src/exp-requirements.rst
 
    src/hpc/index.rst
 
-   src/usage/index.rst
+   src/storage/index.rst
+
 
    src/faq.rst
    src/contributing.rst
    src/glossary.rst
    src/api.rst
 
-SIERRA has been used for results generation in the following papers:
+SIERRA In The Wild
+==================
 
+.. |date| date::
+
+
+Here is a non-exhaustive list of some of the different ways SIERRA has been
+used. Last updated |date|.
+
+
+Papers using SIERRA
+-------------------
+
+- :xref:`Harwell2021a`
+- :xref:`Harwell2021b`
 - :xref:`Harwell2020`
 - :xref:`Harwell2019`
 - :xref:`White2019`
@@ -35,12 +59,10 @@ Projects Using SIERRA
 ---------------------
 
 - :xref:`FORDYCA`
-- :xref:`SILICON`
+- :xref:`PRISM`
 
-Other Projects: (in descending probability of interest)
--------------------------------------------------------
+Demonstrations using SIERRA
+---------------------------
 
-- :xref:`COSM`
-- :xref:`RCPPSW`
-- :xref:`RCSW`
-- :xref:`LIBRA`
+- :xref:`2021-ijcai-demo`
+- Supplementary material for :xref:`Harwell2021a`

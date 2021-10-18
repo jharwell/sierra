@@ -46,6 +46,11 @@ class XMLAttrChange():
 
 class XMLTagRm():
     def __init__(self, path: str, tag: str):
+        """
+        Arguments:
+            path: The path to the **parent** of the tag you want to remove, in XPath syntax.
+            tag: The name of the tag to remove.
+        """
         self.path = path
         self.tag = tag
 
@@ -58,6 +63,14 @@ class XMLTagRm():
 
 class XMLTagAdd():
     def __init__(self, path: str, tag: str, attr: dict = dict()):
+        """
+        Arguments:
+            path: The path to the **parent** tag you want to add a new tag under, in XPath syntax.
+            tag: The name of the tag to add.
+            attr: A dictionary of (attribute, value) pairs to also create as children of the new tag
+                  when creating the new tag.
+        """
+
         self.path = path
         self.tag = tag
         self.attr = attr

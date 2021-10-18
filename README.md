@@ -4,14 +4,14 @@
 [![Documentation Status](https://readthedocs.org/projects/swarm-robotics-sierra/badge/?version=latest)](https://swarm-robotics-sierra.readthedocs.io/en/latest/?badge=latest)
 
 Python framework for automating a common research pipeline in swarm
-robotics. ARGoS driver. It is named thusly because it will save you a
-LITERAL, (not figurative) mountain of work.
+robotics. ARGoS driver. It is named thusly because it will save you a LITERAL,
+(not figurative) mountain of work.
 
 Automated pipeline currently contains:
 
 1. Generating simulation inputs for experiments simulations to investigate some
    variable(s) of interest across some range(s) for arbitrary swarm sizes, robot
-   controllers, and scenarios (exact capabalitities depend on the
+   controllers, and scenarios (exact capabilities depend on the
    controller+support code you have written).
 
 2. Running all simulations in parallel. Supports multiple HPC environments such
@@ -23,8 +23,8 @@ Automated pipeline currently contains:
      for a research group).
    - Local machine (for testing).
 
-3. Averaging simulation results to obtain confidence intervals on observed
-   behavior.
+3. Processing simulation results to generate statistics such as confidence
+   intervals on observed behavior.
 
 4. Generating camera-ready outputs such as:
 
@@ -36,9 +36,9 @@ Automated pipeline currently contains:
    scenario and across multiple scenarios.
 
 
-This is the reusable CORE part of SIERRA; to use SIERRA with your project, you
-will need to defined a project plugin, as described in the documentation
-[here](https://swarm-robotics-sierra.readthedocs.io/en/latest/).
+SIERRA is well documented--see the docs
+[here](https://swarm-robotics-sierra.readthedocs.io/en/latest/) to get started
+using it!
 
 # Requirements
 

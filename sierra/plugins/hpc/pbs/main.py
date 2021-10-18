@@ -30,9 +30,10 @@ def env_configure(args):
     - ``PBS_NODEFILE``
     - ``PBS_JOBID``
     - ``SIERRA_ARCH``
+    - ``PARALLEL``
     """
 
-    keys = ['PBS_NUM_PPN', 'PBS_NODEFILE', 'PBS_JOBID', 'SIERRA_ARCH']
+    keys = ['PBS_NUM_PPN', 'PBS_NODEFILE', 'PBS_JOBID', 'SIERRA_ARCH', 'PARALLEL']
 
     for k in keys:
         assert k in os.environ,\

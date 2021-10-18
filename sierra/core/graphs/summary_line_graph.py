@@ -35,7 +35,7 @@ import sierra.core.config
 import sierra.core.utils
 
 
-class SummaryLinegraph:
+class SummaryLineGraph:
     """
     Generates a linegraph summarizing swarm behavior across a :term:`Batch Experiment`, possibly
     showing the 95% confidence interval or box and whisker plots, according to configuration.
@@ -338,5 +338,5 @@ class SummaryLinegraph:
 
 
 __api__ = [
-    'SummaryLinegraph'
+    'SummaryLineGraph'
 ]

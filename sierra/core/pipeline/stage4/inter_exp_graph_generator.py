@@ -31,7 +31,7 @@ import json
 # Project packages
 import sierra.core.utils
 from sierra.core.graphs.stacked_line_graph import StackedLineGraph
-from sierra.core.graphs.summary_line_graph import SummaryLinegraph
+from sierra.core.graphs.summary_line_graph import SummaryLineGraph
 from sierra.core.variables import batch_criteria as bc
 import sierra.core.config
 
@@ -66,16 +66,16 @@ class InterExpGraphGenerator:
         """
         Runs the following to generate graphs across experiments in the batch:
 
-        #. :class:`~sierra.core.pipeline.stage4.inter_exp_graph_generator.LinegraphsGenerator`
+        #. :class:`~sierra.core.pipeline.stage4.inter_exp_graph_generator.LineGraphsGenerator`
            to generate linegraphs (univariate batch criteria only).
         """
 
         if criteria.is_univar():
             if not self.cmdopts['project_no_yaml_LN']:
-                LinegraphsGenerator(self.cmdopts, self.targets).generate(criteria)
+                LineGraphsGenerator(self.cmdopts, self.targets).generate(criteria)
 
 
-class LinegraphsGenerator:
+class LineGraphsGenerator:
     """
     Generates linegraphs from collated .csv data across a batch of experiments. The graphs generated
     by this class respect the ``--exp-range`` cmdline option.
@@ -94,14 +94,14 @@ class LinegraphsGenerator:
         self.logger = logging.getLogger(__name__)
 
     def generate(self, criteria: bc.IConcreteBatchCriteria) -> None:
-        self.logger.info("Linegraphs from %s", self.cmdopts['batch_stat_collate_root'])
+        self.logger.info("LineGraphs from %s", self.cmdopts['batch_stat_collate_root'])
         # For each category of linegraphs we are generating
         for category in self.targets:
             # For each graph in each category
             for graph in category['graphs']:
                 self.logger.trace('\n' + json.dumps(graph, indent=4))
                 if graph.get('summary', False):
-                    SummaryLinegraph(stats_root=self.cmdopts['batch_stat_collate_root'],
+                    SummaryLineGraph(stats_root=self.cmdopts['batch_stat_collate_root'],
                                      input_stem=graph['dest_stem'],
                                      output_fpath=os.path.join(self.cmdopts['batch_graph_collate_root'],
                                                                'SM-' + graph['dest_stem'] + sierra.core.config.kImageExt),
@@ -131,4 +131,4 @@ class LinegraphsGenerator:
 
 
 __api__ = ['InterExpGraphGenerator',
-           'LinegraphsGenerator']
+           'LineGraphsGenerator']

@@ -1,10 +1,13 @@
-.. _tutorials-project-generators:
+.. _ln-tutorials-project-generators:
 
 =======================
 Generator Configuration
 =======================
 
-.. _tutorials-project-generators-scenario-config:
+.. _ln-tutorials-project-generators-scenario-config:
+
+Per-Scenario Configuration
+==========================
 
 To enable SIERRA to generate experiment definitions based on the ``--scenario``
 you specify, you need to:
@@ -44,7 +47,7 @@ you specify, you need to:
    Within this file, you must define at least one function (and presumably one
    or more classes representing the scenarios you want to test with), which is
    ``gen_generator_name()``, which takes the ``--scenario`` argument and returns
-   the string of the class name with ``scenario_generators.py`` that SIERRA
+   the string of the class name within ``scenario_generators.py`` that SIERRA
    should use to generate scenario definitions for your experiments:
 
    .. code-block:: python
@@ -52,21 +55,30 @@ you specify, you need to:
       def gen_generator_name(scenario_name: str) -> str:
           ...
 
+   Each generator class within ``scenario_generators.py`` must define the
+   ``generate()`` function like so:
 
-Scenario Configuration
-======================
+   .. code-block:: python
 
-.. _tutorials-project-generators-sim-config:
+      class MyScenarioGenerator():
+          ...
+
+      def generate(self):
+          ...
+
+
+.. _ln-tutorials-project-generators-sim-config:
 
 Per-Simulation Configuration
 ============================
 
-In order to hook into SIERRA stage 1 experiment generation, you need to:
+In order to hook into SIERRA stage 1 experiment generation (doing so is
+optional), you need to:
 
 #. Create ``generators/exp_generators.py`` in your ``--project`` directory.
 
 #. Define a ``SimDefUniqueGenerator`` class in this file, overriding the
    ``generate()`` function with your customizations. Your class really should be
    derived from
-   :class:`~sierra.core.generators.exp_generators.SimDefUniqueGenerator`, though
-   you don't have to.
+   :class:`~sierra.core.generators.exp_generators.SimDefUniqueGenerator` and
+   override the ``generate()`` function, though you don't have to.

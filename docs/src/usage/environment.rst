@@ -35,7 +35,11 @@ Environment Variables
 
    Must be set to contain the library directory where you installed/built ARGoS,
    as well as the library directory for your project ``.so``. Checked to be
-   non-empty before running stage 2 for all `--hpc-env` plugins.
+   non-empty before running stage 2 for all `--hpc-env` plugins. SIERRA does
+   `not` modify this variable, so it needs to be setup properly prior to
+   invoking SIERRA (i.e., the directory containing the :term:`Project` ``.so``
+   file needs to be on it). SIERRA can't know, in general, where the location of
+   the C++ code corresponding to the loaded :term:`Project` is.
 
 .. envvar:: SIERRA_ARCH
 

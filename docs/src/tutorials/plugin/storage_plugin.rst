@@ -8,9 +8,8 @@ For the purposes of this tutorial, I will assume you are creating a new storage
 :term:`Plugin` ``infinite``, and the code for that plugin lives in
 ``$HOME/git/plugins/storage/infinite``.
 
-#. Put ``$HOME/git/plugins/storage/infinite`` on your
-   :envvar:`SIERRA_PLUGIN_PATH`. Then your plugin can be used as
-   ``--storage-medium=storage.infinite``.
+#. Put ``$HOME/git/plugins/`` on your :envvar:`SIERRA_PLUGIN_PATH`. Then your
+   plugin can be used as ``--storage-medium=storage.infinite``.
 
 
 #. Create the following directory structure within the ``infinite`` directory.

@@ -32,7 +32,7 @@ import argparse
 import pandas as pd
 
 # Project packages
-from sierra.core.graphs.summary_line_graph import SummaryLinegraph
+from sierra.core.graphs.summary_line_graph import SummaryLineGraph
 from sierra.core.graphs.stacked_surface_graph import StackedSurfaceGraph
 from sierra.core.graphs.heatmap import Heatmap, DualHeatmap
 from sierra.core.variables import batch_criteria as bc
@@ -212,7 +212,7 @@ class UnivarIntraScenarioComparator:
                    inc_exps: tp.Optional[slice],
                    legend: tp.List[str]) -> None:
         """
-        Generates a :class:`~sierra.core.graphs.summary_line_graph.SummaryLinegraph` comparing the
+        Generates a :class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph` comparing the
         specified controllers within the specified scenario after input files have been gathered
         from each controller into :attr:`cc_csv_root`.
         """
@@ -228,7 +228,7 @@ class UnivarIntraScenarioComparator:
 
         opath = os.path.join(self.cc_graph_root, opath_leaf + sierra.core.config.kImageExt)
 
-        SummaryLinegraph(stats_root=self.cc_csv_root,
+        SummaryLineGraph(stats_root=self.cc_csv_root,
                          input_stem=opath_leaf,
                          output_fpath=opath,
                          stats=cmdopts['dist_stats'],
@@ -459,7 +459,7 @@ class BivarIntraScenarioComparator:
         generation. Because we are targeting linegraphs, we draw the the i-th row/col (as
         configured) from the performance results of each controller .csv, and concatenate them into
         a new .csv file which can be given to
-        :class:`~sierra.core.graphs.summary_line_graph.SummaryLinegraph`.
+        :class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`.
         """
         self.logger.debug("Gathering data for '%s' from %s -> %s", controller, src_stem, dest_stem)
 
@@ -540,7 +540,7 @@ class BivarIntraScenarioComparator:
                                                                     n_exp)
                 xlabel = criteria.graph_xlabel(cmdopts)
 
-            SummaryLinegraph(stats_root=self.cc_csv_root,
+            SummaryLineGraph(stats_root=self.cc_csv_root,
                              input_stem=opath_leaf,
                              stats=cmdopts['dist_stats'],
                              output_fpath=img_opath,

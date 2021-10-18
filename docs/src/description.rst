@@ -6,7 +6,7 @@ Automated pipeline currently contains:
 
 1. Generating simulation inputs for experiments simulations to investigate some
    variable(s) of interest across some range(s) for arbitrary swarm sizes, robot
-   controllers, and scenarios (exact capabalitities depend on the
+   controllers, and scenarios (exact capabilities depend on the
    controller+support code you have written).
 
 2. Running all simulations in parallel. Supports multiple HPC environments such
@@ -18,8 +18,8 @@ Automated pipeline currently contains:
      for a research group).
    - Local machine (for testing).
 
-3. Averaging simulation results to obtain confidence intervals on observed
-   behavior.
+3. Processing simulation results to generate statistics such as confidence
+   intervals on observed behavior.
 
 4. Generating camera-ready outputs such as:
 

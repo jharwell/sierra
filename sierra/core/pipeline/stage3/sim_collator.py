@@ -208,7 +208,7 @@ class SimulationCollator:
         self.batch_stat_collate_root = batch_stat_collate_root
 
         # To support inverted performance measures where smaller is better
-        self.invert_perf = main_config['perf']['inverted']
+        self.invert_perf = main_config['perf'].get('inverted', False)
         self.intra_perf_csv = main_config['perf']['intra_perf_csv']
 
         sierra.core.utils.dir_create_checked(self.batch_stat_collate_root, exist_ok=True)

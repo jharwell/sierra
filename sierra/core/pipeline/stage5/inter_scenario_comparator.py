@@ -30,7 +30,7 @@ import argparse
 import pandas as pd
 
 # Project packages
-from sierra.core.graphs.summary_line_graph import SummaryLinegraph
+from sierra.core.graphs.summary_line_graph import SummaryLineGraph
 from sierra.core.variables import batch_criteria as bc
 import sierra.core.root_dirpath_generator as rdg
 import sierra.core.utils
@@ -169,7 +169,7 @@ class UnivarInterScenarioComparator:
                    label: str,
                    legend: tp.List[str]) -> None:
         """
-        Generates a :class:`~sierra.core.graphs.summary_line_graph.SummaryLinegraph` comparing the
+        Generates a :class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph` comparing the
         specified controller across specified scenarios.
         """
         istem = dest_stem + "-" + self.controller
@@ -185,7 +185,7 @@ class UnivarInterScenarioComparator:
                                                                 criteria.n_exp())
             xticks = sierra.core.utils.exp_include_filter(inc_exps, xticks, criteria.n_exp())
 
-        SummaryLinegraph(stats_root=self.sc_csv_root,
+        SummaryLineGraph(stats_root=self.sc_csv_root,
                          input_stem=istem,
                          stats=cmdopts['dist_stats'],
                          output_fpath=img_opath,

@@ -11,6 +11,7 @@ Project Tutorials
    project.rst
    main_config.rst
    graphs_config.rst
+   stage5_config.rst
    template_input_file.rst
    generators.rst
    new_bc.rst

@@ -31,7 +31,7 @@ Add a root level dictionary to one of the following YAML configuration files:
 - ``<project>/config/inter-graphs-line.yaml`` for inter-experiment line
   graphs. Dictionaries must start with ``LN_``.
 
-An example ``intra-graphs-line.yaml``, defined two categories of linegraphs.
+An example ``intra-graphs-line.yaml``, defining two categories of linegraphs:
 
 .. code-block:: YAML
 
@@ -148,7 +148,10 @@ Unless stated otherwise, all keys are mandatory.
      - title: 'My Title'
 
 How to Add A New Inter-Experiment Graph
-========================================
+=======================================
+
+Linegraphs
+----------
 
 Inter-experiment linegraphs are appropriate if:
 
@@ -202,5 +205,5 @@ And it must define::
 
 
 SIERRA will then use this class when generating graphs during stage 4. You
-probably should call ``super().__call__(criteria)`` in the ``__call__()`` you
+probably should have ``super().__call__(criteria)`` in the ``__call__()`` you
 define, but you don't have to.

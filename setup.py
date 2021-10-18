@@ -62,8 +62,6 @@ setup(
         "matplotlib",
         "sympy",
 
-        "similaritymeasures",
-        "fastdtw",
         "coloredlogs",
         "singleton_decorator",
         "implements",

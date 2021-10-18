@@ -580,14 +580,14 @@ class CoreCmdline(BaseCmdline):
                                    confidence interval on relevant graphs.
 
                                  - ``bw`` - Calculate statistics necessary to show box and whisker plots around each
-                                   point in the graph (:class:`~sierra.core.graphs.summary_line_graph.SummaryLinegraph`
+                                   point in the graph (:class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`
                                    only).
 
                                  - ``all`` - Generate all possible statistics, and plot all possible
                                    statistics on graphs.
                                  """
                                  +
-                                 self.graphs_applicable_doc([':class:`~sierra.core.graphs.summary_line_graph.SummaryLinegraph`',
+                                 self.graphs_applicable_doc([':class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`',
                                                              ':class:`~sierra.core.graphs.stacked_line_graph.StackedLineGraph`'])
                                  + self.stage_usage_doc([3, 4]),
                                  default='none')
@@ -669,7 +669,7 @@ class CoreCmdline(BaseCmdline):
 
                            """ +
 
-                           self.graphs_applicable_doc([':class:`~sierra.core.graphs.summary_line_graph.SummaryLinegraph`']) +
+                           self.graphs_applicable_doc([':class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`']) +
                            self.bc_applicable_doc([':ref:`Constant Population Density <ln-bc-population-constant-density>`',
                                                    ':ref:`Population Size <ln-bc-population-size>`']) +
                            self.stage_usage_doc([4, 5]),
@@ -684,7 +684,7 @@ class CoreCmdline(BaseCmdline):
 
                            """ +
 
-                           self.graphs_applicable_doc([':class:`~sierra.core.graphs.summary_line_graph.SummaryLinegraph`']) +
+                           self.graphs_applicable_doc([':class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`']) +
                            self.bc_applicable_doc([':ref:`Constant Population Density <ln-bc-population-constant-density>`',
                                                    ':ref:`Population Size <ln-bc-population-size>`']) +
                            self.stage_usage_doc([4, 5]),
@@ -699,7 +699,7 @@ class CoreCmdline(BaseCmdline):
 
                            """ +
 
-                           self.graphs_applicable_doc([':class:`~sierra.core.graphs.summary_line_graph.SummaryLinegraph`',
+                           self.graphs_applicable_doc([':class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`',
                                                        ':class:`~sierra.core.graphs.stacked_line_graph.StackedLineGraph`']) +
                            self.bc_applicable_doc([':ref:`Population Size <ln-bc-population-size>`',
                                                    ':ref:`Population Constant Density <ln-bc-population-constant-density>`']) +
@@ -712,7 +712,7 @@ class CoreCmdline(BaseCmdline):
                            For all 2D generated scatterplots, plot a linear regression line and the equation of the line
                            to the legend. """ +
 
-                           self.graphs_applicable_doc([':class:`~sierra.core.graphs.summary_line_graph.SummaryLinegraph`']) +
+                           self.graphs_applicable_doc([':class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`']) +
                            self.bc_applicable_doc([]) +
                            self.stage_usage_doc([4]))
 
@@ -869,13 +869,13 @@ class CoreCmdline(BaseCmdline):
                                  If the batch criteria is univariate, the options are:
 
                                  - ``LNraw`` - Output raw 1D performance measures using a single
-                                   :class:`~sierra.core.graphs.summary_line_graph.SummaryLinegraph` for each measure, with all
+                                   :class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph` for each measure, with all
                                    ``--controllers-list`` controllers shown on the same graph.
 
                                  If the batch criteria is bivariate, the options are:
 
                                  - ``LNraw`` - Output raw performance measures as a set of
-                                   :class:`~sierra.core.graphs.summary_line_graph.SummaryLinegraph`, where each line graph is
+                                   :class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`, where each line graph is
                                    constructed from the i-th row/column for the 2D dataframe for the performance results
                                    for all controllers.
 

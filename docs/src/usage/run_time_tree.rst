@@ -1,4 +1,4 @@
-.. _ln-runtime-exp-tree:
+.. _ln-usage-runtime-exp-tree:
 
 =============================
 SIERRA Runtime Directory Tree
@@ -25,11 +25,14 @@ SIERRA Runtime Directory Tree
    Always better to check the arguments before hitting ENTER. Measure twice, cut
    once, as the saying goes.
 
-When SIERRA runs, it creates a directory structure under whatever was passed as
-``--sierra-root``. For the purposes of explanation, I will use the following
-partial SIERRA option set to explain the experiment tree::
+Default Pipeline Directory Tree (Stages 1-4)
+============================================
 
-  --sierra-root=~/exp\
+When SIERRA runs stages 1-4, it creates a directory structure under whatever was
+passed as ``--sierra-root``. For the purposes of explanation, I will use the
+following partial SIERRA option set to explain the experiment tree::
+
+  --sierra-root=$HOME/exp\
   --controller=CATEGORY.my_controller\
   --scenario=SS.12x6\
   --batch-criteria=population_size.Log8\
@@ -39,9 +42,9 @@ partial SIERRA option set to explain the experiment tree::
 
 
 This invocation will cause SIERRA to create the following directory structure as
-it runs stages 1-4:
+it runs:
 
-- ``~/exp`` - This is the root of the directory structure (``--sierra-root``),
+- ``$HOME/exp`` - This is the root of the directory structure (``--sierra-root``),
   and is **NOT** deleted on subsequent runs.
 
   - ``fordyca`` - Each project gets their own directory, so you can disambiguate
@@ -157,3 +160,57 @@ it runs stages 1-4:
           - ``collated`` - Graphs which are generated across experiments in the
             batch from collated .csv data, rather than from the averaged results
             within each experiment, are output here.
+
+Stage 5 Directory Tree
+======================
+
+When SIERRA runs stage 5, stages 1-4 must have already been successfully run,
+and therefore the directory tree shown above will exist. For the purposes of
+explanation, I will use the following partial SIERRA option sets to explain the
+additional to the experiment tree.
+
+First, the experiment tree for `scenario comparison`::
+
+   --pipeline 5\
+   --scenario-comparison\
+   --batch-criteria population_size.Log8\
+   --scenarios-list=RN.16x16x2,PL.16x16x2\
+   --sierra-root=$HOME/exp"
+
+
+This invocation will cause SIERRA to create the following directory structure as
+it runs:
+
+- ``$HOME/exp``
+
+  - ``RN.16x16x2+PL.16x16x2-sc-graphs``
+
+    This is the directory holding the comparison graphs for all controllers
+    which were previously run on the scenarios ``RN.16x16x2`` and ``PL.16x16x2``
+    (scenario names are arbitrary for the purposes of stage 5 and entirely
+    depend on the project). Inside this directory will be all graphs generated
+    according to the configuration specified in
+    :ref:`ln-tutorials-project-stage5-config`.
+
+Second, the experiment tree for `controller comparison` ::
+
+  --pipeline 5\
+  --controller-comparison\
+  --batch-criteria population_size.Log8\
+  --controllers-list d0.CRW,d0.DPO\
+  --sierra-root=$HOME/exp"
+
+
+This invocation will cause SIERRA to create the following directory structure as
+it runs:
+
+- ``$HOME/exp``
+
+  - ``d0.CRW+d0.DPO-cc-graphs``
+
+    This is the directory holding the comparison graphs for each scenario for
+    which ``d0.CRW`` and ``d0.DPO`` were run (scenarios are computed by
+    examining the directory tree for stages 1-4). Controller names are arbitrary
+    for the purposes of stage 5 and entirely depend on the project). Inside this
+    directory will be all graphs generated according to the configuration
+    specified in :ref:`ln-tutorials-project-stage5-config`.

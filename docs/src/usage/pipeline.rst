@@ -54,8 +54,8 @@ experiment, which can include shiny graphs and videos. See
 
 Part of default pipeline.
 
-Stage 5: Graph Genertion for Controller Comparison
---------------------------------------------------
+Stage 5: Graph Generation for Controller Comparison
+---------------------------------------------------
 
 SIERRA perform graph generation for comparing controllers AFTER graph generation
 for batched experiments has been run. Not part of default pipeline.
@@ -70,4 +70,4 @@ for batched experiments has been run. Not part of default pipeline.
 
 .. IMPORTANT:: If you run something other than ``--pipeline 1 2 3 4``, then
   before stage X will run without crashing, you need to run stage X-1. This is a
-  logical limitation, because the differente pipeline stages build on each other.
+  logical limitation, because the different pipeline stages build on each other.

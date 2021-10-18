@@ -1,0 +1,64 @@
+** TODO [#A] Create SIERRA pypi package [75%]
+- [X] Push --scenario to the FORDYCA plugin--not part of core SIERRA
+- [X] Push templates/scripts to the FORDYCA plugin--not part of core SIERRA
+- [X] Make PopulationDensity not coupled to SS,DS,RN,PL block distribution, which it is currently.
+- [X] Move convergence stuff out of exp_generator--not part of core SIERRA
+- [X] Move LOG4CXX_CONFIGURATION check out of HPC--not part of core SIERRA
+- [X] Make SIERRA runnable from directories other than the repo directory
+- [X] Verify that all the batch criteria I moved to FORDYCA still work as expected
+- [X] Move all yaml config out of SIERRA core. Should retain the ability to merge configs though, as I will need that
+       for TITARRA common stuff merging with FORDYCA/PRISM specific config.
+- [X] Create derived TemporalVariance  batch criteria for FORDYCA. (BC|BM|M types are specific to my project).
+      This must be done AFTER creating titarra--the parser is used in vcs.py
+- [ ] Rename xml_luigi to something that makes more sense
+- [ ] More SAANoise out of SIERRA--to uses the perf.robustness dictionary, which I am moving out to TITERRA
+- [ ] Document all the SIERRA hooks that exist/I use in TITERRA
+
+
+** TODO [#B] Fix the pylint import error false positives
+** TODO [#B] Updates docs for the config (stage5, main)
+** TODO [#B] Switch reading intra experiment model dataframe index sizes
+From using the size of a different dataframe in the exp to reading from the time setup written to the pkl file.
+
+** TODO [#B] Add some example pbs/slurm scripts in the HPC docs
+- [X] Re-run a batched experiment which got killed by the HPC scheduler
+- [X] Do I need to re-run SIERRA to tweak graphs
+
+** TODO [#B] Switch all collated .csvs to have .mean extension to make things consistent
+Stat csv extension mapping should probably be put in the config module
+** TODO [#B] For all bivar perf measures, add scatter plot generation
+Might be helpful to spot trends among different controllers. Would also need to be implemented in stage 5 as another
+comparison option.
+
+** TODO [#B] Update FORDYCA models with the new perf measures definitions
+** TODO [#B] Remove **kwargs usage from graphs--explicit arguments leads to way better type checking
+** TODO [#B] Setup travis CI with mypy+pytype
+** TODO [#B] Rename perf measure config from 'perf' to 'stage1/stage3/stage4/etc'.
+Much clearer this way. Also fits better with the 'stage5.yaml' config file idea.
+
+
+** TODO [#C] Check out the fastcore library
+** TODO [#C] Try Modin as a parallel pandas wrapper
+** TODO [#C] Create SIERRA design philosophy
+- Never deletes directories for you, only overwrites stage 1 if you tell it to.
+- Pipeline design
+- Everything is configurable
+
+
+** DONE [#A] Create TITERRA
+   CLOSED: [2021-05-21 Fri 10:46]
+- [X] Create derived PopulationSize batch criteria for FORDYCA. The one in SIERRA core sets a population_dynamics tag.
+- [X] Add --scenario generator
+- [X] Add scripts/, templates/ from SIERRA
+
+** DONE [#C] Make all my colors colorblind safe (should be a set of matplotlib colors I can select for this).
+   CLOSED: [2021-07-19 Mon 15:03]
+** DONE [#A] Create tutorial section for SIERRA [100%]
+   CLOSED: [2021-10-23 Sat 18:46]
+- [X] Define a new variable
+- [X] Define a new project (needs updating)
+- [X] Render video with ARGoS and from .csvs (this needs updating and clarification on directory roots/where things go/come from)
+- [X] Controller comparison/stage5
+- [X] Project rendering
+- [X] Create docs specifying that SIERRA is for homogeneous swarms mainly.
+- [X] Add rendering example

@@ -10,9 +10,20 @@ Creating a New SIERRA Project
    it. You should use :envvar:`SIERRA_PROJECT_PATH` though, because it is more
    self-documenting.
 
-   So if your project is ``proj-awesome``, then it needs be under ``projects``
-   as ``projects/proj-awesome``, and the path to ``projects`` needs to be on
-   :envvar:`SIERRA_PROJECT_PATH`.
+   For example, if your project is ``proj-awesome``, and that directory is in
+   ``projects`` as ``/path/to/projects/proj-awesome``, and the path to
+   ``/path/to/projects`` needs to be on :envvar:`SIERRA_PROJECT_PATH`.
+
+   .. NOTE:: The name of the library C++ SIERRA will tell ARGoS to search for
+      on :envvar:`ARGOS_PLUGIN_PATH` when looking for controller and loop
+      function definitions is computed from the project name. For example if you
+      pass ``--project=project-awesome``, then SIERRA will tell ARGoS to search in
+      ``proj-awesome.so`` for both loop function and controller definitions via
+      XML changes.
+
+   .. NOTE:: SIERRA does `not` modify :envvar:`ARGOS_PLUGIN_PATH`, so you will
+             need to make sure that the directories containing the necessary
+             ``.so`` library are on it prior to invoking SIERRA.
 
 #. Create the following directory structure within your project directory (or
    copy and modify the one from an existing project).
@@ -37,18 +48,18 @@ Creating a New SIERRA Project
      - ``intra-graphs-hm.yaml`` - Configuration for intra-experiment
        heatmaps. This file is optional. If it is present, graphs defined in it
        will be added to those specified in
-       ``<sierra>core/config/intra-graphs-hm.yaml``, and will be generated if
+       ``<sierra>/core/config/intra-graphs-hm.yaml``, and will be generated if
        stage 4 is run. See :doc:`graphs_config` for documentation.
 
      - ``inter-graphs.yaml`` - Configuration for inter-experiment graphs. This
        file is optional. If it is present, graphs defined in it will be added to
-       those specified in ``<sierra>core/config/inter-graphs-line.yaml``, and
+       those specified in ``<sierra>/core/config/inter-graphs-line.yaml``, and
        will be generated if stage 4 is run. See :doc:`graphs_config` for
        documentation.
 
-     - ``stage5.yaml`` - Configuration for stage5 controller comparisons. This file
-       is required if stage5 is run, and optional otherwise. See
-       :ref:`ln-project-config-stage5` for documentation.
+     - ``stage5.yaml`` - Configuration for stage5 controller comparisons. This
+       file is required if stage 5 is run, and optional otherwise. See
+       :doc:`stage5_config` for documentation.
 
      - ``models.yaml`` - Configuration for intra- and inter-experiment
        models. This file is optional. If it is present, models defined and
@@ -61,11 +72,11 @@ Creating a New SIERRA Project
        SIERRA to generate XML file modifications to the
        ``--template-input-file`` based on what is passed as ``--scenario`` on
        the cmdline. This file is required. See
-       :ref:`ln-tutorials-project-scenario-config` for documentation.
+       :ref:`ln-tutorials-project-generators-scenario-config` for documentation.
 
      - ``exp_generators.py`` - Contains extensions to the per-simulation
        configuration that SIERRA performs. See
-       :ref:`ln-tutorials-project-sim_config` for documentation. This file is
+       :ref:`ln-tutorials-project-generators-sim-config` for documentation. This file is
        optional.
 
    - ``variables/`` - Additional variables (including batch criteria) defined by
@@ -81,7 +92,9 @@ Creating a New SIERRA Project
    inputs and process outputs correctly by following :doc:`main_config`.
 
 #. Define graphs to be generated from simulation outputs by following
-   :doc:`graphs_config`.
+   :doc:`graphs_config`. Strictly speaking this is optional, but automated graph
+   generation during stage 4 is one of the most useful parts of SIERRA, so its kind
+   of silly if you don't do this.
 
 #. Setup your ``--template-input-file`` appropriately by following
    :doc:`template_input_file`.
@@ -96,5 +109,6 @@ Optional Steps
    data.
 
 #. Add additional per-simulation configuration such as unique output directory
-   names, random seeds (if you don't use the ARGoS one), etc. SIERRA can't set
-   stuff like this up in a project agnostic way.
+   names, random seeds (if you don't use the ARGoS one), etc. in various python
+   files referenced by ``scenario_generators.py`` and ``exp_generators.py``
+   SIERRA can't set stuff like this up in a project agnostic way.

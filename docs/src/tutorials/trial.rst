@@ -1,4 +1,4 @@
-.. _ln-trial:
+.. _ln-tutorials-trial:
 
 =================
 Trying Out SIERRA
@@ -16,8 +16,14 @@ defining your own, the steps to do so are:
 
 #. Setup the :xref:`FORDYCA` runtime environment, following the `setup steps here
    <https://swarm-robotics-fordyca.readthedocs.io/setup/local-runtime.html>`_,
-   and make sure (1) ``argos3`` is found by your shell, (2) you can launch the
-   FORDYCA demo ARGoS simulation.
+   and make sure that:
+
+   - ``argos3`` is found by your shell
+
+   - You can launch the FORDYCA demo ARGoS simulation.
+
+   `If you can't do these then you won't be able to do anything useful with
+   SIERRA!`.
 
 #. Clone the SIERRA repo, and checkout the ``devel`` branch::
 
@@ -26,10 +32,11 @@ defining your own, the steps to do so are:
      cd $HOME/research/sierra
      git checkout devel
 
-#. From the SIERRA repo root, install python dependencies with ``pip3``::
+#. From the SIERRA repo root, install SIERRA locally::
 
-     pip3 install --upgrade pip
-     pip3 install -r requirements/common.txt
+     cd docs && make man && cd ..
+     python3 -m build
+     pip3 install .
 
 #. Install OS packages (ubuntu package names shown):
 
@@ -48,9 +55,14 @@ defining your own, the steps to do so are:
 
      export SIERRA_PROJECT_PATH=$HOME/research/titerra
 
-#. From the SIERRA repo root, run SIERRA::
+#. Set :envvar:`ARGOS_PLUGIN_PATH`::
 
-     python3 main.py \
+     export ARGOS_PLUGIN_PATH=$HOME/research/fordyca/build/lib
+
+#. From the TITERRA repo root, run SIERRA (taken from
+   :ref:`ln-usage-examples`)::
+
+     sierra-cli \
         --sierra-root=$HOME/exp\
         --template-input-file=templates/ideal.argos \
         --n-sims=3\
@@ -68,8 +80,8 @@ defining your own, the steps to do so are:
    This will run a batch of 7 experiments using a correlated random walk robot
    controller (CRW), across which the swarm size will be varied from 1..64, by
    powers of 2. Within each experiment, 3 copies of each simulation will be run
-   (each will different random seeds), for a total of 21 ARGoS simulations. On a
+   (each with different random seeds), for a total of 21 ARGoS simulations. On a
    reasonable machine it should take about 10 minutes or so to run. After it
    finishes, you can go to ``$HOME/exp`` and find all the simulation outputs,
    including camera ready graphs! For an explanation of SIERRA's runtime
-   directory tree, see :ref:`ln-runtime-exp-tree`.
+   directory tree, see :ref:`ln-usage-runtime-exp-tree`.

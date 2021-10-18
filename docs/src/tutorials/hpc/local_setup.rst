@@ -1,4 +1,4 @@
-.. _ln-hpc-local-setup:
+.. _ln-tutorials-hpc-local-setup:
 
 ===============
 HPC Local Setup

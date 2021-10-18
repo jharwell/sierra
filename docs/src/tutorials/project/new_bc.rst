@@ -9,14 +9,19 @@ If you have a new experimental variable that you have added to your C++ library,
 following to get it to work with SIERRA as a batch criteria:
 
 #. Make your variable (``MyVar`` in this tutorial) inherit from
-   ``UnivarBatchCriteria`` and place your ``my_var.py`` file under
-   ``<project>/variables/``. The "base class" version of your variable should
-   take in parameters, and NOT have any hardcoded values in it anywhere
-   (i.e. rely on dynamic class creation via the ``factory()`` function).
+   :class:`sierra.core.variables.batch_criteria.UnivarBatchCriteria` and place
+   your ``my_var.py`` file under ``<project>/variables/``. The class defined in
+   ``my_var.py`` should be a "base class" version of your variable, and
+   therefore should take in parameters, and NOT have any hardcoded values in it
+   anywhere (i.e., rely on dynamic class creation via the ``factory()``
+   function). This is to provide maximum flexibility to those using SIERRA, so
+   that they can create `any` kind of instance of your variable, and not just
+   the ones you have made pre-defined classes for.
 
-#. Define the abstract functions from ``UnivarBatchCriteria``. Most are straight
-   forward to understand from the documentation, but the XML manipulation ones
-   warrant more explanation.
+#. Define the abstract functions from
+   :class:`sierra.core.variables.batch_criteria.UnivarBatchCriteria`. Most are
+   straight forward to understand from the documentation, but the XML
+   manipulation ones warrant more explanation.
 
    .. _ln-xpath: https://docs.python.org/2/library/xml.etree.elementtree.html
 
@@ -26,7 +31,7 @@ following to get it to work with SIERRA as a batch criteria:
    ``get_attr_changelist()`` - Given whatever parameters that your variable was
    passed during initialization (e.g. the boundaries of a range you want to vary
    it within), produce a list of sets, where each set is all changes that need
-   to be made to the .argos template file in order to set the value of your
+   to be made to the ``.argos`` template file in order to set the value of your
    variable to something. Each change is a
    :class:`~sierra.core.xml_luigi.XMLAttrChange` object, that takes the
    following arguments in its constructor:
@@ -40,8 +45,8 @@ following to get it to work with SIERRA as a batch criteria:
 
    ``gen_tag_rmlist()`` - Given whatever parameters that your variable was
    passed during initialization, generate a list of sets, where each set is all
-   tags that need to be removed from the .argos template file in order to set
-   the value of your variable to something.
+   tags that need to be removed from the ``.argos`` template file in order to
+   set the value of your variable to something.
 
    Each change is a :class:`~sierra.core.xml_luigi.XMLTagRm` object that takes
    the following arguments in its constructor:
@@ -49,11 +54,11 @@ following to get it to work with SIERRA as a batch criteria:
    #. XPath search path for the **parent** of the tag that you want to
       remove.
 
-   #. Name of the attribute you want to remove within the parent element.
+   #. Name of the tag you want to remove within the parent element.
 
    ``gen_tag_addlist()`` - Given whatever parameters that your variable was
    passed during initialization, generate a list of sets, where each set is all
-   tags that need to be added to the .argos template file.
+   tags that need to be added to the ``.argos`` template file.
 
    Each change is a :class:`~sierra.core.xml_luigi.XMLTagAdd` object that takes
    the following arguments in its constructor:
@@ -69,34 +74,56 @@ following to get it to work with SIERRA as a batch criteria:
 #. Define the parser for your variable in order to parse the command line string
    defining your batch criteria into a dictionary of attributes that can then be
    used by the ``factory()``. The parser can be defined anywhere, though it must
-   be able to be used in the ``factory()`` function.
+   be able to be used in the ``factory()`` function. The parse class must
+   conform to the following interface:
+
+   .. code-block:: python
+
+      class MyVarParser():
+          ...
+      def __call__(self, cli_arg: str) -> dict:
+          ...
+
+   It must be callable with a single argument which is whatever was passed to
+   ``--batch-criteria``. See
+   :class:`sierra.core.variables.population_size.Parser` for a simple example of
+   this.
 
 #. Define a factory function to dynamically create classes from the base class
    definition of ``MyVar`` in ``my_var.py``. It must have the following
-   signature::
+   signature:
 
-     factory(cmdline_str, main_config, batch_input_root, **kwargs)
+   .. code-block:: python
 
-   Arguments:
+      def factory(cli_arg: str,
+                  main_config: dict,
+                  batch_input_root: str,
+                  **kwargs) -> MyVar:
+      """
+      Arguments:
+          cli_arg: The string of the your batch criteria/variable you
+                   have defined that was passed on the command line via
+                   ``--batch-criteria``.
+          main_config: The main YAML configuration dictionary
+          (``<project>/config/main.yaml``).
 
-      - ``cmdline_str`` - The string of the your batch criteria/variable you
-        have defined that was passed on the command line.
+          batch_input_root: The directory where the experiment directories are
+                            to be created.
 
-      - ``main_config`` - The main YAML configuration dictionary
-        (``<project>/config/main.yaml``).
+          **kwargs: Additional arguments required by this batch criteria.
 
-      - ``batch_input_root`` - The directory where the experiment directories
-        are to be created, to create specific instances of your variable that
-        are derived from your "base" variable class. This is to provide maximum
-        flexibility to those using SIERRA, so that they can create `any` kind of
-        instance of your variable, and not just the ones you have made
-        pre-defined classes for.
+      """
 
-   This function is a class factory method, and should (1) call the parser for
-   your variable, (2) return a custom instance of your class that is named
-   according to the specific batch criteria string passed on the command line,
-   inherits from ``MyVar`` variable class you defined above, and that has an
-   ``__init__()`` function that calls the ``__init__()`` function of your base
-   variable
+   This function should do the following:
 
-   See ``<sierra>/core/variables/population_size.py`` for a simple example of this.
+   #. Call the parser for your variable, as defined above.
+
+   #. Return a custom instance of your class that is named according to the
+      specific batch criteria string passed on the command line which inherits
+      from ``MyVar`` variable base class you defined above, and that has an
+      ``__init__()`` function that calls the ``__init__()`` function of your
+      base variable. To dynamically create a new class which is derived from
+      your ``MyVar`` class, you can use the ``type()`` function.
+
+   See ``<sierra>/core/variables/population_size.py`` for a simple example of
+   this.

@@ -6,7 +6,7 @@ These are the shell programs which SIERRA using internally when running.
 
 - ``parallel``
 
-   GNU parallel. Used during stage 2 when running experiments.
+  GNU parallel. Used during stage 2 when running experiments.
 
 - ``ffmpeg``
 
@@ -14,5 +14,5 @@ These are the shell programs which SIERRA using internally when running.
 
 - ``Xvfb``
 
-   Used during stage 1 when generating simulation inputs, and during stage 2
-   when running experiments.
+  Used during stage 1 when generating simulation inputs, and during stage 2 when
+  running experiments.

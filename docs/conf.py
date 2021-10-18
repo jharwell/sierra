@@ -61,7 +61,7 @@ source_suffix = ['.rst', '.md']
 master_doc = 'index'
 
 # General information about the project.
-project = 'Sierra'
+project = 'SIERRA'
 copyright = '2021, John Harwell'
 author = 'John Harwell'
 
@@ -136,6 +136,10 @@ autoapi_modules = {
 
 autoapi_ignore = ['*flycheck*']
 xref_links = {
+    "Harwell2021a": ("Improved Swarm Engineering: Aligning Intuition and Analysis",
+                     "https://arxiv.org/pdf/2012.04144.pdf"),
+    "Harwell2021b": ("Characterizing The Limits of Linear Modeling of Non-Linear Swarm Behaviors",
+                     "https://arxiv.org/abs/2110.12307"),
     "Harwell2020": ("Demystifying Emergent Intelligence and Its Effect on Performance in Large Swarms",
                     "http://ifaamas.org/Proceedings/aamas2020/pdfs/p474.pdf"),
     "Harwell2019": ("Swarm Engineering Through Quantitative Measurement in a 10,000 Robot Swarm",
@@ -150,11 +154,10 @@ xref_links = {
                       "http://users.umiacs.umd.edu/~sarit/data/articles/rosenfeldetalbook06.pdf"),
     "SIERRA_GITHUB": ("https://github.com:swarm-robotics/sierra.git", "https://github.com:swarm-robotics/sierra.git"),
     "FORDYCA": ("FORDYCA", "https://swarm-robotics-fordyca.readthedocs.io"),
-    "SILICON": ("SILICON", "https://swarm-robotics-silicon.readthedocs.io"),
-    "COSM": ("COSM", "https://swarm-robotics-cosm.readthedocs.io"),
-    "RCPPSW": ("RCPPSW", "https://swarm-robotics-rcppsw.readthedocs.io"),
-    "RCSW": ("RCSW", "https://swarm-robotics-rcsw.readthedocs.io"),
-    "LIBRA": ("LIBRA", "https://swarm-robotics-libra.readthedocs.io")
+    "PRISM": ("PRISM", "https://swarm-robotics-prism.readthedocs.io"),
+    "LIBRA": ("LIBRA", "https://swarm-robotics-libra.readthedocs.io"),
+    "2021-ijcai-demo": ("2021 IJCAI Robot Exhibition",
+                        "https://www-users.cse.umn.edu/~harwe006/showcase/ijcai-2021-robot-exhibition"),
 }
 
 # -- Options for HTML output ----------------------------------------------
@@ -174,6 +177,8 @@ html_theme = 'sphinx_rtd_theme'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+html_last_updated_fmt = "%b %d, %Y"
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.

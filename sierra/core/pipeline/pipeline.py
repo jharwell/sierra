@@ -16,14 +16,14 @@
 """
 Container module for the 5 pipeline stages implemented by SIERRA:
 
-# . Generate a set of XML configuration files from a template suitable for
+#. Generate a set of XML configuration files from a template suitable for
    input into ARGoS that contain user-specified modifications.
-# . Run the specified  # of experiments in parallel using GNU Parallel on
+#. Run the specified  # of experiments in parallel using GNU Parallel on
    the provided set of hosts on MSI (or on a single personal computer for testing).
-# . Average the .csv results of the simulation runs together.
-# . Generate a user-defined set of graphs based on the averaged results for each
+#. Average the .csv results of the simulation runs together.
+#. Generate a user-defined set of graphs based on the averaged results for each
    experiment, and possibly across experiments for batches.
-# . Compare controllers that have been tested with the same experiment batch across different
+#. Compare controllers that have been tested with the same experiment batch across different
    performance measures.
 """
 

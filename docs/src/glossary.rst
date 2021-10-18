@@ -120,12 +120,24 @@ works/is designed the way it is, and to help you find your way around.
 
    Graph Category
 
-      A semantric label attached to a set of graphs which are similar. For
+      A semantic label attached to a set of graphs which are similar. For
       example, if you want to generate graphs about the different ways that
-      robots allocate tasks, I might creat a ``LN_task_alloc`` label, so that
+      robots allocate tasks, you might create a ``LN_task_alloc`` label, so that
       you can enable/disable all task allocation related graphs for one or more
       controllers easily when :doc:`configuring
       </src/tutorials/project/graphs_config>` your project.
+
+   Controller Category
+
+      A semantic label attached to a set of controllers which are similar in
+      some way. For example, if you have two controllers which use the same type
+      of memory (say it's a "last N objects seen" memory), you could create a
+      ``LastN`` category, and then define controllers within it, e.g.,
+      ``LastN.Ring`` and ``LastN.DecayRing`` for two controllers which have a
+      ringbuffer of remembered objects and a decaying ringbuffer of remembered
+      objects (i.e., an object is forgotten after some period of time even if it
+      is not forced out of the ringbuffer by seeing a new object). See
+      :doc:`configuring </src/tutorials/project/main_config>` your project.
 
    Model
 

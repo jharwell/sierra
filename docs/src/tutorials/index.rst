@@ -7,4 +7,5 @@ SIERRA Tutorials
 
    project/index.rst
    plugin/index.rst
+   hpc/index.rst
    trial.rst
