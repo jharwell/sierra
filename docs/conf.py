@@ -124,7 +124,7 @@ autoapi_modules = {
     'sierra.core.pipeline': {'output': 'api/core/pipeline'},
     'sierra.core.variables': {'output': 'api/core/variables'},
     'sierra.core.graphs': {'output': 'api/core/graphs'},
-    'sierra.core.xml_luigi': {'output': 'api/core'},
+    'sierra.core.xml': {'output': 'api/core'},
     'sierra.core.utils': {'output': 'api/core'},
     'sierra.core.experiment_spec': {'output': 'api/core'},
     'sierra.core.vector': {'output': 'api/core'},

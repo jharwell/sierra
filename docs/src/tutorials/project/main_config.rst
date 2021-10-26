@@ -30,20 +30,18 @@ An example main configuration file:
      # where the C++ code outputs things and where SIERRA looks for outputs.
      sim_metrics_leaf: 'metrics'
 
-   # Configuration for SIERRA internals. This dictionary is mandatory
-   # for all simulations.
-   sierra:
-     # Configuration for performance measures. This key-value pair is mandatory
-     # for all simulations. The value is the location of the .yaml
-     # configuration file for performance measures. It is a separate config
-     # file so that multiple scenarios within a single project which define
-     # performance measures in  different ways can be easily accommodated.
-     perf: 'perf-config.yaml'
+   # Configuration for performance measures. This key-value pair is mandatory
+   # for all simulations. The value is the location of the .yaml
+   # configuration file for performance measures. It is a separate config
+   # file so that multiple scenarios within a single project which define
+   # performance measures in  different ways can be easily accommodated.
+   perf: 'perf-config.yaml'
 
 Summary Performance Measures Configuration File
 ===============================================
 
-Within the pointed-to .yaml file for ``perf`` configuration, the structure is:
+Within the pointed-to .yaml file for ``perf`` configuration, the basic structure
+is:
 
 .. code-block:: YAML
 
@@ -63,6 +61,13 @@ Within the pointed-to .yaml file for ``perf`` configuration, the structure is:
      # temporally charted performance measure for the experiment. This key is
      # mandatory.
      intra_perf_col: 'cum_avg_transported'
+
+Additional fields can be added to this dictionary as needed to support custom
+performance measures,graph generation, or batch criteria as needed. See
+:ref:`ln-bc-saa-noise-yaml-config` for an example of adding fields to this
+dictionary as a lookup table of sorts for a broader range of cmdline
+configuration (i.e., using it to make the cmdline syntax for the
+`ln-bc-saa-noise` much nicer).
 
 Controllers Configuration File: ``config/controllers.yaml``
 ===========================================================

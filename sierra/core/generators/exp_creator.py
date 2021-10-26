@@ -28,7 +28,7 @@ import typing as tp
 # 3rd party packages
 
 # Project packages
-from sierra.core.xml_luigi import XMLLuigi
+from sierra.core.xml import XMLLuigi
 from sierra.core.variables import batch_criteria as bc
 import sierra.core.config as config
 import sierra.core.utils
@@ -81,7 +81,7 @@ class ExpCreator:
 
     def from_def(self, exp_def: XMLLuigi):
         """
-        Given a :class:`~sierra.core.xml_luigi.XMLLuigi` object containing all changes that should be
+        Given a :class:`~sierra.core.xml.XMLLuigi` object containing all changes that should be
         made to all simulations in the experiment, use
         :class:`~sierra.core.generators.exp_generators.SimDefUniqueGenerator` to create additional
         changes to create a set of unique simulations from which distributions of swarm behavior can

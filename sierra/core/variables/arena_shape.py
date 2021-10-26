@@ -23,7 +23,7 @@ import implements
 # Project packages
 from sierra.core.variables.base_variable import IBaseVariable
 from sierra.core.utils import ArenaExtent
-from sierra.core.xml_luigi import XMLAttrChange, XMLAttrChangeSet, XMLTagRmList, XMLTagAddList
+from sierra.core.xml import XMLAttrChange, XMLAttrChangeSet, XMLTagRmList, XMLTagAddList
 
 kWALL_WIDTH = 0.4
 

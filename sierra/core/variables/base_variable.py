@@ -21,7 +21,7 @@ import typing as tp
 import implements
 
 # Project packages
-from sierra.core.xml_luigi import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList
+from sierra.core.xml import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList
 
 
 class IBaseVariable(implements.Interface):

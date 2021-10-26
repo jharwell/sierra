@@ -1,4 +1,4 @@
-** TODO [#A] Create SIERRA pypi package [75%]
+** TODO [#A] Create SIERRA pypi package [91%]
 - [X] Push --scenario to the FORDYCA plugin--not part of core SIERRA
 - [X] Push templates/scripts to the FORDYCA plugin--not part of core SIERRA
 - [X] Make PopulationDensity not coupled to SS,DS,RN,PL block distribution, which it is currently.
@@ -10,13 +10,14 @@
        for TITARRA common stuff merging with FORDYCA/PRISM specific config.
 - [X] Create derived TemporalVariance  batch criteria for FORDYCA. (BC|BM|M types are specific to my project).
       This must be done AFTER creating titarra--the parser is used in vcs.py
-- [ ] Rename xml_luigi to something that makes more sense
-- [ ] More SAANoise out of SIERRA--to uses the perf.robustness dictionary, which I am moving out to TITERRA
+- [X] Rename xml_luigi to something that makes more sense
+- [X] More SAANoise out of SIERRA--to uses the perf.robustness dictionary, which I am moving out to TITERRA. 
+  Actually this can stay. These is nothing wrong with the dictionary being in SIERRA as long as the performance measure
+  isn't . It also provides an example of how to extend the super simple default perf YAML config.
 - [ ] Document all the SIERRA hooks that exist/I use in TITERRA
 
 
 ** TODO [#B] Fix the pylint import error false positives
-** TODO [#B] Updates docs for the config (stage5, main)
 ** TODO [#B] Switch reading intra experiment model dataframe index sizes
 From using the size of a different dataframe in the exp to reading from the time setup written to the pkl file.
 
@@ -62,3 +63,6 @@ Much clearer this way. Also fits better with the 'stage5.yaml' config file idea.
 - [X] Project rendering
 - [X] Create docs specifying that SIERRA is for homogeneous swarms mainly.
 - [X] Add rendering example
+
+** DONE [#B] Updates docs for the config (stage5, main)
+   CLOSED: [2021-10-26 Tue 08:38]

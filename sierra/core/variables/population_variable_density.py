@@ -32,7 +32,7 @@ from sierra.core.variables import variable_density as vd
 import sierra.core.utils
 import sierra.core.variables.batch_criteria as bc
 from sierra.core.vector import Vector3D
-from sierra.core.xml_luigi import XMLAttrChange, XMLAttrChangeSet
+from sierra.core.xml import XMLAttrChange, XMLAttrChangeSet
 import sierra.core.plugin_manager as pm
 from sierra.core.utils import ArenaExtent
 

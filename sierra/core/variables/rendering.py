@@ -28,7 +28,7 @@ import implements
 from sierra.core.variables.base_variable import IBaseVariable
 from sierra.core.utils import ArenaExtent
 import sierra.core.variables.time_setup as ts
-from sierra.core.xml_luigi import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList, XMLTagRm, XMLTagAdd, XMLAttrChange
+from sierra.core.xml import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList, XMLTagRm, XMLTagAdd, XMLAttrChange
 import sierra.core.config
 
 

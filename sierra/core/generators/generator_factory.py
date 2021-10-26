@@ -24,7 +24,7 @@ import typing as tp
 import yaml
 
 # Project packages
-from sierra.core.xml_luigi import XMLLuigi
+from sierra.core.xml import XMLLuigi
 from sierra.core.experiment_spec import ExperimentSpec
 import sierra.core.plugin_manager as pm
 

@@ -28,10 +28,10 @@ import implements
 
 # Project packages
 import sierra.core.utils
-import sierra.core.xml_luigi
+import sierra.core.xml
 from sierra.core.variables import constant_density, base_variable
 from sierra.core.vector import Vector3D
-from sierra.core.xml_luigi import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList, XMLLuigi
+from sierra.core.xml import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList, XMLLuigi
 import sierra.core.config
 import sierra.core.plugin_manager as pm
 
@@ -169,8 +169,6 @@ class BatchCriteria():
 
     """
 
-    kPMNames = ['raw', 'scalability', 'self-org', 'flexibility', 'robustness']
-
     def __init__(self,
                  cli_arg: str,
                  main_config: tp.Dict[str, tp.Any],
@@ -244,7 +242,7 @@ class BatchCriteria():
             exp_def.pickle(pkl_path, delete=True)
 
     def scaffold_exps(self,
-                      xml_luigi: sierra.core.xml_luigi.XMLLuigi,
+                      xml: sierra.core.xml.XMLLuigi,
                       batch_config_leaf: str,
                       cmdopts: tp.Dict[str, tp.Any]) -> None:
         """
@@ -266,7 +264,7 @@ class BatchCriteria():
                          len(chg_defs[0]))
 
         for i, defi in enumerate(chg_defs):
-            self._scaffold_expi(xml_luigi, defi, i, cmdopts, batch_config_leaf)
+            self._scaffold_expi(xml, defi, i, cmdopts, batch_config_leaf)
 
         n_exp_dirs = len(os.listdir(self.batch_input_root))
         if n_exps != n_exp_dirs:
@@ -283,7 +281,7 @@ class BatchCriteria():
             raise ValueError("Batch experiment size/# exp dir mismatch")
 
     def _scaffold_expi(self,
-                       xml_luigi: XMLLuigi,
+                       xml: XMLLuigi,
                        defi: XMLAttrChangeSet,
                        i: int,
                        cmdopts: tp.Dict[str, tp.Any],
@@ -300,9 +298,9 @@ class BatchCriteria():
         sierra.core.utils.dir_create_checked(exp_input_root, exist_ok=cmdopts['exp_overwrite'])
 
         for chgsi in defi:
-            xml_luigi.attr_change(chgsi.path, chgsi.attr, chgsi.value)
+            xml.attr_change(chgsi.path, chgsi.attr, chgsi.value)
 
-        xml_luigi.write(os.path.join(exp_input_root, batch_config_leaf))
+        xml.write(os.path.join(exp_input_root, batch_config_leaf))
 
 
 @implements.implements(IBatchCriteriaType)

@@ -27,10 +27,10 @@ import logging
 # 3rd party packages
 
 # Project packages
-from sierra.core.xml_luigi import XMLLuigi
+from sierra.core.xml import XMLLuigi
 from sierra.core.variables import cameras
 import sierra.core.generators.generator_factory as gf
-import sierra.core.xml_luigi
+import sierra.core.xml
 from sierra.core.experiment_spec import ExperimentSpec
 import sierra.core.variables.time_setup as ts
 import sierra.core.variables.rendering as rendering
@@ -286,7 +286,7 @@ class BatchedExpDefGenerator:
         self.cmdopts = cmdopts
         self.logger = logging.getLogger(__name__)
 
-    def generate_defs(self) -> tp.List[sierra.core.xml_luigi.XMLLuigi]:
+    def generate_defs(self) -> tp.List[sierra.core.xml.XMLLuigi]:
         """
         Generates and returns a list of experiment definitions (one for each experiment in the batch),
         which can used to create the batched experiment.

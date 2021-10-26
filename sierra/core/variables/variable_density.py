@@ -24,7 +24,7 @@ import typing as tp
 # Project packages
 from sierra.core.variables.batch_criteria import UnivarBatchCriteria
 from sierra.core.utils import ArenaExtent
-from sierra.core.xml_luigi import XMLAttrChangeSet
+from sierra.core.xml import XMLAttrChangeSet
 
 
 class VariableDensity(UnivarBatchCriteria):

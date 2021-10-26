@@ -10,7 +10,7 @@ SIERRA Core
    ../api/core/sierra.core.cmdline.rst
    ../api/core/sierra.core.vector.rst
    ../api/core/sierra.core.experiment_spec.rst
-   ../api/core/sierra.core.xml_luigi.rst
+   ../api/core/sierra.core.xml.rst
    ../api/core/sierra.core.utils.rst
 
    ../api/core/generators/sierra.core.generators.rst

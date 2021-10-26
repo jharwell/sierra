@@ -31,7 +31,7 @@ from retry import retry
 
 # Project packages
 from sierra.core.vector import Vector3D
-from sierra.core.xml_luigi import XMLLuigi, XMLAttrChangeSet, XMLTagAddList, XMLTagRmList
+from sierra.core.xml import XMLLuigi, XMLAttrChangeSet, XMLTagAddList, XMLTagRmList
 
 
 class ArenaExtent():

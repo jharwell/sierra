@@ -23,7 +23,7 @@ import typing as tp
 # Project packages
 from sierra.core.variables import arena_shape
 from sierra.core.variables import population_size
-from sierra.core.xml_luigi import XMLLuigi
+from sierra.core.xml import XMLLuigi
 from sierra.core.variables import physics_engines
 from sierra.core.utils import ArenaExtent as ArenaExtent
 from sierra.core.experiment_spec import ExperimentSpec
@@ -89,7 +89,7 @@ class ARGoSScenarioGenerator():
 
         scutils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)
 
-    def generate_n_robots(self, xml_luigi: XMLLuigi) -> None:
+    def generate_n_robots(self, xml: XMLLuigi) -> None:
         """
         Generate XML changes to setup # robots if it was specified on the cmdline.
 
@@ -101,7 +101,7 @@ class ARGoSScenarioGenerator():
         chgs = population_size.PopulationSize.gen_attr_changelist_from_list(
             [self.cmdopts['n_robots']])
         for a in chgs[0]:
-            xml_luigi.attr_change(a.path, a.attr, a.value, True)
+            xml.attr_change(a.path, a.attr, a.value, True)
 
         # Write # robots info to file for later retrieval
         chgs[0].pickle(self.spec.exp_def_fpath)
