@@ -55,13 +55,16 @@ class ExperimentSpec():
 
         if criteria.is_bivar():
             bivar = tp.cast(bc.BivarBatchCriteria, criteria)
-            from_bivar_bc1 = isinstance(bivar.criteria1, constant_density.ConstantDensity)
-            from_bivar_bc2 = isinstance(bivar.criteria2, constant_density.ConstantDensity)
+            from_bivar_bc1 = isinstance(bivar.criteria1,
+                                        constant_density.ConstantDensity)
+            from_bivar_bc2 = isinstance(bivar.criteria2,
+                                        constant_density.ConstantDensity)
         else:
-            from_univar_bc = isinstance(criteria, constant_density.ConstantDensity)
+            from_univar_bc = isinstance(
+                criteria, constant_density.ConstantDensity)
 
-        # Need to get per-experiment arena dimensions from batch criteria, as they might be
-        # different for each experiment
+        # Need to get per-experiment arena dimensions from batch criteria, as
+        # they might be different for each experiment
         if from_univar_bc:
             self.arena_dim = criteria.arena_dims()[exp_num]
             self.scenario_name = criteria.exp_scenario_name(exp_num)
@@ -74,9 +77,11 @@ class ExperimentSpec():
             self.scenario_name = criteria.exp_scenario_name(exp_num)
 
         else:  # Default case: scenario dimensions read from cmdline
-            sgp = pm.module_load_tiered(cmdopts['project'], 'generators.scenario_generator_parser')
+            sgp = pm.module_load_tiered(
+                cmdopts['project'], 'generators.scenario_generator_parser')
             kw = sgp.ScenarioGeneratorParser().to_dict(cmdopts['scenario'])
-            self.arena_dim = ArenaExtent(Vector3D(kw['arena_x'], kw['arena_y'], kw['arena_z']))
+            self.arena_dim = ArenaExtent(
+                Vector3D(kw['arena_x'], kw['arena_y'], kw['arena_z']))
             self.logger.debug("Read scenario dimensions %s from cmdline spec",
                               self.arena_dim)
 

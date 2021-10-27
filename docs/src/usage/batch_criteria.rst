@@ -55,9 +55,10 @@ Cmdline Syntax
 
 - ``N`` - The maximum swarm size.
 
-Examples:
-    - ``population_size.Log1024``: Static swarm sizes 1...1024
-    - ``population_size.Linear1000``: Static swarm sizes 100...1000
+Examples
+^^^^^^^^
+- ``population_size.Log1024``: Static swarm sizes 1...1024
+- ``population_size.Linear1000``: Static swarm sizes 100...1000
 
 .. _ln-bc-population-constant-density:
 
@@ -90,8 +91,9 @@ Cmdline Syntax
 
 - ``cardinality`` How many experiments should be generated?
 
-Examples:
-  - ``population_constant_density.1p0.I16.C4``: Constant density of 1.0. Arena
+Examples
+^^^^^^^^
+- ``population_constant_density.1p0.I16.C4``: Constant density of 1.0. Arena
     dimensions will increase by 16 in both X and Y for each experiment in the
     batch (4 total).
 
@@ -126,8 +128,10 @@ Cmdline Syntax
 - ``cardinality`` How many experiments should be generated? Densities for each
   experiment will be linearly spaced between the min and max densities.
 
-  Examples:
-  - ``population_variable_density.1p0.4p0.C4``: Densities of 1.0,2.0,3.0,4.0.
+Examples
+^^^^^^^^
+
+- ``population_variable_density.1p0.4p0.C4``: Densities of 1.0,2.0,3.0,4.0.
 
 .. _ln-bc-saa-noise:
 
@@ -158,7 +162,8 @@ Cmdline Syntax
 
 - ``population`` - The static swarm size to use (optional).
 
-Examples:
+Examples
+^^^^^^^^^
 
 - ``saa_noise.sensors.C4.Z16``: 4 levels of noise applied to all sensors in a
   swarm of size 16.

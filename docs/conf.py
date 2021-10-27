@@ -152,6 +152,7 @@ xref_links = {
                    "https://www.cs.unm.edu/~wjust/CS523/S2018/Readings/Hecker_Beyond_Pheromones_Swarm_Intelligence.pdf"),
     "Rosenfeld2006": ("Rosenfeld2006",
                       "http://users.umiacs.umd.edu/~sarit/data/articles/rosenfeldetalbook06.pdf"),
+    "argos_home": ("ARGoS", "https://www.argos-sim.info/index.php"),
     "SIERRA_GITHUB": ("https://github.com:swarm-robotics/sierra.git", "https://github.com:swarm-robotics/sierra.git"),
     "FORDYCA": ("FORDYCA", "https://swarm-robotics-fordyca.readthedocs.io"),
     "PRISM": ("PRISM", "https://swarm-robotics-prism.readthedocs.io"),

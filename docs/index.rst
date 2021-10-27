@@ -14,21 +14,20 @@ SIERRA's Documentation
    :hidden:
    :caption: Contents:
 
-   src/quickstart.rst
+   src/getting_started.rst
+   src/trial.rst
 
    src/package.rst
-
-   src/usage/index.rst
-
-   src/tutorials/index.rst
-
    src/c++-lib-requirements.rst
    src/exp-requirements.rst
+
+   src/philosophy.rst
+   src/usage/index.rst
+   src/tutorials/index.rst
 
    src/hpc/index.rst
 
    src/storage/index.rst
-
 
    src/faq.rst
    src/contributing.rst

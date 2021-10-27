@@ -26,7 +26,6 @@ import shutil
 import re
 
 # 3rd party packages
-from singleton_decorator import singleton
 import packaging.version
 
 # Project packages
@@ -122,10 +121,12 @@ class EnvChecker():
         assert res is not None, "FATAL: ARGOS_VERSION not in -v output"
 
         version = packaging.version.parse(res.group(0))
-        min_version = packaging.version.parse(sierra.core.config.kARGoS['min_version'])
+        min_version = packaging.version.parse(
+            sierra.core.config.kARGoS['min_version'])
 
         assert version >= min_version,\
-            "FATAL: ARGoS version {0} < min required {1}".format(version, min_version)
+            "FATAL: ARGoS version {0} < min required {1}".format(
+                version, min_version)
 
         # Check ARGoS plugin path is defined
         assert os.environ.get("ARGOS_PLUGIN_PATH") is not None, \

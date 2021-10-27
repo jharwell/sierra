@@ -2,13 +2,14 @@
 
 
 ===========================================
-SIERRA Requirements for ARGoS C++ Libraries
+SIERRA Requirements for C++ Libraries
 ===========================================
 
-SIERRA makes a few assumptions about how ARGoS :term:`Simulations<Simulation>`
-using your C++ library can be launched, and how they output data. If your code
-does not meet these assumptions, then you will need to make some (hopefully
-minor) modifications to it before you can use it with SIERRA.
+SIERRA makes a few assumptions about how :term:`ARGoS`
+:term:`Simulations<Simulation>` using your C++ library can be launched, and how
+they output data. If your code does not meet these assumptions, then you will
+need to make some (hopefully minor) modifications to it before you can use it
+with SIERRA.
 
 #. :term:`Simulations<Simulation>` can be launched from `any` directory; that
    is, they do not require to be launched from the root of the code repository

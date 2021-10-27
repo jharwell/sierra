@@ -182,7 +182,6 @@ class SimDefUniqueGenerator:
 
     These include:
     - Random seeds for each simulation.
-    - Output directories for each simulation.
 
     Attributes:
         sim_num: The simulation # in the experiment.
@@ -229,9 +228,10 @@ class SimDefUniqueGenerator:
         frames_fpath = os.path.join(self.exp_output_root,
                                     self.sim_output_dir,
                                     config.kARGoSFramesLeaf)
-        exp_def.attr_change(
-            ".//qt-opengl/frame_grabbing",
-            "directory", frames_fpath, noprint=True)  # probably will not be present
+        exp_def.attr_change(".//qt-opengl/frame_grabbing",
+                            "directory",
+                            frames_fpath,
+                            noprint=True)  # probably will not be present
 
 
 class BatchedExpDefGenerator:

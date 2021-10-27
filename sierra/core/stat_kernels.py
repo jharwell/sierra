@@ -20,9 +20,10 @@ import math
 
 # 3rd party packages
 import pandas as pd
+import numpy as np
 
 # Project packages
-import sierra.core.config
+import sierra.core.config as config
 
 
 class conf95:
@@ -66,50 +67,54 @@ class bw:
     def from_pm(dfs: tp.Dict[str, pd.DataFrame]) -> tp.Dict[str, pd.core.groupby.generic.DataFrameGroupBy]:
         ret = {}
         for exp in dfs.keys():
-            ret[exp] = _bw_kernel(dfs[exp], groupby=False, n_sims=len(dfs[exp].columns))
+            ret[exp] = _bw_kernel(dfs[exp], groupby=False,
+                                  n_sims=len(dfs[exp].columns))
 
         return ret
 
 
 def _conf95_kernel(df_like, groupby: bool) -> tp.Dict[str, pd.DataFrame]:
-    # This is (apparently?) a bug in pandas: if the dataframe only has a single row, then passing
-    # axis=1 when calculating mean, median, etc., does not work, as the functions do NOT do their
-    # calculating across the single row, but instead just take the value of the last colum in the
-    # row. Converting the dataframe to a series fixes this.
+    # This is (apparently?) a bug in pandas: if the dataframe only has a single
+    # row, then passing axis=1 when calculating mean, median, etc., does not
+    # work, as the functions do NOT do their calculating across the single row,
+    # but instead just take the value of the last colum in the row. Converting
+    # the dataframe to a series fixes this.
     if not groupby:
         df_like = df_like.iloc[0, :]
 
     return {
-        sierra.core.config.kStatsExtensions['mean']: df_like.mean().round(8).fillna(0),
-        sierra.core.config.kStatsExtensions['stddev']: df_like.std().round(8).fillna(0)
+        config.kStatsExtensions['mean']: _fillna(df_like.mean().round(8)),
+        config.kStatsExtensions['stddev']: _fillna(df_like.std().round(8))
     }
 
 
 def _mean_kernel(df_like, groupby: bool) -> tp.Dict[str, pd.DataFrame]:
-    # This is (apparently?) a bug in pandas: if the dataframe only has a single row, then passing
-    # axis=1 when calculating mean, median, etc., does not work, as the functions do NOT do their
-    # calculating across the single row, but instead just take the value of the last colum in the
-    # row. Converting the dataframe to a series fixes this.
+    # This is (apparently?) a bug in pandas: if the dataframe only has a single
+    # row, then passing axis=1 when calculating mean, median, etc., does not
+    # work, as the functions do NOT do their calculating across the single row,
+    # but instead just take the value of the last colum in the row. Converting
+    # the dataframe to a series fixes this.
     if not groupby:
         df_like = df_like.iloc[0, :]
 
     return {
-        sierra.core.config.kStatsExtensions['mean']: df_like.mean().round(8).fillna(0)
+        config.kStatsExtensions['mean']: _fillna(df_like.mean().round(8))
     }
 
 
 def _bw_kernel(df_like, groupby: bool, n_sims: int) -> tp.Dict[str, pd.DataFrame]:
-    # This is (apparently?) a bug in pandas: if the dataframe only has a single row, then passing
-    # axis=1 when calculating mean, median, etc., does not work, as the functions do NOT do their
-    # calculating across the single row, but instead just take the value of the last colum in the
-    # row. Converting the dataframe to a series fixes this.
+    # This is (apparently?) a bug in pandas: if the dataframe only has a single
+    # row, then passing axis=1 when calculating mean, median, etc., does not
+    # work, as the functions do NOT do their calculating across the single row,
+    # but instead just take the value of the last colum in the row. Converting
+    # the dataframe to a series fixes this.
     if not groupby:
         df_like = df_like.iloc[0, :]
 
-    csv_mean = round(df_like.mean(), 8)
-    csv_median = round(df_like.median(), 8)
-    csv_q1 = round(df_like.quantile(0.25), 8)
-    csv_q3 = round(df_like.quantile(0.75), 8)
+    csv_mean = _fillna(round(df_like.mean(), 8))
+    csv_median = _fillna(round(df_like.median(), 8))
+    csv_q1 = _fillna(round(df_like.quantile(0.25), 8))
+    csv_q3 = _fillna(round(df_like.quantile(0.75), 8))
 
     iqr = abs(csv_q3 - csv_q1)  # Inter-quartile range
     csv_whislo = csv_q1 - 1.50 * iqr
@@ -117,18 +122,22 @@ def _bw_kernel(df_like, groupby: bool, n_sims: int) -> tp.Dict[str, pd.DataFrame
 
     # The magic 1.57 is from the original paper:
     #
-    # (Robert McGill, John W. Tukey and Wayne A. Larsen. Variations of Box Plots, The American
-    # Statistician, Vol. 32, No. 1 (Feb., 1978), pp. 12-16
+    # (Robert McGill, John W. Tukey and Wayne A. Larsen. Variations of Box
+    # Plots, The American Statistician, Vol. 32, No. 1 (Feb., 1978), pp. 12-16
     csv_cilo = csv_median - 1.57 * iqr / math.sqrt(n_sims)
     csv_cihi = csv_median + 1.57 * iqr / math.sqrt(n_sims)
 
     return {
-        sierra.core.config.kStatsExtensions['mean']: csv_mean,
-        sierra.core.config.kStatsExtensions['median']: csv_median,
-        sierra.core.config.kStatsExtensions['q1']: csv_q1,
-        sierra.core.config.kStatsExtensions['q3']: csv_q3,
-        sierra.core.config.kStatsExtensions['cilo']: csv_cilo,
-        sierra.core.config.kStatsExtensions['cihi']: csv_cihi,
-        sierra.core.config.kStatsExtensions['whislo']: csv_whislo,
-        sierra.core.config.kStatsExtensions['whishi']: csv_whishi
+        config.kStatsExtensions['mean']: csv_mean,
+        config.kStatsExtensions['median']: csv_median,
+        config.kStatsExtensions['q1']: csv_q1,
+        config.kStatsExtensions['q3']: csv_q3,
+        config.kStatsExtensions['cilo']: csv_cilo,
+        config.kStatsExtensions['cihi']: csv_cihi,
+        config.kStatsExtensions['whislo']: csv_whislo,
+        config.kStatsExtensions['whishi']: csv_whishi
     }
+
+
+def _fillna(df_like):
+    return np.nan_to_num(df_like, nan=0)

@@ -48,8 +48,8 @@ Projects can generate ``.csv`` files residing in subdirectories within the
 directory (directory path set on a per ``--project`` basis) for each ARGoS
 simulation, in addition to generating ``.csv`` files residing directly in the
 ``main.sim_metrics_leaf.`` directory. SIERRA can then render these ``.csv``
-files into :ref:``~core.graphs.heatmap.Heatmap`` graphs, and stitch these images
-together to make videos.
+files into :class:`~sierra.core.graphs.heatmap.Heatmap` graphs, and stitch these
+images together to make videos.
 
 To use, do the following:
 

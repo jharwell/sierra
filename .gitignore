@@ -110,3 +110,6 @@ ENV/
 
 # MSI
 R-*
+
+# emacs
+*.rel

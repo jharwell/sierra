@@ -17,10 +17,10 @@ SIERRA Runtime Directory Tree
    - ``--template-input-file``
    - ``--batch-criteria``
 
-   SIERRA will abort stage{1,2} processing when this occurs in order to preserve
-   data integrity; this behavior can be overwridden with ``--exp-overwrite``, in
-   which case the use assumes full responsibility for ensuring the integrity of
-   the experiment.
+   SIERRA will abort stage {1,2} processing when this occurs in order to
+   preserve data integrity; this behavior can be overwridden with
+   ``--exp-overwrite``, in which case the use assumes full responsibility for
+   ensuring the integrity of the experiment.
 
    Always better to check the arguments before hitting ENTER. Measure twice, cut
    once, as the saying goes.

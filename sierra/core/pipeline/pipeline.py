@@ -14,17 +14,8 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
-Container module for the 5 pipeline stages implemented by SIERRA:
-
-#. Generate a set of XML configuration files from a template suitable for
-   input into ARGoS that contain user-specified modifications.
-#. Run the specified  # of experiments in parallel using GNU Parallel on
-   the provided set of hosts on MSI (or on a single personal computer for testing).
-#. Average the .csv results of the simulation runs together.
-#. Generate a user-defined set of graphs based on the averaged results for each
-   experiment, and possibly across experiments for batches.
-#. Compare controllers that have been tested with the same experiment batch across different
-   performance measures.
+Container module for the 5 pipeline stages implemented by SIERRA. See
+:ref:`ln-usage-pipeline` for high-level documentation.
 """
 
 # Core packages
@@ -99,11 +90,6 @@ class Pipeline:
             'storage_medium': self.args.storage_medium,
 
             # stage 4
-            'envc_cs_method': self.args.envc_cs_method,
-            'gen_vc_plots': self.args.gen_vc_plots,
-            'reactivity_cs_method': self.args.reactivity_cs_method,
-            'adaptability_cs_method': self.args.adaptability_cs_method,
-            'rperf_cs_method': self.args.rperf_cs_method,
             'exp_graphs': self.args.exp_graphs,
 
             'project_no_yaml_LN': self.args.project_no_yaml_LN,
@@ -116,13 +102,6 @@ class Pipeline:
             'plot_regression_lines': self.args.plot_regression_lines,
             'plot_primary_axis': self.args.plot_primary_axis,
             'plot_large_text': self.args.plot_large_text,
-
-            'pm_scalability_normalize': self.args.pm_scalability_normalize,
-            'pm_scalability_from_exp0': self.args.pm_scalability_from_exp0,
-            'pm_self_org_normalize': self.args.pm_self_org_normalize,
-            'pm_flexibility_normalize': self.args.pm_flexibility_normalize,
-            'pm_robustness_normalize': self.args.pm_robustness_normalize,
-            'pm_normalize_method': self.args.pm_normalize_method,
 
             'models_disable': self.args.models_disable,
 
@@ -137,43 +116,43 @@ class Pipeline:
             'transpose_graphs': self.args.transpose_graphs,
         }
 
-        if self.args.pm_all_normalize:
-            cmdopts['pm_scalability_normalize'] = True
-            cmdopts['pm_self_org_normalize'] = True
-            cmdopts['pm_flexibility_normalize'] = True
-            cmdopts['pm_robustness_normalize'] = True
-
         if cmdopts is not None:
             self.cmdopts.update(cmdopts)
 
-            # Load additional cmdline options from project. This is mandatory, because all projects
-            # have to defined --controller and --scenario at a minimum.
+            # Load additional cmdline options from project. This is mandatory,
+            # because all projects have to defined --controller and --scenario
+            # at a minimum.
             self.logger.debug("Updating cmdopts for cmdline extensions from project '%s'",
                               self.cmdopts['project'])
-            path = "projects.{0}.cmdline".format(self.cmdopts['project'])
+            path = "{0}.cmdline".format(self.cmdopts['project'])
             module = pm.module_load(path)
 
             module.Cmdline.cmdopts_update(self.args, self.cmdopts)
 
         self.cmdopts['plugin_root'] = os.path.join('sierra', 'plugins')
-        self.cmdopts['core_config_root'] = os.path.join('sierra', 'core', 'config')
+        self.cmdopts['core_config_root'] = os.path.join('sierra',
+                                                        'core',
+                                                        'config')
 
         env = os.environ.get('SIERRA_PROJECT_PATH', None)
         assert env is not None, "SIERRA_PROJECT_PATH must be defined"
 
         for root in env.split(os.pathsep):
-            path = os.path.join(root, 'projects', self.cmdopts['project'])
+            path = os.path.join(root, self.cmdopts['project'])
             if os.path.exists(path):
                 self.cmdopts['projects_root'] = root
                 self.cmdopts['project_root'] = path
-                self.cmdopts['project_config_root'] = os.path.join(path, 'config')
-                self.cmdopts['project_model_root'] = os.path.join(path, 'models')
+                self.cmdopts['project_config_root'] = os.path.join(
+                    path, 'config')
+                self.cmdopts['project_model_root'] = os.path.join(
+                    path, 'models')
                 break
 
         self._load_config()
 
         if 5 not in self.args.pipeline:
-            self.batch_criteria = bc.factory(self.main_config, self.cmdopts, self.args)
+            self.batch_criteria = bc.factory(
+                self.main_config, self.cmdopts, self.args)
 
         self.controller = controller
 
@@ -203,14 +182,16 @@ class Pipeline:
                            self.cmdopts).run(self.args)
 
     def _load_config(self) -> None:
-        self.logger.debug("Loading project config from '%s'", self.cmdopts['project_config_root'])
+        self.logger.debug("Loading project config from '%s'",
+                          self.cmdopts['project_config_root'])
 
         try:
             self.main_config = yaml.load(open(os.path.join(self.cmdopts['project_config_root'],
                                                            'main.yaml')),
                                          yaml.FullLoader)
         except FileNotFoundError:
-            self.logger.exception("%s/main.yaml must exist!", self.cmdopts['project_config_root'])
+            self.logger.exception("%s/main.yaml must exist!",
+                                  self.cmdopts['project_config_root'])
             raise
 
         try:

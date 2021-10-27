@@ -1,5 +1,5 @@
-SIERRA Tutorials
-================
+SIERRA Configuration Tutorials
+==============================
 
 .. toctree::
    :maxdepth: 2
@@ -8,4 +8,3 @@ SIERRA Tutorials
    project/index.rst
    plugin/index.rst
    hpc/index.rst
-   trial.rst

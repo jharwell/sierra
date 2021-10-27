@@ -1,6 +1,15 @@
-=================
-SIERRA Quickstart
-=================
+.. _ln-getting-started:
+
+===========================
+Getting Started With SIERRA
+===========================
+
+If you're looking for the "I just want to try out SIERRA without doing any work"
+quickstart, see:ref:`ln-trial` . Otherwise, the steps to install SIERRA and
+setup the interface between your ARGoS C++ project and SIERRA are below.
+
+Installing SIERRA
+-----------------
 
 #. From the SIERRA repo root, install SIERRA locally by following
    :ref:`ln-package`.
@@ -12,16 +21,16 @@ SIERRA Quickstart
    - ``texlive-fonts-recommended``
    - ``texlive-latex-extra``
 
+General Setup Workflow
+----------------------
+
 #. After developing the C++ code for your project (you've already done that
    right???), you may need to modify it so that it simulations can be launched
    and data from simulations captured in a way that SIERRA can process. See
    :ref:`ln-c++-lib-requirements` for requirements.
 
 #. Setup the interface between your code and SIERRA by defining a SIERRA
-   :term:`Project` in python by following
-   :ref:`ln-tutorials-project-project`. If you don't want to spend the
-   time doing this and just want to try out SIERRA with an existing
-   :term:`Project`, see :ref:`ln-tutorials-trial` for the quick-quickstart.
+   :term:`Project` in python by following :ref:`ln-tutorials-project-project`.
 
 #. Figure out which HPC environment SIERRA supports matches your available
    hardware: :ref:`ln-hpc-plugins`, and following the appropriate setup guide.

@@ -1,4 +1,4 @@
-** TODO [#A] Create SIERRA pypi package [91%]
+** TODO [#A] Create SIERRA pypi package [87%]
 - [X] Push --scenario to the FORDYCA plugin--not part of core SIERRA
 - [X] Push templates/scripts to the FORDYCA plugin--not part of core SIERRA
 - [X] Make PopulationDensity not coupled to SS,DS,RN,PL block distribution, which it is currently.
@@ -11,11 +11,15 @@
 - [X] Create derived TemporalVariance  batch criteria for FORDYCA. (BC|BM|M types are specific to my project).
       This must be done AFTER creating titarra--the parser is used in vcs.py
 - [X] Rename xml_luigi to something that makes more sense
-- [X] More SAANoise out of SIERRA--to uses the perf.robustness dictionary, which I am moving out to TITERRA. 
-  Actually this can stay. These is nothing wrong with the dictionary being in SIERRA as long as the performance measure
-  isn't . It also provides an example of how to extend the super simple default perf YAML config.
-- [ ] Document all the SIERRA hooks that exist/I use in TITERRA
-
+- [X] Create trivial ARGoS library to use with SIERRA as a trivial example
+- [X] Document all the SIERRA hooks that exist/I use in TITERRA
+- [X] Update contributing guide: LIBRA development workflow so it makes sense for sierra (originally written for C++),
+  and add CONTRIBUTING.md which points to this page in the docs.
+- [X] Refine docs for all overridable SIERRA hooks to make them more usable to others.
+- [ ] Docs for what statistics SIERRA can generate
+- [ ] Document the for_sphinx arg and how it works for cmdline docs
+- [ ] More SAANoise out of SIERRA--to uses the perf.robustness dictionary, which I am moving out to TITERRA. ALso, SAA
+     noise requires ARGoS functionality that is not in the main repo and will not probably ever make it there.
 
 ** TODO [#B] Fix the pylint import error false positives
 ** TODO [#B] Switch reading intra experiment model dataframe index sizes
@@ -31,7 +35,6 @@ Stat csv extension mapping should probably be put in the config module
 Might be helpful to spot trends among different controllers. Would also need to be implemented in stage 5 as another
 comparison option.
 
-** TODO [#B] Update FORDYCA models with the new perf measures definitions
 ** TODO [#B] Remove **kwargs usage from graphs--explicit arguments leads to way better type checking
 ** TODO [#B] Setup travis CI with mypy+pytype
 ** TODO [#B] Rename perf measure config from 'perf' to 'stage1/stage3/stage4/etc'.
@@ -40,11 +43,13 @@ Much clearer this way. Also fits better with the 'stage5.yaml' config file idea.
 
 ** TODO [#C] Check out the fastcore library
 ** TODO [#C] Try Modin as a parallel pandas wrapper
-** TODO [#C] Create SIERRA design philosophy
+
+** DONE [#C] Create SIERRA design philosophy
+   CLOSED: [2021-10-30 Sat 11:51]
 - Never deletes directories for you, only overwrites stage 1 if you tell it to.
 - Pipeline design
 - Everything is configurable
-
+- Fail early and often
 
 ** DONE [#A] Create TITERRA
    CLOSED: [2021-05-21 Fri 10:46]
@@ -66,3 +71,5 @@ Much clearer this way. Also fits better with the 'stage5.yaml' config file idea.
 
 ** DONE [#B] Updates docs for the config (stage5, main)
    CLOSED: [2021-10-26 Tue 08:38]
+** DONE [#B] Update FORDYCA models with the new perf measures definitions
+   CLOSED: [2021-10-30 Sat 11:52]

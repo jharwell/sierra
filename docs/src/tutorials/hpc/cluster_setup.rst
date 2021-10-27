@@ -12,8 +12,8 @@ This setup applies to the following SIERRA HPC cluster environments:
 - :ref:`ln-hpc-plugins-pbs`
 - :ref:`ln-hpc-plugins-slurm`
 
-The steps to properly configure the C++ libraries for ARGoS and your project for
-use with SIERRA in one of the above environments are:
+The steps to properly configure the C++ libraries for :term:`ARGoS` and your
+project for use with SIERRA in one of the above environments are:
 
 #. Build ARGoS natively on each different type of compute node SIERRA might be
    run on, for maximum efficiency with large swarms. For example, if your HPC

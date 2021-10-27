@@ -50,8 +50,8 @@ class StackedLineGraph:
                  input_stem: str,
                  output_fpath: str,
                  title: str,
-                 xlabel: str,
-                 ylabel: str,
+                 xlabel: tp.Optional[str] = None,
+                 ylabel: tp.Optional[str] = None,
                  large_text: bool = False,
                  legend: tp.Optional[tp.List[str]] = None,
                  cols: tp.Optional[tp.List[str]] = None,
@@ -67,8 +67,6 @@ class StackedLineGraph:
         self.input_stem = input_stem
         self.output_fpath = output_fpath
         self.title = title
-        self.xlabel = xlabel
-        self.ylabel = ylabel
 
         # Optional arguments
         if large_text:
@@ -76,6 +74,8 @@ class StackedLineGraph:
         else:
             self.text_size = sierra.core.config.kGraphTextSizeSmall
 
+        self.xlabel = xlabel
+        self.ylabel = ylabel
         self.legend = legend
         self.cols = cols
         self.logyscale = logyscale
@@ -116,8 +116,11 @@ class StackedLineGraph:
         ax.set_title(self.title, fontsize=self.text_size['title'])
 
         # Add X,Y labels
-        ax.set_xlabel(self.xlabel, fontsize=self.text_size['xyz_label'])
-        ax.set_ylabel(self.ylabel, fontsize=self.text_size['xyz_label'])
+        if self.xlabel is not None:
+            ax.set_xlabel(self.xlabel, fontsize=self.text_size['xyz_label'])
+
+        if self.ylabel is not None:
+            ax.set_ylabel(self.ylabel, fontsize=self.text_size['xyz_label'])
 
         # Output figure
         fig = ax.get_figure()

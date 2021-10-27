@@ -15,12 +15,15 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Classes for collating data from all :term:`Simulation` across all :term:`Experiment` for all
-experiments in a :term:`Batch Experiment`. This is needed to correctly calculate summary statistics
-for performance measures in stage 4: you can't just run the calculated stddev through the
-calculations for flexibility (for example) because comparing curves of stddev is not
-meaningful. Stage 4 needs access to raw-(er) simulation data to construct a `distribution` of
-performance measure values to then calculate the summary statistics (such as stddev) over.
+Classes for collating data from all :term:`Simulation` across all
+:term:`Experiment` for all experiments in a :term:`Batch Experiment`. This is
+needed to correctly calculate summary statistics for performance measures in
+stage 4: you can't just run the calculated stddev through the calculations for
+flexibility (for example) because comparing curves of stddev is not
+meaningful. Stage 4 needs access to raw-(er) simulation data to construct a
+`distribution` of performance measure values to then calculate the summary
+statistics (such as stddev) over.
+
 """
 
 # Core packages
@@ -39,12 +42,13 @@ import sierra.core.utils
 import sierra.core.variables.batch_criteria as bc
 import sierra.core.config
 import sierra.core.storage as storage
+import sierra.core.plugin_manager as pm
 
 
 class SimulationParallelCollator:
     """
-    Gathers .csv output files from each simulation in each experiment for calculating performance
-    measures in stage 4 in parallel.
+    Gathers .csv output files from each simulation in each experiment for
+    calculating performance measures in stage 4 in parallel.
     """
 
     def __init__(self, main_config: dict, cmdopts: tp.Dict[str, tp.Any]):
@@ -72,6 +76,7 @@ class SimulationParallelCollator:
                                      (gatherq,
                                       processq,
                                       self.main_config,
+                                      self.cmdopts['project'],
                                       self.cmdopts['storage_medium'])) for _ in range(0, n_gatherers)]
 
         processed = [pool.apply_async(SimulationParallelCollator._process_worker,
@@ -92,16 +97,19 @@ class SimulationParallelCollator:
     def _gather_worker(gatherq: mp.Queue,
                        processq: mp.Queue,
                        main_config: dict,
+                       project: str,
                        storage_medium: str) -> None:
         while True:
             # Wait for 3 seconds after the queue is empty before bailing
             try:
                 batch_output_root, exp = gatherq.get(True, 3)
-                SimulationCSVGatherer(main_config,
-                                      batch_output_root,
-                                      exp,
-                                      storage_medium,
-                                      processq)()
+                module = pm.module_load_tiered(project,
+                                               'pipeline.stage3.sim_collator')
+                module.SimulationCSVGatherer(main_config,
+                                             batch_output_root,
+                                             exp,
+                                             storage_medium,
+                                             processq)()
                 gatherq.task_done()
 
             except queue.Empty:
@@ -132,8 +140,38 @@ class SimulationParallelCollator:
 
 class SimulationCSVGatherer:
     """
-    Gather necessary :term:`Output .csv` files all :term:`Simulations<Simulation>` within a
-    single :term:`Experiment` so that performance measures can be generated during stage 4.
+    Gather necessary :term:`Output .csv` files from all
+    :term:`Simulations<Simulation>` within a single :term:`Experiment` so that
+    performance measures can be generated during stage 4.
+
+    This class can be extended/overriden using a :term:`Project` hook. See
+    :ref:`ln-tutorials-project-hooks` for details.
+
+    Attributes:
+        processq: The multiprocessing-safe producer-consumer queue that the data
+                  gathered from simulations will be placed in for processing.
+
+        exp_leaf: The name of the experiment directory within the
+                  ``batch_output_root``.
+
+        storage_medium: The name of the storage medium plugin to use to extract
+                        dataframes from when reading simulation data.
+
+        exp_output_root: The absolute path to the experiment directory to gather
+                         data from.
+
+        main_config: Parsed dictionary of main YAML configuration.
+
+        sim_metrics_leaf: The name of the directory within the output directory
+                          for each simulation in which the simulation data can
+                          be found.
+
+        logger: The handle to the logger for this class. If you extend this
+                class, you should save/restore this variable in tandem with
+                overriding it in order to get logging messages have unique
+                logger names between this class and your derived class, in order
+                to reduce confusion.
+
     """
 
     def __init__(self,
@@ -154,42 +192,54 @@ class SimulationCSVGatherer:
         self.logger = logging.getLogger(__name__)
 
     def __call__(self):
+        """
+        Gather data from all simulations within a single experiment and put them
+        in the queue for processing.
+        """
         self.logger.info('Gathering .csvs: %s...', self.exp_leaf)
 
         simulations = sorted(os.listdir(self.exp_output_root))
 
         gathered = []
         for sim in simulations:
-            gathered.append(self._gather_csvs_from_sim(sim))
+            gathered.append(self.gather_csvs_from_sim(sim))
 
         self.processq.put({self.exp_leaf: (simulations, gathered)})
 
-    def _gather_csvs_from_sim(self, sim: str) -> tp.Dict[tp.Tuple[str, str], pd.DataFrame]:
-        intra_perf_leaf = self.main_config['perf']['intra_perf_csv'].split('.')[0]
-        intra_interference_leaf = self.main_config['perf']['intra_interference_csv'].split('.')[0]
+    def gather_csvs_from_sim(self, sim: str) -> tp.Dict[tp.Tuple[str, str], pd.DataFrame]:
+        """
+        Gather all data from a single simulation within an experiment, so that
+        it can be placed in the queue for processing.
 
+        Returns:
+           A dictionary of <(``.csv`` file name, ``.csv`` performance column),
+           dataframe> key-value pairs. The ``.csv`` file name is the leaf part
+           of the path with the extension included.
+        """
+
+        intra_perf_csv = self.main_config['perf']['intra_perf_csv']
+        intra_perf_leaf = intra_perf_csv.split('.')[0]
         intra_perf_col = self.main_config['perf']['intra_perf_col']
-        intra_interference_col = self.main_config['perf']['intra_interference_col']
 
-        sim_output_root = os.path.join(self.exp_output_root, sim, self.sim_metrics_leaf)
+        sim_output_root = os.path.join(self.exp_output_root,
+                                       sim,
+                                       self.sim_metrics_leaf)
 
         reader = storage.DataFrameReader(self.storage_medium)
-        perf_df = reader(os.path.join(sim_output_root, intra_perf_leaf + '.csv'),
+        perf_df = reader(os.path.join(sim_output_root,
+                                      intra_perf_leaf + '.csv'),
                          index_col=False)
-
-        interference_df = reader(os.path.join(sim_output_root,
-                                              intra_interference_leaf + '.csv'),
-                                 index_col=False)
 
         return {
             (intra_perf_leaf, intra_perf_col): perf_df[intra_perf_col],
-            (intra_interference_leaf, intra_interference_col): interference_df[intra_interference_col]
         }
 
 
 class SimulationCollator:
-    """Collate gathered .csvs together gathered from N simulations together into a single .csv per
-    experiment with 1 column per simulation
+    """
+    Collate gathered .csvs together gathered from N simulations together into a
+    single .csv per experiment with 1 column per simulation
+
     """
 
     def __init__(self,
@@ -211,7 +261,8 @@ class SimulationCollator:
         self.invert_perf = main_config['perf'].get('inverted', False)
         self.intra_perf_csv = main_config['perf']['intra_perf_csv']
 
-        sierra.core.utils.dir_create_checked(self.batch_stat_collate_root, exist_ok=True)
+        sierra.core.utils.dir_create_checked(
+            self.batch_stat_collate_root, exist_ok=True)
 
     def __call__(self):
         collated = {}
@@ -223,11 +274,13 @@ class SimulationCollator:
                 if self.invert_perf and csv_leaf in self.intra_perf_csv:
                     csv_df = 1.0 / csv_df
 
-                    # Because of the requirement that P(N) >= 0 for flexibility (1/0 = inf gives a
-                    # crash with DTW), if the current level of performance is 0, it stays 0.
+                    # Because of the requirement that P(N) >= 0 for flexibility
+                    # (1/0 = inf gives a crash with DTW), if the current level
+                    # of performance is 0, it stays 0.
                     #
-                    # This is a bit of a hack. But also not a hack at all, because infinite
-                    # performance is not possible. This is... Schrodinger's Hack.
+                    # This is a bit of a hack. But also not a hack at all,
+                    # because infinite performance is not possible. This
+                    # is... Schrodinger's Hack.
                     csv_df = csv_df.replace([-np.inf, np.inf], 0)
 
                 if (csv_leaf, col) not in collated:
@@ -242,3 +295,10 @@ class SimulationCollator:
                    os.path.join(self.batch_stat_collate_root,
                                 self.exp_leaf + '-' + csv_leaf + '-' + col + '.csv'),
                    index=False)
+
+
+__api__ = [
+    'SimulationParallelCollator',
+    'SimulationCSVGatherer',
+    'SimulationCollator'
+]

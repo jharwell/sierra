@@ -206,7 +206,6 @@ class ExpCSVGatherer:
                                                  r'\d+')
 
         simulations = os.listdir(self.exp_output_root)
-
         assert(all(re.match(pattern, s) for s in simulations)),\
             "FATAL: Extraneous files/not all dirs in '{0}' are simulation runs".format(
                 self.exp_output_root)

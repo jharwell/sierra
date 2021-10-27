@@ -40,8 +40,9 @@ mpl.rcParams['text.usetex'] = True
 
 # mpl.rcParams["axes.prop_cycle"] = plt.cycler("color", plt.cm.tab20.colors)
 
-# Turn off MPL messages when the log level is set to DEBUG. Otherwise you get HUNDREDS.
+# Turn off MPL messages when the log level is set to DEBUG or higher. Otherwise you get HUNDREDS.
 logging.getLogger('matplotlib').setLevel(logging.WARNING)
+logging.getLogger('PIL').setLevel(logging.WARNING)
 
 # Set MPL backend (headless for non-interactive use)
 mpl.use('Agg')

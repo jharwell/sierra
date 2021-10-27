@@ -71,14 +71,15 @@ class SIERRA():
         # Update PYTHONPATH with SIERRA_PROJECT_PATH
         env = os.environ.get('SIERRA_PROJECT_PATH')
         if env is not None:
-            # 2021/07/19: If you put the entries at the end of sys.path it doesn't work for some
-            # reason...
-            sys.path = list(sys.path[0]) + env.split(os.pathsep) + sys.path[1:]
+            # 2021/07/19: If you put the entries at the end of sys.path it
+            # doesn't work for some reason...
+            sys.path = env.split(os.pathsep) + sys.path[0:]
 
-        # Load project cmdline extensions
+        # Load project cmdline extensions.
         project = bootstrap_args.project
-        self.logger.info("Loading cmdline extensions from project '%s'", project)
-        path = "projects.{0}.cmdline".format(project)
+        self.logger.info("Loading cmdline extensions from project '%s'",
+                         project)
+        path = "{0}.cmdline".format(project)
         module = pm.module_load(path)
 
         # Validate cmdline args
@@ -91,9 +92,9 @@ class SIERRA():
         self.args.__dict__['project'] = project
 
     def __call__(self) -> None:
-        # If only 1 pipeline stage is passed, then the list of stages to run is parsed as a non-iterable
-        # integer, which can cause the generator to fail to be created. So make it iterable in that
-        # case as well.
+        # If only 1 pipeline stage is passed, then the list of stages to run is
+        # parsed as a non-iterable integer, which can cause the generator to
+        # fail to be created. So make it iterable in that case as well.
         if not isinstance(self.args.pipeline, Iterable):
             self.args.pipeline = [self.args.pipeline]
 

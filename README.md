@@ -45,5 +45,8 @@ using it!
 - python >= 3.6.
 - ARGoS >= 3.0.0-beta59.
 
+# Contributing
+
+See [here](https://swarm-robotics-sierra.readthedocs.io/en/latest/src/contributing.html) to get started
 # License
 This project is licensed under GPL 3.0. See [LICENSE](LICENSE.md).

@@ -27,10 +27,33 @@ import sierra.core.utils
 
 
 class YAMLConfigLoader():
+    """
+    Load the YAML configuration for :term:`Project` graphs to be generated
+    during stage 4.
+
+    This class can be extended/overriden using a :term:`Project` hook. See
+    :ref:`ln-tutorials-project-hooks` for details.
+
+    Attributes:
+        logger: The handle to the logger for this class. If you extend this
+                class, you should save/restore this variable in tandem with
+                overriding it in order to get logging messages have unique
+                logger names between this class and your derived class, in order
+                to reduce confusion.
+    """
+
     def __init__(self) -> None:
         self.logger = logging.getLogger(__name__)
 
     def __call__(self, cmdopts: tp.Dict[str, tp.Any]) -> tp.Dict[str, tp.Dict[str, str]]:
+        """
+        Loads the intra-experiment linegraph, inter-experiment linegraph, and
+        intra-experiment heatmap YAML configuration.
+
+        Returns:
+            Dictionary of loaded configuration with keys for ``intra_LN,
+            inter_LN, intra_HM``.
+        """
         inter_LN_config = {}
         intra_LN_config = {}
         intra_HM_config = {}
@@ -43,18 +66,21 @@ class YAMLConfigLoader():
                                         'intra-graphs-hm.yaml')
 
         if sierra.core.utils.path_exists(project_intra_LN):
-            self.logger.info("Loading intra-experiment linegraph config for project '%s'",
-                             cmdopts['project'])
-            inter_LN_config = yaml.load(open(project_intra_LN), yaml.FullLoader)
+            self.logger.info("Intra-experiment linegraph config for project '%s' from %s",
+                             cmdopts['project'],
+                             project_intra_LN)
+            intra_LN_config = yaml.load(open(project_intra_LN), yaml.FullLoader)
 
         if sierra.core.utils.path_exists(project_inter_LN):
-            self.logger.info("Loading inter-experiment linegraph config for project '%s'",
-                             cmdopts['project'])
-            intra_LN_config = yaml.load(open(project_inter_LN), yaml.FullLoader)
+            self.logger.info("Inter-experiment linegraph config for project '%s' from %s",
+                             cmdopts['project'],
+                             project_inter_LN)
+            inter_LN_config = yaml.load(open(project_inter_LN), yaml.FullLoader)
 
         if sierra.core.utils.path_exists(project_intra_HM):
-            self.logger.info("Loading intra-experiment heatmap config for project '%s'",
-                             cmdopts['project'])
+            self.logger.info("Intra-experiment heatmap config for project '%s' from %s",
+                             cmdopts['project'],
+                             project_intra_HM)
             intra_HM_config = yaml.load(open(project_intra_HM), yaml.FullLoader)
 
         return {
@@ -62,3 +88,8 @@ class YAMLConfigLoader():
             'intra_HM': intra_HM_config,
             'inter_LN': inter_LN_config
         }
+
+
+__api__ = [
+    'YAMLConfigLoader'
+]

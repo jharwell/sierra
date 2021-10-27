@@ -34,7 +34,8 @@ Cmdline Syntax
   :class:`~sierra.core.variables.time_setup` derived class for the
   ``--project``.
 
-Examples:
+Examples
+^^^^^^^^^
 
 - ``time_setup.T1000``: Simulation will be 1,000 seconds long and have
   1,000*5=5,000 timesteps, with default (50) # datapoints.

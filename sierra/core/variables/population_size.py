@@ -55,7 +55,8 @@ class PopulationSize(bc.UnivarBatchCriteria):
                  main_config: tp.Dict[str, str],
                  batch_input_root: str,
                  size_list: tp.List[float]) -> None:
-        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_input_root)
+        bc.UnivarBatchCriteria.__init__(
+            self, cli_arg, main_config, batch_input_root)
         self.size_list = size_list
         self.attr_changes = []  # type: tp.List[XMLAttrChangeSet]
 
@@ -64,7 +65,8 @@ class PopulationSize(bc.UnivarBatchCriteria):
         Generate list of sets of changes for swarm sizes to define a batch experiment.
         """
         if not self.attr_changes:
-            self.attr_changes = PopulationSize.gen_attr_changelist_from_list(self.size_list)
+            self.attr_changes = PopulationSize.gen_attr_changelist_from_list(
+                self.size_list)
         return self.attr_changes
 
     def gen_exp_dirnames(self, cmdopts: tp.Dict[str, tp.Any]) -> tp.List[str]:
@@ -124,7 +126,8 @@ class Parser():
         # Parse increment type
         res = re.search("Log|Linear", criteria_str)
         assert res is not None, \
-            "FATAL: Bad size increment specification in criteria '{0}'".format(criteria_str)
+            "FATAL: Bad size increment specification in criteria '{0}'".format(
+                criteria_str)
         ret['increment_type'] = res.group(0)
 
         # Parse max size
@@ -135,7 +138,8 @@ class Parser():
 
         # Set linear_increment if needed
         if ret['increment_type'] == 'Linear':
-            ret['linear_increment'] = int(ret['max_size'] / 10.0)  # type: ignore
+            ret['linear_increment'] = int(
+                ret['max_size'] / 10.0)  # type: ignore
 
         return ret
 
@@ -175,5 +179,6 @@ def factory(cli_arg: str,
 
 
 __api__ = [
-    'PopulationSize'
+    'PopulationSize',
+    'Parser'
 ]

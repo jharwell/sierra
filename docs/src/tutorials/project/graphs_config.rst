@@ -104,7 +104,7 @@ Unless stated otherwise, all keys are mandatory.
          - '...'
 
      # The title the graph should have. LaTeX syntax is supported (uses
-     # matplotlib after all).
+     # matplotlib after all). Optional.
      - title: 'My Title'
 
      # List of names of the plotted lines within the graph. Can be
@@ -116,10 +116,10 @@ Unless stated otherwise, all keys are mandatory.
          - 'Column 3'
          - '...'
 
-     # The label of the X-axis of the graph.
+     # The label of the X-axis of the graph. Optional.
      - xlabel: 'X'
 
-     # The label of the Y-axis of the graph.
+     # The label of the Y-axis of the graph. Optional.
      - ylabel: 'Y'
 
 Heatmaps
@@ -144,7 +144,7 @@ Unless stated otherwise, all keys are mandatory.
      - src_stem: 'foo.csv'
 
      # The title the graph should have. LaTeX syntax is supported (uses
-     # matplotlib after all).
+     # matplotlib after all). Optional.
      - title: 'My Title'
 
 How to Add A New Inter-Experiment Graph
@@ -168,8 +168,8 @@ Inter-experiment linegraphs are appropriate if:
 ^^^^^^^^^^^^^^^^^^^^^^
 See same as intra-experiment linegraphs, EXCEPT:
 
-Each inter-experiment linegraph has an additional boolean field ``summary``
-which determines if the generated graph is a
+Each inter-experiment linegraph has an additional optional boolean field
+``summary`` which determines if the generated graph is a
 :class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph` or a
 :class:`~sierra.core.graphs.stacked_line_graph.StackedLineGraph` (default if
 omitted).

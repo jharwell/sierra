@@ -343,7 +343,8 @@ class CoreCmdline(BaseCmdline):
                                                                            config.kSimulationData['n_datapoints_1D']))
 
         # Physics engines options
-        physics = self.parser.add_argument_group('Stage1: Configuring ARGoS physics engines')
+        physics = self.parser.add_argument_group(
+            'Stage1: Configuring ARGoS physics engines')
 
         physics.add_argument("--physics-engine-type2D",
                              choices=['dynamics2d'],
@@ -991,7 +992,8 @@ class CoreCmdlineValidator():
     """
 
     def __call__(self, args) -> None:
-        assert len(args.batch_criteria) <= 2, "FATAL: Too many batch criteria passed"
+        assert len(
+            args.batch_criteria) <= 2, "FATAL: Too many batch criteria passed"
 
         assert args.sierra_root is not None, '--sierra-root is required for all stages'
 
@@ -1008,7 +1010,8 @@ class CoreCmdlineValidator():
             assert args.scenario is not None, '--scenario is required for running stage 1'
 
         if any([1, 2, 3, 4]) in args.pipeline:
-            assert len(args.batch_criteria) > 0, '--batch-criteria is required for running stages 1-4'
+            assert len(
+                args.batch_criteria) > 0, '--batch-criteria is required for running stages 1-4'
             assert args.controller is not None, '--controller is required for running stages 1-4'
 
         if 5 in args.pipeline:

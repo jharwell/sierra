@@ -19,13 +19,16 @@ you specify, you need to:
 
    .. code-block:: python
 
+      import typing as tp
+
       class ScenarioGeneratorParser():
           def __init__(self):
               ...
 
-          def to_scenario_name(self, args) -> str:
+          def to_scenario_name(self, args) -> tp.Optional[str]:
               """
-              Parse the scenario generator from cmdline arguments into a string.
+              Parse the scenario generator from cmdline arguments into a
+              string. Should return None if ``args`` is None (stage5).
               """
               ...
 

@@ -225,12 +225,13 @@ def module_load_tiered(project: str, path: str):
         return module_load(path)
 
     # First, see if the requested module is part of the project plugin
-    plugin_path = 'projects.{0}.{1}'.format(project, path)
-    if module_exists(plugin_path):
-        logging.trace("Using project plugin path '%s'", plugin_path)
-        return module_load(plugin_path)
+    component_path = '{0}.{1}'.format(project, path)
+    if module_exists(component_path):
+        logging.trace("Using project component path '%s'", component_path)
+        return module_load(component_path)
     else:
-        logging.trace("Project plugin path '%s' does not exist", plugin_path)
+        logging.trace("Project component path '%s' does not exist",
+                      component_path)
 
     # If that didn't work, then check the SIERRA core
     core_path = 'sierra.core.{0}'.format(path)
@@ -241,4 +242,6 @@ def module_load_tiered(project: str, path: str):
         logging.trace("SIERRA core path '%s' does not exist", core_path)
 
     # Module does not exist
-    raise ImportError('project: {0} path: {1} sys.path: {2}', project, path, sys.path)
+    raise ImportError("project: '{0}' path: '{1}' sys.path: {2}".format(project,
+                                                                        path,
+                                                                        sys.path))

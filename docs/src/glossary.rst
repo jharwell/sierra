@@ -1,12 +1,18 @@
-===============
-SIERRA Glossary
-===============
+========
+Glossary
+========
 
 SIERRA uses a number of common research-related terms, perhaps in different ways
 than you are used to. They are defined here to help demystify `why` SIERRA
 works/is designed the way it is, and to help you find your way around.
 
 .. glossary::
+
+   ARGoS
+
+      A state-of-the-art multi-physics engine robotics simulator which SIERRA is
+      built on top of. ARGoS website is
+      `here <https://www.argos-sim.info/index.php>`_.
 
    Project
 
@@ -77,9 +83,9 @@ works/is designed the way it is, and to help you find your way around.
 
    Simulation
 
-      An ARGoS simulation that runs as part of an experiment. The number of
-      simulations which will be run by SIERRA in stage 2 and averaged together
-      by SIERRA in stage 3 is controlled by ``--n-sims``.
+      An :term:`ARGoS` simulation that runs as part of an experiment. The number
+      of simulations which will be run by SIERRA in stage 2 and averaged
+      together by SIERRA in stage 3 is controlled by ``--n-sims``.
 
       All simulations in within an :term:`Experiment` are identical, with the
       exception of:

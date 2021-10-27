@@ -1,8 +1,8 @@
 .. _ln-faq:
 
-==========
-SIERRA FAQ
-==========
+===
+FAQ
+===
 
 #. Q: Do I need to re-run my experiments if I want to tweak a particular generated
    graph ?
@@ -82,4 +82,4 @@ SIERRA FAQ
    stages. The files generated in stages {3,4,5} are generated `from` the
    earlier results, so it is OK to overwrite those. However, if you are sure you
    want to overwrite stuff, you can pass ``--exp-overwrite`` to disable this
-   behavior during stages {1,2}.
+   behavior during stages {1,2}. See also :ref:`ln-design-philosophy`.

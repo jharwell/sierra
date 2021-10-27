@@ -38,13 +38,28 @@ import sierra.core.config
 
 class InterExpGraphGenerator:
     """
-    Generates graphs from collated ``.csv`` files across experiments in a batch. Which graphs are
-    generated can be controlled by:
+    Generates graphs from collated ``.csv`` files across experiments in a
+    batch. Which graphs are generated can be controlled by YAML configuration
+    files parsed in
+    :class:`~sierra.core.pipeline.stage4.pipeline_stage4.PipelineStage4`.
 
-    #. YAML configuration files parsed in
-    :class:`~sierra.core.pipeline.stage4.pipeline_stage4.PipelineStage4`
 
-    #. The batch criteria was used (if this class is extended in a ``--project``).
+    This class can be extended/overriden using a :term:`Project` hook. See
+    :ref:`ln-tutorials-project-hooks` for details.
+
+    Attributes:
+        cmdopts: Dictionary of parsed cmdline attributes.
+
+        main_config: Parsed dictionary of main YAML configuration
+
+        targets: A list of dictionaries, where each dictionary defines an
+                 inter-experiment graph to generate.
+
+        logger: The handle to the logger for this class. If you extend this
+               class, you should save/restore this variable in tandem with
+               overriding it in order to get logging messages have unique logger
+               names between this class and your derived class, in order to
+               reduce confusion.
 
     """
 
@@ -52,14 +67,14 @@ class InterExpGraphGenerator:
                  main_config: tp.Dict[str, tp.Any],
                  cmdopts: tp.Dict[str, tp.Any],
                  targets: tp.List[tp.Dict[str, tp.Any]]) -> None:
-        # Copy because we are modifying it and don't want to mess up the arguments for graphs that
-        # are generated after us
+        # Copy because we are modifying it and don't want to mess up the
+        # arguments for graphs that are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
         self.main_config = main_config
         self.targets = targets
 
-        sierra.core.utils.dir_create_checked(
-            self.cmdopts['batch_graph_collate_root'], exist_ok=True)
+        sierra.core.utils.dir_create_checked(self.cmdopts['batch_graph_collate_root'],
+                                             exist_ok=True)
         self.logger = logging.getLogger(__name__)
 
     def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
@@ -72,7 +87,8 @@ class InterExpGraphGenerator:
 
         if criteria.is_univar():
             if not self.cmdopts['project_no_yaml_LN']:
-                LineGraphsGenerator(self.cmdopts, self.targets).generate(criteria)
+                LineGraphsGenerator(self.cmdopts,
+                                    self.targets).generate(criteria)
 
 
 class LineGraphsGenerator:
@@ -94,7 +110,8 @@ class LineGraphsGenerator:
         self.logger = logging.getLogger(__name__)
 
     def generate(self, criteria: bc.IConcreteBatchCriteria) -> None:
-        self.logger.info("LineGraphs from %s", self.cmdopts['batch_stat_collate_root'])
+        self.logger.info("LineGraphs from %s",
+                         self.cmdopts['batch_stat_collate_root'])
         # For each category of linegraphs we are generating
         for category in self.targets:
             # For each graph in each category
@@ -109,9 +126,10 @@ class LineGraphsGenerator:
                                      model_root=self.cmdopts['batch_model_root'],
                                      title=graph['title'],
                                      xlabel=criteria.graph_xlabel(self.cmdopts),
-                                     ylabel=graph['ylabel'],
+                                     ylabel=graph.get('ylabel', None),
                                      xticks=criteria.graph_xticks(self.cmdopts),
-                                     xtick_labels=criteria.graph_xticklabels(self.cmdopts),
+                                     xtick_labels=criteria.graph_xticklabels(
+                                         self.cmdopts),
                                      logyscale=self.cmdopts['plot_log_yscale'],
                                      large_text=self.cmdopts['plot_large_text']).generate()
                 else:
@@ -124,8 +142,8 @@ class LineGraphsGenerator:
                                      dashstyles=graph.get('dashes', None),
                                      linestyles=graph.get('lines', None),
                                      title=graph['title'],
-                                     xlabel=graph['xlabel'],
-                                     ylabel=graph['ylabel'],
+                                     xlabel=graph.get('xlabel', None),
+                                     ylabel=graph.get('ylabel', None),
                                      logyscale=self.cmdopts['plot_log_yscale'],
                                      large_text=self.cmdopts['plot_large_text']).generate()
 
