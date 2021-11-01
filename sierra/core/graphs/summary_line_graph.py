@@ -21,14 +21,12 @@ Linegraph for summarizing the results of a batch experiment in different ways.
 # Core packages
 import os
 import typing as tp
-import logging
+import logging # type: tp.Any   # type: tp.Any
 
 # 3rd party packages
 import matplotlib.ticker as mticker
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import pandas as pd
-import numpy as np
 
 # Project packages
 import sierra.core.config
@@ -36,18 +34,19 @@ import sierra.core.utils
 
 
 class SummaryLineGraph:
-    """
-    Generates a linegraph summarizing swarm behavior across a :term:`Batch Experiment`, possibly
-    showing the 95% confidence interval or box and whisker plots, according to configuration.
+    """Generates a linegraph summarizing swarm behavior across a :term:`Batch
+    Experiment`, possibly showing the 95% confidence interval or box and whisker
+    plots, according to configuration.
 
     Attributes:
-        stats_root: The absolute/relative path to the ``statistics/`` directory for the batch
-                    experiment.
+        stats_root: The absolute/relative path to the ``statistics/`` directory
+                    for the batch experiment.
 
-        input_stem: Stem of the :term:`Summary .csv` file to generate a graph from.
+        input_stem: Stem of the :term:`Summary .csv` file to generate a graph
+                    from.
 
-        output_fpath: The absolute/relative path to the output image file to save generated graph
-                       to.
+        output_fpath: The absolute/relative path to the output image file to
+                      save generated graph to.
 
         title: Graph title.
 
@@ -57,20 +56,23 @@ class SummaryLineGraph:
 
         xticks: The xticks for the graph.
 
-        xtick_labels: The xtick labels for the graph (can be different than the xticks; e.g., if the
-                      xticxs are 1-10 for categorical data, then then labels would be the
-                      categories).
+        xtick_labels: The xtick labels for the graph (can be different than the
+                      xticks; e.g., if the xticxs are 1-10 for categorical data,
+                      then then labels would be the categories).
 
-        large_text: Should the labels, ticks, and titles be large, or regular size?
+        large_text: Should the labels, ticks, and titles be large, or regular
+                    size?
 
         legend: Legend for graph.
 
         logyscale: Should the Y axis be in the log2 domain ?
 
-        stats: The type of statistics to include on the graph (from ``--dist-stats``).
+        stats: The type of statistics to include on the graph (from
+               ``--dist-stats``).
 
-        model_root: The absolute/relative path to the ``models/`` directory for the batch
-                     experiment.
+        model_root: The absolute/relative path to the ``models/`` directory for
+                     the batch experiment.
+
     """
     kLineStyles = ['-', '--', '.-', ':', '-', '--', '.-', ':']
     kMarkStyles = ['o', '^', 's', 'x', 'o', '^', 's', 'x']
@@ -149,9 +151,12 @@ class SummaryLineGraph:
 
         # Output figure
         fig = ax.get_figure()
-        fig.set_size_inches(sierra.core.config.kGraphBaseSize, sierra.core.config.kGraphBaseSize)
-        fig.savefig(self.output_fpath, bbox_inches='tight', dpi=sierra.core.config.kGraphDPI)
-        plt.close(fig)  # Prevent memory accumulation (fig.clf() does not close everything)
+        fig.set_size_inches(sierra.core.config.kGraphBaseSize,
+                            sierra.core.config.kGraphBaseSize)
+        fig.savefig(self.output_fpath, bbox_inches='tight',
+                    dpi=sierra.core.config.kGraphDPI)
+        # Prevent memory accumulation (fig.clf() does not close everything)
+        plt.close(fig)
 
     def _plot_lines(self, data_dfy: pd.DataFrame, model: tp.Tuple[pd.DataFrame, tp.List[str]]) -> None:
         for i in range(0, len(data_dfy.values)):
@@ -170,8 +175,8 @@ class SummaryLineGraph:
 
             # Plot model prediction(s)
             if model[0] is not None:
-                # The model might be of different dimensions than the data. If so, truncate it to
-                # fit.
+                # The model might be of different dimensions than the data. If
+                # so, truncate it to fit.
                 if len(self.xticks) < len(model[0].values[i]):
                     self.logger.warning("Truncating model: model/data lengths disagree: %s vs. %s",
                                         len(model[0].values[i]),
@@ -198,7 +203,8 @@ class SummaryLineGraph:
             for i in range(0, len(data_dfy.values)):
                 # 95% interval = 2 std stdeviations
                 plt.fill_between(xticks, data_dfy.values[i] - 2 * stat_dfs['stddev'].abs().values[i],
-                                 data_dfy.values[i] + 2 * stat_dfs['stddev'].abs().values[i],
+                                 data_dfy.values[i] + 2 *
+                                 stat_dfs['stddev'].abs().values[i],
                                  alpha=0.25, color="C{}".format(i), interpolate=True)
 
         if self.stats in ['bw', 'all'] and all(k in stat_dfs.keys() for k in
@@ -213,17 +219,25 @@ class SummaryLineGraph:
                 boxes = []
                 for j in range(0, len(data_dfy.columns)):
                     boxes.append({
-                        'whislo': stat_dfs['whislo'].iloc[i, j],  # Bottom whisker position
-                        'whishi': stat_dfs['whishi'].iloc[i, j],  # Top whisker position
-                        'q1': stat_dfs['q1'].iloc[i, j],          # First quartile (25th percentile)
-                        'med': stat_dfs['median'].iloc[i, j],     # Median         (50th percentile)
-                        'q3': stat_dfs['q3'].iloc[i, j],          # Third quartile (75th percentile)
-                        'cilo': stat_dfs['cilo'].iloc[i, j],      # Confidence interval lower bound
-                        'cihi': stat_dfs['cihi'].iloc[i, j],      # Confidence interval upper bound
-                        'fliers': []                              # Ignoring outliers
+                        # Bottom whisker position
+                        'whislo': stat_dfs['whislo'].iloc[i, j],
+                        # Top whisker position
+                        'whishi': stat_dfs['whishi'].iloc[i, j],
+                        # First quartile (25th percentile)
+                        'q1': stat_dfs['q1'].iloc[i, j],
+                        # Median         (50th percentile)
+                        'med': stat_dfs['median'].iloc[i, j],
+                        # Third quartile (75th percentile)
+                        'q3': stat_dfs['q3'].iloc[i, j],
+                        # Confidence interval lower bound
+                        'cilo': stat_dfs['cilo'].iloc[i, j],
+                        # Confidence interval upper bound
+                        'cihi': stat_dfs['cihi'].iloc[i, j],
+                        'fliers': []  # Ignoring outliers
                     })
 
-                ax.bxp(boxes, manage_ticks=False, positions=self.xticks, shownotches=True)
+                ax.bxp(boxes, manage_ticks=False,
+                       positions=self.xticks, shownotches=True)
 
     def _plot_ticks(self, ax) -> None:
         if self.logyscale:
@@ -244,7 +258,8 @@ class SummaryLineGraph:
         legend = self.legend
 
         if model[1]:
-            legend = [val for pair in zip(self.legend, model[1]) for val in pair]
+            legend = [val for pair in zip(self.legend, model[1])
+                      for val in pair]
 
         plt.legend(legend,
                    fontsize=self.text_size['legend_label'],
@@ -260,7 +275,8 @@ class SummaryLineGraph:
             if sierra.core.utils.path_exists(stddev_ipath):
                 dfs['stddev'] = sierra.core.utils.pd_csv_read(stddev_ipath)
             else:
-                self.logger.warning("stddev file not found for '%s'", self.input_stem)
+                self.logger.warning(
+                    "stddev file not found for '%s'", self.input_stem)
 
         if self.stats == 'bw' or self.stats == 'all':
             whislo_ipath = os.path.join(self.stats_root,
@@ -282,46 +298,56 @@ class SummaryLineGraph:
             if sierra.core.utils.path_exists(whislo_ipath):
                 dfs['whislo'] = sierra.core.utils.pd_csv_read(whislo_ipath)
             else:
-                self.logger.warning("whislo file not found for '%s'", self.input_stem)
+                self.logger.warning(
+                    "whislo file not found for '%s'", self.input_stem)
 
             if sierra.core.utils.path_exists(whishi_ipath):
                 dfs['whishi'] = sierra.core.utils.pd_csv_read(whishi_ipath)
             else:
-                self.logger.warning("whishi file not found for '%s'", self.input_stem)
+                self.logger.warning(
+                    "whishi file not found for '%s'", self.input_stem)
 
             if sierra.core.utils.path_exists(cilo_ipath):
                 dfs['cilo'] = sierra.core.utils.pd_csv_read(cilo_ipath)
             else:
-                self.logger.warning("cilo file not found for '%s'", self.input_stem)
+                self.logger.warning(
+                    "cilo file not found for '%s'", self.input_stem)
 
             if sierra.core.utils.path_exists(cihi_ipath):
                 dfs['cihi'] = sierra.core.utils.pd_csv_read(cihi_ipath)
             else:
-                self.logger.warning("cihi file not found for '%s'", self.input_stem)
+                self.logger.warning(
+                    "cihi file not found for '%s'", self.input_stem)
 
             if sierra.core.utils.path_exists(median_ipath):
                 dfs['median'] = sierra.core.utils.pd_csv_read(median_ipath)
             else:
-                self.logger.warning("median file not found for '%s'", self.input_stem)
+                self.logger.warning(
+                    "median file not found for '%s'", self.input_stem)
 
             if sierra.core.utils.path_exists(q1_ipath):
                 dfs['q1'] = sierra.core.utils.pd_csv_read(q1_ipath)
             else:
-                self.logger.warning("q1 file not found for '%s'", self.input_stem)
+                self.logger.warning(
+                    "q1 file not found for '%s'", self.input_stem)
 
             if sierra.core.utils.path_exists(q3_ipath):
                 dfs['q3'] = sierra.core.utils.pd_csv_read(q3_ipath)
             else:
-                self.logger.warning("q3 file not found for '%s'", self.input_stem)
+                self.logger.warning(
+                    "q3 file not found for '%s'", self.input_stem)
 
         return dfs
 
     def _read_models(self) -> tp.Tuple[pd.DataFrame, tp.List[str]]:
         if self.model_root is not None:
-            self.logger.trace("Model root='%s',stem='%s'", self.model_root, self.input_stem)
+            self.logger.trace("Model root='%s',stem='%s'",
+                              self.model_root, self.input_stem)
 
-            model_fpath = os.path.join(self.model_root, self.input_stem + '.model')
-            model_legend_fpath = os.path.join(self.model_root, self.input_stem + '.legend')
+            model_fpath = os.path.join(
+                self.model_root, self.input_stem + '.model')
+            model_legend_fpath = os.path.join(
+                self.model_root, self.input_stem + '.legend')
 
             if sierra.core.utils.path_exists(model_fpath):
                 model = sierra.core.utils.pd_csv_read(model_fpath)
@@ -329,7 +355,8 @@ class SummaryLineGraph:
                     with open(model_legend_fpath, 'r') as f:
                         model_legend = f.read().splitlines()
                 else:
-                    self.logger.warning("No legend file for model '%s' found", model_fpath)
+                    self.logger.warning(
+                        "No legend file for model '%s' found", model_fpath)
                     model_legend = ['Model Prediction']
 
                 return (model, model_legend)

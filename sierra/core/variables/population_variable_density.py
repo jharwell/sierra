@@ -21,7 +21,7 @@ Classes for the variable population density batch criteria. See
 
 # Core packages
 import typing as tp
-import logging
+import logging # type: tp.Any
 import numpy as np
 
 # 3rd party packages
@@ -35,6 +35,7 @@ from sierra.core.vector import Vector3D
 from sierra.core.xml import XMLAttrChange, XMLAttrChangeSet
 import sierra.core.plugin_manager as pm
 from sierra.core.utils import ArenaExtent
+from sierra.core import types
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
@@ -76,12 +77,12 @@ class PopulationVariableDensity(vd.VariableDensity):
 
         return self.attr_changes
 
-    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, tp.Any]) -> tp.List[str]:
+    def gen_exp_dirnames(self, cmdopts: types.Cmdopts) -> tp.List[str]:
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
     def graph_xticks(self,
-                     cmdopts: tp.Dict[str, tp.Any],
+                     cmdopts: types.Cmdopts,
                      exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
 
         if exp_dirs is None:
@@ -90,11 +91,11 @@ class PopulationVariableDensity(vd.VariableDensity):
         return [p / self.extent.area() for p in self.populations(cmdopts, exp_dirs)]
 
     def graph_xticklabels(self,
-                          cmdopts: tp.Dict[str, tp.Any],
+                          cmdopts: types.Cmdopts,
                           exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
         return list(map(lambda x: str(round(x, 4)), self.graph_xticks(cmdopts, exp_dirs)))
 
-    def graph_xlabel(self, cmdopts: tp.Dict[str, tp.Any]) -> str:
+    def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
         return r"Swarm Density"
 
     def pm_query(self, pm: str) -> bool:
@@ -111,7 +112,8 @@ def factory(cli_arg: str,
 
     """
     attr = vd.Parser()(cli_arg)
-    sgp = pm.module_load_tiered(kwargs['project'], 'generators.scenario_generator_parser')
+    sgp = pm.module_load_tiered(
+        kwargs['project'], 'generators.scenario_generator_parser')
     kw = sgp.ScenarioGeneratorParser().to_dict(kwargs['scenario'])
     extent = ArenaExtent(Vector3D(kw['arena_x'], kw['arena_y'], kw['arena_z']))
 

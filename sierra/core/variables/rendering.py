@@ -30,6 +30,7 @@ from sierra.core.utils import ArenaExtent
 import sierra.core.variables.time_setup as ts
 from sierra.core.xml import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList, XMLTagRm, XMLTagAdd, XMLAttrChange
 import sierra.core.config
+from sierra.core import types
 
 
 @implements.implements(IBaseVariable)
@@ -39,8 +40,9 @@ class ARGoSQTHeadlessRendering():
 
     Attributes:
         tsetup: Simulation time definitions.
-        extents: List of (X,Y,Zs) tuple of dimensions of area to assign to engines of the specified
-                 type.
+
+        extents: List of (X,Y,Zs) tuple of dimensions of area to assign to
+                 engines of the specified type.
     """
 
     kFrameSize = "1600x1200"
@@ -59,8 +61,9 @@ class ARGoSQTHeadlessRendering():
 
     def gen_tag_rmlist(self) -> tp.List[XMLTagRmList]:
         """
-        Removing the ``<qt_opengl>`` tag if it exists may be desirable so an option is provided
-        to do so. Obviously you *must* call this function BEFORE adding new definitions.
+        Removing the ``<qt_opengl>`` tag if it exists may be desirable so an
+        option is provided to do so. Obviously you *must* call this function
+        BEFORE adding new definitions.
 
         """
         return [XMLTagRmList(XMLTagRm("./visualization", "qt-opengl"))]
@@ -92,16 +95,15 @@ class ARGoSQTHeadlessRendering():
         pass
 
 
-def factory(cmdopts: tp.Dict[str, tp.Any]) -> ARGoSQTHeadlessRendering:
+def factory(cmdopts: types.Cmdopts) -> ARGoSQTHeadlessRendering:
     """
-    Setups up ARGoS QT headless rendering for a the specified simulation duration.
+    Setups up ARGoS QT headless rendering for a the specified simulation
+    duration.
     """
 
-    return ARGoSQTHeadlessRendering(ts.factory(cmdopts["time_setup"])())  # type: ignore
+    return ARGoSQTHeadlessRendering(ts.factory(cmdopts["time_setup"]))
 
 
 __api__ = [
     'ARGoSQTHeadlessRendering',
-
-
 ]

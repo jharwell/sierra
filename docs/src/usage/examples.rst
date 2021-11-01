@@ -10,24 +10,24 @@ These examples all assume that you have successfully set up SIERRA with a
 Basic Example
 =============
 
-This examples assumes a project named `fordyca` which contains a controller
-defined in the `controllers.yaml` as `d0.CRW`, with a runtime environment of
+This examples assumes a project named ``fordyca`` which contains a controller
+defined in the ``controllers.yaml`` as ``d0.CRW``, with a runtime environment of
 the local machine.
 
 ::
 
    sierra-cli \
-   --sierra-root=$HOME/exp\
+   --sierra-root=$HOME/exp \
    --template-input-file=templates/ideal.argos \
-   --n-sims=3\
-   --project=fordyca\
-   --hpc-env=hpc.local\
-   --physics-n-engines=1\
-   --time-setup=time_setup.T10000\
-   --controller=d0.CRW\
-   --scenario=SS.12x6x1\
-   --batch-criteria population_size.Log64\
-   --n-blocks=20\
+   --n-sims=3 \
+   --project=fordyca \
+   --hpc-env=hpc.local \
+   --physics-n-engines=1 \
+   --time-setup=time_setup.T10000 \
+   --controller=d0.CRW \
+   --scenario=SS.12x6x1 \
+   --batch-criteria population_size.Log64 \
+   --n-blocks=20 \
    --models-disable
 
 This will run a batch of 7 experiments using a correlated random walk robot
@@ -48,13 +48,13 @@ videos of simulations.
 ::
 
    sierra-cli \
-   --sierra-root=$HOME/exp\
+   --sierra-root=$HOME/exp \
    --template-input-file=templates/ideal.argos \
-   --project=fordyca\
-   --n-sims=3\
-   --argos-rendering\
-   --exp-graphs=none\
-   --physics-n-engines=1\
+   --project=fordyca \
+   --n-sims=3 \
+   --argos-rendering \
+   --exp-graphs=none \
+   --physics-n-engines=1 \
    --batch-criteria population_size.Log8
 
 The runs 3 simulations in parallel with 1 physics engine each, and runs ARGoS
@@ -82,13 +82,13 @@ named ``fordyca`` and that a univariate batch criteria has been used (such as
 ::
 
    sierra-cli \
-   --project=fordyca\
-   --pipeline 5\
-   --scenario-comparison\
-   --dist-stats=conf95\
-   --bc-univar\
-   --controller=d0.CRW\
-   --sierra-root=$HOME/exp"
+   --project=fordyca \
+   --pipeline 5 \
+   --scenario-comparison \
+   --dist-stats=conf95 \
+   --bc-univar \
+   --controller=d0.CRW \
+   --sierra-root=$HOME/exp
 
 
 This will compare all scenarios that all controllers with ``$HOME/exp`` which

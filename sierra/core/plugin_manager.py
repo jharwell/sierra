@@ -14,21 +14,23 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
-SUPER DUPER simple plugin managers for being able to add stuff to SIERRA without having to modify
-the sierra.core.
+SUPER DUPER simple plugin managers for being able to add stuff to SIERRA
+without having to modify the sierra.core.
+
 """
 # Core packages
 import importlib.util
 import importlib
 import os
-import logging
 import typing as tp
 import sys
+import logging  # type: tp.Any
 
 # 3rd party packages
 from singleton_decorator import singleton
 
 # Project packages
+from sierra.core import types
 
 
 class BasePluginManager():
@@ -195,7 +197,7 @@ class ModelPluginManager(FilePluginManager):
     pass
 
 
-def module_exists(name: str):
+def module_exists(name: str) -> bool:
     try:
         mod = __import__(name)
     except ImportError:
@@ -204,21 +206,16 @@ def module_exists(name: str):
         return True
 
 
-def module_load(name: str):
-    try:
-        mod = __import__(name, fromlist=["*"])
-    except ImportError:
-        return None
-    else:
-        return mod
+def module_load(name: str) -> types.ModuleType:
+    return __import__(name, fromlist=["*"])
 
 
-def bc_load(cmdopts: tp.Dict[str, tp.Any], category: str):
+def bc_load(cmdopts: types.Cmdopts, category: str):
     path = 'variables.{0}'.format(category)
     return module_load_tiered(cmdopts['project'], path)
 
 
-def module_load_tiered(project: str, path: str):
+def module_load_tiered(project: str, path: str) -> types.ModuleType:
     # First, see if the requested module is a project
     if module_exists(path):
         logging.trace("Using project path '%s'", path)

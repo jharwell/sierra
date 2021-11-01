@@ -18,7 +18,7 @@ Main module/entry point for SIERRA, the helpful command line swarm-robotic autom
 """
 
 # Core packages
-import logging
+import logging # type: tp.Any
 import sys
 from collections.abc import Iterable
 import os

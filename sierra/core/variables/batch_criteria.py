@@ -14,13 +14,15 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
-Base classes for defining the variables in SIERRA which are then used to define sets of experiments
-to run. See :ref:`ln-batch-criteria` for full documentation.
+Base classes for defining the variables in SIERRA which are then used to
+define sets of experiments to run. See :ref:`ln-batch-criteria` for full
+documentation.
+
 """
 # Core packages
 import os
-import logging
 import typing as tp
+import logging  # type: tp.Any
 import argparse
 
 # 3rd party packages
@@ -34,39 +36,46 @@ from sierra.core.vector import Vector3D
 from sierra.core.xml import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList, XMLLuigi
 import sierra.core.config
 import sierra.core.plugin_manager as pm
+from sierra.core import types
 
 
 class IConcreteBatchCriteria(implements.Interface):
     """
-    'Final' interface that user-visible batch criteria variables need to implement to indicate that
-    they can be used as such, as they contain no virtual methods.
+    'Final' interface that user-visible batch criteria variables need to
+    implement to indicate that they can be used as such, as they contain no
+    virtual methods.
+
     """
 
     def graph_xticks(self,
-                     cmdopts: tp.Dict[str, tp.Any],
+                     cmdopts: types.Cmdopts,
                      exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
         """
 
         Arguments:
             cmdopts: Dictionary of parsed command line options.
-            exp_dirs: If not None, then this list of directories directories will be used to
-                      calculate the ticks, rather than the results of gen_exp_dirnames().
+
+            exp_dirs: If not None, then this list of directories directories
+                      will be used to calculate the ticks, rather than the
+                      results of gen_exp_dirnames().  
 
         Returns:
-            A list of values to use as the X axis tick values for graph generation.
+            A list of values to use as the X axis tick values for graph
+            generation. 
 
         """
         raise NotImplementedError
 
     def graph_xticklabels(self,
-                          cmdopts: tp.Dict[str, tp.Any],
+                          cmdopts: types.Cmdopts,
                           exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
         """
-
         Arguments:
             cmdopts: Dictionary of parsed command line options.
-            exp_dirs: If not None, then these directories will be used to calculate the labels,
-                      rather than the results of gen_exp_dirnames().
+
+            exp_dirs: If not None, then these directories will be used to
+                      calculate the labels, rather than the results of
+                      gen_exp_dirnames().
 
         Returns:
             A list of values to use as the X axis tick labels for graph generation.
@@ -74,66 +83,70 @@ class IConcreteBatchCriteria(implements.Interface):
         """
         raise NotImplementedError
 
-    def graph_xlabel(self, cmdopts: tp.Dict[str, tp.Any]) -> str:
+    def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
         """
         Returns:
-            The X-label that should be used for the graphs of various performance measures across
-            batch criteria.
+            The X-label that should be used for the graphs of various
+            performance measures across batch criteria.
         """
         raise NotImplementedError
 
     def pm_query(self, pm: str) -> bool:
         """
         Arguments:
-            pm: A possible performance measure to generate from the results of the batched
-                experiment defined by this object.
+            pm: A possible performance measure to generate from the results of
+                the batched experiment defined by this object.
 
         Returns:
-            `True` if the specified pm should be generated for the current object, and
-            `False` otherwise.
+            `True` if the specified pm should be generated for the current
+            object, and `False` otherwise.
         """
         raise NotImplementedError
 
 
 class IBivarBatchCriteria(implements.Interface):
     def graph_yticks(self,
-                     cmdopts: tp.Dict[str, tp.Any],
+                     cmdopts: types.Cmdopts,
                      exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
         """
-
         Arguments:
             cmdopts: Dictionary of parsed command line options.
-            exp_dirs: If not None, then these directories will be used to calculate the ticks,
-                      rather than the results of gen_exp_dirnames().
+
+            exp_dirs: If not None, then these directories will be used to
+                      calculate the ticks, rather than the results of
+                      gen_exp_dirnames().
 
         Returns:
-            A list of criteria-specific values to use as the Y axis tick values for graph
-            generation.
+            A list of criteria-specific values to use as the Y axis tick
+            values for graph generation.
 
         """
         raise NotImplementedError
 
     def graph_yticklabels(self,
-                          cmdopts: tp.Dict[str, tp.Any],
+                          cmdopts: types.Cmdopts,
                           exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
         """
-
         Arguments:
             cmdopts: Dictionary of parsed command line options.
-            exp_dirs: If not None, then these directories will be used to calculate the labels,
-                      rather than the results of gen_exp_dirnames().
+
+            exp_dirs: If not None, then these directories will be used to
+                      calculate the labels, rather than the results of
+                      gen_exp_dirnames().
 
         Returns:
-            A list of values to use as the Y axis tick labels for graph generation.
+            A list of values to use as the Y axis tick labels for graph
+            generation.
 
         """
         raise NotImplementedError
 
-    def graph_ylabel(self, cmdopts: tp.Dict[str, tp.Any]) -> str:
+    def graph_ylabel(self, cmdopts: types.Cmdopts) -> str:
         """
         Returns:
-            The Y-label that should be used for the graphs of various performance measures across
-            batch criteria. Only needed by bivar batch criteria.
+            The Y-label that should be used for the graphs of various
+            performance measures across batch criteria. Only needed by bivar
+            batch criteria. 
         """
         raise NotImplementedError
 
@@ -142,7 +155,8 @@ class IBatchCriteriaType(implements.Interface):
     def is_bivar(self) -> bool:
         """
         Returns:
-            `True` if this class is a bivariate batch criteria instance, and `False` otherwise.
+            `True` if this class is a bivariate batch criteria instance, and
+            `False` otherwise. 
         """
         raise NotImplementedError
 
@@ -150,7 +164,8 @@ class IBatchCriteriaType(implements.Interface):
         """
 
         Returns:
-            `True` if this class is a univar batch criteria instance, and `False` otherwise.
+            `True` if this class is a univar batch criteria instance, and
+            `False` otherwise. 
         """
         raise NotImplementedError
 
@@ -158,20 +173,22 @@ class IBatchCriteriaType(implements.Interface):
 @implements.implements(base_variable.IBaseVariable)
 class BatchCriteria():
     """
-    Defines the list of sets of changes to make to a template input file in order to run a related
-    set of of experiments.
+    Defines the list of sets of changes to make to a template input file in
+    order to run a related set of of experiments.
 
     Attributes:
         cli_arg: Unparsed batch criteria string from command line.
+
         main_config: Parsed dictionary of main YAML configuration.
+
         batch_input_root: Absolute path to the directory where batch experiment directories
-                               should be created.
+                          should be created.
 
     """
 
     def __init__(self,
                  cli_arg: str,
-                 main_config: tp.Dict[str, tp.Any],
+                 main_config: types.YAMLDict,
                  batch_input_root: str) -> None:
         self.cli_arg = cli_arg
         self.main_config = main_config
@@ -181,8 +198,8 @@ class BatchCriteria():
         self.def_str = '.'.join(cli_arg.split('.')[1:])
         self.logger = logging.getLogger(__name__)
 
-    # Stub out IBaseVariable because all concrete batch criteria only implement a subset of them.
-
+    # Stub out IBaseVariable because all concrete batch criteria only implement
+    # a subset of them.
     def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         return []
 
@@ -195,7 +212,7 @@ class BatchCriteria():
     def gen_files(self) -> None:
         pass
 
-    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, tp.Any]) -> tp.List[str]:
+    def gen_exp_dirnames(self, cmdopts: types.Cmdopts) -> tp.List[str]:
         """
         Generate list of strings from the current changelist to use for directory names within a
         batched experiment.
@@ -209,8 +226,8 @@ class BatchCriteria():
     def arena_dims(self) -> tp.List[sierra.core.utils.ArenaExtent]:
         """
         Returns:
-            Arena dimensions used for each experiment in the batch. Not applicable to all
-            criteria.
+            Arena dimensions used for each experiment in the batch. Not
+            applicable to all criteria.
         """
         dims = []
         for exp in self.gen_attr_changelist():
@@ -218,7 +235,8 @@ class BatchCriteria():
                 if c.path == ".//arena" and c.attr == "size":
                     x, y, z = c.value.split(',')
                     dims.append(sierra.core.utils.ArenaExtent(Vector3D(int(float(x)),
-                                                                       int(float(y)),
+                                                                       int(float(
+                                                                           y)),
                                                                        int(float(z)))))
 
         assert len(dims) > 0, "Scenario dimensions not contained in batch criteria"
@@ -227,35 +245,39 @@ class BatchCriteria():
     def n_exp(self) -> int:
         return len(self.gen_attr_changelist())
 
-    def pickle_exp_defs(self, cmdopts: tp.Dict[str, tp.Any]) -> None:
+    def pickle_exp_defs(self, cmdopts: types.Cmdopts) -> None:
         defs = list(self.gen_attr_changelist())
         for i, exp_def in enumerate(defs):
             exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
             pkl_path = os.path.join(self.batch_input_root,
                                     exp_dirname,
                                     sierra.core.config.kPickleLeaf)
-            # Pickling of batch criteria experiment definitions is the FIRST set of changes to be
-            # pickled--all other changes come after. We append to the pickle file by default, which
-            # allows any number of additional sets of changes to be written, BUT that can also lead
-            # to errors if stage 1 is run multiple times before stage 4. So, we DELETE the pickle
-            # file for each experiment here to make stage 1 idempotent.
+            # Pickling of batch criteria experiment definitions is the FIRST set
+            # of changes to be pickled--all other changes come after. We append
+            # to the pickle file by default, which allows any number of
+            # additional sets of changes to be written, BUT that can also lead
+            # to errors if stage 1 is run multiple times before stage 4. So, we
+            # DELETE the pickle file for each experiment here to make stage 1
+            # idempotent.
             exp_def.pickle(pkl_path, delete=True)
 
     def scaffold_exps(self,
                       xml: sierra.core.xml.XMLLuigi,
                       batch_config_leaf: str,
-                      cmdopts: tp.Dict[str, tp.Any]) -> None:
+                      cmdopts: types.Cmdopts) -> None:
         """
-        Scaffold a batched experiment by taking the raw template input file and applying the XML
-        attribute changes to it, and saving the result in the experiment input directory in each
-        experiment in the batch.
+        Scaffold a batched experiment by taking the raw template input file and
+        applying the XML attribute changes to it, and saving the result in the
+        experiment input directory in each experiment in the batch.
 
-        Note that batch criteria which use XML tag additions are NOT valid, because those
-        necessarily have a dictionary of attr,value pairs for the new tag to add, and these cannot
-        be pickled for successful retrieval later.
+        Note that batch criteria which use XML tag additions are NOT valid,
+        because those necessarily have a dictionary of attr,value pairs for the
+        new tag to add, and these cannot be pickled for successful retrieval
+        later.
 
         """
-        assert len(self.gen_tag_addlist()) == 0, "FATAL: Batch criteria cannot add XML tags"
+        assert len(self.gen_tag_addlist()
+                   ) == 0, "FATAL: Batch criteria cannot add XML tags"
         chg_defs = self.gen_attr_changelist()
         n_exps = len(chg_defs)
 
@@ -284,7 +306,7 @@ class BatchCriteria():
                        xml: XMLLuigi,
                        defi: XMLAttrChangeSet,
                        i: int,
-                       cmdopts: tp.Dict[str, tp.Any],
+                       cmdopts: types.Cmdopts,
                        batch_config_leaf: str) -> None:
         exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
         exp_input_root = os.path.join(self.batch_input_root,
@@ -295,7 +317,8 @@ class BatchCriteria():
                           i,
                           exp_dirname)
 
-        sierra.core.utils.dir_create_checked(exp_input_root, exist_ok=cmdopts['exp_overwrite'])
+        sierra.core.utils.dir_create_checked(
+            exp_input_root, exist_ok=cmdopts['exp_overwrite'])
 
         for chgsi in defi:
             xml.attr_change(chgsi.path, chgsi.attr, chgsi.value)
@@ -319,12 +342,14 @@ class UnivarBatchCriteria(BatchCriteria):
     def is_univar(self) -> bool:
         return True
 
-    def populations(self, cmdopts: tp.Dict[str, tp.Any], exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[int]:
+    def populations(self, cmdopts: types.Cmdopts, exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[int]:
         """
         Arguments:
             cmdopts: Dictionary of parsed command line options.
-            exp_dirs: If is not `None`, then these directories will be used to calculate the
-                      swarm sizes, rather than the results of `gen_exp_dirnames()`.
+
+            exp_dirs: If is not `None`, then these directories will be used to
+                      calculate the swarm sizes, rather than the results of
+                      `gen_exp_dirnames()`.
 
         Returns:
             The list of swarm sizes used the batched experiment, sorted.
@@ -389,10 +414,11 @@ class BivarBatchCriteria(BatchCriteria):
         ret.extend(self.criteria2.gen_tag_rmlist())
         return ret
 
-    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, tp.Any]) -> tp.List[str]:
+    def gen_exp_dirnames(self, cmdopts: types.Cmdopts) -> tp.List[str]:
         """
-        Generates a SORTED list of strings for all X/Y axis directories for the bivariate
-        experiments, or both X and Y.
+        Generates a SORTED list of strings for all X/Y axis directories for the
+        bivariate experiments, or both X and Y.
+
         """
         list1 = self.criteria1.gen_exp_dirnames(cmdopts)
         list2 = self.criteria2.gen_exp_dirnames(cmdopts)
@@ -404,10 +430,11 @@ class BivarBatchCriteria(BatchCriteria):
 
         return ret
 
-    def populations(self, cmdopts: tp.Dict[str, tp.Any]) -> tp.List[tp.List[int]]:
+    def populations(self, cmdopts: types.Cmdopts) -> tp.List[tp.List[int]]:
         """
-        Generate a 2D array of swarm swarm sizes used the batched experiment, in the same order as
-        the directories returned from `gen_exp_dirnames()` for each criteria along each axis.
+        Generate a 2D array of swarm swarm sizes used the batched experiment, in
+        the same order as the directories returned from `gen_exp_dirnames()` for
+        each criteria along each axis.
 
         """
         dirs = self.gen_exp_dirnames(cmdopts)
@@ -439,11 +466,13 @@ class BivarBatchCriteria(BatchCriteria):
 
     def exp_scenario_name(self, exp_num: int) -> str:
         """
-        Given the exp number in the batch, compute a valid, parsable scenario name. It is necessary
-        to query this criteria after generating the changnelist in order to create generator classes
-        for each experiment in the batch with the correct name and definition.
+        Given the exp number in the batch, compute a valid, parsable scenario
+        name. It is necessary to query this criteria after generating the
+        changnelist in order to create generator classes for each experiment in
+        the batch with the correct name and definition.
 
         Can only be called if constant density is one of the sub-criteria.
+
         """
         if isinstance(self.criteria1, constant_density.ConstantDensity):
             return self.criteria1.exp_scenario_name(int(exp_num /
@@ -454,7 +483,7 @@ class BivarBatchCriteria(BatchCriteria):
             assert False, "FATAL: bivariate batch criteria does not contain constant density"
 
     def graph_xticks(self,
-                     cmdopts: tp.Dict[str, tp.Any],
+                     cmdopts: types.Cmdopts,
                      exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
         dirs = []
         all_dirs = sierra.core.utils.exp_range_calc(cmdopts,
@@ -471,7 +500,7 @@ class BivarBatchCriteria(BatchCriteria):
         return self.criteria1.graph_xticks(cmdopts, dirs)
 
     def graph_yticks(self,
-                     cmdopts: tp.Dict[str, tp.Any],
+                     cmdopts: types.Cmdopts,
                      exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
         dirs = []
         all_dirs = sierra.core.utils.exp_range_calc(cmdopts,
@@ -488,7 +517,7 @@ class BivarBatchCriteria(BatchCriteria):
         return self.criteria2.graph_xticks(cmdopts, dirs)
 
     def graph_xticklabels(self,
-                          cmdopts: tp.Dict[str, tp.Any],
+                          cmdopts: types.Cmdopts,
                           exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
         dirs = []
         all_dirs = sierra.core.utils.exp_range_calc(cmdopts,
@@ -505,7 +534,7 @@ class BivarBatchCriteria(BatchCriteria):
         return self.criteria1.graph_xticklabels(cmdopts, dirs)
 
     def graph_yticklabels(self,
-                          cmdopts: tp.Dict[str, tp.Any],
+                          cmdopts: types.Cmdopts,
                           exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
         dirs = []
         all_dirs = sierra.core.utils.exp_range_calc(cmdopts,
@@ -521,10 +550,10 @@ class BivarBatchCriteria(BatchCriteria):
 
         return self.criteria2.graph_xticklabels(cmdopts, dirs)
 
-    def graph_xlabel(self, cmdopts: tp.Dict[str, tp.Any]) -> str:
+    def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
         return self.criteria1.graph_xlabel(cmdopts)
 
-    def graph_ylabel(self, cmdopts: tp.Dict[str, tp.Any]) -> str:
+    def graph_ylabel(self, cmdopts: types.Cmdopts) -> str:
         return self.criteria2.graph_xlabel(cmdopts)
 
     def pm_query(self, pm: str) -> bool:
@@ -536,8 +565,8 @@ class BivarBatchCriteria(BatchCriteria):
         self.criteria2.batch_input_root = root
 
 
-def factory(main_config: tp.Dict[str, tp.Any],
-            cmdopts: tp.Dict[str, tp.Any],
+def factory(main_config: types.YAMLDict,
+            cmdopts: types.Cmdopts,
             args: argparse.Namespace,
             scenario: tp.Optional[str] = None) -> IConcreteBatchCriteria:
     if scenario is None:
@@ -553,8 +582,8 @@ def factory(main_config: tp.Dict[str, tp.Any],
         assert False, "FATAL: 1 or 2 batch criterias must be specified on the cmdline"
 
 
-def __univar_factory(main_config: tp.Dict[str, tp.Any],
-                     cmdopts: tp.Dict[str, tp.Any],
+def __univar_factory(main_config: types.YAMLDict,
+                     cmdopts: types.Cmdopts,
                      cli_arg: str,
                      scenario) -> IConcreteBatchCriteria:
     """
@@ -576,8 +605,8 @@ def __univar_factory(main_config: tp.Dict[str, tp.Any],
     return ret  # type: ignore
 
 
-def __bivar_factory(main_config: tp.Dict[str, tp.Any],
-                    cmdopts: tp.Dict[str, tp.Any],
+def __bivar_factory(main_config: types.YAMLDict,
+                    cmdopts: types.Cmdopts,
                     cli_arg: tp.List[str],
                     scenario: str) -> IConcreteBatchCriteria:
     criteria1 = __univar_factory(main_config, cmdopts, cli_arg[0], scenario)

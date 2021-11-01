@@ -57,7 +57,7 @@ def env_configure(args):
      - ``n_jobs``       - How many jobs to run in parallel.
      """
 
-def xvfb_cmd_generate(cmdopts: tp.Dict[str, tp.Any]):
+def xvfb_cmd_generate(cmdopts: types.Cmdopts):
     """
     Generate the command for running ARGoS under Xvfb for headless rendering, using the dictionary
     of parsed cmdline options. If your HPC environment does not support this, return ``''``.

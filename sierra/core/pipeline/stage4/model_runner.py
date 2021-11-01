@@ -20,15 +20,16 @@ Classes for running project-specific models in a general purpose way within a ba
 # Core packages
 import os
 import copy
-import logging
 import typing as tp
-import sierra.core.models.interface
+import logging  # type: tp.Any
 
 # 3rd party packages
 
 # Project packages
 import sierra.core.utils
 import sierra.core.variables.batch_criteria as bc
+from sierra.core import models
+from sierra.core import types
 
 
 class IntraExpModelRunner:
@@ -40,15 +41,15 @@ class IntraExpModelRunner:
     """
 
     def __init__(self,
-                 cmdopts: tp.Dict[str, tp.Any],
-                 models: tp.List[tp.Union[sierra.core.models.interface.IConcreteIntraExpModel1D,
-                                          sierra.core.models.interface.IConcreteIntraExpModel2D]]) -> None:
+                 cmdopts: types.Cmdopts,
+                 models: tp.List[tp.Union[models.interface.IConcreteIntraExpModel1D,
+                                          models.interface.IConcreteIntraExpModel2D]]) -> None:
         self.cmdopts = cmdopts
         self.models = models
         self.logger = logging.getLogger(__name__)
 
     def __call__(self,
-                 main_config: tp.Dict[str, tp.Any],
+                 main_config: types.YAMLDict,
                  criteria: bc.IConcreteBatchCriteria) -> None:
         exp_to_run = sierra.core.utils.exp_range_calc(self.cmdopts,
                                                       self.cmdopts['batch_output_root'],
@@ -65,13 +66,19 @@ class IntraExpModelRunner:
             cmdopts["exp0_stat_root"] = os.path.join(self.cmdopts["batch_stat_root"],
                                                      exp_dirnames[0])
 
-            cmdopts["exp_input_root"] = os.path.join(self.cmdopts['batch_input_root'], exp)
-            cmdopts["exp_output_root"] = os.path.join(self.cmdopts['batch_output_root'], exp)
-            cmdopts["exp_graph_root"] = os.path.join(self.cmdopts['batch_graph_root'], exp)
-            cmdopts["exp_stat_root"] = os.path.join(self.cmdopts["batch_stat_root"], exp)
-            cmdopts["exp_model_root"] = os.path.join(cmdopts['batch_model_root'], exp)
+            cmdopts["exp_input_root"] = os.path.join(
+                self.cmdopts['batch_input_root'], exp)
+            cmdopts["exp_output_root"] = os.path.join(
+                self.cmdopts['batch_output_root'], exp)
+            cmdopts["exp_graph_root"] = os.path.join(
+                self.cmdopts['batch_graph_root'], exp)
+            cmdopts["exp_stat_root"] = os.path.join(
+                self.cmdopts["batch_stat_root"], exp)
+            cmdopts["exp_model_root"] = os.path.join(
+                cmdopts['batch_model_root'], exp)
 
-            sierra.core.utils.dir_create_checked(cmdopts['exp_model_root'], exist_ok=True)
+            sierra.core.utils.dir_create_checked(
+                cmdopts['exp_model_root'], exist_ok=True)
 
             for model in self.models:
                 if not model.run_for_exp(criteria, cmdopts, exp_index):
@@ -86,7 +93,8 @@ class IntraExpModelRunner:
                                   exp_index)
                 dfs = model.run(criteria, exp_index, cmdopts)
                 for df, csv_stem in zip(dfs, model.target_csv_stems()):
-                    path_stem = os.path.join(cmdopts['exp_model_root'], csv_stem)
+                    path_stem = os.path.join(
+                        cmdopts['exp_model_root'], csv_stem)
 
                     # Write model legend file so the generated graph can find it
                     with open(path_stem + '.legend', 'w') as f:
@@ -97,7 +105,8 @@ class IntraExpModelRunner:
                                 break
 
                     # Write model .csv file
-                    sierra.core.utils.pd_csv_write(df, path_stem + '.model', index=False)
+                    sierra.core.utils.pd_csv_write(
+                        df, path_stem + '.model', index=False)
 
 
 class InterExpModelRunner:
@@ -109,20 +118,22 @@ class InterExpModelRunner:
     """
 
     def __init__(self,
-                 cmdopts: tp.Dict[str, tp.Any],
-                 models: tp.List[sierra.core.models.interface.IConcreteInterExpModel1D]) -> None:
+                 cmdopts: types.Cmdopts,
+                 models: tp.List[models.interface.IConcreteInterExpModel1D]) -> None:
         self.cmdopts = cmdopts
         self.models = models
         self.logger = logging.getLogger(__name__)
 
     def __call__(self,
-                 main_config: tp.Dict[str, tp.Any],
+                 main_config: types.YAMLDict,
                  criteria: bc.IConcreteBatchCriteria) -> None:
 
         cmdopts = copy.deepcopy(self.cmdopts)
 
-        sierra.core.utils.dir_create_checked(cmdopts['batch_model_root'], exist_ok=True)
-        sierra.core.utils.dir_create_checked(cmdopts['batch_graph_collate_root'], exist_ok=True)
+        sierra.core.utils.dir_create_checked(
+            cmdopts['batch_model_root'], exist_ok=True)
+        sierra.core.utils.dir_create_checked(
+            cmdopts['batch_graph_collate_root'], exist_ok=True)
 
         for model in self.models:
             if not model.run_for_batch(criteria, cmdopts):
@@ -139,7 +150,8 @@ class InterExpModelRunner:
                 path_stem = os.path.join(cmdopts['batch_model_root'], csv_stem)
 
                 # Write model .csv file
-                sierra.core.utils.pd_csv_write(df, path_stem + '.model', index=False)
+                sierra.core.utils.pd_csv_write(
+                    df, path_stem + '.model', index=False)
 
                 # 1D dataframe -> line graph with legend
                 if len(df.index) == 1:

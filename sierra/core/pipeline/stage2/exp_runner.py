@@ -23,15 +23,16 @@ import os
 import subprocess
 import time
 import sys
-import logging
 import datetime
 import typing as tp
+import logging  # type: tp.Any
 
 # 3rd party packages
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
 import sierra.core.hpc
+from sierra.core import types
 
 
 class BatchedExpRunner:
@@ -48,7 +49,9 @@ class BatchedExpRunner:
 
     """
 
-    def __init__(self, cmdopts: tp.Dict[str, tp.Any], criteria: bc.BatchCriteria) -> None:
+    def __init__(self,
+                 cmdopts: types.Cmdopts,
+                 criteria: bc.BatchCriteria) -> None:
         self.cmdopts = cmdopts
         self.criteria = criteria
 
@@ -59,7 +62,8 @@ class BatchedExpRunner:
 
         self.logger = logging.getLogger(__name__)
 
-        sierra.core.utils.dir_create_checked(self.batch_stat_exec_root, exist_ok=True)
+        sierra.core.utils.dir_create_checked(
+            self.batch_stat_exec_root, exist_ok=True)
 
     def __call__(self) -> None:
         """
@@ -89,7 +93,8 @@ class BatchedExpRunner:
                                         now.strftime("%Y-%m-%e-%H:%M"))
 
         s = "Running batched experiment in '%s': sims_per_exp=%s,threads_per_sim=%s,n_jobs=%s"
-        self.logger.info(s, self.cmdopts['batch_root'], n_sims, n_threads_per_sim, n_jobs)
+        self.logger.info(
+            s, self.cmdopts['batch_root'], n_sims, n_threads_per_sim, n_jobs)
 
         exp_all = [os.path.join(self.batch_exp_root, d)
                    for d in self.criteria.gen_exp_dirnames(self.cmdopts)]
@@ -101,7 +106,8 @@ class BatchedExpRunner:
         sierra.core.hpc.EnvChecker(self.cmdopts['hpc_env'])()
 
         for exp in exp_to_run:
-            runner = ExpRunner(exp, exp_all.index(exp), self.cmdopts['hpc_env'], exec_times_fpath)
+            runner = ExpRunner(exp, exp_all.index(
+                exp), self.cmdopts['hpc_env'], exec_times_fpath)
             runner(n_jobs, exec_resume)
 
         # Cleanup Xvfb processes which were started in the background. If SIERRA was run with
@@ -146,7 +152,8 @@ class ExpRunner:
 
         """
 
-        self.logger.info("Running exp%s in '%s'", self.exp_num, self.exp_input_root)
+        self.logger.info("Running exp%s in '%s'",
+                         self.exp_num, self.exp_input_root)
         sys.stdout.flush()
 
         start = time.time()
@@ -168,7 +175,8 @@ class ExpRunner:
         # run if possible
         except subprocess.CalledProcessError as e:
             self.logger.error("Experiment failed! rc=%s", e.returncode)
-            self.logger.error("Check outputs in %s for details", parallel_opts['jobroot_path'])
+            self.logger.error("Check outputs in %s for details",
+                              parallel_opts['jobroot_path'])
 
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)

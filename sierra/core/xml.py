@@ -20,10 +20,10 @@ manipulating XML files.
 """
 
 # Core packages
-import logging
 import typing as tp
 import pickle
 import os
+import logging  # type: tp.Any
 
 # 3rd party packages
 
@@ -253,7 +253,8 @@ class XMLLuigi:
 
         if attr not in el.attrib:
             if not noprint:
-                self.logger.warning("Atribute '%s' not found in in path '%s'", attr, path)
+                self.logger.warning(
+                    "Atribute '%s' not found in in path '%s'", attr, path)
             return
 
         el.attrib[attr] = value
@@ -303,7 +304,8 @@ class XMLLuigi:
         victim = parent.find(tag)
         if victim is None:
             if not noprint:
-                self.logger.warning("No victim '%s' found in parent '%s'", tag, path)
+                self.logger.warning(
+                    "No victim '%s' found in parent '%s'", tag, path)
             return
 
         parent.remove(victim)

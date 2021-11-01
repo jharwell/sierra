@@ -15,14 +15,15 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Miscellaneous classes/functions used in mutiple places but that don't really fit anywhere.
+Miscellaneous classes/functions used in mutiple places but that don't really fit
+anywhere.
 """
 
 # Core packages
 import os
-import logging
 import typing as tp
 import time
+import logging  # type: tp.Any
 
 # 3rd party packages
 import numpy as np
@@ -32,6 +33,7 @@ from retry import retry
 # Project packages
 from sierra.core.vector import Vector3D
 from sierra.core.xml import XMLLuigi, XMLAttrChangeSet, XMLTagAddList, XMLTagRmList
+from sierra.core import types
 
 
 class ArenaExtent():
@@ -84,8 +86,9 @@ class Sigmoid():
 
     def __call__(self) -> float:
         if self.x < 0:
-            # Equivalent, and numerically stable for large negative exponents. If you don't case the
-            # sigmoid, you get overflow errors at runtime.
+            # Equivalent, and numerically stable for large negative
+            # exponents. If you don't case the sigmoid, you get overflow errors
+            # at runtime.
             return 1.0 - 1.0 / (1 + np.exp(self.x))  # type: ignore
         else:
             return 1.0 / (1 + np.exp(-self.x))  # type: ignore
@@ -141,7 +144,8 @@ def dir_create_checked(path: str, exist_ok: bool) -> None:
 
 @retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=1.1)  # type:ignore
 def pd_csv_read(path: str, **kwargs) -> pd.DataFrame:
-    # Always specify the datatype so pandas does not have to infer it--much faster.
+    # Always specify the datatype so pandas does not have to infer it--much
+    # faster.
     return pd.read_csv(path, sep=';', float_precision='high', **kwargs)
 
 
@@ -167,7 +171,7 @@ def path_exists(path: str) -> bool:
     return max(set(res), key=res.count)
 
 
-def get_primary_axis(criteria, primary_axis_bc: tp.List, cmdopts: tp.Dict[str, tp.Any]) -> int:
+def get_primary_axis(criteria, primary_axis_bc: tp.List, cmdopts: types.Cmdopts) -> int:
     if cmdopts['plot_primary_axis'] == 0:
         return 0
 
@@ -180,7 +184,7 @@ def get_primary_axis(criteria, primary_axis_bc: tp.List, cmdopts: tp.Dict[str, t
     return 1
 
 
-def exp_range_calc(cmdopts: tp.Dict[str, tp.Any], root_dir: str, criteria) -> tp.List[str]:
+def exp_range_calc(cmdopts: types.Cmdopts, root_dir: str, criteria) -> tp.List[str]:
     exp_all = [os.path.join(root_dir, d)
                for d in criteria.gen_exp_dirnames(cmdopts)]
 
@@ -198,10 +202,12 @@ def exp_range_calc(cmdopts: tp.Dict[str, tp.Any], root_dir: str, criteria) -> tp
 
 def exp_include_filter(inc_spec: str, target: tp.List, n_exps: int):
     """
-    Takes a input list, and returns the sublist specified by the inc_spec (of the form
-    [x:y]). inc_spec is an `absolute` specification; if a given performance measure excludes exp0
-    then that case is handled internally so that array/list shapes work out when generating graphs
-    if this function is used consistently everywhere.
+    Takes a input list, and returns the sublist specified by the inc_spec (of
+    the form [x:y]). inc_spec is an `absolute` specification; if a given
+    performance measure excludes exp0 then that case is handled internally so
+    that array/list shapes work out when generating graphs if this function is
+    used consistently everywhere.
+
     """
     if inc_spec is None:
         start = None
@@ -221,10 +227,10 @@ def exp_include_filter(inc_spec: str, target: tp.List, n_exps: int):
 
 
 def bivar_exp_labels_calc(exp_dirs: tp.List[str]) -> tp.Tuple[tp.List[str], tp.List[str]]:
-    # Because sets are used, if a sub-range of experiments are selected for collation, the
-    # selected range has to be an even multiple of the # of experiments in the second batch
-    # criteria, or inter-experiment graph generation won't work (the final .csv is always an MxN
-    # grid).
+    # Because sets are used, if a sub-range of experiments are selected for
+    # collation, the selected range has to be an even multiple of the # of
+    # experiments in the second batch criteria, or inter-experiment graph
+    # generation won't work (the final .csv is always an MxN grid).
     xlabels_set = set()
     ylabels_set = set()
     for e in exp_dirs:
@@ -238,28 +244,31 @@ def bivar_exp_labels_calc(exp_dirs: tp.List[str]) -> tp.Tuple[tp.List[str], tp.L
     return (xlabels, ylabels)
 
 
-def apply_to_expdef(var, exp_def: XMLLuigi, noprint: bool = False) -> tp.Tuple[XMLTagRmList,
-                                                                               XMLTagAddList,
-                                                                               XMLAttrChangeSet]:
-    rms = var.gen_tag_rmlist()
-    adds = var.gen_tag_addlist()
-    chgs = var.gen_attr_changelist()
-    if rms:
-        rms = rms[0]
+def apply_to_expdef(var,
+                    exp_def: XMLLuigi,
+                    noprint: bool = False) -> tp.Tuple[tp.Optional[XMLTagRmList],
+                                                       tp.Optional[XMLTagAddList],
+                                                       tp.Optional[XMLAttrChangeSet]]:
+    rmsl = var.gen_tag_rmlist()  # type: tp.List[XMLTagRmList]
+    addsl = var.gen_tag_addlist()  # type: tp.List[XMLTagAddList]
+    chgsl = var.gen_attr_changelist()  # type: tp.List[XMLAttrChangeSet]
+
+    if rmsl:
+        rms = rmsl[0]
         for r in rms:
             exp_def.tag_remove(r.path, r.tag, noprint)
     else:
         rms = None
 
-    if adds:
-        adds = adds[0]
+    if addsl:
+        adds = addsl[0]
         for a in adds:
             exp_def.tag_add(a.path, a.tag, a.attr, noprint)
     else:
         adds = None
 
-    if chgs:
-        chgs = chgs[0]
+    if chgsl:
+        chgs = chgsl[0]
         for c in chgs:
             exp_def.attr_change(c.path, c.attr, c.value, noprint)
     else:

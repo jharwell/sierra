@@ -25,8 +25,9 @@ import typing as tp
 
 class Vector3D:
     """
-    Represents a point in 3D space and/or a directional vector in 3D space with some common
-    operations.
+    Represents a point in 3D space and/or a directional vector in 3D space with
+    some common operations.
+
     """
 
     def __init__(self, x=0, y=0, z=0):
@@ -52,8 +53,11 @@ class Vector3D:
     def __sub__(self, o: 'Vector3D') -> 'Vector3D':
         return Vector3D((self.x - o.x), (self.y - o.y), (self.z - o.z))
 
-    def __mul__(self, o: 'Vector3D') -> 'Vector3D':
-        return Vector3D((self.x * o.x) + (self.y * o.y) + (self.z * o.z))
+    def __mul__(self, o: tp.Union['Vector3D', float, int]) -> 'Vector3D':
+        if isinstance(o, (float, int)):
+            return Vector3D(self.x * o, self.y * o, self.z * o)
+        else:
+            return Vector3D((self.x * o.x) + (self.y * o.y) + (self.z * o.z))
 
     def __truediv__(self, o: tp.Union[float, int]) -> 'Vector3D':
         if isinstance(o, (float, int)):
@@ -94,6 +98,10 @@ class Vector3D:
     def normalize(self) -> 'Vector3D':
         length = self.length()
         return Vector3D((self.x / length), (self.y / length), (self.z / length))
+
+
+def from_str(s: str) -> Vector3D:
+    return Vector3D(*tuple(map(int, s.split(','))))
 
 
 __api__ = ['Vector3D']

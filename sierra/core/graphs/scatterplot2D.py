@@ -19,7 +19,8 @@
 import sierra.core.config
 import sierra.core.utils
 import os
-import logging
+import typing as tp
+import logging  # type: tp.Any
 
 # 3rd party packages
 import numpy as np
@@ -87,9 +88,12 @@ class Scatterplot2D:
 
         # Output figure
         fig = ax.get_figure()
-        fig.set_size_inches(sierra.core.config.kGraphBaseSize, sierra.core.config.kGraphBaseSize)
-        fig.savefig(self.output_fpath, bbox_inches='tight', dpi=sierra.core.config.kGraphDPI)
-        plt.close(fig)  # Prevent memory accumulation (fig.clf() does not close everything)
+        fig.set_size_inches(sierra.core.config.kGraphBaseSize,
+                            sierra.core.config.kGraphBaseSize)
+        fig.savefig(self.output_fpath, bbox_inches='tight',
+                    dpi=sierra.core.config.kGraphDPI)
+        # Prevent memory accumulation (fig.clf() does not close everything)
+        plt.close(fig)
 
     def _plot_regression(self, df):
         # slope, intercept, r_value, p_value, std_err = stats.linregress(df.loc[:, self.xcol],
@@ -107,7 +111,8 @@ class Scatterplot2D:
 
         # Plot line and add equation to legend
         xsym = sympy.symbols('x')
-        eqn = sum(sympy.S("{:6.2f}".format(v)) * xsym**i for i, v in enumerate(coeffs[::-1]))
+        eqn = sum(sympy.S("{:6.2f}".format(v)) * xsym **
+                  i for i, v in enumerate(coeffs[::-1]))
         latex = sympy.printing.latex(eqn)
         plt.plot(x_new, y_new, label="${}$".format(latex))
         plt.legend(fontsize=self.text_size['legend_label'])

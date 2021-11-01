@@ -25,6 +25,7 @@ import typing as tp
 from sierra.core.variables.batch_criteria import UnivarBatchCriteria
 from sierra.core.utils import ArenaExtent
 from sierra.core.xml import XMLAttrChangeSet
+from sierra.core import types
 
 
 class VariableDensity(UnivarBatchCriteria):
@@ -46,7 +47,8 @@ class VariableDensity(UnivarBatchCriteria):
                  batch_input_root: str,
                  densities: tp.List[float],
                  extent: ArenaExtent) -> None:
-        UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_input_root)
+        UnivarBatchCriteria.__init__(
+            self, cli_arg, main_config, batch_input_root)
         self.densities = densities
         self.extent = extent
         self.attr_changes = []
@@ -54,10 +56,11 @@ class VariableDensity(UnivarBatchCriteria):
 
 class Parser():
     """
-    Enforces the cmdline definition of a :class:`VariableDensity` derived batch criteria.
+    Enforces the cmdline definition of a :class:`VariableDensity` derived batch
+    criteria.
     """
 
-    def __call__(self, cli_arg: str) -> tp.Dict[str, tp.Any]:
+    def __call__(self, cli_arg: str) -> types.CLIArgSpec:
         """
         Returns:
             Dictionary with keys:
@@ -84,7 +87,8 @@ class Parser():
         cardinality = cli_arg.split('.')[3]
         res = re.search('C[0-9]+', cardinality)
         assert res is not None, \
-            "FATAL: Bad cardinality specification in criteria '{0}'".format(cli_arg)
+            "FATAL: Bad cardinality specification in criteria '{0}'".format(
+                cli_arg)
 
         ret['cardinality'] = int(res.group(0)[1:])
 

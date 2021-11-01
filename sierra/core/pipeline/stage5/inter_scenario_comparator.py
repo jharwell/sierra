@@ -22,9 +22,9 @@ stage5 of the experimental pipeline.
 # Core packages
 import os
 import copy
-import logging
 import typing as tp
 import argparse
+import logging  # type: tp.Any
 
 # 3rd party packages
 import pandas as pd
@@ -36,28 +36,38 @@ import sierra.core.root_dirpath_generator as rdg
 import sierra.core.utils
 import sierra.core.config
 import sierra.core.plugin_manager as pm
+from sierra.core import types
 
 
 class UnivarInterScenarioComparator:
     """
-    Compares a single controller on different performance measures across a set of scenarios using
-    univariate batch criteria, one at a time. Graph generation is controlled via a config file
-    parsed in :class:`~sierra.core.pipeline.stage5.pipeline_stage5.PipelineStage5`. Univariate batch
-    criteria only.
+    Compares a single controller on different performance measures across a set
+    of scenarios using univariate batch criteria, one at a time. Graph
+    generation is controlled via a config file parsed in
+    :class:`~sierra.core.pipeline.stage5.pipeline_stage5.PipelineStage5`. Univariate
+    batch criteria only.
 
     Attributes:
         controller: Controller to use.
+
         scenarios: List of scenario names to compare ``controller`` across.
-        sc_csv_root: Absolute directory path to the location scenario ``.csv`` files should be
-                     output to.
-        sc_graph_root: Absolute directory path to the location the generated graphs should be output
-                       to.
+
+        sc_csv_root: Absolute directory path to the location scenario ``.csv``
+                     files should be output to.
+
+        sc_graph_root: Absolute directory path to the location the generated
+                       graphs should be output to.
+
         cmdopts: Dictionary of parsed cmdline parameters.
-        cli_args: :class:`argparse` object containing the cmdline parameters. Needed for
-                  :class:`~sierra.core.variables.batch_criteria.BatchCriteria` generation for each scenario
-                  controllers are compared within, as batch criteria is dependent on
-                  controller+scenario definition, and needs to be re-generated for each scenario in
-                  order to get graph labels/axis ticks to come out right in all cases.
+
+        cli_args: :class:`argparse` object containing the cmdline
+                  parameters. Needed for
+                  :class:`~sierra.core.variables.batch_criteria.BatchCriteria`
+                  generation for each scenario controllers are compared within,
+                  as batch criteria is dependent on controller+scenario
+                  definition, and needs to be re-generated for each scenario in
+                  order to get graph labels/axis ticks to come out right in all
+                  cases.
 
     """
 
@@ -65,9 +75,9 @@ class UnivarInterScenarioComparator:
                  controller: str,
                  scenarios: tp.List[str],
                  roots: tp.Dict[str, str],
-                 cmdopts: tp.Dict[str, tp.Any],
+                 cmdopts: types.Cmdopts,
                  cli_args: argparse.Namespace,
-                 main_config: tp.Dict[str, tp.Any]) -> None:
+                 main_config: types.YAMLDict) -> None:
         self.controller = controller
         self.scenarios = scenarios
         self.sc_graph_root = roots['graphs']
@@ -79,20 +89,22 @@ class UnivarInterScenarioComparator:
         self.main_config = main_config
         self.logger = logging.getLogger(__name__)
 
-    def __call__(self, graphs: tp.List[tp.Dict[str, tp.Any]], legend: tp.List[str]) -> None:
+    def __call__(self, graphs: tp.List[types.YAMLDict], legend: tp.List[str]) -> None:
         # Obtain the list of simulation results directories to draw from.
         batch_leaves = os.listdir(os.path.join(self.cmdopts['sierra_root'],
                                                self.cmdopts['project'],
                                                self.controller))
 
-        # The FS gives us batch leaves which might not be in the same order as the list of specified
-        # scenarios, so we:
+        # The FS gives us batch leaves which might not be in the same order as
+        # the list of specified scenarios, so we:
         #
-        # 1. Remove all batch leaves which do not have a counterpart in the scenario list we are
-        #    comparing across.
-        # 2. Do matching to get the indices of the batch leaves relative to the list, and then sort
-        #    it.
-        batch_leaves = [leaf for leaf in batch_leaves for s in self.scenarios if s in leaf]
+        # 1. Remove all batch leaves which do not have a counterpart in the
+        #    scenario list we are comparing across.
+        #
+        # 2. Do matching to get the indices of the batch leaves relative to the
+        #    list, and then sort it.
+        batch_leaves = [
+            leaf for leaf in batch_leaves for s in self.scenarios if s in leaf]
         indices = [self.scenarios.index(s)
                    for leaf in batch_leaves for s in self.scenarios if s in leaf]
         batch_leaves = [leaf for s, leaf in sorted(zip(indices, batch_leaves),
@@ -115,9 +127,11 @@ class UnivarInterScenarioComparator:
                                       self.cli_args.batch_criteria)
 
     def _leaf_select(self, candidate: str) -> bool:
-        """Determine if a scenario that the controller has been run on in the past is part of the
-        set passed that the controller should be compared across (i.e., the controller is not
-        compared across all scenarios it has ever been run on).
+        """
+        Determine if a scenario that the controller has been run on in the past
+        is part of the set passed that the controller should be compared across
+        (i.e., the controller is not compared across all scenarios it has ever
+        been run on).
 
         """,
         template_stem, scenario, _ = rdg.parse_batch_leaf(candidate)
@@ -127,15 +141,15 @@ class UnivarInterScenarioComparator:
         return leaf in candidate and scenario in self.scenarios
 
     def _compare_across_scenarios(self,
-                                  cmdopts: tp.Dict[str, tp.Any],
-                                  graph: tp.Dict[str, tp.Any],
+                                  cmdopts: types.Cmdopts,
+                                  graph: types.YAMLDict,
                                   batch_leaf: str,
                                   legend: tp.List[str]) -> None:
 
-        # We need to generate the root directory paths for each batched experiment
-        # (which # lives inside of the scenario dir), because they are all
-        # different. We need generate these paths for EACH controller, because the
-        # controller is part of the batch root path.
+        # We need to generate the root directory paths for each batched
+        # experiment (which # lives inside of the scenario dir), because they
+        # are all different. We need generate these paths for EACH controller,
+        # because the controller is part of the batch root path.
         paths = rdg.regen_from_exp(sierra_rpath=self.cli_args.sierra_root,
                                    project=self.cli_args.project,
                                    batch_leaf=batch_leaf,
@@ -145,7 +159,8 @@ class UnivarInterScenarioComparator:
         # For each scenario, we have to create the batch criteria for it, because they
         # are all different.
 
-        criteria = bc.factory(self.main_config, cmdopts, self.cli_args, self.scenarios[0])
+        criteria = bc.factory(self.main_config, cmdopts,
+                              self.cli_args, self.scenarios[0])
 
         self._gen_csv(cmdopts=cmdopts,
                       batch_leaf=batch_leaf,
@@ -162,15 +177,16 @@ class UnivarInterScenarioComparator:
 
     def _gen_graph(self,
                    criteria: bc.IConcreteBatchCriteria,
-                   cmdopts: tp.Dict[str, tp.Any],
+                   cmdopts: types.Cmdopts,
                    dest_stem: str,
-                   inc_exps: tp.Optional[slice],
+                   inc_exps: tp.Optional[str],
                    title: str,
                    label: str,
                    legend: tp.List[str]) -> None:
         """
-        Generates a :class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph` comparing the
-        specified controller across specified scenarios.
+        Generates a :class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`
+        comparing the specified controller across specified scenarios.
+
         """
         istem = dest_stem + "-" + self.controller
         img_opath = os.path.join(self.sc_graph_root, dest_stem) + '-' + \
@@ -183,7 +199,8 @@ class UnivarInterScenarioComparator:
             xtick_labels = sierra.core.utils.exp_include_filter(inc_exps,
                                                                 xtick_labels,
                                                                 criteria.n_exp())
-            xticks = sierra.core.utils.exp_include_filter(inc_exps, xticks, criteria.n_exp())
+            xticks = sierra.core.utils.exp_include_filter(
+                inc_exps, xticks, criteria.n_exp())
 
         SummaryLineGraph(stats_root=self.sc_csv_root,
                          input_stem=istem,
@@ -200,27 +217,30 @@ class UnivarInterScenarioComparator:
                          legend=legend).generate()
 
     def _gen_csv(self,
-                 cmdopts: tp.Dict[str, tp.Any],
+                 cmdopts: types.Cmdopts,
                  batch_leaf: str,
                  src_stem: str,
                  dest_stem: str) -> None:
         """
-        Helper function for generating a set of .csv files for use in inter-scenario graph
-        generation.
+        Helper function for generating a set of .csv files for use in
+        inter-scenario graph generation.
 
         Generates:
 
-        - ``.csv`` file containing results for each scenario the controller is being compared
-          across, 1 per line.
+        - ``.csv`` file containing results for each scenario the controller is
+          being compared across, 1 per line.
 
-        - ``.stddev`` file containing stddev for the generated ``.csv`` file, 1 per line.
+        - ``.stddev`` file containing stddev for the generated ``.csv`` file, 1
+          per line.
 
-        - ``.model`` file containing model predictions for controller behavior during each scenario,
-          1 per line (not generated if models were not run the performance measures we are
+        - ``.model`` file containing model predictions for controller behavior
+          during each scenario, 1 per line (not generated if models were not run
+          the performance measures we are generating graphs for).
+
+        - ``.legend`` file containing legend values for models to plot (not
+          generated if models were not run for the performance measures we are
           generating graphs for).
 
-        - ``.legend`` file containing legend values for models to plot (not generated if models were
-          not run for the performance measures we are generating graphs for).
         """
 
         csv_ipath = os.path.join(cmdopts['batch_output_root'],
@@ -231,34 +251,41 @@ class UnivarInterScenarioComparator:
                                     src_stem + ".stddev")
 
         model_ipath_stem = os.path.join(cmdopts['batch_model_root'], src_stem)
-        model_opath_stem = os.path.join(self.sc_model_root, dest_stem + "-" + self.controller)
+        model_opath_stem = os.path.join(
+            self.sc_model_root, dest_stem + "-" + self.controller)
 
-        opath_stem = os.path.join(self.sc_csv_root, dest_stem + "-" + self.controller)
+        opath_stem = os.path.join(
+            self.sc_csv_root, dest_stem + "-" + self.controller)
 
-        # Some experiments might not generate the necessary performance measure .csvs for graph
-        # generation, which is OK.
+        # Some experiments might not generate the necessary performance measure
+        # .csvs for graph generation, which is OK.
         if not sierra.core.utils.path_exists(csv_ipath):
-            self.logger.warning("%s missing for controller %s", csv_ipath, self.controller)
+            self.logger.warning("%s missing for controller %s",
+                                csv_ipath, self.controller)
             return
 
-        # Collect performance measure results. Append to existing dataframe if it exists, otherwise
-        # start a new one.
+        # Collect performance measure results. Append to existing dataframe if
+        # it exists, otherwise start a new one.
         data_df = self._accum_df(csv_ipath, opath_stem + '.csv', src_stem)
-        sierra.core.utils.pd_csv_write(data_df, opath_stem + '.csv', index=False)
+        sierra.core.utils.pd_csv_write(
+            data_df, opath_stem + '.csv', index=False)
 
-        # Collect performance results stddev. Append to existing dataframe if it exists, otherwise
-        # start a new one.
-        stddev_df = self._accum_df(stddev_ipath, opath_stem + '.stddev', src_stem)
+        # Collect performance results stddev. Append to existing dataframe if it
+        # exists, otherwise start a new one.
+        stddev_df = self._accum_df(
+            stddev_ipath, opath_stem + '.stddev', src_stem)
         if stddev_df is not None:
-            sierra.core.utils.pd_csv_write(stddev_df, opath_stem + '.stddev', index=False)
+            sierra.core.utils.pd_csv_write(
+                stddev_df, opath_stem + '.stddev', index=False)
 
-        # Collect performance results models and legends. Append to existing dataframes if they
-        # exist, otherwise start new ones.
+        # Collect performance results models and legends. Append to existing
+        # dataframes if they exist, otherwise start new ones.
         model_df = self._accum_df(model_ipath_stem + '.model',
                                   model_opath_stem + '.model',
                                   src_stem)
         if model_df is not None:
-            sierra.core.utils.pd_csv_write(model_df, model_opath_stem + '.model', index=False)
+            sierra.core.utils.pd_csv_write(
+                model_df, model_opath_stem + '.model', index=False)
             with open(model_opath_stem + '.legend', 'a') as f:
                 _, scenario, _ = rdg.parse_batch_leaf(batch_leaf)
                 sgp = pm.module_load_tiered(cmdopts['project'],

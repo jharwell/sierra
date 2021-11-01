@@ -20,10 +20,10 @@ Contains main class implementing stage 4 of the experimental pipeline.
 
 # Core packages
 import os
-import logging
 import typing as tp
 import time
 import datetime
+import logging  # type: tp.Any
 
 # 3rd party packages
 import yaml
@@ -40,6 +40,7 @@ from sierra.core.pipeline.stage4.video_renderer import BatchExpParallelVideoRend
 import sierra.core.plugin_manager as pm
 import sierra.core.config
 from sierra.core.pipeline.stage4.yaml_config_loader import YAMLConfigLoader
+from sierra.core import types
 
 
 class PipelineStage4:
@@ -89,8 +90,8 @@ class PipelineStage4:
     """
 
     def __init__(self,
-                 main_config: tp.Dict[str, tp.Dict[str, tp.Any]],
-                 cmdopts: tp.Dict[str, tp.Any]) -> None:
+                 main_config: types.YAMLDict,
+                 cmdopts: types.Cmdopts) -> None:
         self.cmdopts = cmdopts
 
         self.main_config = main_config
@@ -161,14 +162,16 @@ class PipelineStage4:
             self._run_inter_graph_generation(criteria)
 
     def _load_models(self) -> None:
-        project_models = os.path.join(self.cmdopts['project_config_root'], 'models.yaml')
+        project_models = os.path.join(
+            self.cmdopts['project_config_root'], 'models.yaml')
         self.models_intra = []
         self.models_inter = []
 
         if not sierra.core.utils.path_exists(project_models):
             return
 
-        self.logger.info("Loading models for project '%s'", self.cmdopts['project'])
+        self.logger.info("Loading models for project '%s'",
+                         self.cmdopts['project'])
 
         self.models_config = yaml.load(open(project_models), yaml.FullLoader)
         models_pm = pm.ModelPluginManager(self.cmdopts['project_model_root'])
@@ -211,12 +214,14 @@ class PipelineStage4:
         if sierra.core.utils.path_exists(project_intra_LN):
             self.logger.info("Loading intra-experiment linegraph config for project '%s'",
                              self.cmdopts['project'])
-            self.inter_LN_config = yaml.load(open(project_intra_LN), yaml.FullLoader)
+            self.inter_LN_config = yaml.load(
+                open(project_intra_LN), yaml.FullLoader)
 
         if sierra.core.utils.path_exists(project_inter_LN):
             self.logger.info("Loading inter-experiment linegraph config for project '%s'",
                              self.cmdopts['project'])
-            self.intra_LN_config = yaml.load(open(project_inter_LN), yaml.FullLoader)
+            self.intra_LN_config = yaml.load(
+                open(project_inter_LN), yaml.FullLoader)
 
     def _load_HM_config(self) -> None:
         self.intra_HM_config = {}
@@ -227,12 +232,13 @@ class PipelineStage4:
         if sierra.core.utils.path_exists(project_intra_HM):
             self.logger.info("Loading intra-experiment heatmap config for project '%s'",
                              self.cmdopts['project'])
-            self.intra_HM_config = yaml.load(open(project_intra_HM), yaml.FullLoader)
+            self.intra_HM_config = yaml.load(
+                open(project_intra_HM), yaml.FullLoader)
 
-    def _calc_inter_LN_targets(self) -> tp.List[tp.Dict[str, tp.Any]]:
+    def _calc_inter_LN_targets(self) -> tp.List[types.YAMLDict]:
         """
-        Use YAML configuration for controllers and inter-experiment graphs to what ``.csv`` files
-        need to be collated/what graphs should be generated.
+        Use YAML configuration for controllers and inter-experiment graphs to
+        what ``.csv`` files need to be collated/what graphs should be generated.
         """
         keys = []
         for category in list(self.controller_config.keys()):
@@ -298,7 +304,8 @@ class PipelineStage4:
                                                   criteria)
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
-        self.logger.info("Intra-experiment graph generation complete: %s", str(sec))
+        self.logger.info(
+            "Intra-experiment graph generation complete: %s", str(sec))
 
     def _run_collation(self, criteria: bc.IConcreteBatchCriteria) -> None:
         targets = self._calc_inter_LN_targets()
@@ -306,10 +313,12 @@ class PipelineStage4:
         if not self.cmdopts['no_collate']:
             self.logger.info("Collating inter-experiment .csv files...")
             start = time.time()
-            GraphParallelCollator(self.main_config, self.cmdopts)(criteria, targets)
+            GraphParallelCollator(
+                self.main_config, self.cmdopts)(criteria, targets)
             elapsed = int(time.time() - start)
             sec = datetime.timedelta(seconds=elapsed)
-            self.logger.info("Collating inter-experiment .csv files complete: %s", str(sec))
+            self.logger.info(
+                "Collating inter-experiment .csv files complete: %s", str(sec))
 
     def _run_inter_graph_generation(self, criteria: bc.IConcreteBatchCriteria) -> None:
         """
@@ -322,10 +331,12 @@ class PipelineStage4:
 
         generator = pm.module_load_tiered(self.cmdopts['project'],
                                           'pipeline.stage4.inter_exp_graph_generator')
-        generator.InterExpGraphGenerator(self.main_config, self.cmdopts, targets)(criteria)
+        generator.InterExpGraphGenerator(
+            self.main_config, self.cmdopts, targets)(criteria)
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
-        self.logger.info("Inter-experiment graph generation complete: %s", str(sec))
+        self.logger.info(
+            "Inter-experiment graph generation complete: %s", str(sec))
 
 
 __api__ = [

@@ -20,9 +20,9 @@ Container module for the 5 pipeline stages implemented by SIERRA. See
 
 # Core packages
 import os
-import logging
-import argparse
 import typing as tp
+import logging  # type: tp.Any
+import argparse
 
 # 3rd party packages
 import yaml
@@ -30,6 +30,7 @@ import yaml
 # Project packages
 import sierra.core.variables.batch_criteria as bc
 import sierra.core.plugin_manager as pm
+from sierra.core import types
 
 from sierra.core.pipeline.stage1.pipeline_stage1 import PipelineStage1
 from sierra.core.pipeline.stage2.pipeline_stage2 import PipelineStage2
@@ -44,7 +45,7 @@ class Pipeline:
     def __init__(self,
                  args: argparse.Namespace,
                  controller: str,
-                 cmdopts: tp.Dict[str, tp.Any]) -> None:
+                 cmdopts: types.Cmdopts) -> None:
         self.args = args
         self.logger = logging.getLogger(__name__)
         self.cmdopts = {

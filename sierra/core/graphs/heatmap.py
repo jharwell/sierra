@@ -18,10 +18,10 @@
 # Core packages
 import os
 import textwrap
-import logging
 import glob
 import re
 import typing as tp
+import logging  # type: tp.Any
 
 # 3rd party packages
 import numpy as np
@@ -82,7 +82,8 @@ class Heatmap:
 
     def generate(self) -> None:
         if not sierra.core.utils.path_exists(self.input_fpath):
-            self.logger.debug("Not generating heatmap: %s does not exist", self.input_fpath)
+            self.logger.debug(
+                "Not generating heatmap: %s does not exist", self.input_fpath)
             return
 
         # Read .csv and create raw heatmap from default configuration
@@ -91,7 +92,7 @@ class Heatmap:
 
     def _plot_df(self, df: pd.DataFrame, opath: str) -> None:
         fig, ax = plt.subplots(figsize=(sierra.core.config.kGraphBaseSize,
-                               sierra.core.config.kGraphBaseSize))
+                                        sierra.core.config.kGraphBaseSize))
 
         # Transpose if requested
         if self.transpose:
@@ -117,8 +118,10 @@ class Heatmap:
         self._set_graph_size(df, fig)
         fig = ax.get_figure()
 
-        fig.savefig(opath, bbox_inches='tight', dpi=sierra.core.config.kGraphDPI)
-        plt.close(fig)  # Prevent memory accumulation (fig.clf() does not close everything)
+        fig.savefig(opath, bbox_inches='tight',
+                    dpi=sierra.core.config.kGraphDPI)
+        # Prevent memory accumulation (fig.clf() does not close everything)
+        plt.close(fig)
 
     def _set_graph_size(self, df: pd.DataFrame, fig) -> None:
         if len(df.index) > len(df.columns):
@@ -206,8 +209,10 @@ class DualHeatmap:
         maxval = max(dfs[0].max().max(), dfs[1].max().max())
 
         # Plot heatmaps
-        im1 = ax1.matshow(dfs[0], cmap='coolwarm', interpolation='none', vmin=minval, vmax=maxval)
-        im2 = ax2.matshow(dfs[1], cmap='coolwarm', interpolation='none', vmin=minval, vmax=maxval)
+        im1 = ax1.matshow(dfs[0], cmap='coolwarm',
+                          interpolation='none', vmin=minval, vmax=maxval)
+        im2 = ax2.matshow(dfs[1], cmap='coolwarm',
+                          interpolation='none', vmin=minval, vmax=maxval)
 
         # Add titles
         fig.suptitle(self.title, fontsize=self.text_size['title'])
@@ -245,8 +250,10 @@ class DualHeatmap:
 
         # Output figures
         fig.subplots_adjust(wspace=0.0, hspace=0.0)
-        fig.savefig(self.output_fpath, bbox_inches='tight', dpi=sierra.core.config.kGraphDPI)
-        plt.close(fig)  # Prevent memory accumulation (fig.clf() does not close everything)
+        fig.savefig(self.output_fpath, bbox_inches='tight',
+                    dpi=sierra.core.config.kGraphDPI)
+        # Prevent memory accumulation (fig.clf() does not close everything)
+        plt.close(fig)
 
     def _plot_colorbar(self, fig, im, ax, remove: bool) -> None:
         divider = mpl_toolkits.axes_grid1.make_axes_locatable(ax)
@@ -310,7 +317,8 @@ class HeatmapSet():
 
     def generate(self) -> None:
         for ipath, opath, title in zip(self.ipaths, self.opaths, self.titles):
-            hm = Heatmap(input_fpath=ipath, output_fpath=opath, title=title, **self.kwargs)
+            hm = Heatmap(input_fpath=ipath, output_fpath=opath,
+                         title=title, **self.kwargs)
             hm.generate()
 
 

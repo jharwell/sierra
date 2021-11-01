@@ -17,10 +17,10 @@
 
 # Core packages
 import os
-import logging
 import multiprocessing as mp
 import queue
 import typing as tp
+import logging  # type: tp.Any
 
 # 3rd party packages
 import pandas as pd
@@ -30,6 +30,7 @@ import json
 import sierra.core.utils
 import sierra.core.config
 import sierra.core.variables.batch_criteria as bc
+from sierra.core import types
 
 
 class UnivarGraphCollationInfo():
@@ -49,8 +50,8 @@ class UnivarGraphCollationInfo():
 
 class BivarGraphCollationInfo():
     """
-    Data class containing the collated ``.csv`` files for a particular graph for bivariate batch
-    criteria.
+    Data class containing the collated ``.csv`` files for a particular graph for
+    bivariate batch criteria.
     """
 
     def __init__(self,
@@ -65,12 +66,13 @@ class BivarGraphCollationInfo():
 
 class UnivarGraphCollator:
     """
-    For a single graph (target) in a univariate batched experiment, go through all experiment
-    directories in a batched experiment and collate file averaged results into a single ``.csv``
-    file.
+    For a single graph (target) in a univariate batched experiment, go through
+    all experiment directories in a batched experiment and collate file averaged
+    results into a single ``.csv`` file.
+
     """
 
-    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, tp.Any]) -> None:
+    def __init__(self, main_config: dict, cmdopts: types.Cmdopts) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
         self.logger = logging.getLogger(__name__)
@@ -124,7 +126,8 @@ class UnivarGraphCollator:
         exp_stat_root = os.path.join(self.cmdopts['batch_stat_root'], exp_dir)
 
         for stat in stats:
-            csv_ipath = os.path.join(exp_stat_root, target['src_stem'] + stat.df_ext)
+            csv_ipath = os.path.join(
+                exp_stat_root, target['src_stem'] + stat.df_ext)
             if not sierra.core.utils.path_exists(csv_ipath):
                 stat.all_srcs_exist = False
                 continue
@@ -138,20 +141,21 @@ class UnivarGraphCollator:
                                                           target['src_stem'] + stat.df_ext)
 
             if target.get('summary', False):
-                stat.df.loc[0, exp_dir] = data_df.loc[data_df.index[-1], target['col']]
+                stat.df.loc[0, exp_dir] = data_df.loc[data_df.index[-1],
+                                                      target['col']]
             else:
                 stat.df[exp_dir] = data_df[target['col']]
 
 
 class BivarGraphCollator:
     """
-    For a single graph (target) for a bivariate batched experiment, go through all experiment
-    directories in a batched experiment and collate file averaged results into a single ``.csv``
-    file.
+    For a single graph (target) for a bivariate batched experiment, go through
+    all experiment directories in a batched experiment and collate file averaged
+    results into a single ``.csv`` file.
 
     """
 
-    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, tp.Any]) -> None:
+    def __init__(self, main_config: dict, cmdopts: types.Cmdopts) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
         self.logger = logging.getLogger(__name__)
@@ -210,7 +214,8 @@ class BivarGraphCollator:
         exp_stat_root = os.path.join(self.cmdopts['batch_stat_root'], exp_dir)
 
         for stat in stats:
-            csv_ipath = os.path.join(exp_stat_root, target['src_stem'] + stat.df_ext)
+            csv_ipath = os.path.join(
+                exp_stat_root, target['src_stem'] + stat.df_ext)
             if not sierra.core.utils.path_exists(csv_ipath):
                 stat.all_srcs_exist = False
                 continue
@@ -229,25 +234,27 @@ class BivarGraphCollator:
 
 class GraphParallelCollator():
     """
-    Generates collated ``.csv`` files from the averaged ``.csv`` files present in a batch of
-    experiments for univariate or bivariate batch criteria. Each collated ``.csv`` file will have
-    one column per experiment, named after the experiment directory, containing a column drawn from
-    a ``.csv`` in the experiment's averaged output, per graph configuration.
+    Generates collated ``.csv`` files from the averaged ``.csv`` files present
+    in a batch of experiments for univariate or bivariate batch criteria. Each
+    collated ``.csv`` file will have one column per experiment, named after the
+    experiment directory, containing a column drawn from a ``.csv`` in the
+    experiment's averaged output, per graph configuration.
 
     """
 
     def __init__(self,
-                 main_config: tp.Dict[str, tp.Dict[str, tp.Any]],
-                 cmdopts: tp.Dict[str, tp.Any]) -> None:
+                 main_config: tp.Dict[str, types.Cmdopts],
+                 cmdopts: types.Cmdopts) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
 
         self.batch_stat_collate_root = self.cmdopts['batch_stat_collate_root']
-        sierra.core.utils.dir_create_checked(self.batch_stat_collate_root, exist_ok=True)
+        sierra.core.utils.dir_create_checked(
+            self.batch_stat_collate_root, exist_ok=True)
 
     def __call__(self,
                  criteria: bc.IConcreteBatchCriteria,
-                 targets: tp.List[tp.Dict[str, tp.Any]]) -> None:
+                 targets: tp.List[types.YAMLDict]) -> None:
         q = mp.JoinableQueue()  # type: mp.JoinableQueue
 
         # For each category of graphs we are generating
@@ -275,7 +282,7 @@ class GraphParallelCollator():
     @staticmethod
     def _thread_worker(q: mp.Queue,
                        main_config: dict,
-                       cmdopts: tp.Dict[str, tp.Any],
+                       cmdopts: types.Cmdopts,
                        stat_collate_root: str,
                        criteria) -> None:
 

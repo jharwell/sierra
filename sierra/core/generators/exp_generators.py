@@ -22,7 +22,7 @@ handled here.
 # Core packages
 import os
 import typing as tp
-import logging
+import logging # type: tp.Any
 
 # 3rd party packages
 
@@ -37,6 +37,7 @@ import sierra.core.variables.rendering as rendering
 import sierra.core.variables.batch_criteria as bc
 import sierra.core.utils as utils
 import sierra.core.config as config
+from sierra.core import types
 
 
 class ARGoSExpDefGenerator:
@@ -61,7 +62,7 @@ class ARGoSExpDefGenerator:
     def __init__(self,
                  spec: ExperimentSpec,
                  template_input_file: str,
-                 cmdopts: tp.Dict[str, tp.Any]) -> None:
+                 cmdopts: types.Cmdopts) -> None:
 
         self.template_input_file = os.path.abspath(template_input_file)
         self.cmdopts = cmdopts
@@ -93,19 +94,24 @@ class ARGoSExpDefGenerator:
 
     def _generate_saa(self, exp_def: XMLLuigi) -> None:
         """
-        Generates XML changes to disable selected sensors/actuators, which are computationally
-        expensive in large swarms, but not that costly if the # robots is small.
+        Generates XML changes to disable selected sensors/actuators, which are
+        computationally expensive in large swarms, but not that costly if the
+        # robots is small.
 
-        Does not write generated changes to the simulation definition pickle file.
+        Does not write generated changes to the simulation definition pickle
+        file.
         """
         if not self.cmdopts["with_robot_rab"]:
             exp_def.tag_remove(".//media", "range_and_bearing", noprint=True)
-            exp_def.tag_remove(".//actuators", "range_and_bearing", noprint=True)
+            exp_def.tag_remove(
+                ".//actuators", "range_and_bearing", noprint=True)
             exp_def.tag_remove(".//sensors", "range_and_bearing", noprint=True)
 
         if not self.cmdopts["with_robot_leds"]:
             exp_def.tag_remove(".//actuators", "leds", noprint=True)
-            exp_def.tag_remove(".//sensors", "colored_blob_omnidirectional_camera", noprint=True)
+            exp_def.tag_remove(".//sensors",
+                               "colored_blob_omnidirectional_camera",
+                               noprint=True)
             exp_def.tag_remove(".//media", "led", noprint=True)
 
         if not self.cmdopts["with_robot_battery"]:
@@ -127,11 +133,13 @@ class ARGoSExpDefGenerator:
 
     def _generate_threading(self, exp_def: XMLLuigi) -> None:
         """
-        Generates XML changes to set the # of cores for a simulation to use, which may be less than
-        the total # available on the system, depending on the experiment definition and user
-        preferences.
+        Generates XML changes to set the # of cores for a simulation to use,
+        which may be less than the total # available on the system, depending on
+        the experiment definition and user preferences.
 
-        Does not write generated changes to the simulation definition pickle file.
+        Does not write generated changes to the simulation definition pickle
+        file.
+
         """
 
         exp_def.attr_change(".//system",
@@ -140,13 +148,17 @@ class ARGoSExpDefGenerator:
 
     def _generate_library(self, exp_def: XMLLuigi) -> None:
         """
-        Generates XML changes to set the library that controllers and loop functions are sourced
-        from to the name of the plugin passed on the cmdline. The ``__controller__`` tag is changed
-        during stage 1, but since this function is called as part of common def generation, it
-        happens BEFORE that, and so this is OK. If, for some reason that assumption becomes invalid,
-        a warning will be issued about a non-existent XML path, so it won't be a silent error.
+        Generates XML changes to set the library that controllers and loop
+        functions are sourced from to the name of the plugin passed on the
+        cmdline. The ``__controller__`` tag is changed during stage 1, but since
+        this function is called as part of common def generation, it happens
+        BEFORE that, and so this is OK. If, for some reason that assumption
+        becomes invalid, a warning will be issued about a non-existent XML path,
+        so it won't be a silent error.
 
-        Does not write generated changes to the simulation definition pickle file.
+        Does not write generated changes to the simulation definition pickle
+        file.
+
         """
         exp_def.attr_change(".//loop_functions",
                             "library",
@@ -157,18 +169,22 @@ class ARGoSExpDefGenerator:
 
     def _generate_visualization(self, exp_def: XMLLuigi) -> None:
         """
-        Generates XML changes to remove visualization elements from input file, if configured to do
-        so. This depends on cmdline parameters, as visualization definitions should be left in if
-        ARGoS should output simulation frames for video creation.
+        Generates XML changes to remove visualization elements from input file,
+        if configured to do so. This depends on cmdline parameters, as
+        visualization definitions should be left in if ARGoS should output
+        simulation frames for video creation.
 
-        Does not write generated changes to the simulation definition pickle file.
+        Does not write generated changes to the simulation definition pickle
+        file.
+
         """
 
         if not self.cmdopts["argos_rendering"]:
-            exp_def.tag_remove(".", "./visualization", noprint=True)  # ARGoS visualizations
+            # ARGoS visualizations
+            exp_def.tag_remove(".", "./visualization", noprint=True)
         else:
-            # Rendering must be processing before cameras, because it deletes the <qt_opengl>
-            # tag if it exists, and then re-adds it.
+            # Rendering must be processing before cameras, because it deletes
+            # the <qt_opengl> tag if it exists, and then re-adds it.
             render = rendering.factory(self.cmdopts)
             utils.apply_to_expdef(render, exp_def, True)
 
@@ -193,7 +209,7 @@ class SimDefUniqueGenerator:
                  sim_num: int,
                  exp_output_root: str,
                  sim_output_dir: str,
-                 cmdopts: tp.Dict[str, tp.Any]) -> None:
+                 cmdopts: types.Cmdopts) -> None:
 
         self.exp_output_root = exp_output_root
         self.sim_output_dir = sim_output_dir
@@ -203,8 +219,8 @@ class SimDefUniqueGenerator:
     @staticmethod
     def _generate_random(exp_def, random_seed):
         """
-        Generate XML changes for random seeding for a specific simulation in an experiment during
-        the input generation process.
+        Generate XML changes for random seeding for a specific simulation in an
+        experiment during the input generation process.
         """
 
         # set the random seed in the config file
@@ -236,27 +252,34 @@ class SimDefUniqueGenerator:
 
 class BatchedExpDefGenerator:
     """
-    Class for generating experiment definitions for a batched experiment. Does not create the
-    batched experiment after generation.
+    Class for generating experiment definitions for a batched experiment. Does
+    not create the batched experiment after generation.
 
     Attributes:
-        batch_config_template: Path (relative to current dir or absolute) to the root template
-                               XML configuration file.
 
-        batch_input_root: Root directory for all generated XML input files all experiments
-                               should be stored (relative to current dir or absolute). Each
-                               experiment will get a directory within this root to store the xml
-                               input files for the simulation runs comprising an experiment;
-                               directory name determined by the batch criteria used.
+        batch_config_template: Path (relative to current dir or absolute) to the
+                               root template XML configuration file.
 
-        batch_output_root: Root directory for all experiment outputs (relative to current dir or
-                           absolute). Each experiment will get a directory 'exp<n>' in this
-                           directory for its outputs.
+        batch_input_root: Root directory for all generated XML input files all
+                               experiments should be stored (relative to current
+                               dir or absolute). Each experiment will get a
+                               directory within this root to store the xml input
+                               files for the simulation runs comprising an
+                               experiment; directory name determined by the
+                               batch criteria used.
 
-        criteria: :class:`~sierra.core.variables.batch_criteria.BatchCriteria` derived object
-                  instance created from cmdline definition.
+        batch_output_root: Root directory for all experiment outputs (relative
+                           to current dir or absolute). Each experiment will get
+                           a directory 'exp<n>' in this directory for its
+                           outputs.
+
+        criteria: :class:`~sierra.core.variables.batch_criteria.BatchCriteria`
+                  derived object instance created from cmdline definition.
+
         controller_name: Name of controller generator to use.
+
         scenario_basename: Name of scenario generator to use.
+
     """
 
     def __init__(self,
@@ -264,7 +287,7 @@ class BatchedExpDefGenerator:
                  criteria: bc.IConcreteBatchCriteria,
                  controller_name: str,
                  scenario_basename: str,
-                 cmdopts: tp.Dict[str, tp.Any]) -> None:
+                 cmdopts: types.Cmdopts) -> None:
         assert os.path.isfile(batch_config_template),\
             "'{0}' is not a valid file".format(batch_config_template)
 
@@ -288,8 +311,8 @@ class BatchedExpDefGenerator:
 
     def generate_defs(self) -> tp.List[sierra.core.xml.XMLLuigi]:
         """
-        Generates and returns a list of experiment definitions (one for each experiment in the batch),
-        which can used to create the batched experiment.
+        Generates and returns a list of experiment definitions (one for each
+        experiment in the batch), which can used to create the batched experiment.
         """
         change_defs = self.criteria.gen_attr_changelist()
 
@@ -306,8 +329,8 @@ class BatchedExpDefGenerator:
 
     def _create_exp_generator(self, exp_num: int):
         """
-        Create the generator for a particular experiment from the scenario+controller definitions
-        specified on the command line.
+        Create the generator for a particular experiment from the
+        scenario+controller definitions specified on the command line.
 
         Arguments:
             exp_num: Experiment number in the batch

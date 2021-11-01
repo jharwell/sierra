@@ -19,8 +19,8 @@ Contains main class implementing stage  of the experimental pipeline.
 """
 
 # Core packges
-import logging
 import typing as tp
+import logging  # type: tp.Any
 
 # 3rd party packages
 
@@ -28,19 +28,21 @@ import typing as tp
 from sierra.core.generators.exp_generators import BatchedExpDefGenerator
 from sierra.core.generators.exp_creator import BatchedExpCreator
 import sierra.core.variables.batch_criteria as bc
+from sierra.core import types
 
 
 class PipelineStage1:
     """
     Implements stage 1 of the pipeline.
 
-    Generates a set of XML configuration files from a template suitable for input into ARGoS that
-    contain user-specified modifications. This stage is idempotent.
+    Generates a set of XML configuration files from a template suitable for
+    input into ARGoS that contain user-specified modifications. This stage is
+    idempotent.
 
     """
 
     def __init__(self,
-                 cmdopts: tp.Dict[str, tp.Any],
+                 cmdopts: types.Cmdopts,
                  controller: str,
                  criteria: bc.IConcreteBatchCriteria) -> None:
         self.generator = BatchedExpDefGenerator(batch_config_template=cmdopts['template_input_file'],
@@ -69,7 +71,8 @@ class PipelineStage1:
         self.creator.create(self.generator)
 
         self.logger.info("%d input files generated in %d experiments.",
-                         self.cmdopts['n_sims'] * len(self.criteria.gen_attr_changelist()),
+                         self.cmdopts['n_sims'] *
+                         len(self.criteria.gen_attr_changelist()),
                          len(self.criteria.gen_attr_changelist()))
 
 

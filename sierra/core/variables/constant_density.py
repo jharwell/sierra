@@ -25,6 +25,7 @@ import typing as tp
 from sierra.core.variables.batch_criteria import UnivarBatchCriteria
 from sierra.core.utils import ArenaExtent
 from sierra.core.variables.arena_shape import ArenaShape
+from sierra.core import types
 
 
 class ConstantDensity(UnivarBatchCriteria):
@@ -49,7 +50,8 @@ class ConstantDensity(UnivarBatchCriteria):
                  target_density: float,
                  dimensions: tp.List[ArenaExtent],
                  scenario_tag: str) -> None:
-        UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_input_root)
+        UnivarBatchCriteria.__init__(
+            self, cli_arg, main_config, batch_input_root)
         self.target_density = target_density
         self.dimensions = dimensions
         self.scenario_tag = scenario_tag
@@ -74,10 +76,11 @@ class ConstantDensity(UnivarBatchCriteria):
 
 class Parser():
     """
-    Enforces the cmdline definition of a :class:`ConstantDensity` derived batch criteria.
+    Enforces the cmdline definition of a :class:`ConstantDensity` derived batch
+    criteria.
     """
 
-    def __call__(self, cli_arg: str) -> tp.Dict[str, tp.Any]:
+    def __call__(self, cli_arg: str) -> types.CLIArgSpec:
         """
         Returns:
             Dictionary with keys:
@@ -95,13 +98,15 @@ class Parser():
         density = cli_arg.split('.')[1]
         res = re.search('[0-9]+', density)
         assert res is not None, \
-            "FATAL: Bad density characteristic specification in criteria '{0}'".format(cli_arg)
+            "FATAL: Bad density characteristic specification in criteria '{0}'".format(
+                cli_arg)
 
         characteristic = float(res.group(0))
 
         res = re.search('p[0-9]+', density)
         assert res is not None, \
-            "FATAL: Bad density mantissa specification in criteria '{0}'".format(cli_arg)
+            "FATAL: Bad density mantissa specification in criteria '{0}'".format(
+                cli_arg)
         mantissa = float("0." + res.group(0)[1:])
 
         ret['target_density'] = characteristic + mantissa
@@ -110,14 +115,16 @@ class Parser():
         increment = cli_arg.split('.')[2]
         res = re.search('I[0-9]+', increment)
         assert res is not None, \
-            "FATAL: Bad arena increment specification in criteria '{0}'".format(cli_arg)
+            "FATAL: Bad arena increment specification in criteria '{0}'".format(
+                cli_arg)
         ret['arena_size_inc'] = int(res.group(0)[1:])
 
         # Parse cardinality
         increment = cli_arg.split('.')[3]
         res = re.search('C[0-9]+', increment)
         assert res is not None, \
-            "FATAL: Bad cardinality specification in criteria '{0}'".format(cli_arg)
+            "FATAL: Bad cardinality specification in criteria '{0}'".format(
+                cli_arg)
 
         ret['cardinality'] = int(res.group(0)[1:])
 

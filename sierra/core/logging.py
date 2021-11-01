@@ -37,6 +37,7 @@ def initialize(log_level):
     setattr(logging, "TRACE", TRACE)
     setattr(logging.getLoggerClass(), "trace", log_for_level)
     setattr(logging, "trace", log_to_root)
+    setattr(logging, '_HAS_DYNAMIC_ATTRIBUTES', True)
 
     # Get nice colored logging output!
     coloredlogs.install(fmt='%(asctime)s %(levelname)s %(name)s - %(message)s',

@@ -29,6 +29,7 @@ import implements
 # Project packages
 from sierra.core.variables import batch_criteria as bc
 from sierra.core.xml import XMLAttrChange, XMLAttrChangeSet
+from sierra.core import types
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
@@ -69,12 +70,12 @@ class PopulationSize(bc.UnivarBatchCriteria):
                 self.size_list)
         return self.attr_changes
 
-    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, tp.Any]) -> tp.List[str]:
+    def gen_exp_dirnames(self, cmdopts: types.Cmdopts) -> tp.List[str]:
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
     def graph_xticks(self,
-                     cmdopts: tp.Dict[str, tp.Any],
+                     cmdopts: types.Cmdopts,
                      exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
 
         if exp_dirs is None:
@@ -90,7 +91,7 @@ class PopulationSize(bc.UnivarBatchCriteria):
             return ret
 
     def graph_xticklabels(self,
-                          cmdopts: tp.Dict[str, tp.Any],
+                          cmdopts: types.Cmdopts,
                           exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
 
         if exp_dirs is None:
@@ -100,7 +101,7 @@ class PopulationSize(bc.UnivarBatchCriteria):
 
         return list(map(lambda x: str(int(round(x, 4))), ret))
 
-    def graph_xlabel(self, cmdopts: tp.Dict[str, tp.Any]) -> str:
+    def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
         if cmdopts['plot_log_xscale']:
             return r"$\log$(Swarm Size)"
 
@@ -112,11 +113,12 @@ class PopulationSize(bc.UnivarBatchCriteria):
 
 class Parser():
     """
-    Enforces the cmdline definition of the :class:`PopulationSize` batch criteria defined in
-    :ref:`ln-bc-population-size`.
+    Enforces the cmdline definition of the :class:`PopulationSize` batch
+    criteria defined in :ref:`ln-bc-population-size`.
+
     """
 
-    def __call__(self, criteria_str: str) -> tp.Dict[str, tp.Any]:
+    def __call__(self, criteria_str: str) -> types.CLIArgSpec:
         ret = {
             'max_size': int(),
             'increment_type': str(),
@@ -143,7 +145,7 @@ class Parser():
 
         return ret
 
-    def to_sizes(self, attr: tp.Dict[str, tp.Any]) -> tp.List[float]:
+    def to_sizes(self, attr: types.CLIArgSpec) -> tp.List[float]:
         """
         Generates the maximum swarm sizes for each experiment in a batch.
         """
@@ -160,7 +162,8 @@ def factory(cli_arg: str,
             batch_input_root: str,
             **kwargs) -> PopulationSize:
     """
-    Factory to create :class:`PopulationSize` derived classes from the command line definition.
+    Factory to create :class:`PopulationSize` derived classes from the command
+    line definition.
 
     """
     parser = Parser()

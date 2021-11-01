@@ -18,7 +18,8 @@ Contains all SIERRA hard-coded configuration in one place.
 """
 
 # Core packages
-import logging
+import typing as tp
+import logging  # type: tp.Any
 
 # 3rd party packages
 import matplotlib as mpl

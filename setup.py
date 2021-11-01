@@ -31,7 +31,7 @@ readme = (here / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="sierra",
-    version="1.0.3",
+    version="1.0.4",
     description="Swarm robotics end-to-end experimental pipeline automation using ARGoS",
     long_description=readme,
     long_description_content_type="text/markdown",

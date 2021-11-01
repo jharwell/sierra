@@ -27,41 +27,45 @@ import implements
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
+from sierra.core import types
 
 
 class IConcreteIntraExpModel1D(implements.Interface):
     def run(self,
             criteria: bc.IConcreteBatchCriteria,
             exp_num: int,
-            cmdopts: tp.Dict[str, tp.Any]) -> tp.List[pd.DataFrame]:
+            cmdopts: types.Cmdopts) -> tp.List[pd.DataFrame]:
         """
-        Run the model and generate a list of dataframes, each targeting (potentially) different
-        graphs. All dataframes should contain a single column named ``model``, with each row of the
-        dataframe containing the model prediction at the simulation interval corresponding to the
-        row (e.g., row 7 contains the model prediction for simulation interval 7).
-
+        Run the model and generate a list of dataframes, each targeting
+        (potentially) different graphs. All dataframes should contain a single
+        column named ``model``, with each row of the dataframe containing the
+        model prediction at the simulation interval corresponding to the row
+        (e.g., row 7 contains the model prediction for simulation interval 7).
         """
         raise NotImplementedError
 
-    def run_for_exp(self, criteria: bc.IConcreteBatchCriteria, cmdopts: tp.Dict[str, tp.Any], i: int) -> bool:
+    def run_for_exp(self, criteria: bc.IConcreteBatchCriteria,
+                    cmdopts: types.Cmdopts, i: int) -> bool:
         """
-        Some models may only be valid/make sense to run for a subset of experiments within a batch,
-        so models can be selectively executed with this function.
+        Some models may only be valid/make sense to run for a subset of
+        experiments within a batch, so models can be selectively executed with
+        this function. 
         """
         raise NotImplementedError
 
     def target_csv_stems(self) -> tp.List[str]:
         """
-        Return a list of ``.csv`` file stems (sans directory path and extension) that the model is
-        targeting.
+        Return a list of ``.csv`` file stems (sans directory path and extension)
+        that the model is targeting.
         """
         raise NotImplementedError
 
     def legend_names(self) -> tp.List[str]:
         """
-        Return a list of names that the model predictions as they should appear appear on the legend
-        of the target :class:`~sierra.core.graphs.stacked_line_graph.StackedLineGraph` they are each
-        attached to.
+        Return a list of names that the model predictions as they should appear
+        appear on the legend of the target
+        :class:`~sierra.core.graphs.stacked_line_graph.StackedLineGraph` they
+        are each attached to.
         """
         raise NotImplementedError
 
@@ -76,27 +80,31 @@ class IConcreteIntraExpModel2D(implements.Interface):
     def run(self,
             criteria: bc.IConcreteBatchCriteria,
             exp_num: int,
-            cmdopts: tp.Dict[str, tp.Any]) -> tp.List[pd.DataFrame]:
+            cmdopts: types.Cmdopts) -> tp.List[pd.DataFrame]:
         """
-        Run the model and generate a list of dataframes, each targeting (potentially) different
-        graphs. Each data frame should be a NxM grid (with N not necessarily equal to M). All
-        dataframes do not have to be the same dimensions.
+        Run the model and generate a list of dataframes, each targeting
+        (potentially) different graphs. Each data frame should be a NxM grid
+        (with N not necessarily equal to M). All dataframes do not have to be
+        the same dimensions.
 
         """
         raise NotImplementedError
 
-    def run_for_exp(self, criteria: bc.IConcreteBatchCriteria, cmdopts: tp.Dict[str, tp.Any], i: int) -> bool:
+    def run_for_exp(self, criteria: bc.IConcreteBatchCriteria,
+                    cmdopts: types.Cmdopts, i: int) -> bool:
         """
-        Some models may only be valid/make sense to run for a subset of experiments within a batch,
-        so models can be selectively executed with this function.
+        Some models may only be valid/make sense to run for a subset of
+        experiments within a batch, so models can be selectively executed with
+        this function.
         """
         raise NotImplementedError
 
     def target_csv_stems(self) -> tp.List[str]:
         """
-        Return a list of names that the model predictions as they should appear appear on the legend
-        of the target :class:`~sierra.core.graphs.stacked_line_graph.StackedLineGraph` they are each
-        attached to.
+        Return a list of names that the model predictions as they should appear
+        appear on the legend of the target
+        :class:`~sierra.core.graphs.stacked_line_graph.StackedLineGraph` they
+        are each attached to.
         """
         raise NotImplementedError
 
@@ -110,16 +118,18 @@ class IConcreteIntraExpModel2D(implements.Interface):
 class IConcreteInterExpModel1D(implements.Interface):
     def run(self,
             criteria: bc.IConcreteBatchCriteria,
-            cmdopts: tp.Dict[str, tp.Any]) -> tp.List[pd.DataFrame]:
+            cmdopts: types.Cmdopts) -> tp.List[pd.DataFrame]:
         """
-        Run the model and generate list of dataframes, each(potentially) targeting a different
-        graph. Each dataframe should contain a single row, with one column for the predicted value
-        of the model for each experiment in the batch.
+        Run the model and generate list of dataframes, each(potentially)
+        targeting a different graph. Each dataframe should contain a single row,
+        with one column for the predicted value of the model for each experiment
+        in the batch.
 
         """
         raise NotImplementedError
 
-    def run_for_batch(self, criteria: bc.IConcreteBatchCriteria, cmdopts: tp.Dict[str, tp.Any]) -> bool:
+    def run_for_batch(self, criteria: bc.IConcreteBatchCriteria,
+                      cmdopts: types.Cmdopts) -> bool:
         """
         Some models may only be valid/make sense to run for some batch criteria,
         so models can be selectively executed with this function.
@@ -128,8 +138,9 @@ class IConcreteInterExpModel1D(implements.Interface):
 
     def target_csv_stems(self) -> tp.List[str]:
         """
-        Return a list of names that the model predictions as they should appear appear on the legend
-        of the target: class: `~sierra.core.graphs.summary_line_graph.SummaryLineGraph` they are each
+        Return a list of names that the model predictions as they should appear
+        appear on the legend of the target: class:
+        `~sierra.core.graphs.summary_line_graph.SummaryLineGraph` they are each
         attached to.
 
         """
@@ -137,8 +148,9 @@ class IConcreteInterExpModel1D(implements.Interface):
 
     def legend_names(self) -> tp.List[str]:
         """
-        Return a list of names that the model predictions as they should appear appear on the legend
-        of the target: class: `~sierra.core.graphs.summary_line_graph.SummaryLineGraph` they are each
+        Return a list of names that the model predictions as they should appear
+        appear on the legend of the target: class:
+        `~sierra.core.graphs.summary_line_graph.SummaryLineGraph` they are each
         attached to.
         """
         raise NotImplementedError

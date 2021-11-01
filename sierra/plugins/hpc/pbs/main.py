@@ -18,6 +18,7 @@ HPC plugin for running SIERRA on HPC clusters using the TORQUE-PBS scheduler.
 """
 import os
 import typing as tp
+from sierra.core import types
 
 
 def env_configure(args):
@@ -33,11 +34,13 @@ def env_configure(args):
     - ``PARALLEL``
     """
 
-    keys = ['PBS_NUM_PPN', 'PBS_NODEFILE', 'PBS_JOBID', 'SIERRA_ARCH', 'PARALLEL']
+    keys = ['PBS_NUM_PPN', 'PBS_NODEFILE',
+            'PBS_JOBID', 'SIERRA_ARCH', 'PARALLEL']
 
     for k in keys:
         assert k in os.environ,\
-            "FATAL: Attempt to run SIERRA in non-PBS environment: '{0}' not found".format(k)
+            "FATAL: Attempt to run SIERRA in non-PBS environment: '{0}' not found".format(
+                k)
 
     assert args.exec_sims_per_node is not None, "FATAL: --exec-sims-per-node is required"
 
@@ -47,7 +50,8 @@ def env_configure(args):
     #
     # However, PBS does not have an environment variable for # jobs/node, so we have to rely on the
     # user to set this appropriately.
-    args.physics_n_engines = int(float(os.environ['PBS_NUM_PPN']) / args.exec_sims_per_node)
+    args.physics_n_engines = int(
+        float(os.environ['PBS_NUM_PPN']) / args.exec_sims_per_node)
 
 
 def argos_cmd_generate(input_fpath: str):
@@ -62,7 +66,8 @@ def argos_cmd_generate(input_fpath: str):
 
     return 'argos3-' + \
         os.environ['SIERRA_ARCH'] + \
-        ' -c "{0}" --log-file /dev/null --logerr-file /dev/null\n'.format(input_fpath)
+        ' -c "{0}" --log-file /dev/null --logerr-file /dev/null\n'.format(
+            input_fpath)
 
 
 def gnu_parallel_cmd_generate(parallel_opts: dict):
@@ -90,7 +95,7 @@ def gnu_parallel_cmd_generate(parallel_opts: dict):
             parallel_opts['cmdfile_path'])
 
 
-def xvfb_cmd_generate(cmdopts: tp.Dict[str, tp.Any]):
+def xvfb_cmd_generate(cmdopts: types.Cmdopts):
     return ''
 
 

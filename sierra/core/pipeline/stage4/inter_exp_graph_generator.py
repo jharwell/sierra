@@ -22,8 +22,8 @@ Classes for generating graphs across experiments in a batch.
 # Core packages
 import os
 import copy
-import logging
 import typing as tp
+import logging  # type: tp.Any
 
 # 3rd party packages
 import json
@@ -34,6 +34,7 @@ from sierra.core.graphs.stacked_line_graph import StackedLineGraph
 from sierra.core.graphs.summary_line_graph import SummaryLineGraph
 from sierra.core.variables import batch_criteria as bc
 import sierra.core.config
+from sierra.core import types
 
 
 class InterExpGraphGenerator:
@@ -64,9 +65,9 @@ class InterExpGraphGenerator:
     """
 
     def __init__(self,
-                 main_config: tp.Dict[str, tp.Any],
-                 cmdopts: tp.Dict[str, tp.Any],
-                 targets: tp.List[tp.Dict[str, tp.Any]]) -> None:
+                 main_config: types.YAMLDict,
+                 cmdopts: types.Cmdopts,
+                 targets: tp.List[types.YAMLDict]) -> None:
         # Copy because we are modifying it and don't want to mess up the
         # arguments for graphs that are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
@@ -103,8 +104,8 @@ class LineGraphsGenerator:
     """
 
     def __init__(self,
-                 cmdopts: tp.Dict[str, tp.Any],
-                 targets: tp.List[tp.Dict[str, tp.Any]]) -> None:
+                 cmdopts: types.Cmdopts,
+                 targets: tp.List[types.YAMLDict]) -> None:
         self.cmdopts = cmdopts
         self.targets = targets
         self.logger = logging.getLogger(__name__)

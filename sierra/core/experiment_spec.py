@@ -15,9 +15,9 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 # Core packages
-import logging
 import typing as tp
 import os
+import logging  # type: tp.Any
 
 # 3rd party packages
 
@@ -28,6 +28,7 @@ from sierra.core.utils import ArenaExtent
 from sierra.core.vector import Vector3D
 import sierra.core.config
 import sierra.core.plugin_manager as pm
+from sierra.core import types
 
 
 class ExperimentSpec():
@@ -41,7 +42,7 @@ class ExperimentSpec():
     - Full scenario name
     """
 
-    def __init__(self, criteria: bc.IConcreteBatchCriteria, exp_num: int, cmdopts: tp.Dict[str, tp.Any]) -> None:
+    def __init__(self, criteria: bc.IConcreteBatchCriteria, exp_num: int, cmdopts: types.Cmdopts) -> None:
         self.exp_num = exp_num
         self.exp_input_root = os.path.join(cmdopts['batch_input_root'],
                                            criteria.gen_exp_dirnames(cmdopts)[exp_num])

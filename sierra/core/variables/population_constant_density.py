@@ -22,7 +22,7 @@ Classes for the constant population density batch criteria. See
 
 # Core packages
 import typing as tp
-import logging
+import logging # type: tp.Any
 import math
 
 # 3rd party packages
@@ -31,6 +31,7 @@ import implements
 # Project packages
 from sierra.core.variables import constant_density as cd
 import sierra.core.utils
+import sierra.core.types as types
 import sierra.core.variables.batch_criteria as bc
 from sierra.core.vector import Vector3D
 from sierra.core.xml import XMLAttrChange, XMLAttrChangeSet
@@ -65,10 +66,12 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
                     if path == ".//arena" and attr == "size":
                         x, y, z = [int(float(_)) for _ in value.split(",")]
-                        extent = sierra.core.utils.ArenaExtent(Vector3D(x, y, z))
+                        extent = sierra.core.utils.ArenaExtent(
+                            Vector3D(x, y, z))
                         # ARGoS won't start if there are 0 robots, so you always need to put at
                         # least 1.
-                        n_robots = int(max(1, extent.area() * (self.target_density / 100.0)))
+                        n_robots = int(
+                            max(1, extent.area() * (self.target_density / 100.0)))
                         changeset.add(XMLAttrChange(".//arena/distribute/entity",
                                                     "quantity",
                                                     str(n_robots)))
@@ -81,12 +84,12 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
         return self.attr_changes
 
-    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, tp.Any]) -> tp.List[str]:
+    def gen_exp_dirnames(self, cmdopts: types.Cmdopts) -> tp.List[str]:
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
     def graph_xticks(self,
-                     cmdopts: tp.Dict[str, tp.Any],
+                     cmdopts: types.Cmdopts,
                      exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
 
         if exp_dirs is None:
@@ -102,7 +105,7 @@ class PopulationConstantDensity(cd.ConstantDensity):
             return ret
 
     def graph_xticklabels(self,
-                          cmdopts: tp.Dict[str, tp.Any],
+                          cmdopts: types.Cmdopts,
                           exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
         if exp_dirs is None:
             exp_dirs = self.gen_exp_dirnames(cmdopts)
@@ -111,7 +114,7 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
         return list(map(lambda x: str(int(round(x, 4))), ret))
 
-    def graph_xlabel(self, cmdopts: tp.Dict[str, tp.Any]) -> str:
+    def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
         if cmdopts['plot_log_xscale']:
             return r"$\log_{2}$(Swarm Size)"
 
@@ -131,7 +134,8 @@ def factory(cli_arg: str,
 
     """
     attr = cd.Parser()(cli_arg)
-    sgp = pm.module_load_tiered(kwargs['project'], 'generators.scenario_generator_parser')
+    sgp = pm.module_load_tiered(
+        kwargs['project'], 'generators.scenario_generator_parser')
     kw = sgp.ScenarioGeneratorParser().to_dict(kwargs['scenario'])
 
     is_2x1 = kw['arena_x'] == 2 * kw['arena_y']
@@ -141,15 +145,18 @@ def factory(cli_arg: str,
         r = range(kw['arena_x'],
                   kw['arena_x'] + attr['cardinality'] * attr['arena_size_inc'],
                   attr['arena_size_inc'])
-        dims = [sierra.core.utils.ArenaExtent(Vector3D(x, int(x / 2), kw['arena_z'])) for x in r]
+        dims = [sierra.core.utils.ArenaExtent(
+            Vector3D(x, int(x / 2), kw['arena_z'])) for x in r]
     elif is_1x1:
         r = range(kw['arena_x'],
                   kw['arena_x'] + attr['cardinality'] * attr['arena_size_inc'],
                   attr['arena_size_inc'])
 
-        dims = [sierra.core.utils.ArenaExtent(Vector3D(x, x, kw['arena_z'])) for x in r]
+        dims = [sierra.core.utils.ArenaExtent(
+            Vector3D(x, x, kw['arena_z'])) for x in r]
     else:
-        raise NotImplementedError("Unsupported arena X,Y scaling '{0}': Must be [2x1,1x1]")
+        raise NotImplementedError(
+            "Unsupported arena X,Y scaling '{0}': Must be [2x1,1x1]")
 
     def __init__(self) -> None:
         PopulationConstantDensity.__init__(self,

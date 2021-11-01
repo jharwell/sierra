@@ -26,7 +26,7 @@ import multiprocessing as mp
 import typing as tp
 import queue
 import time
-import logging
+import logging # type: tp.Any
 
 # 3rd party packages
 import pandas as pd
@@ -38,6 +38,7 @@ import sierra.core.variables.batch_criteria as bc
 import sierra.core.config
 import sierra.core.stat_kernels
 import sierra.core.storage as storage
+from sierra.core import types
 
 
 class GatherSpec:
@@ -61,7 +62,7 @@ class BatchExpParallelCalculator:
                            absolute).
     """
 
-    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, tp.Any]):
+    def __init__(self, main_config: dict, cmdopts: types.Cmdopts):
         self.main_config = main_config
         self.cmdopts = cmdopts
 
@@ -130,7 +131,8 @@ class BatchExpParallelCalculator:
             # Wait for 3 seconds after the queue is empty before bailing
             try:
                 batch_output_root, exp = gatherq.get(True, 3)
-                ExpCSVGatherer(main_config, avg_opts, batch_output_root, exp, processq)()
+                ExpCSVGatherer(main_config, avg_opts,
+                               batch_output_root, exp, processq)()
                 gatherq.task_done()
 
             except queue.Empty:
@@ -179,7 +181,8 @@ class ExpCSVGatherer:
         self.gather_opts = gather_opts
 
         # will get the main name and extension of the config file (without the full absolute path)
-        self.template_input_fname = os.path.basename(self.gather_opts['template_input_leaf'])
+        self.template_input_fname = os.path.basename(
+            self.gather_opts['template_input_leaf'])
 
         self.exp_leaf = exp_leaf
         self.exp_output_root = os.path.join(batch_output_root, exp_leaf)
@@ -225,7 +228,8 @@ class ExpCSVGatherer:
                           self.exp_leaf)
 
     def _calc_gather_items(self, sim0: str) -> tp.List[GatherSpec]:
-        sim_output_root = os.path.join(self.exp_output_root, sim0, self.sim_metrics_leaf)
+        sim_output_root = os.path.join(
+            self.exp_output_root, sim0, self.sim_metrics_leaf)
         to_gather = []
 
         # The metrics folder should contain nothing but .csv files and directories. For all
@@ -244,7 +248,8 @@ class ExpCSVGatherer:
 
                 for csv_fname in os.listdir(item_path):
                     no_ext = os.path.splitext(csv_fname)[0]
-                    to_gather.append(GatherSpec(self.exp_leaf, csv_leaf, no_ext))
+                    to_gather.append(GatherSpec(
+                        self.exp_leaf, csv_leaf, no_ext))
 
         return to_gather
 
@@ -255,12 +260,15 @@ class ExpCSVGatherer:
         gathered = dict()  # type: tp.Dict[GatherSpec, pd.DataFrame]
 
         for sim in simulations:
-            sim_output_root = os.path.join(self.exp_output_root, sim, self.sim_metrics_leaf)
+            sim_output_root = os.path.join(
+                self.exp_output_root, sim, self.sim_metrics_leaf)
 
             if item.for_imagizing():
-                item_path = os.path.join(sim_output_root, item.csv_stem, item.csv_leaf + '.csv')
+                item_path = os.path.join(
+                    sim_output_root, item.csv_stem, item.csv_leaf + '.csv')
             else:
-                item_path = os.path.join(sim_output_root, item.csv_leaf + '.csv')
+                item_path = os.path.join(
+                    sim_output_root, item.csv_leaf + '.csv')
 
             reader = storage.DataFrameReader(self.gather_opts['storage_medium'])
             df = reader(item_path, index_col=False)
@@ -325,10 +333,12 @@ class ExpCSVGatherer:
                         continue
 
                     assert (sierra.core.utils.path_exists(path1) and sierra.core.utils.path_exists(path2)),\
-                        "FATAL: Either {0} or {1} does not exist".format(path1, path2)
+                        "FATAL: Either {0} or {1} does not exist".format(
+                            path1, path2)
 
                     # Verify both dataframes have same # columns, and that column sets are identical
-                    reader = storage.DataFrameReader(self.gather_opts['storage_medium'])
+                    reader = storage.DataFrameReader(
+                        self.gather_opts['storage_medium'])
                     df1 = reader(path1)
                     df2 = reader(path2)
 
@@ -336,12 +346,14 @@ class ExpCSVGatherer:
                         "FATAL: Dataframes from {0} and {1} do not have same # columns".format(
                             path1, path2)
                     assert(sorted(df1.columns) == sorted(df2.columns)),\
-                        "FATAL: Columns from {0} and {1} not identical".format(path1, path2)
+                        "FATAL: Columns from {0} and {1} not identical".format(
+                            path1, path2)
 
                     # Verify the length of all columns in both dataframes is the same
                     for c1 in df1.columns:
                         assert(all(len(df1[c1]) == len(df1[c2]) for c2 in df1.columns)),\
-                            "FATAL: Not all columns from {0} have same length".format(path1)
+                            "FATAL: Not all columns from {0} have same length".format(
+                                path1)
                         assert(all(len(df1[c1]) == len(df2[c2]) for c2 in df1.columns)),\
                             "FATAL: Not all columns from {0} and {1} have same length".format(path1,
                                                                                               path2)
@@ -382,11 +394,13 @@ class ExpStatisticsCalculator:
         self.gathered_dfs = gathered_dfs
 
         # will get the main name and extension of the config file (without the full absolute path)
-        self.template_input_fname = os.path.basename(self.avg_opts['template_input_leaf'])
+        self.template_input_fname = os.path.basename(
+            self.avg_opts['template_input_leaf'])
 
         self.main_config = main_config
 
-        self.stat_root = os.path.join(batch_stat_root, self.gather_spec.exp_leaf)
+        self.stat_root = os.path.join(
+            batch_stat_root, self.gather_spec.exp_leaf)
 
         self.intra_perf_csv = main_config['perf']['intra_perf_csv']
         self.intra_perf_col = main_config['perf']['intra_perf_col']

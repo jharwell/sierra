@@ -19,5 +19,4 @@
 # 3rd party packages
 
 # Project packages
-from . import cmdline
-from . import config
+from . import interface

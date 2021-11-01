@@ -19,8 +19,8 @@
 import os
 import glob
 import re
-import logging
 import typing as tp
+import logging  # type: tp.Any
 
 # 3rd party packages
 import numpy as np
@@ -91,7 +91,8 @@ class StackedSurfaceGraph:
                                                                  StackedSurfaceGraph.kMaxSurfaces)
 
         # Scaffold graph
-        plt.figure(figsize=(sierra.core.config.kGraphBaseSize, sierra.core.config.kGraphBaseSize))
+        plt.figure(figsize=(sierra.core.config.kGraphBaseSize,
+                            sierra.core.config.kGraphBaseSize))
         ax = plt.axes(projection='3d')
         x = np.arange(len(dfs[0].columns))
         y = dfs[0].index
@@ -101,7 +102,8 @@ class StackedSurfaceGraph:
         # color with Z value. From
         # https://stackoverflow.com/questions/55501860/how-to-put-multiple-colormap-patches-in-a-matplotlib-legend
         colors = [plt.cm.Greens, plt.cm.Reds, plt.cm.Purples, plt.cm.Oranges]
-        legend_cmap_handles = [mpl.patches.Rectangle((0, 0), 1, 1) for _ in colors]
+        legend_cmap_handles = [mpl.patches.Rectangle(
+            (0, 0), 1, 1) for _ in colors]
         legend_handler_map = dict(zip(legend_cmap_handles,
                                       [HandlerColormap(c, num_stripes=8) for c in colors]))
 
@@ -162,8 +164,10 @@ class StackedSurfaceGraph:
     def _plot_labels(self, ax):
         max_xlen = max([len(str(l)) for l in self.xtick_labels])
         max_ylen = max([len(str(l)) for l in self.ytick_labels])
-        ax.set_xlabel('\n' * max_xlen + self.xlabel, fontsize=self.text_size['xyz_label'])
-        ax.set_ylabel('\n' * max_ylen + self.ylabel, fontsize=self.text_size['xyz_label'])
+        ax.set_xlabel('\n' * max_xlen + self.xlabel,
+                      fontsize=self.text_size['xyz_label'])
+        ax.set_ylabel('\n' * max_ylen + self.ylabel,
+                      fontsize=self.text_size['xyz_label'])
         ax.set_zlabel('\n' + self.zlabel, fontsize=self.text_size['xyz_label'])
 
     def _save_figs(self, fig, ax):
@@ -179,12 +183,14 @@ class StackedSurfaceGraph:
             # extension.
             path, leaf = os.path.split(self.output_fpath)
             components = leaf.split('.')
-            fname = ''.join(leaf[0:-2]) + '_' + str(angle) + '.' + components[-1]
+            fname = ''.join(leaf[0:-2]) + '_' + \
+                str(angle) + '.' + components[-1]
             fig.savefig(os.path.join(path, fname),
                         bbox_inches='tight',
                         dpi=sierra.core.config.kGraphDPI,
                         pad_inches=0)
-            plt.close(fig)  # Prevent memory accumulation (fig.clf() does not close everything)
+            # Prevent memory accumulation (fig.clf() does not close everything)
+            plt.close(fig)
 
 
 class HandlerColormap(mpl.legend_handler.HandlerBase):
@@ -207,7 +213,8 @@ class HandlerColormap(mpl.legend_handler.HandlerBase):
             s = mpl.patches.Rectangle([xdescent + i * width / self.num_stripes, ydescent],
                                       width / self.num_stripes,
                                       height,
-                                      fc=self.cmap((2 * i + 1) / (2 * self.num_stripes)),
+                                      fc=self.cmap(
+                                          (2 * i + 1) / (2 * self.num_stripes)),
                                       transform=trans)
             stripes.append(s)
         return stripes

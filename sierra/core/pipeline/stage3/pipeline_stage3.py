@@ -20,10 +20,10 @@ Contains main class implementing stage 3 of the experimental pipeline.
 
 # Core packages
 import os
-import logging
 import time
 import datetime
 import typing as tp
+import logging  # type: tp.Any
 
 # 3rd party packages
 import yaml
@@ -34,6 +34,7 @@ from sierra.core.pipeline.stage3.sim_collator import SimulationParallelCollator
 from sierra.core.pipeline.stage3.imagizer import BatchExpParallelImagizer
 import sierra.core.utils
 import sierra.core.variables.batch_criteria as bc
+from sierra.core import types
 
 
 class PipelineStage3:
@@ -50,7 +51,7 @@ class PipelineStage3:
     This stage is idempotent.
     """
 
-    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, tp.Any]) -> None:
+    def __init__(self, main_config: dict, cmdopts: types.Cmdopts) -> None:
         self.logger = logging.getLogger(__name__)
         self.main_config = main_config
         self.cmdopts = cmdopts
@@ -70,19 +71,23 @@ class PipelineStage3:
             if sierra.core.utils.path_exists(project_intra_HM):
                 self.logger.info("Loading additional intra-experiment heatmap config for project '%s'",
                                  self.cmdopts['project'])
-                project_dict = yaml.load(open(project_intra_HM), yaml.FullLoader)
+                project_dict = yaml.load(
+                    open(project_intra_HM), yaml.FullLoader)
                 for category in project_dict:
                     if category not in intra_HM_config:
-                        intra_HM_config.update({category: project_dict[category]})
+                        intra_HM_config.update(
+                            {category: project_dict[category]})
                     else:
-                        intra_HM_config[category]['graphs'].extend(project_dict[category]['graphs'])
+                        intra_HM_config[category]['graphs'].extend(
+                            project_dict[category]['graphs'])
 
-            self._run_imagizing(self.main_config, intra_HM_config, self.cmdopts, criteria)
+            self._run_imagizing(
+                self.main_config, intra_HM_config, self.cmdopts, criteria)
 
     # Private functions
     def _run_statistics(self,
                         main_config: dict,
-                        cmdopts: tp.Dict[str, tp.Any], criteria:
+                        cmdopts: types.Cmdopts, criteria:
                         bc.IConcreteBatchCriteria):
         self.logger.info("Generating statistics from experiment outputs in %s...",
                          cmdopts['batch_output_root'])
@@ -94,7 +99,7 @@ class PipelineStage3:
 
     def _run_sim_collation(self,
                            main_config: dict,
-                           cmdopts: tp.Dict[str, tp.Any], criteria:
+                           cmdopts: types.Cmdopts, criteria:
                            bc.IConcreteBatchCriteria):
         if not self.cmdopts['no_collate']:
             self.logger.info("Collating simulation outputs into %s...",
@@ -103,17 +108,19 @@ class PipelineStage3:
             SimulationParallelCollator(main_config, cmdopts)(criteria)
             elapsed = int(time.time() - start)
             sec = datetime.timedelta(seconds=elapsed)
-            self.logger.info("Simulation output collation complete in %s", str(sec))
+            self.logger.info(
+                "Simulation output collation complete in %s", str(sec))
 
     def _run_imagizing(self,
                        main_config: dict,
                        intra_HM_config: dict,
-                       cmdopts: tp.Dict[str, tp.Any],
+                       cmdopts: types.Cmdopts,
                        criteria: bc.IConcreteBatchCriteria):
         self.logger.info("Imagizing .csvs in %s...",
                          cmdopts['batch_output_root'])
         start = time.time()
-        BatchExpParallelImagizer(main_config, cmdopts)(intra_HM_config, criteria)
+        BatchExpParallelImagizer(main_config, cmdopts)(
+            intra_HM_config, criteria)
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         self.logger.info("Imagizing complete: %s", str(sec))

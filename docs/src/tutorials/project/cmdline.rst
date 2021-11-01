@@ -67,7 +67,7 @@ the SIERRA, follow the steps below.
               ...
 
           @staticmethod
-          def cmdopts_update(cli_args, cmdopts: tp.Dict[str, tp.Any]):
+          def cmdopts_update(cli_args, cmdopts: types.Cmdopts):
               updates = {
               'scenario': cli_args.scenario,
               'controller': cli_args.controller,

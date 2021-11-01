@@ -31,7 +31,7 @@ import os
 import multiprocessing as mp
 import typing as tp
 import queue
-import logging
+import logging # type: tp.Any
 
 # 3rd party packages
 import pandas as pd
@@ -43,6 +43,7 @@ import sierra.core.variables.batch_criteria as bc
 import sierra.core.config
 import sierra.core.storage as storage
 import sierra.core.plugin_manager as pm
+from sierra.core import types
 
 
 class SimulationParallelCollator:
@@ -51,7 +52,7 @@ class SimulationParallelCollator:
     calculating performance measures in stage 4 in parallel.
     """
 
-    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, tp.Any]):
+    def __init__(self, main_config: dict, cmdopts: types.Cmdopts):
         self.main_config = main_config
         self.cmdopts = cmdopts
 

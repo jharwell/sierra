@@ -22,11 +22,11 @@ stage5 of the experimental pipeline.
 # Core packages
 import os
 import copy
-import logging
 import glob
 import re
 import typing as tp
 import argparse
+import logging  # type: tp.Any
 
 # 3rd party packages
 import pandas as pd
@@ -39,6 +39,7 @@ from sierra.core.variables import batch_criteria as bc
 import sierra.core.root_dirpath_generator as rdg
 import sierra.core.utils
 import sierra.core.config
+from sierra.core import types
 
 
 class UnivarIntraScenarioComparator:
@@ -67,7 +68,7 @@ class UnivarIntraScenarioComparator:
                  controllers: tp.List[str],
                  cc_csv_root: str,
                  cc_graph_root: str,
-                 cmdopts: tp.Dict[str, tp.Any],
+                 cmdopts: types.Cmdopts,
                  cli_args,
                  main_config: dict) -> None:
         self.controllers = controllers
@@ -80,7 +81,7 @@ class UnivarIntraScenarioComparator:
         self.logger = logging.getLogger(__name__)
 
     def __call__(self,
-                 graphs: tp.List[tp.Dict[str, tp.Any]],
+                 graphs: tp.List[types.YAMLDict],
                  legend: tp.List[str],
                  comp_type: str) -> None:
         # Obtain the list of scenarios to use. We can just take the scenario list of the first
@@ -124,8 +125,8 @@ class UnivarIntraScenarioComparator:
         return leaf in candidate
 
     def _compare_in_scenario(self,
-                             cmdopts: tp.Dict[str, tp.Any],
-                             graph: tp.Dict[str, tp.Any],
+                             cmdopts: types.Cmdopts,
+                             graph: types.YAMLDict,
                              batch_leaf: str,
                              legend: tp.List[str]) -> None:
 
@@ -155,7 +156,8 @@ class UnivarIntraScenarioComparator:
             # For each scenario, we have to create the batch criteria for it, because they
             # are all different.
 
-            criteria = bc.factory(self.main_config, cmdopts, self.cli_args, scenario)
+            criteria = bc.factory(self.main_config, cmdopts,
+                                  self.cli_args, scenario)
 
             self._gen_csv(batch_leaf=batch_leaf,
                           criteria=criteria,
@@ -177,7 +179,7 @@ class UnivarIntraScenarioComparator:
     def _gen_csv(self,
                  batch_leaf: str,
                  criteria: bc.IConcreteBatchCriteria,
-                 cmdopts: tp.Dict[str, tp.Any],
+                 cmdopts: types.Cmdopts,
                  controller: str,
                  src_stem: str,
                  dest_stem: str,
@@ -186,13 +188,16 @@ class UnivarIntraScenarioComparator:
         Helper function for generating a set of .csv files for use in intra-scenario graph
         generation (1 per controller).
         """
-        self.logger.debug("Gathering data for '%s' from %s -> %s", controller, src_stem, dest_stem)
-        ipath = os.path.join(cmdopts['batch_stat_collate_root'], src_stem + '.csv')
+        self.logger.debug("Gathering data for '%s' from %s -> %s",
+                          controller, src_stem, dest_stem)
+        ipath = os.path.join(
+            cmdopts['batch_stat_collate_root'], src_stem + '.csv')
 
         # Some experiments might not generate the necessary performance measure .csvs for graph
         # generation, which is OK.
         if not sierra.core.utils.path_exists(ipath):
-            self.logger.warning("%s missing for controller %s", ipath, controller)
+            self.logger.warning(
+                "%s missing for controller %s", ipath, controller)
             return
 
         preparer = StatsPreparer(ipath_stem=cmdopts['batch_stat_collate_root'],
@@ -205,11 +210,11 @@ class UnivarIntraScenarioComparator:
     def _gen_graph(self,
                    batch_leaf: str,
                    criteria: bc.IConcreteBatchCriteria,
-                   cmdopts: tp.Dict[str, tp.Any],
+                   cmdopts: types.Cmdopts,
                    dest_stem: str,
                    title: str,
                    label: str,
-                   inc_exps: tp.Optional[slice],
+                   inc_exps: tp.Optional[str],
                    legend: tp.List[str]) -> None:
         """
         Generates a :class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph` comparing the
@@ -224,9 +229,11 @@ class UnivarIntraScenarioComparator:
         if inc_exps is not None:
             xtick_labels = sierra.core.utils.exp_include_filter(
                 inc_exps, xtick_labels, criteria.n_exp())
-            xticks = sierra.core.utils.exp_include_filter(inc_exps, xticks, criteria.n_exp())
+            xticks = sierra.core.utils.exp_include_filter(
+                inc_exps, xticks, criteria.n_exp())
 
-        opath = os.path.join(self.cc_graph_root, opath_leaf + sierra.core.config.kImageExt)
+        opath = os.path.join(self.cc_graph_root, opath_leaf +
+                             sierra.core.config.kImageExt)
 
         SummaryLineGraph(stats_root=self.cc_csv_root,
                          input_stem=opath_leaf,
@@ -266,9 +273,9 @@ class BivarIntraScenarioComparator:
                  controllers: tp.List[str],
                  cc_csv_root: str,
                  cc_graph_root: str,
-                 cmdopts: tp.Dict[str, tp.Any],
+                 cmdopts: types.Cmdopts,
                  cli_args: argparse.Namespace,
-                 main_config: tp.Dict[str, tp.Any]) -> None:
+                 main_config: types.YAMLDict) -> None:
         self.controllers = controllers
         self.cc_csv_root = cc_csv_root
         self.cc_graph_root = cc_graph_root
@@ -278,7 +285,7 @@ class BivarIntraScenarioComparator:
         self.logger = logging.getLogger(__name__)
 
     def __call__(self,
-                 graphs: tp.List[tp.Dict[str, tp.Any]],
+                 graphs: tp.List[types.YAMLDict],
                  legend: tp.List[str],
                  comp_type: str) -> None:
 
@@ -322,8 +329,8 @@ class BivarIntraScenarioComparator:
         return leaf in candidate
 
     def _compare_in_scenario(self,
-                             cmdopts: tp.Dict[str, tp.Any],
-                             graph: tp.Dict[str, tp.Any],
+                             cmdopts: types.Cmdopts,
+                             graph: types.YAMLDict,
                              batch_leaf: str,
                              legend: tp.List[str],
                              comp_type: str) -> None:
@@ -357,7 +364,8 @@ class BivarIntraScenarioComparator:
 
             # For each scenario, we have to create the batch criteria for it, because they
             # are all different.
-            criteria = bc.factory(self.main_config, cmdopts, self.cli_args, scenario)
+            criteria = bc.factory(self.main_config, cmdopts,
+                                  self.cli_args, scenario)
 
             if comp_type == 'LNraw':
                 self._gen_csvs_for_1D(cmdopts=cmdopts,
@@ -407,7 +415,7 @@ class BivarIntraScenarioComparator:
                               comp_type=comp_type)
 
     def _gen_csvs_for_2D_or_3D(self,
-                               cmdopts: tp.Dict[str, tp.Any],
+                               cmdopts: types.Cmdopts,
                                batch_leaf: str,
                                controller: str,
                                src_stem: str,
@@ -426,14 +434,17 @@ class BivarIntraScenarioComparator:
         controllers, so we do it unconditionally here to handle both cases.
 
         """
-        self.logger.debug("Gathering data for '%s' from %s -> %s", controller, src_stem, dest_stem)
+        self.logger.debug("Gathering data for '%s' from %s -> %s",
+                          controller, src_stem, dest_stem)
 
-        csv_ipath = os.path.join(cmdopts['batch_stat_collate_root'], src_stem + ".csv")
+        csv_ipath = os.path.join(
+            cmdopts['batch_stat_collate_root'], src_stem + ".csv")
 
         # Some experiments might not generate the necessary performance measure .csvs for
         # graph generation, which is OK.
         if not sierra.core.utils.path_exists(csv_ipath):
-            self.logger.warning("%s missing for controller '%s'", csv_ipath, controller)
+            self.logger.warning(
+                "%s missing for controller '%s'", csv_ipath, controller)
             return
 
         df = sierra.core.utils.pd_csv_read(csv_ipath)
@@ -446,7 +457,7 @@ class BivarIntraScenarioComparator:
         sierra.core.utils.pd_csv_write(df, csv_opath_stem + '.csv', index=False)
 
     def _gen_csvs_for_1D(self,
-                         cmdopts: tp.Dict[str, tp.Any],
+                         cmdopts: types.Cmdopts,
                          criteria: bc.IConcreteBatchCriteria,
                          batch_leaf: str,
                          controller: str,
@@ -461,14 +472,17 @@ class BivarIntraScenarioComparator:
         a new .csv file which can be given to
         :class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`.
         """
-        self.logger.debug("Gathering data for '%s' from %s -> %s", controller, src_stem, dest_stem)
+        self.logger.debug("Gathering data for '%s' from %s -> %s",
+                          controller, src_stem, dest_stem)
 
-        csv_ipath = os.path.join(cmdopts['batch_stat_collate_root'], src_stem + ".csv")
+        csv_ipath = os.path.join(
+            cmdopts['batch_stat_collate_root'], src_stem + ".csv")
 
         # Some experiments might not generate the necessary performance measure .csvs for
         # graph generation, which is OK.
         if not sierra.core.utils.path_exists(csv_ipath):
-            self.logger.warning("%s missing for controller '%s'", csv_ipath, controller)
+            self.logger.warning(
+                "%s missing for controller '%s'", csv_ipath, controller)
             return
 
         if primary_axis == 0:
@@ -480,8 +494,10 @@ class BivarIntraScenarioComparator:
             n_rows = len(sierra.core.utils.pd_csv_read(os.path.join(cmdopts['batch_stat_collate_root'],
                                                                     src_stem + ".csv")).index)
             for i in range(0, n_rows):
-                opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, [i])
-                preparer.across_rows(opath_leaf=opath_leaf, index=i, inc_exps=inc_exps)
+                opath_leaf = LeafGenerator.from_batch_leaf(
+                    batch_leaf, dest_stem, [i])
+                preparer.across_rows(opath_leaf=opath_leaf,
+                                     index=i, inc_exps=inc_exps)
         else:
             preparer = StatsPreparer(ipath_stem=cmdopts['batch_stat_collate_root'],
                                      ipath_leaf=src_stem,
@@ -495,7 +511,8 @@ class BivarIntraScenarioComparator:
 
             for col in ylabels:
                 col_index = ylabels.index(col)
-                opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, [col_index])
+                opath_leaf = LeafGenerator.from_batch_leaf(
+                    batch_leaf, dest_stem, [col_index])
                 preparer.across_cols(opath_leaf=opath_leaf,
                                      col_index=col_index,
                                      all_cols=xlabels,
@@ -504,7 +521,7 @@ class BivarIntraScenarioComparator:
     def _gen_graphs1D(self,
                       batch_leaf: str,
                       criteria: bc.BivarBatchCriteria,
-                      cmdopts: tp.Dict[str, tp.Any],
+                      cmdopts: types.Cmdopts,
                       dest_stem: str,
                       title: str,
                       label: str,
@@ -513,16 +530,20 @@ class BivarIntraScenarioComparator:
                       legend: tp.List[str]) -> None:
         oleaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, None)
         csv_stem_root = os.path.join(self.cc_csv_root, oleaf)
-        paths = [f for f in glob.glob(csv_stem_root + '*.csv') if re.search('_[0-9]+', f)]
+        paths = [f for f in glob.glob(
+            csv_stem_root + '*.csv') if re.search('_[0-9]+', f)]
 
         for i in range(0, len(paths)):
-            opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, [i])
-            img_opath = os.path.join(self.cc_graph_root, opath_leaf + sierra.core.config.kImageExt)
+            opath_leaf = LeafGenerator.from_batch_leaf(
+                batch_leaf, dest_stem, [i])
+            img_opath = os.path.join(
+                self.cc_graph_root, opath_leaf + sierra.core.config.kImageExt)
 
             if primary_axis == 0:
                 n_exp = criteria.criteria1.n_exp()
                 xticks = sierra.core.utils.exp_include_filter(inc_exps,
-                                                              criteria.graph_yticks(cmdopts),
+                                                              criteria.graph_yticks(
+                                                                  cmdopts),
                                                               n_exp)
                 xtick_labels = sierra.core.utils.exp_include_filter(inc_exps,
                                                                     criteria.graph_yticklabels(
@@ -532,7 +553,8 @@ class BivarIntraScenarioComparator:
             else:
                 n_exp = criteria.criteria2.n_exp()
                 xticks = sierra.core.utils.exp_include_filter(inc_exps,
-                                                              criteria.graph_xticks(cmdopts),
+                                                              criteria.graph_xticks(
+                                                                  cmdopts),
                                                               n_exp)
                 xtick_labels = sierra.core.utils.exp_include_filter(inc_exps,
                                                                     criteria.graph_xticklabels(
@@ -557,7 +579,7 @@ class BivarIntraScenarioComparator:
     def _gen_graphs2D(self,
                       batch_leaf: str,
                       criteria: bc.BivarBatchCriteria,
-                      cmdopts: tp.Dict[str, tp.Any],
+                      cmdopts: types.Cmdopts,
                       dest_stem: str,
                       title: str,
                       label: str,
@@ -584,7 +606,7 @@ class BivarIntraScenarioComparator:
     def _gen_paired_heatmaps(self,
                              batch_leaf: str,
                              criteria: bc.BivarBatchCriteria,
-                             cmdopts: tp.Dict[str, tp.Any],
+                             cmdopts: types.Cmdopts,
                              dest_stem: str,
                              title: str,
                              label: str,
@@ -597,7 +619,8 @@ class BivarIntraScenarioComparator:
         """
         opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, None)
         csv_pattern_root = os.path.join(self.cc_csv_root, opath_leaf)
-        paths = [f for f in glob.glob(csv_pattern_root + '*.csv') if re.search('_[0-9]+', f)]
+        paths = [f for f in glob.glob(
+            csv_pattern_root + '*.csv') if re.search('_[0-9]+', f)]
 
         ref_df = sierra.core.utils.pd_csv_read(paths[0])
 
@@ -609,11 +632,13 @@ class BivarIntraScenarioComparator:
             elif comp_type == 'HMdiff':
                 plot_df = df - ref_df
 
-            opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, [0, i])
+            opath_leaf = LeafGenerator.from_batch_leaf(
+                batch_leaf, dest_stem, [0, i])
             opath_stem = os.path.join(self.cc_csv_root, opath_leaf)
             opath = opath_stem + sierra.core.config.kImageExt
 
-            sierra.core.utils.pd_csv_write(plot_df, opath_stem + ".csv", index=False)
+            sierra.core.utils.pd_csv_write(
+                plot_df, opath_stem + ".csv", index=False)
 
             Heatmap(input_fpath=opath_stem + ".csv",
                     output_fpath=opath,
@@ -628,7 +653,7 @@ class BivarIntraScenarioComparator:
     def _gen_dual_heatmaps(self,
                            batch_leaf: str,
                            criteria: bc.BivarBatchCriteria,
-                           cmdopts: tp.Dict[str, tp.Any],
+                           cmdopts: types.Cmdopts,
                            dest_stem: str,
                            title: str,
                            label: str,
@@ -643,11 +668,14 @@ class BivarIntraScenarioComparator:
 
         opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, None)
         csv_pattern_root = os.path.join(self.cc_csv_root, opath_leaf)
-        paths = [f for f in glob.glob(csv_pattern_root + '*.csv') if re.search('_[0-9]+', f)]
+        paths = [f for f in glob.glob(
+            csv_pattern_root + '*.csv') if re.search('_[0-9]+', f)]
 
         for i in range(0, len(paths)):
-            opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, None)
-            opath = os.path.join(self.cc_graph_root, opath_leaf + sierra.core.config.kImageExt)
+            opath_leaf = LeafGenerator.from_batch_leaf(
+                batch_leaf, dest_stem, None)
+            opath = os.path.join(self.cc_graph_root,
+                                 opath_leaf + sierra.core.config.kImageExt)
 
             DualHeatmap(input_stem_pattern=csv_pattern_root,
                         output_fpath=opath,
@@ -662,7 +690,7 @@ class BivarIntraScenarioComparator:
     def _gen_graph3D(self,
                      batch_leaf: str,
                      criteria: bc.BivarBatchCriteria,
-                     cmdopts: tp.Dict[str, tp.Any],
+                     cmdopts: types.Cmdopts,
                      dest_stem: str,
                      title: str,
                      zlabel: str,
@@ -676,7 +704,8 @@ class BivarIntraScenarioComparator:
 
         opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, None)
         csv_stem_root = os.path.join(self.cc_csv_root, opath_leaf)
-        opath = os.path.join(self.cc_graph_root, opath_leaf + sierra.core.config.kImageExt)
+        opath = os.path.join(self.cc_graph_root, opath_leaf +
+                             sierra.core.config.kImageExt)
 
         StackedSurfaceGraph(input_stem_pattern=csv_stem_root,
                             output_fpath=opath,
@@ -734,7 +763,8 @@ class StatsPreparer():
                                       self.ipath_leaf + sierra.core.config.kStatsExtensions[k])
             stat_opath = os.path.join(self.opath_stem,
                                       opath_leaf + sierra.core.config.kStatsExtensions[k])
-            df = self._accum_df_by_col(stat_ipath, stat_opath, all_cols, col_index, inc_exps)
+            df = self._accum_df_by_col(
+                stat_ipath, stat_opath, all_cols, col_index, inc_exps)
 
             if df is not None:
                 sierra.core.utils.pd_csv_write(df,
@@ -811,7 +841,8 @@ class StatsPreparer():
             t = sierra.core.utils.pd_csv_read(ipath)
 
             if inc_exps is not None:
-                cols = sierra.core.utils.exp_include_filter(inc_exps, list(t.columns), self.n_exp)
+                cols = sierra.core.utils.exp_include_filter(
+                    inc_exps, list(t.columns), self.n_exp)
             else:
                 cols = t.columns
 
@@ -832,7 +863,8 @@ class LeafGenerator():
                         controllers: tp.List[str],
                         controller) -> str:
         _, batch_leaf, _ = rdg.parse_batch_leaf(batch_root)
-        leaf = graph_stem + "-" + batch_leaf + '_' + str(controllers.index(controller))
+        leaf = graph_stem + "-" + batch_leaf + \
+            '_' + str(controllers.index(controller))
         return leaf
 
     @staticmethod

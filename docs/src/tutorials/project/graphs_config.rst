@@ -195,9 +195,9 @@ This can be done by extending
 constructor must be::
 
   def __init__(self,
-               main_config: tp.Dict[str, tp.Any],
-               cmdopts: tp.Dict[str, tp.Any],
-               targets: tp.List[tp.Dict[str, tp.Any]]) -> None:
+               main_config: types.ParsedYAMLDict,
+               cmdopts: types.Cmdopts,
+               targets: tp.List[types.ParsedYAMLDict]) -> None:
 
 And it must define::
 

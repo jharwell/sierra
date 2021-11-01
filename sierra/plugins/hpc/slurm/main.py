@@ -25,6 +25,7 @@ import typing as tp
 # 3rd party packages
 
 # Project packages
+from sierra.core import types
 
 
 def env_configure(args):
@@ -49,7 +50,8 @@ def env_configure(args):
 
     for k in keys:
         assert k in os.environ,\
-            "FATAL: Attempt to run SIERRA in bad SLURM environment: '{0}' not found".format(k)
+            "FATAL: Attempt to run SIERRA in bad SLURM environment: '{0}' not found".format(
+                k)
 
     # For HPC, we want to use the the maximum # of simultaneous jobs per node such that
     # there is no thread oversubscription. We also always want to allocate each physics
@@ -85,7 +87,8 @@ def argos_cmd_generate(input_fpath: str):
 
     return 'argos3-' + \
         os.environ['SIERRA_ARCH'] + \
-        ' -c "{0}" --log-file /dev/null --logerr-file /dev/null\n'.format(input_fpath)
+        ' -c "{0}" --log-file /dev/null --logerr-file /dev/null\n'.format(
+            input_fpath)
 
 
 def gnu_parallel_cmd_generate(parallel_opts: dict):
@@ -113,7 +116,7 @@ def gnu_parallel_cmd_generate(parallel_opts: dict):
             parallel_opts['cmdfile_path'])
 
 
-def xvfb_cmd_generate(cmdopts: tp.Dict[str, tp.Any]):
+def xvfb_cmd_generate(cmdopts: types.Cmdopts):
     return ''
 
 

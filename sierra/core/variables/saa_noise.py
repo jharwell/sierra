@@ -30,6 +30,7 @@ import numpy as np
 import sierra.core.variables.batch_criteria as bc
 from sierra.core.variables.population_size import PopulationSize
 from sierra.core.xml import XMLAttrChange, XMLAttrChangeSet
+from sierra.core import types
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
@@ -57,7 +58,8 @@ class SAANoise(bc.UnivarBatchCriteria):
                  variances: list,
                  population: int,
                  noise_type: str) -> None:
-        bc.UnivarBatchCriteria.__init__(self, cli_arg, main_config, batch_input_root)
+        bc.UnivarBatchCriteria.__init__(
+            self, cli_arg, main_config, batch_input_root)
 
         self.variances = variances
         self.population = population
@@ -88,7 +90,7 @@ class SAANoise(bc.UnivarBatchCriteria):
         return self.attr_changes
 
     def graph_xticks(self,
-                     cmdopts: tp.Dict[str, tp.Any],
+                     cmdopts: types.Cmdopts,
                      exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
         xticks_range = []
 
@@ -112,7 +114,7 @@ class SAANoise(bc.UnivarBatchCriteria):
             return [float(i) for i in range(len(self.variances))]
 
     def graph_xticklabels(self,
-                          cmdopts: tp.Dict[str, tp.Any],
+                          cmdopts: types.Cmdopts,
                           exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
 
         if self._uniform_sources():
@@ -151,7 +153,7 @@ class SAANoise(bc.UnivarBatchCriteria):
         else:
             return []
 
-    def graph_xlabel(self, cmdopts: tp.Dict[str, tp.Any]) -> str:
+    def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
         if self.main_config['perf']['robustness']['gaussian_labels_show'] == 'stddev':
             return r'Noise $\sigma$'
         elif self.main_config['perf']['robustness']['gaussian_labels_show'] == 'mean':
@@ -159,7 +161,7 @@ class SAANoise(bc.UnivarBatchCriteria):
         else:
             return 'Noise Distribution'
 
-    def gen_exp_dirnames(self, cmdopts: tp.Dict[str, tp.Any]) -> tp.List[str]:
+    def gen_exp_dirnames(self, cmdopts: types.Cmdopts) -> tp.List[str]:
         return ['exp' + str(x) for x in range(0, len(self.gen_attr_changelist()))]
 
     def pm_query(self, pm: str) -> bool:
@@ -192,7 +194,7 @@ class Parser():
     :ref:`ln-bc-saa-noise`.
     """
 
-    def __call__(self, criteria_str: str) -> tp.Dict[str, tp.Any]:
+    def __call__(self, criteria_str: str) -> types.CLIArgSpec:
         """
         Returns:
             Dictionary with the following keys:
@@ -209,13 +211,15 @@ class Parser():
 
         # Parse noise type
         res = re.search("sensors|actuators|all", criteria_str)
-        assert res is not None, "FATAL: Bad noise type in criteria '{0}'".format(criteria_str)
+        assert res is not None, "FATAL: Bad noise type in criteria '{0}'".format(
+            criteria_str)
         ret['noise_type'] = res.group(0)
 
         # Parse cardinality
         res = re.search(r"\.C[0-9]+", criteria_str)
         assert res is not None, \
-            "FATAL: Bad cardinality for set of noise ranges in criteria '{0}'".format(criteria_str)
+            "FATAL: Bad cardinality for set of noise ranges in criteria '{0}'".format(
+                criteria_str)
         ret['cardinality'] = int(res.group(0)[2:])
 
         # Parse swarm size (optional)
@@ -227,7 +231,7 @@ class Parser():
 
 
 class VariancesGenerator():
-    def __init__(self, main_config: tp.Dict[str, tp.Any], attr: tp.Dict[str, tp.Any]):
+    def __init__(self, main_config: types.YAMLDict, attr: types.CLIArgSpec):
         self.main_config = main_config
         self.attr = attr
         self.xml_parents = {
@@ -290,13 +294,14 @@ class VariancesGenerator():
             # experiments that this criteria defines, starting with i=0...n_levels. So if there are
             # 10 levels, then the first set added to the return list would be i={0,10,20,...}, the
             # second would be i={1,11,21,...}, etc.
-            by_exp.append({chg for s in by_src[i:: self.attr['cardinality']] for chg in s})
+            by_exp.append(
+                {chg for s in by_src[i:: self.attr['cardinality']] for chg in s})
 
         return by_exp
 
     def _configure_device(self,
                           xml_config: tuple,
-                          dev_noise_config: tp.Dict[str, tp.Any],
+                          dev_noise_config: types.YAMLDict,
                           by_src: list):
         xml_parent = xml_config[0]
         xml_child_tags = xml_config[1]
@@ -327,10 +332,11 @@ class VariancesGenerator():
 
                 by_src.extend([v])
         else:
-            assert False, "FATAL: bad noise model '{0}'".format(dev_noise_config['model'])
+            assert False, "FATAL: bad noise model '{0}'".format(
+                dev_noise_config['model'])
 
 
-def factory(cli_arg: str, main_config: tp.Dict[str, tp.Any], batch_input_root: str, **kwargs):
+def factory(cli_arg: str, main_config: types.YAMLDict, batch_input_root: str, **kwargs):
     """
     Factory to create :class:`SAANoise` derived classes from the command line definition of
     batch criteria.

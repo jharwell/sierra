@@ -20,10 +20,10 @@ Classes for creating image files from averaged ``.csv`` files for experiments.
 
 # Core packages
 import os
-import logging
 import typing as tp
 import multiprocessing as mp
 import queue
+import logging  # type: tp.Any
 
 # 3rd party packages
 
@@ -32,6 +32,7 @@ from sierra.core.graphs.heatmap import Heatmap
 import sierra.core.utils
 import sierra.core.config
 import sierra.core.variables.batch_criteria as bc
+from sierra.core import types
 
 
 class BatchExpParallelImagizer:
@@ -39,7 +40,7 @@ class BatchExpParallelImagizer:
     Generate the images for each experiment in the specified batch directory.
     """
 
-    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, tp.Any]) -> None:
+    def __init__(self, main_config: dict, cmdopts: types.Cmdopts) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
 
@@ -60,7 +61,8 @@ class BatchExpParallelImagizer:
             _, leaf = os.path.split(exp)
 
             exp_stat_root = os.path.join(self.cmdopts['batch_stat_root'], leaf)
-            exp_imagize_root = os.path.join(self.cmdopts['batch_imagize_root'], leaf)
+            exp_imagize_root = os.path.join(
+                self.cmdopts['batch_imagize_root'], leaf)
 
             for item in os.listdir(exp_stat_root):
                 candidate_path = os.path.join(exp_stat_root, item)
@@ -73,7 +75,8 @@ class BatchExpParallelImagizer:
                         'output_root': imagize_output_root
                     }
 
-                    sierra.core.utils.dir_create_checked(imagize_output_root, exist_ok=True)
+                    sierra.core.utils.dir_create_checked(
+                        imagize_output_root, exist_ok=True)
                     q.put(imagize_opts)
 
         if self.cmdopts['serial_processing']:
@@ -114,7 +117,8 @@ class ExpImagizer:
         self.logger = logging.getLogger(__name__)
 
     def __call__(self, HM_config: dict, imagize_opts: tp.Dict[str, str]) -> None:
-        path = os.path.join(imagize_opts['input_root'], imagize_opts['graph_stem'])
+        path = os.path.join(
+            imagize_opts['input_root'], imagize_opts['graph_stem'])
 
         self.logger.info("Imagizing .csvs in %s...", path)
 

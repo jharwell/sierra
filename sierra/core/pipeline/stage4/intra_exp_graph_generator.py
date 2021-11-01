@@ -21,8 +21,8 @@ Classes for generating graphs within a single experiment in a batch.
 # Core packages
 import os
 import copy
-import logging
 import typing as tp
+import logging  # type: tp.Any
 
 # 3rd party packages
 import json
@@ -34,6 +34,7 @@ from sierra.core.models.graphs import IntraExpModel2DGraphSet
 import sierra.core.utils
 import sierra.core.variables.batch_criteria as bc
 import sierra.core.plugin_manager as pm
+from sierra.core import types
 
 
 class BatchIntraExpGraphGenerator:
@@ -42,17 +43,17 @@ class BatchIntraExpGraphGenerator:
 
     """
 
-    def __init__(self, cmdopts: tp.Dict[str, tp.Any]) -> None:
+    def __init__(self, cmdopts: types.Cmdopts) -> None:
         # Copy because we are modifying it and don't want to mess up the
         # arguments for graphs that are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
         self.logger = logging.getLogger(__name__)
 
     def __call__(self,
-                 main_config: tp.Dict[str, tp.Any],
-                 controller_config: tp.Dict[str, tp.Any],
-                 LN_config: tp.Dict[str, tp.Any],
-                 HM_config: tp.Dict[str, tp.Any],
+                 main_config: types.YAMLDict,
+                 controller_config: types.YAMLDict,
+                 LN_config: types.YAMLDict,
+                 HM_config: types.YAMLDict,
                  criteria: bc.IConcreteBatchCriteria) -> None:
         """
         Parameters:
@@ -133,11 +134,11 @@ class IntraExpGraphGenerator:
     """
 
     def __init__(self,
-                 main_config: tp.Dict[str, tp.Any],
-                 controller_config: tp.Dict[str, tp.Any],
-                 LN_config: tp.Dict[str, tp.Any],
-                 HM_config: tp.Dict[str, tp.Any],
-                 cmdopts: tp.Dict[str, tp.Any]) -> None:
+                 main_config: types.YAMLDict,
+                 controller_config: types.YAMLDict,
+                 LN_config: types.YAMLDict,
+                 HM_config: types.YAMLDict,
+                 cmdopts: types.Cmdopts) -> None:
         # Copy because we are modifying it and don't want to mess up the
         # arguments for graphs that are generated after us
         self.cmdopts = copy.deepcopy(cmdopts)
@@ -165,16 +166,16 @@ class IntraExpGraphGenerator:
         self.generate(LN_targets, HM_targets)
 
     def generate(self,
-                 LN_targets: tp.List[tp.Dict[str, tp.Any]],
-                 HM_targets: tp.List[tp.Dict[str, tp.Any]]):
+                 LN_targets: tp.List[types.YAMLDict],
+                 HM_targets: tp.List[types.YAMLDict]):
         if not self.cmdopts['project_no_yaml_LN']:
             LinegraphsGenerator(self.cmdopts, LN_targets).generate()
 
         if not self.cmdopts['project_no_yaml_HM']:
             HeatmapsGenerator(self.cmdopts, HM_targets).generate()
 
-    def calc_targets(self) -> tp.Tuple[tp.List[tp.Dict[str, tp.Any]],
-                                       tp.List[tp.Dict[str, tp.Any]]]:
+    def calc_targets(self) -> tp.Tuple[tp.List[types.YAMLDict],
+                                       tp.List[types.YAMLDict]]:
         """
         Use YAML configuration for controller and intra-experiment graphs to
         calculate what graphs should be generated.
@@ -225,8 +226,8 @@ class LinegraphsGenerator:
     """
 
     def __init__(self,
-                 cmdopts: tp.Dict[str, tp.Any],
-                 targets: tp.List[tp.Dict[str, tp.Any]]) -> None:
+                 cmdopts: types.Cmdopts,
+                 targets: tp.List[types.YAMLDict]) -> None:
         self.cmdopts = cmdopts
         self.targets = targets
         self.logger = logging.getLogger(__name__)
@@ -277,8 +278,8 @@ class HeatmapsGenerator:
     """
 
     def __init__(self,
-                 cmdopts: tp.Dict[str, tp.Any],
-                 targets: tp.List[tp.Dict[str, tp.Any]]) -> None:
+                 cmdopts: types.Cmdopts,
+                 targets: tp.List[types.YAMLDict]) -> None:
 
         self.exp_stat_root = cmdopts['exp_stat_root']
         self.exp_graph_root = cmdopts["exp_graph_root"]

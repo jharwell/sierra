@@ -7,8 +7,8 @@ SIERRA Design Philosophy
 This document outlines the main philosophy behind SIERRA's design, how it can be
 used, and so forth. It really boils down to a few core ideas.
 
-Fail early, and often
-=====================
+Assert Often, Fail Early
+========================
 
 If a condition arises which SIERRA can't easily handle, abort. Don't try to
 recover by throwing exceptions, etc., just abort. This gives users confidence

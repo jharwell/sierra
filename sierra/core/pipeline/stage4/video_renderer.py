@@ -22,12 +22,12 @@ of SIERRA.
 # Core packages
 import os
 import subprocess
-import logging
 import typing as tp
 import multiprocessing as mp
 import queue
 import copy
 import shutil
+import logging  # type: tp.Any
 
 # 3rd party packages
 
@@ -35,6 +35,7 @@ import shutil
 import sierra.core.utils
 import sierra.core.config
 import sierra.core.variables.batch_criteria as bc
+from sierra.core import types
 
 
 class BatchExpParallelVideoRenderer:
@@ -42,7 +43,7 @@ class BatchExpParallelVideoRenderer:
     Render the video for each experiment in the specified batch directory in sequence.
     """
 
-    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, tp.Any]) -> None:
+    def __init__(self, main_config: dict, cmdopts: types.Cmdopts) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
 
@@ -54,8 +55,8 @@ class BatchExpParallelVideoRenderer:
             batch_exp_root: Root directory for the batch experiment.
         """
         exp_to_render = sierra.core.utils.exp_range_calc(self.cmdopts,
-                                                  self.cmdopts['batch_output_root'],
-                                                  criteria)
+                                                         self.cmdopts['batch_output_root'],
+                                                         criteria)
 
         q = mp.JoinableQueue()  # type: mp.JoinableQueue
 
@@ -64,7 +65,8 @@ class BatchExpParallelVideoRenderer:
 
             if self.cmdopts['project_rendering']:
 
-                exp_imagize_root = os.path.join(self.cmdopts['batch_imagize_root'], leaf)
+                exp_imagize_root = os.path.join(
+                    self.cmdopts['batch_imagize_root'], leaf)
 
                 # Project render targets are in <averaged_output_root>/<metric_dir_name>, for all
                 # directories in <averaged_output_root>.
@@ -79,7 +81,8 @@ class BatchExpParallelVideoRenderer:
                             'cmd_opts': self.cmdopts['render_cmd_opts']
                         }
 
-                        sierra.core.utils.dir_create_checked(opts['output_dir'], True)
+                        sierra.core.utils.dir_create_checked(
+                            opts['output_dir'], True)
                         q.put(opts)
 
             if self.cmdopts['argos_rendering']:
@@ -96,7 +99,8 @@ class BatchExpParallelVideoRenderer:
                                                    leaf),
                         'cmd_opts': self.cmdopts['render_cmd_opts']
                     }
-                    sierra.core.utils.dir_create_checked(opts['output_dir'], exist_ok=True)
+                    sierra.core.utils.dir_create_checked(
+                        opts['output_dir'], exist_ok=True)
                     q.put(copy.deepcopy(opts))
 
         # Render videos in parallel--waaayyyy faster

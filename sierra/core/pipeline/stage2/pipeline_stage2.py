@@ -18,13 +18,18 @@
 Contains main class implementing stage 2 of the experimental pipeline.
 """
 
-import logging
+# Core packages
 import typing as tp
 import time
 import datetime
+import logging  # type: tp.Any
 
+# 3rd party packages
+
+# Project packages
 from sierra.core.variables import batch_criteria as bc
 from sierra.core.pipeline.stage2.exp_runner import BatchedExpRunner
+from sierra.core import types
 
 
 class PipelineStage2:
@@ -37,7 +42,7 @@ class PipelineStage2:
 
     """
 
-    def __init__(self, cmdopts: tp.Dict[str, tp.Any]) -> None:
+    def __init__(self, cmdopts: types.Cmdopts) -> None:
         self.logger = logging.getLogger(__name__)
         self.cmdopts = cmdopts
 

@@ -15,9 +15,17 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 # Core packages
+import typing as tp
+from types import ModuleType
 
 # 3rd party packages
 
 # Project packages
-from . import cmdline
-from . import config
+
+################################################################################
+# Type Definitions
+################################################################################
+
+Cmdopts = tp.Dict[str, tp.Any]
+YAMLDict = tp.Dict[str, tp.Any]
+CLIArgSpec = tp.Dict[str, tp.Any]

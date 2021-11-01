@@ -20,6 +20,7 @@ computers you happen to have laying around in the lab).
 import os
 import math
 import typing as tp
+from sierra.core import types
 
 
 def env_configure(args):
@@ -36,7 +37,8 @@ def env_configure(args):
 
     for k in keys:
         assert k in os.environ,\
-            "FATAL: Attempt to run SIERRA in non-ADHOC environment: '{0}' not found".format(k)
+            "FATAL: Attempt to run SIERRA in non-ADHOC environment: '{0}' not found".format(
+                k)
 
     with open(os.environ['SIERRA_ADHOC_NODEFILE'], 'r') as f:
         lines = f.readlines()
@@ -89,5 +91,5 @@ def gnu_parallel_cmd_generate(parallel_opts: dict):
             parallel_opts['cmdfile_path'])
 
 
-def xvfb_cmd_generate(cmdopts: tp.Dict[str, tp.Any]):
+def xvfb_cmd_generate(cmdopts: types.Cmdopts):
     return ''

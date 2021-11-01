@@ -31,7 +31,7 @@ import packaging.version
 # Project packages
 import sierra.core.plugin_manager as pm
 import sierra.core.config
-
+from sierra.core import types
 
 ################################################################################
 # Dispatchers
@@ -43,7 +43,7 @@ class ARGoSCmdGenerator():
     Dispatcher to generate the ARGoS cmd to run for a simulation, given its input file.
     """
 
-    def __call__(self, cmdopts: tp.Dict[str, tp.Any], input_fpath: str) -> str:
+    def __call__(self, cmdopts: types.Cmdopts, input_fpath: str) -> str:
         hpc = pm.SIERRAPluginManager().get_plugin(cmdopts['hpc_env'])
         return hpc.argos_cmd_generate(input_fpath)  # type: ignore
 
@@ -73,7 +73,7 @@ class XvfbCmdGenerator():
     rendering.
     """
 
-    def __call__(self, cmdopts: tp.Dict[str, tp.Any]) -> str:
+    def __call__(self, cmdopts: types.Cmdopts) -> str:
         hpc = pm.SIERRAPluginManager().get_plugin(cmdopts['hpc_env'])
         return hpc.xvfb_cmd_generate(cmdopts)  # type: ignore
 

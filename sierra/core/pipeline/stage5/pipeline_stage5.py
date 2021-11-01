@@ -21,7 +21,7 @@ Contains main class implementing stage 5 of the experimental pipeline.
 # Core packages
 import os
 import typing as tp
-import logging
+import logging # type: tp.Any
 
 # 3rd party packages
 import yaml
@@ -31,6 +31,7 @@ from sierra.core.pipeline.stage5 import intra_scenario_comparator as intrasc
 from sierra.core.pipeline.stage5 import inter_scenario_comparator as intersc
 import sierra.core.root_dirpath_generator as rdg
 import sierra.core.utils
+from sierra.core import types
 
 
 class PipelineStage5:
@@ -56,7 +57,7 @@ class PipelineStage5:
 
     """
 
-    def __init__(self, main_config: dict, cmdopts: tp.Dict[str, tp.Any]) -> None:
+    def __init__(self, main_config: dict, cmdopts: types.Cmdopts) -> None:
         self.cmdopts = cmdopts
         self.main_config = main_config
         self.stage5_config = yaml.load(open(os.path.join(self.cmdopts['project_config_root'],
@@ -136,7 +137,8 @@ class PipelineStage5:
 
         self._verify_controllers(self.controllers, cli_args)
 
-        self.logger.info("Inter-batch controller comparison of %s...", self.controllers)
+        self.logger.info(
+            "Inter-batch controller comparison of %s...", self.controllers)
 
         if cli_args.bc_univar:
             univar = intrasc.UnivarIntraScenarioComparator(self.controllers,
@@ -218,9 +220,11 @@ class PipelineStage5:
                     collate_root2 = opts2['batch_stat_collate_root']
 
                     if scenario in collate_root1 and scenario not in collate_root2:
-                        self.logger.warning("%s does not exist in %s", scenario, collate_root2)
+                        self.logger.warning(
+                            "%s does not exist in %s", scenario, collate_root2)
                     if scenario in collate_root2 and scenario not in collate_root1:
-                        self.logger.warning("%s does not exist in %s", scenario, collate_root1)
+                        self.logger.warning(
+                            "%s does not exist in %s", scenario, collate_root1)
 
 
 __api__ = [

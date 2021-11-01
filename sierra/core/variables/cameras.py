@@ -32,6 +32,7 @@ from sierra.core.utils import ArenaExtent
 import sierra.core.variables.time_setup as ts
 from sierra.core.xml import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList, XMLTagRm, XMLTagAdd
 import sierra.core.config
+from sierra.core import types
 
 
 @implements.implements(IBaseVariable)
@@ -83,8 +84,10 @@ class ARGoSQTCameraTimeline():
             adds = XMLTagAddList(XMLTagAdd('./visualization/qt-opengl', 'camera', {}),
                                  XMLTagAdd("./visualization/qt-opengl/camera", "placements", {}))
 
-            in_ticks = self.tsetup.duration * sierra.core.config.kARGoS['ticks_per_second']
-            adds.append(XMLTagAdd('.//qt-opengl/camera', 'timeline', {'loop': str(in_ticks)}))
+            in_ticks = self.tsetup.duration * \
+                sierra.core.config.kARGoS['ticks_per_second']
+            adds.append(XMLTagAdd('.//qt-opengl/camera',
+                                  'timeline', {'loop': str(in_ticks)}))
 
             for ext in self.extents:
                 for c in range(0, self.kARGOS_N_CAMERAS + 1):
@@ -97,7 +100,8 @@ class ARGoSQTCameraTimeline():
                                           }
                                           ))
                     if self.interpolate and c < self.kARGOS_N_CAMERAS:
-                        adds.append(XMLTagAdd('.//qt-opengl/camera/timeline', 'interpolate', {}))
+                        adds.append(
+                            XMLTagAdd('.//qt-opengl/camera/timeline', 'interpolate', {}))
 
             if self.paradigm == 'sierra':
                 for ext in self.extents:
@@ -186,7 +190,7 @@ class ARGoSQTCameraOverhead():
         pass
 
 
-def factory(cmdopts: tp.Dict[str, tp.Any], extents: tp.List[ArenaExtent]):
+def factory(cmdopts: types.Cmdopts, extents: tp.List[ArenaExtent]):
     """
     Create cameras for a list of arena extents.
     """

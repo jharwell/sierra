@@ -23,7 +23,7 @@ without overlap.
 
 # Core packages
 import typing as tp
-import logging
+import logging # type: tp.Any
 
 # 3rd party packages
 import implements
@@ -32,6 +32,7 @@ import implements
 from sierra.core.variables.base_variable import IBaseVariable
 from sierra.core.utils import ArenaExtent
 from sierra.core.xml import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList, XMLTagRm, XMLTagAdd
+from sierra.core import types
 
 
 @implements.implements(IBaseVariable)
@@ -111,7 +112,8 @@ class PhysicsEngines():
             elif self.n_engines == 24:
                 self.tag_adds = [self._gen24_engines(s) for s in self.extents]
             else:
-                raise RuntimeError("Bad # of physics engines specified: {0}".format(self.n_engines))
+                raise RuntimeError(
+                    "Bad # of physics engines specified: {0}".format(self.n_engines))
 
         return self.tag_adds
 
@@ -192,15 +194,19 @@ class PhysicsEngines():
             lr_x = extent.ll.x + size_x * ((engine_id % n_engines_x) + 1)
 
         else:  # Engine lower X coord increasing as engine id DECREASES
-            ll_x = extent.ll.x + size_x * (n_engines_x - (engine_id % n_engines_x) - 1)
-            lr_x = extent.ll.x + size_x * ((n_engines_x - (engine_id % n_engines_x) - 1) + 1)
+            ll_x = extent.ll.x + size_x * \
+                (n_engines_x - (engine_id % n_engines_x) - 1)
+            lr_x = extent.ll.x + size_x * \
+                ((n_engines_x - (engine_id % n_engines_x) - 1) + 1)
 
         ur_x = lr_x
         ul_x = ll_x
 
         # We use the max of # engines in X/Y to get the nice numbering/layout of engines.
-        ll_y = extent.ll.y + size_y * (int(engine_id / max(n_engines_x, n_engines_y)))
-        ul_y = extent.ll.y + size_y * (int(engine_id / max(n_engines_x, n_engines_y)) + 1)
+        ll_y = extent.ll.y + size_y * \
+            (int(engine_id / max(n_engines_x, n_engines_y)))
+        ul_y = extent.ll.y + size_y * \
+            (int(engine_id / max(n_engines_x, n_engines_y)) + 1)
 
         lr_y = ll_y
         ur_y = ul_y
@@ -415,7 +421,7 @@ class PhysicsEngines3D(PhysicsEngines):
 
 def factory(engine_type: str,
             n_engines: int,
-            cmdopts: tp.Dict[str, tp.Any],
+            cmdopts: types.Cmdopts,
             extents: tp.List[ArenaExtent]) -> PhysicsEngines:
     """
     Create a physics engine mapping onto a list of arena extents for 2D or 3D

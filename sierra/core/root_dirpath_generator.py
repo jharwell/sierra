@@ -15,28 +15,35 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Functions for generating the directory paths for the root directories for a single batched
-experiment.
+Functions for generating the directory paths for the root directories for a
+single batched experiment.
 
-- The batch experiment root. ALL files (inputs and outputs) are written to this directory, which
-  will be under ``--sierra-root``. Named using a combination of ``--scenario`` (block
-  distribution + arena dimensions) and ``--batch-criteria`` in order to guarantee uniqueness
-  among batch roots anytime the batch criteria or scenario change.
+- The batch experiment root. ALL files (inputs and outputs) are written to this
+  directory, which will be under ``--sierra-root``. Named using a combination of
+  ``--scenario`` (block distribution + arena dimensions) and
+  ``--batch-criteria`` in order to guarantee uniqueness among batch roots
+  anytime the batch criteria or scenario change.
 
-- The batch input root. All input files will be generated under this root directory. Named ``<batch
-  experiment root>/exp-inputs``.
+- The batch input root. All input files will be generated under this root
+  directory. Named ``<batch experiment root>/exp-inputs``.
 
 - The batch output root. All output files will accrue under this root
-  directory. Each experiment will get their own directory in this root for its outputs to
-  accrue into. Named ``<batch experiment root>/exp-outputs``.
+  directory. Each experiment will get their own directory in this root for its
+  outputs to accrue into. Named ``<batch experiment root>/exp-outputs``.
 
-- The batch graph root. All generated graphs will acrrue under this root directory. Each
-  experiment will get their own directory in this root for their graphs to accrue
-  into. Named ``<batch experiment root>/graphs``.
+- The batch graph root. All generated graphs will acrrue under this root
+  directory. Each experiment will get their own directory in this root for their
+  graphs to accrue into. Named ``<batch experiment root>/graphs``.
+
 """
+# Core packages
 import os
-import logging
 import typing as tp
+import logging  # type: tp.Any
+
+# 3rd party packages
+
+# Project packages
 
 
 def from_cmdline(args) -> tp.Dict[str, str]:
@@ -44,13 +51,15 @@ def from_cmdline(args) -> tp.Dict[str, str]:
     Generates the directory paths for the root directories for a single batched experiment directly
     from cmdline arguments.
     """
-    template_stem, _ = os.path.splitext(os.path.basename(args.template_input_file))
+    template_stem, _ = os.path.splitext(
+        os.path.basename(args.template_input_file))
 
     # Remove all '-' from the template input file stem so we know the only '-' that are in it are
     # ones that we put there.
     template_stem = template_stem.replace('-', '')
 
-    batch_leaf = gen_batch_leaf(args.batch_criteria, template_stem, args.scenario)
+    batch_leaf = gen_batch_leaf(
+        args.batch_criteria, template_stem, args.scenario)
 
     return regen_from_exp(args.sierra_root,
                           args.project,

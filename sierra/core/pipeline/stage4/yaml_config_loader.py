@@ -16,14 +16,15 @@
 
 # Core packages
 import os
-import logging
 import typing as tp
+import logging  # type: tp.Any
 
 # 3rd party packages
 import yaml
 
 # Project packages
 import sierra.core.utils
+from sierra.core import types
 
 
 class YAMLConfigLoader():
@@ -45,7 +46,7 @@ class YAMLConfigLoader():
     def __init__(self) -> None:
         self.logger = logging.getLogger(__name__)
 
-    def __call__(self, cmdopts: tp.Dict[str, tp.Any]) -> tp.Dict[str, tp.Dict[str, str]]:
+    def __call__(self, cmdopts: types.Cmdopts) -> tp.Dict[str, tp.Dict[str, str]]:
         """
         Loads the intra-experiment linegraph, inter-experiment linegraph, and
         intra-experiment heatmap YAML configuration.

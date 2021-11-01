@@ -23,6 +23,9 @@ import random
 import typing as tp
 
 
+from sierra.core import types
+
+
 def env_configure(args):
     """
     Configure SIERRA for local HPC by the parsed cmdline arguments according to the # CPUs
@@ -81,7 +84,7 @@ def gnu_parallel_cmd_generate(parallel_opts: dict):
             parallel_opts['cmdfile_path'])
 
 
-def xvfb_cmd_generate(cmdopts: tp.Dict[str, tp.Any]):
+def xvfb_cmd_generate(cmdopts: types.Cmdopts):
     """
     Generate the command for running ARGoS under Xvfb for headless rendering (if configured).
     """

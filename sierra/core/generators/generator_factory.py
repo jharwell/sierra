@@ -16,9 +16,8 @@
 
 # Core packages
 import os
-import re
-import logging
 import typing as tp
+import logging  # type: tp.Any
 
 # 3rd party packages
 import yaml
@@ -27,6 +26,7 @@ import yaml
 from sierra.core.xml import XMLLuigi
 from sierra.core.experiment_spec import ExperimentSpec
 import sierra.core.plugin_manager as pm
+from sierra.core import types
 
 
 def joint_generator_create(controller, scenario):
@@ -78,7 +78,7 @@ def scenario_generator_create(spec: ExperimentSpec,
 
 def controller_generator_create(controller: str,
                                 config_root: str,
-                                cmdopts: tp.Dict[str, tp.Any]):
+                                cmdopts: types.Cmdopts):
     """
     Creates a controller generator from the cmdline specification that exists in one of
     the configuration files.

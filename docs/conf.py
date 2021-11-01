@@ -96,7 +96,6 @@ elif 'man' in sys.argv:
                              'src/contributing.rst',
                              'src/quickstart.rst',
                              'src/faq.rst',
-                             'src/glossary.rst',
                              'src/usage/index.rst'])
 
 # The name of the Pygments (syntax highlighting) style to use.
@@ -241,9 +240,12 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 autosectionlabel_prefix_document = True
 man_pages = [
-    ('man/sierra-cli', 'sierra-cli', 'The SIERRA Command Line Interface', [author], 1),
-    ('man/sierra-rendering', 'sierra-rendering', 'SIERRA Rendering', [author], 7),
-    ('man/sierra', 'sierra', 'Swarm Intelligence Reusable ARGoS Automation (SIERRA)', [author], 7)
+    ('man/sierra-cli', 'sierra-cli',
+     'The SIERRA Command Line Interface', [author], 1),
+    ('man/sierra-rendering', 'sierra-rendering',
+     'SIERRA Rendering', [author], 7),
+    ('man/sierra', 'sierra',
+     'Swarm Intelligence Reusable ARGoS Automation (SIERRA)', [author], 7)
 ]
 
 # -- Options for Texinfo output -------------------------------------------

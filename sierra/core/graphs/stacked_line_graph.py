@@ -16,10 +16,10 @@
 #
 
 # Core packages
-import logging
 import typing as tp
 import copy
 import os
+import logging  # type: tp.Any
 
 # 3rd party packages
 import pandas as pd
@@ -103,7 +103,8 @@ class StackedLineGraph:
         # Plot specified columns from dataframe.
         if self.cols is None:
             ncols = max(1, int(len(data_df.columns) / 2.0))
-            ax = self._plot_selected_cols(data_df, stat_dfs, data_df.columns, model)
+            ax = self._plot_selected_cols(
+                data_df, stat_dfs, data_df.columns, model)
         else:
             ncols = max(1, int(len(self.cols) / 2.0))
             ax = self._plot_selected_cols(data_df, stat_dfs, self.cols, model)
@@ -124,9 +125,12 @@ class StackedLineGraph:
 
         # Output figure
         fig = ax.get_figure()
-        fig.set_size_inches(sierra.core.config.kGraphBaseSize, sierra.core.config.kGraphBaseSize)
-        fig.savefig(self.output_fpath, bbox_inches='tight', dpi=sierra.core.config.kGraphDPI)
-        plt.close(fig)  # Prevent memory accumulation (fig.clf() does not close everything)
+        fig.set_size_inches(sierra.core.config.kGraphBaseSize,
+                            sierra.core.config.kGraphBaseSize)
+        fig.savefig(self.output_fpath, bbox_inches='tight',
+                    dpi=sierra.core.config.kGraphDPI)
+        # Prevent memory accumulation (fig.clf() does not close everything)
+        plt.close(fig)
 
     def _plot_ticks(self, ax) -> None:
         if self.logyscale:
@@ -211,21 +215,25 @@ class StackedLineGraph:
             if sierra.core.utils.path_exists(stddev_ipath):
                 dfs['stddev'] = sierra.core.utils.pd_csv_read(stddev_ipath)
             else:
-                self.logger.warning("Stddev file not found for '%s'", self.input_stem)
+                self.logger.warning(
+                    "Stddev file not found for '%s'", self.input_stem)
 
         return dfs
 
     def _read_models(self) -> tp.Tuple[pd.DataFrame, tp.List[str]]:
         if self.model_root is not None:
-            model_fpath = os.path.join(self.model_root, self.input_stem + '.model')
-            model_legend_fpath = os.path.join(self.model_root, self.input_stem + '.legend')
+            model_fpath = os.path.join(
+                self.model_root, self.input_stem + '.model')
+            model_legend_fpath = os.path.join(
+                self.model_root, self.input_stem + '.legend')
             if sierra.core.utils.path_exists(model_fpath):
                 model = sierra.core.utils.pd_csv_read(model_fpath)
                 if sierra.core.utils.path_exists(model_legend_fpath):
                     with open(model_legend_fpath, 'r') as f:
                         model_legend = f.read().splitlines()
                 else:
-                    self.logger.warning("No legend file for model '%s' found", model_fpath)
+                    self.logger.warning(
+                        "No legend file for model '%s' found", model_fpath)
                     model_legend = ['Model Prediction']
 
                 return (model, model_legend)

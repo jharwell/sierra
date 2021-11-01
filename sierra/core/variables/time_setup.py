@@ -122,7 +122,8 @@ class Parser():
 
 def factory(arg: str) -> ARGoSTimeSetup:
     """
-    Factory to create :class:`ARGoSTimeSetup` derived classes from the command line definition.
+    Factory to create :class:`ARGoSTimeSetup` derived classes from the command
+    line definition.
 
     Parameters:
        arg: The value of ``--time-setup``

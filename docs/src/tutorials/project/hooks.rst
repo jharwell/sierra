@@ -63,7 +63,7 @@ follows:
       import sierra.core.pipeline.stage4.yaml_config_loader as ycl
 
       class YAMLConfigLoader(ycl.YAMLConfigLoader):
-          def __call__(self, cmdopts: tp.Dict[str, tp.Any]) -> tp.Dict[str, tp.Dict[str, str]]:
+          def __call__(self, cmdopts: types.Cmdopts) -> tp.Dict[str, tp.Dict[str, str]]:
               ...
 
 Intra-Experiment Graph Generation
