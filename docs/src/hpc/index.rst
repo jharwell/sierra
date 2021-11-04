@@ -7,17 +7,11 @@ High Performance Computing (HPC) Plugins
 SIERRA is capable of adapting its runtime infrastructure to a number of
 different HPC environments so that ARGoS experiments can be run efficiently on
 whatever computational resources a researcher has access to. Supported
-environments that come with SIERRA are:
-
-- :ref:`ln-hpc-plugins-local`
-- :ref:`ln-hpc-plugins-pbs`
-- :ref:`ln-hpc-plugins-slurm`
-- :ref:`ln-hpc-plugins-adhoc`
-
+environments that come with SIERRA are listed on this page.
 .. _ln-hpc-plugins-local:
 
-Local
-=====
+Local HPC Plugin
+================
 
 This HPC environment can be selected via ``--hpc-env=hpc.local``.
 
@@ -37,8 +31,8 @@ environment for use with SIERRA.
 
 .. _ln-hpc-plugins-pbs:
 
-PBS
-===
+PBS HPC Plugin
+==============
 
 This HPC environment can be selected via ``--hpc-env=hpc.pbs``.
 
@@ -67,7 +61,7 @@ TOQUE-PBS docs for meaning); if they are not defined SIERRA will throw an error.
      - Used to calculate # physics engines per simulation for each allocated compute
        node via::
 
-         floor(PBS_NUM_PPN / ``--exec-sims-per-node``) 
+         floor(PBS_NUM_PPN / --exec-sims-per-node)
 
        That is, ``--exec-sims-per-node`` is required for PBS HPC environments.
 
@@ -91,8 +85,8 @@ an error.
 
 .. _ln-hpc-plugins-slurm:
 
-SLURM
-=====
+SLURM HPC Plugin
+================
 
 `<https://slurm.schedmd.com/documentation.html>`_
 
@@ -146,8 +140,8 @@ an error.
 
 .. _ln-hpc-plugins-adhoc:
 
-Adhoc
-=====
+Adhoc HPC Plugin
+================
 
 This HPC environment can be selected via ``--hpc-env=hpc.adhoc``.
 

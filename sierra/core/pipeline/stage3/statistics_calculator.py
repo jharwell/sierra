@@ -26,7 +26,7 @@ import multiprocessing as mp
 import typing as tp
 import queue
 import time
-import logging # type: tp.Any
+import logging  # type: tp.Any
 
 # 3rd party packages
 import pandas as pd

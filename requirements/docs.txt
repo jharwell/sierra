@@ -1,7 +1,8 @@
 -r common.txt
-sphinx >=3.3.0
+sphinx
+docutils==0.16
+sphinx-rtd-theme
 sphinx-argparse
 sphinxcontrib-napoleon
-sphinx-rtd-theme
 autoapi
 psutil

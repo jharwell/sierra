@@ -97,12 +97,17 @@ class BatchIntraExpGraphGenerator:
                                                  LN_config,
                                                  HM_config,
                                                  cmdopts)(criteria)
+            else:
+                self.logger.warning("Skipping experiment '%s': %s does not exist",
+                                    exp,
+                                    cmdopts['exp_stat_root'])
 
 
 class IntraExpGraphGenerator:
     """
-    Generates graphs from averaged output data within a single experiment in a batch. Which graphs
-    are generated is controlled by YAML configuration files parsed in
+    Generates graphs from averaged output data within a single experiment in a
+    batch. Which graphs are generated is controlled by YAML configuration files
+    parsed in
     :class:`~sierra.core.pipeline.stage4.pipeline_stage4.PipelineStage4`.
 
     This class can be extended/overriden using a :term:`Project` hook. See
@@ -161,7 +166,6 @@ class IntraExpGraphGenerator:
         # . :class:`~sierra.core.pipeline.stage4.intra_exp_graph_generator.HeatmapsGenerator`
             to generate heatmaps for each experiment in the batch.
         """
-
         LN_targets, HM_targets = self.calc_targets()
         self.generate(LN_targets, HM_targets)
 
