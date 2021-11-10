@@ -9,12 +9,18 @@ first defining your own, the steps to do so below. I assume that all
 repositories are cloned into ``$HOME/research``; adjust the paths accordingly if
 you clone things somewhere else.
 
-#. Install OS packages (ubuntu package names shown):
+#. Install OS packages. The .deb package for ubuntu are shown; if you are on a
+   different Linux distribution or on OSX you will have to install the
+   equivalent packages.
 
    - ``parallel``
    - ``cm-super``
    - ``texlive-fonts-recommended``
    - ``texlive-latex-extra``
+   - ``dvipng``
+   
+   .. IMPORTANT:: SIERRA will not work if these packages (or their equivalent on
+                  non-ubuntu systems) are installed!
 
 #. Install :term:`ARGoS` via your chosen method. Check that ``argos3`` is found
    by your shell.

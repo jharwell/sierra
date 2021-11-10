@@ -21,7 +21,7 @@ Linegraph for summarizing the results of a batch experiment in different ways.
 # Core packages
 import os
 import typing as tp
-import logging # type: tp.Any   # type: tp.Any
+import logging  # type: tp.Any   # type: tp.Any
 
 # 3rd party packages
 import matplotlib.ticker as mticker
@@ -34,9 +34,10 @@ import sierra.core.utils
 
 
 class SummaryLineGraph:
-    """Generates a linegraph summarizing swarm behavior across a :term:`Batch
-    Experiment`, possibly showing the 95% confidence interval or box and whisker
-    plots, according to configuration.
+    """
+    Generates a linegraph summarizing swarm behavior across a :term:`Batch Experiment`,
+    possibly showing the 95% confidence interval or box and whisker plots,
+    according to configuration.
 
     Attributes:
         stats_root: The absolute/relative path to the ``statistics/`` directory

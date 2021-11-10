@@ -5,7 +5,7 @@ Getting Started With SIERRA
 ===========================
 
 If you're looking for the "I just want to try out SIERRA without doing any work"
-quickstart, see:ref:`ln-trial` . Otherwise, the steps to install SIERRA and
+quickstart, see :ref:`ln-trial`. Otherwise, the steps to install SIERRA and
 setup the interface between your ARGoS C++ project and SIERRA are below.
 
 Installing SIERRA
@@ -14,12 +14,20 @@ Installing SIERRA
 #. From the SIERRA repo root, install SIERRA locally by following
    :ref:`ln-package`.
 
-#. Install OS packages (ubuntu package names shown):
+
+#. Install OS packages. The .deb package for ubuntu are shown; if you are on a
+   different Linux distribution or on OSX you will have to install the
+   equivalent packages.
 
    - ``parallel``
    - ``cm-super``
    - ``texlive-fonts-recommended``
    - ``texlive-latex-extra``
+   - ``dvipng``
+
+   .. IMPORTANT:: SIERRA will not work if these packages (or their equivalent on
+                  non-ubuntu systems) are installed!
+
 
 General Setup Workflow
 ----------------------

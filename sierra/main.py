@@ -18,7 +18,7 @@ Main module/entry point for SIERRA, the helpful command line swarm-robotic autom
 """
 
 # Core packages
-import logging # type: tp.Any
+import logging  # type: tp.Any
 import sys
 from collections.abc import Iterable
 import os
@@ -34,22 +34,21 @@ from sierra.core.generators.controller_generator_parser import ControllerGenerat
 import sierra.core.root_dirpath_generator as rdg
 import sierra.core.plugin_manager as pm
 import sierra.core.logging
+import sierra.core.startup
 
 
 class SIERRA():
     def __init__(self) -> None:
-
-        # check python version
-        if sys.version_info < (3, 6):
-            raise RuntimeError("Python >= 3.6 must be used to run SIERRA.")
-
+        # Bootstrap the cmdline
         bootstrap = cmd.BootstrapCmdline()
         bootstrap_args, other_args = bootstrap.parser.parse_known_args()
 
         # Setup logging customizations
         sierra.core.logging.initialize(bootstrap_args.log_level)
-
         self.logger = logging.getLogger(__name__)
+
+        # Check runtime environment
+        sierra.core.startup.startup_checks()
 
         sierra_root = os.path.dirname(os.path.abspath(__file__))
 
