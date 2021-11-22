@@ -118,11 +118,19 @@ works/is designed the way it is, and to help you find your way around.
 
       A ``.csv`` file created by SIERRA during stage 4 (if inter-experiment
       graph generation is to be run). A summary ``.csv`` file created from a
-      ``Collated .csv`` file by taking the last row; this usually corresponds to
-      steady-state behavior, which is what you are after. However, you can
-      capture transient behaviors by created collated and summary ``.csv`` files
-      from captured simulation outputs over short stretches of simulation
-      time--SIERRA does not know the difference.
+      :term:`Collated .csv` file by taking the last row; this usually
+      corresponds to steady-state behavior, which is what you are
+      after. However, you can also capture transient behaviors by creating
+      :term:`Collated .csv` and :term:`Summary .csv` files from captured
+      simulation outputs over short stretches of simulation time--SIERRA does
+      not know the difference.
+
+   Inter-Batch .csv
+
+      A ``.csv`` file created by SIERRA during stage 5. An inter-batch ``.csv``
+      is created by "collating" columns from a :term:`Summary .csv` present in
+      multiple :term:`Batch Experiments <Batch Experiment>` into a single
+      ``.csv``. Used during stage 5.
 
    Graph Category
 

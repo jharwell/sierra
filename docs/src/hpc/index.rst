@@ -8,6 +8,7 @@ SIERRA is capable of adapting its runtime infrastructure to a number of
 different HPC environments so that ARGoS experiments can be run efficiently on
 whatever computational resources a researcher has access to. Supported
 environments that come with SIERRA are listed on this page.
+
 .. _ln-hpc-plugins-local:
 
 Local HPC Plugin

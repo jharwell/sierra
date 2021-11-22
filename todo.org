@@ -1,4 +1,4 @@
-** TODO [#A] Create SIERRA pypi package [87%]
+** TODO [#A] Create SIERRA pypi package [88%]
 - [X] Push --scenario to the FORDYCA plugin--not part of core SIERRA
 - [X] Push templates/scripts to the FORDYCA plugin--not part of core SIERRA
 - [X] Make PopulationDensity not coupled to SS,DS,RN,PL block distribution, which it is currently.
@@ -16,7 +16,7 @@
 - [X] Update contributing guide: LIBRA development workflow so it makes sense for sierra (originally written for C++),
   and add CONTRIBUTING.md which points to this page in the docs.
 - [X] Refine docs for all overridable SIERRA hooks to make them more usable to others.
-- [ ] Docs for what statistics SIERRA can generate
+- [X] Docs for what statistics SIERRA can generate
 - [ ] Document the for_sphinx arg and how it works for cmdline docs
 - [ ] More SAANoise out of SIERRA--to uses the perf.robustness dictionary, which I am moving out to TITERRA. ALso, SAA
      noise requires ARGoS functionality that is not in the main repo and will not probably ever make it there.

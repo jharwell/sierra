@@ -17,6 +17,7 @@ a good way to understand how to get the most out of SIERRA.
    batch_criteria.rst
    variables.rst
    pipeline.rst
+   stage5.rst
    cli.rst
    run_time_tree.rst
    subprograms.rst

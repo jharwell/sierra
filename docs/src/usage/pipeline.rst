@@ -38,7 +38,8 @@ SIERRA post-processes experimental results after running the batched experiment;
 some parts of this can be done in parallel. This includes one or more of:
 
 - Computing statistics over/about experimental data for stage 4 for use in graph
-  generation in stage 4. See :ref:`ln-usage-statistics` for details.
+  generation in stage 4. See :ref:`ln-usage-cli` documentation for
+  ``--dist-stats`` for details.
 
 - Creating images from project ``.csv`` files for rendering in stage 4. See
   :ref:`ln-usage-rendering-project` for details.
@@ -54,20 +55,17 @@ experiment, which can include shiny graphs and videos. See
 
 Part of default pipeline.
 
-Stage 5: Graph Generation for Controller Comparison
----------------------------------------------------
+Stage 5: Graph Generation for Controller/Scenario Comparison
+------------------------------------------------------------
 
-SIERRA perform graph generation for comparing controllers AFTER graph generation
-for batched experiments has been run. Not part of default pipeline.
+SIERRA can perform additional graph generation *AFTER* graph generation for
+batched experiments has been run. This is extremely useful for generating graphs
+which can be dropped immediately into academic papers without modification. Not
+part of default pipeline. See :ref:`ln-usage-stage5` for details. This can be
+used to:
 
-.. IMPORTANT:: It is assumed that if stage5 is run that the # experiments and
-               batch criteria are the same for all controllers that will be
-               compared. If this is not true then weird things may or may not
-               happen. Some level of checking and verification is performed
-               prior to comparison, but this functionality is alpha quality at
-               best.
+- Compare multiple controllers within the same ``--scenario``. See
+  :ref:`ln-usage-stage5-intra-scenario` for details.
 
-
-.. IMPORTANT:: If you run something other than ``--pipeline 1 2 3 4``, then
-  before stage X will run without crashing, you need to run stage X-1. This is a
-  logical limitation, because the different pipeline stages build on each other.
+- Compare a single ``--controller`` across multiple scenarios. See
+  :ref:`ln-usage-stage5-inter-scenario` for details.

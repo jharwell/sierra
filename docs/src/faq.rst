@@ -24,6 +24,12 @@ FAQ
 
    A: ``sierra-cli ... --pipeline 3 4``
 
+
+   .. IMPORTANT:: If you run something other than ``--pipeline 1 2 3 4``, then
+                  before stage X will run without crashing, you (probably) need
+                  to run stage X-1. This is a logical limitation, because the
+                  different pipeline stages build on each other.
+
 #. Q: How do I prevent SIERRA from stripping out XML tags?
 
    A: There are 3 options for this: ``--with-robot-leds``, ``--with-robot-rab``,
