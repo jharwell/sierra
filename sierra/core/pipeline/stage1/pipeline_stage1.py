@@ -25,8 +25,8 @@ import logging  # type: tp.Any
 # 3rd party packages
 
 # Project packages
-from sierra.core.generators.exp_generators import BatchedExpDefGenerator
-from sierra.core.generators.exp_creator import BatchedExpCreator
+from sierra.core.generators.exp_generators import BatchExpDefGenerator
+from sierra.core.generators.exp_creator import BatchExpCreator
 import sierra.core.variables.batch_criteria as bc
 from sierra.core import types
 
@@ -36,8 +36,8 @@ class PipelineStage1:
     Implements stage 1 of the pipeline.
 
     Generates a set of XML configuration files from a template suitable for
-    input into ARGoS that contain user-specified modifications. This stage is
-    idempotent.
+    launching simulations/real robot controller that contain user-specified
+    modifications. This stage is idempotent.
 
     """
 
@@ -45,16 +45,16 @@ class PipelineStage1:
                  cmdopts: types.Cmdopts,
                  controller: str,
                  criteria: bc.IConcreteBatchCriteria) -> None:
-        self.generator = BatchedExpDefGenerator(batch_config_template=cmdopts['template_input_file'],
-                                                controller_name=controller,
-                                                scenario_basename=cmdopts['scenario'],
-                                                criteria=criteria,
-                                                cmdopts=cmdopts)
-        self.creator = BatchedExpCreator(batch_config_template=cmdopts['template_input_file'],
-                                         batch_input_root=cmdopts['batch_input_root'],
-                                         batch_output_root=cmdopts['batch_output_root'],
-                                         criteria=criteria,
-                                         cmdopts=cmdopts)
+        self.generator = BatchExpDefGenerator(batch_config_template=cmdopts['template_input_file'],
+                                              controller_name=controller,
+                                              scenario_basename=cmdopts['scenario'],
+                                              criteria=criteria,
+                                              cmdopts=cmdopts)
+        self.creator = BatchExpCreator(batch_config_template=cmdopts['template_input_file'],
+                                       batch_input_root=cmdopts['batch_input_root'],
+                                       batch_output_root=cmdopts['batch_output_root'],
+                                       criteria=criteria,
+                                       cmdopts=cmdopts)
 
         self.cmdopts = cmdopts
         self.criteria = criteria
@@ -65,13 +65,12 @@ class PipelineStage1:
         Run stage 1 of the experiment pipeline.
         """
 
-        self.logger.info("Generating input files for batched experiment in %s...",
+        self.logger.info("Generating input files for batch experiment in %s...",
                          self.cmdopts['batch_root'])
-        self.logger.debug("Using '%s'", self.cmdopts['time_setup'])
         self.creator.create(self.generator)
 
         self.logger.info("%d input files generated in %d experiments.",
-                         self.cmdopts['n_sims'] *
+                         self.cmdopts['n_runs'] *
                          len(self.criteria.gen_attr_changelist()),
                          len(self.criteria.gen_attr_changelist()))
 

@@ -90,7 +90,7 @@ class UnivarInterScenarioComparator:
         self.logger = logging.getLogger(__name__)
 
     def __call__(self, graphs: tp.List[types.YAMLDict], legend: tp.List[str]) -> None:
-        # Obtain the list of simulation results directories to draw from.
+        # Obtain the list of experimental run results directories to draw from.
         batch_leaves = os.listdir(os.path.join(self.cmdopts['sierra_root'],
                                                self.cmdopts['project'],
                                                self.controller))
@@ -146,7 +146,7 @@ class UnivarInterScenarioComparator:
                                   batch_leaf: str,
                                   legend: tp.List[str]) -> None:
 
-        # We need to generate the root directory paths for each batched
+        # We need to generate the root directory paths for each batch
         # experiment (which # lives inside of the scenario dir), because they
         # are all different. We need generate these paths for EACH controller,
         # because the controller is part of the batch root path.
@@ -288,8 +288,8 @@ class UnivarInterScenarioComparator:
                 model_df, model_opath_stem + '.model', index=False)
             with open(model_opath_stem + '.legend', 'a') as f:
                 _, scenario, _ = rdg.parse_batch_leaf(batch_leaf)
-                sgp = pm.module_load_tiered(cmdopts['project'],
-                                            'generators.scenario_generator_parser')
+                sgp = pm.module_load_tiered(project=cmdopts['project'],
+                                            path='generators.scenario_generator_parser')
                 kw = sgp.ScenarioGeneratorParser().to_dict(scenario)
                 f.write("{0} Prediction\n".format(kw['scenario_tag']))
 

@@ -23,7 +23,7 @@ without overlap.
 
 # Core packages
 import typing as tp
-import logging # type: tp.Any
+import logging  # type: tp.Any
 
 # 3rd party packages
 import implements
@@ -37,8 +37,7 @@ from sierra.core import types
 
 @implements.implements(IBaseVariable)
 class PhysicsEngines():
-    """
-    Base physics engine class doing most of the work.
+    """Base physics engine class doing most of the work.
 
     Attributes:
         engine_type: The type of physics engine to use (one supported by ARGoS).
@@ -46,12 +45,14 @@ class PhysicsEngines():
         iter_per_tick: # of iterations physics engines should perform per tick.
         layout: Engine arrangement method. Can be one of:
 
-                - ``uniform_grid2D``: Arrange the engines in a uniform 2D grid that extends up to
-                  the maximum height in Z. For 2D engines, this is the maximum height of objects
-                  that can be present in the arena (I think).
+                 - ``uniform_grid2D``: Arrange the engines in a uniform 2D grid
+                    that extends up to the maximum height in Z. For 2D engines,
+                    this is the maximum height of objects that can be present in
+                    the arena (I think).
 
-        extents: List of (X,Y,Zs) tuple of dimensions of area to assign to engines of the specified
-                 type.
+        extents: List of (X,Y,Zs) tuple of dimensions of area to assign to
+                 engines of the specified type.
+
     """
 
     def __init__(self,
@@ -71,7 +72,7 @@ class PhysicsEngines():
         # among them.
         self.n_engines = int(self.n_engines / float(len(self.extents)))
         assert self.layout == 'uniform_grid2D',\
-            "FATAL: Only uniform_grid2D physics engine layout currently supported"
+            "Only uniform_grid2D physics engine layout currently supported"
 
         self.logger = logging.getLogger(__name__)
 
@@ -83,8 +84,9 @@ class PhysicsEngines():
 
     def gen_tag_rmlist(self) -> tp.List[XMLTagRmList]:
         """
-        Removing the ``<physics_engines>`` tag if it exists may be desirable so an option is
-        provided to do so. Obviously you *must* call this function BEFORE adding new definitions.
+        Removing the ``<physics_engines>`` tag if it exists may be desirable so
+        an option is provided to do so. Obviously you *must* call this function
+        BEFORE adding new definitions.
 
         """
         return [XMLTagRmList(XMLTagRm(".", "./physics_engines"))]
@@ -126,8 +128,8 @@ class PhysicsEngines():
                          n_engines_y: int,
                          forward_engines: tp.List[int]) -> XMLTagAddList:
         """
-        Generate definitions for the specified # of 2D/3D physics engines for the specified arena
-        extent.
+        Generate definitions for the specified # of 2D/3D physics engines for
+        the specified arena extent.
         """
         adds = XMLTagAddList(XMLTagAdd('.', 'physics_engines', {}))
 
@@ -147,21 +149,24 @@ class PhysicsEngines():
                            n_engines_y: int,
                            forward_engines: tp.List[int]) -> XMLTagAddList:
         """
-        Generate definitions for a specific 2D/3D engine as a member of the mapping of the specified
-        arena extent to one or more engines.
+        Generate definitions for a specific 2D/3D engine as a member of the
+        mapping of the specified arena extent to one or more engines.
 
-        Volume is *NOT* divided equally among engines, but rather each of the engines is extended up
-        to some maximum height in Z, forming a set of "silos".
+        Volume is *NOT* divided equally among engines, but rather each of the
+        engines is extended up to some maximum height in Z, forming a set of
+        "silos".
 
         Arguments:
             engine_id: Numerical UUID for the engine.
             extent: The mapped extent for ALL physics engines.
-            exceptions: List of lists of points defining polygons which should NOT be managed by
-                        any of the engines currently being processed.
+            exceptions: List of lists of points defining polygons which should
+                        NOT be managed by any of the engines currently being
+                        processed. 
             n_engines_x: # engines in the x direction.
             n_engines_y: # engines in the y direction.
-            forward_engines: IDs of engines that are placed in increasing order in X when layed out
-                             L->R.
+            forward_engines: IDs of engines that are placed in increasing order
+                             in X when layed out L->R.
+
         """
 
         adds = XMLTagAddList()
@@ -234,15 +239,18 @@ class PhysicsEngines():
                                        {'id': name}))
 
     def _gen2_engines(self, extent: ArenaExtent) -> XMLTagAddList:
-        """
-        Generate definitions for 2 2D or 3D physics engines for the specified extents.
+        """Generate definitions for 2 2D or 3D physics engines for the specified
+        extents. 
 
-        Engines are layed out as follows in 2D, regardless if they are 2D or 3D engines:
+        Engines are layed out as follows in 2D, regardless if they are 2D or 3D
+        engines: 
 
          0 1
 
-        Volume is *NOT* divided equally among 3D engines, but rather each of the engines is extended
-        up to some maximum height in Z, forming a set of "silos".
+        Volume is *NOT* divided equally among 3D engines, but rather each of the
+        engines is extended up to some maximum height in Z, forming a set of
+        "silos".
+
         """
         return self._gen_all_engines(extent,
                                      n_engines_x=2,
@@ -250,16 +258,19 @@ class PhysicsEngines():
                                      forward_engines=[])
 
     def _gen4_engines(self, extent: ArenaExtent) -> XMLTagAddList:
-        """
-        Generate definitions for 4 2D or 3D physics engines for the specified extent.
+        """Generate definitions for 4 2D or 3D physics engines for the specified
+        extent.
 
-        Engines are layed out as follows in 2D, regardless if they are 2D or 3D engines:
+        Engines are layed out as follows in 2D, regardless if they are 2D or 3D
+        engines:
 
          3 2
          0 1
 
-        Volume is *NOT* divided equally among 3D engines, but rather each of the engines is extended
-        up to some maximum height in Z, forming a set of "silos".
+        Volume is *NOT* divided equally among 3D engines, but rather each of the
+        engines is extended up to some maximum height in Z, forming a set of
+        "silos".
+
         """
         return self._gen_all_engines(extent,
                                      n_engines_x=2,
@@ -267,16 +278,19 @@ class PhysicsEngines():
                                      forward_engines=[0, 1])
 
     def _gen6_engines(self, extent: ArenaExtent) -> XMLTagAddList:
-        """
-        Generate definitions for 6 2D or 3D physics engines for the specified extent.
+        """Generate definitions for 6 2D or 3D physics engines for the specified
+        extent.
 
-        Engines are layed out as follows in 2D, regardless if they are 2D or 3D engines:
+        Engines are layed out as follows in 2D, regardless if they are 2D or 3D
+        engines:
 
          5 4 3
          0 1 2
 
-        Volume is *NOT* divided equally among 3D engines, but rather each of the engines is extended
-        up to some maximum height in Z, forming a set of "silos".
+        Volume is *NOT* divided equally among 3D engines, but rather each of the
+        engines is extended up to some maximum height in Z, forming a set of
+        "silos".
+
         """
         return self._gen_all_engines(extent,
                                      n_engines_x=3,
@@ -285,16 +299,18 @@ class PhysicsEngines():
 
     def _gen8_engines(self, extent: ArenaExtent) -> XMLTagAddList:
         """
-        Generate definitions for 8 2D or 3D physics engines for the specified pair of (X,Y) arena
-        extents with a uniform grid layout.
+        Generate definitions for 8 2D or 3D physics engines for the specified
+        pair of (X,Y) arena extents with a uniform grid layout.
 
         The 2D layout is:
 
         7 6 5 4
         0 1 2 3
 
-        Volume is *NOT* divided equally among 3D engines, but rather each of the engines is extended
-        up to some maximum height in Z, forming a set of "silos".
+        Volume is *NOT* divided equally among 3D engines, but rather each of the
+        engines is extended up to some maximum height in Z, forming a set of
+        "silos".
+
         """
         return self._gen_all_engines(extent,
                                      n_engines_x=4,
@@ -302,9 +318,8 @@ class PhysicsEngines():
                                      forward_engines=[0, 1, 2, 3])
 
     def _gen12_engines(self, extent: ArenaExtent) -> XMLTagAddList:
-        """
-        Generate definitions for 12 2D or 3D physics engines for the specified pair of (X,Y) arena
-        extents with a uniform grid layout.
+        """Generate definitions for 12 2D or 3D physics engines for the specified
+        pair of (X,Y) arena extents with a uniform grid layout.
 
         The 2D layout is:
 
@@ -312,8 +327,10 @@ class PhysicsEngines():
         7  6  5  4
         0  1  2  3
 
-        Volume is *NOT* divided equally among 3D engines, but rather each of the engines is extended
-        up to some maximum height in Z, forming a set of "silos".
+        Volume is *NOT* divided equally among 3D engines, but rather each of the
+        engines is extended up to some maximum height in Z, forming a set of
+        "silos".
+
         """
         return self._gen_all_engines(extent,
                                      n_engines_x=4,
@@ -321,9 +338,8 @@ class PhysicsEngines():
                                      forward_engines=[0, 1, 2, 3, 8, 9, 10, 11])
 
     def _gen16_engines(self, extent: ArenaExtent) -> XMLTagAddList:
-        """
-        Generate definitions for 16 2D or 3D physics engines for the specified pair of (X,Y) arena
-        extents with a uniform grid layout.
+        """Generate definitions for 16 2D or 3D physics engines for the
+        specified pair of (X,Y) arena extents with a uniform grid layout.
 
         The 2D layout is:
 
@@ -332,8 +348,10 @@ class PhysicsEngines():
         7  6  5  4
         0  1  2  3
 
-        Volume is *NOT* divided equally among 3D engines, but rather each of the engines is extended
-        up to some maximum height in Z, forming a set of "silos".
+        Volume is *NOT* divided equally among 3D engines, but rather each of the
+        engines is extended up to some maximum height in Z, forming a set of
+        "silos".
+
         """
         return self._gen_all_engines(extent,
                                      n_engines_x=4,
@@ -341,9 +359,8 @@ class PhysicsEngines():
                                      forward_engines=[0, 1, 2, 3, 8, 9, 10, 11])
 
     def _gen24_engines(self, extent: ArenaExtent) -> XMLTagAddList:
-        """
-        Generate definitions for 16 2D or 3D physics engines for the specified pair of (X,Y) arena
-        extents with a uniform grid layout.
+        """Generate definitions for 16 2D or 3D physics engines for the specified pair
+        of (X,Y) arena extents with a uniform grid layout.
 
         The 2D layout is:
 
@@ -352,8 +369,10 @@ class PhysicsEngines():
         11  10  9  8  7  6
         0   1   2  3  4  5
 
-        Volume is *NOT* divided equally among 3D engines, but rather each of the engines is extended
-        up to some maximum height in Z, forming a set of "silos".
+        Volume is *NOT* divided equally among 3D engines, but rather each of the
+        engines is extended up to some maximum height in Z, forming a set of
+        "silos".
+
         """
         return self._gen_all_engines(extent,
                                      n_engines_x=6,
@@ -361,9 +380,9 @@ class PhysicsEngines():
                                      forward_engines=[0, 1, 2, 3, 4, 5, 12, 13, 14, 15, 16, 17])
 
     def _gen_engine_name(self, engine_id: int) -> str:
-        """
-        Generate the unique string for an engine comprised of a type + numeric identifier of the
-        engine.
+        """Generate the unique string for an engine comprised of a type +
+        numeric identifier of the engine.
+
         """
         return self._gen_engine_name_stem() + str(engine_id)
 
@@ -426,9 +445,9 @@ def factory(engine_type: str,
     """
     Create a physics engine mapping onto a list of arena extents for 2D or 3D
     """
-    # Right now the 2D and 3D variants are the same, but that is unlikely to remain so in the
-    # future, so we employ a factory function to make implementation of diverging functionality
-    # easier later.
+    # Right now the 2D and 3D variants are the same, but that is unlikely to
+    # remain so in the future, so we employ a factory function to make
+    # implementation of diverging functionality easier later.
     if '2d' in engine_type:
         return PhysicsEngines2D(engine_type,
                                 n_engines,

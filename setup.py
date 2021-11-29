@@ -32,7 +32,7 @@ readme = (here / "README.md").read_text()
 setup(
     name="sierra",
     version="1.0.5",
-    description="Swarm robotics end-to-end experimental pipeline automation using ARGoS",
+    description="Robotics experimental pipeline automation for ARGoS, ROS, real robots",
     long_description=readme,
     long_description_content_type="text/markdown",
     url="https://github.com/swarm-robotics/sierra",

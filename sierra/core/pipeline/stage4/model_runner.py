@@ -15,7 +15,7 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
 """
-Classes for running project-specific models in a general purpose way within a batched experiment.
+Classes for running project-specific models in a general purpose way within a batch experiment.
 """
 # Core packages
 import os

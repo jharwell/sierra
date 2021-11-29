@@ -27,10 +27,11 @@ import implements
 # Project packages
 from sierra.core.variables.base_variable import IBaseVariable
 from sierra.core.utils import ArenaExtent
-import sierra.core.variables.time_setup as ts
-from sierra.core.xml import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList, XMLTagRm, XMLTagAdd, XMLAttrChange
+from sierra.core.xml import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList, XMLTagRm, XMLTagAdd
 import sierra.core.config
 from sierra.core import types
+
+import sierra.plugins.platform.argos.variables.time_setup as ts
 
 
 @implements.implements(IBaseVariable)
@@ -49,7 +50,7 @@ class ARGoSQTHeadlessRendering():
     kQUALITY = 100
     kFRAME_RATE = 10
 
-    def __init__(self, tsetup: ts.ARGoSTimeSetup) -> None:
+    def __init__(self, tsetup: ts.TimeSetup) -> None:
         self.tsetup = tsetup
         self.tag_adds = []  # type: tp.List[XMLTagAddList]
 

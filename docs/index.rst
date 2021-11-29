@@ -7,6 +7,9 @@
 SIERRA's Documentation
 ======================
 
+SIERRA is named thusly because it will save you a LITERAL, (not figurative)
+mountain of work.
+
 .. include:: src/description.rst
 
 .. toctree::
@@ -18,17 +21,18 @@ SIERRA's Documentation
    src/trial.rst
 
    src/package.rst
+   src/platform/index.rst
    src/c++-lib-requirements.rst
    src/exp-requirements.rst
 
-   src/philosophy.rst
-   src/usage/index.rst
    src/tutorials/index.rst
+   src/usage/index.rst
 
    src/hpc/index.rst
 
    src/storage/index.rst
 
+   src/philosophy.rst
    src/faq.rst
    src/contributing.rst
    src/glossary.rst

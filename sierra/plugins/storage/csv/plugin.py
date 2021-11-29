@@ -13,9 +13,10 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-Storage plugin for running having SIERRA read from ``.csv`` files when processing
-simulation results, and to write intermediate results to ``.csv`` files when generating graphs.
+"""Storage plugin for running having SIERRA read from ``.csv`` files when
+processing :term:`Experimental Run` results, and to write intermediate results
+to ``.csv`` files when generating graphs.
+
 """
 
 # Core packages
@@ -32,7 +33,8 @@ import pandas as pd
 
 @retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=1.1)  # type:ignore
 def df_read(path: str, **kwargs) -> pd.DataFrame:
-    # Always specify the datatype so pandas does not have to infer it--much faster.
+    # Always specify the datatype so pandas does not have to infer it--much
+    # faster.
     return pd.read_csv(path, sep=';', float_precision='high', **kwargs)
 
 

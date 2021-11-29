@@ -130,7 +130,8 @@ autoapi_modules = {
     'sierra.core.models.interface': {'output': 'api/core/models'},
     'sierra.core.models.graphs': {'output': 'api/core/models'},
     'sierra.plugins.hpc': {'output': 'api/plugins/hpc'},
-    'sierra.plugins.storage': {'output': 'api/plugins/storage'}
+    'sierra.plugins.storage': {'output': 'api/plugins/storage'},
+    'sierra.plugins.platform.argos': {'output': 'api/plugins/platform/argos'}
 }
 
 autoapi_ignore = ['*flycheck*']
@@ -151,7 +152,6 @@ xref_links = {
                    "https://www.cs.unm.edu/~wjust/CS523/S2018/Readings/Hecker_Beyond_Pheromones_Swarm_Intelligence.pdf"),
     "Rosenfeld2006": ("Rosenfeld2006",
                       "http://users.umiacs.umd.edu/~sarit/data/articles/rosenfeldetalbook06.pdf"),
-    "argos_home": ("ARGoS", "https://www.argos-sim.info/index.php"),
     "SIERRA_GITHUB": ("https://github.com:swarm-robotics/sierra.git", "https://github.com:swarm-robotics/sierra.git"),
     "FORDYCA": ("FORDYCA", "https://swarm-robotics-fordyca.readthedocs.io"),
     "PRISM": ("PRISM", "https://swarm-robotics-prism.readthedocs.io"),
@@ -245,7 +245,7 @@ man_pages = [
     ('man/sierra-rendering', 'sierra-rendering',
      'SIERRA Rendering', [author], 7),
     ('man/sierra', 'sierra',
-     'Swarm Intelligence Reusable ARGoS Automation (SIERRA)', [author], 7)
+     'reSearch pIpEline Reusable Robotics Automation (SIERRA)', [author], 7)
 ]
 
 # -- Options for Texinfo output -------------------------------------------

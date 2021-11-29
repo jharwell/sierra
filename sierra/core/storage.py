@@ -39,7 +39,7 @@ class DataFrameWriter():
         self.medium = medium
 
     def __call__(self, df: pd.DataFrame, path: str, **kwargs) -> None:
-        storage = pm.SIERRAPluginManager().get_plugin(self.medium)
+        storage = pm.SIERRAPluginManager().get_plugin_module(self.medium)
         return storage.df_write(df, path, **kwargs)  # type: ignore
 
 
@@ -53,7 +53,7 @@ class DataFrameReader():
         self.medium = medium
 
     def __call__(self, path: str, **kwargs) -> pd.DataFrame:
-        storage = pm.SIERRAPluginManager().get_plugin(self.medium)
+        storage = pm.SIERRAPluginManager().get_plugin_module(self.medium)
         return storage.df_read(path, **kwargs)  # type: ignore
 
 

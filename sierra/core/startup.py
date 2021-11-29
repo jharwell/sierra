@@ -16,7 +16,8 @@
 
 # Core packages
 import sys
-import logging
+import typing as tp
+import logging  # type: tp.Any
 
 # 3rd party packages
 
@@ -49,9 +50,9 @@ def startup_checks() -> None:
 
 
 def _linux_pkg_checks() -> None:
-    """
-    Check that all the .deb packages required by SIERRA are installed on
-    whatever flavor of Linux SIERRA is running on.
+    """Check that all the packages required by SIERRA are installed on whatever
+    flavor of Linux SIERRA is running on.
+
     """
     import distro
 

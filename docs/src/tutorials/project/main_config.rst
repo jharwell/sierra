@@ -21,17 +21,17 @@ An example main configuration file:
 
 .. code-block:: YAML
 
-   # Configuration for each ARGoS simulation run. This dictionary is
-   # mandatory for all simulations.
-   sim:
-     # The directory within each simulation's working directory which will
-     # contain the metrics output as by the simulation. This key is mandatory
-     # for all simulations. Can be anything; this is the interface link between
+   # Configuration for each experimental run. This dictionary is
+   # mandatory for all experiments.
+   run:
+     # The directory within each experimental run's working directory which will
+     # contain the metrics output as by the run. This key is mandatory
+     # for all run. Can be anything; this is the interface link between
      # where the C++ code outputs things and where SIERRA looks for outputs.
-     sim_metrics_leaf: 'metrics'
+     run_metrics_leaf: 'metrics'
 
    # Configuration for performance measures. This key-value pair is mandatory
-   # for all simulations. The value is the location of the .yaml
+   # for all experiments. The value is the location of the .yaml
    # configuration file for performance measures. It is a separate config
    # file so that multiple scenarios within a single project which define
    # performance measures in  different ways can be easily accommodated.
@@ -64,10 +64,10 @@ is:
 
 Additional fields can be added to this dictionary as needed to support custom
 performance measures,graph generation, or batch criteria as needed. See
-:ref:`ln-bc-saa-noise-yaml-config` for an example of adding fields to this
-dictionary as a lookup table of sorts for a broader range of cmdline
-configuration (i.e., using it to make the cmdline syntax for the
-`ln-bc-saa-noise` much nicer).
+:ref:`ln-platform-argos-bc-saa-noise-yaml-config` for an example of adding
+fields to this dictionary as a lookup table of sorts for a broader range of
+cmdline configuration (i.e., using it to make the cmdline syntax for the
+`ln-platform-argos-bc-saa-noise` much nicer).
 
 Controllers Configuration File: ``config/controllers.yaml``
 ===========================================================
@@ -85,7 +85,7 @@ A complete YAML configuration for a :term:`Controller Category` ``mycategory``
 and a controller ``FizzBuzz``. This configuration specifies that all graphs in
 the categories of ``LN_MyCategory1``, ``LN_MyCategory2``, ``HM_MyCategory1``,
 ``HM_MyCategory2`` are applicable to ``FizzBuzz``, and should be generated if
-the necessary simulation output files exist. The ``LN_MyCategory1``,
+the necessary :term:`Experiment` output files exist. The ``LN_MyCategory1``,
 ``LN_MyCategory2`` graph categories are common to multiple controllers in this
 project, while the ``HM_MyCategory1``, ``HM_MyCategory2`` :term:`graph
 categories<Graph Category>` are specific to the ``FizzBuzz`` controller.
@@ -97,13 +97,15 @@ categories<Graph Category>` are specific to the ``FizzBuzz`` controller.
      - LN_MyCategory2
 
    mycategory:
-     # XML changes which should be made to the template ``.argos`` file for
+     # XML changes which should be made to the template ``.xml`` file for
      # *all* controllers in the category. This is usually things like setting
      # ARGoS loop functions appropriately, if required. Each change is formatted
      # as a list: [parent tag, tag, value] each specified in the XPath syntax.
      #
-     # This section is optional. If ``--argos-rendering`` is passed, then this
-     # section should be used to specify the QT visualization functions to use.
+     # This section is optional. If ``--platform-vc`` is passed, then
+     # this section should be used to specify any changes to the XML needed to
+     # setup the selected platform for frame capture/video rendering. For ARGoS,
+     # this means specifying the QT visualization functions to use.
      xml:
        attr_change:
          - ['.//loop-functions', 'label', 'my_category_loop_functions']
@@ -120,10 +122,10 @@ categories<Graph Category>` are specific to the ``FizzBuzz`` controller.
            attr_change:
 
              # The ``__controller__`` tag in the ``--template-input-file`` is
-             # REQUIRED. It's purpose is to allow the same template input file to
-             # be used by multiple controller types and to allow SIERRA to
-             # automatically populate the library name that ARGoS will look for to
-             # find the controller C++ code based on the ``--project`` name .
+             # REQUIRED. It's purpose is to allow the same template input file
+             # to be used by multiple controller types and to allow SIERRA to
+             # automatically populate library/executable names for use during
+             # stage2 based on the ``--project`` name.
              - ['.//controllers', '__controller___', 'FizzBuzz']
 
          # Sets of graphs common to multiple controller categories can be

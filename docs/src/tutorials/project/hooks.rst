@@ -21,23 +21,24 @@ project directory, where ``stageX`` is the stage you want to override part of.
 Stage 3 Hooks
 =============
 
-Simulation Collation
---------------------
+Experimental Run Collation
+--------------------------
 
 In order to generate additional inter-experiment graphs, you have to also
 collate additional ``.csv`` files by:
 
-#. Create ``pipeline/stage3/sim_collator.py``.
+#. Create ``pipeline/stage3/run_collator.py``.
 
 #. Override the
-   :class:`sierra.core.pipeline.stage3.sim_collator.SimulationCSVGatherer` class:
+   :class:`sierra.core.pipeline.stage3.run_collator.ExperimentalRunCSVGatherer`
+   class: 
 
    .. code-block:: python
 
-      import sierra.core.pipeline.stage3.sim_collator as sim_collator
+      import sierra.core.pipeline.stage3.run_collator as run_collator
 
-      class SimulationCSVGatherer(sim_collator.SimulationCSVGatherer):
-          def gather_csvs_from_sim(self, sim: str) -> tp.Dict[tp.Tuple[str, str], pd.DataFrame]:
+      class ExperimentalRunCSVGatherer(run_collator.ExperimentalRunCSVGatherer):
+          def gather_csvs_from_run(self, run: str) -> tp.Dict[tp.Tuple[str, str], pd.DataFrame]:
               ...
 
 

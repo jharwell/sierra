@@ -87,7 +87,7 @@ class StackedSurfaceGraph:
             return
 
         assert len(dfs) <= StackedSurfaceGraph.kMaxSurfaces,\
-            "FATAL: Too many surfaces to plot: {0} > {1}".format(len(dfs),
+            "Too many surfaces to plot: {0} > {1}".format(len(dfs),
                                                                  StackedSurfaceGraph.kMaxSurfaces)
 
         # Scaffold graph

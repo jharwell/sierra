@@ -192,7 +192,7 @@ def exp_range_calc(cmdopts: types.Cmdopts, root_dir: str, criteria) -> tp.List[s
     if cmdopts['exp_range'] is not None:
         min_exp = int(exp_range.split(':')[0])
         max_exp = int(exp_range.split(':')[1])
-        assert min_exp <= max_exp, "FATAL: Min batch exp >= max batch exp({0} vs. {1})".format(
+        assert min_exp <= max_exp, "Min batch exp >= max batch exp({0} vs. {1})".format(
             min_exp, max_exp)
 
         return exp_all[min_exp: max_exp + 1]

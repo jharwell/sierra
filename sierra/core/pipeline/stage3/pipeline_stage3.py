@@ -30,7 +30,7 @@ import yaml
 
 # Project packages
 from sierra.core.pipeline.stage3.statistics_calculator import BatchExpParallelCalculator
-from sierra.core.pipeline.stage3.sim_collator import SimulationParallelCollator
+from sierra.core.pipeline.stage3.run_collator import ExperimentalRunParallelCollator
 from sierra.core.pipeline.stage3.imagizer import BatchExpParallelImagizer
 import sierra.core.utils
 import sierra.core.variables.batch_criteria as bc
@@ -38,17 +38,22 @@ from sierra.core import types
 
 
 class PipelineStage3:
-    """
-    Implements stage 3 of the experimental pipeline.
+    """Implements stage 3 of the experimental pipeline.
 
-    Processes results of simulation runs within an experiment/within multiple experiments
-    together, according to configuration. Currently this includes:
+    Processes results of :term:`Experimental Runs <Experimental Run>` within a
+    single :term:`Experiment` and across multiple experiments together,
+    according to configuration. Currently this includes:
 
-    - Averaging simulation results.
-    - Generating image files from project metric collection for later use in video rendering in stage
-      4.
+    - Averaging results for generating per-experiment graphs during stage 4.
+
+    - Collating results across experiments for generating inter-experiment
+      graphs during stage 4.
+
+    - Generating image files from project metric collection for later use in
+      video rendering in stage 4.
 
     This stage is idempotent.
+
     """
 
     def __init__(self, main_config: dict, cmdopts: types.Cmdopts) -> None:
@@ -58,7 +63,7 @@ class PipelineStage3:
 
     def run(self, criteria: bc.IConcreteBatchCriteria) -> None:
         self._run_statistics(self.main_config, self.cmdopts, criteria)
-        self._run_sim_collation(self.main_config, self.cmdopts, criteria)
+        self._run_run_collation(self.main_config, self.cmdopts, criteria)
 
         if self.cmdopts['project_imagizing']:
             intra_HM_config = yaml.load(open(os.path.join(self.cmdopts['core_config_root'],
@@ -97,19 +102,19 @@ class PipelineStage3:
         sec = datetime.timedelta(seconds=elapsed)
         self.logger.info("Statistics generation complete in %s", str(sec))
 
-    def _run_sim_collation(self,
+    def _run_run_collation(self,
                            main_config: dict,
                            cmdopts: types.Cmdopts, criteria:
                            bc.IConcreteBatchCriteria):
         if not self.cmdopts['no_collate']:
-            self.logger.info("Collating simulation outputs into %s...",
+            self.logger.info("Collating experiment run outputs into %s...",
                              cmdopts['batch_stat_collate_root'])
             start = time.time()
-            SimulationParallelCollator(main_config, cmdopts)(criteria)
+            ExperimentalRunParallelCollator(main_config, cmdopts)(criteria)
             elapsed = int(time.time() - start)
             sec = datetime.timedelta(seconds=elapsed)
             self.logger.info(
-                "Simulation output collation complete in %s", str(sec))
+                "Experimental run output collation complete in %s", str(sec))
 
     def _run_imagizing(self,
                        main_config: dict,

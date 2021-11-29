@@ -5,8 +5,8 @@ Create A New Batch Criteria
 ===========================
 
 If you have a new experimental variable that you have added to your C++ library,
-**AND** which is exposed via the input ``.argos`` file, then you need to do the
-following to get it to work with SIERRA as a batch criteria:
+**AND** which is exposed via the input ``.xml`` file, then you need to do the
+following to get it to work with SIERRA as a :term:`Batch Criteria`:
 
 #. Make your variable (``MyVar`` in this tutorial) inherit from
    :class:`sierra.core.variables.batch_criteria.UnivarBatchCriteria` and place
@@ -31,7 +31,7 @@ following to get it to work with SIERRA as a batch criteria:
    ``get_attr_changelist()`` - Given whatever parameters that your variable was
    passed during initialization (e.g. the boundaries of a range you want to vary
    it within), produce a list of sets, where each set is all changes that need
-   to be made to the ``.argos`` template file in order to set the value of your
+   to be made to the ``.xml`` template file in order to set the value of your
    variable to something. Each change is a
    :class:`~sierra.core.xml.XMLAttrChange` object, that takes the
    following arguments in its constructor:
@@ -45,7 +45,7 @@ following to get it to work with SIERRA as a batch criteria:
 
    ``gen_tag_rmlist()`` - Given whatever parameters that your variable was
    passed during initialization, generate a list of sets, where each set is all
-   tags that need to be removed from the ``.argos`` template file in order to
+   tags that need to be removed from the ``.xml`` template file in order to
    set the value of your variable to something.
 
    Each change is a :class:`~sierra.core.xml.XMLTagRm` object that takes
@@ -58,7 +58,7 @@ following to get it to work with SIERRA as a batch criteria:
 
    ``gen_tag_addlist()`` - Given whatever parameters that your variable was
    passed during initialization, generate a list of sets, where each set is all
-   tags that need to be added to the ``.argos`` template file.
+   tags that need to be added to the ``.xml`` template file.
 
    Each change is a :class:`~sierra.core.xml.XMLTagAdd` object that takes
    the following arguments in its constructor:
@@ -86,8 +86,8 @@ following to get it to work with SIERRA as a batch criteria:
 
    It must be callable with a single argument which is whatever was passed to
    ``--batch-criteria``. See
-   :class:`sierra.core.variables.population_size.Parser` for a simple example of
-   this.
+   :class:`sierra.plugins.platform.argos.variables.population_size.Parser` for a
+   simple example of this.
 
 #. Define a factory function to dynamically create classes from the base class
    definition of ``MyVar`` in ``my_var.py``. It must have the following

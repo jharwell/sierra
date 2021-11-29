@@ -39,8 +39,9 @@ class IConcreteIntraExpModel1D(implements.Interface):
         Run the model and generate a list of dataframes, each targeting
         (potentially) different graphs. All dataframes should contain a single
         column named ``model``, with each row of the dataframe containing the
-        model prediction at the simulation interval corresponding to the row
-        (e.g., row 7 contains the model prediction for simulation interval 7).
+        model prediction at the :term:`Experimental Run` interval corresponding
+        to the row (e.g., row 7 contains the model prediction for interval 7).
+
         """
         raise NotImplementedError
 

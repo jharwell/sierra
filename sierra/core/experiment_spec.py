@@ -23,7 +23,6 @@ import logging  # type: tp.Any
 
 # Project packages
 import sierra.core.variables.batch_criteria as bc
-from sierra.core.variables import constant_density
 from sierra.core.utils import ArenaExtent
 from sierra.core.vector import Vector3D
 import sierra.core.config
@@ -36,13 +35,21 @@ class ExperimentSpec():
     The specification for a single experiment with a batch.
 
     - Experiment # within the batch
-    - Root input directory for all simulation files comprising the experiment
+
+    - Root input directory for all :term:`Experimental Run` input files
+      comprising the :term`experiment`
+
     - Pickle file path for the experiment
+
     - Arena dimensions for the experiment
+
     - Full scenario name
     """
 
-    def __init__(self, criteria: bc.IConcreteBatchCriteria, exp_num: int, cmdopts: types.Cmdopts) -> None:
+    def __init__(self,
+                 criteria: bc.IConcreteBatchCriteria,
+                 exp_num: int,
+                 cmdopts: types.Cmdopts) -> None:
         self.exp_num = exp_num
         self.exp_input_root = os.path.join(cmdopts['batch_input_root'],
                                            criteria.gen_exp_dirnames(cmdopts)[exp_num])
@@ -56,13 +63,13 @@ class ExperimentSpec():
 
         if criteria.is_bivar():
             bivar = tp.cast(bc.BivarBatchCriteria, criteria)
-            from_bivar_bc1 = isinstance(bivar.criteria1,
-                                        constant_density.ConstantDensity)
-            from_bivar_bc2 = isinstance(bivar.criteria2,
-                                        constant_density.ConstantDensity)
+            from_bivar_bc1 = hasattr(bivar.criteria1,
+                                     'exp_scenario_name')
+            from_bivar_bc2 = hasattr(bivar.criteria2,
+                                     'exp_scenario_name')
         else:
-            from_univar_bc = isinstance(
-                criteria, constant_density.ConstantDensity)
+            from_univar_bc = hasattr(criteria,
+                                     'exp_scenario_name')
 
         # Need to get per-experiment arena dimensions from batch criteria, as
         # they might be different for each experiment
@@ -78,8 +85,8 @@ class ExperimentSpec():
             self.scenario_name = criteria.exp_scenario_name(exp_num)
 
         else:  # Default case: scenario dimensions read from cmdline
-            sgp = pm.module_load_tiered(
-                cmdopts['project'], 'generators.scenario_generator_parser')
+            sgp = pm.module_load_tiered(project=cmdopts['project'],
+                                        path='generators.scenario_generator_parser')
             kw = sgp.ScenarioGeneratorParser().to_dict(cmdopts['scenario'])
             self.arena_dim = ArenaExtent(
                 Vector3D(kw['arena_x'], kw['arena_y'], kw['arena_z']))

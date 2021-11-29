@@ -28,15 +28,15 @@ def env_configure(args):
      the parsed cmdline arguments (namespace object) as needed. Arguments of
      interest include:
 
-     - --exec-sims-per-node
-     - --physics-n-engines
+     - ``--exec-sims-per-node``
+     - ``--physics-n-engines``
 
      Though you can modify whatever you want.
      """
 
- def argos_cmd_generate(input_fpath: str):
+ def simulator_cmd_generate(input_fpath: str):
      """
-     Generate the ARGoS cmd to run in the HPC environment, given the path to
+     Generate the cmd to run in the HPC environment, given the path to
      an input file. Depending on your environment, you may want to use
      SIERRA_ARCH to chose a version of ARGoS compiled for a given architecture
      for maximum performance.

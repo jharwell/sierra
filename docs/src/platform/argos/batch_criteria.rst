@@ -1,19 +1,18 @@
-.. _ln-batch-criteria:
+.. _ln-platform-argos-bc:
 
-***********************
-Batch Criteria Overview
-***********************
+====================
+ARGoS Batch Criteria
+====================
 
-See :term:`Batch Criteria` fo a detailed explanation of batch criteria, but the
+See :term:`Batch Criteria` for a thorough explanation of batch criteria, but the
 short version is that they are the core of SIERRA--how to get it to DO stuff for
-you. SIERRA defines the following :term:`Batch Criteria` variables which you can
-use to define experiments; :term:`Projects <Project>` can define their own as
-well (see :ref:`ln-tutorials-project`).
+you. The :term:`ARGoS` :term:`Platform` defines the following batch criteria
+which can be used with any :term:`Project`.
 
-- :ref:`Swarm Population Size <ln-bc-population-size>`
-- :ref:`Swarm Constant Population Density <ln-bc-population-constant-density>`
-- :ref:`Swarm Variable Population Density <ln-bc-population-variable-density>`
-- :ref:`SAA Noise <ln-bc-saa-noise>`
+- :ref:`ln-platform-argos-bc-population-size`
+- :ref:`ln-platform-argos-bc-population-constant-density`
+- :ref:`ln-platform-argos-bc-population-variable-density`
+- :ref:`ln-platform-argos-bc-saa-noise`
 
 You *should* be able to combine any two of the criteria above, or use them
 independently. I have not tried all combinations, so YMMV.
@@ -26,26 +25,23 @@ independently. I have not tried all combinations, so YMMV.
    whatever file you pass with ``--template-input-file``. If a batch criteria
    tries to modify a non-existent XML attribute, a warning will be issued.
 
-Core Batch Criteria
-===================
-
-
-.. _ln-bc-population-size:
+.. _ln-platform-argos-bc-population-size:
 
 Swarm Population Size
----------------------
+=====================
 
 Changing the swarm size to investigate behavior across scales within a static
 arena size (i.e., variable density). This criteria is functionally identical to
-:ref:`ln-bc-population-variable-density` in terms of changes to the template XML
+:ref:`ln-platform-argos-bc-population-variable-density` in terms of changes to the template XML
 file, but has a different semantic meaning which can make generated deliverables
 more immediately understandable, depending on the context of what is being
 investigated (e.g., swarm size vs. swarm density on the X axis).
 
-.. _ln-bc-population-size-cmdline:
+.. _ln-platform-argos-bc-population-size-cmdline:
 
 Cmdline Syntax
-^^^^^^^^^^^^^^
+--------------
+
 ``population_size.{increment_type}{N}``
 
 - ``increment_type`` - {Log,Linear}. If ``Log``, then swarm sizes for each
@@ -56,29 +52,29 @@ Cmdline Syntax
 - ``N`` - The maximum swarm size.
 
 Examples
-^^^^^^^^
+--------
+
 - ``population_size.Log1024``: Static swarm sizes 1...1024
 - ``population_size.Linear1000``: Static swarm sizes 100...1000
 
-.. _ln-bc-population-constant-density:
-
+.. _ln-platform-argos-bc-population-constant-density:
 
 Swarm Constant Population Density
----------------------------------
+=================================
 
 Changing the swarm size and arena size together to maintain the same swarm
 size/arena size ratio to investigate behavior across scales.
 
 .. NOTE:: This criteria is for `constant` density of robots as swarm sizes
           increase. For `variable` robot density, use
-          :ref:`ln-bc-population-size` or
-          :ref:`ln-bc-population-variable-density`.
+          :ref:`ln-platform-argos-bc-population-size` or
+          :ref:`ln-platform-argos-bc-population-variable-density`.
 
 
-.. _ln-bc-population-constant-density-cmdline:
+.. _ln-platform-argos-bc-population-constant-density-cmdline:
 
 Cmdline Syntax
-^^^^^^^^^^^^^^
+--------------
 
 ``population_constant_density.{density}.I{Arena Size Increment}.C{cardinality}``
 
@@ -92,32 +88,33 @@ Cmdline Syntax
 - ``cardinality`` How many experiments should be generated?
 
 Examples
-^^^^^^^^
+--------
+
 - ``population_constant_density.1p0.I16.C4``: Constant density of 1.0. Arena
     dimensions will increase by 16 in both X and Y for each experiment in the
     batch (4 total).
 
-.. _ln-bc-population-variable-density:
+.. _ln-platform-argos-bc-population-variable-density:
 
 
 Swarm Variable Population Density
----------------------------------
+=================================
 
 Changing the swarm size to investigate behavior across scales within a static
 arena size. This criteria is functionally identical to
-:ref:`ln-bc-population-size` in terms of changes to the template XML file, but
-has a different semantic meaning which can make generated deliverables more
-immediately understandable, depending on the context of what is being
-investigated (e.g., swarm density vs. swarm size on the X axis).
+:ref:`ln-platform-argos-bc-population-size` in terms of changes to the template
+XML file, but has a different semantic meaning which can make generated
+deliverables more immediately understandable, depending on the context of what
+is being investigated (e.g., swarm density vs. swarm size on the X axis).
 
 .. NOTE:: This criteria is for `variable` density of robots as swarm sizes
           increase. For `constant` robot density, use
-          :ref:`ln-bc-population-constant-density`.
+          :ref:`ln-platform-argos-bc-population-constant-density`.
 
-.. _ln-bc-population-variable-density-cmdline:
+.. _ln-platform-argos-bc-population-variable-density-cmdline:
 
 Cmdline Syntax
-^^^^^^^^^^^^^^
+--------------
 
 ``population_variable_density.{density_min}.{density_max}.C{cardinality}``
 
@@ -129,19 +126,19 @@ Cmdline Syntax
   experiment will be linearly spaced between the min and max densities.
 
 Examples
-^^^^^^^^
+--------
 
 - ``population_variable_density.1p0.4p0.C4``: Densities of 1.0,2.0,3.0,4.0.
 
-.. _ln-bc-saa-noise:
+.. _ln-platform-argos-bc-saa-noise:
 
 Sensor and Actuator Noise
--------------------------
+=========================
 
 Inject sensor and/or actuator noise into the swarm.
 
 Cmdline Syntax
-^^^^^^^^^^^^^^
+--------------
 
 ``saa_noise.{category}.C{cardinality}[.Z{population}]``
 
@@ -158,12 +155,12 @@ Cmdline Syntax
 
 - ``cardinality`` - The # of different noise levels to test with between the min
   and max specified in the config file for each sensor/actuator which defines
-  the cardinality of the batched experiment.
+  the cardinality of the batch experiment.
 
 - ``population`` - The static swarm size to use (optional).
 
 Examples
-^^^^^^^^^
+--------
 
 - ``saa_noise.sensors.C4.Z16``: 4 levels of noise applied to all sensors in a
   swarm of size 16.
@@ -188,7 +185,6 @@ changes will be generated for it.
    The version accessible on the ARGoS website does not have a consistent noise
    injection interface, making usage with this criteria impossible.
 
-
 The following sensors can be affected (dependent on your chosen robot's
 capabilities in ARGoS):
 
@@ -203,15 +199,14 @@ capabilities in ARGoS):
 
 - steering
 
-.. _ln-bc-saa-noise-yaml-config:
+.. _ln-platform-argos-bc-saa-noise-yaml-config:
 
 YAML Config
-^^^^^^^^^^^
+-----------
 
 For all sensors and actuators to which noise should be applied, the noise model
 and dependent parameters must be specified (i.e. if a given sensor or sensor is
 present in the config, all config items for it are mandatory).
-
 
 The appropriate ``ticks_range`` attribute is required, as there is no way to
 calculate in general what the correct range of X values for generated graphs
@@ -250,8 +245,8 @@ compute what the ticks should be for a given experiment.
            model: uniform
 
            # For a ``uniform`` model, the ``range`` attribute is required, and
-           # defines the -[level, level] distribution that injected noise will be
-           # drawn from.
+           # defines the -[level, level] distribution that injected noise will
+           # be drawn from.
            range: [0.0, 0.4]
 
          proximity:
@@ -269,21 +264,21 @@ compute what the ticks should be for a given experiment.
            model: uniform
            range: [0.0, 0.1]
 
-         # The actuators to inject noise into. All shown actuators are optional. If
-         # omitted, they will not be affected by noise injection.
+         # The actuators to inject noise into. All shown actuators are
+         # optional. If omitted, they will not be affected by noise injection.
          actuators:
            steering: # applied to [noise_factor]
              model: uniform
              range: [0.95, 1.05]
 
 Uniform Noise Injection Examples
-""""""""""""""""""""""""""""""""
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - ``range: [0.0,0.1]`` with ``cardinality=1`` will result in two experiments
   with uniform noise distributions of ``[0.0, 0.0]``, and ``[-0.1, 0.1]``.
 
 Gaussian Noise Injection Examples
-"""""""""""""""""""""""""""""""""
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - ``stddev_range: [0.0,1.0]`` and ``mean_range: [0.0, 0.0]`` with
   ``cardinality=2`` will result in two experiments with Guassian noise
@@ -291,7 +286,7 @@ Gaussian Noise Injection Examples
   1.0)``.
 
 Experiment Definitions
-^^^^^^^^^^^^^^^^^^^^^^
+----------------------
 
 - exp0 - Ideal conditions, in which noise will be applied to the specified
   sensors and/or actuators at the lower bound of the specified ranges for each.

@@ -1,31 +1,79 @@
-SIERRA is a python framework for automating a common research pipeline in swarm
-robotics. ARGoS driver. It is named thusly because it will save you a LITERAL,
-(not figurative) mountain of work.
+Pipeline Summary
+================
 
-Automated pipeline currently contains:
+SIERRA is a plugin framework for automating a common research pipeline in
+robotics, and contains the following 5 stage pipeline.
 
-1. Generating simulation inputs for experiments simulations to investigate some
-   variable(s) of interest across some range(s) for arbitrary swarm sizes, robot
-   controllers, and scenarios (exact capabilities depend on the
-   controller+support code you have written).
+1. Generating experiment inputs
+-------------------------------
 
-2. Running all simulations in parallel. Supports multiple HPC environments such
-   as:
+SIERRA allows you to investigate some variable(s) of interest across some
+range(s) for arbitrary system sizes, robot controllers, and scenarios (exact
+capabilities depend on the controller+support code you have written). To do
+this, it uses a python specification of your variable(s) to generate launch
+commands for simulatins/real robot code.
 
-   - `SLURM <https://slurm.schedmd.com/documentation.html>`_.
-   - `Torque/MOAB <http://docs.adaptivecomputing.com/torque/5-0-1/help.htm#topics/torque/0-intro/torquewelcome.htm%3FTocPath%3DWelcome%7C_____0>`_.
-   - ADHOC (suitable for a miscellaneous collection of networked compute nodes
-     for a research group).
-   - Local machine (for testing).
+2. Running experiments
+----------------------
 
-3. Processing simulation results to generate statistics such as confidence
-   intervals on observed behavior.
+SIERRA supports two types of execution environments: simulators and real robots,
+which are handled seamlessly with GNU parallel. For simulators, SIERRA will run
+multiple experimental runs (simulations) from each experiment in parallel (exact
+concurrency dependent on the limits of the computing hardware and the nature of
+the experiment). For real robots, SIERRA will execution 1 experimental run at a
+time, per configuration (runs can have different configuration/# of robots).
 
-4. Generating camera-ready outputs such as:
+SIERRA supports multiple HPC environments for execution of experiments in
+simulation; see :ref:`ln-hpc-plugins` for list.
 
-   - Graphs of simulation results
-   - Videos of simulation execution, captured using ARGoS rendering facilities
-   - Videos built from captured simulation output .csv files.
+To add additional HPC environments, see :ref:`ln-tutorials-plugin-hpc`.
 
-5. Generating camera ready graphs comparing swarm behaviors within a single
-   scenario and across multiple scenarios.
+SIERRA supports multiple real robot targets for running experiments with
+different kinds of real robots; see :ref:`ln-robot-plugins` for list.
+
+To add additional real robot targets, see :ref:`ln-tutorials-plugin-robot`.
+
+3. Experiment Results Processing
+--------------------------------
+
+SIERRA supports a number of data formats which simulations/real robot
+experiments can output their data (e.g., the number of robots engaged in a given
+task over time) for processing. SIERRA can generate various statistics from the
+results such as confidence intervals on observed behavior.
+
+4. Deliverable Generation
+-------------------------
+
+SIERRA can generate many deliverables from the processed experimental results
+automatically (independent of the platform/execution environment!), thus greatly
+simplifying reproduction of previous results if you need to tweak a given graph
+(for example). SIERRA currently supports generating the following deliverables:
+
+- Camera-ready linegraphs, heatmaps, 3D surfaces, and scatterplots directly from
+  averaged/statistically processed experimental data using matplotlib.
+
+- Videos built from frames captured during simulation or real robot operation.
+
+- Videos built from captured experimental output .csv files.
+
+5. Controller/Scenario Comparison
+---------------------------------
+
+SIERRA can take pieces from graphs generated in stage 4 and put them on a
+single graph to generate camera-ready comparison graphs. It can generate
+comparison graphs for:
+
+- Different robot controllers which have all been run in the same scenario.
+
+- A single robot controller which has been run in multiple scenarios.
+
+Platform Support
+================
+
+SIERRA currently supports the following platforms, allowing you to use the same
+interface for the above pipeline.
+
+- :term:`ARGoS` for fast simulation of large robot swarms via multiple physics
+  engines.
+
+To define additional platforms, see :ref:`ln-tutorials-plugin-platform`.

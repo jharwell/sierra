@@ -15,7 +15,8 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Classes for generating statistics from all :term:`Simulation` results within an :term:`Experiment`
+Classes for generating statistics from all :term:`Experimental Runs
+<Experimental Run>` results within an :term:`Experiment`
 for all experiments in a :term:`Batch Experiment`.
 """
 
@@ -160,13 +161,14 @@ class BatchExpParallelCalculator:
 
 
 class ExpCSVGatherer:
-    """Gather all :term:`Output .csv` files from a set of :term:`Simulations<Simulation>` within a
-    single :term:`Experiment`.
+    """Gather all :term:`Output .csv` files from a set of
+    :term:`Experimental Runs<Experimental Run>` within a single
+    :term:`Experiment`.
 
     Attributes:
         main_config: Parsed dictionary of main YAML configuration.
-        template_input_leaf: Leaf(i.e. no preceding path to the template XML configuration file
-                                  for the experiment.
+        template_input_leaf: Leaf (i.e. no preceding path) to the template XML
+                             configuration file for the experiment.
         no_verify: Should result verification be skipped?
 
     """
@@ -180,7 +182,8 @@ class ExpCSVGatherer:
         self.processq = processq
         self.gather_opts = gather_opts
 
-        # will get the main name and extension of the config file (without the full absolute path)
+        # Will get the main name and extension of the config file (without the
+        # full absolute path).
         self.template_input_fname = os.path.basename(
             self.gather_opts['template_input_leaf'])
 
@@ -188,11 +191,12 @@ class ExpCSVGatherer:
         self.exp_output_root = os.path.join(batch_output_root, exp_leaf)
         self.main_config = main_config
 
-        self.sim_metrics_leaf = main_config['sim']['sim_metrics_leaf']
+        self.run_metrics_leaf = main_config['run']['run_metrics_leaf']
         self.videos_leaf = 'videos'
         self.project_imagize = gather_opts['project_imagizing']
 
-        # to be formatted like: self.input_name_format.format(name, experiment_number)
+        # To be formatted like: self.input_name_format.format(name,
+        # experiment_number)
         format_base = "{}_{}"
         self.output_name_format = format_base + "_output"
 
@@ -208,19 +212,19 @@ class ExpCSVGatherer:
         pattern = self.output_name_format.format(re.escape(self.gather_opts['template_input_leaf']),
                                                  r'\d+')
 
-        simulations = os.listdir(self.exp_output_root)
-        assert(all(re.match(pattern, s) for s in simulations)),\
-            "FATAL: Extraneous files/not all dirs in '{0}' are simulation runs".format(
+        runs = os.listdir(self.exp_output_root)
+        assert(all(re.match(pattern, r) for r in runs)),\
+            "Extraneous files/not all dirs in '{0}' are experimental runs".format(
                 self.exp_output_root)
 
         # Maps (unique .csv stem, optional parent dir) to the averaged dataframe
-        to_gather = self._calc_gather_items(simulations[0])
+        to_gather = self._calc_gather_items(runs[0])
 
         for item in to_gather:
             self._wait_for_memory()
-            gathered = self._gather_item_from_sims(item, simulations)
-            # Put gathered .csv list  in the process queue
+            gathered = self._gather_item_from_sims(item, runs)
 
+            # Put gathered .csv list  in the process queue
             self.processq.put(gathered)
 
         self.logger.debug("Enqueued %s items from %s for processing",
@@ -229,12 +233,12 @@ class ExpCSVGatherer:
 
     def _calc_gather_items(self, sim0: str) -> tp.List[GatherSpec]:
         sim_output_root = os.path.join(
-            self.exp_output_root, sim0, self.sim_metrics_leaf)
+            self.exp_output_root, sim0, self.run_metrics_leaf)
         to_gather = []
 
-        # The metrics folder should contain nothing but .csv files and directories. For all
-        # directories it contains, they each should contain nothing but .csv files (these are
-        # for video rendering later).
+        # The metrics folder should contain nothing but .csv files and
+        # directories. For all directories it contains, they each should contain
+        # nothing but .csv files (these are for video rendering later).
         for item in os.listdir(sim_output_root):
             item_path = os.path.join(sim_output_root, item)
             csv_leaf = os.path.splitext(item)[0]
@@ -255,20 +259,22 @@ class ExpCSVGatherer:
 
     def _gather_item_from_sims(self,
                                item: GatherSpec,
-                               simulations: tp.List[str]) -> tp.Dict[GatherSpec,
-                                                                     tp.List[pd.DataFrame]]:
+                               runs: tp.List[str]) -> tp.Dict[GatherSpec,
+                                                              tp.List[pd.DataFrame]]:
         gathered = dict()  # type: tp.Dict[GatherSpec, pd.DataFrame]
 
-        for sim in simulations:
-            sim_output_root = os.path.join(
-                self.exp_output_root, sim, self.sim_metrics_leaf)
+        for run in runs:
+            run_output_root = os.path.join(self.exp_output_root,
+                                           run,
+                                           self.run_metrics_leaf)
 
             if item.for_imagizing():
-                item_path = os.path.join(
-                    sim_output_root, item.csv_stem, item.csv_leaf + '.csv')
+                item_path = os.path.join(run_output_root,
+                                         item.csv_stem,
+                                         item.csv_leaf + '.csv')
             else:
                 item_path = os.path.join(
-                    sim_output_root, item.csv_leaf + '.csv')
+                    run_output_root, item.csv_leaf + '.csv')
 
             reader = storage.DataFrameReader(self.gather_opts['storage_medium'])
             df = reader(item_path, index_col=False)
@@ -297,12 +303,16 @@ class ExpCSVGatherer:
 
     def _verify_exp(self):
         """
-        Verify the integrity of all simulations in an experiment.
+        Verify the integrity of all :term:`Experimental Runs <Experimental Run>`
+        in an :term:`Experiment`.
 
         Specifically:
 
-        - All simulations produced all ``.csv`` files.
-        - All simulation ``.csv`` files have the same # rows/columns.
+        - All runs produced all ``.csv`` files.
+
+        - All runs ``.csv`` files with the same name have the same # rows and
+          columns.
+
         - No simulation ``.csv``files contain NaNs.
         """
         experiments = os.listdir(self.exp_output_root)
@@ -312,12 +322,12 @@ class ExpCSVGatherer:
         for exp1 in experiments:
             csv_root1 = os.path.join(self.exp_output_root,
                                      exp1,
-                                     self.sim_metrics_leaf)
+                                     self.run_metrics_leaf)
 
             for exp2 in experiments:
                 csv_root2 = os.path.join(self.exp_output_root,
                                          exp2,
-                                         self.sim_metrics_leaf)
+                                         self.run_metrics_leaf)
 
                 if not os.path.isdir(csv_root2):
                     continue
@@ -333,7 +343,7 @@ class ExpCSVGatherer:
                         continue
 
                     assert (sierra.core.utils.path_exists(path1) and sierra.core.utils.path_exists(path2)),\
-                        "FATAL: Either {0} or {1} does not exist".format(
+                        "Either {0} or {1} does not exist".format(
                             path1, path2)
 
                     # Verify both dataframes have same # columns, and that column sets are identical
@@ -343,43 +353,46 @@ class ExpCSVGatherer:
                     df2 = reader(path2)
 
                     assert (len(df1.columns) == len(df2.columns)), \
-                        "FATAL: Dataframes from {0} and {1} do not have same # columns".format(
+                        "Dataframes from {0} and {1} do not have same # columns".format(
                             path1, path2)
                     assert(sorted(df1.columns) == sorted(df2.columns)),\
-                        "FATAL: Columns from {0} and {1} not identical".format(
+                        "Columns from {0} and {1} not identical".format(
                             path1, path2)
 
                     # Verify the length of all columns in both dataframes is the same
                     for c1 in df1.columns:
                         assert(all(len(df1[c1]) == len(df1[c2]) for c2 in df1.columns)),\
-                            "FATAL: Not all columns from {0} have same length".format(
+                            "Not all columns from {0} have same length".format(
                                 path1)
                         assert(all(len(df1[c1]) == len(df2[c2]) for c2 in df1.columns)),\
-                            "FATAL: Not all columns from {0} and {1} have same length".format(path1,
-                                                                                              path2)
+                            "Not all columns from {0} and {1} have same length".format(path1,
+                                                                                       path2)
 
 
 class ExpStatisticsCalculator:
     """Generate statistics from all of :term:`Output .csv` files from a set of
-    :term:`Simulations<Simulation>` within a single :term:`Experiment`.
+    :term:`Experimental Runs<Experimental Run>` within a single
+    :term:`Experiment`.
 
-    .. IMPORTANT:: You *CANNOT* use logging ANYWHERE during processing .csv files. Why ? I *think*
-       because of a bug in the logging module itself. If you get unlucky enough to spawn the process
-       which enters the __call__() method in this class while another logging statement is in
-       progress (and is therefore holding an internal logging module lock), then the underlying
-       fork() call will copy the lock in the acquired state. Then, when this class goes to try to
-       log something, it deadlocks with itself.
+    .. IMPORTANT:: You *CANNOT* use loggingANYWHERE during processing .csv
+       files. Why ? I *think* because of a bug in the loggingmodule itself. If
+       you get unlucky enough to spawn the process which enters the __call__()
+       method in this class while another loggingstatement is in progress (and
+       is therefore holding an internal loggingmodule lock), then the
+       underlying fork() call will copy the lock in the acquired state. Then,
+       when this class goes to try to log something, it deadlocks with itself.
 
-       You also can't just create loggers with unique names, as this seems to be something like the
-       GIL, but for the logging module. Sometimes python sucks.
+       You also can't just create loggers with unique names, as this seems to be
+       something like the GIL, but for the loggingmodule. Sometimes python
+       sucks.
 
     Attributes:
         main_config: Parsed dictionary of main YAML configuration.
-        template_input_leaf: Leaf(i.e. no preceding path to the template XML configuration file
-                                  for the experiment.
+        template_input_leaf: Leaf (i.e. no preceding path) to the template XML
+                                  configuration file for the experiment.
         no_verify: Should result verification be skipped?
-        exp_output_root: Directory for averaged .csv output(relative to current dir or
-                         absolute).
+        exp_output_root: Directory for averaged .csv output (relative to current
+                         dir or absolute).
 
     """
 

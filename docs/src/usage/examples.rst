@@ -7,8 +7,11 @@ SIERRA Examples
 These examples all assume that you have successfully set up SIERRA with a
 :term:`Project` of your choice.
 
+ARGoS Examples
+==============
+
 Basic Example
-=============
+-------------
 
 This examples assumes a project named ``fordyca`` which contains a controller
 defined in the ``controllers.yaml`` as ``d0.CRW``, with a runtime environment of
@@ -19,9 +22,10 @@ the local machine.
    sierra-cli \
    --sierra-root=$HOME/exp \
    --template-input-file=templates/ideal.argos \
-   --n-sims=3 \
+   --n-runs=3 \
+   --platform=platform.argos\
    --project=fordyca \
-   --hpc-env=hpc.local \
+   --exec-env=hpc.local \
    --physics-n-engines=1 \
    --time-setup=time_setup.T10000 \
    --controller=d0.CRW \
@@ -40,7 +44,7 @@ including camera ready graphs! For an explanation of SIERRA's runtime directory
 tree, see :ref:`ln-usage-runtime-exp-tree`.
 
 Rendering Example
-=================
+-----------------
 
 This example shows how to use ARGoS image capturing ability to create nice
 videos of simulations.
@@ -51,8 +55,8 @@ videos of simulations.
    --sierra-root=$HOME/exp \
    --template-input-file=templates/ideal.argos \
    --project=fordyca \
-   --n-sims=3 \
-   --argos-rendering \
+   --n-runs=3 \
+   --platform-vc \
    --exp-graphs=none \
    --physics-n-engines=1 \
    --batch-criteria population_size.Log8
@@ -69,15 +73,14 @@ circular pan around the arena during simulation).
 
 .. NOTE:: Because LOTS of images can be captured by ARGoS to create videos,
           depending on simulation length, you usually want to have a very small
-          ``--n-sims`` to avoid filling up the filesystem.
+          ``--n-runs`` to avoid filling up the filesystem.
 
 Stage 5 Example
 ===============
 
-
 This example assumes that stages 1-4 have been run successfully with a project
 named ``fordyca`` and that a univariate batch criteria has been used (such as
-:ref:`ln-bc-population-size`).
+:ref:`ln-platform-argos-bc-population-size`).
 
 ::
 

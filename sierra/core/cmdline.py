@@ -2,9 +2,10 @@
 #
 #  This file is part of SIERRA.
 #
-#  SIERRA is free software: you can redistribute it and/or modify it under the terms of the GNU
-#  General Public License as published by the Free Software Foundation, either version 3 of the
-#  License, or (at your option) any later version.
+#  SIERRA is free software: you can redistribute it and/or modify it under the
+#  terms of the GNU General Public License as published by the Free Software
+#  Foundation, either version 3 of the License, or (at your option) any later
+#  version.
 #
 #  SIERRA is distributed in the hope that it will be useful, but WITHOUT ANY
 #  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
@@ -29,13 +30,16 @@ from sierra.core import config
 
 class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawTextHelpFormatter):
     """
-    Formatter to get (somewhat) better text wrapping of arguments with --help in the terminal.
+    Formatter to get (somewhat) better text wrapping of arguments with --help in
+    the terminal.
     """
 
 
 class BaseCmdline:
     """
-    The base cmdline class for SIERRA cmdline options containing reusable functions.
+    The base cmdline class for SIERRA cmdline options containing reusable
+    functions.
+
     """
     @staticmethod
     def stage_usage_doc(stages: tp.List[int], omitted: str = "If omitted: N/A.") -> str:
@@ -54,13 +58,12 @@ class BaseCmdline:
 
 class BootstrapCmdline(BaseCmdline):
     """
-    Defines the cmdline arguments that are used to bootstrap SIERRA. That is, the arguments that are
-    needed to load the project plugin.
+    Defines the cmdline arguments that are used to bootstrap SIERRA. That is,
+    the arguments that are needed to load plugins.
     """
 
     def __init__(self) -> None:
-        self.parser = argparse.ArgumentParser(prog='sierra',
-                                              formatter_class=HelpFormatter,
+        self.parser = argparse.ArgumentParser(prog='SIERRA',
                                               add_help=False,
                                               allow_abbrev=False,
                                               usage=argparse.SUPPRESS)
@@ -79,36 +82,74 @@ class BootstrapCmdline(BaseCmdline):
                                choices=["INFO", "DEBUG", "TRACE"],
                                help="""
 
-                                 The level of logging to use when running SIERRA.
+                                 The level of loggingto use when running
+                                 SIERRA.
 
                                  """ + self.stage_usage_doc([1, 2, 3, 4, 5]),
                                default="INFO")
 
-        bootstrap.add_argument("--hpc-env",
+        bootstrap.add_argument("--platform",
                                help="""
+                               This argument defines the :term:`Platform` you
+                               want to run experiments on.
 
-                                 The value of this argument determines if the ``--physics-n-engines`` and ``--n-sims``
-                                 options will be computed/inherited from the specified HPC environment. Otherwise, they
-                                 must be specified on the cmdline.
+                               The value of this argument determines the
+                               execution environment for experiments; different
+                               platforms (e.g., simulator, real robots) will
+                               have different configuration options.
 
-                                 Valid values can be any folder name under the ``plugins/hpc`` directory, but the ones
-                                 that come with SIERRA are:
+                               Valid values can be any folder name inside a
+                               folder on the :envvar:`SIERRA_PLUGIN_PATH` (with
+                               ``/`` replaced with ``.`` as you would expect for
+                               using path names to address python packages). The
+                               platforms which come with SIERRA are:
 
-                                 - ``hpc.local`` - This directs SIERRA to run experiments on the local machine. See
-                                   :ref:`ln-hpc-plugins-local` for a detailed description.
-
-                                 - ``hpc.pbs`` - The directs SIERRA to run experiments spread across multiple allocated
-                                   nodes in an HPC computing environment managed by TORQUE-PBS. See
-                                   :ref:`ln-hpc-plugins-pbs` for a detailed description.
-
-                                 - ``hpc.slurm`` - The directs SIERRA to run experiments spread across multiple
-                                   allocated nodes in an HPC computing environment managed by SLURM. See
-                                   :ref:`ln-hpc-plugins-slurm` for a detailed description.
-
-                                 - ``hpc.adhoc`` - This will direct SIERRA to run experiments on an ad-hoc network of
-                                   computers. See :ref:`ln-hpc-plugins-adhoc` for a detailed description.
-
+                               - ``platform.argos`` - This directs SIERRA to run
+                                 experiments using the :term:`ARGoS` simulator.
                                """,
+                               default='platform.argos')
+
+        bootstrap.add_argument("--exec-env",
+                               help="""
+                               This argument defines `how` experiments are going
+                               to be run, using the ``--platform`` you have
+                               selected.
+
+                               Valid values can be any folder name inside a
+                               folder on the :envvar:`SIERRA_PLUGIN_PATH` (with
+                               ``/`` replaced with ``.`` as you would expect for
+                               using path names to address python packages). The
+                               execution environments which come with SIERRA
+                               are:
+
+                               - ``hpc.local`` - This directs SIERRA to run
+                                 experiments on the local machine. See
+                                 :ref:`ln-hpc-plugins-local` for a detailed
+                                 description.
+
+                               - ``hpc.pbs`` - The directs SIERRA to run
+                                 experiments spread across multiple allocated
+                                 nodes in an HPC computing environment managed
+                                 by TORQUE-PBS. See :ref:`ln-hpc-plugins-pbs`
+                                 for a detailed description.
+
+                               - ``hpc.slurm`` - The directs SIERRA to run
+                                 experiments spread across multiple allocated
+                                 nodes in an HPC computing environment managed
+                                 by SLURM. See :ref:`ln-hpc-plugins-slurm` for a
+                                 detailed description.
+
+                               - ``hpc.adhoc`` - This will direct SIERRA to run
+                                 experiments on an ad-hoc network of
+                                 computers. See :ref:`ln-hpc-plugins-adhoc` for
+                                 a detailed description.
+
+                               - ``robots.turtlebot`` - This will direct SIERRA
+                                 to run experiments on real Turtlebots.
+
+                               Not all platforms support all execution
+                               environments.
+                               """ + self.stage_usage_doc([1, 2]),
                                default='hpc.local')
 
 
@@ -117,41 +158,42 @@ class CoreCmdline(BaseCmdline):
     Defines the core command line arguments for SIERRA using: class:`argparse`.
     """
 
-    def __init__(self, bootstrap: tp.Optional[argparse.ArgumentParser], stages: tp.List[int]) -> None:
-        self.scaffold_cli(bootstrap)
-        self.init_cli(stages, False)
+    def __init__(self,
+                 parents: tp.Optional[tp.List[argparse.ArgumentParser]],
+                 stages: tp.List[int]) -> None:
+        self.scaffold_cli(parents)
+        self.init_cli(stages)
 
-    def init_cli(self, stages: tp.List[int], for_sphinx: bool):
+    def init_cli(self, stages: tp.List[int]) -> None:
         if -1 in stages:
-            self.init_multistage(for_sphinx)
+            self.init_multistage()
 
         if 1 in stages:
-            self.init_stage1(for_sphinx)
+            self.init_stage1()
 
         if 2 in stages:
-            self.init_stage2(for_sphinx)
+            self.init_stage2()
 
         if 3 in stages:
-            self.init_stage3(for_sphinx)
+            self.init_stage3()
 
         if 4 in stages:
-            self.init_stage4(for_sphinx)
+            self.init_stage4()
 
         if 5 in stages:
-            self.init_stage5(for_sphinx)
+            self.init_stage5()
 
-    def scaffold_cli(self, bootstrap: tp.Optional[argparse.ArgumentParser]) -> None:
-        if bootstrap is not None:
-            self.parser = argparse.ArgumentParser(prog='SIERRA',
-                                                  formatter_class=HelpFormatter,
-                                                  parents=[bootstrap],
-                                                  allow_abbrev=False,
-                                                  usage=argparse.SUPPRESS)
+    def scaffold_cli(self,
+                     parents: tp.Optional[tp.List[argparse.ArgumentParser]]) -> None:
+        if parents is not None:
+            self.parser = argparse.ArgumentParser(prog='sierra-cli',
+                                                  parents=parents,
+                                                  add_help=False,
+                                                  allow_abbrev=False)
         else:
-            self.parser = argparse.ArgumentParser(prog='SIERRA',
-                                                  formatter_class=HelpFormatter,
-                                                  allow_abbrev=False,
-                                                  usage=argparse.SUPPRESS)
+            self.parser = argparse.ArgumentParser(prog='sierra-cli',
+                                                  add_help=False,
+                                                  allow_abbrev=False)
 
         self.multistage = self.parser.add_argument_group('Multi-stage options',
                                                          'Options which are used in multiple pipeline stages')
@@ -166,19 +208,17 @@ class CoreCmdline(BaseCmdline):
         self.stage5 = self.parser.add_argument_group(
             'Stage5: General options for controller comparison')
 
-    def init_multistage(self, for_sphinx: bool) -> None:
-        if for_sphinx:
-            return
-
+    def init_multistage(self) -> None:
         self.multistage.add_argument("--template-input-file",
                                      metavar="filepath",
                                      help="""
 
-                                     The template ``.argos`` input file for the
-                                     batched experiment. Beyond the ARGoS
-                                     requirements, the content of the file can
-                                     be any valid XML, with the exception of the
-                                     SIERRA requirements detailed in
+                                     The template ``.xml`` input file for the
+                                     batch experiment. Beyond the requirements
+                                     for the specific ``--platform``, the
+                                     content of the file can be any valid XML,
+                                     with the exception of the SIERRA
+                                     requirements detailed in
                                      :ref:`ln-tutorials-project-template-input-file`.
 
                                      """ + self.stage_usage_doc([1, 2, 3, 4]))
@@ -187,9 +227,9 @@ class CoreCmdline(BaseCmdline):
                                      help="""
 
                                      When SIERRA calculates the batch experiment
-                                     root ( or any child path in the batch
-                                     experiment root) during stage{1, 2}, if the
-                                     calculated path already exists it is
+                                     root (or any child path in the batch
+                                     experiment root) during stage {1, 2}, if
+                                     the calculated path already exists it is
                                      treated as a fatal error and no
                                      modifications to the filesystem are
                                      performed. This flag overwrides the default
@@ -205,13 +245,14 @@ class CoreCmdline(BaseCmdline):
                                      metavar="dirpath",
                                      help="""
 
-                                     Root directory for all SIERRA
-                                     generated/created files.
+                                     Root directory for all SIERRA generated and
+                                     created files.
 
                                      Subdirectories for controllers, scenarios,
-                                     experiment/simulation inputs/outputs will
-                                     be created in this directory as needed. Can
-                                     persist between invocations of SIERRA.
+                                     experiment/experimental run inputs/outputs
+                                     will be created in this directory as
+                                     needed. Can persist between invocations of
+                                     SIERRA.
 
                                  """ + self.stage_usage_doc([1, 2, 3, 4, 5]),
                                      default="<home directory>/exp")
@@ -237,13 +278,6 @@ class CoreCmdline(BaseCmdline):
                                      criteria defined by the parser for
                                      ``<category>``).
 
-                                     Not all files within the
-                                     ``core/variables/`` directory contain
-                                     classes which can be used as top level
-                                     batch criteria; see the
-                                     :ref:`ln-batch-criteria` docs for the ones
-                                     that can.
-
                                  """ + self.stage_usage_doc([1, 2, 3, 4, 5]),
                                      nargs='+',
                                      default=[])
@@ -260,23 +294,22 @@ class CoreCmdline(BaseCmdline):
                                        batch criteria, and other command line
                                        options. Part of default pipeline.
 
-                                    - Stage2: Run the batched experiment on a
-                                      previously generated experiment. Part of
-                                      default pipeline.
+                                    - Stage2: Run a previously generated
+                                      experiment. Part of default pipeline.
 
                                     - Stage3: Post-process experimental results
-                                      after running the batched experiment; some
+                                      after running the batch experiment; some
                                       parts of this can be done in
                                       parallel. Part of default pipeline.
 
                                     - Stage4: Perform deliverable generation
-                                      after processing results for a batched
+                                      after processing results for a batch
                                       experiment, which can include shiny graphs
                                       and videos. Part of default pipeline.
 
                                     - Stage5: Perform graph generation for
                                       comparing controllers AFTER graph
-                                      generation for batched experiments has
+                                      generation for batch experiments has
                                       been run. Not part of default pipeline.
 
                                      """,
@@ -298,25 +331,29 @@ class CoreCmdline(BaseCmdline):
                                     for all experiments in the batch (default
                                     behavior).
 
-                                    This is useful to re-run part of a batched
+                                    This is useful to re-run part of a batch
                                     experiment in HPC environments if SIERRA
                                     gets killed before it finishes running all
-                                    experiments in the batch.
+                                    experiments in the batch, or to redo a
+                                    single experiment with real robots which
+                                    failed for some reason.
 
                                  """ + self.stage_usage_doc([2, 3, 4]))
 
-        self.multistage.add_argument("--argos-rendering",
+        self.multistage.add_argument("--platform-vc",
                                      help="""
 
-                                    Enable ARGoS built in frame capture during
-                                    stage 2+SIERRA rendering of captured frames
-                                    during stage 4. See
-                                    :ref:`ln-usage-rendering` for full details.
-
-                                    This option slows things down a LOT, so if
-                                    you use it, ``--n-sims`` should probably be
-                                    low, unless you have gobs of computing power
-                                    available.
+                                    For applicable ``--platforms``, enable
+                                    visual capturing of run-time data during
+                                    stage 2. This data can be frames (i.e., .png
+                                    files), or rendering videos, depending on
+                                    the platform. If the captured data was
+                                    frames, then SIERRA can render the captured
+                                    frames into videos during stage 4. If the
+                                    selected ``--platform`` does not support
+                                    visual capture, then this option has no
+                                    effect. See :ref:`ln-usage-vc-platform` for
+                                    full details.
 
                                     """ + self.stage_usage_doc([1, 4]),
                                      action='store_true')
@@ -332,19 +369,19 @@ class CoreCmdline(BaseCmdline):
                                  """ + self.stage_usage_doc([3, 4]),
                                      action='store_true')
 
-        self.multistage.add_argument("--n-sims",
+        self.multistage.add_argument("--n-runs",
                                      type=int,
                                      help="""
 
-                                    The # of simulations that will be run and
-                                    their results averaged to form the result of
-                                    a single experiment within a batch.
+                                    The # of experimental runs that will be run
+                                    and their results averaged to form the
+                                    result of a single experiment within a
+                                    batch.
 
-                                    If ``--hpc-env`` is something other than
-                                    ``local`` then it will be used to determine
-                                    # physics engines/simulation, and #
-                                    threads/simulation.
-
+                                    If ``--platform`` is a simulator and
+                                    ``--exec-env`` is something other than
+                                    ``hpc.local`` then it will be used to
+                                    determine the concurrency of experimental runs.
                                      """ + self.stage_usage_doc([1, 2]))
 
         self.multistage.add_argument("--no-collate",
@@ -352,270 +389,28 @@ class CoreCmdline(BaseCmdline):
 
                                     Specify that no collation of data across
                                     experiments within a batch (stage 4) or
-                                    across simulations within an experiment
-                                    (stage 3) should be performed. Useful if
-                                    collation takes a long time and multiple
-                                    types of stage 4 outputs are desired.
+                                    across runs within an experiment (stage 3)
+                                    should be performed. Useful if collation
+                                    takes a long time and multiple types of
+                                    stage 4 outputs are desired.
 
                                      """ + self.stage_usage_doc([3, 4]),
                                      action='store_true')
 
-    def init_stage1(self, for_sphinx: bool) -> None:
+    def init_stage1(self) -> None:
         """
         Define cmdline arguments for stage 1.
         """
-        if for_sphinx:
-            return
 
-        # Experiment options
-        experiment = self.parser.add_argument_group('Stage1: Experiment setup')
-
-        experiment.add_argument("--time-setup",
-                                help="""
-
-                                Defines simulation length, ticks per second for
-                                the experiment (<experiment> tag), # of
-                                datapoints to capture/capture interval for each
-                                simulation. See :ref:`ln-vars-ts` for a full
-                                description.
-
-                                 """ + self.stage_usage_doc([1]),
-                                default="time_setup.T{0}.K{1}.N{2}".format(config.kARGoS['duration'],
-                                                                           config.kARGoS['ticks_per_second'],
-                                                                           config.kSimulationData['n_datapoints_1D']))
-
-        # Physics engines options
-        physics = self.parser.add_argument_group(
-            'Stage1: Configuring ARGoS physics engines')
-
-        physics.add_argument("--physics-engine-type2D",
-                             choices=['dynamics2d'],
-                             help="""
-
-                             The type of 2D physics engine to use for managing
-                             spatial extents within the arena, choosing one of
-                             the types that ARGoS supports. The precise 2D areas
-                             (if any) within the arena which the will be
-                             controlled by 2D physics engines is defined on a
-                             per ``--project`` basis.
-
-                             """ + self.stage_usage_doc([1]),
-                             default='dynamics2d')
-
-        physics.add_argument("--physics-engine-type3D",
-                             choices=['dynamics3d'],
-                             help="""
-
-                             The type of 3D physics engine to use for managing
-                             3D volumetric extents within the arena, choosing
-                             one of the types that ARGoS supports. The precise
-                             3D volumes (if any) within the arena which the will
-                             be controlled by 3D physics engines is defined on a
-                             per ``--project`` basis.
-
-                             """ + self.stage_usage_doc([1]),
-                             default='dynamics3d')
-
-        physics.add_argument("--physics-n-engines",
-                             choices=[1, 2, 4, 6, 8, 12, 16, 24],
-                             type=int,
-                             help="""
-
-                             # of physics engines to use during simulation (yay
-                             ARGoS!). If N > 1, the engines will be tiled in a
-                             uniform grid within the arena (X and Y spacing may
-                             not be the same depending on dimensions and how
-                             many engines are chosen, however), extending upward
-                             in Z to the height specified by ``--scenario``
-                             (i.e., forming a set of "silos" rather that equal
-                             volumetric extents).
-
-                             If 2D and 3D physics engines are mixed, then half
-                             of the specified # of engines will be allocated
-                             among all arena extents cumulatively managed by
-                             each type of engine. For example, if 4 engines are
-                             used, with 1/3 of the arena managed by 2D engines
-                             and 2/3 by 3D, then 2 2D engines will manage 1/3 of
-                             the arena, and 2 3D engines will manage the other
-                             2/3 of the arena.
-
-                             If ``--hpc-env`` is something other than ``local``
-                             then the # physics engines will be computed from
-                             the HPC environment, and the cmdline value (if any)
-                             will be ignored.
-
-                             .. IMPORTANT:: When using multiple physics engines,
-                                always make sure that ``# engines / arena
-                                dimension`` (X **AND** Y dimensions) is always a
-                                rational number. That is,
-
-                                - 24 engines in a ``12x12`` arena will be fine,
-                                  because ``12/24=0.5``, which can be
-                                  represented reasonably well in floating point.
-
-                                - 24 engines in a ``16x16`` arena will not be
-                                  fine, because ``16/24=0.666667``, which will
-                                  very likely result in rounding errors and
-                                  ARGoS being unable to initialize the space
-                                  because it can't place arena walls.
-
-                                This is enforced by SIERRA.
-
-                             """ + self.stage_usage_doc([1]))
-        physics.add_argument("--physics-iter-per-tick",
-                             type=int,
-                             help="""
-
-                             The # of iterations all physics engines should
-                             perform per tick each time the controller loops are
-                             run (the # of ticks per second for controller
-                             control loops is set via ``--time-setup``).
-
-                             """ + self.stage_usage_doc([1]),
-                             default=10)
-
-        # Rendering options
-        rendering = self.parser.add_argument_group(
-            'Stage1: Rendering (see also stage4 rendering options)')
-
-        rendering.add_argument("--camera-config",
-                               choices=['overhead',
-                                        'argos_static',
-                                        'argos_dynamic',
-                                        'sierra_static',
-                                        'sierra_dynamic'],
-                               help="""
-
-                               Select the camera configuration for
-                               simulation. Ignored unless ``--argos-rendering``
-                               is passed. Valid values are:
-
-                               - ``overhead`` - Use a single overhead camera at
-                                 the center of the aren looking straight down at
-                                 an appropriate height to see the whole arena.
-
-                               - ``argos_static`` - Use the default ARGoS camera
-                                 configuration (12 cameras), cycling through
-                                 them periodically throughout simulation without
-                                 interpolation.
-
-                               - ``sierra_static`` - Use the SIERRA ARGoS camera
-                                 configuration (12 cameras), cycling through
-                                 them periodically throughout simulation without
-                                 interpolation.
-
-                               - ``sierra_dynamic`` - Use the SIERRA ARGoS
-                                 camera configuration (12 cameras), cycling
-                                 through them periodically throughout simulation
-                                 with interpolation between positions.
-
-                                 """ + self.stage_usage_doc([1]),
-                               default='overhead')
-
-        # Robot options
-        robots = self.parser.add_argument_group('Stage1: Configuring robots')
-
-        robots.add_argument("--with-robot-rab",
-                            help="""
-
-                            If passed, do not remove the Range and Bearing (RAB)
-                            sensor, actuator, and medium XML definitions from
-                            ``--template-input-file`` before generating
-                            experimental inputs. Otherwise, the following XML
-                            tags are removed if they exist:
-
-                            - ``.//media/range_and_bearing``
-                            - ``.//actuators/range_and_bearing``
-                            - ``.//sensors/range_and_bearing``
-
-                            """ + self.stage_usage_doc([1]),
-                            action="store_true",
-                            default=False)
-
-        robots.add_argument("--with-robot-leds",
-                            help="""
-
-                            If passed, do not remove the robot LED actuator XML
-                            definitions from the ``--template-input-file``
-                            before generating experimental inputs. Otherwise,
-                            the following XML tags are removed if they exist:
-
-                            - ``.//actuators/leds``
-                            - ``.//medium/leds``
-                            - ``.//sensors/colored_blob_omnidirectional_camera``
-
-                            """ + self.stage_usage_doc([1]),
-                            action="store_true",
-                            default=False)
-
-        robots.add_argument("--with-robot-battery",
-                            help="""
-
-                            If passed, do not remove the robot battery sensor
-                            XML definitions from ``--template-input-file``
-                            before generating experimental inputs. Otherwise,
-                            the following XML tags are removed if they exist:
-
-                            - `.//entity/*/battery`
-                            - `.//sensors/battery`
-
-                            """ + self.stage_usage_doc([1]),
-                            action="store_true",
-                            default=False)
-
-        robots.add_argument("--n-robots",
-                            help="""
-
-                            The # robots that should be used in the
-                            simulation. Can be used to override batch criteria,
-                            or to supplement experiments that do not set it so
-                            that manual modification of input file is
-                            unneccesary.
-
-                            """ + self.stage_usage_doc([1]),
-                            type=int,
-                            default=None)
-
-    def init_stage2(self, for_sphinx: bool) -> None:
+    def init_stage2(self) -> None:
         """
         Define cmdline arguments for stage 2.
         """
-        if for_sphinx:
-            return
 
-        self.stage2.add_argument("--exec-resume",
-                                 help="""
-
-                                 Resume a batched experiment that was
-                                 killed/stopped/etc last time SIERRA was
-                                 run. This maps directly to GNU parallel's
-                                 ``--resume-failed`` option.
-
-                                 """ + self.stage_usage_doc([2]),
-                                 action='store_true',
-                                 default=False)
-
-        self.stage2.add_argument("--exec-sims-per-node",
-                                 help="""
-
-                                 Specify the maximum number of parallel
-                                 simulations to run. By default this is computed
-                                 from the selected HPC environment for maximum
-                                 throughput given the desired ``--n-sims`` and
-                                 CPUs/allocated node. However, for some
-                                 environments being able to override the
-                                 computed default can be useful.
-
-                                 """ + self.stage_usage_doc([2]),
-                                 type=int,
-                                 default=None)
-
-    def init_stage3(self, for_sphinx: bool) -> None:
+    def init_stage3(self) -> None:
         """
         Define cmdline arguments for stage 3.
         """
-        if for_sphinx:
-            return
 
         self.stage3.add_argument('--no-verify-results',
                                  help="""
@@ -627,8 +422,8 @@ class CoreCmdline(BaseCmdline):
                                  experiments generated the same # rows, then
                                  SIERRA will (probably) crash during experiments
                                  exist and/or have the stage4. Verification can
-                                 take a long time with large # of simulations
-                                 per experiment.
+                                 take a long time with large # of runs per
+                                 experiment.
 
                                  """ + self.stage_usage_doc([3]),
                                  action='store_true',
@@ -637,22 +432,23 @@ class CoreCmdline(BaseCmdline):
         self.stage3.add_argument("--storage-medium", choices=['storage.csv'],
                                  help="""
 
-                                 Specify the storage medium for ARGoS simulation
-                                 outputs, so that SIERRA can select an
-                                 appropriate plugin to read them. Any plugin
-                                 under ``plugins/storage`` can be used, but the
-                                 ones that come with SIERRA are:
+                                 Specify the storage medium for
+                                 :term:`Experimental Run` outputs, so that
+                                 SIERRA can select an appropriate plugin to read
+                                 them. Any plugin under ``plugins/storage`` can
+                                 be used, but the ones that come with SIERRA
+                                 are:
 
-                                 ``storage.csv`` - Simulation outputs are stored
-                                 in a per-simulation directory
-                                 as one or more ``.csv``
-                                 files.
+                                 ``storage.csv`` - Experimental run outputs are
+                                                   stored in a per-run directory
+                                                   as one or more ``.csv``
+                                                   files.
 
 
                                  Regardless of the value of this option, SIERRA
                                  always generates ``.csv`` files as it runs and
-                                 averages outputs, generates graphs, etc.  """
-                                 + self.stage_usage_doc([3]),
+                                 averages outputs, generates graphs, etc.
+                                 """ + self.stage_usage_doc([3]),
                                  default='storage.csv')
 
         self.stage3.add_argument("--dist-stats",
@@ -697,13 +493,10 @@ class CoreCmdline(BaseCmdline):
                                  """ + self.stage_usage_doc([3, 4]),
                                  default=90)
 
-    def init_stage4(self, for_sphinx: bool) -> None:
+    def init_stage4(self) -> None:
         """
         Define cmdline arguments for stage 4.
         """
-        if for_sphinx:
-            return
-
         self.stage4.add_argument("--exp-graphs",
                                  choices=['intra', 'inter', 'all', 'none'],
                                  help="""
@@ -715,7 +508,7 @@ class CoreCmdline(BaseCmdline):
                                    from the results of a single experiment
                                    within a batch, for each experiment in the
                                    batch (this can take a long time with large
-                                   batched experiments). If any intra-experiment
+                                   batch experiments). If any intra-experiment
                                    models are defined and enabled, those are run
                                    and the results placed on appropriate graphs.
 
@@ -784,8 +577,6 @@ class CoreCmdline(BaseCmdline):
                            """ +
 
                            self.graphs_applicable_doc([':class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`']) +
-                           self.bc_applicable_doc([':ref:`Constant Population Density <ln-bc-population-constant-density>`',
-                                                   ':ref:`Population Size <ln-bc-population-size>`']) +
                            self.stage_usage_doc([4, 5]),
                            action='store_true')
 
@@ -801,8 +592,6 @@ class CoreCmdline(BaseCmdline):
                            """ +
 
                            self.graphs_applicable_doc([':class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`']) +
-                           self.bc_applicable_doc([':ref:`Constant Population Density <ln-bc-population-constant-density>`',
-                                                   ':ref:`Population Size <ln-bc-population-size>`']) +
                            self.stage_usage_doc([4, 5]),
                            action='store_true')
 
@@ -819,8 +608,6 @@ class CoreCmdline(BaseCmdline):
 
                            self.graphs_applicable_doc([':class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`',
                                                        ':class:`~sierra.core.graphs.stacked_line_graph.StackedLineGraph`']) +
-                           self.bc_applicable_doc([':ref:`Population Size <ln-bc-population-size>`',
-                                                   ':ref:`Population Constant Density <ln-bc-population-constant-density>`']) +
                            self.stage_usage_doc([4, 5]),
                            action='store_true')
 
@@ -832,7 +619,6 @@ class CoreCmdline(BaseCmdline):
                            legend. """ +
 
                            self.graphs_applicable_doc([':class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`']) +
-                           self.bc_applicable_doc([]) +
                            self.stage_usage_doc([4]))
 
         plots.add_argument("--plot-primary-axis",
@@ -847,8 +633,11 @@ class CoreCmdline(BaseCmdline):
                            For example, in a bivariate batch criteria composed
                            of
 
-                           - :ref:`Swarm Population Size <ln-bc-population-size>` on the X axis (rows)
-                           - :ref:`SAA Noise <ln-bc-saa-noise>` on the Y axis (columns)
+                           - :ref:`ln-platform-argos-bc-population-size` on the
+                             X axis (rows)
+
+                           - :ref:`ln-platform-argos-bc-saa-noise` on the Y axis
+                             (columns)
 
                            Swarm metrics will be calculated by `computing`
                            across .csv rows and `projecting` down the columns by
@@ -901,12 +690,12 @@ class CoreCmdline(BaseCmdline):
         rendering.add_argument("--render-cmd-opts",
                                help="""
 
-                               Specify the ffmpeg options to appear between the
-                               specification of the input image files and the
-                               specification of the output file. The default is
-                               suitable for use with ARGoS frame grabbing set to
-                               a frames size of 1600x1200 to output a reasonable
-                               quality video.
+                               Specify the :program:`ffmpeg` options to appear
+                               between the specification of the input image
+                               files and the specification of the output
+                               file. The default is suitable for use with ARGoS
+                               frame grabbing set to a frames size of 1600x1200
+                               to output a reasonable quality video.
 
                                """ + self.stage_usage_doc([4]),
                                default="-r 10 -s:v 800x600 -c:v libx264 -crf 25 -filter:v scale=-2:956 -pix_fmt yuv420p")
@@ -934,13 +723,10 @@ class CoreCmdline(BaseCmdline):
                                """ + self.stage_usage_doc([4]),
                                action='store_true')
 
-    def init_stage5(self, for_sphinx: bool) -> None:
+    def init_stage5(self) -> None:
         """
         Define cmdline arguments for stage 5.
         """
-        if for_sphinx:
-            return
-
         self.stage5.add_argument("--controllers-list",
                                  help="""
 
@@ -1178,19 +964,19 @@ class CoreCmdlineValidator():
 
     def __call__(self, args) -> None:
         assert len(
-            args.batch_criteria) <= 2, "FATAL: Too many batch criteria passed"
+            args.batch_criteria) <= 2, "Too many batch criteria passed"
 
         assert args.sierra_root is not None, '--sierra-root is required for all stages'
 
         if len(args.batch_criteria) == 2:
             assert args.batch_criteria[0] != args.batch_criteria[1], \
-                "FATAL: Duplicate batch criteria passed"
+                "Duplicate batch criteria passed"
 
         assert isinstance(args.batch_criteria, list), \
             'FATAL Batch criteria not passed as list on cmdline'
 
         if any([1]) in args.pipeline:
-            assert args.n_sims is not None, '--n-sims is required for running stage 1'
+            assert args.n_runs is not None, '--n-runs is required for running stage 1'
             assert args.template_input_file is not None, '--template-input-file is required for running stage 1'
             assert args.scenario is not None, '--scenario is required for running stage 1'
 
@@ -1206,19 +992,11 @@ class CoreCmdlineValidator():
                 '--scenario-comparison or --controller-comparison required for stage 5'
             if args.scenario_comparison:
                 assert args.controller is not None,\
-                    '--centroller is required for --scenario-comparison'
+                    '--controller is required for --scenario-comparison'
 
 
 def sphinx_cmdline_multistage():
-    return CoreCmdline(BootstrapCmdline().parser, [-1]).parser
-
-
-def sphinx_cmdline_stage1():
-    return CoreCmdline(None, [1]).parser
-
-
-def sphinx_cmdline_stage2():
-    return CoreCmdline(None, [2]).parser
+    return CoreCmdline([BootstrapCmdline().parser], [-1]).parser
 
 
 def sphinx_cmdline_stage3():

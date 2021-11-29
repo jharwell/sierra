@@ -28,27 +28,33 @@ import numpy as np
 
 # Project packages
 import sierra.core.variables.batch_criteria as bc
-from sierra.core.variables.population_size import PopulationSize
+from sierra.plugins.platform.argos.variables.population_size import PopulationSize
 from sierra.core.xml import XMLAttrChange, XMLAttrChangeSet
 from sierra.core import types
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
 class SAANoise(bc.UnivarBatchCriteria):
-    """
-    A univariate range specifiying the set of noise ranges for Sensors And Actuators (SAA), and
-    possibly swarm size to use to define the batched experiment. This class is a base class which
-    should (almost) never be used on its own. Instead, the ``factory()`` function should be used to
-    dynamically create derived classes expressing the user's desired variance set.
+    """A univariate range specifiying the set of noise ranges for Sensors And
+    Actuators (SAA), and possibly swarm size to use to define the batch
+    experiment. This class is a base class which should (almost) never be used
+    on its own. Instead, the ``factory()`` function should be used to
+    dynamically create derived classes expressing the user's desired variance
+    set.
 
     Attributes:
-        variances: List of tuples specifying the waveform characteristics for each type of
-                   applied variance. Cardinality of each tuple is 3, and defined as follows:
 
-                   - xml parent path: The path to the parent element in the XML tree.
-                   - [type, frequency, amplitude, offset, phase]: Waveform parameters.
-                   - value: Waveform specific parameters (optional, will be None if not used for the
-                            selected variance)
+        variances: List of tuples specifying the waveform characteristics for
+                   each type of applied variance. Cardinality of each tuple is
+                   3, and defined as follows:
+
+                   - xml parent path: The path to the parent element in the XML
+                     tree.
+                   - [type, frequency, amplitude, offset, phase]: Waveform
+                     parameters.
+                   - value: Waveform specific parameters (optional, will be None
+                     if not used for the selected variance).
+
     """
 
     def __init__(self,
@@ -67,18 +73,19 @@ class SAANoise(bc.UnivarBatchCriteria):
         self.attr_changes = []  # type: tp.List[XMLAttrChangeSet]
 
     def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
-        """
-        Generate a list of sets of changes necessary to make to the input file to correctly set up
-        the simulation with the specified noise ranges.
+        """Generate a list of sets of changes necessary to make to the input file to
+        correctly set up the simulation with the specified noise ranges.
+
         """
         if not self.attr_changes:
             self.attr_changes = [XMLAttrChangeSet(*{XMLAttrChange(v2[0],
                                                                   v2[1],
                                                                   v2[2]) for v2 in v1}) for v1 in self.variances]
 
-            # Swarm size is optional. It can be (1) controlled via this variable, (2) controlled by
-            # another variable in a bivariate batch criteria, (3) not controlled at all. For (2),
-            # (3), the swarm size can be None.
+            # Swarm size is optional. It can be (1) controlled via this
+            # variable, (2) controlled by another variable in a bivariate batch
+            # criteria, (3) not controlled at all. For (2), (3), the swarm size
+            # can be None.
             if self.population is not None:
                 size_chgs = PopulationSize(self.cli_arg,
                                            self.main_config,
@@ -102,12 +109,14 @@ class SAANoise(bc.UnivarBatchCriteria):
         elif self._uniform_sources():
             xticks_range = self.main_config['perf']['robustness']['uniform_ticks_range']
 
-        # If exp_dirs is passed, then we have been handed a subset of the total # of directories in
-        # the batch exp root, and so n_exp() will return more experiments than we actually
-        # have. This behavior is needed to correctly extract x/y values for bivariate experiments.
+        # If exp_dirs is passed, then we have been handed a subset of the total
+        # # of directories in the batch exp root, and so n_exp() will return
+        # more experiments than we actually have. This behavior is needed to
+        # correctly extract x/y values for bivariate experiments.
         #
-        # We use range() instead of the actual SAA noise values so that this batch criteria works
-        # well with box and whisker plots around each data point.
+        # We use range() instead of the actual SAA noise values so that this
+        # batch criteria works well with box and whisker plots around each data
+        # point.
         if exp_dirs is not None:
             return [float(i) for i in range(len(exp_dirs))]
         else:
@@ -211,14 +220,14 @@ class Parser():
 
         # Parse noise type
         res = re.search("sensors|actuators|all", criteria_str)
-        assert res is not None, "FATAL: Bad noise type in criteria '{0}'".format(
+        assert res is not None, "Bad noise type in criteria '{0}'".format(
             criteria_str)
         ret['noise_type'] = res.group(0)
 
         # Parse cardinality
         res = re.search(r"\.C[0-9]+", criteria_str)
         assert res is not None, \
-            "FATAL: Bad cardinality for set of noise ranges in criteria '{0}'".format(
+            "Bad cardinality for set of noise ranges in criteria '{0}'".format(
                 criteria_str)
         ret['cardinality'] = int(res.group(0)[2:])
 
@@ -260,22 +269,23 @@ class VariancesGenerator():
                 'sensors': self.main_config['perf']['robustness'].get('sensors', {})
             }
 
-        # We iterate through by noise source (sensor or actuator) creating lists of noise levels for
-        # each source, which are joined to create a list-of-lists: by_src. We have to do it this
-        # way, because we need the values in the xml_attr dict in order to create the list of noise
+        # We iterate through by noise source (sensor or actuator) creating lists
+        # of noise levels for each source, which are joined to create a
+        # list-of-lists: by_src. We have to do it this way, because we need the
+        # values in the xml_attr dict in order to create the list of noise
         # ranges for each source.
         #
-        # Only after creating this list-of-lists can we then invert it and group the lists of ranges
-        # by experiment, rather than src. That is, we take the 0-th index from each source and use
-        # them to define the first set of XML changes, then the 1-th index to define the second,
-        # etc.
+        # Only after creating this list-of-lists can we then invert it and group
+        # the lists of ranges by experiment, rather than src. That is, we take
+        # the 0-th index from each source and use them to define the first set
+        # of XML changes, then the 1-th index to define the second, etc.
         #
         # I couldn't find a more elegant way of doing this.
         by_src = []  # type: tp.List[tp.Set]
 
         for dev_type in self.xml_parents.keys():
-            # Either the sensors or actuators list is empty because it wasn't included in the YAML
-            # config file.
+            # Either the sensors or actuators list is empty because it wasn't
+            # included in the YAML config file.
             if dev_type not in configured_sources.keys():
                 continue
             for dev_name in self.xml_parents[dev_type].keys():
@@ -290,10 +300,11 @@ class VariancesGenerator():
         # Invert!
         by_exp = []
         for i in range(0, self.attr['cardinality']):
-            # This is the magic line. It takes every "level"-th element, since that is the # of
-            # experiments that this criteria defines, starting with i=0...n_levels. So if there are
-            # 10 levels, then the first set added to the return list would be i={0,10,20,...}, the
-            # second would be i={1,11,21,...}, etc.
+            # This is the magic line. It takes every "level"-th element, since
+            # that is the # of experiments that this criteria defines, starting
+            # with i=0...n_levels. So if there are 10 levels, then the first set
+            # added to the return list would be i={0,10,20,...}, the second
+            # would be i={1,11,21,...}, etc.
             by_exp.append(
                 {chg for s in by_src[i:: self.attr['cardinality']] for chg in s})
 
@@ -332,14 +343,13 @@ class VariancesGenerator():
 
                 by_src.extend([v])
         else:
-            assert False, "FATAL: bad noise model '{0}'".format(
+            assert False, "bad noise model '{0}'".format(
                 dev_noise_config['model'])
 
 
 def factory(cli_arg: str, main_config: types.YAMLDict, batch_input_root: str, **kwargs):
-    """
-    Factory to create :class:`SAANoise` derived classes from the command line definition of
-    batch criteria.
+    """Factory to create :class:`SAANoise` derived classes from the command line
+    definition of batch criteria.
 
     """
     attr = Parser()(cli_arg)

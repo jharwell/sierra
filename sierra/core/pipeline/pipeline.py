@@ -45,39 +45,28 @@ class Pipeline:
     def __init__(self,
                  args: argparse.Namespace,
                  controller: str,
-                 cmdopts: types.Cmdopts) -> None:
+                 rdg_opts: types.Cmdopts) -> None:
         self.args = args
         self.logger = logging.getLogger(__name__)
+
         self.cmdopts = {
             # general
             'sierra_root': self.args.sierra_root,
             'scenario': self.args.scenario,
             'template_input_file': self.args.template_input_file,
             'project': self.args.project,
-            'hpc_env': args.hpc_env,
-            'argos_rendering': self.args.argos_rendering,
-            "n_sims": args.n_sims,
+            'exec_env': args.exec_env,
+            'platform_vc': self.args.platform_vc,
+            "n_runs": args.n_runs,
             'n_robots': args.n_robots,
             'project_imagizing': self.args.project_imagizing,
             'exp_overwrite': self.args.exp_overwrite,
             'exp_range': self.args.exp_range,
             'dist_stats': self.args.dist_stats,
             'no_collate': self.args.no_collate,
-
+            'platform': self.args.platform,
 
             # stage 1
-            'time_setup': self.args.time_setup,
-
-            'physics_n_engines': self.args.physics_n_engines,
-            "physics_engine_type2D": self.args.physics_engine_type2D,
-            "physics_engine_type3D": self.args.physics_engine_type3D,
-            "physics_iter_per_tick": self.args.physics_iter_per_tick,
-
-            "with_robot_rab": self.args.with_robot_rab,
-            "with_robot_leds": self.args.with_robot_leds,
-            "with_robot_battery": self.args.with_robot_battery,
-
-            'camera_config': self.args.camera_config,
 
             # stage 2
             'exec_resume': self.args.exec_resume,
@@ -117,13 +106,20 @@ class Pipeline:
             'transpose_graphs': self.args.transpose_graphs,
         }
 
-        if cmdopts is not None:
-            self.cmdopts.update(cmdopts)
+        # Load additional cmdline options from platform
+        self.logger.debug("Updating cmdopts with extensions from '%s'",
+                          self.cmdopts['platform'])
+        module = pm.module_load_tiered("cmdline",
+                                       platform=self.cmdopts['platform'])
+        module.PlatformCmdline.cmdopts_update(self.args, self.cmdopts)
+
+        if rdg_opts is not None:
+            self.cmdopts.update(rdg_opts)
 
             # Load additional cmdline options from project. This is mandatory,
-            # because all projects have to defined --controller and --scenario
+            # because all projects have to define --controller and --scenario
             # at a minimum.
-            self.logger.debug("Updating cmdopts for cmdline extensions from project '%s'",
+            self.logger.debug("Updating cmdopts with extensions from '%s'",
                               self.cmdopts['project'])
             path = "{0}.cmdline".format(self.cmdopts['project'])
             module = pm.module_load(path)
@@ -135,19 +131,11 @@ class Pipeline:
                                                         'core',
                                                         'config')
 
-        env = os.environ.get('SIERRA_PROJECT_PATH', None)
-        assert env is not None, "SIERRA_PROJECT_PATH must be defined"
-
-        for root in env.split(os.pathsep):
-            path = os.path.join(root, self.cmdopts['project'])
-            if os.path.exists(path):
-                self.cmdopts['projects_root'] = root
-                self.cmdopts['project_root'] = path
-                self.cmdopts['project_config_root'] = os.path.join(
-                    path, 'config')
-                self.cmdopts['project_model_root'] = os.path.join(
-                    path, 'models')
-                break
+        project = pm.SIERRAPluginManager().get_plugin(self.cmdopts['project'])
+        path = os.path.join(project['parent_dir'], self.cmdopts['project'])
+        self.cmdopts['project_root'] = path
+        self.cmdopts['project_config_root'] = os.path.join(path, 'config')
+        self.cmdopts['project_model_root'] = os.path.join(path, 'models')
 
         self._load_config()
 

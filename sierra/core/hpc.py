@@ -19,126 +19,58 @@ experiments.
 """
 
 # Core packages
-import os
+import argparse
 import typing as tp
-import subprocess
-import shutil
-import re
 
 # 3rd party packages
-import packaging.version
 
 # Project packages
-import sierra.core.plugin_manager as pm
-import sierra.core.config
-from sierra.core import types
-
-################################################################################
-# Dispatchers
-################################################################################
+import sierra.core.cmdline as cmd
 
 
-class ARGoSCmdGenerator():
-    """
-    Dispatcher to generate the ARGoS cmd to run for a simulation, given its input file.
-    """
+class HPCCmdline(cmd.BaseCmdline):
+    def __init__(self, stages: tp.List[int]) -> None:
+        self.parser = argparse.ArgumentParser(prog='sierra-cli',
+                                              add_help=False,
+                                              allow_abbrev=False)
 
-    def __call__(self, cmdopts: types.Cmdopts, input_fpath: str) -> str:
-        hpc = pm.SIERRAPluginManager().get_plugin(cmdopts['hpc_env'])
-        return hpc.argos_cmd_generate(input_fpath)  # type: ignore
+        self.init_cli(stages)
 
+    def init_cli(self, stages: tp.List[int]) -> None:
+        if 2 in stages:
+            self.init_stage2()
 
-class GNUParallelCmdGenerator():
-    """
-    Dispatcher to generate the GNU Parallel cmd SIERRA will use to run experiments in the specified
-    HPC environment.
+    def init_stage2(self) -> None:
+        desc = ("For platforms which are simulators (and can"
+                "therefore be run in HPC environments).")
+        hpc = self.parser.add_argument_group('HPC options', desc)
 
-    Passes the following dictionary to the configured HPC plugin:
-    - jobroot_path - The root directory for the batch experiment.
-    - exec_resume - Is this a resume of a previously run experiment?
-    - n_jobs - How many parallel jobs are allowed per node?
-    - joblog_path - The logfile for GNU parallel output.
-    - cmdfile_path - The file containing the ARGoS cmds to run.
+        hpc.add_argument("--exec-sims-per-node",
+                         help="""
 
-    """
+                         Specify the maximum number of parallel simulations to
+                         run. By default this is computed from the selected HPC
+                         environment for maximum throughput given the desired
+                         ``--n-runs`` and CPUs per allocated node. However, for
+                         some environments being able to override the computed
+                         default can be useful.
 
-    def __call__(self, hpc_env: str, parallel_opts: tp.Dict[str, tp.Any]) -> str:
-        hpc = pm.SIERRAPluginManager().get_plugin(hpc_env)
-        return hpc.gnu_parallel_cmd_generate(parallel_opts)  # type: ignore
+                         """ + self.stage_usage_doc([2]),
+                         type=int,
+                         default=None)
 
+        hpc.add_argument("--exec-resume",
+                         help="""
 
-class XvfbCmdGenerator():
-    """
-    Dispatcher to generate the Xvfb wrapper cmd prepended to the generated ARGoS cmd for headless
-    rendering.
-    """
+                         Resume a batch experiment that was killed/stopped/etc
+                         last time SIERRA was run. This maps directly to GNU
+                         parallel's ``--resume-failed`` option.
 
-    def __call__(self, cmdopts: types.Cmdopts) -> str:
-        hpc = pm.SIERRAPluginManager().get_plugin(cmdopts['hpc_env'])
-        return hpc.xvfb_cmd_generate(cmdopts)  # type: ignore
-
-
-class EnvConfigurer():
-    """
-    Dispatcher for configuring the HPC environment via the specified plugin.
-    """
-
-    def __call__(self, hpc_env: str, args):
-        args.__dict__['hpc_env'] = hpc_env
-        hpc = pm.SIERRAPluginManager().get_plugin(hpc_env)
-        hpc.env_configure(args)
-        return args
-
-
-class EnvChecker():
-    """
-    Verify the configured HPC environment before running any experiments during stage 2.
-    """
-
-    def __init__(self, hpc_env: str):
-        self.hpc_env = hpc_env
-
-    def __call__(self) -> None:
-        # Check we can find ARGoS
-        if self.hpc_env in ['hpc.local', 'hpc.adhoc']:
-            argos3 = 'argos3'
-        elif self.hpc_env in ['hpc.pbs', 'hpc.slurm']:
-            arch = os.environ.get('SIERRA_ARCH')
-            argos3 = 'argos3-{0}'.format(arch)
-        else:
-            assert False, "FATAL: Bad HPC env {0}".format(self.hpc_env)
-
-        if shutil.which(argos3):
-            result = subprocess.run(' '.join([argos3, '-v']),
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE,
-                                    shell=True)
-        else:
-            assert False, "FATAL: Cannot find {0}".format(argos3)
-
-        # Check ARGoS version
-        res = re.search(r'beta[0-9]+', result.stdout.decode('utf-8'))
-        assert res is not None, "FATAL: ARGOS_VERSION not in -v output"
-
-        version = packaging.version.parse(res.group(0))
-        min_version = packaging.version.parse(
-            sierra.core.config.kARGoS['min_version'])
-
-        assert version >= min_version,\
-            "FATAL: ARGoS version {0} < min required {1}".format(
-                version, min_version)
-
-        # Check ARGoS plugin path is defined
-        assert os.environ.get("ARGOS_PLUGIN_PATH") is not None, \
-            "FATAL: You must have ARGOS_PLUGIN_PATH defined"
+                         """ + self.stage_usage_doc([2]),
+                         action='store_true',
+                         default=False)
 
 
 __api__ = [
-    'EnvConfigurer',
-    'EnvChecker',
-    'XvfbCmdGenerator',
-    'GNUParallelCmdGenerator',
-    'ARGoSCmdGenerator'
-
-
+    'HPCCmdline',
 ]

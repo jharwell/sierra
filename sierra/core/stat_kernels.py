@@ -61,14 +61,15 @@ class mean:
 class bw:
     @staticmethod
     def from_groupby(groupby: pd.core.groupby.generic.DataFrameGroupBy) -> tp.Dict[str, pd.DataFrame]:
-        return _bw_kernel(groupby, groupby=True, n_sims=groupby.size().values[0])
+        return _bw_kernel(groupby, groupby=True, n_runs=groupby.size().values[0])
 
     @staticmethod
     def from_pm(dfs: tp.Dict[str, pd.DataFrame]) -> tp.Dict[str, pd.core.groupby.generic.DataFrameGroupBy]:
         ret = {}
         for exp in dfs.keys():
-            ret[exp] = _bw_kernel(dfs[exp], groupby=False,
-                                  n_sims=len(dfs[exp].columns))
+            ret[exp] = _bw_kernel(dfs[exp],
+                                  groupby=False,
+                                  n_runs=len(dfs[exp].columns))
 
         return ret
 
@@ -102,7 +103,7 @@ def _mean_kernel(df_like, groupby: bool) -> tp.Dict[str, pd.DataFrame]:
     }
 
 
-def _bw_kernel(df_like, groupby: bool, n_sims: int) -> tp.Dict[str, pd.DataFrame]:
+def _bw_kernel(df_like, groupby: bool, n_runs: int) -> tp.Dict[str, pd.DataFrame]:
     # This is (apparently?) a bug in pandas: if the dataframe only has a single
     # row, then passing axis=1 when calculating mean, median, etc., does not
     # work, as the functions do NOT do their calculating across the single row,
@@ -124,8 +125,8 @@ def _bw_kernel(df_like, groupby: bool, n_sims: int) -> tp.Dict[str, pd.DataFrame
     #
     # (Robert McGill, John W. Tukey and Wayne A. Larsen. Variations of Box
     # Plots, The American Statistician, Vol. 32, No. 1 (Feb., 1978), pp. 12-16
-    csv_cilo = csv_median - 1.57 * iqr / math.sqrt(n_sims)
-    csv_cihi = csv_median + 1.57 * iqr / math.sqrt(n_sims)
+    csv_cilo = csv_median - 1.57 * iqr / math.sqrt(n_runs)
+    csv_cihi = csv_median + 1.57 * iqr / math.sqrt(n_runs)
 
     return {
         config.kStatsExtensions['mean']: csv_mean,
@@ -139,7 +140,8 @@ def _bw_kernel(df_like, groupby: bool, n_sims: int) -> tp.Dict[str, pd.DataFrame
     }
 
 
-def _fillna(df_like):
+def _fillna(df_like: tp.Union[pd.DataFrame, np.float64]) -> tp.Union[pd.DataFrame,
+                                                                     np.float64]:
     # This is the general case for generating stats from a set of dataframes.
     if isinstance(df_like, pd.DataFrame):
         return df_like.fillna(0)
@@ -147,3 +149,5 @@ def _fillna(df_like):
     # which returns a single scalar.
     elif isinstance(df_like, np.float64):
         return np.nan_to_num(df_like, nan=0)
+
+    assert False, "Unknown type"

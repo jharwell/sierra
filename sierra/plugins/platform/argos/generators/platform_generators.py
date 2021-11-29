@@ -1,4 +1,4 @@
-# Copyright 2018 John Harwell, All rights reserved.
+# Copyright 2021 John Harwell, All rights reserved.
 #
 #  This file is part of SIERRA.
 #
@@ -13,32 +13,35 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-
+"""
+Classes for generating XML changes to the :term:`ARGoS` input file independent
+of any :term:`Project`; i.e., changes which are platform-specific, but
+applicable to all projects using the platform.
+"""
 # Core packages
 import typing as tp
 import logging  # type: tp.Any
+import os
 
 # 3rd party packages
 
 # Project packages
-from sierra.core.variables import arena_shape
-from sierra.core.variables import population_size
 from sierra.core.xml import XMLLuigi
-from sierra.core.variables import physics_engines
 from sierra.core.utils import ArenaExtent as ArenaExtent
 from sierra.core.experiment_spec import ExperimentSpec
-import sierra.core.variables.rendering as rendering
-import sierra.core.variables.time_setup as ts
 import sierra.core.utils as scutils
-from sierra.core.variables import cameras
 from sierra.core import types
+from sierra.core import config
+from sierra.plugins.platform.argos.variables import arena_shape
+from sierra.plugins.platform.argos.variables import population_size
+from sierra.plugins.platform.argos.variables import physics_engines
+from sierra.plugins.platform.argos.variables import cameras
+from sierra.plugins.platform.argos.variables import rendering
+import sierra.plugins.platform.argos.variables.time_setup as ts
 
 
-class ARGoSScenarioGenerator():
+class PlatformExpDefGenerator():
     """
-    Base class containing common functionality for generating XML changes to the
-    XML that ARGoS defines independently of any :term:`Project` it is used with.
-
     Attributes:
         controller: The controller used for the experiment.
         cmdopts: Dictionary of parsed cmdline parameters.
@@ -64,6 +67,13 @@ class ARGoSScenarioGenerator():
         # create an object that will edit the XML file
         exp_def = XMLLuigi(self.template_input_file)
 
+        # Generate arena shape
+        self._generate_arena_shape(exp_def,
+                                   arena_shape.ArenaShape([self.spec.arena_dim]))
+
+        # Generate # robots
+        self._generate_n_robots(exp_def)
+
         # Setup library
         self._generate_library(exp_def)
 
@@ -80,35 +90,6 @@ class ARGoSScenarioGenerator():
         self._generate_time(exp_def)
 
         return exp_def
-
-    def generate_arena_shape(self,
-                             exp_def: XMLLuigi,
-                             shape: arena_shape.ArenaShape) -> None:
-        """
-        Generate XML changes for the specified arena shape.
-
-        Writes generated changes to the simulation definition pickle file.
-        """
-        _, adds, chgs = scutils.apply_to_expdef(shape, exp_def)
-
-        scutils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)
-
-    def generate_n_robots(self, xml: XMLLuigi) -> None:
-        """
-        Generate XML changes to setup # robots if it was specified on the cmdline.
-
-        Writes generated changes to the simulation definition pickle file.
-        """
-        if self.cmdopts['n_robots'] is None:
-            return
-
-        chgs = population_size.PopulationSize.gen_attr_changelist_from_list(
-            [self.cmdopts['n_robots']])
-        for a in chgs[0]:
-            xml.attr_change(a.path, a.attr, a.value, True)
-
-        # Write # robots info to file for later retrieval
-        chgs[0].pickle(self.spec.exp_def_fpath)
 
     def generate_physics(self,
                          exp_def: XMLLuigi,
@@ -130,15 +111,48 @@ class ARGoSScenarioGenerator():
         Does not write generated changes to the simulation definition pickle
         file.
         """
-        # Valid to have 0 engines here if 2D/3D were mixed but only 1 engine was specified for the
-        # whole simulation.
+        # Valid to have 0 engines here if 2D/3D were mixed but only 1 engine was
+        # specified for the whole simulation.
         if n_engines == 0:
             self.logger.warning("0 engines of type %s specified", engine_type)
             return
 
+        self.logger.trace("Generating changes for physics engines (all runs)")
         pe = physics_engines.factory(engine_type, n_engines, cmdopts, extents)
 
         scutils.apply_to_expdef(pe, exp_def)
+
+    def _generate_arena_shape(self,
+                              exp_def: XMLLuigi,
+                              shape: arena_shape.ArenaShape) -> None:
+        """
+        Generate XML changes for the specified arena shape.
+
+        Writes generated changes to the simulation definition pickle file.
+        """
+        self.logger.trace("Generating changes for arena shape (all runs)")
+        _, adds, chgs = scutils.apply_to_expdef(shape, exp_def)
+
+        scutils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)
+
+    def _generate_n_robots(self, xml: XMLLuigi) -> None:
+        """
+        Generate XML changes to setup # robots if it was specified on the
+        cmdline.
+
+        Writes generated changes to the simulation definition pickle file.
+        """
+        if self.cmdopts['n_robots'] is None:
+            return
+
+        self.logger.trace("Generating changes for # robots (all runs)")
+        chgs = population_size.PopulationSize.gen_attr_changelist_from_list(
+            [self.cmdopts['n_robots']])
+        for a in chgs[0]:
+            xml.attr_change(a.path, a.attr, a.value, True)
+
+        # Write # robots info to file for later retrieval
+        chgs[0].pickle(self.spec.exp_def_fpath)
 
     def _generate_saa(self, exp_def: XMLLuigi) -> None:
         """
@@ -149,6 +163,8 @@ class ARGoSScenarioGenerator():
         Does not write generated changes to the simulation definition pickle
         file.
         """
+        self.logger.trace("Generating changes for SAA (all runs)")
+
         if not self.cmdopts["with_robot_rab"]:
             exp_def.tag_remove(".//media", "range_and_bearing", noprint=True)
             exp_def.tag_remove(
@@ -157,8 +173,9 @@ class ARGoSScenarioGenerator():
 
         if not self.cmdopts["with_robot_leds"]:
             exp_def.tag_remove(".//actuators", "leds", noprint=True)
-            exp_def.tag_remove(
-                ".//sensors", "colored_blob_omnidirectional_camera", noprint=True)
+            exp_def.tag_remove(".//sensors",
+                               "colored_blob_omnidirectional_camera",
+                               noprint=True)
             exp_def.tag_remove(".//media", "led", noprint=True)
 
         if not self.cmdopts["with_robot_battery"]:
@@ -171,9 +188,10 @@ class ARGoSScenarioGenerator():
 
         Writes generated changes to the simulation definition pickle file.
         """
-        tsetup = ts.factory(self.cmdopts["time_setup"])()
+        self.logger.debug("Using time_setup=%s", self.cmdopts['time_setup'])
 
-        _, adds, chgs = scutils.apply_to_expdef(tsetup, exp_def)
+        tsetup = ts.factory(self.cmdopts["time_setup"])()
+        rms, adds, chgs = scutils.apply_to_expdef(tsetup, exp_def, True)
 
         # Write time setup info to file for later retrieval
         scutils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)
@@ -185,9 +203,9 @@ class ARGoSScenarioGenerator():
         the experiment definition and user preferences.
 
         Does not write generated changes to the simulation definition pickle
-        file. 
+        file.
         """
-
+        self.logger.trace("Generating changes for threading (all runs)")
         exp_def.attr_change(".//system",
                             "threads",
                             str(self.cmdopts["physics_n_engines"]))
@@ -203,9 +221,10 @@ class ARGoSScenarioGenerator():
         so it won't be a silent error.
 
         Does not write generated changes to the simulation definition pickle
-        file. 
+        file.
 
         """
+        self.logger.trace("Generating changes for library (all runs)")
         exp_def.attr_change(".//loop_functions",
                             "library",
                             "lib" + self.cmdopts['project'])
@@ -225,11 +244,13 @@ class ARGoSScenarioGenerator():
         file.
 
         """
+        self.logger.trace("Generating changes for visualization (all runs)")
 
-        if not self.cmdopts["argos_rendering"]:
+        if not self.cmdopts["platform_vc"]:
             # ARGoS visualizations
             exp_def.tag_remove(".", "./visualization", noprint=True)
         else:
+            self.logger.debug('Frame grabbing enabled')
             # Rendering must be processing before cameras, because it deletes
             # the <qt_opengl> tag if it exists, and then re-adds it.
             render = rendering.factory(self.cmdopts)
@@ -239,6 +260,71 @@ class ARGoSScenarioGenerator():
             scutils.apply_to_expdef(cams, exp_def, True)
 
 
+class PlatformExpRunDefUniqueGenerator:
+    """
+    Generate XML changes unique to a experimental run within an experiment for
+    ARGoS.
+
+    These include:
+    - Random seeds for each simulation.
+
+    Attributes:
+        run_num: The runulation # in the experiment.
+        run_output_dir: Directory for simulation outputs in experiment root.
+        cmdopts: Dictionary containing parsed cmdline options.
+    """
+
+    def __init__(self,
+                 run_num: int,
+                 exp_output_root: str,
+                 run_output_dir: str,
+                 cmdopts: types.Cmdopts) -> None:
+
+        self.exp_output_root = exp_output_root
+        self.run_output_dir = run_output_dir
+        self.cmdopts = cmdopts
+        self.run_num = run_num
+        self.logger = logging.getLogger(__name__)
+
+    def _generate_random(self, exp_def, random_seed):
+        """
+        Generate XML changes for random seeding for a specific simulation in an
+        experiment during the input generation process.
+        """
+        self.logger.trace("Generating random seed changes for run%s",
+                          self.run_num)
+
+        # set the random seed in the config file
+        exp_def.attr_change(".//experiment", "random_seed", str(random_seed))
+        if exp_def.has_tag('.//params/rng'):
+            exp_def.attr_change(".//params/rng", "seed", str(random_seed))
+        else:
+            exp_def.tag_add(".//params", "rng", {"seed": str(random_seed)})
+
+    def generate(self, exp_def: XMLLuigi, random_seeds):
+        # Setup simulation random seed
+        self._generate_random(exp_def, random_seeds[self.run_num])
+
+        # Setup simulation visualization output
+        self._generate_visualization(exp_def)
+
+    def _generate_visualization(self, exp_def: XMLLuigi):
+        """
+        Generates XML changes for setting up rendering for a specific simulation
+        """
+        self.logger.trace("Generating visualization changes for run%s",
+                          self.run_num)
+
+        frames_fpath = os.path.join(self.exp_output_root,
+                                    self.run_output_dir,
+                                    config.kARGoS['frames_leaf'])
+        exp_def.attr_change(".//qt-opengl/frame_grabbing",
+                            "directory",
+                            frames_fpath,
+                            noprint=True)  # probably will not be present
+
+
 __api__ = [
-    'ARGoSScenarioGenerator',
+    'PlatformExpDefGenerator',
+    'PlatformExpRunDefUniqueGenerator'
 ]

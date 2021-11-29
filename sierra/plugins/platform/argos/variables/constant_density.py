@@ -24,22 +24,27 @@ import typing as tp
 # Project packages
 from sierra.core.variables.batch_criteria import UnivarBatchCriteria
 from sierra.core.utils import ArenaExtent
-from sierra.core.variables.arena_shape import ArenaShape
+from sierra.plugins.platform.argos.variables.arena_shape import ArenaShape
 from sierra.core import types
 
 
 class ConstantDensity(UnivarBatchCriteria):
     """
-    A univariate range specifiying the density (ratio of SOMETHING to arena size) to hold constant
-    as arena size is increased. This class is a base class which should NEVER be used on its
-    own.
+    A univariate range specifiying the density (ratio of SOMETHING to arena
+    size) to hold constant as arena size is increased. This class is a base
+    class which should NEVER be used on its own.
 
     Attributes:
         target_density: The target density.
-        dimensions: List of (X,Y) dimensions to use (creates rectangular arenas).
-        scenario_tag: A scenario tag (presumably part of `--scenario`) to use to generate scenario
-                      names.
-        changes: List of sets of changes to apply to generate the specified arena sizes.
+
+        dimensions: List of (X,Y) dimensions to use (creates rectangular
+                    arenas).
+
+        scenario_tag: A scenario tag (presumably part of `--scenario`) to use to
+                      generate scenario names.
+
+        changes: List of sets of changes to apply to generate the specified
+                 arena sizes. 
 
     """
 
@@ -58,15 +63,17 @@ class ConstantDensity(UnivarBatchCriteria):
         self.attr_changes = ArenaShape(dimensions).gen_attr_changelist()
 
     def exp_scenario_name(self, exp_num: int) -> str:
-        """
-        Given the exp number in the batch, compute a valid, parsable scenario name. It is necessary
-        to query this criteria after generating the changelist in order to create generator classes
-        for each experiment in the batch with the correct name and definition.
+        """Given the exp number in the batch, compute a valid, parsable scenario
+        name. It is necessary to query this criteria after generating the
+        changelist in order to create generator classes for each experiment in
+        the batch with the correct name and definition.
 
-        Normally controller+scenario are used to look up all necessary changes for the specified
-        arena size, but for this criteria the specified scenario is the base scenario (i.e., the
-        starting arena dimensions), and the correct arena dimensions for a given exp must be found
-        via lookup with THIS function).
+        Normally controller+scenario are used to look up all necessary changes
+        for the specified arena size, but for this criteria the specified
+        scenario is the base scenario (i.e., the starting arena dimensions), and
+        the correct arena dimensions for a given exp must be found via lookup
+        with THIS function).
+
         """
         dims = self.dimensions[exp_num]
         return self.scenario_tag + '.' + 'x'.join([str(dims.xsize()),
@@ -98,14 +105,14 @@ class Parser():
         density = cli_arg.split('.')[1]
         res = re.search('[0-9]+', density)
         assert res is not None, \
-            "FATAL: Bad density characteristic specification in criteria '{0}'".format(
+            "Bad density characteristic specification in criteria '{0}'".format(
                 cli_arg)
 
         characteristic = float(res.group(0))
 
         res = re.search('p[0-9]+', density)
         assert res is not None, \
-            "FATAL: Bad density mantissa specification in criteria '{0}'".format(
+            "Bad density mantissa specification in criteria '{0}'".format(
                 cli_arg)
         mantissa = float("0." + res.group(0)[1:])
 
@@ -115,7 +122,7 @@ class Parser():
         increment = cli_arg.split('.')[2]
         res = re.search('I[0-9]+', increment)
         assert res is not None, \
-            "FATAL: Bad arena increment specification in criteria '{0}'".format(
+            "Bad arena increment specification in criteria '{0}'".format(
                 cli_arg)
         ret['arena_size_inc'] = int(res.group(0)[1:])
 
@@ -123,7 +130,7 @@ class Parser():
         increment = cli_arg.split('.')[3]
         res = re.search('C[0-9]+', increment)
         assert res is not None, \
-            "FATAL: Bad cardinality specification in criteria '{0}'".format(
+            "Bad cardinality specification in criteria '{0}'".format(
                 cli_arg)
 
         ret['cardinality'] = int(res.group(0)[1:])

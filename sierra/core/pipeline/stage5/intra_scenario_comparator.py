@@ -143,7 +143,7 @@ class UnivarIntraScenarioComparator:
             batch_leaf = dirs[0]
             _, scenario, _ = rdg.parse_batch_leaf(batch_leaf)
 
-            # We need to generate the root directory paths for each batched experiment
+            # We need to generate the root directory paths for each batch experiment
             # (which # lives inside of the scenario dir), because they are all
             # different. We need generate these paths for EACH controller, because the
             # controller is part of the batch root path.
@@ -351,7 +351,7 @@ class BivarIntraScenarioComparator:
             batch_leaf = dirs[0]
             _, scenario, _ = rdg.parse_batch_leaf(batch_leaf)
 
-            # We need to generate the root directory paths for each batched experiment
+            # We need to generate the root directory paths for each batch experiment
             # (which # lives inside of the scenario dir), because they are all
             # different. We need generate these paths for EACH controller, because the
             # controller is part of the batch root path.

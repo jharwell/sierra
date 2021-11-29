@@ -21,7 +21,7 @@ Linegraph for summarizing the results of a batch experiment in different ways.
 # Core packages
 import os
 import typing as tp
-import logging  # type: tp.Any   # type: tp.Any
+import logging  # type: tp.Any
 
 # 3rd party packages
 import matplotlib.ticker as mticker
@@ -162,7 +162,7 @@ class SummaryLineGraph:
     def _plot_lines(self, data_dfy: pd.DataFrame, model: tp.Tuple[pd.DataFrame, tp.List[str]]) -> None:
         for i in range(0, len(data_dfy.values)):
             assert len(data_dfy.values[i]) == len(self.xticks),\
-                "FATAL: Length mismatch between xticks,data: {0} vs {1}/{2} vs {3}".format(
+                "Length mismatch between xticks,data: {0} vs {1}/{2} vs {3}".format(
                     len(self.xticks),
                     len(data_dfy.values[i]),
                     self.xticks,

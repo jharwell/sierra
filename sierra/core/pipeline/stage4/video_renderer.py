@@ -15,8 +15,9 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Classes for rendering frames (1) captured by ARGoS during simulation, (2) generated during stage 3
-of SIERRA.
+Classes for rendering frames (1) captured by by the ``--platform`` during
+stage 2, (2) generated during stage 3 of SIERRA.
+
 """
 
 # Core packages
@@ -33,14 +34,15 @@ import logging  # type: tp.Any
 
 # Project packages
 import sierra.core.utils
-import sierra.core.config
 import sierra.core.variables.batch_criteria as bc
 from sierra.core import types
+from sierra.core import config
 
 
 class BatchExpParallelVideoRenderer:
     """
-    Render the video for each experiment in the specified batch directory in sequence.
+    Render the video for each experiment in the specified batch directory in
+    sequence.
     """
 
     def __init__(self, main_config: dict, cmdopts: types.Cmdopts) -> None:
@@ -68,8 +70,9 @@ class BatchExpParallelVideoRenderer:
                 exp_imagize_root = os.path.join(
                     self.cmdopts['batch_imagize_root'], leaf)
 
-                # Project render targets are in <averaged_output_root>/<metric_dir_name>, for all
-                # directories in <averaged_output_root>.
+                # Project render targets are in
+                # <averaged_output_root>/<metric_dir_name>, for all directories
+                # in <averaged_output_root>.
                 for d in os.listdir(exp_imagize_root):
                     candidate = os.path.join(exp_imagize_root, d)
                     if os.path.isdir(candidate):
@@ -77,7 +80,7 @@ class BatchExpParallelVideoRenderer:
                             'input_dir': candidate,
                             'output_dir': os.path.join(self.cmdopts['batch_video_root'],
                                                        leaf),
-                            'ofile_leaf': d + sierra.core.config.kRenderFormat,
+                            'ofile_leaf': d + config.kRenderFormat,
                             'cmd_opts': self.cmdopts['render_cmd_opts']
                         }
 
@@ -85,16 +88,17 @@ class BatchExpParallelVideoRenderer:
                             opts['output_dir'], True)
                         q.put(opts)
 
-            if self.cmdopts['argos_rendering']:
-
-                # ARGoS render targets are in <batch_output_root>/<exp>/<sim>/<argos_frames_leaf>,
-                # for all simulations in a given experiment (which can be a lot!).
-                for sim in self._filter_sim_dirs(os.listdir(exp), self.main_config):
+            if self.cmdopts['platform_vc']:
+                # Render targets are in
+                # <batch_output_root>/<exp>/<sim>/<frames_leaf>, for all
+                # runs in a given experiment (which can be a lot!).
+                for sim in self._filter_sim_dirs(os.listdir(exp),
+                                                 self.main_config):
                     opts = {
                         'ofile_leaf': sim + sierra.core.config.kRenderFormat,
                         'input_dir': os.path.join(exp,
                                                   sim,
-                                                  self.main_config['sim']['argos_frames_leaf']),
+                                                  config.kARGoS['frames_leaf']),
                         'output_dir': os.path.join(self.cmdopts['batch_video_root'],
                                                    leaf),
                         'cmd_opts': self.cmdopts['render_cmd_opts']
@@ -128,14 +132,15 @@ class BatchExpParallelVideoRenderer:
                 break
 
     @staticmethod
-    def _filter_sim_dirs(sim_dirs: tp.List[str], main_config: dict) -> tp.List[str]:
+    def _filter_sim_dirs(sim_dirs: tp.List[str],
+                         main_config: dict) -> tp.List[str]:
         return [s for s in sim_dirs if s not in ['videos']]
 
 
 class ExpVideoRenderer:
     """
-    Render all frames (.png/.jpg/etc files) in a specified input directory to a video file via
-    ffmpeg, output according to configuration.
+    Render all frames (.png/.jpg/etc files) in a specified input directory to a
+    video file via ffmpeg, output according to configuration.
 
     Arguments:
         main_config: Parsed dictionary of main YAML configuration.
@@ -145,7 +150,7 @@ class ExpVideoRenderer:
 
     def __init__(self) -> None:
         self.logger = logging.getLogger(__name__)
-        assert shutil.which('ffmpeg') is not None, "FATAL: ffmpeg not found"
+        assert shutil.which('ffmpeg') is not None, "ffmpeg not found"
 
     def __call__(self, main_config: dict, render_opts: tp.Dict[str, str]) -> None:
         self.logger.info("Rendering images in %s,ofile_leaf=%s...",
@@ -158,7 +163,7 @@ class ExpVideoRenderer:
                "-pattern_type",
                "glob",
                "-i",
-               "'" + os.path.join(render_opts['input_dir'], "*" + sierra.core.config.kImageExt) + "'"]
+               "'" + os.path.join(render_opts['input_dir'], "*" + config.kImageExt) + "'"]
         cmd.extend(opts)
         cmd.extend([os.path.join(render_opts['output_dir'],
                                  render_opts['ofile_leaf'])])

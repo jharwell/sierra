@@ -6,10 +6,10 @@ Getting Started With SIERRA
 
 If you're looking for the "I just want to try out SIERRA without doing any work"
 quickstart, see :ref:`ln-trial`. Otherwise, the steps to install SIERRA and
-setup the interface between your ARGoS C++ project and SIERRA are below.
+setup the interface between your python/C++ project and SIERRA are below.
 
 Installing SIERRA
------------------
+=================
 
 #. From the SIERRA repo root, install SIERRA locally by following
    :ref:`ln-package`.
@@ -26,16 +26,16 @@ Installing SIERRA
    - ``dvipng``
 
    .. IMPORTANT:: SIERRA will not work if these packages (or their equivalent on
-                  non-ubuntu systems) are installed!
+                  non-ubuntu systems) are not installed!
 
 
 General Setup Workflow
-----------------------
+======================
 
-#. After developing the C++ code for your project (you've already done that
-   right???), you may need to modify it so that it simulations can be launched
-   and data from simulations captured in a way that SIERRA can process. See
-   :ref:`ln-c++-lib-requirements` for requirements.
+#. After developing the python/C++ code for your project (you've already done
+   that right???), you may need to modify it so that it :term:`Experimental Runs
+   <Experimental Run>` can be launched and data from them captured in a way that
+   SIERRA can process. See :ref:`ln-c++-lib-requirements` for requirements.
 
 #. Setup the interface between your code and SIERRA by defining a SIERRA
    :term:`Project` in python by following :ref:`ln-tutorials-project-project`.
@@ -43,9 +43,12 @@ General Setup Workflow
 #. Figure out which HPC environment SIERRA supports matches your available
    hardware: :ref:`ln-hpc-plugins`, and following the appropriate setup guide.
 
-#. Decide what variable you are interested in investigating by consulting
-   :ref:`ln-batch-criteria` (i.e., what variable(s) you want to change across
-   some range and see how swarm behavior changes, or doesn't change).
+#. Decide what variable you are interested in investigating by consulting the
+   :term:`Batch Criteria` available for your project (i.e., what variable(s) you
+   want to change across some range and see how system behavior changes, or
+   doesn't change). Which criteria are available to use depends on your
+   :term:`Platform`; if you don't see something suitable, you can
+   :ref:`Define A New Batch Criteria <ln-tutorials-project-new-bc>`.
 
 #. Look at the :ref:`ln-usage-cli` to understand how to invoke SIERRA in
    general.
@@ -57,30 +60,25 @@ General Setup Workflow
 #. Determine how to invoke SIERRA. At a minimum you need to tell it the
    following:
 
-   - What project to load: ``--project``. This must live under a directory named
-     ``projects`` which must be on :envvar:`SIERRA_PROJECT_PATH`. This is used
-     to:
+   - What platform you are targeting/want to run on. See
+     :ref:`ln-platform-plugins` for details.
 
-     - Compute the name of the library SIERRA will tell ARGoS to search for on
-       :envvar:`ARGOS_PLUGIN_PATH` when looking for controller and loop function
-       definitions. For example if you pass ``--project=foobar``, then SIERRA
-       will tell ARGoS to search for controller and loop function definitions in
-       ``libfoobar.so``, which `must` be on :envvar:`ARGOS_PLUGIN_PATH` (SIERRA
-       doesn't modify :envvar:`ARGOS_PLUGIN_PATH` for you).
+   - What project to load: ``--project``. This is used to:
 
-     - Figure out the directory to load graph and simulation processing
-       configuration from.
+     - Configure runtime library search paths (e.g.,
+       :envvar:`ARGOS_PLUGIN_PATH`).
+
+     - Figure out the directory to load graph and :term:`Experiment` data
+       processing configuration from.
 
    - What template input file to use: ``--template-input-file``. See
      :ref:`ln-tutorials-project-template-input-file` for requirements.
 
-   - How many copies of each simulation to run per experiment: ``--n-sims``.
+   - How many variations of the main settings for each experiment to run:
+     ``--n-runs``.
 
-   - Where it is running/how to run experiments: ``--hpc-env``. See
+   - Where it is running/how to run experiments: ``--exec-env``. See
      :ref:`ln-hpc-plugins` for available plugins.
-
-   - How long simulations should be: ``--time-setup``. See
-     :ref:`ln-vars-ts-cmdline` for cmdline syntax/options.
 
    - What controller to run: ``--controller``. See
      :ref:`ln-tutorials-project-main-config` for details on how valid
@@ -90,7 +88,7 @@ General Setup Workflow
      example), etc. ``--scenario``. :term:`Project` dependent.
 
    - What you are investigating; that is, what variable are you interested in
-     varying: ``--batch-criteria`` (you read :ref:`ln-batch-criteria`, right?).
+     varying: ``--batch-criteria``.
 
    If you try to invoke SIERRA with an (obviously) incorrect combination of
    command line options, it will refuse to do anything. For less obviously
@@ -101,17 +99,18 @@ General Setup Workflow
    :ref:`ln-usage-cli`, and there are many useful options that SIERRA accepts,
    so skimming the CLI docs is **very** worthwhile.
 
-   .. NOTE:: Generally speaking, do not try to run SIERRA with a debug build of
-             whatever project you are using (:xref:`FORDYCA`, :xref:`PRISM`,
-             etc). It will work but be obnoxiously/irritatingly slow. SIERRA is
-             intended for `production` code (well, as close to production as
-             research code gets) which is compiled with optimizations enabled.
+   .. IMPORTANT:: Generally speaking, do not try to run SIERRA with a debug
+                  build of whatever project you are using (:xref:`FORDYCA`,
+                  :xref:`PRISM`, etc). It will work but be
+                  obnoxiously/irritatingly slow. SIERRA is intended for
+                  `production` code (well, as close to production as research
+                  code gets) which is compiled with optimizations enabled.
 
 #. Setup the cmdline environment you are going to invoke SIERRA in.
 
-   - Set :envvar:`SIERRA_PROJECT_PATH` appropriately.
+   - Set :envvar:`SIERRA_PLUGIN_PATH` appropriately.
 
-   - Set :envvar:`ARGOS_PLUGIN_PATH` appropriately.
+   - Set :envvar:`ARGOS_PLUGIN_PATH` appropriately (for ARGoS projects).
 
 #. Learn SIERRA's runtime :ref:`ln-usage-runtime-exp-tree`. When running, SIERRA
    will create a (rather) large directory structure for you, so reading the docs

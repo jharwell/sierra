@@ -21,7 +21,7 @@ Contains main class implementing stage 5 of the experimental pipeline.
 # Core packages
 import os
 import typing as tp
-import logging # type: tp.Any
+import logging# type: ignore
 
 # 3rd party packages
 import yaml
@@ -175,7 +175,7 @@ class PipelineStage5:
                          self.scenarios)
 
         assert cli_args.bc_univar,\
-            "FATAL: inter-scenario controller comparison only valid for univariate batch criteria"
+            "inter-scenario controller comparison only valid for univariate batch criteria"
 
         roots = {k: self.output_roots[k] for k in ('csvs', 'graphs', 'models')}
         comparator = intersc.UnivarInterScenarioComparator(self.cmdopts['controller'],

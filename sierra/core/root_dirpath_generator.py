@@ -16,7 +16,7 @@
 
 """
 Functions for generating the directory paths for the root directories for a
-single batched experiment.
+single batch experiment.
 
 - The batch experiment root. ALL files (inputs and outputs) are written to this
   directory, which will be under ``--sierra-root``. Named using a combination of
@@ -48,7 +48,7 @@ import logging  # type: tp.Any
 
 def from_cmdline(args) -> tp.Dict[str, str]:
     """
-    Generates the directory paths for the root directories for a single batched experiment directly
+    Generates the directory paths for the root directories for a single batch experiment directly
     from cmdline arguments.
     """
     template_stem, _ = os.path.splitext(
@@ -96,7 +96,7 @@ def regen_from_exp(sierra_rpath: str,
                    batch_leaf: str,
                    controller: str) -> tp.Dict[str, str]:
     """
-    Re-generates the directory paths for the root directories for a single batched experiment from a
+    Re-generates the directory paths for the root directories for a single batch experiment from a
     previously created batch experiment (i.e. something that was generated with
     :meth:`from_cmdline()`).
 
@@ -104,7 +104,7 @@ def regen_from_exp(sierra_rpath: str,
         sierra_rpath: The path to the root directory where SIERRA should store everything.
         project: The name of the project plugin used.
         criteria: List of strings from the cmdline specification of the batch criteria.
-        batch_root: The name of the directory that will be the root of the batched experiment (not
+        batch_root: The name of the directory that will be the root of the batch experiment (not
                     including its parent).
         controller: The name of the controller used.
     """
@@ -183,7 +183,7 @@ def gen_batch_root(sierra_rpath: str,
         project: The name of the project plugin used.
         criteria: List of strings from the cmdline specification of the batch criteria.
         scenario: The cmdline specification of ``--scenario``
-        batch_root: The name of the directory that will be the root of the batched experiment (not
+        batch_root: The name of the directory that will be the root of the batch experiment (not
                     including its parent).
         controller: The name of the controller used.
 

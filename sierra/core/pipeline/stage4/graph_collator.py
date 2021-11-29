@@ -66,8 +66,8 @@ class BivarGraphCollationInfo():
 
 class UnivarGraphCollator:
     """
-    For a single graph (target) in a univariate batched experiment, go through
-    all experiment directories in a batched experiment and collate file averaged
+    For a single graph (target) in a univariate batch experiment, go through
+    all experiment directories in a batch experiment and collate file averaged
     results into a single ``.csv`` file.
 
     """
@@ -137,7 +137,7 @@ class UnivarGraphCollator:
             data_df = sierra.core.utils.pd_csv_read(csv_ipath)
 
             assert target['col'] in data_df.columns.values,\
-                "FATAL: {0} not in columns of {1}".format(target['col'],
+                "{0} not in columns of {1}".format(target['col'],
                                                           target['src_stem'] + stat.df_ext)
 
             if target.get('summary', False):
@@ -149,8 +149,8 @@ class UnivarGraphCollator:
 
 class BivarGraphCollator:
     """
-    For a single graph (target) for a bivariate batched experiment, go through
-    all experiment directories in a batched experiment and collate file averaged
+    For a single graph (target) for a bivariate batch experiment, go through
+    all experiment directories in a batch experiment and collate file averaged
     results into a single ``.csv`` file.
 
     """
@@ -225,7 +225,7 @@ class BivarGraphCollator:
             data_df = sierra.core.utils.pd_csv_read(csv_ipath)
 
             assert target['col'] in data_df.columns.values,\
-                "FATAL: {0} not in columns of {1}, which has {2}".format(target['col'],
+                "{0} not in columns of {1}, which has {2}".format(target['col'],
                                                                          csv_ipath,
                                                                          data_df.columns)
             xlabel, ylabel = exp_dir.split('+')
@@ -286,7 +286,7 @@ class GraphParallelCollator():
                        stat_collate_root: str,
                        criteria) -> None:
 
-        collator = None  # type: tp.Any
+        collator = None  # type: ignore
 
         if criteria.is_univar():
             collator = UnivarGraphCollator(main_config, cmdopts)

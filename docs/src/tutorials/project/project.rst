@@ -5,24 +5,10 @@ Creating a New SIERRA Project
 =============================
 
 #. Create the directory which will hold your :term:`Project`. The directory your
-   project must be on :envvar:`SIERRA_PROJECT_PATH` or SIERRA won't be able to
-   find your project. You should use :envvar:`SIERRA_PROJECT_PATH` though,
-   because it is more self-documenting.
-
-   For example, if your project is ``proj-awesome``, and that directory is in
-   ``projects`` as ``/path/to/projects/proj-awesome``, then
-   ``/path/to/projects`` needs to be on :envvar:`SIERRA_PROJECT_PATH`.
-
-   .. NOTE:: The name of the library C++ SIERRA will tell :term:`ARGoS` to
-      search for on :envvar:`ARGOS_PLUGIN_PATH` when looking for controller and
-      loop function definitions is computed from the project name. For example
-      if you pass ``--project=project-awesome``, then SIERRA will tell ARGoS to
-      search in ``proj-awesome.so`` for both loop function and controller
-      definitions via XML changes.
-
-   .. NOTE:: SIERRA does `not` modify :envvar:`ARGOS_PLUGIN_PATH`, so you will
-             need to make sure that the directories containing the necessary
-             ``.so`` library are on it prior to invoking SIERRA.
+   project must be on :envvar:`SIERRA_PLUGIN_PATH` or SIERRA won't be able to
+   find your project. For example, if your project is ``proj-awesome``, and
+   that directory is in ``projects`` as ``/path/to/projects/proj-awesome``, then
+   ``/path/to/projects`` needs to be on :envvar:`SIERRA_PLUGIN_PATH`.
 
 #. Create the following directory structure within your project directory (or
    copy and modify the one from an existing project).
@@ -81,10 +67,10 @@ Creating a New SIERRA Project
        the cmdline. This file is required. See
        :ref:`ln-tutorials-project-generators-scenario-config` for documentation.
 
-     - ``exp_generators.py`` - Contains extensions to the per-simulation
-       configuration that SIERRA performs. See
-       :ref:`ln-tutorials-project-generators-sim-config` for documentation. This file is
-       optional.
+     - ``exp_generators.py`` - Contains extensions to the per-:term:`Experiment`
+       and per-:term:`Experimental Run` configuration that SIERRA performs. See
+       :ref:`ln-tutorials-project-generators-sim-config` for documentation. This
+       file is optional.
 
    - ``variables/`` - Additional variables (including batch criteria) defined by
      the plugin/project that can be directly or indirectly used by the
@@ -92,17 +78,18 @@ Creating a New SIERRA Project
      is optional.
 
    - ``models/`` - Theoretical models that you want to run against empirical
-     data from simulations (presumably to compare predictions with). This
+     data from experimental runs (presumably to compare predictions with). This
      directory is optional. See :doc:`models` for documentation.
 
    - ``cmdline.py`` - Specifies cmdline extensions specific to the
      plugin/project. This file is required. See :doc:`cmdline` for
      documentation.
 
-#. Configure your project so SIERRA understands how to generate simulation
-   inputs and process outputs correctly by following :doc:`main_config`.
+#. Configure your project so SIERRA understands how to generate
+:term:`Experimental Run` inputs and process outputs correctly by following
+:doc:`main_config`.
 
-#. Define graphs to be generated from simulation outputs by following
+#. Define graphs to be generated from :term:`Experiment` outputs by following
    :doc:`graphs_config`. Strictly speaking this is optional, but automated graph
    generation during stage 4 is one of the most useful parts of SIERRA, so its
    kind of silly if you don't do this.
@@ -119,8 +106,8 @@ Optional Steps
 #. Define one or more :term:`Models <Model>` to run to compare with empirical
    data.
 
-#. Add additional per-simulation configuration such as unique output directory
-   names, random seeds (if you don't use the ARGoS one), etc. in various python
-   files referenced by ``scenario_generators.py`` and ``exp_generators.py``
-   beyond what is required for ``--scenario``.
-   SIERRA can't set stuff like this up in a project agnostic way.
+#. Add additional per-run configuration such as unique output directory
+   names, random seeds, etc. in various python files referenced by
+   ``scenario_generators.py`` and ``exp_generators.py`` beyond what is required
+   for ``--scenario``.  SIERRA can't set stuff like this up in a project
+   agnostic way.

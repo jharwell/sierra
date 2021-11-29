@@ -72,16 +72,16 @@ you specify, you need to:
 
 .. _ln-tutorials-project-generators-sim-config:
 
-Per-Simulation Configuration
-============================
+Per-Experimental Run Configuration
+==================================
 
 In order to hook into SIERRA stage 1 experiment generation (doing so is
 optional), you need to:
 
 #. Create ``generators/exp_generators.py`` in your ``--project`` directory.
 
-#. Define a ``SimDefUniqueGenerator`` class in this file, overriding the
+#. Define a ``ExpRunDefUniqueGenerator`` class in this file, overriding the
    ``generate()`` function with your customizations. Your class really should be
-   derived from
-   :class:`~sierra.core.generators.exp_generators.SimDefUniqueGenerator` and
-   override the ``generate()`` function, though you don't have to.
+   derived from a platform generator (e.g.,
+   :class:`~sierra.plugins.platform.argos.generators.platform_generators.PlatformExpRunDefUniqueGenerator`)
+   and override the ``generate()`` function, though you don't have to.

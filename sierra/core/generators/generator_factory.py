@@ -31,20 +31,23 @@ from sierra.core import types
 
 def joint_generator_create(controller, scenario):
     """
-    Given a controller(generator), and a scenario(generator), construct a joint generator class
-    that can be used for experiment generation.
+    Given a controller (generator), and a scenario(generator), construct a joint
+    generator class that can be used for experiment generation.
 
     """
+    joint_name = '+'.join([controller.__class__.__name__,
+                           scenario.__class__.__name__])
 
     def __init__(self) -> None:
         self.controller = controller
         self.scenario = scenario
+        self.joint_name = joint_name
 
     def generate(self):
         exp_def = self.scenario.generate()
         return self.controller.generate(exp_def)
 
-    return type('+'.join([controller.__class__.__name__, scenario.__class__.__name__]),
+    return type(joint_name,
                 (object,), {"__init__": __init__, "generate":
                             generate})()
 
@@ -53,15 +56,14 @@ def scenario_generator_create(spec: ExperimentSpec,
                               controller,
                               **kwargs):
     """
-    Creates a scenario generator using arbitrary arena dimensions and with an arbitrary
-    controller.
+    Creates a scenario generator using the plugin search path.
     """
 
     def __init__(self, **kwargs) -> None:
         cmdopts = kwargs['cmdopts']
         self.logger = logging.getLogger(__name__)
-        module = pm.module_load_tiered(cmdopts['project'],
-                                       'generators.scenario_generators')
+        module = pm.module_load_tiered(project=cmdopts['project'],
+                                       path='generators.scenario_generators')
         generator_name = module.gen_generator_name(spec.scenario_name)
         self.scenario_generator = getattr(module, generator_name)(controller=controller,
                                                                   spec=spec,
@@ -80,8 +82,8 @@ def controller_generator_create(controller: str,
                                 config_root: str,
                                 cmdopts: types.Cmdopts):
     """
-    Creates a controller generator from the cmdline specification that exists in one of
-    the configuration files.
+    Creates a controller generator from the cmdline specification that exists in
+    one of the configuration files.
     """
 
     def __init__(self) -> None:
@@ -92,17 +94,19 @@ def controller_generator_create(controller: str,
 
     def generate(self, exp_def: XMLLuigi):
         """
-        Generates all changes to the input file for the simulation (does not save)
+        Generates all changes to the input file for the :term:`Experimental Run`
+        (does not save).
+
         """
-        # Setup loop functions
+        # Setup controller support code (if any)
         try:
             for t in self.config[self.category]['xml']['attr_change']:
                 exp_def.attr_change(t[0],
                                     t[1],
                                     t[2],
-                                    cmdopts['argos_rendering'] is False)
+                                    cmdopts['platform_vc'] is False)
         except KeyError:
-            self.logger.fatal("Loop functions category '%s' not found in YAML configuration",
+            self.logger.fatal("Controller support category '%s' not found in YAML configuration",
                               self.category)
             raise
 

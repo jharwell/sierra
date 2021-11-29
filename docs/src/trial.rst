@@ -7,7 +7,8 @@ Trying Out SIERRA
 If you just want to try SIERRA out with a pre-existing :term:`Project` without
 first defining your own, the steps to do so below. I assume that all
 repositories are cloned into ``$HOME/research``; adjust the paths accordingly if
-you clone things somewhere else.
+you clone things somewhere else. I use an :term:`ARGoS` project for this
+example.
 
 #. Install OS packages. The .deb package for ubuntu are shown; if you are on a
    different Linux distribution or on OSX you will have to install the
@@ -18,9 +19,9 @@ you clone things somewhere else.
    - ``texlive-fonts-recommended``
    - ``texlive-latex-extra``
    - ``dvipng``
-   
+
    .. IMPORTANT:: SIERRA will not work if these packages (or their equivalent on
-                  non-ubuntu systems) are installed!
+                  non-ubuntu systems) are not installed!
 
 #. Install :term:`ARGoS` via your chosen method. Check that ``argos3`` is found
    by your shell.
@@ -29,7 +30,8 @@ you clone things somewhere else.
                   you won't be able to do anything useful with SIERRA!
 
 #. Download and build the super-simple SIERRA sample ARGoS project, which is
-   based on the foraging example from the ARGoS website::
+   based on the `foraging example <https://www.argos-sim.info/examples.php>`_
+   from the ARGoS website::
 
      git clone https://github.com/swarm-robotics/sierra-sample-project.git
      cd sierra-sample-project
@@ -52,9 +54,9 @@ you clone things somewhere else.
      pip3 install .
 
 
-#. Set :envvar:`SIERRA_PROJECT_PATH`::
+#. Set :envvar:`SIERRA_PLUGIN_PATH`::
 
-     export SIERRA_PROJECT_PATH=$HOME/research/sierra-sample-project/project
+     export SIERRA_PLUGIN_PATH=$HOME/research/sierra-sample-project/project
 
 #. Set :envvar:`ARGOS_PLUGIN_PATH`::
 
@@ -66,7 +68,8 @@ you clone things somewhere else.
      sierra-cli \
         --sierra-root=$HOME/research/exp\
         --template-input-file=exp/template.argos \
-        --n-sims=4\
+        --n-runs=4\
+        --platform=platform.argos\
         --project=sample_project\
         --physics-n-engines=1\
         --controller=foraging.footbot_foraging\
@@ -90,4 +93,5 @@ you clone things somewhere else.
              required because robot controllers in the sample project use the
              RAB and LED sensor/actuators, and SIERRA strips those tags out of
              the robots ``<sensors>`` and ``<actuators>`` and ``<media>`` parent
-             tags by default.
+             tags by default to increase speed and reduce the memory footprint
+             of ARGoS simulations.

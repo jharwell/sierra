@@ -106,8 +106,8 @@ class PipelineStage4:
         self.logger = logging.getLogger(__name__)
 
         # Load YAML config
-        loader = pm.module_load_tiered(self.cmdopts['project'],
-                                       'pipeline.stage4.yaml_config_loader')
+        loader = pm.module_load_tiered(project=self.cmdopts['project'],
+                                       path='pipeline.stage4.yaml_config_loader')
         config = loader.YAMLConfigLoader()(self.cmdopts)
         self.intra_LN_config = config['intra_LN']
         self.intra_HM_config = config['intra_HM']
@@ -117,7 +117,7 @@ class PipelineStage4:
 
     def run(self, criteria: bc.IConcreteBatchCriteria) -> None:
         """
-        Runs simulation deliverable generation, ``.csv`` collation for
+        Runs experiment deliverable generation, ``.csv`` collation for
         inter-experiment graph generation, and inter-experiment graph
         generation, as configured on the cmdline.
 
@@ -135,7 +135,6 @@ class PipelineStage4:
         #. :class:`~sierra.core.pipeline.stage4.intra_exp_graph_generator.BatchIntraExpGraphGenerator`
            to generate graphs for each experiment in the batch, or a subset.
 
-
         Inter-experiment graph generation: if inter-experiment graphs should be
         generated according to cmdline configuration, the following is run:
 
@@ -152,7 +151,7 @@ class PipelineStage4:
            to perform graph generation from collated ``.csv`` files.
 
         """
-        if self.cmdopts['project_rendering'] or self.cmdopts['argos_rendering']:
+        if self.cmdopts['project_rendering'] or self.cmdopts['platform_vc']:
             self._run_rendering(criteria)
 
         if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'intra':
@@ -173,12 +172,15 @@ class PipelineStage4:
             self._run_inter_graph_generation(criteria)
 
     def _load_models(self) -> None:
-        project_models = os.path.join(
-            self.cmdopts['project_config_root'], 'models.yaml')
+        project_models = os.path.join(self.cmdopts['project_config_root'],
+                                      'models.yaml')
         self.models_intra = []
         self.models_inter = []
 
         if not sierra.core.utils.path_exists(project_models):
+            self.logger.debug("No models to load for project '%s': %s does not exist",
+                              self.cmdopts['project'],
+                              project_models)
             return
 
         self.logger.info("Loading models for project '%s'",
@@ -186,17 +188,19 @@ class PipelineStage4:
 
         self.models_config = yaml.load(open(project_models), yaml.FullLoader)
         models_pm = pm.ModelPluginManager(self.cmdopts['project_model_root'])
-        models_pm.initialize()
+        models_pm.initialize("")
 
-        # All models present in the .yaml file are enabled/set to run unconditionally
+        # All models present in the .yaml file are enabled/set to run
+        # unconditionally
         for module_name in models_pm.available_plugins():
             # No models specified--nothing to do
-            if self.models_config.get('models') is None or self.models_config['models'] is None:
+            if self.models_config.get('models') is None:
                 continue
 
             for conf in self.models_config['models']:
                 if conf['pyfile'] == module_name:
-                    module = models_pm.load_plugin(module_name)
+                    models_pm.load_plugin(module_name)
+                    module = models_pm.get_plugin_module(module_name)
                     for avail in module.available_models('intra'):
                         model = getattr(module, avail)(self.main_config, conf)
                         self.models_intra.append(model)
@@ -273,7 +277,8 @@ class PipelineStage4:
 
     def _run_rendering(self, criteria: bc.IConcreteBatchCriteria) -> None:
         """
-        Render captured ARGoS frames and/or frames created by imagizing in stage 3 into videos.
+        Render captured frames and/or frames created by imagizing in stage 3
+        into videos.
         """
         self.logger.info("Rendering videos...")
         start = time.time()
@@ -340,12 +345,12 @@ class PipelineStage4:
         self.logger.info("Generating inter-experiment graphs...")
         start = time.time()
 
-        generator = pm.module_load_tiered(self.cmdopts['project'],
-                                          'pipeline.stage4.inter_exp_graph_generator')
+        generator = pm.module_load_tiered(project=self.cmdopts['project'],
+                                          path='pipeline.stage4.inter_exp_graph_generator')
         generator.InterExpGraphGenerator(
             self.main_config, self.cmdopts, targets)(criteria)
         elapsed = int(time.time() - start)
-        sec = datetime.timedelta(seconds=elapsed)
+        sec = datetime.timedelta(seconds=elapsed)
         self.logger.info(
             "Inter-experiment graph generation complete: %s", str(sec))
 

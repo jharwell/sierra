@@ -29,29 +29,31 @@ import implements
 # Project packages
 from sierra.core.variables.base_variable import IBaseVariable
 from sierra.core.utils import ArenaExtent
-import sierra.core.variables.time_setup as ts
 from sierra.core.xml import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList, XMLTagRm, XMLTagAdd
 import sierra.core.config
 from sierra.core import types
+import sierra.plugins.platform.argos.variables.time_setup as ts
 
 
 @implements.implements(IBaseVariable)
-class ARGoSQTCameraTimeline():
+class QTCameraTimeline():
     """
-    Defines when/how to switch between different camera perspectives within ARGoS.
+    Defines when/how to switch between different camera perspectives within
+    ARGoS.
 
     Attributes:
-        interpolate: Should we interpolate between camera positions on our timeline ?
+        interpolate: Should we interpolate between camera positions on our
+                      timeline ?
         tsetup: Simulation time definitions.
-        extents: List of (X,Y,Zs) tuple of dimensions of arena areas to generate camera definitions
-                 for.
+        extents: List of (X,Y,Zs) tuple of dimensions of arena areas to generate
+                 camera definitions for.
     """
 
     # If this default changes in ARGoS, it will need to be updated here too.
     kARGOS_N_CAMERAS = 12
 
     def __init__(self,
-                 tsetup: ts.ARGoSTimeSetup,
+                 tsetup: ts.TimeSetup,
                  cameras: str,
                  extents: tp.List[ArenaExtent]) -> None:
         self.interpolate = 'dynamic' in cameras
@@ -73,8 +75,9 @@ class ARGoSQTCameraTimeline():
 
     def gen_tag_rmlist(self) -> tp.List[XMLTagRmList]:
         """
-        Removing the ``<camera>`` tag if it exists may be desirable so an option is provided to do
-        so. Obviously you *must* call this function BEFORE adding new definitions.
+        Removing the ``<camera>`` tag if it exists may be desirable so an option
+        is provided to do so. Obviously you *must* call this function BEFORE
+        adding new definitions.
 
         """
         return [XMLTagRmList(XMLTagRm("./visualization/qt-opengl", "camera"))]
@@ -123,7 +126,7 @@ class ARGoSQTCameraTimeline():
                                                                                                  pos_y,
                                                                                                  pos_z),
                                                               'look_at': "{0}, {1},0".format(center_x,
-                                                                                             center_y)
+                                                                                             center_y),
                                                  })
                                        )
                 adds.extend(cameras)
@@ -137,7 +140,7 @@ class ARGoSQTCameraTimeline():
 
 
 @implements.implements(IBaseVariable)
-class ARGoSQTCameraOverhead():
+class QTCameraOverhead():
     """
     Defines a single overhead camera perspective within ARGoS.
 
@@ -159,8 +162,9 @@ class ARGoSQTCameraOverhead():
 
     def gen_tag_rmlist(self) -> tp.List[XMLTagRmList]:
         """
-        Removing the ``<camera>`` tag if it exists may be desirable so an option is provided to do
-        so. Obviously you *must* call this function BEFORE adding new definitions.
+        Removing the ``<camera>`` tag if it exists may be desirable so an option
+        is provided to do so. Obviously you *must* call this function BEFORE
+        adding new definitions.
 
         """
         return [XMLTagRmList(XMLTagRm("./visualization/qt-opengl", "camera"))]
@@ -195,15 +199,15 @@ def factory(cmdopts: types.Cmdopts, extents: tp.List[ArenaExtent]):
     Create cameras for a list of arena extents.
     """
     if cmdopts['camera_config'] == 'overhead':
-        return ARGoSQTCameraOverhead(extents)
+        return QTCameraOverhead(extents)
     else:
-        return ARGoSQTCameraTimeline(ts.factory(cmdopts["time_setup"])(),  # type: ignore
-                                     cmdopts['camera_config'],
-                                     extents)
+        return QTCameraTimeline(ts.factory(cmdopts["time_setup"])(),  # type: ignore
+                                cmdopts['camera_config'],
+                                extents)
 
 
 __api__ = [
-    'ARGoSQTCameraTimeline', 'ARGoSQTCameraOverhead',
+    'QTCameraTimeline', 'QTCameraOverhead',
 
 
 ]

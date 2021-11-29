@@ -4,8 +4,14 @@
 FAQ
 ===
 
-#. Q: Do I need to re-run my experiments if I want to tweak a particular generated
-   graph ?
+#. Q: I'm really confused by all the terminology that SIERRA uses--how can I
+   better understand the documentation?
+
+   A: Look at the :doc:`/src/glossary` for all of the terms which SIERRA defines
+   specific names for.
+
+#. Q: Do I need to re-run my experiments if I want to tweak a particular
+   generated graph ?
 
    A: No! Experiment execution happens in stage 2, and graph generation happens
    in stage4. If you just want to add/remove lines from a graph, change the
@@ -44,12 +50,12 @@ FAQ
 
 #. Q: SIERRA hangs during stage {3,4}--why?
 
-   A: The most likely cause is that not all simulations generated outputs which
-   resulted in `.csv` files of the same shape when read into SIERRA. E.g., for
-   `.csv` file outputs, not all `.csv` files with the same name in the output
-   directory for each simulation had the same number of rows and columns. SIERRA
-   does not sanitize simulation outputs before processing them, and relies
-   `.csv` files of the same shape when processing results for generating
+   A: The most likely cause is that not all runs generated outputs which
+   resulted in ``.csv`` files of the same shape when read into SIERRA. E.g., for
+   ``.csv`` file outputs, not all ``.csv`` files with the same name in the
+   output directory for each run had the same number of rows and columns. SIERRA
+   does not sanitize run outputs before processing them, and relies ``.csv``
+   files of the same shape when processing results for generating
    statistics. Depending on the nature of the inconsistency, you may see a
    crash, or you may see it hang indefinitely as it waits for a sub-process
    which crashed to finish.
@@ -62,23 +68,23 @@ FAQ
 #. Q: SIERRA doesn't generate any graphs during stage4/the graph I'm interested
    is not there.
 
-   A:SIERRA matches the stem of an output `.csv` file with the stem in a `.yaml`
-   configuration file; if these are not the same, then no graph will be
-   generated. You can run SIERRA with ``--log-level=TRACE`` to during stage 4 to
-   see which graphs it is generating, and which it is not because the necessary
-   source `.csv` file does not exist. This is usually enough to identify the
-   culprit.
+   A:SIERRA matches the stem of an output ``.csv`` file with the stem in a
+   ``.yaml`` configuration file; if these are not the same, then no graph will
+   be generated. You can run SIERRA with ``--log-level=TRACE`` to during stage 4
+   to see which graphs it is generating, and which it is not because the
+   necessary source ``.csv`` file does not exist. This is usually enough to
+   identify the culprit.
 
 #. Q: Stage 3 takes a very long time--why?
 
-   A: SIERRA is conservative, and attempts to verify all the results of all
-   simulations within each experiment it processes during stage 3, which can be
-   VERY computationally intensive, depending on how many outputs are generated
-   for each simulation. During early experimental runs, this can be helpful to
-   identify which simulations crashed/did not finish/etc as a result of errors
-   in the project C++ library. For later runs, or runs in which you are
-   generating outputs for rendering, this is unnecessary, and can be disabled
-   with ``--no-verify-results``.
+   A: SIERRA is conservative, and attempts to verify all the results of all runs
+   within each experiment it processes during stage 3, which can be VERY
+   computationally intensive, depending on how many outputs are generated for
+   each runs. During early experimental runs, this can be helpful to identify
+   which runs crashed/did not finish/etc as a result of errors in the project
+   C++ library. For later runs, or runs in which you are generating outputs for
+   rendering, this is unnecessary, and can be disabled with
+   ``--no-verify-results``.
 
 #. Q: SIERRA does not overwrite the input configuration for my experiment/SIERRA
    won't run my experiments again after they run the first time--why?

@@ -34,7 +34,7 @@ of default pipeline.
 Stage 3: Experiment Post-Processing
 -----------------------------------
 
-SIERRA post-processes experimental results after running the batched experiment;
+SIERRA post-processes experimental results after running the batch experiment;
 some parts of this can be done in parallel. This includes one or more of:
 
 - Computing statistics over/about experimental data for stage 4 for use in graph
@@ -49,9 +49,9 @@ Part of default pipeline.
 Stage 4: Deliverable Generation
 -------------------------------
 
-SIERRA performs deliverable generation after processing results for a batched
+SIERRA performs deliverable generation after processing results for a batch
 experiment, which can include shiny graphs and videos. See
-:ref:`ln-usage-rendering` for details about rendering capabilities.
+:ref:`ln-usage-vc` for details about rendering capabilities.
 
 Part of default pipeline.
 
@@ -59,7 +59,7 @@ Stage 5: Graph Generation for Controller/Scenario Comparison
 ------------------------------------------------------------
 
 SIERRA can perform additional graph generation *AFTER* graph generation for
-batched experiments has been run. This is extremely useful for generating graphs
+batch experiments has been run. This is extremely useful for generating graphs
 which can be dropped immediately into academic papers without modification. Not
 part of default pipeline. See :ref:`ln-usage-stage5` for details. This can be
 used to:

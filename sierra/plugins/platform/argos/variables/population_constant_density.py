@@ -22,14 +22,14 @@ Classes for the constant population density batch criteria. See
 
 # Core packages
 import typing as tp
-import logging # type: tp.Any
+import logging  # type: tp.Any
 import math
 
 # 3rd party packages
 import implements
 
 # Project packages
-from sierra.core.variables import constant_density as cd
+from sierra.plugins.platform.argos.variables import constant_density as cd
 import sierra.core.utils
 import sierra.core.types as types
 import sierra.core.variables.batch_criteria as bc
@@ -41,10 +41,11 @@ import sierra.core.plugin_manager as pm
 @implements.implements(bc.IConcreteBatchCriteria)
 class PopulationConstantDensity(cd.ConstantDensity):
     """
-    A univariate range specifiying the population density (ratio of swarm size to arena size) to
-    hold constant as swarm and arena size are increased. This class is a base class which should
-    (almost) never be used on its own. Instead, the ``factory()`` function should be used to
-    dynamically create derived classes expressing the user's desired density.
+    A univariate range specifiying the population density (ratio of swarm size
+    to arena size) to hold constant as swarm and arena size are increased. This
+    class is a base class which should (almost) never be used on its
+    own. Instead, the ``factory()`` function should be used to dynamically
+    create derived classes expressing the user's desired density.
 
     Does not change the # blocks/block manifest.
 
@@ -57,8 +58,10 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
     def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         """
-        Generate list of sets of changes to input file to set the # robots for a set of arena
-        sizes such that the swarm density is constant. Robots are approximated as point masses.
+        Generate list of sets of changes to input file to set the # robots for a
+        set of arena sizes such that the swarm density is constant. Robots are
+        approximated as point masses.
+
         """
         if not self.already_added:
             for changeset in self.attr_changes:
@@ -68,10 +71,17 @@ class PopulationConstantDensity(cd.ConstantDensity):
                         x, y, z = [int(float(_)) for _ in value.split(",")]
                         extent = sierra.core.utils.ArenaExtent(
                             Vector3D(x, y, z))
-                        # ARGoS won't start if there are 0 robots, so you always need to put at
-                        # least 1.
-                        n_robots = int(
-                            max(1, extent.area() * (self.target_density / 100.0)))
+                        # ARGoS won't start if there are 0 robots, so you always
+                        # need to put at least 1.
+                        n_robots = int(extent.area() *
+                                       (self.target_density / 100.0))
+                        if n_robots == 0:
+                            n_robots = 1
+                            self.logger.warning("n_robots set to 1 even though \
+                            calculated as 0 for area=%s,density=%s",
+                                                extent.area,
+                                                self.target_density)
+
                         changeset.add(XMLAttrChange(".//arena/distribute/entity",
                                                     "quantity",
                                                     str(n_robots)))
@@ -129,13 +139,13 @@ def factory(cli_arg: str,
             batch_input_root: str,
             **kwargs) -> PopulationConstantDensity:
     """
-    Factory to create :class:`PopulationConstantDensity` derived classes from the command line
-    definition.
+    Factory to create :class:`PopulationConstantDensity` derived classes from
+    the command line definition.
 
     """
     attr = cd.Parser()(cli_arg)
-    sgp = pm.module_load_tiered(
-        kwargs['project'], 'generators.scenario_generator_parser')
+    sgp = pm.module_load_tiered(project=kwargs['project'],
+                                path='generators.scenario_generator_parser')
     kw = sgp.ScenarioGeneratorParser().to_dict(kwargs['scenario'])
 
     is_2x1 = kw['arena_x'] == 2 * kw['arena_y']

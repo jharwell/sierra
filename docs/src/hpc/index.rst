@@ -5,37 +5,46 @@ High Performance Computing (HPC) Plugins
 ========================================
 
 SIERRA is capable of adapting its runtime infrastructure to a number of
-different HPC environments so that ARGoS experiments can be run efficiently on
+different HPC environments so that experiments can be run efficiently on
 whatever computational resources a researcher has access to. Supported
 environments that come with SIERRA are listed on this page.
+
+These plugins are valid for the following platforms:
+
+- :ref:`ln-platform-plugins-argos`
 
 .. _ln-hpc-plugins-local:
 
 Local HPC Plugin
 ================
 
-This HPC environment can be selected via ``--hpc-env=hpc.local``.
+This HPC environment can be selected via ``--exec-env=hpc.local``.
 
-This is the default HPC environment in which SIERRA will all experiments on the
-same computer from which it was launched using GNU parallel.  The # simultaneous
-simulations will be determined by::
+This is the default HPC environment in which SIERRA will run all experiments on
+the same computer from which it was launched using GNU parallel.  The #
+simultaneous simulations will be determined by::
 
-  # cores on machine / # selected physics engines
+  # cores on machine / # threads per experimental run
 
-Consequently, the ``--physics-n-engines`` option is required for this HPC
-environment during stage 1.  If more simulations are requested than can be run
-in parallel, SIERRA will start additional simulations as currently running
-simulations finish.
+If more simulations are requested than can be run in parallel, SIERRA will start
+additional simulations as currently running simulations finish.
 
 No additional configuration/environment variables are needed with this HPC
 environment for use with SIERRA.
+
+ARGoS Considerations
+--------------------
+
+The # threads per :term:`experimental run <Experimental Run>` is defined with
+``--physics-n-engines``, and that option is required for this HPC environment
+during stage 1.
 
 .. _ln-hpc-plugins-pbs:
 
 PBS HPC Plugin
 ==============
 
-This HPC environment can be selected via ``--hpc-env=hpc.pbs``.
+This HPC environment can be selected via ``--exec-env=hpc.pbs``.
 
 In this HPC environment, SIERRA will run experiments spread across multiple
 allocated nodes by a PBS compatible scheduler such as Moab. SIERRA makes the
@@ -56,11 +65,13 @@ TOQUE-PBS docs for meaning); if they are not defined SIERRA will throw an error.
    :header-rows: 1
 
    * - PBS environment variable
+
      - SIERRA context
 
    * - PBS_NUM_PPN
-     - Used to calculate # physics engines per simulation for each allocated compute
-       node via::
+
+     - Used to calculate # threads per experimental run for each allocated
+       compute node via::
 
          floor(PBS_NUM_PPN / --exec-sims-per-node)
 
@@ -68,8 +79,8 @@ TOQUE-PBS docs for meaning); if they are not defined SIERRA will throw an error.
 
    * - PBS_NODEFILE
 
-     - Obtaining the list of nodes allocated to a job which SIERRA can direct GNU
-       parallel to use for experiments.
+     - Obtaining the list of nodes allocated to a job which SIERRA can direct
+       GNU parallel to use for experiments.
 
    * - PBS_JOBID
 
@@ -82,6 +93,7 @@ when using the PBS HPC environment; if they are not defined SIERRA will throw
 an error.
 
 - :envvar:`SIERRA_ARCH`
+
 - :envvar:`PARALLEL`
 
 .. _ln-hpc-plugins-slurm:
@@ -91,7 +103,7 @@ SLURM HPC Plugin
 
 `<https://slurm.schedmd.com/documentation.html>`_
 
-This HPC environment can be selected via ``--hpc-env=hpc.slurm``.
+This HPC environment can be selected via ``--exec-env=hpc.slurm``.
 
 In this HPC environment, SIERRA will run experiments spread across multiple
 allocated nodes by the SLURM scheduler. SIERRA makes the following assumptions
@@ -111,10 +123,11 @@ SLURM docs for meaning); if they are not defined SIERRA will throw an error.
    :header-rows: 1
 
    * - SLURM environment variable
+
      - SIERRA context
 
    * - SLURM_CPUS_PER_TASK
-     - Used to set # physics engines per simulation for each allocated compute
+     - Used to set # threads per experimental node for each allocated compute
        node.
 
    * - SLURM_TASKS_PER_NODE
@@ -123,20 +136,21 @@ SLURM docs for meaning); if they are not defined SIERRA will throw an error.
 
    * - SLURM_JOB_NODELIST
 
-     - Obtaining the list of nodes allocated to a job which SIERRA can direct GNU
-       parallel to use for experiments.
+     - Obtaining the list of nodes allocated to a job which SIERRA can direct
+       GNU parallel to use for experiments.
 
    * - SLURM_JOB_ID
 
      - Creating the UUID nodelist file passed to GNU parallel, guaranteeing no
        collisions (i.e., simultaneous SIERRA invocations sharing allocated nodes
-       if multiple jobs are started from the same directory.
+       if multiple jobs are started from the same directory).
 
 The following additional environmental variables must be defined appropriately
 when using the SLURM HPC environment; if they are not defined SIERRA will throw
 an error.
 
 - :envvar:`SIERRA_ARCH`
+
 - :envvar:`PARALLEL`
 
 .. _ln-hpc-plugins-adhoc:
@@ -144,7 +158,7 @@ an error.
 Adhoc HPC Plugin
 ================
 
-This HPC environment can be selected via ``--hpc-env=hpc.adhoc``.
+This HPC environment can be selected via ``--exec-env=hpc.adhoc``.
 
 In this HPC environment, SIERRA will run experiments spread across an ad-hoc
 network of compute nodes. SIERRA makes the following assumptions about the

@@ -1,4 +1,5 @@
 """
-Classes for generating input files that define simulations within an experiment and experiments
-within a batched experiment.
+Classes for generating input files that define runs within an experiment and
+experiments within a batch experiment.
+
 """

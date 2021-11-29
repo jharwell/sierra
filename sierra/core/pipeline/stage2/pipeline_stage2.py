@@ -28,7 +28,7 @@ import logging  # type: tp.Any
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
-from sierra.core.pipeline.stage2.exp_runner import BatchedExpRunner
+from sierra.core.pipeline.stage2.exp_runner import BatchExpRunner
 from sierra.core import types
 
 
@@ -36,9 +36,9 @@ class PipelineStage2:
     """
     Implements stage 2 of the experimental pipeline.
 
-    Runs all experiments in the input root in parallel using GNU Parallel on the provided set of
-    hosts in an HPC environment, or on the local machine. This stage is *NOT* idempotent, for
-    obvious reasons.
+    Runs all experiments in the input root in parallel using GNU Parallel on the
+    provided set of hosts in an HPC environment, or on the local machine. This
+    stage is *NOT* idempotent, for obvious reasons.
 
     """
 
@@ -47,11 +47,8 @@ class PipelineStage2:
         self.cmdopts = cmdopts
 
     def run(self, criteria: bc.BatchCriteria) -> None:
-        if self.cmdopts['argos_rendering']:
-            self.logger.info('ARGoS frame grabbing enabled')
-
         start = time.time()
-        BatchedExpRunner(self.cmdopts, criteria)()
+        BatchExpRunner(self.cmdopts, criteria)()
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         self.logger.info("Execution complete in %s", str(sec))

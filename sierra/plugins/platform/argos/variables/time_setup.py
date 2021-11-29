@@ -1,4 +1,4 @@
-# Copyright 2018 John Harwell, All rights reserved.
+# Copyright 2021 John Harwell, All rights reserved.
 #
 #  This file is part of SIERRA.
 #
@@ -15,7 +15,7 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Classes for the ``--time-setup`` cmdline option. See :ref:`ln-vars-ts` for usage documentation.
+Classes for the ``--time-setup`` cmdline option. See :ref:`ln-platform-argos-vars-ts` for usage documentation.
 """
 
 # Core packages
@@ -32,9 +32,9 @@ import sierra.core.config as config
 
 
 @implements.implements(IBaseVariable)
-class ARGoSTimeSetup():
+class TimeSetup():
     """
-    Defines the simulation duration, metric collection interval.
+    Defines the simulation duration.
 
     Attributes:
         duration: The simulation duration in seconds, NOT timesteps.
@@ -100,7 +100,7 @@ class Parser():
         # Parse duration, which must be present
         res = re.search(r"T\d+", arg)
         assert res is not None, \
-            "FATAL: Bad duration specification in time setup '{0}'".format(arg)
+            "Bad duration specification in time setup '{0}'".format(arg)
         ret['duration'] = int(res.group(0)[1:])
 
         # Parse # datapoints to capture, which can be absent
@@ -108,7 +108,7 @@ class Parser():
         if res is not None:
             ret['n_datapoints'] = int(res.group(0)[1:])
         else:
-            ret['n_datapoints'] = config.kSimulationData['n_datapoints_1D']
+            ret['n_datapoints'] = config.kExperimentalRunData['n_datapoints_1D']
 
         # Parse # ticks per second for controllers, which can be absent
         res = re.search(r"K\d+", arg)
@@ -120,9 +120,9 @@ class Parser():
         return ret
 
 
-def factory(arg: str) -> ARGoSTimeSetup:
+def factory(arg: str) -> TimeSetup:
     """
-    Factory to create :class:`ARGoSTimeSetup` derived classes from the command
+    Factory to create :class:`TimeSetup` derived classes from the command
     line definition.
 
     Parameters:
@@ -131,17 +131,17 @@ def factory(arg: str) -> ARGoSTimeSetup:
     name = '.'.join(arg.split(".")[1:])
     attr = Parser()(arg)
 
-    def __init__(self: ARGoSTimeSetup) -> None:
-        ARGoSTimeSetup.__init__(self,
-                                attr["duration"],
-                                attr['n_datapoints'],
-                                attr['n_ticks_per_sec'])
+    def __init__(self: TimeSetup) -> None:
+        TimeSetup.__init__(self,
+                           attr["duration"],
+                           attr['n_datapoints'],
+                           attr['n_ticks_per_sec'])
 
     return type(name,
-                (ARGoSTimeSetup,),
+                (TimeSetup,),
                 {"__init__": __init__})  # type: ignore
 
 
 __api__ = [
-    'ARGoSTimeSetup',
+    'TimeSetup',
 ]

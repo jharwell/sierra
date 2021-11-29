@@ -14,15 +14,15 @@ For the purposes of this tutorial, I will assume you are creating a new storage
 
 #. Create the following directory structure within the ``infinite`` directory.
 
-   - ``main.py`` - The main file which SIERRA will reference when using your
+   - ``plugin.py`` - The main file which SIERRA will reference when using your
      plugin.
 
    That's it! You can have as many other files of whatever type you want in your
    plugin directory--they will be ignored by SIERRA.
 
 
-``main.py`` Contents
---------------------
+``plugin.py`` Contents
+----------------------
 
 This file must define the following functions:
 

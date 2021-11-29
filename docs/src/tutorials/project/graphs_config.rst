@@ -9,10 +9,10 @@ This page has the following sections:
 - How to create a new :term:`Graph Category`
 
 - How to define a new graph within a :term:`Graph Category` to generate from
-  simulation outputs.
+  :term:`Experimental Run` outputs.
 
-- How to "activate" the new graph so that it will be generated from simulation
-  outputs where applicable.
+- How to "activate" the new graph so that it will be generated from experimental
+  run outputs where applicable.
 
 - How to generate additional graphs during stage 4 beyond those possible with
   the SIERRA core.
@@ -84,8 +84,8 @@ Unless stated otherwise, all keys are mandatory.
 .. code-block:: YAML
 
    LN_mycategory:
-     # The filename (no path) of the .csv within the simulation output
-     # directory for a simulation, sans the .csv extension.
+     # The filename (no path) of the .csv within the experimental run output
+     # directory for an experimental run, sans the .csv extension.
      - src_stem: 'foo'
 
      # The filename (no path) of the graph to be generated
@@ -139,7 +139,7 @@ Unless stated otherwise, all keys are mandatory.
 
    graphs:
      # The filename (no path) of the .csv within the output directory
-     # for a simulation to look for the column(s) to plot, sans the .csv
+     # for an experimental run to look for the column(s) to plot, sans the .csv
      # extension.
      - src_stem: 'foo.csv'
 

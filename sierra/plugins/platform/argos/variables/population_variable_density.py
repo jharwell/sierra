@@ -21,7 +21,7 @@ Classes for the variable population density batch criteria. See
 
 # Core packages
 import typing as tp
-import logging # type: tp.Any
+import logging  # type: tp.Any
 import numpy as np
 
 # 3rd party packages
@@ -41,9 +41,10 @@ from sierra.core import types
 @implements.implements(bc.IConcreteBatchCriteria)
 class PopulationVariableDensity(vd.VariableDensity):
     """
-    A univariate range specifiying the population density (ratio of swarm size to arena size) to
-    vary as arena size is held constant. Instead, the ``factory()`` function should be used to
-    dynamically create derived classes expressing the user's desired density ranges.
+    A univariate range specifiying the population density (ratio of swarm size
+    to arena size) to vary as arena size is held constant. Instead, the
+    ``factory()`` function should be used to dynamically create derived classes
+    expressing the user's desired density ranges.
 
     Does not change the # blocks/block manifest.
 
@@ -56,14 +57,21 @@ class PopulationVariableDensity(vd.VariableDensity):
 
     def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         """
-        Generate list of sets of changes to input file to set the # robots for a set of swarm
-        densities. Robots are approximated as point masses.
+        Generate list of sets of changes to input file to set the # robots for a
+        set of swarm densities. Robots are approximated as point masses.
         """
         if not self.already_added:
             for density in self.densities:
-                # ARGoS won't start if there are 0 robots, so you always need to put at
-                # least 1.
-                n_robots = int(max(1, self.extent.area() * (density / 100.0)))
+                # ARGoS won't start if there are 0 robots, so you always
+                # need to put at least 1.
+                n_robots = int(extent.area() *
+                               (self.target_density / 100.0))
+                if n_robots == 0:
+                    n_robots = 1
+                    self.logger.warning("n_robots set to 1 even though \
+                    calculated as 0 for area=%s,density=%s",
+                                        extent.area,
+                                        self.target_density)
                 changeset = XMLAttrChangeSet(XMLAttrChange(".//arena/distribute/entity",
                                                            "quantity",
                                                            str(n_robots)))
@@ -107,13 +115,12 @@ def factory(cli_arg: str,
             batch_input_root: str,
             **kwargs) -> PopulationVariableDensity:
     """
-    Factory to create :class:`PopulationVariableDensity` derived classes from the command line
-    definition.
-
+    Factory to create :class:`PopulationVariableDensity` derived classes from
+    the command line definition.
     """
     attr = vd.Parser()(cli_arg)
-    sgp = pm.module_load_tiered(
-        kwargs['project'], 'generators.scenario_generator_parser')
+    sgp = pm.module_load_tiered(project=kwargs['project'],
+                                path='generators.scenario_generator_parser')
     kw = sgp.ScenarioGeneratorParser().to_dict(kwargs['scenario'])
     extent = ArenaExtent(Vector3D(kw['arena_x'], kw['arena_y'], kw['arena_z']))
 

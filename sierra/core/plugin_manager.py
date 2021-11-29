@@ -40,18 +40,18 @@ class BasePluginManager():
 
     def __init__(self) -> None:
         self.logger = logging.getLogger(__name__)
-        self.loaded = {}
+        self.loaded = {}  # type: tp.Dict[str, tp.Dict]
 
     def loaded_plugins(self):
         return self.loaded.copy()
 
-    def initialize(self):
+    def initialize(self, project: str):
         raise NotImplementedError
 
     def available_plugins(self):
         raise NotImplementedError
 
-    def load_plugin(self, name: str):
+    def load_plugin(self, name: str) -> None:
         """
         Loads a plugin module.
         """
@@ -60,87 +60,113 @@ class BasePluginManager():
             self.logger.error("Cannot locate plugin '%s'", name)
             raise Exception("Cannot locate plugin '%s'" % name)
 
-        if name not in self.loaded:
-            module = importlib.util.module_from_spec(plugins[name]['spec'])
-
-            plugins[name]['spec'].loader.exec_module(module)
+        if plugins[name]['type'] == 'pipeline':
             scoped_name = '{0}.{1}'.format(os.path.basename(plugins[name]['parent_dir'].strip("/")),
                                            name)
-            self.loaded[scoped_name] = {
-                'spec': plugins[name]['spec'],
-                'module': module
-            }
-            self.logger.debug("Loaded plugin '%s' from '%s'",
-                              scoped_name,
-                              plugins[name]['parent_dir'])
-        else:
-            self.logger.warning("Plugin '%s' already loaded", name)
+            if name not in self.loaded:
+                module = importlib.util.module_from_spec(plugins[name]['spec'])
 
-        return self.loaded[scoped_name]['module']
+                plugins[name]['spec'].loader.exec_module(module)
+                self.loaded[scoped_name] = {
+                    'spec': plugins[name]['spec'],
+                    'parent_dir': plugins[name]['parent_dir'],
+                    'module': module
+                }
+                self.logger.debug("Loaded pipeline plugin '%s' from '%s'",
+                                  scoped_name,
+                                  plugins[name]['parent_dir'])
+            else:
+                self.logger.warning("Pipeline plugin '%s' already loaded", name)
 
-    def get_plugin(self, name: str):
+            return self.loaded[scoped_name]['module']
+        elif plugins[name]['type'] == 'project':
+            # Projects are addressed directly without scoping. Only one project
+            # is loaded at a time, so this should be fine.
+            scoped_name = name
+            if name not in self.loaded:
+                self.loaded[scoped_name] = {
+                    'spec': plugins[name]['spec'],
+                    'parent_dir': plugins[name]['parent_dir'],
+                }
+                self.logger.debug("Loaded project plugin '%s' from '%s'",
+                                  scoped_name,
+                                  plugins[name]['parent_dir'])
+            else:
+                self.logger.warning("Project plugin '%s' already loaded", name)
+
+    def get_plugin(self, name: str) -> dict:
+        try:
+            return self.loaded[name]
+        except KeyError:
+            self.logger.critical("No such plugin '%s'", name)
+            raise
+
+    def get_plugin_module(self, name: str) -> types.ModuleType:
         try:
             return self.loaded[name]['module']
         except KeyError:
             self.logger.critical("No such plugin '%s'", name)
             raise
 
+    def has_plugin(self, name: str) -> bool:
+        return name in self.loaded
+
 
 class FilePluginManager(BasePluginManager):
     """
-    A simple plugin manager where plugins are ``.py`` `files` within a root plugin directory.
+    A plugin manager where plugins are ``.py`` files within a root plugin
+    directory. Intended for use with :term:`models <Model>`.
+
     """
 
     def __init__(self, search_root: str) -> None:
         super().__init__()
         self.search_root = search_root
-        self.plugins = {}
 
-    def initialize(self) -> None:
-        self.plugins = self.calc_available_plugins()
+    def initialize(self, project: str) -> None:
+        pass
 
-    def available_plugins(self) -> tp.Dict[str, tp.Dict[str, importlib.machinery.ModuleSpec]]:
+    def available_plugins(self) -> tp.Dict[str, tp.Dict]:
         """
-        Returns a dictionary of plugins available in the configured plugin root.
+        Returns a dictionary of plugins available in the configured plugin
+        root.
         """
-        return self.plugins
-
-    def calc_available_plugins(self):
         plugins = {}
         for possible in os.listdir(self.search_root):
             candidate = os.path.join(self.search_root, possible)
             if os.path.isfile(candidate) and '.py' in candidate:
-                name = os.path.split(candidate)[1].split('.')[0]
+                name = "{0}.{1}".format(os.path.basename(candidate),
+                                        os.path.splitext(os.path.split(candidate)[1]))
+                print(name)
+
                 spec = importlib.util.spec_from_file_location(name, candidate)
                 plugins[name] = {
                     'spec': spec,
                     'parent_dir': self.search_root,
+                    'type': 'pipeline'
                 }
         return plugins
 
 
 class DirectoryPluginManager(BasePluginManager):
     """
-    A simple plugin manager where plugins are `directories` found in a root plugin directory.
+    A plugin manager where plugins are `directories` found in a root plugin
+    directory. Intended for use with :term:`Pipeline plugins <plugin>`.
+
     """
 
     def __init__(self, search_root: str) -> None:
         super().__init__()
-
         self.search_root = search_root
-        self.plugins = {}
-        self.main_module = 'main'
+        self.main_module = 'plugin'
 
-    def initialize(self) -> None:
-        self.plugins = self.calc_available_plugins()
+    def initialize(self, project: str) -> None:
+        pass
 
     def available_plugins(self):
         """
-        Returns a dictionary of plugins available in the configured plugin root.
+        Finds all pipeline plugins in all directories within the search root.
         """
-        return self.plugins
-
-    def calc_available_plugins(self):
         plugins = {}
         try:
             for possible in os.listdir(self.search_root):
@@ -151,8 +177,52 @@ class DirectoryPluginManager(BasePluginManager):
                                                                                self.main_module + '.py'))
                     plugins[possible] = {
                         'parent_dir': self.search_root,
-                        'spec': spec
+                        'spec': spec,
+                        'type': 'pipeline'
                     }
+        except FileNotFoundError:
+            pass
+
+        return plugins
+
+
+class ProjectPluginManager(BasePluginManager):
+    """
+    A plugin manager where plugins are `directories` found in a root plugin
+    directory. Intended for use with :term:`Project plugins
+    <plugin>`.
+
+    """
+
+    def __init__(self, search_root: str, project: str) -> None:
+        super().__init__()
+
+        self.search_root = search_root
+        self.project = project
+
+    def initialize(self, project: str) -> None:
+        # Update PYTHONPATH with the directory containing the project so imports
+        # of the form 'import project.module' work.
+        #
+        # 2021/07/19: If you put the entries at the end of sys.path it
+        # doesn't work for some reason...
+        sys.path = [self.search_root] + sys.path[0:]
+
+    def available_plugins(self):
+        """
+        Finds all pipeline plugins in all directories within the search root.
+        """
+        plugins = {}
+        try:
+            for possible in os.listdir(self.search_root):
+                location = os.path.join(self.search_root, possible)
+                if self.project in location:
+                    plugins[possible] = {
+                        'parent_dir': self.search_root,
+                        'spec': None,
+                        'type': 'project'
+                    }
+
         except FileNotFoundError:
             pass
 
@@ -164,22 +234,26 @@ class CompositePluginManager(BasePluginManager):
         super().__init__()
         self.search_path = search_path
         self.logger.debug("Using plugin search path %s", self.search_path)
-        self.components = [DirectoryPluginManager(d) for d in search_path]
-        self.plugins = {}
+        self.components = []
 
     def loaded_plugins(self):
         return self.loaded.copy()
 
-    def initialize(self) -> None:
-        for c in self.components:
-            c.initialize()
+    def initialize(self, project: str) -> None:
+        for d in self.search_path:
+            project_path = os.path.join(d, project)
 
-        self.plugins = self.calc_available_plugins()
+            if os.path.exists(project_path):
+                project_plugin = ProjectPluginManager(d, project)
+                self.components.append(project_plugin)
+            else:
+                pipeline_plugin = DirectoryPluginManager(d)
+                self.components.append(pipeline_plugin)
+
+        for c in self.components:
+            c.initialize(project)
 
     def available_plugins(self):
-        return self.plugins
-
-    def calc_available_plugins(self):
         plugins = {}
         for c in self.components:
             plugins.update(c.available_plugins())
@@ -212,23 +286,42 @@ def module_load(name: str) -> types.ModuleType:
 
 def bc_load(cmdopts: types.Cmdopts, category: str):
     path = 'variables.{0}'.format(category)
-    return module_load_tiered(cmdopts['project'], path)
+    return module_load_tiered(project=cmdopts['project'],
+                              platform=cmdopts['platform'],
+                              path=path)
 
 
-def module_load_tiered(project: str, path: str) -> types.ModuleType:
+def module_load_tiered(path: str,
+                       project: tp.Optional[str] = None,
+                       platform: tp.Optional[str] = None) -> types.ModuleType:
     # First, see if the requested module is a project
     if module_exists(path):
         logging.trace("Using project path '%s'", path)
         return module_load(path)
 
     # First, see if the requested module is part of the project plugin
-    component_path = '{0}.{1}'.format(project, path)
-    if module_exists(component_path):
-        logging.trace("Using project component path '%s'", component_path)
-        return module_load(component_path)
-    else:
-        logging.trace("Project component path '%s' does not exist",
-                      component_path)
+    if project is not None:
+        component_path = '{0}.{1}'.format(project, path)
+        if module_exists(component_path):
+            logging.trace("Using project component path '%s'", component_path)
+            return module_load(component_path)
+        else:
+            logging.trace("Project component path '%s' does not exist",
+                          component_path)
+
+    # If that didn't work, check the platform plugin
+    if platform is not None:
+        # We manually add 'sierra.plugins' here, rather than adding the
+        # necessary directory to PYTHONPATH so that we don't accidentally get
+        # the files from other non-platform plugins with the same name as the
+        # platform plugin file we are interested in getting picked.
+        platform_path = 'sierra.plugins.{0}.{1}'.format(platform, path)
+        if module_exists(platform_path):
+            logging.trace("Using platform component path '%s'", platform_path)
+            return module_load(platform_path)
+        else:
+            logging.trace("Platform component path '%s' does not exist",
+                          platform_path)
 
     # If that didn't work, then check the SIERRA core
     core_path = 'sierra.core.{0}'.format(path)
@@ -239,6 +332,8 @@ def module_load_tiered(project: str, path: str) -> types.ModuleType:
         logging.trace("SIERRA core path '%s' does not exist", core_path)
 
     # Module does not exist
-    raise ImportError("project: '{0}' path: '{1}' sys.path: {2}".format(project,
-                                                                        path,
-                                                                        sys.path))
+    error = "project: '{0}' platform: '{1}' path: '{2}' sys.path: {3}".format(project,
+                                                                              platform,
+                                                                              path,
+                                                                              sys.path)
+    raise ImportError(error)

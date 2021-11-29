@@ -29,15 +29,17 @@ from sierra.core import types
 
 
 class VariableDensity(UnivarBatchCriteria):
-    """
-    A univariate range specifiying the density (ratio of SOMETHING to arena size) to vary as arena
-    size is held constant. This class is a base class which should NEVER be used on its
-    own.
+    """A univariate range specifiying the density (ratio of SOMETHING to arena
+    size) to vary as arena size is held constant. This class is a base class
+    which should NEVER be used on its own.
 
     Attributes:
         densities: List of densities to use.
+
         dist_type: The type of block distribution to use.
-        changes: List of sets of changes to apply to generate the specified arena sizes.
+
+        changes: List of sets of changes to apply to generate the specified
+                 arena sizes.
 
     """
 
@@ -87,7 +89,7 @@ class Parser():
         cardinality = cli_arg.split('.')[3]
         res = re.search('C[0-9]+', cardinality)
         assert res is not None, \
-            "FATAL: Bad cardinality specification in criteria '{0}'".format(
+            "Bad cardinality specification in criteria '{0}'".format(
                 cli_arg)
 
         ret['cardinality'] = int(res.group(0)[1:])
@@ -98,7 +100,7 @@ class Parser():
     def _parse_density(chunk: str, which: str) -> float:
         res = re.search('[0-9]+', chunk)
         assert res is not None, \
-            "FATAL: Bad {0} density characteristic specification in criteria '{1}'".format(
+            "Bad {0} density characteristic specification in criteria '{1}'".format(
                 which,
                 chunk)
 
@@ -106,7 +108,7 @@ class Parser():
 
         res = re.search('p[0-9]+', chunk)
         assert res is not None, \
-            "FATAL: Bad {0} density mantissa specification in criteria '{1}'".format(
+            "Bad {0} density mantissa specification in criteria '{1}'".format(
                 which,
                 chunk)
 

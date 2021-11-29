@@ -41,7 +41,8 @@ mpl.rcParams['text.usetex'] = True
 
 # mpl.rcParams["axes.prop_cycle"] = plt.cycler("color", plt.cm.tab20.colors)
 
-# Turn off MPL messages when the log level is set to DEBUG or higher. Otherwise you get HUNDREDS.
+# Turn off MPL messages when the log level is set to DEBUG or higher. Otherwise
+# you get HUNDREDS.
 logging.getLogger('matplotlib').setLevel(logging.WARNING)
 logging.getLogger('PIL').setLevel(logging.WARNING)
 
@@ -62,8 +63,6 @@ kRenderFormat = '.mp4'
 kPickleExt = '.pkl'
 
 kPickleLeaf = 'exp_def' + kPickleExt
-
-kARGoSFramesLeaf = 'frames'
 
 kGraphDPI = 100
 
@@ -104,10 +103,16 @@ kStatsExtensions = {
 kARGoS = {
     'duration': 5000,  # seconds
     'ticks_per_second': 5,
-    'min_version': 'beta53'
+    'min_version': 'beta53',
+    'cmdname': 'argos3',
+    'frames_leaf': 'frames'
 }
 
-kSimulationData = {
+kGNUParallel = {
+    'cmdfile': 'commands.txt'
+}
+
+kExperimentalRunData = {
     # Default # datapoints in each .csv of one-dimensional data.
     'n_datapoints_1D': 50
 }

@@ -2,6 +2,7 @@
 SIERRA Models
 =============
 
+For a software engineering definition of a SIERRA model, see :term:`Plugin`.
 
 Create A New Intra-Experiment Model
 ===================================
@@ -45,14 +46,13 @@ type; they will be parsed and passed to the model constructor as part of
 ``config``.
 
 
-
 ``config/models.yaml``
 ^^^^^^^^^^^^^^^^^^^^^^
 
 Root level dictionaries:
 
 - ``models`` - List of enabled models. This dictionary is mandatory for all
-  simulations.
+  experiments.
 
 
 Example YAML Config

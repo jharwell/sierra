@@ -20,13 +20,15 @@
 - [ ] Document the for_sphinx arg and how it works for cmdline docs
 - [ ] More SAANoise out of SIERRA--to uses the perf.robustness dictionary, which I am moving out to TITERRA. ALso, SAA
      noise requires ARGoS functionality that is not in the main repo and will not probably ever make it there.
+- [ ] Remove --help; it should be a generic message that directs people to the online docs
+- [ ] Document the plugin search path somewhere
 
 ** TODO [#B] Fix the pylint import error false positives
 ** TODO [#B] Switch reading intra experiment model dataframe index sizes
 From using the size of a different dataframe in the exp to reading from the time setup written to the pkl file.
 
 ** TODO [#B] Add some example pbs/slurm scripts in the HPC docs
-- [X] Re-run a batched experiment which got killed by the HPC scheduler
+- [X] Re-run a batch experiment which got killed by the HPC scheduler
 - [X] Do I need to re-run SIERRA to tweak graphs
 
 ** TODO [#B] Switch all collated .csvs to have .mean extension to make things consistent

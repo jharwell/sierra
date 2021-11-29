@@ -35,14 +35,14 @@ from sierra.core import types
 @implements.implements(bc.IConcreteBatchCriteria)
 class PopulationSize(bc.UnivarBatchCriteria):
     """
-    A univariate range of swarm sizes used to define batched
-    experiments. This class is a base class which should (almost) never be used on its own. Instead,
-    the ``factory()`` function should be used to dynamically create derived classes expressing the
-    user's desired size distribution.
+    A univariate range of swarm sizes used to define batch experiments. This
+    class is a base class which should (almost) never be used on its
+    own. Instead, the ``factory()`` function should be used to dynamically
+    create derived classes expressing the user's desired size distribution.
 
     Attributes:
-        size_list: List of integer swarm sizes defining the range of the variable for the batched
-                   experiment.
+        size_list: List of integer swarm sizes defining the range of the
+                   variable for the batch experiment.
 
     """
 
@@ -128,14 +128,14 @@ class Parser():
         # Parse increment type
         res = re.search("Log|Linear", criteria_str)
         assert res is not None, \
-            "FATAL: Bad size increment specification in criteria '{0}'".format(
+            "Bad size increment specification in criteria '{0}'".format(
                 criteria_str)
         ret['increment_type'] = res.group(0)
 
         # Parse max size
         res = re.search("[0-9]+", criteria_str)
         assert res is not None, \
-            "FATAL: Bad population max in criteria '{0}'".format(criteria_str)
+            "Bad population max in criteria '{0}'".format(criteria_str)
         ret['max_size'] = int(res.group(0))
 
         # Set linear_increment if needed

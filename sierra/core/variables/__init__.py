@@ -14,8 +14,8 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
-Variables (including some that are also batch criteria) that represent things that can be modified
-in the XML input file.
+Variables (including some that are also batch criteria) that represent
+things that can be modified in the XML input file.
+
 """
-from sierra.core.variables import constant_density
 from sierra.core.variables import batch_criteria

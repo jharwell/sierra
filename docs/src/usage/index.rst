@@ -14,8 +14,6 @@ a good way to understand how to get the most out of SIERRA.
    :maxdepth: 2
    :caption: Understanding How SIERRA Works
 
-   batch_criteria.rst
-   variables.rst
    pipeline.rst
    stage5.rst
    cli.rst
@@ -27,5 +25,5 @@ a good way to understand how to get the most out of SIERRA.
    :maxdepth: 2
    :caption: Leveraging SIERRA To Its Maximum Potential
 
-   rendering.rst
+   visual_capture.rst
    examples.rst
