@@ -58,17 +58,26 @@ Environment Variables
 
 .. envvar:: PARALLEL
 
-   Any and all environment variables needed by your project must be exported via
-   the ``PARALLEL`` environment variable before invoking SIERRA, because GNU
-   parallel does not export the environment of the node it is launched from to
-   slave nodes. Something like::
+   Any and all environment variables needed by your :term:`Project` must be
+   exported via the ``PARALLEL`` environment variable before invoking SIERRA,
+   because GNU parallel does not export the environment of the node it is
+   launched from to slave nodes (or even on the local machine). Something like::
 
      export PARALLEL="--workdir . --env PATH --env LD_LIBRARY_PATH --env
      LOADEDMODULES --env _LMFILES_ --env MODULE_VERSION --env MODULEPATH --env
      MODULEVERSION_STACK --env MODULESHOME --env OMP_DYNAMICS --env
      OMP_MAX_ACTIVE_LEVELS --env OMP_NESTED --env OMP_NUM_THREADS --env
      OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
-     --env ARGOS_PLUGIN_PATH --env SIERRA_ARCH --env SIERRA_PLUGIN_PATH"
+     --env SIERRA_ARCH --env SIERRA_PLUGIN_PATH"
 
    Should be a good starting point. Only used if SIERRA is run on a cluster with
-   ``exec_env=hpc.slurm|hpc.pbs``.
+   ``exec_env=hpc.slurm|hpc.pbs``. Don't forget to include
+   :envvar:`ARGOS_PLUGIN_PATH`, :envvar:`ROS_PACKAGE_PATH`, etc., depending on
+   your chosen :term:`Platform`.
+
+.. envvar:: ROS_PACKAGE_PATH
+
+   The list of directories which defines where ROS will search for
+   packages. SIERRA does `not` modify this variable, so it needs to be setup
+   properly prior to invoking SIERRA (i.e., sourcing the proper ``setup.bash``
+   script).

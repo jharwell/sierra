@@ -35,6 +35,7 @@ following partial SIERRA option set to explain the experiment tree::
   --sierra-root=$HOME/exp\
   --controller=CATEGORY.my_controller\
   --scenario=SS.12x6\
+  --platform=platform.argos\
   --batch-criteria=population_size.Log8\
   --n-runs=4\
   --template-input-file=~/my-template.argos\
@@ -67,20 +68,20 @@ it runs:
             as well as a ``commands.txt`` used by GNU parallel to run them all
             in parallel. The leaf of the ``--template-input-file``, sans
             extension, has the experimental run # appended to it
-            (e.g. ``my-template_0`` is the input file for simulation 0).
+            (e.g. ``my-template_0.argos`` is the input file for simulation 0).
 
               - ``commands.txt``
-              - ``my-template_0``
-              - ``my-template_1``
-              - ``my-template_2``
-              - ``my-template_3``
+              - ``my-template_0.argos``
+              - ``my-template_1.argos``
+              - ``my-template_2.argos``
+              - ``my-template_3.argos``
 
           - ``exp1``
 
-            - ``my-template_0``
-            - ``my-template_1``
-            - ``my-template_2``
-            - ``my-template_3``
+            - ``my-template_0.argos``
+            - ``my-template_1.argos``
+            - ``my-template_2.argos``
+            - ``my-template_3.argos``
 
           - ``exp2``
 
@@ -96,17 +97,17 @@ it runs:
             each experimental run's output, including metrics, grabbed frames,
             etc., as configured in the XML input file.
 
-            - ``my-template_0``
-            - ``my-template_1``
-            - ``my-template_2``
-            - ``my-template_3``
+            - ``my-template_0.argos``
+            - ``my-template_1.argos``
+            - ``my-template_2.argos``
+            - ``my-template_3.argos``
 
           - ``exp1``
 
-            - ``my-template_0``
-            - ``my-template_1``
-            - ``my-template_2``
-            - ``my-template_3``
+            - ``my-template_0.argos``
+            - ``my-template_1.argos``
+            - ``my-template_2.argos``
+            - ``my-template_3.argos``
 
           - ``exp2``
 
@@ -124,8 +125,8 @@ it runs:
 
             - ``...``
 
-            - ``collated`` - Contains :term:`Collated .csv` files. During stage4,
-              SIERRA will draw specific columns from .csv files under
+            - ``collated`` - Contains :term:`Collated .csv` files. During
+              stage4, SIERRA will draw specific columns from .csv files under
               ``statistics`` according to configuration, and collate them under
               here for graph generation of `inter`\-experiment graphs.
 

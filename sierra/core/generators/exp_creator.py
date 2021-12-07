@@ -23,13 +23,15 @@ classes in ``exp_generators.py`` and writing the experiment to the filesystem.
 import os
 import random
 import typing as tp
-import shutil
+import copy
 import logging  # type: tp.Any
+import pickle
+import time
 
 # 3rd party packages
 
 # Project packages
-from sierra.core.xml import XMLLuigi
+from sierra.core.xml import XMLLuigi, XMLWriterConfig
 from sierra.core.variables import batch_criteria as bc
 import sierra.core.config as config
 import sierra.core.utils
@@ -76,13 +78,23 @@ class ExpCreator:
 
         self.exp_output_root = os.path.abspath(exp_output_root)
         self.cmdopts = cmdopts
+        self.logger = logging.getLogger(__name__)
 
-        self.random_seed_min = 1
-        self.random_seed_max = 10 * self.cmdopts["n_runs"]
+        # If random seeds where previously generated, use them if configured
+        self.seeds_fpath = os.path.join(self.exp_input_root,
+                                        config.kRandomSeedsLeaf)
+        if os.path.exists(self.seeds_fpath) and not self.cmdopts['no_preserve_seeds']:
+            with open(self.seeds_fpath, 'rb') as f:
+                self.random_seeds = pickle.load(f)
+            self.logger.debug("Using existing random seeds for experiment")
+        else:
+            self.logger.debug("Generating new random seeds for experiment")
+            self.random_seeds = random.sample(range(0, int(time.time())),
+                                              self.cmdopts["n_runs"])
 
         # where the commands file will be stored
-        self.commands_fpath = os.path.abspath(os.path.join(self.exp_input_root,
-                                                           config.kGNUParallel['cmdfile']))
+        self.commands_fpath = os.path.join(self.exp_input_root,
+                                           config.kGNUParallel['cmdfile'])
 
     def from_def(self, exp_def: XMLLuigi):
         """
@@ -94,17 +106,24 @@ class ExpCreator:
         Writes out all experiment input files to the filesystem.
 
         """
-        seeds = self._generate_random_seeds()
-
         # Clear out commands file if it exists
         if sierra.core.utils.path_exists(self.commands_fpath):
             os.remove(self.commands_fpath)
 
         # Create all experimental runs
         for run_num in range(self.cmdopts['n_runs']):
-            self._create_exp_run(exp_def, run_num, seeds)
+            per_run = copy.deepcopy(exp_def)
+            self._create_exp_run(per_run, run_num, self.random_seeds)
 
-    def _create_exp_run(self, exp_def: XMLLuigi, run_num: int, seeds) -> None:
+        # Save seeds
+        if not os.path.exists(self.seeds_fpath) or self.cmdopts['no_preserve_seeds']:
+            with open(self.seeds_fpath, 'ab') as f:
+                pickle.dump(self.random_seeds, f)
+
+    def _create_exp_run(self,
+                        run_exp_def: XMLLuigi,
+                        run_num: int,
+                        seeds: tp.List[int]) -> None:
         run_output_dir = "{0}_{1}_output".format(self.main_input_name,
                                                  run_num)
 
@@ -113,15 +132,17 @@ class ExpCreator:
         per_run = pm.module_load_tiered(project=self.cmdopts['project'],
                                         path='generators.exp_generators')
 
+        run_output_path = os.path.join(self.exp_output_root,
+                                       run_output_dir)
+        stem_path = self._get_launch_file_stempath(run_num)
         per_run.ExpRunDefUniqueGenerator(run_num,
-                                         self.exp_output_root,
-                                         run_output_dir,
-                                         self.cmdopts).generate(exp_def, seeds)
+                                         run_output_path,
+                                         stem_path,
+                                         self.random_seeds[run_num],
+                                         self.cmdopts).generate(run_exp_def)
 
         # Write out the experimental run launch file
-        save_path = self._get_launch_file_path(run_num)
-        open(save_path, 'w').close()  # create an empty file
-        exp_def.write(save_path)
+        run_exp_def.write(stem_path)
 
         # If visual capture is enabled perform any necessary per-run
         # configuration needed.
@@ -135,17 +156,19 @@ class ExpCreator:
         # experimental run.
         with open(self.commands_fpath, 'a') as cmds_file:
             self._update_cmds_file(cmds_file,
-                                   self._get_launch_file_path(run_num))
+                                   self._get_launch_file_stempath(run_num))
 
-    def _get_launch_file_path(self, run_num: int) -> str:
+    def _get_launch_file_stempath(self, run_num: int) -> str:
         """
         File is named as ``<template input file stem>_<run_num>`` in the
-        experiment generation root.
+        experiment generation root. Individual :term:`platforms <Platform>` can
+        extend this path/add extensions as needed.
         """
         return os.path.join(self.exp_input_root,
-                            "{0}_{1}".format(self.main_input_name, run_num))
+                            "{0}_{1}".format(self.main_input_name,
+                                             run_num))
 
-    def _update_cmds_file(self, cmds_file, run_input_path: str) -> None:
+    def _update_cmds_file(self, cmds_file, launch_stem_path: str) -> None:
         """
         Adds the command to launch a particular experimental run to the command
         file.
@@ -153,22 +176,12 @@ class ExpCreator:
         launch_generator = platform.LaunchCmdGenerator()
         launch_cmd = launch_generator(self.cmdopts['platform'],
                                       self.cmdopts['exec_env'],
-                                      run_input_path)
+                                      launch_stem_path)
 
         lvc_generator = platform.LaunchWithVCCmdGenerator()
         launch_with_vc_cmd = lvc_generator(self.cmdopts, launch_cmd)
 
         cmds_file.write(launch_with_vc_cmd + '\n')
-
-    def _generate_random_seeds(self):
-        """Generates random seeds for experiments to use."""
-        try:
-            return random.sample(range(self.random_seed_min, self.random_seed_max + 1),
-                                 self.cmdopts["n_runs"])
-        except ValueError as ve:
-            # create a new error message that clarifies the previous one
-            raise ValueError(
-                "# seeds < # runs: change the random seed parameters") from ve
 
 
 class BatchExpCreator:
@@ -224,7 +237,10 @@ class BatchExpCreator:
         # Scaffold the batch experiment, creating experiment directories and
         # writing template XML input files for each experiment in the batch with
         # changes from the batch criteria added.
-        self.criteria.scaffold_exps(XMLLuigi(self.batch_config_template),
+        exp_def = XMLLuigi(input_fpath=self.batch_config_template,
+                           write_config=XMLWriterConfig({'.': ''}))
+
+        self.criteria.scaffold_exps(exp_def,
                                     self.batch_config_leaf,
                                     self.cmdopts)
 
@@ -235,6 +251,8 @@ class BatchExpCreator:
         # Run batch experiment generator (must be after scaffolding so the
         # per-experiment template files are in place).
         defs = generator.generate_defs()
+
+        assert len(defs) > 0, "No XML modifications generated?"
 
         for i, defi in enumerate(defs):
             self.logger.debug(

@@ -77,25 +77,14 @@ class BatchExpRunner:
         Runs experiments in the batch according to configuration.
 
         """
-        n_threads_per_sim = self.cmdopts['physics_n_engines']
-        n_runs = self.cmdopts['n_runs']
         exec_resume = self.cmdopts['exec_resume']
-        n_jobs = self.cmdopts['exec_sims_per_node']
-
-        now = datetime.datetime.now()
-        exec_times_fpath = os.path.join(self.batch_stat_exec_root,
-                                        now.strftime("%Y-%m-%e-%H:%M"))
+        n_jobs = self.cmdopts['exec_jobs_per_node']
 
         self.logger.info("Platform='%s' exec_env='%s'",
                          self.cmdopts['platform'],
                          self.cmdopts['exec_env'])
 
-        s = "batch_exp_root='%s',sims_per_exp=%s,threads_per_sim=%s,n_jobs=%s"
-        self.logger.info(s,
-                         self.cmdopts['batch_root'],
-                         n_runs,
-                         n_threads_per_sim,
-                         n_jobs)
+        self._prerun_diagnostics()
 
         exp_all = [os.path.join(self.batch_exp_root, d)
                    for d in self.criteria.gen_exp_dirnames(self.cmdopts)]
@@ -107,6 +96,11 @@ class BatchExpRunner:
         # Verify environment is OK before running anything
         platform.ExecEnvChecker(self.cmdopts['platform'],
                                 self.cmdopts['exec_env'])()
+
+        # Calculate path for to file for logging execution times
+        now = datetime.datetime.now()
+        exec_times_fpath = os.path.join(self.batch_stat_exec_root,
+                                        now.strftime("%Y-%m-%e-%H:%M"))
 
         for exp in exp_to_run:
             runner = ExpRunner(exp,
@@ -120,6 +114,20 @@ class BatchExpRunner:
         # needed).
         if self.cmdopts['platform_vc']:
             platform.PostExpVCCleanup(self.cmdopts['platform'])()
+
+    def _prerun_diagnostics(self) -> None:
+        if self.cmdopts['platform'] in ['platform.argos', 'platform.rosgazebo']:
+            n_threads_per_job = self.cmdopts['physics_n_threads']
+            n_runs = self.cmdopts['n_runs']
+            n_jobs = self.cmdopts['exec_jobs_per_node']
+            s = "batch_exp_root='%s',runs/exp=%s,threads/job=%s,n_jobs=%s"
+            self.logger.info(s,
+                             self.cmdopts['batch_root'],
+                             n_runs,
+                             n_threads_per_job,
+                             n_jobs)
+        else:
+            assert False
 
 
 class ExpRunner:
@@ -185,6 +193,7 @@ class ExpRunner:
             cmd = platform.GNUParallelCmdGenerator()(self.platform,
                                                      self.exec_env,
                                                      parallel_opts)
+            self.logger.trace("GNU Parallel: %s", cmd)
             subprocess.run(cmd, shell=True, check=True)
 
         # Catch the exception but do not raise it again so that additional

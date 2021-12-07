@@ -22,16 +22,17 @@ import os
 import typing as tp
 import logging  # type: tp.Any
 import argparse
+import copy
 
 # 3rd party packages
 import implements
 
 # Project packages
 import sierra.core.utils
-import sierra.core.xml
 from sierra.core.variables import base_variable
 from sierra.core.vector import Vector3D
-from sierra.core.xml import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList, XMLLuigi
+from sierra.core import xml
+
 import sierra.core.config
 import sierra.core.plugin_manager as pm
 from sierra.core import types
@@ -77,7 +78,7 @@ class IConcreteBatchCriteria(implements.Interface):
 
         Returns:
             A list of values to use as the X axis tick labels for graph
-            generation. 
+            generation.
 
         """
         raise NotImplementedError
@@ -198,13 +199,13 @@ class BatchCriteria():
 
     # Stub out IBaseVariable because all concrete batch criteria only implement
     # a subset of them.
-    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
+    def gen_attr_changelist(self) -> tp.List[xml.XMLAttrChangeSet]:
         return []
 
-    def gen_tag_rmlist(self) -> tp.List[XMLTagRmList]:
+    def gen_tag_rmlist(self) -> tp.List[xml.XMLTagRmList]:
         return []
 
-    def gen_tag_addlist(self) -> tp.List[XMLTagAddList]:
+    def gen_tag_addlist(self) -> tp.List[xml.XMLTagAddList]:
         return []
 
     def gen_files(self) -> None:
@@ -212,8 +213,8 @@ class BatchCriteria():
 
     def gen_exp_dirnames(self, cmdopts: types.Cmdopts) -> tp.List[str]:
         """
-        Generate list of strings from the current changelist to use for directory
-        names within a batch experiment.
+        Generate list of strings from the current changelist to use for
+        directory names within a batch experiment.
 
         Returns:
             List of directory names for current experiment
@@ -237,15 +238,35 @@ class BatchCriteria():
                                                                            y)),
                                                                        int(float(z)))))
 
-        assert len(dims) > 0, "Scenario dimensions not contained in batch criteria"
+        assert len(dims) > 0,\
+            "Scenario dimensions not contained in batch criteria"
         return dims
 
     def n_exp(self) -> int:
-        return len(self.gen_attr_changelist())
+        self.verify_mods()
+        return len(self.gen_attr_changelist()) + len(self.get_tag_addlist())
 
     def pickle_exp_defs(self, cmdopts: types.Cmdopts) -> None:
-        defs = list(self.gen_attr_changelist())
-        for i, exp_def in enumerate(defs):
+        self.verify_mods()
+        # At most 1 loop of this function will execute!
+
+        chgs = list(self.gen_attr_changelist())
+        for i, exp_def in enumerate(chgs):
+            exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
+            pkl_path = os.path.join(self.batch_input_root,
+                                    exp_dirname,
+                                    sierra.core.config.kPickleLeaf)
+            # Pickling of batch criteria experiment definitions is the FIRST set
+            # of changes to be pickled--all other changes come after. We append
+            # to the pickle file by default, which allows any number of
+            # additional sets of changes to be written, BUT that can also lead
+            # to errors if stage 1 is run multiple times before stage 4. So, we
+            # DELETE the pickle file for each experiment here to make stage 1
+            # idempotent.
+            exp_def.pickle(pkl_path, delete=True)
+
+        adds = list(self.gen_tag_addlist())
+        for i, exp_def in enumerate(adds):
             exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
             pkl_path = os.path.join(self.batch_input_root,
                                     exp_dirname,
@@ -260,7 +281,7 @@ class BatchCriteria():
             exp_def.pickle(pkl_path, delete=True)
 
     def scaffold_exps(self,
-                      xml: sierra.core.xml.XMLLuigi,
+                      batch_def: xml.XMLLuigi,
                       batch_config_leaf: str,
                       cmdopts: types.Cmdopts) -> None:
         """
@@ -268,23 +289,33 @@ class BatchCriteria():
         applying the XML attribute changes to it, and saving the result in the
         experiment input directory in each experiment in the batch.
 
-        Note that batch criteria which use XML tag additions are NOT valid,
-        because those necessarily have a dictionary of attr,value pairs for the
-        new tag to add, and these cannot be pickled for successful retrieval
-        later.
-
         """
-        assert len(self.gen_tag_addlist()
-                   ) == 0, "Batch criteria cannot add XML tags"
-        chg_defs = self.gen_attr_changelist()
-        n_exps = len(chg_defs)
+        chgs_for_batch = self.gen_attr_changelist()
+        adds_for_batch = self.gen_tag_addlist()
 
-        self.logger.info("Scaffolding experiments from batch criteria '%s' by modifying %s XML tags",
-                         self.cli_arg,
-                         len(chg_defs[0]))
+        self.verify_mods()
 
-        for i, defi in enumerate(chg_defs):
-            self._scaffold_expi(xml, defi, i, cmdopts, batch_config_leaf)
+        if len(chgs_for_batch) != 0:
+            mods_for_batch = chgs_for_batch
+            self.logger.info("Scaffolding experiments using '%s': Modify %s XML tags",
+                             self.cli_arg,
+                             len(chgs_for_batch[0]))
+
+        else:
+            mods_for_batch = adds_for_batch
+            self.logger.info("Scaffolding experiments using '%s': Add %s XML tags",
+                             self.cli_arg,
+                             len(adds_for_batch[0]))
+
+        n_exps = len(mods_for_batch)
+
+        for i, mods_for_exp in enumerate(mods_for_batch):
+            expi_def = copy.deepcopy(batch_def)
+            self._scaffold_expi(expi_def,
+                                mods_for_exp,
+                                i,
+                                cmdopts,
+                                batch_config_leaf)
 
         n_exp_dirs = len(os.listdir(self.batch_input_root))
         if n_exps != n_exp_dirs:
@@ -295,33 +326,48 @@ class BatchCriteria():
             msg3 = "(2) Sharing {0} between different batch criteria".format(
                 self.batch_input_root)
 
-            self.logger.critical(msg1)
-            self.logger.critical(msg2)
-            self.logger.critical(msg3)
-            raise ValueError("Batch experiment size/# exp dir mismatch")
+            self.logger.fatal(msg1)
+            self.logger.fatal(msg2)
+            self.logger.fatal(msg3)
+            assert False, "Batch experiment size/# exp dir mismatch"
 
     def _scaffold_expi(self,
-                       xml: XMLLuigi,
-                       defi: XMLAttrChangeSet,
+                       expi_def: xml.XMLLuigi,
+                       modsi: tp.Union[xml.XMLAttrChangeSet, xml.XMLTagAddList],
                        i: int,
                        cmdopts: types.Cmdopts,
                        batch_config_leaf: str) -> None:
         exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
         exp_input_root = os.path.join(self.batch_input_root,
                                       str(exp_dirname))
-        self.logger.debug("Applying %s XML attribute changes from batch criteria generator '%s' for exp%s in %s",
-                          len(defi),
+        self.logger.debug("Applying %s XML modifications from '%s' for exp%s in %s",
+                          len(modsi),
                           self.cli_arg,
                           i,
                           exp_dirname)
 
-        sierra.core.utils.dir_create_checked(
-            exp_input_root, exist_ok=cmdopts['exp_overwrite'])
+        sierra.core.utils.dir_create_checked(exp_input_root,
+                                             exist_ok=cmdopts['exp_overwrite'])
 
-        for chgsi in defi:
-            xml.attr_change(chgsi.path, chgsi.attr, chgsi.value)
+        for mod in modsi:
+            if isinstance(mod, xml.XMLAttrChange):
+                expi_def.attr_change(mod.path, mod.attr, mod.value)
+            elif isinstance(mod, xml.XMLTagAdd):
+                expi_def.tag_add(mod.path, mod.tag, mod.attr)
+            else:
+                assert False,\
+                    "Batch criteria can only modify or remove XML tags"
 
-        xml.write(os.path.join(exp_input_root, batch_config_leaf))
+        # This will be the "template" input file used to generate the input
+        # files for each experimental run in the experiment
+        expi_def.write(os.path.join(exp_input_root, batch_config_leaf))
+
+    def verify_mods(self) -> None:
+        chgs_for_batch = self.gen_attr_changelist()
+        adds_for_batch = self.gen_tag_addlist()
+
+        assert len(chgs_for_batch) == 0 or len(adds_for_batch) == 0,\
+            "Batch criteria cannot add AND change XML tags"
 
 
 @implements.implements(IBatchCriteriaType)
@@ -340,7 +386,9 @@ class UnivarBatchCriteria(BatchCriteria):
     def is_univar(self) -> bool:
         return True
 
-    def populations(self, cmdopts: types.Cmdopts, exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[int]:
+    def populations(self,
+                    cmdopts: types.Cmdopts,
+                    exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[int]:
         """
         Arguments:
             cmdopts: Dictionary of parsed command line options.
@@ -359,13 +407,13 @@ class UnivarBatchCriteria(BatchCriteria):
         else:
             dirs = self.gen_exp_dirnames(cmdopts)
 
+        module = pm.SIERRAPluginManager().get_plugin_module(cmdopts['platform'])
         for d in dirs:
-            exp_def = XMLAttrChangeSet.unpickle(os.path.join(self.batch_input_root,
-                                                             d,
-                                                             sierra.core.config.kPickleLeaf))
-            for chg in exp_def:
-                if chg.path == ".//arena/distribute/entity" and chg.attr == "quantity":
-                    sizes.append(int(chg.value))
+            exp_def = xml.unpickle(os.path.join(self.batch_input_root,
+                                                d,
+                                                sierra.core.config.kPickleLeaf))
+
+            sizes.append(module.population_size_extract(exp_def))
         return sizes
 
 
@@ -396,7 +444,7 @@ class BivarBatchCriteria(BatchCriteria):
     def is_univar(self) -> bool:
         return False
 
-    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
+    def gen_attr_changelist(self) -> tp.List[xml.XMLAttrChangeSet]:
         list1 = self.criteria1.gen_attr_changelist()
         list2 = self.criteria2.gen_attr_changelist()
         ret = []
@@ -407,7 +455,7 @@ class BivarBatchCriteria(BatchCriteria):
 
         return ret
 
-    def gen_tag_rmlist(self) -> tp.List[XMLTagRmList]:
+    def gen_tag_rmlist(self) -> tp.List[xml.XMLTagRmList]:
         ret = self.criteria1.gen_tag_rmlist()
         ret.extend(self.criteria2.gen_tag_rmlist())
         return ret
@@ -430,7 +478,7 @@ class BivarBatchCriteria(BatchCriteria):
 
     def populations(self, cmdopts: types.Cmdopts) -> tp.List[tp.List[int]]:
         """
-        Generate a 2D array of swarm swarm sizes used the batch experiment, in
+        Generate a 2D array of swarm sizes used the batch experiment, in
         the same order as the directories returned from `gen_exp_dirnames()` for
         each criteria along each axis.
 
@@ -440,25 +488,21 @@ class BivarBatchCriteria(BatchCriteria):
         sizes = [[0 for col in self.criteria2.gen_exp_dirnames(
             cmdopts)] for row in self.criteria1.gen_exp_dirnames(cmdopts)]
 
-        n_chgs1 = len(self.criteria1.gen_attr_changelist())
-        n_adds1 = len(self.criteria1.gen_tag_addlist())
+        self.criteria1.verify_mods()
+        self.criteria2.verify_mods()
+
         n_chgs2 = len(self.criteria2.gen_attr_changelist())
         n_adds2 = len(self.criteria2.gen_tag_addlist())
 
-        assert (n_chgs1 == 0 or n_adds1 == 0) and (n_chgs2 == 0 or n_adds2 == 0),\
-            "Criteria defines both XML attribute changes and XML tag additions"
-
+        module = pm.SIERRAPluginManager().get_plugin_module(cmdopts['platform'])
         for d in dirs:
-            exp_def = XMLAttrChangeSet.unpickle(os.path.join(self.batch_input_root,
-                                                             d,
-                                                             sierra.core.config.kPickleLeaf))
-            for path, attr, value in exp_def:
-                if not (path == ".//arena/distribute/entity" and attr == "quantity"):
-                    continue
-                index = dirs.index(d)
-                i = int(index / (n_chgs2 + n_adds2))
-                j = index % (n_chgs2 + n_adds2)
-                sizes[i][j] = int(value)
+            exp_def = xml.unpickle(os.path.join(self.batch_input_root,
+                                                d,
+                                                sierra.core.config.kPickleLeaf))
+            index = dirs.index(d)
+            i = int(index / (n_chgs2 + n_adds2))
+            j = index % (n_chgs2 + n_adds2)
+            sizes[i][j] = module.population_size_extract(exp_def)
 
         return sizes
 
@@ -571,11 +615,17 @@ def factory(main_config: types.YAMLDict,
         scenario = args.scenario
 
     if len(args.batch_criteria) == 1:
-        return __univar_factory(main_config, cmdopts, args.batch_criteria[0], scenario)
+        return __univar_factory(main_config,
+                                cmdopts,
+                                args.batch_criteria[0],
+                                scenario)
     elif len(args.batch_criteria) == 2:
         assert args.batch_criteria[0] != args.batch_criteria[1],\
             "Duplicate batch criteria passed"
-        return __bivar_factory(main_config, cmdopts, args.batch_criteria, scenario)
+        return __bivar_factory(main_config,
+                               cmdopts,
+                               args.batch_criteria,
+                               scenario)
     else:
         assert False, "1 or 2 batch criterias must be specified on the cmdline"
 
@@ -588,15 +638,11 @@ def __univar_factory(main_config: types.YAMLDict,
     Construct a batch criteria object from a single cmdline argument.
     """
     category = cli_arg.split('.')[0]
-    path = 'variables.{0}'.format(category)
+    path = 'variables.{category}'
 
     module = pm.bc_load(cmdopts, category)
 
-    ret = getattr(module, "factory")(cli_arg,
-                                     main_config,
-                                     cmdopts['batch_input_root'],
-                                     scenario=scenario,
-                                     project=cmdopts['project'])()
+    ret = getattr(module, "factory")(cli_arg, main_config, cmdopts)()
     logging.info("Create univariate batch criteria '%s' from '%s'",
                  ret.__class__.__name__,
                  path)
@@ -609,6 +655,7 @@ def __bivar_factory(main_config: types.YAMLDict,
                     scenario: str) -> IConcreteBatchCriteria:
     criteria1 = __univar_factory(main_config, cmdopts, cli_arg[0], scenario)
     criteria2 = __univar_factory(main_config, cmdopts, cli_arg[1], scenario)
+
     ret = BivarBatchCriteria(criteria1, criteria2)
 
     logging.info("Created bivariate batch criteria from %s,%s",

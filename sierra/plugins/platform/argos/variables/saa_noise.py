@@ -14,8 +14,8 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
-Classes for the SAA noise batch criteria. See :ref:`ln-bc-saa-noise` for usage documentation.
-
+Classes for the SAA noise batch criteria. See
+:ref:`ln-platform-argos-bc-saa-noise` for usage documentation. 
 """
 
 # Core packages
@@ -102,12 +102,12 @@ class SAANoise(bc.UnivarBatchCriteria):
         xticks_range = []
 
         if self._gaussian_sources():
-            if self.main_config['perf']['robustness']['gaussian_ticks_src'] == 'mean':
-                xticks_range = self.main_config['perf']['robustness']['gaussian_ticks_mean_range']
+            if self.main_config['sierra']['perf']['robustness']['gaussian_ticks_src'] == 'mean':
+                xticks_range = self.main_config['sierra']['perf']['robustness']['gaussian_ticks_mean_range']
             else:
-                xticks_range = self.main_config['perf']['robustness']['gaussian_ticks_stddev_range']
+                xticks_range = self.main_config['sierra']['perf']['robustness']['gaussian_ticks_stddev_range']
         elif self._uniform_sources():
-            xticks_range = self.main_config['perf']['robustness']['uniform_ticks_range']
+            xticks_range = self.main_config['sierra']['perf']['robustness']['uniform_ticks_range']
 
         # If exp_dirs is passed, then we have been handed a subset of the total
         # # of directories in the batch exp root, and so n_exp() will return
@@ -133,8 +133,8 @@ class SAANoise(bc.UnivarBatchCriteria):
             mean_xticks = []
             stddev_xticks = []
 
-            xticks_mean_range = self.main_config['perf']['robustness']['gaussian_ticks_mean_range']
-            xticks_stddev_range = self.main_config['perf']['robustness']['gaussian_ticks_stddev_range']
+            xticks_mean_range = self.main_config['sierra']['perf']['robustness']['gaussian_ticks_mean_range']
+            xticks_stddev_range = self.main_config['sierra']['perf']['robustness']['gaussian_ticks_stddev_range']
 
             if exp_dirs is not None:
                 mean_xticks = np.linspace(xticks_mean_range[0],
@@ -152,9 +152,9 @@ class SAANoise(bc.UnivarBatchCriteria):
                                             xticks_stddev_range[1],
                                             num=len(self.variances))
 
-            if self.main_config['perf']['robustness']['gaussian_labels_show'] == 'stddev':
+            if self.main_config['sierra']['perf']['robustness']['gaussian_labels_show'] == 'stddev':
                 return ["{0}".format(round(stddev, 3)) for stddev in stddev_xticks]
-            elif self.main_config['perf']['robustness']['gaussian_labels_show'] == 'mean':
+            elif self.main_config['sierra']['perf']['robustness']['gaussian_labels_show'] == 'mean':
                 return ["{0}".format(round(mean, 3)) for mean in mean_xticks]
             else:
                 levels = zip(mean_xticks, stddev_xticks)
@@ -163,9 +163,9 @@ class SAANoise(bc.UnivarBatchCriteria):
             return []
 
     def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
-        if self.main_config['perf']['robustness']['gaussian_labels_show'] == 'stddev':
+        if self.main_config['sierra']['perf']['robustness']['gaussian_labels_show'] == 'stddev':
             return r'Noise $\sigma$'
-        elif self.main_config['perf']['robustness']['gaussian_labels_show'] == 'mean':
+        elif self.main_config['sierra']['perf']['robustness']['gaussian_labels_show'] == 'mean':
             return r'Noise $\mu$'
         else:
             return 'Noise Distribution'
@@ -262,11 +262,11 @@ class VariancesGenerator():
     def __call__(self):
         if any(v == self.attr['noise_type'] for v in ['sensors', 'actuators']):
             configured_sources = {
-                self.attr['noise_type']: self.main_config['perf']['robustness'][self.attr['noise_type']]}
+                self.attr['noise_type']: self.main_config['sierra']['perf']['robustness'][self.attr['noise_type']]}
         else:
             configured_sources = {
-                'actuators': self.main_config['perf']['robustness'].get('actuators', {}),
-                'sensors': self.main_config['perf']['robustness'].get('sensors', {})
+                'actuators': self.main_config['sierra']['perf']['robustness'].get('actuators', {}),
+                'sensors': self.main_config['sierra']['perf']['robustness'].get('sensors', {})
             }
 
         # We iterate through by noise source (sensor or actuator) creating lists
@@ -347,7 +347,9 @@ class VariancesGenerator():
                 dev_noise_config['model'])
 
 
-def factory(cli_arg: str, main_config: types.YAMLDict, batch_input_root: str, **kwargs):
+def factory(cli_arg: str,
+            main_config: types.YAMLDict,
+            cmdopts: types.Cmdopts):
     """Factory to create :class:`SAANoise` derived classes from the command line
     definition of batch criteria.
 
@@ -359,7 +361,7 @@ def factory(cli_arg: str, main_config: types.YAMLDict, batch_input_root: str, **
         SAANoise.__init__(self,
                           cli_arg,
                           main_config,
-                          batch_input_root,
+                          cmdopts['batch_input_root'],
                           variances,
                           attr.get("population", None),
                           attr['noise_type'])

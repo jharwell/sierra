@@ -137,7 +137,6 @@ class FilePluginManager(BasePluginManager):
             if os.path.isfile(candidate) and '.py' in candidate:
                 name = "{0}.{1}".format(os.path.basename(candidate),
                                         os.path.splitext(os.path.split(candidate)[1]))
-                print(name)
 
                 spec = importlib.util.spec_from_file_location(name, candidate)
                 plugins[name] = {

@@ -14,9 +14,9 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""
-Classes for the ``--time-setup`` cmdline option. See
-:ref:`ln-vars-ts` for usage documentation.
+"""Classes for the ``--time-setup`` cmdline option. See :ref:`ln-vars-ts` for
+usage documentation.
+
 """
 
 # Core packages
@@ -28,7 +28,7 @@ import implements
 
 # Project packages
 from sierra.core.variables.base_variable import IBaseVariable
-from sierra.core.xml import XMLAttrChangeSet, XMLAttrChange, XMLTagRmList, XMLTagAddList, XMLLuigi
+from sierra.core.xml import XMLAttrChangeSet, XMLAttrChange, XMLTagAdd, XMLTagRmList, XMLTagAddList, XMLLuigi
 import sierra.core.config as config
 
 
@@ -40,44 +40,31 @@ class TimeSetup():
     Attributes:
         duration: The simulation duration in seconds, NOT timesteps.
     """
-    @staticmethod
-    def extract_time_params(exp_def: XMLAttrChangeSet) -> tp.Dict[str, int]:
-        """
-        Extract and return the length (in seconds), ticks_per_second for the
-        specified experiment.
-        """
-        ret = {
-            'T_in_secs': int(),
-            'n_ticks_per_sec': int()
-        }
-
-        for path, attr, value in exp_def:
-            if 'experiment' in path:
-                if 'length' in attr:
-                    ret['T_in_secs'] = int(value)
-                if 'ticks_per_second' in attr:
-                    ret['n_ticks_per_sec'] = int(value)
-
-        return ret
 
     def __init__(self,
                  n_secs_per_run: int,
                  n_datapoints: int,
-                 n_ticks_per_sec: int) -> None:
+                 n_ticks_per_sec: int,
+                 ros_param_server: bool) -> None:
         self.n_secs_per_run = n_secs_per_run
         self.n_datapoints = n_datapoints
         self.n_ticks_per_sec = n_ticks_per_sec
         self.attr_changes = []  # type: tp.List[XMLAttrChangeSet]
+        self.ros_param_server = ros_param_server
 
     def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         if not self.attr_changes:
-            self.attr_changes = [XMLAttrChangeSet(XMLAttrChange(".//experiment",
-                                                                "length",
-                                                                "{0}".format(self.n_secs_per_run)),
-                                                  XMLAttrChange(".//experiment",
-                                                                "ticks_per_second",
-                                                                "{0}".format(self.n_ticks_per_sec)),
-                                                  )]
+            if self.ros_param_server:
+                chg = XMLAttrChange("./launch/param/[@name='sierra/experiment/length']",
+                                    "value",
+                                    str(self.n_secs_per_run))
+            else:
+                chg = XMLAttrChange("./params/sierra/experiment",
+                                    "length",
+                                    str(self.n_secs_per_run))
+
+            self.attr_changes = [XMLAttrChangeSet(chg)]
+
         return self.attr_changes
 
     def gen_tag_rmlist(self) -> tp.List[XMLTagRmList]:
@@ -119,18 +106,17 @@ class Parser():
         if res is not None:
             ret['n_ticks_per_sec'] = int(res.group(0)[1:])
         else:
-            ret['n_ticks_per_sec'] = config.kARGoS['n_ticks_per_sec']
+            ret['n_ticks_per_sec'] = config.kGazebo['n_ticks_per_sec']
 
         return ret
 
 
-def factory(arg: str) -> TimeSetup:
+def factory(arg: str, ros_param_server: bool) -> TimeSetup:
     """
     Factory to create :class:`TimeSetup` derived classes from the command
     line definition.
 
     Arguments:
-
        arg: The value of ``--time-setup``.
     """
     name = '.'.join(arg.split(".")[1:])
@@ -140,7 +126,8 @@ def factory(arg: str) -> TimeSetup:
         TimeSetup.__init__(self,
                            attr["n_secs_per_run"],
                            attr['n_datapoints'],
-                           attr['n_ticks_per_sec'])
+                           attr['n_ticks_per_sec'],
+                           ros_param_server)
 
     return type(name,
                 (TimeSetup,),

@@ -14,7 +14,8 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
-Classes for the various storage plugins that can be used with SIERRA for reading/writing data.
+Classes for the various storage plugins that can be used with SIERRA for
+reading/writing data.
 """
 
 # Core packages

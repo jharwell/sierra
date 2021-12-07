@@ -29,6 +29,104 @@ import sierra.core.plugin_manager as pm
 from sierra.core import types
 
 
+class ControllerGenerator():
+    """
+    Generate changes to an XML input file related to configuring it for a
+    selected ``--controller``.
+    """
+
+    def __init__(self, controller: str,
+                 config_root: str,
+                 cmdopts: types.Cmdopts,
+                 spec: ExperimentSpec) -> None:
+        self.controller_config = yaml.load(open(os.path.join(config_root,
+                                                             'controllers.yaml')),
+                                           yaml.FullLoader)
+        self.main_config = yaml.load(open(os.path.join(config_root,
+                                                       'main.yaml')),
+                                     yaml.FullLoader)
+        self.category, self.name = controller.split('.')
+        self.cmdopts = cmdopts
+        self.logger = logging.getLogger(__name__)
+        self.spec = spec
+
+    def generate(self, exp_def: XMLLuigi) -> XMLLuigi:
+        """
+        Generates all changes to the input file for the :term:`Experimental Run`
+        (does not save).
+
+        """
+        self._generate_controller_support(exp_def)
+        self._generate_controller(exp_def)
+        return exp_def
+
+    def _pp_for_tag_add(self,
+                        add: tp.List[str],
+                        robot_id: int) -> str:
+        if self.cmdopts['platform'] == 'platform.rosgazebo':
+            prefix = self.main_config['rosgazebo']['robots'][self.cmdopts['robot']]['prefix']
+            add[0] = add[0].replace('__UUID__', f"{prefix}{robot_id}")
+            add[2] = eval(add[2])
+
+        return add
+
+    def _generate_controller_support(self, exp_def: XMLLuigi) -> None:
+        # Setup controller support code (if any)
+        chgs = self.controller_config.get(self.category,
+                                          {}).get('xml',
+                                                  {}).get('attr_change',
+                                                          {})
+        for t in chgs:
+            exp_def.attr_change(t[0], t[1], t[2])
+
+        chgs = self.controller_config.get(self.category, {}).get('xml',
+                                                                 {}).get('tag_change',
+                                                                         {})
+        for t in chgs:
+            exp_def.tag_change(t[0], t[1], t[2])
+
+        adds = self.controller_config.get(self.category, {}).get('xml',
+                                                                 {}).get('tag_add',
+                                                                         {})
+        for t in adds:
+            exp_def.tag_add(t[0], t[1], t[2])
+
+    def _generate_controller(self, exp_def: XMLLuigi) -> None:
+        if self.category not in self.controller_config:
+            self.logger.fatal("Controller category '%s' not found in YAML configuration",
+                              self.category)
+            assert False
+
+        if not any([self.name in config['name'] for config in self.controller_config[self.category]['controllers']]):
+            self.logger.fatal("Controller name '%s' not found in YAML configuration",
+                              self.name)
+            assert False
+
+        for controller in self.controller_config[self.category]['controllers']:
+            if controller['name'] != self.name:
+                continue
+
+            chgs = controller.get('xml', {}).get('attr_change', {})
+            for t in chgs:
+                exp_def.attr_change(t[0], t[1], t[2])
+
+            chgs = controller.get('xml', {}).get('tag_change', {})
+            for t in chgs:
+                exp_def.tag_change(t[0], t[1], t[2])
+
+            adds = controller.get('xml', {}).get('tag_add', {})
+            for t in adds:
+                assert hasattr(self.spec.criteria, 'n_robots'),\
+                    ("When using tag_add, the batch criteria must have a "
+                     "n_robots() method")
+                n_robots = self.spec.criteria.n_robots(self.spec.exp_num)
+                for robot_id in range(0, n_robots):
+                    add = t[:]
+                    add = self._pp_for_tag_add(add, robot_id)
+
+                    exp_def.tag_add(add[0], add[1], add[2])
+
+
 def joint_generator_create(controller, scenario):
     """
     Given a controller (generator), and a scenario(generator), construct a joint
@@ -80,54 +178,18 @@ def scenario_generator_create(spec: ExperimentSpec,
 
 def controller_generator_create(controller: str,
                                 config_root: str,
-                                cmdopts: types.Cmdopts):
+                                cmdopts: types.Cmdopts,
+                                spec: ExperimentSpec):
     """
     Creates a controller generator from the cmdline specification that exists in
     one of the configuration files.
     """
 
-    def __init__(self) -> None:
-        self.config = yaml.load(open(os.path.join(config_root, 'controllers.yaml')),
-                                yaml.FullLoader)
-        self.category, self.name = controller.split('.')
-        self.logger = logging.getLogger(__name__)
-
-    def generate(self, exp_def: XMLLuigi):
-        """
-        Generates all changes to the input file for the :term:`Experimental Run`
-        (does not save).
-
-        """
-        # Setup controller support code (if any)
-        try:
-            for t in self.config[self.category]['xml']['attr_change']:
-                exp_def.attr_change(t[0],
-                                    t[1],
-                                    t[2],
-                                    cmdopts['platform_vc'] is False)
-        except KeyError:
-            self.logger.fatal("Controller support category '%s' not found in YAML configuration",
-                              self.category)
-            raise
-
-        # Setup controller
-        try:
-            for controller in self.config[self.category]['controllers']:
-                if controller['name'] == self.name:
-                    for t in controller['xml']['attr_change']:
-                        exp_def.tag_change(t[0], t[1], t[2])
-        except KeyError:
-            self.logger.fatal("Controller category '%s' or name '%s' not found in YAML configuration",
-                              self.category,
-                              self.name)
-            raise
-
-        return exp_def
-
     return type(controller,
-                (object,), {"__init__": __init__,
-                            "generate": generate
-                            })()
+                (ControllerGenerator,), {})(controller,
+                                            config_root,
+                                            cmdopts,
+                                            spec)
 
 
 __api__ = [

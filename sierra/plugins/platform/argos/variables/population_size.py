@@ -14,8 +14,8 @@
 # You should have received a copy of the GNU General Public License along with
 # SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
-Classes for the population size batch criteria. See :ref:`ln-bc-population-size` for usage
-documentation.
+Classes for the population size batch criteria. See
+:ref:`ln-platform-argos-bc-population-size` for usage documentation.
 """
 
 # Core packages
@@ -39,6 +39,8 @@ class PopulationSize(bc.UnivarBatchCriteria):
     class is a base class which should (almost) never be used on its
     own. Instead, the ``factory()`` function should be used to dynamically
     create derived classes expressing the user's desired size distribution.
+
+    Note: Usage of this class assumes homogeneous swarms.
 
     Attributes:
         size_list: List of integer swarm sizes defining the range of the
@@ -114,7 +116,7 @@ class PopulationSize(bc.UnivarBatchCriteria):
 class Parser():
     """
     Enforces the cmdline definition of the :class:`PopulationSize` batch
-    criteria defined in :ref:`ln-bc-population-size`.
+    criteria defined in :ref:`ln-platform-argos-bc-population-size`.
 
     """
 
@@ -158,9 +160,8 @@ class Parser():
 
 
 def factory(cli_arg: str,
-            main_config: tp.Dict[str, str],
-            batch_input_root: str,
-            **kwargs) -> PopulationSize:
+            main_config: types.YAMLDict,
+            cmdopts: types.Cmdopts) -> PopulationSize:
     """
     Factory to create :class:`PopulationSize` derived classes from the command
     line definition.
@@ -173,7 +174,7 @@ def factory(cli_arg: str,
         PopulationSize.__init__(self,
                                 cli_arg,
                                 main_config,
-                                batch_input_root,
+                                cmdopts['batch_input_root'],
                                 max_sizes)
 
     return type(cli_arg,  # type: ignore

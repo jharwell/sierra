@@ -94,4 +94,4 @@ FAQ
    stages. The files generated in stages {3,4,5} are generated `from` the
    earlier results, so it is OK to overwrite those. However, if you are sure you
    want to overwrite stuff, you can pass ``--exp-overwrite`` to disable this
-   behavior during stages {1,2}. See also :ref:`ln-design-philosophy`.
+   behavior during stages {1,2}. See also :ref:`ln-philosophy`.

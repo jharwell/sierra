@@ -1,4 +1,4 @@
-.. _ln-design-philosophy:
+.. _ln-philosophy:
 
 ========================
 SIERRA Design Philosophy
@@ -7,14 +7,26 @@ SIERRA Design Philosophy
 This document outlines the main philosophy behind SIERRA's design, how it can be
 used, and so forth. It really boils down to a few core ideas.
 
+Single Input, Multiple Output
+=============================
+
+During stage 1, SIERRA generates multiple experiments via multiple experimental
+run input files all from a single template input file, which must be specified
+on the command line. SIERRA does not follow any references/links to other XML
+files in this template input file, greatly simplifying the generation process
+and improving reproducability of experiments (i.e., less cryptic/subtle errors
+because of a ROS ``<include>`` which is different between the package versions
+installed on one system and another).
+
 Assert Often, Fail Early
 ========================
 
 If a condition arises which SIERRA can't easily handle, abort. Don't try to
-recover by throwing exceptions, etc., just abort. This gives users confidence
-that `if` SIERRA doesn't crash, then it is probably working properly.
+recover by throwing an exception which can be caught at a higher level, etc.,
+just abort via assert(). This gives users confidence that `if` SIERRA doesn't
+crash, then it is probably working properly.
 
-Never delete things
+Never Delete Things
 ===================
 
 Because SIERRA is intended for academic research, and experimental data can be
@@ -28,10 +40,10 @@ pipeline stages since those files are built from stage 1 and 2 files.
 Better Too Much Configuration Than Too Little
 =============================================
 
-SIERRA is designed to be as modular and extensible as possible (just like
-ARGoS), so that it can be adapted for a wide variety of applications. When in
-doubt, SIERRA exposes relevant settings as configuration (even if the average
-user will never change them from their default values).
+SIERRA is designed to be as modular and extensible as possible (just like ARGoS,
+ROS, Gazebo, etc.), so that it can be adapted for a wide variety of
+applications. When in doubt, SIERRA exposes relevant settings as configuration
+(even if the average user will never change them from their default values).
 
 Swiss Army Pipeline
 ===================

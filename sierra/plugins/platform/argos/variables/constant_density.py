@@ -22,13 +22,13 @@ import typing as tp
 # 3rd party packages
 
 # Project packages
-from sierra.core.variables.batch_criteria import UnivarBatchCriteria
+from sierra.core.variables import batch_criteria as bc
 from sierra.core.utils import ArenaExtent
 from sierra.plugins.platform.argos.variables.arena_shape import ArenaShape
 from sierra.core import types
 
 
-class ConstantDensity(UnivarBatchCriteria):
+class ConstantDensity(bc.UnivarBatchCriteria):
     """
     A univariate range specifiying the density (ratio of SOMETHING to arena
     size) to hold constant as arena size is increased. This class is a base
@@ -44,7 +44,7 @@ class ConstantDensity(UnivarBatchCriteria):
                       generate scenario names.
 
         changes: List of sets of changes to apply to generate the specified
-                 arena sizes. 
+                 arena sizes.
 
     """
 
@@ -55,8 +55,10 @@ class ConstantDensity(UnivarBatchCriteria):
                  target_density: float,
                  dimensions: tp.List[ArenaExtent],
                  scenario_tag: str) -> None:
-        UnivarBatchCriteria.__init__(
-            self, cli_arg, main_config, batch_input_root)
+        bc.UnivarBatchCriteria.__init__(self,
+                                        cli_arg,
+                                        main_config,
+                                        batch_input_root)
         self.target_density = target_density
         self.dimensions = dimensions
         self.scenario_tag = scenario_tag

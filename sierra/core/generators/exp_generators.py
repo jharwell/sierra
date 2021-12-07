@@ -95,16 +95,26 @@ class BatchExpDefGenerator:
         experiment in the batch), which can used to create the batch
         experiment.
         """
-        change_defs = self.criteria.gen_attr_changelist()
+        chgs = self.criteria.gen_attr_changelist()
+        adds = self.criteria.gen_tag_addlist()
+
+        assert len(chgs) == 0 or len(adds) == 0,\
+            "Batch criteria cannot add AND change XML tags"
+
+        if len(chgs) != 0:
+            mods_for_batch = chgs
+        else:
+            mods_for_batch = adds
 
         # Create and run generators
         defs = []
-        for i in range(0, len(change_defs)):
+        for i in range(0, len(mods_for_batch)):
             generator = self._create_exp_generator(i)
-            defs.append(generator.generate())
             self.logger.debug("Generating scenario+controller changes from generator '%s' for exp%s",
                               self.cmdopts['joint_generator'],
                               i)
+
+            defs.append(generator.generate())
 
         return defs
 
@@ -127,7 +137,8 @@ class BatchExpDefGenerator:
 
         controller = gf.controller_generator_create(controller=self.controller_name,
                                                     config_root=self.cmdopts['project_config_root'],
-                                                    cmdopts=self.cmdopts)
+                                                    cmdopts=self.cmdopts,
+                                                    spec=spec)
 
         generator = gf.joint_generator_create(scenario=scenario,
                                               controller=controller)

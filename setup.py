@@ -31,8 +31,8 @@ readme = (here / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="sierra",
-    version="1.0.5",
-    description="Robotics experimental pipeline automation for ARGoS, ROS, real robots",
+    version="1.1.1",
+    description="Research experimental pipeline automation for multi-agent simulations and real robots",
     long_description=readme,
     long_description_content_type="text/markdown",
     url="https://github.com/swarm-robotics/sierra",
@@ -66,11 +66,27 @@ setup(
         "pandas",
         "matplotlib",
         "sympy",
+        "psutil",
 
         "coloredlogs",
         "singleton_decorator",
         "implements",
-        "retry"],
+        "retry",
+
+        # Sphinx packages (only needed until SIERRA is on pypi, then they will
+        # go in extra_requires=[...] under a "devel" prefix so you only install
+        # them if you are doing SIERRA development).
+        "sphinx",
+        "docutils==0.16",
+        "sphinx-rtd-theme",
+        "sphinx-argparse",
+        "sphinx-tabs",
+        "sphinxcontrib-napoleon",
+        "autoapi",
+    ],
+    extras_require={
+        "devel": ['pylint', 'pytype', 'mypy']
+    },
     python_requires=">=3.6",
     entry_points={
         "console_scripts": [

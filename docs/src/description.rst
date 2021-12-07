@@ -1,8 +1,18 @@
+SIERRA
+======
+
+SIERRA is a plugin framework for automating a common research pipeline in
+robotics and multi-agent systems. It supports a wide range of simulated and
+real-robot platforms, and its deeply modular architecture makes it easy to
+customize for the needs of a specific research project. SIERRA can be used with
+executable code written in any language. SIERRA's one restriction is that
+experimental inputs must be specified in XML in order to be usable with SIERRA
+(see :ref:`ln-req` for details).
+
 Pipeline Summary
 ================
 
-SIERRA is a plugin framework for automating a common research pipeline in
-robotics, and contains the following 5 stage pipeline.
+SIERRA automates the following research pipeline:
 
 1. Generating experiment inputs
 -------------------------------
@@ -11,7 +21,7 @@ SIERRA allows you to investigate some variable(s) of interest across some
 range(s) for arbitrary system sizes, robot controllers, and scenarios (exact
 capabilities depend on the controller+support code you have written). To do
 this, it uses a python specification of your variable(s) to generate launch
-commands for simulatins/real robot code.
+commands for simulations/real robot code.
 
 2. Running experiments
 ----------------------
@@ -21,7 +31,7 @@ which are handled seamlessly with GNU parallel. For simulators, SIERRA will run
 multiple experimental runs (simulations) from each experiment in parallel (exact
 concurrency dependent on the limits of the computing hardware and the nature of
 the experiment). For real robots, SIERRA will execution 1 experimental run at a
-time, per configuration (runs can have different configuration/# of robots).
+time.
 
 SIERRA supports multiple HPC environments for execution of experiments in
 simulation; see :ref:`ln-hpc-plugins` for list.
@@ -66,14 +76,3 @@ comparison graphs for:
 - Different robot controllers which have all been run in the same scenario.
 
 - A single robot controller which has been run in multiple scenarios.
-
-Platform Support
-================
-
-SIERRA currently supports the following platforms, allowing you to use the same
-interface for the above pipeline.
-
-- :term:`ARGoS` for fast simulation of large robot swarms via multiple physics
-  engines.
-
-To define additional platforms, see :ref:`ln-tutorials-plugin-platform`.

@@ -191,7 +191,7 @@ class ExperimentalRunCSVGatherer:
         self.exp_output_root = os.path.join(batch_output_root, exp_leaf)
         self.main_config = main_config
 
-        self.run_metrics_leaf = main_config['run']['run_metrics_leaf']
+        self.run_metrics_leaf = main_config['sierra']['run']['run_metrics_leaf']
 
         self.logger = logging.getLogger(__name__)
 
@@ -222,9 +222,9 @@ class ExperimentalRunCSVGatherer:
            of the path with the extension included.
         """
 
-        intra_perf_csv = self.main_config['perf']['intra_perf_csv']
+        intra_perf_csv = self.main_config['sierra']['perf']['intra_perf_csv']
         intra_perf_leaf = intra_perf_csv.split('.')[0]
-        intra_perf_col = self.main_config['perf']['intra_perf_col']
+        intra_perf_col = self.main_config['sierra']['perf']['intra_perf_col']
 
         run_output_root = os.path.join(self.exp_output_root,
                                        run,
@@ -264,8 +264,8 @@ class ExperimentalRunCollator:
         self.batch_stat_collate_root = batch_stat_collate_root
 
         # To support inverted performance measures where smaller is better
-        self.invert_perf = main_config['perf'].get('inverted', False)
-        self.intra_perf_csv = main_config['perf']['intra_perf_csv']
+        self.invert_perf = main_config['sierra']['perf'].get('inverted', False)
+        self.intra_perf_csv = main_config['sierra']['perf']['intra_perf_csv']
 
         sierra.core.utils.dir_create_checked(
             self.batch_stat_collate_root, exist_ok=True)

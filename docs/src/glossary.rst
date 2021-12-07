@@ -10,9 +10,26 @@ works/is designed the way it is, and to help you find your way around.
 
    ARGoS
 
-      A state-of-the-art multi-physics engine robotics simulator which SIERRA is
-      built on top of. ARGoS website is
-      `here <https://www.argos-sim.info/index.php>`_.
+      A state-of-the-art multi-physics engine robotics simulator which SIERRA
+      supports as a :term:`Platform`. The ARGoS website is `here
+      <https://www.argos-sim.info/index.php>`_.
+
+
+   Gazebo
+
+      A state-of-the-art robotics simulator with many features including .urdf
+      robot models, realistic 3D rendering, and more. The Gazebo website is
+      `here <http://gazebosim.org/>`_.
+
+   ROS
+
+      You know it. You either love it or hate it, but you can't escape it. The
+      ROS website is `here <https://wiki.ros.org>`_.
+
+   ROS-Gazebo
+
+      A :term:`Platform` supported by SIERRA using the ``gazebo_ros`` bridge to
+      use :term:`ROS` with the :term:`Gazebo` simulator.
 
    Project
 
@@ -27,8 +44,20 @@ works/is designed the way it is, and to help you find your way around.
                      be on :envvar:`SIERRA_PLUGIN_PATH`, or SIERRA won't be able
                      to find them.
 
+      .. IMPORTANT:: You can't share projects across :term:`Platforms
+                     <Platform>`, so if you want to be able to use your project
+                     on ROS and ARGoS (for example), you will need to create 2
+                     separate projects with shared python code imported into
+                     each as needed.
+
       Specified via ``--project`` on the cmdline. See :ref:`ln-usage-cli` for
       documentation.
+
+   Tick
+
+      A timestep. In SIERRA, physics engines will perform some number of
+      iterations per tick, and after that the controllers for all robots will be
+      run.
 
    Batch Criteria
 
@@ -95,8 +124,9 @@ works/is designed the way it is, and to help you find your way around.
 
       Meaning is :term:`Platform` dependent.
 
-      For ``--platform=argos`` it is an :term:`ARGoS` simulation that runs as
-      part of an experiment.
+      For ``--platform=platform.argos`` it is an :term:`ARGoS` simulation that
+      runs as part of an experiment. For ``--platform=platform.gazeboros`` it is
+      a :term:`Gazebo` simulation that runs as part of an experiment
 
       The number of simulations which will be run by SIERRA in stage 2 and
       averaged together by SIERRA in stage 3 is controlled by ``--n-runs``.
@@ -188,10 +218,13 @@ works/is designed the way it is, and to help you find your way around.
       A python package/module living in a directory on
       :envvar:`SIERRA_PLUGIN_PATH` which contains functionality to extend SIERRA
       without modifying its core (i.e., customization of different parts of the
-      pipeline). Plugins come in two flavors:
-
-      - Model plugins - Plugins which correspond to predictive models which can
-        run during stage 4.
+      pipeline). Plugins come in several flavors, all of which are handled
+      equivalently by SIERRA:
 
       - Pipeline plugins - Plugins which provide different ways of executing
         core parts of the SIERRA pipeline (e.g., how to run experiments).
+
+      - Platform plugins - Plugins which correspond to different
+        :term:`Platforms <Platform>`.
+
+   

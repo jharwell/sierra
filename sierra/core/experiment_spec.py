@@ -56,6 +56,7 @@ class ExperimentSpec():
         self.exp_def_fpath = os.path.join(self.exp_input_root,
                                           sierra.core.config.kPickleLeaf)
         self.logger = logging.getLogger(__name__)
+        self.criteria = criteria
 
         from_bivar_bc1 = False
         from_bivar_bc2 = False

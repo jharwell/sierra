@@ -62,16 +62,17 @@ class PlatformCmdline(cmd.BaseCmdline):
         experiment.add_argument("--time-setup",
                                 help="""
 
-                                Defines experiment run length, ticks per second
-                                for the experiment (<experiment> tag), # of
-                                datapoints to capture/capture interval for each
-                                simulation. See :ref:`ln-platform-argos-vars-ts`
+                                Defines experiment run length, :term:`Ticks
+                                <Tick>` per second for the experiment
+                                (<experiment> tag), # of datapoints to
+                                capture/capture interval for each
+                                simulation. See :ref:`ln-vars-ts`
                                 for a full description.
 
                                  """ + self.stage_usage_doc([1]),
                                 default="time_setup.T{0}.K{1}.N{2}".format(
-                                    config.kARGoS['duration'],
-                                    config.kARGoS['ticks_per_second'],
+                                    config.kARGoS['n_secs_per_run'],
+                                    config.kARGoS['n_ticks_per_sec'],
                                     config.kExperimentalRunData['n_datapoints_1D']))
 
         # Physics engines options
@@ -157,12 +158,13 @@ class PlatformCmdline(cmd.BaseCmdline):
                              help="""
 
                              The # of iterations all physics engines should
-                             perform per tick each time the controller loops are
-                             run (the # of ticks per second for controller
-                             control loops is set via ``--time-setup``).
+                             perform per :term:`Tick` each time the controller
+                             loops are run (the # of ticks per second for
+                             controller control loops is set via
+                             ``--time-setup``).
 
                              """ + self.stage_usage_doc([1]),
-                             default=10)
+                             default=config.kARGoS['physics_iter_per_tick'])
 
         # Rendering options
         rendering = self.parser.add_argument_group(
@@ -274,10 +276,15 @@ class PlatformCmdline(cmd.BaseCmdline):
 
         """
         updates = {
+            # Multistage
+            'n_robots': cli_args.n_robots,
+            'exec_devnull': cli_args.exec_devnull,
+
             # stage 1
             'time_setup': cli_args.time_setup,
 
             'physics_n_engines': cli_args.physics_n_engines,
+            'physics_n_threads': cli_args.physics_n_engines,  # alias
             "physics_engine_type2D": cli_args.physics_engine_type2D,
             "physics_engine_type3D": cli_args.physics_engine_type3D,
             "physics_iter_per_tick": cli_args.physics_iter_per_tick,
@@ -287,6 +294,7 @@ class PlatformCmdline(cmd.BaseCmdline):
             "with_robot_battery": cli_args.with_robot_battery,
 
             'camera_config': cli_args.camera_config,
+
         }
 
         cmdopts.update(updates)

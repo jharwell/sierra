@@ -1,0 +1,27 @@
+os:
+  - linux
+
+language: python
+python:
+  - 3.6
+
+dist: focal
+
+install:
+  - git clone https://swarm-robotics/sierra-sample-project.git sample-project
+  - pip install -r requirements/common.txt
+  - python3 -m build
+  - pip3 install .
+
+branches:
+  only:
+    - master
+    - devel
+
+script:
+  - bash tests/argos-sample.sh
+  - cmake -DLIBRA_TESTS=yes -DLIBRA_CODE_COV=yes ..
+  - make build-and-test
+
+after_success:
+  - coveralls --root .. -E '.*/ext/.*' -E '.*/CMakeFiles/.*'

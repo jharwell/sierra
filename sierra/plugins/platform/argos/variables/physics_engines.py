@@ -161,7 +161,7 @@ class PhysicsEngines():
             extent: The mapped extent for ALL physics engines.
             exceptions: List of lists of points defining polygons which should
                         NOT be managed by any of the engines currently being
-                        processed. 
+                        processed.
             n_engines_x: # engines in the x direction.
             n_engines_y: # engines in the y direction.
             forward_engines: IDs of engines that are placed in increasing order
@@ -180,16 +180,16 @@ class PhysicsEngines():
         adds.append(XMLTagAdd('.//physics_engines',
                               self.engine_type,
                               {'id': name, 'iterations': str(self.iter_per_tick)}))
-        adds.append(XMLTagAdd(".//physics_engines/*[@id='{0}'".format(name) + "]",
+        adds.append(XMLTagAdd(f".//physics_engines/*[@id='{name}']",
                               "boundaries",
                               {}))
-        adds.append(XMLTagAdd(".//physics_engines/*[@id='{0}'".format(name) + "]/boundaries",
+        adds.append(XMLTagAdd(f".//physics_engines/*[@id='{name}']/boundaries",
                               "top",
                               {'height': str(size_z)}))
-        adds.append(XMLTagAdd(".//physics_engines/*[@id='{0}'".format(name) + "]/boundaries",
+        adds.append(XMLTagAdd(f".//physics_engines/*[@id='{name}']/boundaries",
                               "bottom",
                               {'height': '0.0'}))
-        adds.append(XMLTagAdd(".//physics_engines/*[@id='{0}'".format(name) + "]/boundaries",
+        adds.append(XMLTagAdd(f".//physics_engines/*[@id='{name}']/boundaries",
                               "sides",
                               {}))
 
@@ -207,7 +207,8 @@ class PhysicsEngines():
         ur_x = lr_x
         ul_x = ll_x
 
-        # We use the max of # engines in X/Y to get the nice numbering/layout of engines.
+        # We use the max of # engines in X/Y to get the nice numbering/layout of
+        # engines.
         ll_y = extent.ll.y + size_y * \
             (int(engine_id / max(n_engines_x, n_engines_y)))
         ul_y = extent.ll.y + size_y * \
@@ -216,18 +217,20 @@ class PhysicsEngines():
         lr_y = ll_y
         ur_y = ul_y
 
-        # Adjust vertex list to account for any overlap with entries on the exception list
+        # Adjust vertex list to account for any overlap with entries on the
+        # exception list
         vertices = [(ll_x, ll_y), (lr_x, lr_y), (ur_x, ur_y), (ul_x, ul_y)]
 
         for v in vertices:
-            adds.append(XMLTagAdd(".//physics_engines/*[@id='{0}'".format(name) + "]/boundaries/sides",
+            adds.append(XMLTagAdd(".//physics_engines/*[@id='{name}']/boundaries/sides",
                                   "vertex",
                                   {"point": "{0}, {1}".format(v[0], v[1])}))
         return adds
 
     def _gen1_engines(self) -> XMLTagAddList:
         """
-        Generate definitions for 1 2D or 3D physics engine for the specified extents.
+        Generate definitions for 1 2D or 3D physics engine for the specified
+        extents.
 
         """
 
@@ -240,10 +243,10 @@ class PhysicsEngines():
 
     def _gen2_engines(self, extent: ArenaExtent) -> XMLTagAddList:
         """Generate definitions for 2 2D or 3D physics engines for the specified
-        extents. 
+        extents.
 
         Engines are layed out as follows in 2D, regardless if they are 2D or 3D
-        engines: 
+        engines:
 
          0 1
 
@@ -318,7 +321,8 @@ class PhysicsEngines():
                                      forward_engines=[0, 1, 2, 3])
 
     def _gen12_engines(self, extent: ArenaExtent) -> XMLTagAddList:
-        """Generate definitions for 12 2D or 3D physics engines for the specified
+        """
+        Generate definitions for 12 2D or 3D physics engines for the specified
         pair of (X,Y) arena extents with a uniform grid layout.
 
         The 2D layout is:
@@ -359,8 +363,8 @@ class PhysicsEngines():
                                      forward_engines=[0, 1, 2, 3, 8, 9, 10, 11])
 
     def _gen24_engines(self, extent: ArenaExtent) -> XMLTagAddList:
-        """Generate definitions for 16 2D or 3D physics engines for the specified pair
-        of (X,Y) arena extents with a uniform grid layout.
+        """Generate definitions for 16 2D or 3D physics engines for the
+        specified pair of (X,Y) arena extents with a uniform grid layout.
 
         The 2D layout is:
 

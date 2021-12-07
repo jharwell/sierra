@@ -245,10 +245,9 @@ def bivar_exp_labels_calc(exp_dirs: tp.List[str]) -> tp.Tuple[tp.List[str], tp.L
 
 
 def apply_to_expdef(var,
-                    exp_def: XMLLuigi,
-                    noprint: bool = False) -> tp.Tuple[tp.Optional[XMLTagRmList],
-                                                       tp.Optional[XMLTagAddList],
-                                                       tp.Optional[XMLAttrChangeSet]]:
+                    exp_def: XMLLuigi) -> tp.Tuple[tp.Optional[XMLTagRmList],
+                                                   tp.Optional[XMLTagAddList],
+                                                   tp.Optional[XMLAttrChangeSet]]:
     rmsl = var.gen_tag_rmlist()  # type: tp.List[XMLTagRmList]
     addsl = var.gen_tag_addlist()  # type: tp.List[XMLTagAddList]
     chgsl = var.gen_attr_changelist()  # type: tp.List[XMLAttrChangeSet]
@@ -256,21 +255,21 @@ def apply_to_expdef(var,
     if rmsl:
         rms = rmsl[0]
         for r in rms:
-            exp_def.tag_remove(r.path, r.tag, noprint)
+            exp_def.tag_remove(r.path, r.tag)
     else:
         rms = None
 
     if addsl:
         adds = addsl[0]
         for a in adds:
-            exp_def.tag_add(a.path, a.tag, a.attr, noprint)
+            exp_def.tag_add(a.path, a.tag, a.attr)
     else:
         adds = None
 
     if chgsl:
         chgs = chgsl[0]
         for c in chgs:
-            exp_def.attr_change(c.path, c.attr, c.value, noprint)
+            exp_def.attr_change(c.path, c.attr, c.value)
     else:
         chgs = None
 

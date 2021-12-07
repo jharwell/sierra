@@ -1,14 +1,25 @@
-# SIERRA (reSearch pIpEline Reusable Robotics Automation)
+# SIERRA (reSearch pIpEline for Reproducability, Reusability, and Automation)
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Documentation Status](https://readthedocs.org/projects/swarm-robotics-sierra/badge/?version=latest)](https://swarm-robotics-sierra.readthedocs.io/en/latest/?badge=latest)
 
 SIERRA is named thusly because it will save you a LITERAL, (not figurative)
 mountain of work. It is basically a plugin framework for automating a common
-research pipeline in robotics, and contains the following 5 stage
-pipeline. SIERRA is well documented--see the docs
+research pipeline. SIERRA is well documented--see the docs
 [here](https://swarm-robotics-sierra.readthedocs.io/en/latest/) to get started
 using it!
+
+# Platform Support
+
+SIERRA currently supports the following platforms, allowing you to use the same
+interface for the below pipeline to automate your research workflow:
+
+- [ARGoS](https://www.argos-sim.info/index.php) for fast simulation of large
+  robot swarms via multiple physics engines.
+- [Gazebo](https://www.gazebosim.org) for ROS+Gazebo.
+
+To define additional platforms, see the
+[docs](https://swarm-robotics-sierra.readthedocs.io/en/latest/src/tutorials/plugin/platform_plugin.html).
 
 # Automated Research Pipeline
 
@@ -33,21 +44,22 @@ SIERRA supports multiple HPC environments for execution of experiments in
 simulation
 ([docs](https://swarm-robotics-sierra.readthedocs.io/en/latest/src/hpc/index.html)):
 
-- [SLURM](https://slurm.schedmd.com/documentation.html).
-- [Torque/MOAB](http://docs.adaptivecomputing.com/torque/5-0-1/help.htm#topics/torque/0-intro/torquewelcome.htm%3FTocPath%3DWelcome%7C_____0).
-- ADHOC (suitable for a miscellaneous collection of networked compute nodes
-  for a research group).
-- Local machine (for testing).
+| HPC Execution Environment | Supported Platforms |
+| ------------------------- | ------------------- |
+| [SLURM](https://slurm.schedmd.com/documentation.html) | ARGoS, ROS+Gazebo |
+| [Torque/MOAB](http://docs.adaptivecomputing.com/torque/5-0-1/help.htm#topics/torque/0-intro/torquewelcome.htm%3FTocPath%3DWelcome%7C_____0) | ARGoS, ROS+Gazebo |
+| ADHOC (suitable for a miscellaneous collection of networked compute nodes for a research group) | ARGoS, ROS+Gazebo |
+| Local machine (for testing) | ARGoS, ROS+Gazebo |
 
 To add additional HPC environments, see the
-[docs](https://swarm-robotics-sierra.readthedocs.io/en/latest/src/tutorials/index.html)
+[docs](https://swarm-robotics-sierra.readthedocs.io/en/latest/src/tutorials/plugin/hpc_plugin.html).
 
-SIERRA supports the following real robot targets:
+<!-- SIERRA supports the following real robot targets: -->
 
-- ROS/turtlebot3.
+<!-- - ROS/turtlebot3. -->
 
-To add additional robot targets, see the
-[docs](https://swarm-robotics-sierra.readthedocs.io/en/latest/src/tutorials/index.html).
+<!-- To add additional robot targets, see the -->
+<!-- [docs](https://swarm-robotics-sierra.readthedocs.io/en/latest/src/tutorials/plugin/robot_plugin.html). -->
 
 ## 3. Processing experiment results
 
@@ -80,23 +92,12 @@ graphs for:
 - Different robot controllers which have all been run in the same scenario.
 - A single robot controller which has been run in multiple scenarios.
 
-# Platform Support
-
-SIERRA currently supports the following platforms, allowing you to use the same
-interface for the above pipeline
-([docs](https://swarm-robotics-sierra.readthedocs.io/en/latest/src/platform/index.html)):
-
-- [ARGoS](https://www.argos-sim.info/index.php) for fast simulation of large
-  robot swarms via multiple physics engines.
-- [ROS](https://www.ros.org) for real robots.
-
-To define additional platforms, see the
-[docs](https://swarm-robotics-sierra.readthedocs.io/en/latest/src/tutorials/index.html).
-
 # Requirements
 
 - python >= 3.6.
-- ARGoS >= 3.0.0-beta59 (if you are using ARGoS)
+- ARGoS >= 3.0.0-beta59 (if you are using ARGoS).
+- ROS 1 Melodic or later (if you are using ROS).
+- Gazebo 11.9.0 or later (if you are using ROS+Gazebo).
 
 # Contributing
 

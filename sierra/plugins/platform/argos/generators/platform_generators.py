@@ -26,7 +26,7 @@ import os
 # 3rd party packages
 
 # Project packages
-from sierra.core.xml import XMLLuigi
+from sierra.core.xml import XMLLuigi, XMLWriterConfig
 from sierra.core.utils import ArenaExtent as ArenaExtent
 from sierra.core.experiment_spec import ExperimentSpec
 import sierra.core.utils as scutils
@@ -64,12 +64,9 @@ class PlatformExpDefGenerator():
         Generates XML changes to simulation input files that are common to all
         experiments.
         """
-        # create an object that will edit the XML file
-        exp_def = XMLLuigi(self.template_input_file)
-
-        # Generate arena shape
-        self._generate_arena_shape(exp_def,
-                                   arena_shape.ArenaShape([self.spec.arena_dim]))
+        # ARGoS uses a single input file
+        exp_def = XMLLuigi(input_fpath=self.template_input_file,
+                           write_config=XMLWriterConfig({'.': config.kARGoS['launch_file_ext']}))
 
         # Generate # robots
         self._generate_n_robots(exp_def)
@@ -122,9 +119,9 @@ class PlatformExpDefGenerator():
 
         scutils.apply_to_expdef(pe, exp_def)
 
-    def _generate_arena_shape(self,
-                              exp_def: XMLLuigi,
-                              shape: arena_shape.ArenaShape) -> None:
+    def generate_arena_shape(self,
+                             exp_def: XMLLuigi,
+                             shape: arena_shape.ArenaShape) -> None:
         """
         Generate XML changes for the specified arena shape.
 
@@ -191,7 +188,7 @@ class PlatformExpDefGenerator():
         self.logger.debug("Using time_setup=%s", self.cmdopts['time_setup'])
 
         tsetup = ts.factory(self.cmdopts["time_setup"])()
-        rms, adds, chgs = scutils.apply_to_expdef(tsetup, exp_def, True)
+        rms, adds, chgs = scutils.apply_to_expdef(tsetup, exp_def)
 
         # Write time setup info to file for later retrieval
         scutils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)
@@ -214,7 +211,7 @@ class PlatformExpDefGenerator():
         """
         Generates XML changes to set the library that controllers and loop
         functions are sourced from to the name of the plugin passed on the
-        cmdline. The ``__controller__`` tag is changed during stage 1, but since
+        cmdline. The ``__CONTROLLER__`` tag is changed during stage 1, but since
         this function is called as part of common def generation, it happens
         BEFORE that, and so this is OK. If, for some reason that assumption
         becomes invalid, a warning will be issued about a non-existent XML path,
@@ -228,7 +225,7 @@ class PlatformExpDefGenerator():
         exp_def.attr_change(".//loop_functions",
                             "library",
                             "lib" + self.cmdopts['project'])
-        exp_def.attr_change(".//__controller__",
+        exp_def.attr_change(".//__CONTROLLER__",
                             "library",
                             "lib" + self.cmdopts['project'])
 
@@ -254,10 +251,10 @@ class PlatformExpDefGenerator():
             # Rendering must be processing before cameras, because it deletes
             # the <qt_opengl> tag if it exists, and then re-adds it.
             render = rendering.factory(self.cmdopts)
-            scutils.apply_to_expdef(render, exp_def, True)
+            scutils.apply_to_expdef(render, exp_def)
 
             cams = cameras.factory(self.cmdopts, [self.spec.arena_dim])
-            scutils.apply_to_expdef(cams, exp_def, True)
+            scutils.apply_to_expdef(cams, exp_def)
 
 
 class PlatformExpRunDefUniqueGenerator:
@@ -269,24 +266,30 @@ class PlatformExpRunDefUniqueGenerator:
     - Random seeds for each simulation.
 
     Attributes:
+
         run_num: The runulation # in the experiment.
-        run_output_dir: Directory for simulation outputs in experiment root.
+
+        run_output_path: Path to simulation output directory within experiment
+                         root.
+
         cmdopts: Dictionary containing parsed cmdline options.
     """
 
     def __init__(self,
                  run_num: int,
-                 exp_output_root: str,
-                 run_output_dir: str,
+                 run_output_path: str,
+                 launch_stem_path: str,
+                 random_seed: int,
                  cmdopts: types.Cmdopts) -> None:
 
-        self.exp_output_root = exp_output_root
-        self.run_output_dir = run_output_dir
+        self.run_output_path = run_output_path
+        self.launch_stem_path = launch_stem_path
         self.cmdopts = cmdopts
         self.run_num = run_num
+        self.random_seed = random_seed
         self.logger = logging.getLogger(__name__)
 
-    def _generate_random(self, exp_def, random_seed):
+    def _generate_random(self, exp_def) -> None:
         """
         Generate XML changes for random seeding for a specific simulation in an
         experiment during the input generation process.
@@ -294,16 +297,14 @@ class PlatformExpRunDefUniqueGenerator:
         self.logger.trace("Generating random seed changes for run%s",
                           self.run_num)
 
-        # set the random seed in the config file
-        exp_def.attr_change(".//experiment", "random_seed", str(random_seed))
-        if exp_def.has_tag('.//params/rng'):
-            exp_def.attr_change(".//params/rng", "seed", str(random_seed))
-        else:
-            exp_def.tag_add(".//params", "rng", {"seed": str(random_seed)})
+        # Set the random seed in the input file
+        exp_def.attr_change(".//experiment",
+                            "random_seed",
+                            str(self.random_seed))
 
-    def generate(self, exp_def: XMLLuigi, random_seeds):
+    def generate(self, exp_def: XMLLuigi):
         # Setup simulation random seed
-        self._generate_random(exp_def, random_seeds[self.run_num])
+        self._generate_random(exp_def)
 
         # Setup simulation visualization output
         self._generate_visualization(exp_def)
@@ -315,8 +316,7 @@ class PlatformExpRunDefUniqueGenerator:
         self.logger.trace("Generating visualization changes for run%s",
                           self.run_num)
 
-        frames_fpath = os.path.join(self.exp_output_root,
-                                    self.run_output_dir,
+        frames_fpath = os.path.join(self.run_output_path,
                                     config.kARGoS['frames_leaf'])
         exp_def.attr_change(".//qt-opengl/frame_grabbing",
                             "directory",

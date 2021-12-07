@@ -27,13 +27,14 @@ import shutil
 import re
 import argparse
 import logging  # type: tp.Any
+import socket
 
 # 3rd party packages
 import packaging.version
 
 # Project packages
 import sierra.core.plugin_manager as pm
-import sierra.core.config
+from sierra.core import config
 from sierra.core import types
 from sierra.core import utils
 
@@ -99,7 +100,8 @@ class GNUParallelCmdGenerator():
                  exec_env: str,
                  parallel_opts: tp.Dict[str, tp.Any]) -> str:
         env = pm.SIERRAPluginManager().get_plugin_module(exec_env)
-        return env.GNUParallelCmdGenerator()(parallel_opts)  # type: ignore
+        cmd = env.GNUParallelCmdGenerator(platform)(parallel_opts)
+        return cmd  # type: ignore
 
 
 class LaunchWithVCCmdGenerator():
@@ -158,7 +160,7 @@ class ExpRunVCConfigurer():
 
     def configure_argos(self, run_output_dir: str) -> None:
         frames_fpath = os.path.join(run_output_dir,
-                                    sierra.core.config.kARGoS['frames_leaf'])
+                                    config.kARGoS['frames_leaf'])
         assert shutil.which('Xvfb') is not None, "Xvfb not found"
         utils.dir_create_checked(frames_fpath, exist_ok=True)
 
@@ -205,48 +207,99 @@ class ExecEnvChecker():
     def __call__(self) -> None:
         if self.platform == 'platform.argos':
             self.check_argos()
+        elif self.platform == 'platform.rosgazebo':
+            self.check_rosgazebo()
         else:
             assert False,\
                 "HPC environments not supported for platform '{0}'".format(
                     self.platform)
 
+    def check_rosgazebo(self) -> None:
+        keys = ['ROS_DISTRO', 'GAZEBO_MASTER_URI']
+
+        for k in keys:
+            assert k in os.environ,\
+                "Non-ROS/non-Gazebo environment detected: '{0}' not found".format(
+                    k)
+
+        # Check ROS distro
+        assert os.environ['ROS_DISTRO'] in ['melodic', 'noetic'],\
+            "SIERRA only supports ROS melodic and noetic"
+
+        # Check we can find Gazebo
+        version = self._check_for_simulator(config.kGazebo['launch_cmd'])
+
+        # Check Gazebo version
+        res = re.search(r'[0-9]+.[0-9]+.[0-9]+', version.stdout.decode('utf-8'))
+        assert res is not None, "Gazebo version not in -v output"
+
+        version = packaging.version.parse(res.group(0))
+        min_version = packaging.version.parse(config.kGazebo['min_version'])
+
+        assert version >= min_version,\
+            "Gazebo version {0} < min required {1}".format(version,
+                                                           min_version)
+
     def check_argos(self) -> None:
+        keys = ['ARGOS_PLUGIN_PATH']
+
+        for k in keys:
+            assert k in os.environ,\
+                "Non-ARGoS environment detected: '{0}' not found".format(k)
+
         # Check we can find ARGoS
+        version = self._check_for_simulator(config.kARGoS['launch_cmd'])
+
+        # Check ARGoS version
+        res = re.search(r'beta[0-9]+', version.stdout.decode('utf-8'))
+        assert res is not None, "ARGOS_VERSION not in -v output"
+
+        version = packaging.version.parse(res.group(0))
+        min_version = packaging.version.parse(config.kARGoS['min_version'])
+
+        assert version >= min_version,\
+            "ARGoS version {0} < min required {1}".format(version,
+                                                          min_version)
+
+    def _check_for_simulator(self, name: str):
         if self.exec_env in ['hpc.local', 'hpc.adhoc']:
-            argos3: str = sierra.core.config.kARGoS['cmdname']
+            shellname: str = name
         elif self.exec_env in ['hpc.pbs', 'hpc.slurm']:
             arch = os.environ.get('SIERRA_ARCH')
-            argos3: str = '{0}-{1}'.format(sierra.core.config.kARGoS['cmdname'],
-                                           arch)
+            shellname: str = '{0}-{1}'.format(name, arch)
         else:
             assert False,\
                 "Bad HPC env {0} for platform {1}".format(self.exec_env,
                                                           self.platform)
 
-        if shutil.which(argos3):
-            result = subprocess.run(' '.join([argos3, '-v']),
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE,
-                                    shell=True)
+        if shutil.which(shellname):
+            version_info = subprocess.run(' '.join([shellname, '-v']),
+                                          stdout=subprocess.PIPE,
+                                          stderr=subprocess.PIPE,
+                                          shell=True)
+            return version_info
         else:
-            assert False, "Cannot find {0}".format(argos3)
+            assert False,\
+                "Bad HPC env '{0}' for platform '{1}': cannot find '{2}'".format(self.exec_env,
+                                                                                 self.platform,
+                                                                                 name)
+            return None
 
-        # Check ARGoS version
-        res = re.search(r'beta[0-9]+', result.stdout.decode('utf-8'))
-        assert res is not None, "ARGOS_VERSION not in -v output"
 
-        version = packaging.version.parse(res.group(0))
-        min_version = packaging.version.parse(
-            sierra.core.config.kARGoS['min_version'])
+def get_free_port(self) -> int:
+    """
+    Determines a free port using sockets. From
+    https://stackoverflow.com/questions/44875422/how-to-pick-a-free-port-for-a-subprocess
 
-        assert version >= min_version,\
-            "ARGoS version {0} < min required {1}".format(
-                version, min_version)
-
-        # Check ARGoS plugin path is defined
-        assert os.environ.get("ARGOS_PLUGIN_PATH") is not None, \
-            "You must have ARGOS_PLUGIN_PATH defined with \
-            --platform=platform.argos"
+    Because of TCP TIME_WAIT, close()d ports are still unusable for a few
+    minutes, which will leave plenty of time for SIERRA to assign all unique
+    ports to processes during stage 2.
+    """
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind(('', 0))  # bind to port 0 -> OS allocates free port
+    port = s.getsockname()[1]
+    s.close()
+    return port
 
 
 __api__ = [

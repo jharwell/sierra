@@ -12,10 +12,10 @@ Installing SIERRA
 =================
 
 #. From the SIERRA repo root, install SIERRA locally by following
-   :ref:`ln-package`.
+   :ref:`ln-packages`.
 
 
-#. Install OS packages. The .deb package for ubuntu are shown; if you are on a
+#. Install OS packages. The .deb packages for ubuntu are shown; if you are on a
    different Linux distribution or on OSX you will have to install the
    equivalent packages.
 
@@ -32,16 +32,27 @@ Installing SIERRA
 General Setup Workflow
 ======================
 
-#. After developing the python/C++ code for your project (you've already done
-   that right???), you may need to modify it so that it :term:`Experimental Runs
-   <Experimental Run>` can be launched and data from them captured in a way that
-   SIERRA can process. See :ref:`ln-c++-lib-requirements` for requirements.
+#. Browse through the SIERRA :doc:`/src/glossary` to get an overview of the
+   terminology that SIERRA uses in the code and in the documentation--a little
+   of this will go a long way towards quickly understanding how to get started
+   and use SIERRA!
+
+#. Select which :term:`Platform` SIERRA should target. See
+   :ref:`ln-platform-plugins` for supported platforms. If your desired platform
+   is not in the list, never fear! It's easy to create a new platform plugin,
+   see :ref:`ln-tutorials-plugin-platform`.
+
+#. Look at :ref:`ln-req-exp` to see how to organize your experimental
+   inputs/template input files so they can be used with SIERRA, and if you need
+   to modify the way your code outputs data so that SIERRA can process it.
 
 #. Setup the interface between your code and SIERRA by defining a SIERRA
    :term:`Project` in python by following :ref:`ln-tutorials-project-project`.
 
-#. Figure out which HPC environment SIERRA supports matches your available
-   hardware: :ref:`ln-hpc-plugins`, and following the appropriate setup guide.
+#. Select a HPC environment SIERRA that matches your available hardware:
+   :ref:`ln-hpc-plugins`, following the appropriate setup guide. If there is
+   nothing suitable, never fear! It's easy to create a new HPC plugin, see
+   :ref:`ln-tutorials-plugin-hpc`.
 
 #. Decide what variable you are interested in investigating by consulting the
    :term:`Batch Criteria` available for your project (i.e., what variable(s) you
@@ -60,13 +71,13 @@ General Setup Workflow
 #. Determine how to invoke SIERRA. At a minimum you need to tell it the
    following:
 
-   - What platform you are targeting/want to run on. See
+   - What platform you are targeting/want to run on: ``--platform``. See
      :ref:`ln-platform-plugins` for details.
 
    - What project to load: ``--project``. This is used to:
 
-     - Configure runtime library search paths (e.g.,
-       :envvar:`ARGOS_PLUGIN_PATH`).
+     - Configure runtime search paths (e.g.,
+       :envvar:`ARGOS_PLUGIN_PATH`, :envvar:`ROS_PACKAGE_PATH`).
 
      - Figure out the directory to load graph and :term:`Experiment` data
        processing configuration from.
@@ -82,7 +93,7 @@ General Setup Workflow
 
    - What controller to run: ``--controller``. See
      :ref:`ln-tutorials-project-main-config` for details on how valid
-     controllers are defined for a :term:`Project`. :term:`Project` dependent.
+     controllers are defined for a :term:`Project`. :term:`Project` dependent. 
 
    - How large the arena should be, what block distribution type to use (for
      example), etc. ``--scenario``. :term:`Project` dependent.
@@ -99,10 +110,10 @@ General Setup Workflow
    :ref:`ln-usage-cli`, and there are many useful options that SIERRA accepts,
    so skimming the CLI docs is **very** worthwhile.
 
-   .. IMPORTANT:: Generally speaking, do not try to run SIERRA with a debug
-                  build of whatever project you are using (:xref:`FORDYCA`,
-                  :xref:`PRISM`, etc). It will work but be
-                  obnoxiously/irritatingly slow. SIERRA is intended for
+   .. IMPORTANT:: Generally speaking, do not try to run SIERRA on HPC
+                  environments with a debug build of whatever project you are
+                  using (:xref:`FORDYCA`, :xref:`PRISM`, etc). It will work but
+                  be obnoxiously/irritatingly slow. SIERRA is intended for
                   `production` code (well, as close to production as research
                   code gets) which is compiled with optimizations enabled.
 
@@ -110,7 +121,7 @@ General Setup Workflow
 
    - Set :envvar:`SIERRA_PLUGIN_PATH` appropriately.
 
-   - Set :envvar:`ARGOS_PLUGIN_PATH` appropriately (for ARGoS projects).
+   Different platforms may require additional environments to be set.
 
 #. Learn SIERRA's runtime :ref:`ln-usage-runtime-exp-tree`. When running, SIERRA
    will create a (rather) large directory structure for you, so reading the docs

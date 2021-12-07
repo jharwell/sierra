@@ -143,21 +143,23 @@ class UnivarIntraScenarioComparator:
             batch_leaf = dirs[0]
             _, scenario, _ = rdg.parse_batch_leaf(batch_leaf)
 
-            # We need to generate the root directory paths for each batch experiment
-            # (which # lives inside of the scenario dir), because they are all
-            # different. We need generate these paths for EACH controller, because the
-            # controller is part of the batch root path.
+            # We need to generate the root directory paths for each batch
+            # experiment (which # lives inside of the scenario dir), because
+            # they are all different. We need generate these paths for EACH
+            # controller, because the controller is part of the batch root path.
             paths = rdg.regen_from_exp(sierra_rpath=self.cli_args.sierra_root,
                                        project=self.cli_args.project,
                                        batch_leaf=batch_leaf,
                                        controller=controller)
             cmdopts.update(paths)
 
-            # For each scenario, we have to create the batch criteria for it, because they
-            # are all different.
+            # For each scenario, we have to create the batch criteria for it,
+            # because they are all different.
 
-            criteria = bc.factory(self.main_config, cmdopts,
-                                  self.cli_args, scenario)
+            criteria = bc.factory(self.main_config,
+                                  cmdopts,
+                                  self.cli_args,
+                                  scenario)
 
             self._gen_csv(batch_leaf=batch_leaf,
                           criteria=criteria,
@@ -362,10 +364,12 @@ class BivarIntraScenarioComparator:
 
             cmdopts.update(paths)
 
-            # For each scenario, we have to create the batch criteria for it, because they
-            # are all different.
-            criteria = bc.factory(self.main_config, cmdopts,
-                                  self.cli_args, scenario)
+            # For each scenario, we have to create the batch criteria for it,
+            # because they are all different.
+            criteria = bc.factory(self.main_config,
+                                  cmdopts,
+                                  self.cli_args,
+                                  scenario)
 
             if comp_type == 'LNraw':
                 self._gen_csvs_for_1D(cmdopts=cmdopts,

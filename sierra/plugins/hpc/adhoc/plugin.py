@@ -23,12 +23,13 @@ HPC plugin for running SIERRA with an ad-hoc set of allocated compute nodes
 import os
 import logging  # type: tp.Any
 import typing as tp
+import argparse
 
 # 3rd party packages
 
 # Project packages
-from sierra.core import types
-from sierra.core import config
+from sierra.core import types, config
+from sierra.core import plugin_manager as pm
 
 
 class CmdoptsConfigurer():
@@ -65,47 +66,49 @@ class CmdoptsConfigurer():
 
         if self.platform == 'platform.argos':
             self.configure_argos(ppn, n_nodes, args)
+        elif self.platform == 'platform.rosgazebo':
+            self.configure_argos(ppn, n_nodes, args)
         else:
             assert False,\
                 "hpc.adhoc does not support platform '{0}'".format(
                     self.platform)
 
-    def configure_argos(self, ppn: int, n_nodes: int, args) -> None:
+    def configure_argos(self,
+                        ppn: int,
+                        n_nodes: int,
+                        args: argparse.Namespace) -> None:
         # For HPC, we want to use the the maximum # of simultaneous jobs per
         # node such that there is no thread oversubscription. We also always
         # want to allocate each physics engine its own thread for maximum
         # performance, per the original ARGoS paper.
-        if args.exec_sims_per_node is None:
-            args.exec_sims_per_node = int(float(args.n_runs) / n_nodes)
+        if args.exec_jobs_per_node is None:
+            args.exec_jobs_per_node = int(float(args.n_runs) / n_nodes)
 
-        args.physics_n_engines = int(ppn / args.exec_sims_per_node)
+        args.physics_n_engines = int(ppn / args.exec_jobs_per_node)
 
         self.logger.debug("Allocated %s physics engines/run, %s parallel runs/node",
                           args.physics_n_engines,
-                          args.exec_sims_per_node,)
+                          args.exec_jobs_per_node)
+
+    def configure_rosgazebo(self,
+                            ppn: int,
+                            n_nodes: int,
+                            args: argparse.Namespace) -> None:
+        if args.exec_jobs_per_node is None:
+            args.exec_jobs_per_node = int(float(args.n_runs) / n_nodes)
+
+        self.logger.debug("Allocated %s physics threads/run, %s parallel runs/node",
+                          args.physics_n_threads,
+                          args.exec_jobs_per_node)
 
 
 class LaunchCmdGenerator():
     def __init__(self, platform: str) -> None:
         self.platform = platform
-        self.logger = logging.getLogger('hpc.adhoc')
 
     def __call__(self, input_fpath: str) -> str:
-        if self.platform == 'platform.argos':
-            return self.launch_cmd_argos(input_fpath)
-        else:
-            assert False,\
-                "hpc.adhoc does not support platform '{0}'".format(
-                    self.platform)
-
-    def launch_cmd_argos(self, input_fpath: str) -> str:
-        """
-        Generate the ARGoS cmd to run on a machine in the ad-hoc cluster,
-        given the path to an input file.
-
-        """
-        cmd = '{0} -c "{0}" --log-file /dev/null --logerr-file /dev/null'
-        return cmd.format(config.kARGoS['cmdname'], input_fpath)
+        module = pm.SIERRAPluginManager().get_plugin_module(self.platform)
+        return module.launch_cmd_generate('hpc.adhoc', input_fpath)
 
 
 class GNUParallelCmdGenerator():
@@ -130,9 +133,18 @@ class GNUParallelCmdGenerator():
         if parallel_opts['exec_resume']:
             resume = '--resume-failed'
 
+        # Move ALL ROS/gazebo output to the stdout/stderr files for parallel,
+        # because you can't tell those programs not to print stuff/log
+        # everything that's not an error to a file, and GNU parallel
+        # echoes the stdout/stderr after commads finish in general.
+        suppress = ''
+        if self.platform == 'platform.rosgazebo':
+            suppress = '--ungroup'
+
         cmd = 'sort -u $SIERRA_ADHOC_NODEFILE > {0} && ' \
             'parallel {2} ' \
             '--jobs {1} ' \
+            '{5} '\
             '--results {4} ' \
             '--joblog {3} ' \
             '--sshloginfile {0} ' \
@@ -143,7 +155,8 @@ class GNUParallelCmdGenerator():
                           resume,
                           parallel_opts['joblog_path'],
                           parallel_opts['jobroot_path'],
-                          parallel_opts['cmdfile_path'])
+                          parallel_opts['cmdfile_path'],
+                          suppress)
 
 
 class LaunchWithVCCmdGenerator():

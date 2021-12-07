@@ -15,8 +15,8 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Wrapper around :class:`xml.etree.ElementTree` which contains a small set of functionality for
-manipulating XML files.
+Wrapper around :class:`xml.etree.ElementTree` which contains a small set of
+functionality for reading, writing, and manipulating XML files.
 """
 
 # Core packages
@@ -24,15 +24,19 @@ import typing as tp
 import pickle
 import os
 import logging  # type: tp.Any
+import xml.etree.ElementTree as ET
+from xml.dom import minidom
 
 # 3rd party packages
 
 # Project packages
-import xml.etree.ElementTree as ET
 
 
 class XMLAttrChange():
-    def __init__(self, path: str, attr: str, value: tp.Union[str, int, float]) -> None:
+    def __init__(self,
+                 path: str,
+                 attr: str,
+                 value: tp.Union[str, int, float]) -> None:
         self.path = path
         self.attr = attr
         self.value = str(value)
@@ -48,7 +52,9 @@ class XMLTagRm():
     def __init__(self, path: str, tag: str):
         """
         Arguments:
-            path: The path to the **parent** of the tag you want to remove, in XPath syntax.
+            path: The path to the **parent** of the tag you want to remove, in
+                  XPath syntax.
+
             tag: The name of the tag to remove.
         """
         self.path = path
@@ -65,10 +71,13 @@ class XMLTagAdd():
     def __init__(self, path: str, tag: str, attr: dict = dict()):
         """
         Arguments:
-            path: The path to the **parent** tag you want to add a new tag under, in XPath syntax.
+            path: The path to the **parent** tag you want to add a new tag
+                  under, in XPath syntax.
+
             tag: The name of the tag to add.
-            attr: A dictionary of (attribute, value) pairs to also create as children of the new tag
-                  when creating the new tag.
+
+            attr: A dictionary of (attribute, value) pairs to also create as
+                  children of the new tag when creating the new tag.
         """
 
         self.path = path
@@ -86,9 +95,9 @@ class XMLAttrChangeSet():
     @staticmethod
     def unpickle(fpath: str) -> 'XMLAttrChangeSet':
         """
-        Read in all the different sets of parameter changes that were pickled to make crucial parts
-        of the experiment definition easily accessible. I don't know how many there are, so go until
-        you get an exception.
+        Read in all the different sets of parameter changes that were pickled to
+        make crucial parts of the experiment definition easily accessible. You
+        don't know how many there are, so go until you get an exception.
 
         """
         try:
@@ -161,6 +170,23 @@ class XMLTagRmList():
 
 
 class XMLTagAddList():
+    @staticmethod
+    def unpickle(fpath: str) -> 'XMLTagAddList':
+        """
+        Read in all the different sets of parameter changes that were pickled to
+        make crucial parts of the experiment definition easily accessible. You
+        don't know how many there are, so go until you get an exception.
+
+        """
+        try:
+            with open(fpath, 'rb') as f:
+                exp_def = XMLTagAddList()
+                while True:
+                    exp_def.append(*pickle.load(f))
+        except EOFError:
+            pass
+        return exp_def
+
     def __init__(self, *args: XMLTagAdd) -> None:
         self.adds = list(args)
 
@@ -194,56 +220,114 @@ class InvalidElementError(RuntimeError):
     """Error class for when an element cannot be found or used."""
 
 
-class XMLLuigi:
-    """
-    A class to help edit and save xml files.
-
-    Functionality includes single tag removal/addition, single attribute change/add/remove.
+class XMLWriterConfig():
+    """Config for writing the XML content managed by :class:`XMLLuigi` to one or
+    more XML files.
 
     Attributes:
-        input_filepath: The location of the xml file to process.
-        output_filepath: Where the object should save changes it has made to the xml
-                         file. (Defaults to overwriting the input file.)
+
+        values: Dict mapping the XPath to an XML subtree to a partial filesystem
+                path which will be appended to whatever is passed to the
+                :func:`XMLLuigi.write()` function.
+
     """
 
-    def __init__(self, input_filepath: str, output_filepath: tp.Union[None, str] = None) -> None:
-        if output_filepath is None:
-            output_filepath = input_filepath
+    def __init__(self, values: tp.Dict[str, str]) -> None:
+        self.values = values
 
-        self.input_filepath = input_filepath
-        self.output_filepath = output_filepath
 
-        self.tree = ET.parse(input_filepath)
+class XMLLuigi:
+    """A class to help edit and write xml files.
+
+    Functionality includes single tag removal/addition, single attribute
+    change/add/remove.
+
+    Attributes:
+
+        input_filepath: The location of the XML file to process.
+
+        writer: The configuration for how the XML data will be written.
+    """
+
+    def __init__(self,
+                 input_fpath: str,
+                 write_config: tp.Optional[XMLWriterConfig] = None) -> None:
+
+        self.write_config = write_config
+        self.input_fpath = input_fpath
+        self.tree = ET.parse(self.input_fpath)
         self.root = self.tree.getroot()
         self.logger = logging.getLogger(__name__)
 
-    def write(self, filepath=None):
-        """Write the XML stored in the object to an output filepath."""
-        if filepath is None:
-            filepath = self.output_filepath
+    def write_config_set(self, config: XMLWriterConfig) -> None:
+        """Set the write config for the object; provided for cases in which the
+        configuration is dependent on whether or not certain tags are present in
+        the input file.
+        """
+        self.write_config = config
 
-        self.tree.write(filepath)
+    def write(self, base_path: str) -> None:
+        """Write the XML stored in the object to the filesystem according to
+        configuration.
+        """
+
+        for xpath, partial_path in self.write_config.values.items():
+            parent = self.root.find(xpath)
+
+            leaf, ext = os.path.split(partial_path)
+            if leaf != '':
+                opath = os.path.join(base_path, leaf) + ext
+            else:
+                opath = base_path + ext
+
+            if parent is None:
+                self.logger.warning("Cannot write non-existent tree@%s to %s",
+                                    xpath,
+                                    opath)
+                continue
+
+            to_write = ET.ElementTree(parent)
+
+            # Write out pretty XML to make it easier to read to see if things
+            # have been generated correctly.
+
+            with open(opath, "w") as f:
+                # Replace with ET.indent() eventually in python 3.9
+                xmlstr = minidom.parseString(
+                    ET.tostring(to_write.getroot())).toprettyxml(indent="  ")
+                f.write(xmlstr)
 
     def attr_get(self, path: str, attr: str):
         """
-        Retrieve the specified attribute as a child of the element corresponding to the specified
-        path, if it exists. If it does not exist, None is returned.
+        Retrieve the specified attribute as a child of the element corresponding
+        to the specified path, if it exists. If it does not exist, None is
+        returned.
+
         """
         el = self.root.find(path)
         if el is not None and attr in el.attrib:
             return el.attrib[attr]
         return None
 
-    def attr_change(self, path: str, attr: str, value: str, noprint: bool = False) -> None:
+    def attr_change(self,
+                    path: str,
+                    attr: str,
+                    value: str,
+                    noprint: bool = False) -> None:
         """
-        Change the specified attribute of the *FIRST* element matching the specified path searching
-        from the tree root.
+        Change the specified attribute of the *FIRST* element matching the
+        specified path searching from the tree root.
 
         Arguments:
-          path: An XPath expression that for the element containing the attribute to
-                change. The element must exist or an error will be raised.
-          attr: Name of the attribute to change within the enclosing element.
+          path: An XPath expression that for the element containing the
+                attribute to change. The element must exist or an error will be
+                raised.
+
+          attr: An XPath expression for the name of the attribute to change
+                within the enclosing element.
+
           value: The value to set the attribute to.
+
         """
         el = self.root.find(path)
         if el is None:
@@ -253,24 +337,71 @@ class XMLLuigi:
 
         if attr not in el.attrib:
             if not noprint:
-                self.logger.warning(
-                    "Atribute '%s' not found in in path '%s'", attr, path)
+                self.logger.warning("Attribute '%s' not found in in path '%s'",
+                                    attr,
+                                    path)
             return
 
         el.attrib[attr] = value
+        self.logger.trace("Modify attribute: '%s/%s' = '%s'",
+                          path,
+                          attr,
+                          value)
+
+    def attr_add(self,
+                 path: str,
+                 attr: str,
+                 value: str,
+                 noprint: bool = False) -> None:
+        """
+        Add the specified attribute of the *FIRST* element matching the
+        specified path searching from the tree root.
+
+        Arguments:
+          path: An XPath expression that for the element containing the
+                attribute to add. The element must exist or an error will be
+                raised.
+
+          attr: An XPath expression for the name of the attribute to change
+                within the enclosing element.
+
+          value: The value to set the attribute to.
+
+        """
+        el = self.root.find(path)
+        if el is None:
+            if not noprint:
+                self.logger.warning("Node '%s' not found", path)
+            return
+
+        if attr in el.attrib:
+            if not noprint:
+                self.logger.warning("Attribute '%s' already in path '%s'",
+                                    attr,
+                                    path)
+            return
+
+        el.set(attr, value)
+        self.logger.trace("Add new attribute: '%s/%s' = '%s'",
+                          path,
+                          attr,
+                          value)
 
     def has_tag(self, path: str) -> bool:
         return self.root.find(path) is not None
 
     def tag_change(self, path: str, tag: str, value: str) -> None:
         """
-        Change the specified tag of the element matching the specified path searching
-        from the tree root.
+        Change the specified tag of the element matching the specified path
+        searching from the tree root.
 
         Arguments:
           path: An XPath expression that for the element containing the tag to
                 change. The element must exist or an error will be raised.
-          attr: Name of the tag to change within the enclosing element.
+
+          tag: An XPath expression of the tag to change within the enclosing
+                element.
+
           value: The value to set the tag to.
         """
         el = self.root.find(path)
@@ -281,21 +412,30 @@ class XMLLuigi:
         for child in el:
             if child.tag == tag:
                 child.tag = value
+                self.logger.trace("Modify tag: '%s/%s' = '%s'",
+                                  path,
+                                  tag,
+                                  value)
                 return
         self.logger.warning("No such element '%s' found in '%s'", tag, path)
 
     def tag_remove(self, path: str, tag: str, noprint: bool = False) -> None:
         """
-        Remove the specified tag of the child element found in the enclosing parent specified by the
-        path.
+        Remove the specified tag of the child element found in the enclosing
+        parent specified by the path. If more than one tag matches, only one is
+        removed.
 
         Arguments:
+
           path: An XPath expression that for the element containing the tag to
                 remove. The element must exist or an error will be raised.
-          tag: Name of the tag to remove within the enclosing element, in XPath syntax.
+
+          tag: An XPath expression of the tag to remove within the enclosing
+               element.
         """
 
         parent = self.root.find(path)
+
         if parent is None:
             if not noprint:
                 self.logger.warning("Parent node '%s' not found", path)
@@ -304,16 +444,60 @@ class XMLLuigi:
         victim = parent.find(tag)
         if victim is None:
             if not noprint:
-                self.logger.warning(
-                    "No victim '%s' found in parent '%s'", tag, path)
+                self.logger.warning("No victim '%s' found in parent '%s'",
+                                    tag,
+                                    path)
             return
 
         parent.remove(victim)
 
-    def tag_add(self, path, tag, attr=dict(), noprint: bool = False) -> None:
+    def tag_remove_all(self,
+                       path: str,
+                       tag: str,
+                       noprint: bool = False) -> None:
         """
-        Add the tag name as a child element of the element found by the specified path, giving it
-        the initial set of specified attributes.
+        Remove the specified tag(s) of the child element found in the enclosing
+        parent specified by the path. If more than one tag matches in the
+        parent, all matching child tags are removed.
+
+        Arguments:
+
+          path: An XPath expression that for the element containing the tag to
+                remove. The element must exist or an error will be raised.
+
+          tag: An XPath expression for the tag to remove within the enclosing
+               element.
+        """
+
+        parent = self.root.find(path)
+
+        if parent is None:
+            if not noprint:
+                self.logger.warning("Parent node '%s' not found", path)
+            return
+
+        victims = parent.findall(tag)
+        if victims is None:
+            if not noprint:
+                self.logger.warning("No victim '%s' found in parent '%s'",
+                                    tag,
+                                    path)
+            return
+
+        for victim in victims:
+            parent.remove(victim)
+            self.logger.trace("Remove matching tag: '%s/%s'", path, tag)
+
+    def tag_add(self,
+                path: str,
+                tag: str,
+                attr=dict(),
+                allow_dup: bool = True,
+                noprint: bool = False) -> None:
+        """
+        Add the tag name as a child element of the element found by the
+        specified path, giving it the initial set of specified attributes.
+
         """
         parent = self.root.find(path)
         if parent is None:
@@ -321,10 +505,47 @@ class XMLLuigi:
                 self.logger.warning("Parent node '%s' not found", path)
             return
 
-        # Use ET.Element instead of ET.SubElement so that child nodes with the same 'tag' don't
-        # overwrite each other.
-        child = ET.Element(tag, attrib=attr)
-        parent.append(child)
+        if not allow_dup:
+            if parent.find(tag) is not None:
+                if not noprint:
+                    self.logger.warning("Child tag '%s' already in parent '%s'",
+                                        tag,
+                                        path)
+                return
+
+            ET.SubElement(parent, tag, attrib=attr)
+            self.logger.trace("Add new unique tag: '%s/%s' = '%s'",
+                              path,
+                              tag,
+                              str(attr))
+        else:
+            # Use ET.Element instead of ET.SubElement so that child nodes with
+            # the same 'tag' don't overwrite each other.
+            child = ET.Element(tag, attrib=attr)
+            parent.append(child)
+            self.logger.trace("Add new tag: '%s/%s' = '%s'",
+                              path,
+                              tag,
+                              str(attr))
+
+
+def unpickle(fpath: str) -> tp.Union[XMLAttrChangeSet, XMLTagAddList]:
+    """
+    Read in all the different sets of parameter changes that were pickled to
+    make crucial parts of the experiment definition easily accessible. You don't
+    know how many there are, so go until you get an exception.
+    """
+    try:
+        return XMLAttrChangeSet.unpickle(fpath)
+    except EOFError:
+        pass
+
+    try:
+        return XMLTagAddList.unpickle(fpath)
+    except EOFError:
+        pass
+
+    raise NotImplementedError
 
 
 __api__ = [
@@ -335,5 +556,6 @@ __api__ = [
     'XMLTagAdd',
     'XMLTagAddList',
     'XMLTagRm',
-    'XMLTagRmList'
+    'XMLTagRmList',
+    'XMLWriterConfig'
 ]

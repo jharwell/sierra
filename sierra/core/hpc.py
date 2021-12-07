@@ -45,19 +45,32 @@ class HPCCmdline(cmd.BaseCmdline):
                 "therefore be run in HPC environments).")
         hpc = self.parser.add_argument_group('HPC options', desc)
 
-        hpc.add_argument("--exec-sims-per-node",
+        hpc.add_argument("--exec-jobs-per-node",
                          help="""
 
-                         Specify the maximum number of parallel simulations to
-                         run. By default this is computed from the selected HPC
-                         environment for maximum throughput given the desired
-                         ``--n-runs`` and CPUs per allocated node. However, for
-                         some environments being able to override the computed
-                         default can be useful.
+                         Specify the maximum number of parallel jobs to run per
+                         allocated node. By default this is computed from the
+                         selected HPC environment for maximum throughput given
+                         the desired ``--n-runs`` and CPUs per allocated
+                         node. However, for some environments being able to
+                         override the computed default can be useful.
 
                          """ + self.stage_usage_doc([2]),
                          type=int,
                          default=None)
+
+        hpc.add_argument("--exec-devnull",
+                         help="""
+
+                         Redirect ALL output from simulations to
+                         /dev/null. Useful for platform where you can't disable
+                         all INFO messages when compile time, and don't want to
+                         have to grep through lots of redundant stdout files to
+                         see if there were any errors.
+
+                         """ + self.stage_usage_doc([1, 2]),
+                         action='store_false',
+                         default=True)
 
         hpc.add_argument("--exec-resume",
                          help="""

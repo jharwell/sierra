@@ -218,38 +218,6 @@ class PipelineStage4:
                              len(self.models_inter),
                              self.cmdopts['project'])
 
-    def _load_LN_config(self) -> None:
-        self.inter_LN_config = {}
-        self.intra_LN_config = {}
-        project_inter_LN = os.path.join(self.cmdopts['project_config_root'],
-                                        'inter-graphs-line.yaml')
-        project_intra_LN = os.path.join(self.cmdopts['project_config_root'],
-                                        'intra-graphs-line.yaml')
-
-        if sierra.core.utils.path_exists(project_intra_LN):
-            self.logger.info("Loading intra-experiment linegraph config for project '%s'",
-                             self.cmdopts['project'])
-            self.inter_LN_config = yaml.load(
-                open(project_intra_LN), yaml.FullLoader)
-
-        if sierra.core.utils.path_exists(project_inter_LN):
-            self.logger.info("Loading inter-experiment linegraph config for project '%s'",
-                             self.cmdopts['project'])
-            self.intra_LN_config = yaml.load(
-                open(project_inter_LN), yaml.FullLoader)
-
-    def _load_HM_config(self) -> None:
-        self.intra_HM_config = {}
-
-        project_intra_HM = os.path.join(self.cmdopts['project_config_root'],
-                                        'intra-graphs-hm.yaml')
-
-        if sierra.core.utils.path_exists(project_intra_HM):
-            self.logger.info("Loading intra-experiment heatmap config for project '%s'",
-                             self.cmdopts['project'])
-            self.intra_HM_config = yaml.load(
-                open(project_intra_HM), yaml.FullLoader)
-
     def _calc_inter_LN_targets(self) -> tp.List[types.YAMLDict]:
         """
         Use YAML configuration for controllers and inter-experiment graphs to
@@ -269,6 +237,7 @@ class PipelineStage4:
                     for inherit in controller['graphs_inherit']:
                         keys.extend(inherit)   # optional
 
+        self.logger.debug("Loaded linegraph categories: %s", keys)
         filtered_keys = [k for k in self.inter_LN_config if k in keys]
         targets = [self.inter_LN_config[k] for k in filtered_keys]
 

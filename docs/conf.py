@@ -40,6 +40,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.mathjax',
               'sphinx.ext.ifconfig',
               'sphinx.ext.viewcode',
+              'sphinx_tabs.tabs',
               'sphinx.ext.inheritance_diagram',
               'sphinxarg.ext',
               'xref',
@@ -131,7 +132,12 @@ autoapi_modules = {
     'sierra.core.models.graphs': {'output': 'api/core/models'},
     'sierra.plugins.hpc': {'output': 'api/plugins/hpc'},
     'sierra.plugins.storage': {'output': 'api/plugins/storage'},
-    'sierra.plugins.platform.argos': {'output': 'api/plugins/platform/argos'}
+    'sierra.plugins.platform.argos': {'output': 'api/plugins/platform/argos'},
+    'sierra.plugins.platform.argos.generators': {'output': 'api/plugins/platform/argos/generators'},
+    'sierra.plugins.platform.argos.variables': {'output': 'api/plugins/platform/argos/variables'},
+    'sierra.plugins.platform.rosgazebo': {'output': 'api/plugins/platform/rosgazebo'},
+    'sierra.plugins.platform.rosgazebo.generators': {'output': 'api/plugins/platform/rosgazebo/generators'},
+    'sierra.plugins.platform.rosgazebo.variables': {'output': 'api/plugins/platform/rosgazebo/variables'}
 }
 
 autoapi_ignore = ['*flycheck*']

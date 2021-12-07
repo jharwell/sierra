@@ -29,6 +29,9 @@ class Vector3D:
     some common operations.
 
     """
+    @staticmethod
+    def from_str(s: str, astype=int) -> 'Vector3D':
+        return Vector3D(*tuple(map(astype, s.split(','))))
 
     def __init__(self, x=0, y=0, z=0):
         self.x = x
@@ -98,10 +101,6 @@ class Vector3D:
     def normalize(self) -> 'Vector3D':
         length = self.length()
         return Vector3D((self.x / length), (self.y / length), (self.z / length))
-
-
-def from_str(s: str) -> Vector3D:
-    return Vector3D(*tuple(map(int, s.split(','))))
 
 
 __api__ = ['Vector3D']

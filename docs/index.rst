@@ -20,10 +20,9 @@ mountain of work.
    src/getting_started.rst
    src/trial.rst
 
-   src/package.rst
+   src/packages.rst
    src/platform/index.rst
-   src/c++-lib-requirements.rst
-   src/exp-requirements.rst
+   src/requirements.rst
 
    src/tutorials/index.rst
    src/usage/index.rst

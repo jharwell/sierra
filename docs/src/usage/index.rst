@@ -26,4 +26,5 @@ a good way to understand how to get the most out of SIERRA.
    :caption: Leveraging SIERRA To Its Maximum Potential
 
    visual_capture.rst
+   variables.rst
    examples.rst

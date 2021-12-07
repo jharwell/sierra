@@ -28,7 +28,8 @@ import typing as tp
 from sierra.core import config
 
 
-class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawTextHelpFormatter):
+class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter,
+                    argparse.RawTextHelpFormatter):
     """
     Formatter to get (somewhat) better text wrapping of arguments with --help in
     the terminal.
@@ -105,7 +106,17 @@ class BootstrapCmdline(BaseCmdline):
                                platforms which come with SIERRA are:
 
                                - ``platform.argos`` - This directs SIERRA to run
-                                 experiments using the :term:`ARGoS` simulator.
+                                 experiments using the :term:`ARGoS`
+                                 simulator. Selecting this platform assumes your
+                                 code has been developed and configured for
+                                 ARGoS.
+
+                               - ``platform.rosgazebo`` - This directs SIERRA to
+                                 run experiments using the :term:`Gazebo`
+                                 simulator and :term:`ROS`. Selecting this
+                                 platform assumes your code has been developed
+                                 and configured for Gazebo and ROS.
+
                                """,
                                default='platform.argos')
 
@@ -401,6 +412,20 @@ class CoreCmdline(BaseCmdline):
         """
         Define cmdline arguments for stage 1.
         """
+        self.stage1.add_argument("--no-preserve-seeds",
+                                 help="""
+
+                                 Don't preserve previously generated random
+                                 seeds for experiments (the default). Useful for
+                                 regenerating experiments when you change
+                                 parameters/python code that don't affects
+                                 experimental outputs (e.g., paths).
+
+                                 Preserving/overwriting random seeds is not
+                                 affected by ``--exp-overwrite``.
+                                 """,
+                                 default=False,
+                                 action='store_true')
 
     def init_stage2(self) -> None:
         """
@@ -908,7 +933,7 @@ class CoreCmdline(BaseCmdline):
                                  self.stage_usage_doc([5]),
                                  action='store_true')
 
-    @staticmethod
+    @ staticmethod
     def cs_methods_doc() -> str:
         return r"""
 

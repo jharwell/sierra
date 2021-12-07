@@ -191,7 +191,7 @@ class ExpCSVGatherer:
         self.exp_output_root = os.path.join(batch_output_root, exp_leaf)
         self.main_config = main_config
 
-        self.run_metrics_leaf = main_config['run']['run_metrics_leaf']
+        self.run_metrics_leaf = main_config['sierra']['run']['run_metrics_leaf']
         self.videos_leaf = 'videos'
         self.project_imagize = gather_opts['project_imagizing']
 
@@ -415,8 +415,8 @@ class ExpStatisticsCalculator:
         self.stat_root = os.path.join(
             batch_stat_root, self.gather_spec.exp_leaf)
 
-        self.intra_perf_csv = main_config['perf']['intra_perf_csv']
-        self.intra_perf_col = main_config['perf']['intra_perf_col']
+        self.intra_perf_csv = main_config['sierra']['perf']['intra_perf_csv']
+        self.intra_perf_col = main_config['sierra']['perf']['intra_perf_col']
 
         sierra.core.utils.dir_create_checked(self.stat_root, exist_ok=True)
 

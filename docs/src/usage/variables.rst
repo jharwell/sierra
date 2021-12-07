@@ -1,4 +1,4 @@
-.. _ln-platform-argos-vars:
+.. _ln-usage-vars:
 
 ========================================
 Externally Configurable SIERRA Variables
@@ -8,32 +8,33 @@ Non-:term:`Batch Criteria` variables which you can use to configure
 simulations. All batch criteria are variables, but not all variables are batch
 criteria.
 
-- :ref:`Time Setup <ln-platform-argos-vars-ts>`
+- :ref:`Time Setup <ln-vars-ts>`
 
-.. _ln-platform-argos-vars-ts:
+.. _ln-vars-ts:
 
 Time Setup
 ==========
 
-Configure simulation time: length, controller cadence, and how many datapoints
-to capture per simulation.
+Configure :term:`Experiment` time: length, controller cadence (:term:`Tick`
+duration/timestep), and how many datapoints to capture per :term:`Experimental
+Run`.
 
-.. _ln-platform-argos-vars-ts-cmdline:
+.. _ln--vars-ts-cmdline:
 
 Cmdline Syntax
 --------------
 
 ``T{duration}[.K{ticks_per_sec}][.N{n_datapoints}``
 
-- ``duration`` - Duration of simulation in `seconds` (not timesteps).
+- ``duration`` - Duration of timesteps in `seconds` (not timesteps).
 
-- ``ticks_per_sec`` - How many times each controller will be run per second of
-  simulated time.
+- ``ticks_per_sec`` - How many times each controller will be run per second.
 
-- ``n_datapoints`` - # datapoints per simulation, to be captured; the capture
-  interval (if configurable) should be adjusted in the
-  :class:`~sierra.plugins.platform.argos.variables.time_setup.TimeSetup` derived
-  class for the :term:`Project`.
+- ``n_datapoints`` - # datapoints per :term:`Experimental Run`, to be captured;
+  the capture interval (if configurable) should be adjusted in
+  :term:`Project`-derived class from the platform ``TimeSetup`` class
+  (:class:`~sierra.plugins.platform.argos.variables.time_setup.TimeSetup` for
+  :term:`ARGoS`).
 
 Examples
 --------

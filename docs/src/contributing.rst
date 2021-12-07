@@ -8,9 +8,9 @@ To contribute to the SIERRA core, in you should follow the general workflow and
 python development guide outlined in :xref:`LIBRA`. For the static analysis
 step:
 
-#. Install additional dependencies::
+#. Install the development packages for SIERRA (from the SIERRA repo root)::
 
-     pip3 pytype pylint mypy
+     pip3 install .[devel]
 
 #. Run the following on the code from the root of SIERRA::
 

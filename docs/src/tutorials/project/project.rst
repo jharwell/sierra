@@ -4,6 +4,10 @@
 Creating a New SIERRA Project
 =============================
 
+#. Decide what :term:`Platform` your :term:`Project` will target. Currently,
+   there is no way to share projects across platforms; any common code will have
+   to be put into common python files and imported as needed.
+
 #. Create the directory which will hold your :term:`Project`. The directory your
    project must be on :envvar:`SIERRA_PLUGIN_PATH` or SIERRA won't be able to
    find your project. For example, if your project is ``proj-awesome``, and
@@ -17,8 +21,8 @@ Creating a New SIERRA Project
      for all projects. Within this directory, the following files are used (not
      all files are required when running a stage that utilizes them):
 
-     - ``main.yaml`` - Main SIERRA configuration file. This file is required for all
-       pipeline stages. See :doc:`main_config` for documentation.
+     - ``main.yaml`` - Main SIERRA configuration file. This file is required for
+       all pipeline stages. See :doc:`main_config` for documentation.
 
      - ``controllers.yaml`` - Configuration for controllers (input file/graph
        generation). This file is required for all pipeline stages. See

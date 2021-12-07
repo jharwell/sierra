@@ -1,8 +1,10 @@
--r common.txt
+-e .
+
 sphinx
 docutils==0.16
 sphinx-rtd-theme
 sphinx-argparse
+sphinx-tabs
 sphinxcontrib-napoleon
 autoapi
 psutil

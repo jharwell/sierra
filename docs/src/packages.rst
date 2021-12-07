@@ -1,8 +1,13 @@
-.. _ln-package:
+.. _ln-packages:
 
-==================
-The SIERRA Package
-==================
+===============
+SIERRA Packages
+===============
+
+.. _ln-packages-pypi:
+
+SIERRA PyPi Package
+===================
 
 SIERRA can be built locally into a PyPi package which you can install to provide
 fully access to its functionality outside of the SIERRA repo (generally
@@ -26,8 +31,8 @@ manpages are:
 
 - ``sierra`` - All manpages rolled into one.
 
-Installing SIERRA locally
-=========================
+Installing SIERRA PyPi locally
+------------------------------
 
 To install SIERRA locally do the following from the SIERRA repo:
 
@@ -43,3 +48,22 @@ To install SIERRA locally do the following from the SIERRA repo:
 #. Install SIERRA package::
 
      pip3 install .
+
+.. _ln-packages-rosbridge:
+
+SIERRA ROSbridge Package
+========================
+
+SIERRA provides a :term:`ROS` package containing functionality it uses to manage
+simulations and provide run-time support to :term:`projects<Project>` using a
+:term:`Platform` built on ROS. To use SIERRA with a ROS platform, you need to
+setup the SIERRA ROSbridge package here (details in README):
+`<https://github.com/swarm-robotics/sierra_rosbridge.git>`_.
+
+This package provides the following nodes:
+
+- ``sierra_timekeeper`` - Tracks time on an :term:`Experimental Run`, and
+  terminates once the amount of time specified in ``--time-setup`` has
+  elapsed. Necessary because ROS does not provide a way to say "Run for this
+  long and then terminate". An XML tag including this node is inserted by SIERRA
+  into each ``.launch`` file.

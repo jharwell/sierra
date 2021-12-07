@@ -21,12 +21,13 @@ HPC plugin for running SIERRA on HPC clusters using the TORQUE-PBS scheduler.
 import os
 import typing as tp
 import logging  # type: tp.Any
+import argparse
 
 # 3rd party packages
 
 # Project packages
-from sierra.core import types
-from sierra.core import config
+from sierra.core import types, config
+from sierra.core import plugin_manager as pm
 
 
 class CmdoptsConfigurer():
@@ -56,14 +57,16 @@ class CmdoptsConfigurer():
             assert k in os.environ,\
                 "Non-PBS environment detected: '{0}' not found".format(k)
 
-        assert args.exec_sims_per_node is not None, \
-            "--exec-sims-per-node is required (can't be computed from PBS)"
+        assert args.exec_jobs_per_node is not None, \
+            "--exec-jobs-per-node is required (can't be computed from PBS)"
 
         assert not args.platform_vc,\
             "Platform visual capture not supported on PBS"
 
         if self.platform == 'platform.argos':
             self.configure_argos(args)
+        elif self.platform == 'platform.rosgazebo':
+            self.configure_rosgazebo(args)
         else:
             assert False,\
                 "hpc.pbs does not support platform '{0}'".format(self.platform)
@@ -77,34 +80,27 @@ class CmdoptsConfigurer():
         # However, PBS does not have an environment variable for # jobs/node, so
         # we have to rely on the user to set this appropriately.
         args.physics_n_engines = int(
-            float(os.environ['PBS_NUM_PPN']) / args.exec_sims_per_node)
+            float(os.environ['PBS_NUM_PPN']) / args.exec_jobs_per_node)
 
         self.logger.debug("Allocated %s physics engines/run, %s parallel runs/node",
                           args.physics_n_engines,
-                          args.exec_sims_per_node,)
+                          args.exec_jobs_per_node)
+
+    def configure_rosgazebo(self, args: argparse.Namespace) -> None:
+        # For now, nothing to do. If more stuff with physics engine
+        # configuration is implemented, this may change.
+        self.logger.debug("Allocated %s physics threads/run, %s parallel runs/node",
+                          args.physics_n_threads,
+                          args.exec_jobs_per_node)
 
 
 class LaunchCmdGenerator():
     def __init__(self, platform: str) -> None:
         self.platform = platform
-        self.logger = logging.getLogger('hpc.pbs')
 
     def __call__(self, input_fpath: str) -> str:
-        if self.platform == 'platform.argos':
-            return self.launch_cmd_argos(input_fpath)
-        else:
-            assert False,\
-                "hpc.pbs does not support platform '{0}'".format(self.platform)
-
-    def launch_cmd_argos(self, input_fpath: str) -> str:
-        """
-        Generate the ARGoS cmd to run in the TORQUE environment, given the path
-        to an input file.
-        """
-        cmd = '{0}-{1} -c {2} --log-file /dev/null --logerr-file /dev/null'
-        return cmd.format(config.kARGoS['cmdname'],
-                          os.environ['SIERRA_ARCH'],
-                          input_fpath)
+        module = pm.SIERRAPluginManager().get_plugin_module(self.platform)
+        return module.launch_cmd_generate('hpc.pbs', input_fpath)
 
 
 class GNUParallelCmdGenerator():

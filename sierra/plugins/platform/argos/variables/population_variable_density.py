@@ -16,7 +16,8 @@
 #
 """
 Classes for the variable population density batch criteria. See
-:ref:`ln-bc-population-variable-density` for usage documentation.
+:ref:`ln-platform-argos-bc-population-variable-density` for usage
+documentation.
 """
 
 # Core packages
@@ -111,17 +112,16 @@ class PopulationVariableDensity(vd.VariableDensity):
 
 
 def factory(cli_arg: str,
-            main_config: tp.Dict[str, str],
-            batch_input_root: str,
-            **kwargs) -> PopulationVariableDensity:
+            main_config: types.YAMLDict,
+            cmdopts: types.Cmdopts) -> PopulationVariableDensity:
     """
     Factory to create :class:`PopulationVariableDensity` derived classes from
     the command line definition.
     """
     attr = vd.Parser()(cli_arg)
-    sgp = pm.module_load_tiered(project=kwargs['project'],
+    sgp = pm.module_load_tiered(project=cmdopts['project'],
                                 path='generators.scenario_generator_parser')
-    kw = sgp.ScenarioGeneratorParser().to_dict(kwargs['scenario'])
+    kw = sgp.ScenarioGeneratorParser().to_dict(cmdopts['scenario'])
     extent = ArenaExtent(Vector3D(kw['arena_x'], kw['arena_y'], kw['arena_z']))
 
     densities = [x for x in np.linspace(attr['density_min'],
@@ -132,7 +132,7 @@ def factory(cli_arg: str,
         PopulationVariableDensity.__init__(self,
                                            cli_arg,
                                            main_config,
-                                           batch_input_root,
+                                           cmdopts['batch_input_root'],
                                            densities,
                                            extent)
 

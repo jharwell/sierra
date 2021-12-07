@@ -63,6 +63,7 @@ kRenderFormat = '.mp4'
 kPickleExt = '.pkl'
 
 kPickleLeaf = 'exp_def' + kPickleExt
+kRandomSeedsLeaf = "seeds" + kPickleExt
 
 kGraphDPI = 100
 
@@ -101,11 +102,28 @@ kStatsExtensions = {
 }
 
 kARGoS = {
-    'duration': 5000,  # seconds
-    'ticks_per_second': 5,
+    'n_secs_per_run': 5000,  # seconds
+    'n_ticks_per_sec': 5,
+    'physics_iter_per_tick': 10,
     'min_version': 'beta53',
-    'cmdname': 'argos3',
-    'frames_leaf': 'frames'
+    'launch_cmd': 'argos3',
+    'frames_leaf': 'frames',
+    'launch_file_ext': '.argos'
+}
+
+kROS = {
+    'launch_cmd': 'roslaunch',
+    'launch_file_ext': '.launch',
+    'param_file_ext': '.params'
+}
+
+kGazebo = {
+    'launch_cmd': 'gazebo',
+    'min_version': '11.0.0',
+    'physics_iter_per_tick': 1000,
+    'n_ticks_per_sec': 1000,
+    'n_secs_per_run': 5000  # seconds
+
 }
 
 kGNUParallel = {

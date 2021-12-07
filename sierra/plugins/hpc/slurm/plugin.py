@@ -26,8 +26,8 @@ import logging  # type: tp.Any
 # 3rd party packages
 
 # Project packages
-from sierra.core import types
-from sierra.core import config
+from sierra.core import types, config
+from sierra.core import plugin_manager as pm
 
 
 class CmdoptsConfigurer():
@@ -64,8 +64,17 @@ class CmdoptsConfigurer():
         assert not args.platform_vc,\
             "Platform visual capture not supported on SLURM"
 
+        # SLURM_TASKS_PER_NODE can be set to things like '1(x32),3', indicating
+        # that not all nodes will run the same # of tasks. SIERRA expects all
+        # nodes to have the same # tasks allocated to each (i.e., a homogeneous
+        # allocation), so we check for this.
+        assert "," not in os.environ['SLURM_TASKS_PER_NODE'], \
+            "SLURM_TASKS_PER_NODE not homogeneous"
+
         if self.platform == 'platform.argos':
             self.configure_argos(args)
+        elif self.platform == 'platform.rosgazebo':
+            self.configure_rosgazebo(args)
         else:
             assert False,\
                 "hpc.slurm does not support platform '{0}'".format(
@@ -79,49 +88,39 @@ class CmdoptsConfigurer():
         #
         # We rely on the user to request their job intelligently so that
         # SLURM_TASKS_PER_NODE is appropriate.
-        if args.exec_sims_per_node is None:
-            # SLURM_TASKS_PER_NODE can be set to things like '1(x32),3',
-            # indicating that not all nodes will run the same # of tasks. SIERRA
-            # expects all nodes to have the same # tasks allocated to each
-            # (i.e., a homogeneous allocation), so we check for this.
-            assert "," not in os.environ['SLURM_TASKS_PER_NODE'], \
-                "SLURM_TASKS_PER_NODE not homogeneous"
-
+        if args.exec_jobs_per_node is None:
             res = re.search(r"^[^\(]+", os.environ['SLURM_TASKS_PER_NODE'])
             assert res is not None, \
                 "Unexpected format in SLURM_TASKS_PER_NODE: '{0}'".format(
                     os.environ['SLURM_TASKS_PER_NODE'])
-            args.exec_sims_per_node = int(res.group(0))
-
-        args.physics_n_engines = int(os.environ['SLURM_CPUS_PER_TASK'])
+            args.exec_jobs_per_node = int(res.group(0))
 
         self.logger.debug("Allocated %s physics engines/run, %s parallel runs/node",
                           args.physics_n_engines,
-                          args.exec_sims_per_node,)
+                          args.exec_jobs_per_node)
+
+    def configure_rosgazebo(self, args) -> None:
+        # We rely on the user to request their job intelligently so that
+        # SLURM_TASKS_PER_NODE is appropriate.
+        if args.exec_jobs_per_node is None:
+            res = re.search(r"^[^\(]+", os.environ['SLURM_TASKS_PER_NODE'])
+            assert res is not None, \
+                "Unexpected format in SLURM_TASKS_PER_NODE: '{0}'".format(
+                    os.environ['SLURM_TASKS_PER_NODE'])
+            args.exec_jobs_per_node = int(res.group(0))
+
+        self.logger.debug("Allocated %s physics threads/run, %s parallel runs/node",
+                          args.physics_n_threads,
+                          args.exec_jobs_per_node)
 
 
 class LaunchCmdGenerator():
     def __init__(self, platform: str) -> None:
-        self.platform = platform
         self.logger = logging.getLogger('hpc.slurm')
 
     def __call__(self, input_fpath: str) -> str:
-        if self.platform == 'platform.argos':
-            return self.launch_cmd_argos(input_fpath)
-        else:
-            assert False,\
-                "hpc.slurm does not support platform '{0}'".format(
-                    self.platform)
-
-    def launch_cmd_argos(self, input_fpath: str) -> str:
-        """
-        Generate the ARGoS cmd to run in the SLURM environment, given the path
-        to an input file.
-        """
-        cmd = '{0}-{1} -c {2} --log-file /dev/null --logerr-file /dev/null'
-        return cmd.format(config.kARGoS['cmdname'],
-                          os.environ['SIERRA_ARCH'],
-                          input_fpath)
+        module = pm.SIERRAPluginManager().get_plugin_module(self.platform)
+        return module.launch_cmd_generate('hpc.slurm', input_fpath)
 
 
 class GNUParallelCmdGenerator():
@@ -146,9 +145,18 @@ class GNUParallelCmdGenerator():
         if parallel_opts['exec_resume']:
             resume = '--resume-failed'
 
+        # Move ALL ROS/gazebo output to the stdout/stderr files for parallel,
+        # because you can't tell those programs not to print stuff/log
+        # everything that's not an error to a file, and GNU parallel
+        # echoes the stdout/stderr after commads finish in general.
+        suppress = ''
+        if self.platform == 'platform.rosgazebo':
+            suppress = '--ungroup'
+
         cmd = 'scontrol show hostnames $SLURM_JOB_NODELIST > {0} && ' \
             'parallel {2} '\
             '--jobs {1} '\
+            '{5} '\
             '--results {4} ' \
             '--joblog {3} '\
             '--sshloginfile {0}' \
@@ -158,7 +166,8 @@ class GNUParallelCmdGenerator():
                           resume,
                           parallel_opts['joblog_path'],
                           parallel_opts['jobroot_path'],
-                          parallel_opts['cmdfile_path'])
+                          parallel_opts['cmdfile_path'],
+                          suppress)
 
 
 class LaunchWithVCCmdGenerator():

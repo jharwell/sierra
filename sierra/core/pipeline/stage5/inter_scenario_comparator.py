@@ -156,11 +156,12 @@ class UnivarInterScenarioComparator:
                                    controller=self.controller)
         cmdopts.update(paths)
 
-        # For each scenario, we have to create the batch criteria for it, because they
-        # are all different.
-
-        criteria = bc.factory(self.main_config, cmdopts,
-                              self.cli_args, self.scenarios[0])
+        # For each scenario, we have to create the batch criteria for it,
+        # because they are all different.
+        criteria = bc.factory(self.main_config,
+                              cmdopts,
+                              self.cli_args,
+                              self.scenarios[0])
 
         self._gen_csv(cmdopts=cmdopts,
                       batch_leaf=batch_leaf,

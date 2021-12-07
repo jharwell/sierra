@@ -38,3 +38,5 @@ Setup and Configuration Tutorials
 
    plugin/hpc_plugin.rst
    plugin/storage_plugin.rst
+   plugin/platform_plugin.rst
+

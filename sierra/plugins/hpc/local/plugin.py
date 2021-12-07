@@ -24,12 +24,13 @@ import multiprocessing
 import random
 import typing as tp
 import logging  # type: tp.Any
+import argparse
 
 # 3rd party packages
 
 # Project packages
-from sierra.core import types
-from sierra.core import config
+from sierra.core import types, config
+from sierra.core import plugin_manager as pm
 
 
 class CmdoptsConfigurer():
@@ -40,67 +41,79 @@ class CmdoptsConfigurer():
     """
 
     def __init__(self, platform: str) -> None:
+
         self.platform = platform
         self.logger = logging.getLogger('hpc.local')
 
-    def __call__(self, args) -> None:
+    def __call__(self, args: argparse.Namespace) -> None:
         if self.platform == 'platform.argos':
             self.configure_argos(args)
+        elif self.platform == 'platform.rosgazebo':
+            self.configure_rosgazebo(args)
         else:
             assert False,\
                 "hpc.local does not support platform '{0}'".format(
                     self.platform)
 
-    def configure_argos(self, args) -> None:
+    def configure_argos(self, args: argparse.Namespace) -> None:
         if any([1, 2]) in args.pipeline:
             assert args.physics_n_engines is not None,\
                 '--physics-n-engines is required for --exec-env=hpc.local when running stage{1,2}'
 
-        if any(s in args.pipeline for s in [1, 2]):
-            if args.exec_sims_per_node is None:
-                # Every physics engine gets at least 1 core
-                ppn = int(multiprocessing.cpu_count() /
-                          float(args.physics_n_engines))
-                if ppn == 0:
-                    self.logger.warning(("Local machine has %s cores, but %s "
-                                         "physics engines/run requested; "
-                                         "allocating anyway"),
-                                        multiprocessing.cpu_count(),
-                                        args.physics_n_engines)
-                    ppn = 1
+        ppn_per_run_req = args.physics_n_engines
 
-                # Make sure we don't oversubscribe cores
-                args.exec_sims_per_node = min(args.n_runs, ppn)
+        if args.exec_jobs_per_node is None:
+            # Every physics engine gets at least 1 core
+            parallel_jobs = int(multiprocessing.cpu_count() /
+                                float(ppn_per_run_req))
+            if parallel_jobs == 0:
+                self.logger.warning(("Local machine has %s cores, but %s "
+                                     "physics engines/run requested; "
+                                     "allocating anyway"),
+                                    multiprocessing.cpu_count(),
+                                    ppn_per_run_req)
+                parallel_jobs = 1
 
-        else:
-            args.exec_sims_per_node = 0
+            # Make sure we don't oversubscribe cores--each simulation needs at
+            # least 1 core.
+            args.exec_jobs_per_node = min(args.n_runs, parallel_jobs)
 
         self.logger.debug("Allocated %s physics engines/run, %s parallel runs/node",
                           args.physics_n_engines,
-                          args.exec_sims_per_node,)
+                          args.exec_jobs_per_node)
+
+    def configure_rosgazebo(self, args: argparse.Namespace) -> None:
+        # For now. If more physics engine configuration is added, this will
+        # change.
+        ppn_per_run_req = 1
+
+        if args.exec_jobs_per_node is None:
+            parallel_jobs = int(multiprocessing.cpu_count() /
+                                float(ppn_per_run_req))
+            if parallel_jobs == 0:
+                self.logger.warning(("Local machine has %s cores, but "
+                                     "%s threads/run requested; "
+                                     "allocating anyway"),
+                                    multiprocessing.cpu_count(),
+                                    ppn_per_run_req)
+                parallel_jobs = 1
+
+            # Make sure we don't oversubscribe cores--each simulation needs at
+            # least 1 core.
+            args.exec_jobs_per_node = min(args.n_runs, parallel_jobs)
+
+        self.logger.debug("Allocated %s physics threads/run, %s parallel runs/node",
+                          args.physics_n_threads,
+                          args.exec_jobs_per_node)
 
 
 class LaunchCmdGenerator():
     def __init__(self, platform: str) -> None:
         self.platform = platform
-        self.logger = logging.getLogger('hpc.local')
 
     def __call__(self, input_fpath: str) -> str:
-        if self.platform == 'platform.argos':
-            return self.launch_cmd_argos(input_fpath)
-        else:
-            assert False,\
-                "hpc.local does not support platform '{0}'".format(
-                    self.platform)
-
-    def launch_cmd_argos(self, input_fpath: str) -> str:
-        """
-        Generate the ARGoS cmd to run on the local machine, given the path to an
-        input file.
-
-        """
-        cmd = '{0} -c "{1}" --log-file /dev/null --logerr-file /dev/null'
-        return cmd.format(config.kARGoS['cmdname'], input_fpath)
+        module = pm.SIERRAPluginManager().get_plugin_module(self.platform)
+        return module.launch_cmd_generate('hpc.local', input_fpath)
 
 
 class GNUParallelCmdGenerator():
@@ -109,8 +122,9 @@ class GNUParallelCmdGenerator():
     invoke GNU Parallel in the local HPC environment.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, platform: str) -> None:
         self.logger = logging.getLogger('hpc.local')
+        self.platform = platform
 
     def __call__(self, parallel_opts: tp.Dict[str, tp.Any]) -> str:
         resume = ''
@@ -121,19 +135,31 @@ class GNUParallelCmdGenerator():
         if parallel_opts['exec_resume']:
             resume = '--resume-failed'
 
+        # Move ALL ROS/gazebo output to the stdout/stderr files for parallel,
+        # because you can't tell those programs not to print stuff/log
+        # everything that's not an error to a file, and GNU parallel
+        # echoes the stdout/stderr after commads finish in general.
+        suppress = ''
+        if self.platform == 'platform.rosgazebo':
+            suppress = '--ungroup'
+
         cmd = 'cd {0} && ' \
             'parallel ' \
-            '--eta {1} ' \
+            '--eta '\
+            '{5} '\
             '--jobs {2} ' \
             '--results {0} '\
             '--joblog {3} '\
             '--no-notice < "{4}"'
 
-        return cmd.format(parallel_opts['jobroot_path'],
-                          resume,
-                          parallel_opts['n_jobs'],
-                          parallel_opts['joblog_path'],
-                          parallel_opts['cmdfile_path'])
+        cmd = cmd.format(parallel_opts['jobroot_path'],
+                         resume,
+                         parallel_opts['n_jobs'],
+                         parallel_opts['joblog_path'],
+                         parallel_opts['cmdfile_path'],
+                         suppress)
+
+        return cmd
 
 
 class LaunchWithVCCmdGenerator():
@@ -146,6 +172,8 @@ class LaunchWithVCCmdGenerator():
                  launch_cmd: str) -> None:
         if self.platform == 'platform.argos':
             return self.vc_cmd_argos(cmdopts, launch_cmd)
+        elif self.platform == 'platform.rosgazebo':
+            return launch_cmd
         else:
             assert False,\
                 "Visual capture for hpc.local not supported for platform '{0}'".format(

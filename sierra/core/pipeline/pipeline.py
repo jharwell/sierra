@@ -58,7 +58,6 @@ class Pipeline:
             'exec_env': args.exec_env,
             'platform_vc': self.args.platform_vc,
             "n_runs": args.n_runs,
-            'n_robots': args.n_robots,
             'project_imagizing': self.args.project_imagizing,
             'exp_overwrite': self.args.exp_overwrite,
             'exp_range': self.args.exp_range,
@@ -67,10 +66,11 @@ class Pipeline:
             'platform': self.args.platform,
 
             # stage 1
+            'no_preserve_seeds': self.args.no_preserve_seeds,
 
             # stage 2
             'exec_resume': self.args.exec_resume,
-            'exec_sims_per_node': self.args.exec_sims_per_node,
+            'exec_jobs_per_node': self.args.exec_jobs_per_node,
 
             # stage 3
             'no_verify_results': self.args.no_verify_results,
@@ -127,9 +127,6 @@ class Pipeline:
             module.Cmdline.cmdopts_update(self.args, self.cmdopts)
 
         self.cmdopts['plugin_root'] = os.path.join('sierra', 'plugins')
-        self.cmdopts['core_config_root'] = os.path.join('sierra',
-                                                        'core',
-                                                        'config')
 
         project = pm.SIERRAPluginManager().get_plugin(self.cmdopts['project'])
         path = os.path.join(project['parent_dir'], self.cmdopts['project'])
@@ -140,8 +137,9 @@ class Pipeline:
         self._load_config()
 
         if 5 not in self.args.pipeline:
-            self.batch_criteria = bc.factory(
-                self.main_config, self.cmdopts, self.args)
+            self.batch_criteria = bc.factory(self.main_config,
+                                             self.cmdopts,
+                                             self.args)
 
         self.controller = controller
 
@@ -185,16 +183,16 @@ class Pipeline:
 
         try:
             perf_config = yaml.load(open(os.path.join(self.cmdopts['project_config_root'],
-                                                      self.main_config['perf'])),
+                                                      self.main_config['sierra']['perf'])),
                                     yaml.FullLoader)
 
         except FileNotFoundError:
             self.logger.exception("%s/%s must exist!",
                                   self.cmdopts['project_config_root'],
-                                  self.main_config['perf'])
+                                  self.main_config['sierra']['perf'])
             raise
 
-        self.main_config.update(perf_config)
+        self.main_config['sierra'].update(perf_config)
 
 
 __api__ = [

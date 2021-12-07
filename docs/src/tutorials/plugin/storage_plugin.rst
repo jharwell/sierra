@@ -5,26 +5,43 @@ Creating a New Storage Plugin
 =============================
 
 For the purposes of this tutorial, I will assume you are creating a new storage
-:term:`Plugin` ``infinite``, and the code for that plugin lives in
+:term: `Plugin` ``infinite``, and the code for that plugin lives in
 ``$HOME/git/plugins/storage/infinite``.
 
-#. Put ``$HOME/git/plugins/`` on your :envvar:`SIERRA_PLUGIN_PATH`. Then your
-   plugin can be used as ``--storage-medium=storage.infinite``.
+Create the Code
+===============
+
+#. Create the following filesystem structure in
+   ``$HOME/git/plugins/storage/infinite``:
+
+   .. tabs::
+
+      .. code-tab::  python ``plugin.py``
+
+         import pandas as pd
 
 
-#. Create the following directory structure within the ``infinite`` directory.
+        def df_read(path: str, **kwargs) -> pd.DataFrame:
+            """
+            Return a dataframe containing the contains of the ``.csv`` at the
+            specified path. For other storage methods (e.g. database), you can
+            use a function of the path way to uniquely identify the file in the
+            database (for example).
 
-   - ``plugin.py`` - The main file which SIERRA will reference when using your
-     plugin.
-
-   That's it! You can have as many other files of whatever type you want in your
-   plugin directory--they will be ignored by SIERRA.
+            """
 
 
-``plugin.py`` Contents
-----------------------
+        def df_write(df: pd.DataFrame, path: str, **kwargs) -> None:
+            """
+            Write a dataframe containing to the specified path. For other
+            storage methods (e.g. database), you can use a function of the path
+            way to uniquely identify the file in the database (for example) when
+            you add it.
 
-This file must define the following functions:
+            """
 
-.. literalinclude:: storage_example.py
-   :language: python
+Connect to SIERRA
+=================
+
+#. Put ``$HOME/git/plugins`` on your :envvar:`SIERRA_PLUGIN_PATH`. Then
+   your plugin can be selected as ``--exec-env=storage.infinite``.

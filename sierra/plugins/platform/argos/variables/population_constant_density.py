@@ -16,7 +16,8 @@
 #
 """
 Classes for the constant population density batch criteria. See
-:ref:`ln-bc-population-constant-density` for usage documentation.
+:ref:`ln-platform-argos-bc-population-constant-density` for usage
+documentation.
 
 """
 
@@ -135,18 +136,17 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
 
 def factory(cli_arg: str,
-            main_config: tp.Dict[str, str],
-            batch_input_root: str,
-            **kwargs) -> PopulationConstantDensity:
+            main_config: types.YAMLDict,
+            cmdopts: types.Cmdopts) -> PopulationConstantDensity:
     """
     Factory to create :class:`PopulationConstantDensity` derived classes from
     the command line definition.
 
     """
     attr = cd.Parser()(cli_arg)
-    sgp = pm.module_load_tiered(project=kwargs['project'],
+    sgp = pm.module_load_tiered(project=cmdopts['project'],
                                 path='generators.scenario_generator_parser')
-    kw = sgp.ScenarioGeneratorParser().to_dict(kwargs['scenario'])
+    kw = sgp.ScenarioGeneratorParser().to_dict(cmdopts['scenario'])
 
     is_2x1 = kw['arena_x'] == 2 * kw['arena_y']
     is_1x1 = kw['arena_x'] == kw['arena_y']
@@ -172,7 +172,7 @@ def factory(cli_arg: str,
         PopulationConstantDensity.__init__(self,
                                            cli_arg,
                                            main_config,
-                                           batch_input_root,
+                                           cmdopts['batch_input_root'],
                                            attr["target_density"],
                                            dims,
                                            kw['scenario_tag'])

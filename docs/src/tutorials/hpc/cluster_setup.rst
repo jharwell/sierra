@@ -36,7 +36,7 @@ The steps to properly configure the C++ libraries for :term:`ARGoS` and your
 
 Once ARGoS/your C++ code has been built, you can setup SIERRA:
 
-#. Install SIERRA package by following the instructions in :ref:`ln-package`.
+#. Install SIERRA package by following the instructions in :ref:`ln-packages`.
 
 #. Verify GNU :program:`parallel` is installed; if it is not installed, ask your
    cluster admin to install it for you.
