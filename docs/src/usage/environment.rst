@@ -47,14 +47,14 @@ Environment Variables
    performance.  Can be any string. Used when generating ARGoS cmds in stage 1,
    and only if SIERRA is run on a cluster.
 
-.. envvar:: SIERRA_ADHOC_NODEFILE
+.. envvar:: SIERRA_NODEFILE
 
    Points to a file suitable for passing to :program:`parallel` via
    ``--sshloginfile``. See :program:`parallel` docs for content/formatting
    requirements.
 
    Used by SIERRA to configure experiments during stage 1,2; if it is not
-   defined and ``--exec-env=hpc.adhoc`` is set SIERRA will throw an error.
+   defined and ``--nodefile`` is not passed SIERRA will throw an error.
 
 .. envvar:: PARALLEL
 

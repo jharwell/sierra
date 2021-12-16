@@ -374,22 +374,22 @@ class ExpStatisticsCalculator:
     :term:`Experimental Runs<Experimental Run>` within a single
     :term:`Experiment`.
 
-    .. IMPORTANT:: You *CANNOT* use loggingANYWHERE during processing .csv
-       files. Why ? I *think* because of a bug in the loggingmodule itself. If
+    .. IMPORTANT:: You *CANNOT* use logging ANYWHERE during processing .csv
+       files. Why ? I *think* because of a bug in the logging module itself. If
        you get unlucky enough to spawn the process which enters the __call__()
-       method in this class while another loggingstatement is in progress (and
-       is therefore holding an internal loggingmodule lock), then the
+       method in this class while another logging statement is in progress (and
+       is therefore holding an internal logging module lock), then the
        underlying fork() call will copy the lock in the acquired state. Then,
        when this class goes to try to log something, it deadlocks with itself.
 
        You also can't just create loggers with unique names, as this seems to be
-       something like the GIL, but for the loggingmodule. Sometimes python
+       something like the GIL, but for the logging module. Sometimes python
        sucks.
 
     Attributes:
         main_config: Parsed dictionary of main YAML configuration.
         template_input_leaf: Leaf (i.e. no preceding path) to the template XML
-                                  configuration file for the experiment.
+                             configuration file for the experiment.
         no_verify: Should result verification be skipped?
         exp_output_root: Directory for averaged .csv output (relative to current
                          dir or absolute).
@@ -406,7 +406,8 @@ class ExpStatisticsCalculator:
         self.gather_spec = gather_spec
         self.gathered_dfs = gathered_dfs
 
-        # will get the main name and extension of the config file (without the full absolute path)
+        # will get the main name and extension of the config file (without the
+        # full absolute path)
         self.template_input_fname = os.path.basename(
             self.avg_opts['template_input_leaf'])
 
@@ -420,7 +421,6 @@ class ExpStatisticsCalculator:
 
         sierra.core.utils.dir_create_checked(self.stat_root, exist_ok=True)
 
-        # to be formatted like: self.input_name_format.format(name, experiment_number)
         format_base = "{}_{}"
         self.output_name_format = format_base + "_output"
 

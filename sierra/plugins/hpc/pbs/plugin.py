@@ -24,13 +24,16 @@ import logging  # type: tp.Any
 import argparse
 
 # 3rd party packages
+import implements
 
 # Project packages
 from sierra.core import types, config
 from sierra.core import plugin_manager as pm
+from sierra.core.experiment import bindings
 
 
-class CmdoptsConfigurer():
+@implements.implements(bindings.IParsedCmdlineConfigurer)
+class ParsedCmdlineConfigurer():
     """
     Configure SIERRA for a TORQUE HPC by reading environment variables and
     modifying the parsed cmdline arguments. Uses the following environment
@@ -44,12 +47,10 @@ class CmdoptsConfigurer():
 
     """
 
-    def __init__(self, platform: str) -> None:
-        self.platform = platform
-        self.logger = logging.getLogger('hpc.pbs')
+    def __init__(self, exec_env: str) -> None:
+        pass
 
-    def __call__(self, args) -> None:
-
+    def __call__(self, args: argparse.Namespace) -> None:
         keys = ['PBS_NUM_PPN', 'PBS_NODEFILE',
                 'PBS_JOBID', 'SIERRA_ARCH', 'PARALLEL']
 
@@ -63,100 +64,101 @@ class CmdoptsConfigurer():
         assert not args.platform_vc,\
             "Platform visual capture not supported on PBS"
 
-        if self.platform == 'platform.argos':
-            self.configure_argos(args)
-        elif self.platform == 'platform.rosgazebo':
-            self.configure_rosgazebo(args)
-        else:
-            assert False,\
-                "hpc.pbs does not support platform '{0}'".format(self.platform)
 
-    def configure_argos(self, args) -> None:
-        # For HPC, we want to use the the maximum # of simultaneous jobs per
-        # node such that there is no thread oversubscription. We also always
-        # want to allocate each physics engine its own thread for maximum
-        # performance, per the original ARGoS paper.
-        #
-        # However, PBS does not have an environment variable for # jobs/node, so
-        # we have to rely on the user to set this appropriately.
-        args.physics_n_engines = int(
-            float(os.environ['PBS_NUM_PPN']) / args.exec_jobs_per_node)
-
-        self.logger.debug("Allocated %s physics engines/run, %s parallel runs/node",
-                          args.physics_n_engines,
-                          args.exec_jobs_per_node)
-
-    def configure_rosgazebo(self, args: argparse.Namespace) -> None:
-        # For now, nothing to do. If more stuff with physics engine
-        # configuration is implemented, this may change.
-        self.logger.debug("Allocated %s physics threads/run, %s parallel runs/node",
-                          args.physics_n_threads,
-                          args.exec_jobs_per_node)
-
-
-class LaunchCmdGenerator():
-    def __init__(self, platform: str) -> None:
-        self.platform = platform
-
-    def __call__(self, input_fpath: str) -> str:
-        module = pm.SIERRAPluginManager().get_plugin_module(self.platform)
-        return module.launch_cmd_generate('hpc.pbs', input_fpath)
-
-
-class GNUParallelCmdGenerator():
+@implements.implements(bindings.IExpShellCmdsGenerator)
+class ExpShellCmdsGenerator():
     """
     Given a dictionary containing job information, generate the cmd to correctly
     invoke GNU Parallel on a TORQUE managed cluster.
 
     """
 
-    def __init__(self, platform: str) -> None:
-        self.platform = platform
-        self.logger = logging.getLogger('hpc.pbs')
+    def __init__(self,
+                 cmdopts: types.Cmdopts,
+                 exp_num: int) -> None:
+        self.cmdopts = cmdopts
 
-    def __call__(self, parallel_opts: tp.Dict[str, tp.Any]) -> str:
+    def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+        return []
+
+    def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+        return []
+
+    def exec_exp_cmds(self, exec_opts: types.ExpExecOpts) -> tp.List[types.ShellCmdSpec]:
         resume = ''
         jobid = os.environ['PBS_JOBID']
-        nodelist = os.path.join(parallel_opts['jobroot_path'],
+        nodelist = os.path.join(exec_opts['jobroot_path'],
                                 "{0}-nodelist.txt".format(jobid))
 
         resume = ''
         # This can't be --resume, because then GNU parallel looks at the results
         # directory, and if there is stuff in it, (apparently) assumes that the
         # job finished...
-        if parallel_opts['exec_resume']:
+        if exec_opts['exec_resume']:
             resume = '--resume-failed'
 
-        cmd = 'sort -u $PBS_NODEFILE > {0} && ' \
-            'parallel {2} ' \
+        cmd1 = f'sort -u $PBS_NODEFILE > {nodelist}'
+        cmd2 = 'parallel {2} ' \
             '--jobs {1} '\
+            '--ungroup '\
             '--results {4} '\
             '--joblog {3} '\
             '--sshloginfile {0} '\
             '--workdir {4} < "{5}"'
 
-        return cmd.format(nodelist,
-                          parallel_opts['n_jobs'],
-                          resume,
-                          parallel_opts['joblog_path'],
-                          parallel_opts['jobroot_path'],
-                          parallel_opts['cmdfile_path'])
+        cmd2 = cmd2.format(nodelist,
+                           exec_opts['n_jobs'],
+                           resume,
+                           exec_opts['joblog_path'],
+                           exec_opts['jobroot_path'],
+                           exec_opts['cmdfile_path'])
+
+        return [{'cmd': cmd1, 'shell': True, 'check': True},
+                {'cmd': cmd2, 'shell': True, 'check': True}]
 
 
-class LaunchWithVCCmdGenerator():
-    def __init__(self, platform: str) -> None:
-        self.platform = platform
-        self.logger = logging.getLogger('hpc.pbs')
-
-    def __call__(self,
+@implements.implements(bindings.IExpRunShellCmdsGenerator)
+class ExpRunShellCmdsGenerator():
+    def __init__(self,
                  cmdopts: types.Cmdopts,
-                 launch_cmd: str) -> str:
-        return launch_cmd
+                 n_robots: int,
+                 exp_num: int) -> None:
+        pass
+
+    def pre_run_cmds(self,
+                     input_fpath: str,
+                     run_num: int) -> tp.List[types.ShellCmdSpec]:
+        return []
+
+    def exec_run_cmds(self,
+                      input_fpath: str,
+                      run_num: int) -> tp.List[types.ShellCmdSpec]:
+        return []
+
+    def post_run_cmds(self) -> tp.List[types.ShellCmdSpec]:
+        return []
+
+
+class ExpRunConfigurer():
+    def __init__(self, cmdopts: types.Cmdopts) -> None:
+        pass
+
+    def __call__(self, run_output_dir: str) -> None:
+        pass
+
+
+class ExecEnvChecker():
+    def __init__(self, cmdopts: types.Cmdopts) -> None:
+        pass
+
+    def __call__(self) -> None:
+        pass
 
 
 __api__ = [
-    'CmdoptsConfigurer',
-    'LaunchWithVCCmdGenerator',
-    'GNUParallelCmdGenerator',
-    'LaunchCmdGenerator'
+    'ParsedCmdlineConfigurer',
+    'ExpRunShellCmdsGenerator',
+    'ExpShellCmdsGenerator',
+    'ExpRunConfigurer',
+    'ExecEnvChecker'
 ]

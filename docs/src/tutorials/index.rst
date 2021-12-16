@@ -36,7 +36,7 @@ Setup and Configuration Tutorials
    :maxdepth: 1
    :caption: Customizing/Extending SIERRA:
 
-   plugin/hpc_plugin.rst
-   plugin/storage_plugin.rst
    plugin/platform_plugin.rst
+   plugin/exec_env_plugin.rst
+   plugin/storage_plugin.rst
 

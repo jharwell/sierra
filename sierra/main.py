@@ -27,8 +27,7 @@ import os
 
 # Project packages
 import sierra.core.cmdline as cmd
-import sierra.core.hpc as hpc
-import sierra.core.platform as platform
+from sierra.core import platform, plugin
 from sierra.core.pipeline.pipeline import Pipeline
 from sierra.core.generators.controller_generator_parser import ControllerGeneratorParser
 import sierra.core.root_dirpath_generator as rdg
@@ -57,6 +56,7 @@ class SIERRA():
         project = bootstrap_args.project
         plugin_core_path = [os.path.join(sierra_root, 'plugins', 'hpc'),
                             os.path.join(sierra_root, 'plugins', 'storage'),
+                            os.path.join(sierra_root, 'plugins', 'robots'),
                             os.path.join(sierra_root, 'plugins', 'platform')]
         plugin_search_path = plugin_core_path
         env = os.environ.get('SIERRA_PLUGIN_PATH')
@@ -66,11 +66,20 @@ class SIERRA():
         manager = pm.SIERRAPluginManager(plugin_search_path)
         manager.initialize(project)
 
-        for plugin in manager.available_plugins():
-            manager.load_plugin(plugin)
+        for p in manager.available_plugins():
+            manager.load_plugin(p)
+
+        # Verify platform plugin
+        module = manager.get_plugin_module(bootstrap_args.platform)
+        plugin.platform_sanity_checks(module)
+
+        # Verify execution environment plugin
+        module = manager.get_plugin_module(bootstrap_args.exec_env)
+        plugin.exec_env_sanity_checks(module)
 
         # Load platform cmdline extensions
-        platform_parser = platform.CmdlineParserGenerator()(bootstrap_args.platform)
+        platform_parser = platform.CmdlineParserGenerator(
+            bootstrap_args.platform)()
 
         # Load project cmdline extensions
         self.logger.info("Loading cmdline extensions from project '%s'",
@@ -83,11 +92,17 @@ class SIERRA():
                                    [-1, 1, 2, 3, 4, 5]).parser.parse_args(other_args)
         module.CmdlineValidator()(self.args)
 
+        # Verify storage plugin (declared as part of core cmdline arguments
+        # rather than bootstrap, so we have to wait until after all arguments
+        # are parsed to verify it)
+        module = manager.get_plugin_module(self.args.storage_medium)
+        plugin.storage_sanity_checks(module)
+
         # Configure cmdopts for platform + execution environment by modifying
         # arguments/adding new arguments as needed.
-        self.args = platform.CmdoptsConfigurer()(bootstrap_args.platform,
-                                                 bootstrap_args.exec_env,
-                                                 self.args)
+        configurer = platform.ParsedCmdlineConfigurer(bootstrap_args.platform,
+                                                      bootstrap_args.exec_env)
+        self.args = configurer(self.args)
         self.args.__dict__['project'] = project
 
     def __call__(self) -> None:

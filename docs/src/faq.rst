@@ -95,3 +95,15 @@ FAQ
    earlier results, so it is OK to overwrite those. However, if you are sure you
    want to overwrite stuff, you can pass ``--exp-overwrite`` to disable this
    behavior during stages {1,2}. See also :ref:`ln-philosophy`.
+
+#. Q: I need to apply very precise/nuanced configuration to experiments that is
+   too specific to be easily captured in a :term:`Batch Criteria` or other
+   variable. How can I do this?
+
+   A: You could create one or more controller categories/controllers in
+   ``controllers.yaml``. Within each category *AND* controller, you can specify
+   arbitrary changes to the ``--template-input-file``: adding tags, removing
+   tags, modifying attributes. This is a good way to apply tricky configuration
+   which doesn't really fit anywhere else, or to try out some "quick and dirty"
+   changes to see if they do what you want before codifying them with a
+   python class. See :ref:`ln-tutorials-project-main-config` for details.

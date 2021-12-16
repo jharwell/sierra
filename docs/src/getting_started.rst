@@ -49,10 +49,11 @@ General Setup Workflow
 #. Setup the interface between your code and SIERRA by defining a SIERRA
    :term:`Project` in python by following :ref:`ln-tutorials-project-project`.
 
-#. Select a HPC environment SIERRA that matches your available hardware:
-   :ref:`ln-hpc-plugins`, following the appropriate setup guide. If there is
-   nothing suitable, never fear! It's easy to create a new HPC plugin, see
-   :ref:`ln-tutorials-plugin-hpc`.
+#. Select an execution environment for SIERRA that matches your available
+   computational resources: :ref:`ln-hpc-plugins` or :ref:`ln-robot-plugins`,
+   following the appropriate setup guide. If there is nothing suitable, never
+   fear! It's easy to create a new execution environment plugin, see
+   :ref:`ln-tutorials-plugin-exec-env`.
 
 #. Decide what variable you are interested in investigating by consulting the
    :term:`Batch Criteria` available for your project (i.e., what variable(s) you

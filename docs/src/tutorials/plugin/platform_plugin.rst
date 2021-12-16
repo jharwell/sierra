@@ -14,8 +14,8 @@ If you are creating a new platform, you have two options.
    necessary functions/classes below.
 
 #. Derive from an existing platform by simply calling the "parent" platform's
-   functions in your derived definitions except when you need to actually extend
-   them (e.g., to add support for a new HPC plugin)
+   functions/calling in your derived definitions except when you need to
+   actually extend them (e.g., to add support for a new HPC plugin)
 
 In either case, the steps to actually create the code are below.
 
@@ -29,48 +29,97 @@ additional files can be included.
 
 #. ``plugin.py``
 
-   Within this file, you must define the following functions:
+   Within this file, you must define the following classes:
 
    .. code-block:: python
 
-      def cmdline_parser_generate() -> argparse.ArgumentParser:
-          """
-          Return the argparse object containing ALL options accessible/relevant
-          to the platform. This includes the options for whatever ``--exec-env``
-          are valid for the platform, making use of the ``parents`` option for
-          the cmdline.
+      from sierra.core import xml
+      import typing as tp
 
-          """
-          # As an example, assuming this platform can run on HPC
-          # environments. Initialize all stages and return the initialized
-          # parser to SIERRA for use.
-          parser = hpc.HPCCmdline([-1, 1, 2, 3, 4, 5]).parser
-          return cmd.PlatformCmdline(parents=[parser],
-                                     stages=[-1, 1, 2, 3, 4, 5]).parser
+      class CmdlineParserGenerator():
+        def __call__() -> argparse.ArgumentParser:
+            """A class that conforms to
+            :class:`~sierra.core.experiment.bindings.ICmdlineParserGenerator`.
+            """
+            # As an example, assuming this platform can run on HPC
+            # environments. Initialize all stages and return the initialized
+            # parser to SIERRA for use.
+            parser = hpc.HPCCmdline([-1, 1, 2, 3, 4, 5]).parser
+            return cmd.PlatformCmdline(parents=[parser],
+                                       stages=[-1, 1, 2, 3, 4, 5]).parser
 
 
-      def launch_cmd_generate(exec_env: str, input_fpath: str) -> str:
-          """
-          Given whatever was passed to ``--exec-env`` and the path to the input
-          file for an experimental run, generate the command to launch your code
-          on the platform.
-          """
-          pass
-      
-      def population_size_extract(exp_def: xml.XMLLuigi) -> int:
-          """
-          During stage 5, there is no way for SIERRA to know how many robots
-          where used in a cross-platform way, because different platforms can
-          write different XML tags capturing the # robots used for a specific
-          experiment. So, given an unpickled experiment definition, extract the
-          # robots used.
+      @implements.implements(bindings.IParsedCmdlineConfigurer)
+      class ParsedCmdlineConfigurer():
+        """A class that conforms to
+        :class:`~sierra.core.experiment.bindings.IParsedCmdlineConfigurer`.
+        """
 
-          """
-          # As an example, assuming that for the matrix platform there is
-          # always a "system/size" attribute.
-          for path, attr, value in exp_def:
-              if path == ".//system" and attr == "size":
-                  return int(value)
+      @implements.implements(bindings.IExpShellCmdsGenerator)
+      class ExpShellCmdsGenerator():
+        """A class that conforms to
+        :class:`~sierra.core.experiment.bindings.IExpShellCmdsGenerator`.
+        """
+
+      @implements.implements(bindings.IExpRunShellCmdsGenerator)
+      class ExpRunShellCmdsGenerator():
+        """A class that conforms to
+        :class:`~sierra.core.experiment.bindings.IExpRunShellCmdsGenerator`.
+        """
+
+      @implements.implements(bindings.IExecEnvChecker)
+      class ExecEnvChecker():
+        """A class that conforms to
+        :class:`~sierra.core.experiment.bindings.IExecEnvChecker`.
+        """
+
+      @implements.implements(bindings.IExpRunConfigurer)
+      class ExpRunConfigurer():
+        """A class that conforms to
+        :class:`~sierra.core.experiment.bindings.IExpRunConfigurer`.
+        """
+
+      def population_size_from_pickle(def: tp.Union[xml.XMLAttrChangeSet,
+                                                    xml.XMLTagAddList]) -> int:
+        """
+        During stage 5, there is no way for SIERRA to know how many robots
+        were used in a cross-platform way, because different platforms can
+        write different XML tags capturing the # robots used for a specific
+        experiment. So, given an unpickled experiment definition, extract the
+        # robots used.
+
+        """
+        # As an example, assuming that for the matrix platform there is
+        # always a "system/size" attribute.
+        for path, attr, value in exp_def:
+            if path == ".//system" and attr == "size":
+                return int(value)
+
+      def population_size_from_def(exp_def: xml.XMLLuigi) -> int:
+        """
+        During stage 2, on some platforms (e.g., ROS) you need to be able to
+        extract the # of robots that will be used for a given
+        :term:`Experiment`/:term:`Experimental Run` in order to correctly
+        setup the execution environment. So, given the experimental
+        definition object, extract the # robots that will be used.
+
+        """
+      def robot_prefix_extract(main_config: types.YAMLDict,
+                               cmdopts: types.Cmdopts) -> tp.Optional[str]:
+        """
+        Return the alpha-numeric prefix that will be prepended to each robot's
+        numeric ID to create a UUID for the robot. Not needed by all
+        platforms; if not needed by your platform, return None.
+        """
+
+      def pre_exp_diagnostics(cmdopts: types.Cmdopts,
+                              logger: logging.Logger) -> None:
+        """
+        Log any INFO-level diagnostics to stdout before a given
+        :term:`Experiment` is run. Useful to echo important execution
+        environment configuration to the terminal as a sanity check.
+
+        """
 
 #. ``cmdline.py``
 
@@ -89,7 +138,7 @@ additional files can be included.
 
       class PlatformCmdline(cmd.BaseCmdline):
           """
-          Defines cmdlin. extensions to the core command line arguments
+          Defines cmdline extensions to the core command line arguments
           defined in :class:`~sierra.core.cmdline.CoreCmdline` for the
           ``matrix`` platform. Any projects using this platform should
           derive from this class.

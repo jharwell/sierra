@@ -26,153 +26,138 @@ import typing as tp
 import argparse
 
 # 3rd party packages
+import implements
 
 # Project packages
 from sierra.core import types, config
 from sierra.core import plugin_manager as pm
+from sierra.core.experiment import bindings
 
 
-class CmdoptsConfigurer():
+@implements.implements(bindings.IParsedCmdlineConfigurer)
+class ParsedCmdlineConfigurer():
     """
     Configure SIERRA for ad-hoc HPC by reading environment variables and
     modifying the parsed cmdline arguments. Uses the following environment
-    variables (if any of them are not defined an assertion will be triggered):
+    variables:
 
-    - ``SIERRA_ADHOC_NODEFILE``
+    - ``SIERRA_NODEFILE``
 
     """
 
-    def __init__(self, platform: str) -> None:
-        self.platform = platform
-        self.logger = logging.getLogger('hpc.adhoc')
+    def __init__(self, exec_env: str) -> None:
+        pass
 
-    def __call__(self, args) -> None:
-        keys = ['SIERRA_ADHOC_NODEFILE']
+    def __call__(self, args: argparse.Namespace) -> None:
+        if args.nodefile is None:
+            assert 'SIERRA_NODEFILE' in os.environ,\
+                "Non-Adhoc environment detected: 'SIERRA_NODEFILE' not found"
+            args.nodefile = os.environ['SIERRA_NODEFILE']
 
-        for k in keys:
-            assert k in os.environ,\
-                "Non-Adhoc environment detected: '{0}' not found".format(k)
+        assert os.path.exists(args.nodefile), \
+            f"SIERRA_NODEFILE '{args.nodefile}' does not exist"
 
         assert not args.platform_vc,\
-            "Platform visual capture not supported on PBS"
-
-        with open(os.environ['SIERRA_ADHOC_NODEFILE'], 'r') as f:
-            lines = f.readlines()
-            n_nodes = len(lines)
-
-            ppn = 0
-            for line in lines:
-                ppn = min(ppn, int(line.split('/')[0]))
-
-        if self.platform == 'platform.argos':
-            self.configure_argos(ppn, n_nodes, args)
-        elif self.platform == 'platform.rosgazebo':
-            self.configure_argos(ppn, n_nodes, args)
-        else:
-            assert False,\
-                "hpc.adhoc does not support platform '{0}'".format(
-                    self.platform)
-
-    def configure_argos(self,
-                        ppn: int,
-                        n_nodes: int,
-                        args: argparse.Namespace) -> None:
-        # For HPC, we want to use the the maximum # of simultaneous jobs per
-        # node such that there is no thread oversubscription. We also always
-        # want to allocate each physics engine its own thread for maximum
-        # performance, per the original ARGoS paper.
-        if args.exec_jobs_per_node is None:
-            args.exec_jobs_per_node = int(float(args.n_runs) / n_nodes)
-
-        args.physics_n_engines = int(ppn / args.exec_jobs_per_node)
-
-        self.logger.debug("Allocated %s physics engines/run, %s parallel runs/node",
-                          args.physics_n_engines,
-                          args.exec_jobs_per_node)
-
-    def configure_rosgazebo(self,
-                            ppn: int,
-                            n_nodes: int,
-                            args: argparse.Namespace) -> None:
-        if args.exec_jobs_per_node is None:
-            args.exec_jobs_per_node = int(float(args.n_runs) / n_nodes)
-
-        self.logger.debug("Allocated %s physics threads/run, %s parallel runs/node",
-                          args.physics_n_threads,
-                          args.exec_jobs_per_node)
+            "Platform visual capture not supported on Adhoc"
 
 
-class LaunchCmdGenerator():
-    def __init__(self, platform: str) -> None:
-        self.platform = platform
-
-    def __call__(self, input_fpath: str) -> str:
-        module = pm.SIERRAPluginManager().get_plugin_module(self.platform)
-        return module.launch_cmd_generate('hpc.adhoc', input_fpath)
-
-
-class GNUParallelCmdGenerator():
+@implements.implements(bindings.IExpShellCmdsGenerator)
+class ExpShellCmdsGenerator():
     """
     Given a dictionary containing job information, generate the cmd to correctly
     invoke GNU Parallel in the ad-hoc HPC environment.
     """
 
-    def __init__(self, platform: str) -> None:
-        self.platform = platform
-        self.logger = logging.getLogger('hpc.adhoc')
+    def __init__(self, cmdopts: types.Cmdopts, exp_num: int) -> None:
+        self.cmdopts = cmdopts
 
-    def __call__(self, parallel_opts: tp.Dict[str, tp.Any]) -> str:
+    def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+        return []
+
+    def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+        return []
+
+    def exec_exp_cmds(self, exec_opts: types.ExpExecOpts) -> tp.List[types.ShellCmdSpec]:
         jobid = os.getpid()
-        nodelist = os.path.join(parallel_opts['jobroot_path'],
+
+        # Even if we are passed --nodelist, we still make our own copy of it, so
+        # that the user can safely modify it (if they want to) after running
+        # stage 1.
+        nodelist = os.path.join(exec_opts['jobroot_path'],
                                 "{0}-nodelist.txt".format(jobid))
 
         resume = ''
         # This can't be --resume, because then GNU parallel looks at the results
         # directory, and if there is stuff in it, (apparently) assumes that the
         # job finished...
-        if parallel_opts['exec_resume']:
+        if exec_opts['exec_resume']:
             resume = '--resume-failed'
 
-        # Move ALL ROS/gazebo output to the stdout/stderr files for parallel,
-        # because you can't tell those programs not to print stuff/log
-        # everything that's not an error to a file, and GNU parallel
-        # echoes the stdout/stderr after commads finish in general.
-        suppress = ''
-        if self.platform == 'platform.rosgazebo':
-            suppress = '--ungroup'
+        # Make sure there are no duplicate nodes
+        cmd1 = f'sort -u {0} > {1}'.format(exec_opts["nodelist"], nodelist)
 
-        cmd = 'sort -u $SIERRA_ADHOC_NODEFILE > {0} && ' \
-            'parallel {2} ' \
+        # GNU parallel cmd
+        cmd2 = 'parallel {2} ' \
             '--jobs {1} ' \
-            '{5} '\
+            '--ungroup '\
             '--results {4} ' \
             '--joblog {3} ' \
             '--sshloginfile {0} ' \
             '--workdir {4} < "{5}"'
 
-        return cmd.format(nodelist,
-                          parallel_opts['n_jobs'],
-                          resume,
-                          parallel_opts['joblog_path'],
-                          parallel_opts['jobroot_path'],
-                          parallel_opts['cmdfile_path'],
-                          suppress)
+        cmd2 = cmd2.format(nodelist,
+                           exec_opts['n_jobs'],
+                           resume,
+                           exec_opts['joblog_path'],
+                           exec_opts['jobroot_path'],
+                           exec_opts['cmdfile_path'])
+
+        return [{'cmd': cmd1, 'shell': True, 'check': True},
+                {'cmd': cmd2, 'shell': True, 'check': True}]
 
 
-class LaunchWithVCCmdGenerator():
-    def __init__(self, platform: str) -> None:
-        self.platform = platform
-        self.logger = logging.getLogger('hpc.adhoc')
-
-    def __call__(self,
+@implements.implements(bindings.IExpRunShellCmdsGenerator)
+class ExpRunShellCmdsGenerator():
+    def __init__(self,
                  cmdopts: types.Cmdopts,
-                 launch_cmd: str) -> str:
-        return launch_cmd
+                 n_robots: int,
+                 exp_num: int) -> None:
+        pass
+
+    def pre_run_cmds(self,
+                     input_fpath: str,
+                     run_num: int) -> tp.List[types.ShellCmdSpec]:
+        return []
+
+    def exec_run_cmds(self,
+                      input_fpath: str,
+                      run_num: int) -> tp.List[types.ShellCmdSpec]:
+        return []
+
+    def post_run_cmds(self) -> tp.List[types.ShellCmdSpec]:
+        return []
+
+
+class ExpRunConfigurer():
+    def __init__(self, cmdopts: types.Cmdopts) -> None:
+        pass
+
+    def __call__(self, run_output_dir: str) -> None:
+        pass
+
+
+class ExecEnvChecker():
+    def __init__(self, cmdopts: types.Cmdopts) -> None:
+        pass
+
+    def __call__(self) -> None:
+        pass
 
 
 __api__ = [
-    'CmdoptsConfigurer',
-    'LaunchWithVCCmdGenerator',
-    'GNUParallelCmdGenerator',
-    'LaunchCmdGenerator'
+    'ParsedCmdlineConfigurer',
+    'ExpRunShellCmdsGenerator',
+    'ExpShellCmdsGenerator',
+    'ExpRunConfigurer',
+    'ExecEnvChecker'
 ]

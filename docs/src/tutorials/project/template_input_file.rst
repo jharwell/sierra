@@ -36,7 +36,7 @@ Examples of the structure/required content of the XML file passed to SIERRA via
 
    See :ref:`ln-req-xml` for usage/description of the ``__CONTROLLER__`` tag.
 
-   .. tab:: ROS/Gazebo (ROS parameter server)
+   .. tab:: ROS+Gazebo (ROS parameter server)
 
       .. code-block:: XML
 
@@ -48,7 +48,7 @@ Examples of the structure/required content of the XML file passed to SIERRA via
              </launch>
          <rosgazebo-configuration>
 
-   .. tab:: ROS/Gazebo (``<params>`` tag)
+   .. tab:: ROS+Gazebo (``<params>`` tag)
 
       .. code-block:: XML
 
@@ -123,7 +123,7 @@ Any of the following may be inserted:
       parameter; used by the SIERRA timekeeper node (see
       :ref:`ln-packages-rosbridge`).
 
-   .. tab:: ROS/Gazebo (``<params>`` tag)
+   .. tab:: ROS+Gazebo (``<params>`` tag)
 
       In the ``.launch`` file:
 

@@ -31,16 +31,12 @@ import socket
 
 # 3rd party packages
 import packaging.version
+import implements
 
 # Project packages
 import sierra.core.plugin_manager as pm
-from sierra.core import config
-from sierra.core import types
-from sierra.core import utils
-
-################################################################################
-# Dispatchers
-################################################################################
+from sierra.core import config, types, utils
+from sierra.core.experiment import bindings
 
 
 class CmdlineParserGenerator():
@@ -49,146 +45,134 @@ class CmdlineParserGenerator():
     the selected ``--platform``.
     """
 
-    def __call__(self, platform: str) -> argparse.ArgumentParser:
+    def __init__(self, platform: str) -> None:
         module = pm.SIERRAPluginManager().get_plugin_module(platform)
-        return module.cmdline_parser_generate()  # type: ignore
+        self.platform = module.CmdlineParserGenerator()
+
+    def __call__(self) -> argparse.ArgumentParser:
+        return self.platform()
 
 
-class LaunchCmdGenerator():
+@implements.implements(bindings.IExpRunShellCmdsGenerator)
+class ExpRunShellCmdsGenerator():
     """
-    Dispatcher to generate the cmd to launch execution of controller code on a
-    real robot (for real robot platforms) or to launch execution of a simulation
-    (for simulator platforms).
-
-    Arguments:
-        cmdopts: Dictionary of parsed cmdline options.
-        input_fpath: Path to the input file for the simulation/robot.
-    """
-
-    def __call__(self,
-                 platform: str,
-                 exec_env: str,
-                 input_fpath: str) -> str:
-        env = pm.SIERRAPluginManager().get_plugin_module(exec_env)
-        return env.LaunchCmdGenerator(platform)(input_fpath)  # type: ignore
-
-
-class GNUParallelCmdGenerator():
-    """
-    Dispatcher to generate the GNU Parallel cmd SIERRA will use to run
-    experiments in the specified execution environment for the specified
-    platform.
-
-    Passes the following dictionary to the configured execution environment
-    plugin (not all plugins may need all arguments):
-
-    - ``jobroot_path`` - The root directory for the batch experiment.
-
-    - ``exec_resume`` - Is this a resume of a previously run experiment?
-
-    - ``n_jobs`` - How many parallel jobs are allowed per node?
-
-    - ``joblog_path`` - The logfile for GNU parallel output.
-
-    - ``cmdfile_path`` - The file containing the launch cmds to run (one per
-                         line)
-
+    Trampoline class for dispatching cmd generation to platforms and/or
+    execution environments.
     """
 
-    def __call__(self,
-                 platform: str,
-                 exec_env: str,
-                 parallel_opts: tp.Dict[str, tp.Any]) -> str:
-        env = pm.SIERRAPluginManager().get_plugin_module(exec_env)
-        cmd = env.GNUParallelCmdGenerator(platform)(parallel_opts)
-        return cmd  # type: ignore
+    def __init__(self,
+                 cmdopts: types.Cmdopts,
+                 n_robots: int,
+                 exp_num: int) -> None:
+        self.cmdopts = cmdopts
+        module = pm.SIERRAPluginManager().get_plugin_module(
+            self.cmdopts['platform'])
+        self.platform = module.ExpRunShellCmdsGenerator(self.cmdopts,
+                                                        n_robots,
+                                                        exp_num)
+        module = pm.SIERRAPluginManager().get_plugin_module(
+            self.cmdopts['exec_env'])
+        self.env = module.ExpRunShellCmdsGenerator(self.cmdopts,
+                                                   n_robots,
+                                                   exp_num)
+
+    def pre_run_cmds(self,
+                     input_fpath: str,
+                     run_num: int) -> tp.List[types.ShellCmdSpec]:
+        cmds = self.platform.pre_run_cmds(input_fpath, run_num)
+        cmds.extend(self.env.pre_run_cmds(input_fpath, run_num))
+        return cmds
+
+    def exec_run_cmds(self,
+                      input_fpath: str,
+                      run_num: int) -> tp.List[types.ShellCmdSpec]:
+        cmds = self.platform.exec_run_cmds(input_fpath, run_num)
+        cmds.extend(self.env.exec_run_cmds(input_fpath, num_rum))
+        return cmds
+
+    def post_run_cmds(self) -> tp.List[types.ShellCmdSpec]:
+        cmds = self.platform.post_run_cmds()
+        cmds.extend(self.env.post_run_cmds())
+        return cmds
 
 
-class LaunchWithVCCmdGenerator():
+@implements.implements(bindings.IExpShellCmdsGenerator)
+class ExpShellCmdsGenerator():
+    """Trampoline class for dispatching cmd generation to platforms and/or
+    execution environments.
     """
-    Dispatcher to modify the non-rendering launch cmd for the specified platform
-    to enable capturing of simulation frames/videos via headless rendering.
 
-    """
+    def __init__(self, cmdopts: types.Cmdopts, exp_num: int) -> None:
+        self.cmdopts = cmdopts
+        module = pm.SIERRAPluginManager().get_plugin_module(
+            self.cmdopts['platform'])
+        self.platform = module.ExpShellCmdsGenerator(self.cmdopts, exp_num)
+        module = pm.SIERRAPluginManager().get_plugin_module(
+            self.cmdopts['exec_env'])
+        self.env = module.ExpShellCmdsGenerator(self.cmdopts, exp_num)
 
-    def __call__(self, cmdopts: types.Cmdopts, launch_cmd: str) -> str:
-        env = pm.SIERRAPluginManager().get_plugin_module(cmdopts['exec_env'])
-        generator = env.LaunchWithVCCmdGenerator(cmdopts['platform'])
-        cmd = generator(cmdopts, launch_cmd)
-        return cmd   # type: ignore
+    def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+        cmds = self.platform.pre_exp_cmds()
+        cmds.extend(self.env.pre_exp_cmds())
+        return cmds
+
+    def exec_exp_cmds(self, exec_opts: types.ExpExecOpts) -> tp.List[types.ShellCmdSpec]:
+        cmds = self.platform.exec_exp_cmds(exec_opts)
+        cmds.extend(self.env.exec_exp_cmds(exec_opts))
+        return cmds
+
+    def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+        cmds = self.platform.post_exp_cmds()
+        cmds.extend(self.env.post_exp_cmds())
+        return cmds
 
 
-class CmdoptsConfigurer():
+class ParsedCmdlineConfigurer():
     """
     Dispatcher for configuring the main cmdopts dictionary for the selected
     platform and execution environment.
     """
 
-    def __call__(self,
+    def __init__(self,
                  platform: str,
-                 exec_env: str,
-                 args: argparse.Namespace) -> argparse.Namespace:
-        # Configure cmdopts for selected platform
-        args.__dict__['platform'] = platform
+                 exec_env: str) -> None:
+        self.platform = platform
+        self.exec_env = exec_env
 
-        # Configure cmdopts for selected execution enivornment
-        args.__dict__['exec_env'] = exec_env
-        env = pm.SIERRAPluginManager().get_plugin_module(exec_env)  # type: ignore
-        env.CmdoptsConfigurer(platform)(args)
+        module = pm.SIERRAPluginManager().get_plugin_module(self.platform)
+        self.platformg = module.ParsedCmdlineConfigurer(exec_env)
+
+        module = pm.SIERRAPluginManager().get_plugin_module(self.exec_env)
+        self.envg = module.ParsedCmdlineConfigurer(exec_env)
+
+    def __call__(self, args: argparse.Namespace) -> argparse.Namespace:
+        # Configure for selected execution enivornment first, to check for
+        # low-level details.
+        args.__dict__['exec_env'] = self.exec_env
+        self.envg(args)
+
+        # Configure for selected platform
+        args.__dict__['platform'] = self.platform
+        self.platformg(args)
+
         return args
 
 
-class ExpRunVCConfigurer():
+class ExpRunConfigurer():
     """
-    Perform platform-specific configuration for a given experimental run to
-    enable/setup visual capture for that run.
-    """
-
-    def __init__(self, platform: str) -> None:
-        self.platform = platform
-        self.logger = logging.getLogger(__name__)
-
-    def __call__(self,
-                 cmdopts: types.Cmdopts,
-                 run_output_dir: str) -> None:
-        if self.platform == 'platform.argos':
-            self.configure_argos(run_output_dir)
-        else:
-            assert False,\
-                "Platform '{0}' does not support visual capture".format(
-                    self.platform)
-
-    def configure_argos(self, run_output_dir: str) -> None:
-        frames_fpath = os.path.join(run_output_dir,
-                                    config.kARGoS['frames_leaf'])
-        assert shutil.which('Xvfb') is not None, "Xvfb not found"
-        utils.dir_create_checked(frames_fpath, exist_ok=True)
-
-
-class PostExpVCCleanup():
-    """
-    Perform platform-specific cleanup after a given experiment if visual capture
-    was enabled.
+    Perform platform-specific configuration for a given experimental run.
     """
 
-    def __init__(self, platform: str) -> None:
-        self.platform = platform
-        self.logger = logging.getLogger(__name__)
+    def __init__(self, cmdopts: types.Cmdopts) -> None:
+        self.cmdopts = cmdopts
+        module = pm.SIERRAPluginManager().get_plugin_module(cmdopts['platform'])
+        self.platform = module.ExpRunConfigurer(self.cmdopts)
+        module = pm.SIERRAPluginManager().get_plugin_module(cmdopts['exec_env'])
+        self.env = module.ExpRunConfigurer(self.cmdopts)
 
-    def __call__(self) -> None:
-        if self.platform == 'platform.argos':
-            self.cleanup_argos()
-        else:
-            assert False,\
-                "Platform '{0}' does not support visual capture".format(
-                    self.platform)
-
-    def cleanup_argos(self) -> None:
-        self.logger.trace("Cleaning up orphan Xvfb processes")
-        # Cleanup Xvfb processes which were started in the background. If SIERRA
-        # was run with --exec-resume, then there may be no Xvfb processes to
-        # kill, so we can't (in general) check the return code.
-        subprocess.run(['killall', 'Xvfb'], check=False)
+    def __call__(self, run_output_dir: str) -> None:
+        self.platform(run_output_dir)
+        self.env(run_output_dir)
 
 
 class ExecEnvChecker():
@@ -200,68 +184,20 @@ class ExecEnvChecker():
 
     """
 
-    def __init__(self, platform: str, exec_env: str):
-        self.platform = platform
-        self.exec_env = exec_env
+    def __init__(self, cmdopts: types.Cmdopts):
+        self.cmdopts = cmdopts
+        self.exec_env = self.cmdopts['exec_env']
+        self.platform = self.cmdopts['platform']
 
     def __call__(self) -> None:
-        if self.platform == 'platform.argos':
-            self.check_argos()
-        elif self.platform == 'platform.rosgazebo':
-            self.check_rosgazebo()
-        else:
-            assert False,\
-                "HPC environments not supported for platform '{0}'".format(
-                    self.platform)
+        module = pm.SIERRAPluginManager().get_plugin_module(
+            self.cmdopts['platform'])
+        module.ExecEnvChecker(self.cmdopts)()
+        module = pm.SIERRAPluginManager().get_plugin_module(
+            self.cmdopts['exec_env'])
+        module.ExecEnvChecker(self.cmdopts)()
 
-    def check_rosgazebo(self) -> None:
-        keys = ['ROS_DISTRO', 'GAZEBO_MASTER_URI']
-
-        for k in keys:
-            assert k in os.environ,\
-                "Non-ROS/non-Gazebo environment detected: '{0}' not found".format(
-                    k)
-
-        # Check ROS distro
-        assert os.environ['ROS_DISTRO'] in ['melodic', 'noetic'],\
-            "SIERRA only supports ROS melodic and noetic"
-
-        # Check we can find Gazebo
-        version = self._check_for_simulator(config.kGazebo['launch_cmd'])
-
-        # Check Gazebo version
-        res = re.search(r'[0-9]+.[0-9]+.[0-9]+', version.stdout.decode('utf-8'))
-        assert res is not None, "Gazebo version not in -v output"
-
-        version = packaging.version.parse(res.group(0))
-        min_version = packaging.version.parse(config.kGazebo['min_version'])
-
-        assert version >= min_version,\
-            "Gazebo version {0} < min required {1}".format(version,
-                                                           min_version)
-
-    def check_argos(self) -> None:
-        keys = ['ARGOS_PLUGIN_PATH']
-
-        for k in keys:
-            assert k in os.environ,\
-                "Non-ARGoS environment detected: '{0}' not found".format(k)
-
-        # Check we can find ARGoS
-        version = self._check_for_simulator(config.kARGoS['launch_cmd'])
-
-        # Check ARGoS version
-        res = re.search(r'beta[0-9]+', version.stdout.decode('utf-8'))
-        assert res is not None, "ARGOS_VERSION not in -v output"
-
-        version = packaging.version.parse(res.group(0))
-        min_version = packaging.version.parse(config.kARGoS['min_version'])
-
-        assert version >= min_version,\
-            "ARGoS version {0} < min required {1}".format(version,
-                                                          min_version)
-
-    def _check_for_simulator(self, name: str):
+    def check_for_simulator(self, name: str):
         if self.exec_env in ['hpc.local', 'hpc.adhoc']:
             shellname: str = name
         elif self.exec_env in ['hpc.pbs', 'hpc.slurm']:
@@ -269,8 +205,8 @@ class ExecEnvChecker():
             shellname: str = '{0}-{1}'.format(name, arch)
         else:
             assert False,\
-                "Bad HPC env {0} for platform {1}".format(self.exec_env,
-                                                          self.platform)
+                "Bad --exec-env '{0}' for platform '{1}'".format(self.exec_env,
+                                                                 self.platform)
 
         if shutil.which(shellname):
             version_info = subprocess.run(' '.join([shellname, '-v']),
@@ -280,13 +216,13 @@ class ExecEnvChecker():
             return version_info
         else:
             assert False,\
-                "Bad HPC env '{0}' for platform '{1}': cannot find '{2}'".format(self.exec_env,
-                                                                                 self.platform,
-                                                                                 name)
+                "Bad --exec-env '{0}' for platform '{1}': cannot find '{2}'".format(self.exec_env,
+                                                                                    self.platform,
+                                                                                    name)
             return None
 
 
-def get_free_port(self) -> int:
+def get_free_port() -> int:
     """
     Determines a free port using sockets. From
     https://stackoverflow.com/questions/44875422/how-to-pick-a-free-port-for-a-subprocess
@@ -302,11 +238,19 @@ def get_free_port(self) -> int:
     return port
 
 
+def get_local_ip():
+    """
+    Get the local IP address of the SIERRA host machine.
+    """
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    return s.getsockname()[0]
+
+
 __api__ = [
     'CmdlineParserGenerator'
-    'CmdoptsConfigurer',
-    'LaunchWithVCCmdGenerator',
-    'GNUParallelCmdGenerator',
-    'LaunchCmdGenerator',
+    'ParsedCmdlineConfigurer',
+    'ExpRunLaunchCmdGenerator',
+    'ExpCmdsGenerator',
     'HPCEnvChecker',
 ]

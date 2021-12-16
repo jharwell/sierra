@@ -21,10 +21,13 @@ installed on one system and another).
 Assert Often, Fail Early
 ========================
 
-If a condition arises which SIERRA can't easily handle, abort. Don't try to
-recover by throwing an exception which can be caught at a higher level, etc.,
-just abort via assert(). This gives users confidence that `if` SIERRA doesn't
-crash, then it is probably working properly.
+If a condition arises which SIERRA can't easily handle, abort, either via an
+uncaught exception or an ``assert()``. Don't try to recover by throwing an
+exception which can be caught at a higher level, etc., just abort. This gives
+users confidence that `if` SIERRA doesn't crash, then it is probably working
+properly. As a result of this, any ``try-catch`` blocks which do exist should
+always be in the same function; never rely on raised exceptions to be caught at
+higher levels.
 
 Never Delete Things
 ===================

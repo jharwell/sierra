@@ -57,7 +57,7 @@ class BasePluginManager():
         """
         plugins = self.available_plugins()
         if name not in plugins:
-            self.logger.error("Cannot locate plugin '%s'", name)
+            self.logger.fatal("Cannot locate plugin '%s'", name)
             raise Exception("Cannot locate plugin '%s'" % name)
 
         if plugins[name]['type'] == 'pipeline':
@@ -98,14 +98,14 @@ class BasePluginManager():
         try:
             return self.loaded[name]
         except KeyError:
-            self.logger.critical("No such plugin '%s'", name)
+            self.logger.fatal("No such plugin '%s'", name)
             raise
 
     def get_plugin_module(self, name: str) -> types.ModuleType:
         try:
             return self.loaded[name]['module']
         except KeyError:
-            self.logger.critical("No such plugin '%s'", name)
+            self.logger.fatal("No such plugin '%s'", name)
             raise
 
     def has_plugin(self, name: str) -> bool:

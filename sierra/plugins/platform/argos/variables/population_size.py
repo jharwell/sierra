@@ -20,8 +20,6 @@ Classes for the population size batch criteria. See
 
 # Core packages
 import typing as tp
-import re
-import math
 
 # 3rd party packages
 import implements
@@ -30,10 +28,11 @@ import implements
 from sierra.core.variables import batch_criteria as bc
 from sierra.core.xml import XMLAttrChange, XMLAttrChangeSet
 from sierra.core import types
+from sierra.core.variables import population_size
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
-class PopulationSize(bc.UnivarBatchCriteria):
+class PopulationSize(population_size.BasePopulationSize):
     """
     A univariate range of swarm sizes used to define batch experiments. This
     class is a base class which should (almost) never be used on its
@@ -58,8 +57,10 @@ class PopulationSize(bc.UnivarBatchCriteria):
                  main_config: tp.Dict[str, str],
                  batch_input_root: str,
                  size_list: tp.List[float]) -> None:
-        bc.UnivarBatchCriteria.__init__(
-            self, cli_arg, main_config, batch_input_root)
+        population_size.BasePopulationSize.__init__(self,
+                                                    cli_arg,
+                                                    main_config,
+                                                    batch_input_root)
         self.size_list = size_list
         self.attr_changes = []  # type: tp.List[XMLAttrChangeSet]
 
@@ -76,88 +77,6 @@ class PopulationSize(bc.UnivarBatchCriteria):
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
-    def graph_xticks(self,
-                     cmdopts: types.Cmdopts,
-                     exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
-
-        if exp_dirs is None:
-            exp_dirs = self.gen_exp_dirnames(cmdopts)
-
-        ret = list(map(float, self.populations(cmdopts, exp_dirs)))
-
-        if cmdopts['plot_log_xscale']:
-            return [int(math.log2(x)) for x in ret]
-        elif cmdopts['plot_enumerated_xscale']:
-            return [i for i in range(0, len(ret))]
-        else:
-            return ret
-
-    def graph_xticklabels(self,
-                          cmdopts: types.Cmdopts,
-                          exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
-
-        if exp_dirs is None:
-            exp_dirs = self.gen_exp_dirnames(cmdopts)
-
-        ret = map(float, self.populations(cmdopts, exp_dirs))
-
-        return list(map(lambda x: str(int(round(x, 4))), ret))
-
-    def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
-        if cmdopts['plot_log_xscale']:
-            return r"$\log$(Swarm Size)"
-
-        return "Swarm Size"
-
-    def pm_query(self, pm: str) -> bool:
-        return pm in ['raw', 'scalability', 'self-org']
-
-
-class Parser():
-    """
-    Enforces the cmdline definition of the :class:`PopulationSize` batch
-    criteria defined in :ref:`ln-platform-argos-bc-population-size`.
-
-    """
-
-    def __call__(self, criteria_str: str) -> types.CLIArgSpec:
-        ret = {
-            'max_size': int(),
-            'increment_type': str(),
-            'linear_increment': None
-        }  # type: tp.Dict[str, tp.Union[int, str, None]]
-
-        # Parse increment type
-        res = re.search("Log|Linear", criteria_str)
-        assert res is not None, \
-            "Bad size increment specification in criteria '{0}'".format(
-                criteria_str)
-        ret['increment_type'] = res.group(0)
-
-        # Parse max size
-        res = re.search("[0-9]+", criteria_str)
-        assert res is not None, \
-            "Bad population max in criteria '{0}'".format(criteria_str)
-        ret['max_size'] = int(res.group(0))
-
-        # Set linear_increment if needed
-        if ret['increment_type'] == 'Linear':
-            ret['linear_increment'] = int(
-                ret['max_size'] / 10.0)  # type: ignore
-
-        return ret
-
-    def to_sizes(self, attr: types.CLIArgSpec) -> tp.List[float]:
-        """
-        Generates the maximum swarm sizes for each experiment in a batch.
-        """
-        if attr["increment_type"] == 'Linear':
-            return [attr["linear_increment"] * x for x in range(1, 11)]
-        elif attr["increment_type"] == 'Log':
-            return [2 ** x for x in range(0, int(math.log2(attr["max_size"])) + 1)]
-        else:
-            assert False
-
 
 def factory(cli_arg: str,
             main_config: types.YAMLDict,
@@ -167,7 +86,7 @@ def factory(cli_arg: str,
     line definition.
 
     """
-    parser = Parser()
+    parser = population_size.Parser()
     max_sizes = parser.to_sizes(parser(cli_arg))
 
     def __init__(self) -> None:
@@ -183,6 +102,5 @@ def factory(cli_arg: str,
 
 
 __api__ = [
-    'PopulationSize',
-    'Parser'
+    'PopulationSize'
 ]

@@ -69,8 +69,7 @@ class Pipeline:
             'no_preserve_seeds': self.args.no_preserve_seeds,
 
             # stage 2
-            'exec_resume': self.args.exec_resume,
-            'exec_jobs_per_node': self.args.exec_jobs_per_node,
+            'nodefile': self.args.nodefile,
 
             # stage 3
             'no_verify_results': self.args.no_verify_results,
@@ -177,8 +176,8 @@ class Pipeline:
                                                            'main.yaml')),
                                          yaml.FullLoader)
         except FileNotFoundError:
-            self.logger.exception("%s/main.yaml must exist!",
-                                  self.cmdopts['project_config_root'])
+            self.logger.fatal("%s/main.yaml must exist!",
+                              self.cmdopts['project_config_root'])
             raise
 
         try:
@@ -187,9 +186,9 @@ class Pipeline:
                                     yaml.FullLoader)
 
         except FileNotFoundError:
-            self.logger.exception("%s/%s must exist!",
-                                  self.cmdopts['project_config_root'],
-                                  self.main_config['sierra']['perf'])
+            self.logger.fatal("%s/%s must exist!",
+                              self.cmdopts['project_config_root'],
+                              self.main_config['sierra']['perf'])
             raise
 
         self.main_config['sierra'].update(perf_config)

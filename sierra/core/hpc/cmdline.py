@@ -13,9 +13,9 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-Classes for the various HPC plugins that can be used with SIERRA for running
-experiments.
+"""Common cmdline parsing and validation classes for the various HPC plugins
+that can be used with SIERRA for running experiments.
+
 """
 
 # Core packages
@@ -25,10 +25,10 @@ import typing as tp
 # 3rd party packages
 
 # Project packages
-import sierra.core.cmdline as cmd
+from sierra.core import types, cmdline
 
 
-class HPCCmdline(cmd.BaseCmdline):
+class HPCCmdline(cmdline.BaseCmdline):
     def __init__(self, stages: tp.List[int]) -> None:
         self.parser = argparse.ArgumentParser(prog='sierra-cli',
                                               add_help=False,
@@ -59,18 +59,18 @@ class HPCCmdline(cmd.BaseCmdline):
                          type=int,
                          default=None)
 
-        hpc.add_argument("--exec-devnull",
+        hpc.add_argument("--exec-no-devnull",
                          help="""
 
-                         Redirect ALL output from simulations to
+                         Don't redirect ALL output from simulations to
                          /dev/null. Useful for platform where you can't disable
-                         all INFO messages when compile time, and don't want to
+                         all INFO messages at compile time, and don't want to
                          have to grep through lots of redundant stdout files to
                          see if there were any errors.
 
                          """ + self.stage_usage_doc([1, 2]),
-                         action='store_false',
-                         default=True)
+                         action='store_true',
+                         default=False)
 
         hpc.add_argument("--exec-resume",
                          help="""
@@ -82,6 +82,22 @@ class HPCCmdline(cmd.BaseCmdline):
                          """ + self.stage_usage_doc([2]),
                          action='store_true',
                          default=False)
+
+    @staticmethod
+    def cmdopts_update(cli_args: argparse.Namespace,
+                       cmdopts: types.Cmdopts) -> None:
+        """
+        Updates the core cmdopts dictionary with (key,value) pairs from the
+        HPC-specific cmdline options.
+
+        """
+        updates = {
+            # Multistage
+            'exec_no_devnull': cli_args.exec_no_devnull,
+            'exec_jobs_per_node': cli_args.exec_jobs_per_node,
+            'exec_resume': cli_args.exec_resume
+        }
+        cmdopts.update(updates)
 
 
 __api__ = [

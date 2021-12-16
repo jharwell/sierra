@@ -27,7 +27,6 @@ This is the default platform on which SIERRA will run experiments, and using the
    :maxdepth: 2
    :caption: ARGoS-specific Configuration for SIERRA
 
-   argos/variables.rst
    argos/batch_criteria.rst
 
 Random Seeding For Reproducibility
@@ -44,7 +43,7 @@ details on the format of the provided seed.
 
 .. _ln-platform-plugins-ros-gazebo:
 
-ROS/Gazebo Platform
+ROS+Gazebo Platform
 ===================
 
 This platform can be selected via ``--platform=platform.rosgazebo``.
@@ -57,7 +56,7 @@ used to run experiments on real robots. To use this platform, you must setup the
 
 .. toctree::
    :maxdepth: 2
-   :caption: ROS/Gazebo-specific Configuration for SIERRA
+   :caption: ROS+Gazebo-specific Configuration for SIERRA
 
    rosgazebo/batch_criteria.rst
 
@@ -65,7 +64,7 @@ used to run experiments on real robots. To use this platform, you must setup the
 Random Seeding For Reproducibility
 ----------------------------------
 
-ROS/Gazebo do not provide a random number generator manager, but SIERRA provides
+ROS+Gazebo do not provide a random number generator manager, but SIERRA provides
 random seeds to each :term:`Experimental Run` which :term:`Project` code should
 use to manage random number generation, if needed, to maximize
 reproducability. See :ref:`ln-tutorials-project-template-input-file` and

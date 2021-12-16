@@ -126,16 +126,15 @@ autoapi_modules = {
     'sierra.core.graphs': {'output': 'api/core/graphs'},
     'sierra.core.xml': {'output': 'api/core'},
     'sierra.core.utils': {'output': 'api/core'},
-    'sierra.core.experiment_spec': {'output': 'api/core'},
+    'sierra.core.experiment': {'output': 'api/core/experiment'},
+    'sierra.core.ros': {'output': 'api/core/ros'},
     'sierra.core.vector': {'output': 'api/core'},
     'sierra.core.models.interface': {'output': 'api/core/models'},
     'sierra.core.models.graphs': {'output': 'api/core/models'},
     'sierra.plugins.hpc': {'output': 'api/plugins/hpc'},
     'sierra.plugins.storage': {'output': 'api/plugins/storage'},
-    'sierra.plugins.platform.argos': {'output': 'api/plugins/platform/argos'},
     'sierra.plugins.platform.argos.generators': {'output': 'api/plugins/platform/argos/generators'},
     'sierra.plugins.platform.argos.variables': {'output': 'api/plugins/platform/argos/variables'},
-    'sierra.plugins.platform.rosgazebo': {'output': 'api/plugins/platform/rosgazebo'},
     'sierra.plugins.platform.rosgazebo.generators': {'output': 'api/plugins/platform/rosgazebo/generators'},
     'sierra.plugins.platform.rosgazebo.variables': {'output': 'api/plugins/platform/rosgazebo/variables'}
 }

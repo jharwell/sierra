@@ -34,6 +34,40 @@ SIERRA restricts the content of this file in a few modest ways.
 
 #. No reserved XML tokens are present. See :ref:`ln-req-xml` for details.
 
+#. All experiments from which you want to generate statistics/graphs are:
+
+   - The same length
+
+   - Capture the same number of datapoints
+
+   That is, experiments always obey ``--time-setup``, regardless if early
+   stopping conditions are met. For :term:`ROS` platforms, the SIERRA timekeeper
+   ensures that all experiments are the same length; it is up to you to make
+   sure all experiments capture the same # of data points. For other
+   :term:`Platforms <Platform>` (e.g., :term:`ARGoS`) it is up to you to ensure
+   both conditions.
+
+   This is a necessary restriction for deterministic and non-surprising
+   statistics generation during stage 3. Pandas (the underlying data processing
+   library) can of course handle averaging/calculating statistics from
+   dataframes of different sizes (corresponding to experiments which had
+   different lengths), but the generated statistics may not be as
+   reliable/meaningful. For example, if you are interested in the steady state
+   behavior of the system, then you might want to use the `last` datapoint in a
+   given column as a performance measure, averaged across all experiments. If
+   not all experiments have the same # of datapoints/same length, then the
+   resulting confidence intervals around the average value (for example) may be
+   larger.
+
+   If you need to "stop" an experiment early, simply tell all agents/robots to
+   stop moving/stop doing stuff once the stopping conditions have been met and
+   continue to collect data as you normally would until the end of the
+   experiment.
+
+   If you do **NOT** want to use SIERRA to generate statistics/graphs from
+   experimental data (e.g., you want to use it to capture videos only), then you
+   can ignore this requirement.
+
 :term:`Platforms <Platform>` may have additional experiment requirements, as
 shown below.
 
@@ -81,14 +115,14 @@ Experiment Requirements For :term:`ARGoS`
 
    See also :ref:`ln-tutorials-project-main-config`.
 
-Requirements For :term:`ROS-Gazebo`
+Requirements For :term:`ROS+Gazebo`
 -----------------------------------
 
 #. All robot systems are homogeneous (i.e., only contain 1 type of robot). While
-   SIERRA does not currently support multiple types of robots on ROS/Gazebo,
+   SIERRA does not currently support multiple types of robots on ROS+Gazebo,
    adding support for doing so would not be difficult.
 
-#. Worlds within ROS/Gazebo are infinite from the perspective of physics
+#. Worlds within ROS+Gazebo are infinite from the perspective of physics
    engines, even though a finite area shows up in rendering. So, to place robots
    randomly in the arena at the start of simulation across :term:`Experimental
    Runs <Experimental Run>` (if you want to do that) "dimensions" for a given
@@ -203,7 +237,7 @@ SIERRA Requirements for ARGoS Project Code
 
 #. :envvar:`ARGOS_PLUGIN_PATH` is set up properly prior to invoking SIERRA.
 
-SIERRA Requirements for ROS/Gazebo Project Code
+SIERRA Requirements for ROS+Gazebo Project Code
 -----------------------------------------------
 
 #. :envvar:`ROS_PACKAGE_PATH` is set up properly prior to invoking SIERRA.
@@ -228,12 +262,12 @@ in `specific` places in the ``--template-input-file``, they should be avoided.
   of ``controllers.yaml`` (see :ref:`ln-tutorials-project-main-config` for
   details) in template input files possible.
 
-- ``__UUID__`` - XPath substitution optionally used when the :term:`ROS-Gazebo`
+- ``__UUID__`` - XPath substitution optionally used when the :term:`ROS+Gazebo`
   platform is selected in ``controllers.yaml`` (see
   :ref:`ln-tutorials-project-main-config`) when adding XML tags to force
   addition of the tag once for every robot in the experiment, with ``__UUID__``
   replaced with the configured robot prefix concatenated with its numeric ID
   (0-based). Can appear in XML attributes.
 
-- ``sierra`` - Used when the :term:`ROS-Gazebo` platform is selected.  Should
+- ``sierra`` - Used when the :term:`ROS+Gazebo` platform is selected.  Should
   not appear in XML tags or attributes.

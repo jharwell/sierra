@@ -25,10 +25,8 @@ import argparse
 # 3rd party packages
 
 # Project packages
-from sierra.core import types
-from sierra.core import config
+from sierra.core import types, config, hpc
 import sierra.core.cmdline as cmd
-import sierra.core.hpc as hpc
 
 
 class PlatformCmdline(cmd.BaseCmdline):
@@ -275,10 +273,11 @@ class PlatformCmdline(cmd.BaseCmdline):
         ARGoS-specific cmdline options.
 
         """
+        hpc.cmdline.HPCCmdline.cmdopts_update(cli_args, cmdopts)
+
         updates = {
             # Multistage
             'n_robots': cli_args.n_robots,
-            'exec_devnull': cli_args.exec_devnull,
 
             # stage 1
             'time_setup': cli_args.time_setup,
@@ -309,5 +308,5 @@ def sphinx_cmdline_stage1():
 
 
 def sphinx_cmdline_stage2():
-    parent = hpc.HPCCmdline([2]).parser
+    parent = hpc.cmdline.HPCCmdline([2]).parser
     return PlatformCmdline([parent], [2]).parser

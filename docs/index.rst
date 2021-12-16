@@ -3,12 +3,17 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-======================
-SIERRA's Documentation
-======================
+===============================================================
+SIERRA: Automation for the Scientific Method and Agent Research
+===============================================================
 
-SIERRA is named thusly because it will save you a LITERAL, (not figurative)
-mountain of work.
+.. figure:: figures/architecture.png
+
+   Architecture of SIERRA, organized by pipeline stage. Pipeline stages are
+   listed left to right, and an approximate joint architectural/functional stack
+   is top to bottom for each stage. “... ” indicates areas where SIERRA is
+   designed via python plugins to be easily extensible. “Host machine” indicates
+   the machine SIERRA was invoked on.
 
 .. include:: src/description.rst
 
@@ -27,7 +32,7 @@ mountain of work.
    src/tutorials/index.rst
    src/usage/index.rst
 
-   src/hpc/index.rst
+   src/exec_env/index.rst
 
    src/storage/index.rst
 

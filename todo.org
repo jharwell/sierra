@@ -27,8 +27,9 @@
 - [ ] Update all parsers to use sections to make error messages cleaner
 - [X] Add tutorials for adding new platform to execution exec_env, and vice versa. Talk about how they are coupled.
 - [ ] Add docs for which cmdline arguments all platforms must implement
-- [ ] Setup travis for some basic integration tests with the sample project for ARGoS and ROS/Gazebo.
-
+- [ ] Setup travis for some basic integration tests with the sample project for ARGoS and ROS+Gazebo.
+- [ ] Create interface classes for all plugins--will make documenting easier, as well as help users to find bugs when
+      adding plugins 
 ** TODO [#B] Fix the pylint import error false positives
 ** TODO [#B] Switch reading intra experiment model dataframe index sizes
 From using the size of a different dataframe in the exp to reading from the time setup written to the pkl file.

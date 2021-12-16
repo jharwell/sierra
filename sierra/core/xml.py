@@ -257,6 +257,9 @@ class XMLLuigi:
         self.input_fpath = input_fpath
         self.tree = ET.parse(self.input_fpath)
         self.root = self.tree.getroot()
+        self.tag_adds = []
+        self.attr_chgs = []
+
         self.logger = logging.getLogger(__name__)
 
     def write_config_set(self, config: XMLWriterConfig) -> None:
@@ -347,6 +350,7 @@ class XMLLuigi:
                           path,
                           attr,
                           value)
+        self.attr_chgs.append(XMLAttrChange(path, attr, value))
 
     def attr_add(self,
                  path: str,
@@ -386,6 +390,7 @@ class XMLLuigi:
                           path,
                           attr,
                           value)
+        self.attr_chgs.append(XMLAttrChange(path, attr, value))
 
     def has_tag(self, path: str) -> bool:
         return self.root.find(path) is not None
@@ -506,6 +511,7 @@ class XMLLuigi:
             return
 
         if not allow_dup:
+
             if parent.find(tag) is not None:
                 if not noprint:
                     self.logger.warning("Child tag '%s' already in parent '%s'",
@@ -527,6 +533,8 @@ class XMLLuigi:
                               path,
                               tag,
                               str(attr))
+
+        self.tag_adds.append(XMLTagAdd(path, tag, attr))
 
 
 def unpickle(fpath: str) -> tp.Union[XMLAttrChangeSet, XMLTagAddList]:

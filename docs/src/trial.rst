@@ -43,7 +43,7 @@ you clone things somewhere else.
          .. IMPORTANT:: If ``argos3`` is not found by your shell then
                         you won't be able to do anything useful with SIERRA!
 
-      .. tab:: ROS/Gazebo
+      .. tab:: ROS+Gazebo
 
          #. Install ROS distribution by following one of (or an equivalent guide
             for OSX or an alternative linux distribution):
@@ -58,6 +58,8 @@ you clone things somewhere else.
 
             - ``ros-<distro>-turtlebot3-description``
             - ``ros-<distro>-turtlebot3-msgs``
+            - ``ros-<distro>-turtlebot3-gazebo``
+            - ``ros-<distro>-turtlebot3-bringup``
 
             Where ``<distro>`` is replaced by your ROS distro.
 
@@ -100,7 +102,7 @@ you clone things somewhere else.
          functionality to support having multiple versions of ARGoS installed in
          multiple directories.
 
-      .. tab:: ROS/Gazebo
+      .. tab:: ROS+Gazebo
 
          Based on one of the turtlebot3 `intro tutorials
          <https://github.com:ROBOTIS-GIT/turtlebot3_simulations.git>`_::
@@ -129,7 +131,7 @@ you clone things somewhere else.
 
               export ARGOS_PLUGIN_PATH=$HOME/research/sierra-sample-project/argos/build
 
-      .. tab:: ROS/Gazebo
+      .. tab:: ROS+Gazebo
 
          #. Set :envvar:`SIERRA_PLUGIN_PATH`::
 
@@ -182,7 +184,7 @@ you clone things somewhere else.
                    ``<media>`` parent tags by default to increase speed and
                    reduce the memory footprint of ARGoS simulations.
 
-      .. tab:: ROS/Gazebo
+      .. tab:: ROS+Gazebo
 
          ::
 
