@@ -1,17 +1,19 @@
-.. _ln-hpc-plugins:
+.. _ln-exec-env-hpc:
 
-========================================
-High Performance Computing (HPC) Plugins
-========================================
+==============================================================
+High Performance Computing (HPC) Execution Environment Plugins
+==============================================================
 
 SIERRA is capable of adapting its runtime infrastructure to a number of
 different HPC environments so that experiments can be run efficiently on
 whatever computational resources a researcher has access to. Supported
 environments that come with SIERRA are listed on this page.
 
-These plugins are valid for the following platforms:
+These plugins tested with the following platforms (they may work on other
+platforms out of the box too):
 
 - :ref:`ln-platform-plugins-argos`
+- :ref:`ln-platform-plugins-rosgazebo`
 
 .. _ln-hpc-plugins-local:
 
@@ -169,4 +171,4 @@ compute nodes it is allocated each invocation:
 The following environmental variables must be defined appropriately when using
 the Adhoc HPC environment; if they are not defined SIERRA will throw an error.
 
-- :envvar:`SIERRA_ADHOC_NODEFILE`
+- :envvar:`SIERRA_NODEFILE`

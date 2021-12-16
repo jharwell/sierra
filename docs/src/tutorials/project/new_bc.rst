@@ -86,8 +86,8 @@ following to get it to work with SIERRA as a :term:`Batch Criteria`:
 
    It must be callable with a single argument which is whatever was passed to
    ``--batch-criteria``. See
-   :class:`sierra.plugins.platform.argos.variables.population_size.Parser` for a
-   simple example of this.
+   :class:`sierra.core.variables.population_size.Parser` for a simple example of
+   this.
 
 #. Define a factory function to dynamically create classes from the base class
    definition of ``MyVar`` in ``my_var.py``. It must have the following

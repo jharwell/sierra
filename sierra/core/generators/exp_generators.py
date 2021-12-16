@@ -29,7 +29,7 @@ import logging  # type: tp.Any
 # Project packages
 import sierra.core.generators.generator_factory as gf
 import sierra.core.xml
-from sierra.core.experiment_spec import ExperimentSpec
+from sierra.core.experiment.spec import ExperimentSpec
 from sierra.core import types
 import sierra.core.variables.batch_criteria as bc
 

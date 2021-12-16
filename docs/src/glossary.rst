@@ -12,21 +12,21 @@ works/is designed the way it is, and to help you find your way around.
 
       A state-of-the-art multi-physics engine robotics simulator which SIERRA
       supports as a :term:`Platform`. The ARGoS website is `here
-      <https://www.argos-sim.info/index.php>`_.
+      <https://www.argos-sim.info/index.php>`__.
 
 
    Gazebo
 
       A state-of-the-art robotics simulator with many features including .urdf
       robot models, realistic 3D rendering, and more. The Gazebo website is
-      `here <http://gazebosim.org/>`_.
+      `here <http://gazebosim.org/>`__.
 
    ROS
 
       You know it. You either love it or hate it, but you can't escape it. The
-      ROS website is `here <https://wiki.ros.org>`_.
+      ROS website is `here <https://wiki.ros.org>`__.
 
-   ROS-Gazebo
+   ROS+Gazebo
 
       A :term:`Platform` supported by SIERRA using the ``gazebo_ros`` bridge to
       use :term:`ROS` with the :term:`Gazebo` simulator.

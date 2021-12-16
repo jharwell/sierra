@@ -36,9 +36,9 @@ from sierra.core.variables import batch_criteria as bc
 import sierra.core.config as config
 import sierra.core.utils
 import sierra.core.plugin_manager as pm
-from sierra.core import types
+from sierra.core import types, platform
 from sierra.core.generators.exp_generators import BatchExpDefGenerator
-from sierra.core import platform
+from sierra.core.experiment import bindings
 
 
 class ExpCreator:
@@ -66,7 +66,9 @@ class ExpCreator:
                  template_input_file: str,
                  exp_input_root: str,
                  exp_output_root: str,
-                 cmdopts: types.Cmdopts) -> None:
+                 exp_num: int,
+                 cmdopts: types.Cmdopts,
+                 main_config: types.YAMLDict) -> None:
 
         # Will get the main name and extension of the config file (without the
         # full absolute path)
@@ -78,6 +80,8 @@ class ExpCreator:
 
         self.exp_output_root = os.path.abspath(exp_output_root)
         self.cmdopts = cmdopts
+        self.main_config = main_config
+        self.exp_num = exp_num
         self.logger = logging.getLogger(__name__)
 
         # If random seeds where previously generated, use them if configured
@@ -111,9 +115,18 @@ class ExpCreator:
             os.remove(self.commands_fpath)
 
         # Create all experimental runs
+        module = pm.SIERRAPluginManager().get_plugin_module(
+            self.cmdopts['platform'])
+        n_robots = module.population_size_from_def(exp_def,
+                                                   self.main_config,
+                                                   self.cmdopts)
+        generator = module.ExpRunShellCmdsGenerator(self.cmdopts,
+                                                    n_robots,
+                                                    self.exp_num)
+
         for run_num in range(self.cmdopts['n_runs']):
             per_run = copy.deepcopy(exp_def)
-            self._create_exp_run(per_run, run_num, self.random_seeds)
+            self._create_exp_run(per_run, generator, run_num, self.random_seeds)
 
         # Save seeds
         if not os.path.exists(self.seeds_fpath) or self.cmdopts['no_preserve_seeds']:
@@ -122,6 +135,7 @@ class ExpCreator:
 
     def _create_exp_run(self,
                         run_exp_def: XMLLuigi,
+                        cmds_generator: bindings.IExpShellCmdsGenerator,
                         run_num: int,
                         seeds: tp.List[int]) -> None:
         run_output_dir = "{0}_{1}_output".format(self.main_input_name,
@@ -144,18 +158,17 @@ class ExpCreator:
         # Write out the experimental run launch file
         run_exp_def.write(stem_path)
 
-        # If visual capture is enabled perform any necessary per-run
-        # configuration needed.
-        if self.cmdopts['platform_vc']:
-            run_output_dir = os.path.join(self.exp_output_root,
-                                          run_output_dir)
-            platform.ExpRunVCConfigurer(self.cmdopts['platform'])(self.cmdopts,
-                                                                  run_output_dir)
+        # Perform any necessary per-run configuration.
+        run_output_dir = os.path.join(self.exp_output_root,
+                                      run_output_dir)
+        platform.ExpRunConfigurer(self.cmdopts)(run_output_dir)
 
         # Update GNU Parallel commands file with the command for the configured
         # experimental run.
         with open(self.commands_fpath, 'a') as cmds_file:
             self._update_cmds_file(cmds_file,
+                                   cmds_generator,
+                                   run_num,
                                    self._get_launch_file_stempath(run_num))
 
     def _get_launch_file_stempath(self, run_num: int) -> str:
@@ -168,20 +181,32 @@ class ExpCreator:
                             "{0}_{1}".format(self.main_input_name,
                                              run_num))
 
-    def _update_cmds_file(self, cmds_file, launch_stem_path: str) -> None:
+    def _update_cmds_file(self,
+                          cmds_file,
+                          cmds_generator: bindings.IExpRunShellCmdsGenerator,
+                          run_num: int,
+                          launch_stem_path: str) -> None:
         """
         Adds the command to launch a particular experimental run to the command
         file.
         """
-        launch_generator = platform.LaunchCmdGenerator()
-        launch_cmd = launch_generator(self.cmdopts['platform'],
-                                      self.cmdopts['exec_env'],
-                                      launch_stem_path)
 
-        lvc_generator = platform.LaunchWithVCCmdGenerator()
-        launch_with_vc_cmd = lvc_generator(self.cmdopts, launch_cmd)
+        pre_specs = cmds_generator.pre_run_cmds(launch_stem_path, run_num)
+        assert all([spec['shell'] for spec in pre_specs]),\
+            "All pre-exp commands are run in a shell"
+        pre_cmds = [spec['cmd'] for spec in pre_specs]
 
-        cmds_file.write(launch_with_vc_cmd + '\n')
+        exec_specs = cmds_generator.exec_run_cmds(launch_stem_path, run_num)
+        assert all([spec['shell'] for spec in exec_specs]),\
+            "All exec-exp commands are run in a shell"
+        exec_cmds = [spec['cmd'] for spec in exec_specs]
+
+        post_specs = cmds_generator.post_run_cmds()
+        assert all([spec['shell'] for spec in post_specs]),\
+            "All post-exp commands are run in a shell"
+        post_cmds = [spec['cmd'] for spec in post_specs]
+
+        cmds_file.write(' '.join(pre_cmds + exec_cmds + post_cmds) + '\n')
 
 
 class BatchExpCreator:
@@ -266,7 +291,9 @@ class BatchExpCreator:
             ExpCreator(self.batch_config_template,
                        exp_input_root,
                        exp_output_root,
-                       self.cmdopts).from_def(defi)
+                       i,
+                       self.cmdopts,
+                       self.criteria.main_config).from_def(defi)
 
 
 __api__ = [

@@ -17,14 +17,6 @@ which can be used with any :term:`Project`.
 You *should* be able to combine any two of the criteria above, or use them
 independently. I have not tried all combinations, so YMMV.
 
-.. IMPORTANT::
-
-   All batch criteria only *modify* existing XML attributes, and will not create
-   new XML tags or attributes if they do not exist. So, any attribute under a
-   given tag that will be modified by a batch criteria will need to exist in
-   whatever file you pass with ``--template-input-file``. If a batch criteria
-   tries to modify a non-existent XML attribute, a warning will be issued.
-
 .. _ln-platform-argos-bc-population-size:
 
 Swarm Population Size

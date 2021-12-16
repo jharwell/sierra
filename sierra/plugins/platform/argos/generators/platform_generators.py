@@ -28,7 +28,7 @@ import os
 # Project packages
 from sierra.core.xml import XMLLuigi, XMLWriterConfig
 from sierra.core.utils import ArenaExtent as ArenaExtent
-from sierra.core.experiment_spec import ExperimentSpec
+from sierra.core.experiment.spec import ExperimentSpec
 import sierra.core.utils as scutils
 from sierra.core import types
 from sierra.core import config

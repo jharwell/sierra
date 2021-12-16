@@ -41,9 +41,9 @@ knows how to interact with your project are shown below:
                  # can be easily accommodated without copy-pasting.
                  perf: 'perf-config.yaml'
 
-         .. tab:: ROS/Gazebo
+         .. tab:: ROS+Gazebo
 
-            An example main configuration file for the ROS/Gazebo platform:
+            An example main configuration file for the ROS+Gazebo platform:
 
             .. code-block:: YAML
 
@@ -69,10 +69,10 @@ knows how to interact with your project are shown below:
                  # can be easily accommodated without copy-pasting.
                  perf: 'perf-config.yaml'
 
-              # Configuration specific to the ROS/Gazebo platform. This
+              # Configuration specific to the ROS platforms. This
               # dictionary is required if that platform is selected, and
               # optional otherwise.
-              rosgazebo:
+              ros:
                 # The list of robot configuration for the platform that you want
                 # SIERRA to support (that actual list of robots supported by the
                 # platform can be much larger).
@@ -176,10 +176,10 @@ knows how to interact with your project are shown below:
 
               # Changes to existing XML attributes in the template ``.argos``
               # file for *all* controllers in the category, OR changes to
-              # existing tags in the template ``.xml`` file.  This is usually
-              # things like setting ARGoS loop functions appropriately, if
-              # required. Each change is formatted as a list with paths to
-              # parent tags specified in the XPath syntax.
+              # existing tags for *all* controllers in the template ``.xml``
+              # file.  This is usually things like setting ARGoS loop functions
+              # appropriately, if required. Each change is formatted as a list
+              # with paths to parent tags specified in the XPath syntax.
               #
               # - [parent tag, attr, value] for changes to existing XML
               #   attributes.
@@ -242,7 +242,7 @@ knows how to interact with your project are shown below:
                     - HM_MyCategory1
                     - HM_MyCategory2
 
-         .. code-tab:: YAML ROS/Gazebo
+         .. code-tab:: YAML ROS+Gazebo
 
             my_base_graphs:
               - LN_MyCategory1
@@ -251,9 +251,9 @@ knows how to interact with your project are shown below:
             mycategory:
               # Changes to existing XML attributes in the template ``.launch``
               # file for *all* controllers in the category, OR changes to
-              # existing tags in the template ``.launch`` file.  Each change is
-              # formatted as a list with paths to parent tags specified in the
-              # XPath syntax.
+              # existing tags for *all* controllers in the template ``.launch``
+              # file.  Each change is formatted as a list with paths to parent
+              # tags specified in the XPath syntax.
               #
               # - [parent tag, attr, value] for changes to existing XML
               #   attributes.
@@ -266,8 +266,20 @@ knows how to interact with your project are shown below:
               #
               # The ``xml`` section and subsections are optional. If
               # ``--platform-vc`` is passed, then this section should be used to
-              # specify any changes to the XML needed to setup ROS/Gazebo for
+              # specify any changes to the XML needed to setup ROS+Gazebo for
               # visual capture.
+              #
+              # When adding new tags the ``__UUID__`` string can be included in
+              # the parent tag or child tag fields, which has two
+              # effects. First, it is expanded to the robot prefix (namespace in
+              # ROS terminology) + the robot's ID to form a UUID for the
+              # robot. Second, the tag is added not just once overall, but once
+              # for each robot in each experimental run. This is useful to set
+              # per-robot parameters specific to a given controller outside of
+              # the parameters controller via batch criteria or SIERRA
+              # variables (e.g., launching nodes to bringup sensors on the
+              # robot that are not launched by default/by the controller entry
+              # point).
               xml:
                 tag_change:
                   - ...
@@ -292,8 +304,9 @@ knows how to interact with your project are shown below:
               # robot. Second, the tag is added not just once overall, but once
               # for each robot in each experimental run. This is useful to set
               # per-robot parameters specific to a given controller outside of
-              # the parameters controller via batch criteria or SIERRA
-              # variables.
+              # the parameters controller via batch criteria or SIERRA variables
+              # (e.g., launching nodes to bringup sensors on the robot that are
+              # not launched by default/by the controller entry point).
               controllers:
                 - name: FizzBuzz
                   xml:

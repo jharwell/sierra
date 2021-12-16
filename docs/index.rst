@@ -27,7 +27,7 @@ mountain of work.
    src/tutorials/index.rst
    src/usage/index.rst
 
-   src/hpc/index.rst
+   src/exec_env/index.rst
 
    src/storage/index.rst
 

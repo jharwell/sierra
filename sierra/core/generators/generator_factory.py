@@ -23,8 +23,8 @@ import logging  # type: tp.Any
 import yaml
 
 # Project packages
-from sierra.core.xml import XMLLuigi
-from sierra.core.experiment_spec import ExperimentSpec
+from sierra.core.xml import XMLLuigi, XMLTagAdd
+from sierra.core.experiment.spec import ExperimentSpec
 import sierra.core.plugin_manager as pm
 from sierra.core import types
 
@@ -35,7 +35,8 @@ class ControllerGenerator():
     selected ``--controller``.
     """
 
-    def __init__(self, controller: str,
+    def __init__(self,
+                 controller: str,
                  config_root: str,
                  cmdopts: types.Cmdopts,
                  spec: ExperimentSpec) -> None:
@@ -62,13 +63,33 @@ class ControllerGenerator():
 
     def _pp_for_tag_add(self,
                         add: tp.List[str],
-                        robot_id: int) -> str:
-        if self.cmdopts['platform'] == 'platform.rosgazebo':
-            prefix = self.main_config['rosgazebo']['robots'][self.cmdopts['robot']]['prefix']
-            add[0] = add[0].replace('__UUID__', f"{prefix}{robot_id}")
-            add[2] = eval(add[2])
+                        robot_id: int) -> tp.List[str]:
+        module = pm.SIERRAPluginManager().get_plugin_module(
+            self.cmdopts['platform'])
+        prefix = module.robot_prefix_extract(self.main_config, self.cmdopts)
+        add[0] = add[0].replace('__UUID__', f"{prefix}{robot_id}")
+        add[2] = eval(add[2])
 
         return add
+
+    def _do_tag_add(self, exp_def: XMLLuigi, add: XMLTagAdd) -> None:
+        # We can't use platform.population_size_from_def() here because we
+        # haven't added any tags to the experiment definition yet, and if the
+        # platform relies on added tags to calculate population sizes, then this
+        # won't work.
+        assert hasattr(self.spec.criteria, 'n_robots'),\
+            ("When using tag_add, the batch criteria must implement "
+             "bc.IQueryableBatchCriteria")
+
+        n_robots = self.spec.criteria.n_robots(self.spec.exp_num)
+
+        assert n_robots > 0,\
+            "Batch criteria {self.spec.criteria} returned 0 robots?"
+
+        for robot_id in range(0, n_robots):
+            copy = add[:]
+            pp_add = self._pp_for_tag_add(copy, robot_id)
+            exp_def.tag_add(pp_add[0], pp_add[1], pp_add[2])
 
     def _generate_controller_support(self, exp_def: XMLLuigi) -> None:
         # Setup controller support code (if any)
@@ -89,7 +110,7 @@ class ControllerGenerator():
                                                                  {}).get('tag_add',
                                                                          {})
         for t in adds:
-            exp_def.tag_add(t[0], t[1], t[2])
+            self._do_tag_add(exp_def, t)
 
     def _generate_controller(self, exp_def: XMLLuigi) -> None:
         if self.category not in self.controller_config:
@@ -116,15 +137,7 @@ class ControllerGenerator():
 
             adds = controller.get('xml', {}).get('tag_add', {})
             for t in adds:
-                assert hasattr(self.spec.criteria, 'n_robots'),\
-                    ("When using tag_add, the batch criteria must have a "
-                     "n_robots() method")
-                n_robots = self.spec.criteria.n_robots(self.spec.exp_num)
-                for robot_id in range(0, n_robots):
-                    add = t[:]
-                    add = self._pp_for_tag_add(add, robot_id)
-
-                    exp_def.tag_add(add[0], add[1], add[2])
+                self._do_tag_add(exp_def, t)
 
 
 def joint_generator_create(controller, scenario):

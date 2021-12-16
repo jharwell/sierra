@@ -13,9 +13,10 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-Classes for running and single and batch experiments via the configured method specified on
-the cmdline (usually GNU parallel).
+"""Classes for running and single :term:`Experiments <Experiment>` and
+:term:`Batch Experiments <Batch Experiment>` via the configured method specified
+on the cmdline.
+
 """
 
 # Core packages
@@ -26,15 +27,53 @@ import sys
 import datetime
 import typing as tp
 import logging  # type: tp.Any
+import itertools
 
 # 3rd party packages
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
-from sierra.core import types
-from sierra.core import config
-from sierra.core import platform
-from sierra.core import utils
+from sierra.core import types, config, platform, utils
+import sierra.core.plugin_manager as pm
+
+
+class ExpShell():
+    def __init__(self) -> None:
+        self.tag = "Finished COMMAND"
+        self.initial_env = os.environ
+        self.env = self.initial_env
+        self.logger = logging.getLogger(__name__)
+
+    def run_from_spec(self, spec: types.ShellCmdSpec) -> bool:
+        self.logger.trace("Cmd: %s", spec['cmd'])
+
+        proc = subprocess.Popen(spec['cmd'],
+                                shell=spec['shell'],
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        proc.wait()
+        stdout = proc.stdout.read().decode('utf-8').splitlines()
+        stderr = proc.stdout.read().decode('utf-8').splitlines()
+
+        record = False
+        cmd_stdout = ''
+        for e in stdout:
+            if record:
+                e = e.strip().split('=')
+                self.env[e[0]] = e[1]
+            elif e.strip() == 'Finished COMMAND':
+                record = True
+            else:
+                cmd_stdout += e
+
+        cmd_stderr = ''
+        for e in stderr:
+            cmd_stderr += e
+
+        self.logger.trace("Cmd stdout: %s", cmd_stdout)
+        self.logger.trace("Cmd stderr: %s", cmd_stderr)
+
+        return proc.returncode == 0
 
 
 class BatchExpRunner:
@@ -84,7 +123,9 @@ class BatchExpRunner:
                          self.cmdopts['platform'],
                          self.cmdopts['exec_env'])
 
-        self._prerun_diagnostics()
+        module = pm.SIERRAPluginManager().get_plugin_module(
+            self.cmdopts['platform'])
+        module.pre_exp_diagnostics(self.cmdopts, self.logger)
 
         exp_all = [os.path.join(self.batch_exp_root, d)
                    for d in self.criteria.gen_exp_dirnames(self.cmdopts)]
@@ -94,26 +135,37 @@ class BatchExpRunner:
                                           self.criteria)
 
         # Verify environment is OK before running anything
-        platform.ExecEnvChecker(self.cmdopts['platform'],
-                                self.cmdopts['exec_env'])()
+        platform.ExecEnvChecker(self.cmdopts)()
 
         # Calculate path for to file for logging execution times
         now = datetime.datetime.now()
         exec_times_fpath = os.path.join(self.batch_stat_exec_root,
                                         now.strftime("%Y-%m-%e-%H:%M"))
 
+        generator = platform.ExpShellCmdsGenerator(self.cmdopts)
+
+        # Start a new process for the experiment shell so pre-run commands have
+        # an effect (if they set environment variables, etc.).
+        shell = ExpShell()
+
+        # Run cmds for platform-specific things to setup the experiment (e.g.,
+        # start daemons) if needed.
+        for spec in generator.pre_exp_cmds():
+            shell.run_from_spec(spec)
+
+        # Run the experiment!
         for exp in exp_to_run:
             runner = ExpRunner(exp,
                                exp_all.index(exp),
-                               self.cmdopts['platform'],
-                               self.cmdopts['exec_env'],
+                               shell,
+                               generator,
                                exec_times_fpath)
-            runner(n_jobs, exec_resume)
+            runner(n_jobs, exec_resume, self.cmdopts['nodefile'])
 
-        # Cleanup platform-specific things now that the experiment is done (if
-        # needed).
-        if self.cmdopts['platform_vc']:
-            platform.PostExpVCCleanup(self.cmdopts['platform'])()
+        # Run cmds to cleanup platform-specific things now that the experiment
+        # is done (if needed).
+        for spec in generator.post_exp_cmds():
+            shell.run_from_spec(spec)
 
     def _prerun_diagnostics(self) -> None:
         if self.cmdopts['platform'] in ['platform.argos', 'platform.rosgazebo']:
@@ -148,26 +200,27 @@ class ExpRunner:
     def __init__(self,
                  exp_input_root: str,
                  exp_num: int,
-                 platform: str,
-                 exec_env: str,
+                 shell: ExpShell,
+                 generator: platform.ExpShellCmdsGenerator,
                  exec_times_fpath: str) -> None:
         self.exp_input_root = os.path.abspath(exp_input_root)
         self.exp_num = exp_num
-        self.platform = platform
-        self.exec_env = exec_env
+        self.shell = shell
+        self.generator = generator
         self.exec_times_fpath = exec_times_fpath
         self.logger = logging.getLogger(__name__)
 
-    def __call__(self, n_jobs: int, exec_resume: bool) -> None:
+    def __call__(self, n_jobs: int, exec_resume: bool, nodefile: str) -> None:
         """Executes experimental runs for a single experiment in parallel.
 
         Arguments:
 
-            n_jobs: How many concurrent jobs are allowed? (Don't want
-                    to oversubscribe the machine).
+            n_jobs: How many concurrent jobs are allowed?
 
             exec_resume: Is this run of SIERRA resuming a previous run that
                          failed/did not finish?
+
+            nodefile: List of compute resources to use for the experiment.
         """
 
         self.logger.info("Running exp%s in '%s'",
@@ -176,7 +229,7 @@ class ExpRunner:
         sys.stdout.flush()
 
         start = time.time()
-        parallel_opts = {
+        exec_opts = {
 
             # Root directory for the job. Chose the exp input
             # directory rather than the output directory in order to keep
@@ -187,21 +240,13 @@ class ExpRunner:
                                          config.kGNUParallel['cmdfile']),
             'joblog_path': os.path.join(self.exp_input_root, "parallel.log"),
             'exec_resume': exec_resume,
-            'n_jobs': n_jobs
+            'n_jobs': n_jobs,
+            'nodefile': nodefile
         }
-        try:
-            cmd = platform.GNUParallelCmdGenerator()(self.platform,
-                                                     self.exec_env,
-                                                     parallel_opts)
-            self.logger.trace("GNU Parallel: %s", cmd)
-            subprocess.run(cmd, shell=True, check=True)
-
-        # Catch the exception but do not raise it again so that additional
-        # experiments can still be run if possible
-        except subprocess.CalledProcessError as e:
-            self.logger.error("Experiment failed! rc=%s", e.returncode)
-            self.logger.error("Check GNU parallel outputs in %s for details",
-                              parallel_opts['jobroot_path'])
+        for spec in self.generator.exec_exp_cmds(exec_opts):
+            if not self.shell.run_from_spec(spec):
+                self.logger.error("Check outputs in %s for details",
+                                  exec_opts['jobroot_path'])
 
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)

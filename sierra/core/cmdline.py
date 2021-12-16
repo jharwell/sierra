@@ -431,6 +431,20 @@ class CoreCmdline(BaseCmdline):
         """
         Define cmdline arguments for stage 2.
         """
+        self.stage2.add_argument("--nodefile",
+                                 help="""
+
+                                 Specify a list of compute nodes which SIERpRA
+                                 will use to run jobs. For simulator
+                                 :term:`Platforms <Platform>`, these are HPC
+                                 resource nodes. For real robot platforms, these
+                                 are robot hostnames/IP addresses. This
+                                 information can also be supplied via the
+                                 :envvar:`SIERRA_NODEFILE` environment
+                                 variable; this argument takes priority if both
+                                 are supplied.
+
+                                 """)
 
     def init_stage3(self) -> None:
         """

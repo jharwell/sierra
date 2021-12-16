@@ -34,14 +34,14 @@ the experiment). For real robots, SIERRA will execution 1 experimental run at a
 time.
 
 SIERRA supports multiple HPC environments for execution of experiments in
-simulation; see :ref:`ln-hpc-plugins` for list.
+simulation; see :ref:`ln-exec-env-hpc` for list.
 
-To add additional HPC environments, see :ref:`ln-tutorials-plugin-hpc`.
+To add additional HPC environments, see :ref:`ln-tutorials-plugin-exec-env`.
 
 SIERRA supports multiple real robot targets for running experiments with
-different kinds of real robots; see :ref:`ln-robot-plugins` for list.
+different kinds of real robots; see :ref:`ln-exec-env-robots` for list.
 
-To add additional real robot targets, see :ref:`ln-tutorials-plugin-robot`.
+To add additional real robot targets, see :ref:`ln-tutorials-plugin-exec-env`.
 
 3. Experiment Results Processing
 --------------------------------

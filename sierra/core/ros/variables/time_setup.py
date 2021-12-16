@@ -14,8 +14,9 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""Classes for the ``--time-setup`` cmdline option. See :ref:`ln-vars-ts` for
-usage documentation.
+"""Classes for the ``--time-setup`` cmdline option for :term:`Platforms
+<Platform>` which use :term:`ROS`. See :ref:`ln-vars-ts` for usage
+documentation.
 
 """
 
@@ -29,16 +30,26 @@ import implements
 # Project packages
 from sierra.core.variables.base_variable import IBaseVariable
 from sierra.core.xml import XMLAttrChangeSet, XMLAttrChange, XMLTagAdd, XMLTagRmList, XMLTagAddList, XMLLuigi
-import sierra.core.config as config
+from sierra.core import config
+from sierra.core.variables.time_setup import Parser
 
 
 @implements.implements(IBaseVariable)
 class TimeSetup():
     """
-    Defines the simulation duration.
-
     Attributes:
-        duration: The simulation duration in seconds, NOT timesteps.
+
+        n_secs_per_run: The :term:`Experimental Run` duration in seconds, NOT
+                        :term:`Ticks <Tick>` or timesteps.
+
+        n_datapoints: How many datapoints to capture during the experimental
+                      run.
+
+        n_ticks_per_sec: How many times per second robot controllers will be
+                         run.
+
+        ros_param_server: Should be use the ROS parameter server or not?
+
     """
 
     def __init__(self,
@@ -77,40 +88,6 @@ class TimeSetup():
         pass
 
 
-class Parser():
-    """
-    Enforces the cmdline definition of time setup criteria.
-    """
-
-    def __call__(self, arg: str) -> tp.Dict[str, int]:
-        ret = {
-            'n_secs_per_run': int(),
-            'n_datapoints': int(),
-            'n_ticks_per_sec': int(),
-        }
-        # Parse duration, which must be present
-        res = re.search(r"T\d+", arg)
-        assert res is not None, \
-            "Bad duration specification in time setup '{0}'".format(arg)
-        ret['n_secs_per_run'] = int(res.group(0)[1:])
-
-        # Parse # datapoints to capture, which can be absent
-        res = re.search(r"N\d+", arg)
-        if res is not None:
-            ret['n_datapoints'] = int(res.group(0)[1:])
-        else:
-            ret['n_datapoints'] = config.kExperimentalRunData['n_datapoints_1D']
-
-        # Parse # ticks per second for controllers, which can be absent
-        res = re.search(r"K\d+", arg)
-        if res is not None:
-            ret['n_ticks_per_sec'] = int(res.group(0)[1:])
-        else:
-            ret['n_ticks_per_sec'] = config.kGazebo['n_ticks_per_sec']
-
-        return ret
-
-
 def factory(arg: str, ros_param_server: bool) -> TimeSetup:
     """
     Factory to create :class:`TimeSetup` derived classes from the command
@@ -119,8 +96,10 @@ def factory(arg: str, ros_param_server: bool) -> TimeSetup:
     Arguments:
        arg: The value of ``--time-setup``.
     """
-    name = '.'.join(arg.split(".")[1:])
-    attr = Parser()(arg)
+    parser = Parser({'n_secs_per_run': config.kROS['n_secs_per_run'],
+                     'n_ticks_per_sec': config.kROS['n_ticks_per_sec'],
+                     'n_datapoints': config.kExperimentalRunData['n_datapoints_1D']})
+    attr = parser(arg)
 
     def __init__(self: TimeSetup) -> None:
         TimeSetup.__init__(self,
@@ -129,7 +108,7 @@ def factory(arg: str, ros_param_server: bool) -> TimeSetup:
                            attr['n_ticks_per_sec'],
                            ros_param_server)
 
-    return type(name,
+    return type(attr['pretty_name'],
                 (TimeSetup,),
                 {"__init__": __init__})  # type: ignore
 

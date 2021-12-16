@@ -20,8 +20,6 @@ Classes for the population size batch criteria. See
 
 # Core packages
 import typing as tp
-import re
-import math
 import random
 import logging  # type: tp.Any
 
@@ -33,15 +31,16 @@ from sierra.core.variables import batch_criteria as bc
 from sierra.core.xml import XMLTagAdd, XMLTagAddList
 from sierra.core import types
 from sierra.core.vector import Vector3D
-from sierra.core.utils import ArenaExtent
 import sierra.core.plugin_manager as pm
+from sierra.core.variables import population_size
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
-class PopulationSize(bc.UnivarBatchCriteria):
-    """
-    A univariate range of system sizes used to define batch experiments. This
-    class is a base class which should (almost) never be used on its
+@implements.implements(bc.IQueryableBatchCritera)
+class PopulationSize(population_size.BasePopulationSize):
+    """A univariate range of system sizes used to define batch experiments.
+
+    This class is a base class which should (almost) never be used on its
     own. Instead, the ``factory()`` function should be used to dynamically
     create derived classes expressing the user's desired size distribution.
 
@@ -60,10 +59,10 @@ class PopulationSize(bc.UnivarBatchCriteria):
                  robot: str,
                  sizes: tp.List[float],
                  positions: tp.List[float]) -> None:
-        bc.UnivarBatchCriteria.__init__(self,
-                                        cli_arg,
-                                        main_config,
-                                        batch_input_root)
+        population_size.PopulationSize.__init__(self,
+                                                cli_arg,
+                                                main_config,
+                                                batch_input_root)
         self.sizes = sizes
         self.robot = robot
         self.positions = positions
@@ -80,7 +79,7 @@ class PopulationSize(bc.UnivarBatchCriteria):
         experiment.
         """
         if not self.tag_adds:
-            robot_config = self.main_config['rosgazebo']['robots'][self.robot]
+            robot_config = self.main_config['ros']['robots'][self.robot]
             prefix = robot_config['prefix']
             model_base = robot_config['model']
             model_variant = robot_config.get('model_variant', '')
@@ -91,7 +90,6 @@ class PopulationSize(bc.UnivarBatchCriteria):
                 model = model_base
 
             desc_cmd = f"$(find xacro)/xacro $(find {model_base}_description)/urdf/{model}.urdf.xacro"
-
             for s in self.sizes:
                 exp_adds = XMLTagAddList()
                 pos_i = random.randint(0, len(self.positions) - 1)
@@ -108,6 +106,18 @@ class PopulationSize(bc.UnivarBatchCriteria):
 
                     exp_adds.append(XMLTagAdd(f".//launch/group/[@ns='{ns}']",
                                               "param",
+                                              {"name": "tf_prefix",
+                                               "value": ns}))
+
+                    # These two tag adds are OK to use because:
+                    #
+                    # - All robots in Gazebo are created using spawn_model
+                    #   initially.
+                    #
+                    # - All robots in Gazebo will provide a robot description
+                    #   .urdf.xacro per ROS naming conventions
+                    exp_adds.append(XMLTagAdd(f".//launch/group/[@ns='{ns}']",
+                                              "param",
                                               {"name": "robot_description",
                                                "command": desc_cmd}))
 
@@ -118,11 +128,6 @@ class PopulationSize(bc.UnivarBatchCriteria):
                                                "type": "spawn_model",
                                                "args": spawn_cmd_args}))
 
-                    exp_adds.append(XMLTagAdd(f".//launch/group/[@ns='{ns}']",
-                                              "param",
-                                              {"name": "tf_prefix",
-                                               "value": ns}))
-
                 self.tag_adds.append(exp_adds)
 
         return self.tag_adds
@@ -131,93 +136,8 @@ class PopulationSize(bc.UnivarBatchCriteria):
         adds = self.gen_tag_addlist()
         return ['exp' + str(x) for x in range(0, len(adds))]
 
-    def graph_xticks(self,
-                     cmdopts: types.Cmdopts,
-                     exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
-
-        if exp_dirs is None:
-            exp_dirs = self.gen_exp_dirnames(cmdopts)
-
-        ret = list(map(float, self.populations(cmdopts, exp_dirs)))
-
-        if cmdopts['plot_log_xscale']:
-            return [int(math.log2(x)) for x in ret]
-        elif cmdopts['plot_enumerated_xscale']:
-            return [i for i in range(0, len(ret))]
-        else:
-            return ret
-
-    def graph_xticklabels(self,
-                          cmdopts: types.Cmdopts,
-                          exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
-
-        if exp_dirs is None:
-            exp_dirs = self.gen_exp_dirnames(cmdopts)
-
-        ret = map(float, self.populations(cmdopts, exp_dirs))
-
-        return list(map(lambda x: str(int(round(x, 4))), ret))
-
-    def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
-        if cmdopts['plot_log_xscale']:
-            return r"$\log$(System Size)"
-
-        return "System Size"
-
-    def pm_query(self, pm: str) -> bool:
-        return pm in ['raw', 'scalability', 'self-org']
-
     def n_robots(self, exp_num: int) -> int:
         return int(len(self.tag_adds[exp_num]) / len(self.tag_adds[0]))
-
-
-class Parser():
-    """
-    Enforces the cmdline definition of the :class:`PopulationSize` batch
-    criteria defined in :ref:`ln-platform-rosgazebo-bc-population-size`.
-
-    """
-
-    def __call__(self, criteria_str: str) -> types.CLIArgSpec:
-        ret = {
-            'max_size': int(),
-            'increment_type': str(),
-            'linear_increment': None,
-        }  # type: tp.Dict[str, tp.Union[int, str, None]]
-
-        sections = criteria_str.split('.')
-        assert len(sections) == 2,\
-            "Cmdline spec must have 2 sections separated by '.'"
-
-        # Parse increment type
-        res = re.search("Log|Linear", sections[1])
-        assert res is not None, \
-            f"Bad size increment spec in criteria section '{sections[2]}'"
-        ret['increment_type'] = res.group(0)
-
-        # Parse max size
-        res = re.search("[0-9]+", sections[1])
-        assert res is not None, \
-            "Bad population max in criteria section '{sections[2]}'"
-        ret['max_size'] = int(res.group(0))
-
-        # Set linear_increment if needed
-        if ret['increment_type'] == 'Linear':
-            ret['linear_increment'] = int(
-                ret['max_size'] / 10.0)  # type: ignore
-
-        return ret
-
-    def to_sizes(self, attr: types.CLIArgSpec) -> tp.List[float]:
-        """
-        Generates the swarm sizes for each experiment in a batch.
-        """
-        if attr["increment_type"] == 'Linear':
-            return [attr["linear_increment"] * x for x in range(1, 11)]
-        elif attr["increment_type"] == 'Log':
-            return [2 ** x for x in range(0, int(math.log2(attr["max_size"])) + 1)]
-        else:
-            assert False
 
 
 def factory(cli_arg: str,
@@ -228,7 +148,7 @@ def factory(cli_arg: str,
     line definition.
 
     """
-    parser = Parser()
+    parser = population_size.Parser()
     attr = parser(cli_arg)
     max_sizes = parser.to_sizes(attr)
 
@@ -261,6 +181,5 @@ def factory(cli_arg: str,
 
 
 __api__ = [
-    'PopulationSize',
-    'Parser'
+    'PopulationSize'
 ]

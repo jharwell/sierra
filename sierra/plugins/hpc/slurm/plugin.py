@@ -19,18 +19,21 @@ HPC plugin for running SIERRA on HPC clusters using the SLURM scheduler.
 
 # Core packages
 import os
-import re
 import typing as tp
 import logging  # type: tp.Any
+import argparse
 
 # 3rd party packages
+import implements
 
 # Project packages
-from sierra.core import types, config
+from sierra.core import types
 from sierra.core import plugin_manager as pm
+from sierra.core.experiment import bindings
 
 
-class CmdoptsConfigurer():
+@implements.implements(bindings.IParsedCmdlineConfigurer)
+class ParsedCmdlineConfigurer():
     """
     Configure SIERRA for SLURM HPC by reading environment variables and
     modifying the parsed cmdline arguments. Uses the following environment
@@ -45,11 +48,10 @@ class CmdoptsConfigurer():
 
     """
 
-    def __init__(self, platform: str) -> None:
-        self.platform = platform
-        self.logger = logging.getLogger('hpc.slurm')
+    def __init__(self, exec_env: str) -> None:
+        pass
 
-    def __call__(self, args) -> None:
+    def __call__(self, args: argparse.Namespace) -> None:
         keys = ['SLURM_CPUS_PER_TASK',
                 'SLURM_TASKS_PER_NODE',
                 'SLURM_JOB_NODELIST',
@@ -71,119 +73,98 @@ class CmdoptsConfigurer():
         assert "," not in os.environ['SLURM_TASKS_PER_NODE'], \
             "SLURM_TASKS_PER_NODE not homogeneous"
 
-        if self.platform == 'platform.argos':
-            self.configure_argos(args)
-        elif self.platform == 'platform.rosgazebo':
-            self.configure_rosgazebo(args)
-        else:
-            assert False,\
-                "hpc.slurm does not support platform '{0}'".format(
-                    self.platform)
 
-    def configure_argos(self, args) -> None:
-        # For HPC, we want to use the the maximum # of simultaneous jobs per
-        # node such that there is no thread oversubscription. We also always
-        # want to allocate each physics engine its own thread for maximum
-        # performance, per the original ARGoS paper.
-        #
-        # We rely on the user to request their job intelligently so that
-        # SLURM_TASKS_PER_NODE is appropriate.
-        if args.exec_jobs_per_node is None:
-            res = re.search(r"^[^\(]+", os.environ['SLURM_TASKS_PER_NODE'])
-            assert res is not None, \
-                "Unexpected format in SLURM_TASKS_PER_NODE: '{0}'".format(
-                    os.environ['SLURM_TASKS_PER_NODE'])
-            args.exec_jobs_per_node = int(res.group(0))
-
-        self.logger.debug("Allocated %s physics engines/run, %s parallel runs/node",
-                          args.physics_n_engines,
-                          args.exec_jobs_per_node)
-
-    def configure_rosgazebo(self, args) -> None:
-        # We rely on the user to request their job intelligently so that
-        # SLURM_TASKS_PER_NODE is appropriate.
-        if args.exec_jobs_per_node is None:
-            res = re.search(r"^[^\(]+", os.environ['SLURM_TASKS_PER_NODE'])
-            assert res is not None, \
-                "Unexpected format in SLURM_TASKS_PER_NODE: '{0}'".format(
-                    os.environ['SLURM_TASKS_PER_NODE'])
-            args.exec_jobs_per_node = int(res.group(0))
-
-        self.logger.debug("Allocated %s physics threads/run, %s parallel runs/node",
-                          args.physics_n_threads,
-                          args.exec_jobs_per_node)
-
-
-class LaunchCmdGenerator():
-    def __init__(self, platform: str) -> None:
-        self.logger = logging.getLogger('hpc.slurm')
-
-    def __call__(self, input_fpath: str) -> str:
-        module = pm.SIERRAPluginManager().get_plugin_module(self.platform)
-        return module.launch_cmd_generate('hpc.slurm', input_fpath)
-
-
-class GNUParallelCmdGenerator():
+@implements.implements(bindings.IExpShellCmdsGenerator)
+class ExpShellCmdsGenerator():
     """
     Given a dictionary containing job information, generate the cmd to correctly
     invoke GNU Parallel in a SLURM HPC environment.
     """
 
-    def __init__(self, platform: str) -> None:
-        self.platform = platform
-        self.logger = logging.getLogger('hpc.slurm')
+    def __init__(self,
+                 cmdopts: types.Cmdopts,
+                 exp_num: int) -> None:
+        self.cmdopts = cmdopts
 
-    def __call__(self, parallel_opts: tp.Dict[str, tp.Any]) -> str:
+    def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+        return []
+
+    def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
+        return []
+
+    def exec_exp_cmds(self, exec_opts: types.ExpExecOpts) -> tp.List[types.ShellCmdSpec]:
         jobid = os.environ['SLURM_JOB_ID']
-        nodelist = os.path.join(parallel_opts['jobroot_path'],
+        nodelist = os.path.join(exec_opts['jobroot_path'],
                                 "{0}-nodelist.txt".format(jobid))
 
         resume = ''
         # This can't be --resume, because then GNU parallel looks at the results
         # directory, and if there is stuff in it, (apparently) assumes that the
         # job finished...
-        if parallel_opts['exec_resume']:
+        if exec_opts['exec_resume']:
             resume = '--resume-failed'
 
-        # Move ALL ROS/gazebo output to the stdout/stderr files for parallel,
-        # because you can't tell those programs not to print stuff/log
-        # everything that's not an error to a file, and GNU parallel
-        # echoes the stdout/stderr after commads finish in general.
-        suppress = ''
-        if self.platform == 'platform.rosgazebo':
-            suppress = '--ungroup'
-
-        cmd = 'scontrol show hostnames $SLURM_JOB_NODELIST > {0} && ' \
-            'parallel {2} '\
+        cmd1 = f'scontrol show hostnames $SLURM_JOB_NODELIST > {nodelist}'
+        cmd2 = 'parallel {2} '\
+            '--ungroup '\
             '--jobs {1} '\
-            '{5} '\
             '--results {4} ' \
             '--joblog {3} '\
             '--sshloginfile {0}' \
             '--workdir {4} < "{5}"'
-        return cmd.format(nodelist,
-                          parallel_opts['n_jobs'],
-                          resume,
-                          parallel_opts['joblog_path'],
-                          parallel_opts['jobroot_path'],
-                          parallel_opts['cmdfile_path'],
-                          suppress)
+        cmd2 = cmd2.format(nodelist,
+                           exec_opts['n_jobs'],
+                           resume,
+                           exec_opts['joblog_path'],
+                           exec_opts['jobroot_path'],
+                           exec_opts['cmdfile_path'])
+
+        return [{'cmd': cmd1, 'shell': True, 'check': True},
+                {'cmd': cmd2, 'shell': True, 'check': True}]
 
 
-class LaunchWithVCCmdGenerator():
-    def __init__(self, platform: str) -> None:
-        self.platform = platform
-        self.logger = logging.getLogger('hpc.slurm')
-
-    def __call__(self,
+@implements.implements(bindings.IExpRunShellCmdsGenerator)
+class ExpRunShellCmdsGenerator():
+    def __init__(self,
                  cmdopts: types.Cmdopts,
-                 launch_cmd: str) -> str:
-        return launch_cmd
+                 n_robots: int,
+                 exp_num: int) -> None:
+        pass
+
+    def pre_run_cmds(self,
+                     input_fpath: str,
+                     run_num: int) -> tp.List[types.ShellCmdSpec]:
+        return []
+
+    def exec_run_cmds(self,
+                      input_fpath: str,
+                      run_num: int) -> tp.List[types.ShellCmdSpec]:
+        return []
+
+    def post_run_cmds(self) -> tp.List[types.ShellCmdSpec]:
+        return []
+
+
+class ExpRunConfigurer():
+    def __init__(self, cmdopts: types.Cmdopts) -> None:
+        pass
+
+    def __call__(self, run_output_dir: str) -> None:
+        pass
+
+
+class ExecEnvChecker():
+    def __init__(self, cmdopts: types.Cmdopts) -> None:
+        pass
+
+    def __call__(self) -> None:
+        pass
 
 
 __api__ = [
-    'CmdoptsConfigurer',
-    'LaunchWithVCCmdGenerator',
-    'GNUParallelCmdGenerator',
-    'LaunchCmdGenerator'
+    'ParsedCmdlineConfigurer',
+    'ExpRunShellCmdsGenerator',
+    'ExpShellCmdsGenerator',
+    'ExpRunConfigurer',
+    'ExecEnvChecker'
 ]

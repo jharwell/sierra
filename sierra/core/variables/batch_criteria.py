@@ -38,6 +38,20 @@ import sierra.core.plugin_manager as pm
 from sierra.core import types
 
 
+class IQueryableBatchCritera(implements.Interface):
+    """
+    Mixin interface that batch criteria which can be queried during stage {1,2}
+    to extract additional information needed for configuring some
+    :term:`Platforms <Platform>` and execution environments.
+    """
+
+    def n_robots(self, exp_num: int) -> int:
+        """
+        Return the # of robots used for a given :term:`Experiment`.
+        """
+        raise NotImplementedError
+
+
 class IConcreteBatchCriteria(implements.Interface):
     """
     'Final' interface that user-visible batch criteria variables need to

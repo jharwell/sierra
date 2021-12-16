@@ -15,7 +15,7 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
 """
-Command line parsing and validation for the :term:`ARGoS`.
+Command line parsing and validation for the :term:`ROS+Gazebo` platform.
 """
 
 # Core packages
@@ -27,14 +27,14 @@ import argparse
 # Project packages
 from sierra.core import types
 from sierra.core import config
-import sierra.core.cmdline as cmd
-import sierra.core.hpc as hpc
+import sierra.core.cmdline as corecmd
+from sierra.core import hpc, ros
 
 
-class PlatformCmdline(cmd.BaseCmdline):
-    """
-    Defines :term:`Gazebo` extensions to the core command line arguments defined
-    in :class:`~sierra.core.cmdline.CoreCmdline`.
+class PlatformCmdline(corecmd.BaseCmdline):
+    """Defines :term:`ROS+Gazebo` extensions to the core command line arguments
+    defined in :class:`~sierra.core.cmdline.CoreCmdline`.
+
     """
 
     def __init__(self,
@@ -58,33 +58,6 @@ class PlatformCmdline(cmd.BaseCmdline):
     def init_stage1(self) -> None:
         # Experiment options
         experiment = self.parser.add_argument_group('Stage1: Experiment setup')
-
-        experiment.add_argument("--time-setup",
-                                help="""
-
-                                Defines experiment run length, ticks per second
-                                for the experiment, # of datapoints to
-                                capture/capture interval for each
-                                simulation. See
-                                :ref:`ln-platform-rosgazebo-vars-ts` for a full
-                                description.
-
-                                 """ + self.stage_usage_doc([1]),
-                                default="time_setup.T{0}.K{1}.N{2}".format(
-                                    config.kGazebo['n_secs_per_run'],
-                                    config.kGazebo['n_ticks_per_sec'],
-                                    config.kExperimentalRunData['n_datapoints_1D']))
-
-        experiment.add_argument("--robot",
-
-                                help="""
-
-                                The key name of the robot model, which must be
-                                present in the appropriate section of
-                                ``main.yaml`` for the :term:`Project`. See
-                                :ref:`ln-tutorials-main-config` for details.
-
-                                """ + self.stage_usage_doc([1]))
 
         experiment.add_argument("--robot-positions",
 
@@ -195,40 +168,40 @@ class PlatformCmdline(cmd.BaseCmdline):
                              default=0)
 
     @staticmethod
-    def cmdopts_update(cli_args, cmdopts: types.Cmdopts) -> None:
+    def cmdopts_update(cli_args: argparse.Namespace,
+                       cmdopts: types.Cmdopts) -> None:
         """
         Updates the core cmdopts dictionary with (key,value) pairs from the
-        ROS/Gazebo-specific cmdline options.
+        ROS+Gazebo-specific cmdline options.
 
         """
+        hpc.cmdline.HPCCmdline.cmdopts_update(cli_args, cmdopts)
+        ros.cmdline.ROSCmdline.cmdopts_update(cli_args, cmdopts)
+
         updates = {
-            # Multistage
-            'exec_devnull': cli_args.exec_devnull,
-
             # stage 1
-            'robot': cli_args.robot,
             'robot_positions': cli_args.robot_positions,
-
-            'time_setup': cli_args.time_setup,
 
             'physics_n_engines': 1,  # Always 1 for gazebo...
             'physics_n_threads': cli_args.physics_n_threads,
             'physics_engine_type': cli_args.physics_engine_type,
             'physics_iter_per_tick': cli_args.physics_iter_per_tick,
-
         }
 
         cmdopts.update(updates)
 
 
-class CmdlineValidator(cmd.CoreCmdlineValidator):
+class CmdlineValidator(corecmd.CoreCmdlineValidator):
     pass
 
 
 def sphinx_cmdline_stage1():
-    return PlatformCmdline(None, [1]).parser
+    parent1 = hpc.cmdline.HPCCmdline([1]).parser
+    parent2 = ros.cmdline.ROSCmdline([1]).parser
+    return PlatformCmdline([parent1, parent2], [1]).parser
 
 
 def sphinx_cmdline_stage2():
-    parent = hpc.HPCCmdline([2]).parser
-    return PlatformCmdline([parent], [2]).parser
+    parent1 = hpc.cmdline.HPCCmdline([2]).parser
+    parent2 = ros.cmdline.ROSCmdline([2]).parser
+    return PlatformCmdline([parent1, parent2], [2]).parser

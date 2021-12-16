@@ -142,8 +142,7 @@ class ExperimentalRunParallelCollator:
 
 
 class ExperimentalRunCSVGatherer:
-    """
-    Gather necessary :term:`Output .csv` files from all :term:`Experimental Runs
+    """Gather necessary :term:`Output .csv` files from all :term:`Experimental Runs
     <Experimental Run>` within a single :term:`Experiment` so that performance
     measures can be generated during stage 4.
 

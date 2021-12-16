@@ -261,14 +261,15 @@ class LinegraphsGenerator:
                                      logyscale=self.cmdopts['plot_log_yscale'],
                                      large_text=self.cmdopts['plot_large_text']).generate()
                 except KeyError:
-                    error = "Could not generate graph. Possible reasons include: "
-                    bad_yaml = "The YAML configuration entry is missing required fields, "
-                    missing_cols = "one or more of {1} missing from '{0}.csv'".format(graph.get('cols',
-                                                                                                "MISSING_KEY"),
-                                                                                      graph.get('src_stem',
-                                                                                                "MISSING_KEY"))
+                    error = ("Could not generate graph. Possible reasons include: "
+                             "The YAML configuration entry is missing required fields, "
+                             "one or more of {1} missing from '{0}.csv'").format(graph.get('cols',
+                                                                                           "MISSING_KEY"),
+                                                                                 graph.get('src_stem',
+                                                                                           "MISSING_KEY"))
 
-                    raise KeyError(error + bad_yaml + missing_cols)
+                    self.logger.fatal(error)
+                    raise
 
 
 class HeatmapsGenerator:

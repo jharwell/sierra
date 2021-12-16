@@ -29,3 +29,5 @@ from types import ModuleType
 Cmdopts = tp.Dict[str, tp.Any]
 YAMLDict = tp.Dict[str, tp.Any]
 CLIArgSpec = tp.Dict[str, tp.Any]
+ShellCmdSpec = tp.Dict[tp.Union[str, tp.List[str]], tp.Union[str, bool]]
+ExpExecOpts = tp.Dict[str, tp.Union[str, int]]

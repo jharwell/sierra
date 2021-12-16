@@ -28,8 +28,9 @@ import implements
 
 # Project packages
 from sierra.core.variables.base_variable import IBaseVariable
-from sierra.core.xml import XMLAttrChangeSet, XMLAttrChange, XMLTagRmList, XMLTagAddList, XMLLuigi
-import sierra.core.config as config
+from sierra.core.xml import XMLAttrChangeSet, XMLAttrChange, XMLTagRmList, XMLTagAddList
+from sierra.core import config
+from sierra.core.variables.time_setup import Parser
 
 
 @implements.implements(IBaseVariable)
@@ -90,40 +91,6 @@ class TimeSetup():
         pass
 
 
-class Parser():
-    """
-    Enforces the cmdline definition of time setup criteria.
-    """
-
-    def __call__(self, arg: str) -> tp.Dict[str, int]:
-        ret = {
-            'n_secs_per_run': int(),
-            'n_datapoints': int(),
-            'n_ticks_per_sec': int(),
-        }
-        # Parse duration, which must be present
-        res = re.search(r"T\d+", arg)
-        assert res is not None, \
-            "Bad duration specification in time setup '{0}'".format(arg)
-        ret['n_secs_per_run'] = int(res.group(0)[1:])
-
-        # Parse # datapoints to capture, which can be absent
-        res = re.search(r"N\d+", arg)
-        if res is not None:
-            ret['n_datapoints'] = int(res.group(0)[1:])
-        else:
-            ret['n_datapoints'] = config.kExperimentalRunData['n_datapoints_1D']
-
-        # Parse # ticks per second for controllers, which can be absent
-        res = re.search(r"K\d+", arg)
-        if res is not None:
-            ret['n_ticks_per_sec'] = int(res.group(0)[1:])
-        else:
-            ret['n_ticks_per_sec'] = config.kARGoS['n_ticks_per_sec']
-
-        return ret
-
-
 def factory(arg: str) -> TimeSetup:
     """
     Factory to create :class:`TimeSetup` derived classes from the command
@@ -133,8 +100,10 @@ def factory(arg: str) -> TimeSetup:
 
        arg: The value of ``--time-setup``.
     """
-    name = '.'.join(arg.split(".")[1:])
-    attr = Parser()(arg)
+    parser = Parser({'n_secs_per_run': config.kARGoS['n_secs_per_run'],
+                     'n_ticks_per_sec': config.kARGoS['n_ticks_per_sec'],
+                     'n_datapoints': config.kExperimentalRunData['n_datapoints_1D']})
+    attr = parser(arg)
 
     def __init__(self: TimeSetup) -> None:
         TimeSetup.__init__(self,
@@ -142,7 +111,7 @@ def factory(arg: str) -> TimeSetup:
                            attr['n_datapoints'],
                            attr['n_ticks_per_sec'])
 
-    return type(name,
+    return type(attr['pretty_name'],
                 (TimeSetup,),
                 {"__init__": __init__})  # type: ignore
 
