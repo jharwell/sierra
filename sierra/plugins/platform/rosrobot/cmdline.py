@@ -25,7 +25,7 @@ import argparse
 # 3rd party packages
 
 # Project packages
-from sierra.core import types, config, ros
+from sierra.core import types, ros
 import sierra.core.cmdline as cmd
 
 
@@ -75,7 +75,7 @@ class PlatformCmdline(cmd.BaseCmdline):
         cmdopts.update(updates)
 
 
-class CmdlineValidator(cmd.CoreCmdlineValidator):
+class CmdlineValidator(ros.cmdline.ROSCmdlineValidator):
     pass
 
 

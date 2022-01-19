@@ -222,7 +222,7 @@ class PhysicsEngines():
         vertices = [(ll_x, ll_y), (lr_x, lr_y), (ur_x, ur_y), (ul_x, ul_y)]
 
         for v in vertices:
-            adds.append(XMLTagAdd(".//physics_engines/*[@id='{name}']/boundaries/sides",
+            adds.append(XMLTagAdd(f".//physics_engines/*[@id='{name}']/boundaries/sides",
                                   "vertex",
                                   {"point": "{0}, {1}".format(v[0], v[1])}))
         return adds

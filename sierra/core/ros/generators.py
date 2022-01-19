@@ -72,7 +72,6 @@ class ROSExpDefGenerator():
         exp_def = XMLLuigi(input_fpath=self.template_input_file)
         launch_ext = config.kROS['launch_file_ext']
         params_ext = config.kROS['param_file_ext']
-
         if exp_def.has_tag('./params'):
             self.logger.debug("Using separate %s and %s files",
                               launch_ext,
@@ -104,7 +103,6 @@ class ROSExpDefGenerator():
         self.logger.debug("Applying time_setup=%s", self.cmdopts['time_setup'])
 
         tsetup = ts.factory(self.cmdopts["time_setup"], self.ros_param_server)()
-
         rms, adds, chgs = scutils.apply_to_expdef(tsetup, exp_def)
 
         # Write time setup info to file for later retrieval
@@ -123,13 +121,22 @@ class ROSExpDefGenerator():
             exp_def.tag_add("./params", "sierra", {}, False)
             exp_def.tag_add("./params/sierra",
                             "experiment",
-                            {"length": "-1"})
+                            {
+                                "length": "-1",
+                                "ticks_per_sec": "-1"
+                            })
         else:
             exp_def.tag_add("./launch",
                             "param",
                             {
                                 "name": "sierra/experiment/length",
-                                "value": "-1"
+                                "value": "-1",
+                            })
+            exp_def.tag_add("./launch",
+                            "param",
+                            {
+                                "name": "sierra/experiment/ticks_per_sec",
+                                "value": "-1",
                             })
 
         # Add SIERRA time keeper

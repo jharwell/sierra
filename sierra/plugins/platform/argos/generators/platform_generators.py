@@ -222,12 +222,15 @@ class PlatformExpDefGenerator():
 
         """
         self.logger.trace("Generating changes for library (all runs)")
+        run_config = self.spec.criteria.main_config['sierra']['run']
+        lib_name = run_config.get('library_name',
+                                  'lib' + self.cmdopts['project'])
         exp_def.attr_change(".//loop_functions",
                             "library",
-                            "lib" + self.cmdopts['project'])
+                            lib_name)
         exp_def.attr_change(".//__CONTROLLER__",
                             "library",
-                            "lib" + self.cmdopts['project'])
+                            lib_name)
 
     def _generate_visualization(self, exp_def: XMLLuigi) -> None:
         """
@@ -289,7 +292,7 @@ class PlatformExpRunDefUniqueGenerator:
         self.random_seed = random_seed
         self.logger = logging.getLogger(__name__)
 
-    def _generate_random(self, exp_def) -> None:
+    def __generate_random(self, exp_def) -> None:
         """
         Generate XML changes for random seeding for a specific simulation in an
         experiment during the input generation process.
@@ -304,24 +307,24 @@ class PlatformExpRunDefUniqueGenerator:
 
     def generate(self, exp_def: XMLLuigi):
         # Setup simulation random seed
-        self._generate_random(exp_def)
+        self.__generate_random(exp_def)
 
         # Setup simulation visualization output
-        self._generate_visualization(exp_def)
+        self.__generate_visualization(exp_def)
 
-    def _generate_visualization(self, exp_def: XMLLuigi):
+    def __generate_visualization(self, exp_def: XMLLuigi):
         """
         Generates XML changes for setting up rendering for a specific simulation
         """
         self.logger.trace("Generating visualization changes for run%s",
                           self.run_num)
 
-        frames_fpath = os.path.join(self.run_output_path,
-                                    config.kARGoS['frames_leaf'])
-        exp_def.attr_change(".//qt-opengl/frame_grabbing",
-                            "directory",
-                            frames_fpath,
-                            noprint=True)  # probably will not be present
+        if self.cmdopts['platform_vc']:
+            frames_fpath = os.path.join(self.run_output_path,
+                                        config.kARGoS['frames_leaf'])
+            exp_def.attr_change(".//qt-opengl/frame_grabbing",
+                                "directory",
+                                frames_fpath)  # probably will not be present
 
 
 __api__ = [

@@ -171,26 +171,22 @@ class Pipeline:
         self.logger.debug("Loading project config from '%s'",
                           self.cmdopts['project_config_root'])
 
+        main_path = os.path.join(self.cmdopts['project_config_root'],
+                                 'main.yaml')
         try:
-            self.main_config = yaml.load(open(os.path.join(self.cmdopts['project_config_root'],
-                                                           'main.yaml')),
-                                         yaml.FullLoader)
+            self.main_config = yaml.load(open(main_path), yaml.FullLoader)
         except FileNotFoundError:
-            self.logger.fatal("%s/main.yaml must exist!",
-                              self.cmdopts['project_config_root'])
+            self.logger.fatal("%s must exist!", main_path)
             raise
 
+        perf_path = os.path.join(self.cmdopts['project_config_root'],
+                                 self.main_config['sierra']['perf'])
         try:
-            perf_config = yaml.load(open(os.path.join(self.cmdopts['project_config_root'],
-                                                      self.main_config['sierra']['perf'])),
-                                    yaml.FullLoader)
+            perf_config = yaml.load(open(perf_path), yaml.FullLoader)
 
         except FileNotFoundError:
-            self.logger.fatal("%s/%s must exist!",
-                              self.cmdopts['project_config_root'],
-                              self.main_config['sierra']['perf'])
-            raise
-
+            self.logger.warn("%s does not exist!", perf_path)
+            perf_config = {}
         self.main_config['sierra'].update(perf_config)
 
 

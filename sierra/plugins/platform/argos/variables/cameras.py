@@ -30,8 +30,8 @@ import implements
 from sierra.core.variables.base_variable import IBaseVariable
 from sierra.core.utils import ArenaExtent
 from sierra.core.xml import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList, XMLTagRm, XMLTagAdd
-import sierra.core.config
-from sierra.core import types
+from sierra.core import types, config
+from sierra.core.vector import Vector3D
 import sierra.plugins.platform.argos.variables.time_setup as ts
 
 
@@ -54,15 +54,13 @@ class QTCameraTimeline():
 
     def __init__(self,
                  tsetup: ts.TimeSetup,
-                 cameras: str,
+                 cmdline: str,
                  extents: tp.List[ArenaExtent]) -> None:
-        self.interpolate = 'dynamic' in cameras
+        self.interpolate = cmdline in ['argos.sw+interp',
+                                       'sierra.sw+interp',
+                                       'sierra.sw+interp+zoom']
 
-        if 'argos' in cameras:
-            self.paradigm = 'argos'
-        else:
-            self.paradigm = 'sierra'
-
+        self.cmdline = cmdline
         self.extents = extents
         self.tsetup = tsetup
         self.tag_adds = []  # type: tp.List[XMLTagAddList]
@@ -84,52 +82,49 @@ class QTCameraTimeline():
 
     def gen_tag_addlist(self) -> tp.List[XMLTagAddList]:
         if not self.tag_adds:
-            adds = XMLTagAddList(XMLTagAdd('./visualization/qt-opengl', 'camera', {}),
-                                 XMLTagAdd("./visualization/qt-opengl/camera", "placements", {}))
+            adds = XMLTagAddList(XMLTagAdd('./visualization/qt-opengl',
+                                           'camera',
+                                           {}),
+                                 XMLTagAdd("./visualization/qt-opengl/camera",
+                                           "placements",
+                                           {}))
 
-            in_ticks = self.tsetup.duration * \
-                sierra.core.config.kARGoS['ticks_per_second']
+            in_ticks = self.tsetup.n_secs_per_run * \
+                config.kARGoS['n_ticks_per_sec']
             adds.append(XMLTagAdd('.//qt-opengl/camera',
                                   'timeline', {'loop': str(in_ticks)}))
 
+            if self.cmdline in ['sierra.sw', 'sierra.sw+interp']:
+                n_cameras = self.kARGOS_N_CAMERAS
+            elif self.cmdline == 'sierra.sw+interp+zoom':
+                n_cameras = self.kARGOS_N_CAMERAS * 3
+
             for ext in self.extents:
-                for c in range(0, self.kARGOS_N_CAMERAS + 1):
-                    index = c % self.kARGOS_N_CAMERAS
-                    adds.append(XMLTagAdd('.//qt-opengl/camera/timeline',
-                                          'keyframe',
+                # generate keyframes for switching between camera perspectives
+                self._gen_keyframes(adds, n_cameras, in_ticks)
+
+                info = []
+                for c in range(0, n_cameras):
+                    info.append(self._gen_camera_config(ext,
+                                                        c,
+                                                        n_cameras))
+
+                for index, up, look_at, pos in info:
+                    adds.append(XMLTagAdd('.//camera/placements',
+                                          'placement',
                                           {
-                                              'placement': str(index),
-                                              'step': str(int(in_ticks / self.kARGOS_N_CAMERAS * c))
-                                          }
-                                          ))
-                    if self.interpolate and c < self.kARGOS_N_CAMERAS:
-                        adds.append(
-                            XMLTagAdd('.//qt-opengl/camera/timeline', 'interpolate', {}))
-
-            if self.paradigm == 'sierra':
-                for ext in self.extents:
-                    center_x = ext.xsize() / 2.0
-                    center_y = ext.ysize() / 2.0
-
-                    pos_z = max(ext.xsize(), ext.ysize()) * 0.50
-                    hyp = math.sqrt(2 * max(center_x, center_y) ** 2)
-                    cameras = XMLTagAddList()
-                    for c in range(0, self.kARGOS_N_CAMERAS):
-                        angle = c * math.pi / 6.0
-                        pos_x = hyp * math.cos(angle) + center_x
-                        pos_y = hyp * math.sin(angle) + center_y
-                        cameras.append(XMLTagAdd('.//camera/placements',
-                                                 'placement',
-                                                 {
-                                                     'index': "{0}".format(c),
-                                                              'position': "{0}, {1}, {2}".format(pos_x,
-                                                                                                 pos_y,
-                                                                                                 pos_z),
-                                                              'look_at': "{0}, {1},0".format(center_x,
-                                                                                             center_y),
-                                                 })
-                                       )
-                adds.extend(cameras)
+                                              'index': "{0}".format(index),
+                                              'up': "{0},{1},{2}".format(up.x,
+                                                                         up.y,
+                                                                         up.z),
+                                              'position': "{0},{1},{2}".format(pos.x,
+                                                                               pos.y,
+                                                                               pos.z),
+                                              'look_at': "{0},{1},{2}".format(look_at.x,
+                                                                              look_at.y,
+                                                                              look_at.z),
+                                          })
+                                )
 
             self.tag_adds = [adds]
 
@@ -137,6 +132,52 @@ class QTCameraTimeline():
 
     def gen_files(self) -> None:
         pass
+
+    def _gen_keyframes(self,
+                       adds: XMLTagAddList,
+                       n_cameras: int,
+                       cycle_length: int) -> None:
+        for c in range(0, n_cameras):
+            index = c % n_cameras
+            adds.append(XMLTagAdd('.//qt-opengl/camera/timeline',
+                                  'keyframe',
+                                  {
+                                      'placement': str(index),
+                                      'step': str(int(cycle_length / n_cameras * c))
+                                  }
+                                  ))
+            if self.interpolate and c < n_cameras:
+                adds.append(XMLTagAdd('.//qt-opengl/camera/timeline',
+                                      'interpolate',
+                                      {}))
+
+    def _gen_camera_config(self,
+                           ext: ArenaExtent,
+                           index: int,
+                           n_cameras) -> tuple:
+        angle = (index % n_cameras) * (2.0 * math.pi / n_cameras)
+        look_at = Vector3D(ext.xsize() / 2.0,
+                           ext.ysize() / 2.0,
+                           0.0)
+        hyp = math.sqrt(2 * max(look_at.x, look_at.y) ** 2)
+
+        # As time proceeds and we interpolate between cameras, we want to slowly
+        # be zooming in/moving the cameras closer to the arena center.
+        if self.cmdline == 'sierra.sw+interp+zoom':
+            factor = math.sqrt((n_cameras + index) / n_cameras)
+        else:
+            factor = 1.0
+
+        pos_x = (hyp * math.cos(angle) + look_at.x) / factor
+        pos_y = (hyp * math.sin(angle) + look_at.y) / factor
+        pos_z = (max(ext.xsize(), ext.ysize()) * 0.50) / factor
+        pos = Vector3D(pos_x, pos_y, pos_z)
+
+        # This is what the ARGoS source does for the up vector for the default
+        # camera configuration
+        up = Vector3D(0, 0, 1)
+
+        return index, up, look_at, pos
 
 
 @implements.implements(IBaseVariable)

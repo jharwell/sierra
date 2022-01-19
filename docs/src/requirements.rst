@@ -229,11 +229,13 @@ SIERRA Requirements for ARGoS Project Code
 ------------------------------------------
 
 #. ``--project`` matches the name of the C++ library for the project
-   (i.e. ``--project.so``). For example if you pass
-   ``--project=project-awesome``, then SIERRA will tell ARGoS to search in
-   ``proj-awesome.so`` for both loop function and controller definitions via XML
-   changes. You *cannot* put the loop function/controller definitions in
-   different libraries.
+   (i.e. ``--project.so``), unless ``library_name`` is present in
+   ``sierra.main.run`` YAML config. See :ref:`ln-tutorials-project-main-config`
+   for details. For example if you pass ``--project=project-awesome``, then
+   SIERRA will tell ARGoS to search in ``proj-awesome.so`` for both loop
+   function and controller definitions via XML changes, unless you specify
+   otherwise in project configuration. You *cannot* put the
+   loop function/controller definitions in different libraries.
 
 #. :envvar:`ARGOS_PLUGIN_PATH` is set up properly prior to invoking SIERRA.
 

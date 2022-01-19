@@ -258,7 +258,7 @@ class BatchCriteria():
 
     def n_exp(self) -> int:
         self.verify_mods()
-        return len(self.gen_attr_changelist()) + len(self.get_tag_addlist())
+        return len(self.gen_attr_changelist()) + len(self.gen_tag_addlist())
 
     def pickle_exp_defs(self, cmdopts: types.Cmdopts) -> None:
         self.verify_mods()
@@ -311,8 +311,9 @@ class BatchCriteria():
 
         if len(chgs_for_batch) != 0:
             mods_for_batch = chgs_for_batch
-            self.logger.info("Scaffolding experiments using '%s': Modify %s XML tags",
+            self.logger.info("Scaffolding experiments: cli='%s',leaf='%s': Modify %s XML tags",
                              self.cli_arg,
+                             batch_config_leaf,
                              len(chgs_for_batch[0]))
 
         else:
@@ -352,13 +353,14 @@ class BatchCriteria():
                        cmdopts: types.Cmdopts,
                        batch_config_leaf: str) -> None:
         exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
-        exp_input_root = os.path.join(self.batch_input_root,
-                                      str(exp_dirname))
         self.logger.debug("Applying %s XML modifications from '%s' for exp%s in %s",
                           len(modsi),
                           self.cli_arg,
                           i,
                           exp_dirname)
+
+        exp_input_root = os.path.join(self.batch_input_root,
+                                      str(exp_dirname))
 
         sierra.core.utils.dir_create_checked(exp_input_root,
                                              exist_ok=cmdopts['exp_overwrite'])
@@ -427,7 +429,9 @@ class UnivarBatchCriteria(BatchCriteria):
                                                 d,
                                                 sierra.core.config.kPickleLeaf))
 
-            sizes.append(module.population_size_extract(exp_def))
+            sizes.append(module.population_size_from_pickle(exp_def,
+                                                            self.main_config,
+                                                            cmdopts))
         return sizes
 
 
@@ -516,7 +520,9 @@ class BivarBatchCriteria(BatchCriteria):
             index = dirs.index(d)
             i = int(index / (n_chgs2 + n_adds2))
             j = index % (n_chgs2 + n_adds2)
-            sizes[i][j] = module.population_size_extract(exp_def)
+            sizes[i][j] = module.population_size_from_pickle(exp_def,
+                                                             self.main_config,
+                                                             cmdopts)
 
         return sizes
 
@@ -652,7 +658,7 @@ def __univar_factory(main_config: types.YAMLDict,
     Construct a batch criteria object from a single cmdline argument.
     """
     category = cli_arg.split('.')[0]
-    path = 'variables.{category}'
+    path = f'variables.{category}'
 
     module = pm.bc_load(cmdopts, category)
 

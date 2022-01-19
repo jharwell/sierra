@@ -66,30 +66,25 @@ class PipelineStage3:
         self._run_run_collation(self.main_config, self.cmdopts, criteria)
 
         if self.cmdopts['project_imagizing']:
-            intra_HM_config = yaml.load(open(os.path.join(self.cmdopts['core_config_root'],
-                                                          'intra-graphs-hm.yaml')),
-                                        yaml.FullLoader)
+            intra_HM_path = os.path.join(self.cmdopts['project_config_root'],
+                                         'intra-graphs-hm.yaml')
 
-            project_intra_HM = os.path.join(self.cmdopts['project_config_root'],
-                                            'intra-graphs-hm.yaml')
-
-            if sierra.core.utils.path_exists(project_intra_HM):
-                self.logger.info("Loading additional intra-experiment heatmap config for project '%s'",
+            if sierra.core.utils.path_exists(intra_HM_path):
+                self.logger.info("Loading intra-experiment heatmap config for project '%s'",
                                  self.cmdopts['project'])
-                project_dict = yaml.load(
-                    open(project_intra_HM), yaml.FullLoader)
-                for category in project_dict:
-                    if category not in intra_HM_config:
-                        intra_HM_config.update(
-                            {category: project_dict[category]})
-                    else:
-                        intra_HM_config[category]['graphs'].extend(
-                            project_dict[category]['graphs'])
+                intra_HM_config = yaml.load(open(intra_HM_path),
+                                            yaml.FullLoader)
+                self._run_imagizing(self.main_config,
+                                    intra_HM_config,
+                                    self.cmdopts,
+                                    criteria)
 
-            self._run_imagizing(
-                self.main_config, intra_HM_config, self.cmdopts, criteria)
+            else:
+                self.logger.warn("%s does not exist--cannot imagize",
+                                 intra_HM_path)
 
     # Private functions
+
     def _run_statistics(self,
                         main_config: dict,
                         cmdopts: types.Cmdopts, criteria:

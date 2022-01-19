@@ -91,3 +91,9 @@ class ROSCmdline(cmd.BaseCmdline):
         }
 
         cmdopts.update(updates)
+
+
+class ROSCmdlineValidator():
+    def __call__(self, args: argparse.Namespace) -> None:
+        assert args.robot is not None,\
+            "You must specify the --robot to use"

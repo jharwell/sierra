@@ -58,7 +58,6 @@ class PlatformCmdline(corecmd.BaseCmdline):
     def init_stage1(self) -> None:
         # Experiment options
         experiment = self.parser.add_argument_group('Stage1: Experiment setup')
-
         experiment.add_argument("--robot-positions",
 
                                 help="""

@@ -142,21 +142,22 @@ class BatchExpRunner:
         exec_times_fpath = os.path.join(self.batch_stat_exec_root,
                                         now.strftime("%Y-%m-%e-%H:%M"))
 
-        generator = platform.ExpShellCmdsGenerator(self.cmdopts)
-
         # Start a new process for the experiment shell so pre-run commands have
         # an effect (if they set environment variables, etc.).
         shell = ExpShell()
 
-        # Run cmds for platform-specific things to setup the experiment (e.g.,
-        # start daemons) if needed.
-        for spec in generator.pre_exp_cmds():
-            shell.run_from_spec(spec)
-
         # Run the experiment!
         for exp in exp_to_run:
+            exp_num = exp_all.index(exp)
+
+            # Run cmds for platform-specific things to setup the experiment
+            # (e.g., start daemons) if needed.
+            generator = platform.ExpShellCmdsGenerator(self.cmdopts, exp_num)
+            for spec in generator.pre_exp_cmds():
+                shell.run_from_spec(spec)
+
             runner = ExpRunner(exp,
-                               exp_all.index(exp),
+                               exp_num,
                                shell,
                                generator,
                                exec_times_fpath)

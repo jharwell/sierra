@@ -71,8 +71,13 @@ class ExperimentalRunParallelCollator:
         gatherq = m.Queue()
         processq = m.Queue()
 
-        for exp in os.listdir(self.cmdopts['batch_output_root']):
-            gatherq.put((self.cmdopts['batch_output_root'], exp))
+        exp_to_proc = sierra.core.utils.exp_range_calc(self.cmdopts,
+                                                       self.cmdopts['batch_output_root'],
+                                                       criteria)
+
+        for exp in exp_to_proc:
+            _, leaf = os.path.split(exp)
+            gatherq.put((self.cmdopts['batch_output_root'], leaf))
 
         gathered = [pool.apply_async(ExperimentalRunParallelCollator._gather_worker,
                                      (gatherq,

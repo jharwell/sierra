@@ -66,7 +66,7 @@ class ParsedCmdlineConfigurer():
         # We call out to the execution environment to configure itself after
         # configuring things for ARGoS.
         module = pm.SIERRAPluginManager().get_plugin_module(self.exec_env)
-        module.ParsedCmdlineConfigurer()(args)
+        module.ParsedCmdlineConfigurer(self.exec_env)(args)
 
     def _hpc_pbs(self, args: argparse.Namespace) -> None:
         # For HPC, we want to use the the maximum # of simultaneous jobs per
@@ -183,13 +183,13 @@ class ExpRunShellCmdsGenerator():
                       run_num: int) -> tp.List[types.ShellCmdSpec]:
         exec_env = self.cmdopts['exec_env']
         if exec_env in ['hpc.local', 'hpc.adhoc']:
-            cmd = '{0} -c {1}{2};'.format(config.kARGoS['launch_cmd'],
-                                          input_fpath,
-                                          config.kARGoS['launch_file_ext'])
+            cmd = '{0} -c {1}{2}'.format(config.kARGoS['launch_cmd'],
+                                         input_fpath,
+                                         config.kARGoS['launch_file_ext'])
         elif exec_env in ['hpc.slurm', 'hpc.adhoc']:
-            cmd = '{0}-{1} -c {2};'.format(config.kARGoS['launch_cmd'],
-                                           os.environ['SIERRA_ARCH'],
-                                           input_fpath)
+            cmd = '{0}-{1} -c {2}'.format(config.kARGoS['launch_cmd'],
+                                          os.environ['SIERRA_ARCH'],
+                                          input_fpath)
         else:
             assert False, f"Unsupported exec environment '{exec_env}'"
 
@@ -199,6 +199,8 @@ class ExpRunShellCmdsGenerator():
 
         if not self.cmdopts['exec_no_devnull']:
             cmd += ' --log-file /dev/null --logerr-file /dev/null'
+
+        cmd += ';'
 
         return [{'cmd': cmd, 'shell': True, 'check': True}]
 

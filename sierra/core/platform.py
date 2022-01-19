@@ -24,13 +24,10 @@ import os
 import typing as tp
 import subprocess
 import shutil
-import re
 import argparse
-import logging  # type: tp.Any
 import socket
 
 # 3rd party packages
-import packaging.version
 import implements
 
 # Project packages
@@ -58,6 +55,12 @@ class ExpRunShellCmdsGenerator():
     """
     Trampoline class for dispatching cmd generation to platforms and/or
     execution environments.
+
+    Called during stage 1 to add shell commands which should be run immediately
+    before and after the shell command to actually execute a single
+    :term:`Experimental Run` to the commands file to be fed to whatever the
+    tool a given execution environment environment uses to run cmds (e.g., GNU
+    parallel).
     """
 
     def __init__(self,
@@ -98,8 +101,13 @@ class ExpRunShellCmdsGenerator():
 
 @implements.implements(bindings.IExpShellCmdsGenerator)
 class ExpShellCmdsGenerator():
-    """Trampoline class for dispatching cmd generation to platforms and/or
-    execution environments.
+    """Trampoline class for dispatching shell cmd generation to platforms and/or
+    execute environments.
+
+    Called during stage 2 to run shell commands immediately before running a
+    given :term:`Experiment`, to run shell commands to actually run the
+    experiment, and to run shell commands immediately after the experiment
+    finishes.
     """
 
     def __init__(self, cmdopts: types.Cmdopts, exp_num: int) -> None:
@@ -131,6 +139,9 @@ class ParsedCmdlineConfigurer():
     """
     Dispatcher for configuring the main cmdopts dictionary for the selected
     platform and execution environment.
+
+    Called before the pipeline starts to add new/modify existing cmdline
+    arguments after initial parsing.
     """
 
     def __init__(self,
@@ -160,7 +171,12 @@ class ParsedCmdlineConfigurer():
 
 class ExpRunConfigurer():
     """
-    Perform platform-specific configuration for a given experimental run.
+    Perform platform-specific configuration for a given experimental run that
+    you can do programmatically (i.e., without needing a shell). This usually is
+    things like creating directories, etc.
+
+    Called at the end of stage 1 during configuring a specific
+    :term:`Experimental Run`.
     """
 
     def __init__(self, cmdopts: types.Cmdopts) -> None:

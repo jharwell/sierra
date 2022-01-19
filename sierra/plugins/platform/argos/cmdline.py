@@ -170,10 +170,11 @@ class PlatformCmdline(cmd.BaseCmdline):
 
         rendering.add_argument("--camera-config",
                                choices=['overhead',
-                                        'argos.static',
-                                        'argos.dynamic',
-                                        'sierra.static',
-                                        'sierra.dynamic'],
+                                        'argos.sw',
+                                        'argos.sw+interp',
+                                        'sierra.sw',
+                                        'sierra.sw+interp',
+                                        'sierra.sw+interp+zoom'],
                                help="""
 
                                Select the camera configuration for
@@ -184,20 +185,33 @@ class PlatformCmdline(cmd.BaseCmdline):
                                  the center of the aren looking straight down at
                                  an appropriate height to see the whole arena.
 
-                               - ``argos_static`` - Use the default ARGoS camera
-                                 configuration (12 cameras), cycling through
+                               - ``argos.sw`` - Use the default ARGoS camera
+                                 configuration (12 cameras equally spaced on the
+                                 unit circle), cycling through
                                  them periodically throughout simulation without
-                                 interpolation.
+                                 interpolation. In this configuration, cameras
+                                 are set at Z=arena height, so you need to make
+                                 sure your arena Z size is sufficiently high to
+                                 avoid only looking at the wall (even for 2D
+                                 simulations).
 
-                               - ``sierra_static`` - Use the SIERRA ARGoS camera
-                                 configuration (12 cameras), cycling through
-                                 them periodically throughout simulation without
-                                 interpolation.
+                               - ``argos.sw+interp`` - Same as ``argos.sw``,
+                                 but with interpolation.
 
-                               - ``sierra_dynamic`` - Use the SIERRA ARGoS
+                               - ``sierra.sw`` - Use the SIERRA ARGoS
                                  camera configuration (12 cameras), cycling
                                  through them periodically throughout simulation
-                                 with interpolation between positions.
+                                 without interpolation.
+
+                               - ``sierra.sw+interp`` - Same as ``sierra.static``,
+                                 but with interpolation.
+
+                               - ``sierra.sw+interp+zoom`` - Same as
+                                 ``sierra.sw+interp``, but uses 36 cameras: 12
+                                 at 3 different levels of zoom, forming a spiral
+                                 of vantage points. All cameras are cycled
+                                 through periodically throughout simulation with
+                                 interpolation between positions.
 
                                  """ + self.stage_usage_doc([1]),
                                default='overhead')

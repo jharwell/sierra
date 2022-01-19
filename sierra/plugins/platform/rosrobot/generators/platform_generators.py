@@ -42,7 +42,7 @@ class PlatformExpDefGenerator(ros.generators.ROSExpDefGenerator):
                  controller: str,
                  cmdopts: types.Cmdopts,
                  **kwargs) -> None:
-        super().__init(spec, controller, cmdopts, **kwargs)
+        super().__init__(spec, controller, cmdopts, **kwargs)
 
         self.logger = logging.getLogger(__name__)
 

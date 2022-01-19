@@ -54,7 +54,7 @@ you clone things somewhere else.
 
             SIERRA only supports melodic and noetic.
 
-         #. Install additional ROS packages:
+         #. Install additional ROS packages for the turtlebot:
 
             - ``ros-<distro>-turtlebot3-description``
             - ``ros-<distro>-turtlebot3-msgs``
@@ -125,12 +125,15 @@ you clone things somewhere else.
 
          #. Set :envvar:`SIERRA_PLUGIN_PATH`::
 
-              export SIERRA_PLUGIN_PATH=$HOME/research/sierra-sample-project/projects/argos_project
+              export SIERRA_PLUGIN_PATH=$HOME/research/sierra-sample-project/projects
 
          #. Set :envvar:`ARGOS_PLUGIN_PATH`::
 
-              export ARGOS_PLUGIN_PATH=$HOME/research/sierra-sample-project/argos/build
+              export ARGOS_PLUGIN_PATH=$HOME/research/sierra-sample-project/argos/build:<ARGOS_INSTALL_DIR>
 
+            Where ``<ARGOS_INSTALL_DIR>`` is the prefix that you installed ARGoS
+            to.
+              
       .. tab:: ROS+Gazebo
 
          #. Set :envvar:`SIERRA_PLUGIN_PATH`::

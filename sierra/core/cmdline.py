@@ -1001,7 +1001,7 @@ class CoreCmdlineValidator():
 
     """
 
-    def __call__(self, args) -> None:
+    def __call__(self, args: argparse.Namespace) -> None:
         assert len(
             args.batch_criteria) <= 2, "Too many batch criteria passed"
 

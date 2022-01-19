@@ -59,10 +59,10 @@ class PopulationSize(population_size.BasePopulationSize):
                  robot: str,
                  sizes: tp.List[float],
                  positions: tp.List[float]) -> None:
-        population_size.PopulationSize.__init__(self,
-                                                cli_arg,
-                                                main_config,
-                                                batch_input_root)
+        population_size.BasePopulationSize.__init__(self,
+                                                    cli_arg,
+                                                    main_config,
+                                                    batch_input_root)
         self.sizes = sizes
         self.robot = robot
         self.positions = positions

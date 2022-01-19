@@ -15,7 +15,7 @@
 # SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 Classes for the population size batch criteria. See
-:ref:`ln-platform-rosgazebo-bc-population-size` for usage documentation.
+:ref:`ln-platform-rosrobot-bc-population-size` for usage documentation.
 """
 
 # Core packages
@@ -34,7 +34,7 @@ from sierra.core.variables import population_size
 
 @implements.implements(bc.IConcreteBatchCriteria)
 @implements.implements(bc.IQueryableBatchCritera)
-class PopulationSize(population_size.PopulationSize):
+class PopulationSize(population_size.BasePopulationSize):
     """
     A univariate range of system sizes used to define batch experiments. This
     class is a base class which should (almost) never be used on its
@@ -55,10 +55,10 @@ class PopulationSize(population_size.PopulationSize):
                  batch_input_root: str,
                  robot: str,
                  sizes: tp.List[float]) -> None:
-        population_size.PopulationSize.__init__(self,
-                                                cli_arg,
-                                                main_config,
-                                                batch_input_root)
+        population_size.BasePopulationSize.__init__(self,
+                                                    cli_arg,
+                                                    main_config,
+                                                    batch_input_root)
         self.sizes = sizes
         self.robot = robot
         self.logger = logging.getLogger(__name__)

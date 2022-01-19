@@ -43,7 +43,7 @@ configuration/# of robots).
 
 SIERRA supports multiple HPC environments for execution of experiments in
 simulation
-([docs](https://swarm-robotics-sierra.readthedocs.io/en/latest/src/exec_env/index.html))
+([docs](https://swarm-robotics-sierra.readthedocs.io/en/latest/src/exec_env/hpc.html))
 and on real robots
 ([docs](https://swarm-robotics-sierra.readthedocs.io/en/latest/src/exec_env/robots.html)):
 

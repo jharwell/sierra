@@ -113,7 +113,8 @@ class PipelineStage4:
         self.intra_HM_config = config['intra_HM']
         self.inter_LN_config = config['inter_LN']
 
-        self._load_models()
+        if not self.cmdopts['models_disable']:
+            self._load_models()
 
     def run(self, criteria: bc.IConcreteBatchCriteria) -> None:
         """

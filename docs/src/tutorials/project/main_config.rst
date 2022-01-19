@@ -33,6 +33,13 @@ knows how to interact with your project are shown below:
                    # outputs.
                    run_metrics_leaf: 'metrics'
 
+                   # The name of the shared library where project code can be
+                   # found, sans file extension. Must include
+                   # 'lib'. Optional. If not present, then SIERRA will use
+                   # ``--project`` as the name of the library to tell ARGoS to
+                   # use.
+                   library_name: 'libawesome'
+
                  # Configuration for performance measures. This key is mandatory
                  # for all experiments. The value is the location of the .yaml
                  # configuration file for performance measures. It is a separate
@@ -219,9 +226,9 @@ knows how to interact with your project are shown below:
                     attr_change:
 
                       # The ``__CONTROLLER__`` tag in the
-                      # ``--template-input-file`` REQUIRED to allow SIERRA to
+                      # ``--template-input-file`` is REQUIRED to allow SIERRA to
                       # unambiguously set the "library" attribute of the
-                      # controller based on the ``--project`` name.
+                      # controller.
                       - ['.//controllers', '__CONTROLLER__', 'FizzBuzz']
 
 

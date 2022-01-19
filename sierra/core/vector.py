@@ -95,12 +95,26 @@ class Vector3D:
     def __repr__(self) -> str:
         return '({0},{1},{2})'.format(self.x, self.y, self.z)
 
+    def cross(self, o: 'Vector3D') -> 'Vector3D':
+        return Vector3D(self.y * o.z - self.z * o.y,
+                        self.z * o.x - self.x * o.z,
+                        self.x * o.y - self.y * o.x)
+
     def length(self) -> float:
         return math.sqrt((self.x * self.x) + (self.y * self.y) + (self.z * self.z))
 
     def normalize(self) -> 'Vector3D':
         length = self.length()
         return Vector3D((self.x / length), (self.y / length), (self.z / length))
+
+    def perpendicularize(self) -> 'Vector3D':
+        # From
+        # https://math.stackexchange.com/questions/137362/how-to-find-perpendicular-vector-to-another-vector
+        choice1 = Vector3D(0, self.z, -self.y)
+        choice2 = Vector3D(-self.z, 0, self.x)
+        choice3 = Vector3D(-self.y, self.x, 0)
+        m = max([choice1, choice2, choice3], key=lambda v: v.length())
+        return m
 
 
 __api__ = ['Vector3D']

@@ -77,7 +77,7 @@ class TimeSetup():
                                      "length",
                                      str(self.n_secs_per_run))
                 chg2 = XMLAttrChange("./params/sierra/experiment",
-                                     "ticks_per_set",
+                                     "ticks_per_sec",
                                      str(self.n_ticks_per_sec))
 
             self.attr_changes = [XMLAttrChangeSet(chg1, chg2)]

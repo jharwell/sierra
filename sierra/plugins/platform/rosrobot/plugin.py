@@ -25,7 +25,7 @@ import implements
 import packaging.version
 
 # Project packages
-from sierra.plugins.platform.rosgazebo import cmdline
+from sierra.plugins.platform.rosrobot import cmdline
 from sierra.core import xml, platform, config, ros, types
 from sierra.core.experiment import bindings
 
@@ -76,9 +76,8 @@ class ExpRunShellCmdsGenerator():
 
         # First, the cmd to start roscore, on THIS (the host) machine. We don't
         # really need to be on a unique port so that multiple ROS instances can
-        # be running, but we do need it to force robots to wait in between runs.
-        roscore_port = (kROSCORE_PORT_START + self.exp_num *
-                        self.cmdopts['n_runs'] + run_num)
+        # be running.
+        roscore_port = (kROSCORE_PORT_START + self.exp_num)
 
         ret = []
 
@@ -107,7 +106,15 @@ class ExpRunShellCmdsGenerator():
         return ret
 
     def post_run_cmds(self) -> tp.List[types.ShellCmdSpec]:
-        return []
+        prompt = ("Once the robots and environment are "
+                  "reset/setup for the next run, press any key to continue... ")
+        return [
+            {
+                'cmd': f"read -p {prompt} c",
+                'shell': True,
+                'check': False
+            }
+        ]
 
 
 @implements.implements(bindings.IExpShellCmdsGenerator)
@@ -128,10 +135,10 @@ class ExpShellCmdsGenerator():
             'check': True
         },
             {
-            # Each run gets their own roscore. Because each roscore has
-            # a different port for each run, this prevents any robots
-            # from pre-emptively starting the next run before the rest
-            # of the robots have finished the current one.
+            # Each experiment gets their own roscore. Because each roscore has a
+            # different port, this prevents any robots from pre-emptively
+            # starting the next experiment before the rest of the robots have
+            # finished the current one.
             'cmd': 'roscore -p {roscore_port} &',
             'shell': True,
             'check': True

@@ -87,11 +87,28 @@ class ExpCreator:
         # If random seeds where previously generated, use them if configured
         self.seeds_fpath = os.path.join(self.exp_input_root,
                                         config.kRandomSeedsLeaf)
-        if os.path.exists(self.seeds_fpath) and not self.cmdopts['no_preserve_seeds']:
-            with open(self.seeds_fpath, 'rb') as f:
-                self.random_seeds = pickle.load(f)
-            self.logger.debug("Using existing random seeds for experiment")
-        else:
+        self.preserve_seeds = not self.cmdopts['no_preserve_seeds']
+        self.random_seeds = None
+
+        if self.preserve_seeds:
+            if os.path.exists(self.seeds_fpath):
+                with open(self.seeds_fpath, 'rb') as f:
+                    self.random_seeds = pickle.load(f)
+
+        if self.random_seeds is not None:
+            if len(self.random_seeds) == self.cmdopts['n_runs']:
+                self.logger.debug("Using existing random seeds for experiment")
+            elif len(self.random_seeds) != self.cmdopts['n_runs']:
+                # OK to overwrite the saved random seeds--they changed the
+                # experiment definition.
+                self.logger.warn(("Experiment definition changed: # random "
+                                  "seeds (% s) != --n-runs (%s): create new "
+                                  "seeds"),
+                                 len(self.random_seeds),
+                                 self.cmdopts['n_runs'])
+                self.preserve_seeds = False
+
+        if not self.preserve_seeds or self.random_seeds is None:
             self.logger.debug("Generating new random seeds for experiment")
             self.random_seeds = random.sample(range(0, int(time.time())),
                                               self.cmdopts["n_runs"])
@@ -129,7 +146,9 @@ class ExpCreator:
             self._create_exp_run(per_run, generator, run_num, self.random_seeds)
 
         # Save seeds
-        if not os.path.exists(self.seeds_fpath) or self.cmdopts['no_preserve_seeds']:
+        if not os.path.exists(self.seeds_fpath) or not self.preserve_seeds:
+            if os.path.exists(self.seeds_fpath):
+                os.remove(self.seeds_fpath)
             with open(self.seeds_fpath, 'ab') as f:
                 pickle.dump(self.random_seeds, f)
 
@@ -149,6 +168,7 @@ class ExpCreator:
         run_output_path = os.path.join(self.exp_output_root,
                                        run_output_dir)
         stem_path = self._get_launch_file_stempath(run_num)
+
         per_run.ExpRunDefUniqueGenerator(run_num,
                                          run_output_path,
                                          stem_path,
@@ -158,7 +178,8 @@ class ExpCreator:
         # Write out the experimental run launch file
         run_exp_def.write(stem_path)
 
-        # Perform any necessary per-run configuration.
+        # Perform any necessary programmatic (i.e., stuff you can do in python
+        # and don't need a shell for) per-run configuration.
         run_output_dir = os.path.join(self.exp_output_root,
                                       run_output_dir)
         platform.ExpRunConfigurer(self.cmdopts)(run_output_dir)

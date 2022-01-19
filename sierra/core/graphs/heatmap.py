@@ -229,8 +229,8 @@ class DualHeatmap:
 
         # Add colorbar.
         #
-        # Add, then remove the colorbar for the heatmap on the left so that they both end up the
-        # same size. Not pythonic, but it works.
+        # Add, then remove the colorbar for the heatmap on the left so that they
+        # both end up the same size. Not pythonic, but it works.
         self._plot_colorbar(fig, im1, ax1, remove=True)
         self._plot_colorbar(fig, im2, ax2, remove=False)
 
