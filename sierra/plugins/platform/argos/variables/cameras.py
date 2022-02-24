@@ -32,7 +32,7 @@ from sierra.core.utils import ArenaExtent
 from sierra.core.xml import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList, XMLTagRm, XMLTagAdd
 from sierra.core import types, config
 from sierra.core.vector import Vector3D
-import sierra.plugins.platform.argos.variables.time_setup as ts
+import sierra.plugins.platform.argos.variables.exp_setup as exp
 
 
 @implements.implements(IBaseVariable)
@@ -44,7 +44,7 @@ class QTCameraTimeline():
     Attributes:
         interpolate: Should we interpolate between camera positions on our
                       timeline ?
-        tsetup: Simulation time definitions.
+        setup: Simulation experiment definitions.
         extents: List of (X,Y,Zs) tuple of dimensions of arena areas to generate
                  camera definitions for.
     """
@@ -53,7 +53,7 @@ class QTCameraTimeline():
     kARGOS_N_CAMERAS = 12
 
     def __init__(self,
-                 tsetup: ts.TimeSetup,
+                 setup: exp.ExpSetup,
                  cmdline: str,
                  extents: tp.List[ArenaExtent]) -> None:
         self.interpolate = cmdline in ['argos.sw+interp',
@@ -62,7 +62,7 @@ class QTCameraTimeline():
 
         self.cmdline = cmdline
         self.extents = extents
-        self.tsetup = tsetup
+        self.setup = setup
         self.tag_adds = []  # type: tp.List[XMLTagAddList]
 
     def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
@@ -84,15 +84,21 @@ class QTCameraTimeline():
         if not self.tag_adds:
             adds = XMLTagAddList(XMLTagAdd('./visualization/qt-opengl',
                                            'camera',
-                                           {}),
+                                           {},
+                                           False),
                                  XMLTagAdd("./visualization/qt-opengl/camera",
                                            "placements",
-                                           {}))
+                                           {},
+                                           False))
 
-            in_ticks = self.tsetup.n_secs_per_run * \
+            in_ticks = self.setup.n_secs_per_run * \
                 config.kARGoS['n_ticks_per_sec']
             adds.append(XMLTagAdd('.//qt-opengl/camera',
-                                  'timeline', {'loop': str(in_ticks)}))
+                                  'timeline',
+                                  {
+                                      'loop': str(in_ticks)
+                                  },
+                                  False))
 
             if self.cmdline in ['sierra.sw', 'sierra.sw+interp']:
                 n_cameras = self.kARGOS_N_CAMERAS
@@ -123,7 +129,8 @@ class QTCameraTimeline():
                                               'look_at': "{0},{1},{2}".format(look_at.x,
                                                                               look_at.y,
                                                                               look_at.z),
-                                          })
+                                          },
+                                          True)
                                 )
 
             self.tag_adds = [adds]
@@ -144,12 +151,14 @@ class QTCameraTimeline():
                                   {
                                       'placement': str(index),
                                       'step': str(int(cycle_length / n_cameras * c))
-                                  }
+                                  },
+                                  True
                                   ))
             if self.interpolate and c < n_cameras:
                 adds.append(XMLTagAdd('.//qt-opengl/camera/timeline',
                                       'interpolate',
-                                      {}))
+                                      {},
+                                      True))
 
     def _gen_camera_config(self,
                            ext: ArenaExtent,
@@ -226,7 +235,8 @@ class QTCameraOverhead():
                                                                                       height),
                                                    'look_at': "{0}, {1}, 0".format(ext.xsize() / 2.0,
                                                                                    ext.ysize() / 2.0),
-                                      }))
+                                      },
+                                      True))
             self.tag_adds = [adds]
 
         return self.tag_adds
@@ -242,7 +252,7 @@ def factory(cmdopts: types.Cmdopts, extents: tp.List[ArenaExtent]):
     if cmdopts['camera_config'] == 'overhead':
         return QTCameraOverhead(extents)
     else:
-        return QTCameraTimeline(ts.factory(cmdopts["time_setup"])(),  # type: ignore
+        return QTCameraTimeline(exp.factory(cmdopts["exp_setup"])(),  # type: ignore
                                 cmdopts['camera_config'],
                                 extents)
 

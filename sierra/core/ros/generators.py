@@ -28,7 +28,7 @@ from sierra.core.xml import XMLLuigi, XMLWriterConfig
 from sierra.core.experiment.spec import ExperimentSpec
 import sierra.core.utils as scutils
 from sierra.core import types, config
-import sierra.core.ros.variables.time_setup as ts
+import sierra.core.ros.variables.exp_setup as exp
 
 
 class ROSExpDefGenerator():
@@ -70,98 +70,77 @@ class ROSExpDefGenerator():
 
         """
         exp_def = XMLLuigi(input_fpath=self.template_input_file)
-        launch_ext = config.kROS['launch_file_ext']
-        params_ext = config.kROS['param_file_ext']
-        if exp_def.has_tag('./params'):
-            self.logger.debug("Using separate %s and %s files",
-                              launch_ext,
-                              params_ext)
+        wr_config = XMLWriterConfig([])
 
-            exp_def.write_config_set(XMLWriterConfig({'./launch': launch_ext,
-                                                      './params': params_ext}))
+        if exp_def.has_tag('./params'):
+            self.logger.debug("Using shared XML parameter file")
+            wr_config.add({
+                'src_root': './params',
+                'opath_leaf': config.kROS['param_file_ext'],
+                'create_tags': None,
+                'dest_parent': None,
+                'rename_to': None
+            })
 
         else:
-            self.logger.debug("Using ROS parameter server/single %s file",
-                              launch_ext)
-            exp_def.write_config_set(XMLWriterConfig({'./launch': launch_ext}))
             self.ros_param_server = True
 
-        # Setup experiment
+        exp_def.write_config_set(wr_config)
+
+        # Add <master> tag
+        if not exp_def.has_tag("./master"):
+            exp_def.tag_add(".",
+                            "master",
+                            {})
+        if not exp_def.has_tag("./master/group/[@ns='sierra']"):
+            exp_def.tag_add("./master",
+                            "group",
+                            {
+                                'ns': 'sierra'
+                            })
+        # Add <robot> tag
+        if not exp_def.has_tag("./robot"):
+            exp_def.tag_add(".",
+                            "robot",
+                            {})
+        if not exp_def.has_tag("./robot/group/[@ns='sierra']"):
+            exp_def.tag_add("./robot",
+                            "group",
+                            {
+                                'ns': 'sierra'
+                            })
+
+        # Generate core experiment definitions
         self._generate_experiment(exp_def)
 
-        # Setup simulation time
-        self._generate_time(exp_def)
-
         return exp_def
-
-    def _generate_time(self, exp_def: XMLLuigi) -> None:
-        """
-        Generate XML changes to setup simulation time parameters.
-
-        Writes generated changes to the simulation definition pickle file.
-        """
-        self.logger.debug("Applying time_setup=%s", self.cmdopts['time_setup'])
-
-        tsetup = ts.factory(self.cmdopts["time_setup"], self.ros_param_server)()
-        rms, adds, chgs = scutils.apply_to_expdef(tsetup, exp_def)
-
-        # Write time setup info to file for later retrieval
-        scutils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)
 
     def _generate_experiment(self, exp_def: XMLLuigi) -> None:
         """
         Generate XML tag changes to setup basic experiment parameters.
 
-        Does not write generated changes to the simulation definition pickle
-        file.
+        Writes generated changes to the simulation definition pickle file.
         """
-        self.logger.debug("Generating experiment changes (all runs)")
+        self.logger.debug("Applying exp_setup=%s", self.cmdopts['exp_setup'])
 
-        if not self.ros_param_server:
-            exp_def.tag_add("./params", "sierra", {}, False)
-            exp_def.tag_add("./params/sierra",
-                            "experiment",
-                            {
-                                "length": "-1",
-                                "ticks_per_sec": "-1"
-                            })
-        else:
-            exp_def.tag_add("./launch",
-                            "param",
-                            {
-                                "name": "sierra/experiment/length",
-                                "value": "-1",
-                            })
-            exp_def.tag_add("./launch",
-                            "param",
-                            {
-                                "name": "sierra/experiment/ticks_per_sec",
-                                "value": "-1",
-                            })
+        setup = exp.factory(self.cmdopts["exp_setup"])()
+        rms, adds, chgs = scutils.apply_to_expdef(setup, exp_def)
 
-        # Add SIERRA time keeper
-        exp_def.tag_add("./launch",
-                        "node",
-                        {
-                            "name": "sierra_timekeeper",
-                            "pkg": "sierra_rosbridge",
-                            "type": "sierra_timekeeper.py",
-                            "required": "true"
-                        },
-                        False)
+        # Write setup info to file for later retrieval
+        scutils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)
 
 
 class ROSExpRunDefUniqueGenerator:
     """
     Generate XML changes unique to a experimental run within an experiment
-    targeting a :term:`ROS`-based platform.
+    targeting a: term: `ROS`- based platform.
     ARGoS.
 
     These include:
 
-    - Random seeds for each :term:`Experimental Run`.
+    - Random seeds for each: term: `Experimental Run`.
 
-    - Unique parameter file for each :term:`Experimental Run`.
+    - Unique parameter file for each: term: `Experimental Run`.
     """
 
     def __init__(self,
@@ -179,46 +158,60 @@ class ROSExpRunDefUniqueGenerator:
         self.logger = logging.getLogger(__name__)
 
     def generate(self, exp_def: XMLLuigi):
-        # Setup random seed
-        self._generate_random(exp_def)
+        return exp_def
 
-        # Setup parameter file
-        self._generate_paramfile(exp_def)
-
-    def _generate_random(self, exp_def: XMLLuigi) -> None:
-        """Generate XML changes for random seeding for a specific :term:`Experimental
-        Run` in an :term:`Experiment` during the input generation process.
+    def generate_random(self, exp_def: XMLLuigi) -> None:
+        """Generate XML changes for random seeding for a specific: term: `Experimental
+        Run` in an: term: `Experiment` during the input generation process.
 
         """
         self.logger.trace("Generating random seed changes for run%s",
                           self.run_num)
 
-        # Set the random seed in the input file
-        if exp_def.has_tag('./params'):
-            exp_def.attr_add("./params/sierra/experiment",
-                             "random_seed",
-                             str(self.random_seed))
-        else:
-            exp_def.tag_add("./launch",
-                            "param",
-                            {
-                                "name": "sierra/experiment/random_seed",
-                                "value": str(self.random_seed)
-                            })
+        # Master gets the random seed
+        exp_def.tag_add("./master/group/[@ns='sierra']",
+                        "param",
+                        {
+                            "name": "experiment/random_seed",
+                            "value": str(self.random_seed)
+                        })
 
-    def _generate_paramfile(self, exp_def: XMLLuigi) -> None:
+        # Each robot gets the random seed
+        exp_def.tag_add("./robot/group/[@ns='sierra']",
+                        "param",
+                        {
+                            "name": "experiment/random_seed",
+                            "value": str(self.random_seed)
+                        })
+
+    def generate_paramfile(self, exp_def: XMLLuigi) -> None:
         """Generate XML changes for the parameter for for a specific
-        :term:`Experimental Run` in an :term:`Experiment` during the input
+        : term: `Experimental Run` in an: term: `Experiment` during the input
         generation process.
 
         """
         self.logger.trace("Generating parameter file changes for run%s",
                           self.run_num)
 
-        exp_def.tag_add("./launch",
+        # Master node gets a copy of the parameter file
+        exp_def.tag_add("./master/group/[@ns='sierra']",
                         "param",
                         {
-                            "name": "sierra/experiment/param_file",
+                            "name": "experiment/param_file",
+                            "value": self.launch_stem_path + config.kROS['param_file_ext']
+                        })
+
+        # Each robot gets a copy of the parameter file
+        if not exp_def.has_tag("./robot/group/[@ns='sierra']"):
+            exp_def.tag_add("./robot",
+                            "group",
+                            {
+                                "ns": "sierra",
+                            })
+        exp_def.tag_add("./robot/group/[@ns='sierra']",
+                        "param",
+                        {
+                            "name": "experiment/param_file",
                             "value": self.launch_stem_path + config.kROS['param_file_ext']
                         })
 

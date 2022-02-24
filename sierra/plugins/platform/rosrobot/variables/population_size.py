@@ -74,23 +74,47 @@ class PopulationSize(population_size.BasePopulationSize):
             prefix = robot_config['prefix']
 
             for s in self.sizes:
-                exp_adds = XMLTagAddList()
+                per_robot = XMLTagAddList()
+                per_robot.append(XMLTagAdd(".",
+                                           "master",
+                                           {},
+                                           True))
+                per_robot.append(XMLTagAdd("./master",
+                                           "group",
+                                           {
+                                               'ns': 'sierra'
+                                           },
+                                           False))
+                per_robot.append(XMLTagAdd("./master/group/[@ns='sierra']",
+                                           "param",
+                                           {
+                                               'name': 'experiment/n_robots',
+                                               'value': str(s)
+                                           },
+                                           False))
+
                 for i in range(0, s):
 
                     # Note that we don't try to do any of the robot bringup
                     # here--we can't know the exact node/package names without
                     # using a lot of (brittle) config.
                     ns = f'{prefix}{i}'
-                    exp_adds.append(XMLTagAdd(".//launch",
-                                              "group",
-                                              {'ns': ns}))
+                    per_robot.append(XMLTagAdd("./robot",
+                                               "group",
+                                               {
+                                                   'ns': ns
+                                               },
+                                               True))
 
-                    exp_adds.append(XMLTagAdd(f".//launch/group/[@ns='{ns}']",
-                                              "param",
-                                              {"name": "tf_prefix",
-                                               "value": ns}))
+                    per_robot.append(XMLTagAdd(f"./robot/group/[@ns='{ns}']",
+                                               "param",
+                                               {
+                                                   "name": "tf_prefix",
+                                                   "value": ns
+                                               },
+                                               True))
 
-                self.tag_adds.append(exp_adds)
+                self.tag_adds.append(per_robot)
 
         return self.tag_adds
 

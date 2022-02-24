@@ -85,9 +85,9 @@ setup(
         "autoapi",
     ],
     extras_require={
-        "devel": ['pylint', 'pytype', 'mypy']
+        "devel": ['pylint', 'pytype', 'mypy', 'build']
     },
-    python_requires=">=3.6",
+    python_requires=">=3.9",
     entry_points={
         "console_scripts": [
             "sierra-cli=sierra.main:main",

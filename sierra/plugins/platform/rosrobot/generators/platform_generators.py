@@ -21,13 +21,15 @@ applicable to all projects using ROS with a real robot execution environment.
 """
 # Core packages
 import logging  # type: tp.Any
+import os
 
 # 3rd party packages
+import yaml
 
 # Project packages
-from sierra.core.xml import XMLLuigi
+from sierra.core.xml import XMLLuigi, XMLTagAdd
 from sierra.core.experiment.spec import ExperimentSpec
-from sierra.core import types, ros
+from sierra.core import types, ros, config, utils
 
 
 class PlatformExpDefGenerator(ros.generators.ROSExpDefGenerator):
@@ -48,11 +50,68 @@ class PlatformExpDefGenerator(ros.generators.ROSExpDefGenerator):
 
     def generate(self) -> XMLLuigi:
         exp_def = super().generate()
+
+        self.logger.debug("Writing separate <master> launch file")
+        exp_def.write_config.add({
+            'src_root': './master',
+            'opath_leaf': '_master' + config.kROS['launch_file_ext'],
+            'create_tags': None,
+            'rename_to': 'launch',
+            'dest_parent': None
+        })
+
+        # Add <robot> tag
+        if not exp_def.has_tag("./robot"):
+            exp_def.tag_add(".",
+                            "robot",
+                            {})
+        if not exp_def.has_tag("./robot/group/[@ns='sierra']"):
+            exp_def.tag_add("./robot",
+                            "group",
+                            {
+                                'ns': 'sierra'
+                            })
+
         return exp_def
 
 
 class PlatformExpRunDefUniqueGenerator(ros.generators.ROSExpRunDefUniqueGenerator):
-    pass
+    def __init__(self,
+                 *args,
+                 **kwargs) -> None:
+        ros.generators.ROSExpRunDefUniqueGenerator.__init__(
+            self, *args, **kwargs)
+
+    def generate(self, exp_def: XMLLuigi):
+        exp_def = super().generate(exp_def)
+        main_path = os.path.join(self.cmdopts['project_config_root'],
+                                 config.kYAML['main'])
+
+        main_config = yaml.load(open(main_path), yaml.FullLoader)
+
+        n_robots = utils.get_n_robots(main_config,
+                                      self.cmdopts,
+                                      os.path.dirname(self.launch_stem_path),
+                                      exp_def)
+
+        for i in range(0, n_robots):
+            prefix = main_config['ros']['robots'][self.cmdopts['robot']]['prefix']
+            exp_def.write_config.add({
+                'src_root': f"./robot/group/[@ns='{prefix}{i}']",
+                'opath_leaf': f'_robot{i}' + config.kROS['launch_file_ext'],
+                'create_tags': [XMLTagAdd(None,
+                                          'launch',
+                                          {},
+                                          False)],
+                'dest_parent': ".",
+                'rename_to': None,
+                'grafts': ["./robot/group/[@ns='sierra']"]
+            })
+
+        self.generate_random(exp_def)
+        self.generate_paramfile(exp_def)
+
+        return exp_def
 
 
 __api__ = [

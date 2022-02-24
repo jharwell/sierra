@@ -19,4 +19,4 @@
 # 3rd party packages
 
 # Project packages
-from sierra.core.ros.variables import time_setup
+from sierra.core.ros.variables import exp_setup

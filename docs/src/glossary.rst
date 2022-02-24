@@ -31,6 +31,11 @@ works/is designed the way it is, and to help you find your way around.
       A :term:`Platform` supported by SIERRA using the ``gazebo_ros`` bridge to
       use :term:`ROS` with the :term:`Gazebo` simulator.
 
+   ROS+Robot
+
+      A :term:`Platform` supported by SIERRA using the :term:`ROS` and any robot
+      which supports ROS.
+
    Project
 
       The SIERRA plugin allowing you to use your compiled C++ library+ARGoS

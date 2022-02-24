@@ -20,11 +20,16 @@ a good way to understand how to get the most out of SIERRA.
    run_time_tree.rst
    subprograms.rst
    environment.rst
+   variables.rst
 
 .. toctree::
    :maxdepth: 2
-   :caption: Leveraging SIERRA To Its Maximum Potential
+   :caption: Advanced Features
 
    visual_capture.rst
-   variables.rst
+
+.. toctree::
+   :maxdepth: 1
+   :caption: SIERRA Usage Examples
+
    examples.rst

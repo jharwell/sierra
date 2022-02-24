@@ -39,32 +39,27 @@ import sierra.core.plugin_manager as pm
 
 class ExpShell():
     def __init__(self) -> None:
-        self.tag = "Finished COMMAND"
         self.initial_env = os.environ
         self.env = self.initial_env
         self.logger = logging.getLogger(__name__)
 
     def run_from_spec(self, spec: types.ShellCmdSpec) -> bool:
         self.logger.trace("Cmd: %s", spec['cmd'])
-
         proc = subprocess.Popen(spec['cmd'],
                                 shell=spec['shell'],
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
+        if not spec['wait']:
+            return True
+
         proc.wait()
+
         stdout = proc.stdout.read().decode('utf-8').splitlines()
         stderr = proc.stdout.read().decode('utf-8').splitlines()
 
-        record = False
         cmd_stdout = ''
         for e in stdout:
-            if record:
-                e = e.strip().split('=')
-                self.env[e[0]] = e[1]
-            elif e.strip() == 'Finished COMMAND':
-                record = True
-            else:
-                cmd_stdout += e
+            cmd_stdout += e
 
         cmd_stderr = ''
         for e in stderr:
@@ -105,20 +100,20 @@ class BatchExpRunner:
         self.batch_exp_root = os.path.abspath(self.cmdopts['batch_input_root'])
         self.batch_stat_root = os.path.abspath(self.cmdopts['batch_stat_root'])
         self.batch_stat_exec_root = os.path.join(self.batch_stat_root, 'exec')
+        self.batch_scratch_root = os.path.abspath(
+            self.cmdopts['batch_scratch_root'])
         self.exec_exp_range = self.cmdopts['exp_range']
 
         self.logger = logging.getLogger(__name__)
 
         utils.dir_create_checked(self.batch_stat_exec_root, exist_ok=True)
+        utils.dir_create_checked(self.batch_scratch_root, exist_ok=True)
 
     def __call__(self) -> None:
         """
         Runs experiments in the batch according to configuration.
 
         """
-        exec_resume = self.cmdopts['exec_resume']
-        n_jobs = self.cmdopts['exec_jobs_per_node']
-
         self.logger.info("Platform='%s' exec_env='%s'",
                          self.cmdopts['platform'],
                          self.cmdopts['exec_env'])
@@ -152,16 +147,16 @@ class BatchExpRunner:
 
             # Run cmds for platform-specific things to setup the experiment
             # (e.g., start daemons) if needed.
-            generator = platform.ExpShellCmdsGenerator(self.cmdopts, exp_num)
+            generator = platform.ExpShellCmdsGenerator(self.cmdopts,
+                                                       exp_num)
             for spec in generator.pre_exp_cmds():
                 shell.run_from_spec(spec)
 
-            runner = ExpRunner(exp,
-                               exp_num,
-                               shell,
+            runner = ExpRunner(self.cmdopts,
+                               exec_times_fpath,
                                generator,
-                               exec_times_fpath)
-            runner(n_jobs, exec_resume, self.cmdopts['nodefile'])
+                               shell)
+            runner(exp, exp_num)
 
         # Run cmds to cleanup platform-specific things now that the experiment
         # is done (if needed).
@@ -199,19 +194,20 @@ class ExpRunner:
     """
 
     def __init__(self,
-                 exp_input_root: str,
-                 exp_num: int,
-                 shell: ExpShell,
+                 cmdopts: types.Cmdopts,
+                 exec_times_fpath: str,
                  generator: platform.ExpShellCmdsGenerator,
-                 exec_times_fpath: str) -> None:
-        self.exp_input_root = os.path.abspath(exp_input_root)
-        self.exp_num = exp_num
+                 shell: ExpShell) -> None:
+
+        self.exec_times_fpath = exec_times_fpath
         self.shell = shell
         self.generator = generator
-        self.exec_times_fpath = exec_times_fpath
+        self.cmdopts = cmdopts
         self.logger = logging.getLogger(__name__)
 
-    def __call__(self, n_jobs: int, exec_resume: bool, nodefile: str) -> None:
+    def __call__(self,
+                 exp_input_root: str,
+                 exp_num: int) -> None:
         """Executes experimental runs for a single experiment in parallel.
 
         Arguments:
@@ -225,33 +221,36 @@ class ExpRunner:
         """
 
         self.logger.info("Running exp%s in '%s'",
-                         self.exp_num,
-                         self.exp_input_root)
+                         exp_num,
+                         exp_input_root)
         sys.stdout.flush()
 
+        wd = os.path.relpath(exp_input_root, os.path.expanduser("~"))
         start = time.time()
-        exec_opts = {
+        _, exp = os.path.split(exp_input_root)
 
-            # Root directory for the job. Chose the exp input
-            # directory rather than the output directory in order to keep
-            # run outputs separate from those for the framework used to
-            # run the experiments.
-            'jobroot_path': self.exp_input_root,
-            'cmdfile_path': os.path.join(self.exp_input_root,
-                                         config.kGNUParallel['cmdfile']),
-            'joblog_path': os.path.join(self.exp_input_root, "parallel.log"),
-            'exec_resume': exec_resume,
-            'n_jobs': n_jobs,
-            'nodefile': nodefile
+        scratch_root = os.path.join(self.cmdopts['batch_scratch_root'],
+                                    exp)
+        utils.dir_create_checked(scratch_root, exist_ok=True)
+        exec_opts = {
+            'exp_input_root': exp_input_root,
+            'work_dir': wd,
+            'scratch_dir': scratch_root,
+            'cmdfile_stem_path': os.path.join(exp_input_root,
+                                              config.kGNUParallel['cmdfile_stem']),
+            'cmdfile_ext': config.kGNUParallel['cmdfile_ext'],
+            'exec_resume': self.cmdopts['exec_resume'],
+            'n_jobs': self.cmdopts['exec_jobs_per_node'],
+            'nodefile': self.cmdopts['nodefile']
         }
         for spec in self.generator.exec_exp_cmds(exec_opts):
             if not self.shell.run_from_spec(spec):
                 self.logger.error("Check outputs in %s for details",
-                                  exec_opts['jobroot_path'])
+                                  exec_opts['scratch_dir'])
 
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
-        self.logger.info('Exp%s elapsed time: %s', self.exp_num, str(sec))
+        self.logger.info('Exp%s elapsed time: %s', exp_num, str(sec))
 
         with open(self.exec_times_fpath, 'a') as f:
-            f.write('exp' + str(self.exp_num) + ': ' + str(sec) + '\n')
+            f.write('exp' + str(exp_num) + ': ' + str(sec) + '\n')

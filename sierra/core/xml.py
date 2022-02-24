@@ -68,7 +68,7 @@ class XMLTagRm():
 
 
 class XMLTagAdd():
-    def __init__(self, path: str, tag: str, attr: dict = dict()):
+    def __init__(self, path: str, tag: str, attr: dict, allow_dup: bool):
         """
         Arguments:
             path: The path to the **parent** tag you want to add a new tag
@@ -83,12 +83,16 @@ class XMLTagAdd():
         self.path = path
         self.tag = tag
         self.attr = attr
+        self.allow_dup = allow_dup
 
     def __iter__(self):
         yield from [self.path, self.tag, self.attr]
 
     def __repr__(self) -> str:
-        return self.path + '/' + self.tag + ': ' + str(self.attr)
+        if self.path is not None:
+            return self.path + '/' + self.tag + ': ' + str(self.attr)
+        else:
+            return '/' + self.tag + ': ' + str(self.attr)
 
 
 class XMLAttrChangeSet():
@@ -226,14 +230,34 @@ class XMLWriterConfig():
 
     Attributes:
 
-        values: Dict mapping the XPath to an XML subtree to a partial filesystem
-                path which will be appended to whatever is passed to the
-                :func:`XMLLuigi.write()` function.
+        values: Dict with the following possible key, value pairs:
+
+                ``src_root`` - The root of the XML tree specifying a sub-tree to
+                               write out as ``dest_root``. This key is
+                               required.
+
+                ``dest_root`` - The new name of ``src_root`` when writing out
+                                the partial XML tree to a new file. This key is
+                                optional.
+
+                ``opath_leaf`` - Additional bits added to whatever the opath
+                                 file stem that is set for the :class:`XMLLuigi`
+                                 instance. This key is optional.
+
+                ``grafts`` - Additional bits of the XML tree to add under the
+                             new ``dest_root``, specified as a list of XPath
+                             strings. You can't just have multiple src_roots
+                             because that makes unambiguous renaming of
+                             ``src_root`` -> ``dest_root`` impossible. This key
+                             is optional.
 
     """
 
-    def __init__(self, values: tp.Dict[str, str]) -> None:
+    def __init__(self, values: tp.List[tp.Dict[str, str]]) -> None:
         self.values = values
+
+    def add(self, value: tp.Dict[str, str]) -> None:
+        self.values.append(value)
 
 
 class XMLLuigi:
@@ -273,32 +297,60 @@ class XMLLuigi:
         """Write the XML stored in the object to the filesystem according to
         configuration.
         """
-
-        for xpath, partial_path in self.write_config.values.items():
-            parent = self.root.find(xpath)
-
-            leaf, ext = os.path.split(partial_path)
-            if leaf != '':
-                opath = os.path.join(base_path, leaf) + ext
+        for config in self.write_config.values:
+            tree = self.root.find(config['src_root'])
+            # Customizing the output write path is not required
+            if 'opath_leaf' in config and config['opath_leaf'] is not None:
+                opath = base_path + config['opath_leaf']
             else:
-                opath = base_path + ext
+                opath = base_path
 
-            if parent is None:
+            if tree is None:
                 self.logger.warning("Cannot write non-existent tree@%s to %s",
-                                    xpath,
+                                    config['src_root'],
                                     opath)
                 continue
 
-            to_write = ET.ElementTree(parent)
+            self.logger.trace("Write tree@%s to %s",
+                              config['src_root'],
+                              opath)
+
+            # Renaming tree root is not required
+            if 'rename_to' in config and config['rename_to'] is not None:
+                tree.tag = config['rename_to']
+                self.logger.trace("Rename tree root -> %s",
+                                  config['rename_to'])
+
+            # Adding tags not required
+            if config['dest_parent'] is not None:
+                to_write = ET.ElementTree()
+                if 'create_tags' in config and config['create_tags'] is not None:
+                    for spec in config['create_tags']:
+                        if to_write.getroot() is None:
+                            to_write._setroot(ET.Element(spec.tag, spec.attr))
+                        else:
+                            elt = to_write.find(spec.path)
+                            ET.SubElement(elt, spec.tag, spec.attr)
+
+                parent = to_write.getroot().find(config['dest_parent'])
+                parent.append(tree)
+            else:
+                to_write = ET.ElementTree(tree)
+                parent = to_write.getroot()
+
+            # Grafts are not required
+            if 'grafts' in config and config['grafts'] is not None:
+                for g in config['grafts']:
+                    self.logger.trace("Graft tree@%s -> %s in dest",
+                                      g,
+                                      config['dest_parent'])
+                    elt = self.root.find(g)
+                    parent.append(elt)
 
             # Write out pretty XML to make it easier to read to see if things
             # have been generated correctly.
-
-            with open(opath, "w") as f:
-                # Replace with ET.indent() eventually in python 3.9
-                xmlstr = minidom.parseString(
-                    ET.tostring(to_write.getroot())).toprettyxml(indent="  ")
-                f.write(xmlstr)
+            ET.indent(to_write, space="\t", level=0)
+            to_write.write(opath, encoding='utf-8')
 
     def attr_get(self, path: str, attr: str):
         """
@@ -511,7 +563,6 @@ class XMLLuigi:
             return
 
         if not allow_dup:
-
             if parent.find(tag) is not None:
                 if not noprint:
                     self.logger.warning("Child tag '%s' already in parent '%s'",
@@ -533,8 +584,7 @@ class XMLLuigi:
                               path,
                               tag,
                               str(attr))
-
-        self.tag_adds.append(XMLTagAdd(path, tag, attr))
+        self.tag_adds.append(XMLTagAdd(path, tag, attr, allow_dup))
 
 
 def unpickle(fpath: str) -> tp.Union[XMLAttrChangeSet, XMLTagAddList]:

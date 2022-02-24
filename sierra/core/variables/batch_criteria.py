@@ -27,11 +27,9 @@ import copy
 # 3rd party packages
 import implements
 
-# Project packages
-import sierra.core.utils
 from sierra.core.variables import base_variable
 from sierra.core.vector import Vector3D
-from sierra.core import xml
+from sierra.core import xml, utils
 
 import sierra.core.config
 import sierra.core.plugin_manager as pm
@@ -236,7 +234,7 @@ class BatchCriteria():
         """
         return []
 
-    def arena_dims(self) -> tp.List[sierra.core.utils.ArenaExtent]:
+    def arena_dims(self) -> tp.List[utils.ArenaExtent]:
         """
         Returns:
             Arena dimensions used for each experiment in the batch. Not
@@ -247,10 +245,10 @@ class BatchCriteria():
             for c in exp:
                 if c.path == ".//arena" and c.attr == "size":
                     x, y, z = c.value.split(',')
-                    dims.append(sierra.core.utils.ArenaExtent(Vector3D(int(float(x)),
-                                                                       int(float(
-                                                                           y)),
-                                                                       int(float(z)))))
+                    dims.append(utils.ArenaExtent(Vector3D(int(float(x)),
+                                                           int(float(
+                                                               y)),
+                                                           int(float(z)))))
 
         assert len(dims) > 0,\
             "Scenario dimensions not contained in batch criteria"
@@ -285,6 +283,7 @@ class BatchCriteria():
             pkl_path = os.path.join(self.batch_input_root,
                                     exp_dirname,
                                     sierra.core.config.kPickleLeaf)
+
             # Pickling of batch criteria experiment definitions is the FIRST set
             # of changes to be pickled--all other changes come after. We append
             # to the pickle file by default, which allows any number of
@@ -296,7 +295,6 @@ class BatchCriteria():
 
     def scaffold_exps(self,
                       batch_def: xml.XMLLuigi,
-                      batch_config_leaf: str,
                       cmdopts: types.Cmdopts) -> None:
         """
         Scaffold a batch experiment by taking the raw template input file and
@@ -311,9 +309,8 @@ class BatchCriteria():
 
         if len(chgs_for_batch) != 0:
             mods_for_batch = chgs_for_batch
-            self.logger.info("Scaffolding experiments: cli='%s',leaf='%s': Modify %s XML tags",
+            self.logger.info("Scaffolding experiments: cli='%s': Modify %s XML tags",
                              self.cli_arg,
-                             batch_config_leaf,
                              len(chgs_for_batch[0]))
 
         else:
@@ -329,8 +326,7 @@ class BatchCriteria():
             self._scaffold_expi(expi_def,
                                 mods_for_exp,
                                 i,
-                                cmdopts,
-                                batch_config_leaf)
+                                cmdopts)
 
         n_exp_dirs = len(os.listdir(self.batch_input_root))
         if n_exps != n_exp_dirs:
@@ -350,8 +346,7 @@ class BatchCriteria():
                        expi_def: xml.XMLLuigi,
                        modsi: tp.Union[xml.XMLAttrChangeSet, xml.XMLTagAddList],
                        i: int,
-                       cmdopts: types.Cmdopts,
-                       batch_config_leaf: str) -> None:
+                       cmdopts: types.Cmdopts) -> None:
         exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
         self.logger.debug("Applying %s XML modifications from '%s' for exp%s in %s",
                           len(modsi),
@@ -362,21 +357,30 @@ class BatchCriteria():
         exp_input_root = os.path.join(self.batch_input_root,
                                       str(exp_dirname))
 
-        sierra.core.utils.dir_create_checked(exp_input_root,
-                                             exist_ok=cmdopts['exp_overwrite'])
+        utils.dir_create_checked(exp_input_root,
+                                 exist_ok=cmdopts['exp_overwrite'])
 
         for mod in modsi:
             if isinstance(mod, xml.XMLAttrChange):
                 expi_def.attr_change(mod.path, mod.attr, mod.value)
             elif isinstance(mod, xml.XMLTagAdd):
-                expi_def.tag_add(mod.path, mod.tag, mod.attr)
+                expi_def.tag_add(mod.path, mod.tag, mod.attr, mod.allow_dup)
             else:
                 assert False,\
                     "Batch criteria can only modify or remove XML tags"
 
         # This will be the "template" input file used to generate the input
         # files for each experimental run in the experiment
-        expi_def.write(os.path.join(exp_input_root, batch_config_leaf))
+        wr_config = xml.XMLWriterConfig([{'src_root': '.',
+                                          'opath_leaf': None,
+                                          'create_tags': None,
+                                          'dest_parent': None
+                                          }])
+        expi_def.write_config_set(wr_config)
+        opath = utils.batch_template_path(cmdopts,
+                                          self.batch_input_root,
+                                          exp_dirname)
+        expi_def.write(opath)
 
     def verify_mods(self) -> None:
         chgs_for_batch = self.gen_attr_changelist()
@@ -548,9 +552,9 @@ class BivarBatchCriteria(BatchCriteria):
                      cmdopts: types.Cmdopts,
                      exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
         dirs = []
-        all_dirs = sierra.core.utils.exp_range_calc(cmdopts,
-                                                    cmdopts['batch_output_root'],
-                                                    self)
+        all_dirs = utils.exp_range_calc(cmdopts,
+                                        cmdopts['batch_output_root'],
+                                        self)
 
         for c1 in self.criteria1.gen_exp_dirnames(cmdopts):
             for x in all_dirs:
@@ -565,9 +569,9 @@ class BivarBatchCriteria(BatchCriteria):
                      cmdopts: types.Cmdopts,
                      exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
         dirs = []
-        all_dirs = sierra.core.utils.exp_range_calc(cmdopts,
-                                                    cmdopts['batch_output_root'],
-                                                    self)
+        all_dirs = utils.exp_range_calc(cmdopts,
+                                        cmdopts['batch_output_root'],
+                                        self)
 
         for c2 in self.criteria2.gen_exp_dirnames(cmdopts):
             for y in all_dirs:
@@ -582,9 +586,9 @@ class BivarBatchCriteria(BatchCriteria):
                           cmdopts: types.Cmdopts,
                           exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
         dirs = []
-        all_dirs = sierra.core.utils.exp_range_calc(cmdopts,
-                                                    cmdopts['batch_output_root'],
-                                                    self)
+        all_dirs = utils.exp_range_calc(cmdopts,
+                                        cmdopts['batch_output_root'],
+                                        self)
 
         for c1 in self.criteria1.gen_exp_dirnames(cmdopts):
             for x in all_dirs:
@@ -599,9 +603,9 @@ class BivarBatchCriteria(BatchCriteria):
                           cmdopts: types.Cmdopts,
                           exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
         dirs = []
-        all_dirs = sierra.core.utils.exp_range_calc(cmdopts,
-                                                    cmdopts['batch_output_root'],
-                                                    self)
+        all_dirs = utils.exp_range_calc(cmdopts,
+                                        cmdopts['batch_output_root'],
+                                        self)
 
         for c2 in self.criteria2.gen_exp_dirnames(cmdopts):
             for y in all_dirs:

@@ -33,6 +33,7 @@ from sierra.plugins.platform.argos import cmdline
 from sierra.core import hpc, xml, config, types, utils, platform
 from sierra.core.experiment import bindings
 from sierra.core import plugin_manager as pm
+import sierra.core.variables.batch_criteria as bc
 
 
 class CmdlineParserGenerator():
@@ -60,13 +61,6 @@ class ParsedCmdlineConfigurer():
         else:
             assert False,\
                 f"'{self.exec_env}' unsupported on ARGoS"
-
-        # Bounce!
-        #
-        # We call out to the execution environment to configure itself after
-        # configuring things for ARGoS.
-        module = pm.SIERRAPluginManager().get_plugin_module(self.exec_env)
-        module.ParsedCmdlineConfigurer(self.exec_env)(args)
 
     def _hpc_pbs(self, args: argparse.Namespace) -> None:
         # For HPC, we want to use the the maximum # of simultaneous jobs per
@@ -156,12 +150,14 @@ class ParsedCmdlineConfigurer():
 class ExpRunShellCmdsGenerator():
     def __init__(self,
                  cmdopts: types.Cmdopts,
+                 criteria: bc.IConcreteBatchCriteria,
                  n_robots: int,
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
         self.display_port = -1
 
     def pre_run_cmds(self,
+                     host: str,
                      input_fpath: str,
                      run_num: int) -> tp.List[types.ShellCmdSpec]:
         # When running ARGoS under Xvfb in order to headlessly render frames, we
@@ -169,16 +165,18 @@ class ExpRunShellCmdsGenerator():
         # the DISPLAY environment variable, which will then be killed when the
         # shell GNU parallel spawns to run each line in the commands file exits.
 
-        if self.cmdopts['platform_vc']:
-            self.display_port = random.randint(0, 1000000)
-            cmd1 = f"Xvfb :{self.display_port} -screen 0, 1600x1200x24 &"
-            cmd2 = f"export DISPLAY=:{self.display_port};"
-            return [{'cmd': cmd1, 'shell': True, 'check': True},
-                    {'cmd': cmd2, 'shell': True, 'check': True}]
+        if host == 'slave':
+            if self.cmdopts['platform_vc']:
+                self.display_port = random.randint(0, 1000000)
+                cmd1 = f"Xvfb :{self.display_port} -screen 0, 1600x1200x24 &"
+                cmd2 = f"export DISPLAY=:{self.display_port};"
+                return [{'cmd': cmd1, 'shell': True, 'check': True, 'wait': True},
+                        {'cmd': cmd2, 'shell': True, 'check': True, 'wait': True}]
 
         return []
 
     def exec_run_cmds(self,
+                      host: str,
                       input_fpath: str,
                       run_num: int) -> tp.List[types.ShellCmdSpec]:
         exec_env = self.cmdopts['exec_env']
@@ -202,9 +200,9 @@ class ExpRunShellCmdsGenerator():
 
         cmd += ';'
 
-        return [{'cmd': cmd, 'shell': True, 'check': True}]
+        return [{'cmd': cmd, 'shell': True, 'check': True, 'wait': True}]
 
-    def post_run_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
         return []
 
 
@@ -229,22 +227,29 @@ class ExpShellCmdsGenerator():
             return [{
                 'cmd': 'killall Xvfb',
                 'check': False,
-                'shell': True
+                'shell': True,
+                'wait': True
             }]
 
         return []
 
 
-@implements.implements(bindings.IExpRunConfigurer)
-class ExpRunConfigurer():
+@implements.implements(bindings.IExpConfigurer)
+class ExpConfigurer():
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         self.cmdopts = cmdopts
 
-    def __call__(self, run_output_dir: str) -> None:
+    def for_exp_run(self, exp_input_root: str, run_output_root: str) -> None:
         if self.cmdopts['platform_vc']:
-            frames_fpath = os.path.join(run_output_dir,
+            frames_fpath = os.path.join(run_output_root,
                                         config.kARGoS['frames_leaf'])
             utils.dir_create_checked(frames_fpath, exist_ok=True)
+
+    def for_exp(self, exp_input_root: str) -> None:
+        pass
+
+    def cmdfile_paradigm(self) -> str:
+        return 'per-exp'
 
 
 @implements.implements(bindings.IExecEnvChecker)

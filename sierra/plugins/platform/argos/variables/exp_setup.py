@@ -15,8 +15,8 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Classes for the ``--time-setup`` cmdline option. See
-:ref:`ln-vars-ts` for usage documentation.
+Classes for the ``--exp-setup`` cmdline option. See
+:ref:`ln-vars-expsetup` for usage documentation.
 """
 
 # Core packages
@@ -30,11 +30,11 @@ import implements
 from sierra.core.variables.base_variable import IBaseVariable
 from sierra.core.xml import XMLAttrChangeSet, XMLAttrChange, XMLTagRmList, XMLTagAddList
 from sierra.core import config
-from sierra.core.variables.time_setup import Parser
+from sierra.core.variables.exp_setup import Parser
 
 
 @implements.implements(IBaseVariable)
-class TimeSetup():
+class ExpSetup():
     """
     Defines the simulation duration.
 
@@ -91,31 +91,31 @@ class TimeSetup():
         pass
 
 
-def factory(arg: str) -> TimeSetup:
+def factory(arg: str) -> ExpSetup:
     """
-    Factory to create :class:`TimeSetup` derived classes from the command
+    Factory to create :class:`ExpSetup` derived classes from the command
     line definition.
 
     Arguments:
 
-       arg: The value of ``--time-setup``.
+       arg: The value of ``--exp-setup``.
     """
     parser = Parser({'n_secs_per_run': config.kARGoS['n_secs_per_run'],
                      'n_ticks_per_sec': config.kARGoS['n_ticks_per_sec'],
                      'n_datapoints': config.kExperimentalRunData['n_datapoints_1D']})
     attr = parser(arg)
 
-    def __init__(self: TimeSetup) -> None:
-        TimeSetup.__init__(self,
-                           attr["n_secs_per_run"],
-                           attr['n_datapoints'],
-                           attr['n_ticks_per_sec'])
+    def __init__(self: ExpSetup) -> None:
+        ExpSetup.__init__(self,
+                          attr["n_secs_per_run"],
+                          attr['n_datapoints'],
+                          attr['n_ticks_per_sec'])
 
     return type(attr['pretty_name'],
-                (TimeSetup,),
+                (ExpSetup,),
                 {"__init__": __init__})  # type: ignore
 
 
 __api__ = [
-    'TimeSetup',
+    'ExpSetup',
 ]

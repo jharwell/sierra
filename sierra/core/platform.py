@@ -26,6 +26,7 @@ import subprocess
 import shutil
 import argparse
 import socket
+import logging
 
 # 3rd party packages
 import implements
@@ -34,6 +35,7 @@ import implements
 import sierra.core.plugin_manager as pm
 from sierra.core import config, types, utils
 from sierra.core.experiment import bindings
+import sierra.core.variables.batch_criteria as bc
 
 
 class CmdlineParserGenerator():
@@ -65,37 +67,43 @@ class ExpRunShellCmdsGenerator():
 
     def __init__(self,
                  cmdopts: types.Cmdopts,
+                 criteria: bc.IConcreteBatchCriteria,
                  n_robots: int,
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
+        self.criteria = criteria
         module = pm.SIERRAPluginManager().get_plugin_module(
             self.cmdopts['platform'])
         self.platform = module.ExpRunShellCmdsGenerator(self.cmdopts,
+                                                        self.criteria,
                                                         n_robots,
                                                         exp_num)
         module = pm.SIERRAPluginManager().get_plugin_module(
             self.cmdopts['exec_env'])
         self.env = module.ExpRunShellCmdsGenerator(self.cmdopts,
+                                                   self.criteria,
                                                    n_robots,
                                                    exp_num)
 
     def pre_run_cmds(self,
+                     host: str,
                      input_fpath: str,
                      run_num: int) -> tp.List[types.ShellCmdSpec]:
-        cmds = self.platform.pre_run_cmds(input_fpath, run_num)
-        cmds.extend(self.env.pre_run_cmds(input_fpath, run_num))
+        cmds = self.platform.pre_run_cmds(host, input_fpath, run_num)
+        cmds.extend(self.env.pre_run_cmds(host, input_fpath, run_num))
         return cmds
 
     def exec_run_cmds(self,
+                      host: str,
                       input_fpath: str,
                       run_num: int) -> tp.List[types.ShellCmdSpec]:
-        cmds = self.platform.exec_run_cmds(input_fpath, run_num)
-        cmds.extend(self.env.exec_run_cmds(input_fpath, num_rum))
+        cmds = self.platform.exec_run_cmds(host, input_fpath, run_num)
+        cmds.extend(self.env.exec_run_cmds(host, input_fpath, run_num))
         return cmds
 
-    def post_run_cmds(self) -> tp.List[types.ShellCmdSpec]:
-        cmds = self.platform.post_run_cmds()
-        cmds.extend(self.env.post_run_cmds())
+    def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
+        cmds = self.platform.post_run_cmds(host)
+        cmds.extend(self.env.post_run_cmds(host))
         return cmds
 
 
@@ -110,14 +118,18 @@ class ExpShellCmdsGenerator():
     finishes.
     """
 
-    def __init__(self, cmdopts: types.Cmdopts, exp_num: int) -> None:
+    def __init__(self,
+                 cmdopts: types.Cmdopts,
+                 exp_num: int) -> None:
         self.cmdopts = cmdopts
         module = pm.SIERRAPluginManager().get_plugin_module(
             self.cmdopts['platform'])
-        self.platform = module.ExpShellCmdsGenerator(self.cmdopts, exp_num)
+        self.platform = module.ExpShellCmdsGenerator(self.cmdopts,
+                                                     exp_num)
         module = pm.SIERRAPluginManager().get_plugin_module(
             self.cmdopts['exec_env'])
-        self.env = module.ExpShellCmdsGenerator(self.cmdopts, exp_num)
+        self.env = module.ExpShellCmdsGenerator(self.cmdopts,
+                                                exp_num)
 
     def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
         cmds = self.platform.pre_exp_cmds()
@@ -149,6 +161,7 @@ class ParsedCmdlineConfigurer():
                  exec_env: str) -> None:
         self.platform = platform
         self.exec_env = exec_env
+        self.logger = logging.getLogger(__name__)
 
         module = pm.SIERRAPluginManager().get_plugin_module(self.platform)
         self.platformg = module.ParsedCmdlineConfigurer(exec_env)
@@ -159,17 +172,21 @@ class ParsedCmdlineConfigurer():
     def __call__(self, args: argparse.Namespace) -> argparse.Namespace:
         # Configure for selected execution enivornment first, to check for
         # low-level details.
+        self.logger.debug("Configuring cmdline from --exec_env=%s",
+                          self.exec_env)
         args.__dict__['exec_env'] = self.exec_env
         self.envg(args)
 
         # Configure for selected platform
+        self.logger.debug("Configuring cmdline from --platform=%s",
+                          self.platform)
         args.__dict__['platform'] = self.platform
         self.platformg(args)
 
         return args
 
 
-class ExpRunConfigurer():
+class ExpConfigurer():
     """
     Perform platform-specific configuration for a given experimental run that
     you can do programmatically (i.e., without needing a shell). This usually is
@@ -182,13 +199,16 @@ class ExpRunConfigurer():
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         self.cmdopts = cmdopts
         module = pm.SIERRAPluginManager().get_plugin_module(cmdopts['platform'])
-        self.platform = module.ExpRunConfigurer(self.cmdopts)
-        module = pm.SIERRAPluginManager().get_plugin_module(cmdopts['exec_env'])
-        self.env = module.ExpRunConfigurer(self.cmdopts)
+        self.platform = module.ExpConfigurer(self.cmdopts)
 
-    def __call__(self, run_output_dir: str) -> None:
-        self.platform(run_output_dir)
-        self.env(run_output_dir)
+    def for_exp_run(self, exp_input_root: str, run_output_dir: str) -> None:
+        self.platform.for_exp_run(exp_input_root, run_output_dir)
+
+    def for_exp(self, exp_input_root: str) -> None:
+        self.platform.for_exp(exp_input_root)
+
+    def cmdfile_paradigm(self) -> str:
+        return self.platform.cmdfile_paradigm()
 
 
 class ExecEnvChecker():
@@ -200,10 +220,31 @@ class ExecEnvChecker():
 
     """
 
+    @staticmethod
+    def parse_nodefile(nodefile: str) -> tp.Dict[str, str]:
+        ret = {}
+        with open(nodefile, 'r') as f:
+            lines = f.readlines()
+
+            for line in lines:
+                cores, ssh = line.split('/')
+                if '@' in ssh:
+                    login, hostname = ssh.split('@')
+                else:
+                    hostname = ssh
+                    login = os.getlogin()
+
+                ret[hostname.strip()] = {
+                    'n_cores': cores,
+                    'login': login
+                }
+        return ret
+
     def __init__(self, cmdopts: types.Cmdopts):
         self.cmdopts = cmdopts
         self.exec_env = self.cmdopts['exec_env']
         self.platform = self.cmdopts['platform']
+        self.logger = logging.getLogger(__name__)
 
     def __call__(self) -> None:
         module = pm.SIERRAPluginManager().get_plugin_module(
@@ -212,6 +253,43 @@ class ExecEnvChecker():
         module = pm.SIERRAPluginManager().get_plugin_module(
             self.cmdopts['exec_env'])
         module.ExecEnvChecker(self.cmdopts)()
+
+    def check_connectivity(self,
+                           login: str,
+                           hostname: str,
+                           host_type: str) -> bool:
+        try:
+            hostname = hostname.strip()
+            self.logger.debug("Attempt to ping %s, type=%s",
+                              hostname,
+                              host_type)
+            timeout = config.kPlatform['ping_timeout']
+            subprocess.run(f"ping -c 3 -W {timeout} {hostname}",
+                           shell=True,
+                           check=True,
+                           stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE)
+        except subprocess.CalledProcessError:
+            self.logger.fatal("Unable to ping %s, type=%s", hostname, host_type)
+            raise
+        self.logger.debug("%s is alive, type=%s", hostname, host_type)
+
+        try:
+            self.logger.debug("Verify ssh to %s with %s@%s",
+                              host_type,
+                              login,
+                              hostname)
+            subprocess.run(f"ssh -o PasswordAuthentication=no  -o BatchMode=yes {login}@{hostname} exit",
+                           shell=True,
+                           check=True,
+                           stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE)
+        except subprocess.CalledProcessError:
+            self.logger.fatal("Unable to connect to %s via %s@%s",
+                              host_type,
+                              login,
+                              hostname)
+            raise
 
     def check_for_simulator(self, name: str):
         if self.exec_env in ['hpc.local', 'hpc.adhoc']:

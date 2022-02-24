@@ -32,6 +32,7 @@ import implements
 from sierra.core import types, config
 from sierra.core import plugin_manager as pm
 from sierra.core.experiment import bindings
+import sierra.core.variables.batch_criteria as bc
 
 
 @implements.implements(bindings.IParsedCmdlineConfigurer)
@@ -68,7 +69,9 @@ class ExpShellCmdsGenerator():
     invoke GNU Parallel in the ad-hoc HPC environment.
     """
 
-    def __init__(self, cmdopts: types.Cmdopts, exp_num: int) -> None:
+    def __init__(self,
+                 cmdopts: types.Cmdopts,
+                 exp_num: int) -> None:
         self.cmdopts = cmdopts
 
     def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
@@ -83,7 +86,7 @@ class ExpShellCmdsGenerator():
         # Even if we are passed --nodelist, we still make our own copy of it, so
         # that the user can safely modify it (if they want to) after running
         # stage 1.
-        nodelist = os.path.join(exec_opts['jobroot_path'],
+        nodelist = os.path.join(exec_opts['exp_input_root'],
                                 "{0}-nodelist.txt".format(jobid))
 
         resume = ''
@@ -94,7 +97,7 @@ class ExpShellCmdsGenerator():
             resume = '--resume-failed'
 
         # Make sure there are no duplicate nodes
-        cmd1 = f'sort -u {0} > {1}'.format(exec_opts["nodelist"], nodelist)
+        cmd1 = f'sort -u {0} > {1}'.format(exec_opts["nodefile"], nodelist)
 
         # GNU parallel cmd
         cmd2 = 'parallel {2} ' \
@@ -108,42 +111,38 @@ class ExpShellCmdsGenerator():
         cmd2 = cmd2.format(nodelist,
                            exec_opts['n_jobs'],
                            resume,
-                           exec_opts['joblog_path'],
-                           exec_opts['jobroot_path'],
-                           exec_opts['cmdfile_path'])
+                           os.path.join(exec_opts['scratch_dir'],
+                                        "parallel.log"),
+                           exec_opts['scratch_dir'],
+                           exec_opts['cmdfile_stem'] + exec_opts['cmdfile_ext'])
 
-        return [{'cmd': cmd1, 'shell': True, 'check': True},
-                {'cmd': cmd2, 'shell': True, 'check': True}]
+        return [{'cmd': cmd1, 'shell': True, 'check': True, 'wait': True},
+                {'cmd': cmd2, 'shell': True, 'check': True, 'wait': True}]
 
 
 @implements.implements(bindings.IExpRunShellCmdsGenerator)
 class ExpRunShellCmdsGenerator():
     def __init__(self,
                  cmdopts: types.Cmdopts,
+                 criteria: bc.IConcreteBatchCriteria,
                  n_robots: int,
                  exp_num: int) -> None:
         pass
 
     def pre_run_cmds(self,
+                     host: str,
                      input_fpath: str,
                      run_num: int) -> tp.List[types.ShellCmdSpec]:
         return []
 
     def exec_run_cmds(self,
+                      host: str,
                       input_fpath: str,
                       run_num: int) -> tp.List[types.ShellCmdSpec]:
         return []
 
-    def post_run_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
         return []
-
-
-class ExpRunConfigurer():
-    def __init__(self, cmdopts: types.Cmdopts) -> None:
-        pass
-
-    def __call__(self, run_output_dir: str) -> None:
-        pass
 
 
 class ExecEnvChecker():
@@ -158,6 +157,5 @@ __api__ = [
     'ParsedCmdlineConfigurer',
     'ExpRunShellCmdsGenerator',
     'ExpShellCmdsGenerator',
-    'ExpRunConfigurer',
     'ExecEnvChecker'
 ]

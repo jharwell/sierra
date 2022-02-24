@@ -26,7 +26,7 @@ import yaml
 from sierra.core.xml import XMLLuigi, XMLTagAdd
 from sierra.core.experiment.spec import ExperimentSpec
 import sierra.core.plugin_manager as pm
-from sierra.core import types
+from sierra.core import types, config
 
 
 class ControllerGenerator():
@@ -44,7 +44,7 @@ class ControllerGenerator():
                                                              'controllers.yaml')),
                                            yaml.FullLoader)
         self.main_config = yaml.load(open(os.path.join(config_root,
-                                                       'main.yaml')),
+                                                       config.kYAML['main'])),
                                      yaml.FullLoader)
         self.category, self.name = controller.split('.')
         self.cmdopts = cmdopts
@@ -123,6 +123,8 @@ class ControllerGenerator():
                               self.name)
             assert False
 
+        self.logger.debug(
+            "Applying changes from controllers.yaml (all experiments)")
         for controller in self.controller_config[self.category]['controllers']:
             if controller['name'] != self.name:
                 continue

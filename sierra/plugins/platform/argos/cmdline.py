@@ -57,18 +57,18 @@ class PlatformCmdline(cmd.BaseCmdline):
         # Experiment options
         experiment = self.parser.add_argument_group('Stage1: Experiment setup')
 
-        experiment.add_argument("--time-setup",
+        experiment.add_argument("--exp-setup",
                                 help="""
 
                                 Defines experiment run length, :term:`Ticks
                                 <Tick>` per second for the experiment
                                 (<experiment> tag), # of datapoints to
                                 capture/capture interval for each
-                                simulation. See :ref:`ln-vars-ts`
+                                simulation. See :ref:`ln-vars-expsetup`
                                 for a full description.
 
                                  """ + self.stage_usage_doc([1]),
-                                default="time_setup.T{0}.K{1}.N{2}".format(
+                                default="exp_setup.T{0}.K{1}.N{2}".format(
                                     config.kARGoS['n_secs_per_run'],
                                     config.kARGoS['n_ticks_per_sec'],
                                     config.kExperimentalRunData['n_datapoints_1D']))
@@ -159,7 +159,7 @@ class PlatformCmdline(cmd.BaseCmdline):
                              perform per :term:`Tick` each time the controller
                              loops are run (the # of ticks per second for
                              controller control loops is set via
-                             ``--time-setup``).
+                             ``--exp-setup``).
 
                              """ + self.stage_usage_doc([1]),
                              default=config.kARGoS['physics_iter_per_tick'])
@@ -294,7 +294,7 @@ class PlatformCmdline(cmd.BaseCmdline):
             'n_robots': cli_args.n_robots,
 
             # stage 1
-            'time_setup': cli_args.time_setup,
+            'exp_setup': cli_args.exp_setup,
 
             'physics_n_engines': cli_args.physics_n_engines,
             'physics_n_threads': cli_args.physics_n_engines,  # alias

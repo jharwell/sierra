@@ -30,7 +30,7 @@ import yaml
 # Project packages
 import sierra.core.variables.batch_criteria as bc
 import sierra.core.plugin_manager as pm
-from sierra.core import types
+from sierra.core import types, config
 
 from sierra.core.pipeline.stage1.pipeline_stage1 import PipelineStage1
 from sierra.core.pipeline.stage2.pipeline_stage2 import PipelineStage2
@@ -172,7 +172,7 @@ class Pipeline:
                           self.cmdopts['project_config_root'])
 
         main_path = os.path.join(self.cmdopts['project_config_root'],
-                                 'main.yaml')
+                                 config.kYAML['main'])
         try:
             self.main_config = yaml.load(open(main_path), yaml.FullLoader)
         except FileNotFoundError:

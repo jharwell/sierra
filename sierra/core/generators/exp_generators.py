@@ -67,15 +67,14 @@ class BatchExpDefGenerator:
     """
 
     def __init__(self,
-                 batch_config_template: str,
                  criteria: bc.IConcreteBatchCriteria,
                  controller_name: str,
                  scenario_basename: str,
                  cmdopts: types.Cmdopts) -> None:
-        assert os.path.isfile(batch_config_template),\
-            "'{0}' is not a valid file".format(batch_config_template)
+        self.batch_config_template = cmdopts['template_input_file']
+        assert os.path.isfile(self.batch_config_template),\
+            "'{0}' is not a valid file".format(self.batch_config_template)
 
-        self.batch_config_template = os.path.abspath(batch_config_template)
         self.batch_config_leaf, _ = os.path.splitext(
             os.path.basename(self.batch_config_template))
         self.batch_config_extension = None

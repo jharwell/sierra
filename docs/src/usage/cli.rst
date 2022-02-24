@@ -59,8 +59,8 @@ Stage5: Comparing Controllers
    :func: sphinx_cmdline_stage5
    :prog: SIERRA
 
-ARGoS Platform
-==============
+:term:`ARGoS` Platform
+======================
 
 These options are enabled if ``--platform=platform.argos`` is passed.
 
@@ -77,5 +77,47 @@ Stage2: Running Experiments
 
 .. argparse::
    :filename: ../sierra/plugins/platform/argos/cmdline.py
+   :func: sphinx_cmdline_stage2
+   :prog: SIERRA
+
+:term:`ROS+Gazebo` Platform
+===========================
+
+These options are enabled if ``--platform=platform.rosgazebo`` is passed.
+
+Stage1: Generating Experiments
+------------------------------
+
+.. argparse::
+   :filename: ../sierra/plugins/platform/rosgazebo/cmdline.py
+   :func: sphinx_cmdline_stage1
+   :prog: SIERRA
+
+Stage2: Running Experiments
+---------------------------
+
+.. argparse::
+   :filename: ../sierra/plugins/platform/rosgazebo/cmdline.py
+   :func: sphinx_cmdline_stage2
+   :prog: SIERRA
+
+:term:`ROS+Robot` Platform
+==========================
+
+These options are enabled if ``--platform=platform.rosrobot`` is passed.
+
+Stage1: Generating Experiments
+------------------------------
+
+.. argparse::
+   :filename: ../sierra/plugins/platform/rosrobot/cmdline.py
+   :func: sphinx_cmdline_stage1
+   :prog: SIERRA
+
+Stage2: Running Experiments
+---------------------------
+
+.. argparse::
+   :filename: ../sierra/plugins/platform/rosrobot/cmdline.py
    :func: sphinx_cmdline_stage2
    :prog: SIERRA

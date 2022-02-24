@@ -33,7 +33,8 @@ from retry import retry
 # Project packages
 from sierra.core.vector import Vector3D
 from sierra.core.xml import XMLLuigi, XMLAttrChangeSet, XMLTagAddList, XMLTagRmList
-from sierra.core import types
+from sierra.core import types, xml, config
+from sierra.core import plugin_manager as pm
 
 
 class ArenaExtent():
@@ -262,7 +263,7 @@ def apply_to_expdef(var,
     if addsl:
         adds = addsl[0]
         for a in adds:
-            exp_def.tag_add(a.path, a.tag, a.attr)
+            exp_def.tag_add(a.path, a.tag, a.attr, a.allow_dup)
     else:
         adds = None
 
@@ -284,6 +285,43 @@ def pickle_modifications(adds: tp.Optional[XMLTagAddList],
 
     if chgs is not None:
         chgs.pickle(path)
+
+
+def batch_template_path(cmdopts: types.Cmdopts,
+                        batch_input_root: str,
+                        dirname: str) -> str:
+    batch_config_leaf, _ = os.path.splitext(
+        os.path.basename(cmdopts['template_input_file']))
+    return os.path.join(batch_input_root, dirname, batch_config_leaf)
+
+
+def get_n_robots(main_config: types.YAMLDict,
+                 cmdopts: types.Cmdopts,
+                 exp_input_root: str,
+                 exp_def: xml.XMLLuigi) -> int:
+    module = pm.SIERRAPluginManager().get_plugin_module(cmdopts['platform'])
+
+    # Get # robots to send to shell cmds generator. We try:
+    #
+    # 1. Getting it from the current experiment definition, which contains
+    #    all changes to the template input file EXCEPT those from batch
+    #    criteria, which have already been written pickled at this point.
+    #
+    # 2. Getting it from the pickled experiment definition (i.e., from the
+    #    batch criteria which was used for this experiment).
+    n_robots = module.population_size_from_def(exp_def,
+                                               main_config,
+                                               cmdopts)
+    if n_robots <= 0:
+        pkl_def = xml.unpickle(os.path.join(exp_input_root,
+                                            config.kPickleLeaf))
+        n_robots = module.population_size_from_pickle(pkl_def,
+                                                      main_config,
+                                                      cmdopts)
+
+    assert n_robots > 0, "n_robots must be > 0"
+
+    return n_robots
 
 
 __api__ = [

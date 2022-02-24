@@ -23,6 +23,7 @@ import implements
 
 # Project packages
 from sierra.core import types
+import sierra.core.variables.batch_criteria as bc
 
 
 class IExpShellCmdsGenerator(implements.Interface):
@@ -82,8 +83,12 @@ class IExpShellCmdsGenerator(implements.Interface):
                              experiment run cmd (different than the
                              :term:`Project` code).
 
-                           - ``cmdfile_path`` - The file containing the launch
-                             cmds to run (one per line).
+                           - ``cmdfile_stem_path`` - Stem of the file containing
+                             the launch cmds to run (one per line), all the way
+                             up to but not including the extension.
+
+                           - ``cmdfile_ext`` - Extension of files containing the
+                             launch cmds to run.
 
                            - ``nodefile`` - Path to file containing compute
                              resources for SIERRA to use to run experiments. See
@@ -130,11 +135,13 @@ class IExpRunShellCmdsGenerator(implements.Interface):
 
     def __init__(self,
                  cmdopts: types.Cmdopts,
+                 criteria: bc.IConcreteBatchCriteria,
                  n_robots: int,
                  exp_num: int) -> None:
         raise NotImplementedError
 
     def pre_run_cmds(self,
+                     host: str,
                      input_fpath: str,
                      run_num: int) -> tp.List[types.ShellCmdSpec]:
         """During stage 1, generate :term:`Platform`-specific shell commands to
@@ -157,6 +164,7 @@ class IExpRunShellCmdsGenerator(implements.Interface):
         raise NotImplementedError
 
     def exec_run_cmds(self,
+                      host: str,
                       input_fpath: str,
                       run_num: int) -> tp.List[types.ShellCmdSpec]:
         """During stage 1, generate the :term:`Platform`-specific shell commands
@@ -176,7 +184,7 @@ class IExpRunShellCmdsGenerator(implements.Interface):
         """
         raise NotImplementedError
 
-    def post_run_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
         """During stage 1, generate :term:`Platform`-specific shell commands to
         run during stage 2 after a given :term:`Experimental Run` for an
         :term:`Experiment` has finished. These commands are run in the
@@ -235,26 +243,46 @@ class IExecEnvChecker(implements.Interface):
         raise NotImplementedError
 
 
-class IExpRunConfigurer(implements.Interface):
-    """
-    After creating :term:`Experimental Run` definitions during stage 1, perform
-    addition configuration (e.g., creating directories store outputs in if they
-    are not created by the simulator/:term:`Project` code).
+class IExpConfigurer(implements.Interface):
+    """After creating :term:`Experiment` and/or :term:`Experimental Run`
+    definitions during stage 1, perform addition configuration (e.g., creating
+    directories store outputs in if they are not created by the
+    simulator/:term:`Project` code).
 
     Arguments:
 
         cmdopts: Dictionary of parsed cmdline options.
+
     """
 
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         raise NotImplementedError
 
-    def __call__(self, run_output_dir: str) -> None:
+    def for_exp(self, exp_input_root: str) -> None:
         """
         Arguments:
 
-            run_output_dir: Absolute path to the output directory for the
-                            experimental run.
+            exp_input_root: Absolute path to the input directory for the
+                            experiment.
+        """
+        raise NotImplementedError
+
+    def for_exp_run(self, exp_input_root: str, run_output_root: str) -> None:
+        """
+        Arguments:
+
+            exp_input_root: Absolute path to the input directory for the
+                            experiment.
+
+            run_output_root: Absolute path to the output directory for the
+                             experimental run.
+        """
+        raise NotImplementedError
+
+    def cmdfile_paradigm(self) -> str:
+        """
+        Return either 'per-exp' or 'per-run' depending if a single GNU parallel
+        cmds file should be generated per experiment or per run.
         """
         raise NotImplementedError
 

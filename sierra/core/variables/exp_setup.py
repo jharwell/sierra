@@ -25,9 +25,9 @@ from sierra.core import types
 
 
 class Parser():
-    """
-    Enforces the cmdline definition of ``--time-setup``. See :ref:`ln-vars-ts`
-    for documentation.
+    """Enforces the cmdline definition of ``--exp-setup``. See
+    :ref:`ln-vars-expsetup` for documentation.
+
     """
 
     def __init__(self, dflts: tp.Dict[str, int]):

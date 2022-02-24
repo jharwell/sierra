@@ -47,6 +47,6 @@ Once ARGoS/your C++ code has been built, you can setup SIERRA:
    directory with the EXACT name you want it to be callable with on the cmdline
    via ``--project``.
 
-#. Read the documentation for :ref:`ln-hpc-plugins`, and select and
+#. Read the documentation for :ref:`ln-exec-env-hpc`, and select and
    appropriate plugin to use. Be sure to define all necessary environment
    variables!!

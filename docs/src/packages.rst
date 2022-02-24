@@ -63,7 +63,7 @@ setup the SIERRA ROSbridge package here (details in README):
 This package provides the following nodes:
 
 - ``sierra_timekeeper`` - Tracks time on an :term:`Experimental Run`, and
-  terminates once the amount of time specified in ``--time-setup`` has
+  terminates once the amount of time specified in ``--exp-setup`` has
   elapsed. Necessary because ROS does not provide a way to say "Run for this
   long and then terminate". An XML tag including this node is inserted by SIERRA
   into each ``.launch`` file.

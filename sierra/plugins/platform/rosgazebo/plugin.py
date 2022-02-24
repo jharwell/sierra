@@ -32,6 +32,7 @@ import implements
 from sierra.plugins.platform.rosgazebo import cmdline
 from sierra.core import hpc, xml, platform, config, ros, types
 from sierra.core.experiment import bindings
+import sierra.core.variables.batch_criteria as bc
 
 
 class CmdlineParserGenerator():
@@ -128,52 +129,100 @@ class ParsedCmdlineConfigurer():
 class ExpRunShellCmdsGenerator():
     def __init__(self,
                  cmdopts: types.Cmdopts,
+                 criteria: bc.IConcreteBatchCriteria,
                  n_robots: int,
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
         self.gazebo_port = -1
         self.roscore_port = -1
 
-        assert self.cmdopts['exec_env'] in ['hpc.local'],\
-            "Unsupported exec environment '{0}'".format(
-                self.cmdopts['exec_env'])
-
     def pre_run_cmds(self,
+                     host: str,
                      input_fpath: str,
                      run_num: int) -> tp.List[types.ShellCmdSpec]:
+        if host == 'master':
+            return []
+
         # First, the cmd to start roscore. We need to be on a unique port so
         # that multiple ROS instances corresponding to multiple Gazebo
         # instances with the same topic names are considered distinct/not
         # accessible between instances of Gazebo.
-        self.roscore_port = platform.get_free_port()
+        self.roscore_port = config.kROS['port_base'] + run_num * 2
 
-        # Second, the command to start Gazebo via roslaunch. We need to be on a
-        # unique port so that multiple Gazebo instances can be run in
-        # parallel. Note the -p argument to start a NEW roscore instance on the
-        # current machine with the selected port.
-        self.gazebo_port = platform.get_free_port()
+        roscore = [
+            {
+                # roscore will run on each slave node used during stage 2, so we
+                # have to use 'localhost' for binding.
+                'cmd': f'export ROS_MASTER_URI=http://localhost:{self.roscore_port};',
+                'shell': True,
+                'check': True,
+                'wait': True
+            },
+            {
+                # Each experiment gets their own roscore. Because each roscore
+                # has a different port, this prevents any robots from
+                # pre-emptively starting the next experiment before the rest of
+                # the robots have finished the current one.
+                'cmd': f'roscore -p {self.roscore_port} & ',
+                'shell': True,
+                'check': False,
+                'wait': False
+            }
+        ]
+
+        # Second, the command to give Gazebo a unique port on the host during
+        # stage 2. We need to be on a unique port so that multiple Gazebo
+        # instances can be run in parallel.
+        self.gazebo_port = config.kROS['port_base'] + run_num * 2 + 1
 
         # 2021/12/13: You can't use HTTPS for some reason or gazebo won't
         # start...
-        export_ros = f'export ROS_MASTER_URI=http://localhost:{self.roscore_port};'
-        export_gazebo = f'export GAZEBO_MASTER_URI=http://localhost:{self.gazebo_port};'
+        gazebo = [
+            {
+                'cmd': f'export GAZEBO_MASTER_URI=http://localhost:{self.gazebo_port};',
+                'shell': True,
+                'check': True,
+                'wait': True
+            }
+        ]
 
-        return [{'cmd': export_ros, 'shell': True, 'check': True},
-                {'cmd': export_gazebo, 'shell': True, 'check': True}]
+        return roscore + gazebo
 
     def exec_run_cmds(self,
+                      host: str,
                       input_fpath: str,
                       run_num: int) -> tp.List[types.ShellCmdSpec]:
-        # --wait tells roslaunch to wait for the configured master to come up
-        # before launch the robot code.
-        roslaunch = '{0} --wait -p {1} {2}{3}'.format(config.kROS['launch_cmd'],
-                                                      self.roscore_port,
-                                                      input_fpath,
-                                                      config.kROS['launch_file_ext'])
+        if host == 'master':
+            return []
 
-        return [{'cmd': roslaunch, 'shell': True, 'check': True}]
+        # For ROS+gazebo, we have two files per experimental run:
+        #
+        # - One for the stuff that is run on the ROS master (can be
+        #   nothing/empty file).
+        #
+        # - One for the stuff that describes what to run on each robot/how many
+        #   robots to spawn.
+        #
+        # We COULD do it all in a single file, but in order to share base code
+        # with the ROS+robot platform, we need to do it this way.
+        #
+        # 2022/02/28: I don't use the -u argument here to set ROS_MASTER_URI,
+        # because ROS works well enough when only running on the localhost, in
+        # terms of respecting whatever the envvar is set to.
+        cmd = '{0} --wait {1}{2} {3}{4}; '.format(config.kROS['launch_cmd'],
+                                                  input_fpath + "_master",
+                                                  config.kROS['launch_file_ext'],
+                                                  input_fpath + "_robots",
+                                                  config.kROS['launch_file_ext'])
+        launch = {
+            'cmd': cmd,
+            'shell': True,
+            'check': True,
+        }
 
-    def post_run_cmds(self) -> tp.List[types.ShellCmdSpec]:
+        return [launch]
+
+    def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
         return []
 
 
@@ -183,44 +232,61 @@ class ExpShellCmdsGenerator():
                  cmdopts: types.Cmdopts,
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
+        self.exp_num = exp_num
 
     def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
         return []
 
-    def exec_exp_cmds(self, exec_opts: types.ExpExecOpts) -> tp.List[types.ShellCmdSpec]:
+    def exec_exp_cmds(self,
+                      exec_opts: types.ExpExecOpts) -> tp.List[types.ShellCmdSpec]:
         return []
 
     def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
         # Cleanup roscore and gazebo processes which are still active because
         # they don't know how to clean up after themselves.
+        #
+        # This is OK to do even when we have multiple Gazebo+ROS instances on
+        # the same machine, because we only run these commands after an
+        # experiment finishes, so there isn't anything currently running we
+        # might accidentally kill.
         return [{
                 'cmd': 'killall gzserver',
                 'check': False,
-                'shell': True
+                'shell': True,
+                'wait': True
                 },
                 {
                 'cmd': 'killall rosmaster',
                 'check': False,
-                'shell': True
+                    'shell': True,
+                    'wait': True
                 },
                 {
                 'cmd': 'killall roscore',
                 'check': False,
-                'shell': True
+                    'shell': True,
+                    'wait': True
                 },
                 {
                 'cmd': 'killall rosout',
                 'check': False,
-                'shell': True
+                    'shell': True,
+                    'wait': True
                 }]
 
 
-class ExpRunConfigurer():
+class ExpConfigurer():
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         self.cmdopts = cmdopts
 
-    def __call__(self, run_output_dir: str) -> None:
+    def for_exp_run(self, exp_input_root: str, run_output_root: str) -> None:
         pass
+
+    def for_exp(self, exp_input_root: str) -> None:
+        pass
+
+    def cmdfile_paradigm(self) -> str:
+        return 'per-exp'
 
 
 class ExecEnvChecker(platform.ExecEnvChecker):
@@ -228,12 +294,11 @@ class ExecEnvChecker(platform.ExecEnvChecker):
         super().__init__(cmdopts)
 
     def __call__(self) -> None:
-        keys = ['ROS_DISTRO', 'GAZEBO_MASTER_URI', 'ROS_VERSION']
+        keys = ['ROS_DISTRO', 'ROS_VERSION']
 
         for k in keys:
             assert k in os.environ,\
-                "Non-ROS+Gazebo environment detected: '{0}' not found".format(
-                    k)
+                f"Non-ROS+Gazebo environment detected: '{k}' not found"
 
         # Check ROS distro
         assert os.environ['ROS_DISTRO'] in ['melodic', 'noetic'],\
@@ -254,8 +319,7 @@ class ExecEnvChecker(platform.ExecEnvChecker):
         min_version = packaging.version.parse(config.kGazebo['min_version'])
 
         assert version >= min_version,\
-            "Gazebo version {0} < min required {1}".format(version,
-                                                           min_version)
+            f"Gazebo version {version} < min required {min_version}"
 
 
 def population_size_from_pickle(adds_def: tp.Union[xml.XMLAttrChangeSet,

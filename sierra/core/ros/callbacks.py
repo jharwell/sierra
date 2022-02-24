@@ -32,14 +32,11 @@ def population_size_from_pickle(adds_def: tp.Union[xml.XMLAttrChangeSet,
                                                    xml.XMLTagAddList],
                                 main_config: types.YAMLDict,
                                 cmdopts: types.Cmdopts) -> int:
-    size = 0
-    prefix = main_config['ros']['robots'][cmdopts['robot']]['prefix']
     for add in adds_def:
-        if ('@ns' in add.path):
-            res = re.search(add.path, prefix + '[0-9]+')
-            if res is not None:
-                size += 1
-    return size
+        if 'name' in add.attr and 'n_robots' in add.attr['name']:
+            return int(add.attr['value'])
+
+    return 0
 
 
 def population_size_from_def(exp_def: xml.XMLLuigi,

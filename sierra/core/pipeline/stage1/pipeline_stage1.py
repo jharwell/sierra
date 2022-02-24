@@ -45,16 +45,11 @@ class PipelineStage1:
                  cmdopts: types.Cmdopts,
                  controller: str,
                  criteria: bc.IConcreteBatchCriteria) -> None:
-        self.generator = BatchExpDefGenerator(batch_config_template=cmdopts['template_input_file'],
-                                              controller_name=controller,
+        self.generator = BatchExpDefGenerator(controller_name=controller,
                                               scenario_basename=cmdopts['scenario'],
                                               criteria=criteria,
                                               cmdopts=cmdopts)
-        self.creator = BatchExpCreator(batch_config_template=cmdopts['template_input_file'],
-                                       batch_input_root=cmdopts['batch_input_root'],
-                                       batch_output_root=cmdopts['batch_output_root'],
-                                       criteria=criteria,
-                                       cmdopts=cmdopts)
+        self.creator = BatchExpCreator(criteria=criteria, cmdopts=cmdopts)
 
         self.cmdopts = cmdopts
         self.criteria = criteria

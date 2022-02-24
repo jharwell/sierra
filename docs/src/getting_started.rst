@@ -50,7 +50,7 @@ General Setup Workflow
    :term:`Project` in python by following :ref:`ln-tutorials-project-project`.
 
 #. Select an execution environment for SIERRA that matches your available
-   computational resources: :ref:`ln-hpc-plugins` or :ref:`ln-robot-plugins`,
+   computational resources: :ref:`ln-exec-env-hpc` or :ref:`ln-exec-env-robots`,
    following the appropriate setup guide. If there is nothing suitable, never
    fear! It's easy to create a new execution environment plugin, see
    :ref:`ln-tutorials-plugin-exec-env`.
@@ -90,7 +90,7 @@ General Setup Workflow
      ``--n-runs``.
 
    - Where it is running/how to run experiments: ``--exec-env``. See
-     :ref:`ln-hpc-plugins` for available plugins.
+     :ref:`ln-exec-env-hpc` for available plugins.
 
    - What controller to run: ``--controller``. See
      :ref:`ln-tutorials-project-main-config` for details on how valid

@@ -1,11 +1,7 @@
-.. _ln-usage-examples:
-
-===============
-SIERRA Examples
-===============
-
 These examples all assume that you have successfully set up SIERRA with a
 :term:`Project` of your choice.
+
+.. _ln-usage-examples:
 
 ARGoS Examples
 ==============
@@ -27,7 +23,7 @@ the local machine.
    --project=fordyca \
    --exec-env=hpc.local \
    --physics-n-engines=1 \
-   --time-setup=time_setup.T10000 \
+   --exp-setup=exp_setup.T10000 \
    --controller=d0.CRW \
    --scenario=SS.12x6x1 \
    --batch-criteria population_size.Log64 \
@@ -39,9 +35,9 @@ controller (CRW), across which the swarm size will be varied from 1..64, by
 powers of 2. Within each experiment, 3 copies of each simulation will be run
 (each with different random seeds), for a total of 21 ARGoS simulations. On a
 reasonable machine it should take about 10 minutes or so to run. After it
-finishes, you can go to ``$HOME/exp`` and find all the simulation outputs,
-including camera ready graphs! For an explanation of SIERRA's runtime directory
-tree, see :ref:`ln-usage-runtime-exp-tree`.
+finishes, you can go to ``$HOME/exp`` and find all the simulation outputs. For
+an explanation of SIERRA's runtime directory tree, see
+:ref:`ln-usage-runtime-exp-tree`.
 
 Rendering Example
 -----------------
@@ -98,3 +94,73 @@ This will compare all scenarios that all controllers with ``$HOME/exp`` which
 have been run on the same set of scenarios according to the configuration
 defined in ``stage5.yaml``. It will plot the 95% confidence intervals on all
 generated graphs for the univariate batch criteria.
+
+
+ROS+Gazebo Examples
+===================
+
+Basic Example
+-------------
+
+This examples assumes a project named ``fordyca`` which contains a controller
+defined in the ``controllers.yaml`` as ``turtlebot3_sim.wander``, with a runtime
+environment of the local machine.
+
+::
+
+   sierra-cli \
+   --platform=platform.rosgazebo \
+   --project=fordyca \
+   --n-runs=4 \
+   --template-input-file=exp/ros/turtlebot3_sim.launch \
+   --scenario=HouseWorld.10x10x1 \
+   --sierra-root=$HOME/exp/test \
+   --batch-criteria population_size.Log8 \
+   --controller=turtlebot3_sim.wander \
+   --exp-overwrite \
+   --exp-setup=exp_setup.T10 \
+   --robot turtlebot3 \
+   --models-disable
+
+This will run a batch of 4 experiments using a correlated random walk controller
+(CRW) on the turtlebot3. Swarm size will be varied from 1..8, by powers
+of 2. Within each experiment, 4 copies of each simulation will be run (each with
+different random seeds), for a total of 16 Gazebo simulations. On a reasonable
+machine it should take about 10 minutes or so to run. After it finishes, you can
+go to ``$HOME/exp`` and find all the simulation outputs. For an explanation of
+SIERRA's runtime directory tree, see :ref:`ln-usage-runtime-exp-tree`.
+
+ROS+Robot Examples
+===================
+
+Basic Example
+-------------
+
+This examples assumes a project named ``fordyca`` which contains a controller
+defined in the ``controllers.yaml`` as ``turtlebot3_sim.wander``, with a runtime
+environment of the local machine.
+
+::
+
+   sierra-cli \
+   --platform=platform.rosgazebo \
+   --project=fordyca \
+   --n-runs=4 \
+   --template-input-file=exp/ros/turtlebot3_real.launch \
+   --scenario=HouseWorld.10x10x1 \
+   --sierra-root=$HOME/exp/test \
+   --batch-criteria population_size.Log8 \
+   --controller=turtlebot3_real.wander \
+   --exp-overwrite \
+   --exp-setup=exp_setup.T10 \
+   --robot turtlebot3 \
+   --models-disable
+
+This will run a batch of 4 experiments using a correlated random walk controller
+(CRW) on the turtlebot3. Swarm size will be varied from 1..8, by powers
+of 2. Within each experiment, 4 experimental runs will be conducted with each
+swarm size. SIERRA will prompt the user after each run to reset the environment
+and robot positions before continuing with the next run. After all runs have
+completed and SIERRA finishes stages 3 and 4, you can go to ``$HOME/exp`` and
+find all the simulation outputs. For an explanation of SIERRA's runtime
+directory tree, see :ref:`ln-usage-runtime-exp-tree`.

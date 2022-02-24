@@ -51,17 +51,17 @@ class ROSCmdline(cmd.BaseCmdline):
         # Experiment options
         experiment = self.parser.add_argument_group('Stage1: Experiment setup')
 
-        experiment.add_argument("--time-setup",
+        experiment.add_argument("--exp-setup",
                                 help="""
 
                                 Defines experiment run length, ticks per second
                                 for the experiment, # of datapoints to
                                 capture/capture interval for each
-                                simulation. See :ref:`ln-vars-ts` for a full
-                                description.
+                                simulation. See :ref:`ln-vars-expsetup` for a
+                                full description.
 
                                  """ + self.stage_usage_doc([1]),
-                                default="time_setup.T{0}.K{1}.N{2}".format(
+                                default="exp_setup.T{0}.K{1}.N{2}".format(
                                     config.kROS['n_secs_per_run'],
                                     config.kROS['n_ticks_per_sec'],
                                     config.kExperimentalRunData['n_datapoints_1D']))
@@ -73,7 +73,8 @@ class ROSCmdline(cmd.BaseCmdline):
                                 The key name of the robot model, which must be
                                 present in the appropriate section of
                                 ``main.yaml`` for the :term:`Project`. See
-                                :ref:`ln-tutorials-main-config` for details.
+                                :ref:`ln-tutorials-project-main-config` for
+                                details.
 
                                 """ + self.stage_usage_doc([1]))
 
@@ -87,7 +88,7 @@ class ROSCmdline(cmd.BaseCmdline):
         updates = {
             # stage 1
             'robot': cli_args.robot,
-            'time_setup': cli_args.time_setup,
+            'exp_setup': cli_args.exp_setup,
         }
 
         cmdopts.update(updates)

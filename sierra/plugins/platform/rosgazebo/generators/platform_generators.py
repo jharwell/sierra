@@ -26,7 +26,7 @@ import logging  # type: tp.Any
 # Project packages
 from sierra.core.xml import XMLLuigi
 from sierra.core.experiment.spec import ExperimentSpec
-from sierra.core import types, ros
+from sierra.core import types, ros, config
 
 
 class PlatformExpDefGenerator(ros.generators.ROSExpDefGenerator):
@@ -47,14 +47,27 @@ class PlatformExpDefGenerator(ros.generators.ROSExpDefGenerator):
     def generate(self) -> XMLLuigi:
         exp_def = super().generate()
 
+        exp_def.write_config.add({
+            'src_root': "./master",
+            'opath_leaf': "_master" + config.kROS['launch_file_ext'],
+            'create_tags': None,
+            'dest_parent': None,
+            'rename_to': 'launch'
+        })
+
+        exp_def.write_config.add({
+            'src_root': "./robot",
+            'opath_leaf': "_robots" + config.kROS['launch_file_ext'],
+            'create_tags': None,
+            'dest_parent': None,
+            'rename_to': 'launch'
+        })
+
         # Setup gazebo experiment
         self._generate_gazebo_core(exp_def)
 
         # Setup gazebo visualization
         self._generate_gazebo_vis(exp_def)
-
-        # Setup simulation time
-        self._generate_time(exp_def)
 
         return exp_def
 
@@ -68,7 +81,7 @@ class PlatformExpDefGenerator(ros.generators.ROSExpDefGenerator):
         self.logger.debug("Generating Gazebo experiment changes (all runs)")
 
         # Start Gazebo/ROS in debug mode to make post-mortem analysis easier.
-        exp_def.tag_add("./launch/include",
+        exp_def.tag_add("./master/include",
                         "arg",
                         {
                             "name": "verbose",
@@ -77,7 +90,7 @@ class PlatformExpDefGenerator(ros.generators.ROSExpDefGenerator):
 
         # Terminate Gazebo server whenever the launch script that invoked it
         # exits.
-        exp_def.tag_add("./launch/include",
+        exp_def.tag_add("./master/include",
                         "arg",
                         {
                             "name": "server_required",
@@ -85,14 +98,14 @@ class PlatformExpDefGenerator(ros.generators.ROSExpDefGenerator):
                         })
 
         # Don't record stuff
-        exp_def.tag_remove("./launch/include", "arg/[@name='headless']")
-        exp_def.tag_remove("./launch/include", "arg/[@name='recording']")
+        exp_def.tag_remove("./master/include", "arg/[@name='headless']")
+        exp_def.tag_remove("./master/include", "arg/[@name='recording']")
 
         # Don't start paused
-        exp_def.tag_remove("./launch/include", "arg/[@name='paused']")
+        exp_def.tag_remove("./master/include", "arg/[@name='paused']")
 
         # Don't start gazebo under gdb
-        exp_def.tag_remove("./launch/include", "arg/[@name='debug']")
+        exp_def.tag_remove("./master/include", "arg/[@name='debug']")
 
     def _generate_gazebo_vis(self, exp_def: XMLLuigi) -> None:
         """
@@ -102,8 +115,8 @@ class PlatformExpDefGenerator(ros.generators.ROSExpDefGenerator):
         Does not write generated changes to the simulation definition pickle
         file.
         """
-        exp_def.tag_remove_all("./launch/include", "arg/[@name='gui']")
-        exp_def.tag_add("./launch/include",
+        exp_def.tag_remove_all("./master/include", "arg/[@name='gui']")
+        exp_def.tag_add("./master/include",
                         "arg",
                         {
                             "name": "gui",
@@ -112,7 +125,17 @@ class PlatformExpDefGenerator(ros.generators.ROSExpDefGenerator):
 
 
 class PlatformExpRunDefUniqueGenerator(ros.generators.ROSExpRunDefUniqueGenerator):
-    pass
+    def __init__(self,
+                 *args,
+                 **kwargs) -> None:
+        ros.generators.ROSExpRunDefUniqueGenerator.__init__(
+            self, *args, **kwargs)
+
+    def generate(self, exp_def: XMLLuigi):
+        exp_def = super().generate(exp_def)
+
+        self.generate_random(exp_def)
+        self.generate_paramfile(exp_def)
 
 
 __api__ = [

@@ -22,6 +22,7 @@ enough under that semantic umbrella).
 # Core packages
 import typing as tp
 import argparse
+import os
 
 # 3rd party packages
 import implements
@@ -29,6 +30,7 @@ import implements
 # Project packages
 from sierra.core import types
 from sierra.core.experiment import bindings
+import sierra.core.variables.batch_criteria as bc
 
 
 @implements.implements(bindings.IParsedCmdlineConfigurer)
@@ -66,7 +68,7 @@ class ExpShellCmdsGenerator():
         if exec_opts['exec_resume']:
             resume = '--resume-failed'
 
-        cmd = 'parallel ' \
+        cmd = 'parallel {1} ' \
             '--eta '\
             '--ungroup '\
             '--jobs {2} ' \
@@ -74,43 +76,40 @@ class ExpShellCmdsGenerator():
             '--joblog {3} '\
             '--no-notice < "{4}"'
 
-        cmd = cmd.format(exec_opts['jobroot_path'],
+        cmd = cmd.format(exec_opts['scratch_dir'],
                          resume,
                          exec_opts['n_jobs'],
-                         exec_opts['joblog_path'],
-                         exec_opts['cmdfile_path'])
+                         os.path.join(exec_opts['scratch_dir'],
+                                      "parallel.log"),
+                         exec_opts['cmdfile_stem_path'] +
+                         exec_opts['cmdfile_ext'])
 
-        return [{'cmd': cmd, 'check': True, 'shell': True}]
+        return [{'cmd': cmd, 'check': True, 'shell': True, 'wait': True}]
 
 
 @implements.implements(bindings.IExpRunShellCmdsGenerator)
 class ExpRunShellCmdsGenerator():
     def __init__(self,
                  cmdopts: types.Cmdopts,
+                 criteria: bc.IConcreteBatchCriteria,
                  n_robots: int,
                  exp_num: int) -> None:
         pass
 
     def pre_run_cmds(self,
+                     host: str,
                      input_fpath: str,
                      run_num: int) -> tp.List[types.ShellCmdSpec]:
         return []
 
     def exec_run_cmds(self,
+                      host: str,
                       input_fpath: str,
                       run_num: int) -> tp.List[types.ShellCmdSpec]:
         return []
 
-    def post_run_cmds(self) -> tp.List[types.ShellCmdSpec]:
+    def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
         return []
-
-
-class ExpRunConfigurer():
-    def __init__(self, cmdopts: types.Cmdopts) -> None:
-        pass
-
-    def __call__(self, run_output_dir: str) -> None:
-        pass
 
 
 class ExecEnvChecker():
@@ -125,6 +124,5 @@ __api__ = [
     'ParsedCmdlineConfigurer',
     'ExpRunShellCmdsGenerator',
     'ExpShellCmdsGenerator',
-    'ExpRunConfigurer',
     'ExecEnvChecker'
 ]

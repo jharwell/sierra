@@ -106,7 +106,7 @@ To define additional platforms, see the
 
 # Requirements
 
-- python >= 3.6.
+- python >= 3.9.
 - ARGoS >= 3.0.0-beta59 (if you are using ARGoS).
 - ROS 1 Melodic or later (if you are using ROS).
 - Gazebo 11.9.0 or later (if you are using ROS+Gazebo).

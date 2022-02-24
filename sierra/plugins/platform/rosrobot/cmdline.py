@@ -25,7 +25,7 @@ import argparse
 # 3rd party packages
 
 # Project packages
-from sierra.core import types, ros
+from sierra.core import types, ros, config
 import sierra.core.cmdline as cmd
 
 
@@ -50,11 +50,24 @@ class PlatformCmdline(cmd.BaseCmdline):
         self.init_cli(stages)
 
     def init_cli(self, stages: tp.List[int]) -> None:
-        if 1 in stages:
-            self.init_stage1()
+        if 2 in stages:
+            self.init_stage2()
 
-    def init_stage1(self) -> None:
-        pass
+    def init_stage2(self) -> None:
+        exp = self.parser.add_argument_group('Experiment options',
+                                             'For real robot experiments')
+
+        exp.add_argument("--exec-inter-run-pause",
+                         metavar="SECONDS",
+                         help="""
+
+                         How long to pause between :term:`Experimental Runs
+                         <Experimental Run>`, giving you time to reset the
+                         environment, move robots, etc.
+
+                         """ + self.stage_usage_doc([2]),
+                         type=int,
+                         default=config.kROS['inter_run_pause'])
 
     @staticmethod
     def cmdopts_update(cli_args, cmdopts: types.Cmdopts) -> None:
@@ -69,7 +82,8 @@ class PlatformCmdline(cmd.BaseCmdline):
             'exec_jobs_per_node': 1,  # (1 job/robot)
 
             # stage 2
-            'exec_resume': False  # For now...
+            'exec_resume': False,  # For now...
+            'exec_inter_run_pause': cli_args.exec_inter_run_pause
         }
 
         cmdopts.update(updates)

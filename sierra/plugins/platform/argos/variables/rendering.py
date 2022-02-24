@@ -31,7 +31,7 @@ from sierra.core.xml import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList, XMLTa
 import sierra.core.config
 from sierra.core import types
 
-import sierra.plugins.platform.argos.variables.time_setup as ts
+import sierra.plugins.platform.argos.variables.exp_setup as exp
 
 
 @implements.implements(IBaseVariable)
@@ -50,8 +50,8 @@ class ARGoSQTHeadlessRendering():
     kQUALITY = 100
     kFRAME_RATE = 10
 
-    def __init__(self, tsetup: ts.TimeSetup) -> None:
-        self.tsetup = tsetup
+    def __init__(self, setup: exp.ExpSetup) -> None:
+        self.setup = setup
         self.tag_adds = []  # type: tp.List[XMLTagAddList]
 
     def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
@@ -74,7 +74,8 @@ class ARGoSQTHeadlessRendering():
             self.tag_adds = [XMLTagAddList(XMLTagAdd('.', 'visualization', {}),
                                            XMLTagAdd('./visualization',
                                                      'qt-opengl',
-                                                     {'autoplay': "true"}
+                                                     {'autoplay': "true"},
+                                                     False
                                                      ),
                                            XMLTagAdd('./visualization/qt-opengl',
                                                      'frame_grabbing',
@@ -85,10 +86,12 @@ class ARGoSQTHeadlessRendering():
                                                          'headless_grabbing': "true",
                                                          'headless_frame_size': "{0}".format(self.kFrameSize),
                                                          'headless_frame_rate': "{0}".format(self.kFRAME_RATE),
-                                                     }),
+                                                     },
+                                                     False),
                                            XMLTagAdd('visualization/qt-opengl',
                                                      'user_functions',
-                                                     {'label': '__empty__'}))]
+                                                     {'label': '__empty__'},
+                                                     False))]
 
         return self.tag_adds
 
@@ -102,7 +105,7 @@ def factory(cmdopts: types.Cmdopts) -> ARGoSQTHeadlessRendering:
     duration.
     """
 
-    return ARGoSQTHeadlessRendering(ts.factory(cmdopts["time_setup"]))
+    return ARGoSQTHeadlessRendering(exp.factory(cmdopts["exp_setup"]))
 
 
 __api__ = [

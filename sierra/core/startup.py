@@ -37,8 +37,8 @@ def startup_checks() -> None:
     logging.debug("Performing startup checks")
 
     # Check python version
-    if sys.version_info < (3, 6):
-        raise RuntimeError("Python >= 3.6 must be used to run SIERRA!")
+    if sys.version_info < (3, 9):
+        raise RuntimeError("Python >= 3.9 must be used to run SIERRA!")
 
     # Check OS
     if sys.platform != "linux" and sys.platform != "darwin":

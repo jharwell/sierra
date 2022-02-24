@@ -37,7 +37,7 @@ from sierra.plugins.platform.argos.variables import population_size
 from sierra.plugins.platform.argos.variables import physics_engines
 from sierra.plugins.platform.argos.variables import cameras
 from sierra.plugins.platform.argos.variables import rendering
-import sierra.plugins.platform.argos.variables.time_setup as ts
+import sierra.plugins.platform.argos.variables.exp_setup as exp
 
 
 class PlatformExpDefGenerator():
@@ -65,8 +65,11 @@ class PlatformExpDefGenerator():
         experiments.
         """
         # ARGoS uses a single input file
+        wr_config = XMLWriterConfig([{'src_root': '.',
+                                      'opath_leaf': config.kARGoS['launch_file_ext']
+                                      }])
         exp_def = XMLLuigi(input_fpath=self.template_input_file,
-                           write_config=XMLWriterConfig({'.': config.kARGoS['launch_file_ext']}))
+                           write_config=wr_config)
 
         # Generate # robots
         self._generate_n_robots(exp_def)
@@ -185,10 +188,10 @@ class PlatformExpDefGenerator():
 
         Writes generated changes to the simulation definition pickle file.
         """
-        self.logger.debug("Using time_setup=%s", self.cmdopts['time_setup'])
+        self.logger.debug("Using exp_setup=%s", self.cmdopts['exp_setup'])
 
-        tsetup = ts.factory(self.cmdopts["time_setup"])()
-        rms, adds, chgs = scutils.apply_to_expdef(tsetup, exp_def)
+        setup = exp.factory(self.cmdopts["exp_setup"])()
+        rms, adds, chgs = scutils.apply_to_expdef(setup, exp_def)
 
         # Write time setup info to file for later retrieval
         scutils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)

@@ -41,7 +41,6 @@ def exec_env_sanity_checks(module) -> None:
     classes = ['ParsedCmdlineConfigurer',
                'ExpRunShellCmdsGenerator',
                'ExpShellCmdsGenerator',
-               'ExpRunConfigurer',
                'ExecEnvChecker'
                ]
     in_module = inspect.getmembers(module, inspect.isclass)
@@ -56,7 +55,7 @@ def platform_sanity_checks(module) -> None:
     classes = ['ParsedCmdlineConfigurer',
                'ExpRunShellCmdsGenerator',
                'ExpShellCmdsGenerator',
-               'ExpRunConfigurer',
+               'ExpConfigurer',
                'ExecEnvChecker',
                'CmdlineParserGenerator'
                ]

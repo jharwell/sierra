@@ -99,7 +99,7 @@ class PlatformCmdline(corecmd.BaseCmdline):
                              The # of iterations all physics engines should
                              perform per tick each time the controller loops are
                              run (the # of ticks per second for controller
-                             control loops is set via ``--time-setup``).
+                             control loops is set via ``--exp-setup``).
 
                              """ + self.stage_usage_doc([1]),
                              default=config.kGazebo['physics_iter_per_tick'])

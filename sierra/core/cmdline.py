@@ -947,7 +947,7 @@ class CoreCmdline(BaseCmdline):
                                  self.stage_usage_doc([5]),
                                  action='store_true')
 
-    @ staticmethod
+    @staticmethod
     def cs_methods_doc() -> str:
         return r"""
 

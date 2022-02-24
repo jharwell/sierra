@@ -40,7 +40,7 @@ SIERRA restricts the content of this file in a few modest ways.
 
    - Capture the same number of datapoints
 
-   That is, experiments always obey ``--time-setup``, regardless if early
+   That is, experiments always obey ``--exp-setup``, regardless if early
    stopping conditions are met. For :term:`ROS` platforms, the SIERRA timekeeper
    ensures that all experiments are the same length; it is up to you to make
    sure all experiments capture the same # of data points. For other
@@ -115,21 +115,15 @@ Experiment Requirements For :term:`ARGoS`
 
    See also :ref:`ln-tutorials-project-main-config`.
 
-Requirements For :term:`ROS+Gazebo`
+Requirements For :term:`ROS`
 -----------------------------------
+
+These requirements apply to any :term:`Platform` which uses :term:`ROS` (e.g.,
+:term:`ROS+Gazebo`, :term:`ROS+Robot`).
 
 #. All robot systems are homogeneous (i.e., only contain 1 type of robot). While
    SIERRA does not currently support multiple types of robots on ROS+Gazebo,
    adding support for doing so would not be difficult.
-
-#. Worlds within ROS+Gazebo are infinite from the perspective of physics
-   engines, even though a finite area shows up in rendering. So, to place robots
-   randomly in the arena at the start of simulation across :term:`Experimental
-   Runs <Experimental Run>` (if you want to do that) "dimensions" for a given
-   world must be specified as part of the ``--scenario`` argument. If you don't
-   specify dimensions as part of the ``--scenario`` argument, then you need to
-   supply a list of valid robot positions via ``--robot-positions`` which SIERRA
-   will choose from randomly for each robot.
 
 #. Since SIERRA operates on a single template input file
    (``--template-input-file``) when generating experimental definitions, all XML
@@ -139,8 +133,8 @@ Requirements For :term:`ROS+Gazebo`
    usual ``<include>`` mechanism. See also :ref:`ln-philosophy`.
 
 #. Within the template ``.launch`` file (``--template-input-file``), the root
-   XML tag must be ``<rosgazebo-configuration>`` . The
-   ``<rosgazebo-configuration>`` tag is stripped out by SIERRA during
+   XML tag must be ``<ros-configuration>`` . The
+   ``<ros-configuration>`` tag is stripped out by SIERRA during
    generation, and exists solely for the purposes of conformance with the XML
    standard, which states that there can be only a single root element (i.e.,
    you can't have a ``<params>`` element and a ``<launch>`` element both at the
@@ -166,8 +160,8 @@ Requirements For :term:`ROS+Gazebo`
                      ``//launch/group/[@ns='{ns}']``). For smaller projects it's
                      generally fine.
 
-      - Use the ``<params>`` tag under ``<rosgazebo-configuration>`` to
-        specify an XML tree of controller parameters.
+      - Use the ``<params>`` tag under ``<ros-configuration>`` to specify an XML
+        tree of controller parameters.
 
         This is recommended for large projects, as it allows cleaner XPath
         specifications (e.g., ``.//params/task_alloc/mymethod/threshold``), and
@@ -175,18 +169,40 @@ Requirements For :term:`ROS+Gazebo`
         real robots, as it maximizes code reuse. During stage 1 the modified
         ``<params>`` sub-tree is removed from the written ``.launch`` file if it
         exists and written to a `different` file in the same directory as the
-        ``.launch`` file. A single ROS parameter server parameter is inserted
-        pointing to this file; see
-        :ref:`ln-tutorials-project-template-input-file` for specifics.
+        ``.launch`` file.
 
+        All SIERRA configuration exposed via XML parameters uses the ROS
+        parameter server. See :ref:`ln-tutorials-project-template-input-file`
+        for specifics.
 
-#. Gazebo does not currently provide a way to shut down after a given # of
+#. ROS does not currently provide a way to shut down after a given # of
    iterations/timesteps, so SIERRA provides a ROS package with a node tracking
-   the elapsed time in seconds, and which exits (and takes down the Gazebo node
+   the elapsed time in seconds, and which exits (and takes down the roslaunch
    when it does) after the specified experiment time has elapsed. This node is
    inserted into all ``.launch`` files. All ROS projects must depend on this
    `ROS bridge <https://github.com/swarm-robotics/sierra_rosbridge.git>`_
    package so the necessary nodes can be found by ROS at runtime.
+
+
+Requirements for :term:`ROS+Gazebo`
+-----------------------------------
+
+#. Worlds within ROS+Gazebo are infinite from the perspective of physics
+   engines, even though a finite area shows up in rendering. So, to place robots
+   randomly in the arena at the start of simulation across :term:`Experimental
+   Runs <Experimental Run>` (if you want to do that) "dimensions" for a given
+   world must be specified as part of the ``--scenario`` argument. If you don't
+   specify dimensions as part of the ``--scenario`` argument, then you need to
+   supply a list of valid robot positions via ``--robot-positions`` which SIERRA
+   will choose from randomly for each robot.
+
+
+
+Requirements For :term:`ROS+Robot`
+-----------------------------------
+
+None for the moment.
+
 
 .. _ln-req-code:
 
@@ -244,6 +260,13 @@ SIERRA Requirements for ROS+Gazebo Project Code
 
 #. :envvar:`ROS_PACKAGE_PATH` is set up properly prior to invoking SIERRA.
 
+SIERRA Requirements for ROS+Robot Project Code
+-----------------------------------------------
+
+#. :envvar:`ROS_PACKAGE_PATH` is set up properly prior to invoking SIERRA local
+   machine AND all robots are setup such that it is populated on login (i.e., an
+   appropriate ``setup.bash`` is sourced in ``.bashrc``).
+
 .. _ln-req-xml:
 
 SIERRA XML Requirements
@@ -264,8 +287,8 @@ in `specific` places in the ``--template-input-file``, they should be avoided.
   of ``controllers.yaml`` (see :ref:`ln-tutorials-project-main-config` for
   details) in template input files possible.
 
-- ``__UUID__`` - XPath substitution optionally used when the :term:`ROS+Gazebo`
-  platform is selected in ``controllers.yaml`` (see
+- ``__UUID__`` - XPath substitution optionally used when a :term:`ROS` platform
+  is selected in ``controllers.yaml`` (see
   :ref:`ln-tutorials-project-main-config`) when adding XML tags to force
   addition of the tag once for every robot in the experiment, with ``__UUID__``
   replaced with the configured robot prefix concatenated with its numeric ID

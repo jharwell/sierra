@@ -115,10 +115,15 @@ kROS = {
     'launch_cmd': 'roslaunch',
     'launch_file_ext': '.launch',
     'param_file_ext': '.params',
-    'n_ticks_per_sec': 1000,
-    'n_secs_per_run': 5000  # seconds
+    'n_ticks_per_sec': 5,
+    'n_secs_per_run': 1000,  # seconds
+    'port_base': 11235,
+    'inter_run_pause': 60  # seconds
 }
 
+kYAML = {
+    'main': 'main.yaml'
+}
 kGazebo = {
     'launch_cmd': 'gazebo',
     'min_version': '11.0.0',
@@ -127,10 +132,15 @@ kGazebo = {
 }
 
 kGNUParallel = {
-    'cmdfile': 'commands.txt'
+    'cmdfile_stem': 'commands',
+    'cmdfile_ext': '.txt'
 }
 
 kExperimentalRunData = {
     # Default # datapoints in each .csv of one-dimensional data.
     'n_datapoints_1D': 50
+}
+
+kPlatform = {
+    'ping_timeout': 10  # seconds
 }

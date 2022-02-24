@@ -93,6 +93,25 @@ class PopulationSize(population_size.BasePopulationSize):
             for s in self.sizes:
                 exp_adds = XMLTagAddList()
                 pos_i = random.randint(0, len(self.positions) - 1)
+
+                exp_adds.append(XMLTagAdd(".",
+                                          "master",
+                                          {},
+                                          True))
+                exp_adds.append(XMLTagAdd("./master",
+                                          "group",
+                                          {
+                                              'ns': 'sierra'
+                                          },
+                                          False))
+                exp_adds.append(XMLTagAdd("./master/group/[@ns='sierra']",
+                                          "param",
+                                          {
+                                              'name': 'experiment/n_robots',
+                                              'value': str(s)
+                                          },
+                                          False))
+
                 for i in range(0, s):
 
                     ns = f'{prefix}{i}'
@@ -100,14 +119,20 @@ class PopulationSize(population_size.BasePopulationSize):
                     pos_i = (pos_i + 1) % len(self.positions)
                     spawn_cmd_args = f"-urdf -model {model}_{ns} -x {pos.x} -y {pos.y} -z {pos.z} -param robot_description"
 
-                    exp_adds.append(XMLTagAdd(".//launch",
+                    exp_adds.append(XMLTagAdd("./robot",
                                               "group",
-                                              {'ns': ns}))
+                                              {
+                                                  'ns': ns
+                                              },
+                                              True))
 
-                    exp_adds.append(XMLTagAdd(f".//launch/group/[@ns='{ns}']",
+                    exp_adds.append(XMLTagAdd(f"./robot/group/[@ns='{ns}']",
                                               "param",
-                                              {"name": "tf_prefix",
-                                               "value": ns}))
+                                              {
+                                                  "name": "tf_prefix",
+                                                  "value": ns
+                                              },
+                                              True))
 
                     # These two tag adds are OK to use because:
                     #
@@ -116,17 +141,23 @@ class PopulationSize(population_size.BasePopulationSize):
                     #
                     # - All robots in Gazebo will provide a robot description
                     #   .urdf.xacro per ROS naming conventions
-                    exp_adds.append(XMLTagAdd(f".//launch/group/[@ns='{ns}']",
+                    exp_adds.append(XMLTagAdd(f"./robot/group/[@ns='{ns}']",
                                               "param",
-                                              {"name": "robot_description",
-                                               "command": desc_cmd}))
+                                              {
+                                                  "name": "robot_description",
+                                                  "command": desc_cmd
+                                              },
+                                              True))
 
-                    exp_adds.append(XMLTagAdd(f".//launch/group/[@ns='{ns}']",
+                    exp_adds.append(XMLTagAdd(f"./robot/group/[@ns='{ns}']",
                                               "node",
-                                              {"name": "spawn_urdf",
-                                               "pkg": "gazebo_ros",
-                                               "type": "spawn_model",
-                                               "args": spawn_cmd_args}))
+                                              {
+                                                  "name": "spawn_urdf",
+                                                  "pkg": "gazebo_ros",
+                                                  "type": "spawn_model",
+                                                  "args": spawn_cmd_args
+                                              },
+                                              True))
 
                 self.tag_adds.append(exp_adds)
 

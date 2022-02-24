@@ -131,7 +131,7 @@ class PhysicsEngines():
         Generate definitions for the specified # of 2D/3D physics engines for
         the specified arena extent.
         """
-        adds = XMLTagAddList(XMLTagAdd('.', 'physics_engines', {}))
+        adds = XMLTagAddList(XMLTagAdd('.', 'physics_engines', {}, False))
 
         for i in range(0, self.n_engines):
             adds.extend(self._gen_single_engine(i,
@@ -179,19 +179,31 @@ class PhysicsEngines():
 
         adds.append(XMLTagAdd('.//physics_engines',
                               self.engine_type,
-                              {'id': name, 'iterations': str(self.iter_per_tick)}))
+                              {
+                                  'id': name,
+                                  'iterations': str(self.iter_per_tick)
+                              },
+                              True))
         adds.append(XMLTagAdd(f".//physics_engines/*[@id='{name}']",
                               "boundaries",
-                              {}))
+                              {},
+                              True))
         adds.append(XMLTagAdd(f".//physics_engines/*[@id='{name}']/boundaries",
                               "top",
-                              {'height': str(size_z)}))
+                              {
+                                  'height': str(size_z)
+                              },
+                              True))
         adds.append(XMLTagAdd(f".//physics_engines/*[@id='{name}']/boundaries",
                               "bottom",
-                              {'height': '0.0'}))
+                              {
+                                  'height': '0.0'
+                              },
+                              True))
         adds.append(XMLTagAdd(f".//physics_engines/*[@id='{name}']/boundaries",
                               "sides",
-                              {}))
+                              {},
+                              True))
 
         # Engine lower X coord increasing as engine id increases
         if engine_id in forward_engines:
@@ -224,7 +236,10 @@ class PhysicsEngines():
         for v in vertices:
             adds.append(XMLTagAdd(f".//physics_engines/*[@id='{name}']/boundaries/sides",
                                   "vertex",
-                                  {"point": "{0}, {1}".format(v[0], v[1])}))
+                                  {
+                                      "point": "{0}, {1}".format(v[0], v[1])
+                                  },
+                                  True))
         return adds
 
     def _gen1_engines(self) -> XMLTagAddList:
@@ -236,10 +251,13 @@ class PhysicsEngines():
 
         name = self._gen_engine_name(0)
 
-        return XMLTagAddList(XMLTagAdd('.', 'physics_engines', {}),
+        return XMLTagAddList(XMLTagAdd('.', 'physics_engines', {}, False),
                              XMLTagAdd(".//physics_engines",
                                        self.engine_type,
-                                       {'id': name}))
+                                       {
+                                           'id': name
+                                       },
+                                       True))
 
     def _gen2_engines(self, extent: ArenaExtent) -> XMLTagAddList:
         """Generate definitions for 2 2D or 3D physics engines for the specified
