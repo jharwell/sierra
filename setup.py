@@ -67,6 +67,7 @@ setup(
         "matplotlib",
         "sympy",
         "psutil",
+        "distro",
 
         "coloredlogs",
         "singleton_decorator",

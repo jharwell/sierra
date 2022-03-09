@@ -66,7 +66,10 @@ class PlatformExpDefGenerator():
         """
         # ARGoS uses a single input file
         wr_config = XMLWriterConfig([{'src_root': '.',
-                                      'opath_leaf': config.kARGoS['launch_file_ext']
+                                      'opath_leaf': config.kARGoS['launch_file_ext'],
+                                      'create_tags': None,
+                                      'dest_parent': None,
+                                      'rename_to': None
                                       }])
         exp_def = XMLLuigi(input_fpath=self.template_input_file,
                            write_config=wr_config)
@@ -117,7 +120,10 @@ class PlatformExpDefGenerator():
             self.logger.warning("0 engines of type %s specified", engine_type)
             return
 
-        self.logger.trace("Generating changes for physics engines (all runs)")
+        self.logger.trace(("Generating changes for %d '%s' physics engines ("
+                           "all runs)"),
+                          n_engines,
+                          engine_type)
         pe = physics_engines.factory(engine_type, n_engines, cmdopts, extents)
 
         scutils.apply_to_expdef(pe, exp_def)

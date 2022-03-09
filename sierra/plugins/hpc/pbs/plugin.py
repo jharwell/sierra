@@ -101,7 +101,6 @@ class ExpShellCmdsGenerator():
         cmd1 = f'sort -u $PBS_NODEFILE > {nodelist}'
         cmd2 = 'parallel {2} ' \
             '--jobs {1} '\
-            '--ungroup '\
             '--results {4} '\
             '--joblog {3} '\
             '--sshloginfile {0} '\

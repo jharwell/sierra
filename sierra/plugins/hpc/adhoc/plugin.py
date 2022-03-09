@@ -102,7 +102,6 @@ class ExpShellCmdsGenerator():
         # GNU parallel cmd
         cmd2 = 'parallel {2} ' \
             '--jobs {1} ' \
-            '--ungroup '\
             '--results {4} ' \
             '--joblog {3} ' \
             '--sshloginfile {0} ' \

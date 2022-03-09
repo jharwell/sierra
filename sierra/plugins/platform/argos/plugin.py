@@ -63,6 +63,7 @@ class ParsedCmdlineConfigurer():
                 f"'{self.exec_env}' unsupported on ARGoS"
 
     def _hpc_pbs(self, args: argparse.Namespace) -> None:
+        self.logger.debug("Configuring ARGoS for PBS execution")
         # For HPC, we want to use the the maximum # of simultaneous jobs per
         # node such that there is no thread oversubscription. We also always
         # want to allocate each physics engine its own thread for maximum
@@ -78,6 +79,7 @@ class ParsedCmdlineConfigurer():
                           args.exec_jobs_per_node)
 
     def _hpc_slurm(self, args: argparse.Namespace) -> None:
+        self.logger.debug("Configuring ARGoS for SLURM execution")
         # For HPC, we want to use the the maximum # of simultaneous jobs per
         # node such that there is no thread oversubscription. We also always
         # want to allocate each physics engine its own thread for maximum
@@ -92,11 +94,14 @@ class ParsedCmdlineConfigurer():
                     os.environ['SLURM_TASKS_PER_NODE'])
             args.exec_jobs_per_node = int(res.group(0))
 
+        args.physics_n_engines = int(os.environ['SLURM_CPUS_PER_TASK'])
+
         self.logger.debug("Allocated %s physics engines/run, %s parallel runs/node",
                           args.physics_n_engines,
                           args.exec_jobs_per_node)
 
     def _hpc_local(self, args: argparse.Namespace) -> None:
+        self.logger.debug("Configuring ARGoS for LOCAL execution")
         if any([1, 2]) in args.pipeline:
             assert args.physics_n_engines is not None,\
                 '--physics-n-engines is required for --exec-env=hpc.local when running stage{1,2}'
@@ -124,6 +129,8 @@ class ParsedCmdlineConfigurer():
                           args.exec_jobs_per_node)
 
     def _hpc_adhoc(self, args: argparse.Namespace) -> None:
+        self.logger.debug("Configuring ARGoS for ADHOC execution")
+
         with open(args.nodefile, 'r') as f:
             lines = f.readlines()
             n_nodes = len(lines)
@@ -184,10 +191,11 @@ class ExpRunShellCmdsGenerator():
             cmd = '{0} -c {1}{2}'.format(config.kARGoS['launch_cmd'],
                                          input_fpath,
                                          config.kARGoS['launch_file_ext'])
-        elif exec_env in ['hpc.slurm', 'hpc.adhoc']:
-            cmd = '{0}-{1} -c {2}'.format(config.kARGoS['launch_cmd'],
-                                          os.environ['SIERRA_ARCH'],
-                                          input_fpath)
+        elif exec_env in ['hpc.slurm', 'hpc.pbs']:
+            cmd = '{0}-{1} -c {2}{3}'.format(config.kARGoS['launch_cmd'],
+                                             os.environ['SIERRA_ARCH'],
+                                             input_fpath,
+                                             config.kARGoS['launch_file_ext'])
         else:
             assert False, f"Unsupported exec environment '{exec_env}'"
 

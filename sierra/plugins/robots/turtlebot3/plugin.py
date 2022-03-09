@@ -116,7 +116,6 @@ class ExpShellCmdsGenerator():
             # GNU parallel cmd for robots (slaves)
             robots = 'parallel {2} ' \
                 '--jobs {1} ' \
-                '--ungroup '\
                 '--results {4} ' \
                 '--joblog {3} ' \
                 '--sshloginfile {0} ' \
@@ -134,7 +133,6 @@ class ExpShellCmdsGenerator():
 
             ros_master = 'parallel ' \
                 '--results {1} ' \
-                '--ungroup ' \
                 '--joblog {0} ' \
                 '--workdir {1} < "{2}"'
 
@@ -171,7 +169,7 @@ class ExpShellCmdsGenerator():
         return ret
 
 
-@ implements.implements(bindings.IExpRunShellCmdsGenerator)
+@implements.implements(bindings.IExpRunShellCmdsGenerator)
 class ExpRunShellCmdsGenerator():
     def __init__(self,
                  cmdopts: types.Cmdopts,

@@ -107,11 +107,10 @@ class ExpShellCmdsGenerator():
 
         cmd1 = f'scontrol show hostnames $SLURM_JOB_NODELIST > {nodelist}'
         cmd2 = 'parallel {2} '\
-            '--ungroup '\
             '--jobs {1} '\
             '--results {4} ' \
             '--joblog {3} '\
-            '--sshloginfile {0}' \
+            '--sshloginfile {0} ' \
             '--workdir {4} < "{5}"'
         cmd2 = cmd2.format(nodelist,
                            exec_opts['n_jobs'],

@@ -69,8 +69,6 @@ class ExpShellCmdsGenerator():
             resume = '--resume-failed'
 
         cmd = 'parallel {1} ' \
-            '--eta '\
-            '--ungroup '\
             '--jobs {2} ' \
             '--results {0} '\
             '--joblog {3} '\

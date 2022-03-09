@@ -115,5 +115,20 @@ To define additional platforms, see the
 
 See [here](https://swarm-robotics-sierra.readthedocs.io/en/latest/src/contributing.html) to get started.
 
+
+# Citing
+If you use SIERRA and have found it helpful, please cite the following paper:
+
+    @misc{Harwell2022b-SIERRA,
+          title={SIERRA: A Modular Framework for Research Automation},
+          author={John Harwell and London Lowmanstone and Maria Gini},
+          year={2022},
+          eprint={2203.04748},
+          archivePrefix={arXiv},
+          primaryClass={cs.RO},
+          url={http://arxiv.org/abs/2203.04748}
+    }
+
+
 # License
 This project is licensed under GPL 3.0. See [LICENSE](LICENSE.md).
