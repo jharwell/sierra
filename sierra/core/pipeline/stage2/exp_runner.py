@@ -54,6 +54,9 @@ class ExpShell():
 
         proc.wait()
 
+        if proc.returncode == 0:
+            return True
+
         stdout = proc.stdout.read().decode('utf-8').splitlines()
         stderr = proc.stdout.read().decode('utf-8').splitlines()
 
@@ -68,7 +71,7 @@ class ExpShell():
         self.logger.trace("Cmd stdout: %s", cmd_stdout)
         self.logger.trace("Cmd stderr: %s", cmd_stderr)
 
-        return proc.returncode == 0
+        return proc.returncode
 
 
 class BatchExpRunner:
@@ -250,7 +253,7 @@ class ExpRunner:
 
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
-        self.logger.info('Exp%s elapsed time: %s', exp_num, str(sec))
+        self.logger.info('Exp%s elapsed time: %s', exp_num, sec)
 
         with open(self.exec_times_fpath, 'a') as f:
             f.write('exp' + str(exp_num) + ': ' + str(sec) + '\n')

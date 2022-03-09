@@ -42,6 +42,21 @@ SIERRA: Automation for the Scientific Method and Agent Research
    src/glossary.rst
    src/api.rst
 
+Citing SIERRA
+=============
+
+If you use SIERRA and find it helpful, please cite the following paper::
+
+  @misc{Harwell2022b-SIERRA,
+          title={SIERRA: A Modular Framework for Research Automation},
+          author={John Harwell and London Lowmanstone and Maria Gini},
+          year={2022},
+          eprint={2203.04748},
+          archivePrefix={arXiv},
+          primaryClass={cs.RO},
+          url={http://arxiv.org/abs/2203.04748}
+    }
+
 SIERRA In The Wild
 ==================
 
@@ -72,4 +87,5 @@ Demonstrations using SIERRA
 ---------------------------
 
 - :xref:`2021-ijcai-demo`
+- :xref:`2022-aamas-demo`
 - Supplementary material for :xref:`Harwell2021a`

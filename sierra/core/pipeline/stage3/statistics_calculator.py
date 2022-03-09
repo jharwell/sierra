@@ -27,6 +27,7 @@ import multiprocessing as mp
 import typing as tp
 import queue
 import time
+import datetime
 import logging  # type: tp.Any
 
 # 3rd party packages
@@ -128,27 +129,44 @@ class BatchExpParallelCalculator:
                        processq: mp.Queue,
                        main_config: dict,
                        avg_opts: tp.Dict[str, str]) -> None:
+
+        # Wait for 3 seconds after the queue is empty before bailing, at the
+        # start. If that is not long enough then exponentially increase from
+        # there until you find how long it takes to get the first item in the
+        # queue, and use that as the appropriate timeout (plus a little
+        # margin).
+        timeout = 3
+        got_item = False
         while True:
-            # Wait for 3 seconds after the queue is empty before bailing
             try:
-                batch_output_root, exp = gatherq.get(True, 3)
+                batch_output_root, exp = gatherq.get(True, timeout)
                 ExpCSVGatherer(main_config, avg_opts,
                                batch_output_root, exp, processq)()
                 gatherq.task_done()
+                got_item = True
 
             except queue.Empty:
-                break
+                if got_item:
+                    break
+                else:
+                    timeout *= 2
 
     @staticmethod
     def _process_worker(processq: mp.Queue,
                         main_config: dict,
                         batch_stat_root: str,
                         avg_opts: tp.Dict[str, str]) -> None:
-        while True:
-            # Wait for 3 seconds after the queue is empty before bailing
-            try:
-                item = processq.get(True, 3)
 
+        # Wait for 3 seconds after the queue is empty before bailing, at the
+        # start. If that is not long enough then exponentially increase from
+        # there until you find how long it takes to get the first item in the
+        # queue, and use that as the appropriate timeout (plus a little
+        # margin).
+        timeout = 3
+        got_item = False
+        while True:
+            try:
+                item = processq.get(True, timeout)
                 key = list(item.keys())[0]
                 ExpStatisticsCalculator(main_config,
                                         avg_opts,
@@ -156,8 +174,12 @@ class BatchExpParallelCalculator:
                                         key,
                                         item[key])()
                 processq.task_done()
+                got_item = True
             except queue.Empty:
-                break
+                if got_item:
+                    break
+                else:
+                    timeout *= 2
 
 
 class ExpCSVGatherer:
@@ -319,6 +341,8 @@ class ExpCSVGatherer:
 
         self.logger.info('Verifying results in %s...', self.exp_output_root)
 
+        start = time.time()
+
         for exp1 in experiments:
             csv_root1 = os.path.join(self.exp_output_root,
                                      exp1,
@@ -338,7 +362,7 @@ class ExpCSVGatherer:
 
                     # .csvs for rendering that we don't verify (for now...)
                     if os.path.isdir(path1) or os.path.isdir(path2):
-                        self.logger.debug("Not verifying %s: contains rendering data",
+                        self.logger.debug("Not verifying '%s': contains rendering data",
                                           path1)
                         continue
 
@@ -367,6 +391,11 @@ class ExpCSVGatherer:
                         assert(all(len(df1[c1]) == len(df2[c2]) for c2 in df1.columns)),\
                             "Not all columns from {0} and {1} have same length".format(path1,
                                                                                        path2)
+        elapsed = int(time.time() - start)
+        sec = datetime.timedelta(seconds=elapsed)
+        self.logger.info("Done verifying results in %s: %s",
+                         self.exp_output_root,
+                         sec)
 
 
 class ExpStatisticsCalculator:
@@ -413,8 +442,8 @@ class ExpStatisticsCalculator:
 
         self.main_config = main_config
 
-        self.stat_root = os.path.join(
-            batch_stat_root, self.gather_spec.exp_leaf)
+        self.stat_root = os.path.join(batch_stat_root,
+                                      self.gather_spec.exp_leaf)
 
         self.intra_perf_csv = main_config['sierra']['perf']['intra_perf_csv']
         self.intra_perf_col = main_config['sierra']['perf']['intra_perf_col']

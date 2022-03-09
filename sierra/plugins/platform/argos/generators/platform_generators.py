@@ -66,7 +66,10 @@ class PlatformExpDefGenerator():
         """
         # ARGoS uses a single input file
         wr_config = XMLWriterConfig([{'src_root': '.',
-                                      'opath_leaf': config.kARGoS['launch_file_ext']
+                                      'opath_leaf': config.kARGoS['launch_file_ext'],
+                                      'create_tags': None,
+                                      'dest_parent': None,
+                                      'rename_to': None
                                       }])
         exp_def = XMLLuigi(input_fpath=self.template_input_file,
                            write_config=wr_config)

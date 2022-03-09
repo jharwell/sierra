@@ -322,7 +322,7 @@ class XMLLuigi:
                                   config['rename_to'])
 
             # Adding tags not required
-            if config['dest_parent'] is not None:
+            if 'dest_parent' in config and config['dest_parent'] is not None:
                 to_write = ET.ElementTree()
                 if 'create_tags' in config and config['create_tags'] is not None:
                     for spec in config['create_tags']:

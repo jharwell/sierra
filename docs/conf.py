@@ -157,12 +157,16 @@ xref_links = {
                    "https://www.cs.unm.edu/~wjust/CS523/S2018/Readings/Hecker_Beyond_Pheromones_Swarm_Intelligence.pdf"),
     "Rosenfeld2006": ("Rosenfeld2006",
                       "http://users.umiacs.umd.edu/~sarit/data/articles/rosenfeldetalbook06.pdf"),
-    "SIERRA_GITHUB": ("https://github.com:swarm-robotics/sierra.git", "https://github.com:swarm-robotics/sierra.git"),
+    "SIERRA_GITHUB": ("https://github.com:swarm-robotics/sierra.git",
+                      "https://github.com:swarm-robotics/sierra.git"),
     "FORDYCA": ("FORDYCA", "https://swarm-robotics-fordyca.readthedocs.io"),
     "PRISM": ("PRISM", "https://swarm-robotics-prism.readthedocs.io"),
     "LIBRA": ("LIBRA", "https://swarm-robotics-libra.readthedocs.io"),
+
     "2021-ijcai-demo": ("2021 IJCAI Robot Exhibition",
                         "https://www-users.cse.umn.edu/~harwe006/showcase/ijcai-2021-robot-exhibition"),
+    "2022-aamas-demo": ("2022 AAMAS Demo",
+                        "https://www-users.cse.umn.edu/~harwe006/showcase/aamas-2022-demo")
 }
 
 # -- Options for HTML output ----------------------------------------------

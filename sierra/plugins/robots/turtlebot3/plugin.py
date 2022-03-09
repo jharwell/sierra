@@ -171,7 +171,7 @@ class ExpShellCmdsGenerator():
         return ret
 
 
-@ implements.implements(bindings.IExpRunShellCmdsGenerator)
+@implements.implements(bindings.IExpRunShellCmdsGenerator)
 class ExpRunShellCmdsGenerator():
     def __init__(self,
                  cmdopts: types.Cmdopts,
