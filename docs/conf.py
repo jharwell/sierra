@@ -251,7 +251,7 @@ autosectionlabel_prefix_document = True
 man_pages = [
     ('man/sierra-cli', 'sierra-cli',
      'The SIERRA Command Line Interface', [author], 1),
-    ('man/sierra-rendering', 'sierra-rendering',
+    ('man/sierra-vc', 'sierra-vc',
      'SIERRA Rendering', [author], 7),
     ('man/sierra', 'sierra',
      'reSearch pIpEline Reusable Robotics Automation (SIERRA)', [author], 7)

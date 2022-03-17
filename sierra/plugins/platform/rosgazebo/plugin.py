@@ -50,6 +50,10 @@ class ParsedCmdlineConfigurer():
         self.logger = logging.getLogger('rosgazebo.plugin')
 
     def __call__(self, args: argparse.Namespace) -> None:
+        # No configuration needed for stages 3-5
+        if [1, 2] not in args.pipeline:
+            return
+
         if self.exec_env == 'hpc.local':
             self._hpc_local(args)
         elif self.exec_env == 'hpc.adhoc':

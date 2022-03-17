@@ -154,15 +154,16 @@ class Heatmap:
 
 
 class DualHeatmap:
-    """
-    Generates a side-by-side plot of two heataps from a set of .csv files with the specified
-    graph visuals. .csv files must be named as``<input_stem_fpath>_X.csv``, where `X` is
-    non-negative integer. Input ``.csv`` files must be 2D grids of the same cardinality.
+    """Generates a side-by-side plot of two heataps from a set of .csv files with
+    the specified graph visuals. .csv files must be named
+    as``<input_stem_fpath>_X.csv``, where `X` is non-negative integer. Input
+    ``.csv`` files must be 2D grids of the same cardinality.
 
     This graph does not plot standard deviation.
 
-    If there are not exactly two  ``.csv`` files matching the pattern found, the graph is not
-    generated.
+    If there are not exactly two ``.csv`` files matching the pattern found, the
+    graph is not generated.
+
     """
     kCardinality = 2
 
@@ -189,7 +190,7 @@ class DualHeatmap:
 
     def generate(self) -> None:
         dfs = [sierra.core.utils.pd_csv_read(f) for f in glob.glob(
-            self.input_stem_pattern + '*.csv') if re.search('_[0-9]+', f)]
+            self.input_stem_pattern) if re.search('_[0-9]+', f)]
 
         if not dfs or len(dfs) != DualHeatmap.kCardinality:
             self.logger.debug("Not generating dual heatmap graph: %s did not match %s .csv files",
@@ -209,10 +210,14 @@ class DualHeatmap:
         maxval = max(dfs[0].max().max(), dfs[1].max().max())
 
         # Plot heatmaps
-        im1 = ax1.matshow(dfs[0], cmap='coolwarm',
-                          interpolation='none', vmin=minval, vmax=maxval)
-        im2 = ax2.matshow(dfs[1], cmap='coolwarm',
-                          interpolation='none', vmin=minval, vmax=maxval)
+        im1 = ax1.matshow(dfs[0],
+                          interpolation='none',
+                          vmin=minval,
+                          vmax=maxval)
+        im2 = ax2.matshow(dfs[1],
+                          interpolation='none',
+                          vmin=minval,
+                          vmax=maxval)
 
         # Add titles
         fig.suptitle(self.title, fontsize=self.text_size['title'])

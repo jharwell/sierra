@@ -8,7 +8,7 @@ To contribute to the SIERRA core, in you should follow the general workflow and
 python development guide outlined in :xref:`LIBRA`. For the static analysis
 step:
 
-#. Install the development packages for SIERRA (from the SIERRA repo root)::
+#. Install development packages for SIERRA (from the SIERRA repo root)::
 
      pip3 install .[devel]
 
@@ -16,8 +16,8 @@ step:
 
      pytype -k sierra
 
-   Fix ANY and ALL errors that arise, as SIERRA should get a clean bill of health
-   from the checker.
+   Fix ANY and ALL errors that arise, as SIERRA should get a clean bill of
+   health from the checker.
 
 #. Run the following on any module directories you changed, from the root of
    SIERRA::
@@ -57,7 +57,8 @@ repository.
 
     - ``graphs/`` - Generic code to generate graphs of different types.
 
-    - ``pipeline/`` - Core pipline code in 5 stages (see :ref:`ln-usage-pipeline`)
+    - ``pipeline/`` - Core pipline code in 5 stages (see
+      :ref:`ln-usage-pipeline`).
 
     - ``variables/`` - Genertic generators for experimental variables to modify
       template ``.argos`` files in order to run experiments with a given

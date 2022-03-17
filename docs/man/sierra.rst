@@ -49,4 +49,4 @@ See Also
 ********
 
 - :manpage:`sierra-cli`
-- :manpage:`sierra-rendering`
+- :manpage:`sierra-vc`

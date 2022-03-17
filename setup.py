@@ -30,8 +30,8 @@ readme = (here / "README.md").read_text()
 
 # This call to setup() does all the work
 setup(
-    name="sierra",
-    version="1.1.1",
+    name="sierra-research",
+    version="1.1.2",
     description="Research experimental pipeline automation for multi-agent simulations and real robots",
     long_description=readme,
     long_description_content_type="text/markdown",
@@ -58,7 +58,7 @@ setup(
                  'sierra.plugins': 'sierra/plugins'},
     include_package_data=True,
     data_files=[('share/man/man1', ['docs/_build/man/sierra-cli.1']),
-                ('share/man/man7', ['docs/_build/man/sierra-rendering.7']),
+                ('share/man/man7', ['docs/_build/man/sierra-vc.7']),
                 ('share/man/man7', ['docs/_build/man/sierra.7'])],
 
     install_requires=[
@@ -73,20 +73,27 @@ setup(
         "singleton_decorator",
         "implements",
         "retry",
-
-        # Sphinx packages (only needed until SIERRA is on pypi, then they will
-        # go in extra_requires=[...] under a "devel" prefix so you only install
-        # them if you are doing SIERRA development).
-        "sphinx",
-        "docutils==0.16",
-        "sphinx-rtd-theme",
-        "sphinx-argparse",
-        "sphinx-tabs",
-        "sphinxcontrib-napoleon",
-        "autoapi",
     ],
     extras_require={
-        "devel": ['pylint', 'pytype', 'mypy', 'build']
+        "devel": [
+            # type checking
+            'pylint',
+            'pytype',
+
+            # Deployment packages
+            'mypy',
+            'build',
+            'twine',
+
+            # Sphinx packages
+            "sphinx",
+            "docutils==0.16",
+            "sphinx-rtd-theme",
+            "sphinx-argparse",
+            "sphinx-tabs",
+            "sphinxcontrib-napoleon",
+            "autoapi",
+        ]
     },
     python_requires=">=3.9",
     entry_points={

@@ -829,7 +829,7 @@ class CoreCmdline(BaseCmdline):
 
         self.stage5.add_argument("--comparison-type",
                                  choices=['LNraw',
-                                          'HMraw', 'HMdiff', 'HMscale', 'HMdiff',
+                                          'HMraw', 'HMdiff', 'HMscale',
                                           'SUraw', 'SUscale', 'SUdiff'],
                                  help="""
 

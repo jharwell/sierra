@@ -8,4 +8,4 @@ Description
    /src/usage/batch_criteria.rst
    /src/usage/variables.rst
    /src/usage/run_time_tree.rst
-   /src/usage/rendering.rst
+   /src/usage/visual_capture.rst
