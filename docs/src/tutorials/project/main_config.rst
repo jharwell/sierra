@@ -13,7 +13,7 @@ knows how to interact with your project are shown below:
 
       .. tabs::
 
-         .. tab:: ARGoS
+         .. group-tab:: ARGoS
 
             An example main configuration file for the ARGoS platform:
 
@@ -48,7 +48,7 @@ knows how to interact with your project are shown below:
                  # can be easily accommodated without copy-pasting.
                  perf: 'perf-config.yaml'
 
-         .. tab:: ROS+Gazebo
+         .. group-tab:: ROS+Gazebo
 
             An example main configuration file for the ROS+Gazebo platform:
 

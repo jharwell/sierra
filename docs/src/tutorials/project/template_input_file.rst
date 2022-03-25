@@ -12,7 +12,7 @@ Examples of the structure/required content of the XML file passed to SIERRA via
 
 .. tabs::
 
-   .. tab:: ARGoS
+   .. group-tab:: ARGoS
 
       For the purposes of illustration we will use
       ``--template-input-file=sample.argos`` and a controller ``MyController``:
@@ -36,11 +36,10 @@ Examples of the structure/required content of the XML file passed to SIERRA via
 
    See :ref:`ln-req-xml` for usage/description of the ``__CONTROLLER__`` tag.
 
-   .. tab:: ROS (Using parameter server)
+   .. group-tab:: ROS (Using parameter server)
 
       For the purposes of illustration we will use
-      ``--template-input-file=sample.launch``
-
+      ``--template-input-file=sample.launch``:
 
       .. code-block:: XML
 
@@ -58,10 +57,10 @@ Examples of the structure/required content of the XML file passed to SIERRA via
              </robot>
          <ros-configuration>
 
-   .. tab:: ROS (Using ``<params>`` tag)
+   .. group-tab:: ROS (Using ``<params>`` tag)
 
       For the purposes of illustration we will use
-      ``--template-input-file=sample.launch``
+      ``--template-input-file=sample.launch``:
 
       .. code-block:: XML
 

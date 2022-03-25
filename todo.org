@@ -1,4 +1,4 @@
-** TODO [#A] Create SIERRA pypi package [72%]
+** TODO [#A] Create SIERRA pypi package [65%]
 - [X] Push --scenario to the FORDYCA plugin--not part of core SIERRA
 - [X] Push templates/scripts to the FORDYCA plugin--not part of core SIERRA
 - [X] Make PopulationDensity not coupled to SS,DS,RN,PL block distribution, which it is currently.
@@ -19,7 +19,7 @@
 - [X] Docs for what statistics SIERRA can generate
 - [ ] More SAANoise out of SIERRA--to uses the perf.robustness dictionary, which I am moving out to TITERRA. ALso, SAA
      noise requires ARGoS functionality that is not in the main repo and will not probably ever make it there.
-- [ ] Remove --help; it should be a generic message that directs people to the online docs
+- [X] Remove --help; it should be a generic message that directs people to the online docs
 - [ ] Document the plugin search path somewhere
 - [ ] Remove the pm_query() stuff from ARGoS batch criteria--that is specific to my project. If I need it, I should
       derive from the necessary ARGoS batch criteria and then add that single function.
@@ -29,7 +29,9 @@
 - [ ] Add docs for which cmdline arguments all platforms must implement
 - [ ] Setup travis for some basic integration tests with the sample project for ARGoS and ROS+Gazebo.
 - [ ] Create interface classes for all plugins--will make documenting easier, as well as help users to find bugs when
-      adding plugins 
+      adding plugins
+- [ ] Add docs for the sample project for the rosrobot plugin
+- [ ] Update config tutorials with changes to rosrobot (template input file, )
 ** TODO [#B] Fix the pylint import error false positives
 ** TODO [#B] Switch reading intra experiment model dataframe index sizes
 From using the size of a different dataframe in the exp to reading from the time setup written to the pkl file.

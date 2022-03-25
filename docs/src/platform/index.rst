@@ -82,7 +82,7 @@ This platform can be selected via ``--platform=platform.rosrobot``.
 
 This is the platform on which SIERRA will run experiments using :term:`ROS`
 (either ROS1 OR ROS2) on a real robot of your choice. To use this platform, you
-must setup the :ref:`SIERRA RosBridge <ln-packages-rosbridge>`.
+must setup the :ref:`SIERRA ROSBridge <ln-packages-rosbridge>`.
 
 Random Seeding For Reproducibility
 ----------------------------------

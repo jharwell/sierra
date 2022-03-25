@@ -169,6 +169,9 @@ xref_links = {
                         "https://www-users.cse.umn.edu/~harwe006/showcase/aamas-2022-demo")
 }
 
+sphinx_tabs_disable_tab_closing = True
+# sphinx_tabs_disable_css_loading = True # True=tabs render more as buttons -_-
+
 # -- Options for HTML output ----------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -185,7 +188,7 @@ html_theme = 'sphinx_rtd_theme'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = []
 
 html_last_updated_fmt = "%b %d, %Y"
 
@@ -201,11 +204,11 @@ html_sidebars = {
     ]
 }
 
-html_context = {
-    'css_files': [
-        '_static/theme_overrides.css',  # override wide tables in RTD theme
-    ],
-}
+# html_context = {
+#     'css_files': [
+#         '_static/theme_overrides.css',  # override wide tables in RTD theme
+#     ],
+# }
 
 # -- Options for HTMLHelp output ------------------------------------------
 

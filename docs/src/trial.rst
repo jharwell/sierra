@@ -9,33 +9,49 @@ first defining your own, the steps to do so below. I assume that all
 repositories are cloned into ``$HOME/research``; adjust the paths accordingly if
 you clone things somewhere else.
 
-#. Install SIERRA OS packages. The .deb package for ubuntu are shown; if you are
-   on a different Linux distribution or on OSX you will have to install the
-   equivalent packages.
+#. Install OS packages (if you don't see your OS below you will have to find and
+   install the equivalent packages).
 
-   - ``parallel``
-   - ``cm-super``
-   - ``texlive-fonts-recommended``
-   - ``texlive-latex-extra``
-   - ``dvipng``
+   .. tabs::
 
-   .. IMPORTANT:: SIERRA will not work if these packages (or their equivalent on
-                  non-ubuntu systems) are not installed!
+         .. group-tab:: Ubuntu
+
+            Install the following with ``apt install``:
+
+            - ``parallel``
+            - ``cm-super``
+            - ``texlive-fonts-recommended``
+            - ``texlive-latex-extra``
+            - ``dvipng``
+
+         .. group-tab:: OSX
+
+            Install the following with ``brew install``:
+
+            - ``parallel``
+            - ``--cask mactex``
+
+
+
+   .. IMPORTANT:: SIERRA will not work if these packages (or their equivalent)
+                  are not installed! It may start, it might even not crash
+                  immediately depending on what you are using it to do, but it
+                  won't work correctly.
 
 #. From the SIERRA repo root, install SIERRA locally::
 
      git clone https://github.com/swarm-robotics/sierra.git
      cd sierra
      git checkout devel
+     pip3 install -r docs/requirements.txt
      cd docs && make man && cd ..
-     python3 -m build
      pip3 install .
 
 #. Setup your chosen :term:`Platform`:
 
    .. tabs::
 
-      .. tab:: ARGoS
+      .. group-tab:: ARGoS
 
          Install :term:`ARGoS` via your chosen method (from source or via
          .deb). Check that ``argos3`` is found by your shell.
@@ -43,7 +59,7 @@ you clone things somewhere else.
          .. IMPORTANT:: If ``argos3`` is not found by your shell then
                         you won't be able to do anything useful with SIERRA!
 
-      .. tab:: ROS+Gazebo
+      .. group-tab:: ROS+Gazebo
 
          #. Install ROS distribution by following one of (or an equivalent guide
             for OSX or an alternative linux distribution):
@@ -84,7 +100,7 @@ you clone things somewhere else.
 
    .. tabs::
 
-      .. tab:: ARGoS
+      .. group-tab:: ARGoS
 
          Based on the `foraging example
          <https://www.argos-sim.info/examples.php>`_ from the ARGoS website::
@@ -102,7 +118,7 @@ you clone things somewhere else.
          functionality to support having multiple versions of ARGoS installed in
          multiple directories.
 
-      .. tab:: ROS+Gazebo
+      .. group-tab:: ROS+Gazebo
 
          Based on one of the turtlebot3 `intro tutorials
          <https://github.com:ROBOTIS-GIT/turtlebot3_simulations.git>`_::
@@ -121,7 +137,7 @@ you clone things somewhere else.
 
    .. tabs::
 
-      .. tab:: ARGoS
+      .. group-tab:: ARGoS
 
          #. Set :envvar:`SIERRA_PLUGIN_PATH`::
 
@@ -133,8 +149,8 @@ you clone things somewhere else.
 
             Where ``<ARGOS_INSTALL_DIR>`` is the prefix that you installed ARGoS
             to.
-              
-      .. tab:: ROS+Gazebo
+
+      .. group-tab:: ROS+Gazebo
 
          #. Set :envvar:`SIERRA_PLUGIN_PATH`::
 
@@ -150,7 +166,7 @@ you clone things somewhere else.
 
    .. tabs::
 
-      .. tab:: ARGoS
+      .. group-tab:: ARGoS
 
          ::
 
@@ -187,7 +203,7 @@ you clone things somewhere else.
                    ``<media>`` parent tags by default to increase speed and
                    reduce the memory footprint of ARGoS simulations.
 
-      .. tab:: ROS+Gazebo
+      .. group-tab:: ROS+Gazebo
 
          ::
 

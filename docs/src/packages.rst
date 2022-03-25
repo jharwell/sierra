@@ -36,23 +36,19 @@ Installing SIERRA PyPi locally
 
 To install SIERRA locally do the following from the SIERRA repo:
 
-#. Build SIERRA documentation (needed for packaged manpages)::
+#. Build SIERRA documentation (needed for package manpages)::
 
-     cd docs
-     make man
+     pip3 install -r docs/requirements.txt
+     cd docs && make man && cd ..
 
-#. Build SIERRA package::
-
-     python3 -m build
-
-#. Install SIERRA package::
+#. Install SIERRA::
 
      pip3 install .
 
 .. _ln-packages-rosbridge:
 
-SIERRA ROSbridge Package
-========================
+SIERRA ROSBridge
+----------------
 
 SIERRA provides a :term:`ROS` package containing functionality it uses to manage
 simulations and provide run-time support to :term:`projects<Project>` using a

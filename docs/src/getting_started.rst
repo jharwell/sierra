@@ -15,15 +15,33 @@ Installing SIERRA
    :ref:`ln-packages`.
 
 
-#. Install OS packages. The .deb packages for ubuntu are shown; if you are on a
-   different Linux distribution or on OSX you will have to install the
-   equivalent packages.
+#. Install OS packages (if you don't see your OS below you will have to find and
+   install the equivalent packages).
 
-   - ``parallel``
-   - ``cm-super``
-   - ``texlive-fonts-recommended``
-   - ``texlive-latex-extra``
-   - ``dvipng``
+   .. tabs::
+
+         .. group-tab:: Ubuntu
+
+            Install the following with ``apt install``:
+
+            - ``parallel``
+            - ``cm-super``
+            - ``texlive-fonts-recommended``
+            - ``texlive-latex-extra``
+            - ``dvipng``
+
+         .. group-tab:: OSX
+
+            Install the following with ``brew install``:
+
+            - ``parallel``
+            - ``--cask mactex``
+
+
+
+   If you are on a different Linux distribution you will have to find and
+   install the equivalent packages.
+
 
    .. IMPORTANT:: SIERRA will not work if these packages (or their equivalent on
                   non-ubuntu systems) are not installed!
@@ -94,7 +112,7 @@ General Setup Workflow
 
    - What controller to run: ``--controller``. See
      :ref:`ln-tutorials-project-main-config` for details on how valid
-     controllers are defined for a :term:`Project`. :term:`Project` dependent. 
+     controllers are defined for a :term:`Project`. :term:`Project` dependent.
 
    - How large the arena should be, what block distribution type to use (for
      example), etc. ``--scenario``. :term:`Project` dependent.

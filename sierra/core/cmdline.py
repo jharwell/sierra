@@ -20,6 +20,7 @@ Core command line parsing and validation classes.
 
 # Core packages
 import argparse
+import sys
 import typing as tp
 
 # 3rd party packages
@@ -34,6 +35,17 @@ class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter,
     Formatter to get (somewhat) better text wrapping of arguments with --help in
     the terminal.
     """
+
+
+class SIERRAArgumentParser(argparse.ArgumentParser):
+
+    def print_help(self, file=None):
+        if file is None:
+            file = sys.stdout
+
+        message = ("Usage: sierra-cli [OPTION]...\n"
+                   "See the documentation at https://swarm-robotics-sierra.readthedocs.io/en/latest/.")
+        file.write(message + "\n")
 
 
 class BaseCmdline:
@@ -64,10 +76,9 @@ class BootstrapCmdline(BaseCmdline):
     """
 
     def __init__(self) -> None:
-        self.parser = argparse.ArgumentParser(prog='SIERRA',
-                                              add_help=False,
-                                              allow_abbrev=False,
-                                              usage=argparse.SUPPRESS)
+        self.parser = SIERRAArgumentParser(prog='sierra-cli',
+                                           add_help=True,
+                                           allow_abbrev=False)
 
         bootstrap = self.parser.add_argument_group('Bootstrap options',
                                                    'Bare-bones options for bootstrapping SIERRA')
