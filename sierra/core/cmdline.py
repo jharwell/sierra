@@ -211,14 +211,14 @@ class CoreCmdline(BaseCmdline):
     def scaffold_cli(self,
                      parents: tp.Optional[tp.List[argparse.ArgumentParser]]) -> None:
         if parents is not None:
-            self.parser = argparse.ArgumentParser(prog='sierra-cli',
-                                                  parents=parents,
-                                                  add_help=False,
-                                                  allow_abbrev=False)
+            self.parser = SIERRAArgumentParser(prog='sierra-cli',
+                                               parents=parents,
+                                               add_help=False,
+                                               allow_abbrev=False)
         else:
-            self.parser = argparse.ArgumentParser(prog='sierra-cli',
-                                                  add_help=False,
-                                                  allow_abbrev=False)
+            self.parser = SIERRAArgumentParser(prog='sierra-cli',
+                                               add_help=False,
+                                               allow_abbrev=False)
 
         self.multistage = self.parser.add_argument_group('Multi-stage options',
                                                          'Options which are used in multiple pipeline stages')
@@ -1026,14 +1026,14 @@ class CoreCmdlineValidator():
                 "Duplicate batch criteria passed"
 
         assert isinstance(args.batch_criteria, list), \
-            'FATAL Batch criteria not passed as list on cmdline'
+            'Batch criteria not passed as list on cmdline'
 
-        if any([1]) in args.pipeline:
+        if any(stage in args.pipeline for stage in [1]) in args.pipeline:
             assert args.n_runs is not None, '--n-runs is required for running stage 1'
             assert args.template_input_file is not None, '--template-input-file is required for running stage 1'
             assert args.scenario is not None, '--scenario is required for running stage 1'
 
-        if any([1, 2, 3, 4]) in args.pipeline:
+        if any(stage in args.pipeline for stage in [1, 2, 3, 4]):
             assert len(
                 args.batch_criteria) > 0, '--batch-criteria is required for running stages 1-4'
             assert args.controller is not None, '--controller is required for running stages 1-4'

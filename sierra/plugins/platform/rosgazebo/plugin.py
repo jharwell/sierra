@@ -51,7 +51,7 @@ class ParsedCmdlineConfigurer():
 
     def __call__(self, args: argparse.Namespace) -> None:
         # No configuration needed for stages 3-5
-        if [1, 2] not in args.pipeline:
+        if not any(stage in args.pipeline for stage in [1, 2]):
             return
 
         if self.exec_env == 'hpc.local':

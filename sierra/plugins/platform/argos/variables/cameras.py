@@ -221,8 +221,14 @@ class QTCameraOverhead():
 
     def gen_tag_addlist(self) -> tp.List[XMLTagAddList]:
         if not self.tag_adds:
-            adds = XMLTagAddList(XMLTagAdd('./visualization/qt-opengl', 'camera', {}),
-                                 XMLTagAdd("./visualization/qt-opengl/camera", "placements", {}))
+            adds = XMLTagAddList(XMLTagAdd('./visualization/qt-opengl',
+                                           'camera',
+                                           {},
+                                           False),
+                                 XMLTagAdd("./visualization/qt-opengl/camera",
+                                           "placements",
+                                           {},
+                                           False))
 
             for ext in self.extents:
                 height = max(ext.xsize(), ext.ysize()) * 0.75

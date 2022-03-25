@@ -42,9 +42,11 @@ class PlatformCmdline(cmd.BaseCmdline):
         if parents is not None:
             self.parser = argparse.ArgumentParser(prog='sierra-cli',
                                                   parents=parents,
+                                                  add_help=False,
                                                   allow_abbrev=False)
         else:
             self.parser = argparse.ArgumentParser(prog='sierra-cli',
+                                                  add_help=False,
                                                   allow_abbrev=False)
 
         self.init_cli(stages)

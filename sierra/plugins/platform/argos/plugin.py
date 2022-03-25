@@ -51,7 +51,7 @@ class ParsedCmdlineConfigurer():
 
     def __call__(self, args: argparse.Namespace) -> None:
         # No configuration needed for stages 3-5
-        if [1, 2] not in args.pipeline:
+        if not any(stage in args.pipeline for stage in [1, 2]):
             return
 
         if self.exec_env == 'hpc.local':
@@ -63,8 +63,7 @@ class ParsedCmdlineConfigurer():
         elif self.exec_env == 'hpc.pbs':
             self._hpc_pbs(args)
         else:
-            assert False,\
-                f"'{self.exec_env}' unsupported on ARGoS"
+            assert False, f"'{self.exec_env}' unsupported on ARGoS"
 
     def _hpc_pbs(self, args: argparse.Namespace) -> None:
         self.logger.debug("Configuring ARGoS for PBS execution")
@@ -106,7 +105,7 @@ class ParsedCmdlineConfigurer():
 
     def _hpc_local(self, args: argparse.Namespace) -> None:
         self.logger.debug("Configuring ARGoS for LOCAL execution")
-        if any([1, 2]) in args.pipeline:
+        if any(stage in args.pipeline for stage in [1, 2]):
             assert args.physics_n_engines is not None,\
                 '--physics-n-engines is required for --exec-env=hpc.local when running stage{1,2}'
 
@@ -157,7 +156,7 @@ class ParsedCmdlineConfigurer():
                           args.exec_jobs_per_node)
 
 
-@implements.implements(bindings.IExpRunShellCmdsGenerator)
+@ implements.implements(bindings.IExpRunShellCmdsGenerator)
 class ExpRunShellCmdsGenerator():
     def __init__(self,
                  cmdopts: types.Cmdopts,
@@ -218,7 +217,7 @@ class ExpRunShellCmdsGenerator():
         return []
 
 
-@implements.implements(bindings.IExpShellCmdsGenerator)
+@ implements.implements(bindings.IExpShellCmdsGenerator)
 class ExpShellCmdsGenerator():
     def __init__(self,
                  cmdopts: types.Cmdopts,
@@ -246,7 +245,7 @@ class ExpShellCmdsGenerator():
         return []
 
 
-@implements.implements(bindings.IExpConfigurer)
+@ implements.implements(bindings.IExpConfigurer)
 class ExpConfigurer():
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         self.cmdopts = cmdopts
@@ -264,7 +263,7 @@ class ExpConfigurer():
         return 'per-exp'
 
 
-@implements.implements(bindings.IExecEnvChecker)
+@ implements.implements(bindings.IExecEnvChecker)
 class ExecEnvChecker(platform.ExecEnvChecker):
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         super().__init__(cmdopts)

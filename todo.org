@@ -31,15 +31,14 @@
 - [ ] Create interface classes for all plugins--will make documenting easier, as well as help users to find bugs when
       adding plugins
 - [ ] Add docs for the sample project for the rosrobot plugin
-- [ ] Update config tutorials with changes to rosrobot (template input file, )
+- [ ] Update config tutorials with changes to rosrobot (template input file, etc.)
+- [ ] Fix random seed generation for rosrobot (shows up in wrong place in post-processed XML file)
+
 ** TODO [#B] Fix the pylint import error false positives
 ** TODO [#B] Switch reading intra experiment model dataframe index sizes
 From using the size of a different dataframe in the exp to reading from the time setup written to the pkl file.
 
 ** TODO [#B] Add some example pbs/slurm scripts in the HPC docs
-- [X] Re-run a batch experiment which got killed by the HPC scheduler
-- [X] Do I need to re-run SIERRA to tweak graphs
-
 ** TODO [#B] Switch all collated .csvs to have .mean extension to make things consistent
 Stat csv extension mapping should probably be put in the config module
 ** TODO [#B] For all bivar perf measures, add scatter plot generation
@@ -84,3 +83,7 @@ Much clearer this way. Also fits better with the 'stage5.yaml' config file idea.
    CLOSED: [2021-10-26 Tue 08:38]
 ** DONE [#B] Update FORDYCA models with the new perf measures definitions
    CLOSED: [2021-10-30 Sat 11:52]
+** DONE [#B] Update FAQ [100%]
+   CLOSED: [2022-03-25 Fri 17:57]
+- [X] Re-run a batch experiment which got killed by the HPC scheduler
+- [X] Do I need to re-run SIERRA to tweak graphs

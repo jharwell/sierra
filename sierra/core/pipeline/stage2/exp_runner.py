@@ -52,24 +52,16 @@ class ExpShell():
         if not spec['wait']:
             return True
 
-        proc.wait()
+        # We use communicate(), not wait() to avoid issues with IO buffers
+        # becoming full (i.e., you get deadlocks with wait() regularly).
+        stdout, stderr = proc.communicate()
 
+        # Only show output if the process failed (i.e., did not return 0)
         if proc.returncode == 0:
             return True
 
-        stdout = proc.stdout.read().decode('utf-8').splitlines()
-        stderr = proc.stdout.read().decode('utf-8').splitlines()
-
-        cmd_stdout = ''
-        for e in stdout:
-            cmd_stdout += e
-
-        cmd_stderr = ''
-        for e in stderr:
-            cmd_stderr += e
-
-        self.logger.trace("Cmd stdout: %s", cmd_stdout)
-        self.logger.trace("Cmd stderr: %s", cmd_stderr)
+        self.logger.trace("Cmd stdout: %s", stdout)
+        self.logger.trace("Cmd stderr: %s", stderr)
 
         return proc.returncode
 

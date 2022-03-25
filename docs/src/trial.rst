@@ -156,9 +156,10 @@ you clone things somewhere else.
 
               export SIERRA_PLUGIN_PATH=$HOME/research/sierra-sample-project/projects/rosgazebo_project
 
-         #. Source ROS environment to set :envvar:`ROS_PACKAGE_PATH`::
+         #. Source ROS environment to set :envvar:`ROS_PACKAGE_PATH` (if you
+            haven't already)::
 
-              source $HOME/research/sierra-sample-project/rosgazebo/devel/setup.bash
+              . /path/to/setup.bash
 
 
 #. Run SIERRA (invocation inspired by :ref:`ln-usage-examples`). You can do this
