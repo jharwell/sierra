@@ -27,6 +27,7 @@ import typing as tp
 
 # Project packages
 from sierra.core import config
+import sierra.version
 
 
 class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter,
@@ -43,7 +44,9 @@ class SIERRAArgumentParser(argparse.ArgumentParser):
         if file is None:
             file = sys.stdout
 
-        message = ("Usage: sierra-cli [OPTION]...\n"
+        version = sierra.version.__version__
+        message = (f"This is SIERRA {version}.\n"
+                   "Usage: sierra-cli [OPTION]...\n"
                    "See the documentation at https://swarm-robotics-sierra.readthedocs.io/en/latest/.")
         file.write(message + "\n")
 

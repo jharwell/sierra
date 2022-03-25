@@ -17,6 +17,7 @@
 # Core packages
 import pathlib
 from setuptools import setup, find_packages
+import os
 
 # 3rd party packages
 
@@ -28,10 +29,16 @@ here = pathlib.Path(__file__).parent
 # The text of the README file
 readme = (here / "README.md").read_text()
 
+# Get version
+ver_ns = {}
+ver_path = os.path.join('sierra', 'version.py')
+with open(ver_path) as ver_file:
+    exec(ver_file.read(), ver_ns)
+
 # This call to setup() does all the work
 setup(
     name="sierra-research",
-    version="1.1.2",
+    version=ver_ns['__version__'],
     description="Research experimental pipeline automation for multi-agent simulations and real robots",
     long_description=readme,
     long_description_content_type="text/markdown",

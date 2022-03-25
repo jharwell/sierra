@@ -34,6 +34,7 @@ import sierra.core.root_dirpath_generator as rdg
 import sierra.core.plugin_manager as pm
 import sierra.core.logging  # type: tp.Any
 import sierra.core.startup
+import sierra.version
 
 
 class SIERRA():
@@ -45,6 +46,7 @@ class SIERRA():
         # Setup logging customizations
         sierra.core.logging.initialize(bootstrap_args.log_level)
         self.logger = logging.getLogger(__name__)
+        self.logger.info("This is SIERRA %s.", sierra.version.__version__)
 
         # Check SIERRA runtime environment
         sierra.core.startup.startup_checks()

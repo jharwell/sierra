@@ -27,7 +27,7 @@ sys.path.append(os.path.abspath('_ext'))
 
 # If your documentation needs a minimal Sphinx version, state it here.
 #
-# needs_sphinx = '1.0'
+needs_sphinx = '4.4.0'
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -63,15 +63,20 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'SIERRA'
-copyright = '2021, John Harwell'
+copyright = '2022, John Harwell'
 author = 'John Harwell'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
+ver_ns = {}
+ver_path = os.path.join('..', 'sierra', 'version.py')
+with open(ver_path) as ver_file:
+    exec(ver_file.read(), ver_ns)
+
 # The short X.Y version.
-# version = '0.3.0.0'
+version = ver_ns['__version__']
 # The full version, including alpha/beta/rc tags.
 # release = '0.3.0.0'
 
