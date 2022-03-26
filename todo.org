@@ -20,10 +20,9 @@
 - [ ] More SAANoise out of SIERRA--to uses the perf.robustness dictionary, which I am moving out to TITERRA. ALso, SAA
      noise requires ARGoS functionality that is not in the main repo and will not probably ever make it there.
 - [X] Remove --help; it should be a generic message that directs people to the online docs
-- [ ] Document the plugin search path somewhere
+- [X] Document the plugin search path somewhere
 - [ ] Remove the pm_query() stuff from ARGoS batch criteria--that is specific to my project. If I need it, I should
       derive from the necessary ARGoS batch criteria and then add that single function.
-- [ ] Fix the arena_dims(), populations() being in the BatchCriteria class--ARGoS specific.
 - [ ] Update all parsers to use sections to make error messages cleaner
 - [X] Add tutorials for adding new platform to execution exec_env, and vice versa. Talk about how they are coupled.
 - [ ] Add docs for which cmdline arguments all platforms must implement
@@ -33,6 +32,7 @@
 - [ ] Add docs for the sample project for the rosrobot plugin
 - [ ] Update config tutorials with changes to rosrobot (template input file, etc.)
 - [ ] Fix random seed generation for rosrobot (shows up in wrong place in post-processed XML file)
+- [ ] Go through API documentation and cleanup what is rendered so it looks nice.
 
 ** TODO [#B] Fix the pylint import error false positives
 ** TODO [#B] Switch reading intra experiment model dataframe index sizes

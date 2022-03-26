@@ -11,29 +11,29 @@ works/is designed the way it is, and to help you find your way around.
    ARGoS
 
       A state-of-the-art multi-physics engine robotics simulator which SIERRA
-      supports as a :term:`Platform`. The ARGoS website is `here
-      <https://www.argos-sim.info/index.php>`__.
+      supports as a :term:`Platform`. The ARGoS website is at
+      `https://www.argos-sim.info/index.php <https://www.argos-sim.info/index.php>`_.
 
 
    Gazebo
 
       A state-of-the-art robotics simulator with many features including .urdf
-      robot models, realistic 3D rendering, and more. The Gazebo website is
-      `here <http://gazebosim.org/>`__.
+      robot models, realistic 3D rendering, and more. The Gazebo website is at
+      `http://gazebosim.org <http://gazebosim.org>`_.
 
    ROS
 
       You know it. You either love it or hate it, but you can't escape it. The
-      ROS website is `here <https://wiki.ros.org>`__.
+      ROS website is at `https://wiki.ros.org <https://wiki.ros.org>`_.
 
    ROS+Gazebo
 
-      A :term:`Platform` supported by SIERRA using the ``gazebo_ros`` bridge to
-      use :term:`ROS` with the :term:`Gazebo` simulator.
+      A :term:`Platform` supported by SIERRA to use :term:`ROS` with the
+      :term:`Gazebo` simulator.
 
    ROS+Robot
 
-      A :term:`Platform` supported by SIERRA using the :term:`ROS` and any robot
+      A :term:`Platform` supported by SIERRA using :term:`ROS` and any robot
       which supports ROS.
 
    Project
@@ -130,7 +130,7 @@ works/is designed the way it is, and to help you find your way around.
       Meaning is :term:`Platform` dependent.
 
       For ``--platform=platform.argos`` it is an :term:`ARGoS` simulation that
-      runs as part of an experiment. For ``--platform=platform.gazeboros`` it is
+      runs as part of an experiment. For ``--platform=platform.rosgazebo`` it is
       a :term:`Gazebo` simulation that runs as part of an experiment
 
       The number of simulations which will be run by SIERRA in stage 2 and
@@ -231,5 +231,3 @@ works/is designed the way it is, and to help you find your way around.
 
       - Platform plugins - Plugins which correspond to different
         :term:`Platforms <Platform>`.
-
-   

@@ -8,7 +8,7 @@ Non-:term:`Batch Criteria` variables which you can use to configure
 simulations. All batch criteria are variables, but not all variables are batch
 criteria.
 
-- :ref:`Time Setup <ln-vars-expsetup>`
+- :ref:`Experiment Setup <ln-vars-expsetup>`
 
 .. _ln-vars-expsetup:
 
@@ -32,9 +32,9 @@ Cmdline Syntax
 
 - ``n_datapoints`` - # datapoints per :term:`Experimental Run`, to be captured;
   the capture interval (if configurable) should be adjusted in
-  :term:`Project`-derived class from the platform ``ExpSetup`` class
-  (:class:`~sierra.plugins.platform.argos.variables.exp_setup.ExpSetup` for
-  :term:`ARGoS`).
+  :term:`Project` -derived class from the platform ``ExpSetup`` class
+  (:class:`sierra.plugins.platform.argos.variables.exp_setup.ExpSetup` for
+  :term:`ARGoS` for example).
 
 Examples
 --------

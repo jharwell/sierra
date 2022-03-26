@@ -1,17 +1,15 @@
-These examples all assume that you have successfully set up SIERRA with a
-:term:`Project` of your choice.
-
 .. _ln-usage-examples:
 
+==============
 ARGoS Examples
 ==============
 
-Basic Example
--------------
-
-This examples assumes a project named ``fordyca`` which contains a controller
+These examples assumes a project named ``fordyca`` which contains a controller
 defined in the ``controllers.yaml`` as ``d0.CRW``, with a runtime environment of
 the local machine.
+
+Basic Example
+=============
 
 ::
 
@@ -40,7 +38,7 @@ an explanation of SIERRA's runtime directory tree, see
 :ref:`ln-usage-runtime-exp-tree`.
 
 Rendering Example
------------------
+=================
 
 This example shows how to use ARGoS image capturing ability to create nice
 videos of simulations.
@@ -50,7 +48,11 @@ videos of simulations.
    sierra-cli \
    --sierra-root=$HOME/exp \
    --template-input-file=templates/ideal.argos \
+   --platform=platform.argos\
    --project=fordyca \
+   --controller=d0.CRW \
+   --scenario=SS.12x6x1 \
+   --exec-env=hpc.local \
    --n-runs=3 \
    --platform-vc \
    --exp-graphs=none \
@@ -96,11 +98,12 @@ defined in ``stage5.yaml``. It will plot the 95% confidence intervals on all
 generated graphs for the univariate batch criteria.
 
 
+===================
 ROS+Gazebo Examples
 ===================
 
 Basic Example
--------------
+=============
 
 This examples assumes a project named ``fordyca`` which contains a controller
 defined in the ``controllers.yaml`` as ``turtlebot3_sim.wander``, with a runtime
@@ -130,15 +133,16 @@ machine it should take about 10 minutes or so to run. After it finishes, you can
 go to ``$HOME/exp`` and find all the simulation outputs. For an explanation of
 SIERRA's runtime directory tree, see :ref:`ln-usage-runtime-exp-tree`.
 
+==================
 ROS+Robot Examples
-===================
+==================
 
 Basic Example
--------------
+=============
 
 This examples assumes a project named ``fordyca`` which contains a controller
 defined in the ``controllers.yaml`` as ``turtlebot3_sim.wander``, with a runtime
-environment of the local machine.
+environment of a set of turtlebots.
 
 ::
 

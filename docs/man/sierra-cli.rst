@@ -1,1 +1,7 @@
-.. include:: /src/usage/cli.rst
+======================
+Command Line Interface
+======================
+
+.. toctree::
+
+   /src/usage/cli.rst

@@ -11,11 +11,10 @@ have either gotten SIERRA working via :ref:`ln-trial` or
 a good way to understand how to get the most out of SIERRA.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Understanding How SIERRA Works
 
    pipeline.rst
-   stage5.rst
    cli.rst
    run_time_tree.rst
    subprograms.rst
@@ -23,10 +22,11 @@ a good way to understand how to get the most out of SIERRA.
    variables.rst
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Advanced Features
 
    visual_capture.rst
+   stage5.rst
 
 .. toctree::
    :maxdepth: 1

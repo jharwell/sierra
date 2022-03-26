@@ -51,14 +51,20 @@ repository.
   - ``core/`` - The parts of SIERRA which independent of the :term:`Project`
     being run.
 
+    - ``experiment/`` - Various interfaces and bindings for use by plugins.
+
     - ``generators/`` - Generic controller and scenario generators used to
-      modify template ``.argos`` files to provide the setting/context for
-      running experiments with variables.
+      modify template XML files to provide the setting/context for running
+      experiments with variables.
 
     - ``graphs/`` - Generic code to generate graphs of different types.
 
+    - ``models/`` - Model interfaces.
+
     - ``pipeline/`` - Core pipline code in 5 stages (see
       :ref:`ln-usage-pipeline`).
+
+    - ``ros/`` - Common :term:`ROS` bindings.
 
     - ``variables/`` - Genertic generators for experimental variables to modify
       template ``.argos`` files in order to run experiments with a given
@@ -67,5 +73,4 @@ repository.
   - ``plugins/`` - Plugins which provide broad customization of SIERRA, and
     enables it to adapt to a wide variety of platforms and experiment outputs.
 
-- ``docs/`` - Contains sphinx scaffolding/source code to generate these shiny
-  docs.
+- ``docs/`` - Contains sphinx source code to generate these shiny docs.

@@ -40,10 +40,12 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.mathjax',
               'sphinx.ext.ifconfig',
               'sphinx.ext.viewcode',
+              'sphinx.ext.graphviz',
               'sphinx_tabs.tabs',
               'sphinx.ext.inheritance_diagram',
               'sphinxarg.ext',
               'xref',
+              'sphinx_last_updated_by_git',
               'sphinx_rtd_theme',
               'sphinxcontrib.napoleon',
               'autoapi.sphinx',
@@ -96,7 +98,6 @@ if 'html' in sys.argv:
     exclude_patterns.extend(['man'])
 elif 'man' in sys.argv:
     exclude_patterns.extend(['api',
-                             'src/projects'
                              'src/tutorials',
                              'src/api.rst',
                              'src/contributing.rst',
@@ -123,6 +124,10 @@ nitpick_ignore = [
     ('py:class', 'xml.etree.ElementTree'),
     ('py:class', 'multiprocessing.context.BaseContext.Queue')
 ]
+autoapi_options = {
+    'special-members': False,
+    'show-inheritance-diagram': True
+}
 autoapi_modules = {
     'sierra.core.cmdline': {'output': 'api/core'},
     'sierra.core.generators': {'output': 'api/core/generators'},
@@ -146,18 +151,18 @@ autoapi_modules = {
 
 autoapi_ignore = ['*flycheck*']
 xref_links = {
-    "Harwell2021a": ("Improved Swarm Engineering: Aligning Intuition and Analysis",
-                     "https://arxiv.org/pdf/2012.04144.pdf"),
-    "Harwell2021b": ("Characterizing The Limits of Linear Modeling of Non-Linear Swarm Behaviors",
-                     "https://arxiv.org/abs/2110.12307"),
-    "Harwell2020": ("Demystifying Emergent Intelligence and Its Effect on Performance in Large Swarms",
-                    "http://ifaamas.org/Proceedings/aamas2020/pdfs/p474.pdf"),
-    "Harwell2019": ("Swarm Engineering Through Quantitative Measurement in a 10,000 Robot Swarm",
-                    "https://www.ijcai.org/Proceedings/2019/0048.pdf"),
-    "White2019": ("Socially Inspired Communication in Swarm Robotics",
-                  "https://arxiv.org/abs/1906.01108"),
-    "Chen2019": ("Maximizing Energy Efficiency in Swarm Robotics",
-                 "https://arxiv.org/abs/1906.01957"),
+    "Harwell2021a-metrics": ("Improved Swarm Engineering: Aligning Intuition and Analysis",
+                             "https://arxiv.org/pdf/2012.04144.pdf"),
+    "Harwell2022a-ode": ("Characterizing The Limits of Linear Modeling of Non-Linear Swarm Behaviors",
+                         "https://arxiv.org/abs/2110.12307"),
+    "Harwell2020a-demystify": ("Demystifying Emergent Intelligence and Its Effect on Performance in Large Swarms",
+                               "http://ifaamas.org/Proceedings/aamas2020/pdfs/p474.pdf"),
+    "Harwell2019a-metrics": ("Swarm Engineering Through Quantitative Measurement in a 10,000 Robot Swarm",
+                             "https://www.ijcai.org/Proceedings/2019/0048.pdf"),
+    "White2019-social": ("Socially Inspired Communication in Swarm Robotics",
+                         "https://arxiv.org/abs/1906.01108"),
+    "Chen2019-battery": ("Maximizing Energy Efficiency in Swarm Robotics",
+                         "https://arxiv.org/abs/1906.01957"),
     "Hecker2015": ("Hecker2015",
                    "https://www.cs.unm.edu/~wjust/CS523/S2018/Readings/Hecker_Beyond_Pheromones_Swarm_Intelligence.pdf"),
     "Rosenfeld2006": ("Rosenfeld2006",
@@ -167,11 +172,9 @@ xref_links = {
     "FORDYCA": ("FORDYCA", "https://swarm-robotics-fordyca.readthedocs.io"),
     "PRISM": ("PRISM", "https://swarm-robotics-prism.readthedocs.io"),
     "LIBRA": ("LIBRA", "https://swarm-robotics-libra.readthedocs.io"),
-
-    "2021-ijcai-demo": ("2021 IJCAI Robot Exhibition",
-                        "https://www-users.cse.umn.edu/~harwe006/showcase/ijcai-2021-robot-exhibition"),
     "2022-aamas-demo": ("2022 AAMAS Demo",
                         "https://www-users.cse.umn.edu/~harwe006/showcase/aamas-2022-demo")
+
 }
 
 sphinx_tabs_disable_tab_closing = True
@@ -258,11 +261,29 @@ latex_documents = [
 autosectionlabel_prefix_document = True
 man_pages = [
     ('man/sierra-cli', 'sierra-cli',
-     'The SIERRA Command Line Interface', [author], 1),
-    ('man/sierra-vc', 'sierra-vc',
-     'SIERRA Rendering', [author], 7),
+     'The SIERRA Command Line Interface (CLI).', [author], 1),
+    ('man/sierra-usage', 'sierra-usage',
+     'How to use SIERRA. This covers all non-command line interface aspects.',
+     [author],
+     7),
+    ('man/sierra-platforms', 'sierra-platforms',
+     'The platforms SIERRA supports, and platform-specific Batch Criteria.',
+     [author],
+     7),
+    ('man/sierra-examples', 'sierra-examples',
+     ('Examples of SIERRA usage. These examples all assume that you have '
+      'successfully set up SIERRA with a project of your choice.'),
+     [author],
+     7),
+    ('man/sierra-glossary', 'sierra-glossary',
+     ('Glossary of SIERRA terminology.'),
+     [author],
+     7),
     ('man/sierra', 'sierra',
-     'reSearch pIpEline Reusable Robotics Automation (SIERRA)', [author], 7)
+     'reSearch pIpEline for Reproducability, Reusability, and Automation.',
+     [author],
+     7)
+
 ]
 
 # -- Options for Texinfo output -------------------------------------------

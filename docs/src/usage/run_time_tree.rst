@@ -1,6 +1,5 @@
 .. _ln-usage-runtime-exp-tree:
 
-=============================
 SIERRA Runtime Directory Tree
 =============================
 
@@ -26,7 +25,7 @@ SIERRA Runtime Directory Tree
    once, as the saying goes.
 
 Default Pipeline Directory Tree (Stages 1-4)
-============================================
+--------------------------------------------
 
 When SIERRA runs stages 1-4, it creates a directory structure under whatever was
 passed as ``--sierra-root``. For the purposes of explanation, I will use the
@@ -163,7 +162,7 @@ it runs:
             within each experiment, are output here.
 
 Stage 5 Directory Tree
-======================
+----------------------
 
 When SIERRA runs stage 5, stages 1-4 must have already been successfully run,
 and therefore the directory tree shown above will exist. For the purposes of

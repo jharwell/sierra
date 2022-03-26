@@ -16,20 +16,29 @@ modifying your :envvar:`PYTHONPATH`. Eventually, it will be deployed to PyPi,
 and local installations will be unnecessary except for development of SIERRA
 itself.
 
-The SIERRA package provides the following executables:
+The SIERRA PyPi package provides the following executables:
 
 - ``sierra-cli`` - The command line interface to SIERRA.
 
-The SIERRA package provides the following man pages, which can be view via ``man
-<name>``. Man pages are generally shorter/abridged versions of the HTML pages,
-and are intended as a reference, rather than being comprehensive. Available
+The SIERRA PyPi package provides the following man pages, which can be viewed
+via ``man <name>``. Man pages are meant as a `reference`, and though I've tried
+to make them as full featured as possible, there are some aspects of SIERRA
+which are only documented on the online docs (e.g., the tutorials). Available
 manpages are:
 
-- ``sierra-cli`` - Reference for the command line interface.
+- ``sierra-cli`` - The SIERRA command line interface.
 
-- ``sierra-rendering`` - Reference for SIERRA rendering capabilities.
+- ``sierra-usage`` - How to use SIERRA (everything BUT the command line
+  interface).
 
-- ``sierra`` - All manpages rolled into one.
+- ``sierra-platforms`` - The target platforms that SIERRA currently
+  supports (e.g., ARGoS).
+
+- ``sierra-examples`` - Examples of SIERRA usage via
+  command line invocations demonstrating various features.
+
+- ``sierra-glossary`` - Glossary of SIERRA terminology to make things
+  easier to understand.
 
 Installing SIERRA PyPi locally
 ------------------------------

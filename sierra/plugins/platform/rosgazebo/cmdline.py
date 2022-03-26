@@ -60,6 +60,9 @@ class PlatformCmdline(corecmd.BaseCmdline):
     def init_stage1(self) -> None:
         # Experiment options
         experiment = self.parser.add_argument_group('Stage1: Experiment setup')
+        positions_omitted_doc = ("If omitted: effective arena dimensions must "
+                                 "be given as part of ``--scenario``.")
+
         experiment.add_argument("--robot-positions",
 
                                 help="""
@@ -69,12 +72,7 @@ class PlatformCmdline(corecmd.BaseCmdline):
                                 starting positions for the robots within the
                                 world.
                                 """ + self.stage_usage_doc([1],
-                                                           """If omitted:
-                                                          effective arena
-                                                          dimensions must be
-                                                          given as part of the
-                                                          ``--scenario``
-                                                          parameter."""),
+                                                           positions_omitted_doc),
                                 nargs='+',
                                 default=[])
 

@@ -11,6 +11,7 @@ apply to a subset of the available :term:`Batch Criteria`.
 If an option is given more than once on the command line, the last such
 occurrence is used.
 
+===========
 SIERRA Core
 ===========
 
@@ -59,6 +60,7 @@ Stage5: Comparing Controllers
    :func: sphinx_cmdline_stage5
    :prog: SIERRA
 
+======================
 :term:`ARGoS` Platform
 ======================
 
@@ -80,6 +82,7 @@ Stage2: Running Experiments
    :func: sphinx_cmdline_stage2
    :prog: SIERRA
 
+===========================
 :term:`ROS+Gazebo` Platform
 ===========================
 
@@ -101,6 +104,7 @@ Stage2: Running Experiments
    :func: sphinx_cmdline_stage2
    :prog: SIERRA
 
+==========================
 :term:`ROS+Robot` Platform
 ==========================
 

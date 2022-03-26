@@ -291,7 +291,7 @@ __api__ = [
     'IParsedCmdlineConfigurer',
     'IExpRunShellCmdsGenerator',
     'IExpShellCmdsGenerator',
-    'IExpRunConfigurer',
+    'IExpConfigurer',
     'IExecEnvChecker',
     'ICmdlineParserGenerator'
 ]

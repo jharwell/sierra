@@ -68,7 +68,7 @@ FAQ
 #. Q: SIERRA doesn't generate any graphs during stage4/the graph I'm interested
    is not there.
 
-   A:SIERRA matches the stem of an output ``.csv`` file with the stem in a
+   A: SIERRA matches the stem of an output ``.csv`` file with the stem in a
    ``.yaml`` configuration file; if these are not the same, then no graph will
    be generated. You can run SIERRA with ``--log-level=TRACE`` to during stage 4
    to see which graphs it is generating, and which it is not because the

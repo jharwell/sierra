@@ -50,7 +50,7 @@ and on real robots
 | Execution Environment     | Supported Platforms |
 | ------------------------- | ------------------- |
 | [SLURM](https://slurm.schedmd.com/documentation.html) | ARGoS, ROS+Gazebo |
-| [Torque/MOAB](http://docs.adaptivecomputing.com/torque/5-0-1/help.htm#topics/torque/0-intro/torquewelcome.htm%3FTocPath%3DWelcome%7C_____0) | ARGoS, ROS+Gazebo |
+| [Torque/MOAB](https://adaptivecomputing.com/cherry-services/torque-resource-manager) | ARGoS, ROS+Gazebo |
 | ADHOC (suitable for a miscellaneous collection of networked compute nodes for a research group) | ARGoS, ROS+Gazebo |
 | Local machine (for testing) | ARGoS, ROS+Gazebo |
 | [ROS+Turtlebot3](https://emanual.robotis.com/docs/en/platform/turtlebot3/overview) | ROS+Gazebo, ROS+robot |
@@ -79,6 +79,9 @@ simplifying reproduction of previous results if you need to tweak a given graph
    - Videos built from frames captured during simulation or real robot
      operation.
    - Videos built from captured experimental output .csv files.
+
+For some examples, see the "Generating Deliverables" section
+[here](https://www-users.cse.umn.edu/~harwe006/showcase/aamas-2022-demo).
 
 ## 5. Controller/scenario comparison
 

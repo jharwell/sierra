@@ -1,8 +1,8 @@
 .. _ln-platform-rosgazebo-bc:
 
-=========================
-ROS+Gazebo Batch Criteria
-=========================
+==============
+Batch Criteria
+==============
 
 See :term:`Batch Criteria` for a thorough explanation of batch criteria, but the
 short version is that they are the core of SIERRA--how to get it to DO stuff for
@@ -27,7 +27,7 @@ Cmdline Syntax
 ``population_size.{increment_type}{N}``
 
 - ``increment_type`` - {Log,Linear}. If ``Log``, then system sizes for each
-  experiment are distributed 1...N by powers of 2. If ``Linear`` then sizes for
+  experiment are distributed 1...N by powers of 2. If ``Linear``, then sizes for
   each experiment are distributed linearly between 1...N, split evenly into 10
   different sizes.
 

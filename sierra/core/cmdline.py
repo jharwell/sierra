@@ -58,18 +58,22 @@ class BaseCmdline:
 
     """
     @staticmethod
-    def stage_usage_doc(stages: tp.List[int], omitted: str = "If omitted: N/A.") -> str:
-        return "\n.. ADMONITION:: Stage usage\n\n   Used by stage{" + ",".join(map(str, stages)) + "}; can be omitted otherwise. " + omitted + "\n"
+    def stage_usage_doc(stages: tp.List[int],
+                        omitted: str = "If omitted: N/A.") -> str:
+        lst = ",".join(map(str, stages))
+        header = "\n.. TIP:: Used by stage {" + \
+            lst + "}; can be omitted otherwise. " + omitted + "\n"
+        return header
 
     @staticmethod
     def bc_applicable_doc(criteria: tp.List[str]) -> str:
         lst = "".join(map(lambda bc: "   - " + bc + "\n", criteria))
-        return "\n.. ADMONITION:: Applicable batch criteria\n\n" + lst + "\n"
+        return "\n.. TIP:: Applicable batch criteria\n\n" + lst + "\n"
 
     @staticmethod
     def graphs_applicable_doc(graphs: tp.List[str]) -> str:
         lst = "".join(map(lambda graph: "   - " + graph + "\n", graphs))
-        return "\n.. ADMONITION:: Applicable graphs\n\n" + lst + "\n"
+        return "\n.. TIP:: Applicable graphs\n\n" + lst + "\n"
 
 
 class BootstrapCmdline(BaseCmdline):
@@ -97,7 +101,7 @@ class BootstrapCmdline(BaseCmdline):
                                choices=["INFO", "DEBUG", "TRACE"],
                                help="""
 
-                                 The level of loggingto use when running
+                                 The level of logging to use when running
                                  SIERRA.
 
                                  """ + self.stage_usage_doc([1, 2, 3, 4, 5]),

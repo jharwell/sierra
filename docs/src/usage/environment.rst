@@ -1,8 +1,7 @@
 .. _ln-usage-env-vars:
 
-*********************
 Environment Variables
-*********************
+=====================
 
 .. envvar:: SIERRA_PLUGIN_PATH
 
@@ -11,15 +10,15 @@ Environment Variables
    ``SIERRA_PLUGIN_PATH``. Paths are added to ``PYTHONPATH`` as needed to load
    plugins correctly. For example, if you have a different version of the
    ``--storage-medium`` plugin you'd like to use, and you have but the directory
-   containing the plugin in ``/home/user/plugins``, then you need to add
-   ``/home/user/plugins`` to your ``SIERRA_PLUGIN_PATH`` to so that SIERRA will
-   find it. This variable is used in stages 1-5.
+   containing the plugin in ``$HOME/plugins``, then you need to add
+   ``$HOME/plugins`` to your ``SIERRA_PLUGIN_PATH`` to so that SIERRA will find
+   it. This variable is used in stages 1-5.
 
    Used for locating :term:`projects <Project>`; all projects specifiable with
    ``--project`` are directories found within the directories on this path. For
-   example, if you have a project ``/home/$USER/git/projects/myproject``, then
-   ``/home/$USER/git`` must be on ``SIERRA_PLUGIN_PATH`` in order for you to be
-   able to specify ``--project=myproject``. This variable is used in stages 1-5.
+   example, if you have a project ``$HOME/git/projects/myproject``, then
+   ``$HOME/git`` must be on ``SIERRA_PLUGIN_PATH`` in order for you to be able
+   to specify ``--project=myproject``. This variable is used in stages 1-5.
 
    You *cannot* just put the parent directory of your project on
    :envvar:`PYTHONPATH` because SIERRA uses this path for other things

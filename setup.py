@@ -65,7 +65,10 @@ setup(
                  'sierra.plugins': 'sierra/plugins'},
     include_package_data=True,
     data_files=[('share/man/man1', ['docs/_build/man/sierra-cli.1']),
-                ('share/man/man7', ['docs/_build/man/sierra-vc.7']),
+                ('share/man/man7', ['docs/_build/man/sierra-usage.7']),
+                ('share/man/man7', ['docs/_build/man/sierra-platforms.7']),
+                ('share/man/man7', ['docs/_build/man/sierra-examples.7']),
+                ('share/man/man7', ['docs/_build/man/sierra-glossary.7']),
                 ('share/man/man7', ['docs/_build/man/sierra.7'])],
 
     install_requires=[

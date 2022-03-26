@@ -1,8 +1,8 @@
 .. _ln-platform-argos-bc:
 
-====================
-ARGoS Batch Criteria
-====================
+==============
+Batch Criteria
+==============
 
 See :term:`Batch Criteria` for a thorough explanation of batch criteria, but the
 short version is that they are the core of SIERRA--how to get it to DO stuff for
@@ -37,7 +37,7 @@ Cmdline Syntax
 ``population_size.{increment_type}{N}``
 
 - ``increment_type`` - {Log,Linear}. If ``Log``, then swarm sizes for each
-  experiment are distributed 1...N by powers of 2. If ``Linear`` then swarm
+  experiment are distributed 1...N by powers of 2. If ``Linear``, then swarm
   sizes for each experiment are distributed linearly between 1...N, split evenly
   into 10 different sizes.
 
@@ -72,7 +72,7 @@ Cmdline Syntax
 
 - ``density`` - <integer>p<integer> (i.e. 5p0 for 5.0)
 
-  - ``Arena Size Increment`` - Size in meters that the X and Y dimensions should
+- ``Arena Size Increment`` - Size in meters that the X and Y dimensions should
     increase by in between experiments. Larger values here will result in larger
     arenas and more robots being simulated at a given density. Must be an
     integer.

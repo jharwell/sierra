@@ -1,8 +1,8 @@
 .. _ln-usage-stage5:
 
-=============
-Stage 5 Usage
-=============
+================
+Pipeline Stage 5
+================
 
 The main idea of this pipeline stage is to "collate" the results of one or more
 :term:`Summary .csv` files present in different :term:`Batch Experiments <Batch

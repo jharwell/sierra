@@ -33,9 +33,9 @@ from sierra.core.variables import population_size
 
 @implements.implements(bc.IConcreteBatchCriteria)
 class PopulationSize(population_size.BasePopulationSize):
-    """
-    A univariate range of swarm sizes used to define batch experiments. This
-    class is a base class which should (almost) never be used on its
+    """A univariate range of swarm sizes used to define batch experiments.
+
+    This class is a base class which should (almost) never be used on its
     own. Instead, the ``factory()`` function should be used to dynamically
     create derived classes expressing the user's desired size distribution.
 

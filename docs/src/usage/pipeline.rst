@@ -1,7 +1,7 @@
 .. _ln-usage-pipeline:
 
-SIERRA Pipeline
-===============
+SIERRA Pipeline: A Practical Summary
+====================================
 
 When invoked SIERRA will run one or more stages of its execution path, as
 specified via ``--pipeline`` on the cmdline. Only the first 4 pipeline stages

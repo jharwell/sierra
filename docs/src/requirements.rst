@@ -4,6 +4,13 @@
 Requirements to use SIERRA
 ==========================
 
+.. _ln-req-OS:
+
+OS Requirements
+===============
+
+You must be on a recent version of Linux or OSX. Windows is not supported.
+
 .. _ln-req-exp:
 
 Experiment Requirements

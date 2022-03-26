@@ -4,10 +4,10 @@ range of simulated and real-robot platforms, and its deeply modular architecture
 makes it easy to customize for the needs of a specific research project. SIERRA
 can be used with executable code written in any language. SIERRA's one
 restriction is that experimental inputs must be specified in XML in order to be
-usable with SIERRA (see :ref:`ln-req` for details).
+usable with SIERRA (see :doc:`/src/requirements` for details).
 
-Pipeline Summary
-================
+SIERRA Summary
+==============
 
 SIERRA automates the following research pipeline:
 
@@ -36,14 +36,40 @@ and the nature of the experiment). For real robots, SIERRA will execution 1
 experimental run at a time.
 
 SIERRA supports multiple HPC environments for execution of experiments in
-simulation; see :ref:`ln-exec-env-hpc` for list.
+simulation (see :doc:`/src/exec_env/hpc`) and on real robots
+(see :doc:`/src/exec_env/robots`):
 
-To add additional HPC environments, see :ref:`ln-tutorials-plugin-exec-env`.
+.. list-table:: Supported Execution Environments
+   :widths: 25 75
+   :header-rows: 1
 
-SIERRA supports multiple real robot targets for running experiments with
-different kinds of real robots; see :ref:`ln-exec-env-robots` for list.
+   * - Environment
 
-To add additional real robot targets, see :ref:`ln-tutorials-plugin-exec-env`.
+     - Supported Platforms
+
+   * - SLURM: `<https://slurm.schedmd.com/documentation.html>`_
+
+     - ARGoS, ROS+Gazebo
+
+   * - Torque/MOAB: `<https://adaptivecomputing.com/cherry-services/torque-resource-manager/>`_
+
+     - ARGoS, ROS+Gazebo
+
+   * - ADHOC (suitable for a miscellaneous collection of networked compute nodes
+       for a research group)
+
+     - ARGoS, ROS+Gazebo
+
+   * - Local machine (for testing)
+
+     - ARGoS, ROS+Gazebo
+
+   * - ROS+Turtlebot3: `<https://emanual.robotis.com/docs/en/platform/turtlebot3/overview>`_
+
+     - ROS+Gazebo, ROS+robot
+
+To add additional HPC or real robot execution environments, see
+:doc:`/src/tutorials/plugin/exec_env_plugin`.
 
 3. Experiment Results Processing
 --------------------------------
@@ -67,6 +93,10 @@ simplifying reproduction of previous results if you need to tweak a given graph
 - Videos built from frames captured during simulation or real robot operation.
 
 - Videos built from captured experimental output .csv files.
+
+For some examples, see the "Generating Deliverables" section of
+:xref:`2022-aamas-demo`.
+
 
 5. Controller/Scenario Comparison
 ---------------------------------

@@ -3,9 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-===============================================================
-SIERRA: Automation for the Scientific Method and Agent Research
-===============================================================
+=====================================================================
+SIERRA: Automation for the Scientific Method and Agent-Based Research
+=====================================================================
 
 .. figure:: figures/architecture.png
 
@@ -60,22 +60,20 @@ If you use SIERRA and find it helpful, please cite the following paper::
 SIERRA In The Wild
 ==================
 
-.. |date| date::
-
 
 Here is a non-exhaustive list of some of the different ways SIERRA has been
-used. Last updated |date|.
+used.
 
 
 Papers using SIERRA
 -------------------
 
-- :xref:`Harwell2021a`
-- :xref:`Harwell2021b`
-- :xref:`Harwell2020`
-- :xref:`Harwell2019`
-- :xref:`White2019`
-- :xref:`Chen2019`
+- :xref:`Harwell2021a-metrics`
+- :xref:`Harwell2022a-ode`
+- :xref:`Harwell2020a-demystify`
+- :xref:`Harwell2019a-metrics`
+- :xref:`White2019-social`
+- :xref:`Chen2019-battery`
 
 Projects Using SIERRA
 ---------------------
@@ -86,6 +84,4 @@ Projects Using SIERRA
 Demonstrations using SIERRA
 ---------------------------
 
-- :xref:`2021-ijcai-demo`
 - :xref:`2022-aamas-demo`
-- Supplementary material for :xref:`Harwell2021a`
