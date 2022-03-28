@@ -26,22 +26,22 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Project packages
-import sierra.core.config
-import sierra.core.utils
+from sierra.core import config, utils, storage
 
 
 class StackedLineGraph:
-    """
-    Generates a line graph of one or more lines a column, or set of columns,
-    respectively, from the specified .csv with the specified graph visuals.
+    """Generates a line graph from a set of columns in a ``.csv`
 
     If the necessary data .csv file does not exist, the graph is not generated.
-    If the .stddev file that goes with the .csv does not exist, then no error bars are plotted.
-    if the .model file that goes with the .csv does not exist, then no model predictions are
-    plotted.
 
-    Ideally, model predictions/stddev calculations would be in derivade classes, but I can't figure
-    out a good way to easily pull that stuff out of here.
+    If the .stddev file that goes with the .csv does not exist, then no error
+    bars are plotted.
+
+    If the .model file that goes with the .csv does not exist, then no model
+    predictions are plotted.
+
+    Ideally, model predictions/stddev calculations would be in derivade classes,
+    but I can't figure out a good way to easily pull that stuff out of here.
 
     """
 
@@ -70,9 +70,9 @@ class StackedLineGraph:
 
         # Optional arguments
         if large_text:
-            self.text_size = sierra.core.config.kGraphTextSizeLarge
+            self.text_size = config.kGraphTextSizeLarge
         else:
-            self.text_size = sierra.core.config.kGraphTextSizeSmall
+            self.text_size = config.kGraphTextSizeSmall
 
         self.xlabel = xlabel
         self.ylabel = ylabel
@@ -88,14 +88,14 @@ class StackedLineGraph:
 
     def generate(self) -> None:
         input_fpath = os.path.join(self.stats_root, self.input_stem +
-                                   sierra.core.config.kStatsExtensions['mean'])
-        if not sierra.core.utils.path_exists(input_fpath):
+                                   config.kStatsExtensions['mean'])
+        if not utils.path_exists(input_fpath):
             self.logger.debug("Not generating %s: %s does not exist",
                               self.output_fpath,
                               input_fpath)
             return
 
-        data_df = sierra.core.utils.pd_csv_read(input_fpath)
+        data_df = storage.DataFrameReader('csv')(input_fpath)
 
         model = self._read_models()
         stat_dfs = self._read_stats()
@@ -125,10 +125,10 @@ class StackedLineGraph:
 
         # Output figure
         fig = ax.get_figure()
-        fig.set_size_inches(sierra.core.config.kGraphBaseSize,
-                            sierra.core.config.kGraphBaseSize)
+        fig.set_size_inches(config.kGraphBaseSize,
+                            config.kGraphBaseSize)
         fig.savefig(self.output_fpath, bbox_inches='tight',
-                    dpi=sierra.core.config.kGraphDPI)
+                    dpi=config.kGraphDPI)
         # Prevent memory accumulation (fig.clf() does not close everything)
         plt.close(fig)
 
@@ -211,9 +211,9 @@ class StackedLineGraph:
         dfs = {}
         if self.stats in ['conf95', 'all']:
             stddev_ipath = os.path.join(self.stats_root,
-                                        self.input_stem + sierra.core.config.kStatsExtensions['stddev'])
-            if sierra.core.utils.path_exists(stddev_ipath):
-                dfs['stddev'] = sierra.core.utils.pd_csv_read(stddev_ipath)
+                                        self.input_stem + config.kStatsExtensions['stddev'])
+            if utils.path_exists(stddev_ipath):
+                dfs['stddev'] = storage.DataFrameReader('csv')(stddev_ipath)
             else:
                 self.logger.warning(
                     "Stddev file not found for '%s'", self.input_stem)
@@ -226,9 +226,9 @@ class StackedLineGraph:
                 self.model_root, self.input_stem + '.model')
             model_legend_fpath = os.path.join(
                 self.model_root, self.input_stem + '.legend')
-            if sierra.core.utils.path_exists(model_fpath):
-                model = sierra.core.utils.pd_csv_read(model_fpath)
-                if sierra.core.utils.path_exists(model_legend_fpath):
+            if utils.path_exists(model_fpath):
+                model = storage.DataFrameReader('csv')(model_fpath)
+                if utils.path_exists(model_legend_fpath):
                     with open(model_legend_fpath, 'r') as f:
                         model_legend = f.read().splitlines()
                 else:

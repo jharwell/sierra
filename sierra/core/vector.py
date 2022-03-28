@@ -25,8 +25,7 @@ import typing as tp
 
 class Vector3D:
     """
-    Represents a point in 3D space and/or a directional vector in 3D space with
-    some common operations.
+    Represents a point in 3D space and/or a directional vector in 3D space.
 
     """
     @staticmethod

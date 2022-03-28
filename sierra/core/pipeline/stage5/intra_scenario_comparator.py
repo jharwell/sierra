@@ -37,17 +37,17 @@ from sierra.core.graphs.stacked_surface_graph import StackedSurfaceGraph
 from sierra.core.graphs.heatmap import Heatmap, DualHeatmap
 from sierra.core.variables import batch_criteria as bc
 import sierra.core.root_dirpath_generator as rdg
-import sierra.core.utils
-import sierra.core.config
-from sierra.core import types
+from sierra.core import types, utils, config, storage
 
 
 class UnivarIntraScenarioComparator:
-    """Compares a set of controllers on different performance measures in all
-    scenarios using univariate batch criteria, one at a time. Graph generation
+    """Compares a set of controllers within each of a set of scenarios.
+
+    Graph generation
     is controlled via a config file parsed in
-    :class:`~sierra.core.pipeline.stage5.pipeline_stage5.PipelineStage5`. Univariate
-    batch criteria only.
+    :class:`~sierra.core.pipeline.stage5.pipeline_stage5.PipelineStage5`.
+
+    Univariate batch criteria only.
 
     Attributes:
         controllers: List of controller names to compare.
@@ -204,7 +204,7 @@ class UnivarIntraScenarioComparator:
 
         # Some experiments might not generate the necessary performance measure .csvs for graph
         # generation, which is OK.
-        if not sierra.core.utils.path_exists(ipath):
+        if not utils.path_exists(ipath):
             self.logger.warning(
                 "%s missing for controller %s", ipath, controller)
             return
@@ -237,13 +237,13 @@ class UnivarIntraScenarioComparator:
         xtick_labels = criteria.graph_xticklabels(cmdopts)
 
         if inc_exps is not None:
-            xtick_labels = sierra.core.utils.exp_include_filter(
+            xtick_labels = utils.exp_include_filter(
                 inc_exps, xtick_labels, criteria.n_exp())
-            xticks = sierra.core.utils.exp_include_filter(
+            xticks = utils.exp_include_filter(
                 inc_exps, xticks, criteria.n_exp())
 
         opath = os.path.join(self.cc_graph_root, opath_leaf +
-                             sierra.core.config.kImageExt)
+                             config.kImageExt)
 
         SummaryLineGraph(stats_root=self.cc_csv_root,
                          input_stem=opath_leaf,
@@ -260,11 +260,13 @@ class UnivarIntraScenarioComparator:
 
 
 class BivarIntraScenarioComparator:
-    """Compares a set of controllers on different performance measures in all
-    scenarios, one at a time. Graph generation is controlled via a config file
+    """Compares a set of controllers within each of a set of scenarios.
+
+    Graph generation is controlled via a config file
     parsed in
-    :class:`~sierra.core.pipeline.stage5.pipeline_stage5.PipelineStage5`. Bivariate
-    batch criteria only.
+    :class:`~sierra.core.pipeline.stage5.pipeline_stage5.PipelineStage5`.
+
+    Bivariate batch criteria only.
 
     Attributes:
         controllers: List of controller names to compare.
@@ -468,19 +470,20 @@ class BivarIntraScenarioComparator:
 
         # Some experiments might not generate the necessary performance measure .csvs for
         # graph generation, which is OK.
-        if not sierra.core.utils.path_exists(csv_ipath):
+        if not utils.path_exists(csv_ipath):
             self.logger.warning(
                 "%s missing for controller '%s'", csv_ipath, controller)
             return
 
-        df = sierra.core.utils.pd_csv_read(csv_ipath)
+        df = storage.DataFrameReader('csv')(csv_ipath)
 
         opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf,
                                                    dest_stem,
                                                    [self.controllers.index(controller)])
 
         csv_opath_stem = os.path.join(self.cc_csv_root, opath_leaf)
-        sierra.core.utils.pd_csv_write(df, csv_opath_stem + '.csv', index=False)
+        storage.DataFrameWriter('csv')(
+            df, csv_opath_stem + '.csv', index=False)
 
     def _gen_csvs_for_1D(self,
                          cmdopts: types.Cmdopts,
@@ -507,7 +510,7 @@ class BivarIntraScenarioComparator:
 
         # Some experiments might not generate the necessary performance measure .csvs for
         # graph generation, which is OK.
-        if not sierra.core.utils.path_exists(csv_ipath):
+        if not utils.path_exists(csv_ipath):
             self.logger.warning(
                 "%s missing for controller '%s'", csv_ipath, controller)
             return
@@ -518,8 +521,8 @@ class BivarIntraScenarioComparator:
                                      opath_stem=self.cc_csv_root,
                                      n_exp=criteria.criteria2.n_exp())
 
-            n_rows = len(sierra.core.utils.pd_csv_read(os.path.join(cmdopts['batch_stat_collate_root'],
-                                                                    src_stem + ".csv")).index)
+            n_rows = len(storage.DataFrameReader('csv')(os.path.join(cmdopts['batch_stat_collate_root'],
+                                                                     src_stem + ".csv")).index)
             for i in range(0, n_rows):
                 opath_leaf = LeafGenerator.from_batch_leaf(
                     batch_leaf, dest_stem, [i])
@@ -532,8 +535,8 @@ class BivarIntraScenarioComparator:
                                      n_exp=criteria.criteria1.n_exp())
 
             exp_dirs = criteria.gen_exp_dirnames(cmdopts)
-            xlabels, ylabels = sierra.core.utils.bivar_exp_labels_calc(exp_dirs)
-            xlabels = sierra.core.utils.exp_include_filter(
+            xlabels, ylabels = utils.bivar_exp_labels_calc(exp_dirs)
+            xlabels = utils.exp_include_filter(
                 inc_exps, xlabels, criteria.criteria1.n_exp())
 
             for col in ylabels:
@@ -564,29 +567,29 @@ class BivarIntraScenarioComparator:
             opath_leaf = LeafGenerator.from_batch_leaf(
                 batch_leaf, dest_stem, [i])
             img_opath = os.path.join(
-                self.cc_graph_root, opath_leaf + sierra.core.config.kImageExt)
+                self.cc_graph_root, opath_leaf + config.kImageExt)
 
             if primary_axis == 0:
                 n_exp = criteria.criteria1.n_exp()
-                xticks = sierra.core.utils.exp_include_filter(inc_exps,
-                                                              criteria.graph_yticks(
-                                                                  cmdopts),
-                                                              n_exp)
-                xtick_labels = sierra.core.utils.exp_include_filter(inc_exps,
-                                                                    criteria.graph_yticklabels(
-                                                                        cmdopts),
-                                                                    n_exp)
+                xticks = utils.exp_include_filter(inc_exps,
+                                                  criteria.graph_yticks(
+                                                      cmdopts),
+                                                  n_exp)
+                xtick_labels = utils.exp_include_filter(inc_exps,
+                                                        criteria.graph_yticklabels(
+                                                            cmdopts),
+                                                        n_exp)
                 xlabel = criteria.graph_ylabel(cmdopts)
             else:
                 n_exp = criteria.criteria2.n_exp()
-                xticks = sierra.core.utils.exp_include_filter(inc_exps,
-                                                              criteria.graph_xticks(
-                                                                  cmdopts),
-                                                              n_exp)
-                xtick_labels = sierra.core.utils.exp_include_filter(inc_exps,
-                                                                    criteria.graph_xticklabels(
-                                                                        cmdopts),
-                                                                    n_exp)
+                xticks = utils.exp_include_filter(inc_exps,
+                                                  criteria.graph_xticks(
+                                                      cmdopts),
+                                                  n_exp)
+                xtick_labels = utils.exp_include_filter(inc_exps,
+                                                        criteria.graph_xticklabels(
+                                                            cmdopts),
+                                                        n_exp)
                 xlabel = criteria.graph_xlabel(cmdopts)
 
             SummaryLineGraph(stats_root=self.cc_csv_root,
@@ -660,10 +663,10 @@ class BivarIntraScenarioComparator:
                              pattern)
             return
 
-        ref_df = sierra.core.utils.pd_csv_read(paths[0])
+        ref_df = storage.DataFrameReader('csv')(paths[0])
 
         for i in range(1, len(paths)):
-            df = sierra.core.utils.pd_csv_read(paths[i])
+            df = storage.DataFrameReader('csv')(paths[i])
 
             if comp_type == 'HMscale':
                 plot_df = df / ref_df
@@ -674,9 +677,10 @@ class BivarIntraScenarioComparator:
                 batch_leaf, dest_stem, [0, i])
             ipath = os.path.join(self.cc_csv_root, leaf) + ".csv"
             opath = os.path.join(self.cc_graph_root,
-                                 leaf) + sierra.core.config.kImageExt
+                                 leaf) + config.kImageExt
 
-            sierra.core.utils.pd_csv_write(plot_df, ipath, index=False)
+            storage.DataFrameWriter(
+                'csv')(plot_df, ipath, index=False)
 
             Heatmap(input_fpath=ipath,
                     output_fpath=opath,
@@ -723,7 +727,7 @@ class BivarIntraScenarioComparator:
             opath_leaf = LeafGenerator.from_batch_leaf(
                 batch_leaf, dest_stem, None)
             opath = os.path.join(self.cc_graph_root,
-                                 opath_leaf + sierra.core.config.kImageExt)
+                                 opath_leaf + config.kImageExt)
 
             DualHeatmap(input_stem_pattern=pattern,
                         output_fpath=opath,
@@ -755,7 +759,7 @@ class BivarIntraScenarioComparator:
         opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, None)
         csv_stem_root = os.path.join(self.cc_csv_root, opath_leaf)
         opath = os.path.join(self.cc_graph_root, opath_leaf +
-                             sierra.core.config.kImageExt)
+                             config.kImageExt)
 
         StackedSurfaceGraph(input_stem_pattern=csv_stem_root,
                             output_fpath=opath,
@@ -781,11 +785,11 @@ class BivarIntraScenarioComparator:
 
 
 class StatsPreparer():
-    """Prepare statistics generated from controllers for graph generation by
-    collating from the collated stats for each individual controller. If the
-    batch criteria is univariate, then only :meth:`across_rows` is valid; for
-    bivariate batch criteria, either :meth:`across_rows` or :meth:`across_cols`
-    is valid, depending on what the primary axis is.
+    """Prepare statistics generated from controllers for graph generation.
+
+    If the batch criteria is univariate, then only :meth:`across_rows` is valid;
+    for bivariate batch criteria, either :meth:`across_rows` or
+    :meth:`across_cols` is valid, depending on what the primary axis is.
 
     """
 
@@ -804,24 +808,25 @@ class StatsPreparer():
                     all_cols: tp.List[str],
                     col_index: int,
                     inc_exps: tp.Optional[str]) -> None:
-        """The criteria of interest varies across the rows of controller .csvs. We take
+        """
+        The criteria of interest varies across the rows of controller .csvs. We take
         row `index` from a given dataframe and take the rows specified by the
         `inc_exps` and append them to a results dataframe column-wise, which we
         then write the file system.
 
         """
-        for k in sierra.core.config.kStatsExtensions.keys():
+        for k in config.kStatsExtensions.keys():
             stat_ipath = os.path.join(self.ipath_stem,
-                                      self.ipath_leaf + sierra.core.config.kStatsExtensions[k])
+                                      self.ipath_leaf + config.kStatsExtensions[k])
             stat_opath = os.path.join(self.opath_stem,
-                                      opath_leaf + sierra.core.config.kStatsExtensions[k])
+                                      opath_leaf + config.kStatsExtensions[k])
             df = self._accum_df_by_col(
                 stat_ipath, stat_opath, all_cols, col_index, inc_exps)
 
             if df is not None:
-                sierra.core.utils.pd_csv_write(df,
+                storage.DataFrameWriter('csv')(df,
                                                os.path.join(self.opath_stem,
-                                                            opath_leaf + sierra.core.config.kStatsExtensions[k]),
+                                                            opath_leaf + config.kStatsExtensions[k]),
                                                index=False)
 
     def across_rows(self,
@@ -834,17 +839,17 @@ class StatsPreparer():
         we then write the file system.
 
         """
-        for k in sierra.core.config.kStatsExtensions.keys():
+        for k in config.kStatsExtensions.keys():
             stat_ipath = os.path.join(self.ipath_stem,
-                                      self.ipath_leaf + sierra.core.config.kStatsExtensions[k])
+                                      self.ipath_leaf + config.kStatsExtensions[k])
             stat_opath = os.path.join(self.opath_stem,
-                                      opath_leaf + sierra.core.config.kStatsExtensions[k])
+                                      opath_leaf + config.kStatsExtensions[k])
             df = self._accum_df_by_row(stat_ipath, stat_opath, index, inc_exps)
 
             if df is not None:
-                sierra.core.utils.pd_csv_write(df,
+                storage.DataFrameWriter('csv')(df,
                                                os.path.join(self.opath_stem,
-                                                            opath_leaf + sierra.core.config.kStatsExtensions[k]),
+                                                            opath_leaf + config.kStatsExtensions[k]),
                                                index=False)
 
     def _accum_df_by_col(self,
@@ -853,16 +858,16 @@ class StatsPreparer():
                          all_cols: tp.List[str],
                          col_index: int,
                          inc_exps: tp.Optional[str]) -> pd.DataFrame:
-        if sierra.core.utils.path_exists(opath):
-            cum_df = sierra.core.utils.pd_csv_read(opath)
+        if utils.path_exists(opath):
+            cum_df = storage.DataFrameReader('csv')(opath)
         else:
             cum_df = None
 
-        if sierra.core.utils.path_exists(ipath):
-            t = sierra.core.utils.pd_csv_read(ipath)
+        if utils.path_exists(ipath):
+            t = storage.DataFrameReader('csv')(ipath)
 
             if inc_exps is not None:
-                cols_from_index = sierra.core.utils.exp_include_filter(
+                cols_from_index = utils.exp_include_filter(
                     inc_exps, list(t.index), self.n_exp)
             else:
                 cols_from_index = slice(None, None, None)
@@ -889,16 +894,16 @@ class StatsPreparer():
                          opath: str,
                          index: int,
                          inc_exps: tp.Optional[str]) -> pd.DataFrame:
-        if sierra.core.utils.path_exists(opath):
-            cum_df = sierra.core.utils.pd_csv_read(opath)
+        if utils.path_exists(opath):
+            cum_df = storage.DataFrameReader('csv')(opath)
         else:
             cum_df = None
 
-        if sierra.core.utils.path_exists(ipath):
-            t = sierra.core.utils.pd_csv_read(ipath)
+        if utils.path_exists(ipath):
+            t = storage.DataFrameReader('csv')(ipath)
 
             if inc_exps is not None:
-                cols = sierra.core.utils.exp_include_filter(
+                cols = utils.exp_include_filter(
                     inc_exps, list(t.columns), self.n_exp)
             else:
                 cols = t.columns

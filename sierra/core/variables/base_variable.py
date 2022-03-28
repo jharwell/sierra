@@ -25,30 +25,31 @@ from sierra.core.xml import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList
 
 
 class IBaseVariable(implements.Interface):
-    """
-    Interface specifying the functions that all variables (not just those that are batch criteria)
-    must implement.
+    """Interface that all variables must implement.
+
     """
 
     def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
-        """Generate a list of sets of XML attributes to change in the template input XML file."""
+        """Generate a list of sets of XML attributes to change in the template input XML
+file."""
         raise NotImplementedError
 
     def gen_tag_rmlist(self) -> tp.List[XMLTagRmList]:
-        """Generate a list of lists of XML tags to remove from the template input XML file."""
+        """Generate a list of lists of XML tags to remove from the template input XML
+file."""
         raise NotImplementedError
 
     def gen_tag_addlist(self) -> tp.List[XMLTagAddList]:
-        """
-        Generate a list of lists of XML tags (and possibly child attributes) to add to the template
-        input XML file.
+        """Generate a list of lists of XML tags (and possibly child attributes) to add
+        to the template input XML file.
+
         """
         raise NotImplementedError
 
     def gen_files(self) -> None:
-        """
-        Generate one or more new files which will (presumably) be referenced in the template input
-        file by path.
+        """Generate one or more new files which will (presumably) be referenced in the
+        template input file by path.
+
         """
 
 

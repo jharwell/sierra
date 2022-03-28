@@ -39,7 +39,7 @@ from sierra.core import types
 
 class BatchIntraExpGraphGenerator:
     """
-    Generates all intra-experiment graphs from a :term:`Batch Experiment`.
+    Generates all intra-experiment graphs for a :term:`Batch Experiment`.
 
     """
 
@@ -104,16 +104,16 @@ class BatchIntraExpGraphGenerator:
 
 
 class IntraExpGraphGenerator:
-    """
-    Generates graphs from averaged output data within a single experiment in a
-    batch. Which graphs are generated is controlled by YAML configuration files
-    parsed in
-    :class:`~sierra.core.pipeline.stage4.pipeline_stage4.PipelineStage4`.
+    """Generates graphs from :term:`Averaged .csv` files for a single experiment.
+
+    Which graphs are generated is controlled by YAML configuration files parsed
+    in :class:`~sierra.core.pipeline.stage4.pipeline_stage4.PipelineStage4`.
 
     This class can be extended/overriden using a :term:`Project` hook. See
     :ref:`ln-tutorials-project-hooks` for details.
 
     Attributes:
+
         cmdopts: Dictionary of parsed cmdline attributes.
 
         main_config: Parsed dictionary of main YAML configuration
@@ -160,10 +160,10 @@ class IntraExpGraphGenerator:
         """
         Runs the following to generate graphs for each experiment in the batch:
 
-        # . :class:`~sierra.core.pipeline.stage4.intra_exp_graph_generator.LinegraphsGenerator`
+        #. :class:`~sierra.core.pipeline.stage4.intra_exp_graph_generator.LinegraphsGenerator`
             to generate linegraphs for each experiment in the batch.
 
-        # . :class:`~sierra.core.pipeline.stage4.intra_exp_graph_generator.HeatmapsGenerator`
+        #. :class:`~sierra.core.pipeline.stage4.intra_exp_graph_generator.HeatmapsGenerator`
             to generate heatmaps for each experiment in the batch.
         """
         LN_targets, HM_targets = self.calc_targets()
@@ -220,13 +220,16 @@ class IntraExpGraphGenerator:
 
 class LinegraphsGenerator:
     """
-    Generates linegraphs from averaged output data within a single experiment.
+    Generates linegraphs from :term:`Averaged .csv` files for an experiment.
 
     Attributes:
+
         exp_stat_root: Absolute path to experiment statistics directory.
+
         exp_graph_root: Absolute path to experiment graph output directory.
-        targets: Dictionary of lists of dictionaries specifying what graphs should be
-                 generated.
+
+        targets: Dictionary of lists of dictionaries specifying what graphs
+                 should be generated.
     """
 
     def __init__(self,
@@ -274,12 +277,15 @@ class LinegraphsGenerator:
 
 class HeatmapsGenerator:
     """
-    Generates heatmaps from averaged output data within a single experiment.
+    Generates heatmaps from :term:`Averaged .csv` files for an experiment.
 
     Attributes:
-        exp_stat_root: Absolute path to root directory for experiment statistics.
-        targets: Dictionary of lists of dictionaries specifying what graphs should be
-                 generated.
+
+        exp_stat_root: Absolute path to root directory for experiment
+                       statistics.
+
+        targets: Dictionary of lists of dictionaries specifying what graphs
+                 should be generated.
     """
 
     def __init__(self,
@@ -323,7 +329,9 @@ class HeatmapsGenerator:
                             large_text=self.large_text).generate()
 
 
-__api__ = ['BatchIntraExpGraphGenerator',
-           'IntraExpGraphGenerator',
-           'LinegraphsGenerator',
-           'HeatmapsGenerator']
+__api__ = [
+    'BatchIntraExpGraphGenerator',
+    'IntraExpGraphGenerator',
+    'LinegraphsGenerator',
+    'HeatmapsGenerator'
+]

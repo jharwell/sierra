@@ -129,24 +129,8 @@ autoapi_options = {
     'show-inheritance-diagram': True
 }
 autoapi_modules = {
-    'sierra.core.cmdline': {'output': 'api/core'},
-    'sierra.core.generators': {'output': 'api/core/generators'},
-    'sierra.core.pipeline': {'output': 'api/core/pipeline'},
-    'sierra.core.variables': {'output': 'api/core/variables'},
-    'sierra.core.graphs': {'output': 'api/core/graphs'},
-    'sierra.core.xml': {'output': 'api/core'},
-    'sierra.core.utils': {'output': 'api/core'},
-    'sierra.core.experiment': {'output': 'api/core/experiment'},
-    'sierra.core.ros': {'output': 'api/core/ros'},
-    'sierra.core.vector': {'output': 'api/core'},
-    'sierra.core.models.interface': {'output': 'api/core/models'},
-    'sierra.core.models.graphs': {'output': 'api/core/models'},
-    'sierra.plugins.hpc': {'output': 'api/plugins/hpc'},
-    'sierra.plugins.storage': {'output': 'api/plugins/storage'},
-    'sierra.plugins.platform.argos.generators': {'output': 'api/plugins/platform/argos/generators'},
-    'sierra.plugins.platform.argos.variables': {'output': 'api/plugins/platform/argos/variables'},
-    'sierra.plugins.platform.rosgazebo.generators': {'output': 'api/plugins/platform/rosgazebo/generators'},
-    'sierra.plugins.platform.rosgazebo.variables': {'output': 'api/plugins/platform/rosgazebo/variables'}
+    'sierra.core': {'output': 'api'},
+    'sierra.plugins': {'output': 'api'}
 }
 
 autoapi_ignore = ['*flycheck*']
@@ -169,6 +153,8 @@ xref_links = {
                       "http://users.umiacs.umd.edu/~sarit/data/articles/rosenfeldetalbook06.pdf"),
     "SIERRA_GITHUB": ("https://github.com:swarm-robotics/sierra.git",
                       "https://github.com:swarm-robotics/sierra.git"),
+    "SIERRA_DOCS": ("https://swarm-robotics-fordyca.readthedocs.io",
+                    "https://swarm-robotics-fordyca.readthedocs.io"),
     "FORDYCA": ("FORDYCA", "https://swarm-robotics-fordyca.readthedocs.io"),
     "PRISM": ("PRISM", "https://swarm-robotics-prism.readthedocs.io"),
     "LIBRA": ("LIBRA", "https://swarm-robotics-libra.readthedocs.io"),

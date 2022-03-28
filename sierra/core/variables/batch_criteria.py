@@ -37,10 +37,11 @@ from sierra.core import types
 
 
 class IQueryableBatchCritera(implements.Interface):
-    """
-    Mixin interface that batch criteria which can be queried during stage {1,2}
-    to extract additional information needed for configuring some
+    """Mixin interface for batch criteria which can be queried during stage {1,2}.
+
+    Used to extract additional information needed for configuring some
     :term:`Platforms <Platform>` and execution environments.
+
     """
 
     def n_robots(self, exp_num: int) -> int:
@@ -52,10 +53,7 @@ class IQueryableBatchCritera(implements.Interface):
 
 class IConcreteBatchCriteria(implements.Interface):
     """
-    'Final' interface that user-visible batch criteria variables need to
-    implement to indicate that they can be used as such, as they contain no
-    virtual methods.
-
+    'Final' interface for user-visible batch criteria.
     """
 
     def graph_xticks(self,
@@ -117,6 +115,10 @@ class IConcreteBatchCriteria(implements.Interface):
 
 
 class IBivarBatchCriteria(implements.Interface):
+    """
+    Interface for bivariate batch criteria (those with two univariate axes).
+    """
+
     def graph_yticks(self,
                      cmdopts: types.Cmdopts,
                      exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
@@ -184,8 +186,7 @@ class IBatchCriteriaType(implements.Interface):
 
 @implements.implements(base_variable.IBaseVariable)
 class BatchCriteria():
-    """Defines the list of sets of changes to make to a template input file in
-    order to run a related set of of experiments.
+    """Defines experiments via  lists of sets of changes to make to an XML file.
 
     Attributes:
         cli_arg: Unparsed batch criteria string from command line.
@@ -444,7 +445,6 @@ class UnivarBatchCriteria(BatchCriteria):
 class BivarBatchCriteria(BatchCriteria):
     """
     Combination of the definition of two separate batch criteria.
-
     """
 
     def __init__(self,

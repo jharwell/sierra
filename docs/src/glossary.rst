@@ -152,6 +152,13 @@ works/is designed the way it is, and to help you find your way around.
       of interest, with rows corresponding to values captured throughout the
       run.
 
+   Averaged .csv
+
+      A ``.csv`` file generated as from averaging files from multiple
+      :term:`Experimental Runs<Experimental Run>`. It will (probably) contain a
+      set of columns of representing outputs of interest, with rows
+      corresponding to values captured throughout the run.
+
    Collated .csv
 
       A ``.csv`` file created by SIERRA during stage 4 (if inter-experiment

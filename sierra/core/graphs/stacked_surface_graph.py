@@ -29,19 +29,20 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 # Project packages
-import sierra.core.config
-import sierra.core.utils
+from sierra.core import config, utils, storage
 
 
 class StackedSurfaceGraph:
-    """
-    Generates a 3D plot of a set of 3D surface graphs from a set of .csv files with the specified
-    graph visuals. .csv files must be named as``<input_stem_fpath>_X.csv``, where `X` is
-    non-negative integer. Input ``.csv`` files must be 2D grids of the same cardinality.
+    """Generates a plot of a set of 3D surface graphs from a set of ``.csv`` files.
+
+    ``.csv`` files must be named as``<input_stem_fpath>_X.csv``, where `X` is
+    non-negative integer. Input ``.csv`` files must be 2D grids of the same
+    cardinality.
 
     This graph does not plot standard deviation.
 
-    If no ``.csv`` files matching the pattern are found, the graph is not generated.
+    If no ``.csv`` files matching the pattern are found, the graph is not
+    generated.
 
     """
     kMaxSurfaces = 4
@@ -71,14 +72,14 @@ class StackedSurfaceGraph:
         self.comp_type = comp_type
 
         if large_text:
-            self.text_size = sierra.core.config.kGraphTextSizeLarge
+            self.text_size = config.kGraphTextSizeLarge
         else:
-            self.text_size = sierra.core.config.kGraphTextSizeSmall
+            self.text_size = config.kGraphTextSizeSmall
 
         self.logger = logging.getLogger(__name__)
 
     def generate(self) -> None:
-        dfs = [sierra.core.utils.pd_csv_read(f) for f in glob.glob(
+        dfs = [storage.DataFrameReader('csv')(f) for f in glob.glob(
             self.input_stem_pattern + '*.csv') if re.search('_[0-9]+', f)]
 
         if not dfs:  # empty list
@@ -88,11 +89,11 @@ class StackedSurfaceGraph:
 
         assert len(dfs) <= StackedSurfaceGraph.kMaxSurfaces,\
             "Too many surfaces to plot: {0} > {1}".format(len(dfs),
-                                                                 StackedSurfaceGraph.kMaxSurfaces)
+                                                          StackedSurfaceGraph.kMaxSurfaces)
 
         # Scaffold graph
-        plt.figure(figsize=(sierra.core.config.kGraphBaseSize,
-                            sierra.core.config.kGraphBaseSize))
+        plt.figure(figsize=(config.kGraphBaseSize,
+                            config.kGraphBaseSize))
         ax = plt.axes(projection='3d')
         x = np.arange(len(dfs[0].columns))
         y = dfs[0].index
@@ -140,8 +141,10 @@ class StackedSurfaceGraph:
 
     def _plot_ticks(self, ax, xvals, yvals):
         """
-        Plot ticks and tick labels. If the labels are numerical and the numbers are too large, force
-        scientific notation (the ``rcParam`` way of doing this does not seem to work...)
+        Plot ticks and tick labels. If the labels are numerical and the numbers are
+        too large, force scientific notation (the ``rcParam`` way of doing this
+        does not seem to work...)
+
         """
         ax.tick_params(labelsize=self.text_size['tick_label'])
         ax.set_xticks(xvals)
@@ -171,23 +174,23 @@ class StackedSurfaceGraph:
         ax.set_zlabel('\n' + self.zlabel, fontsize=self.text_size['xyz_label'])
 
     def _save_figs(self, fig, ax):
-        """
-        Save multiple rotated copies of the same figure. Necessary for automation of 3D figure
-        generation, because you can't really know a priori what views are going to give the best
-        results.
+        """Save multiple rotated copies of the same figure. Necessary for automation of
+        3D figure generation, because you can't really know a priori what views
+        are going to give the best results.
+
         """
         for angle in range(0, 360, 30):
             ax.view_init(elev=None, azim=angle)
-            # The path we are passed may contain dots from the controller same, so we extract the
-            # leaf of that for manipulation to add the angle of the view right before the file
-            # extension.
+            # The path we are passed may contain dots from the controller same,
+            # so we extract the leaf of that for manipulation to add the angle
+            # of the view right before the file extension.
             path, leaf = os.path.split(self.output_fpath)
             components = leaf.split('.')
             fname = ''.join(leaf[0:-2]) + '_' + \
                 str(angle) + '.' + components[-1]
             fig.savefig(os.path.join(path, fname),
                         bbox_inches='tight',
-                        dpi=sierra.core.config.kGraphDPI,
+                        dpi=config.kGraphDPI,
                         pad_inches=0)
             # Prevent memory accumulation (fig.clf() does not close everything)
             plt.close(fig)

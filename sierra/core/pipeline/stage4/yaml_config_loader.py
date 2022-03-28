@@ -28,9 +28,7 @@ from sierra.core import types
 
 
 class YAMLConfigLoader():
-    """
-    Load the YAML configuration for :term:`Project` graphs to be generated
-    during stage 4.
+    """Load YAML configuration for :term:`Project` graphs to be generated.
 
     This class can be extended/overriden using a :term:`Project` hook. See
     :ref:`ln-tutorials-project-hooks` for details.
@@ -41,6 +39,7 @@ class YAMLConfigLoader():
                 overriding it in order to get loggingmessages have unique
                 logger names between this class and your derived class, in order
                 to reduce confusion.
+
     """
 
     def __init__(self) -> None:

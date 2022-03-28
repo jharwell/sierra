@@ -14,8 +14,9 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
-"""
-Classes for running project-specific models in a general purpose way within a batch experiment.
+"""Classes for running project-specific models in a general purpose way within
+a batch experiment.
+
 """
 # Core packages
 import os
@@ -26,10 +27,8 @@ import logging  # type: tp.Any
 # 3rd party packages
 
 # Project packages
-import sierra.core.utils
 import sierra.core.variables.batch_criteria as bc
-from sierra.core import models
-from sierra.core import types
+from sierra.core import models, types, utils, storage
 
 
 class IntraExpModelRunner:
@@ -51,9 +50,9 @@ class IntraExpModelRunner:
     def __call__(self,
                  main_config: types.YAMLDict,
                  criteria: bc.IConcreteBatchCriteria) -> None:
-        exp_to_run = sierra.core.utils.exp_range_calc(self.cmdopts,
-                                                      self.cmdopts['batch_output_root'],
-                                                      criteria)
+        exp_to_run = utils.exp_range_calc(self.cmdopts,
+                                          self.cmdopts['batch_output_root'],
+                                          criteria)
         exp_dirnames = criteria.gen_exp_dirnames(self.cmdopts)
 
         for i, exp in enumerate(exp_to_run):
@@ -77,7 +76,7 @@ class IntraExpModelRunner:
             cmdopts["exp_model_root"] = os.path.join(
                 cmdopts['batch_model_root'], exp)
 
-            sierra.core.utils.dir_create_checked(
+            utils.dir_create_checked(
                 cmdopts['exp_model_root'], exist_ok=True)
 
             for model in self.models:
@@ -105,7 +104,7 @@ class IntraExpModelRunner:
                                 break
 
                     # Write model .csv file
-                    sierra.core.utils.pd_csv_write(
+                    storage.DataFrameWriter('csv')(
                         df, path_stem + '.model', index=False)
 
 
@@ -130,9 +129,9 @@ class InterExpModelRunner:
 
         cmdopts = copy.deepcopy(self.cmdopts)
 
-        sierra.core.utils.dir_create_checked(
+        utils.dir_create_checked(
             cmdopts['batch_model_root'], exist_ok=True)
-        sierra.core.utils.dir_create_checked(
+        utils.dir_create_checked(
             cmdopts['batch_graph_collate_root'], exist_ok=True)
 
         for model in self.models:
@@ -150,7 +149,7 @@ class InterExpModelRunner:
                 path_stem = os.path.join(cmdopts['batch_model_root'], csv_stem)
 
                 # Write model .csv file
-                sierra.core.utils.pd_csv_write(
+                storage.DataFrameWriter('csv')(
                     df, path_stem + '.model', index=False)
 
                 # 1D dataframe -> line graph with legend
@@ -162,3 +161,9 @@ class InterExpModelRunner:
                                 legend = model.legend_names()[i]
                                 f.write(legend)
                                 break
+
+
+__api__ = [
+    'IntraExpModelRunner',
+    'InterExpModelRunner'
+]

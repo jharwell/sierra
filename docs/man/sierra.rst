@@ -5,8 +5,9 @@ Sierra
 Synopsis
 ========
 
-The is the "main menu" of the SIERRA reference manual, which captures most, but
-not all of its documentation. For the full experience, look at the online docs.
+This the "main menu" of the SIERRA reference manual, which captures most, but
+not all of its documentation. For the full experience, look at the online docs
+at :xref:`SIERRA_DOCS`.
 
 Components
 ==========
@@ -21,8 +22,8 @@ The following manpages are available:
 - :manpage:`sierra-platforms` - The target platforms that SIERRA currently
   supports (e.g., ARGoS).
 
-- :manpage:`sierra-examples` - Examples of SIERRA usage via
-  command line invocations demonstrating various features.
+- :manpage:`sierra-examples` - Examples of SIERRA usage via command line
+  invocations demonstrating various features.
 
 - :manpage:`sierra-glossary` - Glossary of SIERRA terminology to make things
   easier to understand.

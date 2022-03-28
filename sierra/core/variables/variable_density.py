@@ -29,9 +29,10 @@ from sierra.core import types
 
 
 class VariableDensity(UnivarBatchCriteria):
-    """A univariate range specifiying the density (ratio of SOMETHING to arena
-    size) to vary as arena size is held constant. This class is a base class
-    which should NEVER be used on its own.
+    """A univariate range for variable density (# THINGS/m^2).
+
+    # THINGS is varied as arena size is held constant. This class is a base
+    class which should NEVER be used on its own.
 
     Attributes:
         densities: List of densities to use.

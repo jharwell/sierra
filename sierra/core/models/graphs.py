@@ -21,8 +21,7 @@ import os
 
 # Project packages
 from sierra.core.graphs.heatmap import HeatmapSet
-import sierra.core.utils
-import sierra.core.config
+from sierra.core import utils, config, storage
 
 
 class IntraExpModel2DGraphSet():
@@ -56,29 +55,32 @@ class IntraExpModel2DGraphSet():
         data_ipath = os.path.join(self.exp_stat_root,
                                   self.target_stem + '.csv')
         data_opath = os.path.join(self.exp_graph_root,
-                                  self.target_stem + '-HM' + sierra.core.config.kImageExt)
+                                  self.target_stem + '-HM' + config.kImageExt)
         stddev_ipath = os.path.join(self.exp_stat_root,
                                     self.target_stem + '.stddev')
         stddev_opath = os.path.join(self.exp_graph_root,
-                                    self.target_stem + '-HM-stddev' + sierra.core.config.kImageExt)
+                                    self.target_stem + '-HM-stddev' + config.kImageExt)
 
         model_ipath = os.path.join(self.exp_model_root,
                                    self.target_stem + '.model')
         model_opath = os.path.join(self.exp_graph_root,
-                                   self.target_stem + '-HM-model' + sierra.core.config.kImageExt)
+                                   self.target_stem + '-HM-model' + config.kImageExt)
 
         model_error_ipath = os.path.join(self.exp_model_root,
                                          self.target_stem + '-HM-model-error.csv')
         model_error_opath = os.path.join(self.exp_graph_root,
-                                         self.target_stem + '-HM-model-error' + sierra.core.config.kImageExt)
+                                         self.target_stem + '-HM-model-error' + config.kImageExt)
 
         # Write the error .csv to the filesystem
-        data_df = sierra.core.utils.pd_csv_read(data_ipath)
-        model_df = sierra.core.utils.pd_csv_read(model_ipath)
-        sierra.core.utils.pd_csv_write(model_df - data_df, model_error_ipath, index=False)
+        data_df = storage.DataFrameReader('csv')(data_ipath)
+        model_df = storage.DataFrameReader('csv')(model_ipath)
+        storage.DataFrameWriter('csv')(model_df - data_df,
+                                       model_error_ipath,
+                                       index=False)
 
         HeatmapSet(ipaths=[data_ipath, stddev_ipath, model_ipath, model_error_ipath],
-                   opaths=[data_opath, stddev_opath, model_opath, model_error_opath],
+                   opaths=[data_opath, stddev_opath,
+                           model_opath, model_error_opath],
                    titles=[self.target_title,
                            self.target_title + ' (Stddev)',
                            self.target_title + ' (Model)',

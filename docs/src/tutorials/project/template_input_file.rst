@@ -8,7 +8,7 @@ Template Input Files Passed to SIERRA
 =====================================
 
 Examples of the structure/required content of the XML file passed to SIERRA via
-``--template-input-file`` for each supported :term:`Platform` are below. 
+``--template-input-file`` for each supported :term:`Platform` are below.
 
 .. tabs::
 
@@ -38,6 +38,11 @@ Examples of the structure/required content of the XML file passed to SIERRA via
 
    .. group-tab:: ROS (Using parameter server)
 
+      This is for the following ROS-based platforms:
+
+      - ROS+Gazebo
+      - ROS+Robot
+
       For the purposes of illustration we will use
       ``--template-input-file=sample.launch``:
 
@@ -59,6 +64,11 @@ Examples of the structure/required content of the XML file passed to SIERRA via
 
    .. group-tab:: ROS (Using ``<params>`` tag)
 
+      This is for the following ROS-based platforms:
+
+      - ROS+Gazebo
+      - ROS+Robot
+
       For the purposes of illustration we will use
       ``--template-input-file=sample.launch``:
 
@@ -68,6 +78,9 @@ Examples of the structure/required content of the XML file passed to SIERRA via
              <master>
                 ...
              </master>
+             <robot>
+                ...
+             </robot>
              <params>
                 <metrics directory="/path/to/dir"/>
                 <task_alloc>
@@ -126,20 +139,20 @@ Any of the following may be inserted:
 
    .. tab:: ROS (Using parameter server)
 
-      Input ``sample.launch`` file is split into (potentially) two files:
+      Input ``sample.launch`` file is split into multiple files:
 
-        - ``sample_robot.launch`` containing the ``<robot>`` tag in the original
-          input file, which is changed to ``<launch>``. This has all nodes and
-          configuration which is robot-specific and/or will be launched on each
-          robot.
+        - ``sample_runX_robotY.launch`` containing the ``<robot>`` tag in the
+          original input file, which is changed to ``<launch>``. This has all
+          nodes and configuration which is robot-specific and/or will be
+          launched on each robot ``Y`` for each run ``X``.
 
-        - ``sample_master.launch`` containing the ``<master>`` tag in the
+        - ``sample_master_runX.launch`` containing the ``<master>`` tag in the
           original input file, which is changed to ``<launch>``. This has all
           the nodes and configuration which is ROS master-specific and will be
           launched on the SIERRA host machine (which where the ROS master will
-          be set to).
+          be set to) for each run ``X``.
 
-      ``sample_robot.launch`` file:
+      ``sample_run0_robot0.launch`` file:
 
       .. code-block:: XML
 
@@ -158,7 +171,7 @@ Any of the following may be inserted:
             ...
          </launch>
 
-      ``sample_master.launch`` file:
+      ``sample_master_run0.launch`` file:
 
       .. code-block:: XML
 
@@ -179,24 +192,24 @@ Any of the following may be inserted:
 
    .. tab:: ROS (Not using parameter server)
 
-      Input ``sample.launch`` file is split into (potentially) three files:
+      Input ``sample.launch`` file is split into multiple files:
 
-        - ``sample_robot.launch`` containing the ``<robot>`` tag in the original
-          input file, which is changed to ``<launch>``. This has all nodes and
-          configuration which is robot-specific and/or will be launched on each
-          robot.
+        - ``sample_runX_robotY.launch`` containing the ``<robot>`` tag in the
+          original input file, which is changed to ``<launch>``. This has all
+          nodes and configuration which is robot-specific and/or will be
+          launched on each robot ``Y`` for each run ``X``.
 
-        - ``sample_master.launch`` containing the ``<master>`` tag in the
+        - ``sample_master_runX.launch`` containing the ``<master>`` tag in the
           original input file, which is changed to ``<launch>``. This has all
           the nodes and configuration which is ROS master-specific and will be
           launched on the SIERRA host machine (which where the ROS master will
-          be set to).
+          be set to) for each run ``X``.
 
-        - ``sample.params`` containing the ``<params>`` tag in the original
+        - ``sample_runX.params`` containing the ``<params>`` tag in the original
           input file, which is written out as a common file to use to share
-          parameters between the robots and the ROS master.
+          parameters between the robots and the ROS master for each run ``X``.
 
-      Processed ``sample_robot.launch`` file:
+      Processed ``sample_run0_robot0.launch`` file:
 
       .. code-block:: XML
 
@@ -213,7 +226,7 @@ Any of the following may be inserted:
           </launch>
 
 
-      Processed ``sample_master.launch`` file:
+      Processed ``sample_run0_master.launch`` file:
 
       .. code-block:: XML
 
@@ -231,7 +244,7 @@ Any of the following may be inserted:
           </launch>
 
 
-      Processed ``sample.params`` file:
+      Processed ``sample_run0.params`` file:
 
       .. code-block:: XML
 

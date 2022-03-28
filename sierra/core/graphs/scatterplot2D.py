@@ -28,6 +28,7 @@ import sympy
 import matplotlib.pyplot as plt
 
 # Project packages
+from sierra.core import storage
 
 
 class Scatterplot2D:
@@ -71,7 +72,7 @@ class Scatterplot2D:
             return
 
         # Read .csv and scaffold graph
-        df = sierra.core.utils.pd_csv_read(self.input_fpath)
+        df = storage.DataFrameReader('csv')(self.input_fpath)
         ax = df.plot.scatter(x=self.xcol, y=self.ycol)
 
         # Plot regression line

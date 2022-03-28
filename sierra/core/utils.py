@@ -41,6 +41,10 @@ class ArenaExtent():
     """Representation of a 2D or 3D section/chunk/volume of the arena."""
     @staticmethod
     def from_corners(ll: Vector3D, ur: Vector3D) -> 'ArenaExtent':
+        """
+        Initialize an extent via LL and UR corners rather than an origin and a
+        set of dimensions.
+        """
         return ArenaExtent(ur - ll, ll)
 
     def __init__(self, dims: Vector3D, origin: Vector3D = Vector3D()) -> None:
@@ -97,11 +101,12 @@ class Sigmoid():
 
 class ReLu():
     r"""
-    REctified Linear Unit activation function.
+    Rectified Linear Unit (ReLU) activation function.
 
     .. math::
+
        \begin{equation}
-           \begin{aligned}
+            \begin{aligned}
                f(x) = max(0,x) &= x \textit{if} x > 0
                                &= 0 \textit{else}
            \end{aligned}
@@ -115,16 +120,6 @@ class ReLu():
         return max(0, self.x)
 
 
-def extract_arena_dims(exp_def) -> ArenaExtent:
-    for path, attr, value in exp_def:
-        if path == ".//arena" and attr == "size":
-            x, y, z = value.split(',')
-            dims = Vector3D(float(x), float(y), float(z))
-            return ArenaExtent(dims)
-
-    return None  # type: ignore
-
-
 def scale_minmax(minval: float, maxval: float, val: float) -> float:
     """
     Scale values from range [minval, maxval] -> [-1,1]
@@ -136,6 +131,10 @@ def scale_minmax(minval: float, maxval: float, val: float) -> float:
 
 
 def dir_create_checked(path: str, exist_ok: bool) -> None:
+    """
+    Create a directory idempotently, raising an error if the directory exists
+    and it shouldn't.
+    """
     try:
         os.makedirs(path, exist_ok=exist_ok)
     except FileExistsError:
@@ -143,24 +142,14 @@ def dir_create_checked(path: str, exist_ok: bool) -> None:
         raise
 
 
-@retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=1.1)  # type:ignore
-def pd_csv_read(path: str, **kwargs) -> pd.DataFrame:
-    # Always specify the datatype so pandas does not have to infer it--much
-    # faster.
-    return pd.read_csv(path, sep=';', float_precision='high', **kwargs)
-
-
-@retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=1.1)  # type:ignore
-def pd_csv_write(df: pd.DataFrame, path: str, **kwargs) -> None:
-    df.to_csv(path, sep=';', float_format='%.8f', **kwargs)
-
-
-@retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=1.1)  # type:ignore
-def pd_pickle_write(df: pd.DataFrame, path: str) -> None:
-    df.to_pickle(path)
-
-
 def path_exists(path: str) -> bool:
+    """
+    Check if a path exists, trying multiple times.
+
+    This is necessary for working on HPC systems where if a given
+    directory/filesystem is under heavy pressure the first check or two might
+    time out as the FS goes and executes the query over the network.
+    """
     res = []
     for i in range(0, 10):
         if os.path.exists(path):
@@ -172,7 +161,17 @@ def path_exists(path: str) -> bool:
     return max(set(res), key=res.count)
 
 
-def get_primary_axis(criteria, primary_axis_bc: tp.List, cmdopts: types.Cmdopts) -> int:
+def get_primary_axis(criteria,
+                     primary_axis_bc: tp.List,
+                     cmdopts: types.Cmdopts) -> int:
+    """
+    Determine which :class:`~sierra.core.variables.batch_criteria.BatchCriteria`
+    in a  :class:`~sierra.core.variables.batch_criteria.BivarBatchCriteria`
+    should be treated as the primary axis.
+
+    This is obtained on a per-query basis depending on the query context, or can
+    be overriden on the cmdline.
+    """
     if cmdopts['plot_primary_axis'] == 0:
         return 0
 
@@ -185,7 +184,11 @@ def get_primary_axis(criteria, primary_axis_bc: tp.List, cmdopts: types.Cmdopts)
     return 1
 
 
-def exp_range_calc(cmdopts: types.Cmdopts, root_dir: str, criteria) -> tp.List[str]:
+def exp_range_calc(cmdopts: types.Cmdopts,
+                   root_dir: str, criteria) -> tp.List[str]:
+    """
+    Get the range of experiments to run/do stuff with. SUPER USEFUL.
+    """
     exp_all = [os.path.join(root_dir, d)
                for d in criteria.gen_exp_dirnames(cmdopts)]
 
@@ -193,8 +196,9 @@ def exp_range_calc(cmdopts: types.Cmdopts, root_dir: str, criteria) -> tp.List[s
     if cmdopts['exp_range'] is not None:
         min_exp = int(exp_range.split(':')[0])
         max_exp = int(exp_range.split(':')[1])
-        assert min_exp <= max_exp, "Min batch exp >= max batch exp({0} vs. {1})".format(
-            min_exp, max_exp)
+        assert min_exp <= max_exp, \
+            "Min batch exp >= max batch exp({0} vs. {1})".format(
+                min_exp, max_exp)
 
         return exp_all[min_exp: max_exp + 1]
 
@@ -227,7 +231,11 @@ def exp_include_filter(inc_spec: str, target: tp.List, n_exps: int):
     return target[slice(start, end, None)]
 
 
-def bivar_exp_labels_calc(exp_dirs: tp.List[str]) -> tp.Tuple[tp.List[str], tp.List[str]]:
+def bivar_exp_labels_calc(exp_dirs: tp.List[str]) -> tp.Tuple[tp.List[str],
+                                                              tp.List[str]]:
+    """
+    Calculate the labels for bivariant experiment graphs.
+    """
     # Because sets are used, if a sub-range of experiments are selected for
     # collation, the selected range has to be an even multiple of the # of
     # experiments in the second batch criteria, or inter-experiment graph
@@ -249,6 +257,10 @@ def apply_to_expdef(var,
                     exp_def: XMLLuigi) -> tp.Tuple[tp.Optional[XMLTagRmList],
                                                    tp.Optional[XMLTagAddList],
                                                    tp.Optional[XMLAttrChangeSet]]:
+    """
+    Remove existing XML tags, add new XML tags, and change existing XML
+    attributes (in that order) for the specified variable.
+    """
     rmsl = var.gen_tag_rmlist()  # type: tp.List[XMLTagRmList]
     addsl = var.gen_tag_addlist()  # type: tp.List[XMLTagAddList]
     chgsl = var.gen_attr_changelist()  # type: tp.List[XMLAttrChangeSet]
@@ -280,6 +292,10 @@ def apply_to_expdef(var,
 def pickle_modifications(adds: tp.Optional[XMLTagAddList],
                          chgs: tp.Optional[XMLAttrChangeSet],
                          path: str) -> None:
+    """
+    After applying XML attribute changes and/or adding new XML tags, pickle saxd
+    changes so they can be retrieved later.
+    """
     if adds is not None:
         adds.pickle(path)
 
@@ -290,6 +306,11 @@ def pickle_modifications(adds: tp.Optional[XMLTagAddList],
 def batch_template_path(cmdopts: types.Cmdopts,
                         batch_input_root: str,
                         dirname: str) -> str:
+    """
+    Calculate the path to the template input file in the batch experiment root
+    which will be used as the de-facto template for generating per-run input
+    files.
+    """
     batch_config_leaf, _ = os.path.splitext(
         os.path.basename(cmdopts['template_input_file']))
     return os.path.join(batch_input_root, dirname, batch_config_leaf)
@@ -299,6 +320,9 @@ def get_n_robots(main_config: types.YAMLDict,
                  cmdopts: types.Cmdopts,
                  exp_input_root: str,
                  exp_def: xml.XMLLuigi) -> int:
+    """
+    Get the # robots used for a specific :term:`Experiment`.
+    """
     module = pm.SIERRAPluginManager().get_plugin_module(cmdopts['platform'])
 
     # Get # robots to send to shell cmds generator. We try:
@@ -326,4 +350,16 @@ def get_n_robots(main_config: types.YAMLDict,
 
 __api__ = [
     'ArenaExtent',
+    'Sigmoid',
+    'ReLu',
+    'dir_create_checked',
+    'path_exists',
+    'get_primary_axis',
+    'exp_range_calc',
+    'exp_include_filter',
+    'apply_to_expdef',
+    'pickle_modifications',
+    'batch_template_path',
+    'get_n_robots'
+
 ]

@@ -25,7 +25,6 @@ import pickle
 import os
 import logging  # type: tp.Any
 import xml.etree.ElementTree as ET
-from xml.dom import minidom
 
 # 3rd party packages
 
@@ -33,6 +32,10 @@ from xml.dom import minidom
 
 
 class XMLAttrChange():
+    """
+    Specification for a change to an existing XML attribute.
+    """
+
     def __init__(self,
                  path: str,
                  attr: str,
@@ -49,6 +52,10 @@ class XMLAttrChange():
 
 
 class XMLTagRm():
+    """
+    Specification for removal of an existing XML tag.
+    """
+
     def __init__(self, path: str, tag: str):
         """
         Arguments:
@@ -68,6 +75,12 @@ class XMLTagRm():
 
 
 class XMLTagAdd():
+    """
+    Specification for adding a new XML tag.
+
+    The tag may be added idempotently, or duplicates can be allowed.
+    """
+
     def __init__(self, path: str, tag: str, attr: dict, allow_dup: bool):
         """
         Arguments:
@@ -96,6 +109,13 @@ class XMLTagAdd():
 
 
 class XMLAttrChangeSet():
+    """
+    Data structure for :class:`XMLAttrChange` objects.
+
+    The order in which attributes are changed doesn't matter from the standpoint
+    of correctness (i.e., different orders won't cause crashes).
+
+    """
     @staticmethod
     def unpickle(fpath: str) -> 'XMLAttrChangeSet':
         """
@@ -147,6 +167,15 @@ class XMLAttrChangeSet():
 
 
 class XMLTagRmList():
+    """
+    Data structure for :class:`XMLTagRm` objects.
+
+    The order in which tags are removed matters (i.e., if you remove dependent
+    tags in the wrong order you will get an exception), hence the list
+    representation.
+
+    """
+
     def __init__(self, *args: XMLTagRm) -> None:
         self.rms = list(args)
 
@@ -174,6 +203,14 @@ class XMLTagRmList():
 
 
 class XMLTagAddList():
+    """
+    Data structure for :class:`XMLTagAdd` objects.
+
+    The order in which tags are added matters (i.e., if you add dependent tags
+    in the wrong order you will get an exception), hence the list
+    representation.
+    """
+
     @staticmethod
     def unpickle(fpath: str) -> 'XMLTagAddList':
         """
@@ -225,8 +262,9 @@ class InvalidElementError(RuntimeError):
 
 
 class XMLWriterConfig():
-    """Config for writing the XML content managed by :class:`XMLLuigi` to one or
-    more XML files.
+    """Config for writing the XML content managed by :class:`XMLLuigi`.
+
+    Different parts of the XML tree can be written to multiple XML files.
 
     Attributes:
 

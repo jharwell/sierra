@@ -9,3 +9,4 @@ sphinxcontrib-napoleon
 autoapi
 psutil
 sphinx-last-updated-by-git
+graphviz

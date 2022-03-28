@@ -48,3 +48,10 @@ def population_size_from_def(exp_def: xml.XMLLuigi,
 def robot_prefix_extract(main_config: types.YAMLDict,
                          cmdopts: types.Cmdopts) -> tp.Optional[str]:
     return main_config['ros']['robots'][cmdopts['robot']]['prefix']
+
+
+__api__ = [
+    'population_size_from_pickle',
+    'population_size_from_def',
+    'robot_prefix_extract'
+]

@@ -122,7 +122,8 @@ kROS = {
 }
 
 kYAML = {
-    'main': 'main.yaml'
+    'main': 'main.yaml',
+    'controllers': 'controllers.yaml'
 }
 kGazebo = {
     'launch_cmd': 'gazebo',

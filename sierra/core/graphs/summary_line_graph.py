@@ -29,14 +29,13 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 # Project packages
-import sierra.core.config
-import sierra.core.utils
+from sierra.core import config, utils, storage
 
 
 class SummaryLineGraph:
-    """
-    Generates a linegraph summarizing swarm behavior across a :term:`Batch Experiment`,
-    possibly showing the 95% confidence interval or box and whisker plots,
+    """Generates a linegraph from a :term:`Summary .csv`.
+
+    Possibly shows the 95% confidence interval or box and whisker plots,
     according to configuration.
 
     Attributes:
@@ -104,9 +103,9 @@ class SummaryLineGraph:
 
         # Optional arguments
         if large_text:
-            self.text_size = sierra.core.config.kGraphTextSizeLarge
+            self.text_size = config.kGraphTextSizeLarge
         else:
-            self.text_size = sierra.core.config.kGraphTextSizeSmall
+            self.text_size = config.kGraphTextSizeSmall
 
         self.xtick_labels = xtick_labels
         self.model_root = model_root
@@ -118,14 +117,14 @@ class SummaryLineGraph:
 
     def generate(self) -> None:
         input_fpath = os.path.join(self.stats_root, self.input_stem +
-                                   sierra.core.config.kStatsExtensions['mean'])
-        if not sierra.core.utils.path_exists(input_fpath):
+                                   config.kStatsExtensions['mean'])
+        if not utils.path_exists(input_fpath):
             self.logger.debug("Not generating %s: %s does not exist",
                               self.output_fpath,
                               input_fpath)
             return
 
-        data_dfy = sierra.core.utils.pd_csv_read(input_fpath)
+        data_dfy = storage.DataFrameReader('csv')(input_fpath)
         model = self._read_models()
 
         fig, ax = plt.subplots()
@@ -152,10 +151,10 @@ class SummaryLineGraph:
 
         # Output figure
         fig = ax.get_figure()
-        fig.set_size_inches(sierra.core.config.kGraphBaseSize,
-                            sierra.core.config.kGraphBaseSize)
+        fig.set_size_inches(config.kGraphBaseSize,
+                            config.kGraphBaseSize)
         fig.savefig(self.output_fpath, bbox_inches='tight',
-                    dpi=sierra.core.config.kGraphDPI)
+                    dpi=config.kGraphDPI)
         # Prevent memory accumulation (fig.clf() does not close everything)
         plt.close(fig)
 
@@ -271,69 +270,69 @@ class SummaryLineGraph:
 
         if self.stats == 'conf95' or self.stats == 'all':
             stddev_ipath = os.path.join(self.stats_root,
-                                        self.input_stem + sierra.core.config.kStatsExtensions['stddev'])
+                                        self.input_stem + config.kStatsExtensions['stddev'])
 
-            if sierra.core.utils.path_exists(stddev_ipath):
-                dfs['stddev'] = sierra.core.utils.pd_csv_read(stddev_ipath)
+            if utils.path_exists(stddev_ipath):
+                dfs['stddev'] = storage.DataFrameReader('csv')(stddev_ipath)
             else:
                 self.logger.warning(
                     "stddev file not found for '%s'", self.input_stem)
 
         if self.stats == 'bw' or self.stats == 'all':
             whislo_ipath = os.path.join(self.stats_root,
-                                        self.input_stem + sierra.core.config.kStatsExtensions['whislo'])
+                                        self.input_stem + config.kStatsExtensions['whislo'])
             whishi_ipath = os.path.join(self.stats_root,
-                                        self.input_stem + sierra.core.config.kStatsExtensions['whishi'])
+                                        self.input_stem + config.kStatsExtensions['whishi'])
             median_ipath = os.path.join(self.stats_root,
-                                        self.input_stem + sierra.core.config.kStatsExtensions['median'])
+                                        self.input_stem + config.kStatsExtensions['median'])
             q1_ipath = os.path.join(self.stats_root,
-                                    self.input_stem + sierra.core.config.kStatsExtensions['q1'])
+                                    self.input_stem + config.kStatsExtensions['q1'])
             q3_ipath = os.path.join(self.stats_root,
-                                    self.input_stem + sierra.core.config.kStatsExtensions['q3'])
+                                    self.input_stem + config.kStatsExtensions['q3'])
 
             cihi_ipath = os.path.join(self.stats_root,
-                                      self.input_stem + sierra.core.config.kStatsExtensions['cihi'])
+                                      self.input_stem + config.kStatsExtensions['cihi'])
             cilo_ipath = os.path.join(self.stats_root,
-                                      self.input_stem + sierra.core.config.kStatsExtensions['cilo'])
+                                      self.input_stem + config.kStatsExtensions['cilo'])
 
-            if sierra.core.utils.path_exists(whislo_ipath):
-                dfs['whislo'] = sierra.core.utils.pd_csv_read(whislo_ipath)
+            if utils.path_exists(whislo_ipath):
+                dfs['whislo'] = storage.DataFrameReader('csv')(whislo_ipath)
             else:
                 self.logger.warning(
                     "whislo file not found for '%s'", self.input_stem)
 
-            if sierra.core.utils.path_exists(whishi_ipath):
-                dfs['whishi'] = sierra.core.utils.pd_csv_read(whishi_ipath)
+            if utils.path_exists(whishi_ipath):
+                dfs['whishi'] = storage.DataFrameReader('csv')(whishi_ipath)
             else:
                 self.logger.warning(
                     "whishi file not found for '%s'", self.input_stem)
 
-            if sierra.core.utils.path_exists(cilo_ipath):
-                dfs['cilo'] = sierra.core.utils.pd_csv_read(cilo_ipath)
+            if utils.path_exists(cilo_ipath):
+                dfs['cilo'] = storage.DataFrameReader('csv')(cilo_ipath)
             else:
                 self.logger.warning(
                     "cilo file not found for '%s'", self.input_stem)
 
-            if sierra.core.utils.path_exists(cihi_ipath):
-                dfs['cihi'] = sierra.core.utils.pd_csv_read(cihi_ipath)
+            if utils.path_exists(cihi_ipath):
+                dfs['cihi'] = storage.DataFrameReader('csv')(cihi_ipath)
             else:
                 self.logger.warning(
                     "cihi file not found for '%s'", self.input_stem)
 
-            if sierra.core.utils.path_exists(median_ipath):
-                dfs['median'] = sierra.core.utils.pd_csv_read(median_ipath)
+            if utils.path_exists(median_ipath):
+                dfs['median'] = storage.DataFrameReader('csv')(median_ipath)
             else:
                 self.logger.warning(
                     "median file not found for '%s'", self.input_stem)
 
-            if sierra.core.utils.path_exists(q1_ipath):
-                dfs['q1'] = sierra.core.utils.pd_csv_read(q1_ipath)
+            if utils.path_exists(q1_ipath):
+                dfs['q1'] = storage.DataFrameReader('csv')(q1_ipath)
             else:
                 self.logger.warning(
                     "q1 file not found for '%s'", self.input_stem)
 
-            if sierra.core.utils.path_exists(q3_ipath):
-                dfs['q3'] = sierra.core.utils.pd_csv_read(q3_ipath)
+            if utils.path_exists(q3_ipath):
+                dfs['q3'] = storage.DataFrameReader('csv')(q3_ipath)
             else:
                 self.logger.warning(
                     "q3 file not found for '%s'", self.input_stem)
@@ -350,9 +349,9 @@ class SummaryLineGraph:
             model_legend_fpath = os.path.join(
                 self.model_root, self.input_stem + '.legend')
 
-            if sierra.core.utils.path_exists(model_fpath):
-                model = sierra.core.utils.pd_csv_read(model_fpath)
-                if sierra.core.utils.path_exists(model_legend_fpath):
+            if utils.path_exists(model_fpath):
+                model = storage.DataFrameReader('csv')(model_fpath)
+                if utils.path_exists(model_legend_fpath):
                     with open(model_legend_fpath, 'r') as f:
                         model_legend = f.read().splitlines()
                 else:

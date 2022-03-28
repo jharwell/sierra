@@ -102,7 +102,9 @@ setup(
             "sphinx-argparse",
             "sphinx-tabs",
             "sphinxcontrib-napoleon",
+            "sphinx-last-updated-by-git"
             "autoapi",
+            "graphviz"
         ]
     },
     python_requires=">=3.9",

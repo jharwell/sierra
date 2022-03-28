@@ -28,9 +28,17 @@ import sierra.core.variables.batch_criteria as bc
 
 class IExpShellCmdsGenerator(implements.Interface):
     """
-    Interface for classes used to generate the shell cmds to run before
-    :term:`Experiments <Experiment>`, the cmd to run the experiment, and any
-    post-experiment cleanup cmds.
+    Interface for generating the shell cmds to run for an :term:`Experiment`.
+
+    This includes:
+
+    - The cmds to run the prior to the experiment (before any
+      :term:`Experimental Runs <Experimental Run>`).
+
+    - The cmds to run the experiment.
+
+    - Any post-experiment cleanup cmds before the next :term:`Experiment` is
+      run.
 
     Arguments:
 
@@ -70,30 +78,30 @@ class IExpShellCmdsGenerator(implements.Interface):
         Arguments:
             exec_opts: A dictionary containing:
 
-                           - ``jobroot_path`` - The root directory for the batch
-                             experiment.
+                       - ``jobroot_path`` - The root directory for the batch
+                         experiment.
 
-                           - ``exec_resume`` - Is this a resume of a previously
-                             run experiment?
+                       - ``exec_resume`` - Is this a resume of a previously run
+                         experiment?
 
-                           - ``n_jobs`` - How many parallel jobs are allowed per
-                             node?
+                       - ``n_jobs`` - How many parallel jobs are allowed per
+                         node?
 
-                           - ``joblog_path`` - The logfile for output for the
-                             experiment run cmd (different than the
-                             :term:`Project` code).
+                       - ``joblog_path`` - The logfile for output for the
+                         experiment run cmd (different than the :term:`Project`
+                         code).
 
-                           - ``cmdfile_stem_path`` - Stem of the file containing
-                             the launch cmds to run (one per line), all the way
-                             up to but not including the extension.
+                       - ``cmdfile_stem_path`` - Stem of the file containing the
+                         launch cmds to run (one per line), all the way up to
+                         but not including the extension.
 
-                           - ``cmdfile_ext`` - Extension of files containing the
-                             launch cmds to run.
+                       - ``cmdfile_ext`` - Extension of files containing the
+                         launch cmds to run.
 
-                           - ``nodefile`` - Path to file containing compute
-                             resources for SIERRA to use to run experiments. See
-                             ``--nodefile`` and :envvar:`SIERRA_NODEFILE` for
-                             details.
+                       - ``nodefile`` - Path to file containing compute
+                         resources for SIERRA to use to run experiments. See
+                         ``--nodefile`` and :envvar:`SIERRA_NODEFILE` for
+                         details.
 
         """
         raise NotImplementedError
@@ -113,11 +121,15 @@ class IExpShellCmdsGenerator(implements.Interface):
 
 
 class IExpRunShellCmdsGenerator(implements.Interface):
-    """Generate the command(s) to launch your code within your new execution
-    environment, given the path to an :term:`Experimental Run` input file. There
-    may be cases where you need additional logic beyond "just" the launch
-    command, hence this class.
+    """Interface for generating the shell cmds to run for an :term:`Experimental Run`.
 
+    This includes:
+
+    - The cmds to run the prior to the run.
+
+    - The cmds to executed the experimental run.
+
+    - Any post-run cleanup cmds before the run is executed.
 
     Depending on your environment, you may want to use SIERRA_ARCH (either in
     this function or your dispatch)to chose a version of your simulator compiled
@@ -198,6 +210,10 @@ class IExpRunShellCmdsGenerator(implements.Interface):
 
 
 class IParsedCmdlineConfigurer(implements.Interface):
+    """
+    Modify  arguments as needed to for the platform or execution environment.
+    """
+
     def __init__(self, exec_env: str) -> None:
         """
         Arguments:
@@ -207,33 +223,33 @@ class IParsedCmdlineConfigurer(implements.Interface):
         raise NotImplementedError
 
     def __call__(self, args: argparse.Namespace) -> None:
-        """
-        Modify/perform sanity checks on the parsed cmdline arguents as needed
-        to support the platform or execution environment.
-        """
         raise NotImplementedError
 
 
 class ICmdlineParserGenerator(implements.Interface):
+    """
+    Return the argparse object containing ALL options accessible/relevant to the
+    platform.
+
+    This includes the options for whatever ``--exec-env`` are valid for the
+    platform, making use of the ``parents`` option for the cmdline.
+
+    """
     def __call__() -> argparse.ArgumentParser:
-        """
-        Return the argparse object containing ALL options
-        accessible/relevant to the platform. This includes the options for
-        whatever ``--exec-env`` are valid for the platform, making use of
-        the ``parents`` option for the cmdline.
-        """
+        raise NotImplementedError
 
 
 class IExecEnvChecker(implements.Interface):
-    """
-    Perform any necessary sanity checks for the stage 2 execution environment
-    prior to running experiments. This is needed because stage 2 can run
-    separate from stage 1, and we need to guarantee that the execution
-    environment we verified during stage 1 is still valid.
+    """Perform sanity checks for stage 2 execution environment.
+
+    This is needed because stage 2 can run separate from stage 1, and we need to
+    guarantee that the execution environment we verified during stage 1 is still
+    valid.
 
     Arguments:
 
         cmdopts: Dictionary of parsed cmdline options.
+
     """
 
     def __init__(self, cmdopts: types.Cmdopts) -> None:
@@ -244,10 +260,11 @@ class IExecEnvChecker(implements.Interface):
 
 
 class IExpConfigurer(implements.Interface):
-    """After creating :term:`Experiment` and/or :term:`Experimental Run`
-    definitions during stage 1, perform addition configuration (e.g., creating
-    directories store outputs in if they are not created by the
-    simulator/:term:`Project` code).
+    """Perform addition configuration after creating :term:`Experiments
+    <Experiment>`.
+
+    e.g., creating directories store outputs in if they are not created by the
+    simulator/:term:`Project` code.
 
     Arguments:
 

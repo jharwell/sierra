@@ -15,7 +15,7 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Contains main class implementing stage 3 of the experimental pipeline.
+Classes for implementing stage 3 of the experimental pipeline.
 """
 
 # Core packages
@@ -38,7 +38,7 @@ from sierra.core import types
 
 
 class PipelineStage3:
-    """Implements stage 3 of the experimental pipeline.
+    """Implements stage 3 of the experimental pipeline: processing results.
 
     Processes results of :term:`Experimental Runs <Experimental Run>` within a
     single :term:`Experiment` and across multiple experiments together,

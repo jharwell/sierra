@@ -15,7 +15,7 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Contains main class implementing stage 2 of the experimental pipeline.
+Classes for implementing stage 2 of the experimental pipeline.
 """
 
 # Core packages
@@ -33,12 +33,12 @@ from sierra.core import types
 
 
 class PipelineStage2:
-    """
-    Implements stage 2 of the experimental pipeline.
+    """Implements stage 2 of the experimental pipeline: running experiments.
 
     Runs all experiments in the input root in parallel using GNU Parallel on the
-    provided set of hosts in an HPC environment, or on the local machine. This
-    stage is *NOT* idempotent, for obvious reasons.
+    provided set of hosts in the selected execution environment.
+
+    This stage is *NOT* idempotent, for obvious reasons.
 
     """
 

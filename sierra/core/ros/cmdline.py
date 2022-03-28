@@ -31,7 +31,7 @@ import sierra.core.cmdline as cmd
 
 
 class ROSCmdline(cmd.BaseCmdline):
-    """Defines :term:`ROS` comon command line arguments.
+    """Defines :term:`ROS` common command line arguments.
 
     """
 
@@ -95,6 +95,16 @@ class ROSCmdline(cmd.BaseCmdline):
 
 
 class ROSCmdlineValidator():
+    """
+    Perform checks on parsed ROS cmdline arguments.
+    """
+
     def __call__(self, args: argparse.Namespace) -> None:
         assert args.robot is not None,\
             "You must specify the --robot to use"
+
+
+__api__ = [
+    'ROSCmdline',
+    'ROSCmdlineValidator'
+]

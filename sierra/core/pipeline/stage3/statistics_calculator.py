@@ -44,6 +44,10 @@ from sierra.core import types
 
 
 class GatherSpec:
+    """
+    Data class for specifying .csv files to gather from an :term:`Experiment`.
+    """
+
     def __init__(self, exp_leaf: str, csv_stem: str, csv_leaf: str):
         self.exp_leaf = exp_leaf
         self.csv_stem = csv_stem
@@ -54,14 +58,19 @@ class GatherSpec:
 
 
 class BatchExpParallelCalculator:
-    """
-    Averages the .csv output files for each experiment in the specified batch directory in parallel.
+    """Averages :term:`Output .csv` files for each experiment in the batch.
+
+    In parallel for speed.
 
     Attributes:
+
         main_config: Parsed dictionary of main YAML configuration.
+
         cmdopts: Dictionary parsed cmdline parameters.
-        batch_exp_root: Directory for averaged .csv output (relative to current dir or
-                           absolute).
+
+        batch_exp_root: Directory for averaged .csv output (relative to current
+                        dir or absolute).
+
     """
 
     def __init__(self, main_config: dict, cmdopts: types.Cmdopts):
@@ -399,9 +408,7 @@ class ExpCSVGatherer:
 
 
 class ExpStatisticsCalculator:
-    """Generate statistics from all of :term:`Output .csv` files from a set of
-    :term:`Experimental Runs<Experimental Run>` within a single
-    :term:`Experiment`.
+    """Generate statistics from output files for all runs within an experiment.
 
     .. IMPORTANT:: You *CANNOT* use logging ANYWHERE during processing .csv
        files. Why ? I *think* because of a bug in the logging module itself. If
@@ -479,3 +486,11 @@ class ExpStatisticsCalculator:
             writer = storage.DataFrameWriter(self.avg_opts['storage_medium'])
 
             writer(dfs[ext].fillna(0), opath, index=False)
+
+
+__api__ = [
+    'GatherSpec',
+    'BatchExpParallelCalculator',
+    'ExpCSVGatherer',
+    'ExpStatisticsCalculator'
+]

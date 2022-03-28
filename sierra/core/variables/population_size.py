@@ -27,6 +27,10 @@ from sierra.core.variables import batch_criteria as bc
 
 
 class BasePopulationSize(bc.UnivarBatchCriteria):
+    """
+    Base class for changing the # agents/robots to reduce code duplication.
+    """
+
     def __init__(self, *args, **kwargs) -> None:
         bc.UnivarBatchCriteria.__init__(self, *args, *kwargs)
 
@@ -68,8 +72,7 @@ class BasePopulationSize(bc.UnivarBatchCriteria):
 
 
 class Parser():
-    """A base class parser for use in some platforms for changing the #
-    robots/agents in a given :term:`Experimental Run` and/or :term:`Experiment`.
+    """A base parser for use in changing the # robots/agents.
 
     """
 
@@ -117,5 +120,5 @@ class Parser():
 
 __api__ = [
     'Parser',
-    'BasePopulationSize'
+    'PopulationSize'
 ]

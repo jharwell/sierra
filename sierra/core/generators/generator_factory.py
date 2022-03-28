@@ -30,9 +30,10 @@ from sierra.core import types, config
 
 
 class ControllerGenerator():
-    """
-    Generate changes to an XML input file related to configuring it for a
-    selected ``--controller``.
+    """Generate XML changes for a selected ``--controller``.
+
+    If the specified controller is not found in ``controllers.yaml`` for the
+    loaded :term:`Project`, an assert will be triggered.
     """
 
     def __init__(self,
@@ -41,7 +42,7 @@ class ControllerGenerator():
                  cmdopts: types.Cmdopts,
                  spec: ExperimentSpec) -> None:
         self.controller_config = yaml.load(open(os.path.join(config_root,
-                                                             'controllers.yaml')),
+                                                             config.kYAML['controllers'])),
                                            yaml.FullLoader)
         self.main_config = yaml.load(open(os.path.join(config_root,
                                                        config.kYAML['main'])),
@@ -144,9 +145,7 @@ class ControllerGenerator():
 
 def joint_generator_create(controller, scenario):
     """
-    Given a controller (generator), and a scenario(generator), construct a joint
-    generator class that can be used for experiment generation.
-
+    Combinate controller and scenario XML change generators together.
     """
     joint_name = '+'.join([controller.__class__.__name__,
                            scenario.__class__.__name__])
@@ -196,8 +195,7 @@ def controller_generator_create(controller: str,
                                 cmdopts: types.Cmdopts,
                                 spec: ExperimentSpec):
     """
-    Creates a controller generator from the cmdline specification that exists in
-    one of the configuration files.
+    Creates a controller generator from the cmdline specification.
     """
 
     return type(controller,
@@ -208,6 +206,8 @@ def controller_generator_create(controller: str,
 
 
 __api__ = [
+    'ControllerGenerator',
+
     'joint_generator_create',
     'scenario_generator_create',
     'controller_generator_create',

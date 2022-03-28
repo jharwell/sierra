@@ -32,10 +32,24 @@ import sierra.core.ros.variables.exp_setup as exp
 
 
 class ROSExpDefGenerator():
-    """
+    """Generates XML changes to input files that common to all ROS experiments.
+
+     ROS requires up to 2 input files per run:
+
+    - The launch file containing robot definitions, world definitions (for
+      simulations only).
+
+    - The parameter file for project code (optional).
+
+    Putting everything in 1 file would require extensively using the ROS
+    parameter server which does NOT accept parameters specified in XML--only
+    YAML. So requiring some conventions on the .launch input file seemed more
+    reasonable.
+
     Attributes:
         controller: The controller used for the experiment.
         cmdopts: Dictionary of parsed cmdline parameters.
+
     """
 
     def __init__(self,
@@ -52,23 +66,6 @@ class ROSExpDefGenerator():
         self.logger = logging.getLogger(__name__)
 
     def generate(self) -> XMLLuigi:
-        """
-        Generates XML changes to simulation input files that are common to all
-        experiments.
-
-        ROS requires up to 2 input files per run:
-
-       - The launch file containing robot definitions, world definitions (for
-         simulations only).
-
-       - The parameter file for project code (optional).
-
-       Putting everything in 1 file would require extensively using the
-       ROS parameter server which does NOT accept parameters specified in
-       XML--only YAML. So requiring some conventions on the .launch
-       input file seemed more reasonable.
-
-        """
         exp_def = XMLLuigi(input_fpath=self.template_input_file)
         wr_config = XMLWriterConfig([])
 
@@ -132,9 +129,7 @@ class ROSExpDefGenerator():
 
 class ROSExpRunDefUniqueGenerator:
     """
-    Generate XML changes unique to a experimental run within an experiment
-    targeting a: term: `ROS`- based platform.
-    ARGoS.
+    Generate XML changes unique to a experimental runs for ROS experiments.
 
     These include:
 

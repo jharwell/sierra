@@ -30,15 +30,12 @@ from sierra.core import config
 import sierra.version
 
 
-class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter,
-                    argparse.RawTextHelpFormatter):
-    """
-    Formatter to get (somewhat) better text wrapping of arguments with --help in
-    the terminal.
-    """
-
-
 class SIERRAArgumentParser(argparse.ArgumentParser):
+    """SIERRA's argument parser overriding default argparse behavior.
+
+    Delivers a custom help message without listing options, as the options which
+    SIERRA accepts differs dramatically depending on loaded plugins.
+    """
 
     def print_help(self, file=None):
         if file is None:
@@ -47,14 +44,15 @@ class SIERRAArgumentParser(argparse.ArgumentParser):
         version = sierra.version.__version__
         message = (f"This is SIERRA {version}.\n"
                    "Usage: sierra-cli [OPTION]...\n"
-                   "See the documentation at https://swarm-robotics-sierra.readthedocs.io/en/latest/.")
+                   "See the documentation at "
+                   "https://swarm-robotics-sierra.readthedocs.io/en/latest/, or"
+                   "type 'man sierra' inthe terminal.\n")
         file.write(message + "\n")
 
 
 class BaseCmdline:
     """
-    The base cmdline class for SIERRA cmdline options containing reusable
-    functions.
+    The base cmdline definition class for SIERRA for reusability.
 
     """
     @staticmethod
@@ -78,8 +76,7 @@ class BaseCmdline:
 
 class BootstrapCmdline(BaseCmdline):
     """
-    Defines the cmdline arguments that are used to bootstrap SIERRA. That is,
-    the arguments that are needed to load plugins.
+    Defines the arguments that are used to bootstrap SIERRA/load plugins.
     """
 
     def __init__(self) -> None:
@@ -184,16 +181,17 @@ class BootstrapCmdline(BaseCmdline):
 
 class CoreCmdline(BaseCmdline):
     """
-    Defines the core command line arguments for SIERRA using: class:`argparse`.
+    Defines the core command line arguments for SIERRA using :class:`argparse`.
     """
 
     def __init__(self,
-                 parents: tp.Optional[tp.List[argparse.ArgumentParser]],
+                 parents: tp.Optional[tp.List[SIERRAArgumentParser]],
                  stages: tp.List[int]) -> None:
         self.scaffold_cli(parents)
         self.init_cli(stages)
 
     def init_cli(self, stages: tp.List[int]) -> None:
+        """Define cmdline arguments for stages 1-5."""
         if -1 in stages:
             self.init_multistage()
 
@@ -213,7 +211,11 @@ class CoreCmdline(BaseCmdline):
             self.init_stage5()
 
     def scaffold_cli(self,
-                     parents: tp.Optional[tp.List[argparse.ArgumentParser]]) -> None:
+                     parents: tp.Optional[tp.List[SIERRAArgumentParser]]) -> None:
+        """
+        Scaffold CLI definitions by defining the underlying parser and setting
+                     common argument groups.
+        """
         if parents is not None:
             self.parser = SIERRAArgumentParser(prog='sierra-cli',
                                                parents=parents,
@@ -238,6 +240,9 @@ class CoreCmdline(BaseCmdline):
             'Stage5: General options for controller comparison')
 
     def init_multistage(self) -> None:
+        """
+        Define cmdline arguments which are used in multiple pipeline stages.
+        """
         self.multistage.add_argument("--template-input-file",
                                      metavar="filepath",
                                      help="""
@@ -1069,6 +1074,7 @@ def sphinx_cmdline_stage5():
 
 
 __api__ = [
+    'SIERRAArgumentParser',
     'BaseCmdline',
     'BootstrapCmdline',
     'CoreCmdline',

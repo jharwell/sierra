@@ -37,7 +37,7 @@ from sierra.core import types
 
 class BatchExpParallelImagizer:
     """
-    Generate the images for each experiment in the specified batch directory.
+    Generate  images for each :term:`Experiment` in the :term:`Batch Experiment`.
     """
 
     def __init__(self, main_config: dict, cmdopts: types.Cmdopts) -> None:
@@ -104,13 +104,15 @@ class BatchExpParallelImagizer:
 
 
 class ExpImagizer:
-    """
-    Create images from the averaged ``.csv`` files from an experiment. If no metrics suitable for
-    averaging are found, nothing is done.
+    """Create images from the averaged ``.csv`` files from an experiment.
+
+    If no ``.csv`` files suitable for averaging are found, nothing is done.
 
     Arguments:
         HM_config: Parsed YAML configuration for heatmaps.
+
         imagize_opts: Dictionary of imagizing options.
+
     """
 
     def __init__(self) -> None:
@@ -143,3 +145,9 @@ class ExpImagizer:
             else:
                 self.logger.warning("No match for graph with src_stem=%s found",
                                     imagize_opts['graph_stem'])
+
+
+__api__ = [
+    'BatchExpParallelImagizer',
+    'ExpImagizer'
+]

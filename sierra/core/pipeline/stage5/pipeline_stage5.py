@@ -15,13 +15,13 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Contains main class implementing stage 5 of the experimental pipeline.
+Classes for implementing stage 5 of the experimental pipeline.
 """
 
 # Core packages
 import os
 import typing as tp
-import logging# type: ignore
+import logging  # type: ignore
 
 # 3rd party packages
 import yaml
@@ -35,25 +35,30 @@ from sierra.core import types
 
 
 class PipelineStage5:
-    """Implements stage5 of the experimental pipeline.
+    """Implements stage5 of the experimental pipeline: comparing deliverables.
 
     Can either:
 
-    # . Compare a set of controllers within the same scenario using performance measures specified in
-       YAML configuration.
+    #. Compare a set of controllers within the same scenario using performance
+       measures specified in YAML configuration.
 
-    # . Compare a single controller across a set ofscenarios using performance measures specified in
-       YAML configuration.
+    #. Compare a single controller across a set ofscenarios using performance
+       measures specified in YAML configuration.
 
     This stage is idempotent.
 
     Attributes:
+
         cmdopts: Dictionary of parsed cmdline parameters.
+
         controllers: List of controllers to compare.
+
         main_config: Dictionary of parsed main YAML configuration.
+
         stage5_config: Dictionary of parsed stage5 YAML configuration.
-        output_roots: Dictionary containing output directories for intra- and inter-scenario graph
-                      generation.
+
+        output_roots: Dictionary containing output directories for intra- and
+                      inter-scenario graph generation.
 
     """
 
@@ -68,9 +73,10 @@ class PipelineStage5:
         if self.cmdopts['controllers_list'] is not None:
             self.controllers = self.cmdopts['controllers_list'].split(',')
             self.output_roots = {
-                # We add the controller list to the directory path for the .csv and graph directories so
-                # that multiple runs of stage5 with different controller sets do not overwrite each
-                # other (i.e. make stage5 idempotent).
+                # We add the controller list to the directory path for the .csv
+                # and graph directories so that multiple runs of stage5 with
+                # different controller sets do not overwrite each other
+                # (i.e. make stage5 idempotent).
                 'graphs': os.path.join(self.cmdopts['sierra_root'],
                                        self.cmdopts['project'],
                                        '+'.join(self.controllers) + "-cc-graphs"),
@@ -85,9 +91,10 @@ class PipelineStage5:
         if self.cmdopts['scenarios_list'] is not None:
             self.scenarios = self.cmdopts['scenarios_list'].split(',')
             self.output_roots = {
-                # We add the scenario list to the directory path for the .csv and graph directories so
-                # that multiple runs of stage5 with different scenario sets do not overwrite each other
-                # (i.e. make stage5 idempotent).
+                # We add the scenario list to the directory path for the .csv
+                # and graph directories so that multiple runs of stage5 with
+                # different scenario sets do not overwrite each other (i.e. make
+                # stage5 idempotent).
                 'graphs': os.path.join(self.cmdopts['sierra_root'],
                                        self.cmdopts['project'],
                                        '+'.join(self.scenarios) + "-sc-graphs"),
@@ -103,19 +110,20 @@ class PipelineStage5:
             self.scenarios = []
 
     def run(self, cli_args) -> None:
-        """
-        Runs stage 5 of the experimental pipeline.
+        """Runs stage 5 of the experimental pipeline.
 
         If ``--controller-comparison`` was passed:
 
-        # . :class:`~sierra.core.pipeline.stage5.intra_scenario_comparator.UnivarIntraScenarioComparator` or
-            :class:`~sierra.core.pipeline.stage5.intra_scenario_comparator.BivarIntraScenarioComparator` as
-            appropriate, depending on which type of
-            :class:`~sierra.core.variables.batch_criteria.BatchCriteria` was selected on the cmdline.
+        #. :class:`~sierra.core.pipeline.stage5.intra_scenario_comparator.UnivarIntraScenarioComparator`
+            or
+            :class:`~sierra.core.pipeline.stage5.intra_scenario_comparator.BivarIntraScenarioComparator`
+            as appropriate, depending on which type of
+            :class:`~sierra.core.variables.batch_criteria.BatchCriteria` was
+            selected on the cmdline.
 
         If ``--scenario-comparison`` was passed:
 
-        # . :class:`~sierra.core.pipeline.stage5.inter_scenario_comparator.UnivarInterScenarioComparator`
+        #. :class:`~sierra.core.pipeline.stage5.inter_scenario_comparator.UnivarInterScenarioComparator`
             (only valid for univariate batch criteria currently).
 
         """
@@ -193,10 +201,11 @@ class PipelineStage5:
                          self.scenarios)
 
     def _verify_controllers(self, controllers, cli_args):
-        """
-        Verify that all controllers have run the same set of experiments before doing the
-        comparison. If they have not, it is not `necessarily` an error, but probably should be
-        looked at, so it is only a warning, not fatal.
+        """Verify that all controllers have run the same set of experiments before
+        doing the comparison. If they have not, it is not `necessarily` an
+        error, but probably should be looked at, so it is only a warning, not
+        fatal.
+
         """
         for t1 in controllers:
             for item in os.listdir(os.path.join(self.cmdopts['sierra_root'],

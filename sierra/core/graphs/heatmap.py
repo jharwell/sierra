@@ -30,13 +30,12 @@ import mpl_toolkits.axes_grid1
 import pandas as pd
 
 # Project packages
-import sierra.core.utils
-import sierra.core.config
+from sierra.core import utils, config, storage
 
 
 class Heatmap:
     """
-    Generates a X vs. Y vs. Z heatmap plot of a dataframe in the specified .csv file.
+    Generates a X vs. Y vs. Z heatmap plot of a ``.csv`` file.
 
     If the necessary .csv file does not exist, the graph is not generated.
 
@@ -63,9 +62,9 @@ class Heatmap:
 
         # Optional arguments
         if large_text:
-            self.text_size = sierra.core.config.kGraphTextSizeLarge
+            self.text_size = config.kGraphTextSizeLarge
         else:
-            self.text_size = sierra.core.config.kGraphTextSizeSmall
+            self.text_size = config.kGraphTextSizeSmall
 
         self.transpose = transpose
         self.zlabel = zlabel
@@ -81,18 +80,18 @@ class Heatmap:
         self.logger = logging.getLogger(__name__)
 
     def generate(self) -> None:
-        if not sierra.core.utils.path_exists(self.input_fpath):
+        if not utils.path_exists(self.input_fpath):
             self.logger.debug(
                 "Not generating heatmap: %s does not exist", self.input_fpath)
             return
 
         # Read .csv and create raw heatmap from default configuration
-        data_df = sierra.core.utils.pd_csv_read(self.input_fpath)
+        data_df = storage.DataFrameReader('csv')(self.input_fpath)
         self._plot_df(data_df, self.output_fpath)
 
     def _plot_df(self, df: pd.DataFrame, opath: str) -> None:
-        fig, ax = plt.subplots(figsize=(sierra.core.config.kGraphBaseSize,
-                                        sierra.core.config.kGraphBaseSize))
+        fig, ax = plt.subplots(figsize=(config.kGraphBaseSize,
+                                        config.kGraphBaseSize))
 
         # Transpose if requested
         if self.transpose:
@@ -119,16 +118,16 @@ class Heatmap:
         fig = ax.get_figure()
 
         fig.savefig(opath, bbox_inches='tight',
-                    dpi=sierra.core.config.kGraphDPI)
+                    dpi=config.kGraphDPI)
         # Prevent memory accumulation (fig.clf() does not close everything)
         plt.close(fig)
 
     def _set_graph_size(self, df: pd.DataFrame, fig) -> None:
         if len(df.index) > len(df.columns):
-            xsize = sierra.core.config.kGraphBaseSize
+            xsize = config.kGraphBaseSize
             ysize = xsize * float(len(df.index)) / float(len(df.columns))
         else:
-            ysize = sierra.core.config.kGraphBaseSize
+            ysize = config.kGraphBaseSize
             xsize = ysize * float(len(df.columns)) / float(len(df.index))
 
         fig.set_size_inches(xsize, ysize)
@@ -154,10 +153,12 @@ class Heatmap:
 
 
 class DualHeatmap:
-    """Generates a side-by-side plot of two heataps from a set of .csv files with
-    the specified graph visuals. .csv files must be named
-    as``<input_stem_fpath>_X.csv``, where `X` is non-negative integer. Input
-    ``.csv`` files must be 2D grids of the same cardinality.
+    """Generates a side-by-side plot of two heataps from a set of ``.csv``
+    files.
+
+    ``.csv`` files must be named as``<input_stem_fpath>_X.csv``, where `X` is
+    non-negative integer. Input ``.csv`` files must be 2D grids of the same
+    cardinality.
 
     This graph does not plot standard deviation.
 
@@ -182,14 +183,14 @@ class DualHeatmap:
 
         # Optional arguments
         if kwargs.get('large_text', False):
-            self.text_size = sierra.core.config.kGraphTextSizeLarge
+            self.text_size = config.kGraphTextSizeLarge
         else:
-            self.text_size = sierra.core.config.kGraphTextSizeSmall
+            self.text_size = config.kGraphTextSizeSmall
 
         self.logger = logging.getLogger(__name__)
 
     def generate(self) -> None:
-        dfs = [sierra.core.utils.pd_csv_read(f) for f in glob.glob(
+        dfs = [storage.DataFrameReader('csv')(f) for f in glob.glob(
             self.input_stem_pattern) if re.search('_[0-9]+', f)]
 
         if not dfs or len(dfs) != DualHeatmap.kCardinality:
@@ -199,8 +200,8 @@ class DualHeatmap:
 
         # Scaffold graph
         fig, axes = plt.subplots(ncols=2,
-                                 figsize=(sierra.core.config.kGraphBaseSize * 2.0,
-                                          sierra.core.config.kGraphBaseSize))
+                                 figsize=(config.kGraphBaseSize * 2.0,
+                                          config.kGraphBaseSize))
         y = np.arange(len(dfs[0].columns))
         x = dfs[0].index
         ax1, ax2 = axes
@@ -256,7 +257,7 @@ class DualHeatmap:
         # Output figures
         fig.subplots_adjust(wspace=0.0, hspace=0.0)
         fig.savefig(self.output_fpath, bbox_inches='tight',
-                    dpi=sierra.core.config.kGraphDPI)
+                    dpi=config.kGraphDPI)
         # Prevent memory accumulation (fig.clf() does not close everything)
         plt.close(fig)
 
@@ -307,7 +308,7 @@ class DualHeatmap:
 
 class HeatmapSet():
     """
-    Generates a :class:`Heatmap` plot for each of the specified input/output path pairs.
+    Generates a :class:`Heatmap` plot for each of the specified I/O path pairs.
     """
 
     def __init__(self,

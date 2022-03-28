@@ -40,9 +40,8 @@ from sierra.core import config
 
 
 class BatchExpParallelVideoRenderer:
-    """
-    Render the video for each experiment in the specified batch directory in
-    sequence.
+    """Render the video for each experiment in the batch in sequence.
+
     """
 
     def __init__(self, main_config: dict, cmdopts: types.Cmdopts) -> None:
@@ -138,12 +137,12 @@ class BatchExpParallelVideoRenderer:
 
 
 class ExpVideoRenderer:
-    """
-    Render all frames (.png/.jpg/etc files) in a specified input directory to a
-    video file via ffmpeg, output according to configuration.
+    """Render all images in a specified input directory to a video  via ffmpeg.
 
     Arguments:
+
         main_config: Parsed dictionary of main YAML configuration.
+
         render_opts: Dictionary of render options.
 
     """
@@ -175,4 +174,7 @@ class ExpVideoRenderer:
         p.wait()
 
 
-__api__ = ['BatchExpParallelVideoRenderer', 'ExpVideoRenderer']
+__api__ = [
+    'BatchExpParallelVideoRenderer',
+    'ExpVideoRenderer'
+]

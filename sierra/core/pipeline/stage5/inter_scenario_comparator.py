@@ -14,9 +14,9 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""
-Classes for handling univariate comparisons for a single controller across a set of scenarios for
-stage5 of the experimental pipeline.
+"""Classes for handling univariate comparisons for a single controller across a
+set of scenarios for stage5 of the experimental pipeline.
+
 """
 
 # Core packages
@@ -33,19 +33,17 @@ import pandas as pd
 from sierra.core.graphs.summary_line_graph import SummaryLineGraph
 from sierra.core.variables import batch_criteria as bc
 import sierra.core.root_dirpath_generator as rdg
-import sierra.core.utils
-import sierra.core.config
 import sierra.core.plugin_manager as pm
-from sierra.core import types
+from sierra.core import types, utils, config, storage
 
 
 class UnivarInterScenarioComparator:
-    """
-    Compares a single controller on different performance measures across a set
-    of scenarios using univariate batch criteria, one at a time. Graph
-    generation is controlled via a config file parsed in
-    :class:`~sierra.core.pipeline.stage5.pipeline_stage5.PipelineStage5`. Univariate
-    batch criteria only.
+    """Compares a single controller across a set of scenarios.
+
+    Graph generation is controlled via a config file parsed in
+    :class:`~sierra.core.pipeline.stage5.pipeline_stage5.PipelineStage5`.
+
+    Univariate batch criteria only.
 
     Attributes:
         controller: Controller to use.
@@ -191,16 +189,16 @@ class UnivarInterScenarioComparator:
         """
         istem = dest_stem + "-" + self.controller
         img_opath = os.path.join(self.sc_graph_root, dest_stem) + '-' + \
-            self.controller + sierra.core.config.kImageExt
+            self.controller + config.kImageExt
 
         xticks = criteria.graph_xticks(cmdopts)
         xtick_labels = criteria.graph_xticklabels(cmdopts)
 
         if inc_exps is not None:
-            xtick_labels = sierra.core.utils.exp_include_filter(inc_exps,
-                                                                xtick_labels,
-                                                                criteria.n_exp())
-            xticks = sierra.core.utils.exp_include_filter(
+            xtick_labels = utils.exp_include_filter(inc_exps,
+                                                    xtick_labels,
+                                                    criteria.n_exp())
+            xticks = utils.exp_include_filter(
                 inc_exps, xticks, criteria.n_exp())
 
         SummaryLineGraph(stats_root=self.sc_csv_root,
@@ -260,7 +258,7 @@ class UnivarInterScenarioComparator:
 
         # Some experiments might not generate the necessary performance measure
         # .csvs for graph generation, which is OK.
-        if not sierra.core.utils.path_exists(csv_ipath):
+        if not utils.path_exists(csv_ipath):
             self.logger.warning("%s missing for controller %s",
                                 csv_ipath, self.controller)
             return
@@ -268,7 +266,7 @@ class UnivarInterScenarioComparator:
         # Collect performance measure results. Append to existing dataframe if
         # it exists, otherwise start a new one.
         data_df = self._accum_df(csv_ipath, opath_stem + '.csv', src_stem)
-        sierra.core.utils.pd_csv_write(
+        storage.DataFrameWriter('csv')(
             data_df, opath_stem + '.csv', index=False)
 
         # Collect performance results stddev. Append to existing dataframe if it
@@ -276,7 +274,7 @@ class UnivarInterScenarioComparator:
         stddev_df = self._accum_df(
             stddev_ipath, opath_stem + '.stddev', src_stem)
         if stddev_df is not None:
-            sierra.core.utils.pd_csv_write(
+            storage.DataFrameWriter('csv')(
                 stddev_df, opath_stem + '.stddev', index=False)
 
         # Collect performance results models and legends. Append to existing
@@ -285,7 +283,7 @@ class UnivarInterScenarioComparator:
                                   model_opath_stem + '.model',
                                   src_stem)
         if model_df is not None:
-            sierra.core.utils.pd_csv_write(
+            storage.DataFrameWriter('csv')(
                 model_df, model_opath_stem + '.model', index=False)
             with open(model_opath_stem + '.legend', 'a') as f:
                 _, scenario, _ = rdg.parse_batch_leaf(batch_leaf)
@@ -295,13 +293,13 @@ class UnivarInterScenarioComparator:
                 f.write("{0} Prediction\n".format(kw['scenario_tag']))
 
     def _accum_df(self, ipath: str, opath: str, src_stem: str) -> pd.DataFrame:
-        if sierra.core.utils.path_exists(opath):
-            cum_df = sierra.core.utils.pd_csv_read(opath)
+        if utils.path_exists(opath):
+            cum_df = storage.DataFrameReader('csv')(opath)
         else:
             cum_df = None
 
-        if sierra.core.utils.path_exists(ipath):
-            t = sierra.core.utils.pd_csv_read(ipath)
+        if utils.path_exists(ipath):
+            t = storage.DataFrameReader('csv')(ipath)
             if cum_df is None:
                 cum_df = pd.DataFrame(columns=t.columns)
 

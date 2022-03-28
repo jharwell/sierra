@@ -25,8 +25,9 @@ from sierra.core import types
 
 
 class Parser():
-    """Enforces the cmdline definition of ``--exp-setup``. See
-    :ref:`ln-vars-expsetup` for documentation.
+    """Enforces the cmdline definition of ``--exp-setup``.
+
+    See :ref:`ln-vars-expsetup` for documentation.
 
     """
 
@@ -61,3 +62,8 @@ class Parser():
             ret['n_datapoints'] = int(res.group(0)[1:])
 
         return ret
+
+
+__api__ = [
+    'ExpSetup'
+]

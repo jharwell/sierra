@@ -15,7 +15,7 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Contains main class implementing stage  of the experimental pipeline.
+Classes for implementing stage 1 of the experimental pipeline.
 """
 
 # Core packges
@@ -33,7 +33,7 @@ from sierra.core import types
 
 class PipelineStage1:
     """
-    Implements stage 1 of the pipeline.
+    Implements stage 1 of the pipeline: generating experimental inputs.
 
     Generates a set of XML configuration files from a template suitable for
     launching simulations/real robot controller that contain user-specified

@@ -1,4 +1,4 @@
-** TODO [#A] Create SIERRA pypi package [65%]
+** TODO [#A] Create SIERRA pypi package [70%]
 - [X] Push --scenario to the FORDYCA plugin--not part of core SIERRA
 - [X] Push templates/scripts to the FORDYCA plugin--not part of core SIERRA
 - [X] Make PopulationDensity not coupled to SS,DS,RN,PL block distribution, which it is currently.
@@ -29,8 +29,7 @@
 - [ ] Setup travis for some basic integration tests with the sample project for ARGoS and ROS+Gazebo.
 - [ ] Create interface classes for all plugins--will make documenting easier, as well as help users to find bugs when
       adding plugins
-- [ ] Add docs for the sample project for the rosrobot plugin
-- [ ] Update config tutorials with changes to rosrobot (template input file, etc.)
+- [X] Update config tutorials with changes to rosrobot (template input file, etc.)
 - [ ] Fix random seed generation for rosrobot (shows up in wrong place in post-processed XML file)
 - [ ] Go through API documentation and cleanup what is rendered so it looks nice.
 

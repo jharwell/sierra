@@ -38,6 +38,13 @@ import sierra.core.plugin_manager as pm
 
 
 class ExpShell():
+    """
+    Launch a shell which persists across experimental runs so that running pre-
+    and post-run commands has an effect on the actual commands to execute the
+    run.
+
+    """
+
     def __init__(self) -> None:
         self.initial_env = os.environ
         self.env = self.initial_env
@@ -70,8 +77,7 @@ class ExpShell():
 
 class BatchExpRunner:
     """
-    Runs each experiment in the specified batch experiment directory in sequence
-    using GNU Parallel.
+    Runs each :term:`Experiment` in :term:`Batch Experiment` in sequence.
 
     Attributes:
 
@@ -176,9 +182,11 @@ class BatchExpRunner:
 
 
 class ExpRunner:
-    """Runs the specified # of :term:`Experimental Runs <Experimental Run>` in
-    parallel using GNU Parallel on a provided set of hosts in an HPC
-    environment, or on the current local machine.
+    """
+    Execute each :term:`Experimental Run` in a :term:`Experiment`.
+
+    In parallel if the selected execution environment supports it, otherwise
+    sequentially.
 
     Attributes:
 
@@ -251,3 +259,10 @@ class ExpRunner:
 
         with open(self.exec_times_fpath, 'a') as f:
             f.write('exp' + str(exp_num) + ': ' + str(sec) + '\n')
+
+
+__api__ = [
+    'BatchExpRunner',
+    'ExpRunner',
+    'ExpShell'
+]

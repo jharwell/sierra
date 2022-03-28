@@ -125,5 +125,5 @@ following to get it to work with SIERRA as a :term:`Batch Criteria`:
       base variable. To dynamically create a new class which is derived from
       your ``MyVar`` class, you can use the ``type()`` function.
 
-   See ``<sierra>/core/variables/population_size.py`` for a simple example of
-   this.
+   See ``<sierra>/plugins/argos/variables/population_size.py`` for a simple
+   example of this.

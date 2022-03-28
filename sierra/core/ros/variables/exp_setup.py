@@ -37,6 +37,8 @@ from sierra.core.variables.exp_setup import Parser
 @implements.implements(IBaseVariable)
 class ExpSetup():
     """
+    Defines the experimental setup for ROS experiments.
+
     Attributes:
 
         n_secs_per_run: The :term:`Experimental Run` duration in seconds, NOT

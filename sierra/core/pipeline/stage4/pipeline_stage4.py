@@ -15,7 +15,7 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Contains main class implementing stage 4 of the experimental pipeline.
+Classes for implementing stage 4 of the experimental pipeline.
 """
 
 # Core packages
@@ -38,14 +38,13 @@ import sierra.core.variables.batch_criteria as bc
 
 from sierra.core.pipeline.stage4.video_renderer import BatchExpParallelVideoRenderer
 import sierra.core.plugin_manager as pm
-import sierra.core.config
 from sierra.core.pipeline.stage4.yaml_config_loader import YAMLConfigLoader
+import sierra.core.config
 from sierra.core import types
 
 
 class PipelineStage4:
-    """
-    Implements stage 4 of the experimental pipeline.
+    """Implements stage 4 of the experimental pipeline: generating deliverables.
 
     Generates end-result experimental deliverables within single experiment
     (intra-experiment) and across experiments in a batch (inter-experiment)
@@ -101,7 +100,7 @@ class PipelineStage4:
 
         self.main_config = main_config
         self.controller_config = yaml.load(open(os.path.join(self.cmdopts['project_config_root'],
-                                                             'controllers.yaml')),
+                                                             sierra.core.config.kYAML['controllers'])),
                                            yaml.FullLoader)
         self.logger = logging.getLogger(__name__)
 

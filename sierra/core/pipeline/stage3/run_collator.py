@@ -47,9 +47,10 @@ from sierra.core import types
 
 
 class ExperimentalRunParallelCollator:
-    """Gathers .csv output files from each :term:`Experimental Run` in each
-    :term:`Experiment` for generating deliverables in stage 4 (in parallel for
-    speed).
+    """Gathers :term:`Output .csv` files from each :term:`Experimental Run`.
+
+    Gathered in parallel for each :term:`Experiment` for speed. Used for
+    generating deliverables in stage 4.
 
     """
 
@@ -147,9 +148,7 @@ class ExperimentalRunParallelCollator:
 
 
 class ExperimentalRunCSVGatherer:
-    """Gather necessary :term:`Output .csv` files from all :term:`Experimental Runs
-    <Experimental Run>` within a single :term:`Experiment` so that performance
-    measures can be generated during stage 4.
+    """Gather :term:`Output .csv` files across all runs within an experiment.
 
     This class can be extended/overriden using a :term:`Project` hook. See
     :ref:`ln-tutorials-project-hooks` for details.
@@ -245,10 +244,11 @@ class ExperimentalRunCSVGatherer:
 
 
 class ExperimentalRunCollator:
-    """
-    Collate gathered .csvs together gathered from N :term:`Experimental Runs
-    <Experimental Run>` together into a single :term:`Summary .csv` per
-    experiment with 1 column per run.
+    """Collate gathered :term:`Output .csv` files together (reduce operation).
+
+    :term:`Output .csv`s gathered from N :term:`Experimental Runs <Experimental
+    Run>` are combined together into a single :term:`Summary .csv` per
+    :term:`Experiment` with 1 column per run.
 
     """
 
