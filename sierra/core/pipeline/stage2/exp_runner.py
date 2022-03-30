@@ -57,13 +57,15 @@ class ExpShell():
         stdout, stderr = proc.communicate()
 
         # Only show output if the process failed (i.e., did not return 0)
-        if proc.returncode == 0:
+        if proc.returncode != 0:
+            self.logger.error("Cmd '%s' failed!", spec['cmd'])
+            stdout = '\n' + '\n'.join(stdout.decode('ascii').split('\n')[-10:])
+            stderr = '\n' + '\n'.join(stderr.decode('ascii').split('\n')[-10:])
+            self.logger.error("Cmd stdout (last 10 lines): %s", stdout)
+            self.logger.error("Cmd stderr (last 10 lines): %s", stderr)
+            return False
+        else:
             return True
-
-        self.logger.trace("Cmd stdout: %s", stdout)
-        self.logger.trace("Cmd stderr: %s", stderr)
-
-        return proc.returncode
 
 
 class BatchExpRunner:
@@ -240,7 +242,7 @@ class ExpRunner:
         }
         for spec in self.generator.exec_exp_cmds(exec_opts):
             if not self.shell.run_from_spec(spec):
-                self.logger.error("Check outputs in %s for details",
+                self.logger.error("Check outputs in %s for full details",
                                   exec_opts['scratch_dir'])
 
         elapsed = int(time.time() - start)

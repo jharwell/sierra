@@ -156,7 +156,7 @@ class ParsedCmdlineConfigurer():
                           args.exec_jobs_per_node)
 
 
-@ implements.implements(bindings.IExpRunShellCmdsGenerator)
+@implements.implements(bindings.IExpRunShellCmdsGenerator)
 class ExpRunShellCmdsGenerator():
     def __init__(self,
                  cmdopts: types.Cmdopts,
@@ -217,7 +217,7 @@ class ExpRunShellCmdsGenerator():
         return []
 
 
-@ implements.implements(bindings.IExpShellCmdsGenerator)
+@implements.implements(bindings.IExpShellCmdsGenerator)
 class ExpShellCmdsGenerator():
     def __init__(self,
                  cmdopts: types.Cmdopts,
@@ -245,7 +245,7 @@ class ExpShellCmdsGenerator():
         return []
 
 
-@ implements.implements(bindings.IExpConfigurer)
+@implements.implements(bindings.IExpConfigurer)
 class ExpConfigurer():
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         self.cmdopts = cmdopts
@@ -263,7 +263,7 @@ class ExpConfigurer():
         return 'per-exp'
 
 
-@ implements.implements(bindings.IExecEnvChecker)
+@implements.implements(bindings.IExecEnvChecker)
 class ExecEnvChecker(platform.ExecEnvChecker):
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         super().__init__(cmdopts)
