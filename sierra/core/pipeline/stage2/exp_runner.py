@@ -121,7 +121,7 @@ class BatchExpRunner:
                          self.cmdopts['platform'],
                          self.cmdopts['exec_env'])
 
-        module = pm.SIERRAPluginManager().get_plugin_module(
+        module = pm.pipeline.get_plugin_module(
             self.cmdopts['platform'])
         module.pre_exp_diagnostics(self.cmdopts, self.logger)
 

@@ -475,14 +475,14 @@ class BivarIntraScenarioComparator:
                 "%s missing for controller '%s'", csv_ipath, controller)
             return
 
-        df = storage.DataFrameReader('csv')(csv_ipath)
+        df = storage.DataFrameReader('storage.csv')(csv_ipath)
 
         opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf,
                                                    dest_stem,
                                                    [self.controllers.index(controller)])
 
         csv_opath_stem = os.path.join(self.cc_csv_root, opath_leaf)
-        storage.DataFrameWriter('csv')(
+        storage.DataFrameWriter('storage.csv')(
             df, csv_opath_stem + '.csv', index=False)
 
     def _gen_csvs_for_1D(self,
@@ -521,8 +521,8 @@ class BivarIntraScenarioComparator:
                                      opath_stem=self.cc_csv_root,
                                      n_exp=criteria.criteria2.n_exp())
 
-            n_rows = len(storage.DataFrameReader('csv')(os.path.join(cmdopts['batch_stat_collate_root'],
-                                                                     src_stem + ".csv")).index)
+            n_rows = len(storage.DataFrameReader('storage.csv')(os.path.join(cmdopts['batch_stat_collate_root'],
+                                                                             src_stem + ".csv")).index)
             for i in range(0, n_rows):
                 opath_leaf = LeafGenerator.from_batch_leaf(
                     batch_leaf, dest_stem, [i])
@@ -663,10 +663,10 @@ class BivarIntraScenarioComparator:
                              pattern)
             return
 
-        ref_df = storage.DataFrameReader('csv')(paths[0])
+        ref_df = storage.DataFrameReader('storage.csv')(paths[0])
 
         for i in range(1, len(paths)):
-            df = storage.DataFrameReader('csv')(paths[i])
+            df = storage.DataFrameReader('storage.csv')(paths[i])
 
             if comp_type == 'HMscale':
                 plot_df = df / ref_df
@@ -680,7 +680,7 @@ class BivarIntraScenarioComparator:
                                  leaf) + config.kImageExt
 
             storage.DataFrameWriter(
-                'csv')(plot_df, ipath, index=False)
+                'storage.csv')(plot_df, ipath, index=False)
 
             Heatmap(input_fpath=ipath,
                     output_fpath=opath,
@@ -824,10 +824,10 @@ class StatsPreparer():
                 stat_ipath, stat_opath, all_cols, col_index, inc_exps)
 
             if df is not None:
-                storage.DataFrameWriter('csv')(df,
-                                               os.path.join(self.opath_stem,
-                                                            opath_leaf + config.kStatsExtensions[k]),
-                                               index=False)
+                storage.DataFrameWriter('storage.csv')(df,
+                                                       os.path.join(self.opath_stem,
+                                                                    opath_leaf + config.kStatsExtensions[k]),
+                                                       index=False)
 
     def across_rows(self,
                     opath_leaf: str,
@@ -847,10 +847,10 @@ class StatsPreparer():
             df = self._accum_df_by_row(stat_ipath, stat_opath, index, inc_exps)
 
             if df is not None:
-                storage.DataFrameWriter('csv')(df,
-                                               os.path.join(self.opath_stem,
-                                                            opath_leaf + config.kStatsExtensions[k]),
-                                               index=False)
+                storage.DataFrameWriter('storage.csv')(df,
+                                                       os.path.join(self.opath_stem,
+                                                                    opath_leaf + config.kStatsExtensions[k]),
+                                                       index=False)
 
     def _accum_df_by_col(self,
                          ipath: str,
@@ -859,12 +859,12 @@ class StatsPreparer():
                          col_index: int,
                          inc_exps: tp.Optional[str]) -> pd.DataFrame:
         if utils.path_exists(opath):
-            cum_df = storage.DataFrameReader('csv')(opath)
+            cum_df = storage.DataFrameReader('storage.csv')(opath)
         else:
             cum_df = None
 
         if utils.path_exists(ipath):
-            t = storage.DataFrameReader('csv')(ipath)
+            t = storage.DataFrameReader('storage.csv')(ipath)
 
             if inc_exps is not None:
                 cols_from_index = utils.exp_include_filter(
@@ -895,12 +895,12 @@ class StatsPreparer():
                          index: int,
                          inc_exps: tp.Optional[str]) -> pd.DataFrame:
         if utils.path_exists(opath):
-            cum_df = storage.DataFrameReader('csv')(opath)
+            cum_df = storage.DataFrameReader('storage.csv')(opath)
         else:
             cum_df = None
 
         if utils.path_exists(ipath):
-            t = storage.DataFrameReader('csv')(ipath)
+            t = storage.DataFrameReader('storage.csv')(ipath)
 
             if inc_exps is not None:
                 cols = utils.exp_include_filter(

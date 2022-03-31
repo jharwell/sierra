@@ -86,7 +86,7 @@ class Heatmap:
             return
 
         # Read .csv and create raw heatmap from default configuration
-        data_df = storage.DataFrameReader('csv')(self.input_fpath)
+        data_df = storage.DataFrameReader('storage.csv')(self.input_fpath)
         self._plot_df(data_df, self.output_fpath)
 
     def _plot_df(self, df: pd.DataFrame, opath: str) -> None:
@@ -190,7 +190,7 @@ class DualHeatmap:
         self.logger = logging.getLogger(__name__)
 
     def generate(self) -> None:
-        dfs = [storage.DataFrameReader('csv')(f) for f in glob.glob(
+        dfs = [storage.DataFrameReader('storage.csv')(f) for f in glob.glob(
             self.input_stem_pattern) if re.search('_[0-9]+', f)]
 
         if not dfs or len(dfs) != DualHeatmap.kCardinality:

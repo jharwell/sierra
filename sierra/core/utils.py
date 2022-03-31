@@ -323,7 +323,7 @@ def get_n_robots(main_config: types.YAMLDict,
     """
     Get the # robots used for a specific :term:`Experiment`.
     """
-    module = pm.SIERRAPluginManager().get_plugin_module(cmdopts['platform'])
+    module = pm.pipeline.get_plugin_module(cmdopts['platform'])
 
     # Get # robots to send to shell cmds generator. We try:
     #

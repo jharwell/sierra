@@ -76,6 +76,7 @@ class BatchExpParallelCalculator:
     def __init__(self, main_config: dict, cmdopts: types.Cmdopts):
         self.main_config = main_config
         self.cmdopts = cmdopts
+        self.logger = logging.getLogger(__name__)
 
     def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
 
@@ -113,25 +114,30 @@ class BatchExpParallelCalculator:
             gatherq.put((self.cmdopts['batch_output_root'], leaf))
 
         # Start some threads gathering .csvs first to get things rolling.
+        self.logger.debug("Starting %d gatherers", n_gatherers)
         gathered = [pool.apply_async(BatchExpParallelCalculator._gather_worker,
                                      (gatherq,
                                       processq,
                                       self.main_config,
                                       avg_opts)) for i in range(0, n_gatherers)]
 
+        self.logger.debug("Starting %d processors", n_processors)
         processed = [pool.apply_async(BatchExpParallelCalculator._process_worker,
                                       (processq,
                                        self.main_config,
                                        self.cmdopts['batch_stat_root'],
                                        avg_opts)) for i in range(0, n_processors)]
 
-        # To capture the otherwise silent crashes when something goes wrong in worker threads. Any
-        # assertions will show and any exceptions will be re-raised.
+        # To capture the otherwise silent crashes when something goes wrong in
+        # worker threads. Any assertions will show and any exceptions will be
+        # re-raised.
+        self.logger.debug("Waiting for threads to finish")
         [g.get() for g in gathered]
         [p.get() for p in processed]
 
         pool.close()
         pool.join()
+        self.logger.debug("All threads finished")
 
     @staticmethod
     def _gather_worker(gatherq: mp.Queue,
@@ -146,7 +152,8 @@ class BatchExpParallelCalculator:
         # margin).
         timeout = 3
         got_item = False
-        while True:
+        n_tries = 0
+        while n_tries < 2:
             try:
                 batch_output_root, exp = gatherq.get(True, timeout)
                 ExpCSVGatherer(main_config, avg_opts,
@@ -159,6 +166,7 @@ class BatchExpParallelCalculator:
                     break
                 else:
                     timeout *= 2
+                    n_tries += 1
 
     @staticmethod
     def _process_worker(processq: mp.Queue,
@@ -173,7 +181,8 @@ class BatchExpParallelCalculator:
         # margin).
         timeout = 3
         got_item = False
-        while True:
+        n_tries = 0
+        while n_tries < 2:
             try:
                 item = processq.get(True, timeout)
                 key = list(item.keys())[0]
@@ -189,6 +198,7 @@ class BatchExpParallelCalculator:
                     break
                 else:
                     timeout *= 2
+                    n_tries += 1
 
 
 class ExpCSVGatherer:

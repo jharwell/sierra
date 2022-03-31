@@ -27,7 +27,6 @@ import sys
 import logging  # type: tp.Any
 
 # 3rd party packages
-from singleton_decorator import singleton
 
 # Project packages
 from sierra.core import types
@@ -99,6 +98,7 @@ class BasePluginManager():
             return self.loaded[name]
         except KeyError:
             self.logger.fatal("No such plugin '%s'", name)
+            self.logger.fatal("Loaded plugins: %s", self.loaded)
             raise
 
     def get_plugin_module(self, name: str) -> types.ModuleType:
@@ -106,6 +106,7 @@ class BasePluginManager():
             return self.loaded[name]['module']
         except KeyError:
             self.logger.fatal("No such plugin '%s'", name)
+            self.logger.fatal("Loaded plugins: %s", self.loaded)
             raise
 
     def has_plugin(self, name: str) -> bool:
@@ -119,12 +120,12 @@ class FilePluginManager(BasePluginManager):
 
     """
 
-    def __init__(self, search_root: str) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self.search_root = search_root
+        self.search_root = None
 
-    def initialize(self, project: str) -> None:
-        pass
+    def initialize(self, project: str, search_root: str) -> None:
+        self.search_root = search_root
 
     def available_plugins(self) -> tp.Dict[str, tp.Dict]:
         """
@@ -229,17 +230,17 @@ class ProjectPluginManager(BasePluginManager):
 
 
 class CompositePluginManager(BasePluginManager):
-    def __init__(self, search_path: tp.List[str]) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self.search_path = search_path
-        self.logger.debug("Using plugin search path %s", self.search_path)
         self.components = []
 
     def loaded_plugins(self):
         return self.loaded.copy()
 
-    def initialize(self, project: str) -> None:
-        for d in self.search_path:
+    def initialize(self, project: str, search_path: tp.List[str]) -> None:
+        self.logger.debug("Initializing with plugin search path %s",
+                          search_path)
+        for d in search_path:
             project_path = os.path.join(d, project)
 
             if os.path.exists(project_path):
@@ -260,14 +261,9 @@ class CompositePluginManager(BasePluginManager):
         return plugins
 
 
-@singleton
-class SIERRAPluginManager(CompositePluginManager):
-    pass
-
-
-@singleton
-class ModelPluginManager(FilePluginManager):
-    pass
+# Singletons
+pipeline = CompositePluginManager()
+models = FilePluginManager()
 
 
 def module_exists(name: str) -> bool:

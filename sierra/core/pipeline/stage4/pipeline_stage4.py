@@ -187,20 +187,19 @@ class PipelineStage4:
                          self.cmdopts['project'])
 
         self.models_config = yaml.load(open(project_models), yaml.FullLoader)
-        models_pm = pm.ModelPluginManager(self.cmdopts['project_model_root'])
-        models_pm.initialize("")
+        pm.models.initialize(self.cmdopts['project_model_root'])
 
         # All models present in the .yaml file are enabled/set to run
         # unconditionally
-        for module_name in models_pm.available_plugins():
+        for module_name in pm.models.available_plugins():
             # No models specified--nothing to do
             if self.models_config.get('models') is None:
                 continue
 
             for conf in self.models_config['models']:
                 if conf['pyfile'] == module_name:
-                    models_pm.load_plugin(module_name)
-                    module = models_pm.get_plugin_module(module_name)
+                    pm.models.load_plugin(module_name)
+                    module = pm.models.get_plugin_module(module_name)
                     for avail in module.available_models('intra'):
                         model = getattr(module, avail)(self.main_config, conf)
                         self.models_intra.append(model)

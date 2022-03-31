@@ -79,7 +79,7 @@ class StackedSurfaceGraph:
         self.logger = logging.getLogger(__name__)
 
     def generate(self) -> None:
-        dfs = [storage.DataFrameReader('csv')(f) for f in glob.glob(
+        dfs = [storage.DataFrameReader('storage.csv')(f) for f in glob.glob(
             self.input_stem_pattern + '*.csv') if re.search('_[0-9]+', f)]
 
         if not dfs:  # empty list

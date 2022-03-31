@@ -127,7 +127,7 @@ class Pipeline:
 
         self.cmdopts['plugin_root'] = os.path.join('sierra', 'plugins')
 
-        project = pm.SIERRAPluginManager().get_plugin(self.cmdopts['project'])
+        project = pm.pipeline.get_plugin(self.cmdopts['project'])
         path = os.path.join(project['parent_dir'], self.cmdopts['project'])
         self.cmdopts['project_root'] = path
         self.cmdopts['project_config_root'] = os.path.join(path, 'config')

@@ -45,7 +45,7 @@ class CmdlineParserGenerator():
     """
 
     def __init__(self, platform: str) -> None:
-        module = pm.SIERRAPluginManager().get_plugin_module(platform)
+        module = pm.pipeline.get_plugin_module(platform)
         self.platform = module.CmdlineParserGenerator()
 
     def __call__(self) -> argparse.ArgumentParser:
@@ -72,13 +72,13 @@ class ExpRunShellCmdsGenerator():
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
         self.criteria = criteria
-        module = pm.SIERRAPluginManager().get_plugin_module(
+        module = pm.pipeline.get_plugin_module(
             self.cmdopts['platform'])
         self.platform = module.ExpRunShellCmdsGenerator(self.cmdopts,
                                                         self.criteria,
                                                         n_robots,
                                                         exp_num)
-        module = pm.SIERRAPluginManager().get_plugin_module(
+        module = pm.pipeline.get_plugin_module(
             self.cmdopts['exec_env'])
         self.env = module.ExpRunShellCmdsGenerator(self.cmdopts,
                                                    self.criteria,
@@ -122,11 +122,11 @@ class ExpShellCmdsGenerator():
                  cmdopts: types.Cmdopts,
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
-        module = pm.SIERRAPluginManager().get_plugin_module(
+        module = pm.pipeline.get_plugin_module(
             self.cmdopts['platform'])
         self.platform = module.ExpShellCmdsGenerator(self.cmdopts,
                                                      exp_num)
-        module = pm.SIERRAPluginManager().get_plugin_module(
+        module = pm.pipeline.get_plugin_module(
             self.cmdopts['exec_env'])
         self.env = module.ExpShellCmdsGenerator(self.cmdopts,
                                                 exp_num)
@@ -163,10 +163,10 @@ class ParsedCmdlineConfigurer():
         self.exec_env = exec_env
         self.logger = logging.getLogger(__name__)
 
-        module = pm.SIERRAPluginManager().get_plugin_module(self.platform)
+        module = pm.pipeline.get_plugin_module(self.platform)
         self.platformg = module.ParsedCmdlineConfigurer(exec_env)
 
-        module = pm.SIERRAPluginManager().get_plugin_module(self.exec_env)
+        module = pm.pipeline.get_plugin_module(self.exec_env)
         self.envg = module.ParsedCmdlineConfigurer(exec_env)
 
     def __call__(self, args: argparse.Namespace) -> argparse.Namespace:
@@ -183,8 +183,9 @@ class ParsedCmdlineConfigurer():
         args.__dict__['platform'] = self.platform
         self.platformg(args)
 
-        assert args.exec_jobs_per_node is not None, \
-            "# parallel jobs can't be None"
+        if any(stage in args.pipeline for stage in [2]):
+            assert args.exec_jobs_per_node is not None, \
+                "# parallel jobs can't be None"
 
         return args
 
@@ -201,7 +202,7 @@ class ExpConfigurer():
 
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         self.cmdopts = cmdopts
-        module = pm.SIERRAPluginManager().get_plugin_module(cmdopts['platform'])
+        module = pm.pipeline.get_plugin_module(cmdopts['platform'])
         self.platform = module.ExpConfigurer(self.cmdopts)
 
     def for_exp_run(self, exp_input_root: str, run_output_dir: str) -> None:
@@ -250,10 +251,10 @@ class ExecEnvChecker():
         self.logger = logging.getLogger(__name__)
 
     def __call__(self) -> None:
-        module = pm.SIERRAPluginManager().get_plugin_module(
+        module = pm.pipeline.get_plugin_module(
             self.cmdopts['platform'])
         module.ExecEnvChecker(self.cmdopts)()
-        module = pm.SIERRAPluginManager().get_plugin_module(
+        module = pm.pipeline.get_plugin_module(
             self.cmdopts['exec_env'])
         module.ExecEnvChecker(self.cmdopts)()
 

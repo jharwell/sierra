@@ -160,10 +160,10 @@ class IntraExpGraphGenerator:
         """
         Runs the following to generate graphs for each experiment in the batch:
 
-        #. :class:`~sierra.core.pipeline.stage4.intra_exp_graph_generator.LinegraphsGenerator`
+        # . :class:`~sierra.core.pipeline.stage4.intra_exp_graph_generator.LinegraphsGenerator`
             to generate linegraphs for each experiment in the batch.
 
-        #. :class:`~sierra.core.pipeline.stage4.intra_exp_graph_generator.HeatmapsGenerator`
+        # . :class:`~sierra.core.pipeline.stage4.intra_exp_graph_generator.HeatmapsGenerator`
             to generate heatmaps for each experiment in the batch.
         """
         LN_targets, HM_targets = self.calc_targets()
@@ -264,14 +264,19 @@ class LinegraphsGenerator:
                                      logyscale=self.cmdopts['plot_log_yscale'],
                                      large_text=self.cmdopts['plot_large_text']).generate()
                 except KeyError:
-                    error = ("Could not generate graph. Possible reasons include: "
-                             "The YAML configuration entry is missing required fields, "
-                             "one or more of {1} missing from '{0}.csv'").format(graph.get('cols',
-                                                                                           "MISSING_KEY"),
-                                                                                 graph.get('src_stem',
-                                                                                           "MISSING_KEY"))
+                    self.logger.fatal(("Could not generate linegraph. "
+                                       "Possible reasons include: "))
 
-                    self.logger.fatal(error)
+                    one = ("1. The YAML configuration entry is missing "
+                           "required fields (e.g., 'cols')")
+                    two = ("2. 'cols' is present in YAML configuration entry "
+                           "and some of {0} are missing from '{1}.csv'").format(graph.get('cols',
+                                                                                          "MISSING_KEY"),
+                                                                                graph.get('src_stem',
+                                                                                          "MISSING_KEY"))
+                    self.logger.fatal(one)
+                    self.logger.fatal(two)
+
                     raise
 
 

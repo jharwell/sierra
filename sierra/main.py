@@ -22,6 +22,7 @@ import logging  # type: tp.Any
 import sys
 from collections.abc import Iterable
 import os
+import multiprocessing as mp
 
 # 3rd party packages
 
@@ -65,8 +66,8 @@ class SIERRA():
         if env is not None:
             plugin_search_path += env.split(os.pathsep)
 
-        manager = pm.SIERRAPluginManager(plugin_search_path)
-        manager.initialize(project)
+        manager = pm.pipeline
+        manager.initialize(project, plugin_search_path)
 
         for p in manager.available_plugins():
             manager.load_plugin(p)
@@ -138,4 +139,8 @@ def main():
 
 
 if __name__ == "__main__":
+    # Necessary on OSX, because python > 3.8 defaults to "spawn" which does not
+    # copy loaded modules, which results in the singleton plugin managers not
+    # working.
+    mp.set_start_method("fork")
     main()

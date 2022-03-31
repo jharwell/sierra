@@ -95,7 +95,7 @@ class StackedLineGraph:
                               input_fpath)
             return
 
-        data_df = storage.DataFrameReader('csv')(input_fpath)
+        data_df = storage.DataFrameReader('storage.csv')(input_fpath)
 
         model = self._read_models()
         stat_dfs = self._read_stats()
@@ -213,7 +213,8 @@ class StackedLineGraph:
             stddev_ipath = os.path.join(self.stats_root,
                                         self.input_stem + config.kStatsExtensions['stddev'])
             if utils.path_exists(stddev_ipath):
-                dfs['stddev'] = storage.DataFrameReader('csv')(stddev_ipath)
+                dfs['stddev'] = storage.DataFrameReader(
+                    'storage.csv')(stddev_ipath)
             else:
                 self.logger.warning(
                     "Stddev file not found for '%s'", self.input_stem)
@@ -227,7 +228,7 @@ class StackedLineGraph:
             model_legend_fpath = os.path.join(
                 self.model_root, self.input_stem + '.legend')
             if utils.path_exists(model_fpath):
-                model = storage.DataFrameReader('csv')(model_fpath)
+                model = storage.DataFrameReader('storage.csv')(model_fpath)
                 if utils.path_exists(model_legend_fpath):
                     with open(model_legend_fpath, 'r') as f:
                         model_legend = f.read().splitlines()

@@ -65,7 +65,7 @@ class ControllerGenerator():
     def _pp_for_tag_add(self,
                         add: tp.List[str],
                         robot_id: int) -> tp.List[str]:
-        module = pm.SIERRAPluginManager().get_plugin_module(
+        module = pm.pipeline.get_plugin_module(
             self.cmdopts['platform'])
         prefix = module.robot_prefix_extract(self.main_config, self.cmdopts)
         add[0] = add[0].replace('__UUID__', f"{prefix}{robot_id}")

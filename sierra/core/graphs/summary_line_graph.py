@@ -124,7 +124,7 @@ class SummaryLineGraph:
                               input_fpath)
             return
 
-        data_dfy = storage.DataFrameReader('csv')(input_fpath)
+        data_dfy = storage.DataFrameReader('storage.csv')(input_fpath)
         model = self._read_models()
 
         fig, ax = plt.subplots()
@@ -273,7 +273,8 @@ class SummaryLineGraph:
                                         self.input_stem + config.kStatsExtensions['stddev'])
 
             if utils.path_exists(stddev_ipath):
-                dfs['stddev'] = storage.DataFrameReader('csv')(stddev_ipath)
+                dfs['stddev'] = storage.DataFrameReader(
+                    'storage.csv')(stddev_ipath)
             else:
                 self.logger.warning(
                     "stddev file not found for '%s'", self.input_stem)
@@ -296,43 +297,46 @@ class SummaryLineGraph:
                                       self.input_stem + config.kStatsExtensions['cilo'])
 
             if utils.path_exists(whislo_ipath):
-                dfs['whislo'] = storage.DataFrameReader('csv')(whislo_ipath)
+                dfs['whislo'] = storage.DataFrameReader(
+                    'storage.csv')(whislo_ipath)
             else:
                 self.logger.warning(
                     "whislo file not found for '%s'", self.input_stem)
 
             if utils.path_exists(whishi_ipath):
-                dfs['whishi'] = storage.DataFrameReader('csv')(whishi_ipath)
+                dfs['whishi'] = storage.DataFrameReader(
+                    'storage.csv')(whishi_ipath)
             else:
                 self.logger.warning(
                     "whishi file not found for '%s'", self.input_stem)
 
             if utils.path_exists(cilo_ipath):
-                dfs['cilo'] = storage.DataFrameReader('csv')(cilo_ipath)
+                dfs['cilo'] = storage.DataFrameReader('storage.csv')(cilo_ipath)
             else:
                 self.logger.warning(
                     "cilo file not found for '%s'", self.input_stem)
 
             if utils.path_exists(cihi_ipath):
-                dfs['cihi'] = storage.DataFrameReader('csv')(cihi_ipath)
+                dfs['cihi'] = storage.DataFrameReader('storage.csv')(cihi_ipath)
             else:
                 self.logger.warning(
                     "cihi file not found for '%s'", self.input_stem)
 
             if utils.path_exists(median_ipath):
-                dfs['median'] = storage.DataFrameReader('csv')(median_ipath)
+                dfs['median'] = storage.DataFrameReader(
+                    'storage.csv')(median_ipath)
             else:
                 self.logger.warning(
                     "median file not found for '%s'", self.input_stem)
 
             if utils.path_exists(q1_ipath):
-                dfs['q1'] = storage.DataFrameReader('csv')(q1_ipath)
+                dfs['q1'] = storage.DataFrameReader('storage.csv')(q1_ipath)
             else:
                 self.logger.warning(
                     "q1 file not found for '%s'", self.input_stem)
 
             if utils.path_exists(q3_ipath):
-                dfs['q3'] = storage.DataFrameReader('csv')(q3_ipath)
+                dfs['q3'] = storage.DataFrameReader('storage.csv')(q3_ipath)
             else:
                 self.logger.warning(
                     "q3 file not found for '%s'", self.input_stem)
@@ -350,7 +354,7 @@ class SummaryLineGraph:
                 self.model_root, self.input_stem + '.legend')
 
             if utils.path_exists(model_fpath):
-                model = storage.DataFrameReader('csv')(model_fpath)
+                model = storage.DataFrameReader('storage.csv')(model_fpath)
                 if utils.path_exists(model_legend_fpath):
                     with open(model_legend_fpath, 'r') as f:
                         model_legend = f.read().splitlines()

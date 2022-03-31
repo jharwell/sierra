@@ -109,9 +109,9 @@ class UnivarGraphCollator:
 
         for stat in stats:
             if stat.all_srcs_exist:
-                storage.DataFrameWriter('csv')(stat.df, os.path.join(stat_collate_root,
-                                                                     target['dest_stem'] + stat.df_ext),
-                                               index=False)
+                storage.DataFrameWriter('storage.csv')(stat.df, os.path.join(stat_collate_root,
+                                                                             target['dest_stem'] + stat.df_ext),
+                                                       index=False)
 
             elif not stat.all_srcs_exist and stat.some_srcs_exist:
                 self.logger.warning("Not all experiments in '%s' produced '%s%s'",
@@ -131,7 +131,7 @@ class UnivarGraphCollator:
 
             stat.some_srcs_exist = True
 
-            data_df = storage.DataFrameReader('csv')(csv_ipath)
+            data_df = storage.DataFrameReader('storage.csv')(csv_ipath)
 
             assert target['col'] in data_df.columns.values,\
                 "{0} not in columns of {1}".format(target['col'],
@@ -195,10 +195,10 @@ class BivarGraphCollator:
 
         for stat in stats:
             if stat.all_srcs_exist:
-                storage.DataFrameWriter('csv')(stat.df,
-                                               os.path.join(stat_collate_root,
-                                                            target['dest_stem'] + stat.df_ext),
-                                               index=False)
+                storage.DataFrameWriter('storage.csv')(stat.df,
+                                                       os.path.join(stat_collate_root,
+                                                                    target['dest_stem'] + stat.df_ext),
+                                                       index=False)
 
             elif stat.some_srcs_exist:
                 self.logger.warning("Not all experiments in '%s' produced '%s%s'",
@@ -221,7 +221,7 @@ class BivarGraphCollator:
 
             stat.some_srcs_exist = True
 
-            data_df = storage.DataFrameReader('csv')(csv_ipath)
+            data_df = storage.DataFrameReader('storage.csv')(csv_ipath)
 
             assert target['col'] in data_df.columns.values,\
                 "{0} not in columns of {1}, which has {2}".format(target['col'],

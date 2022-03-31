@@ -266,7 +266,7 @@ class UnivarInterScenarioComparator:
         # Collect performance measure results. Append to existing dataframe if
         # it exists, otherwise start a new one.
         data_df = self._accum_df(csv_ipath, opath_stem + '.csv', src_stem)
-        storage.DataFrameWriter('csv')(
+        storage.DataFrameWriter('storage.csv')(
             data_df, opath_stem + '.csv', index=False)
 
         # Collect performance results stddev. Append to existing dataframe if it
@@ -274,7 +274,7 @@ class UnivarInterScenarioComparator:
         stddev_df = self._accum_df(
             stddev_ipath, opath_stem + '.stddev', src_stem)
         if stddev_df is not None:
-            storage.DataFrameWriter('csv')(
+            storage.DataFrameWriter('storage.csv')(
                 stddev_df, opath_stem + '.stddev', index=False)
 
         # Collect performance results models and legends. Append to existing
@@ -283,7 +283,7 @@ class UnivarInterScenarioComparator:
                                   model_opath_stem + '.model',
                                   src_stem)
         if model_df is not None:
-            storage.DataFrameWriter('csv')(
+            storage.DataFrameWriter('storage.csv')(
                 model_df, model_opath_stem + '.model', index=False)
             with open(model_opath_stem + '.legend', 'a') as f:
                 _, scenario, _ = rdg.parse_batch_leaf(batch_leaf)
@@ -294,12 +294,12 @@ class UnivarInterScenarioComparator:
 
     def _accum_df(self, ipath: str, opath: str, src_stem: str) -> pd.DataFrame:
         if utils.path_exists(opath):
-            cum_df = storage.DataFrameReader('csv')(opath)
+            cum_df = storage.DataFrameReader('storage.csv')(opath)
         else:
             cum_df = None
 
         if utils.path_exists(ipath):
-            t = storage.DataFrameReader('csv')(ipath)
+            t = storage.DataFrameReader('storage.csv')(ipath)
             if cum_df is None:
                 cum_df = pd.DataFrame(columns=t.columns)
 

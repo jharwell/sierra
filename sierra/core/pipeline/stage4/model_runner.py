@@ -104,7 +104,7 @@ class IntraExpModelRunner:
                                 break
 
                     # Write model .csv file
-                    storage.DataFrameWriter('csv')(
+                    storage.DataFrameWriter('storage.csv')(
                         df, path_stem + '.model', index=False)
 
 
@@ -149,7 +149,7 @@ class InterExpModelRunner:
                 path_stem = os.path.join(cmdopts['batch_model_root'], csv_stem)
 
                 # Write model .csv file
-                storage.DataFrameWriter('csv')(
+                storage.DataFrameWriter('storage.csv')(
                     df, path_stem + '.model', index=False)
 
                 # 1D dataframe -> line graph with legend

@@ -80,7 +80,6 @@ setup(
         "distro",
 
         "coloredlogs",
-        "singleton_decorator",
         "implements",
         "retry",
     ],

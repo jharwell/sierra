@@ -428,7 +428,7 @@ class UnivarBatchCriteria(BatchCriteria):
         else:
             dirs = self.gen_exp_dirnames(cmdopts)
 
-        module = pm.SIERRAPluginManager().get_plugin_module(cmdopts['platform'])
+        module = pm.pipeline.get_plugin_module(cmdopts['platform'])
         for d in dirs:
             exp_def = xml.unpickle(os.path.join(self.batch_input_root,
                                                 d,
@@ -516,7 +516,7 @@ class BivarBatchCriteria(BatchCriteria):
         n_chgs2 = len(self.criteria2.gen_attr_changelist())
         n_adds2 = len(self.criteria2.gen_tag_addlist())
 
-        module = pm.SIERRAPluginManager().get_plugin_module(cmdopts['platform'])
+        module = pm.pipeline.get_plugin_module(cmdopts['platform'])
         for d in dirs:
             exp_def = xml.unpickle(os.path.join(self.batch_input_root,
                                                 d,

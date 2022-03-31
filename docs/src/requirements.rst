@@ -271,8 +271,13 @@ SIERRA Requirements for ROS+Robot Project Code
 -----------------------------------------------
 
 #. :envvar:`ROS_PACKAGE_PATH` is set up properly prior to invoking SIERRA local
-   machine AND all robots are setup such that it is populated on login (i.e., an
+   machine AND all robots are setup such that it is populated on login (e.g., an
    appropriate ``setup.bash`` is sourced in ``.bashrc``).
+
+#. All robots have :envvar:`ROS_IP` or :envvar:`ROS_HOSTNAME` populated, or
+   otherwise can correctly report their address to the ROS master. You can
+   verify this by trying to launch a ROS master on each robot: if it launches
+   without errors, then these values are setup properly.
 
 .. _ln-req-xml:
 
