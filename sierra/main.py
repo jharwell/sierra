@@ -135,12 +135,12 @@ class SIERRA():
 
 
 def main():
-    SIERRA()()
-
-
-if __name__ == "__main__":
     # Necessary on OSX, because python > 3.8 defaults to "spawn" which does not
     # copy loaded modules, which results in the singleton plugin managers not
     # working.
     mp.set_start_method("fork")
+    SIERRA()()
+
+
+if __name__ == "__main__":
     main()

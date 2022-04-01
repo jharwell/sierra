@@ -114,14 +114,18 @@ class BatchExpParallelCalculator:
             gatherq.put((self.cmdopts['batch_output_root'], leaf))
 
         # Start some threads gathering .csvs first to get things rolling.
-        self.logger.debug("Starting %d gatherers", n_gatherers)
+        self.logger.debug("Starting %d gatherers, method=%s",
+                          n_gatherers,
+                          mp.get_start_method())
         gathered = [pool.apply_async(BatchExpParallelCalculator._gather_worker,
                                      (gatherq,
                                       processq,
                                       self.main_config,
                                       avg_opts)) for i in range(0, n_gatherers)]
 
-        self.logger.debug("Starting %d processors", n_processors)
+        self.logger.debug("Starting %d processors, method=%s",
+                          n_processors,
+                          mp.get_start_method())
         processed = [pool.apply_async(BatchExpParallelCalculator._process_worker,
                                       (processq,
                                        self.main_config,
@@ -131,7 +135,7 @@ class BatchExpParallelCalculator:
         # To capture the otherwise silent crashes when something goes wrong in
         # worker threads. Any assertions will show and any exceptions will be
         # re-raised.
-        self.logger.debug("Waiting for threads to finish")
+        self.logger.debug("Waiting for workers to finish")
         [g.get() for g in gathered]
         [p.get() for p in processed]
 
