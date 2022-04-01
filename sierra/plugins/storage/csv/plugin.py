@@ -33,6 +33,9 @@ import pandas as pd
 
 @retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=1.1)  # type:ignore
 def df_read(path: str, **kwargs) -> pd.DataFrame:
+    """
+    Read a dataframe to a ``.csv`` file using pandas.
+    """
     # Always specify the datatype so pandas does not have to infer it--much
     # faster.
     return pd.read_csv(path, sep=';', float_precision='high', **kwargs)
@@ -40,4 +43,7 @@ def df_read(path: str, **kwargs) -> pd.DataFrame:
 
 @retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=1.1)  # type:ignore
 def df_write(df: pd.DataFrame, path: str, **kwargs) -> None:
+    """
+    Write a dataframe to a ``.csv`` file using pandas.
+    """
     df.to_csv(path, sep=';', float_format='%.8f', **kwargs)

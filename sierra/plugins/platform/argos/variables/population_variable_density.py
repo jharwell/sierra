@@ -41,13 +41,11 @@ from sierra.core import types
 
 @implements.implements(bc.IConcreteBatchCriteria)
 class PopulationVariableDensity(vd.VariableDensity):
-    """
-    A univariate range specifiying the population density (ratio of swarm size
-    to arena size) to vary as arena size is held constant. Instead, the
-    ``factory()`` function should be used to dynamically create derived classes
-    expressing the user's desired density ranges.
+    """Defines XML changes for variable population density within a single arena.
 
-    Does not change the # blocks/block manifest.
+    This class is a base class which should (almost) never be used on its
+    own. Instead, the ``factory()`` function should be used to dynamically
+    create derived classes expressing the user's desired density ranges.
 
     """
 
@@ -65,13 +63,13 @@ class PopulationVariableDensity(vd.VariableDensity):
             for density in self.densities:
                 # ARGoS won't start if there are 0 robots, so you always
                 # need to put at least 1.
-                n_robots = int(extent.area() *
+                n_robots = int(self.extent.area() *
                                (self.target_density / 100.0))
                 if n_robots == 0:
                     n_robots = 1
                     self.logger.warning("n_robots set to 1 even though \
                     calculated as 0 for area=%s,density=%s",
-                                        extent.area,
+                                        self.extent.area,
                                         self.target_density)
                 changeset = XMLAttrChangeSet(XMLAttrChange(".//arena/distribute/entity",
                                                            "quantity",

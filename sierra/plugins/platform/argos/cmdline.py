@@ -30,9 +30,8 @@ import sierra.core.cmdline as cmd
 
 
 class PlatformCmdline(cmd.BaseCmdline):
-    """
-    Defines :term:`ARGoS` extensions to the core command line arguments defined
-    in :class:`~sierra.core.cmdline.CoreCmdline`.
+    """Defines :term:`ARGoS` extensions to :class:`~sierra.core.cmdline.CoreCmdline`.
+
     """
 
     def __init__(self,
@@ -316,6 +315,9 @@ class PlatformCmdline(cmd.BaseCmdline):
 
 
 class CmdlineValidator(cmd.CoreCmdlineValidator):
+    """
+    Stub implementation.
+    """
     pass
 
 

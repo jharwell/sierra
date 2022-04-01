@@ -37,6 +37,12 @@ import sierra.core.variables.batch_criteria as bc
 
 
 class CmdlineParserGenerator():
+    """
+    Get the cmdline parser to use with the :term:`ARGoS` platform.
+
+    Combination of the ARGoS cmdline extensions and the HPC cmdline.
+    """
+
     def __call__(self) -> argparse.ArgumentParser:
         parser = hpc.cmdline.HPCCmdline([-1, 1, 2, 3, 4, 5]).parser
         return cmdline.PlatformCmdline(parents=[parser],
@@ -205,7 +211,6 @@ class ExpRunShellCmdsGenerator():
         # ARGoS is pretty good about not printing stuff if we pass these
         # arguments. We don't want to pass > /dev/null so that we get the
         # text of any exceptions that cause ARGoS to crash.
-
         if not self.cmdopts['exec_no_devnull']:
             cmd += ' --log-file /dev/null --logerr-file /dev/null'
 

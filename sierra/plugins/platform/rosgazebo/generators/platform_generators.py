@@ -33,6 +33,7 @@ class PlatformExpDefGenerator(ros.generators.ROSExpDefGenerator):
     """
     Attributes:
         controller: The controller used for the experiment.
+
         cmdopts: Dictionary of parsed cmdline parameters.
     """
 

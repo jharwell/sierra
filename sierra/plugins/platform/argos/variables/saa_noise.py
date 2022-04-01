@@ -35,9 +35,9 @@ from sierra.core import types
 
 @implements.implements(bc.IConcreteBatchCriteria)
 class SAANoise(bc.UnivarBatchCriteria):
-    """A univariate range specifiying the set of noise ranges for Sensors And
-    Actuators (SAA), and possibly swarm size to use to define the batch
-    experiment. This class is a base class which should (almost) never be used
+    """Defines XML changes for noise applied to sensors and actuators (SAA).
+
+    This class is a base class which should (almost) never be used
     on its own. Instead, the ``factory()`` function should be used to
     dynamically create derived classes expressing the user's desired variance
     set.

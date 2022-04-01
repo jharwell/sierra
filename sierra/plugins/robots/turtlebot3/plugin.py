@@ -37,10 +37,10 @@ import sierra.core.variables.batch_criteria as bc
 
 @implements.implements(bindings.IParsedCmdlineConfigurer)
 class ParsedCmdlineConfigurer():
-    """Configure SIERRA for the turtlebot3 execution environment by reading
-    environment variables and modifying the parsed cmdline arguments. Uses the
-    following environment variables (if they are not defined SIERRA will throw
-    an error):
+    """Configure SIERRA for the turtlebot3 execution environment.
+
+    Uses the following environment variables (if they are not defined SIERRA
+    will throw an error):
 
     - ``SIERRA_NODEFILE``
 
@@ -66,8 +66,7 @@ class ParsedCmdlineConfigurer():
 
 @implements.implements(bindings.IExpShellCmdsGenerator)
 class ExpShellCmdsGenerator():
-    """Given a dictionary containing job information, generate the cmds to
-    correctly invoke GNU Parallel to launch ROS on turtlebot3 robots.
+    """Generate the cmds to invoke GNU Parallel to launch ROS on the turtlebots.
 
     """
 

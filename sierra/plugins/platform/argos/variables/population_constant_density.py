@@ -41,10 +41,9 @@ import sierra.core.plugin_manager as pm
 
 @implements.implements(bc.IConcreteBatchCriteria)
 class PopulationConstantDensity(cd.ConstantDensity):
-    """
-    A univariate range specifiying the population density (ratio of swarm size
-    to arena size) to hold constant as swarm and arena size are increased. This
-    class is a base class which should (almost) never be used on its
+    """Defines XML changes for maintain population density across arena sizes.
+
+    This class is a base class which should (almost) never be used on its
     own. Instead, the ``factory()`` function should be used to dynamically
     create derived classes expressing the user's desired density.
 

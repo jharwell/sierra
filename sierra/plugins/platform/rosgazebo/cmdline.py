@@ -32,8 +32,7 @@ from sierra.core import hpc, ros
 
 
 class PlatformCmdline(corecmd.BaseCmdline):
-    """Defines :term:`ROS+Gazebo` extensions to the core command line arguments
-    defined in :class:`~sierra.core.cmdline.CoreCmdline`.
+    """Defines :term:`ROS+Gazebo` extensions to :class:`~sierra.core.cmdline.CoreCmdline`.
 
     """
 
@@ -191,6 +190,9 @@ class PlatformCmdline(corecmd.BaseCmdline):
 
 
 class CmdlineValidator(corecmd.CoreCmdlineValidator):
+    """
+    Sub implementation.
+    """
     pass
 
 

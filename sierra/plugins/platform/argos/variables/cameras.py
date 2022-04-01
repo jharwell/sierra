@@ -37,16 +37,17 @@ import sierra.plugins.platform.argos.variables.exp_setup as exp
 
 @implements.implements(IBaseVariable)
 class QTCameraTimeline():
-    """
-    Defines when/how to switch between different camera perspectives within
-    ARGoS.
+    """Defines when/how to switch between camera perspectives within ARGoS.
 
     Attributes:
         interpolate: Should we interpolate between camera positions on our
                       timeline ?
+
         setup: Simulation experiment definitions.
+
         extents: List of (X,Y,Zs) tuple of dimensions of arena areas to generate
                  camera definitions for.
+
     """
 
     # If this default changes in ARGoS, it will need to be updated here too.

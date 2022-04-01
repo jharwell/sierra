@@ -48,6 +48,10 @@ class ParsedCmdlineConfigurer():
 
 @implements.implements(bindings.IExpShellCmdsGenerator)
 class ExpShellCmdsGenerator():
+    """
+    Generate the command to invoke GNU parallel for local HPC.
+    """
+
     def __init__(self,
                  cmdopts: types.Cmdopts,
                  exp_num: int) -> None:
@@ -87,6 +91,10 @@ class ExpShellCmdsGenerator():
 
 @implements.implements(bindings.IExpRunShellCmdsGenerator)
 class ExpRunShellCmdsGenerator():
+    """
+    Stub implementation.
+    """
+
     def __init__(self,
                  cmdopts: types.Cmdopts,
                  criteria: bc.IConcreteBatchCriteria,
@@ -111,6 +119,10 @@ class ExpRunShellCmdsGenerator():
 
 
 class ExecEnvChecker():
+    """
+    Stub implementation.
+    """
+
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         pass
 

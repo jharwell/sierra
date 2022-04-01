@@ -29,10 +29,10 @@ from sierra.core import types
 
 
 class ConstantDensity(bc.UnivarBatchCriteria):
-    """
-    A univariate range specifiying the density (ratio of SOMETHING to arena
-    size) to hold constant as arena size is increased. This class is a base
-    class which should NEVER be used on its own.
+    """Defines common functionality for all constant-density classes.
+
+    Constant density = SOMETHING/arena size is held constant as arena size is
+    increased. This class is a base class which should NEVER be used on its own.
 
     Attributes:
         target_density: The target density.

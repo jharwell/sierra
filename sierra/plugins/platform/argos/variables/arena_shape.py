@@ -31,12 +31,10 @@ kWALL_WIDTH = 0.4
 @implements.implements(IBaseVariable)
 class ArenaShape():
 
-    """
-    Maps a list of desired arena dimensions specified in (X,Y) tuples to a list
-    of sets of changes from a necessary to modify the arena dimensions to
-    realize each desired area size. This class is a base class which should
-    (almost) never be used on its own. Instead, derived classes defined in this
-    file should be used instead.
+    """Maps a list of desired arena dimensions sets of XML changes.
+
+    This class is a base class which should (almost) never be used on its
+    own. Instead, derived classes defined in this file should be used instead.
 
     Attributes:
         extents: List of arena extents.

@@ -37,10 +37,9 @@ import sierra.core.variables.batch_criteria as bc
 
 @implements.implements(bindings.IParsedCmdlineConfigurer)
 class ParsedCmdlineConfigurer():
-    """
-    Configure SIERRA for ad-hoc HPC by reading environment variables and
-    modifying the parsed cmdline arguments. Uses the following environment
-    variables:
+    """Configure SIERRA for ad-hoc HPC.
+
+    Uses the following environment variables:
 
     - ``SIERRA_NODEFILE``
 
@@ -64,9 +63,7 @@ class ParsedCmdlineConfigurer():
 
 @implements.implements(bindings.IExpShellCmdsGenerator)
 class ExpShellCmdsGenerator():
-    """
-    Given a dictionary containing job information, generate the cmd to correctly
-    invoke GNU Parallel in the ad-hoc HPC environment.
+    """Generate the cmd to invoke GNU Parallel in the ad-hoc HPC environment.
     """
 
     def __init__(self,
@@ -121,6 +118,10 @@ class ExpShellCmdsGenerator():
 
 @implements.implements(bindings.IExpRunShellCmdsGenerator)
 class ExpRunShellCmdsGenerator():
+    """
+    Stub implementation.
+    """
+
     def __init__(self,
                  cmdopts: types.Cmdopts,
                  criteria: bc.IConcreteBatchCriteria,
@@ -145,6 +146,10 @@ class ExpRunShellCmdsGenerator():
 
 
 class ExecEnvChecker():
+    """
+    Stub implementation
+    """
+
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         pass
 

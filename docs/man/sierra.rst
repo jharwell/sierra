@@ -37,10 +37,10 @@ execution before proceeding to the next step. SIERRA should rarely crash with a
 cryptic interpreter error message/exception, but if it does, please report it so
 I can fix it and/or create a better error message.
 
+Errors should be reported to :xref:`SIERRA_GITHUB`.
+
 Return Value
 ============
 
 SIERRA will always return 0, unless it crashes with an exception or a failed
 assert, in which case the return code will be non-zero.
-
-Should be reported to :xref:`SIERRA_GITHUB`.

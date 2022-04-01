@@ -35,10 +35,10 @@ import sierra.core.variables.batch_criteria as bc
 
 @implements.implements(bindings.IParsedCmdlineConfigurer)
 class ParsedCmdlineConfigurer():
-    """
-    Configure SIERRA for SLURM HPC by reading environment variables and
-    modifying the parsed cmdline arguments. Uses the following environment
-    variables (if any of them are not defined an assertion will be triggered):
+    """Configure SIERRA for SLURM HPC.
+
+    Uses the following environment variables (if any of them are not defined an
+    assertion will be triggered):
 
     - ``SLURM_CPUS_PER_TASK``
     - ``SLURM_TASKS_PER_NODE``
@@ -77,9 +77,8 @@ class ParsedCmdlineConfigurer():
 
 @implements.implements(bindings.IExpShellCmdsGenerator)
 class ExpShellCmdsGenerator():
-    """
-    Given a dictionary containing job information, generate the cmd to correctly
-    invoke GNU Parallel in a SLURM HPC environment.
+    """Generate the cmd to correctly invoke GNU Parallel on SLURM HPC.
+
     """
 
     def __init__(self,
@@ -127,6 +126,10 @@ class ExpShellCmdsGenerator():
 
 @implements.implements(bindings.IExpRunShellCmdsGenerator)
 class ExpRunShellCmdsGenerator():
+    """
+    Stub implementation.
+    """
+
     def __init__(self,
                  cmdopts: types.Cmdopts,
                  criteria: bc.IConcreteBatchCriteria,
@@ -151,6 +154,10 @@ class ExpRunShellCmdsGenerator():
 
 
 class ExecEnvChecker():
+    """
+    Stub implementation.
+    """
+
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         pass
 
