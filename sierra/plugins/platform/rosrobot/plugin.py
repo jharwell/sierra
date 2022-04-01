@@ -20,6 +20,7 @@ import logging  # type: tp.Any
 import typing as tp
 import os
 import subprocess
+import pwd
 
 # 3rd party packages
 import implements
@@ -234,15 +235,20 @@ class ExpConfigurer():
         nodes = checker.parse_nodefile(self.cmdopts['nodefile'])
 
         for hostname in nodes:
-            login = nodes[hostname]['login']
-
+            remote_login = nodes[hostname]['login']
+            current_username = pwd.getpwuid(os.getuid())[0]
             checker.check_connectivity(nodes[hostname]['login'],
                                        hostname,
                                        self.cmdopts['robot'])
-            robot_input_root = exp_input_root.replace(os.getlogin(), login)
-            mkdir_cmd = f"ssh {login}@{hostname} mkdir -p {robot_input_root}"
+
+            # In case the user is different on the remote machine than this one,
+            # and the location of the generated experiment is under /home.
+            robot_input_root = exp_input_root.replace(current_username,
+                                                      remote_login)
+
+            mkdir_cmd = f"ssh {remote_login}@{hostname} mkdir -p {robot_input_root}"
             rsync_cmd = (f"rsync -avz -e ssh {exp_input_root}/ "
-                         f"{login}@{hostname}:{robot_input_root}/")
+                         f"{remote_login}@{hostname}:{robot_input_root}/")
             self.logger.trace("Running rsync: %s", rsync_cmd)
             try:
                 self.logger.trace("Running mkdir: %s", mkdir_cmd)
@@ -264,7 +270,7 @@ class ExpConfigurer():
                 raise
 
 
-@ implements.implements(bindings.IExecEnvChecker)
+@implements.implements(bindings.IExecEnvChecker)
 class ExecEnvChecker():
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         pass

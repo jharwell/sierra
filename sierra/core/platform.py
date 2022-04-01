@@ -27,6 +27,7 @@ import shutil
 import argparse
 import socket
 import logging
+import pwd
 
 # 3rd party packages
 import implements
@@ -236,7 +237,7 @@ class ExecEnvChecker():
                     login, hostname = ssh.split('@')
                 else:
                     hostname = ssh
-                    login = os.getlogin()
+                    login = pwd.getpwuid(os.getuid())[0]
 
                 ret[hostname.strip()] = {
                     'n_cores': cores,
