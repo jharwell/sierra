@@ -105,12 +105,10 @@ class ReLu():
 
     .. math::
 
-       \begin{equation}
-            \begin{aligned}
-               f(x) = max(0,x) &= x \textit{if} x > 0
-                               &= 0 \textit{else}
-           \end{aligned}
-       \end{equation}
+       \begin{aligned}
+            f(x) = max(0,x) &= x \textit{if} x > 0
+                            &= 0 \textit{else}
+       \end{aligned}
     """
 
     def __init__(self, x: float):

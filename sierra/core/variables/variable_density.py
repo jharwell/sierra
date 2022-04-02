@@ -63,7 +63,7 @@ class Parser():
     criteria.
     """
 
-    def __call__(self, cli_arg: str) -> types.CLIArgSpec:
+    def __call__(self, criteria_str: str) -> types.CLIArgSpec:
         """
         Returns:
             Dictionary with keys:
@@ -73,25 +73,24 @@ class Parser():
 
         """
         ret = {}
-        # Need to have 3 dot/4 parts
-        assert len(cli_arg.split('.')) == 4,\
-            "Bad criteria formatting in criteria '{0}': must have 4 sections, separated by '.'".format(
-                cli_arg)
+        sections = criteria_str.split('.')
+
+        # remove batch criteria variable name, leaving only the spec
+        sections = sections[1:]
+        assert len(sections) == 3,\
+            ("Spec must have 3 sections separated by '.'; "
+             f"have {len(sections)} from '{criteria_str}'")
 
         # Parse density min
-        chunk = cli_arg.split('.')[1]
-        ret['density_min'] = self._parse_density(chunk, 'minimum')
+        ret['density_min'] = self._parse_density(sections[0], 'minimum')
 
         # Parse density pmax
-        chunk = cli_arg.split('.')[2]
-        ret['density_max'] = self._parse_density(chunk, 'maximum')
+        ret['density_max'] = self._parse_density(sections[1], 'maximum')
 
         # Parse cardinality
-        cardinality = cli_arg.split('.')[3]
-        res = re.search('C[0-9]+', cardinality)
+        res = re.search('C[0-9]+', sections[2])
         assert res is not None, \
-            "Bad cardinality specification in criteria '{0}'".format(
-                cli_arg)
+            "Bad cardinality specification in '{sections[2]}'"
 
         ret['cardinality'] = int(res.group(0)[1:])
 
@@ -101,17 +100,13 @@ class Parser():
     def _parse_density(chunk: str, which: str) -> float:
         res = re.search('[0-9]+', chunk)
         assert res is not None, \
-            "Bad {0} density characteristic specification in criteria '{1}'".format(
-                which,
-                chunk)
+            f"Bad {which} density characteristic specification in '{chunk}'"
 
         characteristic = float(res.group(0))
 
         res = re.search('p[0-9]+', chunk)
         assert res is not None, \
-            "Bad {0} density mantissa specification in criteria '{1}'".format(
-                which,
-                chunk)
+            f"Bad {which} density mantissa specification in '{chunk}'"
 
         mantissa = float("0." + res.group(0)[1:])
 
@@ -119,5 +114,7 @@ class Parser():
 
 
 __api__ = [
-    'VariableDensity'
+    'VariableDensity',
+    'Parser'
+
 ]

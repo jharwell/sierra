@@ -79,30 +79,41 @@ class Parser():
     def __call__(self, criteria_str: str) -> types.CLIArgSpec:
         ret = {
             'max_size': int(),
-            'increment_type': str(),
-            'linear_increment': None,
+            'model': str(),
+            'cardinality': None,
         }  # type: tp.Dict[str, tp.Union[int, str, None]]
 
         sections = criteria_str.split('.')
-        assert len(sections) == 2,\
-            "Cmdline spec must have 2 sections separated by '.'"
+
+        # remove batch criteria variable name, leaving only the spec
+        sections = sections[1:]
+        assert len(sections) >= 1 and len(sections) <= 2,\
+            ("Spec must have 1 or 2 sections separated by '.'; "
+             f"have {len(sections)} from '{criteria_str}'")
 
         # Parse increment type
-        res = re.search("Log|Linear", sections[1])
+        res = re.search("Log|Linear", sections[0])
         assert res is not None, \
-            f"Bad size increment spec in criteria section '{sections[2]}'"
-        ret['increment_type'] = res.group(0)
+            f"Bad size increment spec in criteria section '{sections[0]}'"
+        ret['model'] = res.group(0)
 
         # Parse max size
-        res = re.search("[0-9]+", sections[1])
+        res = re.search("[0-9]+", sections[0])
         assert res is not None, \
-            "Bad population max in criteria section '{sections[2]}'"
+            "Bad population max in criteria section '{sections[0]}'"
         ret['max_size'] = int(res.group(0))
 
-        # Set linear_increment if needed
-        if ret['increment_type'] == 'Linear':
-            ret['linear_increment'] = int(
-                ret['max_size'] / 10.0)  # type: ignore
+        # Parse cardinality for linear models
+        if ret['model'] == 'Linear':
+            if len(sections) == 2:
+                res = re.search("C[0-9]+", sections[1])
+                assert res is not None, \
+                    "Bad cardinality in criteria section '{sections[1]}'"
+                ret['cardinality'] = int(res.group(0)[1:])
+            else:
+                ret['cardinality'] = int(ret['max_size'] / 10.0)   # type: ignore
+        elif ret['model'] == 'Log':
+            ret['cardinality'] = len(range(0, int(math.log2(ret["max_size"])) + 1))
 
         return ret
 
@@ -110,10 +121,11 @@ class Parser():
         """
         Generates the swarm sizes for each experiment in a batch.
         """
-        if attr["increment_type"] == 'Linear':
-            return [attr["linear_increment"] * x for x in range(1, 11)]
-        elif attr["increment_type"] == 'Log':
-            return [2 ** x for x in range(0, int(math.log2(attr["max_size"])) + 1)]
+        if attr["model"] == 'Linear':
+            increment = int(attr['max_size'] / attr['cardinality'])
+            return [increment * x for x in range(1, attr['cardinality'] + 1)]
+        elif attr["model"] == 'Log':
+            return [2 ** x for x in range(0, attr['cardinality'])]
         else:
             assert False
 

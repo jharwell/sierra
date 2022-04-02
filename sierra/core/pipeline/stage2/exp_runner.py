@@ -237,6 +237,10 @@ class ExpRunner:
         scratch_root = os.path.join(self.cmdopts['batch_scratch_root'],
                                     exp)
         utils.dir_create_checked(scratch_root, exist_ok=True)
+
+        assert self.cmdopts['exec_jobs_per_node'] is not None, \
+            "# parallel jobs can't be None"
+
         exec_opts = {
             'exp_input_root': exp_input_root,
             'work_dir': wd,

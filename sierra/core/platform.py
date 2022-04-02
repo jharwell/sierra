@@ -184,10 +184,6 @@ class ParsedCmdlineConfigurer():
         args.__dict__['platform'] = self.platform
         self.platformg(args)
 
-        if any(stage in args.pipeline for stage in [2]):
-            assert args.exec_jobs_per_node is not None, \
-                "# parallel jobs can't be None"
-
         return args
 
 
