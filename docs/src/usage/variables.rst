@@ -30,11 +30,12 @@ Cmdline Syntax
 
 - ``ticks_per_sec`` - How many times each controller will be run per second.
 
-- ``n_datapoints`` - # datapoints per :term:`Experimental Run`, to be captured;
+- ``n_datapoints`` - # datapoints per :term:`Experimental Run` to be captured;
   the capture interval (if configurable) should be adjusted in
-  :term:`Project` -derived class from the platform ``ExpSetup`` class
-  (:class:`sierra.plugins.platform.argos.variables.exp_setup.ExpSetup` for
-  :term:`ARGoS` for example).
+  :term:`Project`\-derived class from the platform
+  :class:`sierra.core.variables.exp_setup.ExpSetup` (e.g.,
+  :class:`sierra.plugins.platform.argos.variables.exp_setup.ExpSetup` for
+  :term:`ARGoS`).
 
 Examples
 --------
@@ -42,8 +43,8 @@ Examples
 - ``exp_setup.T1000``: Experimental run will be 1,000 seconds long and have
   1,000*5=5,000 timesteps, with default (50) # datapoints.
 
-- ``exp_setup.T2000.N100``: Experimental run will be 2,000 seconds long and
-  have 2,000*5=10,000 timesteps, with 100 datapoints (1 every 20 seconds/100
+- ``exp_setup.T2000.N100``: Experimental run will be 2,000 seconds long and have
+  2,000*5=10,000 timesteps, with 100 datapoints (1 every 20 seconds/100
   timesteps).
 
 - ``exp_setup.T10000.K10``: Experimental run will be 10,000 seconds long, and

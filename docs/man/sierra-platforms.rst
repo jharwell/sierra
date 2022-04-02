@@ -2,7 +2,6 @@
 SIERRA Platforms
 ================
 
-
 .. toctree::
 
    /src/platform/argos/index.rst
