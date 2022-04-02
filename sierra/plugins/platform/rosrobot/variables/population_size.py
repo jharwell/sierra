@@ -123,7 +123,7 @@ class PopulationSize(population_size.BasePopulationSize):
         return ['exp' + str(x) for x in range(0, len(adds))]
 
     def n_robots(self, exp_num: int) -> int:
-        return int(len(self.tag_adds[exp_num]) / len(self.tag_adds[0]))
+        return self.sizes[exp_num]
 
 
 def factory(cli_arg: str,

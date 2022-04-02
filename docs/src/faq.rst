@@ -84,7 +84,7 @@ FAQ
    which runs crashed/did not finish/etc as a result of errors in the project
    C++ library. For later runs, or runs in which you are generating outputs for
    rendering, this is unnecessary, and can be disabled with
-   ``--no-verify-results``.
+   ``--skip-verify-results``.
 
 #. Q: SIERRA does not overwrite the input configuration for my experiment/SIERRA
    won't run my experiments again after they run the first time--why?

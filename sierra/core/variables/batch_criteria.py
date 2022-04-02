@@ -372,7 +372,8 @@ class BatchCriteria():
 
         # This will be the "template" input file used to generate the input
         # files for each experimental run in the experiment
-        wr_config = xml.XMLWriterConfig([{'src_root': '.',
+        wr_config = xml.XMLWriterConfig([{'src_parent': None,
+                                          'src_tag': '.',
                                           'opath_leaf': None,
                                           'create_tags': None,
                                           'dest_parent': None

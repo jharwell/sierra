@@ -89,7 +89,7 @@ class BatchExpParallelCalculator:
 
         avg_opts = {
             'template_input_leaf': template_input_leaf,
-            'no_verify_results': self.cmdopts['no_verify_results'],
+            'skip_verify_results': self.cmdopts['skip_verify_results'],
             'dist_stats': self.cmdopts['dist_stats'],
             'project_imagizing': self.cmdopts['project_imagizing'],
             'processing_mem_limit': self.cmdopts['processing_mem_limit'],
@@ -214,7 +214,6 @@ class ExpCSVGatherer:
         main_config: Parsed dictionary of main YAML configuration.
         template_input_leaf: Leaf (i.e. no preceding path) to the template XML
                              configuration file for the experiment.
-        no_verify: Should result verification be skipped?
 
     """
 
@@ -249,7 +248,7 @@ class ExpCSVGatherer:
 
     def __call__(self):
         """Process the CSV files found in the output save path"""
-        if not self.gather_opts['no_verify_results']:
+        if not self.gather_opts['skip_verify_results']:
             self._verify_exp()
 
         self.logger.info('Processing .csvs: %s...', self.exp_leaf)
@@ -437,10 +436,12 @@ class ExpStatisticsCalculator:
        sucks.
 
     Attributes:
+
         main_config: Parsed dictionary of main YAML configuration.
+
         template_input_leaf: Leaf (i.e. no preceding path) to the template XML
                              configuration file for the experiment.
-        no_verify: Should result verification be skipped?
+
         exp_output_root: Directory for averaged .csv output (relative to current
                          dir or absolute).
 

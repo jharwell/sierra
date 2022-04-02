@@ -415,7 +415,9 @@ class CoreCmdline(BaseCmdline):
                                     If ``--platform`` is a simulator and
                                     ``--exec-env`` is something other than
                                     ``hpc.local`` then it will be used to
-                                    determine the concurrency of experimental runs.
+                                    determine the concurrency of experimental
+                                    runs.
+
                                      """ + self.stage_usage_doc([1, 2]))
 
         self.multistage.add_argument("--no-collate",
@@ -474,7 +476,7 @@ class CoreCmdline(BaseCmdline):
         Define cmdline arguments for stage 3.
         """
 
-        self.stage3.add_argument('--no-verify-results',
+        self.stage3.add_argument('--skip-verify-results',
                                  help="""
 
                                  If passed, then the verification step will be

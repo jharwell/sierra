@@ -49,27 +49,68 @@ class PlatformCmdline(cmd.BaseCmdline):
                                                   add_help=False,
                                                   allow_abbrev=False)
 
+        self.scaffold_cli()
         self.init_cli(stages)
 
+    def scaffold_cli(self) -> None:
+        self.multistage = self.parser.add_argument_group('Multi-stage options',
+                                                         'Options which are used in multiple pipeline stages')
+        self.stage1 = self.parser.add_argument_group('Stage1: Experiment generation')
+        self.stage2 = self.parser.add_argument_group('Stage2: Experiment execution'
+                                                     'For running real robot experiments')
+
     def init_cli(self, stages: tp.List[int]) -> None:
+        if -1 in stages:
+            self.init_multistage()
+
+        if 1 in stages:
+            self.init_stage1()
+
         if 2 in stages:
             self.init_stage2()
 
+    def init_multistage(self) -> None:
+        self.multistage.add_argument("--skip-online-check",
+                                     help="""
+
+                                     If passed, then the usual 'is this robot
+                                     online' checks will be skipped.
+
+                                     """ + self.stage_usage_doc([1, 2]),
+                                     action='store_true')
+
+    def init_stage1(self) -> None:
+        self.stage1.add_argument("--skip-sync",
+                                 help="""
+
+                                 If passed, then the generated experiment will not
+                                 be synced to robots. This is useful when:
+
+                                 - You are developing your :term:`Project` and
+                                   just want to check locally if the experiment
+                                   is being generated properly.
+
+                                 - You have a lot of robots and/or the network
+                                   connection from the SIERRA host machine to
+                                   the robots is slow, and copying the
+                                   experiment multiple times as you tweak
+                                   parameters takes a long time.
+
+                                 """ + self.stage_usage_doc([1]),
+                                 action='store_true')
+
     def init_stage2(self) -> None:
-        exp = self.parser.add_argument_group('Experiment options',
-                                             'For real robot experiments')
+        self.stage2.add_argument("--exec-inter-run-pause",
+                                 metavar="SECONDS",
+                                 help="""
 
-        exp.add_argument("--exec-inter-run-pause",
-                         metavar="SECONDS",
-                         help="""
+                                 How long to pause between :term:`Experimental
+                                 Runs <Experimental Run>`, giving you time to
+                                 reset the environment, move robots, etc.
 
-                         How long to pause between :term:`Experimental Runs
-                         <Experimental Run>`, giving you time to reset the
-                         environment, move robots, etc.
-
-                         """ + self.stage_usage_doc([2]),
-                         type=int,
-                         default=config.kROS['inter_run_pause'])
+                                 """ + self.stage_usage_doc([2]),
+                                 type=int,
+                                 default=config.kROS['inter_run_pause'])
 
     @staticmethod
     def cmdopts_update(cli_args, cmdopts: types.Cmdopts) -> None:
@@ -82,6 +123,10 @@ class PlatformCmdline(cmd.BaseCmdline):
         updates = {
             # Multistage
             'exec_jobs_per_node': 1,  # (1 job/robot)
+            'skip_online_check': cli_args.skip_online_check,
+
+            # stage 1
+            'skip_sync': cli_args.skip_sync,
 
             # stage 2
             'exec_resume': False,  # For now...

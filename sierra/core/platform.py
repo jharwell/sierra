@@ -259,6 +259,8 @@ class ExecEnvChecker():
                            login: str,
                            hostname: str,
                            host_type: str) -> bool:
+        self.logger.info("Checking connectivity to %s", hostname)
+
         try:
             hostname = hostname.strip()
             self.logger.debug("Attempt to ping %s, type=%s",
@@ -291,6 +293,7 @@ class ExecEnvChecker():
                               login,
                               hostname)
             raise
+        self.logger.info("Robot@%s online", hostname)
 
     def check_for_simulator(self, name: str):
         if self.exec_env in ['hpc.local', 'hpc.adhoc']:

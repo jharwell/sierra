@@ -49,7 +49,8 @@ class PlatformExpDefGenerator(ros.generators.ROSExpDefGenerator):
         exp_def = super().generate()
 
         exp_def.write_config.add({
-            'src_root': "./master",
+            'src_parent': ".",
+            'src_tag': "master",
             'opath_leaf': "_master" + config.kROS['launch_file_ext'],
             'create_tags': None,
             'dest_parent': None,
@@ -57,7 +58,8 @@ class PlatformExpDefGenerator(ros.generators.ROSExpDefGenerator):
         })
 
         exp_def.write_config.add({
-            'src_root': "./robot",
+            'src_parent': ".",
+            'src_tag': "robot",
             'opath_leaf': "_robots" + config.kROS['launch_file_ext'],
             'create_tags': None,
             'dest_parent': None,

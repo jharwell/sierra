@@ -50,7 +50,13 @@ class PlatformCmdline(corecmd.BaseCmdline):
                                                   add_help=False,
                                                   allow_abbrev=False)
 
+        self.scaffold_cli()
         self.init_cli(stages)
+
+    def scaffold_cli(self) -> None:
+        self.stage1_exp = self.parser.add_argument_group('Stage1: Experiment setup')
+        self.stage1_physics = self.parser.add_argument_group(
+            'Stage1: Configuring Gazebo physics engines')
 
     def init_cli(self, stages: tp.List[int]) -> None:
         if 1 in stages:
@@ -58,112 +64,128 @@ class PlatformCmdline(corecmd.BaseCmdline):
 
     def init_stage1(self) -> None:
         # Experiment options
-        experiment = self.parser.add_argument_group('Stage1: Experiment setup')
         positions_omitted_doc = ("If omitted: effective arena dimensions must "
                                  "be given as part of ``--scenario``.")
 
-        experiment.add_argument("--robot-positions",
+        self.stage1_exp.add_argument("--robot-positions",
 
-                                help="""
+                                     help="""
 
-                                A list of space-separated "X,Y,Z" tuples (no
-                                quotes) passed on the command line as valid
-                                starting positions for the robots within the
-                                world.
-                                """ + self.stage_usage_doc([1],
-                                                           positions_omitted_doc),
-                                nargs='+',
-                                default=[])
+                                     A list of space-separated "X,Y,Z" tuples
+                                     (no quotes) passed on the command line as
+                                     valid starting positions for the robots
+                                     within the world.
+
+                                     """ + self.stage_usage_doc([1],
+                                                                positions_omitted_doc),
+                                     nargs='+',
+                                     default=[])
 
         # Physics engines options
-        physics = self.parser.add_argument_group(
-            'Stage1: Configuring Gazebo physics engines')
+        self.stage1_physics.add_argument("--physics-engine-type",
+                                         choices=['ode', 'bullet',
+                                                  'dart', 'simbody'],
+                                         help="""
 
-        physics.add_argument("--physics-engine-type",
-                             choices=['ode', 'bullet', 'dart', 'simbody'],
-                             help="""
+                                         The type of 3D physics engine to use
+                                         for managing spatial extents within the
+                                         arena, choosing one of the types that
+                                         :term:`Gazebo` supports. A single
+                                         engine instance is used to manage all
+                                         physics in the arena.
 
-                             The type of 3D physics engine to use for managing
-                             spatial extents within the arena, choosing one of
-                             the types that :term:`Gazebo` supports. A single
-                             engine instance is used to manage all physics in
-                             the arena.
+                                         """ + self.stage_usage_doc([1]),
+                                         default='ode')
+
+        self.stage1_physics.add_argument("--physics-iter-per-tick",
+                                         type=int,
+                                         help="""
+
+                                         The # of iterations all physics engines
+                                         should perform per tick each time the
+                                         controller loops are run (the # of
+                                         ticks per second for controller control
+                                         loops is set via ``--exp-setup``).
+
                              """ + self.stage_usage_doc([1]),
-                             default='ode')
+                                         default=config.kGazebo['physics_iter_per_tick'])
 
-        physics.add_argument("--physics-iter-per-tick",
-                             type=int,
-                             help="""
+        self.stage1_physics.add_argument("--physics-n-threads",
+                                         type=int,
+                                         help="""
 
-                             The # of iterations all physics engines should
-                             perform per tick each time the controller loops are
-                             run (the # of ticks per second for controller
-                             control loops is set via ``--exp-setup``).
+                                         Gazebo can group non-interacting
+                                         entities into computational "islands"
+                                         and do the physics updates for those
+                                         islands in parallel each timestep
+                                         (islands) are recomputed after each
+                                         timestep). Gazebo can also parallelize
+                                         the computation of velocity/position
+                                         updates with the computation of
+                                         resolving collisions (i.e., the
+                                         timestep impulse results in one entity
+                                         "inside" another). You can assign
+                                         multiple threads to a pool for
+                                         cumulative use for these two
+                                         parallelization methods (threads will
+                                         be allocated evenly between them). The
+                                         point at which adding more threads will
+                                         start to DECREASE performance depends
+                                         on the complexity of your world, the
+                                         number and type of robots in it, etc.,
+                                         so don't just set this parameter to the
+                                         # of cores for your machine as a
+                                         default.
 
-                             """ + self.stage_usage_doc([1]),
-                             default=config.kGazebo['physics_iter_per_tick'])
+                                         From the Gazebo Parallel Physics
+                                         Report, setting the pool size to the #
+                                         robots/# joint trees in your simulation
+                                         usually gives good results, as long as
+                                         you have more cores available than you
+                                         allocate to this pool (Gazebo has other
+                                         threads too).
 
-        physics.add_argument("--physics-n-threads",
-                             type=int,
-                             help="""
+                                         This only applies if
+                                         ``--physics-engine-type``=ode.
 
-                             Gazebo can group non-interacting entities into
-                             computational "islands" and do the physics updates
-                             for those islands in parallel each timestep
-                             (islands) are recomputed after each
-                             timestep). Gazebo can also parallelize the
-                             computation of velocity/position updates with the
-                             computation of resolving collisions (i.e., the
-                             timestep impulse results in one entity "inside"
-                             another). You can assign multiple threads to a pool
-                             for cumulative use for these two parallelization
-                             methods (threads will be allocated evenly between
-                             them). The point at which adding more threads will
-                             start to DECREASE performance depends on the
-                             complexity of your world, the number and type of
-                             robots in it, etc., so don't just set this
-                             parameter to the # of cores for your machine as a
-                             default.
+                                         A value of 0=no threads.
 
-                             From the Gazebo Parallel Physics Report, setting
-                             the pool size to the # robots/# joint trees in your
-                             simulation usually gives good results, as long as
-                             you have more cores available than you allocate to
-                             this pool (Gazebo has other threads too).
+                                         """ + self.stage_usage_doc([1]),
+                                         default=0)
 
-                             This only applies if ``--physics-engine-type``=ode.
+        self.stage1_physics.add_argument("--physics-ec-threadpool",
+                                         type=int,
+                                         help="""
 
-                             A value of 0=no threads.
-                             """ + self.stage_usage_doc([1]),
-                             default=0)
+                                         Gazebo can parallelize the computation
+                                         of velocity/position updates with the
+                                         computation of resolving collisions
+                                         (i.e., the timestep impulse results in
+                                         one entity "inside" another). You can
+                                         assign multiple threads to a pool for
+                                         cumulative use for this purpose. The
+                                         point at which adding more threads will
+                                         start to DECREASE performance depends
+                                         on the complexity of your world, the
+                                         number and type of robots in it, etc.,
+                                         so don't just set this parameter to the
+                                         # of cores for your machine as a
+                                         default.
 
-        physics.add_argument("--physics-ec-threadpool",
-                             type=int,
-                             help="""
+                                         From the Gazebo Parallel Physics
+                                         Report, setting the pool size to the #
+                                         robots/#joint trees in your simulation
+                                         usually gives good results, as long as
+                                         you have more cores than than you
+                                         allocate to physics (Gazebo has other
+                                         threads too).
 
-                             Gazebo can parallelize the computation of
-                             velocity/position updates with the computation of
-                             resolving collisions (i.e., the timestep impulse
-                             results in one entity "inside" another). You
-                             can assign multiple threads to a pool for
-                             cumulative use for this purpose. The point at which
-                             adding more threads will start to DECREASE
-                             performance depends on the complexity of your
-                             world, the number and type of robots in it, etc.,
-                             so don't just set this parameter to the # of cores
-                             for your machine as a default.
+                                         This only applies if ``--physics-engine-type``=ode.
 
-                             From the Gazebo Parallel Physics Report, setting
-                             the pool size to the # robots/#joint trees in your
-                             simulation usually gives good results, as long as
-                             you have more cores than than you allocate to
-                             physics (Gazebo has other threads too).
+                                         A value of 0=no threads.
 
-                             This only applies if ``--physics-engine-type``=ode.
-
-                             A value of 0=no threads.
-                             """ + self.stage_usage_doc([1]),
-                             default=0)
+                                         """ + self.stage_usage_doc([1]),
+                                         default=0)
 
     @staticmethod
     def cmdopts_update(cli_args: argparse.Namespace,

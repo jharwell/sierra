@@ -40,43 +40,71 @@ class ROSCmdline(cmd.BaseCmdline):
         self.parser = argparse.ArgumentParser(prog='sierra-cli',
                                               add_help=False,
                                               allow_abbrev=False)
-
+        self.scaffold_cli()
         self.init_cli(stages)
 
+    def scaffold_cli(self) -> None:
+        self.multistage = self.parser.add_argument_group('Multi-stage options',
+                                                         'Options which are used in multiple pipeline stages')
+        self.stage1_exp = self.parser.add_argument_group(
+            'Stage1: Experiment generation')
+
     def init_cli(self, stages: tp.List[int]) -> None:
+        if -1 in stages:
+            self.init_multistage()
+
         if 1 in stages:
             self.init_stage1()
 
+    def init_multistage(self) -> None:
+        self.multistage.add_argument("--no-master-node",
+                                     help="""
+
+                                     Do not generate commands for/start a ROS
+                                     master node on the SIERRA host
+                                     machine (which is the ROS master).
+
+                                     This is useful when:
+
+                                     - Using the :term:`ROS+Robot` platform and
+                                       each robot outputs their own metrics to a
+                                       shared filesystem.
+
+                                     - The SIERRA host machine does not have ROS
+                                       installed, and you are doing
+                                       testing/bringup of robots.
+
+                                     """ + self.stage_usage_doc([1, 2]),
+                                     action='store_true')
+
     def init_stage1(self) -> None:
         # Experiment options
-        experiment = self.parser.add_argument_group('Stage1: Experiment setup')
 
-        experiment.add_argument("--exp-setup",
-                                help="""
+        self.stage1_exp.add_argument("--exp-setup",
+                                     help="""
 
-                                Defines experiment run length, ticks per second
-                                for the experiment, # of datapoints to
-                                capture/capture interval for each
-                                simulation. See :ref:`ln-vars-expsetup` for a
-                                full description.
+                                     Defines experiment run length, ticks per
+                                     second for the experiment, # of datapoints
+                                     to capture/capture interval for each
+                                     simulation. See :ref:`ln-vars-expsetup` for
+                                     a full description.
 
-                                 """ + self.stage_usage_doc([1]),
-                                default="exp_setup.T{0}.K{1}.N{2}".format(
-                                    config.kROS['n_secs_per_run'],
-                                    config.kROS['n_ticks_per_sec'],
-                                    config.kExperimentalRunData['n_datapoints_1D']))
+                            """ + self.stage_usage_doc([1]),
+                                     default="exp_setup.T{0}.K{1}.N{2}".format(
+                                         config.kROS['n_secs_per_run'],
+                                         config.kROS['n_ticks_per_sec'],
+                                         config.kExperimentalRunData['n_datapoints_1D']))
 
-        experiment.add_argument("--robot",
+        self.stage1_exp.add_argument("--robot",
+                                     help="""
 
-                                help="""
+                                     The key name of the robot model, which must
+                                     be present in the appropriate section of
+                                     ``main.yaml`` for the :term:`Project`. See
+                                     :ref:`ln-tutorials-project-main-config` for
+                                     details.
 
-                                The key name of the robot model, which must be
-                                present in the appropriate section of
-                                ``main.yaml`` for the :term:`Project`. See
-                                :ref:`ln-tutorials-project-main-config` for
-                                details.
-
-                                """ + self.stage_usage_doc([1]))
+                            """ + self.stage_usage_doc([1]))
 
     @staticmethod
     def cmdopts_update(cli_args, cmdopts: types.Cmdopts) -> None:
@@ -86,9 +114,13 @@ class ROSCmdline(cmd.BaseCmdline):
 
         """
         updates = {
+            # multistagev
+            'no_master_node': cli_args.no_master_node,
+
             # stage 1
             'robot': cli_args.robot,
             'exp_setup': cli_args.exp_setup,
+
         }
 
         cmdopts.update(updates)

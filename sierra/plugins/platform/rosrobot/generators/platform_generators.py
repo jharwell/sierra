@@ -53,7 +53,8 @@ class PlatformExpDefGenerator(ros.generators.ROSExpDefGenerator):
 
         self.logger.debug("Writing separate <master> launch file")
         exp_def.write_config.add({
-            'src_root': './master',
+            'src_parent': '.',
+            'src_tag': 'master',
             'opath_leaf': '_master' + config.kROS['launch_file_ext'],
             'create_tags': None,
             'rename_to': 'launch',
@@ -97,7 +98,8 @@ class PlatformExpRunDefUniqueGenerator(ros.generators.ROSExpRunDefUniqueGenerato
         for i in range(0, n_robots):
             prefix = main_config['ros']['robots'][self.cmdopts['robot']]['prefix']
             exp_def.write_config.add({
-                'src_root': f"./robot/group/[@ns='{prefix}{i}']",
+                'src_parent': "./robot",
+                'src_tag': f"group/[@ns='{prefix}{i}']",
                 'opath_leaf': f'_robot{i}' + config.kROS['launch_file_ext'],
                 'create_tags': [XMLTagAdd(None,
                                           'launch',
@@ -105,7 +107,7 @@ class PlatformExpRunDefUniqueGenerator(ros.generators.ROSExpRunDefUniqueGenerato
                                           False)],
                 'dest_parent': ".",
                 'rename_to': None,
-                'grafts': ["./robot/group/[@ns='sierra']"]
+                'child_grafts': ["./robot/group/[@ns='sierra']"]
             })
 
         self.generate_random(exp_def)

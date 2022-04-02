@@ -166,20 +166,6 @@ class BatchExpRunner:
         for spec in generator.post_exp_cmds():
             shell.run_from_spec(spec)
 
-    def _prerun_diagnostics(self) -> None:
-        if self.cmdopts['platform'] in ['platform.argos', 'platform.rosgazebo']:
-            n_threads_per_job = self.cmdopts['physics_n_threads']
-            n_runs = self.cmdopts['n_runs']
-            n_jobs = self.cmdopts['exec_jobs_per_node']
-            s = "batch_exp_root='%s',runs/exp=%s,threads/job=%s,n_jobs=%s"
-            self.logger.info(s,
-                             self.cmdopts['batch_root'],
-                             n_runs,
-                             n_threads_per_job,
-                             n_jobs)
-        else:
-            assert False
-
 
 class ExpRunner:
     """

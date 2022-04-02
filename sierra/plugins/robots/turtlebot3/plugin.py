@@ -130,32 +130,38 @@ class ExpShellCmdsGenerator():
                                    exec_opts['scratch_dir'],
                                    robots_ipath)
 
-            ros_master = 'parallel ' \
-                '--results {1} ' \
-                '--joblog {0} ' \
-                '--workdir {1} < "{2}"'
+            # If no master is spawned, then we need to wait for this GNU
+            # parallel cmd. If the master is spawned, then we wait for THAT
+            # command; waiting for both results in the master never starting
+            # because that cmd is never run.
+            ret.append({
+                'cmd': robots,
+                'shell': True,
+                'check': True,
+                'wait': self.cmdopts['no_master_node']
+            })
 
-            ros_master_ipath = exec_opts['cmdfile_stem_path'] + \
-                f"_run{i}_master" + exec_opts['cmdfile_ext']
-            ros_master = ros_master.format(os.path.join(exec_opts['scratch_dir'],
-                                                        "parallel.log"),
-                                           exec_opts['scratch_dir'],
-                                           ros_master_ipath)
+            if not self.cmdopts['no_master_node']:
+                ros_master = 'parallel ' \
+                    '--results {1} ' \
+                    '--joblog {0} ' \
+                    '--workdir {1} < "{2}"'
 
-            ret.append(
-                {
-                    'cmd': robots,
-                    'shell': True,
-                    'check': True,
-                    'wait': False
-                })
-            ret.append(
-                {
-                    'cmd': ros_master,
-                    'shell': True,
-                    'check': True,
-                    'wait': True
-                })
+                ros_master_ipath = exec_opts['cmdfile_stem_path'] + \
+                    f"_run{i}_master" + exec_opts['cmdfile_ext']
+                ros_master = ros_master.format(os.path.join(exec_opts['scratch_dir'],
+                                                            "parallel.log"),
+                                               exec_opts['scratch_dir'],
+                                               ros_master_ipath)
+
+                ret.append(
+                    {
+                        'cmd': ros_master,
+                        'shell': True,
+                        'check': True,
+                        'wait': not self.cmdopts['no_master_node']
+                    })
+
             ret.append(
                 {
                     'cmd': ('echo  "{0} seconds until launching next run!"; '
@@ -189,32 +195,7 @@ class ExpRunShellCmdsGenerator():
                       host: str,
                       input_fpath: str,
                       run_num: int) -> tp.List[types.ShellCmdSpec]:
-        if host == 'slave':
-            return []
-
-        # ROS master node
-        exp_dirname = self.criteria.gen_exp_dirnames(self.cmdopts)[self.exp_num]
-        batch_template_path = utils.batch_template_path(self.cmdopts,
-                                                        self.criteria.batch_input_root,
-                                                        exp_dirname)
-
-        master_node = {
-            # --wait tells roslaunch to wait for the configured master to
-            # come up before launch the "master" code.
-            #
-            # 2022/02/28: -p (apparently) tells roslaunch to to CONNECT to a
-            # master at the specified ort, but to LAUNCH a new master at the
-            # specified port. This is not really documented well.
-            'cmd': '{0} --wait {1}_run{2}_master{3};'.format(config.kROS['launch_cmd'],
-                                                             batch_template_path,
-                                                             run_num,
-                                                             config.kROS['launch_file_ext']),
-            'shell': True,
-            'check': True,
-            'wait': True
-        }
-
-        return [master_node]
+        return []
 
     def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
         return []
@@ -233,10 +214,10 @@ class ExecEnvChecker(platform.ExecEnvChecker):
                                      "cores; turtlebots are single core"),
                                     self.cmdopts['nodefile'],
                                     hostname)
-
-            self.check_connectivity(nodes[hostname]['login'],
-                                    hostname,
-                                    'turtlebot3')
+            if not self.cmdopts['skip_online_check']:
+                self.check_connectivity(nodes[hostname]['login'],
+                                        hostname,
+                                        'turtlebot3')
 
 
 __api__ = [

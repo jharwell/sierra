@@ -65,7 +65,8 @@ class PlatformExpDefGenerator():
         experiments.
         """
         # ARGoS uses a single input file
-        wr_config = XMLWriterConfig([{'src_root': '.',
+        wr_config = XMLWriterConfig([{'src_parent': None,
+                                      'src_tag': '.',
                                       'opath_leaf': config.kARGoS['launch_file_ext'],
                                       'create_tags': None,
                                       'dest_parent': None,

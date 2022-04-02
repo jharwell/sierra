@@ -148,7 +148,7 @@ class ExpCreator:
 
         # Perform experiment level configuration AFTER all runs have been
         # generated in the experiment, in case the configuration depends on the
-        # generated launch files
+        # generated launch files.
         platform.ExpConfigurer(self.cmdopts).for_exp(self.exp_input_root)
 
         # Save seeds
@@ -267,6 +267,10 @@ class ExpCreator:
             "All post-exp commands are run in a shell"
         post_cmds = [spec['cmd'] for spec in post_specs]
         self.logger.trace("Post-experiment cmds: %s", post_cmds)
+
+        if len(pre_cmds + exec_cmds + post_cmds) == 0:
+            self.logger.debug(f"Skipping writing {for_host} cmds file: no cmds")
+            return
 
         # If there is 1 cmdfile per experiment, then the pre- and post-exec cmds
         # need to be prepended and appended to the exec cmds on a per-line

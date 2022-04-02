@@ -72,7 +72,8 @@ class ROSExpDefGenerator():
         if exp_def.has_tag('./params'):
             self.logger.debug("Using shared XML parameter file")
             wr_config.add({
-                'src_root': './params',
+                'src_parent': '.',
+                'src_tag': 'params',
                 'opath_leaf': config.kROS['param_file_ext'],
                 'create_tags': None,
                 'dest_parent': None,

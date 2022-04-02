@@ -60,6 +60,7 @@ class ExpRunShellCmdsGenerator():
         self.cmdopts = cmdopts
         self.n_robots = n_robots
         self.exp_num = exp_num
+        self.criteria = criteria
         self.logger = logging.getLogger('platform.rosrobot')
 
     def pre_run_cmds(self,
@@ -79,7 +80,10 @@ class ExpRunShellCmdsGenerator():
         }
 
         if host == 'master':
-            return [ros_master]
+            if self.cmdopts['no_master_node']:
+                return []
+            else:
+                [ros_master]
 
         main_path = os.path.join(self.cmdopts['project_config_root'],
                                  config.kYAML['main'])
@@ -108,7 +112,35 @@ class ExpRunShellCmdsGenerator():
                       input_fpath: str,
                       run_num: int) -> tp.List[types.ShellCmdSpec]:
         if host == 'master':
-            return []
+            if self.cmdopts['no_master_node']:
+                return []
+            else:
+                self.logger.debug("Generating exec cmds for run%s master",
+                                  run_num)
+
+                # ROS master node
+                exp_dirname = self.criteria.gen_exp_dirnames(self.cmdopts)[
+                    self.exp_num]
+                batch_template_path = utils.batch_template_path(self.cmdopts,
+                                                                self.criteria.batch_input_root,
+                                                                exp_dirname)
+
+                master_node = {
+                    # --wait tells roslaunch to wait for the configured master to
+                    # come up before launch the "master" code.
+                    #
+                    # 2022/02/28: -p (apparently) tells roslaunch not to CONNECT to a
+                    # master at the specified ort, but to LAUNCH a new master at the
+                    # specified port. This is not really documented well.
+                    'cmd': '{0} --wait {1}_run{2}_master{3};'.format(config.kROS['launch_cmd'],
+                                                                     batch_template_path,
+                                                                     run_num,
+                                                                     config.kROS['launch_file_ext']),
+                    'shell': True,
+                    'check': True,
+                    'wait': True
+                }
+                return [master_node]
 
         self.logger.debug("Generating exec cmds for run%s slaves: %d robots",
                           run_num,
@@ -179,10 +211,11 @@ class ExpShellCmdsGenerator():
                 'wait': True
             },
             {
-                # Each experiment gets their own roscore. Because each roscore has a
-                # different port, this prevents any robots from pre-emptively
-                # starting the next experiment before the rest of the robots have
-                # finished the current one.
+
+                # Each experiment gets their own roscore. Because each roscore
+                # has a  different port, this prevents any robots from
+                # pre-emptively starting the next experiment before the rest of
+                # the robots have finished the current one.
                 'cmd': f'roscore -p {port} & ',
                 'shell': True,
                 'check': False,
@@ -229,7 +262,11 @@ class ExpConfigurer():
         pass
 
     def for_exp(self, exp_input_root: str) -> None:
-        self.logger.info("Syncing experiment input files to robots")
+        if self.cmdopts['skip_sync']:
+            self.logger.info("Skipping syncing experiment inputs -> robots")
+            return
+        else:
+            self.logger.info("Syncing experiment inputs  -> robots")
 
         checker = platform.ExecEnvChecker(self.cmdopts)
         nodes = checker.parse_nodefile(self.cmdopts['nodefile'])
@@ -237,9 +274,10 @@ class ExpConfigurer():
         for hostname in nodes:
             remote_login = nodes[hostname]['login']
             current_username = pwd.getpwuid(os.getuid())[0]
-            checker.check_connectivity(nodes[hostname]['login'],
-                                       hostname,
-                                       self.cmdopts['robot'])
+            if not self.cmdopts['skip_online_check']:
+                checker.check_connectivity(nodes[hostname]['login'],
+                                           hostname,
+                                           self.cmdopts['robot'])
 
             # In case the user is different on the remote machine than this one,
             # and the location of the generated experiment is under /home.

@@ -270,9 +270,12 @@ class XMLWriterConfig():
 
         values: Dict with the following possible key, value pairs:
 
-                ``src_root`` - The root of the XML tree specifying a sub-tree to
-                               write out as ``dest_root``. This key is
-                               required.
+                ``src_parent`` - The parent of the root of the XML tree
+                                 specifying a sub-tree to write out as a child
+                                 of ``dest_root``. This key is required.
+
+                ``src_tag`` - The name of the tag within ``src_parent`` to write
+                              out.This key is required.
 
                 ``dest_root`` - The new name of ``src_root`` when writing out
                                 the partial XML tree to a new file. This key is
@@ -282,12 +285,13 @@ class XMLWriterConfig():
                                  file stem that is set for the :class:`XMLLuigi`
                                  instance. This key is optional.
 
-                ``grafts`` - Additional bits of the XML tree to add under the
-                             new ``dest_root``, specified as a list of XPath
-                             strings. You can't just have multiple src_roots
-                             because that makes unambiguous renaming of
-                             ``src_root`` -> ``dest_root`` impossible. This key
-                             is optional.
+                ``child_grafts`` - Additional bits of the XML tree to add under
+                                   the new ``dest_root/src_tag``, specified as a
+                                   list of XPath strings. You can't just have
+                                   multiple src_roots because that makes
+                                   unambiguous renaming of ``src_root`` ->
+                                   ``dest_root`` impossible. This key is
+                                   optional.
 
     """
 
@@ -336,7 +340,14 @@ class XMLLuigi:
         configuration.
         """
         for config in self.write_config.values:
-            tree = self.root.find(config['src_root'])
+
+            if config['src_parent'] is None:
+                src_root = config['src_tag']
+            else:
+                src_root = "{0}/{1}".format(config['src_parent'],
+                                            config['src_tag'])
+
+            tree = self.root.find(src_root)
             # Customizing the output write path is not required
             if 'opath_leaf' in config and config['opath_leaf'] is not None:
                 opath = base_path + config['opath_leaf']
@@ -345,13 +356,11 @@ class XMLLuigi:
 
             if tree is None:
                 self.logger.warning("Cannot write non-existent tree@%s to %s",
-                                    config['src_root'],
+                                    src_root,
                                     opath)
                 continue
 
-            self.logger.trace("Write tree@%s to %s",
-                              config['src_root'],
-                              opath)
+            self.logger.trace("Write tree@%s to %s", src_root, opath)
 
             # Renaming tree root is not required
             if 'rename_to' in config and config['rename_to'] is not None:
@@ -377,13 +386,16 @@ class XMLLuigi:
                 parent = to_write.getroot()
 
             # Grafts are not required
-            if 'grafts' in config and config['grafts'] is not None:
-                for g in config['grafts']:
-                    self.logger.trace("Graft tree@%s -> %s in dest",
+            if 'child_grafts' in config and config['child_grafts'] is not None:
+                dest_root = "{0}/{1}".format(config['dest_parent'],
+                                             config['src_tag'])
+                graft_parent = to_write.getroot().find(dest_root)
+                for g in config['child_grafts']:
+                    self.logger.trace("Graft tree@%s as child under %s",
                                       g,
-                                      config['dest_parent'])
+                                      dest_root)
                     elt = self.root.find(g)
-                    parent.append(elt)
+                    graft_parent.append(elt)
 
             # Write out pretty XML to make it easier to read to see if things
             # have been generated correctly.

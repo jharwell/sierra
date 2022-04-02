@@ -72,7 +72,7 @@ class Pipeline:
             'nodefile': self.args.nodefile,
 
             # stage 3
-            'no_verify_results': self.args.no_verify_results,
+            'skip_verify_results': self.args.skip_verify_results,
             'render_cmd_opts': self.args.render_cmd_opts,
             'processing_mem_limit': self.args.processing_mem_limit,
             'serial_processing': self.args.serial_processing,
