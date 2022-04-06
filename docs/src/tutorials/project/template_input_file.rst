@@ -180,7 +180,12 @@ Any of the following may be inserted:
             <param name="metrics/directory" value="/path/to/dir"/>
             ...
             <group ns='sierra'>
-               <node name="sierra_timekeeper" pkg="sierra_rosbridge" type="sierra_timekeeper.py" required="true"/>
+               <node
+                  name="sierra_timekeeper"
+                  pkg="sierra_rosbridge"
+                  type="sierra_timekeeper.py"
+                  required="true"
+                  output="screen"/>
                <param name="experiment/length" value="1234"/>
                <param name="experiment/random_seed" value="5678"/>
                <param name="experiment/param_file" value="/path/to/file"/>
@@ -233,7 +238,12 @@ Any of the following may be inserted:
           <launch>
              ...
              <group ns='sierra'>
-                <node name="sierra_timekeeper" pkg="sierra_rosbridge" type="sierra_timekeeper.py" required="true"/>
+                <node
+                  name="sierra_timekeeper"
+                  pkg="sierra_rosbridge"
+                  type="sierra_timekeeper.py"
+                  required="true"
+                  output="screen"/>
                 <param name="experiment/length" value="1234"/>
                 <param name="experiment/random_seed" value="5678"/>
                 <param name="experiment/param_file" value="/path/to/file"/>

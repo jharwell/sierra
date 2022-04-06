@@ -420,7 +420,7 @@ class CoreCmdline(BaseCmdline):
 
                                      """ + self.stage_usage_doc([1, 2]))
 
-        self.multistage.add_argument("--no-collate",
+        self.multistage.add_argument("--skip-collate",
                                      help="""
 
                                     Specify that no collation of data across
@@ -428,7 +428,9 @@ class CoreCmdline(BaseCmdline):
                                     across runs within an experiment (stage 3)
                                     should be performed. Useful if collation
                                     takes a long time and multiple types of
-                                    stage 4 outputs are desired.
+                                    stage 4 outputs are desired. Collation is
+                                    generally idempotent unless you change the
+                                    stage3 options (YMMV).
 
                                      """ + self.stage_usage_doc([3, 4]),
                                      action='store_true')
@@ -738,11 +740,13 @@ class CoreCmdline(BaseCmdline):
 
         # Model options
         models = self.parser.add_argument_group('Models')
-        models.add_argument('--models-disable',
+        models.add_argument('--models-enable',
                             help="""
 
-                            Disables running of all models, even if they appear
-                            in the project config file.
+                            Enable running of all models; otherwise, no models
+                            are run, even if they appear in the project config
+                            file. The logic behind having models disabled by
+                            default is that most users won't have them.
 
                             """,
                             action="store_true")
@@ -1027,10 +1031,11 @@ class CoreCmdlineValidator():
     """
 
     def __call__(self, args: argparse.Namespace) -> None:
-        assert len(
-            args.batch_criteria) <= 2, "Too many batch criteria passed"
+        assert len(args.batch_criteria) <= 2,\
+            "Too many batch criteria passed"
 
-        assert args.sierra_root is not None, '--sierra-root is required for all stages'
+        assert args.sierra_root is not None,\
+            '--sierra-root is required for all stages'
 
         if len(args.batch_criteria) == 2:
             assert args.batch_criteria[0] != args.batch_criteria[1], \
@@ -1040,14 +1045,21 @@ class CoreCmdlineValidator():
             'Batch criteria not passed as list on cmdline'
 
         if any(stage in args.pipeline for stage in [1]) in args.pipeline:
-            assert args.n_runs is not None, '--n-runs is required for running stage 1'
-            assert args.template_input_file is not None, '--template-input-file is required for running stage 1'
-            assert args.scenario is not None, '--scenario is required for running stage 1'
+            assert args.n_runs is not None,\
+                '--n-runs is required for running stage 1'
+            assert args.template_input_file is not None,\
+                '--template-input-file is required for running stage 1'
+            assert args.scenario is not None, \
+                '--scenario is required for running stage 1'
+
+        assert all(stage in [1, 2, 3, 4, 5] for stage in args.pipeline),\
+            'Only 1-5 are valid pipeline stages'
 
         if any(stage in args.pipeline for stage in [1, 2, 3, 4]):
-            assert len(
-                args.batch_criteria) > 0, '--batch-criteria is required for running stages 1-4'
-            assert args.controller is not None, '--controller is required for running stages 1-4'
+            assert len(args.batch_criteria) > 0,\
+                '--batch-criteria is required for running stages 1-4'
+            assert args.controller is not None,\
+                '--controller is required for running stages 1-4'
 
         if 5 in args.pipeline:
             assert args.bc_univar or args.bc_bivar, \

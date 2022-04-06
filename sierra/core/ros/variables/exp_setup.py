@@ -85,12 +85,21 @@ class ExpSetup():
                           },
                           True),
                 XMLTagAdd("./master/group/[@ns='sierra']",
+                          "param",
+                          {
+                              "name": "experiment/barrier_start",
+                              "value": "true",
+                          },
+                          True),
+                XMLTagAdd("./master/group/[@ns='sierra']",
                           "node",
                           {
                               "name": "sierra_timekeeper",
                               "pkg": "sierra_rosbridge",
                               "type": "sierra_timekeeper.py",
-                              "required": "true"
+                              "required": "true",
+                              # Otherwise rospy prints nothing
+                              "output": "screen"
                           },
                           True),
 
@@ -106,6 +115,13 @@ class ExpSetup():
                           {
                               "name": "experiment/ticks_per_sec",
                               "value": str(self.n_ticks_per_sec),
+                          },
+                          True),
+                XMLTagAdd("./robot/group/[@ns='sierra']",
+                          "param",
+                          {
+                              "name": "experiment/barrier_start",
+                              "value": "true"
                           },
                           True),
                 # Robots also need the timekeeper because they are launched in a
@@ -124,7 +140,9 @@ class ExpSetup():
                               "name": "sierra_timekeeper",
                               "pkg": "sierra_rosbridge",
                               "type": "sierra_timekeeper.py",
-                              "required": "true"
+                              "required": "true",
+                              # Otherwise rospy prints nothing
+                              "output": "screen"
                           },
                           True)
             )

@@ -126,7 +126,7 @@ class ExpShellCmdsGenerator():
                                    exec_opts['n_jobs'],
                                    resume,
                                    os.path.join(exec_opts['scratch_dir'],
-                                                "parallel.log"),
+                                                f"parallel-slaves-run{i}.log"),
                                    exec_opts['scratch_dir'],
                                    robots_ipath)
 
@@ -142,7 +142,7 @@ class ExpShellCmdsGenerator():
             })
 
             if not self.cmdopts['no_master_node']:
-                ros_master = 'parallel ' \
+                ros_master = 'parallel {3} ' \
                     '--results {1} ' \
                     '--joblog {0} ' \
                     '--workdir {1} < "{2}"'
@@ -150,9 +150,10 @@ class ExpShellCmdsGenerator():
                 ros_master_ipath = exec_opts['cmdfile_stem_path'] + \
                     f"_run{i}_master" + exec_opts['cmdfile_ext']
                 ros_master = ros_master.format(os.path.join(exec_opts['scratch_dir'],
-                                                            "parallel.log"),
+                                                            f"parallel-master-run{i}.log"),
                                                exec_opts['scratch_dir'],
-                                               ros_master_ipath)
+                                               ros_master_ipath,
+                                               resume)
 
                 ret.append(
                     {

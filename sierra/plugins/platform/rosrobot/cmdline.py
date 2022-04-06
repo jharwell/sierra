@@ -112,6 +112,17 @@ class PlatformCmdline(cmd.BaseCmdline):
                                  type=int,
                                  default=config.kROS['inter_run_pause'])
 
+        self.stage2.add_argument("--exec-resume",
+                                 help="""
+
+                                 Resume a batch experiment that was
+                                 killed/stopped/etc last time SIERRA was
+                                 run.
+
+                                 """ + self.stage_usage_doc([2]),
+                                 action='store_true',
+                                 default=False)
+
     @staticmethod
     def cmdopts_update(cli_args, cmdopts: types.Cmdopts) -> None:
         """
@@ -129,7 +140,7 @@ class PlatformCmdline(cmd.BaseCmdline):
             'skip_sync': cli_args.skip_sync,
 
             # stage 2
-            'exec_resume': False,  # For now...
+            'exec_resume': cli_args.exec_resume,
             'exec_inter_run_pause': cli_args.exec_inter_run_pause
         }
 

@@ -62,7 +62,7 @@ class Pipeline:
             'exp_overwrite': self.args.exp_overwrite,
             'exp_range': self.args.exp_range,
             'dist_stats': self.args.dist_stats,
-            'no_collate': self.args.no_collate,
+            'skip_collate': self.args.skip_collate,
             'platform': self.args.platform,
 
             # stage 1
@@ -92,7 +92,7 @@ class Pipeline:
             'plot_primary_axis': self.args.plot_primary_axis,
             'plot_large_text': self.args.plot_large_text,
 
-            'models_disable': self.args.models_disable,
+            'models_enable': self.args.models_enable,
 
             # stage 5
             'controllers_list': self.args.controllers_list,

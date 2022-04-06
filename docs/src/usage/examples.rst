@@ -25,8 +25,7 @@ Basic Example
    --controller=d0.CRW \
    --scenario=SS.12x6x1 \
    --batch-criteria population_size.Log64 \
-   --n-blocks=20 \
-   --models-disable
+   --n-blocks=20
 
 This will run a batch of 7 experiments using a correlated random walk robot
 controller (CRW), across which the swarm size will be varied from 1..64, by
@@ -122,8 +121,7 @@ environment of the local machine.
    --controller=turtlebot3_sim.wander \
    --exp-overwrite \
    --exp-setup=exp_setup.T10 \
-   --robot turtlebot3 \
-   --models-disable
+   --robot turtlebot3
 
 This will run a batch of 4 experiments using a correlated random walk controller
 (CRW) on the turtlebot3. Swarm size will be varied from 1..8, by powers
@@ -157,8 +155,7 @@ environment of a set of turtlebots.
    --controller=turtlebot3_real.wander \
    --exp-overwrite \
    --exp-setup=exp_setup.T10 \
-   --robot turtlebot3 \
-   --models-disable
+   --robot turtlebot3
 
 This will run a batch of 4 experiments using a correlated random walk controller
 (CRW) on the turtlebot3. Swarm size will be varied from 1..8, by powers

@@ -34,54 +34,58 @@ class HPCCmdline(cmdline.BaseCmdline):
                                               add_help=False,
                                               allow_abbrev=False)
 
+        self.scaffold_cli()
         self.init_cli(stages)
+
+    def scaffold_cli(self) -> None:
+        desc = ("For platforms which are simulators (and can"
+                "therefore be run in HPC environments).")
+        self.hpc = self.parser.add_argument_group('HPC options', desc)
 
     def init_cli(self, stages: tp.List[int]) -> None:
         if 2 in stages:
             self.init_stage2()
 
     def init_stage2(self) -> None:
-        desc = ("For platforms which are simulators (and can"
-                "therefore be run in HPC environments).")
-        hpc = self.parser.add_argument_group('HPC options', desc)
 
-        hpc.add_argument("--exec-jobs-per-node",
-                         help="""
+        self.hpc.add_argument("--exec-jobs-per-node",
+                              help="""
 
-                         Specify the maximum number of parallel jobs to run per
-                         allocated node. By default this is computed from the
-                         selected HPC environment for maximum throughput given
-                         the desired ``--n-runs`` and CPUs per allocated
-                         node. However, for some environments being able to
-                         override the computed default can be useful.
+                              Specify the maximum number of parallel jobs to run
+                              per allocated node. By default this is computed
+                              from the selected HPC environment for maximum
+                              throughput given the desired ``--n-runs`` and CPUs
+                              per allocated node. However, for some environments
+                              being able to override the computed default can be
+                              useful.
 
-                         """ + self.stage_usage_doc([2]),
-                         type=int,
-                         default=None)
+                              """ + self.stage_usage_doc([2]),
+                              type=int,
+                              default=None)
 
-        hpc.add_argument("--exec-no-devnull",
-                         help="""
+        self.hpc.add_argument("--exec-no-devnull",
+                              help="""
 
-                         Don't redirect ALL output from simulations to
-                         /dev/null. Useful for platform where you can't disable
-                         all INFO messages at compile time, and don't want to
-                         have to grep through lots of redundant stdout files to
-                         see if there were any errors.
+                              Don't redirect ALL output from simulations to
+                              /dev/null. Useful for platform where you can't
+                              disable all INFO messages at compile time, and
+                              don't want to have to grep through lots of
+                              redundant stdout files to see if there were any
+                              errors.
 
-                         """ + self.stage_usage_doc([1, 2]),
-                         action='store_true',
-                         default=False)
+                              """ + self.stage_usage_doc([1, 2]),
+                              action='store_true',
+                              default=False)
 
-        hpc.add_argument("--exec-resume",
-                         help="""
+        self.hpc.add_argument("--exec-resume",
+                              help="""
 
-                         Resume a batch experiment that was killed/stopped/etc
-                         last time SIERRA was run. This maps directly to GNU
-                         parallel's ``--resume-failed`` option.
+                              Resume a batch experiment that was killed/stopped/etc
+                              last time SIERRA was run.
 
-                         """ + self.stage_usage_doc([2]),
-                         action='store_true',
-                         default=False)
+                              """ + self.stage_usage_doc([2]),
+                              action='store_true',
+                              default=False)
 
     @staticmethod
     def cmdopts_update(cli_args: argparse.Namespace,
