@@ -180,7 +180,9 @@ class ExpRunShellCmdsGenerator():
         else:
             return [
                 {
-                    'cmd': 'killall roslaunch;',
+                    # Can't use killall, because that returns non-zero if things
+                    # are cleaned up nicely.
+                    'cmd': 'if pgrep roslaunch; then pkill roslaunch; fi;',
                     'check': False,
                     'shell': True,
                     'wait': True

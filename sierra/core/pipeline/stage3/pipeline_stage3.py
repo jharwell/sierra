@@ -101,7 +101,7 @@ class PipelineStage3:
                            main_config: dict,
                            cmdopts: types.Cmdopts, criteria:
                            bc.IConcreteBatchCriteria):
-        if not self.cmdopts['no_collate']:
+        if not self.cmdopts['skip_collate']:
             self.logger.info("Collating experiment run outputs into %s...",
                              cmdopts['batch_stat_collate_root'])
             start = time.time()

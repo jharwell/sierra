@@ -420,7 +420,7 @@ class CoreCmdline(BaseCmdline):
 
                                      """ + self.stage_usage_doc([1, 2]))
 
-        self.multistage.add_argument("--no-collate",
+        self.multistage.add_argument("--skip-collate",
                                      help="""
 
                                     Specify that no collation of data across
@@ -428,7 +428,9 @@ class CoreCmdline(BaseCmdline):
                                     across runs within an experiment (stage 3)
                                     should be performed. Useful if collation
                                     takes a long time and multiple types of
-                                    stage 4 outputs are desired.
+                                    stage 4 outputs are desired. Collation is
+                                    generally idempotent unless you change the
+                                    stage3 options (YMMV).
 
                                      """ + self.stage_usage_doc([3, 4]),
                                      action='store_true')
@@ -738,11 +740,13 @@ class CoreCmdline(BaseCmdline):
 
         # Model options
         models = self.parser.add_argument_group('Models')
-        models.add_argument('--models-disable',
+        models.add_argument('--models-enable',
                             help="""
 
-                            Disables running of all models, even if they appear
-                            in the project config file.
+                            Enable running of all models; otherwise, no models
+                            are run, even if they appear in the project config
+                            file. The logic behind having models disabled by
+                            default is that most users won't have them.
 
                             """,
                             action="store_true")

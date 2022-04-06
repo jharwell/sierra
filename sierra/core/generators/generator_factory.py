@@ -18,6 +18,7 @@
 import os
 import typing as tp
 import logging  # type: tp.Any
+import copy
 
 # 3rd party packages
 import yaml
@@ -63,34 +64,51 @@ class ControllerGenerator():
         return exp_def
 
     def _pp_for_tag_add(self,
-                        add: tp.List[str],
-                        robot_id: int) -> tp.List[str]:
+                        add: XMLTagAdd,
+                        robot_id: tp.Optional[int] = None) -> tp.List[str]:
         module = pm.pipeline.get_plugin_module(
             self.cmdopts['platform'])
-        prefix = module.robot_prefix_extract(self.main_config, self.cmdopts)
-        add[0] = add[0].replace('__UUID__', f"{prefix}{robot_id}")
-        add[2] = eval(add[2])
+        if '__UUID__' in add.path:
+            prefix = module.robot_prefix_extract(self.main_config, self.cmdopts)
+            add.path = add.path.replace('__UUID__', f"{prefix}{robot_id}")
 
+        add.attr = eval(add.attr)
         return add
 
     def _do_tag_add(self, exp_def: XMLLuigi, add: XMLTagAdd) -> None:
-        # We can't use platform.population_size_from_def() here because we
-        # haven't added any tags to the experiment definition yet, and if the
-        # platform relies on added tags to calculate population sizes, then this
-        # won't work.
-        assert hasattr(self.spec.criteria, 'n_robots'),\
-            ("When using tag_add, the batch criteria must implement "
-             "bc.IQueryableBatchCriteria")
 
-        n_robots = self.spec.criteria.n_robots(self.spec.exp_num)
+        # If the user is applying tags for each robot, then they might be added
+        # multiple tags with the same name, but different attributes, so we
+        # allow that explicitly here. Otherwise, we force all tag adds to be
+        # unique.
+        if '__UUID__' in add.path:
+            # We can't use platform.population_size_from_def() here because we
+            # haven't added any tags to the experiment definition yet, and if
+            # the platform relies on added tags to calculate population sizes,
+            # then this won't work.
+            yaml = config.kYAML['controllers']
+            assert hasattr(self.spec.criteria, 'n_robots'),\
+                (f"When using __UUID__ and tag_add in {yaml}, the batch "
+                 "criteria must implement bc.IQueryableBatchCriteria")
+            n_robots = self.spec.criteria.n_robots(self.spec.exp_num)
 
-        assert n_robots > 0,\
-            "Batch criteria {self.spec.criteria} returned 0 robots?"
+            assert n_robots > 0,\
+                "Batch criteria {self.spec.criteria} returned 0 robots?"
 
-        for robot_id in range(0, n_robots):
-            copy = add[:]
-            pp_add = self._pp_for_tag_add(copy, robot_id)
-            exp_def.tag_add(pp_add[0], pp_add[1], pp_add[2])
+            for robot_id in range(0, n_robots):
+                to_pp = copy.deepcopy(add)
+                pp_add = self._pp_for_tag_add(to_pp, robot_id)
+                exp_def.tag_add(pp_add.path,
+                                pp_add.tag,
+                                pp_add.attr,
+                                True)
+        else:
+            to_pp = copy.deepcopy(add)
+            pp_add = self._pp_for_tag_add(to_pp)
+            exp_def.tag_add(pp_add.path,
+                            pp_add.tag,
+                            pp_add.attr,
+                            False)
 
     def _generate_controller_support(self, exp_def: XMLLuigi) -> None:
         # Setup controller support code (if any)
@@ -140,7 +158,10 @@ class ControllerGenerator():
 
             adds = controller.get('xml', {}).get('tag_add', {})
             for t in adds:
-                self._do_tag_add(exp_def, t)
+                self._do_tag_add(exp_def, XMLTagAdd(t[0],
+                                                    t[1],
+                                                    t[2],
+                                                    False))
 
 
 def joint_generator_create(controller, scenario):

@@ -112,7 +112,7 @@ class PipelineStage4:
         self.intra_HM_config = config['intra_HM']
         self.inter_LN_config = config['inter_LN']
 
-        if not self.cmdopts['models_disable']:
+        if self.cmdopts['models_enable']:
             self._load_models()
 
     def run(self, criteria: bc.IConcreteBatchCriteria) -> None:
@@ -155,7 +155,7 @@ class PipelineStage4:
             self._run_rendering(criteria)
 
         if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'intra':
-            if criteria.is_univar() and len(self.models_intra) > 0 and not self.cmdopts['models_disable']:
+            if criteria.is_univar() and self.cmdopts['models_enable']:
                 self._run_intra_models(criteria)
 
             self._run_intra_graph_generation(criteria)
@@ -166,7 +166,7 @@ class PipelineStage4:
         if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'inter':
             self._run_collation(criteria)
 
-            if criteria.is_univar() and len(self.models_inter) > 0 and not self.cmdopts['models_disable']:
+            if criteria.is_univar() and self.cmdopts['models_enable']:
                 self._run_inter_models(criteria)
 
             self._run_inter_graph_generation(criteria)
@@ -294,7 +294,7 @@ class PipelineStage4:
     def _run_collation(self, criteria: bc.IConcreteBatchCriteria) -> None:
         targets = self._calc_inter_LN_targets()
 
-        if not self.cmdopts['no_collate']:
+        if not self.cmdopts['skip_collate']:
             self.logger.info("Collating inter-experiment .csv files...")
             start = time.time()
             GraphParallelCollator(
