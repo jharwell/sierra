@@ -79,11 +79,19 @@ class Vector3D:
         self.z -= o.z
         return self
 
-    def __ge__(self, other: 'Vector3D') -> bool:
-        return self.x >= other.x and self.y >= other.y and self.z >= other.z
+    # def __ge__(self, other: 'Vector3D') -> bool:
+    #     return self.x >= other.x and self.y >= other.y and self.z >= other.z
 
-    def __le__(self, other: 'Vector3D') -> bool:
-        return self.x <= other.x and self.y <= other.y and self.z <= other.z
+    # def __le__(self, other: 'Vector3D') -> bool:
+    #     return self.x <= other.x and self.y <= other.y and self.z <= other.z
+
+    def __lt__(self, other: 'Vector3D') -> bool:
+        """
+        Determine if one vector is less than another by coordinate comparison.
+        """
+        return ((self.x < other.x) or
+                ((self.x == other.x) and (self.y < other.y)) or
+                ((self.x == other.x) and (self.y == other.y) and (self.z < other.z)))
 
     def __neg__(self) -> 'Vector3D':
         return Vector3D(-self.x, -self.y, -self.z)

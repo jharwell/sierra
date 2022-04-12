@@ -74,6 +74,15 @@ Environment Variables
    :envvar:`ARGOS_PLUGIN_PATH`, :envvar:`ROS_PACKAGE_PATH`, etc., depending on
    your chosen :term:`Platform`.
 
+.. envvar:: PARALLEL_SHELL
+
+   SIERRA sets up the :term:`Experiment` execution environments by running one
+   or more shell commands in a subprocess (treated as a shell``, which means
+   that :program:`parallel` can't determine ``SHELL``, and therefore defaults to
+   ``/bin/sh``, which is not what users expect. SIERRA explicitly sets
+   ``PARALLEL_SHELL`` to ``/bin/bash`` in keeping with the Principle Of Least
+   Surprise.
+
 .. envvar:: ROS_PACKAGE_PATH
 
    The list of directories which defines where ROS will search for

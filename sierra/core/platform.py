@@ -31,6 +31,7 @@ import pwd
 
 # 3rd party packages
 import implements
+import netifaces
 
 # Project packages
 import sierra.core.plugin_manager as pm
@@ -340,6 +341,16 @@ def get_local_ip():
     """
     Get the local IP address of the SIERRA host machine.
     """
+    active = []
+    for iface in netifaces.interfaces():
+        # Active=has a normal IP address (that's what AF_INET means)
+        if socket.AF_INET in netifaces.ifaddresses(iface):
+            active.append(iface)
+
+    if len(active) > 2:
+        logging.warning(("SIERRA host machine has >1 non-loopback IP addresses/"
+                         "netwark interfaces--SIERRA may select the wrong one: "
+                         "%s"), active)
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(("8.8.8.8", 80))
     return s.getsockname()[0]

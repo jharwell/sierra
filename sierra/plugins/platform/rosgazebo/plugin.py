@@ -159,8 +159,8 @@ class ExpRunShellCmdsGenerator():
                 # have to use 'localhost' for binding.
                 'cmd': f'export ROS_MASTER_URI=http://localhost:{self.roscore_port};',
                 'shell': True,
-                'check': True,
-                'wait': True
+                'wait': True,
+                'env': True
             },
             {
                 # Each experiment gets their own roscore. Because each roscore
@@ -169,7 +169,6 @@ class ExpRunShellCmdsGenerator():
                 # the robots have finished the current one.
                 'cmd': f'roscore -p {self.roscore_port} & ',
                 'shell': True,
-                'check': False,
                 'wait': False
             }
         ]
@@ -185,7 +184,7 @@ class ExpRunShellCmdsGenerator():
             {
                 'cmd': f'export GAZEBO_MASTER_URI=http://localhost:{self.gazebo_port};',
                 'shell': True,
-                'check': True,
+                'env': True,
                 'wait': True
             }
         ]
@@ -255,25 +254,21 @@ class ExpShellCmdsGenerator():
         # might accidentally kill.
         return [{
                 'cmd': 'killall gzserver',
-                'check': False,
                 'shell': True,
                 'wait': True
                 },
                 {
                 'cmd': 'killall rosmaster',
-                'check': False,
                     'shell': True,
                     'wait': True
                 },
                 {
                 'cmd': 'killall roscore',
-                'check': False,
                     'shell': True,
                     'wait': True
                 },
                 {
                 'cmd': 'killall rosout',
-                'check': False,
                     'shell': True,
                     'wait': True
                 }]

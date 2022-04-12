@@ -72,21 +72,38 @@ class ExpShellCmdsGenerator():
         if exec_opts['exec_resume']:
             resume = '--resume-failed'
 
-        cmd = 'parallel {1} ' \
+        # Make sure GNU parallel uses the right shell, because it seems to
+        # defaults to /bin/sh since all cmds are run in a python shell which
+        # does not have $SHELL set.
+        use_bash = {
+            'cmd': 'export PARALLEL_SHELL=/bin/bash',
+            'shell': True,
+            'wait': True,
+            'env': True
+        }
+        ret = [use_bash]
+
+        parallel = 'parallel {1} ' \
             '--jobs {2} ' \
             '--results {0} '\
             '--joblog {3} '\
             '--no-notice < "{4}"'
 
-        cmd = cmd.format(exec_opts['scratch_dir'],
-                         resume,
-                         exec_opts['n_jobs'],
-                         os.path.join(exec_opts['scratch_dir'],
-                                      "parallel.log"),
-                         exec_opts['cmdfile_stem_path'] +
-                         exec_opts['cmdfile_ext'])
+        parallel = parallel.format(exec_opts['scratch_dir'],
+                                   resume,
+                                   exec_opts['n_jobs'],
+                                   os.path.join(exec_opts['scratch_dir'],
+                                                "parallel.log"),
+                                   exec_opts['cmdfile_stem_path'] +
+                                   exec_opts['cmdfile_ext'])
 
-        return [{'cmd': cmd, 'check': True, 'shell': True, 'wait': True}]
+        ret.append({
+            'cmd': parallel,
+            'shell': True,
+            'wait': True
+        })
+
+        return ret
 
 
 @implements.implements(bindings.IExpRunShellCmdsGenerator)

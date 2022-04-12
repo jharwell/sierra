@@ -78,6 +78,7 @@ setup(
         "sympy",
         "psutil",
         "distro",
+        "netifaces",
 
         "coloredlogs",
         "implements",
