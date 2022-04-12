@@ -75,7 +75,7 @@ class ExpRunShellCmdsGenerator():
         ros_master = {
             'cmd': f'export ROS_MASTER_URI={master_uri};',
             'shell': True,
-            'check': True,
+            'env': True,
             'wait': True,
         }
 
@@ -101,8 +101,7 @@ class ExpRunShellCmdsGenerator():
         ros_setup = {
             'cmd': f'. {script};',
             'shell': True,
-            'check': True,
-            'wait': True
+            'env': True
         }
 
         return [ros_setup, ros_master]
@@ -137,7 +136,6 @@ class ExpRunShellCmdsGenerator():
                                                                      run_num,
                                                                      config.kROS['launch_file_ext']),
                     'shell': True,
-                    'check': True,
                     'wait': True
                 }
                 return [master_node]
@@ -168,7 +166,6 @@ class ExpRunShellCmdsGenerator():
                                                                 i,
                                                                 config.kROS['launch_file_ext']),
                     'shell': True,
-                    'check': True,
                     'wait': True
                 }
             ])
@@ -183,7 +180,6 @@ class ExpRunShellCmdsGenerator():
                     # Can't use killall, because that returns non-zero if things
                     # are cleaned up nicely.
                     'cmd': 'if pgrep roslaunch; then pkill roslaunch; fi;',
-                    'check': False,
                     'shell': True,
                     'wait': True
                 }
@@ -202,25 +198,26 @@ class ExpShellCmdsGenerator():
     def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
         local_ip = platform.get_local_ip()
         port = config.kROS['port_base'] + self.exp_num
-        self.logger.info("Using ROS_MASTER_URI=%s:%s", local_ip, port)
+        master_uri = f'http://{local_ip}:{port}'
+
+        self.logger.info("Using ROS_MASTER_URI=%s", master_uri)
 
         return[
             {
                 # roscore will run on the SIERRA host machine.
-                'cmd': f'export ROS_MASTER_URI={local_ip}:{port};',
+                'cmd': f'export ROS_MASTER_URI={master_uri}',
                 'shell': True,
-                'check': True,
+                'env': True,
                 'wait': True
             },
             {
 
-                # Each experiment gets their own roscore. Because each roscore
+                # Each exppperiment gets their own roscore. Because each roscore
                 # has a  different port, this prevents any robots from
                 # pre-emptively starting the next experiment before the rest of
                 # the robots have finished the current one.
                 'cmd': f'roscore -p {port} & ',
                 'shell': True,
-                'check': False,
                 'wait': False
             }
         ]
@@ -233,19 +230,16 @@ class ExpShellCmdsGenerator():
         # active because they don't know how to clean up after themselves.
         return [{
                 'cmd': 'killall rosmaster;',
-                'check': False,
                 'shell': True,
                 'wait': True
                 },
                 {
                 'cmd': 'killall roscore;',
-                'check': False,
                     'shell': True,
                     'wait': True
                 },
                 {
                 'cmd': 'killall rosout;',
-                'check': False,
                     'shell': True,
                     'wait': True
                 }]

@@ -94,29 +94,48 @@ class ExpShellCmdsGenerator():
             resume = '--resume-failed'
 
         # Make sure there are no duplicate nodes
-        cmd1 = f'sort -u {0} > {1}'.format(exec_opts["nodefile"], nodelist)
+        unique_nodes = {
+            'cmd': 'sort -u {0} > {1}'.format(exec_opts["nodefile"], nodelist),
+            'shell': True,
+            'wait': True
+        }
+        # Make sure GNU parallel uses the right shell, because it seems to
+        # defaults to /bin/sh since all cmds are run in a python shell which
+        # does not have $SHELL set.
+        use_bash = {
+            'cmd': 'export PARALLEL_SHELL=/bin/bash',
+            'shell': True,
+            'wait': True,
+            'env': True
+        }
+        ret = [unique_nodes, use_bash]
 
         # GNU parallel cmd
-        cmd2 = 'parallel {2} ' \
+        parallel = 'parallel {2} ' \
             '--jobs {1} ' \
             '--results {4} ' \
             '--joblog {3} ' \
             '--sshloginfile {0} ' \
             '--workdir {4} < "{5}"'
 
-        cmd2 = cmd2.format(nodelist,
-                           exec_opts['n_jobs'],
-                           resume,
-                           os.path.join(exec_opts['scratch_dir'],
-                                        "parallel.log"),
-                           exec_opts['scratch_dir'],
-                           exec_opts['cmdfile_stem'] + exec_opts['cmdfile_ext'])
+        parallel = parallel.format(nodelist,
+                                   exec_opts['n_jobs'],
+                                   resume,
+                                   os.path.join(exec_opts['scratch_dir'],
+                                                "parallel.log"),
+                                   exec_opts['scratch_dir'],
+                                   exec_opts['cmdfile_stem'] + exec_opts['cmdfile_ext'])
 
-        return [{'cmd': cmd1, 'shell': True, 'check': True, 'wait': True},
-                {'cmd': cmd2, 'shell': True, 'check': True, 'wait': True}]
+        ret.append({
+            'cmd': parallel,
+            'shell': True,
+            'wait': True
+        })
+
+        return ret
 
 
-@implements.implements(bindings.IExpRunShellCmdsGenerator)
+@ implements.implements(bindings.IExpRunShellCmdsGenerator)
 class ExpRunShellCmdsGenerator():
     """
     Stub implementation.
@@ -162,4 +181,6 @@ __api__ = [
     'ExpRunShellCmdsGenerator',
     'ExpShellCmdsGenerator',
     'ExecEnvChecker'
+
+
 ]

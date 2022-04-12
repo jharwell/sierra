@@ -186,8 +186,8 @@ class ExpRunShellCmdsGenerator():
                 self.display_port = random.randint(0, 1000000)
                 cmd1 = f"Xvfb :{self.display_port} -screen 0, 1600x1200x24 &"
                 cmd2 = f"export DISPLAY=:{self.display_port};"
-                return [{'cmd': cmd1, 'shell': True, 'check': True, 'wait': True},
-                        {'cmd': cmd2, 'shell': True, 'check': True, 'wait': True}]
+                return [{'cmd': cmd1, 'shell': True, 'wait': True},
+                        {'cmd': cmd2, 'shell': True, 'wait': True, 'env': True}]
 
         return []
 
@@ -216,7 +216,7 @@ class ExpRunShellCmdsGenerator():
 
         cmd += ';'
 
-        return [{'cmd': cmd, 'shell': True, 'check': True, 'wait': True}]
+        return [{'cmd': cmd, 'shell': True, 'wait': True}]
 
     def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
         return []
@@ -242,7 +242,6 @@ class ExpShellCmdsGenerator():
         if self.cmdopts['platform_vc']:
             return [{
                 'cmd': 'killall Xvfb',
-                'check': False,
                 'shell': True,
                 'wait': True
             }]

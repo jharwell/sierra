@@ -102,11 +102,20 @@ class ExpShellCmdsGenerator():
         unique_nodes = {
             'cmd': 'sort -u {0} > {1}'.format(exec_opts["nodefile"], nodelist),
             'shell': True,
-            'check': True,
             'wait': True
         }
 
-        ret = [unique_nodes]
+        # Make sure GNU parallel uses the right shell, because it seems to
+        # defaults to /bin/sh since all cmds are run in a python shell which
+        # does not have $SHELL set.
+        use_bash = {
+            'cmd': 'export PARALLEL_SHELL=/bin/bash',
+            'shell': True,
+            'env': True,
+            'wait': True
+        }
+
+        ret = [use_bash, unique_nodes]
 
         # 1 GNU parallel command to launch each experimental run, because each
         # run might use all available nodes/robots.
@@ -137,7 +146,6 @@ class ExpShellCmdsGenerator():
             ret.append({
                 'cmd': robots,
                 'shell': True,
-                'check': True,
                 'wait': self.cmdopts['no_master_node']
             })
 
@@ -159,7 +167,6 @@ class ExpShellCmdsGenerator():
                     {
                         'cmd': ros_master,
                         'shell': True,
-                        'check': True,
                         'wait': not self.cmdopts['no_master_node']
                     })
 
@@ -167,7 +174,6 @@ class ExpShellCmdsGenerator():
                 {
                     'cmd': ('echo  "{0} seconds until launching next run!"; '
                             'sleep {0}s ;'.format(self.cmdopts['exec_inter_run_pause'])),
-                    'check': False,
                     'shell': True,
                     'wait': True
                 }

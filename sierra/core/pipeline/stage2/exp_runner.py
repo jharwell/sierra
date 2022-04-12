@@ -27,7 +27,6 @@ import sys
 import datetime
 import typing as tp
 import logging  # type: tp.Any
-import itertools
 
 # 3rd party packages
 
@@ -46,33 +45,73 @@ class ExpShell():
     """
 
     def __init__(self) -> None:
-        self.initial_env = os.environ
-        self.env = self.initial_env
+        self.env = os.environ.copy()
         self.logger = logging.getLogger(__name__)
+        self.procs = []
 
     def run_from_spec(self, spec: types.ShellCmdSpec) -> bool:
         self.logger.trace("Cmd: %s", spec['cmd'])
-        proc = subprocess.Popen(spec['cmd'],
+
+        # We use a special marker at the end of the cmd's output to know when
+        # the environment dump starts.
+        cmd = spec['cmd']
+        if 'env' in spec and spec['env']:
+            cmd += ' && echo ~~~~ENV_START~~~~ && env'
+
+        proc = subprocess.Popen(cmd,
                                 shell=spec['shell'],
                                 stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
+                                stderr=subprocess.PIPE,
+                                env=self.env)
+
         if not spec['wait']:
+            self.procs.append(proc)
             return True
 
         # We use communicate(), not wait() to avoid issues with IO buffers
         # becoming full (i.e., you get deadlocks with wait() regularly).
         stdout, stderr = proc.communicate()
 
+        # Update the environment for all commands
+        if 'env' in spec and spec['env']:
+            self._update_env(stdout)
+
         # Only show output if the process failed (i.e., did not return 0)
         if proc.returncode != 0:
             self.logger.error("Cmd '%s' failed!", spec['cmd'])
-            stdout = '\n' + '\n'.join(stdout.decode('ascii').split('\n')[-10:])
-            stderr = '\n' + '\n'.join(stderr.decode('ascii').split('\n')[-10:])
-            self.logger.error("Cmd stdout (last 10 lines): %s", stdout)
-            self.logger.error("Cmd stderr (last 10 lines): %s", stderr)
+            stdout = stdout.decode("ascii")
+            stderr = stderr.decode("ascii")
+
+            if 'env' in spec and spec['env']:
+                stdout = stdout.split("~~~~ENV_START~~~")[0]
+                stderr = stderr.split("~~~~ENV_START~~~")[0]
+
+            self.logger.error("Cmd stdout (last 10 lines): %s",
+                              '\n + ''\n'.join(stdout.split('\n')[-10:]))
+            self.logger.error("Cmd stderr (last 10 lines): %s",
+                              '\n' + '\n'.join(stderr.split('\n')[-10:]))
             return False
         else:
             return True
+
+    def _update_env(self, stdout) -> None:
+        record = False
+        for e in stdout.decode('ascii').split("\n"):
+            if record:
+                candidate = e.strip().split('=')
+                if len(candidate) != 2:
+                    continue
+
+                key = candidate[0]
+                value = candidate[1]
+
+                if key not in self.env or self.env[key] != value:
+                    self.logger.debug("Update experiment environment: %s=%s",
+                                      key,
+                                      value)
+                    self.env[key] = value
+            elif e.strip() == '~~~~ENV_START~~~~':
+                record = True
 
 
 class BatchExpRunner:
