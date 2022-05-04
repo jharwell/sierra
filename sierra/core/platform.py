@@ -240,25 +240,21 @@ class ExecEnvChecker():
                 port_and_hostname_re = port_re + rf"\s+({identifier_re})"
 
                 if res := re.search(port_and_username_at_host_re, ssh):
-                    print("port and username@host")
                     # They specified the port AND 'username@host'
                     port = int(res.group(1))
                     login = res.group(2)
                     hostname = res.group(3)
                 elif res := re.search(port_and_hostname_re, ssh):
-                    print("port and host")
                     # They only specified the port and hostname
                     port = int(res.group(1))
                     hostname = res.group(2)
                     login = pwd.getpwuid(os.getuid())[0]
                 elif res := re.search(username_at_host_re, ssh):
-                    print("username@host")
                     # They only specified 'username@host'
                     port = 22
                     login = res.group(1)
                     hostname = res.group(2)
                 elif res := re.search(identifier_re, ssh):
-                    print("HOSTNAME only")
                     # They only specified the hostname
                     port = 22
                     login = pwd.getpwuid(os.getuid())[0]

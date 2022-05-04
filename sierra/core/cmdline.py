@@ -135,6 +135,17 @@ class BootstrapCmdline(BaseCmdline):
                                """,
                                default='platform.argos')
 
+        bootstrap.add_argument("--skip-pkg-checks",
+                               help="""
+
+                               Skip the usual startup package checks. Only do
+                               this if you are SURE you will never use the
+                               SIERRA functionality which requires packages you
+                               don't have installed/can't install.
+                               
+                               """,
+                               action='store_true')
+
         bootstrap.add_argument("--exec-env",
                                help="""
                                This argument defines `how` experiments are going

@@ -104,13 +104,6 @@ class PlatformCmdline(cmd.BaseCmdline):
                                        fixed IP address and cannot be addressed
                                        by FQDN (looking at you eduroam...).
 
-                                    .. WARNING:: The username to connect to the
-                                       robots *should* be the same as the one
-                                       used to invoke SIERRA. You *can* put a
-                                       different username in the nodefile, but
-                                       it's not tested and you will probably get
-                                       an error.
-
                                      """,
                                      default='ping+ssh')
 
