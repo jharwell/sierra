@@ -267,12 +267,16 @@ class ExpConfigurer():
         checker = platform.ExecEnvChecker(self.cmdopts)
         nodes = checker.parse_nodefile(self.cmdopts['nodefile'])
 
-        for hostname in nodes:
-            remote_login = nodes[hostname]['login']
+        for node in nodes:
+            remote_login = node['login']
+            remote_port = node['port']
+            remote_hostname = node['hostname']
             current_username = pwd.getpwuid(os.getuid())[0]
+
             if not self.cmdopts['skip_online_check']:
-                checker.check_connectivity(nodes[hostname]['login'],
-                                           hostname,
+                checker.check_connectivity(remote_login,
+                                           remote_hostname,
+                                           remote_port,
                                            self.cmdopts['robot'])
 
             # In case the user is different on the remote machine than this one,
@@ -280,9 +284,13 @@ class ExpConfigurer():
             robot_input_root = exp_input_root.replace(current_username,
                                                       remote_login)
 
-            mkdir_cmd = f"ssh {remote_login}@{hostname} mkdir -p {robot_input_root}"
-            rsync_cmd = (f"rsync -avz -e ssh {exp_input_root}/ "
-                         f"{remote_login}@{hostname}:{robot_input_root}/")
+            mkdir_cmd = (f"ssh -p {remote_port} {remote_login}@{remote_hostname} "
+                         f"mkdir -p {robot_input_root}")
+
+            rsync_cmd = ("rsync -avz "
+                         f"-e 'ssh -p {remote_port} -o StrictHostKeyChecking=no' "
+                         f"{exp_input_root}/ "
+                         f"{remote_login}@{remote_hostname}:{robot_input_root}/")
             self.logger.trace("Running rsync: %s", rsync_cmd)
             try:
                 self.logger.trace("Running mkdir: %s", mkdir_cmd)

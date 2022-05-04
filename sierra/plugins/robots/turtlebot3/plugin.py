@@ -215,15 +215,16 @@ class ExecEnvChecker(platform.ExecEnvChecker):
 
     def __call__(self) -> None:
         nodes = self.parse_nodefile(self.cmdopts['nodefile'])
-        for hostname in nodes:
-            if int(nodes[hostname]['n_cores']) != 1:
+        for node in nodes:
+            if int(node['n_cores']) != 1:
                 self.logger.warning(("Nodefile %s, host %s has multiple "
                                      "cores; turtlebots are single core"),
                                     self.cmdopts['nodefile'],
-                                    hostname)
+                                    node['hostname'])
             if not self.cmdopts['skip_online_check']:
-                self.check_connectivity(nodes[hostname]['login'],
-                                        hostname,
+                self.check_connectivity(node['login'],
+                                        node['hostname'],
+                                        node['port'],
                                         'turtlebot3')
 
 

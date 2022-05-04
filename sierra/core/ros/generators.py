@@ -121,7 +121,8 @@ class ROSExpDefGenerator():
         """
         self.logger.debug("Applying exp_setup=%s", self.cmdopts['exp_setup'])
 
-        setup = exp.factory(self.cmdopts["exp_setup"])()
+        setup = exp.factory(self.cmdopts["exp_setup"],
+                            not self.cmdopts["no_master_node"])()
         rms, adds, chgs = scutils.apply_to_expdef(setup, exp_def)
 
         # Write setup info to file for later retrieval

@@ -28,6 +28,7 @@ import argparse
 import socket
 import logging
 import pwd
+import re
 
 # 3rd party packages
 import implements
@@ -223,23 +224,54 @@ class ExecEnvChecker():
     """
 
     @staticmethod
-    def parse_nodefile(nodefile: str) -> tp.Dict[str, str]:
-        ret = {}
+    def parse_nodefile(nodefile: str) -> tp.Set[tp.Dict]:
+        ret = []
+
         with open(nodefile, 'r') as f:
             lines = f.readlines()
 
             for line in lines:
                 cores, ssh = line.split('/')
-                if '@' in ssh:
-                    login, hostname = ssh.split('@')
-                else:
-                    hostname = ssh
-                    login = pwd.getpwuid(os.getuid())[0]
 
-                ret[hostname.strip()] = {
+                identifier_re = r"[a-zA-Z0-9_.]+"
+                port_re = r"ssh -p\s*([0-9]+)"
+                username_at_host_re = f"({identifier_re})+@({identifier_re})"
+                port_and_username_at_host_re = port_re + r"\*s" + username_at_host_re
+                port_and_hostname_re = port_re + rf"\s+({identifier_re})"
+
+                if res := re.search(port_and_username_at_host_re, ssh):
+                    print("port and username@host")
+                    # They specified the port AND 'username@host'
+                    port = int(res.group(1))
+                    login = res.group(2)
+                    hostname = res.group(3)
+                elif res := re.search(port_and_hostname_re, ssh):
+                    print("port and host")
+                    # They only specified the port and hostname
+                    port = int(res.group(1))
+                    hostname = res.group(2)
+                    login = pwd.getpwuid(os.getuid())[0]
+                elif res := re.search(username_at_host_re, ssh):
+                    print("username@host")
+                    # They only specified 'username@host'
+                    port = 22
+                    login = res.group(1)
+                    hostname = res.group(2)
+                elif res := re.search(identifier_re, ssh):
+                    print("HOSTNAME only")
+                    # They only specified the hostname
+                    port = 22
+                    login = pwd.getpwuid(os.getuid())[0]
+                    hostname = res.group(0)
+                else:
+                    raise ValueError(f"Bad ssh/hostname spec {ssh}")
+
+                ret.append({
+                    'hostname': hostname,
                     'n_cores': cores,
-                    'login': login
-                }
+                    'login': login,
+                    'port': port
+                })
         return ret
 
     def __init__(self, cmdopts: types.Cmdopts):
@@ -259,42 +291,59 @@ class ExecEnvChecker():
     def check_connectivity(self,
                            login: str,
                            hostname: str,
+                           port: int,
                            host_type: str) -> bool:
         self.logger.info("Checking connectivity to %s", hostname)
+        ssh_diag = f"{host_type},port={port} via {login}@{hostname}"
+        nc_diag = f"{host_type},port={port} via {hostname}"
+
+        if self.cmdopts['online_check_method'] == 'ping+ssh':
+            try:
+                self.logger.debug("Attempt to ping %s, type=%s",
+                                  hostname,
+                                  host_type)
+                timeout = config.kPlatform['ping_timeout']
+                subprocess.run(f"ping -c 3 -W {timeout} {hostname}",
+                               shell=True,
+                               check=True,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
+            except subprocess.CalledProcessError:
+                self.logger.fatal("Unable to ping %s, type=%s",
+                                  hostname,
+                                  host_type)
+                raise
+            self.logger.debug("%s is alive, type=%s", hostname, host_type)
+        elif self.cmdopts['online_check_method'] == 'nc+ssh':
+            try:
+                self.logger.debug("Check for ssh tunnel to %s", nc_diag)
+                timeout = config.kPlatform['ping_timeout']
+                subprocess.run(f"nc -z {hostname} {port}",
+                               shell=True,
+                               check=True,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
+            except subprocess.CalledProcessError:
+                self.logger.fatal("No ssh tunnel to %s", nc_diag)
+                raise
+            self.logger.debug("ssh tunnel to %s alive", nc_diag)
 
         try:
-            hostname = hostname.strip()
-            self.logger.debug("Attempt to ping %s, type=%s",
-                              hostname,
-                              host_type)
-            timeout = config.kPlatform['ping_timeout']
-            subprocess.run(f"ping -c 3 -W {timeout} {hostname}",
+
+            self.logger.debug("Verify ssh to %s", ssh_diag)
+            subprocess.run((f"ssh -p{port} "
+                            "-o PasswordAuthentication=no "
+                            "-o StrictHostKeyChecking=no "
+                            "-o BatchMode=yes "
+                            f"{login}@{hostname} exit"),
                            shell=True,
                            check=True,
                            stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE)
         except subprocess.CalledProcessError:
-            self.logger.fatal("Unable to ping %s, type=%s", hostname, host_type)
+            self.logger.fatal("Unable to connect to %s", ssh_diag)
             raise
-        self.logger.debug("%s is alive, type=%s", hostname, host_type)
-
-        try:
-            self.logger.debug("Verify ssh to %s with %s@%s",
-                              host_type,
-                              login,
-                              hostname)
-            subprocess.run(f"ssh -o PasswordAuthentication=no  -o BatchMode=yes {login}@{hostname} exit",
-                           shell=True,
-                           check=True,
-                           stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE)
-        except subprocess.CalledProcessError:
-            self.logger.fatal("Unable to connect to %s via %s@%s",
-                              host_type,
-                              login,
-                              hostname)
-            raise
-        self.logger.info("Robot@%s online", hostname)
+        self.logger.info("%s@%s online", host_type, hostname)
 
     def check_for_simulator(self, name: str):
         if self.exec_env in ['hpc.local', 'hpc.adhoc']:
@@ -303,7 +352,7 @@ class ExecEnvChecker():
             arch = os.environ.get('SIERRA_ARCH')
             shellname: str = '{0}-{1}'.format(name, arch)
         else:
-            assert False,\
+            assert False, \
                 "Bad --exec-env '{0}' for platform '{1}'".format(self.exec_env,
                                                                  self.platform)
 
@@ -314,7 +363,7 @@ class ExecEnvChecker():
                                           shell=True)
             return version_info
         else:
-            assert False,\
+            assert False, \
                 "Bad --exec-env '{0}' for platform '{1}': cannot find '{2}'".format(self.exec_env,
                                                                                     self.platform,
                                                                                     name)
@@ -347,10 +396,12 @@ def get_local_ip():
         if socket.AF_INET in netifaces.ifaddresses(iface):
             active.append(iface)
 
-    if len(active) > 2:
-        logging.warning(("SIERRA host machine has >1 non-loopback IP addresses/"
-                         "netwark interfaces--SIERRA may select the wrong one: "
-                         "%s"), active)
+    active = list(filter('lo'.__ne__, active))
+
+    if len(active) > 1:
+        logging.warning(("SIERRA host machine has > 1 non-loopback IP addresses"
+                         "/network interfaces--SIERRA may select the wrong "
+                         "one: %s"), active)
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(("8.8.8.8", 80))
     return s.getsockname()[0]

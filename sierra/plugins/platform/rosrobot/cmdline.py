@@ -79,6 +79,41 @@ class PlatformCmdline(cmd.BaseCmdline):
                                      """ + self.stage_usage_doc([1, 2]),
                                      action='store_true')
 
+        self.multistage.add_argument("--online-check-method",
+                                     choices=['ping+ssh', 'nc+ssh'],
+                                     help="""
+
+                                     How SIERRA should check if a given robot is
+                                     online. Valid values:
+
+                                     - ``ping+ssh`` - First, verify that you can
+                                       ping each the hostname/IP associated with
+                                       each robot. Second, verify that
+                                       passwordless ssh to the hostname/IP
+                                       works. This is the most common option.
+
+                                     - ``nc+ssh`` - First, verify that an ssh
+                                       connection exists from the SIERRA host
+                                       machine to the robot on the specified
+                                       port using netcat. Second, verify that
+                                       passwordless ssh to the robot on the
+                                       specified port works. This is useful when
+                                       connecting to the robots through a
+                                       reverse SSH tunnel, which can be
+                                       necessary if the robots don't have a
+                                       fixed IP address and cannot be addressed
+                                       by FQDN (looking at you eduroam...).
+
+                                    .. WARNING:: The username to connect to the
+                                       robots *should* be the same as the one
+                                       used to invoke SIERRA. You *can* put a
+                                       different username in the nodefile, but
+                                       it's not tested and you will probably get
+                                       an error.
+
+                                     """,
+                                     default='ping+ssh')
+
     def init_stage1(self) -> None:
         self.stage1.add_argument("--skip-sync",
                                  help="""
@@ -135,6 +170,7 @@ class PlatformCmdline(cmd.BaseCmdline):
             # Multistage
             'exec_jobs_per_node': 1,  # (1 job/robot)
             'skip_online_check': cli_args.skip_online_check,
+            'online_check_method': cli_args.online_check_method,
 
             # stage 1
             'skip_sync': cli_args.skip_sync,
