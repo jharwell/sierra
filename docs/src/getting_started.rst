@@ -29,6 +29,9 @@ Installing SIERRA
             - ``texlive-fonts-recommended``
             - ``texlive-latex-extra``
             - ``dvipng``
+            - ``pssh``
+            - ``ffmpeg``
+            - ``xvfb``
 
          .. group-tab:: OSX
 
@@ -36,16 +39,16 @@ Installing SIERRA
 
             - ``parallel``
             - ``--cask mactex``
-
+            - ``pssh``
 
 
    If you are on a different Linux distribution you will have to find and
    install the equivalent packages.
 
-
-   .. IMPORTANT:: SIERRA will not work if these packages (or their equivalent on
-                  non-ubuntu systems) are not installed!
-
+   .. IMPORTANT:: SIERRA will not work correctly in all cases if these packages
+                  (or their equivalent) are not installed! It may start, it
+                  might even not crash immediately depending on what you are
+                  using it to do.
 
 General Setup Workflow
 ======================

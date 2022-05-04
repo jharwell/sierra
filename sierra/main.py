@@ -50,7 +50,7 @@ class SIERRA():
         self.logger.info("This is SIERRA %s.", sierra.version.__version__)
 
         # Check SIERRA runtime environment
-        sierra.core.startup.startup_checks()
+        sierra.core.startup.startup_checks(not bootstrap_args.skip_pkg_checks)
 
         sierra_root = os.path.dirname(os.path.abspath(__file__))
 

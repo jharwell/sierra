@@ -267,6 +267,9 @@ class ExpConfigurer():
         checker = platform.ExecEnvChecker(self.cmdopts)
         nodes = checker.parse_nodefile(self.cmdopts['nodefile'])
 
+        pssh_base = 'parallel-ssh'
+        prsync_base = 'parallel-rsync'
+
         for node in nodes:
             remote_login = node['login']
             remote_port = node['port']
@@ -279,37 +282,39 @@ class ExpConfigurer():
                                            remote_port,
                                            self.cmdopts['robot'])
 
-            # In case the user is different on the remote machine than this one,
-            # and the location of the generated experiment is under /home.
-            robot_input_root = exp_input_root.replace(current_username,
-                                                      remote_login)
+            pssh_base += f' -H {remote_login}@{remote_hostname}:{remote_port}'
+            prsync_base += f' -H {remote_login}@{remote_hostname}:{remote_port}'
 
-            mkdir_cmd = (f"ssh -p {remote_port} {remote_login}@{remote_hostname} "
-                         f"mkdir -p {robot_input_root}")
+        # In case the user is different on the remote machine than this one,
+        # and the location of the generated experiment is under /home.
+        robot_input_root = exp_input_root.replace(current_username,
+                                                  remote_login)
 
-            rsync_cmd = ("rsync -avz "
-                         f"-e 'ssh -p {remote_port} -o StrictHostKeyChecking=no' "
-                         f"{exp_input_root}/ "
-                         f"{remote_login}@{remote_hostname}:{robot_input_root}/")
+        mkdir_cmd = f"{pssh_base} mkdir -p {robot_input_root}"
+
+        rsync_cmd = (f"{prsync_base} "
+                     f"-avz "
+                     f"-O StrictHostKeyChecking=no "
+                     f"{exp_input_root}/ "
+                     f"{robot_input_root}/")
+        try:
+            self.logger.trace("Running mkdir: %s", mkdir_cmd)
+            subprocess.run(mkdir_cmd,
+                           shell=True,
+                           check=True,
+                           stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE)
             self.logger.trace("Running rsync: %s", rsync_cmd)
-            try:
-                self.logger.trace("Running mkdir: %s", mkdir_cmd)
-                subprocess.run(mkdir_cmd,
-                               shell=True,
-                               check=True,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-                self.logger.trace("Running rsync: %s", rsync_cmd)
-                subprocess.run(rsync_cmd,
-                               shell=True,
-                               check=True,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-            except subprocess.CalledProcessError:
-                self.logger.fatal("Unable to sync %s with %s via ssh",
-                                  exp_input_root,
-                                  robot_input_root)
-                raise
+            subprocess.run(rsync_cmd,
+                           shell=True,
+                           check=True,
+                           stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE)
+        except subprocess.CalledProcessError:
+            self.logger.fatal("Unable to sync %s with %s via ssh",
+                              exp_input_root,
+                              robot_input_root)
+            raise
 
 
 @implements.implements(bindings.IExecEnvChecker)

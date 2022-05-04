@@ -23,6 +23,9 @@ you clone things somewhere else.
             - ``texlive-fonts-recommended``
             - ``texlive-latex-extra``
             - ``dvipng``
+            - ``pssh``
+            - ``ffmpeg``
+            - ``xvfb``
 
          .. group-tab:: OSX
 
@@ -30,13 +33,14 @@ you clone things somewhere else.
 
             - ``parallel``
             - ``--cask mactex``
+            - ``pssh``
 
 
 
-   .. IMPORTANT:: SIERRA will not work if these packages (or their equivalent)
-                  are not installed! It may start, it might even not crash
-                  immediately depending on what you are using it to do, but it
-                  won't work correctly.
+   .. IMPORTANT:: SIERRA will not work correctly in all cases if these packages
+                  (or their equivalent) are not installed! It may start, it
+                  might even not crash immediately depending on what you are
+                  using it to do.
 
 #. From the SIERRA repo root, install SIERRA locally::
 
