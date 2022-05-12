@@ -83,8 +83,8 @@ class ExpShell():
             stderr = stderr.decode("ascii")
 
             if 'env' in spec and spec['env']:
-                stdout = stdout.split("~~~~ENV_START~~~")[0]
-                stderr = stderr.split("~~~~ENV_START~~~")[0]
+                stdout = stdout.split("~~~~ENV_START~~~~")[0]
+                stderr = stderr.split("~~~~ENV_START~~~~")[0]
 
             self.logger.error("Cmd stdout (last 10 lines): %s",
                               '\n + ''\n'.join(stdout.split('\n')[-10:]))

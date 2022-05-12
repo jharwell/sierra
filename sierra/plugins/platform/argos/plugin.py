@@ -280,11 +280,14 @@ class ExecEnvChecker(platform.ExecEnvChecker):
                 "Non-ARGoS environment detected: '{0}' not found".format(k)
 
         # Check we can find ARGoS
-        version = self.check_for_simulator(config.kARGoS['launch_cmd'])
+        proc = self.check_for_simulator(config.kARGoS['launch_cmd'])
 
         # Check ARGoS version
-        res = re.search(r'beta[0-9]+', version.stdout.decode('utf-8'))
-        assert res is not None, "ARGOS_VERSION not in -v output"
+        stdout = proc.stdout.decode('utf-8')
+        stderr = proc.stderr.decode('utf-8')
+        res = re.search(r'beta[0-9]+', stdout)
+        assert res is not None, \
+            f"ARGOS_VERSION not in stdout: stdout='{stdout}',stderr='{stderr}'"
 
         version = packaging.version.parse(res.group(0))
         min_version = packaging.version.parse(config.kARGoS['min_version'])

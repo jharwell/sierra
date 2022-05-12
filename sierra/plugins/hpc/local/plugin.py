@@ -23,6 +23,7 @@ enough under that semantic umbrella).
 import typing as tp
 import argparse
 import os
+import shutil
 
 # 3rd party packages
 import implements
@@ -76,7 +77,7 @@ class ExpShellCmdsGenerator():
         # defaults to /bin/sh since all cmds are run in a python shell which
         # does not have $SHELL set.
         use_bash = {
-            'cmd': 'export PARALLEL_SHELL=/bin/bash',
+            'cmd': 'export PARALLEL_SHELL={0}'.format(shutil.which('bash')),
             'shell': True,
             'wait': True,
             'env': True

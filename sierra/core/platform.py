@@ -356,12 +356,17 @@ class ExecEnvChecker():
                 "Bad --exec-env '{0}' for platform '{1}'".format(self.exec_env,
                                                                  self.platform)
 
+        version_cmd = f'{shellname} -v'
+        self.logger.debug("Check version for '%s' via '%s'",
+                          shellname,
+                          version_cmd)
+
         if shutil.which(shellname):
-            version_info = subprocess.run(' '.join([shellname, '-v']),
-                                          stdout=subprocess.PIPE,
-                                          stderr=subprocess.PIPE,
-                                          shell=True)
-            return version_info
+            res = subprocess.run(version_cmd,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE,
+                                 shell=True)
+            return res
         else:
             assert False, \
                 "Bad --exec-env '{0}' for platform '{1}': cannot find '{2}'".format(self.exec_env,

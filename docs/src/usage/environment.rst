@@ -62,12 +62,25 @@ Environment Variables
    because GNU parallel does not export the environment of the node it is
    launched from to slave nodes (or even on the local machine). Something like::
 
-     export PARALLEL="--workdir . --env PATH --env LD_LIBRARY_PATH --env
-     LOADEDMODULES --env _LMFILES_ --env MODULE_VERSION --env MODULEPATH --env
-     MODULEVERSION_STACK --env MODULESHOME --env OMP_DYNAMICS --env
-     OMP_MAX_ACTIVE_LEVELS --env OMP_NESTED --env OMP_NUM_THREADS --env
-     OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY
-     --env SIERRA_ARCH --env SIERRA_PLUGIN_PATH"
+     export PARALLEL="--workdir . \
+     --env PATH \
+     --env LD_LIBRARY_PATH \
+     --env LOADEDMODULES \
+     --env _LMFILES_ \
+     --env MODULE_VERSION \
+     --env MODULEPATH \
+     --env MODULEVERSION_STACK
+     --env MODULESHOME \
+     --env OMP_DYNAMICS \
+     --env OMP_MAX_ACTIVE_LEVELS \
+     --env OMP_NESTED \
+     --env OMP_NUM_THREADS \
+     --env OMP_SCHEDULE \
+     --env OMP_STACKSIZE \
+     --env OMP_THREAD_LIMIT \
+     --env OMP_WAIT_POLICY \
+     --env SIERRA_ARCH \
+     --env SIERRA_PLUGIN_PATH"
 
    Should be a good starting point. Only used if SIERRA is run on a cluster with
    ``exec_env=hpc.slurm|hpc.pbs``. Don't forget to include
@@ -77,11 +90,11 @@ Environment Variables
 .. envvar:: PARALLEL_SHELL
 
    SIERRA sets up the :term:`Experiment` execution environments by running one
-   or more shell commands in a subprocess (treated as a shell``, which means
+   or more shell commands in a subprocess (treated as a ``shell``, which means
    that :program:`parallel` can't determine ``SHELL``, and therefore defaults to
    ``/bin/sh``, which is not what users expect. SIERRA explicitly sets
-   ``PARALLEL_SHELL`` to ``/bin/bash`` in keeping with the Principle Of Least
-   Surprise.
+   ``PARALLEL_SHELL`` to the result of ``shutil.which('bash')`` in keeping with
+   the Principle Of Least Surprise.
 
 .. envvar:: ROS_PACKAGE_PATH
 
