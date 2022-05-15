@@ -159,7 +159,9 @@ class XMLAttrChangeSet():
         self.changes.add(chg)
 
     def pickle(self, fpath: str, delete: bool = False) -> None:
-        if delete and os.path.exists(fpath):
+        from sierra.core import utils
+
+        if delete and utils.path_exists(fpath):
             os.remove(fpath)
 
         with open(fpath, 'ab') as f:
@@ -195,7 +197,9 @@ class XMLTagRmList():
         self.rms.append(other)
 
     def pickle(self, fpath: str, delete: bool = False) -> None:
-        if delete and os.path.exists(fpath):
+        from sierra.core import utils
+
+        if delete and utils.path_exists(fpath):
             os.remove(fpath)
 
         with open(fpath, 'ab') as f:
@@ -250,7 +254,9 @@ class XMLTagAddList():
         self.adds.insert(0, other)
 
     def pickle(self, fpath: str, delete: bool = False) -> None:
-        if delete and os.path.exists(fpath):
+        from sierra.core import utils
+
+        if delete and utils.path_exists(fpath):
             os.remove(fpath)
 
         with open(fpath, 'ab') as f:

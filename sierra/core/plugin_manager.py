@@ -29,7 +29,7 @@ import logging  # type: tp.Any
 # 3rd party packages
 
 # Project packages
-from sierra.core import types
+from sierra.core import types, utils
 
 
 class BasePluginManager():
@@ -243,7 +243,7 @@ class CompositePluginManager(BasePluginManager):
         for d in search_path:
             project_path = os.path.join(d, project)
 
-            if os.path.exists(project_path):
+            if utils.path_exists(project_path):
                 project_plugin = ProjectPluginManager(d, project)
                 self.components.append(project_plugin)
             else:

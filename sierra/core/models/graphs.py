@@ -35,7 +35,7 @@ class IntraExpModel2DGraphSet():
     """
     @staticmethod
     def model_exists(exp_model_root: str, target_stem: str):
-        return os.path.exists(os.path.join(exp_model_root, target_stem + '.model'))
+        return utils.path_exists(os.path.join(exp_model_root, target_stem + '.model'))
 
     def __init__(self,
                  exp_stat_root: str,

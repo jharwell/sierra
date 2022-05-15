@@ -231,7 +231,16 @@ class ExecEnvChecker():
             lines = f.readlines()
 
             for line in lines:
-                cores, ssh = line.split('/')
+                comment_re = r"^#"
+                if res := re.search(comment_re, line):
+                    continue
+
+                cores_re = r"^[0-9]+/"
+                if res := re.search(cores_re, line):
+                    cores, ssh = line.split('/')
+                else:
+                    cores = 1
+                    ssh = line
 
                 identifier_re = r"[a-zA-Z0-9_.]+"
                 port_re = r"ssh -p\s*([0-9]+)"
