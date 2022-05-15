@@ -88,7 +88,7 @@ class ExpCreator:
         self.random_seeds = None
 
         if self.preserve_seeds:
-            if os.path.exists(self.seeds_fpath):
+            if utils.path_exists(self.seeds_fpath):
                 with open(self.seeds_fpath, 'rb') as f:
                     self.random_seeds = pickle.load(f)
 
@@ -152,8 +152,8 @@ class ExpCreator:
         platform.ExpConfigurer(self.cmdopts).for_exp(self.exp_input_root)
 
         # Save seeds
-        if not os.path.exists(self.seeds_fpath) or not self.preserve_seeds:
-            if os.path.exists(self.seeds_fpath):
+        if not utils.path_exists(self.seeds_fpath) or not self.preserve_seeds:
+            if utils.path_exists(self.seeds_fpath):
                 os.remove(self.seeds_fpath)
             with open(self.seeds_fpath, 'ab') as f:
                 pickle.dump(self.random_seeds, f)

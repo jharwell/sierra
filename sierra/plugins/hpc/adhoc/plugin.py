@@ -30,7 +30,7 @@ import shutil
 import implements
 
 # Project packages
-from sierra.core import types, config
+from sierra.core import types, config, utils
 from sierra.core import plugin_manager as pm
 from sierra.core.experiment import bindings
 import sierra.core.variables.batch_criteria as bc
@@ -55,7 +55,7 @@ class ParsedCmdlineConfigurer():
                 "Non-Adhoc environment detected: 'SIERRA_NODEFILE' not found"
             args.nodefile = os.environ['SIERRA_NODEFILE']
 
-        assert os.path.exists(args.nodefile), \
+        assert utils.path_exists(args.nodefile), \
             f"SIERRA_NODEFILE '{args.nodefile}' does not exist"
 
         assert not args.platform_vc,\
