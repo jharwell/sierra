@@ -49,6 +49,9 @@ class Pipeline:
         self.args = args
         self.logger = logging.getLogger(__name__)
 
+        assert all(stage in [1, 2, 3, 4, 5] for stage in args.pipeline), \
+            f"Invalid pipeline stage in {args.pipeline}: Only 1-5 valid"
+
         self.cmdopts = {
             # general
             'sierra_root': self.args.sierra_root,

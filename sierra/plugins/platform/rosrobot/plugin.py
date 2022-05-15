@@ -292,7 +292,9 @@ class ExpConfigurer():
         robot_input_root = exp_input_root.replace(current_username,
                                                   remote_login)
 
-        mkdir_cmd = f"{pssh_base} mkdir -p {robot_input_root}"
+        mkdir_cmd = (f"{pssh_base} "
+                     f"-O StrictHostKeyChecking=no "
+                     f"mkdir -p {robot_input_root}")
 
         rsync_cmd = (f"{prsync_base} "
                      f"-avz "
@@ -301,21 +303,23 @@ class ExpConfigurer():
                      f"{robot_input_root}/")
         try:
             self.logger.trace("Running mkdir: %s", mkdir_cmd)
-            subprocess.run(mkdir_cmd,
-                           shell=True,
-                           check=True,
-                           stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE)
+            res = subprocess.run(mkdir_cmd,
+                                 shell=True,
+                                 check=True,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
             self.logger.trace("Running rsync: %s", rsync_cmd)
-            subprocess.run(rsync_cmd,
-                           shell=True,
-                           check=True,
-                           stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE)
+            res = subprocess.run(rsync_cmd,
+                                 shell=True,
+                                 check=True,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE)
         except subprocess.CalledProcessError:
-            self.logger.fatal("Unable to sync %s with %s via ssh",
+            self.logger.fatal("Unable to sync %s with %s: stdout=%s,stderr=%s",
                               exp_input_root,
-                              robot_input_root)
+                              robot_input_root,
+                              res.stdout.decode('utf-8'),
+                              res.stderr.decode('utf-8'))
             raise
 
 

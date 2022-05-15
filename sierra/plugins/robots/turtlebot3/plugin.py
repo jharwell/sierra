@@ -29,8 +29,7 @@ import shutil
 import implements
 
 # Project packages
-from sierra.core import types, config, platform, utils
-from sierra.core import plugin_manager as pm
+from sierra.core import types, platform, utils
 from sierra.core.experiment import bindings
 import sierra.core.variables.batch_criteria as bc
 
@@ -56,7 +55,7 @@ class ParsedCmdlineConfigurer():
                  "passed and 'SIERRA_NODEFILE' not found")
             args.nodefile = os.environ['SIERRA_NODEFILE']
 
-        assert os.path.exists(args.nodefile), \
+        assert utils.path_exists(args.nodefile), \
             f"SIERRA_NODEFILE '{args.nodefile}' does not exist"
         self.logger.info("Using '%s' as robot hostnames file", args.nodefile)
 
