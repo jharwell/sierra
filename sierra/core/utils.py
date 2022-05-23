@@ -346,6 +346,17 @@ def get_n_robots(main_config: types.YAMLDict,
     return n_robots
 
 
+def df_fill(df: pd.DataFrame, policy: str) -> pd.DataFrame:
+    if policy == 'none':
+        return df
+    elif policy == 'pad':
+        return df.fillna(method='pad')
+    elif policy == 'zero':
+        return df.fillna(value=0)
+    else:
+        raise RuntimeError(f"Bad fill policy {policy}")
+
+
 __api__ = [
     'ArenaExtent',
     'Sigmoid',
@@ -358,6 +369,7 @@ __api__ = [
     'apply_to_expdef',
     'pickle_modifications',
     'batch_template_path',
-    'get_n_robots'
+    'get_n_robots',
+    'df_fill'
 
 ]

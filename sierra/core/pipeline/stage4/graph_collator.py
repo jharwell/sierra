@@ -259,7 +259,7 @@ class GraphParallelCollator():
             for graph in category['graphs']:
                 q.put(graph)
 
-        if self.cmdopts['serial_processing']:
+        if self.cmdopts['processing_serial']:
             parallelism = 1
         else:
             parallelism = mp.cpu_count()

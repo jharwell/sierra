@@ -107,7 +107,7 @@ class BatchExpParallelVideoRenderer:
                     q.put(copy.deepcopy(opts))
 
         # Render videos in parallel--waaayyyy faster
-        if self.cmdopts['serial_processing']:
+        if self.cmdopts['processing_serial']:
             parallelism = 1
         else:
             parallelism = mp.cpu_count()

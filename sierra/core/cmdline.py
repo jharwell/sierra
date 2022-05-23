@@ -142,7 +142,7 @@ class BootstrapCmdline(BaseCmdline):
                                this if you are SURE you will never use the
                                SIERRA functionality which requires packages you
                                don't have installed/can't install.
-                               
+
                                """,
                                action='store_true')
 
@@ -403,7 +403,7 @@ class CoreCmdline(BaseCmdline):
                                     """ + self.stage_usage_doc([1, 4]),
                                      action='store_true')
 
-        self.multistage.add_argument("--serial-processing",
+        self.multistage.add_argument("--processing-serial",
                                      help="""
 
                                     If TRUE, then results processing/graph
@@ -489,18 +489,27 @@ class CoreCmdline(BaseCmdline):
         Define cmdline arguments for stage 3.
         """
 
-        self.stage3.add_argument('--skip-verify-results',
+        self.stage3.add_argument('--df-skip-verify',
                                  help="""
+
+                                 SIERRA generally assumes/relies on all
+                                 dataframes with the same name having the same #
+                                 of columns which are of equivalent length
+                                 across :term:`Experimental Runs <Experimental
+                                 Run>` (different columns within a dataframe can
+                                 of course have different lengths). This is
+                                 strictly verified during stage 3 by default.
 
                                  If passed, then the verification step will be
                                  skipped during experimental results processing,
-                                 and outputs will be averaged directly. If not
-                                 all the corresponding ``.csv`` files in all
-                                 experiments generated the same # rows, then
+                                 and outputs will be averaged directly.
+
+                                 If not all the corresponding ``.csv`` files in
+                                 all experiments generated the same # rows, then
                                  SIERRA will (probably) crash during experiments
                                  exist and/or have the stage4. Verification can
-                                 take a long time with large # of runs per
-                                 experiment.
+                                 take a long time with large # of runs and/or
+                                 dataframes per experiment.
 
                                  """ + self.stage_usage_doc([3]),
                                  action='store_true',
@@ -560,6 +569,7 @@ class CoreCmdline(BaseCmdline):
                                  default='none')
 
         self.stage3.add_argument("--processing-mem-limit",
+                                 type=int,
                                  help="""
 
 
@@ -569,6 +579,50 @@ class CoreCmdline(BaseCmdline):
 
                                  """ + self.stage_usage_doc([3, 4]),
                                  default=90)
+
+        self.multistage.add_argument("--df-homogenize",
+                                     help="""
+
+                                     SIERRA generally assumes/relies on all
+                                     dataframes with the same name having the
+                                     same # of columns which are of equivalent
+                                     length across :term:`Experimental Runs
+                                     <Experimental Run>` (different columns
+                                     within a dataframe can of course have
+                                     different lengths). This is checked during
+                                     stage 3 unless ``--df-skip-verify`` is
+                                     passed. If strict verification is skipped,
+                                     then SIERRA provides the following options
+                                     when processing dataframes during stage
+                                     {3,4} to to homogenize them:
+
+                                     - ``none`` - Don't do anything. This may or
+                                                  may not produce crashes during
+                                                  stage 4, depending on what you
+                                                  are doing.
+
+                                    - ``pad`` - Project last valid value in
+                                                columns which are too short down
+                                                the column to make it match
+                                                those which are longer.
+
+                                                Note that this may result in
+                                                invalid data/graphs if the
+                                                filled columns are intervallic,
+                                                interval average, or cumulative
+                                                average data. If the data is a
+                                                cumulative count of something,
+                                                then this policy will have no
+                                                ill effects.
+
+                                     - ``zero`` - Same as ``pad``, but always
+                                                  fill with zeroes.
+
+                                     Homogenization is performed just before
+                                     writing dataframes to the specified storage
+                                     medium.
+                                     """,
+                                     default='none')
 
     def init_stage4(self) -> None:
         """

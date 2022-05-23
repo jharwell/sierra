@@ -79,7 +79,7 @@ class BatchExpParallelImagizer:
                         imagize_output_root, exist_ok=True)
                     q.put(imagize_opts)
 
-        if self.cmdopts['serial_processing']:
+        if self.cmdopts['processing_serial']:
             parallelism = 1
         else:
             parallelism = mp.cpu_count()

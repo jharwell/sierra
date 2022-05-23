@@ -53,7 +53,7 @@ class Pipeline:
             f"Invalid pipeline stage in {args.pipeline}: Only 1-5 valid"
 
         self.cmdopts = {
-            # general
+            # multistage
             'sierra_root': self.args.sierra_root,
             'scenario': self.args.scenario,
             'template_input_file': self.args.template_input_file,
@@ -67,6 +67,7 @@ class Pipeline:
             'dist_stats': self.args.dist_stats,
             'skip_collate': self.args.skip_collate,
             'platform': self.args.platform,
+            'processing_serial': self.args.processing_serial,
 
             # stage 1
             'no_preserve_seeds': self.args.no_preserve_seeds,
@@ -75,10 +76,10 @@ class Pipeline:
             'nodefile': self.args.nodefile,
 
             # stage 3
-            'skip_verify_results': self.args.skip_verify_results,
+            'df_skip_verify': self.args.df_skip_verify,
+            'df_homogenize': self.args.df_homogenize,
             'render_cmd_opts': self.args.render_cmd_opts,
             'processing_mem_limit': self.args.processing_mem_limit,
-            'serial_processing': self.args.serial_processing,
             'storage_medium': self.args.storage_medium,
 
             # stage 4
