@@ -75,9 +75,9 @@ TOQUE-PBS docs for meaning); if they are not defined SIERRA will throw an error.
      - Used to calculate # threads per experimental run for each allocated
        compute node via::
 
-         floor(PBS_NUM_PPN / --exec-sims-per-node)
+         floor(PBS_NUM_PPN / --exec-jobs-per-node)
 
-       That is, ``--exec-sims-per-node`` is required for PBS HPC environments.
+       That is, ``--exec-jobs-per-node`` is required for PBS HPC environments.
 
    * - PBS_NODEFILE
 
@@ -134,7 +134,7 @@ SLURM docs for meaning); if they are not defined SIERRA will throw an error.
 
    * - SLURM_TASKS_PER_NODE
      - Used to set # parallel jobs per allocated compute node. Overriden by
-       ``--exec-sims-per-node`` if passed.
+       ``--exec-jobs-per-node`` if passed.
 
    * - SLURM_JOB_NODELIST
 

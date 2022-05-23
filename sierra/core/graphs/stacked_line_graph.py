@@ -127,7 +127,8 @@ class StackedLineGraph:
         fig = ax.get_figure()
         fig.set_size_inches(config.kGraphBaseSize,
                             config.kGraphBaseSize)
-        fig.savefig(self.output_fpath, bbox_inches='tight',
+        fig.savefig(self.output_fpath,
+                    bbox_inches='tight',
                     dpi=config.kGraphDPI)
         # Prevent memory accumulation (fig.clf() does not close everything)
         plt.close(fig)
@@ -184,11 +185,15 @@ class StackedLineGraph:
                          alpha=0.50)
 
     def _plot_legend(self, ax, model_legend: tp.List[str], ncols: int) -> None:
-        # Should have ~3 entries per column, in order to maximize real estate on tightly
-        # constrained papers.
+        # Should always use one column: If a small number of lines are plotted,
+        # then 1 vs. > 1 column makes no difference. If a large number of lines
+        # are plotted, this will make the figures more portrait than landscape,
+        # which is more amenable to inclusion in academic papers.
 
-        # If the legend is not specified, then we assume this is not a graph that will contain any
-        # models.
+        # If the legend is not specified, then we assume this is not a graph
+        # that will contain any models.
+        legend = self.legend
+
         if self.legend is not None:
             legend = copy.deepcopy(self.legend)
             if model_legend:
@@ -199,12 +204,12 @@ class StackedLineGraph:
                       legend,
                       loc='lower center',
                       bbox_to_anchor=(0.5, -0.5),
-                      ncol=ncols,
+                      ncol=1,
                       fontsize=self.text_size['legend_label'])
         else:
             ax.legend(loc='lower center',
                       bbox_to_anchor=(0.5, -0.5),
-                      ncol=ncols,
+                      ncol=1,
                       fontsize=self.text_size['legend_label'])
 
     def _read_stats(self) -> tp.Dict[str, pd.DataFrame]:
