@@ -77,9 +77,10 @@ class PopulationConstantDensity(cd.ConstantDensity):
                                        (self.target_density / 100.0))
                         if n_robots == 0:
                             n_robots = 1
-                            self.logger.warning("n_robots set to 1 even though \
-                            calculated as 0 for area=%s,density=%s",
-                                                extent.area,
+                            self.logger.warning(("n_robots set to 1 even though "
+                                                 "calculated as 0 for area=%s,"
+                                                 "density=%s"),
+                                                str(extent.area),
                                                 self.target_density)
 
                         changeset.add(XMLAttrChange(".//arena/distribute/entity",
@@ -136,7 +137,8 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
 def factory(cli_arg: str,
             main_config: types.YAMLDict,
-            cmdopts: types.Cmdopts) -> PopulationConstantDensity:
+            cmdopts: types.Cmdopts,
+            **kwargs) -> PopulationConstantDensity:
     """
     Factory to create :class:`PopulationConstantDensity` derived classes from
     the command line definition.
@@ -145,7 +147,15 @@ def factory(cli_arg: str,
     attr = cd.Parser()(cli_arg)
     sgp = pm.module_load_tiered(project=cmdopts['project'],
                                 path='generators.scenario_generator_parser')
-    kw = sgp.ScenarioGeneratorParser().to_dict(cmdopts['scenario'])
+
+    # scenario is passed in kwargs during stage 5 (can't be passed via
+    # --scenario in general )
+    if 'scenario' in kwargs:
+        scenario = kwargs['scenario']
+    else:
+        scenario = cmdopts['scenario']
+
+    kw = sgp.ScenarioGeneratorParser().to_dict(scenario)
 
     is_2x1 = kw['arena_x'] == 2 * kw['arena_y']
     is_1x1 = kw['arena_x'] == kw['arena_y']

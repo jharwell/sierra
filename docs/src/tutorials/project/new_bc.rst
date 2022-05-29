@@ -110,7 +110,8 @@ following to get it to work with SIERRA as a :term:`Batch Criteria`:
           batch_input_root: The directory where the experiment directories are
                             to be created.
 
-          **kwargs: Additional arguments required by this batch criteria.
+          **kwargs: Additional arguments required by this batch criteria. This
+          may be used during stage 5 to pass the ``--scenario`` if needed.
 
       """
 

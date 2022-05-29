@@ -79,11 +79,11 @@ class Vector3D:
         self.z -= o.z
         return self
 
-    # def __ge__(self, other: 'Vector3D') -> bool:
-    #     return self.x >= other.x and self.y >= other.y and self.z >= other.z
+    def __ge__(self, other: 'Vector3D') -> bool:
+        return self.x >= other.x and self.y >= other.y and self.z >= other.z
 
-    # def __le__(self, other: 'Vector3D') -> bool:
-    #     return self.x <= other.x and self.y <= other.y and self.z <= other.z
+    def __le__(self, other: 'Vector3D') -> bool:
+        return self.x <= other.x and self.y <= other.y and self.z <= other.z
 
     def __lt__(self, other: 'Vector3D') -> bool:
         """

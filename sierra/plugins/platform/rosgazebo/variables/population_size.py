@@ -173,7 +173,8 @@ class PopulationSize(population_size.BasePopulationSize):
 
 def factory(cli_arg: str,
             main_config: types.YAMLDict,
-            cmdopts: types.Cmdopts) -> PopulationSize:
+            cmdopts: types.Cmdopts,
+            **kwargs) -> PopulationSize:
     """
     Factory to create :class:`PopulationSize` derived classes from the command
     line definition.
@@ -191,7 +192,15 @@ def factory(cli_arg: str,
         # place robots randomly within it.
         sgp = pm.module_load_tiered(project=cmdopts['project'],
                                     path='generators.scenario_generator_parser')
-        kw = sgp.ScenarioGeneratorParser().to_dict(cmdopts['scenario'])
+
+           # scenario is passed in kwargs during stage 5 (can't be passed via
+           # --scenario in general )
+           if 'scenario' in kwargs:
+                scenario = kwargs['scenario']
+            else:
+                scenario = cmdopts['scenario']
+
+        kw = sgp.ScenarioGeneratorParser().to_dict(scenario)
         xs = random.choices(range(0, kw['arena_x']), k=max_sizes[-1])
         ys = random.choices(range(0, kw['arena_y']), k=max_sizes[-1])
         zs = random.choices(range(0, kw['arena_z']), k=max_sizes[-1])

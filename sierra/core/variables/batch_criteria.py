@@ -666,8 +666,15 @@ def __univar_factory(main_config: types.YAMLDict,
     path = f'variables.{category}'
 
     module = pm.bc_load(cmdopts, category)
+    factory = getattr(module, "factory")
+    if 5 in cmdopts['pipeline']:
+        ret = factory(cli_arg,
+                      main_config,
+                      cmdopts,
+                      scenario=scenario)()
+    else:
+        ret = factory(cli_arg, main_config, cmdopts)()
 
-    ret = getattr(module, "factory")(cli_arg, main_config, cmdopts)()
     logging.info("Create univariate batch criteria '%s' from '%s'",
                  ret.__class__.__name__,
                  path)

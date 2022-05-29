@@ -128,7 +128,8 @@ class PopulationSize(population_size.BasePopulationSize):
 
 def factory(cli_arg: str,
             main_config: types.YAMLDict,
-            cmdopts: types.Cmdopts) -> PopulationSize:
+            cmdopts: types.Cmdopts,
+            **kwargs) -> PopulationSize:
     """
     Factory to create :class:`PopulationSize` derived classes from the command
     line definition.

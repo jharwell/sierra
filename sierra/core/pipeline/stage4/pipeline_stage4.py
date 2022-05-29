@@ -124,30 +124,30 @@ class PipelineStage4:
         Video generation: If images have previously been created, then the
         following is run:
 
-        #. :class:`~sierra.core.pipeline.stage4.video_renderer.BatchExpParallelVideoRenderer`
+        # . :class:`~sierra.core.pipeline.stage4.video_renderer.BatchExpParallelVideoRenderer`
            to render videos for each experiment in the batch, or a subset.
 
         Intra-experiment graph generation: if intra-experiment graphs should be
         generated, according to cmdline configuration, the following is run:
 
-        #. Model generation for each enabled and loaded model.
+        # . Model generation for each enabled and loaded model.
 
-        #. :class:`~sierra.core.pipeline.stage4.intra_exp_graph_generator.BatchIntraExpGraphGenerator`
+        # . :class:`~sierra.core.pipeline.stage4.intra_exp_graph_generator.BatchIntraExpGraphGenerator`
            to generate graphs for each experiment in the batch, or a subset.
 
         Inter-experiment graph generation: if inter-experiment graphs should be
         generated according to cmdline configuration, the following is run:
 
-        #. :class:`~sierra.core.pipeline.stage4.graph_collator.UnivarGraphCollator`
+        # . :class:`~sierra.core.pipeline.stage4.graph_collator.UnivarGraphCollator`
            or
            :class:`~sierra.core.pipeline.stage4.graph_collator.BivarGraphCollator`
            as appropriate (depending on which type of
            :class:`~sierra.core.variables.batch_criteria.BatchCriteria` was
            specified on the cmdline).
 
-        #. Model generation for each enabled and loaded model.
+        # . Model generation for each enabled and loaded model.
 
-        #. :class:`~sierra.core.pipeline.stage4.inter_exp_graph_generator.InterExpGraphGenerator`
+        # . :class:`~sierra.core.pipeline.stage4.inter_exp_graph_generator.InterExpGraphGenerator`
            to perform graph generation from collated ``.csv`` files.
 
         """
@@ -187,10 +187,16 @@ class PipelineStage4:
                          self.cmdopts['project'])
 
         self.models_config = yaml.load(open(project_models), yaml.FullLoader)
-        pm.models.initialize(self.cmdopts['project_model_root'])
+        pm.models.initialize(self.cmdopts['project'],
+                             self.cmdopts['project_model_root'])
 
         # All models present in the .yaml file are enabled/set to run
         # unconditionally
+        available = pm.models.available_plugins()
+        self.logger.debug("Project %s has %d available model plugins",
+                          self.cmdopts['project'],
+                          len(available))
+
         for module_name in pm.models.available_plugins():
             # No models specified--nothing to do
             if self.models_config.get('models') is None:
@@ -198,14 +204,32 @@ class PipelineStage4:
 
             for conf in self.models_config['models']:
                 if conf['pyfile'] == module_name:
+
+                    self.logger.debug("Model %s enabled by configuration",
+                                      module_name)
                     pm.models.load_plugin(module_name)
-                    module = pm.models.get_plugin_module(module_name)
+                    model_name = f'models.{module_name}'
+                    module = pm.models.get_plugin_module(model_name)
+                    self.logger.debug(("Configured model %s has %d "
+                                       "intra-experiment models"),
+                                      model_name,
+                                      len(module.available_models('intra')))
+
+                    self.logger.debug(("Configured model %s has %d "
+                                       "inter-experiment models"),
+                                      model_name,
+                                      len(module.available_models('inter')))
+
                     for avail in module.available_models('intra'):
                         model = getattr(module, avail)(self.main_config, conf)
                         self.models_intra.append(model)
+
                     for avail in module.available_models('inter'):
                         model = getattr(module, avail)(self.main_config, conf)
                         self.models_inter.append(model)
+                else:
+                    self.logger.debug("Model %s disabled by configuration",
+                                      module_name)
 
         if len(self.models_intra) > 0:
             self.logger.info("Loaded %s intra-experiment models for project '%s'",
@@ -256,7 +280,8 @@ class PipelineStage4:
         self.logger.info("Rendering complete in %s", str(sec))
 
     def _run_intra_models(self, criteria: bc.IConcreteBatchCriteria) -> None:
-        self.logger.info("Running intra-experiment models...")
+        self.logger.info("Running %d intra-experiment models...",
+                         len(self.models_intra))
         start = time.time()
         IntraExpModelRunner(self.cmdopts,
                             self.models_intra)(self.main_config,
@@ -266,11 +291,13 @@ class PipelineStage4:
         self.logger.info("Intra-experiment models finished in %s", str(sec))
 
     def _run_inter_models(self, criteria: bc.IConcreteBatchCriteria) -> None:
-        self.logger.info("Running inter-experiment models...")
+        self.logger.info("Running %d inter-experiment models...",
+                         len(self.models_inter))
         start = time.time()
-        InterExpModelRunner(self.cmdopts,
-                            self.models_inter)(self.main_config,
-                                               criteria)
+
+        runner = InterExpModelRunner(self.cmdopts, self.models_inter)
+        runner(self.main_config, criteria)
+
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         self.logger.info("Inter-experiment models finished in %s", str(sec))
@@ -318,7 +345,8 @@ class PipelineStage4:
         generator.InterExpGraphGenerator(
             self.main_config, self.cmdopts, targets)(criteria)
         elapsed = int(time.time() - start)
-        sec = datetime.timedelta(seconds=elapsed)
+        sec = datetime.timedelta(seconds=elapsed)
+
         self.logger.info(
             "Inter-experiment graph generation complete: %s", str(sec))
 

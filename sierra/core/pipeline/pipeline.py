@@ -54,6 +54,7 @@ class Pipeline:
 
         self.cmdopts = {
             # multistage
+            'pipeline': self.args.pipeline,
             'sierra_root': self.args.sierra_root,
             'scenario': self.args.scenario,
             'template_input_file': self.args.template_input_file,

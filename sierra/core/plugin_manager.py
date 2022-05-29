@@ -57,6 +57,7 @@ class BasePluginManager():
         plugins = self.available_plugins()
         if name not in plugins:
             self.logger.fatal("Cannot locate plugin '%s'", name)
+            self.logger.fatal("Loaded plugins: %s", self.loaded)
             raise Exception("Cannot locate plugin '%s'" % name)
 
         if plugins[name]['type'] == 'pipeline':
@@ -136,9 +137,7 @@ class FilePluginManager(BasePluginManager):
         for possible in os.listdir(self.search_root):
             candidate = os.path.join(self.search_root, possible)
             if os.path.isfile(candidate) and '.py' in candidate:
-                name = "{0}.{1}".format(os.path.basename(candidate),
-                                        os.path.splitext(os.path.split(candidate)[1]))
-
+                name = os.path.splitext(os.path.basename(candidate))[0]
                 spec = importlib.util.spec_from_file_location(name, candidate)
                 plugins[name] = {
                     'spec': spec,

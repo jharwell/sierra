@@ -36,10 +36,9 @@ mpl.rcParams['lines.markersize'] = 10
 mpl.rcParams['figure.max_open_warning'] = 10000
 mpl.rcParams['axes.formatter.limits'] = (-4, 4)
 
-# Use latex to render all math, so that it matches how the math renders in papers.
+# Use latex to render all math, so that it matches how the math renders in
+# papers.
 mpl.rcParams['text.usetex'] = True
-
-# mpl.rcParams["axes.prop_cycle"] = plt.cycler("color", plt.cm.tab20.colors)
 
 # Turn off MPL messages when the log level is set to DEBUG or higher. Otherwise
 # you get HUNDREDS.

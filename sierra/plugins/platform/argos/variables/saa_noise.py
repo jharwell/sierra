@@ -349,7 +349,8 @@ class VariancesGenerator():
 
 def factory(cli_arg: str,
             main_config: types.YAMLDict,
-            cmdopts: types.Cmdopts):
+            cmdopts: types.Cmdopts,
+            **kwargs):
     """Factory to create :class:`SAANoise` derived classes from the command line
     definition of batch criteria.
 
