@@ -92,7 +92,7 @@ Environment Variables
    SIERRA sets up the :term:`Experiment` execution environments by running one
    or more shell commands in a subprocess (treated as a ``shell``, which means
    that :program:`parallel` can't determine ``SHELL``, and therefore defaults to
-   ``/bin/sh``, which is not what users expect. SIERRA explicitly sets
+   ``/bin/sh``, which is not what users expect). SIERRA explicitly sets
    ``PARALLEL_SHELL`` to the result of ``shutil.which('bash')`` in keeping with
    the Principle Of Least Surprise.
 
@@ -105,21 +105,12 @@ Environment Variables
 
 .. envvar:: ROS_IP
 
-   The IP address a robot will be identified with under :term:`ROS`. SIERRA does
-   `not` modify this variable, so it needs to be setup prior to invoking SIERRA
-   (i.e, sourcing the proper ``setup.bash`` script).
-
-   .. IMPORTANT:: If this is incorrectly set then SIERRA will probably hang
-                  during stage2, and/or fail to send experiment files to robots
-                  during stage 1.
-
+   The IP address which ROS can connect to a given host with. SIERRA does `not`
+   modify this variable, so it needs to be setup properly prior to invoking
+   SIERRA (i.e., sourcing the proper ``setup.bash`` script).
 
 .. envvar:: ROS_HOSTNAME
 
-   The HOSTNAME address a robot will be identified with under
-   :term:`ROS`. SIERRA does `not` modify this variable, so it needs to be setup
-   prior to invoking SIERRA (i.e, sourcing the proper ``setup.bash`` script).
-         
-   .. IMPORTANT:: If this is incorrectly set then SIERRA will probably hang
-                  during stage2, and/or fail to send experiment files to robots
-                  during stage 1.
+   The hostname which ROS can connect to a given host with. SIERRA does `not`
+   modify this variable, so it needs to be setup properly prior to invoking
+   SIERRA (i.e., sourcing the proper ``setup.bash`` script).

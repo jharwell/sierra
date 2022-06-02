@@ -96,17 +96,17 @@ it runs:
             each experimental run's output, including metrics, grabbed frames,
             etc., as configured in the XML input file.
 
-            - ``my-template_0.argos``
-            - ``my-template_1.argos``
-            - ``my-template_2.argos``
-            - ``my-template_3.argos``
+            - ``my-template_0_output``
+            - ``my-template_1_output``
+            - ``my-template_2_output``
+            - ``my-template_3_output``
 
           - ``exp1``
 
-            - ``my-template_0.argos``
-            - ``my-template_1.argos``
-            - ``my-template_2.argos``
-            - ``my-template_3.argos``
+            - ``my-template_0_output``
+            - ``my-template_1_output``
+            - ``my-template_2_output``
+            - ``my-template_3_output``
 
           - ``exp2``
 
@@ -167,7 +167,7 @@ Stage 5 Directory Tree
 When SIERRA runs stage 5, stages 1-4 must have already been successfully run,
 and therefore the directory tree shown above will exist. For the purposes of
 explanation, I will use the following partial SIERRA option sets to explain the
-additional to the experiment tree.
+additions to the experiment tree for stage 5.
 
 First, the experiment tree for `scenario comparison`::
 

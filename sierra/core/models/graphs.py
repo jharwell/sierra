@@ -13,7 +13,10 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-
+"""
+Graphs which can be generated from (empirical data, model predictions) in
+SIERRA, irrespective of model specifics.
+"""
 # Core packages
 import os
 

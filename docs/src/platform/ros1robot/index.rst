@@ -32,10 +32,10 @@ Random Seeding For Reproducibility
 ROS do not provide a random number generator manager, but SIERRA provides random
 seeds to each :term:`Experimental Run` which :term:`Project` code should use to
 manage random number generation, if needed, to maximize reproducability. See
-:ref:`ln-sierra-tutorials-project-template-input-file` and :ref:`ln-sierra-req-exp` for
-details on the format of the provided seed. By default SIERRA does not overwrite
-its generated random seeds for each experiment once generated; you can override
-with ``--no-preserve-seeds``.
+:ref:`ln-sierra-tutorials-project-template-input-file` and
+:ref:`ln-sierra-req-exp` for details on the format of the provided seed. By
+default SIERRA does not overwrite its generated random seeds for each experiment
+once generated; you can override with ``--no-preserve-seeds``.
 
 Real Robot Considerations
 =========================
@@ -51,7 +51,8 @@ invocation:
 - The robots have static IP addresses, or are always allocated an IP from a
   known set so you can pass the set of IPs to SIERRA to use. This set of IP
   address/hostnames can be explicitly passed to SIERRA via cmdline (see
-  :ref:`ln-sierra-usage-cli`) or implicitly passed via :envvar:`SIERRA_NODEFILE`.
+  :ref:`ln-sierra-usage-cli`) or implicitly passed via
+  :envvar:`SIERRA_NODEFILE`.
 
 - The ROS environment is setup either in the .bashrc for the robot login user,
   or the necessary bits are in a script which SIERRA sources on login to each

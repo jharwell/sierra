@@ -63,7 +63,7 @@ class Parser():
     criteria.
     """
 
-    def __call__(self, criteria_str: str) -> types.CLIArgSpec:
+    def __call__(self, arg: str) -> types.CLIArgSpec:
         """
         Returns:
             Dictionary with keys:
@@ -73,13 +73,13 @@ class Parser():
 
         """
         ret = {}
-        sections = criteria_str.split('.')
+        sections = arg.split('.')
 
         # remove batch criteria variable name, leaving only the spec
         sections = sections[1:]
         assert len(sections) == 3,\
             ("Spec must have 3 sections separated by '.'; "
-             f"have {len(sections)} from '{criteria_str}'")
+             f"have {len(sections)} from '{arg}'")
 
         # Parse density min
         ret['density_min'] = self._parse_density(sections[0], 'minimum')

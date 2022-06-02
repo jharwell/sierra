@@ -23,8 +23,8 @@ FAQ
    an HPC scheduler for exceeding its job time limit ?
 
    A: Run SIERRA just as you did before, but add ``--exec-resume``, which will
-   tell SIERRA to pick up where it left off. See :ref:`ln-sierra-usage-cli` for the full
-   cmdline reference.
+   tell SIERRA to pick up where it left off. See :ref:`ln-usage-cli` for the
+   full cmdline reference.
 
 #. Q: How do I run a non-default set of pipeline stages, such as {3,4}?
 
@@ -36,7 +36,8 @@ FAQ
                   to run stage X-1. This is a logical limitation, because the
                   different pipeline stages build on each other.
 
-#. Q: How do I prevent SIERRA from stripping out XML tags?
+#. Q: How do I prevent SIERRA from stripping out ARGoS XML tags for
+   sensors/actuators?
 
    A: There are 3 options for this: ``--with-robot-leds``, ``--with-robot-rab``,
    and ``--with-robot-battery``. More may be added in the future if needed.
@@ -106,4 +107,5 @@ FAQ
    tags, modifying attributes. This is a good way to apply tricky configuration
    which doesn't really fit anywhere else, or to try out some "quick and dirty"
    changes to see if they do what you want before codifying them with a
-   python class. See :ref:`ln-sierra-tutorials-project-main-config` for details.
+   python class (see :ref:`ln-tutorials-project-main-config` for details on how
+   to do that).

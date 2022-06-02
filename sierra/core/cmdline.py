@@ -224,8 +224,7 @@ class CoreCmdline(BaseCmdline):
     def scaffold_cli(self,
                      parents: tp.Optional[tp.List[SIERRAArgumentParser]]) -> None:
         """
-        Scaffold CLI definitions by defining the underlying parser and setting
-                     common argument groups.
+        Scaffold CLI by defining the parser and common argument groups.
         """
         if parents is not None:
             self.parser = SIERRAArgumentParser(prog='sierra-cli',

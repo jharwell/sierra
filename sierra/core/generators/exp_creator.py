@@ -53,7 +53,7 @@ class ExpCreator:
                          XML input files for this experiment should be written.
 
         exp_output_root: Absolute path to root directory for run outputs
-                         for this experiment (sort of a scratch directory).
+                         for this experiment.
 
         cmdopts: Dictionary containing parsed cmdline options.
 

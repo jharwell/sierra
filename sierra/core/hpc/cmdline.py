@@ -14,7 +14,7 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """Common cmdline parsing and validation classes for the various HPC plugins
-that can be used with SIERRA for running experiments.
+that can be used with SIERRA for running experiments during stage 2.
 
 """
 
@@ -47,7 +47,17 @@ class HPCCmdline(cmdline.BaseCmdline):
             self.init_stage2()
 
     def init_stage2(self) -> None:
+        """
+        Add HPC cmdline options. Options may be interpreted differently between
+        :term:`Platforms <Platform>`, or ignored, depending. These include:
 
+        - ``--exec-jobs-per-node``
+
+        - ``--exec-no-devnull``
+
+        - ``--exec-resume``
+
+        """
         self.hpc.add_argument("--exec-jobs-per-node",
                               help="""
 

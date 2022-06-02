@@ -31,14 +31,16 @@ collate additional ``.csv`` files by:
 
 #. Override the
    :class:`sierra.core.pipeline.stage3.run_collator.ExperimentalRunCSVGatherer`
-   class: 
+   class:
 
    .. code-block:: python
 
       import sierra.core.pipeline.stage3.run_collator as run_collator
 
       class ExperimentalRunCSVGatherer(run_collator.ExperimentalRunCSVGatherer):
-          def gather_csvs_from_run(self, run: str) -> tp.Dict[tp.Tuple[str, str], pd.DataFrame]:
+          def gather_csvs_from_run(self,
+                                   exp_output_root: str,
+                                   run: str) -> tp.Dict[tp.Tuple[str, str], pd.DataFrame]:
               ...
 
 
@@ -103,6 +105,7 @@ in the batch (e.g., to create graphs of summary performance measures). To do so:
    .. code-block:: python
 
       import sierra.core.pipeline.stage4 as stage4
+      import sierra.core.batch_criteria as bc
 
       class InterExpGraphGenerator(stage4.inter_exp_graph_generator.InterExpGraphGenerator):
           def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:

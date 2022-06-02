@@ -129,11 +129,11 @@ class IExpRunShellCmdsGenerator(implements.Interface):
 
     - The cmds to executed the experimental run.
 
-    - Any post-run cleanup cmds before the run is executed.
+    - Any post-run cleanup cmds before the next run is executed.
 
-    Depending on your environment, you may want to use SIERRA_ARCH (either in
-    this function or your dispatch)to chose a version of your simulator compiled
-    for a given architecture for maximum performance.
+    Depending on your environment, you may want to use :envvar:`SIERRA_ARCH`
+    (either in this function or your dispatch) to chose a version of your
+    simulator compiled for a given architecture for maximum performance.
 
     Arguments:
 
@@ -211,7 +211,7 @@ class IExpRunShellCmdsGenerator(implements.Interface):
 
 class IParsedCmdlineConfigurer(implements.Interface):
     """
-    Modify  arguments as needed to for the platform or execution environment.
+    Modify arguments as needed for the platform or execution environment.
     """
 
     def __init__(self, exec_env: str) -> None:
@@ -223,6 +223,12 @@ class IParsedCmdlineConfigurer(implements.Interface):
         raise NotImplementedError
 
     def __call__(self, args: argparse.Namespace) -> None:
+        """
+
+        Arguments:
+
+            args: The parsed namespace of cmdline arguments.
+        """
         raise NotImplementedError
 
 
@@ -235,7 +241,8 @@ class ICmdlineParserGenerator(implements.Interface):
     platform, making use of the ``parents`` option for the cmdline.
 
     """
-    def __call__() -> argparse.ArgumentParser:
+
+    def __call__(self) -> argparse.ArgumentParser:
         raise NotImplementedError
 
 

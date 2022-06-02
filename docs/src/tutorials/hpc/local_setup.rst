@@ -4,6 +4,5 @@
 HPC Local Setup
 ===============
 
-Before trying to use SIERRA with any other HPC environment, you should get it
-installed and running on your local machine by following
-:ref:`ln-sierra-getting-started` on your local machine.
+To set up SIERRA for HPC on your local machine, follow
+:ref:`ln-getting-started`.

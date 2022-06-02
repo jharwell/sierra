@@ -116,38 +116,37 @@ class PipelineStage4:
             self._load_models()
 
     def run(self, criteria: bc.IConcreteBatchCriteria) -> None:
-        """
-        Runs experiment deliverable generation, ``.csv`` collation for
+        """Runs experiment deliverable generation, ``.csv`` collation for
         inter-experiment graph generation, and inter-experiment graph
         generation, as configured on the cmdline.
 
         Video generation: If images have previously been created, then the
         following is run:
 
-        # . :class:`~sierra.core.pipeline.stage4.video_renderer.BatchExpParallelVideoRenderer`
+        #. :class:`~sierra.core.pipeline.stage4.video_renderer.BatchExpParallelVideoRenderer`
            to render videos for each experiment in the batch, or a subset.
 
         Intra-experiment graph generation: if intra-experiment graphs should be
         generated, according to cmdline configuration, the following is run:
 
-        # . Model generation for each enabled and loaded model.
+        #. Model generation for each enabled and loaded model.
 
-        # . :class:`~sierra.core.pipeline.stage4.intra_exp_graph_generator.BatchIntraExpGraphGenerator`
+        #. :class:`~sierra.core.pipeline.stage4.intra_exp_graph_generator.BatchIntraExpGraphGenerator`
            to generate graphs for each experiment in the batch, or a subset.
 
         Inter-experiment graph generation: if inter-experiment graphs should be
         generated according to cmdline configuration, the following is run:
 
-        # . :class:`~sierra.core.pipeline.stage4.graph_collator.UnivarGraphCollator`
+        #. :class:`~sierra.core.pipeline.stage4.graph_collator.UnivarGraphCollator`
            or
            :class:`~sierra.core.pipeline.stage4.graph_collator.BivarGraphCollator`
            as appropriate (depending on which type of
            :class:`~sierra.core.variables.batch_criteria.BatchCriteria` was
            specified on the cmdline).
 
-        # . Model generation for each enabled and loaded model.
+        #. Model generation for each enabled and loaded model.
 
-        # . :class:`~sierra.core.pipeline.stage4.inter_exp_graph_generator.InterExpGraphGenerator`
+        #. :class:`~sierra.core.pipeline.stage4.inter_exp_graph_generator.InterExpGraphGenerator`
            to perform graph generation from collated ``.csv`` files.
 
         """

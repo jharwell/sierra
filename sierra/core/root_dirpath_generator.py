@@ -204,5 +204,5 @@ def gen_batch_root(sierra_rpath: str,
 __api__ = [
     'from_cmdline',
     'regen_from_exp',
-    'parse_batch_root'
+    'parse_batch_leaf'
 ]

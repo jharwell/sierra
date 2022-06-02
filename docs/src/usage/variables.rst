@@ -32,8 +32,8 @@ Cmdline Syntax
 
 - ``n_datapoints`` - # datapoints per :term:`Experimental Run` to be captured;
   the capture interval (if configurable) should be adjusted in
-  :term:`Project`\-derived class from the platform experiment setup class (e.g.,
-  :class:`sierra.plugins.platform.argos.variables.exp_setup.ExpSetup` for
+  :term:`Project`\-derived class from the platform "Experiment setup class"
+  (e.g., :class:`sierra.plugins.platform.argos.variables.exp_setup.ExpSetup` for
   :term:`ARGoS`).
 
 Examples

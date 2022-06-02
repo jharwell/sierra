@@ -13,9 +13,9 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-Base classes for the mathematical models that SIERRA can generate and add to any configured graph
-during stage 4.
+"""Base classes for the mathematical models that SIERRA can generate and add to
+any configured graph during stage 4.
+
 """
 
 # Core packages
@@ -31,6 +31,15 @@ from sierra.core import types
 
 
 class IConcreteIntraExpModel1D(implements.Interface):
+    """Interface for one-dimensional models: those that generate a single time
+    series from zero or more experimental outputs within a *single*
+    :term:`Experiment`. Models will be rendered as lines on a
+    :class:`~sierra.core.graphs.stacked_line_graph.StackedLineGraph`. Models
+    "target" one or more ``.csv`` files which are already configured to be
+    generated, and will show up as additional lines on the generated graph.
+
+    """
+
     def run(self,
             criteria: bc.IConcreteBatchCriteria,
             exp_num: int,
@@ -50,7 +59,7 @@ class IConcreteIntraExpModel1D(implements.Interface):
         """
         Some models may only be valid/make sense to run for a subset of
         experiments within a batch, so models can be selectively executed with
-        this function. 
+        this function.
         """
         raise NotImplementedError
 
@@ -78,6 +87,14 @@ class IConcreteIntraExpModel1D(implements.Interface):
 
 
 class IConcreteIntraExpModel2D(implements.Interface):
+    """Interface for two-dimensional models: those that generate a list of 2D
+    matrices, forming a 2D time series. Can be built from zero or more
+    experimental outputs from a *single* :term:`Experiment`. Models
+    "target" one or more ``.csv`` files which are already configured to be
+    generated, and will show up as additional lines on the generated graph.
+
+    """
+
     def run(self,
             criteria: bc.IConcreteBatchCriteria,
             exp_num: int,
@@ -86,7 +103,8 @@ class IConcreteIntraExpModel2D(implements.Interface):
         Run the model and generate a list of dataframes, each targeting
         (potentially) different graphs. Each data frame should be a NxM grid
         (with N not necessarily equal to M). All dataframes do not have to be
-        the same dimensions.
+        the same dimensions. The index of a given dataframe in a list should
+        correspond to the model value for interval/timestep.
 
         """
         raise NotImplementedError
@@ -117,6 +135,15 @@ class IConcreteIntraExpModel2D(implements.Interface):
 
 
 class IConcreteInterExpModel1D(implements.Interface):
+    """Interface for one-dimensional models: those that generate a single time
+    series from any number of experimental outputs across *all* experiments in a
+    batch(or from another source). Models will be rendered as lines on a
+    :class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`.  Models
+    "target" one or more ``.csv`` files which are already configured to be
+    generated, and will show up as additional lines on the generated graph.
+
+    """
+
     def run(self,
             criteria: bc.IConcreteBatchCriteria,
             cmdopts: types.Cmdopts) -> tp.List[pd.DataFrame]:
@@ -125,7 +152,6 @@ class IConcreteInterExpModel1D(implements.Interface):
         targeting a different graph. Each dataframe should contain a single row,
         with one column for the predicted value of the model for each experiment
         in the batch.
-
         """
         raise NotImplementedError
 
@@ -148,11 +174,11 @@ class IConcreteInterExpModel1D(implements.Interface):
         raise NotImplementedError
 
     def legend_names(self) -> tp.List[str]:
-        """
-        Return a list of names that the model predictions as they should appear
-        appear on the legend of the target: class:
-        `~sierra.core.graphs.summary_line_graph.SummaryLineGraph` they are each
-        attached to.
+        """Return a list of names that the model predictions as they should appear
+        appear on the legend of the target:
+        :class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph` they
+        are each attached to.
+
         """
         raise NotImplementedError
 

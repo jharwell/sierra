@@ -50,3 +50,8 @@ Once ARGoS/your C++ code has been built, you can setup SIERRA:
 #. Read the documentation for :ref:`ln-sierra-exec-env-hpc`, and select and
    appropriate plugin to use. Be sure to define all necessary environment
    variables!!
+
+GazeboS Setup on HPC Clusters
+=============================
+
+TBD.

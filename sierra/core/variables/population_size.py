@@ -73,20 +73,20 @@ class Parser():
 
     """
 
-    def __call__(self, criteria_str: str) -> types.CLIArgSpec:
+    def __call__(self, arg: str) -> types.CLIArgSpec:
         ret = {
             'max_size': int(),
             'model': str(),
             'cardinality': None,
         }  # type: tp.Dict[str, tp.Union[int, str, None]]
 
-        sections = criteria_str.split('.')
+        sections = arg.split('.')
 
         # remove batch criteria variable name, leaving only the spec
         sections = sections[1:]
         assert len(sections) >= 1 and len(sections) <= 2,\
             ("Spec must have 1 or 2 sections separated by '.'; "
-             f"have {len(sections)} from '{criteria_str}'")
+             f"have {len(sections)} from '{arg}'")
 
         # Parse increment type
         res = re.search("Log|Linear", sections[0])
@@ -128,6 +128,6 @@ class Parser():
 
 
 __api__ = [
+    'BasePopulationSize',
     'Parser',
-    'BasePopulationSize'
 ]

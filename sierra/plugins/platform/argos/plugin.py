@@ -36,6 +36,7 @@ from sierra.core import plugin_manager as pm
 import sierra.core.variables.batch_criteria as bc
 
 
+@implements.implements(bindings.ICmdlineParserGenerator)
 class CmdlineParserGenerator():
     """
     Get the cmdline parser to use with the :term:`ARGoS` platform.

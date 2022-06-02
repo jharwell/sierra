@@ -137,7 +137,7 @@ autoapi_ignore = ['*flycheck*']
 xref_links = {
     "Harwell2021a-metrics": ("Improved Swarm Engineering: Aligning Intuition and Analysis",
                              "https://arxiv.org/pdf/2012.04144.pdf"),
-    "Harwell2022a-ode": ("Characterizing The Limits of Linear Modeling of Non-Linear Swarm Behaviors",
+    "Harwell2022b-ode": ("Characterizing The Limits of Linear Modeling of Non-Linear Swarm Behaviors",
                          "https://arxiv.org/abs/2110.12307"),
     "Harwell2020a-demystify": ("Demystifying Emergent Intelligence and Its Effect on Performance in Large Swarms",
                                "http://ifaamas.org/Proceedings/aamas2020/pdfs/p474.pdf"),

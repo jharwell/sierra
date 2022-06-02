@@ -1,0 +1,90 @@
+* SIERRA                                                            :sierra:
+** TODO [#A] Create SIERRA pypi package [92%]
+- [X] Push --scenario to the FORDYCA plugin--not part of core SIERRA
+- [X] Push templates/scripts to the FORDYCA plugin--not part of core SIERRA
+- [X] Make PopulationDensity not coupled to SS,DS,RN,PL block distribution, which it is currently.
+- [X] Move convergence stuff out of exp_generator--not part of core SIERRA
+- [X] Move LOG4CXX_CONFIGURATION check out of HPC--not part of core SIERRA
+- [X] Make SIERRA runnable from directories other than the repo directory
+- [X] Verify that all the batch criteria I moved to FORDYCA still work as expected
+- [X] Move all yaml config out of SIERRA core. Should retain the ability to merge configs though, as I will need that
+       for TITARRA common stuff merging with FORDYCA/PRISM specific config.
+- [X] Create derived TemporalVariance  batch criteria for FORDYCA. (BC|BM|M types are specific to my project).
+      This must be done AFTER creating titarra--the parser is used in vcs.py
+- [X] Rename xml_luigi to something that makes more sense
+- [X] Create trivial ARGoS library to use with SIERRA as a trivial example
+- [X] Document all the SIERRA hooks that exist/I use in TITERRA
+- [X] Update contributing guide: LIBRA development workflow so it makes sense for sierra (originally written for C++),
+  and add CONTRIBUTING.md which points to this page in the docs.
+- [X] Refine docs for all overridable SIERRA hooks to make them more usable to others.
+- [X] Docs for what statistics SIERRA can generate
+- [X] More SAANoise out of SIERRA--to uses the perf.robustness dictionary, which I am moving out to TITERRA. ALso, SAA
+     noise requires ARGoS functionality that is not in the main repo and will not probably ever make it there.
+- [X] Remove --help; it should be a generic message that directs people to the online docs
+- [X] Document the plugin search path somewhere
+- [X] Remove the pm_query() stuff from ARGoS batch criteria--that is specific to my project. If I need it, I should
+      derive from the necessary ARGoS batch criteria and then add that single function.
+- [X] Update all parsers to use sections to make error messages cleaner
+- [X] Add tutorials for adding new platform to execution exec_env, and vice versa. Talk about how they are coupled.
+- [X] Add docs for which cmdline arguments all platforms must implement
+- [ ] Setup travis for some basic integration tests with the sample project for ARGoS and ROS+Gazebo.
+- [X] Create interface classes for all plugins--will make documenting easier, as well as help users to find bugs when
+      adding plugins
+- [X] Update config tutorials with changes to rosrobot (template input file, etc.)
+- [X] Go through API documentation and cleanup class docstrings so what is rendered so it looks nice. 
+      First pass done for class docstrings in core. Plugins still needs work.
+- [ ] Go through API documentation and cleanup function docstrings so what is rendered so it looks nice. 
+
+** TODO [#B] Fix the pylint import error false positives
+** TODO [#B] Switch reading intra experiment model dataframe index sizes
+From using the size of a different dataframe in the exp to reading from the time setup written to the pkl file.
+
+** TODO [#B] Add some example pbs/slurm scripts in the HPC docs
+** TODO [#B] Switch all collated .csvs to have .mean extension to make things consistent
+Stat csv extension mapping should probably be put in the config module
+** TODO [#B] For all bivar perf measures, add scatter plot generation
+Might be helpful to spot trends among different controllers. Would also need to be implemented in stage 5 as another
+comparison option.
+
+** TODO [#B] Remove **kwargs usage from graphs--explicit arguments leads to way better type checking
+** TODO [#B] Setup travis CI with mypy+pytype
+** TODO [#B] Rename perf measure config from 'perf' to 'stage1/stage3/stage4/etc'.
+Much clearer this way. Also fits better with the 'stage5.yaml' config file idea.
+
+
+** TODO [#C] Check out the fastcore library
+** TODO [#C] Try Modin as a parallel pandas wrapper
+** TODO [#B] Document that you need to INSTALL your plugin variables :sierra:
+   Or otherwise but the directory you put on SIERRA_PLUGIN_PATH on PYTHONPATH
+   Link to capture context: [[file:~/git/python3.9/titerra/README.md::# TITERRA]]
+** TODO [#B] Document that you probably want to set PARALLEL_SHELL with rosrobot :sierra:
+   sh does not understand setup.bash files.
+
+   Link to capture context: [[file:/opt/jharwell/git/sierra/docs/src/requirements.rst::.. _ln-req-xml:]]
+** TODO [#B] Document why you need 2 GNU parallel processes for rosrobot :sierra:
+   Because you can't have robot controllers running on the master, which could happen if you only had a single GNU
+   parallel process.
+
+   Link to capture context: [[file:/opt/jharwell/git/sierra/docs/src/requirements.rst::.. _ln-req-xml:]]
+** TODO [#B] Fix the pylint import error false positives
+** TODO [#B] Switch reading intra experiment model dataframe index sizes
+From using the size of a different dataframe in the exp to reading from the time setup written to the pkl file.
+** TODO --exec-resume does not work with rosrobot platform
+   At least not reliably...
+I think this is bcause if you cancel a previous run, GNU parallel does not run
+the necessary commands to clean up the previous experiment and kill any
+remaining roslaunch bits
+
+** DONE [#B] Fix GNU parallel sync                                   :sierra:
+   CLOSED: [2022-04-11 Mon 12:09]
+   The slave and master GNU parallel commands for ROS+robot are run in separate processes, and so when the master
+   finishes and says "X seconds until next run", the process with the slave GNU parallel command is still running. A fix
+   would be to have the slave GNU parallel process be a second command in the master's commands.txt.
+
+   This might also be solved with the master/slave/timekeeper barrier functions I have to add anyway...
+
+   Link to capture context: [[file:~/git/python3.9/titerra/README.md::# TITERRA]]
+** DONE [#B] Fix SIERRA cmdline tutorial--not accurate anymore       :sierra
+   CLOSED: [2022-06-02 Thu 10:25]
+
+   Link to capture context: [[file:/opt/jharwell/git/sierra/docs/src/tutorials/project/cmdline.rst::self.stage1.add_argument("--my-stage1-argument",]]

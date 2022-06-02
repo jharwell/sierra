@@ -98,8 +98,8 @@ Post-Processed Template Input Files
 SIERRA may insert additional XML tags and split the processed template input
 file into multiple template files, depending on the platform. The results of
 this processing are shown below for each supported :term:`Platform`. No
-additional modifications beyond those necessary to get use the platform with
-SIERRA are shown (i.e., no :term:`Batch Criteria` modifications).
+additional modifications beyond those necessary to use the platform with SIERRA
+are shown (i.e., no :term:`Batch Criteria` modifications).
 
 Any of the following may be inserted:
 

@@ -57,6 +57,7 @@ class BatchIntraExpGraphGenerator:
                  criteria: bc.IConcreteBatchCriteria) -> None:
         """
         Parameters:
+
             main_config: Parsed dictionary of main YAML configuration
 
             controller_config: Parsed dictionary of controller YAML
@@ -132,7 +133,7 @@ class IntraExpGraphGenerator:
 
         logger: The handle to the logger for this class. If you extend this
                class, you should save/restore this variable in tandem with
-               overriding it in order to get loggingmessages have unique logger
+               overriding it in order to get logging messages have unique logger
                names between this class and your derived class, in order to
                reduce confusion.
 

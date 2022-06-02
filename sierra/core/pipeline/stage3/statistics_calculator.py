@@ -57,16 +57,6 @@ class BatchExpParallelCalculator:
     """Averages :term:`Output .csv` files for each experiment in the batch.
 
     In parallel for speed.
-
-    Attributes:
-
-        main_config: Parsed dictionary of main YAML configuration.
-
-        cmdopts: Dictionary parsed cmdline parameters.
-
-        batch_exp_root: Directory for averaged .csv output (relative to current
-                        dir or absolute).
-
     """
 
     def __init__(self, main_config: dict, cmdopts: types.Cmdopts):
@@ -77,8 +67,8 @@ class BatchExpParallelCalculator:
     def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
 
         exp_to_avg = utils.exp_range_calc(self.cmdopts,
-                                                      self.cmdopts['batch_output_root'],
-                                                      criteria)
+                                          self.cmdopts['batch_output_root'],
+                                          criteria)
 
         template_input_leaf, _ = os.path.splitext(
             os.path.basename(self.cmdopts['template_input_file']))
@@ -208,12 +198,6 @@ class ExpCSVGatherer:
     """Gather all :term:`Output .csv` files from a set of
     :term:`Experimental Runs<Experimental Run>` within a single
     :term:`Experiment`.
-
-    Attributes:
-        main_config: Parsed dictionary of main YAML configuration.
-        template_input_leaf: Leaf (i.e. no preceding path) to the template XML
-                             configuration file for the experiment.
-
     """
 
     def __init__(self,
@@ -435,17 +419,6 @@ class ExpStatisticsCalculator:
        You also can't just create loggers with unique names, as this seems to be
        something like the GIL, but for the logging module. Sometimes python
        sucks.
-
-    Attributes:
-
-        main_config: Parsed dictionary of main YAML configuration.
-
-        template_input_leaf: Leaf (i.e. no preceding path) to the template XML
-                             configuration file for the experiment.
-
-        exp_output_root: Directory for averaged .csv output (relative to current
-                         dir or absolute).
-
     """
 
     def __init__(self,

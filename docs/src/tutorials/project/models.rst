@@ -42,8 +42,8 @@ under a root ``models`` dictionary:
   model within SIERRA.
 
 Each model specified in ``models.yaml`` can take any number of parameters of any
-type; they will be parsed and passed to the model constructor as part of
-``config``.
+type specified as extra fields in the YAML file; they will be parsed and passed
+to the model constructor as part of ``config``.
 
 
 ``config/models.yaml``
@@ -52,7 +52,7 @@ type; they will be parsed and passed to the model constructor as part of
 Root level dictionaries:
 
 - ``models`` - List of enabled models. This dictionary is mandatory for all
-  experiments.
+  experiments (if models are enabled, that is).
 
 
 Example YAML Config

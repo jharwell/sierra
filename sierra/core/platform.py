@@ -58,7 +58,7 @@ class CmdlineParserGenerator():
 @implements.implements(bindings.IExpRunShellCmdsGenerator)
 class ExpRunShellCmdsGenerator():
     """
-    Trampoline class for dispatching cmd generation to platforms and/or
+    Trampoline class for dispatching shell cmd generation to platforms and
     execution environments.
 
     Called during stage 1 to add shell commands which should be run immediately
@@ -112,7 +112,7 @@ class ExpRunShellCmdsGenerator():
 
 @implements.implements(bindings.IExpShellCmdsGenerator)
 class ExpShellCmdsGenerator():
-    """Trampoline class for dispatching shell cmd generation to platforms and/or
+    """Trampoline class for dispatching shell cmd generation to platforms and
     execute environments.
 
     Called during stage 2 to run shell commands immediately before running a
@@ -215,11 +215,12 @@ class ExpConfigurer():
 
 
 class ExecEnvChecker():
-    """
-    Verify the configured ``--exec-env` for the configured ``--platform`` before
-    running any experiments during stage 2. This is needed in addition to the
-    checks performed during stage 1, because stage 2 can be run on its own
-    without running stage 1 first on the same SIERRA invocation.
+    """Verify the configured ``--exec-env`` for the configured ``--platform``
+    before running any experiments during stage 2.
+
+    This is needed in addition to the checks performed during stage 1, because
+    stage 2 can be run on its own without running stage 1 first on the same
+    SIERRA invocation.
 
     """
 
@@ -422,6 +423,7 @@ __api__ = [
     'ExpRunShellCmdsGenerator',
     'ExpShellCmdsGenerator',
     'ParsedCmdlineConfigurer',
-    'ExpConfigurer',
-    'ExecEnvChecker'
+    'ExpRunShellCmdsGenerator',
+    'ExpShellCmdsGenerator',
+    'ExecEnvChecker',
 ]

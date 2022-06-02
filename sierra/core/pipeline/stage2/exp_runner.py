@@ -13,7 +13,7 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""Classes for running and single :term:`Experiments <Experiment>` and
+"""Classes for running single :term:`Experiments <Experiment>` and
 :term:`Batch Experiments <Batch Experiment>` via the configured method specified
 on the cmdline.
 
@@ -37,10 +37,14 @@ import sierra.core.plugin_manager as pm
 
 
 class ExpShell():
-    """
-    Launch a shell which persists across experimental runs so that running pre-
-    and post-run commands has an effect on the actual commands to execute the
-    run.
+    """Launch a shell which persists across experimental runs.
+
+    Having a persistent shell is necessary so that running pre- and post-run
+    shell commands have an effect on the actual commands to execute the run. If
+    you set an environment variable before the simulator launches (for example),
+    and then the shell containing that change exits, and the simulator launches
+    in a new shell, then the configuration has no effect. Thus, a persistent
+    shell.
 
     """
 
@@ -115,14 +119,21 @@ class ExpShell():
 
 
 class BatchExpRunner:
-    """
-    Runs each :term:`Experiment` in :term:`Batch Experiment` in sequence.
+    """Runs each :term:`Experiment` in :term:`Batch Experiment` in sequence.
 
     Attributes:
 
         batch_exp_root: Absolute path to the root directory for the batch
-                        experiment (i.e. experiment directories are placed in
-                        here).
+                        experiment inputs (i.e. experiment directories are
+                        placed in here).
+
+        batch_stat_root: Absolute path to the root directory for statistics
+                         which are computed in stage {3,4} (i.e. experiment
+                         directories are placed in here).
+
+        batch_stat_exec_root: Absolute path to the root directory for statistics
+                              which are generated as experiments run during
+                              stage 2 (e.g., how long each experiment took).
 
         cmdopts: Dictionary of parsed cmdline options.
 
@@ -213,14 +224,6 @@ class ExpRunner:
     In parallel if the selected execution environment supports it, otherwise
     sequentially.
 
-    Attributes:
-
-        exp_input_root: Absolute path to the root directory for all generated
-                        run input files for the experiment (i.e. an
-                        experiment directory within the batch experiment root).
-
-        exp_num: Experiment number in the batch.
-
     """
 
     def __init__(self,
@@ -239,15 +242,6 @@ class ExpRunner:
                  exp_input_root: str,
                  exp_num: int) -> None:
         """Executes experimental runs for a single experiment in parallel.
-
-        Arguments:
-
-            n_jobs: How many concurrent jobs are allowed?
-
-            exec_resume: Is this run of SIERRA resuming a previous run that
-                         failed/did not finish?
-
-            nodefile: List of compute resources to use for the experiment.
         """
 
         self.logger.info("Running exp%s in '%s'",
