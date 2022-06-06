@@ -21,7 +21,6 @@ functionality for reading, writing, and manipulating XML files.
 
 # Core packages
 import typing as tp
-import pickle
 import os
 import logging  # type: tp.Any
 import xml.etree.ElementTree as ET
@@ -165,7 +164,7 @@ class XMLAttrChangeSet():
             os.remove(fpath)
 
         with open(fpath, 'ab') as f:
-            pickle.dump(self.changes, f)
+            utils.pickle_dump(self.changes, f)
 
 
 class XMLTagRmList():
@@ -203,7 +202,7 @@ class XMLTagRmList():
             os.remove(fpath)
 
         with open(fpath, 'ab') as f:
-            pickle.dump(self.rms, f)
+            utils.pickle_dump(self.rms, f)
 
 
 class XMLTagAddList():
@@ -260,7 +259,7 @@ class XMLTagAddList():
             os.remove(fpath)
 
         with open(fpath, 'ab') as f:
-            pickle.dump(self.adds, f)
+            utils.pickle_dump(self.adds, f)
 
 
 class InvalidElementError(RuntimeError):

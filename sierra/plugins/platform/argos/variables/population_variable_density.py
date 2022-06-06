@@ -63,14 +63,13 @@ class PopulationVariableDensity(vd.VariableDensity):
             for density in self.densities:
                 # ARGoS won't start if there are 0 robots, so you always
                 # need to put at least 1.
-                n_robots = int(self.extent.area() *
-                               (self.target_density / 100.0))
+                n_robots = int(self.extent.area() * (density / 100.0))
                 if n_robots == 0:
                     n_robots = 1
                     self.logger.warning("n_robots set to 1 even though \
-                    calculated as 0 for area=%s,density=%s",
-                                        self.extent.area,
-                                        self.target_density)
+                    calculated as 0 for area=%d,density=%s",
+                                        self.extent.area(),
+                                        density)
                 changeset = XMLAttrChangeSet(XMLAttrChange(".//arena/distribute/entity",
                                                            "quantity",
                                                            str(n_robots)))

@@ -25,7 +25,6 @@ import random
 import typing as tp
 import copy
 import logging  # type: tp.Any
-import pickle
 import time
 
 # 3rd party packages
@@ -156,7 +155,7 @@ class ExpCreator:
             if utils.path_exists(self.seeds_fpath):
                 os.remove(self.seeds_fpath)
             with open(self.seeds_fpath, 'ab') as f:
-                pickle.dump(self.random_seeds, f)
+                utils.pickle_dump(self.random_seeds, f)
 
     def _create_exp_run(self,
                         run_exp_def: xml.XMLLuigi,

@@ -241,7 +241,7 @@ class SummaryLineGraph:
 
     def _plot_ticks(self, ax) -> None:
         if self.logyscale:
-            ax.set_yscale('symlog', basey=2)
+            ax.set_yscale('symlog', base=2)
             ax.yaxis.set_minor_formatter(mticker.ScalarFormatter())
 
             # Use scientific or decimal notation--whichever has fewer chars

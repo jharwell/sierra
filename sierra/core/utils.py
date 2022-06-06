@@ -24,11 +24,12 @@ import os
 import typing as tp
 import time
 import logging  # type: tp.Any
+import pickle
 
 # 3rd party packages
 import numpy as np
 import pandas as pd
-from retry import retry
+import retry
 
 # Project packages
 from sierra.core.vector import Vector3D
@@ -347,6 +348,9 @@ def get_n_robots(main_config: types.YAMLDict,
 
 
 def df_fill(df: pd.DataFrame, policy: str) -> pd.DataFrame:
+    """
+    Fill missing cells in a dataframe according to the specified fill policy.
+    """
     if policy == 'none':
         return df
     elif policy == 'pad':
@@ -355,6 +359,11 @@ def df_fill(df: pd.DataFrame, policy: str) -> pd.DataFrame:
         return df.fillna(value=0)
     else:
         raise RuntimeError(f"Bad fill policy {policy}")
+
+
+@retry(OSError, tries=10, delay=0.100, backoff=1.1)  # type:ignore
+def pickle_dump(obj: object, f: tp.IO) -> None:
+    pickle.dump(obj, f)
 
 
 __api__ = [

@@ -32,6 +32,10 @@ class Vector3D:
     def from_str(s: str, astype=int) -> 'Vector3D':
         return Vector3D(*tuple(map(astype, s.split(','))))
 
+    @staticmethod
+    def d2norm(lhs: 'Vector3D', rhs: 'Vector3D') -> float:
+        return math.sqrt((lhs.x - rhs.x) ** 2 + (lhs.y - rhs.y) ** 2)
+
     def __init__(self, x=0, y=0, z=0):
         self.x = x
         self.y = y
