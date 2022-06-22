@@ -108,6 +108,14 @@ kARGoS = {
     'launch_file_ext': '.argos',
     'n_secs_per_run': 5000,  # seconds
     'n_ticks_per_sec': 5,
+
+    # These are the cell sizes for use with the spatial_hash method for the
+    # dynamics2D engine. Since that method should only be used with lots of
+    # robots (per the docs), we set a cell a little larger than the robot.
+    'spatial_hash2D': {
+        'foot-bot': 0.5,
+        'e-puck': 0.5,
+    }
 }
 
 kROS = {

@@ -80,8 +80,8 @@ class PopulationConstantDensity(cd.ConstantDensity):
                             self.logger.warning(("n_robots set to 1 even though "
                                                  "calculated as 0 for area=%s,"
                                                  "density=%s"),
-                                                str(extent.area),
-                                                self.target_density)
+                                                str(extent.area()),
+                                                self.target_density / 100.0)
 
                         changeset.add(XMLAttrChange(".//arena/distribute/entity",
                                                     "quantity",
@@ -130,6 +130,9 @@ class PopulationConstantDensity(cd.ConstantDensity):
             return r"$\log_{2}$(Swarm Size)"
 
         return r"Swarm Size"
+
+    def n_robots(self, exp_num: int) -> int:
+        return int(self.target_density / 100.0 * self.dimensions[exp_num].area())
 
     def pm_query(self, pm: str) -> bool:
         return pm in ['raw', 'scalability', 'self-org']

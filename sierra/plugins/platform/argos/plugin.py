@@ -311,11 +311,24 @@ def population_size_from_pickle(chgs: tp.Union[xml.XMLAttrChangeSet,
     return -1
 
 
+def robot_type_from_def(exp_def: xml.XMLLuigi) -> tp.Optional[str]:
+    """
+    Get the entity type of the robots managed by ARGoS.
+
+    .. NOTE:: Assumes homgeneous swarms.
+    """
+    for robot in config.kARGoS['spatial_hash2D']:
+        if exp_def.has_tag(f'.//arena/distribute/entity/{robot}'):
+            return robot
+
+    return None
+
+
 def population_size_from_def(exp_def: tp.Union[xml.XMLAttrChangeSet,
                                                xml.XMLTagAddList],
                              main_config: types.YAMLDict,
                              cmdopts: types.Cmdopts) -> int:
-    return -1
+    return population_size_from_pickle(exp_def.attr_chgs, main_config, cmdopts)
 
 
 def robot_prefix_extract(main_config: types.YAMLDict,

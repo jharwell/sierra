@@ -22,6 +22,7 @@ applicable to all projects using the platform.
 import typing as tp
 import logging  # type: tp.Any
 import os
+import sys
 
 # 3rd party packages
 
@@ -29,9 +30,9 @@ import os
 from sierra.core.xml import XMLLuigi, XMLWriterConfig
 from sierra.core.utils import ArenaExtent as ArenaExtent
 from sierra.core.experiment.spec import ExperimentSpec
-import sierra.core.utils as scutils
-from sierra.core import types
-from sierra.core import config
+from sierra.core import types, config, utils
+import sierra.core.plugin_manager as pm
+
 from sierra.plugins.platform.argos.variables import arena_shape
 from sierra.plugins.platform.argos.variables import population_size
 from sierra.plugins.platform.argos.variables import physics_engines
@@ -125,9 +126,24 @@ class PlatformExpDefGenerator():
                            "all runs)"),
                           n_engines,
                           engine_type)
-        pe = physics_engines.factory(engine_type, n_engines, cmdopts, extents)
+        if cmdopts['physics_spatial_hash2D']:
+            assert hasattr(self.spec.criteria, 'n_robots'),\
+                ("When using the 2D spatial hash, the batch "
+                 "criteria must implement bc.IQueryableBatchCriteria")
+            n_robots = self.spec.criteria.n_robots(self.spec.exp_num)
+        else:
+            n_robots = None
 
-        scutils.apply_to_expdef(pe, exp_def)
+        module = pm.pipeline.get_plugin_module(cmdopts['platform'])
+        robot_type = module.robot_type_from_def(exp_def)
+        pe = physics_engines.factory(engine_type,
+                                     n_engines,
+                                     n_robots,
+                                     robot_type,
+                                     cmdopts,
+                                     extents)
+
+        utils.apply_to_expdef(pe, exp_def)
 
     def generate_arena_shape(self,
                              exp_def: XMLLuigi,
@@ -138,9 +154,9 @@ class PlatformExpDefGenerator():
         Writes generated changes to the simulation definition pickle file.
         """
         self.logger.trace("Generating changes for arena shape (all runs)")
-        _, adds, chgs = scutils.apply_to_expdef(shape, exp_def)
+        _, adds, chgs = utils.apply_to_expdef(shape, exp_def)
 
-        scutils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)
+        utils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)
 
     def _generate_n_robots(self, xml: XMLLuigi) -> None:
         """
@@ -198,10 +214,10 @@ class PlatformExpDefGenerator():
         self.logger.debug("Using exp_setup=%s", self.cmdopts['exp_setup'])
 
         setup = exp.factory(self.cmdopts["exp_setup"])()
-        rms, adds, chgs = scutils.apply_to_expdef(setup, exp_def)
+        rms, adds, chgs = utils.apply_to_expdef(setup, exp_def)
 
         # Write time setup info to file for later retrieval
-        scutils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)
+        utils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)
 
     def _generate_threading(self, exp_def: XMLLuigi) -> None:
         """
@@ -216,6 +232,18 @@ class PlatformExpDefGenerator():
         exp_def.attr_change(".//system",
                             "threads",
                             str(self.cmdopts["physics_n_engines"]))
+
+        # Only valid on linux, per ARGoS, so we ely on the user to add this
+        # attribute to the input file if it is applicable.
+        if exp_def.attr_get(".//system", "pin_threads_to_cores"):
+            if sys.platform == "linux":
+                exp_def.attr_change(".//system",
+                                    "pin_threads_to_cores",
+                                    "true")
+            else:
+                self.logger.warning((".//system/pin_threads_to_cores only "
+                                     "valid on linux in ARGoS--configuration "
+                                     "error?"))
 
     def _generate_library(self, exp_def: XMLLuigi) -> None:
         """
@@ -264,10 +292,10 @@ class PlatformExpDefGenerator():
             # Rendering must be processing before cameras, because it deletes
             # the <qt_opengl> tag if it exists, and then re-adds it.
             render = rendering.factory(self.cmdopts)
-            scutils.apply_to_expdef(render, exp_def)
+            utils.apply_to_expdef(render, exp_def)
 
             cams = cameras.factory(self.cmdopts, [self.spec.arena_dim])
-            scutils.apply_to_expdef(cams, exp_def)
+            utils.apply_to_expdef(cams, exp_def)
 
 
 class PlatformExpRunDefUniqueGenerator:

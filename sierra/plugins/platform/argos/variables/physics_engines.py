@@ -15,9 +15,9 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-2D and 3D physics engine classes mapping a volumetric extent (does not have to be the whole arena)
-to a set of physics engines arranged in some fashion within the volumetric extent to cover it
-without overlap.
+2D and 3D physics engine classes mapping a volumetric extent (does not have
+to be the whole arena) to a set of physics engines arranged in some fashion
+within the volumetric extent to cover it without overlap.
 
 """
 
@@ -32,7 +32,7 @@ import implements
 from sierra.core.variables.base_variable import IBaseVariable
 from sierra.core.utils import ArenaExtent
 from sierra.core.xml import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList, XMLTagRm, XMLTagAdd
-from sierra.core import types
+from sierra.core import types, config
 
 
 @implements.implements(IBaseVariable)
@@ -70,8 +70,9 @@ class PhysicsEngines():
         self.layout = layout
         self.extents = extents
         self.tag_adds = []  # type: tp.List[XMLTagAddList]
-        # If we are given multiple extents to map, we need to divide the specified # of engines
-        # among them.
+
+        # If we are given multiple extents to map, we need to divide the
+        # specified # of engines among them.
         self.n_engines = int(self.n_engines / float(len(self.extents)))
         assert self.layout == 'uniform_grid2D',\
             "Only uniform_grid2D physics engine layout currently supported"
@@ -136,20 +137,20 @@ class PhysicsEngines():
         adds = XMLTagAddList(XMLTagAdd('.', 'physics_engines', {}, False))
 
         for i in range(0, self.n_engines):
-            adds.extend(self._gen_single_engine(i,
-                                                extent,
-                                                n_engines_x,
-                                                n_engines_y,
-                                                forward_engines))
+            adds.extend(self.gen_single_engine(i,
+                                               extent,
+                                               n_engines_x,
+                                               n_engines_y,
+                                               forward_engines))
 
         return adds
 
-    def _gen_single_engine(self,
-                           engine_id: int,
-                           extent: ArenaExtent,
-                           n_engines_x: int,
-                           n_engines_y: int,
-                           forward_engines: tp.List[int]) -> XMLTagAddList:
+    def gen_single_engine(self,
+                          engine_id: int,
+                          extent: ArenaExtent,
+                          n_engines_x: int,
+                          n_engines_y: int,
+                          forward_engines: tp.List[int]) -> XMLTagAddList:
         """
         Generate definitions for a specific 2D/3D engine as a member of the
         mapping of the specified arena extent to one or more engines.
@@ -159,13 +160,19 @@ class PhysicsEngines():
         "silos".
 
         Arguments:
+
             engine_id: Numerical UUID for the engine.
+
             extent: The mapped extent for ALL physics engines.
+
             exceptions: List of lists of points defining polygons which should
                         NOT be managed by any of the engines currently being
                         processed.
+
             n_engines_x: # engines in the x direction.
+
             n_engines_y: # engines in the y direction.
+
             forward_engines: IDs of engines that are placed in increasing order
                              in X when layed out L->R.
 
@@ -432,6 +439,8 @@ class PhysicsEngines2D(PhysicsEngines):
     def __init__(self,
                  engine_type: str,
                  n_engines: int,
+                 n_robots: int,
+                 spatial_hash_info: tp.Optional[tp.Dict[str, tp.Any]],
                  iter_per_tick: int,
                  layout: str,
                  extents: tp.List[ArenaExtent]) -> None:
@@ -441,6 +450,31 @@ class PhysicsEngines2D(PhysicsEngines):
                                 iter_per_tick,
                                 layout,
                                 extents)
+
+        self.n_robots = n_robots
+        self.spatial_hash_info = spatial_hash_info
+
+    def gen_single_engine(self,
+                          engine_id: int,
+                          extent: ArenaExtent,
+                          n_engines_x: int,
+                          n_engines_y: int,
+                          forward_engines: tp.List[int]) -> XMLTagAddList:
+        adds = super().gen_single_engine(engine_id,
+                                         extent,
+                                         n_engines_x,
+                                         n_engines_y,
+                                         forward_engines)
+        if self.engine_type == 'dynamics2d' and self.spatial_hash_info is not None:
+            name = self._gen_engine_name(engine_id)
+            adds.append(XMLTagAdd(f".//physics_engines/*[@id='{name}']",
+                                  "spatial_hash",
+                                  {
+                                      'cell_size': str(self.spatial_hash_info['cell_size']),
+                                      'cell_num': str(self.spatial_hash_info['cell_num'])
+                                  },
+                                  True))
+        return adds
 
 
 class PhysicsEngines3D(PhysicsEngines):
@@ -457,6 +491,7 @@ class PhysicsEngines3D(PhysicsEngines):
         PhysicsEngines.__init__(self,
                                 engine_type,
                                 n_engines,
+                                None,
                                 iter_per_tick,
                                 layout,
                                 extents)
@@ -464,6 +499,8 @@ class PhysicsEngines3D(PhysicsEngines):
 
 def factory(engine_type: str,
             n_engines: int,
+            n_robots: tp.Optional[int],
+            robot_type: str,
             cmdopts: types.Cmdopts,
             extents: tp.List[ArenaExtent]) -> PhysicsEngines:
     """
@@ -473,8 +510,23 @@ def factory(engine_type: str,
     # remain so in the future, so we employ a factory function to make
     # implementation of diverging functionality easier later.
     if '2d' in engine_type:
+        if n_robots and cmdopts['physics_spatial_hash2D']:
+            spatial_hash = {
+                # Per ARGoS documentation in 'argos3 -q dynamics2d'
+                'cell_size': config.kARGoS['spatial_hash2D'][robot_type],
+                'cell_num': n_robots / float(n_engines) * 10
+            }
+            logging.debug(("Using 2D spatial hash for physics engines: "
+                           "cell_size=%f,cell_num=%d"),
+                          spatial_hash['cell_size'],
+                          spatial_hash['cell_num'])
+        else:
+            spatial_hash = None
+
         return PhysicsEngines2D(engine_type,
                                 n_engines,
+                                n_robots,
+                                spatial_hash,
                                 cmdopts['physics_iter_per_tick'],
                                 'uniform_grid2D',
                                 extents)

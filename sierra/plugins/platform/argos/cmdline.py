@@ -104,7 +104,7 @@ class PlatformCmdline(cmd.BaseCmdline):
         self.stage1_physics.add_argument("--physics-engine-type3D",
                                          choices=['dynamics3d'],
                                          help="""
-                                         
+
                                          The type of 3D physics engine to use
                                          for managing 3D volumetric extents
                                          within the arena, choosing one of the
@@ -186,6 +186,16 @@ class PlatformCmdline(cmd.BaseCmdline):
 
                              """ + self.stage_usage_doc([1]),
                                          default=config.kARGoS['physics_iter_per_tick'])
+
+        self.stage1_physics.add_argument("--physics-spatial-hash2D",
+                                         help="""
+
+                                         Specify that each 2D physics engine
+                                         should use a spatial hash (only applies
+                                         to ``dynamics2d`` engine type).
+
+                                         """,
+                                         action='store_true')
 
         # Rendering options
         self.stage1_rendering.add_argument("--camera-config",
@@ -335,6 +345,7 @@ class PlatformCmdline(cmd.BaseCmdline):
             "physics_engine_type2D": cli_args.physics_engine_type2D,
             "physics_engine_type3D": cli_args.physics_engine_type3D,
             "physics_iter_per_tick": cli_args.physics_iter_per_tick,
+            "physics_spatial_hash2D": cli_args.physics_spatial_hash2D,
 
             "with_robot_rab": cli_args.with_robot_rab,
             "with_robot_leds": cli_args.with_robot_leds,

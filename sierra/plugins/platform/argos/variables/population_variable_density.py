@@ -104,6 +104,9 @@ class PopulationVariableDensity(vd.VariableDensity):
     def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
         return r"Swarm Density"
 
+    def n_robots(self, exp_num: int) -> int:
+        return int(self.extent.area() * self.densities[exp_num] / 100.0)
+
     def pm_query(self, pm: str) -> bool:
         return pm in ['raw', 'scalability', 'self-org']
 

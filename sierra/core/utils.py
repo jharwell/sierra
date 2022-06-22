@@ -29,7 +29,7 @@ import pickle
 # 3rd party packages
 import numpy as np
 import pandas as pd
-import retry
+from retry import retry
 
 # Project packages
 from sierra.core.vector import Vector3D
