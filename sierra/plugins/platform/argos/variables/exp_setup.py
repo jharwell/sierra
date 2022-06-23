@@ -16,7 +16,7 @@
 
 """
 Classes for the ``--exp-setup`` cmdline option. See
-:ref:`ln-vars-expsetup` for usage documentation.
+:ref:`ln-sierra-vars-expsetup` for usage documentation.
 """
 
 # Core packages

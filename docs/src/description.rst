@@ -11,7 +11,7 @@ SIERRA Summary
 
 SIERRA automates the following research pipeline:
 
-1. Generating experiment inputs
+1. Generating Experiment Inputs
 -------------------------------
 
 Experiments using the scientific method have an independent variable whose
@@ -19,13 +19,14 @@ impact on results are measured through a series of trials. SIERRA allows you to
 express this as a research query on the command line, and then parses your query
 to make changes to a template input file to generate launch commands and
 experimental inputs to operationalize it. Switching from targeting platform A
-(e.g., ARGoS) to platform B (e.g., ROS+Gazebo) is as easy as changing a a single
-command line argument (assuming your code is setup to handle both ARGoS and ROS
-environments!). Similarly for switching from running on the local machine to
-running on a HPC cluster. SIERRA handles all the "backend" aspects of running
-experiments and allows you to focus on the fun parts--the research itself!
+(e.g., ARGoS) to platform B (e.g., ROS1+Gazebo) is as easy as changing a a
+single command line argument (assuming your code is setup to handle both ARGoS
+and ROS environments!). Similarly for switching from running on the local
+machine to running on a HPC cluster. SIERRA handles all the "backend" aspects of
+running experiments and allows you to focus on the fun parts--the research
+itself!
 
-2. Running experiments
+2. Running Experiments
 ----------------------
 
 SIERRA currently supports two types of execution environments: simulators and
@@ -49,24 +50,24 @@ simulation (see :doc:`/src/exec_env/hpc`) and on real robots
 
    * - SLURM: `<https://slurm.schedmd.com/documentation.html>`_
 
-     - ARGoS, ROS+Gazebo
+     - ARGoS, ROS1+Gazebo
 
    * - Torque/MOAB: `<https://adaptivecomputing.com/cherry-services/torque-resource-manager/>`_
 
-     - ARGoS, ROS+Gazebo
+     - ARGoS, ROS1+Gazebo
 
    * - ADHOC (suitable for a miscellaneous collection of networked compute nodes
        for a research group)
 
-     - ARGoS, ROS+Gazebo
+     - ARGoS, ROS1+Gazebo
 
    * - Local machine (for testing)
 
-     - ARGoS, ROS+Gazebo
+     - ARGoS, ROS1+Gazebo
 
-   * - ROS+Turtlebot3: `<https://emanual.robotis.com/docs/en/platform/turtlebot3/overview>`_
+   * - ROS1+Turtlebot3: `<https://emanual.robotis.com/docs/en/platform/turtlebot3/overview>`_
 
-     - ROS+Gazebo, ROS+robot
+     - ROS1+Gazebo, ROS1+robot
 
 To add additional HPC or real robot execution environments, see
 :doc:`/src/tutorials/plugin/exec_env_plugin`.

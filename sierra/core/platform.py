@@ -419,8 +419,9 @@ def get_local_ip():
 
 __api__ = [
     'CmdlineParserGenerator',
+    'ExpRunShellCmdsGenerator',
+    'ExpShellCmdsGenerator',
     'ParsedCmdlineConfigurer',
-    'ExpRunLaunchCmdGenerator',
-    'ExpCmdsGenerator',
-    'HPCEnvChecker',
+    'ExpConfigurer',
+    'ExecEnvChecker'
 ]

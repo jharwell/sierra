@@ -110,7 +110,7 @@ class IntraExpGraphGenerator:
     in :class:`~sierra.core.pipeline.stage4.pipeline_stage4.PipelineStage4`.
 
     This class can be extended/overriden using a :term:`Project` hook. See
-    :ref:`ln-tutorials-project-hooks` for details.
+    :ref:`ln-sierra-tutorials-project-hooks` for details.
 
     Attributes:
 

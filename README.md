@@ -18,20 +18,21 @@ bottom for each stage. “... ” indicates areas where SIERRA is designed via
 python plugins to be easily extensible. “Host machine” indicates the machine
 SIERRA was invoked on.")
 
-## 1. Generating experiment inputs
+## 1. Generating Experiment Inputs
 
 Experiments using the scientific method have an independent variable whose
 impact on results are measured through a series of trials. SIERRA allows you to
 express this as a research query on the command line, and then parses your query
 to make changes to a template input file to generate launch commands and
 experimental inputs to operationalize it. Switching from targeting platform A
-(e.g., ARGoS) to platform B (e.g., ROS+Gazebo) is as easy as changing a a single
-command line argument (assuming your code is setup to handle both ARGoS and ROS
-environments!). Similarly for switching from running on the local machine to
-running on a HPC cluster. SIERRA handles all the "backend" aspects of running
-experiments and allows you to focus on the fun parts--the research itself!
+(e.g., ARGoS) to platform B (e.g., ROS1+Gazebo) is as easy as changing a a
+single command line argument (assuming your code is setup to handle both ARGoS
+and ROS environments!). Similarly for switching from running on the local
+machine to running on a HPC cluster. SIERRA handles all the "backend" aspects of
+running experiments and allows you to focus on the fun parts--the research
+itself!
 
-## 2. Running experiments
+## 2. Running Experiments
 
 SIERRA currently supports two types of execution environments: simulators and
 real robots, which are handled seamlessly with GNU parallel. For simulators,
@@ -49,16 +50,16 @@ and on real robots
 
 | Execution Environment     | Supported Platforms |
 | ------------------------- | ------------------- |
-| [SLURM](https://slurm.schedmd.com/documentation.html) | ARGoS, ROS+Gazebo |
-| [Torque/MOAB](https://adaptivecomputing.com/cherry-services/torque-resource-manager) | ARGoS, ROS+Gazebo |
-| ADHOC (suitable for a miscellaneous collection of networked compute nodes for a research group) | ARGoS, ROS+Gazebo |
+| [SLURM](https://slurm.schedmd.com/documentation.html) | ARGoS, ROS1+Gazebo |
+| [Torque/MOAB](https://adaptivecomputing.com/cherry-services/torque-resource-manager) | ARGoS, ROS1+Gazebo |
+| ADHOC (suitable for a miscellaneous collection of networked compute nodes for a research group) | ARGoS, ROS1+Gazebo |
 | Local machine (for testing) | ARGoS, ROS+Gazebo |
-| [ROS+Turtlebot3](https://emanual.robotis.com/docs/en/platform/turtlebot3/overview) | ROS+Gazebo, ROS+robot |
+| [ROS1+Turtlebot3](https://emanual.robotis.com/docs/en/platform/turtlebot3/overview) | ROS1+Gazebo, ROS1+robot |
 
 To add additional execution environments, see the
 [docs](https://swarm-robotics-sierra.readthedocs.io/en/latest/src/tutorials/plugin/exec_env_plugin.html).
 
-## 3. Processing experiment results
+## 3. Processing Experiment Results
 
 SIERRA supports a number of data formats which simulations/real robot
 experiments can output their data (e.g., the number of robots engaged in a given
@@ -67,7 +68,7 @@ task over time) for processing. For more details see the
 generate various statistics from the results such as confidence intervals on
 observed behavior.
 
-## 4. Generating deliverables
+## 4. Generating Deliverables
 
 SIERRA can generate many deliverables from the processed experimental results
 automatically (independent of the platform/execution environment!), thus greatly
@@ -83,7 +84,7 @@ simplifying reproduction of previous results if you need to tweak a given graph
 For some examples, see the "Generating Deliverables" section
 [here](https://www-users.cse.umn.edu/~harwe006/showcase/aamas-2022-demo).
 
-## 5. Controller/scenario comparison
+## 5. Controller/Scenario Comparison
 
 SIERRA can take pieces from graphs generated in stage 4 and put them on a single
 graph to generate camera ready comparison graphs. It can generate comparison
@@ -100,7 +101,7 @@ interface for the below pipeline to automate your research workflow:
 - [ARGoS](https://www.argos-sim.info/index.php) for fast simulation of large
   robot swarms via multiple physics engines.
 
-- [Gazebo](https://www.gazebosim.org) for ROS+Gazebo.
+- [Gazebo](https://www.gazebosim.org) for ROS1+Gazebo.
 
 - [ROS](https://ros.org) for ROS on a real robot.
 
@@ -111,27 +112,30 @@ To define additional platforms, see the
 
 - python >= 3.9.
 - ARGoS >= 3.0.0-beta59 (if you are using ARGoS).
-- ROS 1 Melodic or later (if you are using ROS).
-- Gazebo 11.9.0 or later (if you are using ROS+Gazebo).
+- ROS1 Melodic or later (if you are using ROS).
+- Gazebo 11.9.0 or later (if you are using ROS1+Gazebo).
 
-# Contributing
 
-See [here](https://swarm-robotics-sierra.readthedocs.io/en/latest/src/contributing.html) to get started.
+# Installing SIERRA
 
+    pip3 install sierra-research
 
 # Citing
 If you use SIERRA and have found it helpful, please cite the following paper:
 
-    @misc{Harwell2022b-SIERRA,
-          title={SIERRA: A Modular Framework for Research Automation},
-          author={John Harwell and London Lowmanstone and Maria Gini},
-          year={2022},
-          eprint={2203.04748},
-          archivePrefix={arXiv},
-          primaryClass={cs.RO},
-          url={http://arxiv.org/abs/2203.04748}
+    @inproceedings{Harwell2022a-SIERRA,
+    author = {Harwell, John and Lowmanstone, London and Gini, Maria},
+    title = {SIERRA: A Modular Framework for Research Automation},
+    year = {2022},
+    isbn = {9781450392136},
+    publisher = {International Foundation for Autonomous Agents and Multiagent Systems},
+    booktitle = {Proceedings of the 21st International Conference on Autonomous Agents and Multiagent Systems},
+    pages = {1905–1907}
     }
 
+# Contributing
+
+See [here](https://swarm-robotics-sierra.readthedocs.io/en/latest/src/contributing.html) to get started.
 
 # License
 This project is licensed under GPL 3.0. See [LICENSE](LICENSE.md).

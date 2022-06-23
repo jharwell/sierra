@@ -1,4 +1,4 @@
-.. _ln-usage-env-vars:
+.. _ln-sierra-usage-env-vars:
 
 Environment Variables
 =====================
@@ -98,7 +98,28 @@ Environment Variables
 
 .. envvar:: ROS_PACKAGE_PATH
 
-   The list of directories which defines where ROS will search for
+   The list of directories which defines where :term:`ROS` will search for
    packages. SIERRA does `not` modify this variable, so it needs to be setup
    properly prior to invoking SIERRA (i.e., sourcing the proper ``setup.bash``
    script).
+
+.. envvar:: ROS_IP
+
+   The IP address a robot will be identified with under :term:`ROS`. SIERRA does
+   `not` modify this variable, so it needs to be setup prior to invoking SIERRA
+   (i.e, sourcing the proper ``setup.bash`` script).
+
+   .. IMPORTANT:: If this is incorrectly set then SIERRA will probably hang
+                  during stage2, and/or fail to send experiment files to robots
+                  during stage 1.
+
+
+.. envvar:: ROS_HOSTNAME
+
+   The HOSTNAME address a robot will be identified with under
+   :term:`ROS`. SIERRA does `not` modify this variable, so it needs to be setup
+   prior to invoking SIERRA (i.e, sourcing the proper ``setup.bash`` script).
+         
+   .. IMPORTANT:: If this is incorrectly set then SIERRA will probably hang
+                  during stage2, and/or fail to send experiment files to robots
+                  during stage 1.

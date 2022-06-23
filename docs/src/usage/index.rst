@@ -1,4 +1,4 @@
-.. _ln-usage:
+.. _ln-sierra-usage:
 
 =================
 How To Use SIERRA
@@ -6,8 +6,8 @@ How To Use SIERRA
 
 This page contains more in-depth documentation on how to use SIERRA/required
 configuration beyond the minimum needed to get started, and assumes that you
-have either gotten SIERRA working via :ref:`ln-trial` or
-:ref:`ln-getting-started`. Once you've done that, the docs on this page provide
+have either gotten SIERRA working via :ref:`ln-sierra-trial` or
+:ref:`ln-sierra-getting-started`. Once you've done that, the docs on this page provide
 a good way to understand how to get the most out of SIERRA.
 
 .. toctree::

@@ -15,7 +15,7 @@
 # SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 Classes for the population size batch criteria. See
-:ref:`ln-platform-rosrobot-bc-population-size` for usage documentation.
+:ref:`ln-sierra-platform-ros1robot-bc-population-size` for usage documentation.
 """
 
 # Core packages
@@ -33,7 +33,7 @@ from sierra.core.variables import population_size
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
-@implements.implements(bc.IQueryableBatchCritera)
+@implements.implements(bc.IQueryableBatchCriteria)
 class PopulationSize(population_size.BasePopulationSize):
     """A univariate range of system sizes used to define batch experiments.
 

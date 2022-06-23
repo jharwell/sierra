@@ -14,7 +14,7 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
-Provides platform-specific callbacks for the :term:`ROS+Gazebo` platform.
+Provides platform-specific callbacks for the :term:`ROS1+Gazebo` platform.
 """
 # Core packages
 import argparse
@@ -29,7 +29,7 @@ import packaging.version
 import implements
 
 # Project packages
-from sierra.plugins.platform.rosgazebo import cmdline
+from sierra.plugins.platform.ros1gazebo import cmdline
 from sierra.core import hpc, xml, platform, config, ros, types
 from sierra.core.experiment import bindings
 import sierra.core.variables.batch_criteria as bc
@@ -47,7 +47,7 @@ class CmdlineParserGenerator():
 class ParsedCmdlineConfigurer():
     def __init__(self, exec_env: str) -> None:
         self.exec_env = exec_env
-        self.logger = logging.getLogger('rosgazebo.plugin')
+        self.logger = logging.getLogger('ros1gazebo.plugin')
 
     def __call__(self, args: argparse.Namespace) -> None:
         # No configuration needed for stages 3-5
@@ -64,7 +64,7 @@ class ParsedCmdlineConfigurer():
             self._hpc_pbs(args)
         else:
             assert False,\
-                f"'{self.exec_env}' unsupported on Ros+Gazebo"
+                f"'{self.exec_env}' unsupported on ROS1+Gazebo"
 
     def _hpc_pbs(self, args: argparse.Namespace) -> None:
         # For now, nothing to do. If more stuff with physics engine
@@ -301,11 +301,11 @@ class ExecEnvChecker(platform.ExecEnvChecker):
 
         # Check ROS distro
         assert os.environ['ROS_DISTRO'] in ['melodic', 'noetic'],\
-            "SIERRA only supports ROS melodic and noetic"
+            "SIERRA only supports ROS1 melodic and noetic"
 
         # Check ROS version
         assert os.environ['ROS_VERSION'] == "1",\
-            "SIERRA only supports ROS 1"
+            "Wrong ROS version: this plugin is for ROS1"
 
         # Check we can find Gazebo
         version = self.check_for_simulator(config.kGazebo['launch_cmd'])

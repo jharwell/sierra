@@ -27,7 +27,7 @@ import implements
 import yaml
 
 # Project packages
-from sierra.plugins.platform.rosrobot import cmdline
+from sierra.plugins.platform.ros1robot import cmdline
 from sierra.core import xml, platform, config, ros, types, utils
 from sierra.core.experiment import bindings
 import sierra.core.variables.batch_criteria as bc
@@ -44,7 +44,7 @@ class CmdlineParserGenerator():
 class ParsedCmdlineConfigurer():
     def __init__(self, exec_env: str) -> None:
         self.exec_env = exec_env
-        self.logger = logging.getLogger('platform.rosrobot')
+        self.logger = logging.getLogger('platform.ros1robot')
 
     def __call__(self, args: argparse.Namespace) -> None:
         pass
@@ -61,7 +61,7 @@ class ExpRunShellCmdsGenerator():
         self.n_robots = n_robots
         self.exp_num = exp_num
         self.criteria = criteria
-        self.logger = logging.getLogger('platform.rosrobot')
+        self.logger = logging.getLogger('platform.ros1robot')
 
     def pre_run_cmds(self,
                      host: str,
@@ -193,7 +193,7 @@ class ExpShellCmdsGenerator():
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
         self.exp_num = exp_num
-        self.logger = logging.getLogger('platform.rosrobot')
+        self.logger = logging.getLogger('platform.ros1robot')
 
     def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
         local_ip = platform.get_local_ip()
@@ -249,7 +249,7 @@ class ExpShellCmdsGenerator():
 class ExpConfigurer():
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         self.cmdopts = cmdopts
-        self.logger = logging.getLogger('platform.rosrobot')
+        self.logger = logging.getLogger('platform.ros1robot')
 
     def cmdfile_paradigm(self) -> str:
         return 'per-run'
@@ -333,16 +333,16 @@ class ExecEnvChecker():
 
         for k in keys:
             assert k in os.environ, \
-                "Non-ROS+robot environment detected: '{0}' not found".format(
+                "Non-ROS1+robot environment detected: '{0}' not found".format(
                     k)
 
         # Check ROS distro
         assert os.environ['ROS_DISTRO'] in ['melodic', 'noetic'],\
-            "SIERRA only supports ROS melodic and noetic"
+            "SIERRA only supports ROS1 melodic and noetic"
 
         # Check ROS version
         assert os.environ['ROS_VERSION'] == "1",\
-            "SIERRA only supports ROS 1"
+            "Wrong ROS version: This plugin is for ROS1"
 
 
 def population_size_from_pickle(adds_def: tp.Union[xml.XMLAttrChangeSet,

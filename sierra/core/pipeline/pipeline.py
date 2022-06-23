@@ -15,7 +15,7 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 Container module for the 5 pipeline stages implemented by SIERRA. See
-:ref:`ln-usage-pipeline` for high-level documentation.
+:ref:`ln-sierra-usage-pipeline` for high-level documentation.
 """
 
 # Core packages

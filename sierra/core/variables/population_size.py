@@ -67,9 +67,6 @@ class BasePopulationSize(bc.UnivarBatchCriteria):
 
         return "System Size"
 
-    def pm_query(self, pm: str) -> bool:
-        return pm in ['raw', 'scalability', 'self-org']
-
 
 class Parser():
     """A base parser for use in changing the # robots/agents.
@@ -132,5 +129,5 @@ class Parser():
 
 __api__ = [
     'Parser',
-    'PopulationSize'
+    'BasePopulationSize'
 ]

@@ -16,7 +16,7 @@
 #
 """
 Classes for the variable population density batch criteria. See
-:ref:`ln-platform-argos-bc-population-variable-density` for usage
+:ref:`ln-sierra-platform-argos-bc-population-variable-density` for usage
 documentation.
 """
 
@@ -106,9 +106,6 @@ class PopulationVariableDensity(vd.VariableDensity):
 
     def n_robots(self, exp_num: int) -> int:
         return int(self.extent.area() * self.densities[exp_num] / 100.0)
-
-    def pm_query(self, pm: str) -> bool:
-        return pm in ['raw', 'scalability', 'self-org']
 
 
 def factory(cli_arg: str,

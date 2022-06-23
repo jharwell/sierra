@@ -1,4 +1,4 @@
-.. _ln-exec-env-hpc:
+.. _ln-sierra-exec-env-hpc:
 
 ==============================================================
 High Performance Computing (HPC) Execution Environment Plugins
@@ -12,10 +12,10 @@ environments that come with SIERRA are listed on this page.
 These plugins tested with the following platforms (they may work on other
 platforms out of the box too):
 
-- :ref:`ln-platform-plugins-argos`
-- :ref:`ln-platform-plugins-rosgazebo`
+- :ref:`ln-sierra-platform-plugins-argos`
+- :ref:`ln-sierra-platform-plugins-ros1gazebo`
 
-.. _ln-hpc-plugins-local:
+.. _ln-sierra-hpc-plugins-local:
 
 Local HPC Plugin
 ================
@@ -41,7 +41,7 @@ The # threads per :term:`experimental run <Experimental Run>` is defined with
 ``--physics-n-engines``, and that option is required for this HPC environment
 during stage 1.
 
-.. _ln-hpc-plugins-pbs:
+.. _ln-sierra-hpc-plugins-pbs:
 
 PBS HPC Plugin
 ==============
@@ -98,7 +98,7 @@ an error.
 
 - :envvar:`PARALLEL`
 
-.. _ln-hpc-plugins-slurm:
+.. _ln-sierra-hpc-plugins-slurm:
 
 SLURM HPC Plugin
 ================
@@ -155,7 +155,7 @@ an error.
 
 - :envvar:`PARALLEL`
 
-.. _ln-hpc-plugins-adhoc:
+.. _ln-sierra-hpc-plugins-adhoc:
 
 Adhoc HPC Plugin
 ================

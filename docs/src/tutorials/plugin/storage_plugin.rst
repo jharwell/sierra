@@ -1,4 +1,4 @@
-.. _ln-tutorials-plugin-storage:
+.. _ln-sierra-tutorials-plugin-storage:
 
 =============================
 Creating a New Storage Plugin

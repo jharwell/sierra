@@ -1,4 +1,4 @@
-.. _ln-tutorials-project-project:
+.. _ln-sierra-tutorials-project-project:
 
 =============================
 Creating a New SIERRA Project
@@ -62,18 +62,18 @@ Creating a New SIERRA Project
      - ``scenario_generator_parser.py`` - Contains the parser for parsing the
        contents of ``--scenario`` into a dictionary which can be used to
        configure experiments. This file is required. See
-       :ref:`ln-tutorials-project-generators-scenario-config` for
+       :ref:`ln-sierra-tutorials-project-generators-scenario-config` for
        documentation.
 
      - ``scenario_generators.py`` - Specifies classes and functions to enable
        SIERRA to generate XML file modifications to the
        ``--template-input-file`` based on what is passed as ``--scenario`` on
        the cmdline. This file is required. See
-       :ref:`ln-tutorials-project-generators-scenario-config` for documentation.
+       :ref:`ln-sierra-tutorials-project-generators-scenario-config` for documentation.
 
      - ``exp_generators.py`` - Contains extensions to the per-:term:`Experiment`
        and per-:term:`Experimental Run` configuration that SIERRA performs. See
-       :ref:`ln-tutorials-project-generators-sim-config` for documentation. This
+       :ref:`ln-sierra-tutorials-project-generators-sim-config` for documentation. This
        file is optional.
 
    - ``variables/`` - Additional variables (including batch criteria) defined by
@@ -105,7 +105,7 @@ Optional Steps
 ==============
 
 #. Define additional batch criteria to investigate variables of interest
-   specific to your project by following :ref:`ln-tutorials-project-new-bc`.
+   specific to your project by following :ref:`ln-sierra-tutorials-project-new-bc`.
 
 #. Define one or more :term:`Models <Model>` to run to compare with empirical
    data.

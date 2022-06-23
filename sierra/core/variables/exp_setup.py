@@ -27,7 +27,7 @@ from sierra.core import types
 class Parser():
     """Enforces the cmdline definition of ``--exp-setup``.
 
-    See :ref:`ln-vars-expsetup` for documentation.
+    See :ref:`ln-sierra-vars-expsetup` for documentation.
 
     """
 

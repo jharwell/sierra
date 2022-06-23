@@ -15,7 +15,7 @@
 # SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 Classes for the population size batch criteria. See
-:ref:`ln-platform-rosgazebo-bc-population-size` for usage documentation.
+:ref:`ln-sierra-platform-ros1gazebo-bc-population-size` for usage documentation.
 """
 
 # Core packages
@@ -36,7 +36,7 @@ from sierra.core.variables import population_size
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
-@implements.implements(bc.IQueryableBatchCritera)
+@implements.implements(bc.IQueryableBatchCriteria)
 class PopulationSize(population_size.BasePopulationSize):
     """A univariate range of system sizes used to define batch experiments.
 
@@ -193,12 +193,12 @@ def factory(cli_arg: str,
         sgp = pm.module_load_tiered(project=cmdopts['project'],
                                     path='generators.scenario_generator_parser')
 
-           # scenario is passed in kwargs during stage 5 (can't be passed via
-           # --scenario in general )
-           if 'scenario' in kwargs:
-                scenario = kwargs['scenario']
-            else:
-                scenario = cmdopts['scenario']
+        # scenario is passed in kwargs during stage 5 (can't be passed via
+        # --scenario in general )
+        if 'scenario' in kwargs:
+            scenario = kwargs['scenario']
+        else:
+            scenario = cmdopts['scenario']
 
         kw = sgp.ScenarioGeneratorParser().to_dict(scenario)
         xs = random.choices(range(0, kw['arena_x']), k=max_sizes[-1])

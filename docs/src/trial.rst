@@ -1,4 +1,4 @@
-.. _ln-trial:
+.. _ln-sierra-trial:
 
 =================
 Trying Out SIERRA
@@ -42,14 +42,9 @@ you clone things somewhere else.
                   might even not crash immediately depending on what you are
                   using it to do.
 
-#. From the SIERRA repo root, install SIERRA locally::
+#. Install SIERRA::
 
-     git clone https://github.com/swarm-robotics/sierra.git
-     cd sierra
-     git checkout devel
-     pip3 install -r docs/requirements.txt
-     cd docs && make man && cd ..
-     pip3 install .
+     pip3 install sierra-research
 
 #. Setup your chosen :term:`Platform`:
 
@@ -63,7 +58,7 @@ you clone things somewhere else.
          .. IMPORTANT:: If ``argos3`` is not found by your shell then
                         you won't be able to do anything useful with SIERRA!
 
-      .. group-tab:: ROS+Gazebo
+      .. group-tab:: ROS1+Gazebo
 
          #. Install ROS distribution by following one of (or an equivalent guide
             for OSX or an alternative linux distribution):
@@ -122,13 +117,13 @@ you clone things somewhere else.
          functionality to support having multiple versions of ARGoS installed in
          multiple directories.
 
-      .. group-tab:: ROS+Gazebo
+      .. group-tab:: ROS1+Gazebo
 
          Based on one of the turtlebot3 `intro tutorials
          <https://github.com:ROBOTIS-GIT/turtlebot3_simulations.git>`_::
 
            git clone https://github.com/swarm-robotics/sierra-sample-project.git
-           cd sierra-sample-project/rosgazebo
+           cd sierra-sample-project/ros1gazebo
            git checkout devel
            catkin init
            catkin config --extend=$HOME/.local/ros/melodic
@@ -155,11 +150,11 @@ you clone things somewhere else.
             Where ``<ARGOS_INSTALL_DIR>`` is the prefix that you installed ARGoS
             to.
 
-      .. group-tab:: ROS+Gazebo
+      .. group-tab:: ROS1+Gazebo
 
          #. Set :envvar:`SIERRA_PLUGIN_PATH`::
 
-              export SIERRA_PLUGIN_PATH=$HOME/research/sierra-sample-project/projects/rosgazebo_project
+              export SIERRA_PLUGIN_PATH=$HOME/research/sierra-sample-project/projects/ros1gazebo_project
 
          #. Source ROS environment to set :envvar:`ROS_PACKAGE_PATH` (if you
             haven't already)::
@@ -167,7 +162,7 @@ you clone things somewhere else.
               . /path/to/setup.bash
 
 
-#. Run SIERRA (invocation inspired by :ref:`ln-usage-examples`). You can do this
+#. Run SIERRA (invocation inspired by :ref:`ln-sierra-usage-examples`). You can do this
    from any directory! (yay SIERRA!)
 
    .. tabs::
@@ -198,7 +193,7 @@ you clone things somewhere else.
          so to run. After it finishes, you can go to ``$HOME/research/exp`` and
          find all the simulation outputs, including camera ready graphs! For an
          explanation of SIERRA's runtime directory tree, see
-         :ref:`ln-usage-runtime-exp-tree`. You can also run the same experiment
+         :ref:`ln-sierra-usage-runtime-exp-tree`. You can also run the same experiment
          again, and it will overwrite the previous one because you passed
          ``--exp-overwrite``.
 
@@ -209,16 +204,16 @@ you clone things somewhere else.
                    ``<media>`` parent tags by default to increase speed and
                    reduce the memory footprint of ARGoS simulations.
 
-      .. group-tab:: ROS+Gazebo
+      .. group-tab:: ROS1+Gazebo
 
          ::
 
             sierra-cli \
             --sierra-root=$HOME/research/exp \
-            --template-input-file=exp/rosgazebo/turtlebot3_house.launch \
+            --template-input-file=exp/ros1gazebo/turtlebot3_house.launch \
             --n-runs=4 \
-            --platform=platform.rosgazebo \
-            --project=rosgazebo_project \
+            --platform=platform.ros1gazebo \
+            --project=ros1gazebo_project \
             --controller=turtlebot3.wander \
             --scenario=HouseWorld.10x10x1 \
             --batch-criteria population_size.Log8 \

@@ -15,7 +15,7 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """Classes for the ``--exp-setup`` cmdline option for :term:`Platforms
-<Platform>` which use :term:`ROS`. See :ref:`ln-vars-expsetup` for usage
+<Platform>` which use :term:`ROS`. See :ref:`ln-sierra-vars-expsetup` for usage
 documentation.
 
 """

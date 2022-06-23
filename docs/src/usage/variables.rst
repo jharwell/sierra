@@ -1,4 +1,4 @@
-.. _ln-usage-vars:
+.. _ln-sierra-usage-vars:
 
 ========================================
 Externally Configurable SIERRA Variables
@@ -8,9 +8,9 @@ Non-:term:`Batch Criteria` variables which you can use to configure
 simulations. All batch criteria are variables, but not all variables are batch
 criteria.
 
-- :ref:`Experiment Setup <ln-vars-expsetup>`
+- :ref:`Experiment Setup <ln-sierra-vars-expsetup>`
 
-.. _ln-vars-expsetup:
+.. _ln-sierra-vars-expsetup:
 
 Experiment Setup
 ================
@@ -19,7 +19,7 @@ Configure :term:`Experiment` time: length, controller cadence (:term:`Tick`
 duration/timestep), and how many datapoints to capture per :term:`Experimental
 Run`.
 
-.. _ln-vars-expsetup-cmdline:
+.. _ln-sierra-vars-expsetup-cmdline:
 
 Cmdline Syntax
 --------------
@@ -32,8 +32,7 @@ Cmdline Syntax
 
 - ``n_datapoints`` - # datapoints per :term:`Experimental Run` to be captured;
   the capture interval (if configurable) should be adjusted in
-  :term:`Project`\-derived class from the platform
-  :class:`sierra.core.variables.exp_setup.ExpSetup` (e.g.,
+  :term:`Project`\-derived class from the platform experiment setup class (e.g.,
   :class:`sierra.plugins.platform.argos.variables.exp_setup.ExpSetup` for
   :term:`ARGoS`).
 

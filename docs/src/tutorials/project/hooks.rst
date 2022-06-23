@@ -1,4 +1,4 @@
-.. _ln-tutorials-project-hooks:
+.. _ln-sierra-tutorials-project-hooks:
 
 ============
 SIERRA Hooks

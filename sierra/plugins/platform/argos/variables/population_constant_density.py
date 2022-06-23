@@ -16,7 +16,7 @@
 #
 """
 Classes for the constant population density batch criteria. See
-:ref:`ln-platform-argos-bc-population-constant-density` for usage
+:ref:`ln-sierra-platform-argos-bc-population-constant-density` for usage
 documentation.
 
 """
@@ -133,9 +133,6 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
     def n_robots(self, exp_num: int) -> int:
         return int(self.target_density / 100.0 * self.dimensions[exp_num].area())
-
-    def pm_query(self, pm: str) -> bool:
-        return pm in ['raw', 'scalability', 'self-org']
 
 
 def factory(cli_arg: str,

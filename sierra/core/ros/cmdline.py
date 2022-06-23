@@ -60,17 +60,17 @@ class ROSCmdline(cmd.BaseCmdline):
         self.multistage.add_argument("--no-master-node",
                                      help="""
 
-                                     Do not generate commands for/start a ROS
+                                     Do not generate commands for/start a ROS1
                                      master node on the SIERRA host
-                                     machine (which is the ROS master).
+                                     machine (which is the ROS1 master).
 
                                      This is useful when:
 
-                                     - Using the :term:`ROS+Robot` platform and
+                                     - Using the :term:`ROS1+Robot` platform and
                                        each robot outputs their own metrics to a
                                        shared filesystem.
 
-                                     - The SIERRA host machine does not have ROS
+                                     - The SIERRA host machine does not have ROS1
                                        installed, and you are doing
                                        testing/bringup of robots.
 
@@ -86,7 +86,7 @@ class ROSCmdline(cmd.BaseCmdline):
                                      Defines experiment run length, ticks per
                                      second for the experiment, # of datapoints
                                      to capture/capture interval for each
-                                     simulation. See :ref:`ln-vars-expsetup` for
+                                     simulation. See :ref:`ln-sierra-vars-expsetup` for
                                      a full description.
 
                             """ + self.stage_usage_doc([1]),
@@ -101,7 +101,7 @@ class ROSCmdline(cmd.BaseCmdline):
                                      The key name of the robot model, which must
                                      be present in the appropriate section of
                                      ``main.yaml`` for the :term:`Project`. See
-                                     :ref:`ln-tutorials-project-main-config` for
+                                     :ref:`ln-sierra-tutorials-project-main-config` for
                                      details.
 
                             """ + self.stage_usage_doc([1]))

@@ -15,7 +15,7 @@
 # SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 Classes for the population size batch criteria. See
-:ref:`ln-platform-argos-bc-population-size` for usage documentation.
+:ref:`ln-sierra-platform-argos-bc-population-size` for usage documentation.
 """
 
 # Core packages

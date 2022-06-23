@@ -1,4 +1,4 @@
-.. _ln-tutorials-project-graphs-config:
+.. _ln-sierra-tutorials-project-graphs-config:
 
 ===================
 Graph Configuration

@@ -36,8 +36,9 @@ import sierra.core.plugin_manager as pm
 from sierra.core import types
 
 
-class IQueryableBatchCritera(implements.Interface):
-    """Mixin interface for batch criteria which can be queried during stage {1,2}.
+class IQueryableBatchCriteria(implements.Interface):
+    """Mixin interface for batch criteria which can be queried during stage
+    {1,2}.
 
     Used to extract additional information needed for configuring some
     :term:`Platforms <Platform>` and execution environments.
@@ -98,18 +99,6 @@ class IConcreteBatchCriteria(implements.Interface):
         Returns:
             The X-label that should be used for the graphs of various
             performance measures across batch criteria.
-        """
-        raise NotImplementedError
-
-    def pm_query(self, pm: str) -> bool:
-        """
-        Arguments:
-            pm: A possible performance measure to generate from the results of
-                the batch experiment defined by this object.
-
-        Returns:
-            `True` if the specified pm should be generated for the current
-            object, and `False` otherwise.
         """
         raise NotImplementedError
 
@@ -622,9 +611,6 @@ class BivarBatchCriteria(BatchCriteria):
 
     def graph_ylabel(self, cmdopts: types.Cmdopts) -> str:
         return self.criteria2.graph_xlabel(cmdopts)
-
-    def pm_query(self, pm: str) -> bool:
-        return self.criteria1.pm_query(pm) or self.criteria2.pm_query(pm)
 
     def set_batch_input_root(self, root: str) -> None:
         self.batch_input_root = root

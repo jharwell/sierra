@@ -20,4 +20,4 @@
 
 # Project packages
 
-__version__ = "1.1.15"
+__version__ = "1.2.1"

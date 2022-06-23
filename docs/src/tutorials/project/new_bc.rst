@@ -1,4 +1,4 @@
-.. _ln-tutorials-project-new-bc:
+.. _ln-sierra-tutorials-project-new-bc:
 
 ===========================
 Create A New Batch Criteria

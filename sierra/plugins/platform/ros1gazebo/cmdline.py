@@ -15,7 +15,7 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
 """
-Command line parsing and validation for the :term:`ROS+Gazebo` platform.
+Command line parsing and validation for the :term:`ROS1+Gazebo` platform.
 """
 
 # Core packages
@@ -32,7 +32,7 @@ from sierra.core import hpc, ros
 
 
 class PlatformCmdline(corecmd.BaseCmdline):
-    """Defines :term:`ROS+Gazebo` extensions to :class:`~sierra.core.cmdline.CoreCmdline`.
+    """Defines :term:`ROS1+Gazebo` extensions to :class:`~sierra.core.cmdline.CoreCmdline`.
 
     """
 
@@ -192,7 +192,7 @@ class PlatformCmdline(corecmd.BaseCmdline):
                        cmdopts: types.Cmdopts) -> None:
         """
         Updates the core cmdopts dictionary with (key,value) pairs from the
-        ROS+Gazebo-specific cmdline options.
+        ROS1+Gazebo-specific cmdline options.
 
         """
         hpc.cmdline.HPCCmdline.cmdopts_update(cli_args, cmdopts)

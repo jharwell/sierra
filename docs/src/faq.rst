@@ -1,4 +1,4 @@
-.. _ln-faq:
+.. _ln-sierra-faq:
 
 ===
 FAQ
@@ -16,14 +16,14 @@ FAQ
    A: No! Experiment execution happens in stage 2, and graph generation happens
    in stage4. If you just want to add/remove lines from a graph, change the
    title, formatting, etc., you can just tell SIERRA to re-run stage 4 via
-   ``--pipeline 4``. See :ref:`ln-usage-pipeline` for more details about
+   ``--pipeline 4``. See :ref:`ln-sierra-usage-pipeline` for more details about
    pipeline stages.
 
 #. Q: How to I resume an experiment which got killed part of the way through by
    an HPC scheduler for exceeding its job time limit ?
 
    A: Run SIERRA just as you did before, but add ``--exec-resume``, which will
-   tell SIERRA to pick up where it left off. See :ref:`ln-usage-cli` for the full
+   tell SIERRA to pick up where it left off. See :ref:`ln-sierra-usage-cli` for the full
    cmdline reference.
 
 #. Q: How do I run a non-default set of pipeline stages, such as {3,4}?
@@ -63,7 +63,7 @@ FAQ
 #. Q: SIERRA fails to run on my HPC environment?
 
    A: The most likely reason is that you don't have the necessary environment
-   variables set up--see :ref:`ln-exec-env-hpc` for details on what is required.
+   variables set up--see :ref:`ln-sierra-exec-env-hpc` for details on what is required.
 
 #. Q: SIERRA doesn't generate any graphs during stage4/the graph I'm interested
    is not there.
@@ -84,7 +84,7 @@ FAQ
    which runs crashed/did not finish/etc as a result of errors in the project
    C++ library. For later runs, or runs in which you are generating outputs for
    rendering, this is unnecessary, and can be disabled with
-   ``--skip-verify-results``.
+   ``--df-skip-verify``.
 
 #. Q: SIERRA does not overwrite the input configuration for my experiment/SIERRA
    won't run my experiments again after they run the first time--why?
@@ -94,7 +94,7 @@ FAQ
    stages. The files generated in stages {3,4,5} are generated `from` the
    earlier results, so it is OK to overwrite those. However, if you are sure you
    want to overwrite stuff, you can pass ``--exp-overwrite`` to disable this
-   behavior during stages {1,2}. See also :ref:`ln-philosophy`.
+   behavior during stages {1,2}. See also :ref:`ln-sierra-philosophy`.
 
 #. Q: I need to apply very precise/nuanced configuration to experiments that is
    too specific to be easily captured in a :term:`Batch Criteria` or other
@@ -106,4 +106,4 @@ FAQ
    tags, modifying attributes. This is a good way to apply tricky configuration
    which doesn't really fit anywhere else, or to try out some "quick and dirty"
    changes to see if they do what you want before codifying them with a
-   python class. See :ref:`ln-tutorials-project-main-config` for details.
+   python class. See :ref:`ln-sierra-tutorials-project-main-config` for details.

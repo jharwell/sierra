@@ -31,7 +31,7 @@ class YAMLConfigLoader():
     """Load YAML configuration for :term:`Project` graphs to be generated.
 
     This class can be extended/overriden using a :term:`Project` hook. See
-    :ref:`ln-tutorials-project-hooks` for details.
+    :ref:`ln-sierra-tutorials-project-hooks` for details.
 
     Attributes:
         logger: The handle to the logger for this class. If you extend this

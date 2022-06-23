@@ -126,11 +126,11 @@ class BootstrapCmdline(BaseCmdline):
                                  code has been developed and configured for
                                  ARGoS.
 
-                               - ``platform.rosgazebo`` - This directs SIERRA to
+                               - ``platform.ros1gazebo`` - This directs SIERRA to
                                  run experiments using the :term:`Gazebo`
                                  simulator and :term:`ROS`. Selecting this
                                  platform assumes your code has been developed
-                                 and configured for Gazebo and ROS.
+                                 and configured for Gazebo and ROS1.
 
                                """,
                                default='platform.argos')
@@ -161,24 +161,24 @@ class BootstrapCmdline(BaseCmdline):
 
                                - ``hpc.local`` - This directs SIERRA to run
                                  experiments on the local machine. See
-                                 :ref:`ln-hpc-plugins-local` for a detailed
+                                 :ref:`ln-sierra-hpc-plugins-local` for a detailed
                                  description.
 
                                - ``hpc.pbs`` - The directs SIERRA to run
                                  experiments spread across multiple allocated
                                  nodes in an HPC computing environment managed
-                                 by TORQUE-PBS. See :ref:`ln-hpc-plugins-pbs`
+                                 by TORQUE-PBS. See :ref:`ln-sierra-hpc-plugins-pbs`
                                  for a detailed description.
 
                                - ``hpc.slurm`` - The directs SIERRA to run
                                  experiments spread across multiple allocated
                                  nodes in an HPC computing environment managed
-                                 by SLURM. See :ref:`ln-hpc-plugins-slurm` for a
+                                 by SLURM. See :ref:`ln-sierra-hpc-plugins-slurm` for a
                                  detailed description.
 
                                - ``hpc.adhoc`` - This will direct SIERRA to run
                                  experiments on an ad-hoc network of
-                                 computers. See :ref:`ln-hpc-plugins-adhoc` for
+                                 computers. See :ref:`ln-sierra-hpc-plugins-adhoc` for
                                  a detailed description.
 
                                - ``robots.turtlebot`` - This will direct SIERRA
@@ -264,7 +264,7 @@ class CoreCmdline(BaseCmdline):
                                      content of the file can be any valid XML,
                                      with the exception of the SIERRA
                                      requirements detailed in
-                                     :ref:`ln-tutorials-project-template-input-file`.
+                                     :ref:`ln-sierra-tutorials-project-template-input-file`.
 
                                      """ + self.stage_usage_doc([1, 2, 3, 4]))
 
@@ -397,7 +397,7 @@ class CoreCmdline(BaseCmdline):
                                     frames into videos during stage 4. If the
                                     selected ``--platform`` does not support
                                     visual capture, then this option has no
-                                    effect. See :ref:`ln-usage-vc-platform` for
+                                    effect. See :ref:`ln-sierra-usage-vc-platform` for
                                     full details.
 
                                     """ + self.stage_usage_doc([1, 4]),
@@ -764,11 +764,11 @@ class CoreCmdline(BaseCmdline):
                            For example, in a bivariate batch criteria composed
                            of
 
-                           - :ref:`ln-platform-argos-bc-population-size` on the
+                           - :ref:`ln-sierra-platform-argos-bc-population-size` on the
                              X axis (rows)
 
-                           - :ref:`ln-platform-argos-bc-saa-noise` on the Y axis
-                             (columns)
+                           - Another batch criteria which does not affect swarm
+                             size
 
                            Swarm metrics will be calculated by `computing`
                            across .csv rows and `projecting` down the columns by
@@ -839,7 +839,7 @@ class CoreCmdline(BaseCmdline):
                                Enable generation of image files from ``.csv``
                                files captured during stage 2 and averaged during
                                stage 3 for each experiment. See
-                               :ref:`ln-usage-rendering-project` for details and
+                               :ref:`ln-sierra-usage-rendering-project` for details and
                                restrictions.
 
                                """ + self.stage_usage_doc([3, 4]),
@@ -851,7 +851,7 @@ class CoreCmdline(BaseCmdline):
                                Enable generation of videos from imagized
                                ``.csv`` files created as a result of
                                ``--project-imagizing``. See
-                               :ref:`ln-usage-rendering-project` for details.
+                               :ref:`ln-sierra-usage-rendering-project` for details.
 
                                """ + self.stage_usage_doc([4]),
                                action='store_true')

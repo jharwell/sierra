@@ -47,15 +47,15 @@ Citing SIERRA
 
 If you use SIERRA and find it helpful, please cite the following paper::
 
-  @misc{Harwell2022b-SIERRA,
-          title={SIERRA: A Modular Framework for Research Automation},
-          author={John Harwell and London Lowmanstone and Maria Gini},
-          year={2022},
-          eprint={2203.04748},
-          archivePrefix={arXiv},
-          primaryClass={cs.RO},
-          url={http://arxiv.org/abs/2203.04748}
-    }
+  @inproceedings{Harwell2022a-SIERRA,
+  author = {Harwell, John and Lowmanstone, London and Gini, Maria},
+  title = {SIERRA: A Modular Framework for Research Automation},
+  year = {2022},
+  isbn = {9781450392136},
+  publisher = {International Foundation for Autonomous Agents and Multiagent Systems},
+  booktitle = {Proceedings of the 21st International Conference on Autonomous Agents and Multiagent Systems},
+  pages = {1905–1907}
+  }
 
 SIERRA In The Wild
 ==================

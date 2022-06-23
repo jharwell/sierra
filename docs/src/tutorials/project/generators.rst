@@ -1,10 +1,10 @@
-.. _ln-tutorials-project-generators:
+.. _ln-sierra-tutorials-project-generators:
 
 =======================
 Generator Configuration
 =======================
 
-.. _ln-tutorials-project-generators-scenario-config:
+.. _ln-sierra-tutorials-project-generators-scenario-config:
 
 Per-Scenario Configuration
 ==========================
@@ -71,7 +71,7 @@ you specify, you need to:
           ...
 
 
-.. _ln-tutorials-project-generators-sim-config:
+.. _ln-sierra-tutorials-project-generators-sim-config:
 
 Per-Experimental Run Configuration
 ==================================

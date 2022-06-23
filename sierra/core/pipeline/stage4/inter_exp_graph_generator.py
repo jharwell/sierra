@@ -47,7 +47,7 @@ class InterExpGraphGenerator:
 
 
     This class can be extended/overriden using a :term:`Project` hook. See
-    :ref:`ln-tutorials-project-hooks` for details.
+    :ref:`ln-sierra-tutorials-project-hooks` for details.
 
     Attributes:
         cmdopts: Dictionary of parsed cmdline attributes.

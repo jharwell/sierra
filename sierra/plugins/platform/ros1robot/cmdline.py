@@ -15,7 +15,7 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
 """
-Command line parsing and validation for the :term:`ROS+robot` platform.
+Command line parsing and validation for the :term:`ROS1+robot` platform.
 """
 
 # Core packages
@@ -155,7 +155,7 @@ class PlatformCmdline(cmd.BaseCmdline):
     def cmdopts_update(cli_args, cmdopts: types.Cmdopts) -> None:
         """
         Updates the core cmdopts dictionary with (key,value) pairs from the
-        ROS+robot-specific cmdline options.
+        ROS1+robot-specific cmdline options.
 
         """
         ros.cmdline.ROSCmdline.cmdopts_update(cli_args, cmdopts)

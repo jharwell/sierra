@@ -1,4 +1,4 @@
-.. _ln-contributing:
+.. _ln-sierra-contributing:
 
 ============
 Contributing
@@ -62,7 +62,7 @@ repository.
     - ``models/`` - Model interfaces.
 
     - ``pipeline/`` - Core pipline code in 5 stages (see
-      :ref:`ln-usage-pipeline`).
+      :ref:`ln-sierra-usage-pipeline`).
 
     - ``ros/`` - Common :term:`ROS` bindings.
 

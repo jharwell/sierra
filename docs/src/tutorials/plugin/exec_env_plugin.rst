@@ -1,4 +1,4 @@
-.. _ln-tutorials-plugin-exec-env:
+.. _ln-sierra-tutorials-plugin-exec-env:
 
 ===========================================
 Creating a New Execution Environment Plugin
@@ -11,7 +11,7 @@ For the purposes of this tutorial, I will assume you are creating a new HPC
 If you are creating a new HPC plugin for an existing platform that comes with
 SIERRA (e.g., :term:`ARGoS`) you have two options:
 
-#. Following :ref:`ln-tutorials-plugin-platform` to create a new platform to
+#. Following :ref:`ln-sierra-tutorials-plugin-platform` to create a new platform to
    add support for your execution environment within the existing platform.
 
 #. Open a pull request for SIERRA with your created HPC plugin to get it into

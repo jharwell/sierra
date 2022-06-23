@@ -14,7 +14,7 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
-Classes for generating XML changes to the :term:`ROS+Gazebo` input file
+Classes for generating XML changes to the :term:`ROS1+Gazebo` input file
 independent of any :term:`Project`; i.e., changes which are platform-specific,
 but applicable to all projects using the platform.
 """

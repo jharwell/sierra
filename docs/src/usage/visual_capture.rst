@@ -1,4 +1,4 @@
-.. _ln-usage-vc:
+.. _ln-sierra-usage-vc:
 
 ==============
 Visual Capture
@@ -13,7 +13,7 @@ section.
    terrabytes of disk space available. In general when using SIERRA's rendering
    capabilities, ``--exp-range`` is your friend.
 
-.. _ln-usage-vc-platform:
+.. _ln-sierra-usage-vc-platform:
 
 Platform Visual Capture
 =======================
@@ -34,7 +34,7 @@ This is applicable to the following platforms:
                computing power available.
 
 
-.. _ln-usage-vc-platform-argos:
+.. _ln-sierra-usage-vc-platform-argos:
 
 ARGos Visual Capture
 --------------------
@@ -57,13 +57,13 @@ stitched together into a unique video file using :program:`ffmpeg` (precise
 command configurable via ``--render-cmd-opts``), and output to
 ``<batch_root>/videos/<exp>``.
 
-.. _ln-usage-rendering-project:
+.. _ln-sierra-usage-rendering-project:
 
 Project Rendering
 =================
 
 Projects can generate ``.csv`` files residing in subdirectories within the
-``main.run_metrics_leaf`` (see :ref:`ln-tutorials-project-main-config`)
+``main.run_metrics_leaf`` (see :ref:`ln-sierra-tutorials-project-main-config`)
 directory (directory path set on a per ``--project`` basis) for each
 experimental run, in addition to generating ``.csv`` files residing directly in
 the ``main.run_metrics_leaf.`` directory. SIERRA can then render these ``.csv``

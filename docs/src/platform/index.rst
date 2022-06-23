@@ -1,4 +1,4 @@
-.. _ln-platform-plugins:
+.. _ln-sierra-platform-plugins:
 
 ===========================
 Supported Platforms Summary
@@ -13,5 +13,5 @@ between platforms).
    :maxdepth: 2
 
    argos/index.rst
-   rosgazebo/index.rst
-   rosrobot/index.rst
+   ros1gazebo/index.rst
+   ros1robot/index.rst
