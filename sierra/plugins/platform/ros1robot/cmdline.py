@@ -25,13 +25,13 @@ import argparse
 # 3rd party packages
 
 # Project packages
-from sierra.core import types, ros, config
+from sierra.core import types, ros1, config
 import sierra.core.cmdline as cmd
 
 
 class PlatformCmdline(cmd.BaseCmdline):
     """
-    Defines :term:`ROS` extensions to the core command line arguments defined
+    Defines :term:`ROS1` extensions to the core command line arguments defined
     in :class:`~sierra.core.cmdline.CoreCmdline`.
     """
 
@@ -158,7 +158,7 @@ class PlatformCmdline(cmd.BaseCmdline):
         ROS1+robot-specific cmdline options.
 
         """
-        ros.cmdline.ROSCmdline.cmdopts_update(cli_args, cmdopts)
+        ros1.cmdline.ROSCmdline.cmdopts_update(cli_args, cmdopts)
         updates = {
             # Multistage
             'exec_jobs_per_node': 1,  # (1 job/robot)
@@ -176,15 +176,15 @@ class PlatformCmdline(cmd.BaseCmdline):
         cmdopts.update(updates)
 
 
-class CmdlineValidator(ros.cmdline.ROSCmdlineValidator):
+class CmdlineValidator(ros1.cmdline.ROSCmdlineValidator):
     pass
 
 
 def sphinx_cmdline_stage1():
-    parent = ros.cmdline.ROSCmdline([1]).parser
+    parent = ros1.cmdline.ROSCmdline([1]).parser
     return PlatformCmdline([parent], [1]).parser
 
 
 def sphinx_cmdline_stage2():
-    parent = ros.cmdline.ROSCmdline([2]).parser
+    parent = ros1.cmdline.ROSCmdline([2]).parser
     return PlatformCmdline([parent], [2]).parser

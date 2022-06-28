@@ -14,9 +14,9 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
-Classes for generating common XML changes for all :term:`ROS`-based
+Classes for generating common XML changes for all :term:`ROS1`-based
 :term:`Platforms <Platform>`; i.e., changes which are platform-specific,
-but applicable to all projects using ROS.
+but applicable to all projects using :term:`ROS1`.
 """
 # Core packages
 import logging  # type: tp.Any
@@ -28,20 +28,20 @@ from sierra.core.xml import XMLLuigi, XMLWriterConfig
 from sierra.core.experiment.spec import ExperimentSpec
 import sierra.core.utils as scutils
 from sierra.core import types, config
-import sierra.core.ros.variables.exp_setup as exp
+import sierra.core.ros1.variables.exp_setup as exp
 
 
 class ROSExpDefGenerator():
     """Generates XML changes to input files that common to all ROS experiments.
 
-     ROS requires up to 2 input files per run:
+     ROS1 requires up to 2 input files per run:
 
     - The launch file containing robot definitions, world definitions (for
       simulations only).
 
     - The parameter file for project code (optional).
 
-    Putting everything in 1 file would require extensively using the ROS
+    Putting everything in 1 file would require extensively using the ROS1
     parameter server which does NOT accept parameters specified in XML--only
     YAML. So requiring some conventions on the .launch input file seemed more
     reasonable.
@@ -120,9 +120,15 @@ class ROSExpDefGenerator():
         Writes generated changes to the simulation definition pickle file.
         """
         self.logger.debug("Applying exp_setup=%s", self.cmdopts['exp_setup'])
+        robots_need_timekeeper = 'ros1robot' in self.cmdopts['platform']
+
+        # Barrier start not needed in simulation
+        use_barrier_start = ('ros1robot' in self.cmdopts['platform'] and
+                             not self.cmdopts["no_master_node"])
 
         setup = exp.factory(self.cmdopts["exp_setup"],
-                            not self.cmdopts["no_master_node"])()
+                            use_barrier_start,
+                            robots_need_timekeeper)()
         rms, adds, chgs = scutils.apply_to_expdef(setup, exp_def)
 
         # Write setup info to file for later retrieval

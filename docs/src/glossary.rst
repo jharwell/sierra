@@ -21,20 +21,21 @@ works/is designed the way it is, and to help you find your way around.
       robot models, realistic 3D rendering, and more. The Gazebo website is at
       `http://gazebosim.org <http://gazebosim.org>`_.
 
-   ROS
+   ROS1
 
       You know it. You either love it or hate it, but you can't escape it. The
       ROS website is at `https://wiki.ros.org <https://wiki.ros.org>`_.
 
+
    ROS1+Gazebo
 
-      A :term:`Platform` supported by SIERRA to use :term:`ROS` version 1 with
-      the :term:`Gazebo` simulator.
+      A :term:`Platform` supported by SIERRA to use :term:`ROS1` with the
+      :term:`Gazebo` simulator.
 
    ROS1+Robot
 
-      A :term:`Platform` supported by SIERRA using :term:`ROS` version 1 and any
-      robot which supports ROS.
+      A :term:`Platform` supported by SIERRA using :term:`ROS1` and any robot
+      which supports ROS.
 
    Project
 
@@ -157,7 +158,8 @@ works/is designed the way it is, and to help you find your way around.
       A ``.csv`` file generated as from averaging files from multiple
       :term:`Experimental Runs<Experimental Run>`. It will (probably) contain a
       set of columns of representing outputs of interest, with rows
-      corresponding to values captured throughout the run.
+      corresponding to values captured throughout the run (i.e., a time
+      series).
 
    Collated .csv
 
@@ -221,9 +223,9 @@ works/is designed the way it is, and to help you find your way around.
    Model
 
       A python implementation of a theoretical model of some kind. Can use
-      empirical data from simulations, or not, as needed. Intended to generate
-      predictions of `something` which can then be plotted against empirical
-      results for comparison.
+      empirical data from simulations/real robot experiments, or not, as
+      needed. Intended to generate predictions of `something` which can then be
+      plotted against empirical results for comparison.
 
    Plugin
 

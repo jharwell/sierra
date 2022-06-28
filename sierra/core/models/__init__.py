@@ -13,10 +13,6 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-Interface bindings for users to hook into SIERRA to automatically run models
-against and/or with empirical data.
-"""
 # Core packages
 
 # 3rd party packages

@@ -23,8 +23,8 @@ FAQ
    an HPC scheduler for exceeding its job time limit ?
 
    A: Run SIERRA just as you did before, but add ``--exec-resume``, which will
-   tell SIERRA to pick up where it left off. See :ref:`ln-usage-cli` for the
-   full cmdline reference.
+   tell SIERRA to pick up where it left off. See :ref:`ln-sierra-usage-cli` for
+   the full cmdline reference.
 
 #. Q: How do I run a non-default set of pipeline stages, such as {3,4}?
 
@@ -106,6 +106,21 @@ FAQ
    arbitrary changes to the ``--template-input-file``: adding tags, removing
    tags, modifying attributes. This is a good way to apply tricky configuration
    which doesn't really fit anywhere else, or to try out some "quick and dirty"
-   changes to see if they do what you want before codifying them with a
-   python class (see :ref:`ln-tutorials-project-main-config` for details on how
+   changes to see if they do what you want before codifying them with a python
+   class (see :ref:`ln-sierra-tutorials-project-main-config` for details on how
    to do that).
+
+#. Q: SIERRA can't find a module it should be able to find via
+   :envvar:`SIERRA_PLUGIN_PATH` or :envvar:`PYTHONPATH`. I know the module path
+   is correct--why can't SIERRA find it?
+
+   A: If you're sure you have the two environment variables set correctly, the
+   reason is likely that you have an import *inside* the module you are trying
+   to load which is not found. Try this::
+
+     python3 -m full.path.to.module
+
+   This command will attempt to find and load the problematic module, and will
+   print any import errors. When you load modules dynamically in python, those
+   errors don't get printed, python just says "can't find the module" instead of
+   "found the module but I can't load it because of bad imports".

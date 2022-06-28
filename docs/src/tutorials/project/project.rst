@@ -22,11 +22,12 @@ Creating a New SIERRA Project
      all files are required when running a stage that utilizes them):
 
      - ``main.yaml`` - Main SIERRA configuration file. This file is required for
-       all pipeline stages. See :doc:`main_config` for documentation.
+       all pipeline stages. See :ref:`ln-sierra-tutorials-project-main-config`
+       for documentation.
 
      - ``controllers.yaml`` - Configuration for controllers (input file/graph
        generation). This file is required for all pipeline stages. See
-       :doc:`main_config` for documentation.
+       :ref:`ln-sierra-tutorials-project-main-config` for documentation.
 
      - ``intra-graphs-line.yaml`` - Configuration for intra-experiment
        linegraphs. This file is optional. If it is present, graphs defined in it
@@ -91,7 +92,7 @@ Creating a New SIERRA Project
 
 #. Configure your project so SIERRA understands how to generate
 :term:`Experimental Run` inputs and process outputs correctly by following
-:doc:`main_config`.
+:ref:`ln-sierra-tutorials-project-main-config`.
 
 #. Define graphs to be generated from :term:`Experiment` outputs by following
    :doc:`graphs_config`. Strictly speaking this is optional, but automated graph

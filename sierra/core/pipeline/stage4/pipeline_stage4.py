@@ -15,7 +15,8 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Classes for implementing stage 4 of the experimental pipeline.
+Classes for implementing stage 4 of the experimental pipeline: generating
+deliverables.
 """
 
 # Core packages
@@ -44,13 +45,13 @@ from sierra.core import types
 
 
 class PipelineStage4:
-    """Implements stage 4 of the experimental pipeline: generating deliverables.
+    """Generates end-result experimental deliverables within single experiment
+    (intra-experiment) and across experiments in a batch (inter-experiment).
 
-    Generates end-result experimental deliverables within single experiment
-    (intra-experiment) and across experiments in a batch (inter-experiment)
-    according to configuration. Currently this includes:
+    Currently this includes:
 
     - Graph generation controlled via YAML config files.
+
     - Video rendering controlled via YAML config files.
 
     This stage is idempotent.
@@ -118,7 +119,7 @@ class PipelineStage4:
     def run(self, criteria: bc.IConcreteBatchCriteria) -> None:
         """Runs experiment deliverable generation, ``.csv`` collation for
         inter-experiment graph generation, and inter-experiment graph
-        generation, as configured on the cmdline.
+        generation.
 
         Video generation: If images have previously been created, then the
         following is run:

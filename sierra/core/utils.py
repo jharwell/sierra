@@ -16,7 +16,7 @@
 
 """
 Miscellaneous classes/functions used in mutiple places but that don't really fit
-anywhere.
+anywhere else.
 """
 
 # Core packages

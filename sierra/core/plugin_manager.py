@@ -266,6 +266,9 @@ models = FilePluginManager()
 
 
 def module_exists(name: str) -> bool:
+    """
+    Check if a module exists before trying to import it.
+    """
     try:
         mod = __import__(name)
     except ImportError:
@@ -275,10 +278,16 @@ def module_exists(name: str) -> bool:
 
 
 def module_load(name: str) -> types.ModuleType:
+    """
+    Import the specified module.
+    """
     return __import__(name, fromlist=["*"])
 
 
 def bc_load(cmdopts: types.Cmdopts, category: str):
+    """
+    Load the specified :term:`Batch Criteria`.
+    """
     path = 'variables.{0}'.format(category)
     return module_load_tiered(project=cmdopts['project'],
                               platform=cmdopts['platform'],
@@ -288,6 +297,28 @@ def bc_load(cmdopts: types.Cmdopts, category: str):
 def module_load_tiered(path: str,
                        project: tp.Optional[str] = None,
                        platform: tp.Optional[str] = None) -> types.ModuleType:
+    """Attempt to load the specified python module with precedence between
+    sources.
+
+    Generally, the precedence is project -> project submodule -> platform module
+    -> SIERRA core module, to allow users to override SIERRA core functionality
+    with ease. Specifically:
+
+    #. Check if the requested module is a project. If it is, return it.
+
+    #. Check if the requested module is a part of a project (i.e.,
+       ``<project>.<path>`` exists). If it does, return it. This requires that
+       :envvar:`SIERRA_PLUGIN_PATH` to be set properly.
+
+    #. Check if the requested module is provided by the platform plugin (i.e.,
+       ``sierra.platform.<platform>.<path>`` exists). If it does, return it.
+
+    #. Check if the requested module is part of the SIERRA core (i.e.,
+       ``sierra.core.<path>`` exists). If it does, return it.
+
+    If no match was found using any of these, throw an error.
+
+    """
     # First, see if the requested module is a project
     if module_exists(path):
         logging.trace("Using project path '%s'", path)
@@ -331,3 +362,16 @@ def module_load_tiered(path: str,
                                                                               path,
                                                                               sys.path)
     raise ImportError(error)
+
+
+__api__ = [
+    'BasePluginManager',
+    'FilePluginManager',
+    'DirectoryPluginManager',
+    'ProjectPluginManager',
+    'CompositePluginManager',
+    'module_exists',
+    'module_load',
+    'bc_load',
+    'module_load_tiered'
+]

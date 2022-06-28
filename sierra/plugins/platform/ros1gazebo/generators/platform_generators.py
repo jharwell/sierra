@@ -26,10 +26,10 @@ import logging  # type: tp.Any
 # Project packages
 from sierra.core.xml import XMLLuigi
 from sierra.core.experiment.spec import ExperimentSpec
-from sierra.core import types, ros, config
+from sierra.core import types, ros1, config
 
 
-class PlatformExpDefGenerator(ros.generators.ROSExpDefGenerator):
+class PlatformExpDefGenerator(ros1.generators.ROSExpDefGenerator):
     """
     Attributes:
         controller: The controller used for the experiment.
@@ -127,11 +127,11 @@ class PlatformExpDefGenerator(ros.generators.ROSExpDefGenerator):
                         })
 
 
-class PlatformExpRunDefUniqueGenerator(ros.generators.ROSExpRunDefUniqueGenerator):
+class PlatformExpRunDefUniqueGenerator(ros1.generators.ROSExpRunDefUniqueGenerator):
     def __init__(self,
                  *args,
                  **kwargs) -> None:
-        ros.generators.ROSExpRunDefUniqueGenerator.__init__(
+        ros1.generators.ROSExpRunDefUniqueGenerator.__init__(
             self, *args, **kwargs)
 
     def generate(self, exp_def: XMLLuigi):

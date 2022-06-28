@@ -56,9 +56,9 @@ SIERRA restricts the content of this file in a few modest ways.
    - Capture the same number of datapoints
 
    That is, experiments always obey ``--exp-setup``, regardless if early
-   stopping conditions are met. For :term:`ROS` platforms, the SIERRA timekeeper
-   ensures that all experiments are the same length; it is up to you to make
-   sure all experiments capture the same # of data points. For other
+   stopping conditions are met. For :term:`ROS1` platforms, the SIERRA
+   timekeeper ensures that all experiments are the same length; it is up to you
+   to make sure all experiments capture the same # of data points. For other
    :term:`Platforms <Platform>` (e.g., :term:`ARGoS`) it is up to you to ensure
    both conditions.
 
@@ -130,10 +130,10 @@ shown below.
 
    See also :ref:`ln-sierra-tutorials-project-main-config`.
 
-:term:`ROS`-based Platforms
----------------------------
+:term:`ROS1`-based Platforms
+----------------------------
 
-These requirements apply to any :term:`Platform` which uses :term:`ROS` (e.g.,
+These requirements apply to any :term:`Platform` which uses :term:`ROS1` (e.g.,
 :term:`ROS1+Gazebo`, :term:`ROS1+Robot`).
 
 #. All robot systems are homogeneous (i.e., only contain 1 type of robot). While
@@ -337,7 +337,7 @@ in `specific` places in the ``--template-input-file``, they should be avoided.
   :ref:`ln-sierra-tutorials-project-main-config` for details) in template input files
   possible.
 
-- ``__UUID__`` - XPath substitution optionally used when a :term:`ROS` platform
+- ``__UUID__`` - XPath substitution optionally used when a :term:`ROS1` platform
   is selected in ``controllers.yaml`` (see
   :ref:`ln-sierra-tutorials-project-main-config`) when adding XML tags to force
   addition of the tag once for every robot in the experiment, with ``__UUID__``

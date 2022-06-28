@@ -15,7 +15,7 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """Classes for the ``--exp-setup`` cmdline option for :term:`Platforms
-<Platform>` which use :term:`ROS`. See :ref:`ln-sierra-vars-expsetup` for usage
+<Platform>` which use :term:`ROS1`. See :ref:`ln-sierra-vars-expsetup` for usage
 documentation.
 
 """
@@ -56,11 +56,13 @@ class ExpSetup():
                  n_secs_per_run: int,
                  n_datapoints: int,
                  n_ticks_per_sec: int,
-                 barrier_start: bool) -> None:
+                 barrier_start: bool,
+                 robots_need_timekeeper: bool) -> None:
         self.n_secs_per_run = n_secs_per_run
         self.n_datapoints = n_datapoints
         self.n_ticks_per_sec = n_ticks_per_sec
         self.barrier_start = barrier_start
+        self.robots_need_timekeeper = robots_need_timekeeper
 
         self.tag_adds = []  # type: tp.List[XMLTagAddList]
 
@@ -91,7 +93,7 @@ class ExpSetup():
                           "param",
                           {
                               "name": "experiment/barrier_start",
-                              "value": str(self.barrier_start),
+                              "value": str(self.barrier_start).lower(),
                           },
                           True),
                 XMLTagAdd("./master/group/[@ns='sierra']",
@@ -124,31 +126,38 @@ class ExpSetup():
                           "param",
                           {
                               "name": "experiment/barrier_start",
-                              "value": str(self.barrier_start)
-                          },
-                          True),
-                # Robots also need the timekeeper because they are launched in a
-                # separate roslaunch than the master node (potentially), and
-                # that node exiting will not cause all robots to exit. This is
-                # needed even if robot nodes respect the set experiment time,
-                # because they might be using ROS packages which launch nodes
-                # which DON'T respect the set experiment time and will stay
-                # active until you kill them. This can cause issues if a robot
-                # node expects that at most 1 dependent node will be active at a
-                # given time. Plus, it's just sloppy to leave that sort of thing
-                # hanging around after a run exits.
-                XMLTagAdd("./robot/group/[@ns='sierra']",
-                          "node",
-                          {
-                              "name": "sierra_timekeeper",
-                              "pkg": "sierra_rosbridge",
-                              "type": "sierra_timekeeper.py",
-                              "required": "true",
-                              # Otherwise rospy prints nothing
-                              "output": "screen"
+                              "value": str(self.barrier_start).lower()
                           },
                           True)
             )
+            if self.robots_need_timekeeper:
+                # Robots also need the timekeeper when they are real and not
+                # simulated robots. With simulated robots, robots share the root
+                # ROS namespace with the master, so duplicating the timekeeper
+                # in that case causes an error.
+                #
+                # Because real robot nodes are launch in a separate roslaunch
+                # than the master node (potentially), and that node exiting will
+                # not cause all robots to exit. This is needed even if robot
+                # nodes respect the set experiment time, because they might be
+                # using ROS packages which launch nodes which DON'T respect the
+                # set experiment time and will stay active until you kill
+                # them. This can cause issues if a robot node expects that at
+                # most 1 dependent node will be active at a given time. Plus,
+                # it's just sloppy to leave that sort of thing hanging around
+                # after a run exits.
+                adds.append(XMLTagAdd("./robot/group/[@ns='sierra']",
+                                      "node",
+                                      {
+                                          "name": "sierra_timekeeper",
+                                          "pkg": "sierra_rosbridge",
+                                          "type": "sierra_timekeeper.py",
+                                          "required": "true",
+                                          # Otherwise rospy prints nothing
+                                          "output": "screen"
+                                      },
+                                      True)
+                            )
             self.tag_adds = adds
 
         return [self.tag_adds]
@@ -157,7 +166,9 @@ class ExpSetup():
         pass
 
 
-def factory(arg: str, barrier_start: bool) -> ExpSetup:
+def factory(arg: str,
+            barrier_start: bool,
+            robots_need_timekeeper: bool) -> ExpSetup:
     """
     Factory to create :class:`ExpSetup` derived classes from the command
     line definition.
@@ -175,7 +186,8 @@ def factory(arg: str, barrier_start: bool) -> ExpSetup:
                           attr["n_secs_per_run"],
                           attr['n_datapoints'],
                           attr['n_ticks_per_sec'],
-                          barrier_start)
+                          barrier_start,
+                          robots_need_timekeeper)
 
     return type(attr['pretty_name'],
                 (ExpSetup,),

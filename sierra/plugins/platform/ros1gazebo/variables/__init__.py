@@ -19,4 +19,4 @@
 # 3rd party packages
 
 # Project packages
-from sierra.core.ros.variables import exp_setup
+from sierra.core.ros1.variables import exp_setup

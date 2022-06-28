@@ -181,7 +181,8 @@ How to Activate New Graph Category
 If you added a new :term:`Graph Category`, it will not automatically be used to
 generate graphs for existing or new controllers. You will need to modify the
 ``<project>/config/controllers.yaml`` file to specify which controllers your new
-category of graphs should be generated for. See :doc:`main_config` for details.
+category of graphs should be generated for. See
+:ref:`ln-sierra-tutorial-project-main-config` for details.
 
 
 How to Generate Additional Graphs

@@ -64,11 +64,10 @@ repository.
     - ``pipeline/`` - Core pipline code in 5 stages (see
       :ref:`ln-sierra-usage-pipeline`).
 
-    - ``ros/`` - Common :term:`ROS` bindings.
+    - ``ros1/`` - Common :term:`ROS1` bindings.
 
-    - ``variables/`` - Genertic generators for experimental variables to modify
-      template ``.argos`` files in order to run experiments with a given
-      controller.
+    - ``variables/`` - Generic generators for experimental variables to modify
+      template XML files in order to run experiments with a given controller.
 
   - ``plugins/`` - Plugins which provide broad customization of SIERRA, and
     enables it to adapt to a wide variety of platforms and experiment outputs.

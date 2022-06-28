@@ -7,7 +7,7 @@ ROS1+Gazebo Platform
 This platform can be selected via ``--platform=platform.ros1gazebo``.
 
 This is the platform on which SIERRA will run experiments using the
-:term:`Gazebo` simulator and :term:`ROS` (ROS1). It cannot be used to run
+:term:`Gazebo` simulator and :term:`ROS1`. It cannot be used to run
 experiments on real robots. To use this platform, you must setup the
 :ref:`SIERRA ROSBridge <ln-sierra-packages-rosbridge>`.
 

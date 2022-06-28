@@ -15,7 +15,8 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
 """
-Classes for generating graphs within a single experiment in a batch.
+Classes for generating graphs within a single :term:`Experiment` in a
+:term:`Batch Experiment`.
 """
 
 # Core packages
@@ -221,16 +222,8 @@ class IntraExpGraphGenerator:
 
 class LinegraphsGenerator:
     """
-    Generates linegraphs from :term:`Averaged .csv` files for an experiment.
-
-    Attributes:
-
-        exp_stat_root: Absolute path to experiment statistics directory.
-
-        exp_graph_root: Absolute path to experiment graph output directory.
-
-        targets: Dictionary of lists of dictionaries specifying what graphs
-                 should be generated.
+    Generates linegraphs from :term:`Averaged .csv` files within a single
+    :term:`Experiment`.
     """
 
     def __init__(self,
@@ -283,15 +276,8 @@ class LinegraphsGenerator:
 
 class HeatmapsGenerator:
     """
-    Generates heatmaps from :term:`Averaged .csv` files for an experiment.
-
-    Attributes:
-
-        exp_stat_root: Absolute path to root directory for experiment
-                       statistics.
-
-        targets: Dictionary of lists of dictionaries specifying what graphs
-                 should be generated.
+    Generates heatmaps from :term:`Averaged .csv` files for a single
+    :term:`Experiment`.
     """
 
     def __init__(self,

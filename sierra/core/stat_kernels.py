@@ -13,7 +13,10 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-
+"""
+Kernels for the different types of statistics which can be generated from
+experiments.
+"""
 # Core packages
 import typing as tp
 import math
@@ -27,6 +30,10 @@ import sierra.core.config as config
 
 
 class conf95:
+    """
+    Generate stddev statistics suitable for 95% confidence intervals. Applicable
+    to line graphs.
+    """
     @staticmethod
     def from_groupby(groupby: pd.core.groupby.generic.DataFrameGroupBy) -> tp.Dict[str,
                                                                                    pd.DataFrame]:
@@ -43,6 +50,9 @@ class conf95:
 
 
 class mean:
+    """
+    Generate mean statistics only. Applicable to line graphs and heatmaps.
+    """
     @staticmethod
     def from_groupby(groupby: pd.core.groupby.generic.DataFrameGroupBy) -> tp.Dict[str,
                                                                                    pd.DataFrame]:
@@ -59,6 +69,10 @@ class mean:
 
 
 class bw:
+    """
+    Generate statistics so that box and whisker plots can be included for each
+    data point. Applicable to line graphs.
+    """
     @staticmethod
     def from_groupby(groupby: pd.core.groupby.generic.DataFrameGroupBy) -> tp.Dict[str, pd.DataFrame]:
         return _bw_kernel(groupby, groupby=True, n_runs=groupby.size().values[0])
@@ -151,3 +165,10 @@ def _fillna(df_like: tp.Union[pd.DataFrame, np.float64]) -> tp.Union[pd.DataFram
         return np.nan_to_num(df_like, nan=0)
 
     assert False, "Unknown type"
+
+
+__api__ = [
+    'conf95',
+    'mean',
+    'bw'
+]

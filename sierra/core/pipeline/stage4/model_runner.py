@@ -14,8 +14,8 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
-"""Classes for running project-specific models in a general purpose way within
-a batch experiment.
+"""Classes for running project-specific :term:`Models <Model>` in a general
+purpose way within a :term:`Batch Experiment`.
 
 """
 # Core packages
@@ -34,9 +34,6 @@ from sierra.core import models, types, utils, storage
 class IntraExpModelRunner:
     """
     Runs all enabled intra-experiment models for all experiments in a batch.
-
-    Attributes:
-        cmdopts: Dictionary of parsed cmdline attributes.
     """
 
     def __init__(self,
@@ -111,9 +108,6 @@ class IntraExpModelRunner:
 class InterExpModelRunner:
     """
     Runs all enabled inter-experiment models in a batch.
-
-    Attributes:
-        cmdopts: Dictionary of parsed cmdline attributes.
     """
 
     def __init__(self,

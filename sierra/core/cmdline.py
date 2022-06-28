@@ -128,7 +128,7 @@ class BootstrapCmdline(BaseCmdline):
 
                                - ``platform.ros1gazebo`` - This directs SIERRA to
                                  run experiments using the :term:`Gazebo`
-                                 simulator and :term:`ROS`. Selecting this
+                                 simulator and :term:`ROS1`. Selecting this
                                  platform assumes your code has been developed
                                  and configured for Gazebo and ROS1.
 

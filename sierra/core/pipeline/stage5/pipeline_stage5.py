@@ -15,7 +15,8 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Classes for implementing stage 5 of the experimental pipeline.
+Classes for implementing stage 5 of the experimental pipeline: comparing
+deliverables.
 """
 
 # Core packages
@@ -35,9 +36,9 @@ from sierra.core import types
 
 
 class PipelineStage5:
-    """Implements stage5 of the experimental pipeline: comparing deliverables.
+    """Compare controllers within or across scenarios.
 
-    Can either:
+    This can be either:
 
     #. Compare a set of controllers within the same scenario using performance
        measures specified in YAML configuration.

@@ -28,14 +28,14 @@ import yaml
 
 # Project packages
 from sierra.plugins.platform.ros1robot import cmdline
-from sierra.core import xml, platform, config, ros, types, utils
+from sierra.core import xml, platform, config, ros1, types, utils
 from sierra.core.experiment import bindings
 import sierra.core.variables.batch_criteria as bc
 
 
 class CmdlineParserGenerator():
     def __call__(self) -> argparse.ArgumentParser:
-        parent1 = ros.cmdline.ROSCmdline([-1, 1, 2, 3, 4, 5]).parser
+        parent1 = ros1.cmdline.ROSCmdline([-1, 1, 2, 3, 4, 5]).parser
         return cmdline.PlatformCmdline(parents=[parent1],
                                        stages=[-1, 1, 2, 3, 4, 5]).parser
 
@@ -349,23 +349,23 @@ def population_size_from_pickle(adds_def: tp.Union[xml.XMLAttrChangeSet,
                                                    xml.XMLTagAddList],
                                 main_config: types.YAMLDict,
                                 cmdopts: types.Cmdopts) -> int:
-    return ros.callbacks.population_size_from_pickle(adds_def,
-                                                     main_config,
-                                                     cmdopts)
+    return ros1.callbacks.population_size_from_pickle(adds_def,
+                                                      main_config,
+                                                      cmdopts)
 
 
 def population_size_from_def(exp_def: tp.Union[xml.XMLAttrChangeSet,
                                                xml.XMLTagAddList],
                              main_config: types.YAMLDict,
                              cmdopts: types.Cmdopts) -> int:
-    return ros.callbacks.population_size_from_def(exp_def,
-                                                  main_config,
-                                                  cmdopts)
+    return ros1.callbacks.population_size_from_def(exp_def,
+                                                   main_config,
+                                                   cmdopts)
 
 
 def robot_prefix_extract(main_config: types.YAMLDict,
                          cmdopts: types.Cmdopts) -> str:
-    return ros.callbacks.robot_prefix_extract(main_config, cmdopts)
+    return ros1.callbacks.robot_prefix_extract(main_config, cmdopts)
 
 
 def pre_exp_diagnostics(cmdopts: types.Cmdopts,

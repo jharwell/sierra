@@ -149,7 +149,7 @@ class Pipeline:
 
     def run(self) -> None:
         """
-        Run pipeline stages as configured.
+        Run pipeline stages 1-5 as configured.
         """
         if 1 in self.args.pipeline:
             PipelineStage1(self.cmdopts,

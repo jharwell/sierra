@@ -7,14 +7,14 @@ ROS1+Robot Platform
 This platform can be selected via ``--platform=platform.ros1robot``.
 
 
-This is the platform on which SIERRA will run experiments using :term:`ROS`
-(ROS1) on a real robot of your choice. To use this platform, you must setup the
-:ref:`SIERRA ROSBridge <ln-sierra-packages-rosbridge>`.  This is a generic platform
-meant to work with most real robots which :term:`ROS` supports, and as a
-starting point to derive more specific platform configuration for a given robot
-(if needed). For all execution environments using this platform (see
-:ref:`ln-sierra-exec-env-robots` for examples), SIERRA will run experiments spread
-across multiple robots using GNU parallel.
+This is the platform on which SIERRA will run experiments using :term:`ROS1` on
+a real robot of your choice. To use this platform, you must setup the
+:ref:`SIERRA ROSBridge <ln-sierra-packages-rosbridge>`.  This is a generic
+platform meant to work with most real robots which :term:`ROS1` supports, and as
+a starting point to derive more specific platform configuration for a given
+robot (if needed). For all execution environments using this platform (see
+:ref:`ln-sierra-exec-env-robots` for examples), SIERRA will run experiments
+spread across multiple robots using GNU parallel.
 
 SIERRA designates the host machine as the ROS master, and allows you to
 (optionally) specify configuration for running one or more nodes on it in the

@@ -54,7 +54,8 @@ class GatherSpec:
 
 
 class BatchExpParallelCalculator:
-    """Averages :term:`Output .csv` files for each experiment in the batch.
+    """Averages :term:`Output .csv` files for each experiment in the batch into
+    :term:`Averaged .csv` files.
 
     In parallel for speed.
     """
@@ -198,6 +199,10 @@ class ExpCSVGatherer:
     """Gather all :term:`Output .csv` files from a set of
     :term:`Experimental Runs<Experimental Run>` within a single
     :term:`Experiment`.
+
+    "Gathering" in this context means creating a dictionary mapping which .csv
+    came from where, so that statistics can be generated both across and with
+    experiments in the batch.
     """
 
     def __init__(self,

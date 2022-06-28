@@ -14,13 +14,12 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
-"""Common classes and callbacks :term:`Platforms <Platform>` using :term:`ROS`.
+"""Common classes and callbacks :term:`Platforms <Platform>` using :term:`ROS1`.
 
 """
 
 # Core packages
 import typing as tp
-import re
 
 # 3rd party packages
 

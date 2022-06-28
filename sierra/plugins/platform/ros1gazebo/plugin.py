@@ -30,7 +30,7 @@ import implements
 
 # Project packages
 from sierra.plugins.platform.ros1gazebo import cmdline
-from sierra.core import hpc, xml, platform, config, ros, types
+from sierra.core import hpc, xml, platform, config, ros1, types
 from sierra.core.experiment import bindings
 import sierra.core.variables.batch_criteria as bc
 
@@ -38,7 +38,7 @@ import sierra.core.variables.batch_criteria as bc
 class CmdlineParserGenerator():
     def __call__(self) -> argparse.ArgumentParser:
         parent1 = hpc.cmdline.HPCCmdline([-1, 1, 2, 3, 4, 5]).parser
-        parent2 = ros.cmdline.ROSCmdline([-1, 1, 2, 3, 4, 5]).parser
+        parent2 = ros1.cmdline.ROSCmdline([-1, 1, 2, 3, 4, 5]).parser
         return cmdline.PlatformCmdline(parents=[parent1, parent2],
                                        stages=[-1, 1, 2, 3, 4, 5]).parser
 
@@ -252,23 +252,26 @@ class ExpShellCmdsGenerator():
         # the same machine, because we only run these commands after an
         # experiment finishes, so there isn't anything currently running we
         # might accidentally kill.
+        #
+        # Can't use killall, because that returns non-zero if things
+        # are cleaned up nicely.
         return [{
-                'cmd': 'killall gzserver',
+                'cmd': 'if pgrep gzserver; then pkill gzserver; fi;',
                 'shell': True,
                 'wait': True
                 },
                 {
-                'cmd': 'killall rosmaster',
+                'cmd': 'if pgrep rosmaster; then pkill rosmaster; fi;',
                     'shell': True,
                     'wait': True
                 },
                 {
-                'cmd': 'killall roscore',
+                'cmd': 'if pgrep roscore; then pkill roscore; fi;',
                     'shell': True,
                     'wait': True
                 },
                 {
-                'cmd': 'killall rosout',
+                'cmd': 'if pgrep rosout; then pkill rosout; fi;',
                     'shell': True,
                     'wait': True
                 }]
@@ -325,23 +328,23 @@ def population_size_from_pickle(adds_def: tp.Union[xml.XMLAttrChangeSet,
                                                    xml.XMLTagAddList],
                                 main_config: types.YAMLDict,
                                 cmdopts: types.Cmdopts) -> int:
-    return ros.callbacks.population_size_from_pickle(adds_def,
-                                                     main_config,
-                                                     cmdopts)
+    return ros1.callbacks.population_size_from_pickle(adds_def,
+                                                      main_config,
+                                                      cmdopts)
 
 
 def population_size_from_def(exp_def: tp.Union[xml.XMLAttrChangeSet,
                                                xml.XMLTagAddList],
                              main_config: types.YAMLDict,
                              cmdopts: types.Cmdopts) -> int:
-    return ros.callbacks.population_size_from_def(exp_def,
-                                                  main_config,
-                                                  cmdopts)
+    return ros1.callbacks.population_size_from_def(exp_def,
+                                                   main_config,
+                                                   cmdopts)
 
 
 def robot_prefix_extract(main_config: types.YAMLDict,
                          cmdopts: types.Cmdopts) -> str:
-    return ros.callbacks.robot_prefix_extract(main_config, cmdopts)
+    return ros1.callbacks.robot_prefix_extract(main_config, cmdopts)
 
 
 def pre_exp_diagnostics(cmdopts: types.Cmdopts,

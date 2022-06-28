@@ -14,7 +14,7 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
-Classes for generating XML changes to the :term:`ROS` input file independent
+Classes for generating XML changes to the :term:`ROS1` input file independent
 of any :term:`Project`; i.e., changes which are platform-specific, but
 applicable to all projects using ROS with a real robot execution environment.
 
@@ -29,10 +29,10 @@ import yaml
 # Project packages
 from sierra.core.xml import XMLLuigi, XMLTagAdd
 from sierra.core.experiment.spec import ExperimentSpec
-from sierra.core import types, ros, config, utils
+from sierra.core import types, ros1, config, utils
 
 
-class PlatformExpDefGenerator(ros.generators.ROSExpDefGenerator):
+class PlatformExpDefGenerator(ros1.generators.ROSExpDefGenerator):
     """
     Attributes:
         controller: The controller used for the experiment.
@@ -76,11 +76,11 @@ class PlatformExpDefGenerator(ros.generators.ROSExpDefGenerator):
         return exp_def
 
 
-class PlatformExpRunDefUniqueGenerator(ros.generators.ROSExpRunDefUniqueGenerator):
+class PlatformExpRunDefUniqueGenerator(ros1.generators.ROSExpRunDefUniqueGenerator):
     def __init__(self,
                  *args,
                  **kwargs) -> None:
-        ros.generators.ROSExpRunDefUniqueGenerator.__init__(
+        ros1.generators.ROSExpRunDefUniqueGenerator.__init__(
             self, *args, **kwargs)
 
     def generate(self, exp_def: XMLLuigi):

@@ -1,5 +1,5 @@
 * SIERRA                                                            :sierra:
-** TODO [#A] Create SIERRA pypi package [92%]
+** TODO [#A] Create SIERRA pypi package [96%]
 - [X] Push --scenario to the FORDYCA plugin--not part of core SIERRA
 - [X] Push templates/scripts to the FORDYCA plugin--not part of core SIERRA
 - [X] Make PopulationDensity not coupled to SS,DS,RN,PL block distribution, which it is currently.
@@ -33,7 +33,7 @@
 - [X] Update config tutorials with changes to rosrobot (template input file, etc.)
 - [X] Go through API documentation and cleanup class docstrings so what is rendered so it looks nice. 
       First pass done for class docstrings in core. Plugins still needs work.
-- [ ] Go through API documentation and cleanup function docstrings so what is rendered so it looks nice. 
+- [X] Go through API documentation and cleanup function docstrings so what is rendered so it looks nice.
 
 ** TODO [#B] Fix the pylint import error false positives
 ** TODO [#B] Switch reading intra experiment model dataframe index sizes

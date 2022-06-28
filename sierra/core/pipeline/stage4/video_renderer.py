@@ -40,8 +40,9 @@ from sierra.core import config
 
 
 class BatchExpParallelVideoRenderer:
-    """Render the video for each experiment in the batch in sequence.
+    """Render the video for each experiment in the batch.
 
+    In parallel for speed, unless disabled with ``--proccessing-serial``.
     """
 
     def __init__(self, main_config: dict, cmdopts: types.Cmdopts) -> None:
@@ -65,46 +66,10 @@ class BatchExpParallelVideoRenderer:
             _, leaf = os.path.split(exp)
 
             if self.cmdopts['project_rendering']:
-
-                exp_imagize_root = os.path.join(
-                    self.cmdopts['batch_imagize_root'], leaf)
-
-                # Project render targets are in
-                # <averaged_output_root>/<metric_dir_name>, for all directories
-                # in <averaged_output_root>.
-                for d in os.listdir(exp_imagize_root):
-                    candidate = os.path.join(exp_imagize_root, d)
-                    if os.path.isdir(candidate):
-                        opts = {
-                            'input_dir': candidate,
-                            'output_dir': os.path.join(self.cmdopts['batch_video_root'],
-                                                       leaf),
-                            'ofile_leaf': d + config.kRenderFormat,
-                            'cmd_opts': self.cmdopts['render_cmd_opts']
-                        }
-
-                        sierra.core.utils.dir_create_checked(
-                            opts['output_dir'], True)
-                        q.put(opts)
+                self._project_rendering(leaf, q)
 
             if self.cmdopts['platform_vc']:
-                # Render targets are in
-                # <batch_output_root>/<exp>/<sim>/<frames_leaf>, for all
-                # runs in a given experiment (which can be a lot!).
-                for sim in self._filter_sim_dirs(os.listdir(exp),
-                                                 self.main_config):
-                    opts = {
-                        'ofile_leaf': sim + sierra.core.config.kRenderFormat,
-                        'input_dir': os.path.join(exp,
-                                                  sim,
-                                                  config.kARGoS['frames_leaf']),
-                        'output_dir': os.path.join(self.cmdopts['batch_video_root'],
-                                                   leaf),
-                        'cmd_opts': self.cmdopts['render_cmd_opts']
-                    }
-                    sierra.core.utils.dir_create_checked(
-                        opts['output_dir'], exist_ok=True)
-                    q.put(copy.deepcopy(opts))
+                self._platform_rendering(exp, leaf, q)
 
         # Render videos in parallel--waaayyyy faster
         if self.cmdopts['processing_serial']:
@@ -118,6 +83,50 @@ class BatchExpParallelVideoRenderer:
             p.start()
 
         q.join()
+
+    def _platform_rendering(self,
+                            exp: str,
+                            leaf: str, q:
+                            mp.JoinableQueue) -> None:
+        # Render targets are in
+        # <batch_output_root>/<exp>/<sim>/<frames_leaf>, for all
+        # runs in a given experiment (which can be a lot!).
+        for sim in self._filter_sim_dirs(os.listdir(exp),
+                                         self.main_config):
+            opts = {
+                'ofile_leaf': sim + sierra.core.config.kRenderFormat,
+                'input_dir': os.path.join(exp,
+                                          sim,
+                                          config.kARGoS['frames_leaf']),
+                'output_dir': os.path.join(self.cmdopts['batch_video_root'],
+                                           leaf),
+                'cmd_opts': self.cmdopts['render_cmd_opts']
+            }
+            sierra.core.utils.dir_create_checked(
+                opts['output_dir'], exist_ok=True)
+            q.put(copy.deepcopy(opts))
+
+    def _project_rendering(self, leaf: str, q: mp.JoinableQueue) -> None:
+        exp_imagize_root = os.path.join(self.cmdopts['batch_imagize_root'],
+                                        leaf)
+
+        # Project render targets are in
+        # <averaged_output_root>/<metric_dir_name>, for all directories
+        # in <averaged_output_root>.
+        for d in os.listdir(exp_imagize_root):
+            candidate = os.path.join(exp_imagize_root, d)
+            if os.path.isdir(candidate):
+                opts = {
+                    'input_dir': candidate,
+                    'output_dir': os.path.join(self.cmdopts['batch_video_root'],
+                                               leaf),
+                    'ofile_leaf': d + config.kRenderFormat,
+                    'cmd_opts': self.cmdopts['render_cmd_opts']
+                }
+
+                sierra.core.utils.dir_create_checked(
+                    opts['output_dir'], True)
+                q.put(opts)
 
     @staticmethod
     def _thread_worker(q: mp.Queue, main_config: dict) -> None:
@@ -137,14 +146,8 @@ class BatchExpParallelVideoRenderer:
 
 
 class ExpVideoRenderer:
-    """Render all images in a specified input directory to a video  via ffmpeg.
-
-    Arguments:
-
-        main_config: Parsed dictionary of main YAML configuration.
-
-        render_opts: Dictionary of render options.
-
+    """Render all images in a specified input directory to a video via
+    :program:`ffmpeg`.
     """
 
     def __init__(self) -> None:

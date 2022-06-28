@@ -15,7 +15,7 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
 """Common cmdline parsing and validation for :term:`Platforms <Platform>` using
-:term:`ROS`.
+:term:`ROS1`.
 
 """
 
@@ -31,7 +31,7 @@ import sierra.core.cmdline as cmd
 
 
 class ROSCmdline(cmd.BaseCmdline):
-    """Defines :term:`ROS` common command line arguments.
+    """Defines :term:`ROS1` common command line arguments.
 
     """
 

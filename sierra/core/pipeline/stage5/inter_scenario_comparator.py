@@ -108,8 +108,8 @@ class UnivarInterScenarioComparator:
         batch_leaves = [leaf for s, leaf in sorted(zip(indices, batch_leaves),
                                                    key=lambda pair: pair[0])]
 
-        # For each controller comparison graph we are interested in, generate it using data from all
-        # scenarios
+        # For each controller comparison graph we are interested in, generate it
+        # using data from all scenarios
         cmdopts = copy.deepcopy(self.cmdopts)
         for graph in graphs:
             for leaf in batch_leaves:

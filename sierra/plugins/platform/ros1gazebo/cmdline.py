@@ -28,7 +28,7 @@ import argparse
 from sierra.core import types
 from sierra.core import config
 import sierra.core.cmdline as corecmd
-from sierra.core import hpc, ros
+from sierra.core import hpc, ros1
 
 
 class PlatformCmdline(corecmd.BaseCmdline):
@@ -196,7 +196,7 @@ class PlatformCmdline(corecmd.BaseCmdline):
 
         """
         hpc.cmdline.HPCCmdline.cmdopts_update(cli_args, cmdopts)
-        ros.cmdline.ROSCmdline.cmdopts_update(cli_args, cmdopts)
+        ros1.cmdline.ROSCmdline.cmdopts_update(cli_args, cmdopts)
 
         updates = {
             # stage 1
@@ -220,11 +220,11 @@ class CmdlineValidator(corecmd.CoreCmdlineValidator):
 
 def sphinx_cmdline_stage1():
     parent1 = hpc.cmdline.HPCCmdline([1]).parser
-    parent2 = ros.cmdline.ROSCmdline([1]).parser
+    parent2 = ros1.cmdline.ROSCmdline([1]).parser
     return PlatformCmdline([parent1, parent2], [1]).parser
 
 
 def sphinx_cmdline_stage2():
     parent1 = hpc.cmdline.HPCCmdline([2]).parser
-    parent2 = ros.cmdline.ROSCmdline([2]).parser
+    parent2 = ros1.cmdline.ROSCmdline([2]).parser
     return PlatformCmdline([parent1, parent2], [2]).parser

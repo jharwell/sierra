@@ -44,10 +44,11 @@ from sierra.core import types, storage, utils, stat_kernels
 
 
 class ExperimentalRunParallelCollator:
-    """Gathers :term:`Output .csv` files from each :term:`Experimental Run`.
+    """Gathers :term:`Output .csv` files from each :term:`Experimental Run` into
+    :term:`Collated .csv` files for each :term:`Experiment`.
 
-    Gathered in parallel for each :term:`Experiment` for speed. Used for
-    generating deliverables in stage 4.
+    Gathered in parallel for each experiment for speed, unless disabled with
+    ``--processing-serial``.
 
     """
 

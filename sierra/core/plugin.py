@@ -13,6 +13,10 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
+"""
+Sanity checks to verify that the selected ``--storage-medium``, ``--exec-env``,
+and ``--platform`` implement the necessary classes and functions.
+"""
 
 # Core packages
 import inspect
@@ -24,6 +28,10 @@ import logging  # type: tp.Any
 
 
 def storage_sanity_checks(module) -> None:
+    """
+    Check the selected ``--storage-medium`` implements the necessary classes and
+    functions.
+    """
     logging.trace("Verifying selected --storage-medium plugin interface")
 
     functions = ['df_read',
@@ -36,6 +44,10 @@ def storage_sanity_checks(module) -> None:
 
 
 def exec_env_sanity_checks(module) -> None:
+    """
+    Check the selected ``--exec-env`` implements the necessary classes and
+    functions.
+    """
     logging.trace("Verifying selected --exec-env plugin interface")
 
     classes = ['ParsedCmdlineConfigurer',
@@ -50,6 +62,10 @@ def exec_env_sanity_checks(module) -> None:
 
 
 def platform_sanity_checks(module) -> None:
+    """
+    Check the selected ``--platform`` implements the necessary classes and
+    functions.
+    """
     logging.trace("Verifying selected --platform plugin interface")
 
     classes = ['ParsedCmdlineConfigurer',
@@ -74,3 +90,10 @@ def platform_sanity_checks(module) -> None:
     for f in functions:
         assert (any([f in name for name, _ in in_module])),\
             f"Platform plugin '{module.__name__}' does not define '{f}'"
+
+
+__api__ = {
+    'storage_sanity_checks',
+    'exec_env_sanity_checks',
+    'platform_sanity_checks'
+}

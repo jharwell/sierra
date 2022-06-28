@@ -14,9 +14,9 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""
-Classes for handling univariate and bivariate controller comparisons within a set of scenarios for
-stage5 of the experimental pipeline.
+"""Classes for handling univariate and bivariate controller comparisons within
+a set of scenarios for stage5 of the experimental pipeline.
+
 """
 
 # Core packages
@@ -91,15 +91,15 @@ class UnivarIntraScenarioComparator:
                  graphs: tp.List[types.YAMLDict],
                  legend: tp.List[str],
                  comp_type: str) -> None:
-        # Obtain the list of scenarios to use. We can just take the scenario list of the first
-        # controllers, because we have already checked that all controllers executed the same set
-        # scenarios
+        # Obtain the list of scenarios to use. We can just take the scenario
+        # list of the first controllers, because we have already checked that
+        # all controllers executed the same set scenarios.
         batch_leaves = os.listdir(os.path.join(self.cmdopts['sierra_root'],
                                                self.cmdopts['project'],
                                                self.controllers[0]))
 
-        # For each controller comparison graph we are interested in, generate it using data from all
-        # scenarios
+        # For each controller comparison graph we are interested in, generate it
+        # using data from all scenarios
         cmdopts = copy.deepcopy(self.cmdopts)
         for graph in graphs:
             found = False
@@ -202,8 +202,8 @@ class UnivarIntraScenarioComparator:
         ipath = os.path.join(
             cmdopts['batch_stat_collate_root'], src_stem + '.csv')
 
-        # Some experiments might not generate the necessary performance measure .csvs for graph
-        # generation, which is OK.
+        # Some experiments might not generate the necessary performance measure
+        # .csvs for graph generation, which is OK.
         if not utils.path_exists(ipath):
             self.logger.warning(
                 "%s missing for controller %s", ipath, controller)
@@ -313,9 +313,9 @@ class BivarIntraScenarioComparator:
                  legend: tp.List[str],
                  comp_type: str) -> None:
 
-        # Obtain the list of scenarios to use. We can just take the scenario list of the first
-        # controllers, because we have already checked that all controllers executed the same set
-        # scenarios.
+        # Obtain the list of scenarios to use. We can just take the scenario
+        # list of the first controllers, because we have already checked that
+        # all controllers executed the same set scenarios.
         batch_leaves = os.listdir(os.path.join(self.cmdopts['sierra_root'],
                                                self.cmdopts['project'],
                                                self.controllers[0]))
@@ -375,10 +375,10 @@ class BivarIntraScenarioComparator:
             batch_leaf = dirs[0]
             _, scenario, _ = rdg.parse_batch_leaf(batch_leaf)
 
-            # We need to generate the root directory paths for each batch experiment
-            # (which # lives inside of the scenario dir), because they are all
-            # different. We need generate these paths for EACH controller, because the
-            # controller is part of the batch root path.
+            # We need to generate the root directory paths for each batch
+            # experiment (which # lives inside of the scenario dir), because
+            # they are all different. We need generate these paths for EACH
+            # controller, because the controller is part of the batch root path.
             paths = rdg.regen_from_exp(sierra_rpath=self.cli_args.sierra_root,
                                        project=self.cli_args.project,
                                        batch_leaf=batch_leaf,

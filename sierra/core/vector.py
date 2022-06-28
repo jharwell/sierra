@@ -13,7 +13,9 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-
+"""
+Representation of vectors in 3D space and operations on them..
+"""
 # Core packages
 import math
 import typing as tp

@@ -13,7 +13,10 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-
+"""
+Startup checks performed by SIERRA for compatibility and testing for the
+required packages in its environment.
+"""
 # Core packages
 import sys
 import logging  # type: tp.Any
