@@ -31,7 +31,7 @@ import os
 import multiprocessing as mp
 import typing as tp
 import queue
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import pandas as pd
@@ -40,7 +40,7 @@ import numpy as np
 # Project packages
 import sierra.core.variables.batch_criteria as bc
 import sierra.core.plugin_manager as pm
-from sierra.core import types, storage, utils, stat_kernels
+from sierra.core import types, storage, utils
 
 
 class ExperimentalRunParallelCollator:

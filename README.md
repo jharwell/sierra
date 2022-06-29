@@ -1,17 +1,23 @@
 # SIERRA (reSearch pIpEline for Reproducability, Reusability, and Automation)
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Documentation Status](https://readthedocs.org/projects/swarm-robotics-sierra/badge/?version=latest)](https://swarm-robotics-sierra.readthedocs.io/en/latest/?badge=latest)
+
+| Usage   | Release | Development |
+|---------|---------|-------------|
+| [![](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) | ![](https://github.com/swarm-robotics/sierra/actions/workflows/static-analysis.yml/badge.svg?branch=master) | ![](https://github.com/swarm-robotics/sierra/actions/workflows/static-analysis.yml/badge.svg?branch=devel) |
+| [![Python 3.6](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/release/python-360/)  | ![](https://github.com/swarm-robotics/sierra/actions/workflows/argos-integration-tests.yml/badge.svg?branch=master) | ![](https://github.com/swarm-robotics/sierra/actions/workflows/argos-integration-tests.yml/badge.svg?branch=devel) |
+| [![Linux](https://svgshare.com/i/Zhy.svg)](https://svgshare.com/i/Zhy.svg) [![macOS](https://svgshare.com/i/ZjP.svg)](https://svgshare.com/i/ZjP.svg) |![](https://github.com/swarm-robotics/sierra/actions/workflows/ros1gazebo-integration-tests.yml/badge.svg?branch=master) | ![](https://github.com/swarm-robotics/sierra/actions/workflows/ros1gazebo-integration-tests.yml/badge.svg?branch=devel) |
+| [![Downloads](https://pepy.tech/badge/sierra-research)](https://pepy.tech/project/sierra-research)  | [![](https://readthedocs.org/projects/swarm-robotics-sierra/badge/?version=master)](https://swarm-robotics-sierra.readthedocs.io/en/master/?badge=master) | [![](https://readthedocs.org/projects/swarm-robotics-sierra/badge/?version=master)](https://swarm-robotics-sierra.readthedocs.io/en/master/?badge=devel)
+
 
 SIERRA is named thusly because it will save you a LITERAL, (not figurative)
 mountain of work. It is basically a plugin-based framework for automating
 research driven by the scientific method. SIERRA is well documented--see the
-docs [here](https://swarm-robotics-sierra.readthedocs.io/en/latest/) to get
+docs [here](https://swarm-robotics-sierra.readthedocs.io/en//) to get
 started using it!
 
 # Automated Research Pipeline
 
-![SIERRA Architecture](./docs/figures/architecture.png "
+![SIERRA Architecture](https://raw.githubusercontent.com/swarm-robotics/sierra/master/docs/figures/architecture.png "
 Architecture of SIERRA,organized by pipeline stage. Pipeline stages are listed
 left to right, and an approximate joint architectural/functional stack is top to
 bottom for each stage. “... ” indicates areas where SIERRA is designed via
@@ -44,9 +50,9 @@ configuration/# of robots).
 
 SIERRA supports multiple HPC environments for execution of experiments in
 simulation
-([docs](https://swarm-robotics-sierra.readthedocs.io/en/latest/src/exec_env/hpc.html))
+([docs](https://swarm-robotics-sierra.readthedocs.io/en/master/src/exec_env/hpc.html))
 and on real robots
-([docs](https://swarm-robotics-sierra.readthedocs.io/en/latest/src/exec_env/robots.html)):
+([docs](https://swarm-robotics-sierra.readthedocs.io/en/master/src/exec_env/robots.html)):
 
 | Execution Environment     | Supported Platforms |
 | ------------------------- | ------------------- |
@@ -57,14 +63,14 @@ and on real robots
 | [ROS1+Turtlebot3](https://emanual.robotis.com/docs/en/platform/turtlebot3/overview) | ROS1+Gazebo, ROS1+robot |
 
 To add additional execution environments, see the
-[docs](https://swarm-robotics-sierra.readthedocs.io/en/latest/src/tutorials/plugin/exec_env_plugin.html).
+[docs](https://swarm-robotics-sierra.readthedocs.io/en/master/src/tutorials/plugin/exec_env_plugin.html).
 
 ## 3. Processing Experiment Results
 
 SIERRA supports a number of data formats which simulations/real robot
 experiments can output their data (e.g., the number of robots engaged in a given
 task over time) for processing. For more details see the
-[docs](https://swarm-robotics-sierra.readthedocs.io/en/latest/). SIERRA can
+[docs](https://swarm-robotics-sierra.readthedocs.io/en/master/). SIERRA can
 generate various statistics from the results such as confidence intervals on
 observed behavior.
 
@@ -106,13 +112,18 @@ interface for the below pipeline to automate your research workflow:
 - [ROS](https://ros.org) for ROS on a real robot.
 
 To define additional platforms, see the
-[docs](https://swarm-robotics-sierra.readthedocs.io/en/latest/src/tutorials/plugin/platform_plugin.html).
+[docs](https://swarm-robotics-sierra.readthedocs.io/en/master/src/tutorials/plugin/platform_plugin.html).
 
 # Requirements
 
+- Recent OSX or Linux (Windows is not supported).
+
 - python >= 3.9.
+
 - ARGoS >= 3.0.0-beta59 (if you are using ARGoS).
-- ROS1 Melodic or later (if you are using ROS).
+
+- ROS1 Noetic or later (if you are using ROS).
+
 - Gazebo 11.9.0 or later (if you are using ROS1+Gazebo).
 
 
@@ -135,7 +146,7 @@ If you use SIERRA and have found it helpful, please cite the following paper:
 
 # Contributing
 
-See [here](https://swarm-robotics-sierra.readthedocs.io/en/latest/src/contributing.html) to get started.
+See [here](https://swarm-robotics-sierra.readthedocs.io/en/master/src/contributing.html) to get started.
 
 # License
 This project is licensed under GPL 3.0. See [LICENSE](LICENSE.md).

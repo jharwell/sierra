@@ -28,7 +28,7 @@ import typing as tp
 import queue
 import time
 import datetime
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import pandas as pd
@@ -36,7 +36,7 @@ import psutil
 
 # Project packages
 import sierra.core.variables.batch_criteria as bc
-from sierra.core import types, config, utils, stat_kernels, storage
+from sierra.core import types, utils, stat_kernels, storage
 
 
 class GatherSpec:
@@ -88,11 +88,21 @@ class BatchExpParallelCalculator:
             n_gatherers = 1
             n_processors = 1
         else:
-            n_gatherers = int(mp.cpu_count() * 0.25)
-            n_processors = int(mp.cpu_count() * 0.75)
+            # Aways need to have at least one of each! If SIERRA is invoked on a
+            # machine with 2 or less logical cores, the calculation with
+            # mp.cpu_count() will return 0 for # gatherers.
+            n_gatherers = max(1, int(mp.cpu_count() * 0.25))
+            n_processors = max(1, int(mp.cpu_count() * 0.75))
 
-        pool = mp.Pool(processes=n_gatherers + n_processors)
+        with mp.Pool(processes=n_gatherers + n_processors) as pool:
+            self._execute(exp_to_avg, avg_opts, n_gatherers, n_processors, pool)
 
+    def _execute(self,
+                 exp_to_avg: tp.List[str],
+                 avg_opts: types.SimpleDict,
+                 n_gatherers: int,
+                 n_processors: int,
+                 pool: mp.Pool) -> None:
         m = mp.Manager()
         gatherq = m.Queue()
         processq = m.Queue()
@@ -157,9 +167,9 @@ class BatchExpParallelCalculator:
             except queue.Empty:
                 if got_item:
                     break
-                else:
-                    timeout *= 2
-                    n_tries += 1
+
+                timeout *= 2
+                n_tries += 1
 
     @staticmethod
     def _process_worker(processq: mp.Queue,
@@ -190,9 +200,9 @@ class BatchExpParallelCalculator:
             except queue.Empty:
                 if got_item:
                     break
-                else:
-                    timeout *= 2
-                    n_tries += 1
+
+                timeout *= 2
+                n_tries += 1
 
 
 class ExpCSVGatherer:
@@ -229,20 +239,19 @@ class ExpCSVGatherer:
 
     def __call__(self, batch_output_root: str, exp_leaf: str) -> None:
         """Process the CSV files found in the output save path"""
+        exp_output_root = os.path.join(batch_output_root, exp_leaf)
+
         if not self.gather_opts['df_skip_verify']:
-            self._verify_exp()
+            self._verify_exp(exp_output_root)
 
         self.logger.info('Processing .csvs: %s...', exp_leaf)
-
-        exp_output_root = os.path.join(batch_output_root, exp_leaf)
 
         pattern = self.output_name_format.format(re.escape(self.gather_opts['template_input_leaf']),
                                                  r'\d+')
 
         runs = os.listdir(exp_output_root)
         assert(all(re.match(pattern, r) for r in runs)),\
-            "Extraneous files/not all dirs in '{0}' are experimental runs".format(
-                exp_output_root)
+            f"Extra files/not all dirs in '{exp_output_root}' are exp runs"
 
         # Maps (unique .csv stem, optional parent dir) to the averaged dataframe
         to_gather = self._calc_gather_items(exp_output_root, exp_leaf, runs[0])
@@ -292,7 +301,7 @@ class ExpCSVGatherer:
                                item: GatherSpec,
                                runs: tp.List[str]) -> tp.Dict[GatherSpec,
                                                               tp.List[pd.DataFrame]]:
-        gathered = dict()  # type: tp.Dict[GatherSpec, pd.DataFrame]
+        gathered = {}  # type: tp.Dict[GatherSpec, pd.DataFrame]
 
         for run in runs:
             run_output_root = os.path.join(exp_output_root,
@@ -379,30 +388,30 @@ class ExpCSVGatherer:
                         continue
 
                     assert (utils.path_exists(path1) and utils.path_exists(path2)),\
-                        "Either {0} or {1} does not exist".format(
-                            path1, path2)
+                        f"Either {path1} or {path2} does not exist"
 
-                    # Verify both dataframes have same # columns, and that column sets are identical
+                    # Verify both dataframes have same # columns, and that
+                    # column sets are identical
                     reader = storage.DataFrameReader(
                         self.gather_opts['storage_medium'])
                     df1 = reader(path1)
                     df2 = reader(path2)
 
                     assert (len(df1.columns) == len(df2.columns)), \
-                        "Dataframes from {0} and {1} do not have same # columns".format(
-                            path1, path2)
+                        (f"Dataframes from {path1} and {path2} do not have "
+                         "the same # columns")
                     assert(sorted(df1.columns) == sorted(df2.columns)),\
-                        "Columns from {0} and {1} not identical".format(
-                            path1, path2)
+                        f"Columns from {path1} and {path2} not identical"
 
                     # Verify the length of all columns in both dataframes is the same
                     for c1 in df1.columns:
                         assert(all(len(df1[c1]) == len(df1[c2]) for c2 in df1.columns)),\
-                            "Not all columns from {0} have same length".format(
-                                path1)
+                            f"Not all columns from {path1} have same length"
+
                         assert(all(len(df1[c1]) == len(df2[c2]) for c2 in df1.columns)),\
-                            "Not all columns from {0} and {1} have same length".format(path1,
-                                                                                       path2)
+                            (f"Not all columns from {path1} and {path2} have "
+                             "the same length")
+
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         self.logger.info("Done verifying results in %s: %s",

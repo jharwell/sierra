@@ -20,7 +20,7 @@ import os
 import multiprocessing as mp
 import queue
 import typing as tp
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import pandas as pd
@@ -75,7 +75,7 @@ class UnivarGraphCollator:
         self.logger.info("Stage4: Collating univariate files from batch in %s for graph '%s'...",
                          self.cmdopts['batch_output_root'],
                          target['src_stem'])
-        self.logger.trace(json.dumps(target, indent=4))
+        self.logger.trace(json.dumps(target, indent=4))   # type: ignore
 
         exp_dirs = utils.exp_range_calc(self.cmdopts,
                                         self.cmdopts['batch_output_root'],
@@ -99,8 +99,8 @@ class UnivarGraphCollator:
                                           ylabels=[os.path.split(e)[1] for e in exp_dirs]) for ext in exts]
 
         for i, diri in enumerate(exp_dirs):
-            # We get full paths back from the exp dirs calculation, and we need to work with path
-            # leaves
+            # We get full paths back from the exp dirs calculation, and we need
+            # to work with path leaves
             diri = os.path.split(diri)[1]
             self._collate_exp(target, diri, stats)
 
@@ -157,7 +157,7 @@ class BivarGraphCollator:
         self.logger.info("Stage4: Collating bivariate files from batch in %s for graph '%s'...",
                          self.cmdopts['batch_output_root'],
                          target['src_stem'])
-        self.logger.trace(json.dumps(target, indent=4))
+        self.logger.trace(json.dumps(target, indent=4))   # type: ignore
 
         exp_dirs = utils.exp_range_calc(self.cmdopts,
                                         self.cmdopts['batch_output_root'],
@@ -276,7 +276,7 @@ class GraphParallelCollator():
                        stat_collate_root: str,
                        criteria) -> None:
 
-        collator = None  # type: ignore
+        collator: tp.Union[UnivarGraphCollator, BivarGraphCollator]
 
         if criteria.is_univar():
             collator = UnivarGraphCollator(main_config, cmdopts)

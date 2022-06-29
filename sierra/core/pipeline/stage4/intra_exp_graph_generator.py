@@ -23,7 +23,7 @@ Classes for generating graphs within a single :term:`Experiment` in a
 import os
 import copy
 import typing as tp
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import json
@@ -243,7 +243,8 @@ class LinegraphsGenerator:
                 output_fpath = os.path.join(self.cmdopts['exp_graph_root'],
                                             'SLN-' + graph['dest_stem'] + sierra.core.config.kImageExt)
                 try:
-                    self.logger.trace('\n' + json.dumps(graph, indent=4))
+                    self.logger.trace('\n' +  # type: ignore
+                                      json.dumps(graph, indent=4))
                     StackedLineGraph(stats_root=self.cmdopts['exp_stat_root'],
                                      input_stem=graph['src_stem'],
                                      output_fpath=output_fpath,
@@ -299,7 +300,8 @@ class HeatmapsGenerator:
         for category in self.targets:
             # For each graph in each category
             for graph in category['graphs']:
-                self.logger.trace('\n' + json.dumps(graph, indent=4))
+                self.logger.trace('\n' +  # type: ignore
+                                  json.dumps(graph, indent=4))
                 if IntraExpModel2DGraphSet.model_exists(self.exp_model_root,
                                                         graph['src_stem']):
                     IntraExpModel2DGraphSet(self.exp_stat_root,

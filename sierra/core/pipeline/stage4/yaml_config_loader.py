@@ -17,7 +17,7 @@
 # Core packages
 import os
 import typing as tp
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import yaml
@@ -69,19 +69,22 @@ class YAMLConfigLoader():
             self.logger.info("Intra-experiment linegraph config for project '%s' from %s",
                              cmdopts['project'],
                              project_intra_LN)
-            intra_LN_config = yaml.load(open(project_intra_LN), yaml.FullLoader)
+            with open(project_intra_LN) as f:
+                intra_LN_config = yaml.load(f, yaml.FullLoader)
 
         if sierra.core.utils.path_exists(project_inter_LN):
             self.logger.info("Inter-experiment linegraph config for project '%s' from %s",
                              cmdopts['project'],
                              project_inter_LN)
-            inter_LN_config = yaml.load(open(project_inter_LN), yaml.FullLoader)
+            with open(project_inter_LN) as f:
+                inter_LN_config = yaml.load(f, yaml.FullLoader)
 
         if sierra.core.utils.path_exists(project_intra_HM):
             self.logger.info("Intra-experiment heatmap config for project '%s' from %s",
                              cmdopts['project'],
                              project_intra_HM)
-            intra_HM_config = yaml.load(open(project_intra_HM), yaml.FullLoader)
+            with open(project_intra_HM) as f:
+                intra_HM_config = yaml.load(f, yaml.FullLoader)
 
         return {
             'intra_LN': intra_LN_config,

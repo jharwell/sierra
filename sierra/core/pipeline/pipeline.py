@@ -21,14 +21,13 @@ Container module for the 5 pipeline stages implemented by SIERRA. See
 # Core packages
 import os
 import typing as tp
-import logging  # type: tp.Any
+import logging
 import argparse
 
 # 3rd party packages
 import yaml
 
 # Project packages
-import sierra.core.variables.batch_criteria as bc
 import sierra.core.plugin_manager as pm
 from sierra.core import types, config
 
@@ -44,7 +43,7 @@ class Pipeline:
 
     def __init__(self,
                  args: argparse.Namespace,
-                 controller: str,
+                 controller: tp.Optional[str],
                  rdg_opts: types.Cmdopts) -> None:
         self.args = args
         self.logger = logging.getLogger(__name__)
@@ -141,6 +140,8 @@ class Pipeline:
         self._load_config()
 
         if 5 not in self.args.pipeline:
+            bc = pm.module_load_tiered(project=self.cmdopts['project'],
+                                       path='variables.batch_criteria')
             self.batch_criteria = bc.factory(self.main_config,
                                              self.cmdopts,
                                              self.args)
@@ -179,7 +180,9 @@ class Pipeline:
         main_path = os.path.join(self.cmdopts['project_config_root'],
                                  config.kYAML['main'])
         try:
-            self.main_config = yaml.load(open(main_path), yaml.FullLoader)
+            with open(main_path) as f:
+                self.main_config = yaml.load(f, yaml.FullLoader)
+
         except FileNotFoundError:
             self.logger.fatal("%s must exist!", main_path)
             raise
@@ -190,7 +193,7 @@ class Pipeline:
             perf_config = yaml.load(open(perf_path), yaml.FullLoader)
 
         except FileNotFoundError:
-            self.logger.warn("%s does not exist!", perf_path)
+            self.logger.warning("%s does not exist!", perf_path)
             perf_config = {}
         self.main_config['sierra'].update(perf_config)
 

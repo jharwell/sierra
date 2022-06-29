@@ -26,7 +26,6 @@ import typing as tp
 # 3rd party packages
 
 # Project packages
-from sierra.core import config
 import sierra.version
 
 
@@ -66,12 +65,12 @@ class BaseCmdline:
     @staticmethod
     def bc_applicable_doc(criteria: tp.List[str]) -> str:
         lst = "".join(map(lambda bc: "   - " + bc + "\n", criteria))
-        return "\n.. TIP:: Applicable batch criteria\n\n" + lst + "\n"
+        return "\n.. TIP:: Applicable batch criteria:\n\n" + lst + "\n"
 
     @staticmethod
     def graphs_applicable_doc(graphs: tp.List[str]) -> str:
         lst = "".join(map(lambda graph: "   - " + graph + "\n", graphs))
-        return "\n.. TIP:: Applicable graphs\n\n" + lst + "\n"
+        return "\n.. TIP:: Applicable graphs:\n\n" + lst + "\n"
 
 
 class BootstrapCmdline(BaseCmdline):
@@ -95,7 +94,11 @@ class BootstrapCmdline(BaseCmdline):
                                """ + self.stage_usage_doc([1, 2, 3, 4, 5]))
 
         bootstrap.add_argument("--log-level",
-                               choices=["INFO", "DEBUG", "TRACE"],
+                               choices=["ERROR",
+                                        "INFO",
+                                        "WARNING",
+                                        "DEBUG",
+                                        "TRACE"],
                                help="""
 
                                  The level of logging to use when running
@@ -524,10 +527,9 @@ class CoreCmdline(BaseCmdline):
                                  be used, but the ones that come with SIERRA
                                  are:
 
-                                 ``storage.csv`` - Experimental run outputs are
-                                                   stored in a per-run directory
-                                                   as one or more ``.csv``
-                                                   files.
+                                 - ``storage.csv`` - Experimental run outputs
+                                   are stored in a per-run directory as one or
+                                   more ``.csv`` files.
 
 
                                  Regardless of the value of this option, SIERRA
@@ -596,30 +598,32 @@ class CoreCmdline(BaseCmdline):
                                      {3,4} to to homogenize them:
 
                                      - ``none`` - Don't do anything. This may or
-                                                  may not produce crashes during
-                                                  stage 4, depending on what you
-                                                  are doing.
+                                       may not produce crashes during stage 4,
+                                       depending on what you are doing.
 
                                     - ``pad`` - Project last valid value in
-                                                columns which are too short down
-                                                the column to make it match
-                                                those which are longer.
+                                       columns which are too short down the
+                                       column to make it match those which are
+                                       longer.
 
-                                                Note that this may result in
-                                                invalid data/graphs if the
-                                                filled columns are intervallic,
-                                                interval average, or cumulative
-                                                average data. If the data is a
-                                                cumulative count of something,
-                                                then this policy will have no
-                                                ill effects.
+                                       Note that this may result in invalid
+                                       data/graphs if the filled columns are
+                                       intervallic, interval average, or
+                                       cumulative average data. If the data is a
+                                       cumulative count of something, then this
+                                       policy will have no ill effects.
 
                                      - ``zero`` - Same as ``pad``, but always
-                                                  fill with zeroes.
+                                       fill with zeroes.
 
                                      Homogenization is performed just before
                                      writing dataframes to the specified storage
-                                     medium.
+                                     medium. Useful with real robot experiments
+                                     if the number of datapoints captured
+                                     per-robot is slightly different, depending
+                                     on when they started executing relative to
+                                     when the experiment started.
+
                                      """,
                                      default='none')
 
@@ -999,12 +1003,12 @@ class CoreCmdline(BaseCmdline):
                                  univariate. This cannot be deduced from the
                                  command line ``--batch-criteria`` argument in
                                  all cases because we are comparing controllers
-                                 `across` scenarios, and each
-                                 scenario(potentially) has a different batch
-                                 criteria definition, which will result in
-                                 (potentially) erroneous comparisons if we don't
-                                 re-generate the batch criteria for each scenaro
-                                 we compare controllers within.
+                                 `across` scenarios, and each scenario
+                                 (potentially) has a different batch criteria
+                                 definition, which will result in (potentially)
+                                 erroneous comparisons if we don't re-generate
+                                 the batch criteria for each scenaro we compare
+                                 controllers within.
 
                                  """ + self.stage_usage_doc([5]),
                                  action='store_true')
@@ -1032,8 +1036,6 @@ class CoreCmdline(BaseCmdline):
                                  Transpose the X, Y axes in generated
                                  graphs. Useful as a general way to tweak graphs
                                  for best use of space within a paper.
-
-                                 Ignored for other graph types.
 
                                  """ +
                                  self.graphs_applicable_doc([':class:`~sierra.core.graphs.heatmap.Heatmap`']) +

@@ -19,7 +19,7 @@
 import typing as tp
 import copy
 import os
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import pandas as pd

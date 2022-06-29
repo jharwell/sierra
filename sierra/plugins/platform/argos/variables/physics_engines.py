@@ -23,7 +23,7 @@ within the volumetric extent to cover it without overlap.
 
 # Core packages
 import typing as tp
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import implements
@@ -491,7 +491,6 @@ class PhysicsEngines3D(PhysicsEngines):
         PhysicsEngines.__init__(self,
                                 engine_type,
                                 n_engines,
-                                None,
                                 iter_per_tick,
                                 layout,
                                 extents)

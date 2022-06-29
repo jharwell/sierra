@@ -23,7 +23,7 @@ here.
 # Core packages
 import os
 import typing as tp
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 

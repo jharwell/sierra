@@ -20,8 +20,7 @@ experimental inputs.
 """
 
 # Core packges
-import typing as tp
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 

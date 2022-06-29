@@ -20,7 +20,6 @@ HPC plugin for running SIERRA on HPC clusters using the SLURM scheduler.
 # Core packages
 import os
 import typing as tp
-import logging  # type: tp.Any
 import argparse
 import shutil
 
@@ -29,7 +28,6 @@ import implements
 
 # Project packages
 from sierra.core import types
-from sierra.core import plugin_manager as pm
 from sierra.core.experiment import bindings
 import sierra.core.variables.batch_criteria as bc
 
@@ -63,7 +61,7 @@ class ParsedCmdlineConfigurer():
 
         for k in keys:
             assert k in os.environ,\
-                "Non-SLURM environment detected: '{0}' not found".format(k)
+                f"Non-SLURM environment detected: '{k}' not found"
 
         assert not args.platform_vc,\
             "Platform visual capture not supported on SLURM"
@@ -93,10 +91,10 @@ class ExpShellCmdsGenerator():
     def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
         return []
 
-    def exec_exp_cmds(self, exec_opts: types.ExpExecOpts) -> tp.List[types.ShellCmdSpec]:
+    def exec_exp_cmds(self, exec_opts: types.SimpleDict) -> tp.List[types.ShellCmdSpec]:
         jobid = os.environ['SLURM_JOB_ID']
         nodelist = os.path.join(exec_opts['exp_input_root'],
-                                "{0}-nodelist.txt".format(jobid))
+                                f"{jobid}-nodelist.txt")
 
         resume = ''
         # This can't be --resume, because then GNU parallel looks at the results

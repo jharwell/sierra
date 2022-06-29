@@ -241,7 +241,7 @@ class ExpShellCmdsGenerator():
         return []
 
     def exec_exp_cmds(self,
-                      exec_opts: types.ExpExecOpts) -> tp.List[types.ShellCmdSpec]:
+                      exec_opts: types.SimpleDict) -> tp.List[types.ShellCmdSpec]:
         return []
 
     def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
@@ -303,8 +303,8 @@ class ExecEnvChecker(platform.ExecEnvChecker):
                 f"Non-ROS+Gazebo environment detected: '{k}' not found"
 
         # Check ROS distro
-        assert os.environ['ROS_DISTRO'] in ['melodic', 'noetic'],\
-            "SIERRA only supports ROS1 melodic and noetic"
+        assert os.environ['ROS_DISTRO'] in ['noetic'],\
+            "SIERRA only supports ROS1 noetic"
 
         # Check ROS version
         assert os.environ['ROS_VERSION'] == "1",\
@@ -333,8 +333,7 @@ def population_size_from_pickle(adds_def: tp.Union[xml.XMLAttrChangeSet,
                                                       cmdopts)
 
 
-def population_size_from_def(exp_def: tp.Union[xml.XMLAttrChangeSet,
-                                               xml.XMLTagAddList],
+def population_size_from_def(exp_def: xml.XMLLuigi,
                              main_config: types.YAMLDict,
                              cmdopts: types.Cmdopts) -> int:
     return ros1.callbacks.population_size_from_def(exp_def,

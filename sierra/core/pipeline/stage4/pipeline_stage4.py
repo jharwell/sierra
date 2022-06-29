@@ -24,7 +24,7 @@ import os
 import typing as tp
 import time
 import datetime
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import yaml
@@ -32,16 +32,13 @@ import yaml
 # Project packages
 from sierra.core.pipeline.stage4.graph_collator import GraphParallelCollator
 from sierra.core.pipeline.stage4.intra_exp_graph_generator import BatchIntraExpGraphGenerator
-from sierra.core.pipeline.stage4.inter_exp_graph_generator import InterExpGraphGenerator
 from sierra.core.pipeline.stage4.model_runner import IntraExpModelRunner
 from sierra.core.pipeline.stage4.model_runner import InterExpModelRunner
 import sierra.core.variables.batch_criteria as bc
 
 from sierra.core.pipeline.stage4.video_renderer import BatchExpParallelVideoRenderer
 import sierra.core.plugin_manager as pm
-from sierra.core.pipeline.stage4.yaml_config_loader import YAMLConfigLoader
-import sierra.core.config
-from sierra.core import types
+from sierra.core import types, config, utils
 
 
 class PipelineStage4:
@@ -100,18 +97,18 @@ class PipelineStage4:
         self.cmdopts = cmdopts
 
         self.main_config = main_config
-        self.controller_config = yaml.load(open(os.path.join(self.cmdopts['project_config_root'],
-                                                             sierra.core.config.kYAML['controllers'])),
-                                           yaml.FullLoader)
+        with open(os.path.join(self.cmdopts['project_config_root'],
+                               config.kYAML['controllers'])) as f:
+            self.controller_config = yaml.load(f, yaml.FullLoader)
         self.logger = logging.getLogger(__name__)
 
         # Load YAML config
         loader = pm.module_load_tiered(project=self.cmdopts['project'],
                                        path='pipeline.stage4.yaml_config_loader')
-        config = loader.YAMLConfigLoader()(self.cmdopts)
-        self.intra_LN_config = config['intra_LN']
-        self.intra_HM_config = config['intra_HM']
-        self.inter_LN_config = config['inter_LN']
+        graphs_config = loader.YAMLConfigLoader()(self.cmdopts)
+        self.intra_LN_config = graphs_config['intra_LN']
+        self.intra_HM_config = graphs_config['intra_HM']
+        self.inter_LN_config = graphs_config['inter_LN']
 
         if self.cmdopts['models_enable']:
             self._load_models()
@@ -177,7 +174,7 @@ class PipelineStage4:
         self.models_intra = []
         self.models_inter = []
 
-        if not sierra.core.utils.path_exists(project_models):
+        if not utils.path_exists(project_models):
             self.logger.debug("No models to load for project '%s': %s does not exist",
                               self.cmdopts['project'],
                               project_models)
@@ -342,8 +339,9 @@ class PipelineStage4:
 
         generator = pm.module_load_tiered(project=self.cmdopts['project'],
                                           path='pipeline.stage4.inter_exp_graph_generator')
-        generator.InterExpGraphGenerator(
-            self.main_config, self.cmdopts, targets)(criteria)
+        generator.InterExpGraphGenerator(self.main_config,
+                                         self.cmdopts,
+                                         targets)(criteria)
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
 

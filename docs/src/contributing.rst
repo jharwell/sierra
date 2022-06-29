@@ -4,6 +4,22 @@
 Contributing
 ============
 
+Types of contributions
+======================
+
+All types of contributions are welcome: bugfixes, adding unit/integration tests,
+etc. If you're only have a little bit of time and/or are new to SIERRA, looking
+at the issues is a good place to look for places to contribute. If you have more
+time and/or want to give back to the community in a bigger way, see
+:ref:`ln-sierra-roadmap` for some big picture ideas about where things might be
+going, and help shape the future!
+
+Mechanics
+=========
+
+Writing the code
+----------------
+
 To contribute to the SIERRA core, in you should follow the general workflow and
 python development guide outlined in :xref:`LIBRA`. For the static analysis
 step:
@@ -35,11 +51,11 @@ step:
 
    Fix ANY errors your changes have introduced (there will probably still be
    errors in the my output, because cleaning up the code is always a work in
-   progress).
+   progress), and also mypy just gives a lot of false positives in general.
 
 
 SIERRA Source Code Directory Structure
-======================================
+--------------------------------------
 
 It is helpful to know how SIERRA is layed out, so it is easier to see how things
 fit together, and where to look for implementation details if (really `when`)

@@ -21,7 +21,6 @@ HPC plugin for running SIERRA with an ad-hoc set of allocated compute nodes
 
 # Core packages
 import os
-import logging  # type: tp.Any
 import typing as tp
 import argparse
 import shutil
@@ -30,8 +29,7 @@ import shutil
 import implements
 
 # Project packages
-from sierra.core import types, config, utils
-from sierra.core import plugin_manager as pm
+from sierra.core import types, utils
 from sierra.core.experiment import bindings
 import sierra.core.variables.batch_criteria as bc
 
@@ -78,14 +76,14 @@ class ExpShellCmdsGenerator():
     def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
         return []
 
-    def exec_exp_cmds(self, exec_opts: types.ExpExecOpts) -> tp.List[types.ShellCmdSpec]:
+    def exec_exp_cmds(self, exec_opts: types.SimpleDict) -> tp.List[types.ShellCmdSpec]:
         jobid = os.getpid()
 
         # Even if we are passed --nodelist, we still make our own copy of it, so
         # that the user can safely modify it (if they want to) after running
         # stage 1.
         nodelist = os.path.join(exec_opts['exp_input_root'],
-                                "{0}-nodelist.txt".format(jobid))
+                                f"{jobid}-nodelist.txt")
 
         resume = ''
         # This can't be --resume, because then GNU parallel looks at the results

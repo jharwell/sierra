@@ -146,7 +146,7 @@ class PlatformCmdline(corecmd.BaseCmdline):
                                          threads too).
 
                                          This only applies if
-                                         ``--physics-engine-type``=ode.
+                                         ``--physics-engine-type``\=ode.
 
                                          A value of 0=no threads.
 

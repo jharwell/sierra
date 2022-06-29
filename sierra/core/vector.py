@@ -106,7 +106,7 @@ class Vector3D:
         return self.__repr__()
 
     def __repr__(self) -> str:
-        return '({0},{1},{2})'.format(self.x, self.y, self.z)
+        return f'({self.x},{self.y},{self.z})'
 
     def cross(self, o: 'Vector3D') -> 'Vector3D':
         return Vector3D(self.y * o.z - self.z * o.y,

@@ -68,7 +68,7 @@ class IExpShellCmdsGenerator(implements.Interface):
         raise NotImplementedError
 
     def exec_exp_cmds(self,
-                      exec_opts: types.ExpExecOpts) -> tp.List[types.ShellCmdSpec]:
+                      exec_opts: types.SimpleDict) -> tp.List[types.ShellCmdSpec]:
         """During stage 1, generate the :term:`Platform`-specific shell commands
         to run during stage 2 to execute a single :term:`Experiment` in a
         :term:`Batch Experiment`. This is (usually) a single GNU parallel

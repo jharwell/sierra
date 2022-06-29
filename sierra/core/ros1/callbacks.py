@@ -45,7 +45,7 @@ def population_size_from_def(exp_def: xml.XMLLuigi,
 
 
 def robot_prefix_extract(main_config: types.YAMLDict,
-                         cmdopts: types.Cmdopts) -> tp.Optional[str]:
+                         cmdopts: types.Cmdopts) -> str:
     return main_config['ros']['robots'][cmdopts['robot']]['prefix']
 
 

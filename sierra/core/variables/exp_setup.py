@@ -15,7 +15,6 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 # Core packages
-import typing as tp
 import re
 
 # 3rd party packages
@@ -31,7 +30,7 @@ class Parser():
 
     """
 
-    def __init__(self, dflts: tp.Dict[str, int]):
+    def __init__(self, dflts: types.SimpleDict):
         self.dflts = dflts
 
     def __call__(self, arg: str) -> types.CLIArgSpec:
@@ -73,4 +72,6 @@ class Parser():
 
 __api__ = [
     'Parser'
+
+
 ]

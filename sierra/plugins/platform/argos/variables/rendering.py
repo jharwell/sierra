@@ -26,7 +26,6 @@ import implements
 
 # Project packages
 from sierra.core.variables.base_variable import IBaseVariable
-from sierra.core.utils import ArenaExtent
 from sierra.core.xml import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList, XMLTagRm, XMLTagAdd
 import sierra.core.config
 from sierra.core import types
@@ -93,7 +92,7 @@ class ARGoSQTHeadlessRendering():
                                                      False),
                                            XMLTagAdd('visualization/qt-opengl',
                                                      'user_functions',
-                                                     {'label': '__empty__'},
+                                                     {'label': '__EMPTY__'},
                                                      False))]
 
         return self.tag_adds

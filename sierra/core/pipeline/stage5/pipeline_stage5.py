@@ -21,8 +21,7 @@ deliverables.
 
 # Core packages
 import os
-import typing as tp
-import logging  # type: ignore
+import logging
 
 # 3rd party packages
 import yaml
@@ -66,9 +65,11 @@ class PipelineStage5:
     def __init__(self, main_config: dict, cmdopts: types.Cmdopts) -> None:
         self.cmdopts = cmdopts
         self.main_config = main_config
-        self.stage5_config = yaml.load(open(os.path.join(self.cmdopts['project_config_root'],
-                                                         'stage5.yaml')),
-                                       yaml.FullLoader)
+
+        with open(os.path.join(self.cmdopts['project_config_root'],
+                               'stage5.yaml')) as f:
+            self.stage5_config = yaml.load(f, yaml.FullLoader)
+
         self.logger = logging.getLogger(__name__)
 
         if self.cmdopts['controllers_list'] is not None:

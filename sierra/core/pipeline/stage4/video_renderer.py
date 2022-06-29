@@ -28,7 +28,7 @@ import multiprocessing as mp
 import queue
 import copy
 import shutil
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 
@@ -170,11 +170,11 @@ class ExpVideoRenderer:
         cmd.extend([os.path.join(render_opts['output_dir'],
                                  render_opts['ofile_leaf'])])
 
-        p = subprocess.Popen(' '.join(cmd),
-                             shell=True,
-                             stderr=subprocess.DEVNULL,
-                             stdout=subprocess.DEVNULL)
-        p.wait()
+        with subprocess.Popen(' '.join(cmd),
+                              shell=True,
+                              stderr=subprocess.DEVNULL,
+                              stdout=subprocess.DEVNULL) as p:
+            p.wait()
 
 
 __api__ = [

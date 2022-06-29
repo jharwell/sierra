@@ -104,7 +104,7 @@ class Parser():
         sections = sections[1:]
 
         # Need to have 2 dot/3 parts
-        assert len(sections == 3), \
+        assert len(sections) == 3, \
             (f"Spec must have 3 sections separated by '.'; have "
              f"{len(sections)} sections from '{arg}'")
 

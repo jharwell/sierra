@@ -1,0 +1,82 @@
+name: 'Setup SIERRA sample project'
+description: 'Setup SIERRA project for CI and testing'
+inputs:
+  platform:  # id of input
+    description: 'The SIERRA platform to setup for'
+    required: true
+  rosdistro:
+    description: 'The version of ROS to test with'
+    default: 'noetic'
+# outputs:
+#   time: # id of output
+#     description: 'The time we greeted you'
+runs:
+  using: 'composite'
+  steps:
+    - name: Clone sample project
+      shell: bash
+      working-directory: ../../
+      run: |
+        git clone https://github.com/swarm-robotics/sierra-sample-project.git
+        cd sierra-sample-project
+        git checkout devel
+
+    - name: Install ARGoS dependencies
+      shell: bash
+      working-directory: ../../
+      if: ${{ inputs.platform == 'argos' }}
+      run: |
+        sudo apt-get install cmake libfreeimage-dev libfreeimageplus-dev \
+        qt5-default freeglut3-dev libxi-dev libxmu-dev liblua5.3-dev \
+        lua5.3 doxygen graphviz libgraphviz-dev asciidoc
+
+    - name: Install ARGoS platform dependency
+      shell: bash
+      working-directory: ../../
+      if: ${{ inputs.platform == 'argos' }}
+      run: |
+        git clone https://github.com/swarm-robotics/argos3.git
+        cd argos3
+        git checkout devel
+        mkdir -p build && cd build
+        cmake -DARGOS_DOCUMENTATION=OFF ../src
+        make
+        sudo make install
+
+
+    - name: Build SIERRA project for ARGoS
+      if: ${{ inputs.platform == 'argos' }}
+      working-directory: ../../
+      shell: bash
+      run: |
+        cd sierra-sample-project/argos
+        mkdir -p build && cd build
+        cmake -DARGOS_INSTALL_DIR=/usr/local ..
+        make
+
+    - name: Install ROS1 platform dependency
+      if: ${{ inputs.platform == 'ros1gazebo' }}
+      shell: bash
+      run: |
+        sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+        curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
+        sudo apt update
+        sudo apt-get install ros-${{ inputs.rosdistro }}-desktop-full
+        sudo apt-get install ros-${{ inputs.rosdistro }}-turtlebot3-description
+        sudo apt-get install ros-${{ inputs.rosdistro }}-turtlebot3-msgs
+        sudo apt-get install ros-${{ inputs.rosdistro }}-turtlebot3-gazebo
+        sudo apt-get install ros-${{ inputs.rosdistro }}-turtlebot3-bringup
+
+    - name: Install SIERRA ROSBridge dependency
+      if: ${{ inputs.platform == 'ros1gazebo' }}
+      working-directory: ../..
+      shell: bash
+      run: |
+        pip3 install catkin_tools
+        git clone https://github.com/swarm-robotics/sierra_rosbridge.git
+        cd sierra_rosbridge
+        git checkout devel
+        catkin init
+        catkin config --extend /opt/ros/${{ inputs.rosdistro }}
+        catkin config --install -DCMAKE_INSTALL_PREFIX=$HOME/.local
+        catkin build

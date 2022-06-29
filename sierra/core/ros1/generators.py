@@ -19,7 +19,7 @@ Classes for generating common XML changes for all :term:`ROS1`-based
 but applicable to all projects using :term:`ROS1`.
 """
 # Core packages
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 
@@ -168,7 +168,7 @@ class ROSExpRunDefUniqueGenerator:
         Run` in an: term: `Experiment` during the input generation process.
 
         """
-        self.logger.trace("Generating random seed changes for run%s",
+        self.logger.trace("Generating random seed changes for run%s",  # type: ignore
                           self.run_num)
 
         # Master gets the random seed

@@ -20,9 +20,6 @@ to ``.csv`` files when generating graphs.
 """
 
 # Core packages
-import os
-import math
-import typing as tp
 
 # 3rd party packages
 from retry import retry
