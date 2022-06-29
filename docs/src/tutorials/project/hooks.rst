@@ -18,6 +18,35 @@ project directory, where ``stageX`` is the stage you want to override part of.
              below. It will probably not work, and even if it does there is
              every chance that it will break stuff.
 
+Multi-Stage Hooks
+=================
+
+Base Batch Criteria
+-------------------
+
+Suppose you want to extend one of the following core SIERRA classes to add
+additional attributes/methods you want to be accessible to all :term:`Batch
+Criteria` in your project:
+
+- :class:`~sierra.core.variables.batch_criteria.BatchCriteria`
+
+- :class:`~sierra.core.variables.batch_criteria.UnivarBatchCriteria`
+
+- :class:`~sierra.core.variables.batch_criteria.BivarBatchCriteria`
+
+To do this, do following:
+
+#. Create ``variables/batch_criteria.py`` in the root directory for your
+   project.
+
+#. Override one or more of the classes above, and SIERRA will then select your
+   version of said override classes when running. Exactly where SIERRA is
+   looking/what module it uses when a given class is requested can be seen with
+   ``--log-level=TRACE``.
+
+.. WARNING:: Don't override or extend any of the interfaces! It will causes
+             static analysis and/or runtime errors.
+
 Stage 3 Hooks
 =============
 

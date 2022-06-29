@@ -23,7 +23,7 @@ documentation.
 
 # Core packages
 import typing as tp
-import logging  # type: tp.Any
+import logging
 import math
 
 # 3rd party packages
@@ -31,12 +31,10 @@ import implements
 
 # Project packages
 from sierra.plugins.platform.argos.variables import constant_density as cd
-import sierra.core.utils
-import sierra.core.types as types
+from sierra.core import utils, types
 import sierra.core.variables.batch_criteria as bc
 from sierra.core.vector import Vector3D
 from sierra.core.xml import XMLAttrChange, XMLAttrChangeSet
-import sierra.core.plugin_manager as pm
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
@@ -69,7 +67,7 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
                     if path == ".//arena" and attr == "size":
                         x, y, z = [int(float(_)) for _ in value.split(",")]
-                        extent = sierra.core.utils.ArenaExtent(
+                        extent = utils.ArenaExtent(
                             Vector3D(x, y, z))
                         # ARGoS won't start if there are 0 robots, so you always
                         # need to put at least 1.
@@ -135,6 +133,31 @@ class PopulationConstantDensity(cd.ConstantDensity):
         return int(self.target_density / 100.0 * self.dimensions[exp_num].area())
 
 
+def calc_dims(cmdopts: types.Cmdopts,
+              attr: types.CLIArgSpec,
+              **kwargs) -> tp.List[utils.ArenaExtent]:
+
+    kw = utils.gen_scenario_spec(cmdopts, **kwargs)
+
+    is_2x1 = kw['arena_x'] == 2 * kw['arena_y']
+    is_1x1 = kw['arena_x'] == kw['arena_y']
+
+    if is_2x1:
+        r = range(kw['arena_x'],
+                  kw['arena_x'] + attr['cardinality'] * attr['arena_size_inc'],
+                  attr['arena_size_inc'])
+        return list(utils.ArenaExtent(Vector3D(x, int(x / 2), kw['arena_z'])) for x in r)
+    elif is_1x1:
+        r = range(kw['arena_x'],
+                  kw['arena_x'] + attr['cardinality'] * attr['arena_size_inc'],
+                  attr['arena_size_inc'])
+
+        return list(utils.ArenaExtent(Vector3D(x, x, kw['arena_z'])) for x in r)
+    else:
+        raise NotImplementedError(
+            "Unsupported arena X,Y scaling '{0}': Must be [2x1,1x1]")
+
+
 def factory(cli_arg: str,
             main_config: types.YAMLDict,
             cmdopts: types.Cmdopts,
@@ -145,37 +168,8 @@ def factory(cli_arg: str,
 
     """
     attr = cd.Parser()(cli_arg)
-    sgp = pm.module_load_tiered(project=cmdopts['project'],
-                                path='generators.scenario_generator_parser')
-
-    # scenario is passed in kwargs during stage 5 (can't be passed via
-    # --scenario in general )
-    if 'scenario' in kwargs:
-        scenario = kwargs['scenario']
-    else:
-        scenario = cmdopts['scenario']
-
-    kw = sgp.ScenarioGeneratorParser().to_dict(scenario)
-
-    is_2x1 = kw['arena_x'] == 2 * kw['arena_y']
-    is_1x1 = kw['arena_x'] == kw['arena_y']
-
-    if is_2x1:
-        r = range(kw['arena_x'],
-                  kw['arena_x'] + attr['cardinality'] * attr['arena_size_inc'],
-                  attr['arena_size_inc'])
-        dims = [sierra.core.utils.ArenaExtent(
-            Vector3D(x, int(x / 2), kw['arena_z'])) for x in r]
-    elif is_1x1:
-        r = range(kw['arena_x'],
-                  kw['arena_x'] + attr['cardinality'] * attr['arena_size_inc'],
-                  attr['arena_size_inc'])
-
-        dims = [sierra.core.utils.ArenaExtent(
-            Vector3D(x, x, kw['arena_z'])) for x in r]
-    else:
-        raise NotImplementedError(
-            "Unsupported arena X,Y scaling '{0}': Must be [2x1,1x1]")
+    kw = utils.gen_scenario_spec(cmdopts, **kwargs)
+    dims = calc_dims(cmdopts, attr, **kwargs)
 
     def __init__(self) -> None:
         PopulationConstantDensity.__init__(self,

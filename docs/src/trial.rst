@@ -65,9 +65,9 @@ you clone things somewhere else.
 
             - `<http://wiki.ros.org/noetic/Installation/Ubuntu>`_
 
-            - `<http://wiki.ros.org/melodic/Installation/Ubuntu>`_
+            - `<http://wiki.ros.org/noetic/Installation/Ubuntu>`_
 
-            SIERRA only supports melodic and noetic.
+            SIERRA only supports noetic.
 
          #. Install additional ROS packages for the turtlebot:
 
@@ -88,9 +88,9 @@ you clone things somewhere else.
 
             Where ``<distro>`` is replaced by your ROS distro.  Finally, set
             catkin to install at a common location (e.g.,
-            ``$HOME/.local/ros/melodic``) and build the package::
+            ``$HOME/.local/ros/noetic``) and build the package::
 
-              catkin config --install -DCMAKE_INSTALL_PREFIX=$HOME/.local/ros/melodic
+              catkin config --install -DCMAKE_INSTALL_PREFIX=$HOME/.local/ros/noetic
               catkin build
 
 
@@ -126,10 +126,10 @@ you clone things somewhere else.
            cd sierra-sample-project/ros1gazebo
            git checkout devel
            catkin init
-           catkin config --extend=$HOME/.local/ros/melodic
+           catkin config --extend=$HOME/.local/ros/noetic
            catkin build
 
-         Where ``$HOME/.local/ros/melodic`` is where I installed the SIERRA
+         Where ``$HOME/.local/ros/noetic`` is where I installed the SIERRA
          ROSBridge into.
 
 
@@ -145,7 +145,7 @@ you clone things somewhere else.
 
          #. Set :envvar:`ARGOS_PLUGIN_PATH`::
 
-              export ARGOS_PLUGIN_PATH=$HOME/research/sierra-sample-project/argos/build:<ARGOS_INSTALL_DIR>
+              export ARGOS_PLUGIN_PATH=$HOME/research/sierra-sample-project/argos/build:<ARGOS_INSTALL_DIR>/lib/argos3
 
             Where ``<ARGOS_INSTALL_DIR>`` is the prefix that you installed ARGoS
             to.

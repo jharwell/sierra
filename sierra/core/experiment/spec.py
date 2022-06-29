@@ -17,7 +17,7 @@
 # Core packages
 import typing as tp
 import os
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 

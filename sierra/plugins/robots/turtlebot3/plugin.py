@@ -20,7 +20,7 @@ Robot plugin for running SIERRA with a set of Turtlebot3 robots.
 
 # Core packages
 import os
-import logging  # type: tp.Any
+import logging
 import typing as tp
 import argparse
 import shutil
@@ -81,7 +81,7 @@ class ExpShellCmdsGenerator():
     def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
         return []
 
-    def exec_exp_cmds(self, exec_opts: types.ExpExecOpts) -> tp.List[types.ShellCmdSpec]:
+    def exec_exp_cmds(self, exec_opts: types.SimpleDict) -> tp.List[types.ShellCmdSpec]:
         jobid = os.getpid()
 
         # Even if we are passed --nodelist, we still make our own copy of it, so
@@ -209,6 +209,7 @@ class ExpRunShellCmdsGenerator():
 
 class ExecEnvChecker(platform.ExecEnvChecker):
     def __init__(self, cmdopts: types.Cmdopts) -> None:
+        super().__init__(cmdopts)
         self.cmdopts = cmdopts
         self.logger = logging.getLogger('robots.turtlebot3')
 

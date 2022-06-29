@@ -100,11 +100,11 @@ class ROSCmdline(cmd.BaseCmdline):
 
                                      The key name of the robot model, which must
                                      be present in the appropriate section of
-                                     ``main.yaml`` for the :term:`Project`. See
-                                     :ref:`ln-sierra-tutorials-project-main-config` for
-                                     details.
+                                     ``{0}`` for the :term:`Project`. See
+                                     :ref:`ln-sierra-tutorials-project-main-config`
+                                     for details.
 
-                            """ + self.stage_usage_doc([1]))
+                            """.format(config.kYAML['main']) + self.stage_usage_doc([1]))
 
     @staticmethod
     def cmdopts_update(cli_args, cmdopts: types.Cmdopts) -> None:

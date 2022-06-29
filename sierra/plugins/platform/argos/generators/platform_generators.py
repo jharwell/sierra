@@ -20,7 +20,7 @@ applicable to all projects using the platform.
 """
 # Core packages
 import typing as tp
-import logging  # type: tp.Any
+import logging
 import os
 import sys
 
@@ -28,7 +28,7 @@ import sys
 
 # Project packages
 from sierra.core.xml import XMLLuigi, XMLWriterConfig
-from sierra.core.utils import ArenaExtent as ArenaExtent
+from sierra.core.utils import ArenaExtent
 from sierra.core.experiment.spec import ExperimentSpec
 from sierra.core import types, config, utils
 import sierra.core.plugin_manager as pm
@@ -122,8 +122,8 @@ class PlatformExpDefGenerator():
             self.logger.warning("0 engines of type %s specified", engine_type)
             return
 
-        self.logger.trace(("Generating changes for %d '%s' physics engines ("
-                           "all runs)"),
+        self.logger.trace(("Generating changes for %d '%s' "   # type: ignore
+                           "physics engines (all runs)"),
                           n_engines,
                           engine_type)
         if cmdopts['physics_spatial_hash2D']:
@@ -153,7 +153,8 @@ class PlatformExpDefGenerator():
 
         Writes generated changes to the simulation definition pickle file.
         """
-        self.logger.trace("Generating changes for arena shape (all runs)")
+        self.logger.trace(("Generating changes for arena "    # type: ignore
+                           "share (all runs)"))
         _, adds, chgs = utils.apply_to_expdef(shape, exp_def)
 
         utils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)
@@ -168,7 +169,8 @@ class PlatformExpDefGenerator():
         if self.cmdopts['n_robots'] is None:
             return
 
-        self.logger.trace("Generating changes for # robots (all runs)")
+        self.logger.trace(("Generating changes for # robots "   # type: ignore
+                           "(all runs)"))
         chgs = population_size.PopulationSize.gen_attr_changelist_from_list(
             [self.cmdopts['n_robots']])
         for a in chgs[0]:
@@ -186,7 +188,8 @@ class PlatformExpDefGenerator():
         Does not write generated changes to the simulation definition pickle
         file.
         """
-        self.logger.trace("Generating changes for SAA (all runs)")
+        self.logger.trace(("Generating changes for SAA "   # type: ignore
+                           "(all runs)"))
 
         if not self.cmdopts["with_robot_rab"]:
             exp_def.tag_remove(".//media", "range_and_bearing", noprint=True)
@@ -282,7 +285,8 @@ class PlatformExpDefGenerator():
         file.
 
         """
-        self.logger.trace("Generating changes for visualization (all runs)")
+        self.logger.trace(("Generating changes for "  # type: ignore
+                           "visualization (all runs)"))
 
         if not self.cmdopts["platform_vc"]:
             # ARGoS visualizations
@@ -335,7 +339,7 @@ class PlatformExpRunDefUniqueGenerator:
         Generate XML changes for random seeding for a specific simulation in an
         experiment during the input generation process.
         """
-        self.logger.trace("Generating random seed changes for run%s",
+        self.logger.trace("Generating random seed changes for run%s",  # type: ignore
                           self.run_num)
 
         # Set the random seed in the input file
@@ -354,7 +358,7 @@ class PlatformExpRunDefUniqueGenerator:
         """
         Generates XML changes for setting up rendering for a specific simulation
         """
-        self.logger.trace("Generating visualization changes for run%s",
+        self.logger.trace("Generating visualization changes for run%s",  # type: ignore
                           self.run_num)
 
         if self.cmdopts['platform_vc']:

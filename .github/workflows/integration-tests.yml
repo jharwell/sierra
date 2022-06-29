@@ -1,0 +1,46 @@
+name: Integration tests
+
+on:
+  push:
+    branches:
+      - master
+      - devel
+
+jobs:
+  argos-platform:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.9']
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/sierra-setup
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: argos
+
+      - name: ARGoS platform integration tests
+        run: |
+          ./scripts/argos-integration-tests.sh
+
+  ros1gazebo-platform:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.9']
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: ./.github/actions/sierra-setup
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: ros1gazebo
+          rosdistro: noetic
+
+      - name: ROS1+Gazebo platform integration tests (noetic)
+        run: |
+          ./scripts/ros1gazebo-integration-tests.sh

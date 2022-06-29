@@ -22,7 +22,7 @@ documentation.
 
 # Core packages
 import typing as tp
-import logging  # type: tp.Any
+import logging
 import numpy as np
 
 # 3rd party packages
@@ -30,13 +30,10 @@ import implements
 
 # Project packages
 from sierra.core.variables import variable_density as vd
-import sierra.core.utils
 import sierra.core.variables.batch_criteria as bc
 from sierra.core.vector import Vector3D
 from sierra.core.xml import XMLAttrChange, XMLAttrChangeSet
-import sierra.core.plugin_manager as pm
-from sierra.core.utils import ArenaExtent
-from sierra.core import types
+from sierra.core import types, utils
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
@@ -117,22 +114,15 @@ def factory(cli_arg: str,
     the command line definition.
     """
     attr = vd.Parser()(cli_arg)
-    sgp = pm.module_load_tiered(project=cmdopts['project'],
-                                path='generators.scenario_generator_parser')
+    kw = utils.gen_scenario_spec(cmdopts, **kwargs)
 
-    # scenario is passed in kwargs during stage 5 (can't be passed via
-    # --scenario in general )
-    if 'scenario' in kwargs:
-        scenario = kwargs['scenario']
-    else:
-        scenario = cmdopts['scenario']
+    extent = utils.ArenaExtent(Vector3D(kw['arena_x'],
+                                        kw['arena_y'],
+                                        kw['arena_z']))
 
-    kw = sgp.ScenarioGeneratorParser().to_dict(scenario)
-    extent = ArenaExtent(Vector3D(kw['arena_x'], kw['arena_y'], kw['arena_z']))
-
-    densities = [x for x in np.linspace(attr['density_min'],
-                                        attr['density_max'],
-                                        num=attr['cardinality'])]
+    densities = list(x for x in np.linspace(attr['density_min'],
+                                            attr['density_max'],
+                                            num=attr['cardinality']))
 
     def __init__(self) -> None:
         PopulationVariableDensity.__init__(self,

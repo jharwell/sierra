@@ -21,7 +21,7 @@ Linegraph for summarizing the results of a batch experiment in different ways.
 # Core packages
 import os
 import typing as tp
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import matplotlib.ticker as mticker
@@ -276,8 +276,8 @@ class SummaryLineGraph:
                 dfs['stddev'] = storage.DataFrameReader(
                     'storage.csv')(stddev_ipath)
             else:
-                self.logger.warning(
-                    "stddev file not found for '%s'", self.input_stem)
+                self.logger.warning("stddev file not found for '%s'",
+                                    self.input_stem)
 
         if self.stats == 'bw' or self.stats == 'all':
             whislo_ipath = os.path.join(self.stats_root,
@@ -345,8 +345,9 @@ class SummaryLineGraph:
 
     def _read_models(self) -> tp.Tuple[pd.DataFrame, tp.List[str]]:
         if self.model_root is not None:
-            self.logger.trace("Model root='%s',stem='%s'",
-                              self.model_root, self.input_stem)
+            self.logger.trace("Model root='%s',stem='%s'",   # type: ignore
+                              self.model_root,
+                              self.input_stem)
 
             model_fpath = os.path.join(
                 self.model_root, self.input_stem + '.model')

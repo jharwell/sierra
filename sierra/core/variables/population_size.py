@@ -46,7 +46,7 @@ class BasePopulationSize(bc.UnivarBatchCriteria):
         if cmdopts['plot_log_xscale']:
             return [int(math.log2(x)) for x in ret]
         elif cmdopts['plot_enumerated_xscale']:
-            return [i for i in range(0, len(ret))]
+            return list(range(0, len(ret)))
         else:
             return ret
 
@@ -77,8 +77,8 @@ class Parser():
         ret = {
             'max_size': int(),
             'model': str(),
-            'cardinality': None,
-        }  # type: tp.Dict[str, tp.Union[int, str, None]]
+            'cardinality': None
+        }  # type: tp.Dict[str, tp.Union[int, str, tp.Optional[int]]]
 
         sections = arg.split('.')
 

@@ -22,7 +22,7 @@ purpose way within a :term:`Batch Experiment`.
 import os
 import copy
 import typing as tp
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 
@@ -38,10 +38,10 @@ class IntraExpModelRunner:
 
     def __init__(self,
                  cmdopts: types.Cmdopts,
-                 models: tp.List[tp.Union[models.interface.IConcreteIntraExpModel1D,
+                 to_run: tp.List[tp.Union[models.interface.IConcreteIntraExpModel1D,
                                           models.interface.IConcreteIntraExpModel2D]]) -> None:
         self.cmdopts = cmdopts
-        self.models = models
+        self.models = to_run
         self.logger = logging.getLogger(__name__)
 
     def __call__(self,
@@ -94,9 +94,9 @@ class IntraExpModelRunner:
 
                     # Write model legend file so the generated graph can find it
                     with open(path_stem + '.legend', 'w') as f:
-                        for i, search in enumerate(dfs):
+                        for j, search in enumerate(dfs):
                             if search.values.all() == df.values.all():
-                                legend = model.legend_names()[i]
+                                legend = model.legend_names()[j]
                                 f.write(legend)
                                 break
 

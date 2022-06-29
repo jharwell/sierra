@@ -25,8 +25,7 @@ import subprocess
 import time
 import sys
 import datetime
-import typing as tp
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 
@@ -48,13 +47,14 @@ class ExpShell():
 
     """
 
-    def __init__(self) -> None:
+    def __init__(self, exec_strict: bool) -> None:
         self.env = os.environ.copy()
         self.logger = logging.getLogger(__name__)
         self.procs = []
+        self.exec_strict = exec_strict
 
     def run_from_spec(self, spec: types.ShellCmdSpec) -> bool:
-        self.logger.trace("Cmd: %s", spec['cmd'])
+        self.logger.trace("Cmd: %s", spec['cmd'])   # type: ignore
 
         # We use a special marker at the end of the cmd's output to know when
         # the environment dump starts.
@@ -87,13 +87,18 @@ class ExpShell():
             stderr = stderr.decode("ascii")
 
             if 'env' in spec and spec['env']:
-                stdout = stdout.split("~~~~ENV_START~~~~")[0]
-                stderr = stderr.split("~~~~ENV_START~~~~")[0]
+                stdout = stdout.split("~~~~ENV_START~~~~", maxsplit=1)[0]
+                stderr = stderr.split("~~~~ENV_START~~~~", maxsplit=1)[0]
 
             self.logger.error("Cmd stdout (last 10 lines): %s",
                               '\n + ''\n'.join(stdout.split('\n')[-10:]))
             self.logger.error("Cmd stderr (last 10 lines): %s",
                               '\n' + '\n'.join(stderr.split('\n')[-10:]))
+
+            if self.exec_strict:
+                raise RuntimeError(("Command failed and strict checking was "
+                                    "requested"))
+
             return False
         else:
             return True
@@ -192,7 +197,7 @@ class BatchExpRunner:
 
         # Start a new process for the experiment shell so pre-run commands have
         # an effect (if they set environment variables, etc.).
-        shell = ExpShell()
+        shell = ExpShell(self.cmdopts['exec_strict'])
 
         # Run the experiment!
         for exp in exp_to_run:

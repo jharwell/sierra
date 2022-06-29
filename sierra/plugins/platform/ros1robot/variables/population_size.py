@@ -20,7 +20,7 @@ Classes for the population size batch criteria. See
 
 # Core packages
 import typing as tp
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import implements
@@ -54,7 +54,7 @@ class PopulationSize(population_size.BasePopulationSize):
                  main_config: tp.Dict[str, str],
                  batch_input_root: str,
                  robot: str,
-                 sizes: tp.List[float]) -> None:
+                 sizes: tp.List[int]) -> None:
         population_size.BasePopulationSize.__init__(self,
                                                     cli_arg,
                                                     main_config,

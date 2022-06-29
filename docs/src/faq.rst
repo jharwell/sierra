@@ -124,3 +124,60 @@ FAQ
    print any import errors. When you load modules dynamically in python, those
    errors don't get printed, python just says "can't find the module" instead of
    "found the module but I can't load it because of bad imports".
+
+#. Q: I have multiple projects which all share batch
+   criteria/generators/etc. How can I share this between projects?
+
+   A: You have a couple options, depending on your preferences and the nature of
+   what you want to share:
+
+   - You could create a "common" project containing the reusable classes, and
+     your other projects inherit from these classes as needed. This works if
+     most of the stuff you want to share is class-based and does *not* need to
+     be selectable via ``--batch-criteria``.
+
+     Pros: Easy, straightforward.
+
+     Cons: Being able to import stuff from a project which was not passed via
+     ``--project`` is subject to :envvar:`SIERRA_PLUGIN_PATH`, which might make
+     sharing classes trickier, because you will have to make sure the right
+     version of a class is found by SIERRA (you can have it tell you via
+     ``--log-level=TRACE``).
+
+   - You can put common stuff into a separate python module/package/repo, and
+     import it into your SIERRA project via :envvar:`PYTHONPATH`. This works if
+     most of the stuff you want to share does *not* need to be selectable via
+     ``--batch-criteria``.
+
+     Pros: Clearer separation between shared and non-shared code.
+
+     Cons: Debugging is more difficult because you now have multiple environment
+     variables which need to be set in order to be able to run SIERRA.
+
+   - You can put shared stuff into a common project, and then "lift" these
+     classes declarations into your projects SIERRA import path as needed. For
+     example, suppose you have a project ``laserblast`` on
+     :envvar:`SIERRA_PLUGIN_PATH` as ``$HOME/git/sierra-projects/laser_blast``
+     (i.e., :envvar:`SIERRA_PLUGIN_PATH`\=\ ``$HOME/git/sierra-projects``),
+     which relies on some shared code in
+     ``$HOME/git/sierra-projects/common``. Specifically a ``SimpleBlaster``
+     class in ``common/variables/simple_blaster.py`` which you want to be
+     selectable via ``--batch-criteria=simple_blaster.XX.YY.ZZ`` in the
+     ``laser_blast`` project. You can create the following ``__init__.py`` file
+     in ``laser_blast/variables/__init__.py``::
+
+       import sys
+       from common.variables simple_blaster
+
+       sys.modules['laser_blast.variables.simple_blaster'] = simple_blaster
+
+     Then, when SIERRA asks the python interpreter to find
+     ``laser_blast.variables.simple_blaster``, it is as if you had defined this
+     class in the ``laser_blast.variables`` namespace.
+
+     This works well when the stuff you want to share between projects *does*
+     need to be selectable via ``--batch-criteria``.
+
+     Pros: Good code reuse, no danger of selecting the wrong version of a class.
+
+     Cons: Sort of hacky from a python interpreter/language point of view.

@@ -16,7 +16,7 @@
 
 # Core packages
 import argparse
-import logging  # type: tp.Any
+import logging
 import typing as tp
 import os
 import subprocess
@@ -222,7 +222,7 @@ class ExpShellCmdsGenerator():
             }
         ]
 
-    def exec_exp_cmds(self, exec_opts: types.ExpExecOpts) -> tp.List[types.ShellCmdSpec]:
+    def exec_exp_cmds(self, exec_opts: types.SimpleDict) -> tp.List[types.ShellCmdSpec]:
         return []
 
     def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
@@ -302,13 +302,13 @@ class ExpConfigurer():
                      f"{exp_input_root}/ "
                      f"{robot_input_root}/")
         try:
-            self.logger.trace("Running mkdir: %s", mkdir_cmd)
+            self.logger.trace("Running mkdir: %s", mkdir_cmd)  # type: ignore
             res = subprocess.run(mkdir_cmd,
                                  shell=True,
                                  check=True,
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE)
-            self.logger.trace("Running rsync: %s", rsync_cmd)
+            self.logger.trace("Running rsync: %s", rsync_cmd)  # type: ignore
             res = subprocess.run(rsync_cmd,
                                  shell=True,
                                  check=True,
@@ -337,8 +337,8 @@ class ExecEnvChecker():
                     k)
 
         # Check ROS distro
-        assert os.environ['ROS_DISTRO'] in ['melodic', 'noetic'],\
-            "SIERRA only supports ROS1 melodic and noetic"
+        assert os.environ['ROS_DISTRO'] in ['noetic'],\
+            "SIERRA only supports ROS1 noetic"
 
         # Check ROS version
         assert os.environ['ROS_VERSION'] == "1",\
@@ -354,8 +354,7 @@ def population_size_from_pickle(adds_def: tp.Union[xml.XMLAttrChangeSet,
                                                       cmdopts)
 
 
-def population_size_from_def(exp_def: tp.Union[xml.XMLAttrChangeSet,
-                                               xml.XMLTagAddList],
+def population_size_from_def(exp_def: xml.XMLLuigi,
                              main_config: types.YAMLDict,
                              cmdopts: types.Cmdopts) -> int:
     return ros1.callbacks.population_size_from_def(exp_def,

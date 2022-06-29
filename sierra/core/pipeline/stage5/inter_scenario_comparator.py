@@ -24,7 +24,7 @@ import os
 import copy
 import typing as tp
 import argparse
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import pandas as pd

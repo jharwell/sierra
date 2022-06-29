@@ -19,7 +19,7 @@ independent of any :term:`Project`; i.e., changes which are platform-specific,
 but applicable to all projects using the platform.
 """
 # Core packages
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 

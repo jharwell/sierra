@@ -21,7 +21,7 @@ Classes for the population size batch criteria. See
 # Core packages
 import typing as tp
 import random
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import implements
@@ -57,8 +57,8 @@ class PopulationSize(population_size.BasePopulationSize):
                  main_config: tp.Dict[str, str],
                  batch_input_root: str,
                  robot: str,
-                 sizes: tp.List[float],
-                 positions: tp.List[float]) -> None:
+                 sizes: tp.List[int],
+                 positions: tp.List[Vector3D]) -> None:
         population_size.BasePopulationSize.__init__(self,
                                                     cli_arg,
                                                     main_config,
@@ -201,9 +201,9 @@ def factory(cli_arg: str,
             scenario = cmdopts['scenario']
 
         kw = sgp.ScenarioGeneratorParser().to_dict(scenario)
-        xs = random.choices(range(0, kw['arena_x']), k=max_sizes[-1])
-        ys = random.choices(range(0, kw['arena_y']), k=max_sizes[-1])
-        zs = random.choices(range(0, kw['arena_z']), k=max_sizes[-1])
+        xs = random.choices(range(0, kw['arena_x']), k=max_sizes[-1])  # type: ignore
+        ys = random.choices(range(0, kw['arena_y']), k=max_sizes[-1])  # type: ignore
+        zs = random.choices(range(0, kw['arena_z']), k=max_sizes[-1])  # type: ignore
         positions = [Vector3D(x, y, z) for x, y, z in zip(xs, ys, zs)]
 
     def __init__(self) -> None:

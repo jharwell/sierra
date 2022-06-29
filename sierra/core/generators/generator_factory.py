@@ -17,7 +17,7 @@
 # Core packages
 import os
 import typing as tp
-import logging  # type: tp.Any
+import logging
 import copy
 
 # 3rd party packages
@@ -42,12 +42,13 @@ class ControllerGenerator():
                  config_root: str,
                  cmdopts: types.Cmdopts,
                  spec: ExperimentSpec) -> None:
-        self.controller_config = yaml.load(open(os.path.join(config_root,
-                                                             config.kYAML['controllers'])),
-                                           yaml.FullLoader)
-        self.main_config = yaml.load(open(os.path.join(config_root,
-                                                       config.kYAML['main'])),
-                                     yaml.FullLoader)
+        with open(os.path.join(config_root,
+                               config.kYAML['controllers'])) as f:
+            self.controller_config = yaml.load(f, yaml.FullLoader)
+
+        with open(os.path.join(config_root, config.kYAML['main'])) as f:
+            self.main_config = yaml.load(f, yaml.FullLoader)
+
         self.category, self.name = controller.split('.')
         self.cmdopts = cmdopts
         self.logger = logging.getLogger(__name__)
@@ -65,9 +66,8 @@ class ControllerGenerator():
 
     def _pp_for_tag_add(self,
                         add: XMLTagAdd,
-                        robot_id: tp.Optional[int] = None) -> tp.List[str]:
-        module = pm.pipeline.get_plugin_module(
-            self.cmdopts['platform'])
+                        robot_id: tp.Optional[int] = None) -> XMLTagAdd:
+        module = pm.pipeline.get_plugin_module(self.cmdopts['platform'])
         if '__UUID__' in add.path:
             prefix = module.robot_prefix_extract(self.main_config, self.cmdopts)
             add.path = add.path.replace('__UUID__', f"{prefix}{robot_id}")
@@ -86,9 +86,9 @@ class ControllerGenerator():
             # haven't added any tags to the experiment definition yet, and if
             # the platform relies on added tags to calculate population sizes,
             # then this won't work.
-            yaml = config.kYAML['controllers']
+            controllers = config.kYAML['controllers']
             assert hasattr(self.spec.criteria, 'n_robots'),\
-                (f"When using __UUID__ and tag_add in {yaml}, the batch "
+                (f"When using __UUID__ and tag_add in {controllers}, the batch "
                  "criteria must implement bc.IQueryableBatchCriteria")
             n_robots = self.spec.criteria.n_robots(self.spec.exp_num)
 
@@ -137,7 +137,7 @@ class ControllerGenerator():
                               self.category)
             assert False
 
-        if not any([self.name in config['name'] for config in self.controller_config[self.category]['controllers']]):
+        if not any(self.name in config['name'] for config in self.controller_config[self.category]['controllers']):
             self.logger.fatal("Controller name '%s' not found in YAML configuration",
                               self.name)
             assert False

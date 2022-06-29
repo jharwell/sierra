@@ -23,8 +23,7 @@ experimental results.
 import os
 import time
 import datetime
-import typing as tp
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import yaml
@@ -82,8 +81,8 @@ class PipelineStage3:
                                     criteria)
 
             else:
-                self.logger.warn("%s does not exist--cannot imagize",
-                                 intra_HM_path)
+                self.logger.warning("%s does not exist--cannot imagize",
+                                    intra_HM_path)
 
     # Private functions
 

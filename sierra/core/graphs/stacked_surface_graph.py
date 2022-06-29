@@ -20,7 +20,7 @@ import os
 import glob
 import re
 import typing as tp
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import numpy as np
@@ -29,7 +29,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 # Project packages
-from sierra.core import config, utils, storage
+from sierra.core import config, storage
 
 
 class StackedSurfaceGraph:
@@ -88,8 +88,7 @@ class StackedSurfaceGraph:
             return
 
         assert len(dfs) <= StackedSurfaceGraph.kMaxSurfaces,\
-            "Too many surfaces to plot: {0} > {1}".format(len(dfs),
-                                                          StackedSurfaceGraph.kMaxSurfaces)
+            f"Too many surfaces to plot: {len(dfs)} > {StackedSurfaceGraph.kMaxSurfaces}"
 
         # Scaffold graph
         plt.figure(figsize=(config.kGraphBaseSize,
@@ -99,8 +98,8 @@ class StackedSurfaceGraph:
         y = dfs[0].index
         X, Y = np.meshgrid(x, y)
 
-        # Use non-quantitative colormaps in order to get really nice looking surfaces that change
-        # color with Z value. From
+        # Use non-quantitative colormaps in order to get really nice looking
+        # surfaces that change color with Z value. From
         # https://stackoverflow.com/questions/55501860/how-to-put-multiple-colormap-patches-in-a-matplotlib-legend
         colors = [plt.cm.Greens, plt.cm.Reds, plt.cm.Purples, plt.cm.Oranges]
         legend_cmap_handles = [mpl.patches.Rectangle(

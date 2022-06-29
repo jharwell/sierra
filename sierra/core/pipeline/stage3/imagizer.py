@@ -24,7 +24,7 @@ import os
 import typing as tp
 import multiprocessing as mp
 import queue
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 
@@ -59,23 +59,9 @@ class BatchExpParallelImagizer:
             _, leaf = os.path.split(exp)
 
             exp_stat_root = os.path.join(self.cmdopts['batch_stat_root'], leaf)
-            exp_imagize_root = os.path.join(
-                self.cmdopts['batch_imagize_root'], leaf)
-
-            for item in os.listdir(exp_stat_root):
-                candidate_path = os.path.join(exp_stat_root, item)
-
-                if os.path.isdir(candidate_path):
-                    imagize_output_root = os.path.join(exp_imagize_root, item)
-                    imagize_opts = {
-                        'input_root': exp_stat_root,
-                        'graph_stem': item,
-                        'output_root': imagize_output_root
-                    }
-
-                    utils.dir_create_checked(
-                        imagize_output_root, exist_ok=True)
-                    q.put(imagize_opts)
+            exp_imagize_root = os.path.join(self.cmdopts['batch_imagize_root'],
+                                            leaf)
+            self._enqueue_for_exp(exp_stat_root, exp_imagize_root, q)
 
         if self.cmdopts['processing_serial']:
             parallelism = 1
@@ -88,6 +74,25 @@ class BatchExpParallelImagizer:
             p.start()
 
         q.join()
+
+    def _enqueue_for_exp(self,
+                         exp_stat_root: str,
+                         exp_imagize_root: str,
+                         q: mp.JoinableQueue) -> None:
+        for item in os.listdir(exp_stat_root):
+            candidate_path = os.path.join(exp_stat_root, item)
+
+            if os.path.isdir(candidate_path):
+                imagize_output_root = os.path.join(exp_imagize_root, item)
+                imagize_opts = {
+                    'input_root': exp_stat_root,
+                    'graph_stem': item,
+                    'output_root': imagize_output_root
+                }
+
+                utils.dir_create_checked(
+                    imagize_output_root, exist_ok=True)
+                q.put(imagize_opts)
 
     @staticmethod
     def _thread_worker(q: mp.Queue, HM_config: dict) -> None:

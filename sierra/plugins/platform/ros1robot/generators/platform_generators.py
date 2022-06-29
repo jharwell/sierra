@@ -20,7 +20,7 @@ applicable to all projects using ROS with a real robot execution environment.
 
 """
 # Core packages
-import logging  # type: tp.Any
+import logging
 import os
 
 # 3rd party packages
@@ -88,7 +88,8 @@ class PlatformExpRunDefUniqueGenerator(ros1.generators.ROSExpRunDefUniqueGenerat
         main_path = os.path.join(self.cmdopts['project_config_root'],
                                  config.kYAML['main'])
 
-        main_config = yaml.load(open(main_path), yaml.FullLoader)
+        with open(main_path) as f:
+            main_config = yaml.load(f, yaml.FullLoader)
 
         n_robots = utils.get_n_robots(main_config,
                                       self.cmdopts,
@@ -119,4 +120,6 @@ class PlatformExpRunDefUniqueGenerator(ros1.generators.ROSExpRunDefUniqueGenerat
 __api__ = [
     'PlatformExpDefGenerator',
     'PlatformExpRunDefUniqueGenerator'
+
+
 ]

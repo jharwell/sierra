@@ -20,10 +20,9 @@ experiments.
 """
 
 # Core packages
-import typing as tp
 import time
 import datetime
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 

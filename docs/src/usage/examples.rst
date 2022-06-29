@@ -15,7 +15,7 @@ Basic Example
 
    sierra-cli \
    --sierra-root=$HOME/exp \
-   --template-input-file=templates/ideal.argos \
+   --template-input-file=exp/your-experiment.argos \
    --n-runs=3 \
    --platform=platform.argos\
    --project=fordyca \
@@ -46,7 +46,7 @@ videos of simulations.
 
    sierra-cli \
    --sierra-root=$HOME/exp \
-   --template-input-file=templates/ideal.argos \
+   --template-input-file=exp/your-experiment.argos \
    --platform=platform.argos\
    --project=fordyca \
    --controller=d0.CRW \
@@ -97,9 +97,9 @@ defined in ``stage5.yaml``. It will plot the 95% confidence intervals on all
 generated graphs for the univariate batch criteria.
 
 
-===================
-ROS+Gazebo Examples
-===================
+====================
+ROS1+Gazebo Examples
+====================
 
 Basic Example
 =============
@@ -114,7 +114,7 @@ environment of the local machine.
    --platform=platform.ros1gazebo \
    --project=fordyca \
    --n-runs=4 \
-   --template-input-file=exp/ros/turtlebot3_sim.launch \
+   --template-input-file=exp/your-experiment.launch \
    --scenario=HouseWorld.10x10x1 \
    --sierra-root=$HOME/exp/test \
    --batch-criteria population_size.Log8 \
@@ -131,9 +131,9 @@ machine it should take about 10 minutes or so to run. After it finishes, you can
 go to ``$HOME/exp`` and find all the simulation outputs. For an explanation of
 SIERRA's runtime directory tree, see :ref:`ln-sierra-usage-runtime-exp-tree`.
 
-==================
-ROS+Robot Examples
-==================
+===================
+ROS1+Robot Examples
+===================
 
 Basic Example
 =============
@@ -148,7 +148,7 @@ environment of a set of turtlebots.
    --platform=platform.ros1robot \
    --project=fordyca \
    --n-runs=4 \
-   --template-input-file=exp/turtlebot3_real.launch \
+   --template-input-file=exp/your-experiment.launch \
    --scenario=RN.16x16x2 \
    --sierra-root=$HOME/exp/test \
    --batch-criteria population_size.Linear6.C6 \
@@ -164,7 +164,9 @@ This will run a batch of 4 experiments using a correlated random walk controller
 (CRW) on the turtlebot3. Swarm size will be varied from 1,2,3,4,5,6. Within each
 experiment, 4 experimental runs will be conducted with each swarm size. SIERRA
 will pause for 60 seconds between runs so you can reset the robot's positions
-and environment before continuing with the next run. For these experiments, no
+and environment before continuing with the next run. ``turtlebots3.txt``
+contains the IP addresses of all 6 robots in the swarm (SIERRA may use different
+combinations of these if the swarm size is < 6). For these experiments, no
 master node is needed, so it is disabled. After all runs have completed and
 SIERRA finishes stages 3 and 4, you can go to ``$HOME/exp`` and find all the
 simulation outputs. For an explanation of SIERRA's runtime directory tree, see

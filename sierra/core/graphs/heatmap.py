@@ -21,7 +21,7 @@ import textwrap
 import glob
 import re
 import typing as tp
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import numpy as np

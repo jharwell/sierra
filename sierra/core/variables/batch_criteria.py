@@ -20,7 +20,7 @@ define sets of experiments to run.
 # Core packages
 import os
 import typing as tp
-import logging  # type: tp.Any
+import logging
 import argparse
 import copy
 
@@ -250,10 +250,13 @@ class BatchCriteria():
 
     def pickle_exp_defs(self, cmdopts: types.Cmdopts) -> None:
         self.verify_mods()
-        # At most 1 loop of this function will execute!
+
+        #
+        # At most 1 loop in this function will execute!
+        #
 
         chgs = list(self.gen_attr_changelist())
-        for i, exp_def in enumerate(chgs):
+        for i, exp_defi in enumerate(chgs):
             exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
             pkl_path = os.path.join(self.batch_input_root,
                                     exp_dirname,
@@ -265,11 +268,11 @@ class BatchCriteria():
             # to errors if stage 1 is run multiple times before stage 4. So, we
             # DELETE the pickle file for each experiment here to make stage 1
             # idempotent.
-            exp_def.pickle(pkl_path, delete=True)
+            exp_defi.pickle(pkl_path, delete=True)
 
         adds = list(self.gen_tag_addlist())
-        for i, exp_def in enumerate(adds):
-            exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
+        for j, exp_defj in enumerate(adds):
+            exp_dirname = self.gen_exp_dirnames(cmdopts)[j]
             pkl_path = os.path.join(self.batch_input_root,
                                     exp_dirname,
                                     sierra.core.config.kPickleLeaf)
@@ -281,7 +284,7 @@ class BatchCriteria():
             # to errors if stage 1 is run multiple times before stage 4. So, we
             # DELETE the pickle file for each experiment here to make stage 1
             # idempotent.
-            exp_def.pickle(pkl_path, delete=True)
+            exp_defj.pickle(pkl_path, delete=True)
 
     def scaffold_exps(self,
                       batch_def: xml.XMLLuigi,
@@ -298,20 +301,20 @@ class BatchCriteria():
         self.verify_mods()
 
         if len(chgs_for_batch) != 0:
-            mods_for_batch = chgs_for_batch
+            mods_batch = chgs_for_batch
             self.logger.info("Scaffolding experiments: cli='%s': Modify %s XML tags",
                              self.cli_arg,
                              len(chgs_for_batch[0]))
 
         else:
-            mods_for_batch = adds_for_batch
+            mods_batch = adds_for_batch
             self.logger.info("Scaffolding experiments using '%s': Add %s XML tags",
                              self.cli_arg,
                              len(adds_for_batch[0]))
 
-        n_exps = len(mods_for_batch)
+        n_exps = len(mods_batch)
 
-        for i, mods_for_exp in enumerate(mods_for_batch):
+        for i, mods_for_exp in enumerate(mods_batch):
             expi_def = copy.deepcopy(batch_def)
             self._scaffold_expi(expi_def,
                                 mods_for_exp,
@@ -320,12 +323,12 @@ class BatchCriteria():
 
         n_exp_dirs = len(os.listdir(self.batch_input_root))
         if n_exps != n_exp_dirs:
-            msg1 = "Size of batch experiment ({0}) != # exp dirs ({1}): possibly caused by:".format(n_exps,
-                                                                                                    n_exp_dirs)
-            msg2 = "(1) Changing batch criteria without changing the generation root ({0})".format(
-                self.batch_input_root)
-            msg3 = "(2) Sharing {0} between different batch criteria".format(
-                self.batch_input_root)
+            msg1 = (f"Size of batch experiment ({n_exps}) != "
+                    f"# exp dirs ({n_exp_dirs}): possibly caused by:")
+            msg2 = (f"(1) Changing bc w/o changing the generation root "
+                    f"({self.batch_input_root})")
+            msg3 = (f"(2) Sharing {self.batch_input_root} between different "
+                    f"batch criteria")
 
             self.logger.fatal(msg1)
             self.logger.fatal(msg2)
@@ -652,14 +655,15 @@ def __univar_factory(main_config: types.YAMLDict,
     path = f'variables.{category}'
 
     module = pm.bc_load(cmdopts, category)
-    factory = getattr(module, "factory")
+    bcfactory = getattr(module, "factory")
+
     if 5 in cmdopts['pipeline']:
-        ret = factory(cli_arg,
-                      main_config,
-                      cmdopts,
-                      scenario=scenario)()
+        ret = bcfactory(cli_arg,
+                        main_config,
+                        cmdopts,
+                        scenario=scenario)()
     else:
-        ret = factory(cli_arg, main_config, cmdopts)()
+        ret = bcfactory(cli_arg, main_config, cmdopts)()
 
     logging.info("Create univariate batch criteria '%s' from '%s'",
                  ret.__class__.__name__,
@@ -674,7 +678,10 @@ def __bivar_factory(main_config: types.YAMLDict,
     criteria1 = __univar_factory(main_config, cmdopts, cli_arg[0], scenario)
     criteria2 = __univar_factory(main_config, cmdopts, cli_arg[1], scenario)
 
-    ret = BivarBatchCriteria(criteria1, criteria2)
+    # Project hook
+    bc = pm.module_load_tiered(project=cmdopts['project'],
+                               path='variables.batch_criteria')
+    ret = bc.BivarBatchCriteria(criteria1, criteria2)
 
     logging.info("Created bivariate batch criteria from %s,%s",
                  ret.criteria1.__class__.__name__,

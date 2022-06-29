@@ -26,7 +26,7 @@ import pandas as pd
 import numpy as np
 
 # Project packages
-import sierra.core.config as config
+from sierra.core import config
 
 
 class conf95:
@@ -154,17 +154,17 @@ def _bw_kernel(df_like, groupby: bool, n_runs: int) -> tp.Dict[str, pd.DataFrame
     }
 
 
-def _fillna(df_like: tp.Union[pd.DataFrame, np.float64]) -> tp.Union[pd.DataFrame,
-                                                                     np.float64]:
+def _fillna(df_like: tp.Union[pd.DataFrame, np.float64, float]) -> tp.Union[pd.DataFrame,
+                                                                            np.float64]:
     # This is the general case for generating stats from a set of dataframes.
     if isinstance(df_like, pd.DataFrame):
         return df_like.fillna(0)
     # This case is for performance measure stats which operate on pd.Series,
     # which returns a single scalar.
-    elif isinstance(df_like, np.float64):
+    elif isinstance(df_like, (np.float64, float)):
         return np.nan_to_num(df_like, nan=0)
 
-    assert False, "Unknown type"
+    assert False, f"Unknown type={type(df_like)}, value={df_like}"
 
 
 __api__ = [

@@ -35,7 +35,7 @@ step:
 
    Fix ANY errors your changes have introduced (there will probably still be
    errors in the my output, because cleaning up the code is always a work in
-   progress).
+   progress), and also mypy just gives a lot of false positives in general.
 
 
 SIERRA Source Code Directory Structure

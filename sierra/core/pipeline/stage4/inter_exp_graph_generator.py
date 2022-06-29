@@ -23,7 +23,7 @@ Classes for generating graphs across experiments in a batch.
 import os
 import copy
 import typing as tp
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import json
@@ -85,7 +85,6 @@ class InterExpGraphGenerator:
         #. :class:`~sierra.core.pipeline.stage4.inter_exp_graph_generator.LineGraphsGenerator`
            to generate linegraphs (univariate batch criteria only).
         """
-
         if criteria.is_univar():
             if not self.cmdopts['project_no_yaml_LN']:
                 LineGraphsGenerator(self.cmdopts,
@@ -113,7 +112,8 @@ class LineGraphsGenerator:
         for category in self.targets:
             # For each graph in each category
             for graph in category['graphs']:
-                self.logger.trace('\n' + json.dumps(graph, indent=4))
+                self.logger.trace('\n' +  # type: ignore
+                                  json.dumps(graph, indent=4))
                 if graph.get('summary', False):
                     SummaryLineGraph(stats_root=self.cmdopts['batch_stat_collate_root'],
                                      input_stem=graph['dest_stem'],

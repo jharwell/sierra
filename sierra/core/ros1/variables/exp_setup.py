@@ -22,14 +22,13 @@ documentation.
 
 # Core packages
 import typing as tp
-import re
 
 # 3rd party packages
 import implements
 
 # Project packages
 from sierra.core.variables.base_variable import IBaseVariable
-from sierra.core.xml import XMLAttrChangeSet, XMLTagAdd, XMLTagRmList, XMLTagAddList, XMLLuigi
+from sierra.core.xml import XMLAttrChangeSet, XMLTagAdd, XMLTagRmList, XMLTagAddList
 from sierra.core import config
 from sierra.core.variables.exp_setup import Parser
 
@@ -64,7 +63,7 @@ class ExpSetup():
         self.barrier_start = barrier_start
         self.robots_need_timekeeper = robots_need_timekeeper
 
-        self.tag_adds = []  # type: tp.List[XMLTagAddList]
+        self.tag_adds = None
 
     def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         return []
