@@ -98,8 +98,8 @@ def _conf95_kernel(df_like, groupby: bool) -> tp.Dict[str, pd.DataFrame]:
         df_like = df_like.iloc[0, :]
 
     return {
-        config.kStatsExtensions['mean']: _fillna(df_like.mean().round(8)),
-        config.kStatsExtensions['stddev']: _fillna(df_like.std().round(8))
+        config.kStatsExt['mean']: _fillna(df_like.mean().round(8)),
+        config.kStatsExt['stddev']: _fillna(df_like.std().round(8))
     }
 
 
@@ -113,7 +113,7 @@ def _mean_kernel(df_like, groupby: bool) -> tp.Dict[str, pd.DataFrame]:
         df_like = df_like.iloc[0, :]
 
     return {
-        config.kStatsExtensions['mean']: _fillna(df_like.mean().round(8))
+        config.kStatsExt['mean']: _fillna(df_like.mean().round(8))
     }
 
 
@@ -143,14 +143,14 @@ def _bw_kernel(df_like, groupby: bool, n_runs: int) -> tp.Dict[str, pd.DataFrame
     csv_cihi = csv_median + 1.57 * iqr / math.sqrt(n_runs)
 
     return {
-        config.kStatsExtensions['mean']: csv_mean,
-        config.kStatsExtensions['median']: csv_median,
-        config.kStatsExtensions['q1']: csv_q1,
-        config.kStatsExtensions['q3']: csv_q3,
-        config.kStatsExtensions['cilo']: csv_cilo,
-        config.kStatsExtensions['cihi']: csv_cihi,
-        config.kStatsExtensions['whislo']: csv_whislo,
-        config.kStatsExtensions['whishi']: csv_whishi
+        config.kStatsExt['mean']: csv_mean,
+        config.kStatsExt['median']: csv_median,
+        config.kStatsExt['q1']: csv_q1,
+        config.kStatsExt['q3']: csv_q3,
+        config.kStatsExt['cilo']: csv_cilo,
+        config.kStatsExt['cihi']: csv_cihi,
+        config.kStatsExt['whislo']: csv_whislo,
+        config.kStatsExt['whishi']: csv_whishi
     }
 
 

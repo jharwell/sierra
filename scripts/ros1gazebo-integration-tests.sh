@@ -67,4 +67,6 @@ set -e
 # Echo cmds to stdout
 set -x
 
+rospack find sierra_rosbridge
+
 batch_criteria_test

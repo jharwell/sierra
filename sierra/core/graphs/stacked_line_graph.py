@@ -30,17 +30,17 @@ from sierra.core import config, utils, storage
 
 
 class StackedLineGraph:
-    """Generates a line graph from a set of columns in a ``.csv`
+    """Generates a line graph from a set of columns in a CSV file.
 
-    If the necessary data .csv file does not exist, the graph is not generated.
+    If the necessary data file does not exist, the graph is not generated.
 
-    If the .stddev file that goes with the .csv does not exist, then no error
+    If the .stddev file that goes with the .mean does not exist, then no error
     bars are plotted.
 
-    If the .model file that goes with the .csv does not exist, then no model
+    If the .model file that goes with the .mean does not exist, then no model
     predictions are plotted.
 
-    Ideally, model predictions/stddev calculations would be in derivade classes,
+    Ideally, model predictions/stddev calculations would be in derived classes,
     but I can't figure out a good way to easily pull that stuff out of here.
 
     """
@@ -88,7 +88,7 @@ class StackedLineGraph:
 
     def generate(self) -> None:
         input_fpath = os.path.join(self.stats_root, self.input_stem +
-                                   config.kStatsExtensions['mean'])
+                                   config.kStatsExt['mean'])
         if not utils.path_exists(input_fpath):
             self.logger.debug("Not generating %s: %s does not exist",
                               self.output_fpath,
@@ -214,12 +214,12 @@ class StackedLineGraph:
 
     def _read_stats(self) -> tp.Dict[str, pd.DataFrame]:
         dfs = {}
+        reader = storage.DataFrameReader('storage.csv')
         if self.stats in ['conf95', 'all']:
             stddev_ipath = os.path.join(self.stats_root,
-                                        self.input_stem + config.kStatsExtensions['stddev'])
+                                        self.input_stem + config.kStatsExt['stddev'])
             if utils.path_exists(stddev_ipath):
-                dfs['stddev'] = storage.DataFrameReader(
-                    'storage.csv')(stddev_ipath)
+                dfs['stddev'] = reader(stddev_ipath)
             else:
                 self.logger.warning(
                     "Stddev file not found for '%s'", self.input_stem)
@@ -228,10 +228,10 @@ class StackedLineGraph:
 
     def _read_models(self) -> tp.Tuple[pd.DataFrame, tp.List[str]]:
         if self.model_root is not None:
-            model_fpath = os.path.join(
-                self.model_root, self.input_stem + '.model')
-            model_legend_fpath = os.path.join(
-                self.model_root, self.input_stem + '.legend')
+            model_fpath = os.path.join(self.model_root,
+                                       self.input_stem + config.kModelsExt['model'])
+            model_legend_fpath = os.path.join(self.model_root,
+                                              self.input_stem + config.kModelsExt['legend'])
             if utils.path_exists(model_fpath):
                 model = storage.DataFrameReader('storage.csv')(model_fpath)
                 if utils.path_exists(model_legend_fpath):

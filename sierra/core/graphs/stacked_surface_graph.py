@@ -33,15 +33,16 @@ from sierra.core import config, storage
 
 
 class StackedSurfaceGraph:
-    """Generates a plot of a set of 3D surface graphs from a set of ``.csv`` files.
+    """Generates a plot of a set of 3D surface graphs from a set of ``.mean``
+    files.
 
-    ``.csv`` files must be named as``<input_stem_fpath>_X.csv``, where `X` is
-    non-negative integer. Input ``.csv`` files must be 2D grids of the same
+    ``.mean`` files must be named as``<input_stem_fpath>_X.mean``, where `X` is
+    non-negative integer. Input CSV files must be 2D grids of the same
     cardinality.
 
     This graph does not plot standard deviation.
 
-    If no ``.csv`` files matching the pattern are found, the graph is not
+    If no ``.mean`` files matching the pattern are found, the graph is not
     generated.
 
     """
@@ -79,11 +80,12 @@ class StackedSurfaceGraph:
         self.logger = logging.getLogger(__name__)
 
     def generate(self) -> None:
-        dfs = [storage.DataFrameReader('storage.csv')(f) for f in glob.glob(
-            self.input_stem_pattern + '*.csv') if re.search('_[0-9]+', f)]
+        reader = storage.DataFrameReader('storage.csv')
+        pattern = self.input_stem_pattern + '*.' + config.kStatsExt['mean']
+        dfs = [reader(f) for f in glob.glob(pattern) if re.search('_[0-9]+', f)]
 
         if not dfs:  # empty list
-            self.logger.debug("Not generating stacked surface graph: %s did not match any .csv files",
+            self.logger.debug("Not generating stacked surface graph: %s did not match any CSV files",
                               self.input_stem_pattern)
             return
 

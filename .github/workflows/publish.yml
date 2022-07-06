@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - devel
+      - master
 
 jobs:
   test-pypi:
@@ -18,8 +19,16 @@ jobs:
       - uses: ./.github/actions/sierra-setup
       - name: Build package
         run: |
-          pip3 install build
+          pip3 install build setuptools
           python3 -m build
+
+      - name: Tag package
+        run: |
+          export TAG=v$(python3 setup.py --version).beta
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git tag -fa "${TAG}" -m "Release SIERRA ${TAG}" "${GITHUB_SHA}"
+          git push --force origin "${TAG}"
 
       - name: Publish to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
@@ -41,8 +50,17 @@ jobs:
       - uses: ./.github/actions/sierra-setup
       - name: Build package
         run: |
-          pip3 install build
+          pip3 install build setuptools
           python3 -m build
+
+      - name: Tag package
+        run: |
+          export TAG=v$(python3 setup.py --version)
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git tag -fa "${TAG}" -m "Release SIERRA ${TAG}" "${GITHUB_SHA}"
+          git push --force origin "${TAG}"
+
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

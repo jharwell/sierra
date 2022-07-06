@@ -12,7 +12,7 @@
 SIERRA is named thusly because it will save you a LITERAL, (not figurative)
 mountain of work. It is basically a plugin-based framework for automating
 research driven by the scientific method. SIERRA is well documented--see the
-docs [here](https://swarm-robotics-sierra.readthedocs.io/en//) to get
+docs [here](https://swarm-robotics-sierra.readthedocs.io/en/master/) to get
 started using it!
 
 # Automated Research Pipeline
@@ -59,7 +59,7 @@ and on real robots
 | [SLURM](https://slurm.schedmd.com/documentation.html) | ARGoS, ROS1+Gazebo |
 | [Torque/MOAB](https://adaptivecomputing.com/cherry-services/torque-resource-manager) | ARGoS, ROS1+Gazebo |
 | ADHOC (suitable for a miscellaneous collection of networked compute nodes for a research group) | ARGoS, ROS1+Gazebo |
-| Local machine (for testing) | ARGoS, ROS+Gazebo |
+| Local machine (for testing) | ARGoS, ROS1+Gazebo |
 | [ROS1+Turtlebot3](https://emanual.robotis.com/docs/en/platform/turtlebot3/overview) | ROS1+Gazebo, ROS1+robot |
 
 To add additional execution environments, see the
@@ -90,19 +90,20 @@ simplifying reproduction of previous results if you need to tweak a given graph
 For some examples, see the "Generating Deliverables" section
 [here](https://www-users.cse.umn.edu/~harwe006/showcase/aamas-2022-demo).
 
-## 5. Controller/Scenario Comparison
+## 5. Deliverable Comparison
 
 SIERRA can take pieces from graphs generated in stage 4 and put them on a single
 graph to generate camera ready comparison graphs. It can generate comparison
 graphs for:
 
-- Different robot controllers which have all been run in the same scenario.
-- A single robot controller which has been run in multiple scenarios.
+- Different agent control algorithms which have all been run in the same
+  scenario.
+
+- A single agent control algorithm which has been run in multiple scenarios.
 
 # Platform Support
 
-SIERRA currently supports the following platforms, allowing you to use the same
-interface for the below pipeline to automate your research workflow:
+SIERRA currently supports the following platforms:
 
 - [ARGoS](https://www.argos-sim.info/index.php) for fast simulation of large
   robot swarms via multiple physics engines.

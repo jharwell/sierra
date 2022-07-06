@@ -99,13 +99,14 @@ For some examples, see the "Generating Deliverables" section of
 :xref:`2022-aamas-demo`.
 
 
-5. Controller/Scenario Comparison
----------------------------------
+5. Deliverable Comparison
+-------------------------
 
-SIERRA can take pieces from graphs generated in stage 4 and put them on a
-single graph to generate camera-ready comparison graphs. It can generate
-comparison graphs for:
+SIERRA can take pieces from graphs generated in stage 4 and put them on a single
+graph to generate camera ready comparison graphs. It can generate comparison
+graphs for:
 
-- Different robot controllers which have all been run in the same scenario.
+- Different agent control algorithms which have all been run in the same
+  scenario.
 
-- A single robot controller which has been run in multiple scenarios.
+- A single agent control algorithm which has been run in multiple scenarios.

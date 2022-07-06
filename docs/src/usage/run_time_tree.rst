@@ -116,7 +116,8 @@ it runs:
           - ``statistics`` - Root directory for holding statistics calculated
             during stage3 for use during stage4.
 
-            - ``exp0`` - Contains the averaged ``.csv`` results from exp0.
+            - ``exp0`` - Contains the results of statistics generation for exp0
+              (mean, stddev, etc., as configured).
 
             - ``exp1``
 

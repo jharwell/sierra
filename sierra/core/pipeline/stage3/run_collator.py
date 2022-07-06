@@ -40,7 +40,7 @@ import numpy as np
 # Project packages
 import sierra.core.variables.batch_criteria as bc
 import sierra.core.plugin_manager as pm
-from sierra.core import types, storage, utils
+from sierra.core import types, storage, utils, config
 
 
 class ExperimentalRunParallelCollator:
@@ -55,14 +55,18 @@ class ExperimentalRunParallelCollator:
     def __init__(self, main_config: dict, cmdopts: types.Cmdopts):
         self.main_config = main_config
         self.cmdopts = cmdopts
+        self.logger = logging.getLogger(__name__)
 
     def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
         if self.cmdopts['processing_serial']:
             n_gatherers = 1
             n_processors = 1
         else:
-            n_gatherers = int(mp.cpu_count() * 0.25)
-            n_processors = int(mp.cpu_count() * 0.75)
+            # Aways need to have at least one of each! If SIERRA is invoked on a
+            # machine with 2 or less logical cores, the calculation with
+            # mp.cpu_count() will return 0 for # gatherers.
+            n_gatherers = max(1, int(mp.cpu_count() * 0.25))
+            n_processors = max(1, int(mp.cpu_count() * 0.75))
 
         pool = mp.Pool(processes=n_gatherers + n_processors)
 
@@ -78,6 +82,10 @@ class ExperimentalRunParallelCollator:
             _, leaf = os.path.split(exp)
             gatherq.put((self.cmdopts['batch_output_root'], leaf))
 
+        self.logger.debug("Starting %d gatherers, method=%s",
+                          n_gatherers,
+                          mp.get_start_method())
+
         gathered = [pool.apply_async(ExperimentalRunParallelCollator._gather_worker,
                                      (gatherq,
                                       processq,
@@ -85,6 +93,9 @@ class ExperimentalRunParallelCollator:
                                       self.cmdopts['project'],
                                       self.cmdopts['storage_medium'])) for _ in range(0, n_gatherers)]
 
+        self.logger.debug("Starting %d processors, method=%s",
+                          n_processors,
+                          mp.get_start_method())
         processed = [pool.apply_async(ExperimentalRunParallelCollator._process_worker,
                                       (processq,
                                        self.main_config,
@@ -95,11 +106,13 @@ class ExperimentalRunParallelCollator:
         # To capture the otherwise silent crashes when something goes wrong in
         # worker threads. Any assertions will show and any exceptions will be
         # re-raised.
+        self.logger.debug("Waiting for workers to finish")
         [g.get() for g in gathered]
         [p.get() for p in processed]
 
         pool.close()
         pool.join()
+        self.logger.debug("All threads finished")
 
     @staticmethod
     def _gather_worker(gatherq: mp.Queue,
@@ -232,7 +245,7 @@ class ExperimentalRunCSVGatherer:
 
         reader = storage.DataFrameReader(self.storage_medium)
         perf_df = reader(os.path.join(run_output_root,
-                                      intra_perf_leaf + '.csv'),
+                                      intra_perf_leaf + config.kStorageExt['csv']),
                          index_col=False)
 
         return {
@@ -296,8 +309,8 @@ class ExperimentalRunCollator:
         for (csv_leaf, col) in collated.keys():
             writer = storage.DataFrameWriter(self.storage_medium)
             df = utils.df_fill(collated[(csv_leaf, col)], self.df_homogenize)
-            opath = os.path.join(self.batch_stat_collate_root,
-                                 exp_leaf + '-' + csv_leaf + '-' + col + '.csv')
+            fname = f'{exp_leaf}-{csv_leaf}-{col}' + config.kStatsExt['mean']
+            opath = os.path.join(self.batch_stat_collate_root, fname)
             writer(df, opath, index=False)
 
 
@@ -305,4 +318,6 @@ __api__ = [
     'ExperimentalRunParallelCollator',
     'ExperimentalRunCSVGatherer',
     'ExperimentalRunCollator'
+
+
 ]

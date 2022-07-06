@@ -117,7 +117,7 @@ class SummaryLineGraph:
 
     def generate(self) -> None:
         input_fpath = os.path.join(self.stats_root, self.input_stem +
-                                   config.kStatsExtensions['mean'])
+                                   config.kStatsExt['mean'])
         if not utils.path_exists(input_fpath):
             self.logger.debug("Not generating %s: %s does not exist",
                               self.output_fpath,
@@ -270,7 +270,7 @@ class SummaryLineGraph:
 
         if self.stats == 'conf95' or self.stats == 'all':
             stddev_ipath = os.path.join(self.stats_root,
-                                        self.input_stem + config.kStatsExtensions['stddev'])
+                                        self.input_stem + config.kStatsExt['stddev'])
 
             if utils.path_exists(stddev_ipath):
                 dfs['stddev'] = storage.DataFrameReader(
@@ -281,20 +281,20 @@ class SummaryLineGraph:
 
         if self.stats == 'bw' or self.stats == 'all':
             whislo_ipath = os.path.join(self.stats_root,
-                                        self.input_stem + config.kStatsExtensions['whislo'])
+                                        self.input_stem + config.kStatsExt['whislo'])
             whishi_ipath = os.path.join(self.stats_root,
-                                        self.input_stem + config.kStatsExtensions['whishi'])
+                                        self.input_stem + config.kStatsExt['whishi'])
             median_ipath = os.path.join(self.stats_root,
-                                        self.input_stem + config.kStatsExtensions['median'])
+                                        self.input_stem + config.kStatsExt['median'])
             q1_ipath = os.path.join(self.stats_root,
-                                    self.input_stem + config.kStatsExtensions['q1'])
+                                    self.input_stem + config.kStatsExt['q1'])
             q3_ipath = os.path.join(self.stats_root,
-                                    self.input_stem + config.kStatsExtensions['q3'])
+                                    self.input_stem + config.kStatsExt['q3'])
 
             cihi_ipath = os.path.join(self.stats_root,
-                                      self.input_stem + config.kStatsExtensions['cihi'])
+                                      self.input_stem + config.kStatsExt['cihi'])
             cilo_ipath = os.path.join(self.stats_root,
-                                      self.input_stem + config.kStatsExtensions['cilo'])
+                                      self.input_stem + config.kStatsExt['cilo'])
 
             if utils.path_exists(whislo_ipath):
                 dfs['whislo'] = storage.DataFrameReader(
@@ -350,9 +350,9 @@ class SummaryLineGraph:
                               self.input_stem)
 
             model_fpath = os.path.join(
-                self.model_root, self.input_stem + '.model')
+                self.model_root, self.input_stem + config.kModelsExt['model'])
             model_legend_fpath = os.path.join(
-                self.model_root, self.input_stem + '.legend')
+                self.model_root, self.input_stem + config.kModelsExt['legend'])
 
             if utils.path_exists(model_fpath):
                 model = storage.DataFrameReader('storage.csv')(model_fpath)
