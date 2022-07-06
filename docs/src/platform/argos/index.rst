@@ -6,7 +6,7 @@ ARGoS Platform
 
 This platform can be selected via ``--platform=platform.argos``.
 
-This is the default platform on which SIERRA will run experiments, and using the
+This is the default platform on which SIERRA will run experiments, and uses the
 :term:`ARGoS` simulator. It cannot be used to run experiments on real robots.
 
 .. toctree::

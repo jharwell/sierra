@@ -28,13 +28,13 @@ Cmdline Syntax
 
 - ``model``
 
-  - ``Log`` - Swarm sizes for each experiment are distributed 1...N by powers
-    of 2.
+  - ``Log`` - Population sizes for each experiment are distributed 1...N by
+    powers of 2.
 
-  - ``Linear`` - Swarm sizes for each experiment are distributed linearly
+  - ``Linear`` - Population sizes for each experiment are distributed linearly
     between 1...N, split evenly into 10 different sizes.
 
-- ``N`` - The maximum swarm size.
+- ``N`` - The maximum population size.
 
 - ``cardinality`` - If the model is ``Linear``, then this can be used
   to specify how many experiments to generate; i.e, it defines the `size` of the
@@ -43,7 +43,7 @@ Cmdline Syntax
 Examples
 --------
 
-- ``population_size.Log1024``: Static swarm sizes 1...1024
-- ``population_size.Linear1000``: Static swarm sizes 100...1000 (10)
-- ``population_size.Linear3.C3``: Static swarm sizes 1...3 (3)
-- ``population_size.Linear10.C2``: Static swarm sizes 5...10 (2)
+- ``population_size.Log1024``: Static population sizes 1...1024
+- ``population_size.Linear1000``: Static population sizes 100...1000 (10)
+- ``population_size.Linear3.C3``: Static population sizes 1...3 (3)
+- ``population_size.Linear10.C2``: Static population sizes 5...10 (2)

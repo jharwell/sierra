@@ -20,6 +20,6 @@ This storage plugin can be selected via ``--storage-medium=storage.csv``.
 This is the default storage type which SIERRA will use to read
 :term:`Experimental Run` outputs.
 
-.. IMPORTANT:: The ``.csv`` files read by this plugin must be semicolon (``;``)
+.. IMPORTANT:: The CSV files read by this plugin must be semicolon (``;``)
                delimited, `NOT` comma delimited; this may changed in a future
                version of SIERRA.

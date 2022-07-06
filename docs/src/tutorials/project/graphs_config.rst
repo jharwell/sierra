@@ -74,7 +74,7 @@ Linegraphs are appropriate if:
   dimensional in some way).
 
 - The data you want to graph can be obtained from a single .csv file (multiple
-  columns in the same .csv file can be graphed simultaneously).
+  columns in the same CSV file can be graphed simultaneously).
 
 ``LN_XXX`` YAML Config
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -84,19 +84,19 @@ Unless stated otherwise, all keys are mandatory.
 .. code-block:: YAML
 
    LN_mycategory:
-     # The filename (no path) of the .csv within the experimental run output
-     # directory for an experimental run, sans the .csv extension.
+     # The filename (no path) of the CSV within the experimental run output
+     # directory for an experimental run, sans the CSV extension.
      - src_stem: 'foo'
 
      # The filename (no path) of the graph to be generated
      # (extension/image type is determined elsewhere). This allows for multiple
-     # graphs to be generated from the same ``.csv`` file by plotting different
+     # graphs to be generated from the same CSV file by plotting different
      # combinations of columns.
      - dest_stem: 'bar'
 
-     # List of names of columns within the source .csv that should be
+     # List of names of columns within the source CSV that should be
      # included on the plot. Must match EXACTLY (i.e. no fuzzy matching). Can be
-     # omitted to plot all columns within the .csv.
+     # omitted to plot all columns within the CSV.
      - cols:
          - 'col1'
          - 'col2'
@@ -109,7 +109,7 @@ Unless stated otherwise, all keys are mandatory.
 
      # List of names of the plotted lines within the graph. Can be
      # omitted to set the legend for each column to the name of the column
-     # in the ``.csv``.
+     # in the CSV.
      - legend:
          - 'Column 1'
          - 'Column 2'
@@ -138,10 +138,10 @@ Unless stated otherwise, all keys are mandatory.
 .. code-block:: YAML
 
    graphs:
-     # The filename (no path) of the .csv within the output directory
-     # for an experimental run to look for the column(s) to plot, sans the .csv
+     # The filename (no path) of the CSV within the output directory
+     # for an experimental run to look for the column(s) to plot, sans the CSV
      # extension.
-     - src_stem: 'foo.csv'
+     - src_stem: 'fooCSV'
 
      # The title the graph should have. LaTeX syntax is supported (uses
      # matplotlib after all). Optional.
@@ -159,7 +159,7 @@ Inter-experiment linegraphs are appropriate if:
   dimensional in some way).
 
 - The data you want to graph can be obtained from a single column from a single
-  ``.csv`` file.
+  CSV file.
 
 - The data you want to graph requires comparison between multiple experiments in
   a batch.

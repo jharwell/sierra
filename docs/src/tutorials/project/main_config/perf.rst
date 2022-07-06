@@ -11,12 +11,12 @@ Configuration for summary performance measures. Does not have to be named
      # omitted.
      inverted: true
 
-     # The ``.csv`` file under ``statistics/`` for each experiment which
+     # The CSV file under ``statistics/`` for each experiment which
      # contains the averaged performance information for the
      # experiment. This key is required.
      intra_perf_csv: 'block-transport.csv'
 
-     # The ``.csv`` column within ``intra_perf_csv`` which is the
+     # The CSV column within ``intra_perf_csv`` which is the
      # temporally charted performance measure for the experiment. This key
      # is required.
      intra_perf_col: 'cum_avg_transported'

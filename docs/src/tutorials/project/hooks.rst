@@ -54,7 +54,7 @@ Experimental Run Collation
 --------------------------
 
 In order to generate additional inter-experiment graphs, you have to also
-collate additional ``.csv`` files by:
+collate additional CSV files by:
 
 #. Create ``pipeline/stage3/run_collator.py``.
 

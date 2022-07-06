@@ -58,7 +58,6 @@ kImageExt = '.png'
 kRenderFormat = '.mp4'
 
 kPickleExt = '.pkl'
-
 kPickleLeaf = 'exp_def' + kPickleExt
 kRandomSeedsLeaf = "seeds" + kPickleExt
 
@@ -79,9 +78,16 @@ kGraphTextSizeLarge = {
     'legend_label': 32
 }
 
-kStatsExtensions = {
-    # The default
-    'mean': '.csv',
+# These are the file extensions that files read/written by a given storage
+# plugin should have. Once processed by SIERRA they are written out as CSV files
+# with new extensions contextualizing them.
+kStorageExt = {
+    'csv': '.csv'
+}
+
+kStatsExt = {
+    # The default for averaging
+    'mean': '.mean',
 
     # For calculating 95% confidence intervals
     'stddev': '.stddev',
@@ -96,6 +102,10 @@ kStatsExtensions = {
     'whishi': '.whishi',
     'cilo': '.cilo',
     'cihi': '.cihi',
+}
+kModelsExt = {
+    'model': '.model',
+    'legend': '.legend'
 }
 
 kARGoS = {

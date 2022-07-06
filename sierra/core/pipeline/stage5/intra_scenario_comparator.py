@@ -37,7 +37,7 @@ from sierra.core.graphs.stacked_surface_graph import StackedSurfaceGraph
 from sierra.core.graphs.heatmap import Heatmap, DualHeatmap
 from sierra.core.variables import batch_criteria as bc
 import sierra.core.root_dirpath_generator as rdg
-from sierra.core import types, utils, config, storage
+from sierra.core import types, utils, config, storage, config
 
 
 class UnivarIntraScenarioComparator:
@@ -52,7 +52,7 @@ class UnivarIntraScenarioComparator:
     Attributes:
         controllers: List of controller names to compare.
 
-        cc_csv_root: Absolute directory path to the location controller ``.csv``
+        cc_csv_root: Absolute directory path to the location controller CSV
                      files should be output to.
 
         cc_graph_root: Absolute directory path to the location the generated
@@ -200,7 +200,8 @@ class UnivarIntraScenarioComparator:
         self.logger.debug("Gathering data for '%s' from %s -> %s",
                           controller, src_stem, dest_stem)
         ipath = os.path.join(
-            cmdopts['batch_stat_collate_root'], src_stem + '.csv')
+            cmdopts['batch_stat_collate_root'],
+            src_stem + config.kStatsExt['mean'])
 
         # Some experiments might not generate the necessary performance measure
         # .csvs for graph generation, which is OK.
@@ -271,7 +272,7 @@ class BivarIntraScenarioComparator:
     Attributes:
         controllers: List of controller names to compare.
 
-        cc_csv_root: Absolute directory path to the location controller ``.csv``
+        cc_csv_root: Absolute directory path to the location controller CSV
                      files should be output to.
 
         cc_graph_root: Absolute directory path to the location the generated
@@ -358,9 +359,9 @@ class BivarIntraScenarioComparator:
                              batch_leaf: str,
                              legend: tp.List[str],
                              comp_type: str) -> None:
-        """
-        Compares all controllers within the specified scenario, generating ``.csv`` files and graphs
-        according to configuration.
+        """Compares all controllers within the specified scenario, generating CSV
+        files and graphs according to configuration.
+
         """
         for controller in self.controllers:
             dirs = [d for d in os.listdir(os.path.join(self.cmdopts['sierra_root'],
@@ -448,8 +449,8 @@ class BivarIntraScenarioComparator:
                                dest_stem: str) -> None:
         """Helper function for generating a set of .csv files for use in intra-scenario
         graph generation (1 per controller) for 2D/3D comparison types. Because
-        each ``.csv`` file corresponding to performance measures are 2D arrays,
-        we actually just copy and rename the performance measure ``.csv`` files
+        each CSV file corresponding to performance measures are 2D arrays,
+        we actually just copy and rename the performance measure CSV files
         for each controllers into :attr:`cc_csv_root`.
 
         :class:`~sierra.core.graphs.stacked_surface_graph.StackedSurfaceGraph`
@@ -465,8 +466,8 @@ class BivarIntraScenarioComparator:
         self.logger.debug("Gathering data for '%s' from %s -> %s",
                           controller, src_stem, dest_stem)
 
-        csv_ipath = os.path.join(
-            cmdopts['batch_stat_collate_root'], src_stem + ".csv")
+        csv_ipath = os.path.join(cmdopts['batch_stat_collate_root'],
+                                 src_stem + config.kStatsExt['mean'])
 
         # Some experiments might not generate the necessary performance measure .csvs for
         # graph generation, which is OK.
@@ -482,8 +483,10 @@ class BivarIntraScenarioComparator:
                                                    [self.controllers.index(controller)])
 
         csv_opath_stem = os.path.join(self.cc_csv_root, opath_leaf)
-        storage.DataFrameWriter('storage.csv')(
-            df, csv_opath_stem + '.csv', index=False)
+        writer = storage.DataFrameWriter('storage.csv')
+        writer(df,
+               csv_opath_stem + config.kStatsExt['mean'],
+               index=False)
 
     def _gen_csvs_for_1D(self,
                          cmdopts: types.Cmdopts,
@@ -505,11 +508,11 @@ class BivarIntraScenarioComparator:
         self.logger.debug("Gathering data for '%s' from %s -> %s",
                           controller, src_stem, dest_stem)
 
-        csv_ipath = os.path.join(
-            cmdopts['batch_stat_collate_root'], src_stem + ".csv")
+        csv_ipath = os.path.join(cmdopts['batch_stat_collate_root'],
+                                 src_stem + config.kStatsExt['mean'])
 
-        # Some experiments might not generate the necessary performance measure .csvs for
-        # graph generation, which is OK.
+        # Some experiments might not generate the necessary performance measure
+        # .csvs for graph generation, which is OK.
         if not utils.path_exists(csv_ipath):
             self.logger.warning(
                 "%s missing for controller '%s'", csv_ipath, controller)
@@ -521,8 +524,9 @@ class BivarIntraScenarioComparator:
                                      opath_stem=self.cc_csv_root,
                                      n_exp=criteria.criteria2.n_exp())
 
-            n_rows = len(storage.DataFrameReader('storage.csv')(os.path.join(cmdopts['batch_stat_collate_root'],
-                                                                             src_stem + ".csv")).index)
+            reader = storage.DataFrameReader('storage.csv')
+            n_rows = len(reader(os.path.join(cmdopts['batch_stat_collate_root'],
+                                             src_stem + config.kStatsExt['mean'])).index)
             for i in range(0, n_rows):
                 opath_leaf = LeafGenerator.from_batch_leaf(
                     batch_leaf, dest_stem, [i])
@@ -560,8 +564,8 @@ class BivarIntraScenarioComparator:
                       legend: tp.List[str]) -> None:
         oleaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, None)
         csv_stem_root = os.path.join(self.cc_csv_root, oleaf)
-        paths = [f for f in glob.glob(
-            csv_stem_root + '*.csv') if re.search('_[0-9]+', f)]
+        pattern = csv_stem_root + '*.' + config.kStatsExt['mean']
+        paths = [f for f in glob.glob(pattern) if re.search('_[0-9]+', f)]
 
         for i in range(0, len(paths)):
             opath_leaf = LeafGenerator.from_batch_leaf(
@@ -675,7 +679,8 @@ class BivarIntraScenarioComparator:
 
             leaf = LeafGenerator.from_batch_leaf(
                 batch_leaf, dest_stem, [0, i])
-            ipath = os.path.join(self.cc_csv_root, leaf) + ".csv"
+            ipath = os.path.join(self.cc_csv_root, leaf) + \
+                config.kStatsExt['mean']
             opath = os.path.join(self.cc_graph_root,
                                  leaf) + config.kImageExt
 
@@ -815,18 +820,18 @@ class StatsPreparer():
         then write the file system.
 
         """
-        for k in config.kStatsExtensions.keys():
+        for k in config.kStatsExt.keys():
             stat_ipath = os.path.join(self.ipath_stem,
-                                      self.ipath_leaf + config.kStatsExtensions[k])
+                                      self.ipath_leaf + config.kStatsExt[k])
             stat_opath = os.path.join(self.opath_stem,
-                                      opath_leaf + config.kStatsExtensions[k])
+                                      opath_leaf + config.kStatsExt[k])
             df = self._accum_df_by_col(
                 stat_ipath, stat_opath, all_cols, col_index, inc_exps)
 
             if df is not None:
                 storage.DataFrameWriter('storage.csv')(df,
                                                        os.path.join(self.opath_stem,
-                                                                    opath_leaf + config.kStatsExtensions[k]),
+                                                                    opath_leaf + config.kStatsExt[k]),
                                                        index=False)
 
     def across_rows(self,
@@ -839,17 +844,17 @@ class StatsPreparer():
         we then write the file system.
 
         """
-        for k in config.kStatsExtensions.keys():
+        for k in config.kStatsExt.keys():
             stat_ipath = os.path.join(self.ipath_stem,
-                                      self.ipath_leaf + config.kStatsExtensions[k])
+                                      self.ipath_leaf + config.kStatsExt[k])
             stat_opath = os.path.join(self.opath_stem,
-                                      opath_leaf + config.kStatsExtensions[k])
+                                      opath_leaf + config.kStatsExt[k])
             df = self._accum_df_by_row(stat_ipath, stat_opath, index, inc_exps)
 
             if df is not None:
                 storage.DataFrameWriter('storage.csv')(df,
                                                        os.path.join(self.opath_stem,
-                                                                    opath_leaf + config.kStatsExtensions[k]),
+                                                                    opath_leaf + config.kStatsExt[k]),
                                                        index=False)
 
     def _accum_df_by_col(self,

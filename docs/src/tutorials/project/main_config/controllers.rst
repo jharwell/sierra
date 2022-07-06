@@ -89,7 +89,7 @@ to the ``FizzBuzz`` controller.
 
             # Specifies a list of graph categories from inter- or
             # intra-experiment ``.yaml`` configuration which should be
-            # generated for this controller, if the necessary input .csv
+            # generated for this controller, if the necessary input CSV
             # files exist.
             graphs: &FizzBuzz_graphs
               - HM_MyCategory1
@@ -179,7 +179,7 @@ to the ``FizzBuzz`` controller.
 
             # Specifies a list of graph categories from inter- or
             # intra-experiment ``.yaml`` configuration which should be
-            # generated for this controller, if the necessary input .csv
+            # generated for this controller, if the necessary input CSV
             # files exist.
             graphs: &FizzBuzz_graphs
               - HM_MyCategory1

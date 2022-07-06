@@ -38,7 +38,8 @@ class IntraExpModel2DGraphSet():
     """
     @staticmethod
     def model_exists(exp_model_root: str, target_stem: str):
-        return utils.path_exists(os.path.join(exp_model_root, target_stem + '.model'))
+        return utils.path_exists(os.path.join(exp_model_root,
+                                              target_stem + config.kModelsExt['model']))
 
     def __init__(self,
                  exp_stat_root: str,
@@ -56,30 +57,30 @@ class IntraExpModel2DGraphSet():
 
     def generate(self):
         data_ipath = os.path.join(self.exp_stat_root,
-                                  self.target_stem + '.csv')
+                                  self.target_stem + config.kStatsExt['mean'])
         data_opath = os.path.join(self.exp_graph_root,
                                   self.target_stem + '-HM' + config.kImageExt)
         stddev_ipath = os.path.join(self.exp_stat_root,
-                                    self.target_stem + '.stddev')
+                                    self.target_stem + config.kStatsExt['stddev'])
         stddev_opath = os.path.join(self.exp_graph_root,
                                     self.target_stem + '-HM-stddev' + config.kImageExt)
 
         model_ipath = os.path.join(self.exp_model_root,
-                                   self.target_stem + '.model')
+                                   self.target_stem + config.kModelsExt['model'])
         model_opath = os.path.join(self.exp_graph_root,
                                    self.target_stem + '-HM-model' + config.kImageExt)
 
         model_error_ipath = os.path.join(self.exp_model_root,
-                                         self.target_stem + '-HM-model-error.csv')
+                                         self.target_stem + '-HM-model-error' + config.kStatsExt['mean'])
         model_error_opath = os.path.join(self.exp_graph_root,
                                          self.target_stem + '-HM-model-error' + config.kImageExt)
 
         # Write the error .csv to the filesystem
-        data_df = storage.DataFrameReader('storage.csv')(data_ipath)
-        model_df = storage.DataFrameReader('storage.csv')(model_ipath)
-        storage.DataFrameWriter('storage.csv')(model_df - data_df,
-                                               model_error_ipath,
-                                               index=False)
+        reader = storage.DataFrameReader('storage.csv')
+        writer = storage.DataFrameWriter('storage.csv')
+        data_df = reader(data_ipath)
+        model_df = reader(model_ipath)
+        writer(model_df - data_df, model_error_ipath, index=False)
 
         HeatmapSet(ipaths=[data_ipath, stddev_ipath, model_ipath, model_error_ipath],
                    opaths=[data_opath, stddev_opath,
