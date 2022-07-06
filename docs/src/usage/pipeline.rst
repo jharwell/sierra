@@ -41,7 +41,7 @@ some parts of this can be done in parallel. This includes one or more of:
   generation in stage 4. See :ref:`ln-sierra-usage-cli` documentation for
   ``--dist-stats`` for details.
 
-- Creating images from project ``.csv`` files for rendering in stage 4. See
+- Creating images from project CSV files for rendering in stage 4. See
   :ref:`ln-sierra-usage-rendering-project` for details.
 
 Part of default pipeline.

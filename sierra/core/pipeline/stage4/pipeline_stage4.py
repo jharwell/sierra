@@ -114,7 +114,7 @@ class PipelineStage4:
             self._load_models()
 
     def run(self, criteria: bc.IConcreteBatchCriteria) -> None:
-        """Runs experiment deliverable generation, ``.csv`` collation for
+        """Runs experiment deliverable generation, CSV collation for
         inter-experiment graph generation, and inter-experiment graph
         generation.
 
@@ -145,7 +145,7 @@ class PipelineStage4:
         #. Model generation for each enabled and loaded model.
 
         #. :class:`~sierra.core.pipeline.stage4.inter_exp_graph_generator.InterExpGraphGenerator`
-           to perform graph generation from collated ``.csv`` files.
+           to perform graph generation from collated CSV files.
 
         """
         if self.cmdopts['project_rendering'] or self.cmdopts['platform_vc']:
@@ -241,7 +241,7 @@ class PipelineStage4:
     def _calc_inter_LN_targets(self) -> tp.List[types.YAMLDict]:
         """
         Use YAML configuration for controllers and inter-experiment graphs to
-        what ``.csv`` files need to be collated/what graphs should be generated.
+        what CSV files need to be collated/what graphs should be generated.
         """
         keys = []
         for category in list(self.controller_config.keys()):

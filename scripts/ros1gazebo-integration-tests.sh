@@ -8,7 +8,8 @@ export SAMPLE_ROOT=$HOME/work/sierra-sample-project
 export SIERRA_PLUGIN_PATH=$SAMPLE_ROOT/projects
 export SIERRA_ROSBRIDGE_INSTALL_PREFIX=$HOME/.local
 
-. $SIERRA_ROSBRIDGE_INSTALL_PREFIX/setup.bash
+rosdistro=$1
+. /opt/ros/$rosdistro/setup.bash
 
 export SIERRA_BASE_CMD="sierra-cli \
        --sierra-root=$SIERRA_ROOT \
@@ -22,7 +23,7 @@ export SIERRA_BASE_CMD="sierra-cli \
        --controller=turtlebot3.wander \
        --robot turtlebot3\
        --exec-no-devnull \
-       --log-level=TRACE"
+       --log-level=DEBUG"
 
 sanity_check_pipeline() {
     SIERRA_CMD="$*"

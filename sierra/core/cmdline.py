@@ -529,11 +529,11 @@ class CoreCmdline(BaseCmdline):
 
                                  - ``storage.csv`` - Experimental run outputs
                                    are stored in a per-run directory as one or
-                                   more ``.csv`` files.
+                                   more CSV files.
 
 
                                  Regardless of the value of this option, SIERRA
-                                 always generates ``.csv`` files as it runs and
+                                 always generates CSV files as it runs and
                                  averages outputs, generates graphs, etc.
                                  """ + self.stage_usage_doc([3]),
                                  default='storage.csv')
@@ -839,7 +839,7 @@ class CoreCmdline(BaseCmdline):
         rendering.add_argument("--project-imagizing",
                                help="""
 
-                               Enable generation of image files from ``.csv``
+                               Enable generation of image files from CSV
                                files captured during stage 2 and averaged during
                                stage 3 for each experiment. See
                                :ref:`ln-sierra-usage-rendering-project` for details and
@@ -852,7 +852,7 @@ class CoreCmdline(BaseCmdline):
                                help="""
 
                                Enable generation of videos from imagized
-                               ``.csv`` files created as a result of
+                               CSV files created as a result of
                                ``--project-imagizing``. See
                                :ref:`ln-sierra-usage-rendering-project` for details.
 

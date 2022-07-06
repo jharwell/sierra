@@ -4,30 +4,40 @@ on:
   push:
     branches:
       - devel
+      - master
+      - enh/300/extension-cleanup
 
 jobs:
   test-pypi:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/devel'
+    # if: github.ref == 'refs/heads/devel'
     strategy:
       matrix:
         python-version: ["3.9"]
 
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/sierra-setup
+      # - uses: ./.github/actions/sierra-setup
       - name: Build package
         run: |
-          pip3 install build
-          python3 -m build
+          pip3 install build setuptools
+          # python3 -m build
 
-      - name: Publish to TestPyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          skip_existing: true
-          user: __token__
-          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-          repository_url: https://test.pypi.org/legacy/
+      - name: Tag package
+        run: |
+          export TAG=v$(python3 setup.py --version)
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git tag -fa "${TAG}" -m "Release ${TAG}" "${GITHUB_SHA}"
+          git push --force origin "${TAG}"
+
+      # - name: Publish to TestPyPI
+      #   uses: pypa/gh-action-pypi-publish@release/v1
+      #   with:
+      #     skip_existing: true
+      #     user: __token__
+      #     password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+      #     repository_url: https://test.pypi.org/legacy/
 
   pypi:
     runs-on: ubuntu-latest

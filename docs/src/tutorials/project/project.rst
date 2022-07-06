@@ -17,6 +17,13 @@ Creating a New SIERRA Project
 #. Create the following directory structure within your project directory (or
    copy and modify the one from an existing project).
 
+   .. IMPORTANT:: Once you create the directory structure below you need to
+                  INSTALL your project with pip so that not only can SIERRA find
+                  it, but so can the python interpreter. If you don't want to do
+                  that, then you need to put your project plugin directory on
+                  :envvar:`PYTHONPATH`. Otherwise, you won't be able to use your
+                  project plugin with SIERRA.
+
    - ``config/`` - Plugin YAML configuration root. This directory is required
      for all projects. Within this directory, the following files are used (not
      all files are required when running a stage that utilizes them):

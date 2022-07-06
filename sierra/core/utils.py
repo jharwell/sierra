@@ -239,7 +239,7 @@ def bivar_exp_labels_calc(exp_dirs: tp.List[str]) -> tp.Tuple[tp.List[str],
     # Because sets are used, if a sub-range of experiments are selected for
     # collation, the selected range has to be an even multiple of the # of
     # experiments in the second batch criteria, or inter-experiment graph
-    # generation won't work (the final .csv is always an MxN grid).
+    # generation won't work (the final CSV is always an MxN grid).
     xlabels_set = set()
     ylabels_set = set()
     for e in exp_dirs:

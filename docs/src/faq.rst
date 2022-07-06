@@ -52,28 +52,28 @@ FAQ
 #. Q: SIERRA hangs during stage {3,4}--why?
 
    A: The most likely cause is that not all runs generated outputs which
-   resulted in ``.csv`` files of the same shape when read into SIERRA. E.g., for
-   ``.csv`` file outputs, not all ``.csv`` files with the same name in the
-   output directory for each run had the same number of rows and columns. SIERRA
-   does not sanitize run outputs before processing them, and relies ``.csv``
-   files of the same shape when processing results for generating
-   statistics. Depending on the nature of the inconsistency, you may see a
-   crash, or you may see it hang indefinitely as it waits for a sub-process
-   which crashed to finish.
+   resulted in CSV files of the same shape when read into SIERRA. E.g., for CSV
+   file outputs, not all CSV files with the same name in the output directory
+   for each run had the same number of rows and columns. SIERRA does not
+   sanitize run outputs before processing them, and relies CSV files of the same
+   shape when processing results for generating statistics. Depending on the
+   nature of the inconsistency, you may see a crash, or you may see it hang
+   indefinitely as it waits for a sub-process which crashed to finish.
 
 #. Q: SIERRA fails to run on my HPC environment?
 
    A: The most likely reason is that you don't have the necessary environment
-   variables set up--see :ref:`ln-sierra-exec-env-hpc` for details on what is required.
+   variables set up--see :ref:`ln-sierra-exec-env-hpc` for details on what is
+   required.
 
 #. Q: SIERRA doesn't generate any graphs during stage4/the graph I'm interested
    is not there.
 
-   A: SIERRA matches the stem of an output ``.csv`` file with the stem in a
+   A: SIERRA matches the stem of an output CSV file with the stem in a
    ``.yaml`` configuration file; if these are not the same, then no graph will
    be generated. You can run SIERRA with ``--log-level=TRACE`` to during stage 4
    to see which graphs it is generating, and which it is not because the
-   necessary source ``.csv`` file does not exist. This is usually enough to
+   necessary source CSV file does not exist. This is usually enough to
    identify the culprit.
 
 #. Q: Stage 3 takes a very long time--why?
@@ -124,6 +124,7 @@ FAQ
    print any import errors. When you load modules dynamically in python, those
    errors don't get printed, python just says "can't find the module" instead of
    "found the module but I can't load it because of bad imports".
+
 
 #. Q: I have multiple projects which all share batch
    criteria/generators/etc. How can I share this between projects?

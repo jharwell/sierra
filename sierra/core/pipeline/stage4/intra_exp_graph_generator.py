@@ -32,10 +32,9 @@ import json
 from sierra.core.graphs.stacked_line_graph import StackedLineGraph
 from sierra.core.graphs.heatmap import Heatmap
 from sierra.core.models.graphs import IntraExpModel2DGraphSet
-import sierra.core.utils
 import sierra.core.variables.batch_criteria as bc
 import sierra.core.plugin_manager as pm
-from sierra.core import types
+from sierra.core import types, config, utils
 
 
 class BatchIntraExpGraphGenerator:
@@ -73,9 +72,9 @@ class BatchIntraExpGraphGenerator:
             criteria:  The :term:`Batch Criteria` used for the batch
                        experiment.
         """
-        exp_to_gen = sierra.core.utils.exp_range_calc(self.cmdopts,
-                                                      self.cmdopts['batch_output_root'],
-                                                      criteria)
+        exp_to_gen = utils.exp_range_calc(self.cmdopts,
+                                          self.cmdopts['batch_output_root'],
+                                          criteria)
 
         for exp in exp_to_gen:
             exp = os.path.split(exp)[1]
@@ -155,8 +154,7 @@ class IntraExpGraphGenerator:
         self.controller_config = controller_config
         self.logger = logging.getLogger(__name__)
 
-        sierra.core.utils.dir_create_checked(
-            self.cmdopts["exp_graph_root"], exist_ok=True)
+        utils.dir_create_checked(self.cmdopts["exp_graph_root"], exist_ok=True)
 
     def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
         """
@@ -241,7 +239,7 @@ class LinegraphsGenerator:
             # For each graph in each category
             for graph in category['graphs']:
                 output_fpath = os.path.join(self.cmdopts['exp_graph_root'],
-                                            'SLN-' + graph['dest_stem'] + sierra.core.config.kImageExt)
+                                            'SLN-' + graph['dest_stem'] + config.kImageExt)
                 try:
                     self.logger.trace('\n' +  # type: ignore
                                       json.dumps(graph, indent=4))
@@ -311,9 +309,9 @@ class HeatmapsGenerator:
                                             graph.get('title', None)).generate()
                 else:
                     input_fpath = os.path.join(self.exp_stat_root,
-                                               graph['src_stem'] + '.csv')
+                                               graph['src_stem'] + config.kStatsExt['mean'])
                     output_fpath = os.path.join(self.exp_graph_root,
-                                                'HM-' + graph['src_stem'] + sierra.core.config.kImageExt)
+                                                'HM-' + graph['src_stem'] + config.kImageExt)
 
                     Heatmap(input_fpath=input_fpath,
                             output_fpath=output_fpath,

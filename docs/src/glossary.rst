@@ -148,14 +148,14 @@ works/is designed the way it is, and to help you find your way around.
 
    Output .csv
 
-      A ``.csv`` file generated as an output from a single :term:`Experimental
+      A CSV file generated as an output from a single :term:`Experimental
       Run`. It will (probably) contain a set of columns of representing outputs
       of interest, with rows corresponding to values captured throughout the
       run.
 
    Averaged .csv
 
-      A ``.csv`` file generated as from averaging files from multiple
+      A CSV file generated as from averaging files from multiple
       :term:`Experimental Runs<Experimental Run>`. It will (probably) contain a
       set of columns of representing outputs of interest, with rows
       corresponding to values captured throughout the run (i.e., a time
@@ -163,8 +163,8 @@ works/is designed the way it is, and to help you find your way around.
 
    Collated .csv
 
-      A ``.csv`` file created by SIERRA during stage 4 (if inter-experiment
-      graph generation is to be run). Collated ``.csv`` files contain a set
+      A CSV file created by SIERRA during stage 4 (if inter-experiment
+      graph generation is to be run). Collated CSV files contain a set
       columns, one per :term:`Experiment` in the :term:`Batch Experiment`. Each
       column is the captured value of a `single` column within an :term:`Output
       .csv`. This is to capture a specific aspect of the behavior of the swarm
@@ -172,8 +172,8 @@ works/is designed the way it is, and to help you find your way around.
 
    Summary .csv
 
-      A ``.csv`` file created by SIERRA during stage 4 (if inter-experiment
-      graph generation is to be run). A summary ``.csv`` file created from a
+      A CSV file created by SIERRA during stage 4 (if inter-experiment
+      graph generation is to be run). A summary CSV file created from a
       :term:`Collated .csv` file by taking the last row; this usually
       corresponds to steady-state behavior, which is what you are
       after. However, you can also capture transient behaviors by creating
@@ -183,14 +183,14 @@ works/is designed the way it is, and to help you find your way around.
 
    Inter-Batch .csv
 
-      A ``.csv`` file created by SIERRA during stage 5. An inter-batch ``.csv``
+      A CSV file created by SIERRA during stage 5. An inter-batch CSV
       is created by "collating" columns from a :term:`Summary .csv` present in
       multiple :term:`Batch Experiments <Batch Experiment>` into a single
-      ``.csv``. Used during stage 5.
+      CSV. Used during stage 5.
 
    imagizing
 
-      The process of turning a text file of some kind (e.g., ``.csv``, ``.gml``)
+      The process of turning a text file of some kind (e.g., CSV, ``.gml``)
       into an image.
 
    Platform

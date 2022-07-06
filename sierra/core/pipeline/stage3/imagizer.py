@@ -15,7 +15,7 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Classes for creating image files from averaged ``.csv`` files for
+Classes for creating image files from ``.mean`` files for
 experiments. See :ref:`ln-sierra-usage-vc` for usage documentation.
 """
 
@@ -107,9 +107,9 @@ class BatchExpParallelImagizer:
 
 
 class ExpImagizer:
-    """Create images from the averaged ``.csv`` files from an experiment.
+    """Create images from the averaged ``.mean`` files from an experiment.
 
-    If no ``.csv`` files suitable for averaging are found, nothing is done. See
+    If no ``.mean`` files suitable for averaging are found, nothing is done. See
     :ref:`ln-sierra-usage-vc` for per-platform descriptions of what "suitable"
     means.
 
@@ -128,7 +128,7 @@ class ExpImagizer:
         path = os.path.join(imagize_opts['input_root'],
                             imagize_opts['graph_stem'])
 
-        self.logger.info("Imagizing .csvs in %s...", path)
+        self.logger.info("Imagizing CSVs in %s...", path)
 
         for csv in os.listdir(path):
             # For each category of heatmaps we are generating
@@ -141,7 +141,8 @@ class ExpImagizer:
 
             if match is not None:
                 stem, _ = os.path.splitext(csv)
-                Heatmap(input_fpath=os.path.join(path, stem + '.csv'),
+                Heatmap(input_fpath=os.path.join(path,
+                                                 stem + config.kStatsExt['mean']),
                         output_fpath=os.path.join(imagize_opts['output_root'],
                                                   stem + config.kImageExt),
                         title=match['title'],

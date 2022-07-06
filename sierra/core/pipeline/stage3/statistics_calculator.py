@@ -36,7 +36,7 @@ import psutil
 
 # Project packages
 import sierra.core.variables.batch_criteria as bc
-from sierra.core import types, utils, stat_kernels, storage
+from sierra.core import types, utils, stat_kernels, storage, config
 
 
 class GatherSpec:
@@ -311,10 +311,10 @@ class ExpCSVGatherer:
             if item.for_imagizing():
                 item_path = os.path.join(run_output_root,
                                          item.csv_stem,
-                                         item.csv_leaf + '.csv')
+                                         item.csv_leaf + config.kStorageExt['csv'])
             else:
-                item_path = os.path.join(
-                    run_output_root, item.csv_leaf + '.csv')
+                item_path = os.path.join(run_output_root,
+                                         item.csv_leaf + config.kStorageExt['csv'])
 
             reader = storage.DataFrameReader(self.gather_opts['storage_medium'])
             df = reader(item_path, index_col=False)
@@ -351,12 +351,12 @@ class ExpCSVGatherer:
 
         Specifically:
 
-        - All runs produced all ``.csv`` files.
+        - All runs produced all CSV files.
 
-        - All runs ``.csv`` files with the same name have the same # rows and
+        - All runs CSV files with the same name have the same # rows and
           columns.
 
-        - No simulation ``.csv``files contain NaNs.
+        - No CSV files contain NaNs.
         """
         experiments = os.listdir(exp_output_root)
 

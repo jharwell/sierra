@@ -40,7 +40,7 @@ import numpy as np
 # Project packages
 import sierra.core.variables.batch_criteria as bc
 import sierra.core.plugin_manager as pm
-from sierra.core import types, storage, utils
+from sierra.core import types, storage, utils, config
 
 
 class ExperimentalRunParallelCollator:
@@ -232,7 +232,7 @@ class ExperimentalRunCSVGatherer:
 
         reader = storage.DataFrameReader(self.storage_medium)
         perf_df = reader(os.path.join(run_output_root,
-                                      intra_perf_leaf + '.csv'),
+                                      intra_perf_leaf + config.kStorageExt['csv']),
                          index_col=False)
 
         return {
@@ -296,8 +296,8 @@ class ExperimentalRunCollator:
         for (csv_leaf, col) in collated.keys():
             writer = storage.DataFrameWriter(self.storage_medium)
             df = utils.df_fill(collated[(csv_leaf, col)], self.df_homogenize)
-            opath = os.path.join(self.batch_stat_collate_root,
-                                 exp_leaf + '-' + csv_leaf + '-' + col + '.csv')
+            fname = f'{exp_leaf}-{csv_leaf}-{col}' + config.kStatsExt['mean']
+            opath = os.path.join(self.batch_stat_collate_root, fname)
             writer(df, opath, index=False)
 
 
@@ -305,4 +305,6 @@ __api__ = [
     'ExperimentalRunParallelCollator',
     'ExperimentalRunCSVGatherer',
     'ExperimentalRunCollator'
+
+
 ]

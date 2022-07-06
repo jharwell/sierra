@@ -23,7 +23,7 @@ Create the Code
 
         def df_read(path: str, **kwargs) -> pd.DataFrame:
             """
-            Return a dataframe containing the contains of the ``.csv`` at the
+            Return a dataframe containing the contents of the CSV at the
             specified path. For other storage methods (e.g. database), you can
             use a function of the path way to uniquely identify the file in the
             database (for example).

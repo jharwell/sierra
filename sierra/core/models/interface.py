@@ -35,7 +35,7 @@ class IConcreteIntraExpModel1D(implements.Interface):
     series from zero or more experimental outputs within a *single*
     :term:`Experiment`. Models will be rendered as lines on a
     :class:`~sierra.core.graphs.stacked_line_graph.StackedLineGraph`. Models
-    "target" one or more ``.csv`` files which are already configured to be
+    "target" one or more CSV files which are already configured to be
     generated, and will show up as additional lines on the generated graph.
 
     """
@@ -65,7 +65,7 @@ class IConcreteIntraExpModel1D(implements.Interface):
 
     def target_csv_stems(self) -> tp.List[str]:
         """
-        Return a list of ``.csv`` file stems (sans directory path and extension)
+        Return a list of CSV file stems (sans directory path and extension)
         that the model is targeting.
         """
         raise NotImplementedError
@@ -90,7 +90,7 @@ class IConcreteIntraExpModel2D(implements.Interface):
     """Interface for two-dimensional models: those that generate a list of 2D
     matrices, forming a 2D time series. Can be built from zero or more
     experimental outputs from a *single* :term:`Experiment`. Models
-    "target" one or more ``.csv`` files which are already configured to be
+    "target" one or more CSV files which are already configured to be
     generated, and will show up as additional lines on the generated graph.
 
     """
@@ -139,7 +139,7 @@ class IConcreteInterExpModel1D(implements.Interface):
     series from any number of experimental outputs across *all* experiments in a
     batch(or from another source). Models will be rendered as lines on a
     :class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`.  Models
-    "target" one or more ``.csv`` files which are already configured to be
+    "target" one or more CSV files which are already configured to be
     generated, and will show up as additional lines on the generated graph.
 
     """

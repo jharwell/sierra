@@ -10,7 +10,7 @@ on:
       - 'sierra/**'
 
 jobs:
-  argos-platform:
+  ros1gazebo-platform:
 
     runs-on: ubuntu-latest
     strategy:
@@ -22,8 +22,8 @@ jobs:
       - uses: ./.github/actions/sierra-setup
       - uses: ./.github/actions/sample-project-setup
         with:
-          platform: argos
+          platform: ros1gazebo
 
-      - name: ARGoS platform integration tests
+      - name: ROS1+Gazebo platform integration tests (noetic)
         run: |
-          ./scripts/argos-integration-tests.sh
+          ./scripts/ros1gazebo-integration-tests.sh noetic

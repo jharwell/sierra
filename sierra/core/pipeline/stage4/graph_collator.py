@@ -82,18 +82,19 @@ class UnivarGraphCollator:
                                         criteria)
 
         # Always do the mean, even if stats are disabled
-        exts = [config.kStatsExtensions['mean']]
+        exts = [config.kStatsExt['mean']]
 
         if self.cmdopts['dist_stats'] in ['conf95', 'all']:
-            exts.extend([config.kStatsExtensions['stddev']])
+            exts.extend([config.kStatsExt['stddev']])
+
         if self.cmdopts['dist_stats'] in ['bw', 'all']:
-            exts.extend([config.kStatsExtensions['min'],
-                         config.kStatsExtensions['max'],
-                         config.kStatsExtensions['whislo'],
-                         config.kStatsExtensions['whishi'],
-                         config.kStatsExtensions['cilo'],
-                         config.kStatsExtensions['cihi'],
-                         config.kStatsExtensions['median']])
+            exts.extend([config.kStatsExt['min'],
+                         config.kStatsExt['max'],
+                         config.kStatsExt['whislo'],
+                         config.kStatsExt['whishi'],
+                         config.kStatsExt['cilo'],
+                         config.kStatsExt['cihi'],
+                         config.kStatsExt['median']])
 
         stats = [UnivarGraphCollationInfo(df_ext=ext,
                                           ylabels=[os.path.split(e)[1] for e in exp_dirs]) for ext in exts]
@@ -104,11 +105,13 @@ class UnivarGraphCollator:
             diri = os.path.split(diri)[1]
             self._collate_exp(target, diri, stats)
 
+        writer = storage.DataFrameWriter('storage.csv')
         for stat in stats:
             if stat.all_srcs_exist:
-                storage.DataFrameWriter('storage.csv')(stat.df, os.path.join(stat_collate_root,
-                                                                             target['dest_stem'] + stat.df_ext),
-                                                       index=False)
+                writer(stat.df,
+                       os.path.join(stat_collate_root,
+                                    target['dest_stem'] + stat.df_ext),
+                       index=False)
 
             elif not stat.all_srcs_exist and stat.some_srcs_exist:
                 self.logger.warning("Not all experiments in '%s' produced '%s%s'",
@@ -166,34 +169,35 @@ class BivarGraphCollator:
         xlabels, ylabels = utils.bivar_exp_labels_calc(exp_dirs)
 
         if self.cmdopts['dist_stats'] in ['conf95', 'all']:
-            exts = [config.kStatsExtensions['mean'],
-                    config.kStatsExtensions['stddev']]
+            exts = [config.kStatsExt['mean'],
+                    config.kStatsExt['stddev']]
         elif self.cmdopts['dist_stats'] in ['bw', 'all']:
-            exts = [config.kStatsExtensions['min'],
-                    config.kStatsExtensions['max'],
-                    config.kStatsExtensions['mean'],
-                    config.kStatsExtensions['whislo'],
-                    config.kStatsExtensions['whishi'],
-                    config.kStatsExtensions['cilo'],
-                    config.kStatsExtensions['cihi'],
-                    config.kStatsExtensions['median']]
+            exts = [config.kStatsExt['min'],
+                    config.kStatsExt['max'],
+                    config.kStatsExt['mean'],
+                    config.kStatsExt['whislo'],
+                    config.kStatsExt['whishi'],
+                    config.kStatsExt['cilo'],
+                    config.kStatsExt['cihi'],
+                    config.kStatsExt['median']]
 
         stats = [BivarGraphCollationInfo(df_ext=ext,
                                          xlabels=xlabels,
                                          ylabels=ylabels) for ext in exts]
 
         for i, diri in enumerate(exp_dirs):
-            # We get full paths back from the exp dirs calculation, and we need to work with path
-            # leaves
+            # We get full paths back from the exp dirs calculation, and we need
+            # to work with path leaves
             diri = os.path.split(diri)[1]
             self._collate_exp(target, diri, stats)
 
+        writer = storage.DataFrameWriter('storage.csv')
         for stat in stats:
             if stat.all_srcs_exist:
-                storage.DataFrameWriter('storage.csv')(stat.df,
-                                                       os.path.join(stat_collate_root,
-                                                                    target['dest_stem'] + stat.df_ext),
-                                                       index=False)
+                writer(stat.df,
+                       os.path.join(stat_collate_root,
+                                    target['dest_stem'] + stat.df_ext),
+                       index=False)
 
             elif stat.some_srcs_exist:
                 self.logger.warning("Not all experiments in '%s' produced '%s%s'",

@@ -35,9 +35,9 @@ from sierra.core import utils, config, storage
 
 class Heatmap:
     """
-    Generates a X vs. Y vs. Z heatmap plot of a ``.csv`` file.
+    Generates a X vs. Y vs. Z heatmap plot of a ``.mean`` file.
 
-    If the necessary .csv file does not exist, the graph is not generated.
+    If the necessary .mean file does not exist, the graph is not generated.
 
     """
 
@@ -165,16 +165,16 @@ class Heatmap:
 
 
 class DualHeatmap:
-    """Generates a side-by-side plot of two heataps from a set of ``.csv``
+    """Generates a side-by-side plot of two heataps from a set of CSV
     files.
 
-    ``.csv`` files must be named as ``<input_stem_fpath>_X.csv``, where `X` is
-    non-negative integer. Input ``.csv`` files must be 2D grids of the same
+    ``.mean`` files must be named as ``<input_stem_fpath>_X.mean``, where `X` is
+    non-negative integer. Input ``.mean`` files must be 2D grids of the same
     cardinality.
 
     This graph does not plot standard deviation.
 
-    If there are not exactly two ``.csv`` files matching the pattern found, the
+    If there are not exactly two ``.mean`` files matching the pattern found, the
     graph is not generated.
 
     """
@@ -202,11 +202,12 @@ class DualHeatmap:
         self.logger = logging.getLogger(__name__)
 
     def generate(self) -> None:
-        dfs = [storage.DataFrameReader('storage.csv')(f) for f in glob.glob(
-            self.input_stem_pattern) if re.search('_[0-9]+', f)]
+        reader = storage.DataFrameReader('storage.csv')
+        dfs = [reader(f) for f in glob.glob(self.input_stem_pattern)
+               if re.search('_[0-9]+', f)]
 
         if not dfs or len(dfs) != DualHeatmap.kCardinality:
-            self.logger.debug("Not generating dual heatmap graph: %s did not match %s .csv files",
+            self.logger.debug("Not generating dual heatmap: %s did not match %s CSV files",
                               self.input_stem_pattern, DualHeatmap.kCardinality)
             return
 

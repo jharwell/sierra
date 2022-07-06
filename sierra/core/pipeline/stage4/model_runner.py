@@ -28,7 +28,7 @@ import logging
 
 # Project packages
 import sierra.core.variables.batch_criteria as bc
-from sierra.core import models, types, utils, storage
+from sierra.core import models, types, utils, storage, config
 
 
 class IntraExpModelRunner:
@@ -93,7 +93,7 @@ class IntraExpModelRunner:
                         cmdopts['exp_model_root'], csv_stem)
 
                     # Write model legend file so the generated graph can find it
-                    with open(path_stem + '.legend', 'w') as f:
+                    with open(path_stem + config.kModelsExt['legend'], 'w') as f:
                         for j, search in enumerate(dfs):
                             if search.values.all() == df.values.all():
                                 legend = model.legend_names()[j]
@@ -101,8 +101,10 @@ class IntraExpModelRunner:
                                 break
 
                     # Write model .csv file
-                    storage.DataFrameWriter('storage.csv')(
-                        df, path_stem + '.model', index=False)
+                    writer = storage.DataFrameWriter('storage.csv')
+                    writer(df,
+                           path_stem + config.kModelsExt['model'],
+                           index=False)
 
 
 class InterExpModelRunner:
@@ -143,13 +145,13 @@ class InterExpModelRunner:
                 path_stem = os.path.join(cmdopts['batch_model_root'], csv_stem)
 
                 # Write model .csv file
-                storage.DataFrameWriter('storage.csv')(
-                    df, path_stem + '.model', index=False)
+                writer = storage.DataFrameWriter('storage.csv')
+                writer(df, path_stem + config.kModelsExt['model'], index=False)
 
                 # 1D dataframe -> line graph with legend
                 if len(df.index) == 1:
                     # Write model legend file so the generated graph can find it
-                    with open(path_stem + '.legend', 'w') as f:
+                    with open(path_stem + config.kModelsExt['legend'], 'w') as f:
                         for i, search in enumerate(dfs):
                             if search.values.all() == df.values.all():
                                 legend = model.legend_names()[i]
