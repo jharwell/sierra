@@ -47,7 +47,7 @@ logging.getLogger('PIL').setLevel(logging.WARNING)
 mpl.use('Agg')
 
 # Set MPL style
-mpl.style.use('seaborn-colorblind')
+plt.style.use('seaborn-colorblind')
 
 ################################################################################
 # General Configuration

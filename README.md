@@ -8,14 +8,11 @@
 | [![Linux](https://svgshare.com/i/Zhy.svg)](https://svgshare.com/i/Zhy.svg) [![macOS](https://svgshare.com/i/ZjP.svg)](https://svgshare.com/i/ZjP.svg) |![](https://github.com/swarm-robotics/sierra/actions/workflows/ros1gazebo-integration-tests.yml/badge.svg?branch=master) | ![](https://github.com/swarm-robotics/sierra/actions/workflows/ros1gazebo-integration-tests.yml/badge.svg?branch=devel) |
 | [![Downloads](https://pepy.tech/badge/sierra-research)](https://pepy.tech/project/sierra-research)  | [![](https://readthedocs.org/projects/swarm-robotics-sierra/badge/?version=master)](https://swarm-robotics-sierra.readthedocs.io/en/master/?badge=master) | [![](https://readthedocs.org/projects/swarm-robotics-sierra/badge/?version=master)](https://swarm-robotics-sierra.readthedocs.io/en/master/?badge=devel)
 
+# Installing SIERRA
 
-SIERRA is named thusly because it will save you a LITERAL, (not figurative)
-mountain of work. It is basically a plugin-based framework for automating
-research driven by the scientific method. SIERRA is well documented--see the
-docs [here](https://swarm-robotics-sierra.readthedocs.io/en/master/) to get
-started using it!
+    pip3 install sierra-research
 
-# Automated Research Pipeline
+# Why SIERRA?
 
 ![SIERRA Architecture](https://raw.githubusercontent.com/swarm-robotics/sierra/master/docs/figures/architecture.png "
 Architecture of SIERRA,organized by pipeline stage. Pipeline stages are listed
@@ -24,113 +21,156 @@ bottom for each stage. “... ” indicates areas where SIERRA is designed via
 python plugins to be easily extensible. “Host machine” indicates the machine
 SIERRA was invoked on.")
 
-## 1. Generating Experiment Inputs
+SIERRA is a command line tool for automating the pipeline described above,
+providing faculties for seamless experiment generation, execution, and results
+processing. Essentially, SIERRA handles the “backend” parts of research, such
+as: handling random seeds, algorithm stochasticity, configuration for a given
+execution environment or platform, generating statistics from experimental
+results, and generating graphs and videos from experimental results.  This
+allows researchers to focus on the “research” aspects: developing theories and
+algorithms and testing them via experimental evaluation. SIERRA also eliminates
+menial reconfiguration of experimental inputs across platforms and execution
+environments by decoupling the two concepts: any supported execution environment
+or platform can be selected with a single command line switch.  It further
+automates the process of experimental data processing and deliverable
+generation, changing the paradigm of those pipeline stages from procedural (“Do
+these steps in order to process my data and generate graphs”) to declarative
+(“Here are the deliverables I want to generate and the data I want to appear on
+them”), eliminating the need for throw-away scripts. Overall, SIERRA’s
+automation increases reusability and reproducability across projects, which
+lowers the barriers to collaboration between researchers, while also
+accelerating research and development cycles.
 
-Experiments using the scientific method have an independent variable whose
-impact on results are measured through a series of trials. SIERRA allows you to
-express this as a research query on the command line, and then parses your query
-to make changes to a template input file to generate launch commands and
-experimental inputs to operationalize it. Switching from targeting platform A
-(e.g., ARGoS) to platform B (e.g., ROS1+Gazebo) is as easy as changing a a
-single command line argument (assuming your code is setup to handle both ARGoS
-and ROS environments!). Similarly for switching from running on the local
-machine to running on a HPC cluster. SIERRA handles all the "backend" aspects of
-running experiments and allows you to focus on the fun parts--the research
-itself!
+Consider the two use cases below: within each, SIERRA provides faculties for
+managing heterogeneity and automating common tasks to reduce the burden on
+researchers, either directly or through a rich plugin interface.  If aspects of
+either use case sound familiar, then there is a strong chance SIERRA could help
+you with your research! SIERRA is well documented--see the docs
+[here](https://swarm-robotics-sierra.readthedocs.io/en/master/) for more info on
+the automation it provides and to get started using it!
 
-## 2. Running Experiments
+## Use Case #1: Alice The Robotics Researcher
 
-SIERRA currently supports two types of execution environments: simulators and
-real robots, which are handled seamlessly with GNU parallel. For simulators,
-SIERRA will run multiple experimental runs (simulations) from each experiment in
-parallel (exact concurrency dependent on the limits of the computing hardware
-and the nature of the experiment). For real robots, SIERRA will execution 1
-experimental run at a time, per configuration (runs can have different
-configuration/# of robots).
+Alice is a researcher at a large university that has developed a distributed new
+task allocation algorithm $\alpha$ for use in a foraging task where robots must
+coordinate to find objects of interest in an unknown environment and bring them
+to a central location. Alice wants to implement her algorithm so she can
+investigate:
 
-SIERRA supports multiple HPC environments for execution of experiments in
-simulation
+- How well it scales with the number of robots, specifically if it remains
+  efficient with up to 1000 robots in several different scenarios.
+
+- How robust it is with respect to sensor and actuator noise.
+
+- How it compares to other similar state of the art algorithms on a foraging
+  task: $\beta,\gamma$.
+
+Alice is faced with the following heterogeneity matrix which she has to deal
+with in addition to theoretical and algorithmic issues in her algorithms of
+interest in order to answer her research queries:
+
+| Algorithm | Contains stochasticity? | Outputs data in? |
+|-----------|-------------------------|------------------|
+| $\alpha$  | Yes                     | .csv, .rosbag    |
+| $\beta$   | Yes                     | .csv, .rosbag    |
+| $\gamma$  | No                      | .rosbag          |
+
+Alice is familiar with ROS, and wants to use it with large scale simulated and
+small scale real-robot experiments with TurtleBots. However, for real robots she
+is unsure what data she will ultimately need, and wants to capture all ROS
+messages, to avoid having to redo experiments later.  She has access to a large
+SLURM-managed cluster, and prefers to develop code on her laptop.
+
+## Use Case#2: Alice The Contagion Modeler
+
+Alice has teamed with Bob, a biologist, to model the spread of contagion among
+agents in a population, and how that affects their individual and collective
+abilities to do tasks. She believes her α algorithm can be reused in this
+context. However, Bob is not convinced and has selected several multi-agent
+models from recent papers: $\delta$,$\epsilon$, and wants Alice to compare
+$\alpha$ to them. $\delta$ was originally developed in NetLogo, for modeling
+disease transmission in animals. $\epsilon$ was originally developed for ARGoS
+to model the effects of radiation on robots.
+
+Alice is faced with the following heterogeneity matrix which she must deal with
+with in addition to theoretical and algorithmic issues in her algorithms of
+interest in order to answer her research queries:
+
+| Algorithm  | Can Run On? | Input Requirements? |
+|------------|-------------|---------------------|
+| $\alpha$   | ROS/Gazebo  | XML                 |
+| $\delta$   | NetLogo     | NetLogo             |
+| $\epsilon$ | ARGoS       | XML                 |
+
+Bob is interested in how the rate of contagion spread varies with agent velocity
+and population size. Bob needs to prepare succinct, comprehensive visual
+representations of the results of this research queries for a a presentation,
+including visual comparisons of the multi-agent model as it runs for each
+algorithm. He will give Alice a range of parameter values to test for each
+algorithm based on his ecological knowledge, and rely on Alice to perform the
+experiments. For this project, Alice does not have access to HPC resources, but
+does have a handful of servers in her lab which she can use.
+
+# SIERRA Support Matrix
+
+SIERRA supports multiple platforms which researchers can write code to target
+([docs](https://swarm-robotics-sierra.readthedocs.io/en/master/src/platform/index.html)). SIERRA
+supports multiple execution environments for execution of experiments, such as
+High Performance Computing (HPC) environments
 ([docs](https://swarm-robotics-sierra.readthedocs.io/en/master/src/exec_env/hpc.html))
-and on real robots
-([docs](https://swarm-robotics-sierra.readthedocs.io/en/master/src/exec_env/robots.html)):
+and real robots
+([docs](https://swarm-robotics-sierra.readthedocs.io/en/master/src/exec_env/robots.html)). If
+your desired platform or execution environment is not listed, see the
+[docs](https://swarm-robotics-sierra.readthedocs.io/en/master/src/tutorials.html)
+for how to add it via a plugin.
 
-| Execution Environment     | Supported Platforms |
-| ------------------------- | ------------------- |
-| [SLURM](https://slurm.schedmd.com/documentation.html) | ARGoS, ROS1+Gazebo |
-| [Torque/MOAB](https://adaptivecomputing.com/cherry-services/torque-resource-manager) | ARGoS, ROS1+Gazebo |
-| ADHOC (suitable for a miscellaneous collection of networked compute nodes for a research group) | ARGoS, ROS1+Gazebo |
-| Local machine (for testing) | ARGoS, ROS1+Gazebo |
-| [ROS1+Turtlebot3](https://emanual.robotis.com/docs/en/platform/turtlebot3/overview) | ROS1+Gazebo, ROS1+robot |
+| Execution Environment                                                                | Description                                                                      |
+|--------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
+| [SLURM](https://slurm.schedmd.com/documentation.html)                                | A cluster managed by the SLURM scheduler                                         |
+| [Torque/MOAB](https://adaptivecomputing.com/cherry-services/torque-resource-manager) | A cluster managed by the Torque/MOAB scheduler                                   |
+| ADHOC                                                                                | Miscellaneous collection of networked compute nodes (not managed by a scheduler) |
+| Local                                                                                | The SIERRA host machine (e.g., a researcher's laptop)                            |
+| [Turtlebot3](https://emanual.robotis.com/docs/en/platform/turtlebot3/overview)       | Real turtlebot3 robots                                                           |
 
-To add additional execution environments, see the
-[docs](https://swarm-robotics-sierra.readthedocs.io/en/master/src/tutorials/plugin/exec_env_plugin.html).
+| Platform                                                    | Description                                                                             |
+|-------------------------------------------------------------|-----------------------------------------------------------------------------------------|
+| [ARGoS](https://www.argos-sim.info/index.php)               | Simulator for fast simulation of large swarms. Requires ARGoS >= 3.0.0-beta59.          |
+| [ROS1](https://ros.org)+[Gazebo](https://www.gazebosim.org) | Using ROS1 with the Gazebo simulator. Requires Gazebo >= 11.9.0, ROS1 Noetic or later.  |
+| [ROS1](https://ros.org)+Robot                               | Using ROS1 with a real robot platform of your choice. ROS1 Noetic or later is required. |
 
-## 3. Processing Experiment Results
+SIERRA also supports multiple output formats for experimental outputs. If the
+format for your experimental outputs is not listed, see the
+[docs](https://swarm-robotics-sierra.readthedocs.io/en/master/src/tutorials.html)
+for how to add it via a plugin. SIERRA currently only supports XML experimental
+inputs.
 
-SIERRA supports a number of data formats which simulations/real robot
-experiments can output their data (e.g., the number of robots engaged in a given
-task over time) for processing. For more details see the
-[docs](https://swarm-robotics-sierra.readthedocs.io/en/master/). SIERRA can
-generate various statistics from the results such as confidence intervals on
-observed behavior.
+| Experimental Output Format | Scope                                                     |
+|----------------------------|-----------------------------------------------------------|
+| CSV file                   | Raw experimental outputs, tranforming into heatmap images |
+| PNG file                   | Stitching images together into videos                     |
 
-## 4. Generating Deliverables
+SIERRA supports (mostly) mix-and-match between platforms, execution
+environments, experiment input/output formats as shown in its support matrix
+below. This is one of the most powerful features of SIERRA!
 
-SIERRA can generate many deliverables from the processed experimental results
-automatically (independent of the platform/execution environment!), thus greatly
-simplifying reproduction of previous results if you need to tweak a given graph
-(for example). SIERRA currently supports generating the following deliverables:
+| Execution Environment     | Platform                | Experimental Input Format | Experimental Output Format  |
+| ------------------------- | ----------------------- | ------------------------- | --------------------------- |
+| SLURM                     | ARGoS, ROS1+Gazebo      | XML                       | CSV, PNG                    |
+| Torque/MOAB               | ARGoS, ROS1+Gazebo      | XML                       | CSV, PNG                    |
+| ADHOC                     | ARGoS, ROS1+Gazebo      | XML                       | CSV, PNG                    |
+| Local                     | ARGoS, ROS1+Gazebo      | XML                       | CSV, PNG                    |
+| ROS1+Turtlebot3           | ROS1+Gazebo, ROS1+robot | XML                       | CSV, PNG                    |
 
-   - Camera-ready linegraphs, heatmaps, 3D surfaces, and scatterplots directly
-     from averaged/statistically processed experimental data using matplotlib.
-   - Videos built from frames captured during simulation or real robot
-     operation.
-   - Videos built from captured experimental output .csv files.
+# Requirements To Use SIERRA
 
-For some examples, see the "Generating Deliverables" section
-[here](https://www-users.cse.umn.edu/~harwe006/showcase/aamas-2022-demo).
-
-## 5. Deliverable Comparison
-
-SIERRA can take pieces from graphs generated in stage 4 and put them on a single
-graph to generate camera ready comparison graphs. It can generate comparison
-graphs for:
-
-- Different agent control algorithms which have all been run in the same
-  scenario.
-
-- A single agent control algorithm which has been run in multiple scenarios.
-
-# Platform Support
-
-SIERRA currently supports the following platforms:
-
-- [ARGoS](https://www.argos-sim.info/index.php) for fast simulation of large
-  robot swarms via multiple physics engines.
-
-- [Gazebo](https://www.gazebosim.org) for ROS1+Gazebo.
-
-- [ROS](https://ros.org) for ROS on a real robot.
-
-To define additional platforms, see the
-[docs](https://swarm-robotics-sierra.readthedocs.io/en/master/src/tutorials/plugin/platform_plugin.html).
-
-# Requirements
+The basic requirements are:
 
 - Recent OSX or Linux (Windows is not supported).
 
 - python >= 3.9.
 
-- ARGoS >= 3.0.0-beta59 (if you are using ARGoS).
-
-- ROS1 Noetic or later (if you are using ROS).
-
-- Gazebo 11.9.0 or later (if you are using ROS1+Gazebo).
-
-
-# Installing SIERRA
-
-    pip3 install sierra-research
+For more details, such requirements for researcher code, see the
+[docs](https://swarm-robotics-sierra.readthedocs.io/en/master/src/requirements.html).
 
 # Citing
 If you use SIERRA and have found it helpful, please cite the following paper:
@@ -147,7 +187,9 @@ If you use SIERRA and have found it helpful, please cite the following paper:
 
 # Contributing
 
-See [here](https://swarm-robotics-sierra.readthedocs.io/en/master/src/contributing.html) to get started.
+See
+[here](https://swarm-robotics-sierra.readthedocs.io/en/master/src/contributing.html)
+to get started.
 
 # License
 This project is licensed under GPL 3.0. See [LICENSE](LICENSE.md).

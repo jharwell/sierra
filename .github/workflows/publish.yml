@@ -22,13 +22,16 @@ jobs:
           pip3 install build setuptools
           python3 -m build
 
-      - name: Tag package
-        run: |
-          export TAG=v$(python3 setup.py --version).beta
-          git config user.name "${GITHUB_ACTOR}"
-          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          git tag -fa "${TAG}" -m "Release SIERRA ${TAG}" "${GITHUB_SHA}"
-          git push --force origin "${TAG}"
+      - name: Set tag
+        run: echo "RELEASE_TAG=v$(python3 setup.py --version).beta" >> $GITHUB_ENV
+
+      - name: Github release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: ${{ env.RELEASE_TAG }}
+          prerelease: true
+          title: "Development releease ${{ env.RELEASE_TAG }}"
 
       - name: Publish to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
@@ -53,14 +56,16 @@ jobs:
           pip3 install build setuptools
           python3 -m build
 
-      - name: Tag package
-        run: |
-          export TAG=v$(python3 setup.py --version)
-          git config user.name "${GITHUB_ACTOR}"
-          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-          git tag -fa "${TAG}" -m "Release SIERRA ${TAG}" "${GITHUB_SHA}"
-          git push --force origin "${TAG}"
+      - name: Set tag
+        run: echo "RELEASE_TAG=v$(python3 setup.py --version)" >> $GITHUB_ENV
 
+      - name: Github release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: ${{ env.RELEASE_TAG }}
+          prerelease: false
+          title: "Release ${{ env.RELEASE_TAG }}"
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

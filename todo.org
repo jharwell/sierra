@@ -9,6 +9,10 @@
 - [ ] Test on OSX (reall just getting the python environment setup).
 - [ ] Testing specific command line options
 
+** TODO [#A] Add plugin interface for experimental inputs
+- This is needed as part of making SIERRA directly able to support platforms
+  which can't take XML as input.
+
 ** TODO [#B] Switch reading intra experiment model dataframe index sizes
 From using the size of a different dataframe in the exp to reading from the time
 setup written to the pkl file.

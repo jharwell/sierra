@@ -27,6 +27,7 @@ import sys
 import logging
 
 # 3rd party packages
+import json
 
 # Project packages
 from sierra.core import types, utils
@@ -54,7 +55,10 @@ class BasePluginManager():
         plugins = self.available_plugins()
         if name not in plugins:
             self.logger.fatal("Cannot locate plugin '%s'", name)
-            self.logger.fatal("Loaded plugins: %s", self.loaded)
+            self.logger.fatal('Loaded plugins: %s',
+                              '\n' + json.dumps(self.loaded,
+                                                default=lambda x: '<ModuleSpec>',
+                                                indent=4))
             raise Exception(f"Cannot locate plugin '{name}'")
 
         if plugins[name]['type'] == 'pipeline':
@@ -97,7 +101,10 @@ class BasePluginManager():
             return self.loaded[name]
         except KeyError:
             self.logger.fatal("No such plugin '%s'", name)
-            self.logger.fatal("Loaded plugins: %s", self.loaded)
+            self.logger.fatal('Loaded plugins: %s',
+                              '\n' + json.dumps(self.loaded,
+                                                default=lambda x: '<ModuleSpec>',
+                                                indent=4))
             raise
 
     def get_plugin_module(self, name: str) -> types.ModuleType:
@@ -105,7 +112,10 @@ class BasePluginManager():
             return self.loaded[name]['module']
         except KeyError:
             self.logger.fatal("No such plugin '%s'", name)
-            self.logger.fatal("Loaded plugins: %s", self.loaded)
+            self.logger.fatal('Loaded plugins: %s',
+                              '\n' + json.dumps(self.loaded,
+                                                default=lambda x: '<ModuleSpec>',
+                                                indent=4))
             raise
 
     def has_plugin(self, name: str) -> bool:

@@ -76,6 +76,8 @@ class IntraExpModelRunner:
             utils.dir_create_checked(
                 cmdopts['exp_model_root'], exist_ok=True)
 
+            writer = storage.DataFrameWriter('storage.csv')
+
             for model in self.models:
                 if not model.run_for_exp(criteria, cmdopts, exp_index):
                     self.logger.debug("Skip running intra-experiment model from '%s' for exp%s",
@@ -89,8 +91,8 @@ class IntraExpModelRunner:
                                   exp_index)
                 dfs = model.run(criteria, exp_index, cmdopts)
                 for df, csv_stem in zip(dfs, model.target_csv_stems()):
-                    path_stem = os.path.join(
-                        cmdopts['exp_model_root'], csv_stem)
+                    path_stem = os.path.join(cmdopts['exp_model_root'],
+                                             csv_stem)
 
                     # Write model legend file so the generated graph can find it
                     with open(path_stem + config.kModelsExt['legend'], 'w') as f:
@@ -101,7 +103,6 @@ class IntraExpModelRunner:
                                 break
 
                     # Write model .csv file
-                    writer = storage.DataFrameWriter('storage.csv')
                     writer(df,
                            path_stem + config.kModelsExt['model'],
                            index=False)

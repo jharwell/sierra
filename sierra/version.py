@@ -22,4 +22,4 @@ The one and only place where the current SIERRA version is recorded.
 
 # Project packages
 
-__version__ = "1.2.6"
+__version__ = "1.2.7"

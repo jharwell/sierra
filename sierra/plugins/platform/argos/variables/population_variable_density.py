@@ -99,7 +99,7 @@ class PopulationVariableDensity(vd.VariableDensity):
         return list(map(lambda x: str(round(x, 4)), self.graph_xticks(cmdopts, exp_dirs)))
 
     def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
-        return r"Swarm Density"
+        return r"Population Density"
 
     def n_robots(self, exp_num: int) -> int:
         return int(self.extent.area() * self.densities[exp_num] / 100.0)
