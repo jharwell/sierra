@@ -124,7 +124,7 @@ environment of the local machine.
    --robot turtlebot3
 
 This will run a batch of 4 experiments using a correlated random walk controller
-(CRW) on the turtlebot3. Swarm size will be varied from 1..8, by powers
+(CRW) on the turtlebot3. Population size will be varied from 1..8, by powers
 of 2. Within each experiment, 4 copies of each simulation will be run (each with
 different random seeds), for a total of 16 Gazebo simulations. On a reasonable
 machine it should take about 10 minutes or so to run. After it finishes, you can
@@ -161,13 +161,13 @@ environment of a set of turtlebots.
    --no-master-node \
 
 This will run a batch of 4 experiments using a correlated random walk controller
-(CRW) on the turtlebot3. Swarm size will be varied from 1,2,3,4,5,6. Within each
-experiment, 4 experimental runs will be conducted with each swarm size. SIERRA
-will pause for 60 seconds between runs so you can reset the robot's positions
-and environment before continuing with the next run. ``turtlebots3.txt``
-contains the IP addresses of all 6 robots in the swarm (SIERRA may use different
-combinations of these if the swarm size is < 6). For these experiments, no
-master node is needed, so it is disabled. After all runs have completed and
-SIERRA finishes stages 3 and 4, you can go to ``$HOME/exp`` and find all the
-simulation outputs. For an explanation of SIERRA's runtime directory tree, see
-:ref:`ln-sierra-usage-runtime-exp-tree`.
+(CRW) on the turtlebot3. Population size will be varied from 1,2,3,4,5,6. Within
+each experiment, 4 experimental runs will be conducted with each swarm
+size. SIERRA will pause for 60 seconds between runs so you can reset the robot's
+positions and environment before continuing with the next
+run. ``turtlebots3.txt`` contains the IP addresses of all 6 robots in the swarm
+(SIERRA may use different combinations of these if the swarm size is < 6). For
+these experiments, no master node is needed, so it is disabled. After all runs
+have completed and SIERRA finishes stages 3 and 4, you can go to ``$HOME/exp``
+and find all the simulation outputs. For an explanation of SIERRA's runtime
+directory tree, see :ref:`ln-sierra-usage-runtime-exp-tree`.

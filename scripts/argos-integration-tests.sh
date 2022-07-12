@@ -220,9 +220,9 @@ stage3_outputs_test() {
     [ -f "$stat_root/exp2/collected-data.mean" ] || false
 
     ls -alh "$stat_root/collated/"
-    [ -f "$stat_root/collated/exp0-collected-data-collected_food.mean" ] || false
-    [ -f "$stat_root/collated/exp1-collected-data-collected_food.mean" ] || false
-    [ -f "$stat_root/collated/exp2-collected-data-collected_food.mean" ] || false
+    [ -f "$stat_root/collated/exp0-collected-data-collected_food.csv" ] || false
+    [ -f "$stat_root/collated/exp1-collected-data-collected_food.csv" ] || false
+    [ -f "$stat_root/collated/exp2-collected-data-collected_food.csv" ] || false
 
     rm -rf $SIERRA_ROOT
 }

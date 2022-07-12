@@ -241,7 +241,7 @@ Additional Platform Requirements
                     ROSbag file is per-run, not per-robot; that is, if a given
                     data source somehow built from messages sent from multiple
                     robots, those messages need to be processed/averaged/etc and
-                    then set to a dedicated topic to be recorded.
+                    then sent to a dedicated topic to be recorded.
 
 
 .. _ln-sierra-req-code:
@@ -259,8 +259,8 @@ your code does not meet these assumptions, then you will need to make some
 
 #. Project code uses a configurable random seed. While this is not technically
    `required` for use with SIERRA, all research code should do this for
-   reproducibility. See :ref:`ln-sierra-platform-plugins` for platform-specific details
-   about random seeding and usage with SIERRA.
+   reproducibility. See :ref:`ln-sierra-platform-plugins` for platform-specific
+   details about random seeding and usage with SIERRA.
 
 #. :term:`Experimental Runs<Experimental Run>` can be launched from `any`
    directory; that is, they do not require to be launched from the root of the

@@ -119,10 +119,10 @@ class UnivarIntraScenarioComparator:
                                     self.cli_args.batch_criteria)
 
     def _leaf_select(self, candidate: str) -> bool:
-        """Select which scenario to compare controllers within. You can only compare
-        controllers within the scenario directly generated from the value of
-        ``--batch-criteria``; other scenarios will (probably) cause file not
-        found errors.
+        """Select which scenario to compare controllers within. You can only
+        compare controllers within the scenario directly generated from the
+        value of ``--batch-criteria``; other scenarios will (probably) cause
+        file not found errors.
 
         """
         template_stem, scenario, _ = rdg.parse_batch_leaf(candidate)
@@ -655,22 +655,24 @@ class BivarIntraScenarioComparator:
         """
         opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, None)
         csv_pattern_root = os.path.join(self.cc_csv_root, opath_leaf)
-        pattern = csv_pattern_root + "*.csv"
+        pattern = csv_pattern_root + '*' + config.kStatsExt['mean']
+
         self.logger.debug("Generating paired heatmaps from pattern='%s'",
                           pattern)
 
         paths = [f for f in glob.glob(pattern) if re.search('_[0-9]+', f)]
 
         if len(paths) < 2:
-            self.logger.warn(("Not enough matches from pattern='%s'--skipping "
-                              "paired heatmap generation"),
-                             pattern)
+            self.logger.warning(("Not enough matches from pattern='%s'--"
+                                 "skipping paired heatmap generation"),
+                                pattern)
             return
 
-        ref_df = storage.DataFrameReader('storage.csv')(paths[0])
+        reader = storage.DataFrameReader('storage.csv')
+        ref_df = reader(paths[0])
 
         for i in range(1, len(paths)):
-            df = storage.DataFrameReader('storage.csv')(paths[i])
+            df = reader(paths[i])
 
             if comp_type == 'HMscale':
                 plot_df = df / ref_df
@@ -684,8 +686,8 @@ class BivarIntraScenarioComparator:
             opath = os.path.join(self.cc_graph_root,
                                  leaf) + config.kImageExt
 
-            storage.DataFrameWriter(
-                'storage.csv')(plot_df, ipath, index=False)
+            writer = storage.DataFrameWriter('storage.csv')
+            writer(plot_df, ipath, index=False)
 
             Heatmap(input_fpath=ipath,
                     output_fpath=opath,
@@ -711,21 +713,21 @@ class BivarIntraScenarioComparator:
         containing all pairs of (primary controller, other), one per graph,
         within the specified scenario after input files have been gathered from
         each controller into :attr:`cc_csv_root`. Only valid if the comparison
-        type is ``raw``.
+        type is ``HMraw``.
 
         """
 
         opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, None)
         csv_pattern_root = os.path.join(self.cc_csv_root, opath_leaf)
-        pattern = csv_pattern_root + "*.csv"
+        pattern = csv_pattern_root + '*' + config.kStatsExt['mean']
         self.logger.debug("Generating paired heatmaps from pattern='%s'",
                           pattern)
         paths = [f for f in glob.glob(pattern) if re.search('_[0-9]+', f)]
 
         if len(paths) < 2:
-            self.logger.warn(("Not enough matches from pattern='%s'--skipping "
-                              "dual heatmap generation"),
-                             pattern)
+            self.logger.warning(("Not enough matches from pattern='%s'--"
+                                 "skipping dual heatmap generation"),
+                                pattern)
             return
 
         for i in range(0, len(paths)):
@@ -737,6 +739,7 @@ class BivarIntraScenarioComparator:
             DualHeatmap(input_stem_pattern=pattern,
                         output_fpath=opath,
                         title=title,
+                        large_text=cmdopts['plot_large_text'],
                         zlabel=self._gen_zaxis_label(label, comp_type),
                         xlabel=criteria.graph_xlabel(cmdopts),
                         ylabel=criteria.graph_ylabel(cmdopts),

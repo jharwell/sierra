@@ -773,14 +773,14 @@ class CoreCmdline(BaseCmdline):
                            - Another batch criteria which does not affect swarm
                              size
 
-                           Swarm metrics will be calculated by `computing`
-                           across .csv rows and `projecting` down the columns by
-                           default, since swarm size will only vary within a
-                           row. Passing a value of 1 to this option will
-                           override this calculation, which can be useful in
-                           bivariate batch criteria in which you are interested
-                           in the effect of the OTHER non-size criteria on
-                           various performance measures.
+                           Metrics will be calculated by `computing` across .csv
+                           rows and `projecting` down the columns by default,
+                           since swarm size will only vary within a row. Passing
+                           a value of 1 to this option will override this
+                           calculation, which can be useful in bivariate batch
+                           criteria in which you are interested in the effect of
+                           the OTHER non-size criteria on various performance
+                           measures.
 
                            0=criteria of interest varies across `rows`.
 

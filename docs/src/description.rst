@@ -1,15 +1,13 @@
 SIERRA is a plugin framework for automating research driven by the scientific
 method generally, and for agent-based research specifically. It supports a wide
-range of simulated and real-robot platforms, and its deeply modular architecture
-makes it easy to customize for the needs of a specific research project. SIERRA
-can be used with executable code written in any language. SIERRA's one
-restriction is that experimental inputs must be specified in XML in order to be
-usable with SIERRA (see :doc:`/src/requirements` for details).
+range of platforms, and its deeply modular architecture makes it easy to
+customize for the needs of a specific research project. SIERRA can be used with
+executable code written in any language. Not sure if SIERRA makes sense for your
+use case? See :doc:`/src/requirements`, and an overview of its capabilities
+below.
 
-SIERRA Summary
-==============
-
-SIERRA automates the following research pipeline:
+SIERRA Pipeline Automation
+==========================
 
 1. Generating Experiment Inputs
 -------------------------------
@@ -19,12 +17,11 @@ impact on results are measured through a series of trials. SIERRA allows you to
 express this as a research query on the command line, and then parses your query
 to make changes to a template input file to generate launch commands and
 experimental inputs to operationalize it. Switching from targeting platform A
-(e.g., ARGoS) to platform B (e.g., ROS1+Gazebo) is as easy as changing a a
-single command line argument (assuming your code is setup to handle both ARGoS
-and ROS environments!). Similarly for switching from running on the local
-machine to running on a HPC cluster. SIERRA handles all the "backend" aspects of
-running experiments and allows you to focus on the fun parts--the research
-itself!
+(e.g., ARGoS) to platform B (e.g., ROS1+Gazebo) is as easy as changing a single
+command line argument (assuming your code is setup to handle both ARGoS and ROS
+environments!). SIERRA handles the "backend" aspects of defining experimental
+inputs allowing you to focus on their *content*, rather than the mechanics of
+how to turn the content into something that can be executed.
 
 2. Running Experiments
 ----------------------
@@ -34,7 +31,9 @@ real robots, which are handled seamlessly with GNU parallel. For simulators,
 SIERRA will run multiple experimental runs (simulations) from each experiment in
 parallel (exact concurrency dependent on the limits of the computing hardware
 and the nature of the experiment). For real robots, SIERRA will execution 1
-experimental run at a time.
+experimental run at a time. Similar to stage 1, switching between execution
+environments is as easy as changing a s single command line argument (assuming
+your code is setup to handle the environment you are switching to).
 
 SIERRA supports multiple HPC environments for execution of experiments in
 simulation (see :doc:`/src/exec_env/hpc`) and on real robots
@@ -78,7 +77,8 @@ To add additional HPC or real robot execution environments, see
 SIERRA supports a number of data formats which simulations/real robot
 experiments can output their data (e.g., the number of robots engaged in a given
 task over time) for processing. SIERRA can generate various statistics from the
-results such as confidence intervals on observed behavior.
+results such as confidence intervals on observed behavior. What statistics are
+generated and for which experimental outputs is configurable via YAML.
 
 4. Deliverable Generation
 -------------------------

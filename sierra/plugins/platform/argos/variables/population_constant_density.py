@@ -125,9 +125,9 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
     def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
         if cmdopts['plot_log_xscale']:
-            return r"$\log_{2}$(Swarm Size)"
+            return r"$\log_{2}$(Population Size)"
 
-        return r"Swarm Size"
+        return r"Population Size"
 
     def n_robots(self, exp_num: int) -> int:
         return int(self.target_density / 100.0 * self.dimensions[exp_num].area())

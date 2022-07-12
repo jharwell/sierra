@@ -40,6 +40,19 @@ class Heatmap:
     If the necessary .mean file does not exist, the graph is not generated.
 
     """
+    @staticmethod
+    def set_graph_size(df: pd.DataFrame, fig) -> None:
+        """
+        Set graph X,Y size based on dataframe dimensions.
+        """
+        if len(df.index) > len(df.columns):
+            xsize = config.kGraphBaseSize
+            ysize = xsize * float(len(df.index)) / float(len(df.columns))
+        else:
+            ysize = config.kGraphBaseSize
+            xsize = ysize * float(len(df.columns)) / float(len(df.index))
+
+        fig.set_size_inches(xsize, ysize)
 
     def __init__(self,
                  input_fpath: str,
@@ -117,26 +130,12 @@ class Heatmap:
         self._plot_colorbar(ax)
 
         # Output figure
-        self._set_graph_size(df, fig)
+        self.set_graph_size(df, fig)
         fig = ax.get_figure()
 
-        fig.savefig(opath, bbox_inches='tight',
-                    dpi=config.kGraphDPI)
+        fig.savefig(opath, bbox_inches='tight', dpi=config.kGraphDPI)
         # Prevent memory accumulation (fig.clf() does not close everything)
         plt.close(fig)
-
-    def _set_graph_size(self, df: pd.DataFrame, fig) -> None:
-        """
-        Set graph X,Y size based on dataframe dimensions.
-        """
-        if len(df.index) > len(df.columns):
-            xsize = config.kGraphBaseSize
-            ysize = xsize * float(len(df.index)) / float(len(df.columns))
-        else:
-            ysize = config.kGraphBaseSize
-            xsize = ysize * float(len(df.columns)) / float(len(df.index))
-
-        fig.set_size_inches(xsize, ysize)
 
     def _plot_colorbar(self, ax) -> None:
         """
@@ -181,7 +180,6 @@ class DualHeatmap:
     kCardinality = 2
 
     def __init__(self, **kwargs) -> None:
-
         self.input_stem_pattern = os.path.abspath(kwargs['input_stem_pattern'])
         self.output_fpath = kwargs['output_fpath']
         self.title = kwargs['title']
@@ -211,10 +209,12 @@ class DualHeatmap:
                               self.input_stem_pattern, DualHeatmap.kCardinality)
             return
 
-        # Scaffold graph
-        fig, axes = plt.subplots(ncols=2,
-                                 figsize=(config.kGraphBaseSize * 2.0,
-                                          config.kGraphBaseSize))
+        # Scaffold graph. We can use either dataframe for setting the graph
+        # size; we assume they have the same dimensions.
+        #
+        fig, axes = plt.subplots(ncols=2)
+        Heatmap.set_graph_size(dfs[0], fig)
+
         y = np.arange(len(dfs[0].columns))
         x = dfs[0].index
         ax1, ax2 = axes
