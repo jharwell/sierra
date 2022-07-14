@@ -1,4 +1,4 @@
-.. _ln-usage-cli:
+.. _ln-sierra-usage-cli:
 
 ######################
 Command Line Interface
@@ -23,14 +23,14 @@ SIERRA Core
 
 .. include:: /src/usage/cli-argos.rst
 
+============================
+:term:`ROS1+Gazebo` Platform
+============================
+
+.. include:: /src/usage/cli-ros1gazebo.rst
+
 ===========================
-:term:`ROS+Gazebo` Platform
+:term:`ROS1+Robot` Platform
 ===========================
 
-.. include:: /src/usage/cli-rosgazebo.rst
-
-==========================
-:term:`ROS+Robot` Platform
-==========================
-
-.. include:: /src/usage/cli-rosrobot.rst
+.. include:: /src/usage/cli-ros1robot.rst

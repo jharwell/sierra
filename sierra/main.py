@@ -1,10 +1,12 @@
+#!/usr/bin/env python3
 # Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 #
 #  This file is part of SIERRA.
 #
-#  SIERRA is free software: you can redistribute it and/or modify it under the terms of the GNU
-#  General Public License as published by the Free Software Foundation, either version 3 of the
-#  License, or (at your option) any later version.
+#  SIERRA is free software: you can redistribute it and/or modify it under the
+#  terms of the GNU General Public License as published by the Free Software
+#  Foundation, either version 3 of the License, or (at your option) any later
+#  version.
 #
 #  SIERRA is distributed in the hope that it will be useful, but WITHOUT ANY
 #  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
@@ -13,12 +15,13 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
-"""
-Main module/entry point for SIERRA, the helpful command line swarm-robotic automation tool.
+"""Main module/entry point for SIERRA, the helpful command line swarm-robotic
+automation tool.
+
 """
 
 # Core packages
-import logging  # type: tp.Any
+import logging
 import sys
 from collections.abc import Iterable
 import os
@@ -33,12 +36,16 @@ from sierra.core.pipeline.pipeline import Pipeline
 from sierra.core.generators.controller_generator_parser import ControllerGeneratorParser
 import sierra.core.root_dirpath_generator as rdg
 import sierra.core.plugin_manager as pm
-import sierra.core.logging  # type: tp.Any
+import sierra.core.logging  # type: ignore
 import sierra.core.startup
 import sierra.version
 
 
 class SIERRA():
+    """
+    Initialize SIERRA and then launch the pipeline.
+    """
+
     def __init__(self) -> None:
         # Bootstrap the cmdline
         bootstrap = cmd.BootstrapCmdline()
@@ -87,7 +94,7 @@ class SIERRA():
         # Load project cmdline extensions
         self.logger.info("Loading cmdline extensions from project '%s'",
                          project)
-        path = "{0}.cmdline".format(project)
+        path = f"{project}.cmdline"
         module = pm.module_load(path)
 
         # Validate cmdline args

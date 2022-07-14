@@ -19,10 +19,10 @@ import argparse
 import os
 import random
 import typing as tp
-import logging  # type: tp.Any
 import multiprocessing
 import re
 import shutil
+import logging
 
 # 3rd party packages
 import implements
@@ -32,10 +32,10 @@ import packaging.version
 from sierra.plugins.platform.argos import cmdline
 from sierra.core import hpc, xml, config, types, utils, platform
 from sierra.core.experiment import bindings
-from sierra.core import plugin_manager as pm
 import sierra.core.variables.batch_criteria as bc
 
 
+@implements.implements(bindings.ICmdlineParserGenerator)
 class CmdlineParserGenerator():
     """
     Get the cmdline parser to use with the :term:`ARGoS` platform.
@@ -232,7 +232,7 @@ class ExpShellCmdsGenerator():
     def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
         return []
 
-    def exec_exp_cmds(self, exec_opts: types.ExpExecOpts) -> tp.List[types.ShellCmdSpec]:
+    def exec_exp_cmds(self, exec_opts: types.SimpleDict) -> tp.List[types.ShellCmdSpec]:
         return []
 
     def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
@@ -311,11 +311,23 @@ def population_size_from_pickle(chgs: tp.Union[xml.XMLAttrChangeSet,
     return -1
 
 
-def population_size_from_def(exp_def: tp.Union[xml.XMLAttrChangeSet,
-                                               xml.XMLTagAddList],
+def robot_type_from_def(exp_def: xml.XMLLuigi) -> tp.Optional[str]:
+    """
+    Get the entity type of the robots managed by ARGoS.
+
+    .. NOTE:: Assumes homgeneous swarms.
+    """
+    for robot in config.kARGoS['spatial_hash2D']:
+        if exp_def.has_tag(f'.//arena/distribute/entity/{robot}'):
+            return robot
+
+    return None
+
+
+def population_size_from_def(exp_def: xml.XMLLuigi,
                              main_config: types.YAMLDict,
                              cmdopts: types.Cmdopts) -> int:
-    return -1
+    return population_size_from_pickle(exp_def.attr_chgs, main_config, cmdopts)
 
 
 def robot_prefix_extract(main_config: types.YAMLDict,

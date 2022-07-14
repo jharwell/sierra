@@ -15,7 +15,8 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Classes for implementing stage 4 of the experimental pipeline.
+Classes for implementing stage 4 of the experimental pipeline: generating
+deliverables.
 """
 
 # Core packages
@@ -23,7 +24,7 @@ import os
 import typing as tp
 import time
 import datetime
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import yaml
@@ -31,26 +32,23 @@ import yaml
 # Project packages
 from sierra.core.pipeline.stage4.graph_collator import GraphParallelCollator
 from sierra.core.pipeline.stage4.intra_exp_graph_generator import BatchIntraExpGraphGenerator
-from sierra.core.pipeline.stage4.inter_exp_graph_generator import InterExpGraphGenerator
 from sierra.core.pipeline.stage4.model_runner import IntraExpModelRunner
 from sierra.core.pipeline.stage4.model_runner import InterExpModelRunner
 import sierra.core.variables.batch_criteria as bc
 
 from sierra.core.pipeline.stage4.video_renderer import BatchExpParallelVideoRenderer
 import sierra.core.plugin_manager as pm
-from sierra.core.pipeline.stage4.yaml_config_loader import YAMLConfigLoader
-import sierra.core.config
-from sierra.core import types
+from sierra.core import types, config, utils
 
 
 class PipelineStage4:
-    """Implements stage 4 of the experimental pipeline: generating deliverables.
+    """Generates end-result experimental deliverables within single experiment
+    (intra-experiment) and across experiments in a batch (inter-experiment).
 
-    Generates end-result experimental deliverables within single experiment
-    (intra-experiment) and across experiments in a batch (inter-experiment)
-    according to configuration. Currently this includes:
+    Currently this includes:
 
     - Graph generation controlled via YAML config files.
+
     - Video rendering controlled via YAML config files.
 
     This stage is idempotent.
@@ -99,27 +97,26 @@ class PipelineStage4:
         self.cmdopts = cmdopts
 
         self.main_config = main_config
-        self.controller_config = yaml.load(open(os.path.join(self.cmdopts['project_config_root'],
-                                                             sierra.core.config.kYAML['controllers'])),
-                                           yaml.FullLoader)
+        with open(os.path.join(self.cmdopts['project_config_root'],
+                               config.kYAML['controllers'])) as f:
+            self.controller_config = yaml.load(f, yaml.FullLoader)
         self.logger = logging.getLogger(__name__)
 
         # Load YAML config
         loader = pm.module_load_tiered(project=self.cmdopts['project'],
                                        path='pipeline.stage4.yaml_config_loader')
-        config = loader.YAMLConfigLoader()(self.cmdopts)
-        self.intra_LN_config = config['intra_LN']
-        self.intra_HM_config = config['intra_HM']
-        self.inter_LN_config = config['inter_LN']
+        graphs_config = loader.YAMLConfigLoader()(self.cmdopts)
+        self.intra_LN_config = graphs_config['intra_LN']
+        self.intra_HM_config = graphs_config['intra_HM']
+        self.inter_LN_config = graphs_config['inter_LN']
 
         if self.cmdopts['models_enable']:
             self._load_models()
 
     def run(self, criteria: bc.IConcreteBatchCriteria) -> None:
-        """
-        Runs experiment deliverable generation, ``.csv`` collation for
+        """Runs experiment deliverable generation, CSV collation for
         inter-experiment graph generation, and inter-experiment graph
-        generation, as configured on the cmdline.
+        generation.
 
         Video generation: If images have previously been created, then the
         following is run:
@@ -148,7 +145,7 @@ class PipelineStage4:
         #. Model generation for each enabled and loaded model.
 
         #. :class:`~sierra.core.pipeline.stage4.inter_exp_graph_generator.InterExpGraphGenerator`
-           to perform graph generation from collated ``.csv`` files.
+           to perform graph generation from collated CSV files.
 
         """
         if self.cmdopts['project_rendering'] or self.cmdopts['platform_vc']:
@@ -177,7 +174,7 @@ class PipelineStage4:
         self.models_intra = []
         self.models_inter = []
 
-        if not sierra.core.utils.path_exists(project_models):
+        if not utils.path_exists(project_models):
             self.logger.debug("No models to load for project '%s': %s does not exist",
                               self.cmdopts['project'],
                               project_models)
@@ -187,10 +184,16 @@ class PipelineStage4:
                          self.cmdopts['project'])
 
         self.models_config = yaml.load(open(project_models), yaml.FullLoader)
-        pm.models.initialize(self.cmdopts['project_model_root'])
+        pm.models.initialize(self.cmdopts['project'],
+                             self.cmdopts['project_model_root'])
 
         # All models present in the .yaml file are enabled/set to run
         # unconditionally
+        available = pm.models.available_plugins()
+        self.logger.debug("Project %s has %d available model plugins",
+                          self.cmdopts['project'],
+                          len(available))
+
         for module_name in pm.models.available_plugins():
             # No models specified--nothing to do
             if self.models_config.get('models') is None:
@@ -198,14 +201,32 @@ class PipelineStage4:
 
             for conf in self.models_config['models']:
                 if conf['pyfile'] == module_name:
+
+                    self.logger.debug("Model %s enabled by configuration",
+                                      module_name)
                     pm.models.load_plugin(module_name)
-                    module = pm.models.get_plugin_module(module_name)
+                    model_name = f'models.{module_name}'
+                    module = pm.models.get_plugin_module(model_name)
+                    self.logger.debug(("Configured model %s has %d "
+                                       "intra-experiment models"),
+                                      model_name,
+                                      len(module.available_models('intra')))
+
+                    self.logger.debug(("Configured model %s has %d "
+                                       "inter-experiment models"),
+                                      model_name,
+                                      len(module.available_models('inter')))
+
                     for avail in module.available_models('intra'):
                         model = getattr(module, avail)(self.main_config, conf)
                         self.models_intra.append(model)
+
                     for avail in module.available_models('inter'):
                         model = getattr(module, avail)(self.main_config, conf)
                         self.models_inter.append(model)
+                else:
+                    self.logger.debug("Model %s disabled by configuration",
+                                      module_name)
 
         if len(self.models_intra) > 0:
             self.logger.info("Loaded %s intra-experiment models for project '%s'",
@@ -220,7 +241,7 @@ class PipelineStage4:
     def _calc_inter_LN_targets(self) -> tp.List[types.YAMLDict]:
         """
         Use YAML configuration for controllers and inter-experiment graphs to
-        what ``.csv`` files need to be collated/what graphs should be generated.
+        what CSV files need to be collated/what graphs should be generated.
         """
         keys = []
         for category in list(self.controller_config.keys()):
@@ -256,7 +277,8 @@ class PipelineStage4:
         self.logger.info("Rendering complete in %s", str(sec))
 
     def _run_intra_models(self, criteria: bc.IConcreteBatchCriteria) -> None:
-        self.logger.info("Running intra-experiment models...")
+        self.logger.info("Running %d intra-experiment models...",
+                         len(self.models_intra))
         start = time.time()
         IntraExpModelRunner(self.cmdopts,
                             self.models_intra)(self.main_config,
@@ -266,11 +288,13 @@ class PipelineStage4:
         self.logger.info("Intra-experiment models finished in %s", str(sec))
 
     def _run_inter_models(self, criteria: bc.IConcreteBatchCriteria) -> None:
-        self.logger.info("Running inter-experiment models...")
+        self.logger.info("Running %d inter-experiment models...",
+                         len(self.models_inter))
         start = time.time()
-        InterExpModelRunner(self.cmdopts,
-                            self.models_inter)(self.main_config,
-                                               criteria)
+
+        runner = InterExpModelRunner(self.cmdopts, self.models_inter)
+        runner(self.main_config, criteria)
+
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         self.logger.info("Inter-experiment models finished in %s", str(sec))
@@ -315,10 +339,12 @@ class PipelineStage4:
 
         generator = pm.module_load_tiered(project=self.cmdopts['project'],
                                           path='pipeline.stage4.inter_exp_graph_generator')
-        generator.InterExpGraphGenerator(
-            self.main_config, self.cmdopts, targets)(criteria)
+        generator.InterExpGraphGenerator(self.main_config,
+                                         self.cmdopts,
+                                         targets)(criteria)
         elapsed = int(time.time() - start)
-        sec = datetime.timedelta(seconds=elapsed)
+        sec = datetime.timedelta(seconds=elapsed)
+
         self.logger.info(
             "Inter-experiment graph generation complete: %s", str(sec))
 

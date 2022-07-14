@@ -18,13 +18,11 @@ Contains all SIERRA hard-coded configuration in one place.
 """
 
 # Core packages
-import typing as tp
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-
 
 # Project packages
 
@@ -36,10 +34,9 @@ mpl.rcParams['lines.markersize'] = 10
 mpl.rcParams['figure.max_open_warning'] = 10000
 mpl.rcParams['axes.formatter.limits'] = (-4, 4)
 
-# Use latex to render all math, so that it matches how the math renders in papers.
+# Use latex to render all math, so that it matches how the math renders in
+# papers.
 mpl.rcParams['text.usetex'] = True
-
-# mpl.rcParams["axes.prop_cycle"] = plt.cycler("color", plt.cm.tab20.colors)
 
 # Turn off MPL messages when the log level is set to DEBUG or higher. Otherwise
 # you get HUNDREDS.
@@ -50,7 +47,7 @@ logging.getLogger('PIL').setLevel(logging.WARNING)
 mpl.use('Agg')
 
 # Set MPL style
-mpl.style.use('seaborn-colorblind')
+plt.style.use('seaborn-colorblind')
 
 ################################################################################
 # General Configuration
@@ -61,7 +58,6 @@ kImageExt = '.png'
 kRenderFormat = '.mp4'
 
 kPickleExt = '.pkl'
-
 kPickleLeaf = 'exp_def' + kPickleExt
 kRandomSeedsLeaf = "seeds" + kPickleExt
 
@@ -82,9 +78,16 @@ kGraphTextSizeLarge = {
     'legend_label': 32
 }
 
-kStatsExtensions = {
-    # The default
-    'mean': '.csv',
+# These are the file extensions that files read/written by a given storage
+# plugin should have. Once processed by SIERRA they are written out as CSV files
+# with new extensions contextualizing them.
+kStorageExt = {
+    'csv': '.csv'
+}
+
+kStatsExt = {
+    # The default for averaging
+    'mean': '.mean',
 
     # For calculating 95% confidence intervals
     'stddev': '.stddev',
@@ -100,6 +103,10 @@ kStatsExtensions = {
     'cilo': '.cilo',
     'cihi': '.cihi',
 }
+kModelsExt = {
+    'model': '.model',
+    'legend': '.legend'
+}
 
 kARGoS = {
     'physics_iter_per_tick': 10,
@@ -109,6 +116,14 @@ kARGoS = {
     'launch_file_ext': '.argos',
     'n_secs_per_run': 5000,  # seconds
     'n_ticks_per_sec': 5,
+
+    # These are the cell sizes for use with the spatial_hash method for the
+    # dynamics2D engine. Since that method should only be used with lots of
+    # robots (per the docs), we set a cell a little larger than the robot.
+    'spatial_hash2D': {
+        'foot-bot': 0.5,
+        'e-puck': 0.5,
+    }
 }
 
 kROS = {

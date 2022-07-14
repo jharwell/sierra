@@ -13,7 +13,10 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-
+"""
+Kernels for the different types of statistics which can be generated from
+experiments.
+"""
 # Core packages
 import typing as tp
 import math
@@ -23,10 +26,14 @@ import pandas as pd
 import numpy as np
 
 # Project packages
-import sierra.core.config as config
+from sierra.core import config
 
 
 class conf95:
+    """
+    Generate stddev statistics suitable for 95% confidence intervals. Applicable
+    to line graphs.
+    """
     @staticmethod
     def from_groupby(groupby: pd.core.groupby.generic.DataFrameGroupBy) -> tp.Dict[str,
                                                                                    pd.DataFrame]:
@@ -43,6 +50,9 @@ class conf95:
 
 
 class mean:
+    """
+    Generate mean statistics only. Applicable to line graphs and heatmaps.
+    """
     @staticmethod
     def from_groupby(groupby: pd.core.groupby.generic.DataFrameGroupBy) -> tp.Dict[str,
                                                                                    pd.DataFrame]:
@@ -59,6 +69,10 @@ class mean:
 
 
 class bw:
+    """
+    Generate statistics so that box and whisker plots can be included for each
+    data point. Applicable to line graphs.
+    """
     @staticmethod
     def from_groupby(groupby: pd.core.groupby.generic.DataFrameGroupBy) -> tp.Dict[str, pd.DataFrame]:
         return _bw_kernel(groupby, groupby=True, n_runs=groupby.size().values[0])
@@ -84,8 +98,8 @@ def _conf95_kernel(df_like, groupby: bool) -> tp.Dict[str, pd.DataFrame]:
         df_like = df_like.iloc[0, :]
 
     return {
-        config.kStatsExtensions['mean']: _fillna(df_like.mean().round(8)),
-        config.kStatsExtensions['stddev']: _fillna(df_like.std().round(8))
+        config.kStatsExt['mean']: _fillna(df_like.mean().round(8)),
+        config.kStatsExt['stddev']: _fillna(df_like.std().round(8))
     }
 
 
@@ -99,7 +113,7 @@ def _mean_kernel(df_like, groupby: bool) -> tp.Dict[str, pd.DataFrame]:
         df_like = df_like.iloc[0, :]
 
     return {
-        config.kStatsExtensions['mean']: _fillna(df_like.mean().round(8))
+        config.kStatsExt['mean']: _fillna(df_like.mean().round(8))
     }
 
 
@@ -129,25 +143,32 @@ def _bw_kernel(df_like, groupby: bool, n_runs: int) -> tp.Dict[str, pd.DataFrame
     csv_cihi = csv_median + 1.57 * iqr / math.sqrt(n_runs)
 
     return {
-        config.kStatsExtensions['mean']: csv_mean,
-        config.kStatsExtensions['median']: csv_median,
-        config.kStatsExtensions['q1']: csv_q1,
-        config.kStatsExtensions['q3']: csv_q3,
-        config.kStatsExtensions['cilo']: csv_cilo,
-        config.kStatsExtensions['cihi']: csv_cihi,
-        config.kStatsExtensions['whislo']: csv_whislo,
-        config.kStatsExtensions['whishi']: csv_whishi
+        config.kStatsExt['mean']: csv_mean,
+        config.kStatsExt['median']: csv_median,
+        config.kStatsExt['q1']: csv_q1,
+        config.kStatsExt['q3']: csv_q3,
+        config.kStatsExt['cilo']: csv_cilo,
+        config.kStatsExt['cihi']: csv_cihi,
+        config.kStatsExt['whislo']: csv_whislo,
+        config.kStatsExt['whishi']: csv_whishi
     }
 
 
-def _fillna(df_like: tp.Union[pd.DataFrame, np.float64]) -> tp.Union[pd.DataFrame,
-                                                                     np.float64]:
+def _fillna(df_like: tp.Union[pd.DataFrame, np.float64, float]) -> tp.Union[pd.DataFrame,
+                                                                            np.float64]:
     # This is the general case for generating stats from a set of dataframes.
     if isinstance(df_like, pd.DataFrame):
         return df_like.fillna(0)
     # This case is for performance measure stats which operate on pd.Series,
     # which returns a single scalar.
-    elif isinstance(df_like, np.float64):
+    elif isinstance(df_like, (np.float64, float)):
         return np.nan_to_num(df_like, nan=0)
 
-    assert False, "Unknown type"
+    assert False, f"Unknown type={type(df_like)}, value={df_like}"
+
+
+__api__ = [
+    'conf95',
+    'mean',
+    'bw'
+]

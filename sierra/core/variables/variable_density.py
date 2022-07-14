@@ -24,8 +24,8 @@ import typing as tp
 # Project packages
 from sierra.core.variables.batch_criteria import UnivarBatchCriteria
 from sierra.core.utils import ArenaExtent
-from sierra.core.xml import XMLAttrChangeSet
 from sierra.core import types
+from sierra.core.xml import XMLAttrChangeSet
 
 
 class VariableDensity(UnivarBatchCriteria):
@@ -54,7 +54,7 @@ class VariableDensity(UnivarBatchCriteria):
             self, cli_arg, main_config, batch_input_root)
         self.densities = densities
         self.extent = extent
-        self.attr_changes = []
+        self.attr_changes = []  # type: tp.List[XMLAttrChangeSet]
 
 
 class Parser():
@@ -63,7 +63,7 @@ class Parser():
     criteria.
     """
 
-    def __call__(self, criteria_str: str) -> types.CLIArgSpec:
+    def __call__(self, arg: str) -> types.CLIArgSpec:
         """
         Returns:
             Dictionary with keys:
@@ -73,13 +73,13 @@ class Parser():
 
         """
         ret = {}
-        sections = criteria_str.split('.')
+        sections = arg.split('.')
 
         # remove batch criteria variable name, leaving only the spec
         sections = sections[1:]
         assert len(sections) == 3,\
             ("Spec must have 3 sections separated by '.'; "
-             f"have {len(sections)} from '{criteria_str}'")
+             f"have {len(sections)} from '{arg}'")
 
         # Parse density min
         ret['density_min'] = self._parse_density(sections[0], 'minimum')

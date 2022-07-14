@@ -1,4 +1,4 @@
-.. _ln-tutorials-project-stage5-config:
+.. _ln-sierra-tutorials-project-stage5-config:
 
 =====================
 Stage 5 Configuration

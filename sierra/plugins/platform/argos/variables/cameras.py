@@ -14,9 +14,9 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""
-Classes for specifying ARGoS camera positions, timeline, and interpolation, for manipulation the
-frame capture/rendering perspective.
+"""Classes for specifying ARGoS camera positions, timeline, and interpolation,
+for manipulation the frame capture/rendering perspective.
+
 """
 
 # Core packages
@@ -117,22 +117,16 @@ class QTCameraTimeline():
                                                         n_cameras))
 
                 for index, up, look_at, pos in info:
-                    adds.append(XMLTagAdd('.//camera/placements',
-                                          'placement',
-                                          {
-                                              'index': "{0}".format(index),
-                                              'up': "{0},{1},{2}".format(up.x,
-                                                                         up.y,
-                                                                         up.z),
-                                              'position': "{0},{1},{2}".format(pos.x,
-                                                                               pos.y,
-                                                                               pos.z),
-                                              'look_at': "{0},{1},{2}".format(look_at.x,
-                                                                              look_at.y,
-                                                                              look_at.z),
-                                          },
-                                          True)
-                                )
+                    camera = XMLTagAdd('.//camera/placements',
+                                       'placement',
+                                       {
+                                           'index': f"{index}",
+                                           'up': f"{up.x},{up.y},{up.z}",
+                                           'position': f"{pos.x},{pos.y},{pos.z}",
+                                           'look_at': f"{look_at.x},{look_at.y},{look_at.z}",
+                                       },
+                                       True)
+                    adds.append(camera)
 
             self.tag_adds = [adds]
 
@@ -233,17 +227,18 @@ class QTCameraOverhead():
 
             for ext in self.extents:
                 height = max(ext.xsize(), ext.ysize()) * 0.75
-                adds.append(XMLTagAdd('.//camera/placements',
-                                      'placement',
-                                      {
-                                          'index': '0',
-                                                   'position': "{0}, {1}, {2}".format(ext.xsize() / 2.0,
-                                                                                      ext.ysize() / 2.0,
-                                                                                      height),
-                                                   'look_at': "{0}, {1}, 0".format(ext.xsize() / 2.0,
-                                                                                   ext.ysize() / 2.0),
-                                      },
-                                      True))
+                camera = XMLTagAdd('.//camera/placements',
+                                   'placement',
+                                   {
+                                       'index': '0',
+                                       'position': "{0}, {1}, {2}".format(ext.xsize() / 2.0,
+                                                                          ext.ysize() / 2.0,
+                                                                          height),
+                                       'look_at': "{0}, {1}, 0".format(ext.xsize() / 2.0,
+                                                                       ext.ysize() / 2.0),
+                                   },
+                                   True)
+                adds.append(camera)
             self.tag_adds = [adds]
 
         return self.tag_adds

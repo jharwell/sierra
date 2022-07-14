@@ -17,7 +17,7 @@
 # Core packages
 import typing as tp
 import os
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 
@@ -34,10 +34,12 @@ class ExperimentSpec():
     """
     The specification for a single experiment with a batch.
 
+    In the interest of DRY, this class collects the following common components:
+
     - Experiment # within the batch
 
     - Root input directory for all :term:`Experimental Run` input files
-      comprising the :term`experiment`
+      comprising the :term:`Experiment`
 
     - Pickle file path for the experiment
 

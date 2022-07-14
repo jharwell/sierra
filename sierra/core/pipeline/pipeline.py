@@ -15,20 +15,19 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 Container module for the 5 pipeline stages implemented by SIERRA. See
-:ref:`ln-usage-pipeline` for high-level documentation.
+:ref:`ln-sierra-usage-pipeline` for high-level documentation.
 """
 
 # Core packages
 import os
 import typing as tp
-import logging  # type: tp.Any
+import logging
 import argparse
 
 # 3rd party packages
 import yaml
 
 # Project packages
-import sierra.core.variables.batch_criteria as bc
 import sierra.core.plugin_manager as pm
 from sierra.core import types, config
 
@@ -44,7 +43,7 @@ class Pipeline:
 
     def __init__(self,
                  args: argparse.Namespace,
-                 controller: str,
+                 controller: tp.Optional[str],
                  rdg_opts: types.Cmdopts) -> None:
         self.args = args
         self.logger = logging.getLogger(__name__)
@@ -53,7 +52,8 @@ class Pipeline:
             f"Invalid pipeline stage in {args.pipeline}: Only 1-5 valid"
 
         self.cmdopts = {
-            # general
+            # multistage
+            'pipeline': self.args.pipeline,
             'sierra_root': self.args.sierra_root,
             'scenario': self.args.scenario,
             'template_input_file': self.args.template_input_file,
@@ -67,6 +67,7 @@ class Pipeline:
             'dist_stats': self.args.dist_stats,
             'skip_collate': self.args.skip_collate,
             'platform': self.args.platform,
+            'processing_serial': self.args.processing_serial,
 
             # stage 1
             'no_preserve_seeds': self.args.no_preserve_seeds,
@@ -75,10 +76,10 @@ class Pipeline:
             'nodefile': self.args.nodefile,
 
             # stage 3
-            'skip_verify_results': self.args.skip_verify_results,
+            'df_skip_verify': self.args.df_skip_verify,
+            'df_homogenize': self.args.df_homogenize,
             'render_cmd_opts': self.args.render_cmd_opts,
             'processing_mem_limit': self.args.processing_mem_limit,
-            'serial_processing': self.args.serial_processing,
             'storage_medium': self.args.storage_medium,
 
             # stage 4
@@ -139,6 +140,8 @@ class Pipeline:
         self._load_config()
 
         if 5 not in self.args.pipeline:
+            bc = pm.module_load_tiered(project=self.cmdopts['project'],
+                                       path='variables.batch_criteria')
             self.batch_criteria = bc.factory(self.main_config,
                                              self.cmdopts,
                                              self.args)
@@ -147,7 +150,7 @@ class Pipeline:
 
     def run(self) -> None:
         """
-        Run pipeline stages as configured.
+        Run pipeline stages 1-5 as configured.
         """
         if 1 in self.args.pipeline:
             PipelineStage1(self.cmdopts,
@@ -177,7 +180,9 @@ class Pipeline:
         main_path = os.path.join(self.cmdopts['project_config_root'],
                                  config.kYAML['main'])
         try:
-            self.main_config = yaml.load(open(main_path), yaml.FullLoader)
+            with open(main_path) as f:
+                self.main_config = yaml.load(f, yaml.FullLoader)
+
         except FileNotFoundError:
             self.logger.fatal("%s must exist!", main_path)
             raise
@@ -188,7 +193,7 @@ class Pipeline:
             perf_config = yaml.load(open(perf_path), yaml.FullLoader)
 
         except FileNotFoundError:
-            self.logger.warn("%s does not exist!", perf_path)
+            self.logger.warning("%s does not exist!", perf_path)
             perf_config = {}
         self.main_config['sierra'].update(perf_config)
 

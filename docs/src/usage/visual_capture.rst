@@ -1,4 +1,4 @@
-.. _ln-usage-vc:
+.. _ln-sierra-usage-vc:
 
 ==============
 Visual Capture
@@ -13,7 +13,7 @@ section.
    terrabytes of disk space available. In general when using SIERRA's rendering
    capabilities, ``--exp-range`` is your friend.
 
-.. _ln-usage-vc-platform:
+.. _ln-sierra-usage-vc-platform:
 
 Platform Visual Capture
 =======================
@@ -34,7 +34,7 @@ This is applicable to the following platforms:
                computing power available.
 
 
-.. _ln-usage-vc-platform-argos:
+.. _ln-sierra-usage-vc-platform-argos:
 
 ARGos Visual Capture
 --------------------
@@ -57,41 +57,41 @@ stitched together into a unique video file using :program:`ffmpeg` (precise
 command configurable via ``--render-cmd-opts``), and output to
 ``<batch_root>/videos/<exp>``.
 
-.. _ln-usage-rendering-project:
+.. _ln-sierra-usage-rendering-project:
 
 Project Rendering
 =================
 
-Projects can generate ``.csv`` files residing in subdirectories within the
-``main.run_metrics_leaf`` (see :ref:`ln-tutorials-project-main-config`)
+Projects can generate CSV files residing in subdirectories within the
+``main.run_metrics_leaf`` (see :ref:`ln-sierra-tutorials-project-main-config`)
 directory (directory path set on a per ``--project`` basis) for each
-experimental run, in addition to generating ``.csv`` files residing directly in
-the ``main.run_metrics_leaf.`` directory. SIERRA can then render these ``.csv``
+experimental run, in addition to generating CSV files residing directly in
+the ``main.run_metrics_leaf.`` directory. SIERRA can then render these CSV
 files into :class:`~sierra.core.graphs.heatmap.Heatmap` graphs, and stitch these
 images together to make videos.
 
 To use, do the following:
 
-#. Pass ``--project-imagizing`` during stage 3. When passed, the ``.csv`` files
+#. Pass ``--project-imagizing`` during stage 3. When passed, the CSV files
    residing each subdirectory under the ``main.run_metrics_leaf`` directory (no
    recursive nesting is allowed) in each run are treated as snapshots of 2D or
    3D data over time, and will be averaged together across runs and then turn
    into image files suitable for video rendering in stage 4. The following
    restrictions apply:
 
-   - A common stem with a unique numeric ID is required for each ``.csv`` must
-     be present for each ``.csv``.
+   - A common stem with a unique numeric ID is required for each CSV must
+     be present for each CSV.
 
    - The directory name within ``main.run_metrics_leaf`` must be the same as the
-     stem for each ``.csv`` file in that directory. For example, if the
+     stem for each CSV file in that directory. For example, if the
      directory name was ``swarm-distribution`` under ``main.run_metrics_leaf``
-     then all ``.csv`` files within that directory must be named according to
+     then all CSV files within that directory must be named according to
      ``swarm-distribution/swarm-distributionXXXXX.csv``, where XXXXX is any
      length numeric prefix (possibly preceded by an underscore or dash).
 
    .. IMPORTANT::
 
-      Averaging the image ``.csv`` files and generating the images for each
+      Averaging the image CSV files and generating the images for each
       experiment does not happen automatically as part of stage 3 because it can
       take a LONG time and is idempotent. You should only pass
       ``--project-imagizing`` the first time you run stage 3 after running stage
@@ -99,13 +99,13 @@ To use, do the following:
 
 #. Pass ``--project-vc`` during stage 4 after running imagizing via
    ``--project-imagizing`` during stage 3, either on the same invocation or a
-   previous one. SIERRA will take the imagized ``.csv`` files previously created
+   previous one. SIERRA will take the imagized CSV files previously created
    and generate a set of a videos in ``<batch_root>/videos/<exp>`` for each
    experiment in the batch which was run.
 
    .. IMPORTANT::
 
-      Rendering the imagized ``.csv`` does not happen automatically every time
+      Rendering the imagized CSV does not happen automatically every time
       as part of stage 4 because it can take a LONG time and is idempotent. You
       should only pass ``--project-vc`` the first time you run stage 4 after
       having run stage 3 with ``--project-vc`` (unless you are getting paid by

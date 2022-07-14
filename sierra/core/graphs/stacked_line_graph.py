@@ -19,7 +19,7 @@
 import typing as tp
 import copy
 import os
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import pandas as pd
@@ -30,17 +30,17 @@ from sierra.core import config, utils, storage
 
 
 class StackedLineGraph:
-    """Generates a line graph from a set of columns in a ``.csv`
+    """Generates a line graph from a set of columns in a CSV file.
 
-    If the necessary data .csv file does not exist, the graph is not generated.
+    If the necessary data file does not exist, the graph is not generated.
 
-    If the .stddev file that goes with the .csv does not exist, then no error
+    If the .stddev file that goes with the .mean does not exist, then no error
     bars are plotted.
 
-    If the .model file that goes with the .csv does not exist, then no model
+    If the .model file that goes with the .mean does not exist, then no model
     predictions are plotted.
 
-    Ideally, model predictions/stddev calculations would be in derivade classes,
+    Ideally, model predictions/stddev calculations would be in derived classes,
     but I can't figure out a good way to easily pull that stuff out of here.
 
     """
@@ -88,7 +88,7 @@ class StackedLineGraph:
 
     def generate(self) -> None:
         input_fpath = os.path.join(self.stats_root, self.input_stem +
-                                   config.kStatsExtensions['mean'])
+                                   config.kStatsExt['mean'])
         if not utils.path_exists(input_fpath):
             self.logger.debug("Not generating %s: %s does not exist",
                               self.output_fpath,
@@ -127,7 +127,8 @@ class StackedLineGraph:
         fig = ax.get_figure()
         fig.set_size_inches(config.kGraphBaseSize,
                             config.kGraphBaseSize)
-        fig.savefig(self.output_fpath, bbox_inches='tight',
+        fig.savefig(self.output_fpath,
+                    bbox_inches='tight',
                     dpi=config.kGraphDPI)
         # Prevent memory accumulation (fig.clf() does not close everything)
         plt.close(fig)
@@ -184,11 +185,15 @@ class StackedLineGraph:
                          alpha=0.50)
 
     def _plot_legend(self, ax, model_legend: tp.List[str], ncols: int) -> None:
-        # Should have ~3 entries per column, in order to maximize real estate on tightly
-        # constrained papers.
+        # Should always use one column: If a small number of lines are plotted,
+        # then 1 vs. > 1 column makes no difference. If a large number of lines
+        # are plotted, this will make the figures more portrait than landscape,
+        # which is more amenable to inclusion in academic papers.
 
-        # If the legend is not specified, then we assume this is not a graph that will contain any
-        # models.
+        # If the legend is not specified, then we assume this is not a graph
+        # that will contain any models.
+        legend = self.legend
+
         if self.legend is not None:
             legend = copy.deepcopy(self.legend)
             if model_legend:
@@ -199,22 +204,22 @@ class StackedLineGraph:
                       legend,
                       loc='lower center',
                       bbox_to_anchor=(0.5, -0.5),
-                      ncol=ncols,
+                      ncol=1,
                       fontsize=self.text_size['legend_label'])
         else:
             ax.legend(loc='lower center',
                       bbox_to_anchor=(0.5, -0.5),
-                      ncol=ncols,
+                      ncol=1,
                       fontsize=self.text_size['legend_label'])
 
     def _read_stats(self) -> tp.Dict[str, pd.DataFrame]:
         dfs = {}
+        reader = storage.DataFrameReader('storage.csv')
         if self.stats in ['conf95', 'all']:
             stddev_ipath = os.path.join(self.stats_root,
-                                        self.input_stem + config.kStatsExtensions['stddev'])
+                                        self.input_stem + config.kStatsExt['stddev'])
             if utils.path_exists(stddev_ipath):
-                dfs['stddev'] = storage.DataFrameReader(
-                    'storage.csv')(stddev_ipath)
+                dfs['stddev'] = reader(stddev_ipath)
             else:
                 self.logger.warning(
                     "Stddev file not found for '%s'", self.input_stem)
@@ -223,10 +228,10 @@ class StackedLineGraph:
 
     def _read_models(self) -> tp.Tuple[pd.DataFrame, tp.List[str]]:
         if self.model_root is not None:
-            model_fpath = os.path.join(
-                self.model_root, self.input_stem + '.model')
-            model_legend_fpath = os.path.join(
-                self.model_root, self.input_stem + '.legend')
+            model_fpath = os.path.join(self.model_root,
+                                       self.input_stem + config.kModelsExt['model'])
+            model_legend_fpath = os.path.join(self.model_root,
+                                              self.input_stem + config.kModelsExt['legend'])
             if utils.path_exists(model_fpath):
                 model = storage.DataFrameReader('storage.csv')(model_fpath)
                 if utils.path_exists(model_legend_fpath):

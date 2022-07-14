@@ -16,13 +16,13 @@
 #
 """
 Classes for the variable population density batch criteria. See
-:ref:`ln-platform-argos-bc-population-variable-density` for usage
+:ref:`ln-sierra-platform-argos-bc-population-variable-density` for usage
 documentation.
 """
 
 # Core packages
 import typing as tp
-import logging  # type: tp.Any
+import logging
 import numpy as np
 
 # 3rd party packages
@@ -30,13 +30,10 @@ import implements
 
 # Project packages
 from sierra.core.variables import variable_density as vd
-import sierra.core.utils
 import sierra.core.variables.batch_criteria as bc
 from sierra.core.vector import Vector3D
 from sierra.core.xml import XMLAttrChange, XMLAttrChangeSet
-import sierra.core.plugin_manager as pm
-from sierra.core.utils import ArenaExtent
-from sierra.core import types
+from sierra.core import types, utils
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
@@ -63,14 +60,13 @@ class PopulationVariableDensity(vd.VariableDensity):
             for density in self.densities:
                 # ARGoS won't start if there are 0 robots, so you always
                 # need to put at least 1.
-                n_robots = int(self.extent.area() *
-                               (self.target_density / 100.0))
+                n_robots = int(self.extent.area() * (density / 100.0))
                 if n_robots == 0:
                     n_robots = 1
                     self.logger.warning("n_robots set to 1 even though \
-                    calculated as 0 for area=%s,density=%s",
-                                        self.extent.area,
-                                        self.target_density)
+                    calculated as 0 for area=%d,density=%s",
+                                        self.extent.area(),
+                                        density)
                 changeset = XMLAttrChangeSet(XMLAttrChange(".//arena/distribute/entity",
                                                            "quantity",
                                                            str(n_robots)))
@@ -103,28 +99,30 @@ class PopulationVariableDensity(vd.VariableDensity):
         return list(map(lambda x: str(round(x, 4)), self.graph_xticks(cmdopts, exp_dirs)))
 
     def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
-        return r"Swarm Density"
+        return r"Population Density"
 
-    def pm_query(self, pm: str) -> bool:
-        return pm in ['raw', 'scalability', 'self-org']
+    def n_robots(self, exp_num: int) -> int:
+        return int(self.extent.area() * self.densities[exp_num] / 100.0)
 
 
 def factory(cli_arg: str,
             main_config: types.YAMLDict,
-            cmdopts: types.Cmdopts) -> PopulationVariableDensity:
+            cmdopts: types.Cmdopts,
+            **kwargs) -> PopulationVariableDensity:
     """
     Factory to create :class:`PopulationVariableDensity` derived classes from
     the command line definition.
     """
     attr = vd.Parser()(cli_arg)
-    sgp = pm.module_load_tiered(project=cmdopts['project'],
-                                path='generators.scenario_generator_parser')
-    kw = sgp.ScenarioGeneratorParser().to_dict(cmdopts['scenario'])
-    extent = ArenaExtent(Vector3D(kw['arena_x'], kw['arena_y'], kw['arena_z']))
+    kw = utils.gen_scenario_spec(cmdopts, **kwargs)
 
-    densities = [x for x in np.linspace(attr['density_min'],
-                                        attr['density_max'],
-                                        num=attr['cardinality'])]
+    extent = utils.ArenaExtent(Vector3D(kw['arena_x'],
+                                        kw['arena_y'],
+                                        kw['arena_z']))
+
+    densities = list(x for x in np.linspace(attr['density_min'],
+                                            attr['density_max'],
+                                            num=attr['cardinality']))
 
     def __init__(self) -> None:
         PopulationVariableDensity.__init__(self,

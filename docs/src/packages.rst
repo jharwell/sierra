@@ -1,20 +1,14 @@
-.. _ln-packages:
+.. _ln-sierra-packages:
 
 ===============
 SIERRA Packages
 ===============
 
-.. _ln-packages-pypi:
+.. _ln-sierra-packages-pypi:
 
 SIERRA PyPi Package
 ===================
 
-SIERRA can be built locally into a PyPi package which you can install to provide
-fully access to its functionality outside of the SIERRA repo (generally
-necessary for development with SIERRA :term:`projects<Project>`), and without
-modifying your :envvar:`PYTHONPATH`. Eventually, it will be deployed to PyPi,
-and local installations will be unnecessary except for development of SIERRA
-itself.
 
 The SIERRA PyPi package provides the following executables:
 
@@ -40,26 +34,19 @@ manpages are:
 - ``sierra-glossary`` - Glossary of SIERRA terminology to make things
   easier to understand.
 
-Installing SIERRA PyPi locally
-------------------------------
+Installing SIERRA
+-----------------
 
-To install SIERRA locally do the following from the SIERRA repo:
+::
 
-#. Build SIERRA documentation (needed for package manpages)::
+   pip3 install sierra-research
 
-     pip3 install -r docs/requirements.txt
-     cd docs && make man && cd ..
-
-#. Install SIERRA::
-
-     pip3 install .
-
-.. _ln-packages-rosbridge:
+.. _ln-sierra-packages-rosbridge:
 
 SIERRA ROSBridge
 ----------------
 
-SIERRA provides a :term:`ROS` package containing functionality it uses to manage
+SIERRA provides a :term:`ROS1` package containing functionality it uses to manage
 simulations and provide run-time support to :term:`projects<Project>` using a
 :term:`Platform` built on ROS. To use SIERRA with a ROS platform, you need to
 setup the SIERRA ROSbridge package here (details in README):

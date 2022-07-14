@@ -15,15 +15,15 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Classes for implementing stage 3 of the experimental pipeline.
+Classes for implementing stage 3 of the experimental pipeline: processing
+experimental results.
 """
 
 # Core packages
 import os
 import time
 import datetime
-import typing as tp
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import yaml
@@ -38,13 +38,14 @@ from sierra.core import types
 
 
 class PipelineStage3:
-    """Implements stage 3 of the experimental pipeline: processing results.
+    """Processes results of :term:`Experimental Runs <Experimental Run>` within a
+    single :term:`Experiment` and across multiple experiments together.
 
-    Processes results of :term:`Experimental Runs <Experimental Run>` within a
-    single :term:`Experiment` and across multiple experiments together,
-    according to configuration. Currently this includes:
+    Currently this includes:
 
-    - Averaging results for generating per-experiment graphs during stage 4.
+    - Generating statistics from results for generating per-experiment graphs
+      during stage 4. This can generated :term:`Averaged .csv` files, among
+      other statistics.
 
     - Collating results across experiments for generating inter-experiment
       graphs during stage 4.
@@ -80,8 +81,8 @@ class PipelineStage3:
                                     criteria)
 
             else:
-                self.logger.warn("%s does not exist--cannot imagize",
-                                 intra_HM_path)
+                self.logger.warning("%s does not exist--cannot imagize",
+                                    intra_HM_path)
 
     # Private functions
 

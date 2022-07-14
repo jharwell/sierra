@@ -16,11 +16,8 @@
 #
 
 # Core packages
-import sierra.core.config
-import sierra.core.utils
 import os
-import typing as tp
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import numpy as np
@@ -28,7 +25,7 @@ import sympy
 import matplotlib.pyplot as plt
 
 # Project packages
-from sierra.core import storage
+from sierra.core import storage, config, utils
 
 
 class Scatterplot2D:
@@ -59,14 +56,14 @@ class Scatterplot2D:
         self.regression = regression
 
         if large_text:
-            self.text_size = sierra.core.config.kGraphTextSizeLarge
+            self.text_size = config.kGraphTextSizeLarge
         else:
-            self.text_size = sierra.core.config.kGraphTextSizeSmall
+            self.text_size = config.kGraphTextSizeSmall
 
         self.logger = logging.getLogger(__name__)
 
     def generate(self) -> None:
-        if not sierra.core.utils.path_exists(self.input_fpath):
+        if not utils.path_exists(self.input_fpath):
             self.logger.debug("Not generating 2D scatterplot: %s does not exist",
                               self.input_fpath)
             return
@@ -89,10 +86,10 @@ class Scatterplot2D:
 
         # Output figure
         fig = ax.get_figure()
-        fig.set_size_inches(sierra.core.config.kGraphBaseSize,
-                            sierra.core.config.kGraphBaseSize)
-        fig.savefig(self.output_fpath, bbox_inches='tight',
-                    dpi=sierra.core.config.kGraphDPI)
+        fig.set_size_inches(config.kGraphBaseSize, config.kGraphBaseSize)
+        fig.savefig(self.output_fpath,
+                    bbox_inches='tight',
+                    dpi=config.kGraphDPI)
         # Prevent memory accumulation (fig.clf() does not close everything)
         plt.close(fig)
 

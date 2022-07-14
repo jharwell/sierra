@@ -1,4 +1,4 @@
-.. _ln-tutorials-project-template-input-file:
+.. _ln-sierra-tutorials-project-template-input-file:
 
 ====================
 Template Input Files
@@ -34,14 +34,14 @@ Examples of the structure/required content of the XML file passed to SIERRA via
             ...
         <argos-configuration>
 
-   See :ref:`ln-req-xml` for usage/description of the ``__CONTROLLER__`` tag.
+   See :ref:`ln-sierra-req-xml` for usage/description of the ``__CONTROLLER__`` tag.
 
-   .. group-tab:: ROS (Using parameter server)
+   .. group-tab:: ROS1 (Using parameter server)
 
-      This is for the following ROS-based platforms:
+      This is for the following ROS1-based platforms:
 
-      - ROS+Gazebo
-      - ROS+Robot
+      - ROS1+Gazebo
+      - ROS1+Robot
 
       For the purposes of illustration we will use
       ``--template-input-file=sample.launch``:
@@ -62,12 +62,12 @@ Examples of the structure/required content of the XML file passed to SIERRA via
              </robot>
          <ros-configuration>
 
-   .. group-tab:: ROS (Using ``<params>`` tag)
+   .. group-tab:: ROS1 (Using ``<params>`` tag)
 
       This is for the following ROS-based platforms:
 
-      - ROS+Gazebo
-      - ROS+Robot
+      - ROS1+Gazebo
+      - ROS1+Robot
 
       For the purposes of illustration we will use
       ``--template-input-file=sample.launch``:
@@ -98,8 +98,8 @@ Post-Processed Template Input Files
 SIERRA may insert additional XML tags and split the processed template input
 file into multiple template files, depending on the platform. The results of
 this processing are shown below for each supported :term:`Platform`. No
-additional modifications beyond those necessary to get use the platform with
-SIERRA are shown (i.e., no :term:`Batch Criteria` modifications).
+additional modifications beyond those necessary to use the platform with SIERRA
+are shown (i.e., no :term:`Batch Criteria` modifications).
 
 Any of the following may be inserted:
 

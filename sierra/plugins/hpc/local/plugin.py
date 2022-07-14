@@ -64,7 +64,7 @@ class ExpShellCmdsGenerator():
     def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
         return []
 
-    def exec_exp_cmds(self, exec_opts: types.ExpExecOpts) -> tp.List[types.ShellCmdSpec]:
+    def exec_exp_cmds(self, exec_opts: types.SimpleDict) -> tp.List[types.ShellCmdSpec]:
         resume = ''
 
         # This can't be --resume, because then GNU parallel looks at the results

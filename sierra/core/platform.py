@@ -36,7 +36,7 @@ import netifaces
 
 # Project packages
 import sierra.core.plugin_manager as pm
-from sierra.core import config, types, utils
+from sierra.core import config, types
 from sierra.core.experiment import bindings
 import sierra.core.variables.batch_criteria as bc
 
@@ -58,7 +58,7 @@ class CmdlineParserGenerator():
 @implements.implements(bindings.IExpRunShellCmdsGenerator)
 class ExpRunShellCmdsGenerator():
     """
-    Trampoline class for dispatching cmd generation to platforms and/or
+    Trampoline class for dispatching shell cmd generation to platforms and
     execution environments.
 
     Called during stage 1 to add shell commands which should be run immediately
@@ -112,7 +112,7 @@ class ExpRunShellCmdsGenerator():
 
 @implements.implements(bindings.IExpShellCmdsGenerator)
 class ExpShellCmdsGenerator():
-    """Trampoline class for dispatching shell cmd generation to platforms and/or
+    """Trampoline class for dispatching shell cmd generation to platforms and
     execute environments.
 
     Called during stage 2 to run shell commands immediately before running a
@@ -139,7 +139,7 @@ class ExpShellCmdsGenerator():
         cmds.extend(self.env.pre_exp_cmds())
         return cmds
 
-    def exec_exp_cmds(self, exec_opts: types.ExpExecOpts) -> tp.List[types.ShellCmdSpec]:
+    def exec_exp_cmds(self, exec_opts: types.SimpleDict) -> tp.List[types.ShellCmdSpec]:
         cmds = self.platform.exec_exp_cmds(exec_opts)
         cmds.extend(self.env.exec_exp_cmds(exec_opts))
         return cmds
@@ -215,16 +215,17 @@ class ExpConfigurer():
 
 
 class ExecEnvChecker():
-    """
-    Verify the configured ``--exec-env` for the configured ``--platform`` before
-    running any experiments during stage 2. This is needed in addition to the
-    checks performed during stage 1, because stage 2 can be run on its own
-    without running stage 1 first on the same SIERRA invocation.
+    """Verify the configured ``--exec-env`` for the configured ``--platform``
+    before running any experiments during stage 2.
+
+    This is needed in addition to the checks performed during stage 1, because
+    stage 2 can be run on its own without running stage 1 first on the same
+    SIERRA invocation.
 
     """
 
     @staticmethod
-    def parse_nodefile(nodefile: str) -> tp.Set[tp.Dict]:
+    def parse_nodefile(nodefile: str) -> tp.List[types.SimpleDict]:
         ret = []
 
         with open(nodefile, 'r') as f:
@@ -237,7 +238,8 @@ class ExecEnvChecker():
 
                 cores_re = r"^[0-9]+/"
                 if res := re.search(cores_re, line):
-                    cores, ssh = line.split('/')
+                    cores = int(line.split('/')[0])
+                    ssh = line.split('/')[1]
                 else:
                     cores = 1
                     ssh = line
@@ -286,11 +288,9 @@ class ExecEnvChecker():
         self.logger = logging.getLogger(__name__)
 
     def __call__(self) -> None:
-        module = pm.pipeline.get_plugin_module(
-            self.cmdopts['platform'])
+        module = pm.pipeline.get_plugin_module(self.cmdopts['platform'])
         module.ExecEnvChecker(self.cmdopts)()
-        module = pm.pipeline.get_plugin_module(
-            self.cmdopts['exec_env'])
+        module = pm.pipeline.get_plugin_module(self.cmdopts['exec_env'])
         module.ExecEnvChecker(self.cmdopts)()
 
     def check_connectivity(self,
@@ -352,10 +352,10 @@ class ExecEnvChecker():
 
     def check_for_simulator(self, name: str):
         if self.exec_env in ['hpc.local', 'hpc.adhoc']:
-            shellname: str = name
+            shellname = name
         elif self.exec_env in ['hpc.pbs', 'hpc.slurm']:
             arch = os.environ.get('SIERRA_ARCH')
-            shellname: str = '{0}-{1}'.format(name, arch)
+            shellname = f'{name}-{arch}'
         else:
             assert False, \
                 "Bad --exec-env '{0}' for platform '{1}'".format(self.exec_env,
@@ -377,7 +377,6 @@ class ExecEnvChecker():
                 "Bad --exec-env '{0}' for platform '{1}': cannot find '{2}'".format(self.exec_env,
                                                                                     self.platform,
                                                                                     name)
-            return None
 
 
 def get_free_port() -> int:
@@ -419,8 +418,10 @@ def get_local_ip():
 
 __api__ = [
     'CmdlineParserGenerator',
+    'ExpRunShellCmdsGenerator',
+    'ExpShellCmdsGenerator',
     'ParsedCmdlineConfigurer',
-    'ExpRunLaunchCmdGenerator',
-    'ExpCmdsGenerator',
-    'HPCEnvChecker',
+    'ExpRunShellCmdsGenerator',
+    'ExpShellCmdsGenerator',
+    'ExecEnvChecker',
 ]

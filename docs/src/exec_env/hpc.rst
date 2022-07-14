@@ -1,4 +1,4 @@
-.. _ln-exec-env-hpc:
+.. _ln-sierra-exec-env-hpc:
 
 ==============================================================
 High Performance Computing (HPC) Execution Environment Plugins
@@ -12,10 +12,10 @@ environments that come with SIERRA are listed on this page.
 These plugins tested with the following platforms (they may work on other
 platforms out of the box too):
 
-- :ref:`ln-platform-plugins-argos`
-- :ref:`ln-platform-plugins-rosgazebo`
+- :ref:`ln-sierra-platform-plugins-argos`
+- :ref:`ln-sierra-platform-plugins-ros1gazebo`
 
-.. _ln-hpc-plugins-local:
+.. _ln-sierra-hpc-plugins-local:
 
 Local HPC Plugin
 ================
@@ -41,7 +41,7 @@ The # threads per :term:`experimental run <Experimental Run>` is defined with
 ``--physics-n-engines``, and that option is required for this HPC environment
 during stage 1.
 
-.. _ln-hpc-plugins-pbs:
+.. _ln-sierra-hpc-plugins-pbs:
 
 PBS HPC Plugin
 ==============
@@ -75,9 +75,9 @@ TOQUE-PBS docs for meaning); if they are not defined SIERRA will throw an error.
      - Used to calculate # threads per experimental run for each allocated
        compute node via::
 
-         floor(PBS_NUM_PPN / --exec-sims-per-node)
+         floor(PBS_NUM_PPN / --exec-jobs-per-node)
 
-       That is, ``--exec-sims-per-node`` is required for PBS HPC environments.
+       That is, ``--exec-jobs-per-node`` is required for PBS HPC environments.
 
    * - PBS_NODEFILE
 
@@ -98,7 +98,7 @@ an error.
 
 - :envvar:`PARALLEL`
 
-.. _ln-hpc-plugins-slurm:
+.. _ln-sierra-hpc-plugins-slurm:
 
 SLURM HPC Plugin
 ================
@@ -134,7 +134,7 @@ SLURM docs for meaning); if they are not defined SIERRA will throw an error.
 
    * - SLURM_TASKS_PER_NODE
      - Used to set # parallel jobs per allocated compute node. Overriden by
-       ``--exec-sims-per-node`` if passed.
+       ``--exec-jobs-per-node`` if passed.
 
    * - SLURM_JOB_NODELIST
 
@@ -155,7 +155,7 @@ an error.
 
 - :envvar:`PARALLEL`
 
-.. _ln-hpc-plugins-adhoc:
+.. _ln-sierra-hpc-plugins-adhoc:
 
 Adhoc HPC Plugin
 ================

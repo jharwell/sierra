@@ -13,7 +13,9 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-
+"""
+Representation of vectors in 3D space and operations on them..
+"""
 # Core packages
 import math
 import typing as tp
@@ -31,6 +33,10 @@ class Vector3D:
     @staticmethod
     def from_str(s: str, astype=int) -> 'Vector3D':
         return Vector3D(*tuple(map(astype, s.split(','))))
+
+    @staticmethod
+    def d2norm(lhs: 'Vector3D', rhs: 'Vector3D') -> float:
+        return math.sqrt((lhs.x - rhs.x) ** 2 + (lhs.y - rhs.y) ** 2)
 
     def __init__(self, x=0, y=0, z=0):
         self.x = x
@@ -79,11 +85,11 @@ class Vector3D:
         self.z -= o.z
         return self
 
-    # def __ge__(self, other: 'Vector3D') -> bool:
-    #     return self.x >= other.x and self.y >= other.y and self.z >= other.z
+    def __ge__(self, other: 'Vector3D') -> bool:
+        return self.x >= other.x and self.y >= other.y and self.z >= other.z
 
-    # def __le__(self, other: 'Vector3D') -> bool:
-    #     return self.x <= other.x and self.y <= other.y and self.z <= other.z
+    def __le__(self, other: 'Vector3D') -> bool:
+        return self.x <= other.x and self.y <= other.y and self.z <= other.z
 
     def __lt__(self, other: 'Vector3D') -> bool:
         """
@@ -100,7 +106,7 @@ class Vector3D:
         return self.__repr__()
 
     def __repr__(self) -> str:
-        return '({0},{1},{2})'.format(self.x, self.y, self.z)
+        return f'({self.x},{self.y},{self.z})'
 
     def cross(self, o: 'Vector3D') -> 'Vector3D':
         return Vector3D(self.y * o.z - self.z * o.y,

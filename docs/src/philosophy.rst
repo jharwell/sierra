@@ -1,4 +1,4 @@
-.. _ln-philosophy:
+.. _ln-sierra-philosophy:
 
 ========================
 SIERRA Design Philosophy
@@ -52,7 +52,7 @@ applications. When in doubt, SIERRA exposes relevant settings as configuration
 Swiss Army Pipeline
 ===================
 
-SIERRAS 5-stage :ref:`Pipeline<ln-usage-pipeline>` is meant to be like a Swiss
+SIERRAS 5-stage :ref:`Pipeline<ln-sierra-usage-pipeline>` is meant to be like a Swiss
 army knife, in that you can run (mostly) arbitrary subsets of the 5 stages and
 have everything work as you would expect it to, to help with tweaking
 experimental design, generated graphs, etc., with minimal headaches of "Grrr I

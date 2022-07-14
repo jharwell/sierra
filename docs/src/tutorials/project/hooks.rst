@@ -1,4 +1,4 @@
-.. _ln-tutorials-project-hooks:
+.. _ln-sierra-tutorials-project-hooks:
 
 ============
 SIERRA Hooks
@@ -18,6 +18,35 @@ project directory, where ``stageX`` is the stage you want to override part of.
              below. It will probably not work, and even if it does there is
              every chance that it will break stuff.
 
+Multi-Stage Hooks
+=================
+
+Base Batch Criteria
+-------------------
+
+Suppose you want to extend one of the following core SIERRA classes to add
+additional attributes/methods you want to be accessible to all :term:`Batch
+Criteria` in your project:
+
+- :class:`~sierra.core.variables.batch_criteria.BatchCriteria`
+
+- :class:`~sierra.core.variables.batch_criteria.UnivarBatchCriteria`
+
+- :class:`~sierra.core.variables.batch_criteria.BivarBatchCriteria`
+
+To do this, do following:
+
+#. Create ``variables/batch_criteria.py`` in the root directory for your
+   project.
+
+#. Override one or more of the classes above, and SIERRA will then select your
+   version of said override classes when running. Exactly where SIERRA is
+   looking/what module it uses when a given class is requested can be seen with
+   ``--log-level=TRACE``.
+
+.. WARNING:: Don't override or extend any of the interfaces! It will causes
+             static analysis and/or runtime errors.
+
 Stage 3 Hooks
 =============
 
@@ -25,20 +54,22 @@ Experimental Run Collation
 --------------------------
 
 In order to generate additional inter-experiment graphs, you have to also
-collate additional ``.csv`` files by:
+collate additional CSV files by:
 
 #. Create ``pipeline/stage3/run_collator.py``.
 
 #. Override the
    :class:`sierra.core.pipeline.stage3.run_collator.ExperimentalRunCSVGatherer`
-   class: 
+   class:
 
    .. code-block:: python
 
       import sierra.core.pipeline.stage3.run_collator as run_collator
 
       class ExperimentalRunCSVGatherer(run_collator.ExperimentalRunCSVGatherer):
-          def gather_csvs_from_run(self, run: str) -> tp.Dict[tp.Tuple[str, str], pd.DataFrame]:
+          def gather_csvs_from_run(self,
+                                   exp_output_root: str,
+                                   run: str) -> tp.Dict[tp.Tuple[str, str], pd.DataFrame]:
               ...
 
 
@@ -103,6 +134,7 @@ in the batch (e.g., to create graphs of summary performance measures). To do so:
    .. code-block:: python
 
       import sierra.core.pipeline.stage4 as stage4
+      import sierra.core.batch_criteria as bc
 
       class InterExpGraphGenerator(stage4.inter_exp_graph_generator.InterExpGraphGenerator):
           def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:

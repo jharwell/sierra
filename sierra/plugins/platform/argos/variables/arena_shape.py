@@ -46,9 +46,9 @@ class ArenaShape():
         self.attr_changes = []  # type: tp.List[XMLAttrChangeSet]
 
     def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
-        """
-        Generate list of sets of changes necessary to make to the input file to correctly set up the
-        simulation with the specified arena.
+        """Generate list of sets of changes necessary to make to the input file to
+        correctly set up the simulation with the specified arena.
+
         """
         if not self.attr_changes:
             for extent in self.extents:
@@ -57,17 +57,20 @@ class ArenaShape():
         return self.attr_changes
 
     def _gen_chgs_for_extent(self, extent: ArenaExtent) -> XMLAttrChangeSet:
+
+        xsize = extent.xsize()
+        ysize = extent.ysize()
+        zsize = extent.zsize()
+        dims = xsize, ysize, zsize
+
         chgs = XMLAttrChangeSet(XMLAttrChange(".//arena",
                                               "size",
-                                              "{0},{1},{2}".format(extent.xsize(),
-                                                                   extent.ysize(),
-                                                                   extent.zsize())),
+                                              f"{xsize},{ysize},{zsize}"),
                                 XMLAttrChange(".//arena",
                                               "center",
-                                              "{0:.9f},{1:.9f},{2}".format(extent.xsize()
-                                                                           / 2.0, extent.ysize() /
-                                                                           2.0, extent.zsize() /
-                                                                           2.0)),
+                                              "{0:.9f},{1:.9f},{2}".format(xsize / 2.0,
+                                                                           ysize / 2.0,
+                                                                           zsize / 2.0)),
 
                                 # We restrict the places robots can spawn within
                                 # the arena as follows:
@@ -83,24 +86,24 @@ class ArenaShape():
                                 # - All robots start on the ground with Z=0.
                                 XMLAttrChange(".//arena/distribute/position",
                                               "max",
-                                              "{0:.9f}, {1:.9f}, 0".format(extent.xsize() - 2.0 * kWALL_WIDTH - 2.0,
-                                                                           extent.ysize() - 2.0 * kWALL_WIDTH - 2.0)),
+                                              "{0:.9f}, {1:.9f}, 0".format(xsize - 2.0 * kWALL_WIDTH - 2.0,
+                                                                           ysize - 2.0 * kWALL_WIDTH - 2.0)),
                                 XMLAttrChange(".//arena/distribute/position",
                                               "min",
                                               "{0:.9f}, {1:.9f}, 0".format(2.0 * kWALL_WIDTH + 2.0, 2.0 * kWALL_WIDTH + 2.0)),
 
                                 XMLAttrChange(".//arena/*[@id='wall_north']",
                                               "size",
-                                              "{0:.9f}, {1:.9f}, 0.5".format(extent.xsize(), kWALL_WIDTH)),
+                                              "{0:.9f}, {1:.9f}, 0.5".format(xsize, kWALL_WIDTH)),
 
                                 XMLAttrChange(".//arena/*[@id='wall_north']/body",
-                                              "position", "{0:.9f}, {1:.9f}, 0".format(extent.xsize() / 2.0, extent.ysize())),
+                                              "position", "{0:.9f}, {1:.9f}, 0".format(xsize / 2.0, ysize)),
                                 XMLAttrChange(".//arena/*[@id='wall_south']",
                                               "size",
-                                              "{0:.9f}, {1:.9f}, 0.5".format(extent.xsize(), kWALL_WIDTH)),
+                                              "{0:.9f}, {1:.9f}, 0.5".format(xsize, kWALL_WIDTH)),
                                 XMLAttrChange(".//arena/*[@id='wall_south']/body",
                                               "position",
-                                              "{0:.9f}, 0, 0 ".format(extent.xsize() / 2.0)),
+                                              "{0:.9f}, 0, 0 ".format(xsize / 2.0)),
 
                                 # East wall needs to have its X coordinate
                                 # offset by the width of the wall / 2 in order
@@ -114,19 +117,19 @@ class ArenaShape():
                                 XMLAttrChange(".//arena/*[@id='wall_east']",
                                               "size",
                                               "{0:.9f}, {1:.9f}, 0.5".format(kWALL_WIDTH,
-                                                                             extent.ysize() + kWALL_WIDTH)),
+                                                                             ysize + kWALL_WIDTH)),
                                 XMLAttrChange(".//arena/*[@id='wall_east']/body",
                                               "position",
-                                              "{0:.9f}, {1:.9f}, 0".format(extent.xsize() - kWALL_WIDTH / 2.0,
-                                                                           extent.ysize() / 2.0)),
+                                              "{0:.9f}, {1:.9f}, 0".format(xsize - kWALL_WIDTH / 2.0,
+                                                                           ysize / 2.0)),
 
                                 XMLAttrChange(".//arena/*[@id='wall_west']",
                                               "size",
                                               "{0:.9f}, {1:.9f}, 0.5".format(kWALL_WIDTH,
-                                                                             extent.ysize() + kWALL_WIDTH)),
+                                                                             ysize + kWALL_WIDTH)),
                                 XMLAttrChange(".//arena/*[@id='wall_west']/body",
                                               "position",
-                                              "0, {0:.9f}, 0".format(extent.ysize() / 2.0)))
+                                              "0, {0:.9f}, 0".format(ysize / 2.0)))
 
         return chgs
 

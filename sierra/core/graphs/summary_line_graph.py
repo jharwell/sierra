@@ -21,7 +21,7 @@ Linegraph for summarizing the results of a batch experiment in different ways.
 # Core packages
 import os
 import typing as tp
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import matplotlib.ticker as mticker
@@ -117,7 +117,7 @@ class SummaryLineGraph:
 
     def generate(self) -> None:
         input_fpath = os.path.join(self.stats_root, self.input_stem +
-                                   config.kStatsExtensions['mean'])
+                                   config.kStatsExt['mean'])
         if not utils.path_exists(input_fpath):
             self.logger.debug("Not generating %s: %s does not exist",
                               self.output_fpath,
@@ -241,7 +241,7 @@ class SummaryLineGraph:
 
     def _plot_ticks(self, ax) -> None:
         if self.logyscale:
-            ax.set_yscale('symlog', basey=2)
+            ax.set_yscale('symlog', base=2)
             ax.yaxis.set_minor_formatter(mticker.ScalarFormatter())
 
             # Use scientific or decimal notation--whichever has fewer chars
@@ -270,31 +270,31 @@ class SummaryLineGraph:
 
         if self.stats == 'conf95' or self.stats == 'all':
             stddev_ipath = os.path.join(self.stats_root,
-                                        self.input_stem + config.kStatsExtensions['stddev'])
+                                        self.input_stem + config.kStatsExt['stddev'])
 
             if utils.path_exists(stddev_ipath):
                 dfs['stddev'] = storage.DataFrameReader(
                     'storage.csv')(stddev_ipath)
             else:
-                self.logger.warning(
-                    "stddev file not found for '%s'", self.input_stem)
+                self.logger.warning("stddev file not found for '%s'",
+                                    self.input_stem)
 
         if self.stats == 'bw' or self.stats == 'all':
             whislo_ipath = os.path.join(self.stats_root,
-                                        self.input_stem + config.kStatsExtensions['whislo'])
+                                        self.input_stem + config.kStatsExt['whislo'])
             whishi_ipath = os.path.join(self.stats_root,
-                                        self.input_stem + config.kStatsExtensions['whishi'])
+                                        self.input_stem + config.kStatsExt['whishi'])
             median_ipath = os.path.join(self.stats_root,
-                                        self.input_stem + config.kStatsExtensions['median'])
+                                        self.input_stem + config.kStatsExt['median'])
             q1_ipath = os.path.join(self.stats_root,
-                                    self.input_stem + config.kStatsExtensions['q1'])
+                                    self.input_stem + config.kStatsExt['q1'])
             q3_ipath = os.path.join(self.stats_root,
-                                    self.input_stem + config.kStatsExtensions['q3'])
+                                    self.input_stem + config.kStatsExt['q3'])
 
             cihi_ipath = os.path.join(self.stats_root,
-                                      self.input_stem + config.kStatsExtensions['cihi'])
+                                      self.input_stem + config.kStatsExt['cihi'])
             cilo_ipath = os.path.join(self.stats_root,
-                                      self.input_stem + config.kStatsExtensions['cilo'])
+                                      self.input_stem + config.kStatsExt['cilo'])
 
             if utils.path_exists(whislo_ipath):
                 dfs['whislo'] = storage.DataFrameReader(
@@ -345,13 +345,14 @@ class SummaryLineGraph:
 
     def _read_models(self) -> tp.Tuple[pd.DataFrame, tp.List[str]]:
         if self.model_root is not None:
-            self.logger.trace("Model root='%s',stem='%s'",
-                              self.model_root, self.input_stem)
+            self.logger.trace("Model root='%s',stem='%s'",   # type: ignore
+                              self.model_root,
+                              self.input_stem)
 
             model_fpath = os.path.join(
-                self.model_root, self.input_stem + '.model')
+                self.model_root, self.input_stem + config.kModelsExt['model'])
             model_legend_fpath = os.path.join(
-                self.model_root, self.input_stem + '.legend')
+                self.model_root, self.input_stem + config.kModelsExt['legend'])
 
             if utils.path_exists(model_fpath):
                 model = storage.DataFrameReader('storage.csv')(model_fpath)

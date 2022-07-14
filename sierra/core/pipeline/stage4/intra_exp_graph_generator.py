@@ -15,14 +15,15 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
 """
-Classes for generating graphs within a single experiment in a batch.
+Classes for generating graphs within a single :term:`Experiment` in a
+:term:`Batch Experiment`.
 """
 
 # Core packages
 import os
 import copy
 import typing as tp
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import json
@@ -31,10 +32,9 @@ import json
 from sierra.core.graphs.stacked_line_graph import StackedLineGraph
 from sierra.core.graphs.heatmap import Heatmap
 from sierra.core.models.graphs import IntraExpModel2DGraphSet
-import sierra.core.utils
 import sierra.core.variables.batch_criteria as bc
 import sierra.core.plugin_manager as pm
-from sierra.core import types
+from sierra.core import types, config, utils
 
 
 class BatchIntraExpGraphGenerator:
@@ -57,6 +57,7 @@ class BatchIntraExpGraphGenerator:
                  criteria: bc.IConcreteBatchCriteria) -> None:
         """
         Parameters:
+
             main_config: Parsed dictionary of main YAML configuration
 
             controller_config: Parsed dictionary of controller YAML
@@ -71,9 +72,9 @@ class BatchIntraExpGraphGenerator:
             criteria:  The :term:`Batch Criteria` used for the batch
                        experiment.
         """
-        exp_to_gen = sierra.core.utils.exp_range_calc(self.cmdopts,
-                                                      self.cmdopts['batch_output_root'],
-                                                      criteria)
+        exp_to_gen = utils.exp_range_calc(self.cmdopts,
+                                          self.cmdopts['batch_output_root'],
+                                          criteria)
 
         for exp in exp_to_gen:
             exp = os.path.split(exp)[1]
@@ -110,7 +111,7 @@ class IntraExpGraphGenerator:
     in :class:`~sierra.core.pipeline.stage4.pipeline_stage4.PipelineStage4`.
 
     This class can be extended/overriden using a :term:`Project` hook. See
-    :ref:`ln-tutorials-project-hooks` for details.
+    :ref:`ln-sierra-tutorials-project-hooks` for details.
 
     Attributes:
 
@@ -132,7 +133,7 @@ class IntraExpGraphGenerator:
 
         logger: The handle to the logger for this class. If you extend this
                class, you should save/restore this variable in tandem with
-               overriding it in order to get loggingmessages have unique logger
+               overriding it in order to get logging messages have unique logger
                names between this class and your derived class, in order to
                reduce confusion.
 
@@ -153,8 +154,7 @@ class IntraExpGraphGenerator:
         self.controller_config = controller_config
         self.logger = logging.getLogger(__name__)
 
-        sierra.core.utils.dir_create_checked(
-            self.cmdopts["exp_graph_root"], exist_ok=True)
+        utils.dir_create_checked(self.cmdopts["exp_graph_root"], exist_ok=True)
 
     def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
         """
@@ -220,16 +220,8 @@ class IntraExpGraphGenerator:
 
 class LinegraphsGenerator:
     """
-    Generates linegraphs from :term:`Averaged .csv` files for an experiment.
-
-    Attributes:
-
-        exp_stat_root: Absolute path to experiment statistics directory.
-
-        exp_graph_root: Absolute path to experiment graph output directory.
-
-        targets: Dictionary of lists of dictionaries specifying what graphs
-                 should be generated.
+    Generates linegraphs from :term:`Averaged .csv` files within a single
+    :term:`Experiment`.
     """
 
     def __init__(self,
@@ -247,9 +239,10 @@ class LinegraphsGenerator:
             # For each graph in each category
             for graph in category['graphs']:
                 output_fpath = os.path.join(self.cmdopts['exp_graph_root'],
-                                            'SLN-' + graph['dest_stem'] + sierra.core.config.kImageExt)
+                                            'SLN-' + graph['dest_stem'] + config.kImageExt)
                 try:
-                    self.logger.trace('\n' + json.dumps(graph, indent=4))
+                    self.logger.trace('\n' +  # type: ignore
+                                      json.dumps(graph, indent=4))
                     StackedLineGraph(stats_root=self.cmdopts['exp_stat_root'],
                                      input_stem=graph['src_stem'],
                                      output_fpath=output_fpath,
@@ -282,15 +275,8 @@ class LinegraphsGenerator:
 
 class HeatmapsGenerator:
     """
-    Generates heatmaps from :term:`Averaged .csv` files for an experiment.
-
-    Attributes:
-
-        exp_stat_root: Absolute path to root directory for experiment
-                       statistics.
-
-        targets: Dictionary of lists of dictionaries specifying what graphs
-                 should be generated.
+    Generates heatmaps from :term:`Averaged .csv` files for a single
+    :term:`Experiment`.
     """
 
     def __init__(self,
@@ -312,7 +298,8 @@ class HeatmapsGenerator:
         for category in self.targets:
             # For each graph in each category
             for graph in category['graphs']:
-                self.logger.trace('\n' + json.dumps(graph, indent=4))
+                self.logger.trace('\n' +  # type: ignore
+                                  json.dumps(graph, indent=4))
                 if IntraExpModel2DGraphSet.model_exists(self.exp_model_root,
                                                         graph['src_stem']):
                     IntraExpModel2DGraphSet(self.exp_stat_root,
@@ -322,9 +309,9 @@ class HeatmapsGenerator:
                                             graph.get('title', None)).generate()
                 else:
                     input_fpath = os.path.join(self.exp_stat_root,
-                                               graph['src_stem'] + '.csv')
+                                               graph['src_stem'] + config.kStatsExt['mean'])
                     output_fpath = os.path.join(self.exp_graph_root,
-                                                'HM-' + graph['src_stem'] + sierra.core.config.kImageExt)
+                                                'HM-' + graph['src_stem'] + config.kImageExt)
 
                     Heatmap(input_fpath=input_fpath,
                             output_fpath=output_fpath,

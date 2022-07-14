@@ -24,7 +24,7 @@ import os
 import copy
 import typing as tp
 import argparse
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import pandas as pd
@@ -50,7 +50,7 @@ class UnivarInterScenarioComparator:
 
         scenarios: List of scenario names to compare ``controller`` across.
 
-        sc_csv_root: Absolute directory path to the location scenario ``.csv``
+        sc_csv_root: Absolute directory path to the location scenario CSV
                      files should be output to.
 
         sc_graph_root: Absolute directory path to the location the generated
@@ -108,8 +108,8 @@ class UnivarInterScenarioComparator:
         batch_leaves = [leaf for s, leaf in sorted(zip(indices, batch_leaves),
                                                    key=lambda pair: pair[0])]
 
-        # For each controller comparison graph we are interested in, generate it using data from all
-        # scenarios
+        # For each controller comparison graph we are interested in, generate it
+        # using data from all scenarios
         cmdopts = copy.deepcopy(self.cmdopts)
         for graph in graphs:
             for leaf in batch_leaves:
@@ -226,10 +226,10 @@ class UnivarInterScenarioComparator:
 
         Generates:
 
-        - ``.csv`` file containing results for each scenario the controller is
+        - CSV file containing results for each scenario the controller is
           being compared across, 1 per line.
 
-        - ``.stddev`` file containing stddev for the generated ``.csv`` file, 1
+        - ``.stddev`` file containing stddev for the generated CSV file, 1
           per line.
 
         - ``.model`` file containing model predictions for controller behavior
@@ -244,17 +244,17 @@ class UnivarInterScenarioComparator:
 
         csv_ipath = os.path.join(cmdopts['batch_output_root'],
                                  cmdopts['batch_stat_collate_root'],
-                                 src_stem + ".csv")
+                                 src_stem + config.kStatsExt['mean'])
         stddev_ipath = os.path.join(cmdopts['batch_output_root'],
                                     cmdopts['batch_stat_collate_root'],
-                                    src_stem + ".stddev")
+                                    src_stem + config.kStatsExt['stddev'])
 
         model_ipath_stem = os.path.join(cmdopts['batch_model_root'], src_stem)
-        model_opath_stem = os.path.join(
-            self.sc_model_root, dest_stem + "-" + self.controller)
+        model_opath_stem = os.path.join(self.sc_model_root,
+                                        dest_stem + "-" + self.controller)
 
-        opath_stem = os.path.join(
-            self.sc_csv_root, dest_stem + "-" + self.controller)
+        opath_stem = os.path.join(self.sc_csv_root,
+                                  dest_stem + "-" + self.controller)
 
         # Some experiments might not generate the necessary performance measure
         # .csvs for graph generation, which is OK.
@@ -265,27 +265,34 @@ class UnivarInterScenarioComparator:
 
         # Collect performance measure results. Append to existing dataframe if
         # it exists, otherwise start a new one.
-        data_df = self._accum_df(csv_ipath, opath_stem + '.csv', src_stem)
-        storage.DataFrameWriter('storage.csv')(
-            data_df, opath_stem + '.csv', index=False)
+        data_df = self._accum_df(csv_ipath,
+                                 opath_stem + config.kStatsExt['mean'],
+                                 src_stem)
+        writer = storage.DataFrameWriter('storage.csv')
+        writer(data_df,
+               opath_stem + config.kStatsExt['mean'],
+               index=False)
 
         # Collect performance results stddev. Append to existing dataframe if it
         # exists, otherwise start a new one.
-        stddev_df = self._accum_df(
-            stddev_ipath, opath_stem + '.stddev', src_stem)
+        stddev_df = self._accum_df(stddev_ipath,
+                                   opath_stem + config.kStatsExt['stddev'],
+                                   src_stem)
         if stddev_df is not None:
-            storage.DataFrameWriter('storage.csv')(
-                stddev_df, opath_stem + '.stddev', index=False)
+            writer(stddev_df,
+                   opath_stem + config.kStatsExt['stddev'],
+                   index=False)
 
         # Collect performance results models and legends. Append to existing
         # dataframes if they exist, otherwise start new ones.
-        model_df = self._accum_df(model_ipath_stem + '.model',
-                                  model_opath_stem + '.model',
+        model_df = self._accum_df(model_ipath_stem + config.kModelsExt['model'],
+                                  model_opath_stem + config.kModelsExt['model'],
                                   src_stem)
         if model_df is not None:
-            storage.DataFrameWriter('storage.csv')(
-                model_df, model_opath_stem + '.model', index=False)
-            with open(model_opath_stem + '.legend', 'a') as f:
+            writer(model_df,
+                   model_opath_stem + config.kModelsExt['model'],
+                   index=False)
+            with open(model_opath_stem + config.kModelsExt['legend'], 'a') as f:
                 _, scenario, _ = rdg.parse_batch_leaf(batch_leaf)
                 sgp = pm.module_load_tiered(project=cmdopts['project'],
                                             path='generators.scenario_generator_parser')
@@ -293,13 +300,14 @@ class UnivarInterScenarioComparator:
                 f.write("{0} Prediction\n".format(kw['scenario_tag']))
 
     def _accum_df(self, ipath: str, opath: str, src_stem: str) -> pd.DataFrame:
+        reader = storage.DataFrameReader('storage.csv')
         if utils.path_exists(opath):
-            cum_df = storage.DataFrameReader('storage.csv')(opath)
+            cum_df = reader(opath)
         else:
             cum_df = None
 
         if utils.path_exists(ipath):
-            t = storage.DataFrameReader('storage.csv')(ipath)
+            t = reader(ipath)
             if cum_df is None:
                 cum_df = pd.DataFrame(columns=t.columns)
 

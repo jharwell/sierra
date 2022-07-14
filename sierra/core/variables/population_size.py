@@ -46,7 +46,7 @@ class BasePopulationSize(bc.UnivarBatchCriteria):
         if cmdopts['plot_log_xscale']:
             return [int(math.log2(x)) for x in ret]
         elif cmdopts['plot_enumerated_xscale']:
-            return [i for i in range(0, len(ret))]
+            return list(range(0, len(ret)))
         else:
             return ret
 
@@ -67,29 +67,26 @@ class BasePopulationSize(bc.UnivarBatchCriteria):
 
         return "System Size"
 
-    def pm_query(self, pm: str) -> bool:
-        return pm in ['raw', 'scalability', 'self-org']
-
 
 class Parser():
     """A base parser for use in changing the # robots/agents.
 
     """
 
-    def __call__(self, criteria_str: str) -> types.CLIArgSpec:
+    def __call__(self, arg: str) -> types.CLIArgSpec:
         ret = {
             'max_size': int(),
             'model': str(),
-            'cardinality': None,
-        }  # type: tp.Dict[str, tp.Union[int, str, None]]
+            'cardinality': None
+        }  # type: tp.Dict[str, tp.Union[int, str, tp.Optional[int]]]
 
-        sections = criteria_str.split('.')
+        sections = arg.split('.')
 
         # remove batch criteria variable name, leaving only the spec
         sections = sections[1:]
         assert len(sections) >= 1 and len(sections) <= 2,\
             ("Spec must have 1 or 2 sections separated by '.'; "
-             f"have {len(sections)} from '{criteria_str}'")
+             f"have {len(sections)} from '{arg}'")
 
         # Parse increment type
         res = re.search("Log|Linear", sections[0])
@@ -131,6 +128,6 @@ class Parser():
 
 
 __api__ = [
+    'BasePopulationSize',
     'Parser',
-    'PopulationSize'
 ]

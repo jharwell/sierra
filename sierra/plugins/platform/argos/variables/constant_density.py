@@ -89,7 +89,7 @@ class Parser():
     criteria.
     """
 
-    def __call__(self, cli_arg: str) -> types.CLIArgSpec:
+    def __call__(self, arg: str) -> types.CLIArgSpec:
         """
         Returns:
             Dictionary with keys:
@@ -98,42 +98,40 @@ class Parser():
 
         """
         ret = {}
-        # Need to have 3 dot/4 parts
-        assert len(cli_arg.split('.')) == 4,\
-            "Bad criteria formatting in criteria '{0}': must have 4 sections, separated by '.'".format(
-                cli_arg)
+
+        sections = arg.split('.')
+        # remove variable name, leaving only the spec
+        sections = sections[1:]
+
+        # Need to have 2 dot/3 parts
+        assert len(sections) == 3, \
+            (f"Spec must have 3 sections separated by '.'; have "
+             f"{len(sections)} sections from '{arg}'")
 
         # Parse density
-        density = cli_arg.split('.')[1]
-        res = re.search('[0-9]+', density)
+        res = re.search('[0-9]+', sections[0])
         assert res is not None, \
-            "Bad density characteristic specification in criteria '{0}'".format(
-                cli_arg)
+            f"Bad density characteristic spec in section '{sections[0]}'"
 
         characteristic = float(res.group(0))
 
-        res = re.search('p[0-9]+', density)
+        res = re.search('p[0-9]+', sections[0])
         assert res is not None, \
-            "Bad density mantissa specification in criteria '{0}'".format(
-                cli_arg)
+            f"Bad density mantissa spec in section '{sections[0]}'"
         mantissa = float("0." + res.group(0)[1:])
 
         ret['target_density'] = characteristic + mantissa
 
         # Parse arena size increment
-        increment = cli_arg.split('.')[2]
-        res = re.search('I[0-9]+', increment)
+        res = re.search('I[0-9]+', sections[1])
         assert res is not None, \
-            "Bad arena increment specification in criteria '{0}'".format(
-                cli_arg)
+            f"Bad arena increment spec in section '{sections[1]}'"
         ret['arena_size_inc'] = int(res.group(0)[1:])
 
         # Parse cardinality
-        increment = cli_arg.split('.')[3]
-        res = re.search('C[0-9]+', increment)
+        res = re.search('C[0-9]+', sections[2])
         assert res is not None, \
-            "Bad cardinality specification in criteria '{0}'".format(
-                cli_arg)
+            f"Bad cardinality spec in section '{sections[2]}'"
 
         ret['cardinality'] = int(res.group(0)[1:])
 

@@ -24,9 +24,9 @@ import os
 import random
 import typing as tp
 import copy
-import logging  # type: tp.Any
-import pickle
+import logging
 import time
+import pickle
 
 # 3rd party packages
 
@@ -53,7 +53,7 @@ class ExpCreator:
                          XML input files for this experiment should be written.
 
         exp_output_root: Absolute path to root directory for run outputs
-                         for this experiment (sort of a scratch directory).
+                         for this experiment.
 
         cmdopts: Dictionary containing parsed cmdline options.
 
@@ -98,11 +98,11 @@ class ExpCreator:
             elif len(self.random_seeds) != self.cmdopts['n_runs']:
                 # OK to overwrite the saved random seeds--they changed the
                 # experiment definition.
-                self.logger.warn(("Experiment definition changed: # random "
-                                  "seeds (% s) != --n-runs (%s): create new "
-                                  "seeds"),
-                                 len(self.random_seeds),
-                                 self.cmdopts['n_runs'])
+                self.logger.warning(("Experiment definition changed: # random "
+                                     "seeds (% s) != --n-runs (%s): create new "
+                                     "seeds"),
+                                    len(self.random_seeds),
+                                    self.cmdopts['n_runs'])
                 self.preserve_seeds = False
 
         if not self.preserve_seeds or self.random_seeds is None:
@@ -144,7 +144,7 @@ class ExpCreator:
         # Create all experimental runs
         for run_num in range(self.cmdopts['n_runs']):
             per_run = copy.deepcopy(exp_def)
-            self._create_exp_run(per_run, generator, run_num, self.random_seeds)
+            self._create_exp_run(per_run, generator, run_num)
 
         # Perform experiment level configuration AFTER all runs have been
         # generated in the experiment, in case the configuration depends on the
@@ -156,13 +156,12 @@ class ExpCreator:
             if utils.path_exists(self.seeds_fpath):
                 os.remove(self.seeds_fpath)
             with open(self.seeds_fpath, 'ab') as f:
-                pickle.dump(self.random_seeds, f)
+                utils.pickle_dump(self.random_seeds, f)
 
     def _create_exp_run(self,
                         run_exp_def: xml.XMLLuigi,
                         cmds_generator: bindings.IExpShellCmdsGenerator,
-                        run_num: int,
-                        seeds: tp.List[int]) -> None:
+                        run_num: int) -> None:
         run_output_dir = "{0}_{1}_output".format(self.main_input_name,
                                                  run_num)
 
@@ -207,7 +206,8 @@ class ExpCreator:
             master_fpath = f"{self.commands_fpath}_run{run_num}_master{ext}"
             slave_fpath = f"{self.commands_fpath}_run{run_num}_slave{ext}"
 
-            self.logger.trace("Updating slave cmdfile %s", slave_fpath)
+            self.logger.trace("Updating slave cmdfile %s",   # type: ignore
+                              slave_fpath)
             with open(slave_fpath, 'w') as cmds_file:
                 self._update_cmds_file(cmds_file,
                                        cmds_generator,
@@ -216,7 +216,8 @@ class ExpCreator:
                                        self._get_launch_file_stempath(run_num),
                                        'slave')
 
-            self.logger.trace("Updating master cmdfile %s", master_fpath)
+            self.logger.trace("Updating master cmdfile %s",   # type: ignore
+                              master_fpath)
             with open(master_fpath, 'w') as cmds_file:
                 self._update_cmds_file(cmds_file,
                                        cmds_generator,
@@ -249,27 +250,28 @@ class ExpCreator:
         pre_specs = cmds_generator.pre_run_cmds(for_host,
                                                 launch_stem_path,
                                                 run_num)
-        assert all([spec['shell'] for spec in pre_specs]),\
+        assert all(spec['shell'] for spec in pre_specs),\
             "All pre-exp commands are run in a shell"
         pre_cmds = [spec['cmd'] for spec in pre_specs]
-        self.logger.trace("Pre-experiment cmds: %s", pre_cmds)
+        self.logger.trace("Pre-experiment cmds: %s", pre_cmds)   # type: ignore
 
         exec_specs = cmds_generator.exec_run_cmds(for_host,
                                                   launch_stem_path,
                                                   run_num)
-        assert all([spec['shell'] for spec in exec_specs]),\
+        assert all(spec['shell'] for spec in exec_specs),\
             "All exec-exp commands are run in a shell"
         exec_cmds = [spec['cmd'] for spec in exec_specs]
-        self.logger.trace("Exec-experiment cmds: %s", exec_cmds)
+        self.logger.trace("Exec-experiment cmds: %s", exec_cmds)   # type: ignore
 
         post_specs = cmds_generator.post_run_cmds(for_host)
-        assert all([spec['shell'] for spec in post_specs]),\
+        assert all(spec['shell'] for spec in post_specs),\
             "All post-exp commands are run in a shell"
         post_cmds = [spec['cmd'] for spec in post_specs]
-        self.logger.trace("Post-experiment cmds: %s", post_cmds)
+        self.logger.trace("Post-experiment cmds: %s", post_cmds)   # type: ignore
 
         if len(pre_cmds + exec_cmds + post_cmds) == 0:
-            self.logger.debug(f"Skipping writing {for_host} cmds file: no cmds")
+            self.logger.debug("Skipping writing %s cmds file: no cmds",
+                              for_host)
             return
 
         # If there is 1 cmdfile per experiment, then the pre- and post-exec cmds
@@ -335,7 +337,7 @@ class BatchExpCreator:
         # writing template XML input files for each experiment in the batch with
         # changes from the batch criteria added.
         exp_def = xml.XMLLuigi(input_fpath=self.batch_config_template,
-                               write_config=xml.XMLWriterConfig({'.': ''}))
+                               write_config=xml.XMLWriterConfig([{'.': ''}]))
 
         self.criteria.scaffold_exps(exp_def, self.cmdopts)
 

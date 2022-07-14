@@ -31,40 +31,42 @@ import os
 import multiprocessing as mp
 import typing as tp
 import queue
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import pandas as pd
 import numpy as np
 
 # Project packages
-import sierra.core.utils
 import sierra.core.variables.batch_criteria as bc
-import sierra.core.config
-import sierra.core.storage as storage
 import sierra.core.plugin_manager as pm
-from sierra.core import types
+from sierra.core import types, storage, utils, config
 
 
 class ExperimentalRunParallelCollator:
-    """Gathers :term:`Output .csv` files from each :term:`Experimental Run`.
+    """Gathers :term:`Output .csv` files from each :term:`Experimental Run` into
+    :term:`Collated .csv` files for each :term:`Experiment`.
 
-    Gathered in parallel for each :term:`Experiment` for speed. Used for
-    generating deliverables in stage 4.
+    Gathered in parallel for each experiment for speed, unless disabled with
+    ``--processing-serial``.
 
     """
 
     def __init__(self, main_config: dict, cmdopts: types.Cmdopts):
         self.main_config = main_config
         self.cmdopts = cmdopts
+        self.logger = logging.getLogger(__name__)
 
     def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
-        if self.cmdopts['serial_processing']:
+        if self.cmdopts['processing_serial']:
             n_gatherers = 1
             n_processors = 1
         else:
-            n_gatherers = int(mp.cpu_count() * 0.25)
-            n_processors = int(mp.cpu_count() * 0.75)
+            # Aways need to have at least one of each! If SIERRA is invoked on a
+            # machine with 2 or less logical cores, the calculation with
+            # mp.cpu_count() will return 0 for # gatherers.
+            n_gatherers = max(1, int(mp.cpu_count() * 0.25))
+            n_processors = max(1, int(mp.cpu_count() * 0.75))
 
         pool = mp.Pool(processes=n_gatherers + n_processors)
 
@@ -72,13 +74,17 @@ class ExperimentalRunParallelCollator:
         gatherq = m.Queue()
         processq = m.Queue()
 
-        exp_to_proc = sierra.core.utils.exp_range_calc(self.cmdopts,
-                                                       self.cmdopts['batch_output_root'],
-                                                       criteria)
+        exp_to_proc = utils.exp_range_calc(self.cmdopts,
+                                           self.cmdopts['batch_output_root'],
+                                           criteria)
 
         for exp in exp_to_proc:
             _, leaf = os.path.split(exp)
             gatherq.put((self.cmdopts['batch_output_root'], leaf))
+
+        self.logger.debug("Starting %d gatherers, method=%s",
+                          n_gatherers,
+                          mp.get_start_method())
 
         gathered = [pool.apply_async(ExperimentalRunParallelCollator._gather_worker,
                                      (gatherq,
@@ -87,20 +93,26 @@ class ExperimentalRunParallelCollator:
                                       self.cmdopts['project'],
                                       self.cmdopts['storage_medium'])) for _ in range(0, n_gatherers)]
 
+        self.logger.debug("Starting %d processors, method=%s",
+                          n_processors,
+                          mp.get_start_method())
         processed = [pool.apply_async(ExperimentalRunParallelCollator._process_worker,
                                       (processq,
                                        self.main_config,
                                        self.cmdopts['batch_stat_collate_root'],
-                                       self.cmdopts['storage_medium'])) for _ in range(0, n_processors)]
+                                       self.cmdopts['storage_medium'],
+                                       self.cmdopts['df_homogenize'])) for _ in range(0, n_processors)]
 
         # To capture the otherwise silent crashes when something goes wrong in
         # worker threads. Any assertions will show and any exceptions will be
         # re-raised.
+        self.logger.debug("Waiting for workers to finish")
         [g.get() for g in gathered]
         [p.get() for p in processed]
 
         pool.close()
         pool.join()
+        self.logger.debug("All threads finished")
 
     @staticmethod
     def _gather_worker(gatherq: mp.Queue,
@@ -108,17 +120,16 @@ class ExperimentalRunParallelCollator:
                        main_config: dict,
                        project: str,
                        storage_medium: str) -> None:
+        module = pm.module_load_tiered(project=project,
+                                       path='pipeline.stage3.run_collator')
+        gatherer = module.ExperimentalRunCSVGatherer(main_config,
+                                                     storage_medium,
+                                                     processq)
         while True:
             # Wait for 3 seconds after the queue is empty before bailing
             try:
                 batch_output_root, exp = gatherq.get(True, 3)
-                module = pm.module_load_tiered(project=project,
-                                               path='pipeline.stage3.run_collator')
-                module.ExperimentalRunCSVGatherer(main_config,
-                                                  batch_output_root,
-                                                  exp,
-                                                  storage_medium,
-                                                  processq)()
+                gatherer(batch_output_root, exp)
                 gatherq.task_done()
 
             except queue.Empty:
@@ -128,7 +139,12 @@ class ExperimentalRunParallelCollator:
     def _process_worker(processq: mp.Queue,
                         main_config: dict,
                         batch_stat_pm_root: str,
-                        storage_medium) -> None:
+                        storage_medium: str,
+                        df_homogenize: str) -> None:
+        collator = ExperimentalRunCollator(main_config,
+                                           batch_stat_pm_root,
+                                           storage_medium,
+                                           df_homogenize)
         while True:
             # Wait for 3 seconds after the queue is empty before bailing
             try:
@@ -136,12 +152,7 @@ class ExperimentalRunParallelCollator:
 
                 exp_leaf = list(item.keys())[0]
                 gathered_runs, gathered_dfs = item[exp_leaf]
-                ExperimentalRunCollator(main_config,
-                                        batch_stat_pm_root,
-                                        exp_leaf,
-                                        storage_medium,
-                                        gathered_runs,
-                                        gathered_dfs)()
+                collator(gathered_runs, gathered_dfs, exp_leaf)
                 processq.task_done()
             except queue.Empty:
                 break
@@ -151,31 +162,23 @@ class ExperimentalRunCSVGatherer:
     """Gather :term:`Output .csv` files across all runs within an experiment.
 
     This class can be extended/overriden using a :term:`Project` hook. See
-    :ref:`ln-tutorials-project-hooks` for details.
+    :ref:`ln-sierra-tutorials-project-hooks` for details.
 
     Attributes:
+
         processq: The multiprocessing-safe producer-consumer queue that the data
                   gathered from experimental runs will be placed in for
                   processing.
 
-        exp_leaf: The name of the experiment directory within the
-                  ``batch_output_root``.
-
         storage_medium: The name of the storage medium plugin to use to extract
                         dataframes from when reading run data.
 
-        exp_output_root: The absolute path to the experiment directory to gather
-                         data from.
 
         main_config: Parsed dictionary of main YAML configuration.
 
-        run_metrics_leaf: The name of the directory within the output directory
-                          for each experimental run in which the data can be
-                          found.
-
         logger: The handle to the logger for this class. If you extend this
                 class, you should save/restore this variable in tandem with
-                overriding it in order to get loggingmessages have unique
+                overriding it in order to get logging messages have unique
                 logger names between this class and your derived class, in order
                 to reduce confusion.
 
@@ -183,37 +186,44 @@ class ExperimentalRunCSVGatherer:
 
     def __init__(self,
                  main_config: dict,
-                 batch_output_root: str,
-                 exp_leaf: str,
                  storage_medium: str,
                  processq: mp.Queue) -> None:
         self.processq = processq
 
-        self.exp_leaf = exp_leaf
         self.storage_medium = storage_medium
-        self.exp_output_root = os.path.join(batch_output_root, exp_leaf)
         self.main_config = main_config
 
         self.run_metrics_leaf = main_config['sierra']['run']['run_metrics_leaf']
 
         self.logger = logging.getLogger(__name__)
 
-    def __call__(self):
+    def __call__(self,
+                 batch_output_root: str,
+                 exp_leaf: str):
         """
         Gather data from all experimental runs within a single experiment and
         put them in the queue for processing.
-        """
-        self.logger.info('Gathering .csvs: %s...', self.exp_leaf)
 
-        runs = sorted(os.listdir(self.exp_output_root))
+        Arguments:
+
+            exp_leaf: The name of the experiment directory within the
+                      ``batch_output_root``.
+
+        """
+        self.logger.info('Gathering .csvs: %s...', exp_leaf)
+
+        exp_output_root = os.path.join(batch_output_root, exp_leaf)
+
+        runs = sorted(os.listdir(exp_output_root))
 
         gathered = []
         for run in runs:
-            gathered.append(self.gather_csvs_from_run(run))
+            gathered.append(self.gather_csvs_from_run(exp_output_root, run))
 
-        self.processq.put({self.exp_leaf: (runs, gathered)})
+        self.processq.put({exp_leaf: (runs, gathered)})
 
     def gather_csvs_from_run(self,
+                             exp_output_root: str,
                              run: str) -> tp.Dict[tp.Tuple[str, str], pd.DataFrame]:
         """
         Gather all data from a single run within an experiment, so that
@@ -229,13 +239,13 @@ class ExperimentalRunCSVGatherer:
         intra_perf_leaf = intra_perf_csv.split('.')[0]
         intra_perf_col = self.main_config['sierra']['perf']['intra_perf_col']
 
-        run_output_root = os.path.join(self.exp_output_root,
+        run_output_root = os.path.join(exp_output_root,
                                        run,
                                        self.run_metrics_leaf)
 
         reader = storage.DataFrameReader(self.storage_medium)
         perf_df = reader(os.path.join(run_output_root,
-                                      intra_perf_leaf + '.csv'),
+                                      intra_perf_leaf + config.kStorageExt['csv']),
                          index_col=False)
 
         return {
@@ -255,29 +265,27 @@ class ExperimentalRunCollator:
     def __init__(self,
                  main_config: dict,
                  batch_stat_collate_root: str,
-                 exp_leaf: str,
                  storage_medium: str,
-                 gathered_runs: tp.List[str],
-                 gathered_dfs: tp.List[tp.Dict[tp.Tuple[str, str], pd.DataFrame]]) -> None:
-        self.exp_leaf = exp_leaf
-        self.storage_medium = storage_medium
-        self.gathered_runs = gathered_runs
-        self.gathered_dfs = gathered_dfs
-
+                 df_homogenize: str) -> None:
         self.main_config = main_config
         self.batch_stat_collate_root = batch_stat_collate_root
+        self.df_homogenize = df_homogenize
+
+        self.storage_medium = storage_medium
 
         # To support inverted performance measures where smaller is better
         self.invert_perf = main_config['sierra']['perf'].get('inverted', False)
         self.intra_perf_csv = main_config['sierra']['perf']['intra_perf_csv']
 
-        sierra.core.utils.dir_create_checked(
-            self.batch_stat_collate_root, exist_ok=True)
+        utils.dir_create_checked(self.batch_stat_collate_root, exist_ok=True)
 
-    def __call__(self):
+    def __call__(self,
+                 gathered_runs: tp.List[str],
+                 gathered_dfs: tp.List[tp.Dict[tp.Tuple[str, str], pd.DataFrame]],
+                 exp_leaf: str) -> None:
         collated = {}
-        for run in self.gathered_runs:
-            run_dfs = self.gathered_dfs[self.gathered_runs.index(run)]
+        for run in gathered_runs:
+            run_dfs = gathered_dfs[gathered_runs.index(run)]
             for csv_leaf, col in run_dfs.keys():
                 csv_df = run_dfs[(csv_leaf, col)]
                 # Invert performance if configured.
@@ -295,20 +303,21 @@ class ExperimentalRunCollator:
 
                 if (csv_leaf, col) not in collated:
                     collated[(csv_leaf, col)] = pd.DataFrame(index=csv_df.index,
-                                                             columns=self.gathered_runs)
+                                                             columns=gathered_runs)
                 collated[(csv_leaf, col)][run] = csv_df
 
         for (csv_leaf, col) in collated.keys():
-
             writer = storage.DataFrameWriter(self.storage_medium)
-            writer(collated[(csv_leaf, col)].fillna(0),
-                   os.path.join(self.batch_stat_collate_root,
-                                self.exp_leaf + '-' + csv_leaf + '-' + col + '.csv'),
-                   index=False)
+            df = utils.df_fill(collated[(csv_leaf, col)], self.df_homogenize)
+            fname = f'{exp_leaf}-{csv_leaf}-{col}' + config.kStorageExt['csv']
+            opath = os.path.join(self.batch_stat_collate_root, fname)
+            writer(df, opath, index=False)
 
 
 __api__ = [
     'ExperimentalRunParallelCollator',
     'ExperimentalRunCSVGatherer',
     'ExperimentalRunCollator'
+
+
 ]

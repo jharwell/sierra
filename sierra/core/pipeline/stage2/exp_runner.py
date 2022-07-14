@@ -13,9 +13,9 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""Classes for running and single :term:`Experiments <Experiment>` and
-:term:`Batch Experiments <Batch Experiment>` via the configured method specified
-on the cmdline.
+"""Classes for running single :term:`Experiments <Experiment>` and
+:term:`Batch Experiments <Batch Experiment>` via the method specified
+on the cmdline via ``--exec-env``.
 
 """
 
@@ -25,8 +25,7 @@ import subprocess
 import time
 import sys
 import datetime
-import typing as tp
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 
@@ -37,20 +36,25 @@ import sierra.core.plugin_manager as pm
 
 
 class ExpShell():
-    """
-    Launch a shell which persists across experimental runs so that running pre-
-    and post-run commands has an effect on the actual commands to execute the
-    run.
+    """Launch a shell which persists across experimental runs.
+
+    Having a persistent shell is necessary so that running pre- and post-run
+    shell commands have an effect on the actual commands to execute the run. If
+    you set an environment variable before the simulator launches (for example),
+    and then the shell containing that change exits, and the simulator launches
+    in a new shell, then the configuration has no effect. Thus, a persistent
+    shell.
 
     """
 
-    def __init__(self) -> None:
+    def __init__(self, exec_strict: bool) -> None:
         self.env = os.environ.copy()
         self.logger = logging.getLogger(__name__)
         self.procs = []
+        self.exec_strict = exec_strict
 
     def run_from_spec(self, spec: types.ShellCmdSpec) -> bool:
-        self.logger.trace("Cmd: %s", spec['cmd'])
+        self.logger.trace("Cmd: %s", spec['cmd'])   # type: ignore
 
         # We use a special marker at the end of the cmd's output to know when
         # the environment dump starts.
@@ -83,13 +87,18 @@ class ExpShell():
             stderr = stderr.decode("ascii")
 
             if 'env' in spec and spec['env']:
-                stdout = stdout.split("~~~~ENV_START~~~~")[0]
-                stderr = stderr.split("~~~~ENV_START~~~~")[0]
+                stdout = stdout.split("~~~~ENV_START~~~~", maxsplit=1)[0]
+                stderr = stderr.split("~~~~ENV_START~~~~", maxsplit=1)[0]
 
             self.logger.error("Cmd stdout (last 10 lines): %s",
                               '\n + ''\n'.join(stdout.split('\n')[-10:]))
             self.logger.error("Cmd stderr (last 10 lines): %s",
                               '\n' + '\n'.join(stderr.split('\n')[-10:]))
+
+            if self.exec_strict:
+                raise RuntimeError(("Command failed and strict checking was "
+                                    "requested"))
+
             return False
         else:
             return True
@@ -115,14 +124,21 @@ class ExpShell():
 
 
 class BatchExpRunner:
-    """
-    Runs each :term:`Experiment` in :term:`Batch Experiment` in sequence.
+    """Runs each :term:`Experiment` in :term:`Batch Experiment` in sequence.
 
     Attributes:
 
         batch_exp_root: Absolute path to the root directory for the batch
-                        experiment (i.e. experiment directories are placed in
-                        here).
+                        experiment inputs (i.e. experiment directories are
+                        placed in here).
+
+        batch_stat_root: Absolute path to the root directory for statistics
+                         which are computed in stage {3,4} (i.e. experiment
+                         directories are placed in here).
+
+        batch_stat_exec_root: Absolute path to the root directory for statistics
+                              which are generated as experiments run during
+                              stage 2 (e.g., how long each experiment took).
 
         cmdopts: Dictionary of parsed cmdline options.
 
@@ -181,7 +197,7 @@ class BatchExpRunner:
 
         # Start a new process for the experiment shell so pre-run commands have
         # an effect (if they set environment variables, etc.).
-        shell = ExpShell()
+        shell = ExpShell(self.cmdopts['exec_strict'])
 
         # Run the experiment!
         for exp in exp_to_run:
@@ -208,18 +224,10 @@ class BatchExpRunner:
 
 class ExpRunner:
     """
-    Execute each :term:`Experimental Run` in a :term:`Experiment`.
+    Execute each :term:`Experimental Run` in an :term:`Experiment`.
 
     In parallel if the selected execution environment supports it, otherwise
     sequentially.
-
-    Attributes:
-
-        exp_input_root: Absolute path to the root directory for all generated
-                        run input files for the experiment (i.e. an
-                        experiment directory within the batch experiment root).
-
-        exp_num: Experiment number in the batch.
 
     """
 
@@ -238,16 +246,7 @@ class ExpRunner:
     def __call__(self,
                  exp_input_root: str,
                  exp_num: int) -> None:
-        """Executes experimental runs for a single experiment in parallel.
-
-        Arguments:
-
-            n_jobs: How many concurrent jobs are allowed?
-
-            exec_resume: Is this run of SIERRA resuming a previous run that
-                         failed/did not finish?
-
-            nodefile: List of compute resources to use for the experiment.
+        """Executes experimental runs for a single experiment.
         """
 
         self.logger.info("Running exp%s in '%s'",

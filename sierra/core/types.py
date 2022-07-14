@@ -13,7 +13,10 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-
+"""
+Custom types defined by SIERRA for more readable type hints/better static
+analysis.
+"""
 # Core packages
 import typing as tp
 from types import ModuleType
@@ -28,6 +31,7 @@ from types import ModuleType
 
 Cmdopts = tp.Dict[str, tp.Any]
 YAMLDict = tp.Dict[str, tp.Any]
+SimpleDict = tp.Dict[str, tp.Union[str, int]]
+StrDict = tp.Dict[str, str]
 CLIArgSpec = tp.Dict[str, tp.Any]
 ShellCmdSpec = tp.Dict[tp.Union[str, tp.List[str]], tp.Union[str, bool]]
-ExpExecOpts = tp.Dict[str, tp.Union[str, int]]

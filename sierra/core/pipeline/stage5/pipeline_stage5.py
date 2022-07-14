@@ -15,13 +15,13 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Classes for implementing stage 5 of the experimental pipeline.
+Classes for implementing stage 5 of the experimental pipeline: comparing
+deliverables.
 """
 
 # Core packages
 import os
-import typing as tp
-import logging  # type: ignore
+import logging
 
 # 3rd party packages
 import yaml
@@ -35,9 +35,9 @@ from sierra.core import types
 
 
 class PipelineStage5:
-    """Implements stage5 of the experimental pipeline: comparing deliverables.
+    """Compare controllers within or across scenarios.
 
-    Can either:
+    This can be either:
 
     #. Compare a set of controllers within the same scenario using performance
        measures specified in YAML configuration.
@@ -65,9 +65,11 @@ class PipelineStage5:
     def __init__(self, main_config: dict, cmdopts: types.Cmdopts) -> None:
         self.cmdopts = cmdopts
         self.main_config = main_config
-        self.stage5_config = yaml.load(open(os.path.join(self.cmdopts['project_config_root'],
-                                                         'stage5.yaml')),
-                                       yaml.FullLoader)
+
+        with open(os.path.join(self.cmdopts['project_config_root'],
+                               'stage5.yaml')) as f:
+            self.stage5_config = yaml.load(f, yaml.FullLoader)
+
         self.logger = logging.getLogger(__name__)
 
         if self.cmdopts['controllers_list'] is not None:

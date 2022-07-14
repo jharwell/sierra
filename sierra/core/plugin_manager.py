@@ -24,9 +24,10 @@ import importlib
 import os
 import typing as tp
 import sys
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
+import json
 
 # Project packages
 from sierra.core import types, utils
@@ -44,9 +45,6 @@ class BasePluginManager():
     def loaded_plugins(self):
         return self.loaded.copy()
 
-    def initialize(self, project: str):
-        raise NotImplementedError
-
     def available_plugins(self):
         raise NotImplementedError
 
@@ -57,11 +55,16 @@ class BasePluginManager():
         plugins = self.available_plugins()
         if name not in plugins:
             self.logger.fatal("Cannot locate plugin '%s'", name)
-            raise Exception("Cannot locate plugin '%s'" % name)
+            self.logger.fatal('Loaded plugins: %s',
+                              '\n' + json.dumps(self.loaded,
+                                                default=lambda x: '<ModuleSpec>',
+                                                indent=4))
+            raise Exception(f"Cannot locate plugin '{name}'")
 
         if plugins[name]['type'] == 'pipeline':
-            scoped_name = '{0}.{1}'.format(os.path.basename(plugins[name]['parent_dir'].strip("/")),
-                                           name)
+            parent_scope = os.path.basename(plugins[name]['parent_dir'].strip("/"))
+            scoped_name = f'{parent_scope}.{name}'
+
             if name not in self.loaded:
                 module = importlib.util.module_from_spec(plugins[name]['spec'])
 
@@ -98,7 +101,10 @@ class BasePluginManager():
             return self.loaded[name]
         except KeyError:
             self.logger.fatal("No such plugin '%s'", name)
-            self.logger.fatal("Loaded plugins: %s", self.loaded)
+            self.logger.fatal('Loaded plugins: %s',
+                              '\n' + json.dumps(self.loaded,
+                                                default=lambda x: '<ModuleSpec>',
+                                                indent=4))
             raise
 
     def get_plugin_module(self, name: str) -> types.ModuleType:
@@ -106,7 +112,10 @@ class BasePluginManager():
             return self.loaded[name]['module']
         except KeyError:
             self.logger.fatal("No such plugin '%s'", name)
-            self.logger.fatal("Loaded plugins: %s", self.loaded)
+            self.logger.fatal('Loaded plugins: %s',
+                              '\n' + json.dumps(self.loaded,
+                                                default=lambda x: '<ModuleSpec>',
+                                                indent=4))
             raise
 
     def has_plugin(self, name: str) -> bool:
@@ -122,7 +131,7 @@ class FilePluginManager(BasePluginManager):
 
     def __init__(self) -> None:
         super().__init__()
-        self.search_root = None
+        self.search_root = None  # type: tp.Optional[str]
 
     def initialize(self, project: str, search_root: str) -> None:
         self.search_root = search_root
@@ -133,12 +142,13 @@ class FilePluginManager(BasePluginManager):
         root.
         """
         plugins = {}
+        assert self.search_root is not None, \
+            "FilePluginManager not initialized!"
+
         for possible in os.listdir(self.search_root):
             candidate = os.path.join(self.search_root, possible)
             if os.path.isfile(candidate) and '.py' in candidate:
-                name = "{0}.{1}".format(os.path.basename(candidate),
-                                        os.path.splitext(os.path.split(candidate)[1]))
-
+                name = os.path.splitext(os.path.basename(candidate))[0]
                 spec = importlib.util.spec_from_file_location(name, candidate)
                 plugins[name] = {
                     'spec': spec,
@@ -232,7 +242,7 @@ class ProjectPluginManager(BasePluginManager):
 class CompositePluginManager(BasePluginManager):
     def __init__(self) -> None:
         super().__init__()
-        self.components = []
+        self.components = []  # type: tp.List[tp.Union[DirectoryPluginManager,ProjectPluginManager]]
 
     def loaded_plugins(self):
         return self.loaded.copy()
@@ -267,8 +277,11 @@ models = FilePluginManager()
 
 
 def module_exists(name: str) -> bool:
+    """
+    Check if a module exists before trying to import it.
+    """
     try:
-        mod = __import__(name)
+        _ = __import__(name)
     except ImportError:
         return False
     else:
@@ -276,11 +289,17 @@ def module_exists(name: str) -> bool:
 
 
 def module_load(name: str) -> types.ModuleType:
+    """
+    Import the specified module.
+    """
     return __import__(name, fromlist=["*"])
 
 
 def bc_load(cmdopts: types.Cmdopts, category: str):
-    path = 'variables.{0}'.format(category)
+    """
+    Load the specified :term:`Batch Criteria`.
+    """
+    path = f'variables.{category}'
     return module_load_tiered(project=cmdopts['project'],
                               platform=cmdopts['platform'],
                               path=path)
@@ -289,19 +308,42 @@ def bc_load(cmdopts: types.Cmdopts, category: str):
 def module_load_tiered(path: str,
                        project: tp.Optional[str] = None,
                        platform: tp.Optional[str] = None) -> types.ModuleType:
+    """Attempt to load the specified python module with precedence between
+    sources.
+
+    Generally, the precedence is project -> project submodule -> platform module
+    -> SIERRA core module, to allow users to override SIERRA core functionality
+    with ease. Specifically:
+
+    #. Check if the requested module is a project. If it is, return it.
+
+    #. Check if the requested module is a part of a project (i.e.,
+       ``<project>.<path>`` exists). If it does, return it. This requires that
+       :envvar:`SIERRA_PLUGIN_PATH` to be set properly.
+
+    #. Check if the requested module is provided by the platform plugin (i.e.,
+       ``sierra.platform.<platform>.<path>`` exists). If it does, return it.
+
+    #. Check if the requested module is part of the SIERRA core (i.e.,
+       ``sierra.core.<path>`` exists). If it does, return it.
+
+    If no match was found using any of these, throw an error.
+
+    """
     # First, see if the requested module is a project
     if module_exists(path):
-        logging.trace("Using project path '%s'", path)
+        logging.trace("Using project path '%s'", path)  # type: ignore
         return module_load(path)
 
     # First, see if the requested module is part of the project plugin
     if project is not None:
-        component_path = '{0}.{1}'.format(project, path)
+        component_path = f'{project}.{path}'
         if module_exists(component_path):
-            logging.trace("Using project component path '%s'", component_path)
+            logging.trace("Using project component path '%s'",  # type: ignore
+                          component_path)
             return module_load(component_path)
         else:
-            logging.trace("Project component path '%s' does not exist",
+            logging.trace("Project component path '%s' does not exist",  # type: ignore
                           component_path)
 
     # If that didn't work, check the platform plugin
@@ -310,21 +352,24 @@ def module_load_tiered(path: str,
         # necessary directory to PYTHONPATH so that we don't accidentally get
         # the files from other non-platform plugins with the same name as the
         # platform plugin file we are interested in getting picked.
-        platform_path = 'sierra.plugins.{0}.{1}'.format(platform, path)
+        platform_path = f'sierra.plugins.{platform}.{path}'
         if module_exists(platform_path):
-            logging.trace("Using platform component path '%s'", platform_path)
+            logging.trace("Using platform component path '%s'",  # type: ignore
+                          platform_path)
             return module_load(platform_path)
         else:
-            logging.trace("Platform component path '%s' does not exist",
+            logging.trace("Platform component path '%s' does not exist",  # type: ignore
                           platform_path)
 
     # If that didn't work, then check the SIERRA core
-    core_path = 'sierra.core.{0}'.format(path)
+    core_path = f'sierra.core.{path}'
     if module_exists(core_path):
-        logging.trace("Using SIERRA core path '%s'", core_path)
+        logging.trace("Using SIERRA core path '%s'",  # type: ignore
+                      core_path)
         return module_load(core_path)
     else:
-        logging.trace("SIERRA core path '%s' does not exist", core_path)
+        logging.trace("SIERRA core path '%s' does not exist",  # type: ignore
+                      core_path)
 
     # Module does not exist
     error = "project: '{0}' platform: '{1}' path: '{2}' sys.path: {3}".format(project,
@@ -332,3 +377,16 @@ def module_load_tiered(path: str,
                                                                               path,
                                                                               sys.path)
     raise ImportError(error)
+
+
+__api__ = [
+    'BasePluginManager',
+    'FilePluginManager',
+    'DirectoryPluginManager',
+    'ProjectPluginManager',
+    'CompositePluginManager',
+    'module_exists',
+    'module_load',
+    'bc_load',
+    'module_load_tiered'
+]

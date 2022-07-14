@@ -26,7 +26,6 @@ import typing as tp
 # 3rd party packages
 
 # Project packages
-from sierra.core import config
 import sierra.version
 
 
@@ -45,7 +44,7 @@ class SIERRAArgumentParser(argparse.ArgumentParser):
         message = (f"This is SIERRA {version}.\n"
                    "Usage: sierra-cli [OPTION]...\n"
                    "See the documentation at "
-                   "https://swarm-robotics-sierra.readthedocs.io/en/latest/, or"
+                   "https://swarm-robotics-sierra.readthedocs.io/en/master/, or"
                    "type 'man sierra' inthe terminal.\n")
         file.write(message + "\n")
 
@@ -66,12 +65,12 @@ class BaseCmdline:
     @staticmethod
     def bc_applicable_doc(criteria: tp.List[str]) -> str:
         lst = "".join(map(lambda bc: "   - " + bc + "\n", criteria))
-        return "\n.. TIP:: Applicable batch criteria\n\n" + lst + "\n"
+        return "\n.. TIP:: Applicable batch criteria:\n\n" + lst + "\n"
 
     @staticmethod
     def graphs_applicable_doc(graphs: tp.List[str]) -> str:
         lst = "".join(map(lambda graph: "   - " + graph + "\n", graphs))
-        return "\n.. TIP:: Applicable graphs\n\n" + lst + "\n"
+        return "\n.. TIP:: Applicable graphs:\n\n" + lst + "\n"
 
 
 class BootstrapCmdline(BaseCmdline):
@@ -95,7 +94,11 @@ class BootstrapCmdline(BaseCmdline):
                                """ + self.stage_usage_doc([1, 2, 3, 4, 5]))
 
         bootstrap.add_argument("--log-level",
-                               choices=["INFO", "DEBUG", "TRACE"],
+                               choices=["ERROR",
+                                        "INFO",
+                                        "WARNING",
+                                        "DEBUG",
+                                        "TRACE"],
                                help="""
 
                                  The level of logging to use when running
@@ -126,11 +129,11 @@ class BootstrapCmdline(BaseCmdline):
                                  code has been developed and configured for
                                  ARGoS.
 
-                               - ``platform.rosgazebo`` - This directs SIERRA to
+                               - ``platform.ros1gazebo`` - This directs SIERRA to
                                  run experiments using the :term:`Gazebo`
-                                 simulator and :term:`ROS`. Selecting this
+                                 simulator and :term:`ROS1`. Selecting this
                                  platform assumes your code has been developed
-                                 and configured for Gazebo and ROS.
+                                 and configured for Gazebo and ROS1.
 
                                """,
                                default='platform.argos')
@@ -142,7 +145,7 @@ class BootstrapCmdline(BaseCmdline):
                                this if you are SURE you will never use the
                                SIERRA functionality which requires packages you
                                don't have installed/can't install.
-                               
+
                                """,
                                action='store_true')
 
@@ -161,24 +164,24 @@ class BootstrapCmdline(BaseCmdline):
 
                                - ``hpc.local`` - This directs SIERRA to run
                                  experiments on the local machine. See
-                                 :ref:`ln-hpc-plugins-local` for a detailed
+                                 :ref:`ln-sierra-hpc-plugins-local` for a detailed
                                  description.
 
                                - ``hpc.pbs`` - The directs SIERRA to run
                                  experiments spread across multiple allocated
                                  nodes in an HPC computing environment managed
-                                 by TORQUE-PBS. See :ref:`ln-hpc-plugins-pbs`
+                                 by TORQUE-PBS. See :ref:`ln-sierra-hpc-plugins-pbs`
                                  for a detailed description.
 
                                - ``hpc.slurm`` - The directs SIERRA to run
                                  experiments spread across multiple allocated
                                  nodes in an HPC computing environment managed
-                                 by SLURM. See :ref:`ln-hpc-plugins-slurm` for a
+                                 by SLURM. See :ref:`ln-sierra-hpc-plugins-slurm` for a
                                  detailed description.
 
                                - ``hpc.adhoc`` - This will direct SIERRA to run
                                  experiments on an ad-hoc network of
-                                 computers. See :ref:`ln-hpc-plugins-adhoc` for
+                                 computers. See :ref:`ln-sierra-hpc-plugins-adhoc` for
                                  a detailed description.
 
                                - ``robots.turtlebot`` - This will direct SIERRA
@@ -224,8 +227,7 @@ class CoreCmdline(BaseCmdline):
     def scaffold_cli(self,
                      parents: tp.Optional[tp.List[SIERRAArgumentParser]]) -> None:
         """
-        Scaffold CLI definitions by defining the underlying parser and setting
-                     common argument groups.
+        Scaffold CLI by defining the parser and common argument groups.
         """
         if parents is not None:
             self.parser = SIERRAArgumentParser(prog='sierra-cli',
@@ -264,7 +266,7 @@ class CoreCmdline(BaseCmdline):
                                      content of the file can be any valid XML,
                                      with the exception of the SIERRA
                                      requirements detailed in
-                                     :ref:`ln-tutorials-project-template-input-file`.
+                                     :ref:`ln-sierra-tutorials-project-template-input-file`.
 
                                      """ + self.stage_usage_doc([1, 2, 3, 4]))
 
@@ -397,13 +399,13 @@ class CoreCmdline(BaseCmdline):
                                     frames into videos during stage 4. If the
                                     selected ``--platform`` does not support
                                     visual capture, then this option has no
-                                    effect. See :ref:`ln-usage-vc-platform` for
+                                    effect. See :ref:`ln-sierra-usage-vc-platform` for
                                     full details.
 
                                     """ + self.stage_usage_doc([1, 4]),
                                      action='store_true')
 
-        self.multistage.add_argument("--serial-processing",
+        self.multistage.add_argument("--processing-serial",
                                      help="""
 
                                     If TRUE, then results processing/graph
@@ -489,18 +491,27 @@ class CoreCmdline(BaseCmdline):
         Define cmdline arguments for stage 3.
         """
 
-        self.stage3.add_argument('--skip-verify-results',
+        self.stage3.add_argument('--df-skip-verify',
                                  help="""
+
+                                 SIERRA generally assumes/relies on all
+                                 dataframes with the same name having the same #
+                                 of columns which are of equivalent length
+                                 across :term:`Experimental Runs <Experimental
+                                 Run>` (different columns within a dataframe can
+                                 of course have different lengths). This is
+                                 strictly verified during stage 3 by default.
 
                                  If passed, then the verification step will be
                                  skipped during experimental results processing,
-                                 and outputs will be averaged directly. If not
-                                 all the corresponding ``.csv`` files in all
-                                 experiments generated the same # rows, then
+                                 and outputs will be averaged directly.
+
+                                 If not all the corresponding ``.csv`` files in
+                                 all experiments generated the same # rows, then
                                  SIERRA will (probably) crash during experiments
                                  exist and/or have the stage4. Verification can
-                                 take a long time with large # of runs per
-                                 experiment.
+                                 take a long time with large # of runs and/or
+                                 dataframes per experiment.
 
                                  """ + self.stage_usage_doc([3]),
                                  action='store_true',
@@ -516,14 +527,13 @@ class CoreCmdline(BaseCmdline):
                                  be used, but the ones that come with SIERRA
                                  are:
 
-                                 ``storage.csv`` - Experimental run outputs are
-                                                   stored in a per-run directory
-                                                   as one or more ``.csv``
-                                                   files.
+                                 - ``storage.csv`` - Experimental run outputs
+                                   are stored in a per-run directory as one or
+                                   more CSV files.
 
 
                                  Regardless of the value of this option, SIERRA
-                                 always generates ``.csv`` files as it runs and
+                                 always generates CSV files as it runs and
                                  averages outputs, generates graphs, etc.
                                  """ + self.stage_usage_doc([3]),
                                  default='storage.csv')
@@ -560,6 +570,7 @@ class CoreCmdline(BaseCmdline):
                                  default='none')
 
         self.stage3.add_argument("--processing-mem-limit",
+                                 type=int,
                                  help="""
 
 
@@ -569,6 +580,52 @@ class CoreCmdline(BaseCmdline):
 
                                  """ + self.stage_usage_doc([3, 4]),
                                  default=90)
+
+        self.multistage.add_argument("--df-homogenize",
+                                     help="""
+
+                                     SIERRA generally assumes/relies on all
+                                     dataframes with the same name having the
+                                     same # of columns which are of equivalent
+                                     length across :term:`Experimental Runs
+                                     <Experimental Run>` (different columns
+                                     within a dataframe can of course have
+                                     different lengths). This is checked during
+                                     stage 3 unless ``--df-skip-verify`` is
+                                     passed. If strict verification is skipped,
+                                     then SIERRA provides the following options
+                                     when processing dataframes during stage
+                                     {3,4} to to homogenize them:
+
+                                     - ``none`` - Don't do anything. This may or
+                                       may not produce crashes during stage 4,
+                                       depending on what you are doing.
+
+                                    - ``pad`` - Project last valid value in
+                                       columns which are too short down the
+                                       column to make it match those which are
+                                       longer.
+
+                                       Note that this may result in invalid
+                                       data/graphs if the filled columns are
+                                       intervallic, interval average, or
+                                       cumulative average data. If the data is a
+                                       cumulative count of something, then this
+                                       policy will have no ill effects.
+
+                                     - ``zero`` - Same as ``pad``, but always
+                                       fill with zeroes.
+
+                                     Homogenization is performed just before
+                                     writing dataframes to the specified storage
+                                     medium. Useful with real robot experiments
+                                     if the number of datapoints captured
+                                     per-robot is slightly different, depending
+                                     on when they started executing relative to
+                                     when the experiment started.
+
+                                     """,
+                                     default='none')
 
     def init_stage4(self) -> None:
         """
@@ -710,20 +767,20 @@ class CoreCmdline(BaseCmdline):
                            For example, in a bivariate batch criteria composed
                            of
 
-                           - :ref:`ln-platform-argos-bc-population-size` on the
+                           - :ref:`ln-sierra-platform-argos-bc-population-size` on the
                              X axis (rows)
 
-                           - :ref:`ln-platform-argos-bc-saa-noise` on the Y axis
-                             (columns)
+                           - Another batch criteria which does not affect swarm
+                             size
 
-                           Swarm metrics will be calculated by `computing`
-                           across .csv rows and `projecting` down the columns by
-                           default, since swarm size will only vary within a
-                           row. Passing a value of 1 to this option will
-                           override this calculation, which can be useful in
-                           bivariate batch criteria in which you are interested
-                           in the effect of the OTHER non-size criteria on
-                           various performance measures.
+                           Metrics will be calculated by `computing` across .csv
+                           rows and `projecting` down the columns by default,
+                           since swarm size will only vary within a row. Passing
+                           a value of 1 to this option will override this
+                           calculation, which can be useful in bivariate batch
+                           criteria in which you are interested in the effect of
+                           the OTHER non-size criteria on various performance
+                           measures.
 
                            0=criteria of interest varies across `rows`.
 
@@ -782,10 +839,10 @@ class CoreCmdline(BaseCmdline):
         rendering.add_argument("--project-imagizing",
                                help="""
 
-                               Enable generation of image files from ``.csv``
+                               Enable generation of image files from CSV
                                files captured during stage 2 and averaged during
                                stage 3 for each experiment. See
-                               :ref:`ln-usage-rendering-project` for details and
+                               :ref:`ln-sierra-usage-rendering-project` for details and
                                restrictions.
 
                                """ + self.stage_usage_doc([3, 4]),
@@ -795,9 +852,9 @@ class CoreCmdline(BaseCmdline):
                                help="""
 
                                Enable generation of videos from imagized
-                               ``.csv`` files created as a result of
+                               CSV files created as a result of
                                ``--project-imagizing``. See
-                               :ref:`ln-usage-rendering-project` for details.
+                               :ref:`ln-sierra-usage-rendering-project` for details.
 
                                """ + self.stage_usage_doc([4]),
                                action='store_true')
@@ -946,12 +1003,12 @@ class CoreCmdline(BaseCmdline):
                                  univariate. This cannot be deduced from the
                                  command line ``--batch-criteria`` argument in
                                  all cases because we are comparing controllers
-                                 `across` scenarios, and each
-                                 scenario(potentially) has a different batch
-                                 criteria definition, which will result in
-                                 (potentially) erroneous comparisons if we don't
-                                 re-generate the batch criteria for each scenaro
-                                 we compare controllers within.
+                                 `across` scenarios, and each scenario
+                                 (potentially) has a different batch criteria
+                                 definition, which will result in (potentially)
+                                 erroneous comparisons if we don't re-generate
+                                 the batch criteria for each scenaro we compare
+                                 controllers within.
 
                                  """ + self.stage_usage_doc([5]),
                                  action='store_true')
@@ -979,8 +1036,6 @@ class CoreCmdline(BaseCmdline):
                                  Transpose the X, Y axes in generated
                                  graphs. Useful as a general way to tweak graphs
                                  for best use of space within a paper.
-
-                                 Ignored for other graph types.
 
                                  """ +
                                  self.graphs_applicable_doc([':class:`~sierra.core.graphs.heatmap.Heatmap`']) +

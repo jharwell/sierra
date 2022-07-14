@@ -21,14 +21,15 @@ functionality for reading, writing, and manipulating XML files.
 
 # Core packages
 import typing as tp
-import pickle
 import os
-import logging  # type: tp.Any
+import logging
 import xml.etree.ElementTree as ET
+import pickle
 
 # 3rd party packages
 
 # Project packages
+from sierra.core import types
 
 
 class XMLAttrChange():
@@ -81,11 +82,16 @@ class XMLTagAdd():
     The tag may be added idempotently, or duplicates can be allowed.
     """
 
-    def __init__(self, path: str, tag: str, attr: dict, allow_dup: bool):
+    def __init__(self,
+                 path: tp.Optional[str],
+                 tag: str,
+                 attr: dict,
+                 allow_dup: bool):
         """
         Arguments:
             path: The path to the **parent** tag you want to add a new tag
-                  under, in XPath syntax.
+                  under, in XPath syntax. If None, then the tag will be added as
+                  the root XML tag.
 
             tag: The name of the tag to add.
 
@@ -124,9 +130,10 @@ class XMLAttrChangeSet():
         don't know how many there are, so go until you get an exception.
 
         """
+        exp_def = XMLAttrChangeSet()
+
         try:
             with open(fpath, 'rb') as f:
-                exp_def = XMLAttrChangeSet()
                 while True:
                     exp_def |= XMLAttrChangeSet(*pickle.load(f))
         except EOFError:
@@ -165,7 +172,7 @@ class XMLAttrChangeSet():
             os.remove(fpath)
 
         with open(fpath, 'ab') as f:
-            pickle.dump(self.changes, f)
+            utils.pickle_dump(self.changes, f)
 
 
 class XMLTagRmList():
@@ -203,7 +210,7 @@ class XMLTagRmList():
             os.remove(fpath)
 
         with open(fpath, 'ab') as f:
-            pickle.dump(self.rms, f)
+            utils.pickle_dump(self.rms, f)
 
 
 class XMLTagAddList():
@@ -216,16 +223,17 @@ class XMLTagAddList():
     """
 
     @staticmethod
-    def unpickle(fpath: str) -> 'XMLTagAddList':
+    def unpickle(fpath: str) -> tp.Optional['XMLTagAddList']:
         """
         Read in all the different sets of parameter changes that were pickled to
         make crucial parts of the experiment definition easily accessible. You
         don't know how many there are, so go until you get an exception.
 
         """
+        exp_def = XMLTagAddList()
+
         try:
             with open(fpath, 'rb') as f:
-                exp_def = XMLTagAddList()
                 while True:
                     exp_def.append(*pickle.load(f))
         except EOFError:
@@ -260,7 +268,7 @@ class XMLTagAddList():
             os.remove(fpath)
 
         with open(fpath, 'ab') as f:
-            pickle.dump(self.adds, f)
+            utils.pickle_dump(self.adds, f)
 
 
 class InvalidElementError(RuntimeError):
@@ -301,10 +309,10 @@ class XMLWriterConfig():
 
     """
 
-    def __init__(self, values: tp.List[tp.Dict[str, str]]) -> None:
+    def __init__(self, values: tp.List[dict]) -> None:
         self.values = values
 
-    def add(self, value: tp.Dict[str, str]) -> None:
+    def add(self, value: dict) -> None:
         self.values.append(value)
 
 
@@ -329,8 +337,8 @@ class XMLLuigi:
         self.input_fpath = input_fpath
         self.tree = ET.parse(self.input_fpath)
         self.root = self.tree.getroot()
-        self.tag_adds = []
-        self.attr_chgs = []
+        self.tag_adds = XMLTagAddList()
+        self.attr_chgs = XMLAttrChangeSet()
 
         self.logger = logging.getLogger(__name__)
 
@@ -366,12 +374,14 @@ class XMLLuigi:
                                     opath)
                 continue
 
-            self.logger.trace("Write tree@%s to %s", src_root, opath)
+            self.logger.trace("Write tree@%s to %s",  # type: ignore
+                              src_root,
+                              opath)
 
             # Renaming tree root is not required
             if 'rename_to' in config and config['rename_to'] is not None:
                 tree.tag = config['rename_to']
-                self.logger.trace("Rename tree root -> %s",
+                self.logger.trace("Rename tree root -> %s",  # type: ignore
                                   config['rename_to'])
 
             # Adding tags not required
@@ -397,7 +407,7 @@ class XMLLuigi:
                                              config['src_tag'])
                 graft_parent = to_write.getroot().find(dest_root)
                 for g in config['child_grafts']:
-                    self.logger.trace("Graft tree@%s as child under %s",
+                    self.logger.trace("Graft tree@%s as child under %s",  # type: ignore
                                       g,
                                       dest_root)
                     elt = self.root.find(g)
@@ -458,7 +468,7 @@ class XMLLuigi:
                           path,
                           attr,
                           value)
-        self.attr_chgs.append(XMLAttrChange(path, attr, value))
+        self.attr_chgs.add(XMLAttrChange(path, attr, value))
 
     def attr_add(self,
                  path: str,
@@ -494,11 +504,11 @@ class XMLLuigi:
             return
 
         el.set(attr, value)
-        self.logger.trace("Add new attribute: '%s/%s' = '%s'",
+        self.logger.trace("Add new attribute: '%s/%s' = '%s'",  # type: ignore
                           path,
                           attr,
                           value)
-        self.attr_chgs.append(XMLAttrChange(path, attr, value))
+        self.attr_chgs.add(XMLAttrChange(path, attr, value))
 
     def has_tag(self, path: str) -> bool:
         return self.root.find(path) is not None
@@ -525,7 +535,7 @@ class XMLLuigi:
         for child in el:
             if child.tag == tag:
                 child.tag = value
-                self.logger.trace("Modify tag: '%s/%s' = '%s'",
+                self.logger.trace("Modify tag: '%s/%s' = '%s'",  # type: ignore
                                   path,
                                   tag,
                                   value)
@@ -599,12 +609,14 @@ class XMLLuigi:
 
         for victim in victims:
             parent.remove(victim)
-            self.logger.trace("Remove matching tag: '%s/%s'", path, tag)
+            self.logger.trace("Remove matching tag: '%s/%s'",  # type: ignore
+                              path,
+                              tag)
 
     def tag_add(self,
                 path: str,
                 tag: str,
-                attr=dict(),
+                attr={},
                 allow_dup: bool = True,
                 noprint: bool = False) -> None:
         """
@@ -627,7 +639,7 @@ class XMLLuigi:
                 return
 
             ET.SubElement(parent, tag, attrib=attr)
-            self.logger.trace("Add new unique tag: '%s/%s' = '%s'",
+            self.logger.trace("Add new unique tag: '%s/%s' = '%s'",  # type: ignore
                               path,
                               tag,
                               str(attr))
@@ -636,14 +648,15 @@ class XMLLuigi:
             # the same 'tag' don't overwrite each other.
             child = ET.Element(tag, attrib=attr)
             parent.append(child)
-            self.logger.trace("Add new tag: '%s/%s' = '%s'",
+            self.logger.trace("Add new tag: '%s/%s' = '%s'",  # type: ignore
                               path,
                               tag,
                               str(attr))
         self.tag_adds.append(XMLTagAdd(path, tag, attr, allow_dup))
 
 
-def unpickle(fpath: str) -> tp.Union[XMLAttrChangeSet, XMLTagAddList]:
+def unpickle(fpath: str) -> tp.Optional[tp.Union[XMLAttrChangeSet,
+                                                 XMLTagAddList]]:
     """
     Read in all the different sets of parameter changes that were pickled to
     make crucial parts of the experiment definition easily accessible. You don't

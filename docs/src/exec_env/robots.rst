@@ -1,4 +1,4 @@
-.. _ln-exec-env-robots:
+.. _ln-sierra-exec-env-robots:
 
 ========================================
 Real Robot Execution Environment Plugins
@@ -11,19 +11,18 @@ this page.
 These plugins are tested with the following platforms (they may work with other
 platforms out of the box too):
 
-- :ref:`ln-platform-plugins-rosrobot`
+- :ref:`ln-sierra-platform-plugins-ros1robot`
 
-.. _ln-robot-plugins-rosrobot:
+.. _ln-sierra-robot-plugins-turtlebot3:
 
-ROS Robot
-=========
+Turtlebot3
+==========
 
-This is a generic plugin meant to work with most real robots which :term:`ROS`
-supports, and as a starting point to derive more specific configuration for a
-given robot.
+This real robot plugin can be selected via ``--exec-env=robots.turtlebot3``.
 
 In this execution environment, SIERRA will run experiments spread across
-multiple robots using GNU parallel. SIERRA makes the following assumptions about
-the robots it is allocated each invocation:
+multiple turtlebots using GNU parallel.
 
-- No robots will die/run out of battery during an :term:`Experimental Run`.
+The following environmental variables may be used:
+
+- :envvar:`SIERRA_NODEFILE`

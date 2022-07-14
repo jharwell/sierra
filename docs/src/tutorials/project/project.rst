@@ -1,4 +1,4 @@
-.. _ln-tutorials-project-project:
+.. _ln-sierra-tutorials-project-project:
 
 =============================
 Creating a New SIERRA Project
@@ -17,16 +17,24 @@ Creating a New SIERRA Project
 #. Create the following directory structure within your project directory (or
    copy and modify the one from an existing project).
 
+   .. IMPORTANT:: Once you create the directory structure below you need to
+                  INSTALL your project with pip so that not only can SIERRA find
+                  it, but so can the python interpreter. If you don't want to do
+                  that, then you need to put your project plugin directory on
+                  :envvar:`PYTHONPATH`. Otherwise, you won't be able to use your
+                  project plugin with SIERRA.
+
    - ``config/`` - Plugin YAML configuration root. This directory is required
      for all projects. Within this directory, the following files are used (not
      all files are required when running a stage that utilizes them):
 
      - ``main.yaml`` - Main SIERRA configuration file. This file is required for
-       all pipeline stages. See :doc:`main_config` for documentation.
+       all pipeline stages. See :ref:`ln-sierra-tutorials-project-main-config`
+       for documentation.
 
      - ``controllers.yaml`` - Configuration for controllers (input file/graph
        generation). This file is required for all pipeline stages. See
-       :doc:`main_config` for documentation.
+       :ref:`ln-sierra-tutorials-project-main-config` for documentation.
 
      - ``intra-graphs-line.yaml`` - Configuration for intra-experiment
        linegraphs. This file is optional. If it is present, graphs defined in it
@@ -62,18 +70,18 @@ Creating a New SIERRA Project
      - ``scenario_generator_parser.py`` - Contains the parser for parsing the
        contents of ``--scenario`` into a dictionary which can be used to
        configure experiments. This file is required. See
-       :ref:`ln-tutorials-project-generators-scenario-config` for
+       :ref:`ln-sierra-tutorials-project-generators-scenario-config` for
        documentation.
 
      - ``scenario_generators.py`` - Specifies classes and functions to enable
        SIERRA to generate XML file modifications to the
        ``--template-input-file`` based on what is passed as ``--scenario`` on
        the cmdline. This file is required. See
-       :ref:`ln-tutorials-project-generators-scenario-config` for documentation.
+       :ref:`ln-sierra-tutorials-project-generators-scenario-config` for documentation.
 
      - ``exp_generators.py`` - Contains extensions to the per-:term:`Experiment`
        and per-:term:`Experimental Run` configuration that SIERRA performs. See
-       :ref:`ln-tutorials-project-generators-sim-config` for documentation. This
+       :ref:`ln-sierra-tutorials-project-generators-sim-config` for documentation. This
        file is optional.
 
    - ``variables/`` - Additional variables (including batch criteria) defined by
@@ -91,7 +99,7 @@ Creating a New SIERRA Project
 
 #. Configure your project so SIERRA understands how to generate
 :term:`Experimental Run` inputs and process outputs correctly by following
-:doc:`main_config`.
+:ref:`ln-sierra-tutorials-project-main-config`.
 
 #. Define graphs to be generated from :term:`Experiment` outputs by following
    :doc:`graphs_config`. Strictly speaking this is optional, but automated graph
@@ -105,7 +113,7 @@ Optional Steps
 ==============
 
 #. Define additional batch criteria to investigate variables of interest
-   specific to your project by following :ref:`ln-tutorials-project-new-bc`.
+   specific to your project by following :ref:`ln-sierra-tutorials-project-new-bc`.
 
 #. Define one or more :term:`Models <Model>` to run to compare with empirical
    data.

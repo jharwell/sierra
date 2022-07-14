@@ -15,14 +15,14 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Classes for implementing stage 2 of the experimental pipeline.
+Classes for implementing stage 2 of the experimental pipeline: running
+experiments.
 """
 
 # Core packages
-import typing as tp
 import time
 import datetime
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 
@@ -33,10 +33,11 @@ from sierra.core import types
 
 
 class PipelineStage2:
-    """Implements stage 2 of the experimental pipeline: running experiments.
+    """Runs :term:`Experiments <Experiment>` in a :term:`Batch Experiment`.
 
-    Runs all experiments in the input root in parallel using GNU Parallel on the
-    provided set of hosts in the selected execution environment.
+    GNUParallel is used as the execution engine, and a provided/generated set of
+    hosts is used to actually execute experiments in the selected execution
+    environment.
 
     This stage is *NOT* idempotent, for obvious reasons.
 

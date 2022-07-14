@@ -15,7 +15,6 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 # Core packages
-import typing as tp
 import re
 
 # 3rd party packages
@@ -27,11 +26,11 @@ from sierra.core import types
 class Parser():
     """Enforces the cmdline definition of ``--exp-setup``.
 
-    See :ref:`ln-vars-expsetup` for documentation.
+    See :ref:`ln-sierra-vars-expsetup` for documentation.
 
     """
 
-    def __init__(self, dflts: tp.Dict[str, int]):
+    def __init__(self, dflts: types.SimpleDict):
         self.dflts = dflts
 
     def __call__(self, arg: str) -> types.CLIArgSpec:
@@ -73,4 +72,6 @@ class Parser():
 
 __api__ = [
     'Parser'
+
+
 ]

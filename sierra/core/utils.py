@@ -16,14 +16,15 @@
 
 """
 Miscellaneous classes/functions used in mutiple places but that don't really fit
-anywhere.
+anywhere else.
 """
 
 # Core packages
 import os
 import typing as tp
 import time
-import logging  # type: tp.Any
+import logging
+import pickle
 
 # 3rd party packages
 import numpy as np
@@ -176,7 +177,7 @@ def get_primary_axis(criteria,
     if cmdopts['plot_primary_axis'] == 1:
         return 1
 
-    if any([isinstance(criteria.criteria1, elt) for elt in primary_axis_bc]):
+    if any(isinstance(criteria.criteria1, elt) for elt in primary_axis_bc):
         return 0
 
     return 1
@@ -195,15 +196,16 @@ def exp_range_calc(cmdopts: types.Cmdopts,
         min_exp = int(exp_range.split(':')[0])
         max_exp = int(exp_range.split(':')[1])
         assert min_exp <= max_exp, \
-            "Min batch exp >= max batch exp({0} vs. {1})".format(
-                min_exp, max_exp)
+            f"Min batch exp >= max batch exp({min_exp} vs. {max_exp})"
 
         return exp_all[min_exp: max_exp + 1]
 
     return exp_all
 
 
-def exp_include_filter(inc_spec: str, target: tp.List, n_exps: int):
+def exp_include_filter(inc_spec: tp.Optional[str],
+                       target: tp.List,
+                       n_exps: int):
     """
     Takes a input list, and returns the sublist specified by the inc_spec (of
     the form [x:y]). inc_spec is an `absolute` specification; if a given
@@ -237,7 +239,7 @@ def bivar_exp_labels_calc(exp_dirs: tp.List[str]) -> tp.Tuple[tp.List[str],
     # Because sets are used, if a sub-range of experiments are selected for
     # collation, the selected range has to be an even multiple of the # of
     # experiments in the second batch criteria, or inter-experiment graph
-    # generation won't work (the final .csv is always an MxN grid).
+    # generation won't work (the final CSV is always an MxN grid).
     xlabels_set = set()
     ylabels_set = set()
     for e in exp_dirs:
@@ -346,6 +348,40 @@ def get_n_robots(main_config: types.YAMLDict,
     return n_robots
 
 
+def df_fill(df: pd.DataFrame, policy: str) -> pd.DataFrame:
+    """
+    Fill missing cells in a dataframe according to the specified fill policy.
+    """
+    if policy == 'none':
+        return df
+    elif policy == 'pad':
+        return df.fillna(method='pad')
+    elif policy == 'zero':
+        return df.fillna(value=0)
+    else:
+        raise RuntimeError(f"Bad fill policy {policy}")
+
+
+@retry(OSError, tries=10, delay=0.100, backoff=1.1)  # type:ignore
+def pickle_dump(obj: object, f: tp.IO) -> None:
+    pickle.dump(obj, f)
+
+
+def gen_scenario_spec(cmdopts: types.Cmdopts, **kwargs) -> dict[str, tp.Any]:
+    # scenario is passed in kwargs during stage 5 (can't be passed via
+    # --scenario in general )
+    if 'scenario' in kwargs:
+        scenario = kwargs['scenario']
+    else:
+        scenario = cmdopts['scenario']
+
+    sgp = pm.module_load_tiered(project=cmdopts['project'],
+                                path='generators.scenario_generator_parser')
+    kw = sgp.ScenarioGeneratorParser().to_dict(scenario)
+
+    return kw
+
+
 __api__ = [
     'ArenaExtent',
     'Sigmoid',
@@ -358,6 +394,7 @@ __api__ = [
     'apply_to_expdef',
     'pickle_modifications',
     'batch_template_path',
-    'get_n_robots'
+    'get_n_robots',
+    'df_fill'
 
 ]

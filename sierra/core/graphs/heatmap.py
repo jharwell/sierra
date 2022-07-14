@@ -21,7 +21,7 @@ import textwrap
 import glob
 import re
 import typing as tp
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import numpy as np
@@ -35,11 +35,24 @@ from sierra.core import utils, config, storage
 
 class Heatmap:
     """
-    Generates a X vs. Y vs. Z heatmap plot of a ``.csv`` file.
+    Generates a X vs. Y vs. Z heatmap plot of a ``.mean`` file.
 
-    If the necessary .csv file does not exist, the graph is not generated.
+    If the necessary .mean file does not exist, the graph is not generated.
 
     """
+    @staticmethod
+    def set_graph_size(df: pd.DataFrame, fig) -> None:
+        """
+        Set graph X,Y size based on dataframe dimensions.
+        """
+        if len(df.index) > len(df.columns):
+            xsize = config.kGraphBaseSize
+            ysize = xsize * float(len(df.index)) / float(len(df.columns))
+        else:
+            ysize = config.kGraphBaseSize
+            xsize = ysize * float(len(df.columns)) / float(len(df.index))
+
+        fig.set_size_inches(xsize, ysize)
 
     def __init__(self,
                  input_fpath: str,
@@ -90,6 +103,9 @@ class Heatmap:
         self._plot_df(data_df, self.output_fpath)
 
     def _plot_df(self, df: pd.DataFrame, opath: str) -> None:
+        """
+        Given a dataframe read from a file, plot it as a heatmap.
+        """
         fig, ax = plt.subplots(figsize=(config.kGraphBaseSize,
                                         config.kGraphBaseSize))
 
@@ -114,25 +130,17 @@ class Heatmap:
         self._plot_colorbar(ax)
 
         # Output figure
-        self._set_graph_size(df, fig)
+        self.set_graph_size(df, fig)
         fig = ax.get_figure()
 
-        fig.savefig(opath, bbox_inches='tight',
-                    dpi=config.kGraphDPI)
+        fig.savefig(opath, bbox_inches='tight', dpi=config.kGraphDPI)
         # Prevent memory accumulation (fig.clf() does not close everything)
         plt.close(fig)
 
-    def _set_graph_size(self, df: pd.DataFrame, fig) -> None:
-        if len(df.index) > len(df.columns):
-            xsize = config.kGraphBaseSize
-            ysize = xsize * float(len(df.index)) / float(len(df.columns))
-        else:
-            ysize = config.kGraphBaseSize
-            xsize = ysize * float(len(df.columns)) / float(len(df.index))
-
-        fig.set_size_inches(xsize, ysize)
-
     def _plot_colorbar(self, ax) -> None:
+        """
+        Put the Z-axis colorbar on the plot.
+        """
         divider = mpl_toolkits.axes_grid1.make_axes_locatable(ax)
         cax = divider.append_axes('right', size='5%', pad=0.05)
         bar = plt.colorbar(cax=cax)
@@ -141,6 +149,9 @@ class Heatmap:
             bar.ax.set_ylabel(self.zlabel)
 
     def _plot_ticks(self, ax) -> None:
+        """
+        Plot X,Y ticks and their corresponding labels
+        """
         ax.tick_params(labelsize=self.text_size['tick_label'])
 
         if self.xtick_labels is not None:
@@ -153,23 +164,22 @@ class Heatmap:
 
 
 class DualHeatmap:
-    """Generates a side-by-side plot of two heataps from a set of ``.csv``
+    """Generates a side-by-side plot of two heataps from a set of CSV
     files.
 
-    ``.csv`` files must be named as``<input_stem_fpath>_X.csv``, where `X` is
-    non-negative integer. Input ``.csv`` files must be 2D grids of the same
+    ``.mean`` files must be named as ``<input_stem_fpath>_X.mean``, where `X` is
+    non-negative integer. Input ``.mean`` files must be 2D grids of the same
     cardinality.
 
     This graph does not plot standard deviation.
 
-    If there are not exactly two ``.csv`` files matching the pattern found, the
+    If there are not exactly two ``.mean`` files matching the pattern found, the
     graph is not generated.
 
     """
     kCardinality = 2
 
     def __init__(self, **kwargs) -> None:
-
         self.input_stem_pattern = os.path.abspath(kwargs['input_stem_pattern'])
         self.output_fpath = kwargs['output_fpath']
         self.title = kwargs['title']
@@ -190,18 +200,21 @@ class DualHeatmap:
         self.logger = logging.getLogger(__name__)
 
     def generate(self) -> None:
-        dfs = [storage.DataFrameReader('storage.csv')(f) for f in glob.glob(
-            self.input_stem_pattern) if re.search('_[0-9]+', f)]
+        reader = storage.DataFrameReader('storage.csv')
+        dfs = [reader(f) for f in glob.glob(self.input_stem_pattern)
+               if re.search('_[0-9]+', f)]
 
         if not dfs or len(dfs) != DualHeatmap.kCardinality:
-            self.logger.debug("Not generating dual heatmap graph: %s did not match %s .csv files",
+            self.logger.debug("Not generating dual heatmap: %s did not match %s CSV files",
                               self.input_stem_pattern, DualHeatmap.kCardinality)
             return
 
-        # Scaffold graph
-        fig, axes = plt.subplots(ncols=2,
-                                 figsize=(config.kGraphBaseSize * 2.0,
-                                          config.kGraphBaseSize))
+        # Scaffold graph. We can use either dataframe for setting the graph
+        # size; we assume they have the same dimensions.
+        #
+        fig, axes = plt.subplots(ncols=2)
+        Heatmap.set_graph_size(dfs[0], fig)
+
         y = np.arange(len(dfs[0].columns))
         x = dfs[0].index
         ax1, ax2 = axes
@@ -262,6 +275,9 @@ class DualHeatmap:
         plt.close(fig)
 
     def _plot_colorbar(self, fig, im, ax, remove: bool) -> None:
+        """
+        Plot the Z-axis color bar on the dual heatmap.
+        """
         divider = mpl_toolkits.axes_grid1.make_axes_locatable(ax)
         cax = divider.append_axes('right', size='5%', pad=0.05)
 
@@ -279,8 +295,10 @@ class DualHeatmap:
 
     def _plot_ticks(self, ax, xvals, yvals, xlabels: bool, ylabels: bool) -> None:
         """
-        Plot ticks and tick labels. If the labels are numerical and the numbers are too large, force
-        scientific notation (the ``rcParam`` way of doing this does not seem to work...)
+        Plot ticks and tick labels. If the labels are numerical and the numbers are
+        too large, force scientific notation (the ``rcParam`` way of doing this
+        does not seem to work...)
+
         """
         ax.tick_params(labelsize=self.text_size['tick_label'])
 
@@ -299,6 +317,9 @@ class DualHeatmap:
             ax.set_yticklabels([])
 
     def _plot_labels(self, ax, xlabel: bool, ylabel: bool) -> None:
+        """
+        Plot X,Y axis labels.
+        """
         if xlabel:
             ax.set_xlabel(self.ylabel, fontsize=self.text_size['xyz_label'])
 

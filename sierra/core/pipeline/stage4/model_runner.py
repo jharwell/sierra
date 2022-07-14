@@ -14,37 +14,34 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
-"""Classes for running project-specific models in a general purpose way within
-a batch experiment.
+"""Classes for running project-specific :term:`Models <Model>` in a general
+purpose way within a :term:`Batch Experiment`.
 
 """
 # Core packages
 import os
 import copy
 import typing as tp
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 
 # Project packages
 import sierra.core.variables.batch_criteria as bc
-from sierra.core import models, types, utils, storage
+from sierra.core import models, types, utils, storage, config
 
 
 class IntraExpModelRunner:
     """
     Runs all enabled intra-experiment models for all experiments in a batch.
-
-    Attributes:
-        cmdopts: Dictionary of parsed cmdline attributes.
     """
 
     def __init__(self,
                  cmdopts: types.Cmdopts,
-                 models: tp.List[tp.Union[models.interface.IConcreteIntraExpModel1D,
+                 to_run: tp.List[tp.Union[models.interface.IConcreteIntraExpModel1D,
                                           models.interface.IConcreteIntraExpModel2D]]) -> None:
         self.cmdopts = cmdopts
-        self.models = models
+        self.models = to_run
         self.logger = logging.getLogger(__name__)
 
     def __call__(self,
@@ -79,6 +76,8 @@ class IntraExpModelRunner:
             utils.dir_create_checked(
                 cmdopts['exp_model_root'], exist_ok=True)
 
+            writer = storage.DataFrameWriter('storage.csv')
+
             for model in self.models:
                 if not model.run_for_exp(criteria, cmdopts, exp_index):
                     self.logger.debug("Skip running intra-experiment model from '%s' for exp%s",
@@ -92,28 +91,26 @@ class IntraExpModelRunner:
                                   exp_index)
                 dfs = model.run(criteria, exp_index, cmdopts)
                 for df, csv_stem in zip(dfs, model.target_csv_stems()):
-                    path_stem = os.path.join(
-                        cmdopts['exp_model_root'], csv_stem)
+                    path_stem = os.path.join(cmdopts['exp_model_root'],
+                                             csv_stem)
 
                     # Write model legend file so the generated graph can find it
-                    with open(path_stem + '.legend', 'w') as f:
-                        for i, search in enumerate(dfs):
+                    with open(path_stem + config.kModelsExt['legend'], 'w') as f:
+                        for j, search in enumerate(dfs):
                             if search.values.all() == df.values.all():
-                                legend = model.legend_names()[i]
+                                legend = model.legend_names()[j]
                                 f.write(legend)
                                 break
 
                     # Write model .csv file
-                    storage.DataFrameWriter('storage.csv')(
-                        df, path_stem + '.model', index=False)
+                    writer(df,
+                           path_stem + config.kModelsExt['model'],
+                           index=False)
 
 
 class InterExpModelRunner:
     """
     Runs all enabled inter-experiment models in a batch.
-
-    Attributes:
-        cmdopts: Dictionary of parsed cmdline attributes.
     """
 
     def __init__(self,
@@ -149,13 +146,13 @@ class InterExpModelRunner:
                 path_stem = os.path.join(cmdopts['batch_model_root'], csv_stem)
 
                 # Write model .csv file
-                storage.DataFrameWriter('storage.csv')(
-                    df, path_stem + '.model', index=False)
+                writer = storage.DataFrameWriter('storage.csv')
+                writer(df, path_stem + config.kModelsExt['model'], index=False)
 
                 # 1D dataframe -> line graph with legend
                 if len(df.index) == 1:
                     # Write model legend file so the generated graph can find it
-                    with open(path_stem + '.legend', 'w') as f:
+                    with open(path_stem + config.kModelsExt['legend'], 'w') as f:
                         for i, search in enumerate(dfs):
                             if search.values.all() == df.values.all():
                                 legend = model.legend_names()[i]

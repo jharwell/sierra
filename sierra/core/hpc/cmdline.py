@@ -14,7 +14,7 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """Common cmdline parsing and validation classes for the various HPC plugins
-that can be used with SIERRA for running experiments.
+that can be used with SIERRA for running experiments during stage 2.
 
 """
 
@@ -47,7 +47,19 @@ class HPCCmdline(cmdline.BaseCmdline):
             self.init_stage2()
 
     def init_stage2(self) -> None:
+        """
+        Add HPC cmdline options. Options may be interpreted differently between
+        :term:`Platforms <Platform>`, or ignored, depending. These include:
 
+        - ``--exec-jobs-per-node``
+
+        - ``--exec-no-devnull``
+
+        - ``--exec-resume``
+
+        - ``--exec-strict``
+
+        """
         self.hpc.add_argument("--exec-jobs-per-node",
                               help="""
 
@@ -80,12 +92,32 @@ class HPCCmdline(cmdline.BaseCmdline):
         self.hpc.add_argument("--exec-resume",
                               help="""
 
-                              Resume a batch experiment that was killed/stopped/etc
-                              last time SIERRA was run.
+                              Resume a batch experiment that was
+                              killed/stopped/etc last time SIERRA was run.
 
                               """ + self.stage_usage_doc([2]),
                               action='store_true',
                               default=False)
+
+        self.hpc.add_argument("--exec-strict",
+                              help="""
+
+                              If passed, then if any experimental commands fail
+                              during stage 2 SIERRA will exit, rather than try
+                              to keep going and execute the rest of the
+                              experiments.
+
+                              Useful for:
+
+                              - "Correctness by construction" experiments, where
+                                you know if SIERRA doesn't crash and it makes it
+                                to the end of your batch experiment then none of
+                                the individual experiments crashed.
+
+                              - CI pipelines
+
+                              """,
+                              action='store_true')
 
     @staticmethod
     def cmdopts_update(cli_args: argparse.Namespace,
@@ -99,7 +131,8 @@ class HPCCmdline(cmdline.BaseCmdline):
             # Multistage
             'exec_no_devnull': cli_args.exec_no_devnull,
             'exec_jobs_per_node': cli_args.exec_jobs_per_node,
-            'exec_resume': cli_args.exec_resume
+            'exec_resume': cli_args.exec_resume,
+            'exec_strict': cli_args.exec_strict
         }
         cmdopts.update(updates)
 

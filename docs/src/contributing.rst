@@ -1,8 +1,24 @@
-.. _ln-contributing:
+.. _ln-sierra-contributing:
 
 ============
 Contributing
 ============
+
+Types of contributions
+======================
+
+All types of contributions are welcome: bugfixes, adding unit/integration tests,
+etc. If you're only have a little bit of time and/or are new to SIERRA, looking
+at the issues is a good place to look for places to contribute. If you have more
+time and/or want to give back to the community in a bigger way, see
+:ref:`ln-sierra-roadmap` for some big picture ideas about where things might be
+going, and help shape the future!
+
+Mechanics
+=========
+
+Writing the code
+----------------
 
 To contribute to the SIERRA core, in you should follow the general workflow and
 python development guide outlined in :xref:`LIBRA`. For the static analysis
@@ -35,11 +51,11 @@ step:
 
    Fix ANY errors your changes have introduced (there will probably still be
    errors in the my output, because cleaning up the code is always a work in
-   progress).
+   progress), and also mypy just gives a lot of false positives in general.
 
 
 SIERRA Source Code Directory Structure
-======================================
+--------------------------------------
 
 It is helpful to know how SIERRA is layed out, so it is easier to see how things
 fit together, and where to look for implementation details if (really `when`)
@@ -62,13 +78,12 @@ repository.
     - ``models/`` - Model interfaces.
 
     - ``pipeline/`` - Core pipline code in 5 stages (see
-      :ref:`ln-usage-pipeline`).
+      :ref:`ln-sierra-usage-pipeline`).
 
-    - ``ros/`` - Common :term:`ROS` bindings.
+    - ``ros1/`` - Common :term:`ROS1` bindings.
 
-    - ``variables/`` - Genertic generators for experimental variables to modify
-      template ``.argos`` files in order to run experiments with a given
-      controller.
+    - ``variables/`` - Generic generators for experimental variables to modify
+      template XML files in order to run experiments with a given controller.
 
   - ``plugins/`` - Plugins which provide broad customization of SIERRA, and
     enables it to adapt to a wide variety of platforms and experiment outputs.

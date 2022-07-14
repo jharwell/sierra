@@ -13,7 +13,16 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
+"""Extensions to the standard python ``logging`` module for SIERRA.
 
+These include:
+
+- Supporting the additional ``TRACE`` level. No idea why this is not supported
+  by default...
+
+- Adding nice colored logging which is helpful but not angry fruit salad.
+
+"""
 # Core packages
 import logging
 
@@ -37,6 +46,8 @@ def initialize(log_level):
     setattr(logging, "TRACE", TRACE)
     setattr(logging.getLoggerClass(), "trace", log_for_level)
     setattr(logging, "trace", log_to_root)
+
+    # Needed for static analysis (mypy and/or pylint)
     setattr(logging, '_HAS_DYNAMIC_ATTRIBUTES', True)
 
     # Get nice colored logging output!

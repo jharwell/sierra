@@ -15,7 +15,7 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
 Classes for the various storage plugins that can be used with SIERRA for
-reading/writing data.
+reading/writing data. See also :ref:`ln-sierra-tutorials-plugin-storage`.
 """
 
 # Core packages

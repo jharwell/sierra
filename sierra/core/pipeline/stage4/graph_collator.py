@@ -20,7 +20,7 @@ import os
 import multiprocessing as mp
 import queue
 import typing as tp
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 import pandas as pd
@@ -32,8 +32,8 @@ import sierra.core.variables.batch_criteria as bc
 
 
 class UnivarGraphCollationInfo():
-    """
-    Data class containing the collated ``.csv`` files for a particular graph.
+    """Data class containing the :term:`Collated .csv` files for a particular
+    graph.
     """
 
     def __init__(self,
@@ -46,8 +46,8 @@ class UnivarGraphCollationInfo():
 
 
 class BivarGraphCollationInfo():
-    """
-    Data class containing the collated ``.csv`` files for a particular graph.
+    """Data class containing the :term:`Collated .csv` files for a particular
+    graph.
     """
 
     def __init__(self,
@@ -63,10 +63,7 @@ class BivarGraphCollationInfo():
 class UnivarGraphCollator:
     """For a single graph gather needed data from experiments in a batch.
 
-    Results are put into a single :term:`Collated .csv` file which will have one
-    column per experiment, named after the experiment directory, containing a
-    column drawn from an :term:`Averaged .csv` file for the experiment.
-
+    Results are put into a single :term:`Collated .csv` file.
     """
 
     def __init__(self, main_config: dict, cmdopts: types.Cmdopts) -> None:
@@ -78,40 +75,43 @@ class UnivarGraphCollator:
         self.logger.info("Stage4: Collating univariate files from batch in %s for graph '%s'...",
                          self.cmdopts['batch_output_root'],
                          target['src_stem'])
-        self.logger.trace(json.dumps(target, indent=4))
+        self.logger.trace(json.dumps(target, indent=4))   # type: ignore
 
         exp_dirs = utils.exp_range_calc(self.cmdopts,
                                         self.cmdopts['batch_output_root'],
                                         criteria)
 
         # Always do the mean, even if stats are disabled
-        exts = [config.kStatsExtensions['mean']]
+        exts = [config.kStatsExt['mean']]
 
         if self.cmdopts['dist_stats'] in ['conf95', 'all']:
-            exts.extend([config.kStatsExtensions['stddev']])
+            exts.extend([config.kStatsExt['stddev']])
+
         if self.cmdopts['dist_stats'] in ['bw', 'all']:
-            exts.extend([config.kStatsExtensions['min'],
-                         config.kStatsExtensions['max'],
-                         config.kStatsExtensions['whislo'],
-                         config.kStatsExtensions['whishi'],
-                         config.kStatsExtensions['cilo'],
-                         config.kStatsExtensions['cihi'],
-                         config.kStatsExtensions['median']])
+            exts.extend([config.kStatsExt['min'],
+                         config.kStatsExt['max'],
+                         config.kStatsExt['whislo'],
+                         config.kStatsExt['whishi'],
+                         config.kStatsExt['cilo'],
+                         config.kStatsExt['cihi'],
+                         config.kStatsExt['median']])
 
         stats = [UnivarGraphCollationInfo(df_ext=ext,
                                           ylabels=[os.path.split(e)[1] for e in exp_dirs]) for ext in exts]
 
         for i, diri in enumerate(exp_dirs):
-            # We get full paths back from the exp dirs calculation, and we need to work with path
-            # leaves
+            # We get full paths back from the exp dirs calculation, and we need
+            # to work with path leaves
             diri = os.path.split(diri)[1]
             self._collate_exp(target, diri, stats)
 
+        writer = storage.DataFrameWriter('storage.csv')
         for stat in stats:
             if stat.all_srcs_exist:
-                storage.DataFrameWriter('storage.csv')(stat.df, os.path.join(stat_collate_root,
-                                                                             target['dest_stem'] + stat.df_ext),
-                                                       index=False)
+                writer(stat.df,
+                       os.path.join(stat_collate_root,
+                                    target['dest_stem'] + stat.df_ext),
+                       index=False)
 
             elif not stat.all_srcs_exist and stat.some_srcs_exist:
                 self.logger.warning("Not all experiments in '%s' produced '%s%s'",
@@ -147,9 +147,7 @@ class UnivarGraphCollator:
 class BivarGraphCollator:
     """For a single graph gather needed data from experiments in a batch.
 
-    Results are put into a single :term:`Collated .csv` file which will have one
-    column per experiment, named after the experiment directory, containing a
-    column drawn from an :term:`Averaged .csv` file for the experiment.
+    Results are put into a single :term:`Collated .csv` file.
 
     """
 
@@ -162,7 +160,7 @@ class BivarGraphCollator:
         self.logger.info("Stage4: Collating bivariate files from batch in %s for graph '%s'...",
                          self.cmdopts['batch_output_root'],
                          target['src_stem'])
-        self.logger.trace(json.dumps(target, indent=4))
+        self.logger.trace(json.dumps(target, indent=4))   # type: ignore
 
         exp_dirs = utils.exp_range_calc(self.cmdopts,
                                         self.cmdopts['batch_output_root'],
@@ -171,34 +169,35 @@ class BivarGraphCollator:
         xlabels, ylabels = utils.bivar_exp_labels_calc(exp_dirs)
 
         if self.cmdopts['dist_stats'] in ['conf95', 'all']:
-            exts = [config.kStatsExtensions['mean'],
-                    config.kStatsExtensions['stddev']]
+            exts = [config.kStatsExt['mean'],
+                    config.kStatsExt['stddev']]
         elif self.cmdopts['dist_stats'] in ['bw', 'all']:
-            exts = [config.kStatsExtensions['min'],
-                    config.kStatsExtensions['max'],
-                    config.kStatsExtensions['mean'],
-                    config.kStatsExtensions['whislo'],
-                    config.kStatsExtensions['whishi'],
-                    config.kStatsExtensions['cilo'],
-                    config.kStatsExtensions['cihi'],
-                    config.kStatsExtensions['median']]
+            exts = [config.kStatsExt['min'],
+                    config.kStatsExt['max'],
+                    config.kStatsExt['mean'],
+                    config.kStatsExt['whislo'],
+                    config.kStatsExt['whishi'],
+                    config.kStatsExt['cilo'],
+                    config.kStatsExt['cihi'],
+                    config.kStatsExt['median']]
 
         stats = [BivarGraphCollationInfo(df_ext=ext,
                                          xlabels=xlabels,
                                          ylabels=ylabels) for ext in exts]
 
         for i, diri in enumerate(exp_dirs):
-            # We get full paths back from the exp dirs calculation, and we need to work with path
-            # leaves
+            # We get full paths back from the exp dirs calculation, and we need
+            # to work with path leaves
             diri = os.path.split(diri)[1]
             self._collate_exp(target, diri, stats)
 
+        writer = storage.DataFrameWriter('storage.csv')
         for stat in stats:
             if stat.all_srcs_exist:
-                storage.DataFrameWriter('storage.csv')(stat.df,
-                                                       os.path.join(stat_collate_root,
-                                                                    target['dest_stem'] + stat.df_ext),
-                                                       index=False)
+                writer(stat.df,
+                       os.path.join(stat_collate_root,
+                                    target['dest_stem'] + stat.df_ext),
+                       index=False)
 
             elif stat.some_srcs_exist:
                 self.logger.warning("Not all experiments in '%s' produced '%s%s'",
@@ -233,9 +232,8 @@ class BivarGraphCollator:
 
 class GraphParallelCollator():
     """
-    Generates :term:`Collated .csv` files from the :term:`Summary .csv` files.
-
-    For all experiments in the batch.
+    Generates :term:`Collated .csv` files from the :term:`Summary .csv` files
+    for all experiments in the batch.
 
     """
 
@@ -259,7 +257,7 @@ class GraphParallelCollator():
             for graph in category['graphs']:
                 q.put(graph)
 
-        if self.cmdopts['serial_processing']:
+        if self.cmdopts['processing_serial']:
             parallelism = 1
         else:
             parallelism = mp.cpu_count()
@@ -282,7 +280,7 @@ class GraphParallelCollator():
                        stat_collate_root: str,
                        criteria) -> None:
 
-        collator = None  # type: ignore
+        collator: tp.Union[UnivarGraphCollator, BivarGraphCollator]
 
         if criteria.is_univar():
             collator = UnivarGraphCollator(main_config, cmdopts)

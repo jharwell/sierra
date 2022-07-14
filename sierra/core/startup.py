@@ -13,10 +13,13 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-
+"""
+Startup checks performed by SIERRA for compatibility and testing for the
+required packages in its environment.
+"""
 # Core packages
 import sys
-import logging  # type: tp.Any
+import logging
 import subprocess
 
 # 3rd party packages
@@ -77,7 +80,7 @@ def _linux_pkg_checks() -> None:
         missing = []
 
         for pkg in kRequiredDebPackages:
-            logging.trace("Checking for .deb package '%s'", pkg)
+            logging.trace("Checking for .deb package '%s'", pkg)  # type: ignore
             if pkg not in cache or not cache[pkg].is_installed:
                 missing.append(pkg)
 
@@ -103,7 +106,8 @@ def _osx_pkg_checks() -> None:
     missing = []
 
     for pkg in kRequiredOSXPackages:
-        logging.trace("Checking for homebrew package '%s'", pkg)
+        logging.trace("Checking for homebrew package '%s'",   # type: ignore
+                      pkg)
         p1 = subprocess.Popen('brew list | grep {pkg}',
                               shell=True,
                               stderr=subprocess.DEVNULL,

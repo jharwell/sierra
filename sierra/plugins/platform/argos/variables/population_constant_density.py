@@ -16,14 +16,14 @@
 #
 """
 Classes for the constant population density batch criteria. See
-:ref:`ln-platform-argos-bc-population-constant-density` for usage
+:ref:`ln-sierra-platform-argos-bc-population-constant-density` for usage
 documentation.
 
 """
 
 # Core packages
 import typing as tp
-import logging  # type: tp.Any
+import logging
 import math
 
 # 3rd party packages
@@ -31,12 +31,10 @@ import implements
 
 # Project packages
 from sierra.plugins.platform.argos.variables import constant_density as cd
-import sierra.core.utils
-import sierra.core.types as types
+from sierra.core import utils, types
 import sierra.core.variables.batch_criteria as bc
 from sierra.core.vector import Vector3D
 from sierra.core.xml import XMLAttrChange, XMLAttrChangeSet
-import sierra.core.plugin_manager as pm
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
@@ -69,7 +67,7 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
                     if path == ".//arena" and attr == "size":
                         x, y, z = [int(float(_)) for _ in value.split(",")]
-                        extent = sierra.core.utils.ArenaExtent(
+                        extent = utils.ArenaExtent(
                             Vector3D(x, y, z))
                         # ARGoS won't start if there are 0 robots, so you always
                         # need to put at least 1.
@@ -77,10 +75,11 @@ class PopulationConstantDensity(cd.ConstantDensity):
                                        (self.target_density / 100.0))
                         if n_robots == 0:
                             n_robots = 1
-                            self.logger.warning("n_robots set to 1 even though \
-                            calculated as 0 for area=%s,density=%s",
-                                                extent.area,
-                                                self.target_density)
+                            self.logger.warning(("n_robots set to 1 even though "
+                                                 "calculated as 0 for area=%s,"
+                                                 "density=%s"),
+                                                str(extent.area()),
+                                                self.target_density / 100.0)
 
                         changeset.add(XMLAttrChange(".//arena/distribute/entity",
                                                     "quantity",
@@ -126,26 +125,19 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
     def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
         if cmdopts['plot_log_xscale']:
-            return r"$\log_{2}$(Swarm Size)"
+            return r"$\log_{2}$(Population Size)"
 
-        return r"Swarm Size"
+        return r"Population Size"
 
-    def pm_query(self, pm: str) -> bool:
-        return pm in ['raw', 'scalability', 'self-org']
+    def n_robots(self, exp_num: int) -> int:
+        return int(self.target_density / 100.0 * self.dimensions[exp_num].area())
 
 
-def factory(cli_arg: str,
-            main_config: types.YAMLDict,
-            cmdopts: types.Cmdopts) -> PopulationConstantDensity:
-    """
-    Factory to create :class:`PopulationConstantDensity` derived classes from
-    the command line definition.
+def calc_dims(cmdopts: types.Cmdopts,
+              attr: types.CLIArgSpec,
+              **kwargs) -> tp.List[utils.ArenaExtent]:
 
-    """
-    attr = cd.Parser()(cli_arg)
-    sgp = pm.module_load_tiered(project=cmdopts['project'],
-                                path='generators.scenario_generator_parser')
-    kw = sgp.ScenarioGeneratorParser().to_dict(cmdopts['scenario'])
+    kw = utils.gen_scenario_spec(cmdopts, **kwargs)
 
     is_2x1 = kw['arena_x'] == 2 * kw['arena_y']
     is_1x1 = kw['arena_x'] == kw['arena_y']
@@ -154,18 +146,30 @@ def factory(cli_arg: str,
         r = range(kw['arena_x'],
                   kw['arena_x'] + attr['cardinality'] * attr['arena_size_inc'],
                   attr['arena_size_inc'])
-        dims = [sierra.core.utils.ArenaExtent(
-            Vector3D(x, int(x / 2), kw['arena_z'])) for x in r]
+        return list(utils.ArenaExtent(Vector3D(x, int(x / 2), kw['arena_z'])) for x in r)
     elif is_1x1:
         r = range(kw['arena_x'],
                   kw['arena_x'] + attr['cardinality'] * attr['arena_size_inc'],
                   attr['arena_size_inc'])
 
-        dims = [sierra.core.utils.ArenaExtent(
-            Vector3D(x, x, kw['arena_z'])) for x in r]
+        return list(utils.ArenaExtent(Vector3D(x, x, kw['arena_z'])) for x in r)
     else:
         raise NotImplementedError(
             "Unsupported arena X,Y scaling '{0}': Must be [2x1,1x1]")
+
+
+def factory(cli_arg: str,
+            main_config: types.YAMLDict,
+            cmdopts: types.Cmdopts,
+            **kwargs) -> PopulationConstantDensity:
+    """
+    Factory to create :class:`PopulationConstantDensity` derived classes from
+    the command line definition.
+
+    """
+    attr = cd.Parser()(cli_arg)
+    kw = utils.gen_scenario_spec(cmdopts, **kwargs)
+    dims = calc_dims(cmdopts, attr, **kwargs)
 
     def __init__(self) -> None:
         PopulationConstantDensity.__init__(self,

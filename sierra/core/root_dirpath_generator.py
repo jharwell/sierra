@@ -14,8 +14,7 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""
-Functions for generating the directory paths for the root directories for a
+"""Functions for generating the directory paths for the root directories for a
 single batch experiment.
 
 - The batch experiment root. ALL files (inputs and outputs) are written to this
@@ -35,11 +34,35 @@ single batch experiment.
   directory. Each experiment will get their own directory in this root for their
   graphs to accrue into. Named ``<batch experiment root>/graphs``.
 
+- The batch model root. All model outputs will accrue under this root
+  directory. Each experiment will get their own directory in this root for their
+  model outputs to accrue into. Named ``<batch experiment root>/models``.
+
+- The batch statistics root. All statistics generated during stage 3 will accrue
+  under this root directory. Each experiment will get their own directory in
+  this root for their statistics. Named
+  ``<batch experiment root>/statistics``.
+
+- The batch imagizing root. All images generated during stage 3 will accrue
+  under this root directory. Each experiment will get their own directory in
+  this root for their images. Named
+  ``<batch experiment root>/images``.
+
+- The batch video root. All videos rendered during stage 4 will accrue
+  under this root directory. Each experiment will get their own directory in
+  this root for their videos. Named
+  ``<batch experiment root>/videos``.
+
+- The batch scratch root. All GNU parallel outputs, ``--exec-env`` artifacts
+  will appear under here. Each experiment will get their own directory in this
+  root for their own scratch. This root is separate from experiment inputs to
+  make checking for segfaults, tar-ing experiments, etc. easier. Named ``<batch
+  experiment root>/scratch``.
 """
 # Core packages
 import os
 import typing as tp
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 
@@ -178,21 +201,30 @@ def gen_batch_root(sierra_rpath: str,
                    scenario: str,
                    controller: str,
                    template_stem: str) -> str:
-    """
-    Generate the directory path for the root directory for batch experiments depending on what
-    the batch criteria is. The directory path depends on all of the input arguments to this
-    function, and if ANY of the arguments change, so should the generated path.
+    """Generate the directory path for the root directory for batch experiments
+    depending on what the batch criteria is. The directory path depends on all
+    of the input arguments to this function, and if ANY of the arguments change,
+    so should the generated path.
 
     Arguments:
-        sierra_rpath: The path to the root directory where SIERRA should store everything.
+        sierra_rpath: The path to the root directory where SIERRA should store
+                      everything.
+
         project: The name of the project plugin used.
-        criteria: List of strings from the cmdline specification of the batch criteria.
+
+        criteria: List of strings from the cmdline specification of the batch
+                  criteria.
+
         scenario: The cmdline specification of ``--scenario``
-        batch_root: The name of the directory that will be the root of the batch experiment (not
-                    including its parent).
+
+        batch_root: The name of the directory that will be the root of the batch
+                    experiment (not including its parent).
+
         controller: The name of the controller used.
 
-    Batch root is: <sierra root>/<project>/<template_basename>-<scenario>+<criteria0>+<criteria1>
+    Batch root is:
+    <sierra_root>/<project>/<template_basename>-<scenario>+<criteria0>+<criteria1>
+
     """
     batch_leaf = gen_batch_leaf(criteria, template_stem, scenario)
     return os.path.join(sierra_rpath,
@@ -204,5 +236,6 @@ def gen_batch_root(sierra_rpath: str,
 __api__ = [
     'from_cmdline',
     'regen_from_exp',
-    'parse_batch_root'
+    'parse_batch_leaf',
+    'gen_batch_root'
 ]

@@ -1,4 +1,4 @@
-.. _ln-tutorials-plugin-platform:
+.. _ln-sierra-tutorials-plugin-platform:
 
 ==============================
 Creating a New Platform Plugin
@@ -33,9 +33,15 @@ additional files can be included.
 
    .. code-block:: python
 
-      from sierra.core import xml
       import typing as tp
+      import argparse
 
+      import implements
+
+      from sierra.core import xml
+      from sierra.core.experiment import bindings
+
+      @implements.implements(bindings.IParsedCmdlineConfigurer)
       class CmdlineParserGenerator():
         def __call__() -> argparse.ArgumentParser:
             """A class that conforms to
@@ -73,6 +79,12 @@ additional files can be included.
         :class:`~sierra.core.experiment.bindings.IExecEnvChecker`.
         """
 
+      @implements.implements(bindings.IExpConfigurer)
+      class ExpConfigurer():
+        """A class that conforms to
+        :class:`~sierra.core.experiment.bindings.IExpConfigurer`.
+        """
+
       @implements.implements(bindings.IExpRunConfigurer)
       class ExpRunConfigurer():
         """A class that conforms to
@@ -104,6 +116,7 @@ additional files can be included.
         definition object, extract the # robots that will be used.
 
         """
+
       def robot_prefix_extract(main_config: types.YAMLDict,
                                cmdopts: types.Cmdopts) -> tp.Optional[str]:
         """
@@ -148,7 +161,7 @@ additional files can be included.
               parents: A list of other parsers which are the parents of
                        this parser. This is used to inherit cmdline options
                        from the selected ``--exec-env`` at runtime. If
-                       None, then we are generated sphinx documentation
+                       None, then we are generating sphinx documentation
                        from cmdline options.
 
                stages: A list of pipeline stages to add cmdline arguments

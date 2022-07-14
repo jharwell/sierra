@@ -13,10 +13,14 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
+"""
+Sanity checks to verify that the selected ``--storage-medium``, ``--exec-env``,
+and ``--platform`` implement the necessary classes and functions.
+"""
 
 # Core packages
 import inspect
-import logging  # type: tp.Any
+import logging
 
 # 3rd party packages
 
@@ -24,19 +28,27 @@ import logging  # type: tp.Any
 
 
 def storage_sanity_checks(module) -> None:
-    logging.trace("Verifying selected --storage-medium plugin interface")
+    """
+    Check the selected ``--storage-medium`` implements the necessary classes and
+    functions.
+    """
+    logging.trace("Verifying --storage-medium plugin interface")  # type: ignore
 
     functions = ['df_read',
                  'df_write']
     in_module = inspect.getmembers(module, inspect.isfunction)
 
     for f in functions:
-        assert (any([f in name for name, _ in in_module])),\
+        assert (any(f in name for (name, _) in in_module)),\
             f"Storage medium plugin does not define {f}"
 
 
 def exec_env_sanity_checks(module) -> None:
-    logging.trace("Verifying selected --exec-env plugin interface")
+    """
+    Check the selected ``--exec-env`` implements the necessary classes and
+    functions.
+    """
+    logging.trace("Verifying --exec-env plugin interface")  # type: ignore
 
     classes = ['ParsedCmdlineConfigurer',
                'ExpRunShellCmdsGenerator',
@@ -45,12 +57,16 @@ def exec_env_sanity_checks(module) -> None:
                ]
     in_module = inspect.getmembers(module, inspect.isclass)
     for c in classes:
-        assert (any([c in name for name, _ in in_module])),\
+        assert (any(c in name for (name, _) in in_module)),\
             f"Execution environment plugin '{module.__name__}' does not define '{c}'"
 
 
 def platform_sanity_checks(module) -> None:
-    logging.trace("Verifying selected --platform plugin interface")
+    """
+    Check the selected ``--platform`` implements the necessary classes and
+    functions.
+    """
+    logging.trace("Verifying --platform plugin interface")  # type: ignore
 
     classes = ['ParsedCmdlineConfigurer',
                'ExpRunShellCmdsGenerator',
@@ -66,11 +82,18 @@ def platform_sanity_checks(module) -> None:
     in_module = inspect.getmembers(module, inspect.isclass)
 
     for c in classes:
-        assert (any([c in name for name, _ in in_module])),\
+        assert (any(c in name for (name, _) in in_module)),\
             f"Platform plugin '{module.__name__}' does not define '{c}'"
 
     in_module = inspect.getmembers(module, inspect.isfunction)
 
     for f in functions:
-        assert (any([f in name for name, _ in in_module])),\
+        assert (any(f in name for (name, _) in in_module)),\
             f"Platform plugin '{module.__name__}' does not define '{f}'"
+
+
+__api__ = {
+    'storage_sanity_checks',
+    'exec_env_sanity_checks',
+    'platform_sanity_checks'
+}

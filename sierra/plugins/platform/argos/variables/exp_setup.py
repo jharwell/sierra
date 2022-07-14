@@ -16,12 +16,11 @@
 
 """
 Classes for the ``--exp-setup`` cmdline option. See
-:ref:`ln-vars-expsetup` for usage documentation.
+:ref:`ln-sierra-vars-expsetup` for usage documentation.
 """
 
 # Core packages
 import typing as tp
-import re
 
 # 3rd party packages
 import implements
@@ -29,7 +28,7 @@ import implements
 # Project packages
 from sierra.core.variables.base_variable import IBaseVariable
 from sierra.core.xml import XMLAttrChangeSet, XMLAttrChange, XMLTagRmList, XMLTagAddList
-from sierra.core import config
+from sierra.core import config, types
 from sierra.core.variables.exp_setup import Parser
 
 
@@ -42,7 +41,7 @@ class ExpSetup():
         duration: The simulation duration in seconds, NOT timesteps.
     """
     @staticmethod
-    def extract_time_params(exp_def: XMLAttrChangeSet) -> tp.Dict[str, int]:
+    def extract_time_params(exp_def: XMLAttrChangeSet) -> types.SimpleDict:
         """
         Extract and return the length (in seconds), ticks_per_second for the
         specified experiment.

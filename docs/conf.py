@@ -17,7 +17,6 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import subprocess
 import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
@@ -119,9 +118,12 @@ math_eqref_format = 'Eq. {number}'
 
 nitpick_ignore = [
     ('py:class', 'pandas.core.frame.DataFrame'),
+    ('py:class', 'pandas.core.groupby.generic.DataFrameGroupBy'),
     ('py:class', 'argparse'),
+    ('py:class', 'module'),
     ('py:class', 'implements.Interface'),
     ('py:class', 'xml.etree.ElementTree'),
+    ('py:class', 'multiprocessing.context.BaseContext.JoinableQueue'),
     ('py:class', 'multiprocessing.context.BaseContext.Queue')
 ]
 autoapi_options = {
@@ -137,7 +139,7 @@ autoapi_ignore = ['*flycheck*']
 xref_links = {
     "Harwell2021a-metrics": ("Improved Swarm Engineering: Aligning Intuition and Analysis",
                              "https://arxiv.org/pdf/2012.04144.pdf"),
-    "Harwell2022a-ode": ("Characterizing The Limits of Linear Modeling of Non-Linear Swarm Behaviors",
+    "Harwell2022b-ode": ("Characterizing The Limits of Linear Modeling of Non-Linear Swarm Behaviors",
                          "https://arxiv.org/abs/2110.12307"),
     "Harwell2020a-demystify": ("Demystifying Emergent Intelligence and Its Effect on Performance in Large Swarms",
                                "http://ifaamas.org/Proceedings/aamas2020/pdfs/p474.pdf"),
@@ -290,7 +292,7 @@ intersphinx_mapping = {'python3': ('https://docs.python.org/3', None),
                        'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
                        'matplotlib': ('https://matplotlib.org', None),
                        'sphinx': ('https://www.sphinx-doc.org/en/stable/', None),
-                       'pandas': ('https://pandas.pydata.org/docs/', None),
+                       'pandas': ('https://pandas.pydata.org/pandas-docs/dev', None),
                        'implements': ('https://implements.readthedocs.io/en/latest/', None)
                        }
 

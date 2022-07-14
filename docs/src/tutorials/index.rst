@@ -1,10 +1,10 @@
-.. _ln-tutorials:
+.. _ln-sierra-tutorials:
 
 =================================
 Setup and Configuration Tutorials
 =================================
 
-.. _ln-tutorials-project:
+.. _ln-sierra-tutorials-project:
 
 .. toctree::
    :maxdepth: 1
@@ -12,7 +12,7 @@ Setup and Configuration Tutorials
 
    project/project.rst
    project/cmdline.rst
-   project/main_config.rst
+   project/main_config/index.rst
    project/graphs_config.rst
    project/stage5_config.rst
    project/template_input_file.rst
@@ -21,7 +21,7 @@ Setup and Configuration Tutorials
    project/hooks.rst
    project/models.rst
 
-.. _ln-tutorials-hpc:
+.. _ln-sierra-tutorials-hpc:
 
 .. toctree::
    :maxdepth: 1
@@ -30,7 +30,7 @@ Setup and Configuration Tutorials
    hpc/cluster_setup.rst
    hpc/local_setup.rst
 
-.. _ln-tutorials-extension:
+.. _ln-sierra-tutorials-extension:
 
 .. toctree::
    :maxdepth: 1
@@ -39,4 +39,3 @@ Setup and Configuration Tutorials
    plugin/platform_plugin.rst
    plugin/exec_env_plugin.rst
    plugin/storage_plugin.rst
-
