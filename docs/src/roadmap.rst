@@ -5,8 +5,8 @@ SIERRA Roadmap
 ==============
 
 This page shows a brief overview of some of the ways I think SIERRA could be
-improved. Big picture stuff, not stuff like "add more unit tests".  Basically a
-place to put stuff I want to add someday so I don't forget.
+improved. Big picture stuff, not "add more unit tests".  Basically a place to
+put stuff I want to add someday so I don't forget.
 
 
 Supporting ROS2
@@ -22,6 +22,17 @@ Supporting WeBots
 
 This would require adding a new platform plugin. Should be a fairly
 self-contained improvement.
+
+Supporting NetLogo
+==================
+
+This would require adding a new platform plugin. I *think* netlogo can take in
+XML, so this should be a fairly self-contained improvement. netlogo handles
+parallel experimental runs, so that might require some additional configuration,
+since none of the currently supported platforms do that.
+
+Adding this would also make SIERRA more appealing/using to researchers outside
+of robotics.
 
 Supporting multiple types of experiment input files (not just XML)
 ==================================================================

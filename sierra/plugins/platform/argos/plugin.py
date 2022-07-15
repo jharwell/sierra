@@ -140,7 +140,7 @@ class ParsedCmdlineConfigurer():
     def _hpc_adhoc(self, args: argparse.Namespace) -> None:
         self.logger.debug("Configuring ARGoS for ADHOC execution")
 
-        with open(args.nodefile, 'r') as f:
+        with utils.utf8open(args.nodefile, 'r') as f:
             lines = f.readlines()
             n_nodes = len(lines)
 

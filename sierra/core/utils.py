@@ -25,6 +25,7 @@ import typing as tp
 import time
 import logging
 import pickle
+import functools
 
 # 3rd party packages
 import numpy as np
@@ -150,7 +151,7 @@ def path_exists(path: str) -> bool:
     time out as the FS goes and executes the query over the network.
     """
     res = []
-    for i in range(0, 10):
+    for _ in range(0, 10):
         if os.path.exists(path):
             res.append(True)
         else:
@@ -370,10 +371,7 @@ def pickle_dump(obj: object, f: tp.IO) -> None:
 def gen_scenario_spec(cmdopts: types.Cmdopts, **kwargs) -> dict[str, tp.Any]:
     # scenario is passed in kwargs during stage 5 (can't be passed via
     # --scenario in general )
-    if 'scenario' in kwargs:
-        scenario = kwargs['scenario']
-    else:
-        scenario = cmdopts['scenario']
+    scenario = kwargs.get('scenario', cmdopts['scenario'])
 
     sgp = pm.module_load_tiered(project=cmdopts['project'],
                                 path='generators.scenario_generator_parser')
@@ -381,6 +379,12 @@ def gen_scenario_spec(cmdopts: types.Cmdopts, **kwargs) -> dict[str, tp.Any]:
 
     return kw
 
+
+utf8open = functools.partial(open, encoding='UTF-8')
+"""
+Explictly specify that the type of file being opened is UTF-8, which is should
+be for almost everything in SIERRA.
+"""
 
 __api__ = [
     'ArenaExtent',
@@ -395,6 +399,6 @@ __api__ = [
     'pickle_modifications',
     'batch_template_path',
     'get_n_robots',
-    'df_fill'
-
+    'df_fill',
+    'utf8open',
 ]

@@ -36,7 +36,7 @@ import netifaces
 
 # Project packages
 import sierra.core.plugin_manager as pm
-from sierra.core import config, types
+from sierra.core import config, types, utils
 from sierra.core.experiment import bindings
 import sierra.core.variables.batch_criteria as bc
 
@@ -228,58 +228,64 @@ class ExecEnvChecker():
     def parse_nodefile(nodefile: str) -> tp.List[types.SimpleDict]:
         ret = []
 
-        with open(nodefile, 'r') as f:
+        with utils.utf8open(nodefile, 'r') as f:
             lines = f.readlines()
 
             for line in lines:
-                comment_re = r"^#"
-                if res := re.search(comment_re, line):
-                    continue
+                ret.append(ExecEnvChecker._parse_nodefile_line(line))
 
-                cores_re = r"^[0-9]+/"
-                if res := re.search(cores_re, line):
-                    cores = int(line.split('/')[0])
-                    ssh = line.split('/')[1]
-                else:
-                    cores = 1
-                    ssh = line
-
-                identifier_re = r"[a-zA-Z0-9_.]+"
-                port_re = r"ssh -p\s*([0-9]+)"
-                username_at_host_re = f"({identifier_re})+@({identifier_re})"
-                port_and_username_at_host_re = port_re + r"\*s" + username_at_host_re
-                port_and_hostname_re = port_re + rf"\s+({identifier_re})"
-
-                if res := re.search(port_and_username_at_host_re, ssh):
-                    # They specified the port AND 'username@host'
-                    port = int(res.group(1))
-                    login = res.group(2)
-                    hostname = res.group(3)
-                elif res := re.search(port_and_hostname_re, ssh):
-                    # They only specified the port and hostname
-                    port = int(res.group(1))
-                    hostname = res.group(2)
-                    login = pwd.getpwuid(os.getuid())[0]
-                elif res := re.search(username_at_host_re, ssh):
-                    # They only specified 'username@host'
-                    port = 22
-                    login = res.group(1)
-                    hostname = res.group(2)
-                elif res := re.search(identifier_re, ssh):
-                    # They only specified the hostname
-                    port = 22
-                    login = pwd.getpwuid(os.getuid())[0]
-                    hostname = res.group(0)
-                else:
-                    raise ValueError(f"Bad ssh/hostname spec {ssh}")
-
-                ret.append({
-                    'hostname': hostname,
-                    'n_cores': cores,
-                    'login': login,
-                    'port': port
-                })
         return ret
+
+    @staticmethod
+    def _parse_nodefile_line(line: str) -> types.SimpleDict:
+        # Line starts with a comment--no parsing needed
+        comment_re = r"^#"
+        if res := re.search(comment_re, line):
+            return {}
+
+        cores_re = r"^[0-9]+/"
+        if res := re.search(cores_re, line):
+            cores = int(line.split('/')[0])
+            ssh = line.split('/')[1]
+        else:
+            cores = 1
+            ssh = line
+
+        identifier_re = r"[a-zA-Z0-9_.]+"
+        port_re = r"ssh -p\s*([0-9]+)"
+        username_at_host_re = f"({identifier_re})+@({identifier_re})"
+        port_and_username_at_host_re = port_re + r"\*s" + username_at_host_re
+        port_and_hostname_re = port_re + rf"\s+({identifier_re})"
+
+        if res := re.search(port_and_username_at_host_re, ssh):
+            # They specified the port AND 'username@host'
+            port = int(res.group(1))
+            login = res.group(2)
+            hostname = res.group(3)
+        elif res := re.search(port_and_hostname_re, ssh):
+            # They only specified the port and hostname
+            port = int(res.group(1))
+            hostname = res.group(2)
+            login = pwd.getpwuid(os.getuid())[0]
+        elif res := re.search(username_at_host_re, ssh):
+            # They only specified 'username@host'
+            port = 22
+            login = res.group(1)
+            hostname = res.group(2)
+        elif res := re.search(identifier_re, ssh):
+            # They only specified the hostname
+            port = 22
+            login = pwd.getpwuid(os.getuid())[0]
+            hostname = res.group(0)
+        else:
+            raise ValueError(f"Bad ssh/hostname spec {ssh}")
+
+        return {
+            'hostname': hostname,
+            'n_cores': cores,
+            'login': login,
+            'port': port
+        }
 
     def __init__(self, cmdopts: types.Cmdopts):
         self.cmdopts = cmdopts

@@ -89,7 +89,7 @@ class ExpCreator:
 
         if self.preserve_seeds:
             if utils.path_exists(self.seeds_fpath):
-                with open(self.seeds_fpath, 'rb') as f:
+                with utils.utf8open(self.seeds_fpath, 'rb') as f:
                     self.random_seeds = pickle.load(f)
 
         if self.random_seeds is not None:
@@ -192,7 +192,7 @@ class ExpCreator:
             # Update GNU Parallel commands file with the command for the
             # configured experimental run.
             fpath = f"{self.commands_fpath}{config.kGNUParallel['cmdfile_ext']}"
-            with open(fpath, 'a') as cmds_file:
+            with utils.utf8open(fpath, 'a') as cmds_file:
                 self._update_cmds_file(cmds_file,
                                        cmds_generator,
                                        'per-exp',
@@ -208,7 +208,7 @@ class ExpCreator:
 
             self.logger.trace("Updating slave cmdfile %s",   # type: ignore
                               slave_fpath)
-            with open(slave_fpath, 'w') as cmds_file:
+            with utils.utf8open(slave_fpath, 'w') as cmds_file:
                 self._update_cmds_file(cmds_file,
                                        cmds_generator,
                                        'per-run',
@@ -218,7 +218,7 @@ class ExpCreator:
 
             self.logger.trace("Updating master cmdfile %s",   # type: ignore
                               master_fpath)
-            with open(master_fpath, 'w') as cmds_file:
+            with utils.utf8open(master_fpath, 'w') as cmds_file:
                 self._update_cmds_file(cmds_file,
                                        cmds_generator,
                                        'per-run',

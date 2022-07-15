@@ -32,9 +32,8 @@ import yaml
 from sierra.core.pipeline.stage3.statistics_calculator import BatchExpParallelCalculator
 from sierra.core.pipeline.stage3.run_collator import ExperimentalRunParallelCollator
 from sierra.core.pipeline.stage3.imagizer import BatchExpParallelImagizer
-import sierra.core.utils
 import sierra.core.variables.batch_criteria as bc
-from sierra.core import types
+from sierra.core import types, utils
 
 
 class PipelineStage3:
@@ -70,10 +69,10 @@ class PipelineStage3:
             intra_HM_path = os.path.join(self.cmdopts['project_config_root'],
                                          'intra-graphs-hm.yaml')
 
-            if sierra.core.utils.path_exists(intra_HM_path):
+            if utils.path_exists(intra_HM_path):
                 self.logger.info("Loading intra-experiment heatmap config for project '%s'",
                                  self.cmdopts['project'])
-                intra_HM_config = yaml.load(open(intra_HM_path),
+                intra_HM_config = yaml.load(utils.utf8open(intra_HM_path),
                                             yaml.FullLoader)
                 self._run_imagizing(self.main_config,
                                     intra_HM_config,

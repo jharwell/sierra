@@ -285,7 +285,7 @@ class ExpRunner:
         sec = datetime.timedelta(seconds=elapsed)
         self.logger.info('Exp%s elapsed time: %s', exp_num, sec)
 
-        with open(self.exec_times_fpath, 'a') as f:
+        with utils.utf8open(self.exec_times_fpath, 'a') as f:
             f.write('exp' + str(exp_num) + ': ' + str(sec) + '\n')
 
 

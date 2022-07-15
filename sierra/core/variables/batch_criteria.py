@@ -155,6 +155,11 @@ class IBivarBatchCriteria(implements.Interface):
 
 
 class IBatchCriteriaType(implements.Interface):
+    """
+    Mixin interface for batch criteria for specifying if they are univariate or
+    bivariate.
+    """
+
     def is_bivar(self) -> bool:
         """
         Returns:

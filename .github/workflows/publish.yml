@@ -31,7 +31,7 @@ jobs:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: ${{ env.RELEASE_TAG }}
           prerelease: true
-          title: "Development releease ${{ env.RELEASE_TAG }}"
+          title: "Development release ${{ env.RELEASE_TAG }}"
 
       - name: Publish to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1

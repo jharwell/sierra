@@ -13,7 +13,11 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-
+"""
+Central factory for creating and combining XML modification generators from
+controller and scenario specifications into a single generator which can be used
+to apply modifications to the template XML file.
+"""
 # Core packages
 import os
 import typing as tp
@@ -27,7 +31,7 @@ import yaml
 from sierra.core.xml import XMLLuigi, XMLTagAdd
 from sierra.core.experiment.spec import ExperimentSpec
 import sierra.core.plugin_manager as pm
-from sierra.core import types, config
+from sierra.core import types, config, utils
 
 
 class ControllerGenerator():
@@ -42,11 +46,13 @@ class ControllerGenerator():
                  config_root: str,
                  cmdopts: types.Cmdopts,
                  spec: ExperimentSpec) -> None:
-        with open(os.path.join(config_root,
-                               config.kYAML['controllers'])) as f:
+        controllers_yaml = os.path.join(config_root,
+                                        config.kYAML['controllers'])
+        with utils.utf8open(controllers_yaml) as f:
             self.controller_config = yaml.load(f, yaml.FullLoader)
 
-        with open(os.path.join(config_root, config.kYAML['main'])) as f:
+        main_yaml = os.path.join(config_root, config.kYAML['main'])
+        with utils.utf8open(main_yaml) as f:
             self.main_config = yaml.load(f, yaml.FullLoader)
 
         self.category, self.name = controller.split('.')

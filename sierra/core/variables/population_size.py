@@ -13,7 +13,9 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-
+"""
+Reusable classes related to the homogeneous populations of agents.
+"""
 # Core packages
 import typing as tp
 import re

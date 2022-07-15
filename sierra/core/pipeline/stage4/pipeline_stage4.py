@@ -97,8 +97,10 @@ class PipelineStage4:
         self.cmdopts = cmdopts
 
         self.main_config = main_config
-        with open(os.path.join(self.cmdopts['project_config_root'],
-                               config.kYAML['controllers'])) as f:
+
+        controllers_yaml = os.path.join(self.cmdopts['project_config_root'],
+                                        config.kYAML['controllers'])
+        with utils.utf8open(controllers_yaml) as f:
             self.controller_config = yaml.load(f, yaml.FullLoader)
         self.logger = logging.getLogger(__name__)
 
@@ -183,7 +185,8 @@ class PipelineStage4:
         self.logger.info("Loading models for project '%s'",
                          self.cmdopts['project'])
 
-        self.models_config = yaml.load(open(project_models), yaml.FullLoader)
+        self.models_config = yaml.load(utils.utf8open(project_models),
+                                       yaml.FullLoader)
         pm.models.initialize(self.cmdopts['project'],
                              self.cmdopts['project_model_root'])
 

@@ -99,7 +99,7 @@ class UnivarGraphCollator:
         stats = [UnivarGraphCollationInfo(df_ext=ext,
                                           ylabels=[os.path.split(e)[1] for e in exp_dirs]) for ext in exts]
 
-        for i, diri in enumerate(exp_dirs):
+        for diri in exp_dirs:
             # We get full paths back from the exp dirs calculation, and we need
             # to work with path leaves
             diri = os.path.split(diri)[1]
@@ -185,7 +185,7 @@ class BivarGraphCollator:
                                          xlabels=xlabels,
                                          ylabels=ylabels) for ext in exts]
 
-        for i, diri in enumerate(exp_dirs):
+        for diri in exp_dirs:
             # We get full paths back from the exp dirs calculation, and we need
             # to work with path leaves
             diri = os.path.split(diri)[1]
@@ -262,7 +262,7 @@ class GraphParallelCollator():
         else:
             parallelism = mp.cpu_count()
 
-        for i in range(0, parallelism):
+        for _ in range(0, parallelism):
             p = mp.Process(target=GraphParallelCollator._thread_worker,
                            args=(q,
                                  self.main_config,

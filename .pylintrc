@@ -94,6 +94,8 @@ disable=missing-function-docstring,
         use-symbolic-message-instead,
         too-many-instance-attributes,
         no-else-return,
+        unused-argument,
+        no-self-use,
         abstract-method
 
 # Enable the message, report, category or checker with the given id(s). You can
@@ -347,7 +349,7 @@ ignore-imports=no
 ignore-signatures=no
 
 # Minimum lines number of a similarity.
-min-similarity-lines=10
+min-similarity-lines=20
 
 
 [SPELLING]

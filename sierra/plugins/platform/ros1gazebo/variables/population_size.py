@@ -29,9 +29,8 @@ import implements
 # Project packages
 from sierra.core.variables import batch_criteria as bc
 from sierra.core.xml import XMLTagAdd, XMLTagAddList
-from sierra.core import types
+from sierra.core import types, utils
 from sierra.core.vector import Vector3D
-import sierra.core.plugin_manager as pm
 from sierra.core.variables import population_size
 
 
@@ -190,17 +189,8 @@ def factory(cli_arg: str,
     else:
         # Get the dimensions of the effective arena from the scenario so we can
         # place robots randomly within it.
-        sgp = pm.module_load_tiered(project=cmdopts['project'],
-                                    path='generators.scenario_generator_parser')
+        kw = utils.gen_scenario_spec(cmdopts, **kwargs)
 
-        # scenario is passed in kwargs during stage 5 (can't be passed via
-        # --scenario in general )
-        if 'scenario' in kwargs:
-            scenario = kwargs['scenario']
-        else:
-            scenario = cmdopts['scenario']
-
-        kw = sgp.ScenarioGeneratorParser().to_dict(scenario)
         xs = random.choices(range(0, kw['arena_x']), k=max_sizes[-1])  # type: ignore
         ys = random.choices(range(0, kw['arena_y']), k=max_sizes[-1])  # type: ignore
         zs = random.choices(range(0, kw['arena_z']), k=max_sizes[-1])  # type: ignore

@@ -171,7 +171,7 @@ class SummaryLineGraph:
             plt.plot(self.xticks,
                      data_dfy.values[i],
                      marker=self.kMarkStyles[i],
-                     color="C{}".format(i))
+                     color=f"C{i}")
 
             # Plot model prediction(s)
             if model[0] is not None:
@@ -268,7 +268,7 @@ class SummaryLineGraph:
     def _read_stats(self) -> tp.Dict[str, list]:
         dfs = {}
 
-        if self.stats == 'conf95' or self.stats == 'all':
+        if self.stats in ['conf95', 'all']:
             stddev_ipath = os.path.join(self.stats_root,
                                         self.input_stem + config.kStatsExt['stddev'])
 
@@ -279,7 +279,7 @@ class SummaryLineGraph:
                 self.logger.warning("stddev file not found for '%s'",
                                     self.input_stem)
 
-        if self.stats == 'bw' or self.stats == 'all':
+        if self.stats in ['bw', 'all']:
             whislo_ipath = os.path.join(self.stats_root,
                                         self.input_stem + config.kStatsExt['whislo'])
             whishi_ipath = os.path.join(self.stats_root,
@@ -357,7 +357,7 @@ class SummaryLineGraph:
             if utils.path_exists(model_fpath):
                 model = storage.DataFrameReader('storage.csv')(model_fpath)
                 if utils.path_exists(model_legend_fpath):
-                    with open(model_legend_fpath, 'r') as f:
+                    with utils.utf8open(model_legend_fpath, 'r') as f:
                         model_legend = f.read().splitlines()
                 else:
                     self.logger.warning(

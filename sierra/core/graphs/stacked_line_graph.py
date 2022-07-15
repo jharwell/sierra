@@ -235,7 +235,7 @@ class StackedLineGraph:
             if utils.path_exists(model_fpath):
                 model = storage.DataFrameReader('storage.csv')(model_fpath)
                 if utils.path_exists(model_legend_fpath):
-                    with open(model_legend_fpath, 'r') as f:
+                    with utils.utf8open(model_legend_fpath, 'r') as f:
                         model_legend = f.read().splitlines()
                 else:
                     self.logger.warning(

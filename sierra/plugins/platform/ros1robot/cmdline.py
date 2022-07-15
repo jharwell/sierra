@@ -177,7 +177,9 @@ class PlatformCmdline(cmd.BaseCmdline):
 
 
 class CmdlineValidator(ros1.cmdline.ROSCmdlineValidator):
-    pass
+    """
+    Stub implementation.
+    """
 
 
 def sphinx_cmdline_stage1():

@@ -30,7 +30,7 @@ import implements
 
 # Project packages
 from sierra.plugins.platform.ros1gazebo import cmdline
-from sierra.core import hpc, xml, platform, config, ros1, types
+from sierra.core import hpc, xml, platform, config, ros1, types, utils
 from sierra.core.experiment import bindings
 import sierra.core.variables.batch_criteria as bc
 
@@ -88,7 +88,7 @@ class ParsedCmdlineConfigurer():
                           args.exec_jobs_per_node)
 
     def _hpc_adhoc(self, args: argparse.Namespace) -> None:
-        with open(args.nodefile, 'r') as f:
+        with utils.utf8open(args.nodefile, 'r') as f:
             lines = f.readlines()
             n_nodes = len(lines)
 

@@ -29,7 +29,7 @@ import yaml
 
 # Project packages
 import sierra.core.plugin_manager as pm
-from sierra.core import types, config
+from sierra.core import types, config, utils
 
 from sierra.core.pipeline.stage1.pipeline_stage1 import PipelineStage1
 from sierra.core.pipeline.stage2.pipeline_stage2 import PipelineStage2
@@ -180,7 +180,7 @@ class Pipeline:
         main_path = os.path.join(self.cmdopts['project_config_root'],
                                  config.kYAML['main'])
         try:
-            with open(main_path) as f:
+            with utils.utf8open(main_path) as f:
                 self.main_config = yaml.load(f, yaml.FullLoader)
 
         except FileNotFoundError:

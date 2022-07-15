@@ -52,60 +52,74 @@ class IntraExpModelRunner:
                                           criteria)
         exp_dirnames = criteria.gen_exp_dirnames(self.cmdopts)
 
-        for i, exp in enumerate(exp_to_run):
-            exp = os.path.split(exp)[1]
-            exp_index = exp_dirnames.index(exp)
+        for exp in exp_to_run:
+            self._run_models_in_exp(criteria, exp_dirnames, exp)
 
-            cmdopts = copy.deepcopy(self.cmdopts)
-            cmdopts["exp0_output_root"] = os.path.join(self.cmdopts["batch_output_root"],
-                                                       exp_dirnames[0])
-            cmdopts["exp0_stat_root"] = os.path.join(self.cmdopts["batch_stat_root"],
-                                                     exp_dirnames[0])
+    def _run_models_in_exp(self,
+                           criteria: bc.IConcreteBatchCriteria,
+                           exp_dirnames: tp.List[str],
+                           exp: str) -> None:
+        exp = os.path.split(exp)[1]
+        exp_index = exp_dirnames.index(exp)
 
-            cmdopts["exp_input_root"] = os.path.join(
-                self.cmdopts['batch_input_root'], exp)
-            cmdopts["exp_output_root"] = os.path.join(
-                self.cmdopts['batch_output_root'], exp)
-            cmdopts["exp_graph_root"] = os.path.join(
-                self.cmdopts['batch_graph_root'], exp)
-            cmdopts["exp_stat_root"] = os.path.join(
-                self.cmdopts["batch_stat_root"], exp)
-            cmdopts["exp_model_root"] = os.path.join(
-                cmdopts['batch_model_root'], exp)
+        cmdopts = copy.deepcopy(self.cmdopts)
+        cmdopts["exp0_output_root"] = os.path.join(self.cmdopts["batch_output_root"],
+                                                   exp_dirnames[0])
+        cmdopts["exp0_stat_root"] = os.path.join(self.cmdopts["batch_stat_root"],
+                                                 exp_dirnames[0])
 
-            utils.dir_create_checked(
-                cmdopts['exp_model_root'], exist_ok=True)
+        cmdopts["exp_input_root"] = os.path.join(
+            self.cmdopts['batch_input_root'], exp)
+        cmdopts["exp_output_root"] = os.path.join(
+            self.cmdopts['batch_output_root'], exp)
+        cmdopts["exp_graph_root"] = os.path.join(
+            self.cmdopts['batch_graph_root'], exp)
+        cmdopts["exp_stat_root"] = os.path.join(
+            self.cmdopts["batch_stat_root"], exp)
+        cmdopts["exp_model_root"] = os.path.join(
+            cmdopts['batch_model_root'], exp)
 
-            writer = storage.DataFrameWriter('storage.csv')
+        utils.dir_create_checked(cmdopts['exp_model_root'], exist_ok=True)
 
-            for model in self.models:
-                if not model.run_for_exp(criteria, cmdopts, exp_index):
-                    self.logger.debug("Skip running intra-experiment model from '%s' for exp%s",
-                                      str(model),
-                                      exp_index)
-                    continue
+        for model in self.models:
+            self._run_model_in_exp(criteria, cmdopts, exp_index, model)
 
-                # Run the model
-                self.logger.debug("Run intra-experiment model '%s' for exp%s",
-                                  str(model),
-                                  exp_index)
-                dfs = model.run(criteria, exp_index, cmdopts)
-                for df, csv_stem in zip(dfs, model.target_csv_stems()):
-                    path_stem = os.path.join(cmdopts['exp_model_root'],
-                                             csv_stem)
+    def _run_model_in_exp(self,
+                          criteria: bc.IConcreteBatchCriteria,
+                          cmdopts: types.Cmdopts,
+                          exp_index: int,
+                          model: tp.Union[models.interface.IConcreteIntraExpModel1D,
+                                          models.interface.IConcreteIntraExpModel2D]) -> None:
+        if not model.run_for_exp(criteria, cmdopts, exp_index):
+            self.logger.debug("Skip running intra-experiment model from '%s' for exp%s",
+                              str(model),
+                              exp_index)
+            return
 
-                    # Write model legend file so the generated graph can find it
-                    with open(path_stem + config.kModelsExt['legend'], 'w') as f:
-                        for j, search in enumerate(dfs):
-                            if search.values.all() == df.values.all():
-                                legend = model.legend_names()[j]
-                                f.write(legend)
-                                break
+        # Run the model
+        self.logger.debug("Run intra-experiment model '%s' for exp%s",
+                          str(model),
+                          exp_index)
+        dfs = model.run(criteria, exp_index, cmdopts)
+        writer = storage.DataFrameWriter('storage.csv')
 
-                    # Write model .csv file
-                    writer(df,
-                           path_stem + config.kModelsExt['model'],
-                           index=False)
+        for df, csv_stem in zip(dfs, model.target_csv_stems()):
+            path_stem = os.path.join(cmdopts['exp_model_root'],
+                                     csv_stem)
+
+            # Write model legend file so the generated graph can find it
+            with utils.utf8open(path_stem + config.kModelsExt['legend'],
+                                'w') as f:
+                for j, search in enumerate(dfs):
+                    if search.values.all() == df.values.all():
+                        legend = model.legend_names()[j]
+                        f.write(legend)
+                        break
+
+            # Write model .csv file
+            writer(df,
+                   path_stem + config.kModelsExt['model'],
+                   index=False)
 
 
 class InterExpModelRunner:
@@ -115,9 +129,9 @@ class InterExpModelRunner:
 
     def __init__(self,
                  cmdopts: types.Cmdopts,
-                 models: tp.List[models.interface.IConcreteInterExpModel1D]) -> None:
+                 to_run: tp.List[models.interface.IConcreteInterExpModel1D]) -> None:
         self.cmdopts = cmdopts
-        self.models = models
+        self.models = to_run
         self.logger = logging.getLogger(__name__)
 
     def __call__(self,
@@ -152,7 +166,7 @@ class InterExpModelRunner:
                 # 1D dataframe -> line graph with legend
                 if len(df.index) == 1:
                     # Write model legend file so the generated graph can find it
-                    with open(path_stem + config.kModelsExt['legend'], 'w') as f:
+                    with utils.utf8open(path_stem + config.kModelsExt['legend'], 'w') as f:
                         for i, search in enumerate(dfs):
                             if search.values.all() == df.values.all():
                                 legend = model.legend_names()[i]

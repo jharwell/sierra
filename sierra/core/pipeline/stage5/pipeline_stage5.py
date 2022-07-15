@@ -30,8 +30,7 @@ import yaml
 from sierra.core.pipeline.stage5 import intra_scenario_comparator as intrasc
 from sierra.core.pipeline.stage5 import inter_scenario_comparator as intersc
 import sierra.core.root_dirpath_generator as rdg
-import sierra.core.utils
-from sierra.core import types
+from sierra.core import types, utils
 
 
 class PipelineStage5:
@@ -66,8 +65,9 @@ class PipelineStage5:
         self.cmdopts = cmdopts
         self.main_config = main_config
 
-        with open(os.path.join(self.cmdopts['project_config_root'],
-                               'stage5.yaml')) as f:
+        path = os.path.join(self.cmdopts['project_config_root'],
+                            'stage5.yaml')
+        with utils.utf8open(path) as f:
             self.stage5_config = yaml.load(f, yaml.FullLoader)
 
         self.logger = logging.getLogger(__name__)
@@ -131,7 +131,7 @@ class PipelineStage5:
         """
         # Create directories for .csv files and graphs
         for v in self.output_roots.values():
-            sierra.core.utils.dir_create_checked(v, True)
+            utils.dir_create_checked(v, True)
 
         if self.cmdopts['controller_comparison']:
             self._run_cc(cli_args)

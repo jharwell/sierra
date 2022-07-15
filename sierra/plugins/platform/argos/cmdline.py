@@ -359,9 +359,6 @@ class PlatformCmdline(cmd.BaseCmdline):
 
 
 class CmdlineValidator(cmd.CoreCmdlineValidator):
-    """
-    Stub implementation.
-    """
     pass
 
 

@@ -88,7 +88,7 @@ class PlatformExpRunDefUniqueGenerator(ros1.generators.ROSExpRunDefUniqueGenerat
         main_path = os.path.join(self.cmdopts['project_config_root'],
                                  config.kYAML['main'])
 
-        with open(main_path) as f:
+        with utils.utf8open(main_path) as f:
             main_config = yaml.load(f, yaml.FullLoader)
 
         n_robots = utils.get_n_robots(main_config,

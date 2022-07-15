@@ -306,7 +306,7 @@ class ExperimentalRunCollator:
                                                              columns=gathered_runs)
                 collated[(csv_leaf, col)][run] = csv_df
 
-        for (csv_leaf, col) in collated.keys():
+        for (csv_leaf, col) in collated:
             writer = storage.DataFrameWriter(self.storage_medium)
             df = utils.df_fill(collated[(csv_leaf, col)], self.df_homogenize)
             fname = f'{exp_leaf}-{csv_leaf}-{col}' + config.kStorageExt['csv']

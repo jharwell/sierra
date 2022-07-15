@@ -79,8 +79,6 @@ class BasePluginManager():
                                   plugins[name]['parent_dir'])
             else:
                 self.logger.warning("Pipeline plugin '%s' already loaded", name)
-
-            return self.loaded[scoped_name]['module']
         elif plugins[name]['type'] == 'project':
             # Projects are addressed directly without scoping. Only one project
             # is loaded at a time, so this should be fine.
@@ -372,10 +370,10 @@ def module_load_tiered(path: str,
                       core_path)
 
     # Module does not exist
-    error = "project: '{0}' platform: '{1}' path: '{2}' sys.path: {3}".format(project,
-                                                                              platform,
-                                                                              path,
-                                                                              sys.path)
+    error = (f"project: '{project}' "
+             f"platform: '{platform}' "
+             f"path: '{path}' "
+             f"sys.path: {sys.path}")
     raise ImportError(error)
 
 

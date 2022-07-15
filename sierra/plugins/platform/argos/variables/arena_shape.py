@@ -61,7 +61,6 @@ class ArenaShape():
         xsize = extent.xsize()
         ysize = extent.ysize()
         zsize = extent.zsize()
-        dims = xsize, ysize, zsize
 
         chgs = XMLAttrChangeSet(XMLAttrChange(".//arena",
                                               "size",
@@ -70,66 +69,62 @@ class ArenaShape():
                                               "center",
                                               "{0:.9f},{1:.9f},{2}".format(xsize / 2.0,
                                                                            ysize / 2.0,
-                                                                           zsize / 2.0)),
+                                                                           zsize / 2.0)))
 
-                                # We restrict the places robots can spawn within
-                                # the arena as follows:
-                                #
-                                # - Subtract width of the walls so that robots
-                                #   do not spawn inside walls (which ARGoS seems
-                                #   to allow?).
-                                #
-                                # - Subtract a little bit more so robots don't
-                                #   get into weird states by being near arena
-                                #   boundaries on the first timestep.
-                                #
-                                # - All robots start on the ground with Z=0.
-                                XMLAttrChange(".//arena/distribute/position",
-                                              "max",
-                                              "{0:.9f}, {1:.9f}, 0".format(xsize - 2.0 * kWALL_WIDTH - 2.0,
-                                                                           ysize - 2.0 * kWALL_WIDTH - 2.0)),
-                                XMLAttrChange(".//arena/distribute/position",
-                                              "min",
-                                              "{0:.9f}, {1:.9f}, 0".format(2.0 * kWALL_WIDTH + 2.0, 2.0 * kWALL_WIDTH + 2.0)),
+        # We restrict the places robots can spawn within the arena as follows:
+        #
+        # - Subtract width of the walls so that robots do not spawn inside walls
+        #   (which ARGoS seems to allow?).
+        #
+        # - Subtract a little bit more so robots don't get into weird states by
+        #   being near arena boundaries on the first timestep.
+        #
+        # - All robots start on the ground with Z=0.
+        chgs.add(XMLAttrChange(".//arena/distribute/position",
+                               "max",
+                               "{0:.9f}, {1:.9f}, 0".format(xsize - 2.0 * kWALL_WIDTH - 2.0,
+                                                            ysize - 2.0 * kWALL_WIDTH - 2.0)))
+        chgs.add(XMLAttrChange(".//arena/distribute/position",
+                               "min",
+                               "{0:.9f}, {1:.9f}, 0".format(2.0 * kWALL_WIDTH + 2.0, 2.0 * kWALL_WIDTH + 2.0)))
 
-                                XMLAttrChange(".//arena/*[@id='wall_north']",
-                                              "size",
-                                              "{0:.9f}, {1:.9f}, 0.5".format(xsize, kWALL_WIDTH)),
+        chgs.add(XMLAttrChange(".//arena/*[@id='wall_north']",
+                               "size",
+                               "{0:.9f}, {1:.9f}, 0.5".format(xsize, kWALL_WIDTH)))
 
-                                XMLAttrChange(".//arena/*[@id='wall_north']/body",
-                                              "position", "{0:.9f}, {1:.9f}, 0".format(xsize / 2.0, ysize)),
-                                XMLAttrChange(".//arena/*[@id='wall_south']",
-                                              "size",
-                                              "{0:.9f}, {1:.9f}, 0.5".format(xsize, kWALL_WIDTH)),
-                                XMLAttrChange(".//arena/*[@id='wall_south']/body",
-                                              "position",
-                                              "{0:.9f}, 0, 0 ".format(xsize / 2.0)),
+        chgs.add(XMLAttrChange(".//arena/*[@id='wall_north']/body",
+                               "position",
+                               "{0:.9f}, {1:.9f}, 0".format(xsize / 2.0, ysize)))
+        chgs.add(XMLAttrChange(".//arena/*[@id='wall_south']",
+                               "size",
+                               "{0:.9f}, {1:.9f}, 0.5".format(xsize, kWALL_WIDTH)))
+        XMLAttrChange(".//arena/*[@id='wall_south']/body",
+                      "position",
+                      "{0:.9f}, 0, 0 ".format(xsize / 2.0)),
 
-                                # East wall needs to have its X coordinate
-                                # offset by the width of the wall / 2 in order
-                                # to be centered on the boundary for the
-                                # arena. This is necessary to ensure that the
-                                # maximum X coordinate that robots can access is
-                                # LESS than the upper boundary of physics
-                                # engines incident along the east wall.
-                                #
-                                # I think this is a bug in ARGoS.
-                                XMLAttrChange(".//arena/*[@id='wall_east']",
-                                              "size",
-                                              "{0:.9f}, {1:.9f}, 0.5".format(kWALL_WIDTH,
-                                                                             ysize + kWALL_WIDTH)),
-                                XMLAttrChange(".//arena/*[@id='wall_east']/body",
-                                              "position",
-                                              "{0:.9f}, {1:.9f}, 0".format(xsize - kWALL_WIDTH / 2.0,
-                                                                           ysize / 2.0)),
+        # East wall needs to have its X coordinate offset by the width of the
+        # wall / 2 in order to be centered on the boundary for the arena. This
+        # is necessary to ensure that the maximum X coordinate that robots can
+        # access is LESS than the upper boundary of physics engines incident
+        # along the east wall.
+        #
+        # I think this is a bug in ARGoS.
+        chgs.add(XMLAttrChange(".//arena/*[@id='wall_east']",
+                               "size",
+                               "{0:.9f}, {1:.9f}, 0.5".format(kWALL_WIDTH,
+                                                              ysize + kWALL_WIDTH)))
+        chgs.add(XMLAttrChange(".//arena/*[@id='wall_east']/body",
+                               "position",
+                               "{0:.9f}, {1:.9f}, 0".format(xsize - kWALL_WIDTH / 2.0,
+                                                            ysize / 2.0)))
 
-                                XMLAttrChange(".//arena/*[@id='wall_west']",
-                                              "size",
-                                              "{0:.9f}, {1:.9f}, 0.5".format(kWALL_WIDTH,
-                                                                             ysize + kWALL_WIDTH)),
-                                XMLAttrChange(".//arena/*[@id='wall_west']/body",
-                                              "position",
-                                              "0, {0:.9f}, 0".format(ysize / 2.0)))
+        chgs.add(XMLAttrChange(".//arena/*[@id='wall_west']",
+                               "size",
+                               "{0:.9f}, {1:.9f}, 0.5".format(kWALL_WIDTH,
+                                                              ysize + kWALL_WIDTH)))
+        chgs.add(XMLAttrChange(".//arena/*[@id='wall_west']/body",
+                               "position",
+                               "0, {0:.9f}, 0".format(ysize / 2.0)))
 
         return chgs
 
@@ -146,4 +141,6 @@ class ArenaShape():
 __api__ = [
     'kWALL_WIDTH',
     'ArenaShape',
+
+
 ]

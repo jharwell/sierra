@@ -6,7 +6,9 @@
 | [![](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) | ![](https://github.com/swarm-robotics/sierra/actions/workflows/static-analysis.yml/badge.svg?branch=master) | ![](https://github.com/swarm-robotics/sierra/actions/workflows/static-analysis.yml/badge.svg?branch=devel) |
 | [![Python 3.6](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/release/python-360/)  | ![](https://github.com/swarm-robotics/sierra/actions/workflows/argos-integration-tests.yml/badge.svg?branch=master) | ![](https://github.com/swarm-robotics/sierra/actions/workflows/argos-integration-tests.yml/badge.svg?branch=devel) |
 | [![Linux](https://svgshare.com/i/Zhy.svg)](https://svgshare.com/i/Zhy.svg) [![macOS](https://svgshare.com/i/ZjP.svg)](https://svgshare.com/i/ZjP.svg) |![](https://github.com/swarm-robotics/sierra/actions/workflows/ros1gazebo-integration-tests.yml/badge.svg?branch=master) | ![](https://github.com/swarm-robotics/sierra/actions/workflows/ros1gazebo-integration-tests.yml/badge.svg?branch=devel) |
-| [![Downloads](https://pepy.tech/badge/sierra-research)](https://pepy.tech/project/sierra-research)  | [![](https://readthedocs.org/projects/swarm-robotics-sierra/badge/?version=master)](https://swarm-robotics-sierra.readthedocs.io/en/master/?badge=master) | [![](https://readthedocs.org/projects/swarm-robotics-sierra/badge/?version=master)](https://swarm-robotics-sierra.readthedocs.io/en/master/?badge=devel)
+| [![Downloads](https://pepy.tech/badge/sierra-research)](https://pepy.tech/project/sierra-research)  | [![](https://readthedocs.org/projects/swarm-robotics-sierra/badge/?version=master)](https://swarm-robotics-sierra.readthedocs.io/en/master/?badge=master) | [![](https://readthedocs.org/projects/swarm-robotics-sierra/badge/?version=master)](https://swarm-robotics-sierra.readthedocs.io/en/master/?badge=devel)|
+| [![DOI](https://zenodo.org/badge/125774567.svg)](https://zenodo.org/badge/latestdoi/125774567) | |
+
 
 # Installing SIERRA
 
@@ -23,23 +25,23 @@ SIERRA was invoked on.")
 
 SIERRA is a command line tool for automating the pipeline described above,
 providing faculties for seamless experiment generation, execution, and results
-processing. Essentially, SIERRA handles the “backend” parts of research, such
-as: handling random seeds, algorithm stochasticity, configuration for a given
-execution environment or platform, generating statistics from experimental
-results, and generating graphs and videos from experimental results.  This
-allows researchers to focus on the “research” aspects: developing theories and
-algorithms and testing them via experimental evaluation. SIERRA also eliminates
-menial reconfiguration of experimental inputs across platforms and execution
-environments by decoupling the two concepts: any supported execution environment
-or platform can be selected with a single command line switch.  It further
-automates the process of experimental data processing and deliverable
-generation, changing the paradigm of those pipeline stages from procedural (“Do
-these steps in order to process my data and generate graphs”) to declarative
-(“Here are the deliverables I want to generate and the data I want to appear on
-them”), eliminating the need for throw-away scripts. Overall, SIERRA’s
-automation increases reusability and reproducability across projects, which
-lowers the barriers to collaboration between researchers, while also
-accelerating research and development cycles.
+processing. SIERRA accelerates research cycles by allowing researchers to focus
+on the “science” aspects: developing AI elements and designing experiments to
+test them. SIERRA changes the paradigm of the engineering tasks researchers must
+perform from manual and procedural to declarative and automated. That is, from
+“Do these steps to run the experiment, process the data and generate graphs” to
+“Here is the environment and platform, the deliverables I want to generate and
+the data I want to appear on them for my research query--GO!”. Essentially,
+SIERRA handles the “backend” parts of research, such as: random seeds, algorithm
+stochasticity, configuration for a given execution environment or platform,
+generating statistics from experimental results, and generating visualizations
+from processed results. By employing declarative researcher specification via
+command line arguments and YAML configuration, it eliminates manual
+reconfiguration of experiments across platforms by decoupling the concepts of
+execution environment platform; any supported pair can be selected in a
+mix-and-match fashion (see below). Furthermore, it removes the need for
+throw-away scripts for data processing and deliverable generation by providing
+rich, extensible faculties for those pipeline stages.
 
 Consider the two use cases below: within each, SIERRA provides faculties for
 managing heterogeneity and automating common tasks to reduce the burden on
@@ -66,14 +68,14 @@ investigate:
   task: $\beta,\gamma$.
 
 Alice is faced with the following heterogeneity matrix which she has to deal
-with in addition to theoretical and algorithmic issues in her algorithms of
-interest in order to answer her research queries:
+with to answer her research queries, _in addition to the technical challenges of
+the AI elements themselves_:
 
 | Algorithm | Contains stochasticity? | Outputs data in? |
 |-----------|-------------------------|------------------|
-| $\alpha$  | Yes                     | .csv, .rosbag    |
-| $\beta$   | Yes                     | .csv, .rosbag    |
-| $\gamma$  | No                      | .rosbag          |
+| $\alpha$  | Yes                     | CSV, rosbag      |
+| $\beta$   | Yes                     | CSV, rosbag      |
+| $\gamma$  | No                      | rosbag           |
 
 Alice is familiar with ROS, and wants to use it with large scale simulated and
 small scale real-robot experiments with TurtleBots. However, for real robots she
@@ -93,8 +95,8 @@ disease transmission in animals. $\epsilon$ was originally developed for ARGoS
 to model the effects of radiation on robots.
 
 Alice is faced with the following heterogeneity matrix which she must deal with
-with in addition to theoretical and algorithmic issues in her algorithms of
-interest in order to answer her research queries:
+with to answer her research query, _in addition to the technical challenges of
+the AI elements themselves_:
 
 | Algorithm  | Can Run On? | Input Requirements? |
 |------------|-------------|---------------------|
@@ -173,6 +175,7 @@ For more details, such requirements for researcher code, see the
 [docs](https://swarm-robotics-sierra.readthedocs.io/en/master/src/requirements.html).
 
 # Citing
+
 If you use SIERRA and have found it helpful, please cite the following paper:
 
     @inproceedings{Harwell2022a-SIERRA,
@@ -184,6 +187,9 @@ If you use SIERRA and have found it helpful, please cite the following paper:
     booktitle = {Proceedings of the 21st International Conference on Autonomous Agents and Multiagent Systems},
     pages = {1905–1907}
     }
+
+You can also cite the specific version of SIERRA used with the DOI at the top of
+this page, to help facilitate reproducibility.
 
 # Contributing
 

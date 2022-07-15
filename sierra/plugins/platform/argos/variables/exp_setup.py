@@ -71,13 +71,14 @@ class ExpSetup():
 
     def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
         if not self.attr_changes:
-            self.attr_changes = [XMLAttrChangeSet(XMLAttrChange(".//experiment",
-                                                                "length",
-                                                                "{0}".format(self.n_secs_per_run)),
-                                                  XMLAttrChange(".//experiment",
-                                                                "ticks_per_second",
-                                                                "{0}".format(self.n_ticks_per_sec)),
-                                                  )]
+            chgs = XMLAttrChangeSet(XMLAttrChange(".//experiment",
+                                                  "length",
+                                                  "{0}".format(self.n_secs_per_run)),
+                                    XMLAttrChange(".//experiment",
+                                                  "ticks_per_second",
+                                                  "{0}".format(self.n_ticks_per_sec)),
+                                    )
+            self.attr_changes = [chgs]
         return self.attr_changes
 
     def gen_tag_rmlist(self) -> tp.List[XMLTagRmList]:

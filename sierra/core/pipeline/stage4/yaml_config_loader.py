@@ -23,8 +23,7 @@ import logging
 import yaml
 
 # Project packages
-import sierra.core.utils
-from sierra.core import types
+from sierra.core import types, utils
 
 
 class YAMLConfigLoader():
@@ -65,25 +64,25 @@ class YAMLConfigLoader():
         project_intra_HM = os.path.join(cmdopts['project_config_root'],
                                         'intra-graphs-hm.yaml')
 
-        if sierra.core.utils.path_exists(project_intra_LN):
+        if utils.path_exists(project_intra_LN):
             self.logger.info("Intra-experiment linegraph config for project '%s' from %s",
                              cmdopts['project'],
                              project_intra_LN)
-            with open(project_intra_LN) as f:
+            with utils.utf8open(project_intra_LN) as f:
                 intra_LN_config = yaml.load(f, yaml.FullLoader)
 
-        if sierra.core.utils.path_exists(project_inter_LN):
+        if utils.path_exists(project_inter_LN):
             self.logger.info("Inter-experiment linegraph config for project '%s' from %s",
                              cmdopts['project'],
                              project_inter_LN)
-            with open(project_inter_LN) as f:
+            with utils.utf8open(project_inter_LN) as f:
                 inter_LN_config = yaml.load(f, yaml.FullLoader)
 
-        if sierra.core.utils.path_exists(project_intra_HM):
+        if utils.path_exists(project_intra_HM):
             self.logger.info("Intra-experiment heatmap config for project '%s' from %s",
                              cmdopts['project'],
                              project_intra_HM)
-            with open(project_intra_HM) as f:
+            with utils.utf8open(project_intra_HM) as f:
                 intra_HM_config = yaml.load(f, yaml.FullLoader)
 
         return {

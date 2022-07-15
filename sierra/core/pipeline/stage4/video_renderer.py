@@ -77,7 +77,7 @@ class BatchExpParallelVideoRenderer:
         else:
             parallelism = mp.cpu_count()
 
-        for i in range(0, parallelism):
+        for _ in range(0, parallelism):
             p = mp.Process(target=BatchExpParallelVideoRenderer._thread_worker,
                            args=(q, self.main_config))
             p.start()

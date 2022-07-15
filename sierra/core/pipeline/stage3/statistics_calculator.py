@@ -242,7 +242,7 @@ class ExpCSVGatherer:
         exp_output_root = os.path.join(batch_output_root, exp_leaf)
 
         if not self.gather_opts['df_skip_verify']:
-            self._verify_exp(exp_output_root)
+            self._verify_exp_outputs(exp_output_root)
 
         self.logger.info('Processing .csvs: %s...', exp_leaf)
 
@@ -344,7 +344,7 @@ class ExpCSVGatherer:
                              free_limit)
             time.sleep(1)
 
-    def _verify_exp(self, exp_output_root: str) -> None:
+    def _verify_exp_outputs(self, exp_output_root: str) -> None:
         """
         Verify the integrity of all :term:`Experimental Runs <Experimental Run>`
         in an :term:`Experiment`.
@@ -377,46 +377,50 @@ class ExpCSVGatherer:
                 if not os.path.isdir(csv_root2):
                     continue
 
-                for csv in os.listdir(csv_root2):
-                    path1 = os.path.join(csv_root1, csv)
-                    path2 = os.path.join(csv_root2, csv)
-
-                    # .csvs for rendering that we don't verify (for now...)
-                    if os.path.isdir(path1) or os.path.isdir(path2):
-                        self.logger.debug("Not verifying '%s': contains rendering data",
-                                          path1)
-                        continue
-
-                    assert (utils.path_exists(path1) and utils.path_exists(path2)),\
-                        f"Either {path1} or {path2} does not exist"
-
-                    # Verify both dataframes have same # columns, and that
-                    # column sets are identical
-                    reader = storage.DataFrameReader(
-                        self.gather_opts['storage_medium'])
-                    df1 = reader(path1)
-                    df2 = reader(path2)
-
-                    assert (len(df1.columns) == len(df2.columns)), \
-                        (f"Dataframes from {path1} and {path2} do not have "
-                         "the same # columns")
-                    assert(sorted(df1.columns) == sorted(df2.columns)),\
-                        f"Columns from {path1} and {path2} not identical"
-
-                    # Verify the length of all columns in both dataframes is the same
-                    for c1 in df1.columns:
-                        assert(all(len(df1[c1]) == len(df1[c2]) for c2 in df1.columns)),\
-                            f"Not all columns from {path1} have same length"
-
-                        assert(all(len(df1[c1]) == len(df2[c2]) for c2 in df1.columns)),\
-                            (f"Not all columns from {path1} and {path2} have "
-                             "the same length")
+                self._verify_exp_outputs_pairwise(csv_root1, csv_root2)
 
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         self.logger.info("Done verifying results in %s: %s",
                          exp_output_root,
                          sec)
+
+    def _verify_exp_outputs_pairwise(self,
+                                     csv_root1: str,
+                                     csv_root2: str) -> None:
+        for csv in os.listdir(csv_root2):
+            path1 = os.path.join(csv_root1, csv)
+            path2 = os.path.join(csv_root2, csv)
+
+            # .csvs for rendering that we don't verify (for now...)
+            if os.path.isdir(path1) or os.path.isdir(path2):
+                self.logger.debug("Not verifying '%s': contains rendering data",
+                                  path1)
+                continue
+
+            assert (utils.path_exists(path1) and utils.path_exists(path2)),\
+                f"Either {path1} or {path2} does not exist"
+
+            # Verify both dataframes have same # columns, and that
+            # column sets are identical
+            reader = storage.DataFrameReader(self.gather_opts['storage_medium'])
+            df1 = reader(path1)
+            df2 = reader(path2)
+
+            assert (len(df1.columns) == len(df2.columns)), \
+                (f"Dataframes from {path1} and {path2} do not have "
+                 "the same # columns")
+            assert(sorted(df1.columns) == sorted(df2.columns)),\
+                f"Columns from {path1} and {path2} not identical"
+
+            # Verify the length of all columns in both dataframes is the same
+            for c1 in df1.columns:
+                assert(all(len(df1[c1]) == len(df1[c2]) for c2 in df1.columns)),\
+                    f"Not all columns from {path1} have same length"
+
+                assert(all(len(df1[c1]) == len(df2[c2]) for c2 in df1.columns)),\
+                    (f"Not all columns from {path1} and {path2} have "
+                     "the same length")
 
 
 class ExpStatisticsCalculator:
@@ -480,7 +484,7 @@ class ExpStatisticsCalculator:
         if self.avg_opts['dist_stats'] in ['bw', 'all']:
             dfs = stat_kernels.bw.from_groupby(by_row_index)
 
-        for ext in dfs.keys():
+        for ext in dfs:
             opath = os.path.join(exp_stat_root,
                                  gather_spec.csv_stem,
                                  gather_spec.csv_leaf + ext)

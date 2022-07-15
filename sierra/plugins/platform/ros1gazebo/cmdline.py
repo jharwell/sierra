@@ -146,7 +146,7 @@ class PlatformCmdline(corecmd.BaseCmdline):
                                          threads too).
 
                                          This only applies if
-                                         ``--physics-engine-type``\=ode.
+                                         ``--physics-engine-type``\\=ode.
 
                                          A value of 0=no threads.
 
@@ -213,9 +213,8 @@ class PlatformCmdline(corecmd.BaseCmdline):
 
 class CmdlineValidator(corecmd.CoreCmdlineValidator):
     """
-    Sub implementation.
+    Stub implementation.
     """
-    pass
 
 
 def sphinx_cmdline_stage1():

@@ -260,15 +260,15 @@ class LinegraphsGenerator:
                     self.logger.fatal(("Could not generate linegraph. "
                                        "Possible reasons include: "))
 
-                    one = ("1. The YAML configuration entry is missing "
-                           "required fields (e.g., 'cols')")
-                    two = ("2. 'cols' is present in YAML configuration entry "
-                           "and some of {0} are missing from '{1}.csv'").format(graph.get('cols',
-                                                                                          "MISSING_KEY"),
-                                                                                graph.get('src_stem',
-                                                                                          "MISSING_KEY"))
-                    self.logger.fatal(one)
-                    self.logger.fatal(two)
+                    self.logger.fatal(("1. The YAML configuration entry is "
+                                       "missing required fields"))
+                    missing_cols = graph.get('cols', "MISSING_KEY")
+                    missing_stem = graph.get('src_stem', "MISSING_KEY")
+                    self.logger.fatal(("2. 'cols' is present in YAML "
+                                       "configuration but some of %s are "
+                                       "missing from %s"),
+                                      missing_cols,
+                                      missing_stem)
 
                     raise
 

@@ -83,12 +83,12 @@ class ExpRunShellCmdsGenerator():
             if self.cmdopts['no_master_node']:
                 return []
             else:
-                [ros_master]
+                return [ros_master]
 
         main_path = os.path.join(self.cmdopts['project_config_root'],
                                  config.kYAML['main'])
 
-        main_config = yaml.load(open(main_path), yaml.FullLoader)
+        main_config = yaml.load(utils.utf8open(main_path), yaml.FullLoader)
 
         self.logger.debug("Generating pre-exec cmds for run%s slaves: %d robots",
                           run_num,
@@ -111,34 +111,48 @@ class ExpRunShellCmdsGenerator():
                       input_fpath: str,
                       run_num: int) -> tp.List[types.ShellCmdSpec]:
         if host == 'master':
-            if self.cmdopts['no_master_node']:
-                return []
-            else:
-                self.logger.debug("Generating exec cmds for run%s master",
-                                  run_num)
+            return self._exec_run_cmds_master(host, input_fpath, run_num)
+        else:
+            return self._exec_run_cmds_slave(host, input_fpath, run_num)
 
-                # ROS master node
-                exp_dirname = self.criteria.gen_exp_dirnames(self.cmdopts)[
-                    self.exp_num]
-                batch_template_path = utils.batch_template_path(self.cmdopts,
-                                                                self.criteria.batch_input_root,
-                                                                exp_dirname)
+    def _exec_run_cmds_master(self,
+                              host: str,
+                              input_fpath: str,
+                              run_num: int) -> tp.List[types.ShellCmdSpec]:
 
-                master_node = {
-                    # --wait tells roslaunch to wait for the configured master to
-                    # come up before launch the "master" code.
-                    #
-                    # 2022/02/28: -p (apparently) tells roslaunch not to CONNECT to a
-                    # master at the specified ort, but to LAUNCH a new master at the
-                    # specified port. This is not really documented well.
-                    'cmd': '{0} --wait {1}_run{2}_master{3};'.format(config.kROS['launch_cmd'],
-                                                                     batch_template_path,
-                                                                     run_num,
-                                                                     config.kROS['launch_file_ext']),
-                    'shell': True,
-                    'wait': True
-                }
-                return [master_node]
+        if self.cmdopts['no_master_node']:
+            return []
+
+        self.logger.debug("Generating exec cmds for run%s master",
+                          run_num)
+
+        # ROS master node
+        exp_dirname = self.criteria.gen_exp_dirnames(self.cmdopts)[
+            self.exp_num]
+        batch_template_path = utils.batch_template_path(self.cmdopts,
+                                                        self.criteria.batch_input_root,
+                                                        exp_dirname)
+
+        master_node = {
+            # --wait tells roslaunch to wait for the configured master to
+            # come up before launch the "master" code.
+            #
+            # 2022/02/28: -p (apparently) tells roslaunch not to CONNECT to a
+            # master at the specified ort, but to LAUNCH a new master at the
+            # specified port. This is not really documented well.
+            'cmd': '{0} --wait {1}_run{2}_master{3};'.format(config.kROS['launch_cmd'],
+                                                             batch_template_path,
+                                                             run_num,
+                                                             config.kROS['launch_file_ext']),
+            'shell': True,
+            'wait': True
+        }
+        return [master_node]
+
+    def _exec_run_cmds_slave(self,
+                             host: str,
+                             input_fpath: str,
+                             run_num: int) -> tp.List[types.ShellCmdSpec]:
 
         self.logger.debug("Generating exec cmds for run%s slaves: %d robots",
                           run_num,

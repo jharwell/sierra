@@ -131,7 +131,7 @@ class UnivarInterScenarioComparator:
         (i.e., the controller is not compared across all scenarios it has ever
         been run on).
 
-        """,
+        """
         template_stem, scenario, _ = rdg.parse_batch_leaf(candidate)
         leaf = rdg.gen_batch_leaf(criteria=self.cli_args.batch_criteria,
                                   scenario=scenario,
@@ -292,7 +292,8 @@ class UnivarInterScenarioComparator:
             writer(model_df,
                    model_opath_stem + config.kModelsExt['model'],
                    index=False)
-            with open(model_opath_stem + config.kModelsExt['legend'], 'a') as f:
+            with utils.utf8open(model_opath_stem + config.kModelsExt['legend'],
+                                'a') as f:
                 _, scenario, _ = rdg.parse_batch_leaf(batch_leaf)
                 sgp = pm.module_load_tiered(project=cmdopts['project'],
                                             path='generators.scenario_generator_parser')

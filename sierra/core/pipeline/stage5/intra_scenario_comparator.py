@@ -37,7 +37,7 @@ from sierra.core.graphs.stacked_surface_graph import StackedSurfaceGraph
 from sierra.core.graphs.heatmap import Heatmap, DualHeatmap
 from sierra.core.variables import batch_criteria as bc
 import sierra.core.root_dirpath_generator as rdg
-from sierra.core import types, utils, config, storage, config
+from sierra.core import types, utils, config, storage
 
 
 class UnivarIntraScenarioComparator:
@@ -730,22 +730,19 @@ class BivarIntraScenarioComparator:
                                 pattern)
             return
 
-        for i in range(0, len(paths)):
-            opath_leaf = LeafGenerator.from_batch_leaf(
-                batch_leaf, dest_stem, None)
-            opath = os.path.join(self.cc_graph_root,
-                                 opath_leaf + config.kImageExt)
+        opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, None)
+        opath = os.path.join(self.cc_graph_root, opath_leaf + config.kImageExt)
 
-            DualHeatmap(input_stem_pattern=pattern,
-                        output_fpath=opath,
-                        title=title,
-                        large_text=cmdopts['plot_large_text'],
-                        zlabel=self._gen_zaxis_label(label, comp_type),
-                        xlabel=criteria.graph_xlabel(cmdopts),
-                        ylabel=criteria.graph_ylabel(cmdopts),
-                        legend=legend,
-                        xtick_labels=criteria.graph_xticklabels(cmdopts),
-                        ytick_labels=criteria.graph_yticklabels(cmdopts)).generate()
+        DualHeatmap(input_stem_pattern=pattern,
+                    output_fpath=opath,
+                    title=title,
+                    large_text=cmdopts['plot_large_text'],
+                    zlabel=self._gen_zaxis_label(label, comp_type),
+                    xlabel=criteria.graph_xlabel(cmdopts),
+                    ylabel=criteria.graph_ylabel(cmdopts),
+                    legend=legend,
+                    xtick_labels=criteria.graph_xticklabels(cmdopts),
+                    ytick_labels=criteria.graph_yticklabels(cmdopts)).generate()
 
     def _gen_graph3D(self,
                      batch_leaf: str,
