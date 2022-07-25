@@ -1,4 +1,4 @@
-# Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
+# Copyright 2022 John Harwell, All rights reserved.
 #
 #  This file is part of SIERRA.
 #
@@ -30,294 +30,11 @@ import pickle
 
 # Project packages
 from sierra.core import types
+from sierra.core.experiment import xml
 
 
-class XMLAttrChange():
-    """
-    Specification for a change to an existing XML attribute.
-    """
-
-    def __init__(self,
-                 path: str,
-                 attr: str,
-                 value: tp.Union[str, int, float]) -> None:
-        self.path = path
-        self.attr = attr
-        self.value = str(value)
-
-    def __iter__(self):
-        yield from [self.path, self.attr, self.value]
-
-    def __repr__(self) -> str:
-        return self.path + '/' + self.attr + ': ' + str(self.value)
-
-
-class XMLTagRm():
-    """
-    Specification for removal of an existing XML tag.
-    """
-
-    def __init__(self, path: str, tag: str):
-        """
-        Arguments:
-            path: The path to the **parent** of the tag you want to remove, in
-                  XPath syntax.
-
-            tag: The name of the tag to remove.
-        """
-        self.path = path
-        self.tag = tag
-
-    def __iter__(self):
-        yield from [self.path, self.tag]
-
-    def __repr__(self) -> str:
-        return self.path + '/' + self.tag
-
-
-class XMLTagAdd():
-    """
-    Specification for adding a new XML tag.
-
-    The tag may be added idempotently, or duplicates can be allowed.
-    """
-
-    def __init__(self,
-                 path: tp.Optional[str],
-                 tag: str,
-                 attr: dict,
-                 allow_dup: bool):
-        """
-        Arguments:
-            path: The path to the **parent** tag you want to add a new tag
-                  under, in XPath syntax. If None, then the tag will be added as
-                  the root XML tag.
-
-            tag: The name of the tag to add.
-
-            attr: A dictionary of (attribute, value) pairs to also create as
-                  children of the new tag when creating the new tag.
-        """
-
-        self.path = path
-        self.tag = tag
-        self.attr = attr
-        self.allow_dup = allow_dup
-
-    def __iter__(self):
-        yield from [self.path, self.tag, self.attr]
-
-    def __repr__(self) -> str:
-        if self.path is not None:
-            return self.path + '/' + self.tag + ': ' + str(self.attr)
-        else:
-            return '/' + self.tag + ': ' + str(self.attr)
-
-
-class XMLAttrChangeSet():
-    """
-    Data structure for :class:`XMLAttrChange` objects.
-
-    The order in which attributes are changed doesn't matter from the standpoint
-    of correctness (i.e., different orders won't cause crashes).
-
-    """
-    @staticmethod
-    def unpickle(fpath: str) -> 'XMLAttrChangeSet':
-        """
-        Read in all the different sets of parameter changes that were pickled to
-        make crucial parts of the experiment definition easily accessible. You
-        don't know how many there are, so go until you get an exception.
-
-        """
-        exp_def = XMLAttrChangeSet()
-
-        try:
-            with open(fpath, 'rb') as f:
-                while True:
-                    exp_def |= XMLAttrChangeSet(*pickle.load(f))
-        except EOFError:
-            pass
-        return exp_def
-
-    def __init__(self, *args: XMLAttrChange) -> None:
-        self.changes = set(args)
-        self.logger = logging.getLogger(__name__)
-
-    def __len__(self) -> int:
-        return len(self.changes)
-
-    def __iter__(self) -> tp.Iterator[XMLAttrChange]:
-        return iter(self.changes)
-
-    def __ior__(self, other: 'XMLAttrChangeSet') -> 'XMLAttrChangeSet':
-        self.changes |= other.changes
-        return self
-
-    def __or__(self, other: 'XMLAttrChangeSet') -> 'XMLAttrChangeSet':
-        new = XMLAttrChangeSet(*self.changes)
-        new |= other
-        return new
-
-    def __repr__(self) -> str:
-        return str(self.changes)
-
-    def add(self, chg: XMLAttrChange) -> None:
-        self.changes.add(chg)
-
-    def pickle(self, fpath: str, delete: bool = False) -> None:
-        from sierra.core import utils
-
-        if delete and utils.path_exists(fpath):
-            os.remove(fpath)
-
-        with open(fpath, 'ab') as f:
-            utils.pickle_dump(self.changes, f)
-
-
-class XMLTagRmList():
-    """
-    Data structure for :class:`XMLTagRm` objects.
-
-    The order in which tags are removed matters (i.e., if you remove dependent
-    tags in the wrong order you will get an exception), hence the list
-    representation.
-
-    """
-
-    def __init__(self, *args: XMLTagRm) -> None:
-        self.rms = list(args)
-
-    def __len__(self) -> int:
-        return len(self.rms)
-
-    def __iter__(self) -> tp.Iterator[XMLTagRm]:
-        return iter(self.rms)
-
-    def __repr__(self) -> str:
-        return str(self.rms)
-
-    def extend(self, other: 'XMLTagRmList') -> None:
-        self.rms.extend(other.rms)
-
-    def append(self, other: XMLTagRm) -> None:
-        self.rms.append(other)
-
-    def pickle(self, fpath: str, delete: bool = False) -> None:
-        from sierra.core import utils
-
-        if delete and utils.path_exists(fpath):
-            os.remove(fpath)
-
-        with open(fpath, 'ab') as f:
-            utils.pickle_dump(self.rms, f)
-
-
-class XMLTagAddList():
-    """
-    Data structure for :class:`XMLTagAdd` objects.
-
-    The order in which tags are added matters (i.e., if you add dependent tags
-    in the wrong order you will get an exception), hence the list
-    representation.
-    """
-
-    @staticmethod
-    def unpickle(fpath: str) -> tp.Optional['XMLTagAddList']:
-        """
-        Read in all the different sets of parameter changes that were pickled to
-        make crucial parts of the experiment definition easily accessible. You
-        don't know how many there are, so go until you get an exception.
-
-        """
-        exp_def = XMLTagAddList()
-
-        try:
-            with open(fpath, 'rb') as f:
-                while True:
-                    exp_def.append(*pickle.load(f))
-        except EOFError:
-            pass
-        return exp_def
-
-    def __init__(self, *args: XMLTagAdd) -> None:
-        self.adds = list(args)
-
-    def __len__(self) -> int:
-        return len(self.adds)
-
-    def __iter__(self) -> tp.Iterator[XMLTagAdd]:
-        return iter(self.adds)
-
-    def __repr__(self) -> str:
-        return str(self.adds)
-
-    def extend(self, other: 'XMLTagAddList') -> None:
-        self.adds.extend(other.adds)
-
-    def append(self, other: XMLTagAdd) -> None:
-        self.adds.append(other)
-
-    def prepend(self, other: XMLTagAdd) -> None:
-        self.adds.insert(0, other)
-
-    def pickle(self, fpath: str, delete: bool = False) -> None:
-        from sierra.core import utils
-
-        if delete and utils.path_exists(fpath):
-            os.remove(fpath)
-
-        with open(fpath, 'ab') as f:
-            utils.pickle_dump(self.adds, f)
-
-
-class InvalidElementError(RuntimeError):
-    """Error class for when an element cannot be found or used."""
-
-
-class XMLWriterConfig():
-    """Config for writing the XML content managed by :class:`XMLLuigi`.
-
-    Different parts of the XML tree can be written to multiple XML files.
-
-    Attributes:
-
-        values: Dict with the following possible key, value pairs:
-
-                ``src_parent`` - The parent of the root of the XML tree
-                                 specifying a sub-tree to write out as a child
-                                 of ``dest_root``. This key is required.
-
-                ``src_tag`` - The name of the tag within ``src_parent`` to write
-                              out.This key is required.
-
-                ``dest_root`` - The new name of ``src_root`` when writing out
-                                the partial XML tree to a new file. This key is
-                                optional.
-
-                ``opath_leaf`` - Additional bits added to whatever the opath
-                                 file stem that is set for the :class:`XMLLuigi`
-                                 instance. This key is optional.
-
-                ``child_grafts`` - Additional bits of the XML tree to add under
-                                   the new ``dest_root/src_tag``, specified as a
-                                   list of XPath strings. You can't just have
-                                   multiple src_roots because that makes
-                                   unambiguous renaming of ``src_root`` ->
-                                   ``dest_root`` impossible. This key is
-                                   optional.
-
-    """
-
-    def __init__(self, values: tp.List[dict]) -> None:
-        self.values = values
-
-    def add(self, value: dict) -> None:
-        self.values.append(value)
-
-
-class XMLLuigi:
-    """A class to help edit and write xml files.
+class XMLExpDef:
+    """Read, write, and modify parsed XML files into experiment definitions.
 
     Functionality includes single tag removal/addition, single attribute
     change/add/remove.
@@ -331,18 +48,18 @@ class XMLLuigi:
 
     def __init__(self,
                  input_fpath: str,
-                 write_config: tp.Optional[XMLWriterConfig] = None) -> None:
+                 write_config: tp.Optional[xml.WriterConfig] = None) -> None:
 
         self.write_config = write_config
         self.input_fpath = input_fpath
         self.tree = ET.parse(self.input_fpath)
         self.root = self.tree.getroot()
-        self.tag_adds = XMLTagAddList()
-        self.attr_chgs = XMLAttrChangeSet()
+        self.tag_adds = xml.TagAddList()
+        self.attr_chgs = xml.AttrChangeSet()
 
         self.logger = logging.getLogger(__name__)
 
-    def write_config_set(self, config: XMLWriterConfig) -> None:
+    def write_config_set(self, config: xml.WriterConfig) -> None:
         """Set the write config for the object; provided for cases in which the
         configuration is dependent on whether or not certain tags are present in
         the input file.
@@ -468,7 +185,7 @@ class XMLLuigi:
                           path,
                           attr,
                           value)
-        self.attr_chgs.add(XMLAttrChange(path, attr, value))
+        self.attr_chgs.add(xml.AttrChange(path, attr, value))
 
     def attr_add(self,
                  path: str,
@@ -508,7 +225,7 @@ class XMLLuigi:
                           path,
                           attr,
                           value)
-        self.attr_chgs.add(XMLAttrChange(path, attr, value))
+        self.attr_chgs.add(xml.AttrChange(path, attr, value))
 
     def has_tag(self, path: str) -> bool:
         return self.root.find(path) is not None
@@ -652,23 +369,23 @@ class XMLLuigi:
                               path,
                               tag,
                               str(attr))
-        self.tag_adds.append(XMLTagAdd(path, tag, attr, allow_dup))
+        self.tag_adds.append(xml.TagAdd(path, tag, attr, allow_dup))
 
 
-def unpickle(fpath: str) -> tp.Optional[tp.Union[XMLAttrChangeSet,
-                                                 XMLTagAddList]]:
+def unpickle(fpath: str) -> tp.Optional[tp.Union[xml.AttrChangeSet,
+                                                 xml.TagAddList]]:
     """
     Read in all the different sets of parameter changes that were pickled to
     make crucial parts of the experiment definition easily accessible. You don't
     know how many there are, so go until you get an exception.
     """
     try:
-        return XMLAttrChangeSet.unpickle(fpath)
+        return xml.AttrChangeSet.unpickle(fpath)
     except EOFError:
         pass
 
     try:
-        return XMLTagAddList.unpickle(fpath)
+        return xml.TagAddList.unpickle(fpath)
     except EOFError:
         pass
 
@@ -676,13 +393,5 @@ def unpickle(fpath: str) -> tp.Optional[tp.Union[XMLAttrChangeSet,
 
 
 __api__ = [
-    'InvalidElementError',
-    'XMLLuigi',
-    'XMLAttrChange',
-    'XMLAttrChangeSet',
-    'XMLTagAdd',
-    'XMLTagAddList',
-    'XMLTagRm',
-    'XMLTagRmList',
-    'XMLWriterConfig'
+    'XMLExpDef',
 ]

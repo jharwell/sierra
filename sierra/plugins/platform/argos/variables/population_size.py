@@ -26,7 +26,7 @@ import implements
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
-from sierra.core.xml import XMLAttrChange, XMLAttrChangeSet
+from sierra.core.experiment import xml
 from sierra.core import types
 from sierra.core.variables import population_size
 
@@ -48,8 +48,8 @@ class PopulationSize(population_size.BasePopulationSize):
     """
 
     @staticmethod
-    def gen_attr_changelist_from_list(sizes: tp.List[int]) -> tp.List[XMLAttrChangeSet]:
-        return [XMLAttrChangeSet(XMLAttrChange(".//arena/distribute/entity", "quantity", str(s)))
+    def gen_attr_changelist_from_list(sizes: tp.List[int]) -> tp.List[xml.AttrChangeSet]:
+        return [xml.AttrChangeSet(xml.AttrChange(".//arena/distribute/entity", "quantity", str(s)))
                 for s in sizes]
 
     def __init__(self,
@@ -62,9 +62,9 @@ class PopulationSize(population_size.BasePopulationSize):
                                                     main_config,
                                                     batch_input_root)
         self.size_list = size_list
-        self.attr_changes = []  # type: tp.List[XMLAttrChangeSet]
+        self.attr_changes = []  # type: tp.List[xml.AttrChangeSet]
 
-    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
+    def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
         """
         Generate list of sets of changes for swarm sizes to define a batch experiment.
         """

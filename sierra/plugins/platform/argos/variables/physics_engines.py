@@ -31,7 +31,7 @@ import implements
 # Project packages
 from sierra.core.variables.base_variable import IBaseVariable
 from sierra.core.utils import ArenaExtent
-from sierra.core.xml import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList, XMLTagRm, XMLTagAdd
+from sierra.core.experiment import xml
 from sierra.core import types, config
 
 
@@ -69,7 +69,7 @@ class PhysicsEngines():
         self.iter_per_tick = iter_per_tick
         self.layout = layout
         self.extents = extents
-        self.tag_adds = []  # type: tp.List[XMLTagAddList]
+        self.tag_adds = []  # type: tp.List[xml.TagAddList]
 
         # If we are given multiple extents to map, we need to divide the
         # specified # of engines among them.
@@ -79,22 +79,22 @@ class PhysicsEngines():
 
         self.logger = logging.getLogger(__name__)
 
-    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
+    def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
         """
         Does nothing because all tags/attributes are either deleted or added.
         """
         return []
 
-    def gen_tag_rmlist(self) -> tp.List[XMLTagRmList]:
+    def gen_tag_rmlist(self) -> tp.List[xml.TagRmList]:
         """
         Removing the ``<physics_engines>`` tag if it exists may be desirable so
         an option is provided to do so. Obviously you *must* call this function
         BEFORE adding new definitions.
 
         """
-        return [XMLTagRmList(XMLTagRm(".", "./physics_engines"))]
+        return [xml.TagRmList(xml.TagRm(".", "./physics_engines"))]
 
-    def gen_tag_addlist(self) -> tp.List[XMLTagAddList]:
+    def gen_tag_addlist(self) -> tp.List[xml.TagAddList]:
         self.logger.debug("Mapping %s physics engines of type %s to extents=%s",
                           self.n_engines,
                           self.engine_type,
@@ -129,12 +129,12 @@ class PhysicsEngines():
                          extent: ArenaExtent,
                          n_engines_x: int,
                          n_engines_y: int,
-                         forward_engines: tp.List[int]) -> XMLTagAddList:
+                         forward_engines: tp.List[int]) -> xml.TagAddList:
         """
         Generate definitions for the specified # of 2D/3D physics engines for
         the specified arena extent.
         """
-        adds = XMLTagAddList(XMLTagAdd('.', 'physics_engines', {}, False))
+        adds = xml.TagAddList(xml.TagAdd('.', 'physics_engines', {}, False))
 
         for i in range(0, self.n_engines):
             adds.extend(self.gen_single_engine(i,
@@ -150,7 +150,7 @@ class PhysicsEngines():
                           extent: ArenaExtent,
                           n_engines_x: int,
                           n_engines_y: int,
-                          forward_engines: tp.List[int]) -> XMLTagAddList:
+                          forward_engines: tp.List[int]) -> xml.TagAddList:
         """
         Generate definitions for a specific 2D/3D engine as a member of the
         mapping of the specified arena extent to one or more engines.
@@ -178,7 +178,7 @@ class PhysicsEngines():
 
         """
 
-        adds = XMLTagAddList()
+        adds = xml.TagAddList()
 
         size_x = extent.xsize() / n_engines_x
         size_y = extent.ysize() / n_engines_y
@@ -186,33 +186,33 @@ class PhysicsEngines():
 
         name = self._gen_engine_name(engine_id)
 
-        adds.append(XMLTagAdd('.//physics_engines',
-                              self.engine_type,
-                              {
-                                  'id': name,
-                                  'iterations': str(self.iter_per_tick)
-                              },
-                              True))
-        adds.append(XMLTagAdd(f".//physics_engines/*[@id='{name}']",
-                              "boundaries",
-                              {},
-                              True))
-        adds.append(XMLTagAdd(f".//physics_engines/*[@id='{name}']/boundaries",
-                              "top",
-                              {
-                                  'height': str(size_z)
-                              },
-                              True))
-        adds.append(XMLTagAdd(f".//physics_engines/*[@id='{name}']/boundaries",
-                              "bottom",
-                              {
-                                  'height': '0.0'
-                              },
-                              True))
-        adds.append(XMLTagAdd(f".//physics_engines/*[@id='{name}']/boundaries",
-                              "sides",
-                              {},
-                              True))
+        adds.append(xml.TagAdd('.//physics_engines',
+                               self.engine_type,
+                               {
+                                   'id': name,
+                                   'iterations': str(self.iter_per_tick)
+                               },
+                               True))
+        adds.append(xml.TagAdd(f".//physics_engines/*[@id='{name}']",
+                               "boundaries",
+                               {},
+                               True))
+        adds.append(xml.TagAdd(f".//physics_engines/*[@id='{name}']/boundaries",
+                               "top",
+                               {
+                                   'height': str(size_z)
+                               },
+                               True))
+        adds.append(xml.TagAdd(f".//physics_engines/*[@id='{name}']/boundaries",
+                               "bottom",
+                               {
+                                   'height': '0.0'
+                               },
+                               True))
+        adds.append(xml.TagAdd(f".//physics_engines/*[@id='{name}']/boundaries",
+                               "sides",
+                               {},
+                               True))
 
         # Engine lower X coord increasing as engine id increases
         if engine_id in forward_engines:
@@ -243,15 +243,15 @@ class PhysicsEngines():
         vertices = [(ll_x, ll_y), (lr_x, lr_y), (ur_x, ur_y), (ul_x, ul_y)]
 
         for v in vertices:
-            adds.append(XMLTagAdd(f".//physics_engines/*[@id='{name}']/boundaries/sides",
-                                  "vertex",
-                                  {
-                                      "point": "{0}, {1}".format(v[0], v[1])
-                                  },
-                                  True))
+            adds.append(xml.TagAdd(f".//physics_engines/*[@id='{name}']/boundaries/sides",
+                                   "vertex",
+                                   {
+                                       "point": "{0}, {1}".format(v[0], v[1])
+                                   },
+                                   True))
         return adds
 
-    def _gen1_engines(self) -> XMLTagAddList:
+    def _gen1_engines(self) -> xml.TagAddList:
         """
         Generate definitions for 1 2D or 3D physics engine for the specified
         extents.
@@ -260,15 +260,15 @@ class PhysicsEngines():
 
         name = self._gen_engine_name(0)
 
-        return XMLTagAddList(XMLTagAdd('.', 'physics_engines', {}, False),
-                             XMLTagAdd(".//physics_engines",
-                                       self.engine_type,
-                                       {
-                                           'id': name
-                                       },
-                                       True))
+        return xml.TagAddList(xml.TagAdd('.', 'physics_engines', {}, False),
+                              xml.TagAdd(".//physics_engines",
+                                         self.engine_type,
+                                         {
+                                             'id': name
+                                         },
+                                         True))
 
-    def _gen2_engines(self, extent: ArenaExtent) -> XMLTagAddList:
+    def _gen2_engines(self, extent: ArenaExtent) -> xml.TagAddList:
         """Generate definitions for 2 2D or 3D physics engines for the specified
         extents.
 
@@ -287,7 +287,7 @@ class PhysicsEngines():
                                      n_engines_y=1,
                                      forward_engines=[])
 
-    def _gen4_engines(self, extent: ArenaExtent) -> XMLTagAddList:
+    def _gen4_engines(self, extent: ArenaExtent) -> xml.TagAddList:
         """Generate definitions for 4 2D or 3D physics engines for the specified
         extent.
 
@@ -307,7 +307,7 @@ class PhysicsEngines():
                                      n_engines_y=2,
                                      forward_engines=[0, 1])
 
-    def _gen6_engines(self, extent: ArenaExtent) -> XMLTagAddList:
+    def _gen6_engines(self, extent: ArenaExtent) -> xml.TagAddList:
         """Generate definitions for 6 2D or 3D physics engines for the specified
         extent.
 
@@ -327,7 +327,7 @@ class PhysicsEngines():
                                      n_engines_y=2,
                                      forward_engines=[0, 1, 2])
 
-    def _gen8_engines(self, extent: ArenaExtent) -> XMLTagAddList:
+    def _gen8_engines(self, extent: ArenaExtent) -> xml.TagAddList:
         """
         Generate definitions for 8 2D or 3D physics engines for the specified
         pair of (X,Y) arena extents with a uniform grid layout.
@@ -347,7 +347,7 @@ class PhysicsEngines():
                                      n_engines_y=2,
                                      forward_engines=[0, 1, 2, 3])
 
-    def _gen12_engines(self, extent: ArenaExtent) -> XMLTagAddList:
+    def _gen12_engines(self, extent: ArenaExtent) -> xml.TagAddList:
         """
         Generate definitions for 12 2D or 3D physics engines for the specified
         pair of (X,Y) arena extents with a uniform grid layout.
@@ -368,7 +368,7 @@ class PhysicsEngines():
                                      n_engines_y=3,
                                      forward_engines=[0, 1, 2, 3, 8, 9, 10, 11])
 
-    def _gen16_engines(self, extent: ArenaExtent) -> XMLTagAddList:
+    def _gen16_engines(self, extent: ArenaExtent) -> xml.TagAddList:
         """Generate definitions for 16 2D or 3D physics engines for the
         specified pair of (X,Y) arena extents with a uniform grid layout.
 
@@ -389,7 +389,7 @@ class PhysicsEngines():
                                      n_engines_y=4,
                                      forward_engines=[0, 1, 2, 3, 8, 9, 10, 11])
 
-    def _gen24_engines(self, extent: ArenaExtent) -> XMLTagAddList:
+    def _gen24_engines(self, extent: ArenaExtent) -> xml.TagAddList:
         """Generate definitions for 16 2D or 3D physics engines for the
         specified pair of (X,Y) arena extents with a uniform grid layout.
 
@@ -459,7 +459,7 @@ class PhysicsEngines2D(PhysicsEngines):
                           extent: ArenaExtent,
                           n_engines_x: int,
                           n_engines_y: int,
-                          forward_engines: tp.List[int]) -> XMLTagAddList:
+                          forward_engines: tp.List[int]) -> xml.TagAddList:
         adds = super().gen_single_engine(engine_id,
                                          extent,
                                          n_engines_x,
@@ -467,13 +467,13 @@ class PhysicsEngines2D(PhysicsEngines):
                                          forward_engines)
         if self.engine_type == 'dynamics2d' and self.spatial_hash_info is not None:
             name = self._gen_engine_name(engine_id)
-            adds.append(XMLTagAdd(f".//physics_engines/*[@id='{name}']",
-                                  "spatial_hash",
-                                  {
-                                      'cell_size': str(self.spatial_hash_info['cell_size']),
-                                      'cell_num': str(self.spatial_hash_info['cell_num'])
-                                  },
-                                  True))
+            adds.append(xml.TagAdd(f".//physics_engines/*[@id='{name}']",
+                                   "spatial_hash",
+                                   {
+                                       'cell_size': str(self.spatial_hash_info['cell_size']),
+                                       'cell_num': str(self.spatial_hash_info['cell_num'])
+                                   },
+                                   True))
         return adds
 
 

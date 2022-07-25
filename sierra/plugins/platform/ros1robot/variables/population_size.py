@@ -27,9 +27,9 @@ import implements
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
-from sierra.core.xml import XMLTagAdd, XMLTagAddList
 from sierra.core import types
 from sierra.core.variables import population_size
+from sierra.core.experiment import xml
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
@@ -62,9 +62,9 @@ class PopulationSize(population_size.BasePopulationSize):
         self.sizes = sizes
         self.robot = robot
         self.logger = logging.getLogger(__name__)
-        self.tag_adds = []  # type: tp.List[XMLTagAddList]
+        self.tag_adds = []  # type: tp.List[xml.TagAddList]
 
-    def gen_tag_addlist(self) -> tp.List[XMLTagAddList]:
+    def gen_tag_addlist(self) -> tp.List[xml.TagAddList]:
         """
         Generate list of sets of changes for system sizes to define a batch
         experiment.
@@ -74,24 +74,24 @@ class PopulationSize(population_size.BasePopulationSize):
             prefix = robot_config['prefix']
 
             for s in self.sizes:
-                per_robot = XMLTagAddList()
-                per_robot.append(XMLTagAdd(".",
-                                           "master",
-                                           {},
-                                           True))
-                per_robot.append(XMLTagAdd("./master",
-                                           "group",
-                                           {
-                                               'ns': 'sierra'
-                                           },
-                                           False))
-                per_robot.append(XMLTagAdd("./master/group/[@ns='sierra']",
-                                           "param",
-                                           {
-                                               'name': 'experiment/n_robots',
-                                               'value': str(s)
-                                           },
-                                           False))
+                per_robot = xml.TagAddList()
+                per_robot.append(xml.TagAdd(".",
+                                            "master",
+                                            {},
+                                            True))
+                per_robot.append(xml.TagAdd("./master",
+                                            "group",
+                                            {
+                                                'ns': 'sierra'
+                                            },
+                                            False))
+                per_robot.append(xml.TagAdd("./master/group/[@ns='sierra']",
+                                            "param",
+                                            {
+                                                'name': 'experiment/n_robots',
+                                                'value': str(s)
+                                            },
+                                            False))
 
                 for i in range(0, s):
 
@@ -99,20 +99,20 @@ class PopulationSize(population_size.BasePopulationSize):
                     # here--we can't know the exact node/package names without
                     # using a lot of (brittle) config.
                     ns = f'{prefix}{i}'
-                    per_robot.append(XMLTagAdd("./robot",
-                                               "group",
-                                               {
-                                                   'ns': ns
-                                               },
-                                               True))
+                    per_robot.append(xml.TagAdd("./robot",
+                                                "group",
+                                                {
+                                                    'ns': ns
+                                                },
+                                                True))
 
-                    per_robot.append(XMLTagAdd(f"./robot/group/[@ns='{ns}']",
-                                               "param",
-                                               {
-                                                   "name": "tf_prefix",
-                                                   "value": ns
-                                               },
-                                               True))
+                    per_robot.append(xml.TagAdd(f"./robot/group/[@ns='{ns}']",
+                                                "param",
+                                                {
+                                                    "name": "tf_prefix",
+                                                    "value": ns
+                                                },
+                                                True))
 
                 self.tag_adds.append(per_robot)
 

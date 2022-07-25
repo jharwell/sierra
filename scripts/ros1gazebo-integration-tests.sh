@@ -69,4 +69,8 @@ set -x
 
 rospack find sierra_rosbridge
 
+cd $SAMPLE_ROOT
+ls -alh
+python3 -m projects.ros1gazebo_project.generators.scenario_generators
+
 batch_criteria_test

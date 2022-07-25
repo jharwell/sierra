@@ -27,7 +27,7 @@ import implements
 
 # Project packages
 from sierra.core.variables.base_variable import IBaseVariable
-from sierra.core.xml import XMLAttrChangeSet, XMLAttrChange, XMLTagRmList, XMLTagAddList
+from sierra.core.experiment import xml
 from sierra.core import config, types
 from sierra.core.variables.exp_setup import Parser
 
@@ -41,7 +41,7 @@ class ExpSetup():
         duration: The simulation duration in seconds, NOT timesteps.
     """
     @staticmethod
-    def extract_time_params(exp_def: XMLAttrChangeSet) -> types.SimpleDict:
+    def extract_time_params(exp_def: xml.AttrChangeSet) -> types.SimpleDict:
         """
         Extract and return the length (in seconds), ticks_per_second for the
         specified experiment.
@@ -67,24 +67,24 @@ class ExpSetup():
         self.n_secs_per_run = n_secs_per_run
         self.n_datapoints = n_datapoints
         self.n_ticks_per_sec = n_ticks_per_sec
-        self.attr_changes = []  # type: tp.List[XMLAttrChangeSet]
+        self.attr_changes = []  # type: tp.List[xml.AttrChangeSet]
 
-    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
+    def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
         if not self.attr_changes:
-            chgs = XMLAttrChangeSet(XMLAttrChange(".//experiment",
-                                                  "length",
-                                                  "{0}".format(self.n_secs_per_run)),
-                                    XMLAttrChange(".//experiment",
-                                                  "ticks_per_second",
-                                                  "{0}".format(self.n_ticks_per_sec)),
-                                    )
+            chgs = xml.AttrChangeSet(xml.AttrChange(".//experiment",
+                                                    "length",
+                                                    "{0}".format(self.n_secs_per_run)),
+                                     xml.AttrChange(".//experiment",
+                                                    "ticks_per_second",
+                                                    "{0}".format(self.n_ticks_per_sec)),
+                                     )
             self.attr_changes = [chgs]
         return self.attr_changes
 
-    def gen_tag_rmlist(self) -> tp.List[XMLTagRmList]:
+    def gen_tag_rmlist(self) -> tp.List[xml.TagRmList]:
         return []
 
-    def gen_tag_addlist(self) -> tp.List[XMLTagAddList]:
+    def gen_tag_addlist(self) -> tp.List[xml.TagAddList]:
         return []
 
     def gen_files(self) -> None:

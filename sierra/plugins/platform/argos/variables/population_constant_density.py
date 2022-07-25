@@ -34,7 +34,7 @@ from sierra.plugins.platform.argos.variables import constant_density as cd
 from sierra.core import utils, types
 import sierra.core.variables.batch_criteria as bc
 from sierra.core.vector import Vector3D
-from sierra.core.xml import XMLAttrChange, XMLAttrChangeSet
+from sierra.core.experiment import xml
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
@@ -54,7 +54,7 @@ class PopulationConstantDensity(cd.ConstantDensity):
         self.already_added = False
         self.logger = logging.getLogger(__name__)
 
-    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
+    def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
         """
         Generate list of sets of changes to input file to set the # robots for a
         set of arena sizes such that the swarm density is constant. Robots are
@@ -81,9 +81,9 @@ class PopulationConstantDensity(cd.ConstantDensity):
                                                 str(extent.area()),
                                                 self.target_density / 100.0)
 
-                        changeset.add(XMLAttrChange(".//arena/distribute/entity",
-                                                    "quantity",
-                                                    str(n_robots)))
+                        changeset.add(xml.AttrChange(".//arena/distribute/entity",
+                                                     "quantity",
+                                                     str(n_robots)))
                         self.logger.debug("Calculated swarm size=%d for extent=%s,density=%s",
                                           n_robots,
                                           str(extent), self.target_density)

@@ -32,7 +32,7 @@ import implements
 from sierra.core.variables import variable_density as vd
 import sierra.core.variables.batch_criteria as bc
 from sierra.core.vector import Vector3D
-from sierra.core.xml import XMLAttrChange, XMLAttrChangeSet
+from sierra.core.experiment import xml
 from sierra.core import types, utils
 
 
@@ -51,7 +51,7 @@ class PopulationVariableDensity(vd.VariableDensity):
         self.already_added = False
         self.logger = logging.getLogger(__name__)
 
-    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
+    def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
         """
         Generate list of sets of changes to input file to set the # robots for a
         set of swarm densities. Robots are approximated as point masses.
@@ -67,9 +67,9 @@ class PopulationVariableDensity(vd.VariableDensity):
                     calculated as 0 for area=%d,density=%s",
                                         self.extent.area(),
                                         density)
-                changeset = XMLAttrChangeSet(XMLAttrChange(".//arena/distribute/entity",
-                                                           "quantity",
-                                                           str(n_robots)))
+                changeset = xml.AttrChangeSet(xml.AttrChange(".//arena/distribute/entity",
+                                                             "quantity",
+                                                             str(n_robots)))
                 self.attr_changes.append(changeset)
                 self.logger.debug("Calculated swarm size=%d for extent=%s,density=%s",
                                   n_robots,

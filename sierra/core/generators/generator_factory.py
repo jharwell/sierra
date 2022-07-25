@@ -28,8 +28,7 @@ import copy
 import yaml
 
 # Project packages
-from sierra.core.xml import XMLLuigi, XMLTagAdd
-from sierra.core.experiment.spec import ExperimentSpec
+from sierra.core.experiment import spec, xml, definition
 import sierra.core.plugin_manager as pm
 from sierra.core import types, config, utils
 
@@ -45,7 +44,7 @@ class ControllerGenerator():
                  controller: str,
                  config_root: str,
                  cmdopts: types.Cmdopts,
-                 spec: ExperimentSpec) -> None:
+                 exp_spec: spec.ExperimentSpec) -> None:
         controllers_yaml = os.path.join(config_root,
                                         config.kYAML['controllers'])
         with utils.utf8open(controllers_yaml) as f:
@@ -58,9 +57,9 @@ class ControllerGenerator():
         self.category, self.name = controller.split('.')
         self.cmdopts = cmdopts
         self.logger = logging.getLogger(__name__)
-        self.spec = spec
+        self.spec = exp_spec
 
-    def generate(self, exp_def: XMLLuigi) -> XMLLuigi:
+    def generate(self, exp_def: definition.XMLExpDef) -> definition.XMLExpDef:
         """
         Generates all changes to the input file for the :term:`Experimental Run`
         (does not save).
@@ -71,8 +70,8 @@ class ControllerGenerator():
         return exp_def
 
     def _pp_for_tag_add(self,
-                        add: XMLTagAdd,
-                        robot_id: tp.Optional[int] = None) -> XMLTagAdd:
+                        add: xml.TagAdd,
+                        robot_id: tp.Optional[int] = None) -> xml.TagAdd:
         module = pm.pipeline.get_plugin_module(self.cmdopts['platform'])
         if '__UUID__' in add.path:
             prefix = module.robot_prefix_extract(self.main_config, self.cmdopts)
@@ -81,7 +80,9 @@ class ControllerGenerator():
         add.attr = eval(add.attr)
         return add
 
-    def _do_tag_add(self, exp_def: XMLLuigi, add: XMLTagAdd) -> None:
+    def _do_tag_add(self,
+                    exp_def: definition.XMLExpDef,
+                    add: xml.TagAdd) -> None:
 
         # If the user is applying tags for each robot, then they might be added
         # multiple tags with the same name, but different attributes, so we
@@ -116,7 +117,8 @@ class ControllerGenerator():
                             pp_add.attr,
                             False)
 
-    def _generate_controller_support(self, exp_def: XMLLuigi) -> None:
+    def _generate_controller_support(self,
+                                     exp_def: definition.XMLExpDef) -> None:
         # Setup controller support code (if any)
         chgs = self.controller_config.get(self.category,
                                           {}).get('xml',
@@ -137,7 +139,7 @@ class ControllerGenerator():
         for t in adds:
             self._do_tag_add(exp_def, t)
 
-    def _generate_controller(self, exp_def: XMLLuigi) -> None:
+    def _generate_controller(self, exp_def: definition.XMLExpDef) -> None:
         if self.category not in self.controller_config:
             self.logger.fatal("Controller category '%s' not found in YAML configuration",
                               self.category)
@@ -164,10 +166,10 @@ class ControllerGenerator():
 
             adds = controller.get('xml', {}).get('tag_add', {})
             for t in adds:
-                self._do_tag_add(exp_def, XMLTagAdd(t[0],
-                                                    t[1],
-                                                    t[2],
-                                                    False))
+                self._do_tag_add(exp_def, xml.TagAdd(t[0],
+                                                     t[1],
+                                                     t[2],
+                                                     False))
 
 
 def joint_generator_create(controller, scenario):
@@ -191,7 +193,7 @@ def joint_generator_create(controller, scenario):
                             generate})()
 
 
-def scenario_generator_create(spec: ExperimentSpec,
+def scenario_generator_create(exp_spec: spec.ExperimentSpec,
                               controller,
                               **kwargs):
     """
@@ -203,15 +205,15 @@ def scenario_generator_create(spec: ExperimentSpec,
         self.logger = logging.getLogger(__name__)
         module = pm.module_load_tiered(project=cmdopts['project'],
                                        path='generators.scenario_generators')
-        generator_name = module.gen_generator_name(spec.scenario_name)
+        generator_name = module.gen_generator_name(exp_spec.scenario_name)
         self.scenario_generator = getattr(module, generator_name)(controller=controller,
-                                                                  spec=spec,
+                                                                  exp_spec=exp_spec,
                                                                   **kwargs)
 
     def generate(self):
         return self.scenario_generator.generate()
 
-    return type(spec.scenario_name,
+    return type(exp_spec.scenario_name,
                 (object,), {"__init__": __init__,
                             "generate": generate
                             })(**kwargs)
@@ -220,7 +222,7 @@ def scenario_generator_create(spec: ExperimentSpec,
 def controller_generator_create(controller: str,
                                 config_root: str,
                                 cmdopts: types.Cmdopts,
-                                spec: ExperimentSpec):
+                                exp_spec: spec.ExperimentSpec):
     """
     Creates a controller generator from the cmdline specification.
     """
@@ -229,12 +231,11 @@ def controller_generator_create(controller: str,
                 (ControllerGenerator,), {})(controller,
                                             config_root,
                                             cmdopts,
-                                            spec)
+                                            exp_spec)
 
 
 __api__ = [
     'ControllerGenerator',
-
     'joint_generator_create',
     'scenario_generator_create',
     'controller_generator_create',

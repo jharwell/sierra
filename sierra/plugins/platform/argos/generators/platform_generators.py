@@ -27,9 +27,8 @@ import sys
 # 3rd party packages
 
 # Project packages
-from sierra.core.xml import XMLLuigi, XMLWriterConfig
 from sierra.core.utils import ArenaExtent
-from sierra.core.experiment.spec import ExperimentSpec
+from sierra.core.experiment import spec, definition, xml
 from sierra.core import types, config, utils
 import sierra.core.plugin_manager as pm
 
@@ -49,32 +48,32 @@ class PlatformExpDefGenerator():
     """
 
     def __init__(self,
-                 spec: ExperimentSpec,
+                 exp_spec: spec.ExperimentSpec,
                  controller: str,
                  cmdopts: types.Cmdopts,
                  **kwargs) -> None:
         self.controller = controller
-        self.spec = spec
+        self.spec = exp_spec
         self.cmdopts = cmdopts
         self.template_input_file = kwargs['template_input_file']
         self.kwargs = kwargs
         self.logger = logging.getLogger(__name__)
 
-    def generate(self) -> XMLLuigi:
+    def generate(self) -> definition.XMLExpDef:
         """
         Generates XML changes to simulation input files that are common to all
         experiments.
         """
         # ARGoS uses a single input file
-        wr_config = XMLWriterConfig([{'src_parent': None,
-                                      'src_tag': '.',
-                                      'opath_leaf': config.kARGoS['launch_file_ext'],
-                                      'create_tags': None,
-                                      'dest_parent': None,
-                                      'rename_to': None
-                                      }])
-        exp_def = XMLLuigi(input_fpath=self.template_input_file,
-                           write_config=wr_config)
+        wr_config = xml.WriterConfig([{'src_parent': None,
+                                       'src_tag': '.',
+                                       'opath_leaf': config.kARGoS['launch_file_ext'],
+                                       'create_tags': None,
+                                       'dest_parent': None,
+                                       'rename_to': None
+                                       }])
+        exp_def = definition.XMLExpDef(input_fpath=self.template_input_file,
+                                       write_config=wr_config)
 
         # Generate # robots
         self._generate_n_robots(exp_def)
@@ -97,7 +96,7 @@ class PlatformExpDefGenerator():
         return exp_def
 
     def generate_physics(self,
-                         exp_def: XMLLuigi,
+                         exp_def: definition.XMLExpDef,
                          cmdopts: types.Cmdopts,
                          engine_type: str,
                          n_engines: int,
@@ -146,7 +145,7 @@ class PlatformExpDefGenerator():
         utils.apply_to_expdef(pe, exp_def)
 
     def generate_arena_shape(self,
-                             exp_def: XMLLuigi,
+                             exp_def: definition.XMLExpDef,
                              shape: arena_shape.ArenaShape) -> None:
         """
         Generate XML changes for the specified arena shape.
@@ -159,7 +158,7 @@ class PlatformExpDefGenerator():
 
         utils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)
 
-    def _generate_n_robots(self, xml: XMLLuigi) -> None:
+    def _generate_n_robots(self, xml: definition.XMLExpDef) -> None:
         """
         Generate XML changes to setup # robots if it was specified on the
         cmdline.
@@ -179,7 +178,7 @@ class PlatformExpDefGenerator():
         # Write # robots info to file for later retrieval
         chgs[0].pickle(self.spec.exp_def_fpath)
 
-    def _generate_saa(self, exp_def: XMLLuigi) -> None:
+    def _generate_saa(self, exp_def: definition.XMLExpDef) -> None:
         """
         Generates XML changes to disable selected sensors/actuators, which are
         computationally expensive in large swarms, but not that costly if the
@@ -208,7 +207,7 @@ class PlatformExpDefGenerator():
             exp_def.tag_remove(".//sensors", "battery", noprint=True)
             exp_def.tag_remove(".//entity/*", "battery", noprint=True)
 
-    def _generate_time(self, exp_def: XMLLuigi) -> None:
+    def _generate_time(self, exp_def: definition.XMLExpDef) -> None:
         """
         Generate XML changes to setup simulation time parameters.
 
@@ -222,7 +221,7 @@ class PlatformExpDefGenerator():
         # Write time setup info to file for later retrieval
         utils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)
 
-    def _generate_threading(self, exp_def: XMLLuigi) -> None:
+    def _generate_threading(self, exp_def: definition.XMLExpDef) -> None:
         """
         Generates XML changes to set the # of cores for a simulation to use,
         which may be less than the total # available on the system, depending on
@@ -248,7 +247,7 @@ class PlatformExpDefGenerator():
                                      "valid on linux in ARGoS--configuration "
                                      "error?"))
 
-    def _generate_library(self, exp_def: XMLLuigi) -> None:
+    def _generate_library(self, exp_def: definition.XMLExpDef) -> None:
         """
         Generates XML changes to set the library that controllers and loop
         functions are sourced from to the name of the plugin passed on the
@@ -273,7 +272,7 @@ class PlatformExpDefGenerator():
                             "library",
                             lib_name)
 
-    def _generate_visualization(self, exp_def: XMLLuigi) -> None:
+    def _generate_visualization(self, exp_def: definition.XMLExpDef) -> None:
         """
 
         Generates XML changes to remove visualization elements from input file,
@@ -347,14 +346,14 @@ class PlatformExpRunDefUniqueGenerator:
                             "random_seed",
                             str(self.random_seed))
 
-    def generate(self, exp_def: XMLLuigi):
+    def generate(self, exp_def: definition.XMLExpDef):
         # Setup simulation random seed
         self.__generate_random(exp_def)
 
         # Setup simulation visualization output
         self.__generate_visualization(exp_def)
 
-    def __generate_visualization(self, exp_def: XMLLuigi):
+    def __generate_visualization(self, exp_def: definition.XMLExpDef):
         """
         Generates XML changes for setting up rendering for a specific simulation
         """

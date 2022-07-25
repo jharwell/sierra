@@ -24,8 +24,7 @@ import logging
 # 3rd party packages
 
 # Project packages
-from sierra.core.xml import XMLLuigi
-from sierra.core.experiment.spec import ExperimentSpec
+from sierra.core.experiment import spec, xml, definition
 from sierra.core import types, ros1, config
 
 
@@ -38,14 +37,14 @@ class PlatformExpDefGenerator(ros1.generators.ROSExpDefGenerator):
     """
 
     def __init__(self,
-                 spec: ExperimentSpec,
+                 exp_spec: spec.ExperimentSpec,
                  controller: str,
                  cmdopts: types.Cmdopts,
                  **kwargs) -> None:
-        super().__init__(spec, controller, cmdopts, **kwargs)
+        super().__init__(exp_spec, controller, cmdopts, **kwargs)
         self.logger = logging.getLogger(__name__)
 
-    def generate(self) -> XMLLuigi:
+    def generate(self) -> definition.XMLExpDef:
         exp_def = super().generate()
 
         exp_def.write_config.add({
@@ -74,7 +73,7 @@ class PlatformExpDefGenerator(ros1.generators.ROSExpDefGenerator):
 
         return exp_def
 
-    def _generate_gazebo_core(self, exp_def: XMLLuigi) -> None:
+    def _generate_gazebo_core(self, exp_def: definition.XMLExpDef) -> None:
         """
         Generate XML tag changes to setup Gazebo core experiment parameters.
 
@@ -110,7 +109,7 @@ class PlatformExpDefGenerator(ros1.generators.ROSExpDefGenerator):
         # Don't start gazebo under gdb
         exp_def.tag_remove("./master/include", "arg/[@name='debug']")
 
-    def _generate_gazebo_vis(self, exp_def: XMLLuigi) -> None:
+    def _generate_gazebo_vis(self, exp_def: definition.XMLExpDef) -> None:
         """
         Generate XML changes to configure Gazebo according to visualization
         configuration.
@@ -134,7 +133,7 @@ class PlatformExpRunDefUniqueGenerator(ros1.generators.ROSExpRunDefUniqueGenerat
         ros1.generators.ROSExpRunDefUniqueGenerator.__init__(
             self, *args, **kwargs)
 
-    def generate(self, exp_def: XMLLuigi):
+    def generate(self, exp_def: definition.XMLExpDef):
         exp_def = super().generate(exp_def)
 
         self.generate_random(exp_def)

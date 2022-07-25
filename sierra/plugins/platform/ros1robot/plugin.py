@@ -28,8 +28,8 @@ import yaml
 
 # Project packages
 from sierra.plugins.platform.ros1robot import cmdline
-from sierra.core import xml, platform, config, ros1, types, utils
-from sierra.core.experiment import bindings
+from sierra.core import platform, config, ros1, types, utils
+from sierra.core.experiment import bindings, definition, xml
 import sierra.core.variables.batch_criteria as bc
 
 
@@ -359,8 +359,8 @@ class ExecEnvChecker():
             "Wrong ROS version: This plugin is for ROS1"
 
 
-def population_size_from_pickle(adds_def: tp.Union[xml.XMLAttrChangeSet,
-                                                   xml.XMLTagAddList],
+def population_size_from_pickle(adds_def: tp.Union[xml.AttrChangeSet,
+                                                   xml.TagAddList],
                                 main_config: types.YAMLDict,
                                 cmdopts: types.Cmdopts) -> int:
     return ros1.callbacks.population_size_from_pickle(adds_def,
@@ -368,7 +368,7 @@ def population_size_from_pickle(adds_def: tp.Union[xml.XMLAttrChangeSet,
                                                       cmdopts)
 
 
-def population_size_from_def(exp_def: xml.XMLLuigi,
+def population_size_from_def(exp_def: definition.XMLExpDef,
                              main_config: types.YAMLDict,
                              cmdopts: types.Cmdopts) -> int:
     return ros1.callbacks.population_size_from_def(exp_def,

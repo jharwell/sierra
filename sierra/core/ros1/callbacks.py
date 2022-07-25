@@ -24,11 +24,12 @@ import typing as tp
 # 3rd party packages
 
 # Project packages
-from sierra.core import xml, types
+from sierra.core import types
+from sierra.core.experiment import xml, definition
 
 
-def population_size_from_pickle(adds_def: tp.Union[xml.XMLAttrChangeSet,
-                                                   xml.XMLTagAddList],
+def population_size_from_pickle(adds_def: tp.Union[xml.AttrChangeSet,
+                                                   xml.TagAddList],
                                 main_config: types.YAMLDict,
                                 cmdopts: types.Cmdopts) -> int:
     for add in adds_def:
@@ -38,7 +39,7 @@ def population_size_from_pickle(adds_def: tp.Union[xml.XMLAttrChangeSet,
     return 0
 
 
-def population_size_from_def(exp_def: xml.XMLLuigi,
+def population_size_from_def(exp_def: definition.XMLExpDef,
                              main_config: types.YAMLDict,
                              cmdopts: types.Cmdopts) -> int:
     return population_size_from_pickle(exp_def.tag_adds, main_config, cmdopts)

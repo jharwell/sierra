@@ -39,6 +39,7 @@ SIERRA: Automation for the Scientific Method and Agent-Based Research
    src/philosophy.rst
    src/faq.rst
    src/contributing.rst
+   src/roadmap.rst
    src/glossary.rst
    src/api.rst
 

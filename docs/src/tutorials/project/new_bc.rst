@@ -33,7 +33,7 @@ following to get it to work with SIERRA as a :term:`Batch Criteria`:
    it within), produce a list of sets, where each set is all changes that need
    to be made to the ``.xml`` template file in order to set the value of your
    variable to something. Each change is a
-   :class:`~sierra.core.xml.XMLAttrChange` object, that takes the
+   :class:`~sierra.core.experiment.xml.AttrChange` object, that takes the
    following arguments in its constructor:
 
    #. XPath search path for the **parent** of the attribute that you want to
@@ -48,8 +48,8 @@ following to get it to work with SIERRA as a :term:`Batch Criteria`:
    tags that need to be removed from the ``.xml`` template file in order to
    set the value of your variable to something.
 
-   Each change is a :class:`~sierra.core.xml.XMLTagRm` object that takes
-   the following arguments in its constructor:
+   Each change is a :class:`~sierra.core.experiment.xml.TagRm` object that
+   takes the following arguments in its constructor:
 
    #. XPath search path for the **parent** of the tag that you want to
       remove.
@@ -60,8 +60,8 @@ following to get it to work with SIERRA as a :term:`Batch Criteria`:
    passed during initialization, generate a list of sets, where each set is all
    tags that need to be added to the ``.xml`` template file.
 
-   Each change is a :class:`~sierra.core.xml.XMLTagAdd` object that takes
-   the following arguments in its constructor:
+   Each change is a :class:`~sierra.core.experiment.xml.TagAdd` object that
+   takes the following arguments in its constructor:
 
    #. XPath search path for the **parent** of the tag that you want to
       add.

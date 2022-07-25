@@ -21,7 +21,7 @@ import typing as tp
 import implements
 
 # Project packages
-from sierra.core.xml import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList
+from sierra.core.experiment import xml
 
 
 class IBaseVariable(implements.Interface):
@@ -29,26 +29,28 @@ class IBaseVariable(implements.Interface):
 
     """
 
-    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
-        """Generate a list of sets of XML attributes to change in the template input XML
-file."""
+    def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
+        """Generate a list of sets of XML attributes to change in the template
+        input XML file.
+
+        """
         raise NotImplementedError
 
-    def gen_tag_rmlist(self) -> tp.List[XMLTagRmList]:
-        """Generate a list of lists of XML tags to remove from the template input XML
-file."""
+    def gen_tag_rmlist(self) -> tp.List[xml.TagRmList]:
+        """Generate a list of lists of XML tags to remove from the template
+        input XML file."""
         raise NotImplementedError
 
-    def gen_tag_addlist(self) -> tp.List[XMLTagAddList]:
-        """Generate a list of lists of XML tags (and possibly child attributes) to add
-        to the template input XML file.
+    def gen_tag_addlist(self) -> tp.List[xml.TagAddList]:
+        """Generate a list of lists of XML tags (and possibly child attributes)
+        to add to the template input XML file.
 
         """
         raise NotImplementedError
 
     def gen_files(self) -> None:
-        """Generate one or more new files which will (presumably) be referenced in the
-        template input file by path.
+        """Generate one or more new files which will (presumably) be referenced
+        in the template input file by path.
 
         """
 

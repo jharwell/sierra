@@ -34,8 +34,8 @@ from retry import retry
 
 # Project packages
 from sierra.core.vector import Vector3D
-from sierra.core.xml import XMLLuigi, XMLAttrChangeSet, XMLTagAddList, XMLTagRmList
-from sierra.core import types, xml, config
+from sierra.core.experiment import xml, definition
+from sierra.core import types, config
 from sierra.core import plugin_manager as pm
 
 
@@ -255,16 +255,16 @@ def bivar_exp_labels_calc(exp_dirs: tp.List[str]) -> tp.Tuple[tp.List[str],
 
 
 def apply_to_expdef(var,
-                    exp_def: XMLLuigi) -> tp.Tuple[tp.Optional[XMLTagRmList],
-                                                   tp.Optional[XMLTagAddList],
-                                                   tp.Optional[XMLAttrChangeSet]]:
+                    exp_def: definition.XMLExpDef) -> tp.Tuple[tp.Optional[xml.TagRmList],
+                                                               tp.Optional[xml.TagAddList],
+                                                               tp.Optional[xml.AttrChangeSet]]:
     """
     Remove existing XML tags, add new XML tags, and change existing XML
     attributes (in that order) for the specified variable.
     """
-    rmsl = var.gen_tag_rmlist()  # type: tp.List[XMLTagRmList]
-    addsl = var.gen_tag_addlist()  # type: tp.List[XMLTagAddList]
-    chgsl = var.gen_attr_changelist()  # type: tp.List[XMLAttrChangeSet]
+    rmsl = var.gen_tag_rmlist()  # type: tp.List[xml.TagRmList]
+    addsl = var.gen_tag_addlist()  # type: tp.List[xml.TagAddList]
+    chgsl = var.gen_attr_changelist()  # type: tp.List[xml.AttrChangeSet]
 
     if rmsl:
         rms = rmsl[0]
@@ -290,8 +290,8 @@ def apply_to_expdef(var,
     return rms, adds, chgs
 
 
-def pickle_modifications(adds: tp.Optional[XMLTagAddList],
-                         chgs: tp.Optional[XMLAttrChangeSet],
+def pickle_modifications(adds: tp.Optional[xml.TagAddList],
+                         chgs: tp.Optional[xml.AttrChangeSet],
                          path: str) -> None:
     """
     After applying XML attribute changes and/or adding new XML tags, pickle saxd
@@ -320,7 +320,7 @@ def batch_template_path(cmdopts: types.Cmdopts,
 def get_n_robots(main_config: types.YAMLDict,
                  cmdopts: types.Cmdopts,
                  exp_input_root: str,
-                 exp_def: xml.XMLLuigi) -> int:
+                 exp_def: definition.XMLExpDef) -> int:
     """
     Get the # robots used for a specific :term:`Experiment`.
     """
@@ -338,8 +338,8 @@ def get_n_robots(main_config: types.YAMLDict,
                                                main_config,
                                                cmdopts)
     if n_robots <= 0:
-        pkl_def = xml.unpickle(os.path.join(exp_input_root,
-                                            config.kPickleLeaf))
+        pkl_def = definition.unpickle(os.path.join(exp_input_root,
+                                                   config.kPickleLeaf))
         n_robots = module.population_size_from_pickle(pkl_def,
                                                       main_config,
                                                       cmdopts)

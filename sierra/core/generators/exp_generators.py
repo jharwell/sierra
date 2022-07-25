@@ -29,8 +29,7 @@ import logging
 
 # Project packages
 import sierra.core.generators.generator_factory as gf
-import sierra.core.xml
-from sierra.core.experiment.spec import ExperimentSpec
+from sierra.core.experiment import spec, definition
 from sierra.core import types
 import sierra.core.variables.batch_criteria as bc
 
@@ -90,7 +89,7 @@ class BatchExpDefGenerator:
         self.cmdopts = cmdopts
         self.logger = logging.getLogger(__name__)
 
-    def generate_defs(self) -> tp.List[sierra.core.xml.XMLLuigi]:
+    def generate_defs(self) -> tp.List[definition.XMLExpDef]:
         """
         Generates and returns a list of experiment definitions (one for each
         experiment in the batch), which can used to create the batch
@@ -128,18 +127,18 @@ class BatchExpDefGenerator:
             exp_num: Experiment number in the batch
         """
 
-        spec = ExperimentSpec(self.criteria, exp_num, self.cmdopts)
-
+        exp_spec = spec.ExperimentSpec(self.criteria, exp_num, self.cmdopts)
+        template_fpath = os.path.join(exp_spec.exp_input_root,
+                                      self.batch_config_leaf)
         scenario = gf.scenario_generator_create(controller=self.controller_name,
-                                                spec=spec,
-                                                template_input_file=os.path.join(spec.exp_input_root,
-                                                                                 self.batch_config_leaf),
+                                                exp_spec=exp_spec,
+                                                template_input_file=template_fpath,
                                                 cmdopts=self.cmdopts)
 
         controller = gf.controller_generator_create(controller=self.controller_name,
                                                     config_root=self.cmdopts['project_config_root'],
                                                     cmdopts=self.cmdopts,
-                                                    spec=spec)
+                                                    exp_spec=exp_spec)
 
         generator = gf.joint_generator_create(scenario=scenario,
                                               controller=controller)

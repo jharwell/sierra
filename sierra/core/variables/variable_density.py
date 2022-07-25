@@ -25,7 +25,7 @@ import typing as tp
 from sierra.core.variables.batch_criteria import UnivarBatchCriteria
 from sierra.core.utils import ArenaExtent
 from sierra.core import types
-from sierra.core.xml import XMLAttrChangeSet
+from sierra.core.experiment import xml
 
 
 class VariableDensity(UnivarBatchCriteria):
@@ -54,7 +54,7 @@ class VariableDensity(UnivarBatchCriteria):
             self, cli_arg, main_config, batch_input_root)
         self.densities = densities
         self.extent = extent
-        self.attr_changes = []  # type: tp.List[XMLAttrChangeSet]
+        self.attr_changes = []  # type: tp.List[xml.AttrChangeSet]
 
 
 class Parser():

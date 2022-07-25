@@ -29,7 +29,8 @@ import implements
 
 from sierra.core.variables import base_variable
 from sierra.core.vector import Vector3D
-from sierra.core import xml, utils
+from sierra.core import utils
+from sierra.core.experiment import definition, xml
 
 import sierra.core.config
 import sierra.core.plugin_manager as pm
@@ -206,13 +207,13 @@ class BatchCriteria():
 
     # Stub out IBaseVariable because all concrete batch criteria only implement
     # a subset of them.
-    def gen_attr_changelist(self) -> tp.List[xml.XMLAttrChangeSet]:
+    def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
         return []
 
-    def gen_tag_rmlist(self) -> tp.List[xml.XMLTagRmList]:
+    def gen_tag_rmlist(self) -> tp.List[xml.TagRmList]:
         return []
 
-    def gen_tag_addlist(self) -> tp.List[xml.XMLTagAddList]:
+    def gen_tag_addlist(self) -> tp.List[xml.TagAddList]:
         return []
 
     def gen_files(self) -> None:
@@ -292,7 +293,7 @@ class BatchCriteria():
             exp_defj.pickle(pkl_path, delete=True)
 
     def scaffold_exps(self,
-                      batch_def: xml.XMLLuigi,
+                      batch_def: definition.XMLExpDef,
                       cmdopts: types.Cmdopts) -> None:
         """
         Scaffold a batch experiment by taking the raw template input file and
@@ -341,8 +342,8 @@ class BatchCriteria():
             assert False, "Batch experiment size/# exp dir mismatch"
 
     def _scaffold_expi(self,
-                       expi_def: xml.XMLLuigi,
-                       modsi: tp.Union[xml.XMLAttrChangeSet, xml.XMLTagAddList],
+                       expi_def: definition.XMLExpDef,
+                       modsi: tp.Union[xml.AttrChangeSet, xml.TagAddList],
                        i: int,
                        cmdopts: types.Cmdopts) -> None:
         exp_dirname = self.gen_exp_dirnames(cmdopts)[i]
@@ -359,9 +360,9 @@ class BatchCriteria():
                                  exist_ok=cmdopts['exp_overwrite'])
 
         for mod in modsi:
-            if isinstance(mod, xml.XMLAttrChange):
+            if isinstance(mod, xml.AttrChange):
                 expi_def.attr_change(mod.path, mod.attr, mod.value)
-            elif isinstance(mod, xml.XMLTagAdd):
+            elif isinstance(mod, xml.TagAdd):
                 expi_def.tag_add(mod.path, mod.tag, mod.attr, mod.allow_dup)
             else:
                 assert False,\
@@ -369,12 +370,12 @@ class BatchCriteria():
 
         # This will be the "template" input file used to generate the input
         # files for each experimental run in the experiment
-        wr_config = xml.XMLWriterConfig([{'src_parent': None,
-                                          'src_tag': '.',
-                                          'opath_leaf': None,
-                                          'create_tags': None,
-                                          'dest_parent': None
-                                          }])
+        wr_config = xml.WriterConfig([{'src_parent': None,
+                                       'src_tag': '.',
+                                       'opath_leaf': None,
+                                       'create_tags': None,
+                                       'dest_parent': None
+                                       }])
         expi_def.write_config_set(wr_config)
         opath = utils.batch_template_path(cmdopts,
                                           self.batch_input_root,
@@ -428,9 +429,9 @@ class UnivarBatchCriteria(BatchCriteria):
 
         module = pm.pipeline.get_plugin_module(cmdopts['platform'])
         for d in dirs:
-            exp_def = xml.unpickle(os.path.join(self.batch_input_root,
-                                                d,
-                                                sierra.core.config.kPickleLeaf))
+            exp_def = definition.unpickle(os.path.join(self.batch_input_root,
+                                                       d,
+                                                       sierra.core.config.kPickleLeaf))
 
             sizes.append(module.population_size_from_pickle(exp_def,
                                                             self.main_config,
@@ -464,7 +465,7 @@ class BivarBatchCriteria(BatchCriteria):
     def is_univar(self) -> bool:
         return False
 
-    def gen_attr_changelist(self) -> tp.List[xml.XMLAttrChangeSet]:
+    def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
         list1 = self.criteria1.gen_attr_changelist()
         list2 = self.criteria2.gen_attr_changelist()
         ret = []
@@ -475,7 +476,7 @@ class BivarBatchCriteria(BatchCriteria):
 
         return ret
 
-    def gen_tag_rmlist(self) -> tp.List[xml.XMLTagRmList]:
+    def gen_tag_rmlist(self) -> tp.List[xml.TagRmList]:
         ret = self.criteria1.gen_tag_rmlist()
         ret.extend(self.criteria2.gen_tag_rmlist())
         return ret
@@ -516,9 +517,9 @@ class BivarBatchCriteria(BatchCriteria):
 
         module = pm.pipeline.get_plugin_module(cmdopts['platform'])
         for d in dirs:
-            exp_def = xml.unpickle(os.path.join(self.batch_input_root,
-                                                d,
-                                                sierra.core.config.kPickleLeaf))
+            exp_def = definition.unpickle(os.path.join(self.batch_input_root,
+                                                       d,
+                                                       sierra.core.config.kPickleLeaf))
             index = dirs.index(d)
             i = int(index / (n_chgs2 + n_adds2))
             j = index % (n_chgs2 + n_adds2)

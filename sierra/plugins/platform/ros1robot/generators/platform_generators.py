@@ -27,8 +27,7 @@ import os
 import yaml
 
 # Project packages
-from sierra.core.xml import XMLLuigi, XMLTagAdd
-from sierra.core.experiment.spec import ExperimentSpec
+from sierra.core.experiment import spec, xml, definition
 from sierra.core import types, ros1, config, utils
 
 
@@ -40,15 +39,15 @@ class PlatformExpDefGenerator(ros1.generators.ROSExpDefGenerator):
     """
 
     def __init__(self,
-                 spec: ExperimentSpec,
+                 exp_spec: spec.ExperimentSpec,
                  controller: str,
                  cmdopts: types.Cmdopts,
                  **kwargs) -> None:
-        super().__init__(spec, controller, cmdopts, **kwargs)
+        super().__init__(exp_spec, controller, cmdopts, **kwargs)
 
         self.logger = logging.getLogger(__name__)
 
-    def generate(self) -> XMLLuigi:
+    def generate(self) -> definition.XMLExpDef:
         exp_def = super().generate()
 
         self.logger.debug("Writing separate <master> launch file")
@@ -83,7 +82,7 @@ class PlatformExpRunDefUniqueGenerator(ros1.generators.ROSExpRunDefUniqueGenerat
         ros1.generators.ROSExpRunDefUniqueGenerator.__init__(
             self, *args, **kwargs)
 
-    def generate(self, exp_def: XMLLuigi):
+    def generate(self, exp_def: definition.XMLExpDef):
         exp_def = super().generate(exp_def)
         main_path = os.path.join(self.cmdopts['project_config_root'],
                                  config.kYAML['main'])
@@ -102,10 +101,10 @@ class PlatformExpRunDefUniqueGenerator(ros1.generators.ROSExpRunDefUniqueGenerat
                 'src_parent': "./robot",
                 'src_tag': f"group/[@ns='{prefix}{i}']",
                 'opath_leaf': f'_robot{i}' + config.kROS['launch_file_ext'],
-                'create_tags': [XMLTagAdd(None,
-                                          'launch',
-                                          {},
-                                          False)],
+                'create_tags': [xml.TagAdd(None,
+                                           'launch',
+                                           {},
+                                           False)],
                 'dest_parent': ".",
                 'rename_to': None,
                 'child_grafts': ["./robot/group/[@ns='sierra']"]

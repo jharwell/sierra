@@ -28,7 +28,7 @@ import implements
 
 # Project packages
 from sierra.core.variables.base_variable import IBaseVariable
-from sierra.core.xml import XMLAttrChangeSet, XMLTagAdd, XMLTagRmList, XMLTagAddList
+from sierra.core.experiment import xml
 from sierra.core import config
 from sierra.core.variables.exp_setup import Parser
 
@@ -65,69 +65,69 @@ class ExpSetup():
 
         self.tag_adds = None
 
-    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
+    def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
         return []
 
-    def gen_tag_rmlist(self) -> tp.List[XMLTagRmList]:
+    def gen_tag_rmlist(self) -> tp.List[xml.TagRmList]:
         return []
 
-    def gen_tag_addlist(self) -> tp.List[XMLTagAddList]:
+    def gen_tag_addlist(self) -> tp.List[xml.TagAddList]:
         if not self.tag_adds:
-            adds = XMLTagAddList(
-                XMLTagAdd("./master/group/[@ns='sierra']",
-                          "param",
-                          {
-                              "name": "experiment/length",
-                              "value": str(self.n_secs_per_run),
-                          },
-                          True),
-                XMLTagAdd("./master/group/[@ns='sierra']",
-                          "param",
-                          {
-                              "name": "experiment/ticks_per_sec",
-                              "value": str(self.n_ticks_per_sec),
-                          },
-                          True),
-                XMLTagAdd("./master/group/[@ns='sierra']",
-                          "param",
-                          {
-                              "name": "experiment/barrier_start",
-                              "value": str(self.barrier_start).lower(),
-                          },
-                          True),
-                XMLTagAdd("./master/group/[@ns='sierra']",
-                          "node",
-                          {
-                              "name": "sierra_timekeeper",
-                              "pkg": "sierra_rosbridge",
-                              "type": "sierra_timekeeper.py",
-                              "required": "true",
-                              # Otherwise rospy prints nothing
-                              "output": "screen"
-                          },
-                          True),
+            adds = xml.TagAddList(
+                xml.TagAdd("./master/group/[@ns='sierra']",
+                           "param",
+                           {
+                               "name": "experiment/length",
+                               "value": str(self.n_secs_per_run),
+                           },
+                           True),
+                xml.TagAdd("./master/group/[@ns='sierra']",
+                           "param",
+                           {
+                               "name": "experiment/ticks_per_sec",
+                               "value": str(self.n_ticks_per_sec),
+                           },
+                           True),
+                xml.TagAdd("./master/group/[@ns='sierra']",
+                           "param",
+                           {
+                               "name": "experiment/barrier_start",
+                               "value": str(self.barrier_start).lower(),
+                           },
+                           True),
+                xml.TagAdd("./master/group/[@ns='sierra']",
+                           "node",
+                           {
+                               "name": "sierra_timekeeper",
+                               "pkg": "sierra_rosbridge",
+                               "type": "sierra_timekeeper.py",
+                               "required": "true",
+                               # Otherwise rospy prints nothing
+                               "output": "screen"
+                           },
+                           True),
 
-                XMLTagAdd("./robot/group/[@ns='sierra']",
-                          "param",
-                          {
-                              "name": "experiment/length",
-                              "value": str(self.n_secs_per_run),
-                          },
-                          True),
-                XMLTagAdd("./robot/group/[@ns='sierra']",
-                          "param",
-                          {
-                              "name": "experiment/ticks_per_sec",
-                              "value": str(self.n_ticks_per_sec),
-                          },
-                          True),
-                XMLTagAdd("./robot/group/[@ns='sierra']",
-                          "param",
-                          {
-                              "name": "experiment/barrier_start",
-                              "value": str(self.barrier_start).lower()
-                          },
-                          True)
+                xml.TagAdd("./robot/group/[@ns='sierra']",
+                           "param",
+                           {
+                               "name": "experiment/length",
+                               "value": str(self.n_secs_per_run),
+                           },
+                           True),
+                xml.TagAdd("./robot/group/[@ns='sierra']",
+                           "param",
+                           {
+                               "name": "experiment/ticks_per_sec",
+                               "value": str(self.n_ticks_per_sec),
+                           },
+                           True),
+                xml.TagAdd("./robot/group/[@ns='sierra']",
+                           "param",
+                           {
+                               "name": "experiment/barrier_start",
+                               "value": str(self.barrier_start).lower()
+                           },
+                           True)
             )
             if self.robots_need_timekeeper:
                 # Robots also need the timekeeper when they are real and not
@@ -145,17 +145,17 @@ class ExpSetup():
                 # most 1 dependent node will be active at a given time. Plus,
                 # it's just sloppy to leave that sort of thing hanging around
                 # after a run exits.
-                adds.append(XMLTagAdd("./robot/group/[@ns='sierra']",
-                                      "node",
-                                      {
-                                          "name": "sierra_timekeeper",
-                                          "pkg": "sierra_rosbridge",
-                                          "type": "sierra_timekeeper.py",
-                                          "required": "true",
-                                          # Otherwise rospy prints nothing
-                                          "output": "screen"
-                                      },
-                                      True)
+                adds.append(xml.TagAdd("./robot/group/[@ns='sierra']",
+                                       "node",
+                                       {
+                                           "name": "sierra_timekeeper",
+                                           "pkg": "sierra_rosbridge",
+                                           "type": "sierra_timekeeper.py",
+                                           "required": "true",
+                                           # Otherwise rospy prints nothing
+                                           "output": "screen"
+                                       },
+                                       True)
                             )
             self.tag_adds = adds
 

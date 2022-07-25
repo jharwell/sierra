@@ -22,7 +22,6 @@ classes in ``exp_generators.py`` and writing the experiment to the filesystem.
 # Core packages
 import os
 import random
-import typing as tp
 import copy
 import logging
 import time
@@ -32,10 +31,10 @@ import pickle
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
-from sierra.core import config, utils, types, platform, xml
+from sierra.core import config, utils, types, platform
 import sierra.core.plugin_manager as pm
 from sierra.core.generators.exp_generators import BatchExpDefGenerator
-from sierra.core.experiment import bindings
+from sierra.core.experiment import bindings, definition, xml
 
 
 class ExpCreator:
@@ -114,9 +113,9 @@ class ExpCreator:
         self.commands_fpath = os.path.join(self.exp_input_root,
                                            config.kGNUParallel['cmdfile_stem'])
 
-    def from_def(self, exp_def: xml.XMLLuigi):
+    def from_def(self, exp_def: definition.XMLExpDef):
         """
-        Given a :class:`~sierra.core.xml.XMLLuigi` object containing all changes
+        Given a :class:`~sierra.core.definition.XMLExpDef` object containing all changes
         that should be made to all runs in the experiment, create additional
         changes to create a set of unique runs from which distributions of swarm
         behavior can be meaningfully computed post-hoc.
@@ -159,7 +158,7 @@ class ExpCreator:
                 utils.pickle_dump(self.random_seeds, f)
 
     def _create_exp_run(self,
-                        run_exp_def: xml.XMLLuigi,
+                        run_exp_def: definition.XMLExpDef,
                         cmds_generator: bindings.IExpShellCmdsGenerator,
                         run_num: int) -> None:
         run_output_dir = "{0}_{1}_output".format(self.main_input_name,
@@ -336,8 +335,8 @@ class BatchExpCreator:
         # Scaffold the batch experiment, creating experiment directories and
         # writing template XML input files for each experiment in the batch with
         # changes from the batch criteria added.
-        exp_def = xml.XMLLuigi(input_fpath=self.batch_config_template,
-                               write_config=xml.XMLWriterConfig([{'.': ''}]))
+        exp_def = definition.XMLExpDef(input_fpath=self.batch_config_template,
+                                       write_config=xml.WriterConfig([{'.': ''}]))
 
         self.criteria.scaffold_exps(exp_def, self.cmdopts)
 

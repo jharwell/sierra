@@ -28,7 +28,7 @@ import implements
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
-from sierra.core.xml import XMLTagAdd, XMLTagAddList
+from sierra.core.experiment import xml
 from sierra.core import types, utils
 from sierra.core.vector import Vector3D
 from sierra.core.variables import population_size
@@ -70,9 +70,9 @@ class PopulationSize(population_size.BasePopulationSize):
             self.logger.warning("# possible positions < # robots: %s < %s",
                                 len(positions),
                                 self.sizes[-1])
-        self.tag_adds = []  # type: tp.List[XMLTagAddList]
+        self.tag_adds = []  # type: tp.List[xml.TagAddList]
 
-    def gen_tag_addlist(self) -> tp.List[XMLTagAddList]:
+    def gen_tag_addlist(self) -> tp.List[xml.TagAddList]:
         """
         Generate list of sets of changes for system sizes to define a batch
         experiment.
@@ -90,26 +90,26 @@ class PopulationSize(population_size.BasePopulationSize):
 
             desc_cmd = f"$(find xacro)/xacro $(find {model_base}_description)/urdf/{model}.urdf.xacro"
             for s in self.sizes:
-                exp_adds = XMLTagAddList()
+                exp_adds = xml.TagAddList()
                 pos_i = random.randint(0, len(self.positions) - 1)
 
-                exp_adds.append(XMLTagAdd(".",
-                                          "master",
-                                          {},
-                                          True))
-                exp_adds.append(XMLTagAdd("./master",
-                                          "group",
-                                          {
-                                              'ns': 'sierra'
-                                          },
-                                          False))
-                exp_adds.append(XMLTagAdd("./master/group/[@ns='sierra']",
-                                          "param",
-                                          {
-                                              'name': 'experiment/n_robots',
-                                              'value': str(s)
-                                          },
-                                          False))
+                exp_adds.append(xml.TagAdd(".",
+                                           "master",
+                                           {},
+                                           True))
+                exp_adds.append(xml.TagAdd("./master",
+                                           "group",
+                                           {
+                                               'ns': 'sierra'
+                                           },
+                                           False))
+                exp_adds.append(xml.TagAdd("./master/group/[@ns='sierra']",
+                                           "param",
+                                           {
+                                               'name': 'experiment/n_robots',
+                                               'value': str(s)
+                                           },
+                                           False))
 
                 for i in range(0, s):
 
@@ -118,20 +118,20 @@ class PopulationSize(population_size.BasePopulationSize):
                     pos_i = (pos_i + 1) % len(self.positions)
                     spawn_cmd_args = f"-urdf -model {model}_{ns} -x {pos.x} -y {pos.y} -z {pos.z} -param robot_description"
 
-                    exp_adds.append(XMLTagAdd("./robot",
-                                              "group",
-                                              {
-                                                  'ns': ns
-                                              },
-                                              True))
+                    exp_adds.append(xml.TagAdd("./robot",
+                                               "group",
+                                               {
+                                                   'ns': ns
+                                               },
+                                               True))
 
-                    exp_adds.append(XMLTagAdd(f"./robot/group/[@ns='{ns}']",
-                                              "param",
-                                              {
-                                                  "name": "tf_prefix",
-                                                  "value": ns
-                                              },
-                                              True))
+                    exp_adds.append(xml.TagAdd(f"./robot/group/[@ns='{ns}']",
+                                               "param",
+                                               {
+                                                   "name": "tf_prefix",
+                                                   "value": ns
+                                               },
+                                               True))
 
                     # These two tag adds are OK to use because:
                     #
@@ -140,23 +140,23 @@ class PopulationSize(population_size.BasePopulationSize):
                     #
                     # - All robots in Gazebo will provide a robot description
                     #   .urdf.xacro per ROS naming conventions
-                    exp_adds.append(XMLTagAdd(f"./robot/group/[@ns='{ns}']",
-                                              "param",
-                                              {
-                                                  "name": "robot_description",
-                                                  "command": desc_cmd
-                                              },
-                                              True))
+                    exp_adds.append(xml.TagAdd(f"./robot/group/[@ns='{ns}']",
+                                               "param",
+                                               {
+                                                   "name": "robot_description",
+                                                   "command": desc_cmd
+                                               },
+                                               True))
 
-                    exp_adds.append(XMLTagAdd(f"./robot/group/[@ns='{ns}']",
-                                              "node",
-                                              {
-                                                  "name": "spawn_urdf",
-                                                  "pkg": "gazebo_ros",
-                                                  "type": "spawn_model",
-                                                  "args": spawn_cmd_args
-                                              },
-                                              True))
+                    exp_adds.append(xml.TagAdd(f"./robot/group/[@ns='{ns}']",
+                                               "node",
+                                               {
+                                                   "name": "spawn_urdf",
+                                                   "pkg": "gazebo_ros",
+                                                   "type": "spawn_model",
+                                                   "args": spawn_cmd_args
+                                               },
+                                               True))
 
                 self.tag_adds.append(exp_adds)
 

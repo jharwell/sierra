@@ -29,7 +29,7 @@ import implements
 # Project packages
 from sierra.core.variables.base_variable import IBaseVariable
 from sierra.core.utils import ArenaExtent
-from sierra.core.xml import XMLAttrChangeSet, XMLTagRmList, XMLTagAddList, XMLTagRm, XMLTagAdd
+from sierra.core.experiment import xml
 from sierra.core import types, config
 from sierra.core.vector import Vector3D
 import sierra.plugins.platform.argos.variables.exp_setup as exp
@@ -64,42 +64,42 @@ class QTCameraTimeline():
         self.cmdline = cmdline
         self.extents = extents
         self.setup = setup
-        self.tag_adds = []  # type: tp.List[XMLTagAddList]
+        self.tag_adds = []  # type: tp.List[xml.TagAddList]
 
-    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
+    def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
         """
         Does nothing because all tags/attributes are either deleted or added.
         """
         return []
 
-    def gen_tag_rmlist(self) -> tp.List[XMLTagRmList]:
+    def gen_tag_rmlist(self) -> tp.List[xml.TagRmList]:
         """
         Removing the ``<camera>`` tag if it exists may be desirable so an option
         is provided to do so. Obviously you *must* call this function BEFORE
         adding new definitions.
 
         """
-        return [XMLTagRmList(XMLTagRm("./visualization/qt-opengl", "camera"))]
+        return [xml.TagRmList(xml.TagRm("./visualization/qt-opengl", "camera"))]
 
-    def gen_tag_addlist(self) -> tp.List[XMLTagAddList]:
+    def gen_tag_addlist(self) -> tp.List[xml.TagAddList]:
         if not self.tag_adds:
-            adds = XMLTagAddList(XMLTagAdd('./visualization/qt-opengl',
-                                           'camera',
-                                           {},
-                                           False),
-                                 XMLTagAdd("./visualization/qt-opengl/camera",
-                                           "placements",
-                                           {},
-                                           False))
+            adds = xml.TagAddList(xml.TagAdd('./visualization/qt-opengl',
+                                             'camera',
+                                             {},
+                                             False),
+                                  xml.TagAdd("./visualization/qt-opengl/camera",
+                                             "placements",
+                                             {},
+                                             False))
 
             in_ticks = self.setup.n_secs_per_run * \
                 config.kARGoS['n_ticks_per_sec']
-            adds.append(XMLTagAdd('.//qt-opengl/camera',
-                                  'timeline',
-                                  {
-                                      'loop': str(in_ticks)
-                                  },
-                                  False))
+            adds.append(xml.TagAdd('.//qt-opengl/camera',
+                                   'timeline',
+                                   {
+                                       'loop': str(in_ticks)
+                                   },
+                                   False))
 
             if self.cmdline in ['sierra.sw', 'sierra.sw+interp']:
                 n_cameras = self.kARGOS_N_CAMERAS
@@ -117,15 +117,15 @@ class QTCameraTimeline():
                                                         n_cameras))
 
                 for index, up, look_at, pos in info:
-                    camera = XMLTagAdd('.//camera/placements',
-                                       'placement',
-                                       {
-                                           'index': f"{index}",
-                                           'up': f"{up.x},{up.y},{up.z}",
-                                           'position': f"{pos.x},{pos.y},{pos.z}",
-                                           'look_at': f"{look_at.x},{look_at.y},{look_at.z}",
-                                       },
-                                       True)
+                    camera = xml.TagAdd('.//camera/placements',
+                                        'placement',
+                                        {
+                                            'index': f"{index}",
+                                            'up': f"{up.x},{up.y},{up.z}",
+                                            'position': f"{pos.x},{pos.y},{pos.z}",
+                                            'look_at': f"{look_at.x},{look_at.y},{look_at.z}",
+                                        },
+                                        True)
                     adds.append(camera)
 
             self.tag_adds = [adds]
@@ -136,24 +136,24 @@ class QTCameraTimeline():
         pass
 
     def _gen_keyframes(self,
-                       adds: XMLTagAddList,
+                       adds: xml.TagAddList,
                        n_cameras: int,
                        cycle_length: int) -> None:
         for c in range(0, n_cameras):
             index = c % n_cameras
-            adds.append(XMLTagAdd('.//qt-opengl/camera/timeline',
-                                  'keyframe',
-                                  {
-                                      'placement': str(index),
-                                      'step': str(int(cycle_length / n_cameras * c))
-                                  },
-                                  True
-                                  ))
+            adds.append(xml.TagAdd('.//qt-opengl/camera/timeline',
+                                   'keyframe',
+                                   {
+                                       'placement': str(index),
+                                       'step': str(int(cycle_length / n_cameras * c))
+                                   },
+                                   True
+                                   ))
             if self.interpolate and c < n_cameras:
-                adds.append(XMLTagAdd('.//qt-opengl/camera/timeline',
-                                      'interpolate',
-                                      {},
-                                      True))
+                adds.append(xml.TagAdd('.//qt-opengl/camera/timeline',
+                                       'interpolate',
+                                       {},
+                                       True))
 
     def _gen_camera_config(self,
                            ext: ArenaExtent,
@@ -197,47 +197,47 @@ class QTCameraOverhead():
     def __init__(self,
                  extents: tp.List[ArenaExtent]) -> None:
         self.extents = extents
-        self.tag_adds = []  # type: tp.List[XMLTagAddList]
+        self.tag_adds = []  # type: tp.List[xml.TagAddList]
 
-    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
+    def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
         """
         Does nothing because all tags/attributes are either deleted or added.
         """
         return []
 
-    def gen_tag_rmlist(self) -> tp.List[XMLTagRmList]:
+    def gen_tag_rmlist(self) -> tp.List[xml.TagRmList]:
         """
         Removing the ``<camera>`` tag if it exists may be desirable so an option
         is provided to do so. Obviously you *must* call this function BEFORE
         adding new definitions.
 
         """
-        return [XMLTagRmList(XMLTagRm("./visualization/qt-opengl", "camera"))]
+        return [xml.TagRmList(xml.TagRm("./visualization/qt-opengl", "camera"))]
 
-    def gen_tag_addlist(self) -> tp.List[XMLTagAddList]:
+    def gen_tag_addlist(self) -> tp.List[xml.TagAddList]:
         if not self.tag_adds:
-            adds = XMLTagAddList(XMLTagAdd('./visualization/qt-opengl',
-                                           'camera',
-                                           {},
-                                           False),
-                                 XMLTagAdd("./visualization/qt-opengl/camera",
-                                           "placements",
-                                           {},
-                                           False))
+            adds = xml.TagAddList(xml.TagAdd('./visualization/qt-opengl',
+                                             'camera',
+                                             {},
+                                             False),
+                                  xml.TagAdd("./visualization/qt-opengl/camera",
+                                             "placements",
+                                             {},
+                                             False))
 
             for ext in self.extents:
                 height = max(ext.xsize(), ext.ysize()) * 0.75
-                camera = XMLTagAdd('.//camera/placements',
-                                   'placement',
-                                   {
-                                       'index': '0',
-                                       'position': "{0}, {1}, {2}".format(ext.xsize() / 2.0,
-                                                                          ext.ysize() / 2.0,
-                                                                          height),
-                                       'look_at': "{0}, {1}, 0".format(ext.xsize() / 2.0,
-                                                                       ext.ysize() / 2.0),
-                                   },
-                                   True)
+                camera = xml.TagAdd('.//camera/placements',
+                                    'placement',
+                                    {
+                                        'index': '0',
+                                        'position': "{0}, {1}, {2}".format(ext.xsize() / 2.0,
+                                                                           ext.ysize() / 2.0,
+                                                                           height),
+                                        'look_at': "{0}, {1}, 0".format(ext.xsize() / 2.0,
+                                                                        ext.ysize() / 2.0),
+                                    },
+                                    True)
                 adds.append(camera)
             self.tag_adds = [adds]
 

@@ -23,7 +23,7 @@ import implements
 # Project packages
 from sierra.core.variables.base_variable import IBaseVariable
 from sierra.core.utils import ArenaExtent
-from sierra.core.xml import XMLAttrChange, XMLAttrChangeSet, XMLTagRmList, XMLTagAddList
+from sierra.core.experiment import xml
 
 kWALL_WIDTH = 0.4
 
@@ -43,9 +43,9 @@ class ArenaShape():
 
     def __init__(self, extents: tp.List[ArenaExtent]) -> None:
         self.extents = extents
-        self.attr_changes = []  # type: tp.List[XMLAttrChangeSet]
+        self.attr_changes = []  # type: tp.List[xml.AttrChangeSet]
 
-    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
+    def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
         """Generate list of sets of changes necessary to make to the input file to
         correctly set up the simulation with the specified arena.
 
@@ -56,20 +56,20 @@ class ArenaShape():
 
         return self.attr_changes
 
-    def _gen_chgs_for_extent(self, extent: ArenaExtent) -> XMLAttrChangeSet:
+    def _gen_chgs_for_extent(self, extent: ArenaExtent) -> xml.AttrChangeSet:
 
         xsize = extent.xsize()
         ysize = extent.ysize()
         zsize = extent.zsize()
 
-        chgs = XMLAttrChangeSet(XMLAttrChange(".//arena",
-                                              "size",
-                                              f"{xsize},{ysize},{zsize}"),
-                                XMLAttrChange(".//arena",
-                                              "center",
-                                              "{0:.9f},{1:.9f},{2}".format(xsize / 2.0,
-                                                                           ysize / 2.0,
-                                                                           zsize / 2.0)))
+        chgs = xml.AttrChangeSet(xml.AttrChange(".//arena",
+                                                "size",
+                                                f"{xsize},{ysize},{zsize}"),
+                                 xml.AttrChange(".//arena",
+                                                "center",
+                                                "{0:.9f},{1:.9f},{2}".format(xsize / 2.0,
+                                                                             ysize / 2.0,
+                                                                             zsize / 2.0)))
 
         # We restrict the places robots can spawn within the arena as follows:
         #
@@ -80,27 +80,34 @@ class ArenaShape():
         #   being near arena boundaries on the first timestep.
         #
         # - All robots start on the ground with Z=0.
-        chgs.add(XMLAttrChange(".//arena/distribute/position",
-                               "max",
-                               "{0:.9f}, {1:.9f}, 0".format(xsize - 2.0 * kWALL_WIDTH - 2.0,
-                                                            ysize - 2.0 * kWALL_WIDTH - 2.0)))
-        chgs.add(XMLAttrChange(".//arena/distribute/position",
-                               "min",
-                               "{0:.9f}, {1:.9f}, 0".format(2.0 * kWALL_WIDTH + 2.0, 2.0 * kWALL_WIDTH + 2.0)))
+        chgs.add(xml.AttrChange(".//arena/distribute/position",
+                                "max",
+                                "{0:.9f}, {1:.9f}, 0".format(xsize - 2.0 * kWALL_WIDTH - 2.0,
+                                                             ysize - 2.0 * kWALL_WIDTH - 2.0)))
+        chgs.add(xml.AttrChange(".//arena/distribute/position",
+                                "min",
+                                "{0:.9f}, {1:.9f}, 0".format(2.0 * kWALL_WIDTH + 2.0, 2.0 * kWALL_WIDTH + 2.0)))
 
-        chgs.add(XMLAttrChange(".//arena/*[@id='wall_north']",
-                               "size",
-                               "{0:.9f}, {1:.9f}, 0.5".format(xsize, kWALL_WIDTH)))
+        chgs.add(xml.AttrChange(".//arena/*[@id='wall_north']",
+                                "size",
+                                "{0:.9f}, {1:.9f}, 0.5".format(xsize, kWALL_WIDTH)))
 
-        chgs.add(XMLAttrChange(".//arena/*[@id='wall_north']/body",
-                               "position",
-                               "{0:.9f}, {1:.9f}, 0".format(xsize / 2.0, ysize)))
-        chgs.add(XMLAttrChange(".//arena/*[@id='wall_south']",
-                               "size",
-                               "{0:.9f}, {1:.9f}, 0.5".format(xsize, kWALL_WIDTH)))
-        XMLAttrChange(".//arena/*[@id='wall_south']/body",
-                      "position",
-                      "{0:.9f}, 0, 0 ".format(xsize / 2.0)),
+        chgs.add(xml.AttrChange(".//arena/*[@id='wall_north']/body",
+                                "position",
+                                "{0:.9f}, {1:.9f}, 0".format(xsize / 2.0, ysize)))
+        chgs.add(xml.AttrChange(".//arena/*[@id='wall_south']",
+                                "size",
+                                "{0:.9f}, {1:.9f}, 0.5".format(xsize, kWALL_WIDTH)))
+
+        chgs.add(xml.AttrChange(".//arena/*[@id='wall_north']/body",
+                                "position",
+                                "{0:.9f}, {1:.9f}, 0".format(xsize / 2.0, ysize)))
+        chgs.add(xml.AttrChange(".//arena/*[@id='wall_south']",
+                                "size",
+                                "{0:.9f}, {1:.9f}, 0.5".format(xsize, kWALL_WIDTH)))
+        xml.AttrChange(".//arena/*[@id='wall_south']/body",
+                       "position",
+                       "{0:.9f}, 0, 0 ".format(xsize / 2.0)),
 
         # East wall needs to have its X coordinate offset by the width of the
         # wall / 2 in order to be centered on the boundary for the arena. This
@@ -109,29 +116,29 @@ class ArenaShape():
         # along the east wall.
         #
         # I think this is a bug in ARGoS.
-        chgs.add(XMLAttrChange(".//arena/*[@id='wall_east']",
-                               "size",
-                               "{0:.9f}, {1:.9f}, 0.5".format(kWALL_WIDTH,
-                                                              ysize + kWALL_WIDTH)))
-        chgs.add(XMLAttrChange(".//arena/*[@id='wall_east']/body",
-                               "position",
-                               "{0:.9f}, {1:.9f}, 0".format(xsize - kWALL_WIDTH / 2.0,
-                                                            ysize / 2.0)))
+        chgs.add(xml.AttrChange(".//arena/*[@id='wall_east']",
+                                "size",
+                                "{0:.9f}, {1:.9f}, 0.5".format(kWALL_WIDTH,
+                                                               ysize + kWALL_WIDTH)))
+        chgs.add(xml.AttrChange(".//arena/*[@id='wall_east']/body",
+                                "position",
+                                "{0:.9f}, {1:.9f}, 0".format(xsize - kWALL_WIDTH / 2.0,
+                                                             ysize / 2.0)))
 
-        chgs.add(XMLAttrChange(".//arena/*[@id='wall_west']",
-                               "size",
-                               "{0:.9f}, {1:.9f}, 0.5".format(kWALL_WIDTH,
-                                                              ysize + kWALL_WIDTH)))
-        chgs.add(XMLAttrChange(".//arena/*[@id='wall_west']/body",
-                               "position",
-                               "0, {0:.9f}, 0".format(ysize / 2.0)))
+        chgs.add(xml.AttrChange(".//arena/*[@id='wall_west']",
+                                "size",
+                                "{0:.9f}, {1:.9f}, 0.5".format(kWALL_WIDTH,
+                                                               ysize + kWALL_WIDTH)))
+        chgs.add(xml.AttrChange(".//arena/*[@id='wall_west']/body",
+                                "position",
+                                "0, {0:.9f}, 0".format(ysize / 2.0)))
 
         return chgs
 
-    def gen_tag_rmlist(self) -> tp.List[XMLTagRmList]:
+    def gen_tag_rmlist(self) -> tp.List[xml.TagRmList]:
         return []
 
-    def gen_tag_addlist(self) -> tp.List[XMLTagAddList]:
+    def gen_tag_addlist(self) -> tp.List[xml.TagAddList]:
         return []
 
     def gen_files(self) -> None:
@@ -141,6 +148,4 @@ class ArenaShape():
 __api__ = [
     'kWALL_WIDTH',
     'ArenaShape',
-
-
 ]

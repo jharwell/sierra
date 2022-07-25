@@ -38,8 +38,7 @@ additional files can be included.
 
       import implements
 
-      from sierra.core import xml
-      from sierra.core.experiment import bindings
+      from sierra.core.experiment import bindings, xml, definition
 
       @implements.implements(bindings.IParsedCmdlineConfigurer)
       class CmdlineParserGenerator():
@@ -91,8 +90,8 @@ additional files can be included.
         :class:`~sierra.core.experiment.bindings.IExpRunConfigurer`.
         """
 
-      def population_size_from_pickle(def: tp.Union[xml.XMLAttrChangeSet,
-                                                    xml.XMLTagAddList]) -> int:
+      def population_size_from_pickle(def: tp.Union[xml.AttrChangeSet,
+                                                    xml.TagAddList]) -> int:
         """
         During stage 5, there is no way for SIERRA to know how many robots
         were used in a cross-platform way, because different platforms can
@@ -107,7 +106,7 @@ additional files can be included.
             if path == ".//system" and attr == "size":
                 return int(value)
 
-      def population_size_from_def(exp_def: xml.XMLLuigi) -> int:
+      def population_size_from_def(exp_def: definition.XMLExpDef) -> int:
         """
         During stage 2, on some platforms (e.g., ROS) you need to be able to
         extract the # of robots that will be used for a given
@@ -221,6 +220,8 @@ additional files can be included.
 
    .. code-block:: python
 
+      from sierra.core.experiment import definition
+
       class PlatformExpDefGenerator():
           """
           Create an experiment definition from the
@@ -244,7 +245,7 @@ additional files can be included.
                        **kwargs) -> None:
               pass
 
-          def generate(self) -> XMLLuigi:
+          def generate(self) -> definition.XMLExpDef:
               pass
 
        class PlatformExpRunDefUniqueGenerator:

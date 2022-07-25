@@ -1,13 +1,11 @@
 .. _ln-sierra-roadmap:
 
-==============
-SIERRA Roadmap
-==============
+===================
+Development Roadmap
+===================
 
 This page shows a brief overview of some of the ways I think SIERRA could be
-improved. Big picture stuff, not "add more unit tests".  Basically a place to
-put stuff I want to add someday so I don't forget.
-
+improved. Big picture stuff, not "add more unit tests".
 
 Supporting ROS2
 ===============
