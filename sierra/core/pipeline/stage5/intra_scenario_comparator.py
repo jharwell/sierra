@@ -14,8 +14,9 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""Classes for handling univariate and bivariate controller comparisons within
-a set of scenarios for stage5 of the experimental pipeline.
+"""Classes for comparing deliverables within the same scenario.
+
+Univariate and bivariate batch criteria.
 
 """
 
@@ -50,6 +51,7 @@ class UnivarIntraScenarioComparator:
     Univariate batch criteria only.
 
     Attributes:
+
         controllers: List of controller names to compare.
 
         cc_csv_root: Absolute directory path to the location controller CSV
@@ -119,10 +121,11 @@ class UnivarIntraScenarioComparator:
                                     self.cli_args.batch_criteria)
 
     def _leaf_select(self, candidate: str) -> bool:
-        """Select which scenario to compare controllers within. You can only
-        compare controllers within the scenario directly generated from the
-        value of ``--batch-criteria``; other scenarios will (probably) cause
-        file not found errors.
+        """Determine if a controller can be included in the comparison for a scenario.
+
+        You can only compare controllers within the scenario directly generated
+        from the value of ``--batch-criteria``; other scenarios will (probably)
+        cause file not found errors.
 
         """
         template_stem, scenario, _ = rdg.parse_batch_leaf(candidate)
@@ -193,8 +196,9 @@ class UnivarIntraScenarioComparator:
                  src_stem: str,
                  dest_stem: str,
                  inc_exps: tp.Optional[str]) -> None:
-        """Helper function for generating a set of .csv files for use in intra-scenario
-        graph generation (1 per controller).
+        """Generate a set of CSV files for use in intra-scenario graph generation.
+
+        1 CSV per controller.
 
         """
         self.logger.debug("Gathering data for '%s' from %s -> %s",
@@ -226,11 +230,7 @@ class UnivarIntraScenarioComparator:
                    label: str,
                    inc_exps: tp.Optional[str],
                    legend: tp.List[str]) -> None:
-        """Generates a :class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`
-        comparing the specified controllers within the specified scenario after
-        input files have been gathered from each controller into
-        :attr:`cc_csv_root`.
-
+        """Generate a graph comparing the specified controllers within a scenario.
         """
         opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, None)
 
@@ -270,6 +270,7 @@ class BivarIntraScenarioComparator:
     Bivariate batch criteria only.
 
     Attributes:
+
         controllers: List of controller names to compare.
 
         cc_csv_root: Absolute directory path to the location controller CSV
@@ -341,10 +342,11 @@ class BivarIntraScenarioComparator:
                                     self.cli_args.batch_criteria)
 
     def _leaf_select(self, candidate: str) -> bool:
-        """Select which scenario to compare controllers within. You can only compare
-        controllers within the scenario directly generated from the value of
-        ``--batch-criteria``; other scenarios will (probably) cause file not
-        found errors.
+        """Determine if a controller can be included in the comparison for a scenario.
+
+        You can only compare controllers within the scenario directly generated
+        from the value of ``--batch-criteria``; other scenarios will (probably)
+        cause file not found errors.
 
         """
         template_stem, scenario, _ = rdg.parse_batch_leaf(candidate)
@@ -359,9 +361,9 @@ class BivarIntraScenarioComparator:
                              batch_leaf: str,
                              legend: tp.List[str],
                              comp_type: str) -> None:
-        """Compares all controllers within the specified scenario, generating CSV
-        files and graphs according to configuration.
+        """Compare all controllers within the specified scenario.
 
+        Generates CSV files and graphs according to configuration.
         """
         for controller in self.controllers:
             dirs = [d for d in os.listdir(os.path.join(self.cmdopts['sierra_root'],
@@ -447,11 +449,12 @@ class BivarIntraScenarioComparator:
                                controller: str,
                                src_stem: str,
                                dest_stem: str) -> None:
-        """Helper function for generating a set of .csv files for use in intra-scenario
-        graph generation (1 per controller) for 2D/3D comparison types. Because
-        each CSV file corresponding to performance measures are 2D arrays,
-        we actually just copy and rename the performance measure CSV files
-        for each controllers into :attr:`cc_csv_root`.
+        """Generate a set of CSV files for use in intra-scenario graph generation.
+
+        1 CSV per controller, for 2D/3D comparison types only. Because each CSV
+        file corresponding to performance measures are 2D arrays, we actually
+        just copy and rename the performance measure CSV files for each
+        controllers into :attr:`cc_csv_root`.
 
         :class:`~sierra.core.graphs.stacked_surface_graph.StackedSurfaceGraph`
         expects an ``_[0-9]+.csv`` pattern for each 2D surfaces to graph in
@@ -497,11 +500,11 @@ class BivarIntraScenarioComparator:
                          dest_stem: str,
                          primary_axis: int,
                          inc_exps: tp.Optional[str]) -> None:
-        """Helper function for generating a set of .csv files for use in intra-scenario
-        graph generation. Because we are targeting linegraphs, we draw the the
-        i-th row/col (as configured) from the performance results of each
-        controller .csv, and concatenate them into a new .csv file which can be
-        given to
+        """Generate a set of CSV files for use in intra-scenario graph generation.
+
+        Because we are targeting linegraphs, we draw the the i-th row/col (as
+        configured) from the performance results of each controller .csv, and
+        concatenate them into a new .csv file which can be given to
         :class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`.
 
         """
@@ -645,12 +648,12 @@ class BivarIntraScenarioComparator:
                              title: str,
                              label: str,
                              comp_type: str) -> None:
-        """
-        Generates a set of :class:`~sierra.core.graphs.heatmap.Heatmap` graphs a
-        controller of primary interest against all other controllers (one graph
-        per pairing), after input files have been gathered from each controller
-        into :attr:`cc_csv_root`. Only valid if the comparison type is
-        ``scale2D`` or ``diff2D``.
+        """Generate a set of :class:`~sierra.core.graphs.heatmap.Heatmap` graphs.
+
+        Uses a configured controller of primary interest against all other
+        controllers (one graph per pairing), after input files have been
+        gathered from each controller into :attr:`cc_csv_root`. Only valid if
+        the comparison type is ``scale2D`` or ``diff2D``.
 
         """
         opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, None)
@@ -708,12 +711,12 @@ class BivarIntraScenarioComparator:
                            label: str,
                            legend: tp.List[str],
                            comp_type: str) -> None:
-        """
-        Generates a set of :class:`~sierra.core.graphs.heatmap.DualHeatmap` graphs
-        containing all pairs of (primary controller, other), one per graph,
-        within the specified scenario after input files have been gathered from
-        each controller into :attr:`cc_csv_root`. Only valid if the comparison
-        type is ``HMraw``.
+        """Generate a set of :class:`~sierra.core.graphs.heatmap.DualHeatmap` graphs.
+
+        Graphs contain all pairings of (primary controller, other), one per
+        graph, within the specified scenario after input files have been
+        gathered from each controller into :attr:`cc_csv_root`. Only valid if
+        the comparison type is ``HMraw``.
 
         """
 
@@ -753,10 +756,10 @@ class BivarIntraScenarioComparator:
                      zlabel: str,
                      legend: tp.List[str],
                      comp_type: str) -> None:
-        """Generates a
-        :class:`~sierra.core.graphs.stacked_surface_graph.StackedSurfaceGraph`
-        comparing the specified controllers within thespecified scenario after
-        input files have been gathered from each controllers into
+        """Generate a graph comparing the specified controllers within a scenario.
+
+        Graph contains the specified controllers within thes pecified scenario
+        after input files have been gathered from each controllers into
         :attr:`cc_csv_root`.
 
         """
@@ -778,9 +781,8 @@ class BivarIntraScenarioComparator:
                             comp_type=comp_type).generate()
 
     def _gen_zaxis_label(self, label: str, comp_type: str) -> str:
-        """
-        If we are doing something other than raw controller comparisons, put that on the graph
-        Z axis title.
+        """If the comparison type is not "raw", put it on the graph as Z axis title.
+
         """
         if 'scale' in comp_type:
             return label + ' (Scaled)'
@@ -813,11 +815,12 @@ class StatsPreparer():
                     all_cols: tp.List[str],
                     col_index: int,
                     inc_exps: tp.Optional[str]) -> None:
-        """
-        The criteria of interest varies across the rows of controller .csvs. We take
-        row `index` from a given dataframe and take the rows specified by the
-        `inc_exps` and append them to a results dataframe column-wise, which we
-        then write the file system.
+        """Prepare statistics in column-major batch criteria.
+
+        The criteria of interest varies across the rows of controller CSVs.  We
+        take row `index` from a given dataframe and take the rows specified by
+        the `inc_exps` and append them to a results dataframe column-wise, which
+        we then write the file system.
 
         """
         for k in config.kStatsExt.keys():
@@ -829,19 +832,21 @@ class StatsPreparer():
                 stat_ipath, stat_opath, all_cols, col_index, inc_exps)
 
             if df is not None:
-                storage.DataFrameWriter('storage.csv')(df,
-                                                       os.path.join(self.opath_stem,
-                                                                    opath_leaf + config.kStatsExt[k]),
-                                                       index=False)
+                writer = storage.DataFrameWriter('storage.csv')
+                opath = os.path.join(self.opath_stem,
+                                     opath_leaf + config.kStatsExt[k])
+                writer(df, opath, index=False)
 
     def across_rows(self,
                     opath_leaf: str,
                     index: int,
                     inc_exps: tp.Optional[str]) -> None:
-        """The criteria of interest varies across the columns of controller .csvs. We
-        take row `index` from a given dataframe and take the columns specified
-        by the `inc_exps` and append them to a results dataframe row-wise, which
-        we then write the file system.
+        """Prepare statistics in row-major batch criteria.
+
+        The criteria of interest varies across the columns of controller
+        CSVs. We take row `index` from a given dataframe and take the columns
+        specified by the `inc_exps` and append them to a results dataframe
+        row-wise, which we then write the file system.
 
         """
         for k in config.kStatsExt.keys():

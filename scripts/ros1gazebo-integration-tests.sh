@@ -4,7 +4,13 @@
 # Setup Environment
 ################################################################################
 export SIERRA_ROOT=$HOME/test
-export SAMPLE_ROOT=$HOME/work/sierra-sample-project
+
+if [ "$GITHUB_ACTIONS" = true ]; then
+    export SAMPLE_ROOT=$HOME/work/sierra-sample-project
+else
+    export SAMPLE_ROOT=$HOME/git/sierra-sample-project
+fi
+
 export SIERRA_PLUGIN_PATH=$SAMPLE_ROOT/projects
 export SIERRA_ROSBRIDGE_INSTALL_PREFIX=$HOME/.local
 
@@ -59,8 +65,6 @@ batch_criteria_test() {
 ################################################################################
 # Run Tests
 ################################################################################
-set -e
-
 # Exit anytime SIERRA crashes or a command fails
 set -e
 

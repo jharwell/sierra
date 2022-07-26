@@ -13,9 +13,8 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-Custom types defined by SIERRA for more readable type hints/better static
-analysis.
+"""Custom types defined by SIERRA for more readable type hints.
+
 """
 # Core packages
 import typing as tp

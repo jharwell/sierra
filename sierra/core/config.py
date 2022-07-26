@@ -21,37 +21,49 @@ Contains all SIERRA hard-coded configuration in one place.
 import logging
 
 # 3rd party packages
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 
 # Project packages
 
 ################################################################################
 # Matplotlib Configuration
 ################################################################################
-mpl.rcParams['lines.linewidth'] = 3
-mpl.rcParams['lines.markersize'] = 10
-mpl.rcParams['figure.max_open_warning'] = 10000
-mpl.rcParams['axes.formatter.limits'] = (-4, 4)
 
-# Use latex to render all math, so that it matches how the math renders in
-# papers.
-mpl.rcParams['text.usetex'] = True
 
-# Turn off MPL messages when the log level is set to DEBUG or higher. Otherwise
-# you get HUNDREDS.
-logging.getLogger('matplotlib').setLevel(logging.WARNING)
-logging.getLogger('PIL').setLevel(logging.WARNING)
+def mpl_init():
+    # Turn off MPL messages when the log level is set to DEBUG or
+    # higher. Otherwise you get HUNDREDS. Must be before import to suppress
+    # messages which occur during import.
+    logging.getLogger('matplotlib').setLevel(logging.WARNING)
+    logging.getLogger('PIL').setLevel(logging.WARNING)
 
-# Set MPL backend (headless for non-interactive use)
-mpl.use('Agg')
+    import matplotlib as mpl
 
-# Set MPL style
-plt.style.use('seaborn-colorblind')
+    mpl.rcParams['lines.linewidth'] = 3
+    mpl.rcParams['lines.markersize'] = 10
+    mpl.rcParams['figure.max_open_warning'] = 10000
+    mpl.rcParams['axes.formatter.limits'] = (-4, 4)
+
+    # Use latex to render all math, so that it matches how the math renders in
+    # papers.
+    mpl.rcParams['text.usetex'] = True
+
+    # Set MPL backend (headless for non-interactive use). Must be BEFORE
+    # importing pyplot reduce import loading time.
+    mpl.use('agg')
+
+    import matplotlib.pyplot as plt
+
+    # Set MPL style
+    plt.style.use('seaborn-colorblind')
+
+
+# Actually initialize matplotlib
+mpl_init()
 
 ################################################################################
 # General Configuration
 ################################################################################
+
 
 kImageExt = '.png'
 

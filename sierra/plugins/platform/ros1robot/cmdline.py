@@ -30,9 +30,8 @@ import sierra.core.cmdline as cmd
 
 
 class PlatformCmdline(cmd.BaseCmdline):
-    """
-    Defines :term:`ROS1` extensions to the core command line arguments defined
-    in :class:`~sierra.core.cmdline.CoreCmdline`.
+    """Defines :term:`ROS1` extensions to :class:`~sierra.core.cmdline.CoreCmdline`.
+
     """
 
     def __init__(self,
@@ -153,9 +152,7 @@ class PlatformCmdline(cmd.BaseCmdline):
 
     @staticmethod
     def cmdopts_update(cli_args, cmdopts: types.Cmdopts) -> None:
-        """
-        Updates the core cmdopts dictionary with (key,value) pairs from the
-        ROS1+robot-specific cmdline options.
+        """Update cmdopts with ROS1+robot-specific cmdline options.
 
         """
         ros1.cmdline.ROSCmdline.cmdopts_update(cli_args, cmdopts)

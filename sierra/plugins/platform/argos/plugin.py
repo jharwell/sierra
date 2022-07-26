@@ -315,7 +315,7 @@ def robot_type_from_def(exp_def: definition.XMLExpDef) -> tp.Optional[str]:
     """
     Get the entity type of the robots managed by ARGoS.
 
-    .. NOTE:: Assumes homgeneous swarms.
+    .. NOTE:: Assumes homgeneous systems.
     """
     for robot in config.kARGoS['spatial_hash2D']:
         if exp_def.has_tag(f'.//arena/distribute/entity/{robot}'):

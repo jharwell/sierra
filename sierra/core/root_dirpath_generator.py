@@ -14,8 +14,7 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""Functions for generating the directory paths for the root directories for a
-single batch experiment.
+"""Functions for generating root directory paths for a batch experiment.
 
 - The batch experiment root. ALL files (inputs and outputs) are written to this
   directory, which will be under ``--sierra-root``. Named using a combination of
@@ -58,31 +57,33 @@ single batch experiment.
   root for their own scratch. This root is separate from experiment inputs to
   make checking for segfaults, tar-ing experiments, etc. easier. Named ``<batch
   experiment root>/scratch``.
+
 """
 # Core packages
 import os
 import typing as tp
 import logging
+import argparse
 
 # 3rd party packages
 
 # Project packages
 
 
-def from_cmdline(args) -> tp.Dict[str, str]:
-    """
-    Generates the directory paths for the root directories for a single batch experiment directly
-    from cmdline arguments.
+def from_cmdline(args: argparse.Namespace) -> tp.Dict[str, str]:
+    """Generate directory paths directly from cmdline arguments.
+
     """
     template_stem, _ = os.path.splitext(
         os.path.basename(args.template_input_file))
 
-    # Remove all '-' from the template input file stem so we know the only '-' that are in it are
-    # ones that we put there.
+    # Remove all '-' from the template input file stem so we know the only '-'
+    # that are in it are ones that we put there.
     template_stem = template_stem.replace('-', '')
 
-    batch_leaf = gen_batch_leaf(
-        args.batch_criteria, template_stem, args.scenario)
+    batch_leaf = gen_batch_leaf(args.batch_criteria,
+                                template_stem,
+                                args.scenario)
 
     return regen_from_exp(args.sierra_root,
                           args.project,
@@ -91,9 +92,11 @@ def from_cmdline(args) -> tp.Dict[str, str]:
 
 
 def parse_batch_leaf(root: str) -> tp.Tuple[str, str, tp.List[str]]:
-    """
-    Parse a batch root into (template input file basename, scenario, batch criteria list) string
-    components as they would have been specified on the cmdline.
+    """Parse a batch root (dirpath leaf).
+
+    Parsed into (template input file basename, scenario, batch criteria list)
+    string components as they would have been specified on the cmdline.
+
     """
     template_stem = ''.join(root.split('-')[0])
     scenario_and_bc = root.split('-')[1].split('+')
@@ -118,18 +121,23 @@ def regen_from_exp(sierra_rpath: str,
                    project: str,
                    batch_leaf: str,
                    controller: str) -> tp.Dict[str, str]:
-    """
-    Re-generates the directory paths for the root directories for a single batch experiment from a
-    previously created batch experiment (i.e. something that was generated with
-    :meth:`from_cmdline()`).
+    """Regenerate directory paths from a previously created batch experiment.
 
     Arguments:
-        sierra_rpath: The path to the root directory where SIERRA should store everything.
+
+        sierra_rpath: The path to the root directory where SIERRA should store
+                      everything.
+
         project: The name of the project plugin used.
-        criteria: List of strings from the cmdline specification of the batch criteria.
-        batch_root: The name of the directory that will be the root of the batch experiment (not
-                    including its parent).
+
+        criteria: List of strings from the cmdline specification of the batch
+                  criteria.
+
+        batch_root: The name of the directory that will be the root of the batch
+                    experiment (not including its parent).
+
         controller: The name of the controller used.
+
     """
     template_stem, scenario, bc = parse_batch_leaf(batch_leaf)
 
@@ -201,12 +209,16 @@ def gen_batch_root(sierra_rpath: str,
                    scenario: str,
                    controller: str,
                    template_stem: str) -> str:
-    """Generate the directory path for the root directory for batch experiments
-    depending on what the batch criteria is. The directory path depends on all
-    of the input arguments to this function, and if ANY of the arguments change,
-    so should the generated path.
+    """Generate the directory path for the batch root directory.
+
+    The directory path depends on all of the input arguments to this function,
+    and if ANY of the arguments change, so will the generated path.
+
+    Batch root is:
+    <sierra_root>/<project>/<template_basename>-<scenario>+<criteria0>+<criteria1>
 
     Arguments:
+
         sierra_rpath: The path to the root directory where SIERRA should store
                       everything.
 
@@ -221,9 +233,6 @@ def gen_batch_root(sierra_rpath: str,
                     experiment (not including its parent).
 
         controller: The name of the controller used.
-
-    Batch root is:
-    <sierra_root>/<project>/<template_basename>-<scenario>+<criteria0>+<criteria1>
 
     """
     batch_leaf = gen_batch_leaf(criteria, template_stem, scenario)

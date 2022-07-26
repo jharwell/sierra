@@ -304,8 +304,8 @@ class PlatformCmdline(cmd.BaseCmdline):
                                         inputs. Otherwise, the following XML
                                         tags are removed if they exist:
 
-                                        - `.//entity/*/battery`
-                                        - `.//sensors/battery`
+                                        - ``.//entity/*/battery``
+                                        - ``.//sensors/battery``
 
                                         """ + self.stage_usage_doc([1]),
                                         action="store_true",
@@ -327,9 +327,7 @@ class PlatformCmdline(cmd.BaseCmdline):
 
     @staticmethod
     def cmdopts_update(cli_args, cmdopts: types.Cmdopts) -> None:
-        """
-        Updates the core cmdopts dictionary with (key,value) pairs from the
-        ARGoS-specific cmdline options.
+        """Update cmdopts with ARGoS-specific cmdline options.
 
         """
         hpc.cmdline.HPCCmdline.cmdopts_update(cli_args, cmdopts)

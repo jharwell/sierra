@@ -14,9 +14,8 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""
-Classes for implementing stage 1 of the experimental pipeline: generating
-experimental inputs.
+"""Stage 1 of the experimental pipeline: generating experimental inputs.
+
 """
 
 # Core packges
@@ -56,7 +55,7 @@ class PipelineStage1:
         self.logger = logging.getLogger(__name__)
 
     def run(self) -> None:
-        """Creates the :term:`Batch Experiment` in the filesystem.
+        """Create the :term:`Batch Experiment` in the filesystem.
 
         The creation process can be summarized as:
 

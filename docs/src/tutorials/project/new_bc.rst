@@ -101,6 +101,7 @@ following to get it to work with SIERRA as a :term:`Batch Criteria`:
                   **kwargs) -> MyVar:
       """
       Arguments:
+
           cli_arg: The string of the your batch criteria/variable you
                    have defined that was passed on the command line via
                    ``--batch-criteria``.

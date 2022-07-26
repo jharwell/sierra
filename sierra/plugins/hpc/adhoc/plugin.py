@@ -13,9 +13,9 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-HPC plugin for running SIERRA with an ad-hoc set of allocated compute nodes
-(e.g., whatever computers you happen to have laying around in the lab).
+"""HPC plugin for running experiments with an ad-hoc set of compute nodes.
+
+E.g., whatever computers you happen to have laying around in the lab.
 
 """
 
@@ -165,7 +165,7 @@ class ExpRunShellCmdsGenerator():
 
 class ExecEnvChecker():
     """
-    Stub implementation
+    Stub implementation.
     """
 
     def __init__(self, cmdopts: types.Cmdopts) -> None:

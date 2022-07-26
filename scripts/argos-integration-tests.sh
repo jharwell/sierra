@@ -4,8 +4,14 @@
 # Setup Environment
 ################################################################################
 export SIERRA_ROOT=$HOME/test
-export SAMPLE_ROOT=$HOME/work/sierra-sample-project
-export ARGOS_INSTALL_PREFIX=/usr/local
+
+if [ "$GITHUB_ACTIONS" = true ]; then
+    export SAMPLE_ROOT=$HOME/work/sierra-sample-project
+    export ARGOS_INSTALL_PREFIX=/usr/local
+else
+    export SAMPLE_ROOT=$HOME/git/sierra-sample-project
+    export ARGOS_INSTALL_PREFIX=/$HOME/.local
+fi
 
 # Set ARGoS library search path. Must contain both the ARGoS core libraries path
 # AND the sample project library path.

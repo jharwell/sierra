@@ -39,6 +39,7 @@ class ARGoSQTHeadlessRendering():
     Sets up ARGoS headless rendering with QT.
 
     Attributes:
+
         tsetup: Simulation time definitions.
 
         extents: List of (X,Y,Zs) tuple of dimensions of area to assign to
@@ -55,15 +56,16 @@ class ARGoSQTHeadlessRendering():
 
     def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
         """
-        Does nothing because all tags/attributes are either deleted or added.
+        No effect.
+
+        All tags/attributes are either deleted or added.
         """
         return []
 
     def gen_tag_rmlist(self) -> tp.List[xml.TagRmList]:
-        """
-        Removing the ``<qt_opengl>`` tag if it exists may be desirable so an
-        option is provided to do so. Obviously you *must* call this function
-        BEFORE adding new definitions.
+        """Remove the ``<qt_opengl>`` tag if it exists.
+
+        Obviously you *must* call this function BEFORE adding new definitions.
 
         """
         return [xml.TagRmList(xml.TagRm("./visualization", "qt-opengl"))]
@@ -102,9 +104,8 @@ class ARGoSQTHeadlessRendering():
 
 
 def factory(cmdopts: types.Cmdopts) -> ARGoSQTHeadlessRendering:
-    """
-    Setups up ARGoS QT headless rendering for a the specified simulation
-    duration.
+    """Set up QT headless rendering for the specified experimental setup.
+
     """
 
     return ARGoSQTHeadlessRendering(exp.factory(cmdopts["exp_setup"]))

@@ -231,6 +231,7 @@ additional files can be included.
           project-specific changes for the platform.
 
           Arguments:
+
               spec: The spec for the experimental run.
               controller: The controller used for the experiment, as passed
                           via ``--controller.
@@ -254,6 +255,7 @@ additional files can be included.
            experiment for the matrix platform.
 
            Arguments:
+
                run_num: The run # in the experiment.
 
                run_output_path: Path to run output directory within

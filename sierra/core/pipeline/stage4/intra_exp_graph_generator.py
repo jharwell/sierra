@@ -15,8 +15,7 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
 """
-Classes for generating graphs within a single :term:`Experiment` in a
-:term:`Batch Experiment`.
+Classes for generating graphs within a single :term:`Experiment`.
 """
 
 # Core packages
@@ -38,11 +37,6 @@ from sierra.core import types, config, utils
 
 
 class BatchIntraExpGraphGenerator:
-    """
-    Generates all intra-experiment graphs for a :term:`Batch Experiment`.
-
-    """
-
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         # Copy because we are modifying it and don't want to mess up the
         # arguments for graphs that are generated after us
@@ -55,7 +49,8 @@ class BatchIntraExpGraphGenerator:
                  LN_config: types.YAMLDict,
                  HM_config: types.YAMLDict,
                  criteria: bc.IConcreteBatchCriteria) -> None:
-        """
+        """Generate all intra-experiment graphs for a :term:`Batch Experiment`.
+
         Parameters:
 
             main_config: Parsed dictionary of main YAML configuration
@@ -71,6 +66,7 @@ class BatchIntraExpGraphGenerator:
 
             criteria:  The :term:`Batch Criteria` used for the batch
                        experiment.
+
         """
         exp_to_gen = utils.exp_range_calc(self.cmdopts,
                                           self.cmdopts['batch_output_root'],
@@ -158,7 +154,9 @@ class IntraExpGraphGenerator:
 
     def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
         """
-        Runs the following to generate graphs for each experiment in the batch:
+        Generate graphs.
+
+        Performs the following steps:
 
         # . :class:`~sierra.core.pipeline.stage4.intra_exp_graph_generator.LinegraphsGenerator`
             to generate linegraphs for each experiment in the batch.
@@ -180,15 +178,14 @@ class IntraExpGraphGenerator:
 
     def calc_targets(self) -> tp.Tuple[tp.List[types.YAMLDict],
                                        tp.List[types.YAMLDict]]:
-        """
-        Use YAML configuration for controller and intra-experiment graphs to
-        calculate what graphs should be generated.
+        """Calculate what intra-experiment graphs should be generated.
 
+        Uses YAML configuration for controller and intra-experiment graphs.
         Returns a tuple of dictionaries: (intra-experiment linegraphs,
-        intra-experiment heatmaps) defined what graphs to generate. The
-        enabled graphs exist in their YAML respective YAML configuration
-        `and` are enabled by the YAML configuration for the selected
-        controller.
+        intra-experiment heatmaps) defined what graphs to generate. The enabled
+        graphs exist in their YAML respective YAML configuration `and` are
+        enabled by the YAML configuration for the selected controller.
+
         """
         keys = []
         for category in list(self.controller_config.keys()):
@@ -220,8 +217,7 @@ class IntraExpGraphGenerator:
 
 class LinegraphsGenerator:
     """
-    Generates linegraphs from :term:`Averaged .csv` files within a single
-    :term:`Experiment`.
+    Generates linegraphs from :term:`Averaged .csv` files within an experiment.
     """
 
     def __init__(self,
@@ -275,8 +271,7 @@ class LinegraphsGenerator:
 
 class HeatmapsGenerator:
     """
-    Generates heatmaps from :term:`Averaged .csv` files for a single
-    :term:`Experiment`.
+    Generates heatmaps from :term:`Averaged .csv` files for a single experiment.
     """
 
     def __init__(self,

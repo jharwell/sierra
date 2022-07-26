@@ -15,9 +15,7 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Classes for generating statistics from all :term:`Experimental Runs
-<Experimental Run>` results within an :term:`Experiment`
-for all experiments in a :term:`Batch Experiment`.
+Classes for generating statistics within and across experiments in a batch.
 """
 
 # Core packages
@@ -54,8 +52,7 @@ class GatherSpec:
 
 
 class BatchExpParallelCalculator:
-    """Averages :term:`Output .csv` files for each experiment in the batch into
-    :term:`Averaged .csv` files.
+    """Process :term:`Output .csv` files for each experiment in the batch.
 
     In parallel for speed.
     """
@@ -134,8 +131,12 @@ class BatchExpParallelCalculator:
         # worker threads. Any assertions will show and any exceptions will be
         # re-raised.
         self.logger.debug("Waiting for workers to finish")
-        [g.get() for g in gathered]
-        [p.get() for p in processed]
+
+        for g in gathered:
+            g.get()
+
+        for p in processed:
+            p.get()
 
         pool.close()
         pool.join()
@@ -206,9 +207,7 @@ class BatchExpParallelCalculator:
 
 
 class ExpCSVGatherer:
-    """Gather all :term:`Output .csv` files from a set of
-    :term:`Experimental Runs<Experimental Run>` within a single
-    :term:`Experiment`.
+    """Gather all :term:`Output .csv` files from all runs within an experiment.
 
     "Gathering" in this context means creating a dictionary mapping which .csv
     came from where, so that statistics can be generated both across and with
@@ -238,7 +237,7 @@ class ExpCSVGatherer:
         self.logger = logging.getLogger(__name__)
 
     def __call__(self, batch_output_root: str, exp_leaf: str) -> None:
-        """Process the CSV files found in the output save path"""
+        """Process the CSV files found in the output save path."""
         exp_output_root = os.path.join(batch_output_root, exp_leaf)
 
         if not self.gather_opts['df_skip_verify']:
@@ -346,8 +345,7 @@ class ExpCSVGatherer:
 
     def _verify_exp_outputs(self, exp_output_root: str) -> None:
         """
-        Verify the integrity of all :term:`Experimental Runs <Experimental Run>`
-        in an :term:`Experiment`.
+        Verify the integrity of all runs in an experiment.
 
         Specifically:
 

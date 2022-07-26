@@ -26,10 +26,10 @@ import typing as tp
 
 
 class Vector3D:
-    """
-    Represents a point in 3D space and/or a directional vector in 3D space.
+    """Represents a point in 3D space and/or a directional vector in 3D space.
 
     """
+
     @staticmethod
     def from_str(s: str, astype=int) -> 'Vector3D':
         return Vector3D(*tuple(map(astype, s.split(','))))
@@ -61,11 +61,8 @@ class Vector3D:
     def __sub__(self, o: 'Vector3D') -> 'Vector3D':
         return Vector3D((self.x - o.x), (self.y - o.y), (self.z - o.z))
 
-    def __mul__(self, o: tp.Union['Vector3D', float, int]) -> 'Vector3D':
-        if isinstance(o, (float, int)):
-            return Vector3D(self.x * o, self.y * o, self.z * o)
-        else:
-            return Vector3D((self.x * o.x) + (self.y * o.y) + (self.z * o.z))
+    def __mul__(self, o: tp.Union[float, int]) -> 'Vector3D':
+        return Vector3D(self.x * o, self.y * o, self.z * o)
 
     def __truediv__(self, o: tp.Union[float, int]) -> 'Vector3D':
         if isinstance(o, (float, int)):
@@ -108,19 +105,26 @@ class Vector3D:
     def __repr__(self) -> str:
         return f'({self.x},{self.y},{self.z})'
 
-    def cross(self, o: 'Vector3D') -> 'Vector3D':
-        return Vector3D(self.y * o.z - self.z * o.y,
-                        self.z * o.x - self.x * o.z,
-                        self.x * o.y - self.y * o.x)
-
     def length(self) -> float:
         return math.sqrt((self.x * self.x) + (self.y * self.y) + (self.z * self.z))
 
+    def cross(self, rhs: 'Vector3D') -> 'Vector3D':
+        return Vector3D(self.y * rhs.z - self.z * rhs.y,
+                        self.z * rhs.x - self.x * rhs.z,
+                        self.x * rhs.y - self.y * rhs.x)
+
+    def dot(self, rhs: 'Vector3D') -> 'Vector3D':
+        return self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
+
     def normalize(self) -> 'Vector3D':
         length = self.length()
-        return Vector3D((self.x / length), (self.y / length), (self.z / length))
+        self.x /= length
+        self.y /= length
+        self.z /= length
 
-    def perpendicularize(self) -> 'Vector3D':
+        return self
+
+    def perpendicularize(self: 'Vector3D') -> 'Vector3D':
         # From
         # https://math.stackexchange.com/questions/137362/how-to-find-perpendicular-vector-to-another-vector
         choice1 = Vector3D(0, self.z, -self.y)

@@ -9,6 +9,9 @@
 - [ ] Test on OSX (reall just getting the python environment setup).
 - [ ] Testing specific command line options
 
+** TODO [#B] Add --version flag
+This really should be there.... And not require a valid --project to be passed.
+
 ** TODO [#A] Add plugin interface for experimental inputs
 - This is needed as part of making SIERRA directly able to support platforms
   which can't take XML as input.

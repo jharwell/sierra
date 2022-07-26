@@ -14,9 +14,11 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""
-Classes for XML experiment definitions: adding/removing tags, modifying
-attributes, configuration for how to write XML files.
+"""Helper classes for XML experiment definitions.
+
+Adding/removing tags, modifying attributes, configuration for how to write XML
+files.
+
 """
 
 # Core packages
@@ -24,6 +26,7 @@ import typing as tp
 import os
 import logging
 import pickle
+import xml.etree.ElementTree as ET
 
 # 3rd party packages
 
@@ -57,7 +60,10 @@ class TagRm():
 
     def __init__(self, path: str, tag: str):
         """
+        Init the object.
+
         Arguments:
+
             path: The path to the **parent** of the tag you want to remove, in
                   XPath syntax.
 
@@ -86,7 +92,10 @@ class TagAdd():
                  attr: dict,
                  allow_dup: bool):
         """
+        Init the object.
+
         Arguments:
+
             path: The path to the **parent** tag you want to add a new tag
                   under, in XPath syntax. If None, then the tag will be added as
                   the root XML tag.
@@ -122,10 +131,9 @@ class AttrChangeSet():
     """
     @staticmethod
     def unpickle(fpath: str) -> 'AttrChangeSet':
-        """
-        Read in all the different sets of parameter changes that were pickled to
-        make crucial parts of the experiment definition easily accessible. You
-        don't know how many there are, so go until you get an exception.
+        """Unpickle XML changes.
+
+        You don't know how many there are, so go until you get an exception.
 
         """
         exp_def = AttrChangeSet()
@@ -222,10 +230,9 @@ class TagAddList():
 
     @staticmethod
     def unpickle(fpath: str) -> tp.Optional['TagAddList']:
-        """
-        Read in all the different sets of parameter changes that were pickled to
-        make crucial parts of the experiment definition easily accessible. You
-        don't know how many there are, so go until you get an exception.
+        """Unpickle XML modifications.
+
+        You don't know how many there are, so go until you get an exception.
 
         """
         exp_def = TagAddList()
@@ -270,8 +277,7 @@ class TagAddList():
 
 
 class WriterConfig():
-    """Config for writing the XML content managed by
-    :class:`~sierra.core.experiment.definition.XMLExpDef`.
+    """Config for writing :class:`~sierra.core.experiment.definition.XMLExpDef`.
 
     Different parts of the XML tree can be written to multiple XML files.
 
@@ -310,6 +316,93 @@ class WriterConfig():
 
     def add(self, value: dict) -> None:
         self.values.append(value)
+
+
+class Writer():
+    """Write the XML experiment to the filesystem according to configuration.
+
+    More than one file may be written, as specified.
+    """
+
+    def __init__(self, tree: ET.ElementTree) -> None:
+        self.tree = tree
+        self.logger = logging.getLogger(__name__)
+
+    def __call__(self, write_config: WriterConfig, base_path: str) -> None:
+        for config in write_config.values:
+            self._write_with_config(base_path, config)
+
+    def _write_with_config(self, base_path: str, config: dict) -> None:
+        tree, src_root, opath = self._write_prepare_tree(base_path, config)
+
+        if tree is None:
+            self.logger.warning("Cannot write non-existent tree@%s to %s",
+                                src_root,
+                                opath)
+            return
+
+        self.logger.trace("Write tree@%s to %s",  # type: ignore
+                          src_root,
+                          opath)
+
+        # Renaming tree root is not required
+        if 'rename_to' in config and config['rename_to'] is not None:
+            tree.tag = config['rename_to']
+            self.logger.trace("Rename tree root -> %s",  # type: ignore
+                              config['rename_to'])
+
+        # Adding tags not required
+        if 'dest_parent' in config and config['dest_parent'] is not None:
+            to_write = ET.ElementTree()
+            if 'create_tags' in config and config['create_tags'] is not None:
+                for spec in config['create_tags']:
+                    if to_write.getroot() is None:
+                        to_write._setroot(ET.Element(spec.tag, spec.attr))
+                    else:
+                        elt = to_write.find(spec.path)
+                        ET.SubElement(elt, spec.tag, spec.attr)
+
+            parent = to_write.getroot().find(config['dest_parent'])
+            parent.append(tree)
+        else:
+            to_write = ET.ElementTree(tree)
+            parent = to_write.getroot()
+
+        # Grafts are not required
+        if 'child_grafts' in config and config['child_grafts'] is not None:
+            dest_root = "{0}/{1}".format(config['dest_parent'],
+                                         config['src_tag'])
+            graft_parent = to_write.getroot().find(dest_root)
+            for g in config['child_grafts']:
+                self.logger.trace("Graft tree@%s as child under %s",  # type: ignore
+                                  g,
+                                  dest_root)
+                elt = tree.root.find(g)
+                graft_parent.append(elt)
+
+        # Write out pretty XML to make it easier to read to see if things
+        # have been generated correctly.
+        ET.indent(to_write, space="\t", level=0)
+        to_write.write(opath, encoding='utf-8')
+
+    def _write_prepare_tree(self,
+                            base_path: str,
+                            config: dict) -> tp.Tuple[ET.Element, str, str]:
+        if config['src_parent'] is None:
+            src_root = config['src_tag']
+        else:
+            src_root = "{0}/{1}".format(config['src_parent'],
+                                        config['src_tag'])
+
+        tree_out = self.tree.getroot().find(src_root)
+
+        # Customizing the output write path is not required
+        if 'opath_leaf' in config and config['opath_leaf'] is not None:
+            opath = base_path + config['opath_leaf']
+        else:
+            opath = base_path
+
+        return (tree_out, src_root, opath)
 
 
 __api__ = [

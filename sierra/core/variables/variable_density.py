@@ -35,6 +35,7 @@ class VariableDensity(UnivarBatchCriteria):
     class which should NEVER be used on its own.
 
     Attributes:
+
         densities: List of densities to use.
 
         dist_type: The type of block distribution to use.
@@ -58,15 +59,17 @@ class VariableDensity(UnivarBatchCriteria):
 
 
 class Parser():
-    """
-    Enforces the cmdline definition of a :class:`VariableDensity` derived batch
-    criteria.
+    """Enforces specification of a :class:`VariableDensity` derived batch criteria.
+
     """
 
     def __call__(self, arg: str) -> types.CLIArgSpec:
         """
+        Parse the cmdline argument.
+
         Returns:
-            Dictionary with keys:
+
+            dict:
                 density_min: Floating point value of target minimum density.
                 density_max: Floating point value of target maximum density.
                 cardinality: # densities in [min,max] that should be created.

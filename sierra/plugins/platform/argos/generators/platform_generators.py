@@ -13,10 +13,11 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-Classes for generating XML changes to the :term:`ARGoS` input file independent
-of any :term:`Project`; i.e., changes which are platform-specific, but
-applicable to all projects using the platform.
+"""Classes for generating common XML modifications for :term:`ARGoS`.
+
+I.e., changes which are platform-specific, but applicable to all projects using
+the platform.
+
 """
 # Core packages
 import typing as tp
@@ -42,8 +43,12 @@ import sierra.plugins.platform.argos.variables.exp_setup as exp
 
 class PlatformExpDefGenerator():
     """
+    Init the object.
+
     Attributes:
+
         controller: The controller used for the experiment.
+
         cmdopts: Dictionary of parsed cmdline parameters.
     """
 
@@ -60,9 +65,8 @@ class PlatformExpDefGenerator():
         self.logger = logging.getLogger(__name__)
 
     def generate(self) -> definition.XMLExpDef:
-        """
-        Generates XML changes to simulation input files that are common to all
-        experiments.
+        """Generate XML modifications common to all ARGoS experiments.
+
         """
         # ARGoS uses a single input file
         wr_config = xml.WriterConfig([{'src_parent': None,
@@ -103,8 +107,7 @@ class PlatformExpDefGenerator():
                          extents: tp.List[ArenaExtent],
                          remove_defs: bool = True) -> None:
         """
-        Generates XML changes for the specified physics engines configuration
-        for the simulation.
+        Generate XML changes for the specified physics engines configuration.
 
         Physics engine definition removal is optional, because when mixing 2D/3D
         engine definitions, you only want to remove the existing definitions
@@ -158,10 +161,9 @@ class PlatformExpDefGenerator():
 
         utils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)
 
-    def _generate_n_robots(self, xml: definition.XMLExpDef) -> None:
+    def _generate_n_robots(self, exp_def: definition.XMLExpDef) -> None:
         """
-        Generate XML changes to setup # robots if it was specified on the
-        cmdline.
+        Generate XML changes to setup # robots (if specified on cmdline).
 
         Writes generated changes to the simulation definition pickle file.
         """
@@ -173,19 +175,20 @@ class PlatformExpDefGenerator():
         chgs = population_size.PopulationSize.gen_attr_changelist_from_list(
             [self.cmdopts['n_robots']])
         for a in chgs[0]:
-            xml.attr_change(a.path, a.attr, a.value, True)
+            exp_def.attr_change(a.path, a.attr, a.value, True)
 
         # Write # robots info to file for later retrieval
         chgs[0].pickle(self.spec.exp_def_fpath)
 
     def _generate_saa(self, exp_def: definition.XMLExpDef) -> None:
-        """
-        Generates XML changes to disable selected sensors/actuators, which are
-        computationally expensive in large swarms, but not that costly if the
-        # robots is small.
+        """Generate XML changes to disable selected sensors/actuators.
+
+        Some sensors and actuators are computationally expensive in large
+        populations, but not that costly if the # robots is small.
 
         Does not write generated changes to the simulation definition pickle
         file.
+
         """
         self.logger.trace(("Generating changes for SAA "   # type: ignore
                            "(all runs)"))
@@ -222,13 +225,14 @@ class PlatformExpDefGenerator():
         utils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)
 
     def _generate_threading(self, exp_def: definition.XMLExpDef) -> None:
-        """
-        Generates XML changes to set the # of cores for a simulation to use,
-        which may be less than the total # available on the system, depending on
+        """Generate XML changes to set the # of cores for a simulation to use.
+
+        This may be less than the total # available on the system, depending on
         the experiment definition and user preferences.
 
         Does not write generated changes to the simulation definition pickle
         file.
+
         """
         self.logger.trace("Generating changes for threading (all runs)")
         exp_def.attr_change(".//system",
@@ -248,14 +252,14 @@ class PlatformExpDefGenerator():
                                      "error?"))
 
     def _generate_library(self, exp_def: definition.XMLExpDef) -> None:
-        """
-        Generates XML changes to set the library that controllers and loop
-        functions are sourced from to the name of the plugin passed on the
-        cmdline. The ``__CONTROLLER__`` tag is changed during stage 1, but since
-        this function is called as part of common def generation, it happens
-        BEFORE that, and so this is OK. If, for some reason that assumption
-        becomes invalid, a warning will be issued about a non-existent XML path,
-        so it won't be a silent error.
+        """Generate XML changes for ARGoS search paths for controller,loop functions.
+
+        Set to the name of the plugin passed on the cmdline, unless overriden in
+        configuration. The ``__CONTROLLER__`` tag is changed during stage 1, but
+        since this function is called as part of common def generation, it
+        happens BEFORE that, and so this is OK. If, for some reason that
+        assumption becomes invalid, a warning will be issued about a
+        non-existent XML path, so it won't be a silent error.
 
         Does not write generated changes to the simulation definition pickle
         file.
@@ -273,12 +277,10 @@ class PlatformExpDefGenerator():
                             lib_name)
 
     def _generate_visualization(self, exp_def: definition.XMLExpDef) -> None:
-        """
+        """Generate XML changes to remove visualization elements from input file.
 
-        Generates XML changes to remove visualization elements from input file,
-        if configured to do so. This depends on cmdline parameters, as
-        visualization definitions should be left in if ARGoS should output
-        simulation frames for video creation.
+        This depends on cmdline parameters, as visualization definitions should
+        be left in if ARGoS should output simulation frames for video creation.
 
         Does not write generated changes to the simulation definition pickle
         file.
@@ -302,11 +304,10 @@ class PlatformExpDefGenerator():
 
 
 class PlatformExpRunDefUniqueGenerator:
-    """
-    Generate XML changes unique to a experimental run within an experiment for
-    ARGoS.
+    """Generate XML changes unique to each experimental run.
 
     These include:
+
     - Random seeds for each simulation.
 
     Attributes:
@@ -317,6 +318,7 @@ class PlatformExpRunDefUniqueGenerator:
                          root.
 
         cmdopts: Dictionary containing parsed cmdline options.
+
     """
 
     def __init__(self,
@@ -335,8 +337,7 @@ class PlatformExpRunDefUniqueGenerator:
 
     def __generate_random(self, exp_def) -> None:
         """
-        Generate XML changes for random seeding for a specific simulation in an
-        experiment during the input generation process.
+        Generate XML changes for random seeding for a specific simulation.
         """
         self.logger.trace("Generating random seed changes for run%s",  # type: ignore
                           self.run_num)
@@ -355,7 +356,7 @@ class PlatformExpRunDefUniqueGenerator:
 
     def __generate_visualization(self, exp_def: definition.XMLExpDef):
         """
-        Generates XML changes for setting up rendering for a specific simulation
+        Generate XML changes for setting up rendering for a specific simulation.
         """
         self.logger.trace("Generating visualization changes for run%s",  # type: ignore
                           self.run_num)

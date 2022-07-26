@@ -19,6 +19,10 @@
 #
 import os
 import sys
+import builtins
+
+builtins.__sphinx_build__ = True
+
 sys.path.insert(0, os.path.abspath('..'))
 sys.path.append(os.path.abspath('_ext'))
 
@@ -94,8 +98,10 @@ language = None
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'flycheck']
 
 if 'html' in sys.argv:
+    builtins.__sphinx_build_html__ = True
     exclude_patterns.extend(['man'])
 elif 'man' in sys.argv:
+    builtins.__sphinx_build_man__ = True
     exclude_patterns.extend(['api',
                              'src/tutorials',
                              'src/api.rst',
@@ -273,7 +279,7 @@ man_pages = [
      7)
 
 ]
-
+man_show_urls = True
 # -- Options for Texinfo output -------------------------------------------
 
 # Grouping the document tree into Texinfo files. List of tuples

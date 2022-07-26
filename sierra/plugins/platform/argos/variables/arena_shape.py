@@ -37,6 +37,7 @@ class ArenaShape():
     own. Instead, derived classes defined in this file should be used instead.
 
     Attributes:
+
         extents: List of arena extents.
 
     """
@@ -46,8 +47,7 @@ class ArenaShape():
         self.attr_changes = []  # type: tp.List[xml.AttrChangeSet]
 
     def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
-        """Generate list of sets of changes necessary to make to the input file to
-        correctly set up the simulation with the specified arena.
+        """Generate changes necessary setup ARGoS with the specified arena sizes.
 
         """
         if not self.attr_changes:
@@ -105,9 +105,9 @@ class ArenaShape():
         chgs.add(xml.AttrChange(".//arena/*[@id='wall_south']",
                                 "size",
                                 "{0:.9f}, {1:.9f}, 0.5".format(xsize, kWALL_WIDTH)))
-        xml.AttrChange(".//arena/*[@id='wall_south']/body",
-                       "position",
-                       "{0:.9f}, 0, 0 ".format(xsize / 2.0)),
+        chgs.add(xml.AttrChange(".//arena/*[@id='wall_south']/body",
+                                "position",
+                                "{0:.9f}, 0, 0 ".format(xsize / 2.0)))
 
         # East wall needs to have its X coordinate offset by the width of the
         # wall / 2 in order to be centered on the boundary for the arena. This

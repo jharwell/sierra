@@ -14,9 +14,8 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""
-Classes for implementing stage 4 of the experimental pipeline: generating
-deliverables.
+"""Stage 4 of the experimental pipeline: generating deliverables.
+
 """
 
 # Core packages
@@ -42,10 +41,10 @@ from sierra.core import types, config, utils
 
 
 class PipelineStage4:
-    """Generates end-result experimental deliverables within single experiment
-    (intra-experiment) and across experiments in a batch (inter-experiment).
+    """Generates end-result experimental deliverables.
 
-    Currently this includes:
+    Delvirables can be within a single experiment (intra-experiment) and across
+    experiments in a batch (inter-experiment).  Currently this includes:
 
     - Graph generation controlled via YAML config files.
 
@@ -54,6 +53,7 @@ class PipelineStage4:
     This stage is idempotent.
 
     Attributes:
+
         cmdopts: Dictionary of parsed cmdline options.
 
         controller_config: YAML configuration file found in
@@ -112,13 +112,12 @@ class PipelineStage4:
         self.intra_HM_config = graphs_config['intra_HM']
         self.inter_LN_config = graphs_config['inter_LN']
 
+        # Load models
         if self.cmdopts['models_enable']:
             self._load_models()
 
     def run(self, criteria: bc.IConcreteBatchCriteria) -> None:
-        """Runs experiment deliverable generation, CSV collation for
-        inter-experiment graph generation, and inter-experiment graph
-        generation.
+        """Run the pipeline stage.
 
         Video generation: If images have previously been created, then the
         following is run:
@@ -242,9 +241,12 @@ class PipelineStage4:
                              self.cmdopts['project'])
 
     def _calc_inter_LN_targets(self) -> tp.List[types.YAMLDict]:
-        """
-        Use YAML configuration for controllers and inter-experiment graphs to
-        what CSV files need to be collated/what graphs should be generated.
+        """Calculate what graphs to generate.
+
+        This also defines what CSV files need to be collated, as one graph is
+        always generated from one CSV file. Uses YAML configuration for
+        controllers and inter-experiment graphs to
+
         """
         keys = []
         for category in list(self.controller_config.keys()):
@@ -268,9 +270,8 @@ class PipelineStage4:
         return targets
 
     def _run_rendering(self, criteria: bc.IConcreteBatchCriteria) -> None:
-        """
-        Render captured frames and/or frames created by imagizing in stage 3
-        into videos.
+        """Render captured frames and/or imagized frames into videos.
+
         """
         self.logger.info("Rendering videos...")
         start = time.time()

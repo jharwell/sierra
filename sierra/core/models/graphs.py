@@ -14,8 +14,10 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
-Graphs which can be generated from (empirical data, model predictions) in
-SIERRA, irrespective of model specifics.
+Graphs which can always be generated, irrespective of model specifics.
+
+For example, you can always compare the model value to the empirical value, and
+plot the difference as error.
 """
 # Core packages
 import os
@@ -29,7 +31,7 @@ from sierra.core import utils, config, storage
 
 class IntraExpModel2DGraphSet():
     """
-    Generates 4 :class:`~sierra.core.graphs.heatmap.Heatmap` plots:
+    Generates 4 :class:`~sierra.core.graphs.heatmap.Heatmap` plots.
 
     - One for the empirical data
     - One for the stddev of the empirical data

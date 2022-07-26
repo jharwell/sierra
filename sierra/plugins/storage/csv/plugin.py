@@ -13,9 +13,7 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""Storage plugin for running having SIERRA read from CSV files when
-processing :term:`Experimental Run` results, and to write intermediate results
-to CSV files when generating graphs.
+"""Plugin for reading from CSV files when processing experimental run results.
 
 """
 

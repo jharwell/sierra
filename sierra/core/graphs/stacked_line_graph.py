@@ -145,7 +145,9 @@ class StackedLineGraph:
                             cols: tp.List[str],
                             model: tp.Tuple[pd.DataFrame, tp.List[str]]):
         """
-        Plots selected columns in a dataframe, (possibly) including:
+        Plot the  selected columns in a dataframe.
+
+        This may include:
 
         - Errorbars
         - Models

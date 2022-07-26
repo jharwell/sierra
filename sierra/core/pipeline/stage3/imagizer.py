@@ -14,9 +14,10 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""
-Classes for creating image files from ``.mean`` files for
-experiments. See :ref:`ln-sierra-usage-vc` for usage documentation.
+"""Classes for creating image files from ``.mean`` files for experiments.
+
+See :ref:`ln-sierra-usage-vc` for usage documentation.
+
 """
 
 # Core packages
@@ -35,8 +36,7 @@ from sierra.core import types, config, utils
 
 
 class BatchExpParallelImagizer:
-    """Generate  images for each :term:`Experiment` in the :term:`Batch
-    Experiment`.
+    """Generate images for each :term:`Experiment` in the :term:`Batch Experiment`.
 
     Ideally this is done in parallel across experiments, but this can be changed
     to serial if memory on the SIERRA host machine is limited via

@@ -14,9 +14,9 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
-"""
-Classes for the constant population density batch criteria. See
-:ref:`ln-sierra-platform-argos-bc-population-constant-density` for usage
+"""Classes for the constant population density batch criteria.
+
+See :ref:`ln-sierra-platform-argos-bc-population-constant-density` for usage
 documentation.
 
 """
@@ -55,10 +55,9 @@ class PopulationConstantDensity(cd.ConstantDensity):
         self.logger = logging.getLogger(__name__)
 
     def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
-        """
-        Generate list of sets of changes to input file to set the # robots for a
-        set of arena sizes such that the swarm density is constant. Robots are
-        approximated as point masses.
+        """Generate XML modifications to to maintain constant population density.
+
+        Robots are approximated as point masses.
 
         """
         if not self.already_added:
@@ -84,7 +83,7 @@ class PopulationConstantDensity(cd.ConstantDensity):
                         changeset.add(xml.AttrChange(".//arena/distribute/entity",
                                                      "quantity",
                                                      str(n_robots)))
-                        self.logger.debug("Calculated swarm size=%d for extent=%s,density=%s",
+                        self.logger.debug("Calculated population size=%d for extent=%s,density=%s",
                                           n_robots,
                                           str(extent), self.target_density)
                         break
@@ -109,7 +108,7 @@ class PopulationConstantDensity(cd.ConstantDensity):
         if cmdopts['plot_log_xscale']:
             return [int(math.log2(x)) for x in ret]
         elif cmdopts['plot_enumerated_xscale']:
-            return [i for i in range(0, len(ret))]
+            return list(range(0, len(ret)))
         else:
             return ret
 
@@ -162,9 +161,7 @@ def factory(cli_arg: str,
             main_config: types.YAMLDict,
             cmdopts: types.Cmdopts,
             **kwargs) -> PopulationConstantDensity:
-    """
-    Factory to create :class:`PopulationConstantDensity` derived classes from
-    the command line definition.
+    """Create a :class:`PopulationConstantDensity` derived class.
 
     """
     attr = cd.Parser()(cli_arg)

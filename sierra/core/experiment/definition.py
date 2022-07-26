@@ -15,21 +15,21 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Wrapper around :class:`xml.etree.ElementTree` which contains a small set of
-functionality for reading, writing, and manipulating XML files.
+Functionality for reading, writing, and manipulating experiment definitions.
+
+Currently, experiments can be specified in:
+
+- XML
 """
 
 # Core packages
 import typing as tp
-import os
 import logging
 import xml.etree.ElementTree as ET
-import pickle
 
 # 3rd party packages
 
 # Project packages
-from sierra.core import types
 from sierra.core.experiment import xml
 
 
@@ -60,86 +60,25 @@ class XMLExpDef:
         self.logger = logging.getLogger(__name__)
 
     def write_config_set(self, config: xml.WriterConfig) -> None:
-        """Set the write config for the object; provided for cases in which the
-        configuration is dependent on whether or not certain tags are present in
-        the input file.
+        """Set the write config for the object.
+
+        Provided for cases in which the configuration is dependent on whether or
+        not certain tags are present in the input file.
+
         """
         self.write_config = config
 
     def write(self, base_path: str) -> None:
-        """Write the XML stored in the object to the filesystem according to
-        configuration.
+        """Write the XML stored in the object to the filesystem.
+
         """
-        for config in self.write_config.values:
-
-            if config['src_parent'] is None:
-                src_root = config['src_tag']
-            else:
-                src_root = "{0}/{1}".format(config['src_parent'],
-                                            config['src_tag'])
-
-            tree = self.root.find(src_root)
-            # Customizing the output write path is not required
-            if 'opath_leaf' in config and config['opath_leaf'] is not None:
-                opath = base_path + config['opath_leaf']
-            else:
-                opath = base_path
-
-            if tree is None:
-                self.logger.warning("Cannot write non-existent tree@%s to %s",
-                                    src_root,
-                                    opath)
-                continue
-
-            self.logger.trace("Write tree@%s to %s",  # type: ignore
-                              src_root,
-                              opath)
-
-            # Renaming tree root is not required
-            if 'rename_to' in config and config['rename_to'] is not None:
-                tree.tag = config['rename_to']
-                self.logger.trace("Rename tree root -> %s",  # type: ignore
-                                  config['rename_to'])
-
-            # Adding tags not required
-            if 'dest_parent' in config and config['dest_parent'] is not None:
-                to_write = ET.ElementTree()
-                if 'create_tags' in config and config['create_tags'] is not None:
-                    for spec in config['create_tags']:
-                        if to_write.getroot() is None:
-                            to_write._setroot(ET.Element(spec.tag, spec.attr))
-                        else:
-                            elt = to_write.find(spec.path)
-                            ET.SubElement(elt, spec.tag, spec.attr)
-
-                parent = to_write.getroot().find(config['dest_parent'])
-                parent.append(tree)
-            else:
-                to_write = ET.ElementTree(tree)
-                parent = to_write.getroot()
-
-            # Grafts are not required
-            if 'child_grafts' in config and config['child_grafts'] is not None:
-                dest_root = "{0}/{1}".format(config['dest_parent'],
-                                             config['src_tag'])
-                graft_parent = to_write.getroot().find(dest_root)
-                for g in config['child_grafts']:
-                    self.logger.trace("Graft tree@%s as child under %s",  # type: ignore
-                                      g,
-                                      dest_root)
-                    elt = self.root.find(g)
-                    graft_parent.append(elt)
-
-            # Write out pretty XML to make it easier to read to see if things
-            # have been generated correctly.
-            ET.indent(to_write, space="\t", level=0)
-            to_write.write(opath, encoding='utf-8')
+        writer = xml.Writer(self.tree)
+        writer(self.write_config, base_path)
 
     def attr_get(self, path: str, attr: str):
-        """
-        Retrieve the specified attribute as a child of the element corresponding
-        to the specified path, if it exists. If it does not exist, None is
-        returned.
+        """Retrieve the specified attribute of the element at the specified path.
+
+        If it does not exist, None is returned.
 
         """
         el = self.root.find(path)
@@ -152,11 +91,13 @@ class XMLExpDef:
                     attr: str,
                     value: str,
                     noprint: bool = False) -> None:
-        """
-        Change the specified attribute of the *FIRST* element matching the
-        specified path searching from the tree root.
+        """Change the specified attribute of the element at the specified path.
+
+        Only the attribute of the *FIRST* element matching the specified path is
+        changed.
 
         Arguments:
+
           path: An XPath expression that for the element containing the
                 attribute to change. The element must exist or an error will be
                 raised.
@@ -192,11 +133,13 @@ class XMLExpDef:
                  attr: str,
                  value: str,
                  noprint: bool = False) -> None:
-        """
-        Add the specified attribute of the *FIRST* element matching the
-        specified path searching from the tree root.
+        """Add the specified attribute to the element matching the specified path.
+
+        Only the *FIRST* element matching the specified path searching from the
+        tree root is modified.
 
         Arguments:
+
           path: An XPath expression that for the element containing the
                 attribute to add. The element must exist or an error will be
                 raised.
@@ -232,10 +175,10 @@ class XMLExpDef:
 
     def tag_change(self, path: str, tag: str, value: str) -> None:
         """
-        Change the specified tag of the element matching the specified path
-        searching from the tree root.
+        Change the specified tag of the element matching the specified path.
 
         Arguments:
+
           path: An XPath expression that for the element containing the tag to
                 change. The element must exist or an error will be raised.
 
@@ -260,10 +203,10 @@ class XMLExpDef:
         self.logger.warning("No such element '%s' found in '%s'", tag, path)
 
     def tag_remove(self, path: str, tag: str, noprint: bool = False) -> None:
-        """
-        Remove the specified tag of the child element found in the enclosing
-        parent specified by the path. If more than one tag matches, only one is
-        removed.
+        """Remove the specified child in the enclosing parent specified by the path.
+
+        If more than one tag matches, only one is removed. If the path does not
+        exist, nothing is done.
 
         Arguments:
 
@@ -272,6 +215,7 @@ class XMLExpDef:
 
           tag: An XPath expression of the tag to remove within the enclosing
                element.
+
         """
 
         parent = self.root.find(path)
@@ -295,10 +239,10 @@ class XMLExpDef:
                        path: str,
                        tag: str,
                        noprint: bool = False) -> None:
-        """
-        Remove the specified tag(s) of the child element found in the enclosing
-        parent specified by the path. If more than one tag matches in the
-        parent, all matching child tags are removed.
+        """Remove the specified tag(s) in the enclosing parent specified by the path.
+
+        If more than one tag matches in the parent, all matching child tags are
+        removed.
 
         Arguments:
 
@@ -307,6 +251,7 @@ class XMLExpDef:
 
           tag: An XPath expression for the tag to remove within the enclosing
                element.
+
         """
 
         parent = self.root.find(path)
@@ -337,9 +282,7 @@ class XMLExpDef:
                 allow_dup: bool = True,
                 noprint: bool = False) -> None:
         """
-        Add the tag name as a child element of the element found by the
-        specified path, giving it the initial set of specified attributes.
-
+        Add tag name as a child element of enclosing parent.
         """
         parent = self.root.find(path)
         if parent is None:
@@ -374,10 +317,10 @@ class XMLExpDef:
 
 def unpickle(fpath: str) -> tp.Optional[tp.Union[xml.AttrChangeSet,
                                                  xml.TagAddList]]:
-    """
-    Read in all the different sets of parameter changes that were pickled to
-    make crucial parts of the experiment definition easily accessible. You don't
-    know how many there are, so go until you get an exception.
+    """Unickle all XML modifications from the pickle file at the path.
+
+    You don't know how many there are, so go until you get an exception.
+
     """
     try:
         return xml.AttrChangeSet.unpickle(fpath)

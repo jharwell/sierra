@@ -46,10 +46,18 @@ class YAMLConfigLoader():
 
     def __call__(self, cmdopts: types.Cmdopts) -> tp.Dict[str, tp.Dict[str, str]]:
         """
-        Loads the intra-experiment linegraph, inter-experiment linegraph, and
-        intra-experiment heatmap YAML configuration.
+        Load YAML configuratoin for graphs.
+
+        This includes:
+
+        - intra-experiment linegraphs
+
+        - inter-experiment linegraphs
+
+        - intra-experiment heatmaps
 
         Returns:
+
             Dictionary of loaded configuration with keys for ``intra_LN,
             inter_LN, intra_HM``.
         """

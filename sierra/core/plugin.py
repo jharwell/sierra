@@ -13,9 +13,12 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-Sanity checks to verify that the selected ``--storage-medium``, ``--exec-env``,
-and ``--platform`` implement the necessary classes and functions.
+"""Sanity checks for verifying selected plugins.
+
+Checks that selected plugins implement the necessary classes and
+ functions. Currently checkes: ``--storage-medium``, ``--exec-env``, and
+ ``--platform``.
+
 """
 
 # Core packages
@@ -29,8 +32,7 @@ import logging
 
 def storage_sanity_checks(module) -> None:
     """
-    Check the selected ``--storage-medium`` implements the necessary classes and
-    functions.
+    Check the selected ``--storage-medium`` plugin.
     """
     logging.trace("Verifying --storage-medium plugin interface")  # type: ignore
 
@@ -45,8 +47,7 @@ def storage_sanity_checks(module) -> None:
 
 def exec_env_sanity_checks(module) -> None:
     """
-    Check the selected ``--exec-env`` implements the necessary classes and
-    functions.
+    Check the selected ``--exec-env`` plugin.
     """
     logging.trace("Verifying --exec-env plugin interface")  # type: ignore
 
@@ -63,8 +64,7 @@ def exec_env_sanity_checks(module) -> None:
 
 def platform_sanity_checks(module) -> None:
     """
-    Check the selected ``--platform`` implements the necessary classes and
-    functions.
+    Check the selected ``--platform`` plugin.
     """
     logging.trace("Verifying --platform plugin interface")  # type: ignore
 

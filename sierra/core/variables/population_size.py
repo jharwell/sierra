@@ -118,7 +118,7 @@ class Parser():
 
     def to_sizes(self, attr: types.CLIArgSpec) -> tp.List[float]:
         """
-        Generates the swarm sizes for each experiment in a batch.
+        Generate the system sizes for each experiment in a batch.
         """
         if attr["model"] == 'Linear':
             increment = int(attr['max_size'] / attr['cardinality'])

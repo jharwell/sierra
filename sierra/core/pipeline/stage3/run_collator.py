@@ -14,11 +14,13 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""
-Classes for collating data from all :term:`Experimental Run` across all
-:term:`Experiment` for all experiments in a :term:`Batch Experiment`. This is
-needed to correctly calculate summary statistics for performance measures in
-stage 4: you can't just run the calculated stddev through the calculations for
+"""Classes for collating data within a :term:`Batch Experiment`.
+
+Collation is the process of "lifting" data from :term:`Experimental Runs
+<Experimental Run>` across all :term:`Experiment` for all experiments in a
+:term:`Batch Experiment` into a single CSV (a reduce operation).  This is needed
+to correctly calculate summary statistics for performance measures in stage 4:
+you can't just run the calculated stddev through the calculations for
 flexibility (for example) because comparing curves of stddev is not
 meaningful. Stage 4 needs access to raw-(er) run data to construct a
 `distribution` of performance measure values to then calculate the summary
@@ -44,11 +46,11 @@ from sierra.core import types, storage, utils, config
 
 
 class ExperimentalRunParallelCollator:
-    """Gathers :term:`Output .csv` files from each :term:`Experimental Run` into
-    :term:`Collated .csv` files for each :term:`Experiment`.
+    """Generates :term:`Collated .csv` files for each :term:`Experiment`.
 
-    Gathered in parallel for each experiment for speed, unless disabled with
-    ``--processing-serial``.
+    :term:`Collectade .csv` files generated from :term:`Output .csv` files
+     across :term:`Experimental Run`s.  Gathered in parallel for each experiment
+     for speed, unless disabled with ``--processing-serial``.
 
     """
 
@@ -107,8 +109,11 @@ class ExperimentalRunParallelCollator:
         # worker threads. Any assertions will show and any exceptions will be
         # re-raised.
         self.logger.debug("Waiting for workers to finish")
-        [g.get() for g in gathered]
-        [p.get() for p in processed]
+        for g in gathered:
+            g.get()
+
+        for p in processed:
+            p.get()
 
         pool.close()
         pool.join()
@@ -201,8 +206,9 @@ class ExperimentalRunCSVGatherer:
                  batch_output_root: str,
                  exp_leaf: str):
         """
-        Gather data from all experimental runs within a single experiment and
-        put them in the queue for processing.
+        Gather CSV data from all experimental runs in an experiment.
+
+        Gathered data is put in a queue for processing.
 
         Arguments:
 
@@ -225,14 +231,14 @@ class ExperimentalRunCSVGatherer:
     def gather_csvs_from_run(self,
                              exp_output_root: str,
                              run: str) -> tp.Dict[tp.Tuple[str, str], pd.DataFrame]:
-        """
-        Gather all data from a single run within an experiment, so that
-        it can be placed in the queue for processing.
+        """Gather all data from a single run within an experiment.
 
         Returns:
-           A dictionary of <(``.csv`` file name, ``.csv`` performance column),
-           dataframe> key-value pairs. The ``.csv`` file name is the leaf part
-           of the path with the extension included.
+
+           dict: A dictionary of <(``.csv`` file name, ``.csv`` performance
+           column), dataframe> key-value pairs. The ``.csv`` file name is the
+           leaf part of the path with the extension included.
+
         """
 
         intra_perf_csv = self.main_config['sierra']['perf']['intra_perf_csv']

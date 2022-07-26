@@ -14,9 +14,8 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""
-Miscellaneous classes/functions used in mutiple places but that don't really fit
-anywhere else.
+"""Miscellaneous bits used in mutiple places but that don't fit anywhere else.
+
 """
 
 # Core packages
@@ -43,9 +42,10 @@ class ArenaExtent():
     """Representation of a 2D or 3D section/chunk/volume of the arena."""
     @staticmethod
     def from_corners(ll: Vector3D, ur: Vector3D) -> 'ArenaExtent':
-        """
-        Initialize an extent via LL and UR corners rather than an origin and a
-        set of dimensions.
+        """Initialize an extent via LL and UR corners.
+
+        As opposed to an origin and a set of dimensions.
+
         """
         return ArenaExtent(ur - ll, ll)
 
@@ -122,7 +122,7 @@ class ReLu():
 
 def scale_minmax(minval: float, maxval: float, val: float) -> float:
     """
-    Scale values from range [minval, maxval] -> [-1,1]
+    Scale values from range [minval, maxval] -> [-1,1].
 
     .. math::
        -1 + (value - minval) * (1 - \frac{-1}{maxval - minval})
@@ -131,9 +131,10 @@ def scale_minmax(minval: float, maxval: float, val: float) -> float:
 
 
 def dir_create_checked(path: str, exist_ok: bool) -> None:
-    """
-    Create a directory idempotently, raising an error if the directory exists
-    and it shouldn't.
+    """Create a directory idempotently.
+
+    If the directory exists and it shouldn't, raise an error.
+
     """
     try:
         os.makedirs(path, exist_ok=exist_ok)
@@ -165,9 +166,7 @@ def get_primary_axis(criteria,
                      primary_axis_bc: tp.List,
                      cmdopts: types.Cmdopts) -> int:
     """
-    Determine which :class:`~sierra.core.variables.batch_criteria.BatchCriteria`
-    in a  :class:`~sierra.core.variables.batch_criteria.BivarBatchCriteria`
-    should be treated as the primary axis.
+    Determine axis in a bivariate batch criteria is the primary axis.
 
     This is obtained on a per-query basis depending on the query context, or can
     be overriden on the cmdline.
@@ -207,12 +206,13 @@ def exp_range_calc(cmdopts: types.Cmdopts,
 def exp_include_filter(inc_spec: tp.Optional[str],
                        target: tp.List,
                        n_exps: int):
-    """
-    Takes a input list, and returns the sublist specified by the inc_spec (of
-    the form [x:y]). inc_spec is an `absolute` specification; if a given
-    performance measure excludes exp0 then that case is handled internally so
-    that array/list shapes work out when generating graphs if this function is
-    used consistently everywhere.
+    """Calculate which experiments to include in a calculation for something.
+
+    Take a input list of experiment numbers to include, and returns the sublist
+    specified by the inc_spec (of the form [x:y]). inc_spec is an `absolute`
+    specification; if a given performance measure excludes exp0 then that case
+    is handled internally so that array/list shapes work out when generating
+    graphs if this function is used consistently everywhere.
 
     """
     if inc_spec is None:
@@ -259,8 +259,13 @@ def apply_to_expdef(var,
                                                                tp.Optional[xml.TagAddList],
                                                                tp.Optional[xml.AttrChangeSet]]:
     """
-    Remove existing XML tags, add new XML tags, and change existing XML
-    attributes (in that order) for the specified variable.
+    Apply a generated XML modifictions to an experiment definition.
+
+    In this order:
+
+    #. Remove existing XML tags
+    #. Add new XML tags
+    #. Change existing XML attributes
     """
     rmsl = var.gen_tag_rmlist()  # type: tp.List[xml.TagRmList]
     addsl = var.gen_tag_addlist()  # type: tp.List[xml.TagAddList]
@@ -294,8 +299,7 @@ def pickle_modifications(adds: tp.Optional[xml.TagAddList],
                          chgs: tp.Optional[xml.AttrChangeSet],
                          path: str) -> None:
     """
-    After applying XML attribute changes and/or adding new XML tags, pickle saxd
-    changes so they can be retrieved later.
+    After applying XML modifications, pickle changes for later retrieval.
     """
     if adds is not None:
         adds.pickle(path)
@@ -307,10 +311,11 @@ def pickle_modifications(adds: tp.Optional[xml.TagAddList],
 def batch_template_path(cmdopts: types.Cmdopts,
                         batch_input_root: str,
                         dirname: str) -> str:
-    """
-    Calculate the path to the template input file in the batch experiment root
-    which will be used as the de-facto template for generating per-run input
-    files.
+    """Calculate the path to the template input file in the batch experiment root.
+
+     The file at this path will be Used as the de-facto template for generating
+     per-run input files.
+
     """
     batch_config_leaf, _ = os.path.splitext(
         os.path.basename(cmdopts['template_input_file']))
@@ -378,6 +383,19 @@ def gen_scenario_spec(cmdopts: types.Cmdopts, **kwargs) -> dict[str, tp.Any]:
     kw = sgp.ScenarioGeneratorParser().to_dict(scenario)
 
     return kw
+
+
+def sphinx_ref(ref: str) -> str:
+    try:
+        if __sphinx_build_man__:
+            parts = ref.split('.')
+            stripped = parts[-1]
+            return stripped[:-1]
+
+    except NameError:
+        pass
+
+    return ref
 
 
 utf8open = functools.partial(open, encoding='UTF-8')

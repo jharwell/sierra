@@ -180,7 +180,7 @@ class PlatformCmdline(corecmd.BaseCmdline):
                                          allocate to physics (Gazebo has other
                                          threads too).
 
-                                         This only applies if ``--physics-engine-type``=ode.
+                                         This only applies if ``--physics-engine-type``\\=ode.
 
                                          A value of 0=no threads.
 
@@ -190,9 +190,7 @@ class PlatformCmdline(corecmd.BaseCmdline):
     @staticmethod
     def cmdopts_update(cli_args: argparse.Namespace,
                        cmdopts: types.Cmdopts) -> None:
-        """
-        Updates the core cmdopts dictionary with (key,value) pairs from the
-        ROS1+Gazebo-specific cmdline options.
+        """Update cmdopts with ROS1+Gazebo-specific cmdline options.
 
         """
         hpc.cmdline.HPCCmdline.cmdopts_update(cli_args, cmdopts)

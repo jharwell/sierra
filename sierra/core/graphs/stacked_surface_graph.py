@@ -33,8 +33,7 @@ from sierra.core import config, storage
 
 
 class StackedSurfaceGraph:
-    """Generates a plot of a set of 3D surface graphs from a set of ``.mean``
-    files.
+    """Generates a plot of a set of 3D surface graphs from a set of CSVs.
 
     ``.mean`` files must be named as``<input_stem_fpath>_X.mean``, where `X` is
     non-negative integer. Input CSV files must be 2D grids of the same
@@ -141,10 +140,11 @@ class StackedSurfaceGraph:
             ax.plot_surface(X, Y, plot_df, cmap=colors[i], alpha=0.5)
 
     def _plot_ticks(self, ax, xvals, yvals):
-        """
-        Plot ticks and tick labels. If the labels are numerical and the numbers are
-        too large, force scientific notation (the ``rcParam`` way of doing this
-        does not seem to work...)
+        """Plot ticks and tick labels.
+
+        If the labels are numerical and the numbers are too large, force
+        scientific notation (the ``rcParam`` way of doing this does not seem to
+        work...)
 
         """
         ax.tick_params(labelsize=self.text_size['tick_label'])
@@ -175,9 +175,11 @@ class StackedSurfaceGraph:
         ax.set_zlabel('\n' + self.zlabel, fontsize=self.text_size['xyz_label'])
 
     def _save_figs(self, fig, ax):
-        """Save multiple rotated copies of the same figure. Necessary for automation of
-        3D figure generation, because you can't really know a priori what views
-        are going to give the best results.
+        """Save multiple rotated copies of the same figure.
+
+        Necessary for automation of 3D figure generation, because you can't
+        really know a priori what views are going to give the best results. MPL
+        doesn't have a true 3D plot generator yet.
 
         """
         for angle in range(0, 360, 30):

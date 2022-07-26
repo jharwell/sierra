@@ -13,8 +13,7 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""Common cmdline parsing and validation classes for the various HPC plugins
-that can be used with SIERRA for running experiments during stage 2.
+"""Common cmdline classes for the various HPC plugins.
 
 """
 
@@ -38,7 +37,7 @@ class HPCCmdline(cmdline.BaseCmdline):
         self.init_cli(stages)
 
     def scaffold_cli(self) -> None:
-        desc = ("For platforms which are simulators (and can"
+        desc = ("For platforms which are simulators (and can "
                 "therefore be run in HPC environments).")
         self.hpc = self.parser.add_argument_group('HPC options', desc)
 
@@ -47,9 +46,10 @@ class HPCCmdline(cmdline.BaseCmdline):
             self.init_stage2()
 
     def init_stage2(self) -> None:
-        """
-        Add HPC cmdline options. Options may be interpreted differently between
-        :term:`Platforms <Platform>`, or ignored, depending. These include:
+        """Add HPC cmdline options.
+
+        Options may be interpreted differently between :term:`Platforms
+        <Platform>`, or ignored, depending. These include:
 
         - ``--exec-jobs-per-node``
 
@@ -122,9 +122,7 @@ class HPCCmdline(cmdline.BaseCmdline):
     @staticmethod
     def cmdopts_update(cli_args: argparse.Namespace,
                        cmdopts: types.Cmdopts) -> None:
-        """
-        Updates the core cmdopts dictionary with (key,value) pairs from the
-        HPC-specific cmdline options.
+        """Update cmdopts dictionary with the HPC-specific cmdline options.
 
         """
         updates = {

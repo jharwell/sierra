@@ -14,8 +14,10 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""Classes for specifying ARGoS camera positions, timeline, and interpolation,
-for manipulation the frame capture/rendering perspective.
+"""Classes for specifying ARGoS cameras.
+
+Positions, timeline, and interpolation, for manipulating the frame
+capture/rendering perspective.
 
 """
 
@@ -40,6 +42,7 @@ class QTCameraTimeline():
     """Defines when/how to switch between camera perspectives within ARGoS.
 
     Attributes:
+
         interpolate: Should we interpolate between camera positions on our
                       timeline ?
 
@@ -68,15 +71,16 @@ class QTCameraTimeline():
 
     def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
         """
-        Does nothing because all tags/attributes are either deleted or added.
+        No effect.
+
+        All tags/attributes are either deleted or added.
         """
         return []
 
     def gen_tag_rmlist(self) -> tp.List[xml.TagRmList]:
-        """
-        Removing the ``<camera>`` tag if it exists may be desirable so an option
-        is provided to do so. Obviously you *must* call this function BEFORE
-        adding new definitions.
+        """Remove the ``<camera>`` tag if it exists.
+
+        Obviously you *must* call this function BEFORE adding new definitions.
 
         """
         return [xml.TagRmList(xml.TagRm("./visualization/qt-opengl", "camera"))]
@@ -186,12 +190,13 @@ class QTCameraTimeline():
 
 @implements.implements(IBaseVariable)
 class QTCameraOverhead():
-    """
-    Defines a single overhead camera perspective within ARGoS.
+    """Defines a single overhead camera perspective within ARGoS.
 
     Attributes:
-        extents: List of (X,Y,Zs) tuple of dimensions of arena areas to generate camera definitions
-                 for.
+
+        extents: List of (X,Y,Zs) tuple of dimensions of arena areas to generate
+                 camera definitions for.
+
     """
 
     def __init__(self,
@@ -200,16 +205,17 @@ class QTCameraOverhead():
         self.tag_adds = []  # type: tp.List[xml.TagAddList]
 
     def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
-        """
-        Does nothing because all tags/attributes are either deleted or added.
+        """No effect.
+
+        All tags/attributes are either deleted or added.
+
         """
         return []
 
     def gen_tag_rmlist(self) -> tp.List[xml.TagRmList]:
-        """
-        Removing the ``<camera>`` tag if it exists may be desirable so an option
-        is provided to do so. Obviously you *must* call this function BEFORE
-        adding new definitions.
+        """Remove the ``<camera>`` tag if it exists.
+
+        Obviously you *must* call this function BEFORE adding new definitions.
 
         """
         return [xml.TagRmList(xml.TagRm("./visualization/qt-opengl", "camera"))]
@@ -248,8 +254,8 @@ class QTCameraOverhead():
 
 
 def factory(cmdopts: types.Cmdopts, extents: tp.List[ArenaExtent]):
-    """
-    Create cameras for a list of arena extents.
+    """Create cameras for a list of arena extents.
+
     """
     if cmdopts['camera_config'] == 'overhead':
         return QTCameraOverhead(extents)

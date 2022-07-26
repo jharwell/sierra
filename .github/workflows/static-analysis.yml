@@ -21,23 +21,10 @@ jobs:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/sierra-setup
 
-      - name: Install checkers
+      - name: Install nox
         run: |
-          pip3 install flake8 mypy pylint pytype
+          pip3 install nox
 
-      - name: Check with flake8
+      - name: Run nox
         run: |
-
-          # stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-
-          # exit-zero treats all errors as warnings.
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=80 --statistics
-
-      - name: Check with pytype
-        run: |
-          pytype -d name-error,attribute-error,invalid-annotation,pyi-error sierra
-
-      - name: Check with pylint
-        run: |
-          pylint sierra
+          nox

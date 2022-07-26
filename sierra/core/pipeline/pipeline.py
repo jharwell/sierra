@@ -13,9 +13,10 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-Container module for the 5 pipeline stages implemented by SIERRA. See
-:ref:`ln-sierra-usage-pipeline` for high-level documentation.
+"""The 5 pipeline stages implemented by SIERRA.
+
+See :ref:`ln-sierra-usage-pipeline` for high-level documentation.
+
 """
 
 # Core packages

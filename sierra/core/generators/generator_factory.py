@@ -13,10 +13,11 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-Central factory for creating and combining XML modification generators from
-controller and scenario specifications into a single generator which can be used
-to apply modifications to the template XML file.
+"""Factory for combining controller+scenario XML modification generators.
+
+By combining them together, the result can be easily used to apply modifications
+to the template XML file to scaffold the batch experiment.
+
 """
 # Core packages
 import os
@@ -60,9 +61,9 @@ class ControllerGenerator():
         self.spec = exp_spec
 
     def generate(self, exp_def: definition.XMLExpDef) -> definition.XMLExpDef:
-        """
-        Generates all changes to the input file for the :term:`Experimental Run`
-        (does not save).
+        """Generate all modifications to the experiment definition from the controller.
+
+        Does not save.
 
         """
         self._generate_controller_support(exp_def)
@@ -174,7 +175,7 @@ class ControllerGenerator():
 
 def joint_generator_create(controller, scenario):
     """
-    Combinate controller and scenario XML change generators together.
+    Combine controller and scenario XML modification generators together.
     """
     joint_name = '+'.join([controller.__class__.__name__,
                            scenario.__class__.__name__])
@@ -197,7 +198,7 @@ def scenario_generator_create(exp_spec: spec.ExperimentSpec,
                               controller,
                               **kwargs):
     """
-    Creates a scenario generator using the plugin search path.
+    Create a scenario generator using the plugin search path.
     """
 
     def __init__(self, **kwargs) -> None:
@@ -224,7 +225,7 @@ def controller_generator_create(controller: str,
                                 cmdopts: types.Cmdopts,
                                 exp_spec: spec.ExperimentSpec):
     """
-    Creates a controller generator from the cmdline specification.
+    Create a controller generator from the cmdline specification.
     """
 
     return type(controller,

@@ -13,9 +13,11 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-Startup checks performed by SIERRA for compatibility and testing for the
-required packages in its environment.
+"""Startup checks performed by SIERRA.
+
+Tests for compatibility and testing for the required packages in its
+environment.
+
 """
 # Core packages
 import sys
@@ -65,17 +67,16 @@ def startup_checks(pkg_checks: bool) -> None:
 
 
 def _linux_pkg_checks() -> None:
-    """Check that all the packages required by SIERRA are installed on whatever
-    flavor of Linux SIERRA is running on.
+    """Check that all the packages required by SIERRA are installed on Linux.
 
     """
-    import distro
+    import distro  # will fail on OSX
 
     dist = distro.id()
     os_info = distro.os_release_info()
 
     if os_info['id_like'] in ['debian', 'ubuntu']:
-        import apt
+        import apt  # may fail on non-debian based systems
         cache = apt.Cache()
         missing = []
 
@@ -99,8 +100,7 @@ def _linux_pkg_checks() -> None:
 
 
 def _osx_pkg_checks() -> None:
-    """Check that all the packages required by SIERRA are installed on whatever
-    version of OSX SIERRA is running on.
+    """Check that all the packages required by SIERRA are installed on OSX.
 
     """
     missing = []

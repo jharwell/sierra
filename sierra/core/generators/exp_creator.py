@@ -13,9 +13,10 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-Experiment creation classes, taking an experiment definition `generated` by
-classes in ``exp_generators.py`` and writing the experiment to the filesystem.
+"""Experiment creation classes.
+
+Experiment creation takes an experiment definition `generated` by classes in
+``exp_generators.py`` and writes the experiment to the filesystem.
 
 """
 
@@ -114,13 +115,13 @@ class ExpCreator:
                                            config.kGNUParallel['cmdfile_stem'])
 
     def from_def(self, exp_def: definition.XMLExpDef):
-        """
-        Given a :class:`~sierra.core.definition.XMLExpDef` object containing all changes
-        that should be made to all runs in the experiment, create additional
-        changes to create a set of unique runs from which distributions of swarm
-        behavior can be meaningfully computed post-hoc.
+        """Create all experimental runs by writing input files to filesystem.
 
-        Writes out all experiment input files to the filesystem.
+        The passed :class:`~sierra.core.experiment.definition.XMLExpDef` object
+        contains all changes that should be made to all runs in the
+        experiment. Additional changes to create a set of unique runs from which
+        distributions of system behavior can be meaningfully computed post-hoc
+        are added.
 
         """
         # Clear out commands file if it exists
@@ -226,10 +227,7 @@ class ExpCreator:
                                        'master')
 
     def _get_launch_file_stempath(self, run_num: int) -> str:
-        """
-        File is named as ``<template input file stem>_run<run_num>`` in the
-        experiment generation root. Individual :term:`platforms <Platform>` can
-        extend this path/add extensions as needed.
+        """File is named as ``<template input file stem>_run<run_num>``.
         """
         return os.path.join(self.exp_input_root,
                             "{0}_run{1}".format(self.main_input_name,
@@ -242,9 +240,8 @@ class ExpCreator:
                           run_num: int,
                           launch_stem_path: str,
                           for_host: str) -> None:
-        """
-        Adds the command to launch a particular experimental run to the command
-        file.
+        """Add command to launch a given experimental run to the command file.
+
         """
         pre_specs = cmds_generator.pre_run_cmds(for_host,
                                                 launch_stem_path,

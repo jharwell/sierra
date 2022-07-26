@@ -13,9 +13,7 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""Classes for running single :term:`Experiments <Experiment>` and
-:term:`Batch Experiments <Batch Experiment>` via the method specified
-on the cmdline via ``--exec-env``.
+"""Classes for executing experiments via the specified ``--exec-env``.
 
 """
 
@@ -169,7 +167,7 @@ class BatchExpRunner:
 
     def __call__(self) -> None:
         """
-        Runs experiments in the batch according to configuration.
+        Execute experiments in the batch according to configuration.
 
         """
         self.logger.info("Platform='%s' exec_env='%s'",
@@ -246,7 +244,7 @@ class ExpRunner:
     def __call__(self,
                  exp_input_root: str,
                  exp_num: int) -> None:
-        """Executes experimental runs for a single experiment.
+        """Execute experimental runs for a single experiment.
         """
 
         self.logger.info("Running exp%s in '%s'",

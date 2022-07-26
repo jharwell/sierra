@@ -14,9 +14,10 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""
-Classes for the ``--exp-setup`` cmdline option. See
-:ref:`ln-sierra-vars-expsetup` for usage documentation.
+"""Classes for the ``--exp-setup`` cmdline option.
+
+See :ref:`ln-sierra-vars-expsetup` for usage documentation.
+
 """
 
 # Core packages
@@ -38,13 +39,17 @@ class ExpSetup():
     Defines the simulation duration.
 
     Attributes:
+
         duration: The simulation duration in seconds, NOT timesteps.
     """
     @staticmethod
     def extract_time_params(exp_def: xml.AttrChangeSet) -> types.SimpleDict:
         """
-        Extract and return the length (in seconds), ticks_per_second for the
-        specified experiment.
+        Extract and return time parameters for the experiment.
+
+        Returns:
+
+            length (in seconds), ticks_per_second
         """
         ret = {
             'T_in_secs': int(),
@@ -92,13 +97,12 @@ class ExpSetup():
 
 
 def factory(arg: str) -> ExpSetup:
-    """
-    Factory to create :class:`ExpSetup` derived classes from the command
-    line definition.
+    """Create an :class:`ExpSetup` derived class from the command line definition.
 
     Arguments:
 
        arg: The value of ``--exp-setup``.
+
     """
     parser = Parser({'n_secs_per_run': config.kARGoS['n_secs_per_run'],
                      'n_ticks_per_sec': config.kARGoS['n_ticks_per_sec'],

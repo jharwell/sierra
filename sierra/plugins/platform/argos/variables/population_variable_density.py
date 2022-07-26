@@ -14,10 +14,11 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
-"""
-Classes for the variable population density batch criteria. See
-:ref:`ln-sierra-platform-argos-bc-population-variable-density` for usage
+"""Classes for the variable population density batch criteria.
+
+See :ref:`ln-sierra-platform-argos-bc-population-variable-density` for usage
 documentation.
+
 """
 
 # Core packages
@@ -52,9 +53,10 @@ class PopulationVariableDensity(vd.VariableDensity):
         self.logger = logging.getLogger(__name__)
 
     def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
-        """
-        Generate list of sets of changes to input file to set the # robots for a
-        set of swarm densities. Robots are approximated as point masses.
+        """Generate XML modifications to achieve the desired population densities.
+
+        Robots are approximated as point masses.
+
         """
         if not self.already_added:
             for density in self.densities:
@@ -110,8 +112,7 @@ def factory(cli_arg: str,
             cmdopts: types.Cmdopts,
             **kwargs) -> PopulationVariableDensity:
     """
-    Factory to create :class:`PopulationVariableDensity` derived classes from
-    the command line definition.
+    Create a :class:`PopulationVariableDensity` derived class.
     """
     attr = vd.Parser()(cli_arg)
     kw = utils.gen_scenario_spec(cmdopts, **kwargs)

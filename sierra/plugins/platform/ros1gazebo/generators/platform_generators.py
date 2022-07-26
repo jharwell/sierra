@@ -13,10 +13,11 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-Classes for generating XML changes to the :term:`ROS1+Gazebo` input file
-independent of any :term:`Project`; i.e., changes which are platform-specific,
-but applicable to all projects using the platform.
+"""Classes for generating common XML modifications for :term:`ROS1+Gazebo`.
+
+I.e., changes which are platform-specific, but applicable to all projects using
+the platform.
+
 """
 # Core packages
 import logging
@@ -24,13 +25,16 @@ import logging
 # 3rd party packages
 
 # Project packages
-from sierra.core.experiment import spec, xml, definition
+from sierra.core.experiment import spec, definition
 from sierra.core import types, ros1, config
 
 
 class PlatformExpDefGenerator(ros1.generators.ROSExpDefGenerator):
     """
+    Init the object.
+
     Attributes:
+
         controller: The controller used for the experiment.
 
         cmdopts: Dictionary of parsed cmdline parameters.
@@ -111,8 +115,7 @@ class PlatformExpDefGenerator(ros1.generators.ROSExpDefGenerator):
 
     def _generate_gazebo_vis(self, exp_def: definition.XMLExpDef) -> None:
         """
-        Generate XML changes to configure Gazebo according to visualization
-        configuration.
+        Generate XML changes to configure Gazebo visualizations.
 
         Does not write generated changes to the simulation definition pickle
         file.

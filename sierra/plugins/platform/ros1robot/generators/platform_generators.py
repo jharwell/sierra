@@ -13,10 +13,10 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-Classes for generating XML changes to the :term:`ROS1` input file independent
-of any :term:`Project`; i.e., changes which are platform-specific, but
-applicable to all projects using ROS with a real robot execution environment.
+"""Classes for generating common XML modifications to :term:`ROS1` input files.
+
+I.e., changes which are platform-specific, but applicable to all projects using
+ROS with a real robot execution environment.
 
 """
 # Core packages
@@ -33,7 +33,10 @@ from sierra.core import types, ros1, config, utils
 
 class PlatformExpDefGenerator(ros1.generators.ROSExpDefGenerator):
     """
+    Init the object.
+
     Attributes:
+
         controller: The controller used for the experiment.
         cmdopts: Dictionary of parsed cmdline parameters.
     """

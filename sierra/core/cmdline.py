@@ -14,9 +14,7 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
-"""
-Core command line parsing and validation classes.
-"""
+"""Core command line parsing and validation classes."""
 
 # Core packages
 import argparse
@@ -27,26 +25,38 @@ import typing as tp
 
 # Project packages
 import sierra.version
+from sierra.core import utils
+
+kVersionMsg = ("reSearch pIpEline for Reproducibility, Reusability and "
+               f"Automation (SIERRA) v{sierra.version.__version__}.\n"
+               "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
+               "This is free software: you are free to change and redistribute it.\n"
+               "SIERRA comes with no warranty.\n\n"
+
+               "See the documentation at "
+               "https://swarm-robotics-sierra.readthedocs.io/en/master/,\n"
+               "or 'man sierra' for details.\n")
 
 
-class SIERRAArgumentParser(argparse.ArgumentParser):
+class ArgumentParser(argparse.ArgumentParser):
     """SIERRA's argument parser overriding default argparse behavior.
 
     Delivers a custom help message without listing options, as the options which
     SIERRA accepts differs dramatically depending on loaded plugins.
+
     """
+
+    kHelpMsg = ("Usage:\n\nsierra-cli [OPTION]...\n\n"
+                "What command line options SIERRA accepts depends on the loaded\n"
+                "--project, --platform, --exec-env, and project-specific options.\n"
+                "'man sierra-cli' will give you the full set of options that\n"
+                "comes with SIERRA.\n\n")
 
     def print_help(self, file=None):
         if file is None:
             file = sys.stdout
 
-        version = sierra.version.__version__
-        message = (f"This is SIERRA {version}.\n"
-                   "Usage: sierra-cli [OPTION]...\n"
-                   "See the documentation at "
-                   "https://swarm-robotics-sierra.readthedocs.io/en/master/, or"
-                   "type 'man sierra' inthe terminal.\n")
-        file.write(message + "\n")
+        file.write(self.kHelpMsg + "\n")
 
 
 class BaseCmdline:
@@ -54,6 +64,7 @@ class BaseCmdline:
     The base cmdline definition class for SIERRA for reusability.
 
     """
+
     @staticmethod
     def stage_usage_doc(stages: tp.List[int],
                         omitted: str = "If omitted: N/A.") -> str:
@@ -69,7 +80,9 @@ class BaseCmdline:
 
     @staticmethod
     def graphs_applicable_doc(graphs: tp.List[str]) -> str:
-        lst = "".join(map(lambda graph: "   - " + graph + "\n", graphs))
+        lst = "".join(map(lambda graph: "   - " +
+                          utils.sphinx_ref(graph) + "\n",
+                          graphs))
         return "\n.. TIP:: Applicable graphs:\n\n" + lst + "\n"
 
 
@@ -79,9 +92,9 @@ class BootstrapCmdline(BaseCmdline):
     """
 
     def __init__(self) -> None:
-        self.parser = SIERRAArgumentParser(prog='sierra-cli',
-                                           add_help=True,
-                                           allow_abbrev=False)
+        self.parser = ArgumentParser(prog='sierra-cli',
+                                     add_help=True,
+                                     allow_abbrev=False)
 
         bootstrap = self.parser.add_argument_group('Bootstrap options',
                                                    'Bare-bones options for bootstrapping SIERRA')
@@ -92,6 +105,15 @@ class BootstrapCmdline(BaseCmdline):
                                  Specify which :term:`Project` to load.
 
                                """ + self.stage_usage_doc([1, 2, 3, 4, 5]))
+
+        bootstrap.add_argument("--version", "-v",
+                               help="""
+
+                               Display SIERRA version information on stdout and
+                               then exit.
+
+                               """,
+                               action='store_true')
 
         bootstrap.add_argument("--log-level",
                                choices=["ERROR",
@@ -176,13 +198,15 @@ class BootstrapCmdline(BaseCmdline):
                                - ``hpc.slurm`` - The directs SIERRA to run
                                  experiments spread across multiple allocated
                                  nodes in an HPC computing environment managed
-                                 by SLURM. See :ref:`ln-sierra-hpc-plugins-slurm` for a
+                                 by SLURM. See
+                                 :ref:`ln-sierra-hpc-plugins-slurm` for a
                                  detailed description.
 
                                - ``hpc.adhoc`` - This will direct SIERRA to run
                                  experiments on an ad-hoc network of
-                                 computers. See :ref:`ln-sierra-hpc-plugins-adhoc` for
-                                 a detailed description.
+                                 computers. See
+                                 :ref:`ln-sierra-hpc-plugins-adhoc` for a
+                                 detailed description.
 
                                - ``robots.turtlebot`` - This will direct SIERRA
                                  to run experiments on real Turtlebots.
@@ -194,12 +218,12 @@ class BootstrapCmdline(BaseCmdline):
 
 
 class CoreCmdline(BaseCmdline):
-    """
-    Defines the core command line arguments for SIERRA using :class:`argparse`.
+    """Defines the core command line arguments for SIERRA using :class:`argparse`.
+
     """
 
     def __init__(self,
-                 parents: tp.Optional[tp.List[SIERRAArgumentParser]],
+                 parents: tp.Optional[tp.List[ArgumentParser]],
                  stages: tp.List[int]) -> None:
         self.scaffold_cli(parents)
         self.init_cli(stages)
@@ -225,19 +249,19 @@ class CoreCmdline(BaseCmdline):
             self.init_stage5()
 
     def scaffold_cli(self,
-                     parents: tp.Optional[tp.List[SIERRAArgumentParser]]) -> None:
+                     parents: tp.Optional[tp.List[ArgumentParser]]) -> None:
         """
         Scaffold CLI by defining the parser and common argument groups.
         """
         if parents is not None:
-            self.parser = SIERRAArgumentParser(prog='sierra-cli',
-                                               parents=parents,
-                                               add_help=False,
-                                               allow_abbrev=False)
+            self.parser = ArgumentParser(prog='sierra-cli',
+                                         parents=parents,
+                                         add_help=False,
+                                         allow_abbrev=False)
         else:
-            self.parser = SIERRAArgumentParser(prog='sierra-cli',
-                                               add_help=False,
-                                               allow_abbrev=False)
+            self.parser = ArgumentParser(prog='sierra-cli',
+                                         add_help=False,
+                                         allow_abbrev=False)
 
         self.multistage = self.parser.add_argument_group('Multi-stage options',
                                                          'Options which are used in multiple pipeline stages')
@@ -330,34 +354,34 @@ class CoreCmdline(BaseCmdline):
                                      default=[])
 
         self.multistage.add_argument("--pipeline",
-                                     metavar="stages",
                                      help="""
-
                                      Define which stages of the experimental
                                      pipeline to run:
 
-                                     - Stage1: Generate the experiment
+                                     - Stage1 - Generate the experiment
                                        definition from the template input file,
                                        batch criteria, and other command line
                                        options. Part of default pipeline.
 
-                                    - Stage2: Run a previously generated
-                                      experiment. Part of default pipeline.
+                                     - Stage2 - Run a previously generated
+                                       experiment. Part of default pipeline.
 
-                                    - Stage3: Post-process experimental results
-                                      after running the batch experiment; some
-                                      parts of this can be done in
-                                      parallel. Part of default pipeline.
+                                     - Stage3 - Post-process experimental
+                                       results after running the batch
+                                       experiment; some parts of this can be
+                                       done in parallel. Part of default
+                                       pipeline.
 
-                                    - Stage4: Perform deliverable generation
-                                      after processing results for a batch
-                                      experiment, which can include shiny graphs
-                                      and videos. Part of default pipeline.
+                                     - Stage4 - Perform deliverable generation
+                                       after processing results for a batch
+                                       experiment, which can include shiny
+                                       graphs and videos. Part of default
+                                       pipeline.
 
-                                    - Stage5: Perform graph generation for
-                                      comparing controllers AFTER graph
-                                      generation for batch experiments has
-                                      been run. Not part of default pipeline.
+                                     - Stage5 - Perform graph generation for
+                                       comparing controllers AFTER graph
+                                       generation for batch experiments has been
+                                       run. Not part of default pipeline.
 
                                      """,
                                      type=int,
@@ -420,14 +444,14 @@ class CoreCmdline(BaseCmdline):
                                      type=int,
                                      help="""
 
-                                    The # of experimental runs that will be run
-                                    and their results averaged to form the
-                                    result of a single experiment within a
+                                    The # of experimental runs that will be
+                                    executed and their results processed to form
+                                    the result of a single experiment within a
                                     batch.
 
                                     If ``--platform`` is a simulator and
                                     ``--exec-env`` is something other than
-                                    ``hpc.local`` then it will be used to
+                                    ``hpc.local`` then this may be be used to
                                     determine the concurrency of experimental
                                     runs.
 
@@ -556,9 +580,11 @@ class CoreCmdline(BaseCmdline):
 
                                  - ``bw`` - Calculate statistics necessary to
                                    show box and whisker plots around each point
-                                   in the graph
-                                   (:class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`
-                                   only).
+                                   in the graph. """ +
+
+                                 utils.sphinx_ref(':class: `~sierra.core.graphs.summary_line_graph.SummaryLineGraph`') +
+
+                                 """ only).
 
                                  - ``all`` - Generate all possible statistics,
                                    and plot all possible statistics on graphs.
@@ -574,7 +600,7 @@ class CoreCmdline(BaseCmdline):
                                  help="""
 
 
-                                 Specify, as a percent in [0,100], how much
+                                 Specify, as a percent in [0, 100], how much
                                  memory SIERRA should try to limit itself to
                                  using.
 
@@ -583,25 +609,24 @@ class CoreCmdline(BaseCmdline):
 
         self.multistage.add_argument("--df-homogenize",
                                      help="""
-
                                      SIERRA generally assumes/relies on all
                                      dataframes with the same name having the
-                                     same # of columns which are of equivalent
-                                     length across :term:`Experimental Runs
-                                     <Experimental Run>` (different columns
+                                     same  # of columns which are of equivalent
+                                     length across: term: `Experimental Runs
+                                     < Experimental Run >` (different columns
                                      within a dataframe can of course have
                                      different lengths). This is checked during
                                      stage 3 unless ``--df-skip-verify`` is
                                      passed. If strict verification is skipped,
                                      then SIERRA provides the following options
                                      when processing dataframes during stage
-                                     {3,4} to to homogenize them:
+                                     {3, 4} to to homogenize them:
 
                                      - ``none`` - Don't do anything. This may or
                                        may not produce crashes during stage 4,
                                        depending on what you are doing.
 
-                                    - ``pad`` - Project last valid value in
+                                     - ``pad`` - Project last valid value in
                                        columns which are too short down the
                                        column to make it match those which are
                                        longer.
@@ -641,7 +666,7 @@ class CoreCmdline(BaseCmdline):
                                  - ``intra`` - Generate intra-experiment graphs
                                    from the results of a single experiment
                                    within a batch, for each experiment in the
-                                   batch (this can take a long time with large
+                                   batch(this can take a long time with large
                                    batch experiments). If any intra-experiment
                                    models are defined and enabled, those are run
                                    and the results placed on appropriate graphs.
@@ -702,10 +727,10 @@ class CoreCmdline(BaseCmdline):
         plots.add_argument("--plot-log-xscale",
                            help="""
 
-                           Place the set of X values used to generate intra- and
+                           Place the set of X values used to generate intra - and
                            inter-experiment graphs into the logarithmic
                            space. Mainly useful when the batch criteria involves
-                           large swarm sizes, so that the plots are more
+                           large system sizes, so that the plots are more
                            readable.
 
                            """ +
@@ -719,8 +744,8 @@ class CoreCmdline(BaseCmdline):
 
                            Instead of using the values generated by a given
                            batch criteria for the X values, use an enumerated
-                           list [0,...,len(X value) - 1]. Mainly useful when the
-                           batch criteria involves large swarm sizes, so that
+                           list[0, ..., len(X value) - 1]. Mainly useful when the
+                           batch criteria involves large system sizes, so that
                            the plots are more readable.
 
                            """ +
@@ -732,10 +757,10 @@ class CoreCmdline(BaseCmdline):
         plots.add_argument("--plot-log-yscale",
                            help="""
 
-                           Place the set of Y values used to generate intra- and
+                           Place the set of Y values used to generate intra - and
                            inter-experiment graphs into the logarithmic
                            space. Mainly useful when the batch criteria involves
-                           large swarm sizes, so that the plots are more
+                           large system sizes, so that the plots are more
                            readable.
 
                            """ +
@@ -767,27 +792,26 @@ class CoreCmdline(BaseCmdline):
                            For example, in a bivariate batch criteria composed
                            of
 
-                           - :ref:`ln-sierra-platform-argos-bc-population-size` on the
-                             X axis (rows)
+                           -: ref: `ln-sierra-platform-argos-bc-population-size` on the
+                             X axis(rows)
 
-                           - Another batch criteria which does not affect swarm
+                           - Another batch criteria which does not affect system
                              size
 
                            Metrics will be calculated by `computing` across .csv
                            rows and `projecting` down the columns by default,
-                           since swarm size will only vary within a row. Passing
-                           a value of 1 to this option will override this
-                           calculation, which can be useful in bivariate batch
-                           criteria in which you are interested in the effect of
-                           the OTHER non-size criteria on various performance
-                           measures.
+                           since system size will only vary within a
+                           row. Passing a value of 1 to this option will
+                           override this calculation, which can be useful in
+                           bivariate batch criteria in which you are interested
+                           in the effect of the OTHER non-size criteria on
+                           various performance measures.
 
                            0=criteria of interest varies across `rows`.
 
                            1=criteria of interest varies across `columns`.
 
-                           This option only affects
-                           :class:`~sierra.core.variables.batch_criteria.BivarBatchCriteria`.
+                           This option only affects: class: `~sierra.core.variables.batch_criteria.BivarBatchCriteria`.
                            """ +
                            self.graphs_applicable_doc([':class:`~sierra.core.graphs.heatmap.Heatmap`']) +
                            self.stage_usage_doc([4]),
@@ -826,7 +850,7 @@ class CoreCmdline(BaseCmdline):
         rendering.add_argument("--render-cmd-opts",
                                help="""
 
-                               Specify the :program:`ffmpeg` options to appear
+                               Specify the: program: `ffmpeg` options to appear
                                between the specification of the input image
                                files and the specification of the output
                                file. The default is suitable for use with ARGoS
@@ -841,8 +865,7 @@ class CoreCmdline(BaseCmdline):
 
                                Enable generation of image files from CSV
                                files captured during stage 2 and averaged during
-                               stage 3 for each experiment. See
-                               :ref:`ln-sierra-usage-rendering-project` for details and
+                               stage 3 for each experiment. See: ref: `ln-sierra-usage-rendering-project` for details and
                                restrictions.
 
                                """ + self.stage_usage_doc([3, 4]),
@@ -853,8 +876,7 @@ class CoreCmdline(BaseCmdline):
 
                                Enable generation of videos from imagized
                                CSV files created as a result of
-                               ``--project-imagizing``. See
-                               :ref:`ln-sierra-usage-rendering-project` for details.
+                               ``--project-imagizing``. See: ref: `ln-sierra-usage-rendering-project` for details.
 
                                """ + self.stage_usage_doc([4]),
                                action='store_true')
@@ -870,8 +892,7 @@ class CoreCmdline(BaseCmdline):
                                  within ``--sierra-root``.
 
                                  The first controller in this list will be used
-                                 for as the controller of primary interest if
-                                 ``--comparison-type`` is passed.
+                                 for as the controller of primary interest if ``--comparison-type`` is passed.
 
                                  """ + self.stage_usage_doc([5]))
 
@@ -937,20 +958,24 @@ class CoreCmdline(BaseCmdline):
                                  options are:
 
                                  - ``LNraw`` - Output raw 1D performance
-                                   measures using a single: class:
-                                   `~sierra.core.graphs.summary_line_graph.SummaryLineGraph`
-                                   for each measure, with all ``-
-                                   -controllers-list`` controllers shown on the
+                                   measures using a single """ +
+
+                                 utils.sphinx_ref(':class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`') +
+
+                                 """ for each measure, with all ``--controllers-list`` controllers shown on the
                                    same graph.
 
                                  If the batch criteria is bivariate, the options
                                  are:
 
                                  - ``LNraw`` - Output raw performance measures
-                                   as a set of: class:
-                                   `~sierra.core.graphs.summary_line_graph.SummaryLineGraph`,
-                                   where each line graph is constructed from the
-                                   i-th row/column for the 2D dataframe for the
+                                   as a set of """ +
+
+                                 utils.sphinx_ref(':class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`') +
+
+                                 r"""s, where each
+                                   line graph is constructed from the i-th
+                                   row/column for the 2D dataframe for the
                                    performance results for all controllers.
 
                                  - ``HMraw`` - Output raw 2D performance
@@ -1051,28 +1076,28 @@ class CoreCmdline(BaseCmdline):
         domain may invert the meaning of lower values=better. If defined, the
         normalized domain the default for a given measure.
 
-        - ``pcm`` - Partial Curve Mapping (Witowski2012).
+        - ``pcm`` - Partial Curve Mapping(Witowski2012).
 
           - Intrinsic domain: math: `[0, \infty)`. Lower values indicate greater
             similarity.
 
           - Normalized domain: N/A.
 
-        - ``area_between`` - Area between the two curves (Jekel2018).
+        - ``area_between`` - Area between the two curves(Jekel2018).
 
           - Intrinsic domain::math:`[0, \infty)`. Lower values indicate greater
             similarity.
 
           - Normalized domain: N/A.
 
-        - ``frechet`` - Frechet distance (Frechet1906).
+        - ``frechet`` - Frechet distance(Frechet1906).
 
           - Intrinsic domain::math:`[0, \infty)`. Lower values indicate greater
             similarity.
 
           - Normalized domain: N/A.
 
-        - ``dtw`` - Dynamic Time Warping (Berndt1994).
+        - ``dtw`` - Dynamic Time Warping(Berndt1994).
 
           - Intrinsic domain::math:`[0, \infty)`. Lower values indicate greater
             similarity.
@@ -1081,7 +1106,7 @@ class CoreCmdline(BaseCmdline):
             similarity.
 
         - ``curve_length`` - Arc-length distance along the curve from the origin
-          of(applied - ideal) curve (Andrade-campos2009).
+          of(applied - ideal) curve(Andrade-campos2009).
 
           - Intrinsic domain::math:`[0, \infty)`.
 
@@ -1090,26 +1115,32 @@ class CoreCmdline(BaseCmdline):
 
 
 class CoreCmdlineValidator():
-    """
-    Validate the core command line arguments to ensure that the pipeline will
-    work properly in all stages, given the options that were passed.
+    """Validate the core command line arguments.
+
+    This ensures that the pipeline will work properly in all stages, given the
+    options that were passed.
 
     """
 
     def __call__(self, args: argparse.Namespace) -> None:
-        assert len(args.batch_criteria) <= 2,\
-            "Too many batch criteria passed"
+        self._check_bc(args)
+        self._check_pipeline(args)
 
         assert args.sierra_root is not None,\
             '--sierra-root is required for all stages'
+
+    def _check_bc(self, args: argparse.Namespace) -> None:
+        assert len(args.batch_criteria) <= 2,\
+            "Too many batch criteria passed"
 
         if len(args.batch_criteria) == 2:
             assert args.batch_criteria[0] != args.batch_criteria[1], \
                 "Duplicate batch criteria passed"
 
-        assert isinstance(args.batch_criteria, list), \
-            'Batch criteria not passed as list on cmdline'
+            assert isinstance(args.batch_criteria, list), \
+                'Batch criteria not passed as list on cmdline'
 
+    def _check_pipeline(self, args: argparse.Namespace) -> None:
         if any(stage in args.pipeline for stage in [1]) in args.pipeline:
             assert args.n_runs is not None,\
                 '--n-runs is required for running stage 1'
@@ -1154,7 +1185,7 @@ def sphinx_cmdline_stage5():
 
 
 __api__ = [
-    'SIERRAArgumentParser',
+    'ArgumentParser',
     'BaseCmdline',
     'BootstrapCmdline',
     'CoreCmdline',

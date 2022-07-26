@@ -14,9 +14,8 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""
-Classes for implementing stage 3 of the experimental pipeline: processing
-experimental results.
+"""Stage 3 of the experimental pipeline: processing experimental results.
+
 """
 
 # Core packages
@@ -37,13 +36,12 @@ from sierra.core import types, utils
 
 
 class PipelineStage3:
-    """Processes results of :term:`Experimental Runs <Experimental Run>` within a
-    single :term:`Experiment` and across multiple experiments together.
+    """Processes the results of running a :term:`Batch Experiment`.
 
     Currently this includes:
 
     - Generating statistics from results for generating per-experiment graphs
-      during stage 4. This can generated :term:`Averaged .csv` files, among
+      during stage 4. This can generate :term:`Averaged .csv` files, among
       other statistics.
 
     - Collating results across experiments for generating inter-experiment

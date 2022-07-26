@@ -13,10 +13,11 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-Classes for generating common XML changes for all :term:`ROS1`-based
-:term:`Platforms <Platform>`; i.e., changes which are platform-specific,
-but applicable to all projects using :term:`ROS1`.
+"""Classes for generating XML changes common to all :term:`ROS1` platforms.
+
+I.e., changes which are platform-specific, but applicable to all projects using
+ROS1.
+
 """
 # Core packages
 import logging
@@ -46,6 +47,7 @@ class ROSExpDefGenerator():
     reasonable.
 
     Attributes:
+
         controller: The controller used for the experiment.
         cmdopts: Dictionary of parsed cmdline parameters.
 
@@ -163,9 +165,7 @@ class ROSExpRunDefUniqueGenerator:
         return exp_def
 
     def generate_random(self, exp_def: definition.XMLExpDef) -> None:
-        """Generate XML changes for random seeding for a specific: term:
-        `Experimental Run` in an: term: `Experiment` during the input generation
-        process.
+        """Generate XML changes for random seeding for an experimental run.
 
         """
         self.logger.trace("Generating random seed changes for run%s",  # type: ignore
@@ -188,9 +188,7 @@ class ROSExpRunDefUniqueGenerator:
                         })
 
     def generate_paramfile(self, exp_def: definition.XMLExpDef) -> None:
-        """Generate XML changes for the parameter for for a specific
-        : term: `Experimental Run` in an: term: `Experiment` during the input
-        generation process.
+        """Generate XML changes for the parameter file for an experimental run.
 
         """
         self.logger.trace("Generating parameter file changes for run%s",

@@ -13,9 +13,9 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-HPC plugin for running SIERRA locally (not necessarily HPC, but it fits well
-enough under that semantic umbrella).
+"""HPC plugin for running SIERRA locally.
+
+Not necessarily HPC, but it fits well enough under that semantic umbrella.
 
 """
 

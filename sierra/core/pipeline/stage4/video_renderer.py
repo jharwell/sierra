@@ -14,9 +14,13 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""
-Classes for rendering frames (1) captured by by the ``--platform`` during
-stage 2, (2) generated during stage 3 of SIERRA.
+"""Classes for rendering frames (images).
+
+Frames can be:
+
+- Captured by by the ``--platform`` during stage 2.
+
+- Generated during stage 3 of SIERRA via imagizing.
 
 """
 
@@ -51,7 +55,10 @@ class BatchExpParallelVideoRenderer:
 
     def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
         """
+        Do the rendering.
+
         Arguments:
+
             main_config: Parsed dictionary of main YAML configuration.
             render_opts: Dictionary of render options.
             batch_exp_root: Root directory for the batch experiment.
@@ -146,8 +153,8 @@ class BatchExpParallelVideoRenderer:
 
 
 class ExpVideoRenderer:
-    """Render all images in a specified input directory to a video via
-    :program:`ffmpeg`.
+    """Render all images in the input directory to a video via :program:`ffmpeg`.
+
     """
 
     def __init__(self) -> None:

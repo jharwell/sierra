@@ -32,8 +32,8 @@ import sierra.core.variables.batch_criteria as bc
 
 
 class UnivarGraphCollationInfo():
-    """Data class containing the :term:`Collated .csv` files for a particular
-    graph.
+    """Data class of the :term:`Collated .csv` files for a particular graph.
+
     """
 
     def __init__(self,
@@ -46,8 +46,8 @@ class UnivarGraphCollationInfo():
 
 
 class BivarGraphCollationInfo():
-    """Data class containing the :term:`Collated .csv` files for a particular
-    graph.
+    """Data class of the :term:`Collated .csv` files for a particular graph.
+
     """
 
     def __init__(self,
@@ -232,8 +232,7 @@ class BivarGraphCollator:
 
 class GraphParallelCollator():
     """
-    Generates :term:`Collated .csv` files from the :term:`Summary .csv` files
-    for all experiments in the batch.
+    Generate :term:`Collated .csv` files from :term:`Summary .csv`.
 
     """
 

@@ -14,8 +14,7 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
-"""Common cmdline parsing and validation for :term:`Platforms <Platform>` using
-:term:`ROS1`.
+"""Common cmdline classes :term:`Platforms <Platform>` using :term:`ROS1`.
 
 """
 
@@ -108,10 +107,7 @@ class ROSCmdline(cmd.BaseCmdline):
 
     @staticmethod
     def cmdopts_update(cli_args, cmdopts: types.Cmdopts) -> None:
-        """
-        Updates the core cmdopts dictionary with (key,value) pairs from the
-        ROS-specific cmdline options.
-
+        """Update cmdopts with ROS-specific cmdline options.
         """
         updates = {
             # multistagev

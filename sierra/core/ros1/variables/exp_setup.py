@@ -14,9 +14,9 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""Classes for the ``--exp-setup`` cmdline option for :term:`Platforms
-<Platform>` which use :term:`ROS1`. See :ref:`ln-sierra-vars-expsetup` for usage
-documentation.
+"""Classes for the ``--exp-setup`` cmdline option for ROS1 platforms.
+
+See :ref:`ln-sierra-vars-expsetup` for usage documentation.
 
 """
 
@@ -168,12 +168,12 @@ class ExpSetup():
 def factory(arg: str,
             barrier_start: bool,
             robots_need_timekeeper: bool) -> ExpSetup:
-    """
-    Factory to create :class:`ExpSetup` derived classes from the command
-    line definition.
+    """Create an :class:`ExpSetup` derived class from the command line definition.
 
     Arguments:
+
        arg: The value of ``--exp-setup``.
+
     """
     parser = Parser({'n_secs_per_run': config.kROS['n_secs_per_run'],
                      'n_ticks_per_sec': config.kROS['n_ticks_per_sec'],

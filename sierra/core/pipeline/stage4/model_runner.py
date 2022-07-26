@@ -14,8 +14,7 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
-"""Classes for running project-specific :term:`Models <Model>` in a general
-purpose way within a :term:`Batch Experiment`.
+"""Classes for running project-specific :term:`Models <Model>`.
 
 """
 # Core packages

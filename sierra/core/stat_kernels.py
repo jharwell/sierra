@@ -13,9 +13,8 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-Kernels for the different types of statistics which can be generated from
-experiments.
+"""Kernels for the different types of statistics generated from experiments.
+
 """
 # Core packages
 import typing as tp
@@ -30,9 +29,13 @@ from sierra.core import config
 
 
 class conf95:
-    """
-    Generate stddev statistics suitable for 95% confidence intervals. Applicable
-    to line graphs.
+    """Generate stddev statistics plotting for 95% confidence intervals.
+
+    Applicable to:
+
+    - :class:`~sierra.core.graphs.stacked_line_graph.StackedLineGraph`
+    - :class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`
+
     """
     @staticmethod
     def from_groupby(groupby: pd.core.groupby.generic.DataFrameGroupBy) -> tp.Dict[str,
@@ -70,8 +73,12 @@ class mean:
 
 class bw:
     """
-    Generate statistics so that box and whisker plots can be included for each
-    data point. Applicable to line graphs.
+    Generate statistics for plotting box and whisker plots around data points.
+
+    Applicable to:
+
+    - :class:`~sierra.core.graphs.stacked_line_graph.StackedLineGraph`
+    - :class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`
     """
     @staticmethod
     def from_groupby(groupby: pd.core.groupby.generic.DataFrameGroupBy) -> tp.Dict[str, pd.DataFrame]:

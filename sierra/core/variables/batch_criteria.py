@@ -14,8 +14,7 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 """
-Base classes for defining the variables in SIERRA which are then used to
-define sets of experiments to run.
+Base classes used to define :term:`Batch Experiments <Batch Experiment>`.
 """
 # Core packages
 import os
@@ -38,8 +37,7 @@ from sierra.core import types
 
 
 class IQueryableBatchCriteria(implements.Interface):
-    """Mixin interface for batch criteria which can be queried during stage
-    {1,2}.
+    """Mixin interface for criteria which can be queried during stage {1,2}.
 
     Used to extract additional information needed for configuring some
     :term:`Platforms <Platform>` and execution environments.
@@ -62,67 +60,65 @@ class IConcreteBatchCriteria(implements.Interface):
                      cmdopts: types.Cmdopts,
                      exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
         """
+        Calculate X axis ticks for graph generation.
 
         Arguments:
+
             cmdopts: Dictionary of parsed command line options.
 
             exp_dirs: If not None, then this list of directories directories
                       will be used to calculate the ticks, rather than the
                       results of gen_exp_dirnames().
-
-        Returns:
-            A list of values to use as the X axis tick values for graph
-            generation.
-
         """
+
         raise NotImplementedError
 
     def graph_xticklabels(self,
                           cmdopts: types.Cmdopts,
                           exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
-        """
+        """Calculate X axis tick labels for graph generation.
+
         Arguments:
+
             cmdopts: Dictionary of parsed command line options.
 
             exp_dirs: If not None, then these directories will be used to
                       calculate the labels, rather than the results of
                       gen_exp_dirnames().
 
-        Returns:
-            A list of values to use as the X axis tick labels for graph
-            generation.
-
         """
         raise NotImplementedError
 
     def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
-        """
+        """Get the X-label for a graph.
+
         Returns:
+
             The X-label that should be used for the graphs of various
             performance measures across batch criteria.
+
         """
         raise NotImplementedError
 
 
 class IBivarBatchCriteria(implements.Interface):
     """
-    Interface for bivariate batch criteria (those with two univariate axes).
+    Interface for bivariate batch criteria(those with two univariate axes).
     """
 
     def graph_yticks(self,
                      cmdopts: types.Cmdopts,
                      exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
         """
+        Calculate Y axis ticks for graph generation.
+
         Arguments:
+
             cmdopts: Dictionary of parsed command line options.
 
             exp_dirs: If not None, then these directories will be used to
                       calculate the ticks, rather than the results of
                       gen_exp_dirnames().
-
-        Returns:
-            A list of criteria-specific values to use as the Y axis tick
-            values for graph generation.
 
         """
         raise NotImplementedError
@@ -131,23 +127,24 @@ class IBivarBatchCriteria(implements.Interface):
                           cmdopts: types.Cmdopts,
                           exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
         """
+        Calculate X axis ticks for graph generation.
+
         Arguments:
+
             cmdopts: Dictionary of parsed command line options.
 
             exp_dirs: If not None, then these directories will be used to
                       calculate the labels, rather than the results of
                       gen_exp_dirnames().
-
-        Returns:
-            A list of values to use as the Y axis tick labels for graph
-            generation.
-
         """
         raise NotImplementedError
 
     def graph_ylabel(self, cmdopts: types.Cmdopts) -> str:
         """
+        Get the Y-label for a graph.
+
         Returns:
+
             The Y-label that should be used for the graphs of various
             performance measures across batch criteria. Only needed by bivar
             batch criteria.
@@ -156,14 +153,16 @@ class IBivarBatchCriteria(implements.Interface):
 
 
 class IBatchCriteriaType(implements.Interface):
-    """
-    Mixin interface for batch criteria for specifying if they are univariate or
-    bivariate.
+    """Mixin interface for criteria for querying univariate/bivariate.
+
     """
 
     def is_bivar(self) -> bool:
         """
+        Determine if the batch criteria is bivariate.
+
         Returns:
+
             `True` if this class is a bivariate batch criteria instance, and
             `False` otherwise.
         """
@@ -171,8 +170,10 @@ class IBatchCriteriaType(implements.Interface):
 
     def is_univar(self) -> bool:
         """
+        Determine if the batch criteria is univariate.
 
         Returns:
+
             `True` if this class is a univar batch criteria instance, and
             `False` otherwise.
         """
@@ -184,6 +185,7 @@ class BatchCriteria():
     """Defines experiments via  lists of sets of changes to make to an XML file.
 
     Attributes:
+
         cli_arg: Unparsed batch criteria string from command line.
 
         main_config: Parsed dictionary of main YAML configuration.
@@ -221,20 +223,20 @@ class BatchCriteria():
 
     def gen_exp_dirnames(self, cmdopts: types.Cmdopts) -> tp.List[str]:
         """
-        Generate list of strings from the current changelist to use for
-        directory names within a batch experiment.
+        Generate list of directory names from the criteria.
 
         Returns:
-            List of directory names for current experiment
+
+            List of directory names for current experiment.
 
         """
         return []
 
     def arena_dims(self) -> tp.List[utils.ArenaExtent]:
-        """
-        Returns:
-            Arena dimensions used for each experiment in the batch. Not
-            applicable to all criteria.
+        """Get the arena dimensions used for each experiment in the batch.
+
+        Not applicable to all criteria.
+
         """
         dims = []
         for exp in self.gen_attr_changelist():
@@ -295,10 +297,11 @@ class BatchCriteria():
     def scaffold_exps(self,
                       batch_def: definition.XMLExpDef,
                       cmdopts: types.Cmdopts) -> None:
-        """
-        Scaffold a batch experiment by taking the raw template input file and
-        applying the XML attribute changes to it, and saving the result in the
-        experiment input directory in each experiment in the batch.
+        """Scaffold a batch experiment.
+
+        Takes the raw template input file and applying the XML attribute changes
+        to it, and saves the result in the experiment input directory in each
+        experiment in the batch.
 
         """
         chgs_for_batch = self.gen_attr_changelist()
@@ -410,15 +413,15 @@ class UnivarBatchCriteria(BatchCriteria):
                     cmdopts: types.Cmdopts,
                     exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[int]:
         """
+        Calculate system sizes used the batch experiment, sorted.
+
         Arguments:
+
             cmdopts: Dictionary of parsed command line options.
 
             exp_dirs: If is not `None`, then these directories will be used to
-                      calculate the swarm sizes, rather than the results of
+                      calculate the system sizes, rather than the results of
                       `gen_exp_dirnames()`.
-
-        Returns:
-            The list of swarm sizes used the batch experiment, sorted.
 
         """
         sizes = []
@@ -483,8 +486,7 @@ class BivarBatchCriteria(BatchCriteria):
 
     def gen_exp_dirnames(self, cmdopts: types.Cmdopts) -> tp.List[str]:
         """
-        Generates a SORTED list of strings for all X/Y axis directories for the
-        bivariate experiments, or both X and Y.
+        Generate a SORTED list of strings for all X/Y axis directories.
 
         """
         list1 = self.criteria1.gen_exp_dirnames(cmdopts)
@@ -498,10 +500,10 @@ class BivarBatchCriteria(BatchCriteria):
         return ret
 
     def populations(self, cmdopts: types.Cmdopts) -> tp.List[tp.List[int]]:
-        """
-        Generate a 2D array of swarm sizes used the batch experiment, in
-        the same order as the directories returned from `gen_exp_dirnames()` for
-        each criteria along each axis.
+        """Generate a 2D array of system sizes used the batch experiment.
+
+        Sizes are in the same order as the directories returned from
+        `gen_exp_dirnames()` for each criteria along each axis.
 
         """
         dirs = self.gen_exp_dirnames(cmdopts)
@@ -530,11 +532,11 @@ class BivarBatchCriteria(BatchCriteria):
         return sizes
 
     def exp_scenario_name(self, exp_num: int) -> str:
-        """
-        Given the exp number in the batch, compute a valid, parsable scenario
-        name. It is necessary to query this criteria after generating the
-        changelist in order to create generator classes for each experiment in
-        the batch with the correct name and definition.
+        """Given the expeperiment number, compute a parsable scenario name.
+
+        It is necessary to query this function after generating the changelist
+        in order to create generator classes for each experiment in the batch
+        with the correct name and definition in some cases.
 
         Can only be called if constant density is one of the sub-criteria.
 

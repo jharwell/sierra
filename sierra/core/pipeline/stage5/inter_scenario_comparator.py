@@ -14,8 +14,10 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""Classes for handling univariate comparisons for a single controller across a
-set of scenarios for stage5 of the experimental pipeline.
+"""Classes for comparing deliverables across a set of scenarios.
+
+Univariate batch criteria only. The same controller must be used for all
+scenarios.
 
 """
 
@@ -46,6 +48,7 @@ class UnivarInterScenarioComparator:
     Univariate batch criteria only.
 
     Attributes:
+
         controller: Controller to use.
 
         scenarios: List of scenario names to compare ``controller`` across.
@@ -125,11 +128,12 @@ class UnivarInterScenarioComparator:
                                       self.cli_args.batch_criteria)
 
     def _leaf_select(self, candidate: str) -> bool:
-        """
-        Determine if a scenario that the controller has been run on in the past
-        is part of the set passed that the controller should be compared across
-        (i.e., the controller is not compared across all scenarios it has ever
-        been run on).
+        """Figure out if a batch experiment root should be included in the comparison.
+
+        Inclusion determined by if a scenario that the selected controller has
+        been run on in the past is part of the set passed that the controller
+        should be compared across (i.e., the controller is not compared across
+        all scenarios it has ever been run on).
 
         """
         template_stem, scenario, _ = rdg.parse_batch_leaf(candidate)
@@ -182,9 +186,7 @@ class UnivarInterScenarioComparator:
                    title: str,
                    label: str,
                    legend: tp.List[str]) -> None:
-        """
-        Generates a :class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`
-        comparing the specified controller across specified scenarios.
+        """Generate graph comparing the specified controller across scenarios.
 
         """
         istem = dest_stem + "-" + self.controller
@@ -220,9 +222,7 @@ class UnivarInterScenarioComparator:
                  batch_leaf: str,
                  src_stem: str,
                  dest_stem: str) -> None:
-        """
-        Helper function for generating a set of .csv files for use in
-        inter-scenario graph generation.
+        """Generate a set of .csv files for use in inter-scenario graph generation.
 
         Generates:
 

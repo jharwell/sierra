@@ -13,10 +13,12 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-Classes for the generating the commands to run :term:`experiments <Batch
+"""Terminal interface for pltaform plugins.
+
+Classes for generating the commands to run :term:`experiments <Batch
 Experiment>` on multiple :term:`platforms <Platform>` using multiple execution
 methods.
+
 """
 
 # Core packages
@@ -43,8 +45,7 @@ import sierra.core.variables.batch_criteria as bc
 
 class CmdlineParserGenerator():
     """
-    Dispatcher to generate additional cmdline arguments which are dependent on
-    the selected ``--platform``.
+    Dispatcher to generate additional platform-dependent cmdline arguments.
     """
 
     def __init__(self, platform: str) -> None:
@@ -57,15 +58,15 @@ class CmdlineParserGenerator():
 
 @implements.implements(bindings.IExpRunShellCmdsGenerator)
 class ExpRunShellCmdsGenerator():
-    """
-    Trampoline class for dispatching shell cmd generation to platforms and
-    execution environments.
+    """Dispatcher for shell cmd generation for an :term:`Experimental Run`.
 
+    Dispatches generation to the selected platform and execution environment.
     Called during stage 1 to add shell commands which should be run immediately
     before and after the shell command to actually execute a single
-    :term:`Experimental Run` to the commands file to be fed to whatever the
-    tool a given execution environment environment uses to run cmds (e.g., GNU
+    :term:`Experimental Run` to the commands file to be fed to whatever the tool
+    a given execution environment environment uses to run cmds (e.g., GNU
     parallel).
+
     """
 
     def __init__(self,
@@ -112,13 +113,14 @@ class ExpRunShellCmdsGenerator():
 
 @implements.implements(bindings.IExpShellCmdsGenerator)
 class ExpShellCmdsGenerator():
-    """Trampoline class for dispatching shell cmd generation to platforms and
-    execute environments.
+    """Dispatcher for shell cmd generation for an :term:`Experiment`.
 
+    Dispatches generation to the selected platform and execution environment.
     Called during stage 2 to run shell commands immediately before running a
     given :term:`Experiment`, to run shell commands to actually run the
     experiment, and to run shell commands immediately after the experiment
     finishes.
+
     """
 
     def __init__(self,
@@ -151,12 +153,12 @@ class ExpShellCmdsGenerator():
 
 
 class ParsedCmdlineConfigurer():
-    """
-    Dispatcher for configuring the main cmdopts dictionary for the selected
-    platform and execution environment.
+    """Dispatcher for configuring the cmdopts dictionary.
 
+    Dispatches configuring to the selected platform and execution environment.
     Called before the pipeline starts to add new/modify existing cmdline
     arguments after initial parsing.
+
     """
 
     def __init__(self,
@@ -190,13 +192,12 @@ class ParsedCmdlineConfigurer():
 
 
 class ExpConfigurer():
-    """
-    Perform platform-specific configuration for a given experimental run that
-    you can do programmatically (i.e., without needing a shell). This usually is
-    things like creating directories, etc.
+    """Perform platform-specific configuration for an :term:`Experimental Run`.
 
-    Called at the end of stage 1 during configuring a specific
-    :term:`Experimental Run`.
+    For things can do programmatically (i.e., without needing a shell). This
+    usually is things like creating directories, etc.  Called at the end of
+    stage 1 during for each experimental run.
+
     """
 
     def __init__(self, cmdopts: types.Cmdopts) -> None:
@@ -215,12 +216,11 @@ class ExpConfigurer():
 
 
 class ExecEnvChecker():
-    """Verify the configured ``--exec-env`` for the configured ``--platform``
-    before running any experiments during stage 2.
+    """Verify the execution environment perior to running experiments in stage 2.
 
-    This is needed in addition to the checks performed during stage 1, because
-    stage 2 can be run on its own without running stage 1 first on the same
-    SIERRA invocation.
+    Verifies ``--exec-env`` for the configured ``--platform``.  This is needed
+    in addition to the checks performed during stage 1, because stage 2 can be
+    run on its own without running stage 1 first on the same SIERRA invocation.
 
     """
 
@@ -386,13 +386,15 @@ class ExecEnvChecker():
 
 
 def get_free_port() -> int:
-    """
-    Determines a free port using sockets. From
+    """Determine a free port using sockets.
+
+    From
     https://stackoverflow.com/questions/44875422/how-to-pick-a-free-port-for-a-subprocess
 
     Because of TCP TIME_WAIT, close()d ports are still unusable for a few
     minutes, which will leave plenty of time for SIERRA to assign all unique
     ports to processes during stage 2.
+
     """
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind(('', 0))  # bind to port 0 -> OS allocates free port

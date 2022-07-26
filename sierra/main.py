@@ -15,10 +15,7 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
-"""Main module/entry point for SIERRA, the helpful command line swarm-robotic
-automation tool.
-
-"""
+"""Main module/entry point for SIERRA."""
 
 # Core packages
 import logging
@@ -26,6 +23,7 @@ import sys
 from collections.abc import Iterable
 import os
 import multiprocessing as mp
+import argparse
 
 # 3rd party packages
 
@@ -42,13 +40,10 @@ import sierra.version
 
 
 class SIERRA():
-    """
-    Initialize SIERRA and then launch the pipeline.
-    """
+    """Initialize SIERRA and then launch the pipeline."""
 
-    def __init__(self) -> None:
+    def __init__(self, bootstrap: cmd.BootstrapCmdline) -> None:
         # Bootstrap the cmdline
-        bootstrap = cmd.BootstrapCmdline()
         bootstrap_args, other_args = bootstrap.parser.parse_known_args()
 
         # Setup logging customizations
@@ -146,7 +141,16 @@ def main():
     # copy loaded modules, which results in the singleton plugin managers not
     # working.
     mp.set_start_method("fork")
-    SIERRA()()
+
+    # Bootstrap the cmdline to print version if needed
+    bootstrap = cmd.BootstrapCmdline()
+    bootstrap_args, _ = bootstrap.parser.parse_known_args()
+
+    if bootstrap_args.version:
+        sys.stdout.write(cmd.kVersionMsg)
+    else:
+        app = SIERRA(bootstrap)
+        app()
 
 
 if __name__ == "__main__":

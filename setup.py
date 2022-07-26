@@ -47,9 +47,17 @@ setup(
     author_email="john.r.harwell@gmail.com",
     license="GPLv3+",
     platforms=['linux', 'osx'],
+    keywords=['research',
+              'automation',
+              'robotics',
+              'agent-based modeling',
+              'reproducibility',
+              'reusability'],
     classifiers=[
-        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Environment :: Console",
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: POSIX :: Linux",
@@ -84,14 +92,21 @@ setup(
         "implements",
         "retry",
     ],
+    # Apt module not included--should be provided by linux OS if SIERRA is
+    # installed on linux.
     extras_require={
         "devel": [
             # type checking
             'pylint',
             'pytype',
+            'pydocstyle',
+            'xenon',
+            'flake8',
+            'nox',
+            'pytest',
+            'mypy',
 
             # Deployment packages
-            'mypy',
             'build',
             'twine',
 
@@ -102,7 +117,7 @@ setup(
             "sphinx-argparse",
             "sphinx-tabs",
             "sphinxcontrib-napoleon",
-            "sphinx-last-updated-by-git"
+            "sphinx-last-updated-by-git",
             "autoapi",
             "graphviz"
         ]

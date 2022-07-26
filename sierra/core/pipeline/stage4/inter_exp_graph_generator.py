@@ -49,6 +49,7 @@ class InterExpGraphGenerator:
     :ref:`ln-sierra-tutorials-project-hooks` for details.
 
     Attributes:
+
         cmdopts: Dictionary of parsed cmdline attributes.
 
         main_config: Parsed dictionary of main YAML configuration
@@ -80,7 +81,9 @@ class InterExpGraphGenerator:
 
     def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
         """
-        Runs the following to generate graphs across experiments in the batch:
+        Generate graphs.
+
+        Performs the following steps:
 
         #. :class:`~sierra.core.pipeline.stage4.inter_exp_graph_generator.LineGraphsGenerator`
            to generate linegraphs (univariate batch criteria only).

@@ -150,7 +150,7 @@ class Heatmap:
 
     def _plot_ticks(self, ax) -> None:
         """
-        Plot X,Y ticks and their corresponding labels
+        Plot X,Y ticks and their corresponding labels.
         """
         ax.tick_params(labelsize=self.text_size['tick_label'])
 
@@ -164,8 +164,7 @@ class Heatmap:
 
 
 class DualHeatmap:
-    """Generates a side-by-side plot of two heataps from a set of CSV
-    files.
+    """Generates a side-by-side plot of two heataps from two CSV files.
 
     ``.mean`` files must be named as ``<input_stem_fpath>_X.mean``, where `X` is
     non-negative integer. Input ``.mean`` files must be 2D grids of the same
@@ -294,10 +293,11 @@ class DualHeatmap:
             bar.ax.set_ylabel(self.zlabel, fontsize=self.text_size['xyz_label'])
 
     def _plot_ticks(self, ax, xvals, yvals, xlabels: bool, ylabels: bool) -> None:
-        """
-        Plot ticks and tick labels. If the labels are numerical and the numbers are
-        too large, force scientific notation (the ``rcParam`` way of doing this
-        does not seem to work...)
+        """Plot ticks and tick labels.
+
+        If the labels are numerical and the numbers are too large, force
+        scientific notation (the ``rcParam`` way of doing this does not seem to
+        work...)
 
         """
         ax.tick_params(labelsize=self.text_size['tick_label'])

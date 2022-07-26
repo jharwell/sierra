@@ -1,4 +1,4 @@
-# SIERRA (reSearch pIpEline for Reproducability, Reusability, and Automation)
+# SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
 
 
 | Usage   | Release | Development |

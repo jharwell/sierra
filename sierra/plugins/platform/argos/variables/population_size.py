@@ -13,9 +13,10 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-Classes for the population size batch criteria. See
-:ref:`ln-sierra-platform-argos-bc-population-size` for usage documentation.
+"""Classes for the population size batch criteria.
+
+See :ref:`ln-sierra-platform-argos-bc-population-size` for usage documentation.
+
 """
 
 # Core packages
@@ -42,6 +43,7 @@ class PopulationSize(population_size.BasePopulationSize):
     Note: Usage of this class assumes homogeneous swarms.
 
     Attributes:
+
         size_list: List of integer swarm sizes defining the range of the
                    variable for the batch experiment.
 
@@ -82,9 +84,7 @@ def factory(cli_arg: str,
             main_config: types.YAMLDict,
             cmdopts: types.Cmdopts,
             **kwargs) -> PopulationSize:
-    """
-    Factory to create :class:`PopulationSize` derived classes from the command
-    line definition.
+    """Create a :class:`PopulationSize` derived class from the cmdline definition.
 
     """
     parser = population_size.Parser()

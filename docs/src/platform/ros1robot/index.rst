@@ -59,8 +59,9 @@ invocation:
   robot (this is a configuration parameter--see
   :ref:`ln-sierra-tutorials-project-main-config`).
 
-- ROS does not provide a way to say "Run this experiment for X seconds", SIERRA
-  inserts its own timekeeper node into each robot which will exit after X
-  seconds and take the roslaunch process with it.
+- ROS does not provide a way to say "Run this experiment for X seconds", so
+  SIERRA inserts its own timekeeper node into each robot which will exit after X
+  seconds and take the roslaunch process with it on each robot and/or the master
+  node.
 
 See also :ref:`ln-sierra-req-code-ros1robot`.

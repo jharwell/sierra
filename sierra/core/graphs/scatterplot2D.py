@@ -29,10 +29,9 @@ from sierra.core import storage, config, utils
 
 
 class Scatterplot2D:
-    """Generates a 2D scatterplot of rows vs. colums (X vs. Y) from the specified
-    ``CSV`` file.
+    """Generates a 2D scatterplot of rows vs. colums (X vs. Y) from a CSV.
 
-    If the necessary ``CSV`` file does not exist, the graph is not generated.
+    If the necessary CSV file does not exist, the graph is not generated.
 
     """
 

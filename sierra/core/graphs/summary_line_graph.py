@@ -39,6 +39,7 @@ class SummaryLineGraph:
     according to configuration.
 
     Attributes:
+
         stats_root: The absolute/relative path to the ``statistics/`` directory
                     for the batch experiment.
 
@@ -268,6 +269,14 @@ class SummaryLineGraph:
     def _read_stats(self) -> tp.Dict[str, list]:
         dfs = {}
 
+        dfs.update(self._read_conf95_stats())
+        dfs.update(self._read_bw_stats())
+
+        return dfs
+
+    def _read_conf95_stats(self) -> tp.Dict[str, list]:
+        dfs = {}
+
         if self.stats in ['conf95', 'all']:
             stddev_ipath = os.path.join(self.stats_root,
                                         self.input_stem + config.kStatsExt['stddev'])
@@ -278,6 +287,11 @@ class SummaryLineGraph:
             else:
                 self.logger.warning("stddev file not found for '%s'",
                                     self.input_stem)
+
+        return dfs
+
+    def _read_bw_stats(self) -> tp.Dict[str, list]:
+        dfs = {}
 
         if self.stats in ['bw', 'all']:
             whislo_ipath = os.path.join(self.stats_root,

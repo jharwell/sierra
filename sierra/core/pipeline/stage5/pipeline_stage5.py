@@ -14,9 +14,8 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""
-Classes for implementing stage 5 of the experimental pipeline: comparing
-deliverables.
+"""Stage 5 of the experimental pipeline: comparing deliverables.
+
 """
 
 # Core packages
@@ -112,7 +111,7 @@ class PipelineStage5:
             self.scenarios = []
 
     def run(self, cli_args) -> None:
-        """Runs stage 5 of the experimental pipeline.
+        """Run stage 5 of the experimental pipeline.
 
         If ``--controller-comparison`` was passed:
 
@@ -145,7 +144,7 @@ class PipelineStage5:
         else:
             legend = self.controllers
 
-        self._verify_controllers(self.controllers, cli_args)
+        self._verify_comparability(self.controllers, cli_args)
 
         self.logger.info(
             "Inter-batch controller comparison of %s...", self.controllers)
@@ -202,11 +201,12 @@ class PipelineStage5:
                          self.cmdopts['controller'],
                          self.scenarios)
 
-    def _verify_controllers(self, controllers, cli_args):
-        """Verify that all controllers have run the same set of experiments before
-        doing the comparison. If they have not, it is not `necessarily` an
-        error, but probably should be looked at, so it is only a warning, not
-        fatal.
+    def _verify_comparability(self, controllers, cli_args):
+        """Check if the specified controllers can be compared.
+
+        Comparable controllers have all been run on the same set of batch
+        experiments. If they have not, it is not `necessarily` an error, but
+        probably should be looked at, so it is only a warning, not fatal.
 
         """
         for t1 in controllers:

@@ -30,27 +30,36 @@ class IBaseVariable(implements.Interface):
     """
 
     def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
-        """Generate a list of sets of XML attributes to change in the template
-        input XML file.
+        """Generate XML attributes to change in a batch experiment definition.
+
+        Modifications are sets, one per experiment in the batch, because the
+        order you apply them doesn't matter.
 
         """
         raise NotImplementedError
 
     def gen_tag_rmlist(self) -> tp.List[xml.TagRmList]:
-        """Generate a list of lists of XML tags to remove from the template
-        input XML file."""
+        """Generate XML tags to remove from the batch experiment definition.
+
+        Modifications are lists, one per experiment in the batch, because the
+        order you apply them matters.
+        """
+
         raise NotImplementedError
 
     def gen_tag_addlist(self) -> tp.List[xml.TagAddList]:
-        """Generate a list of lists of XML tags (and possibly child attributes)
-        to add to the template input XML file.
+        """Generate XML tags to add to the batch experiment definition.
 
+        Modifications are lists, one per experiment in the batch, because the
+        order you apply them matters.
         """
         raise NotImplementedError
 
     def gen_files(self) -> None:
-        """Generate one or more new files which will (presumably) be referenced
-        in the template input file by path.
+        """Generate one or more new files to add to the batch experiment definition.
+
+        Presumably, the created files will be referenced in the template input
+        file by path.
 
         """
 
