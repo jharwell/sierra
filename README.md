@@ -4,7 +4,7 @@
 | Usage   | Release | Development |
 |---------|---------|-------------|
 | [![](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) | ![](https://github.com/swarm-robotics/sierra/actions/workflows/static-analysis.yml/badge.svg?branch=master) | ![](https://github.com/swarm-robotics/sierra/actions/workflows/static-analysis.yml/badge.svg?branch=devel) |
-| [![Python 3.6](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/release/python-360/)  | ![](https://github.com/swarm-robotics/sierra/actions/workflows/argos-integration-tests.yml/badge.svg?branch=master) | ![](https://github.com/swarm-robotics/sierra/actions/workflows/argos-integration-tests.yml/badge.svg?branch=devel) |
+| [![Python 3.8](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/release/python-360/)  | ![](https://github.com/swarm-robotics/sierra/actions/workflows/argos-integration-tests.yml/badge.svg?branch=master) | ![](https://github.com/swarm-robotics/sierra/actions/workflows/argos-integration-tests.yml/badge.svg?branch=devel) |
 | [![Linux](https://svgshare.com/i/Zhy.svg)](https://svgshare.com/i/Zhy.svg) [![macOS](https://svgshare.com/i/ZjP.svg)](https://svgshare.com/i/ZjP.svg) |![](https://github.com/swarm-robotics/sierra/actions/workflows/ros1gazebo-integration-tests.yml/badge.svg?branch=master) | ![](https://github.com/swarm-robotics/sierra/actions/workflows/ros1gazebo-integration-tests.yml/badge.svg?branch=devel) |
 | [![Downloads](https://pepy.tech/badge/sierra-research)](https://pepy.tech/project/sierra-research)  | [![](https://readthedocs.org/projects/swarm-robotics-sierra/badge/?version=master)](https://swarm-robotics-sierra.readthedocs.io/en/master/?badge=master) | [![](https://readthedocs.org/projects/swarm-robotics-sierra/badge/?version=master)](https://swarm-robotics-sierra.readthedocs.io/en/master/?badge=devel)|
 | [![DOI](https://zenodo.org/badge/125774567.svg)](https://zenodo.org/badge/latestdoi/125774567) | |
@@ -169,7 +169,7 @@ The basic requirements are:
 
 - Recent OSX or Linux (Windows is not supported).
 
-- python >= 3.9.
+- python >= 3.8.
 
 For more details, such requirements for researcher code, see the
 [docs](https://swarm-robotics-sierra.readthedocs.io/en/master/src/requirements.html).

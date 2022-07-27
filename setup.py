@@ -55,8 +55,8 @@ setup(
               'reusability'],
     classifiers=[
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Environment :: Console",
         "Operating System :: MacOS :: MacOS X",
@@ -96,7 +96,7 @@ setup(
     # installed on linux.
     extras_require={
         "devel": [
-            # type checking
+            # checkers, CI, etc.
             'pylint',
             'pytype',
             'pydocstyle',
@@ -122,7 +122,7 @@ setup(
             "graphviz"
         ]
     },
-    python_requires=">=3.9",
+    python_requires=">=3.8",
     entry_points={
         "console_scripts": [
             "sierra-cli=sierra.main:main",

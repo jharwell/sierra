@@ -27,6 +27,7 @@ import os
 import logging
 import pickle
 import xml.etree.ElementTree as ET
+import sys
 
 # 3rd party packages
 
@@ -382,12 +383,21 @@ class Writer():
 
         # Write out pretty XML to make it easier to read to see if things
         # have been generated correctly.
-        ET.indent(to_write, space="\t", level=0)
-        to_write.write(opath, encoding='utf-8')
+        if sys.version_info < (3, 9):
+            from xml.dom import minidom
+            with open(opath, "w") as f:
+                raw = ET.tostring(to_write.getroot())
+                pretty = minidom.parseString(raw).toprettyxml(indent="  ")
+                f.write(pretty)
+        else:
+            ET.indent(to_write, space="\t", level=0)
+            to_write.write(opath, encoding='utf-8')
 
     def _write_prepare_tree(self,
                             base_path: str,
-                            config: dict) -> tp.Tuple[ET.Element, str, str]:
+                            config: dict) -> tp.Tuple[tp.Optional[ET.Element],
+                                                      str,
+                                                      str]:
         if config['src_parent'] is None:
             src_root = config['src_tag']
         else:

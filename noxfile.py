@@ -22,7 +22,7 @@ import nox
 # Project packages
 
 
-@nox.session(python=["3.9"])
+@nox.session(python=['3.8', '3.9'])
 def lint(session):
     session.install('.')  # same as 'pip3 install .'
     session.install('.[devel]')  # same as 'pip3 install .[devel]'
@@ -51,7 +51,7 @@ def lint(session):
 
 
 # venv argument needed so the apt module can be found in the nox venv
-@nox.session(python=["3.9"], venv_params=['--system-site-packages'])
+@nox.session(python=['3.8', '3.9'], venv_params=['--system-site-packages'])
 def static_analysis(session):
     session.install('.')  # same as 'pip3 install .'
     session.install('.[devel]')  # same as 'pip3 install .[devel]'
@@ -61,7 +61,7 @@ def static_analysis(session):
                 'sierra')
 
 
-@nox.session(python=["3.9"])
+@nox.session(python=['3.8', '3.9'])
 def docs(session):
     session.install('.')  # same as 'pip3 install .'
     session.install('.[devel]')  # same as 'pip3 install .[devel]'
@@ -82,7 +82,9 @@ def docs(session):
                 'sierra')
 
 
-@nox.session(python=["3.9"])
+@nox.session(python=['3.8', '3.9'])
 def unit_tests(session):
     session.install('.')  # same as 'pip3 install .'
+    session.install('.[devel]')  # same as 'pip3 install .[devel]'
+
     session.run("pytest")

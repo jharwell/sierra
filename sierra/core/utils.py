@@ -373,7 +373,7 @@ def pickle_dump(obj: object, f: tp.IO) -> None:
     pickle.dump(obj, f)
 
 
-def gen_scenario_spec(cmdopts: types.Cmdopts, **kwargs) -> dict[str, tp.Any]:
+def gen_scenario_spec(cmdopts: types.Cmdopts, **kwargs) -> tp.Dict[str, tp.Any]:
     # scenario is passed in kwargs during stage 5 (can't be passed via
     # --scenario in general )
     scenario = kwargs.get('scenario', cmdopts['scenario'])
