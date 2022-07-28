@@ -44,12 +44,12 @@ Installing SIERRA
 .. _ln-sierra-packages-rosbridge:
 
 SIERRA ROSBridge
-----------------
+================
 
-SIERRA provides a :term:`ROS1` package containing functionality it uses to manage
-simulations and provide run-time support to :term:`projects<Project>` using a
-:term:`Platform` built on ROS. To use SIERRA with a ROS platform, you need to
-setup the SIERRA ROSbridge package here (details in README):
+SIERRA provides a :term:`ROS1` package containing functionality it uses to
+manage simulations and provide run-time support to :term:`projects<Project>`
+using a :term:`Platform` built on ROS. To use SIERRA with a ROS platform, you
+need to setup the SIERRA ROSbridge package here (details in README):
 `<https://github.com/swarm-robotics/sierra_rosbridge.git>`_.
 
 This package provides the following nodes:

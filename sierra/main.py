@@ -23,7 +23,6 @@ import sys
 from collections.abc import Iterable
 import os
 import multiprocessing as mp
-import argparse
 
 # 3rd party packages
 
@@ -53,6 +52,7 @@ class SIERRA():
 
         # Check SIERRA runtime environment
         sierra.core.startup.startup_checks(not bootstrap_args.skip_pkg_checks)
+        self.logger.info("Using python=%s.", sys.version)
 
         sierra_root = os.path.dirname(os.path.abspath(__file__))
 

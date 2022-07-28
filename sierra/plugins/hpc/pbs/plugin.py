@@ -137,50 +137,7 @@ class ExpShellCmdsGenerator():
         return ret
 
 
-@implements.implements(bindings.IExpRunShellCmdsGenerator)
-class ExpRunShellCmdsGenerator():
-    """
-    Stub implementation.
-    """
-
-    def __init__(self,
-                 cmdopts: types.Cmdopts,
-                 criteria: bc.IConcreteBatchCriteria,
-                 n_robots: int,
-                 exp_num: int) -> None:
-        pass
-
-    def pre_run_cmds(self,
-                     host: str,
-                     input_fpath: str,
-                     run_num: int) -> tp.List[types.ShellCmdSpec]:
-        return []
-
-    def exec_run_cmds(self,
-                      host: str,
-                      input_fpath: str,
-                      run_num: int) -> tp.List[types.ShellCmdSpec]:
-        return []
-
-    def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
-        return []
-
-
-class ExecEnvChecker():
-    """
-    Stub implementation.
-    """
-
-    def __init__(self, cmdopts: types.Cmdopts) -> None:
-        pass
-
-    def __call__(self) -> None:
-        pass
-
-
 __api__ = [
     'ParsedCmdlineConfigurer',
     'ExpRunShellCmdsGenerator',
-    'ExpShellCmdsGenerator',
-    'ExecEnvChecker'
 ]

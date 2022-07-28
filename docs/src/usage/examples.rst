@@ -1,5 +1,9 @@
 .. _ln-sierra-usage-examples:
 
+*********************
+SIERRA Usage Examples
+*********************
+
 ==============
 ARGoS Examples
 ==============

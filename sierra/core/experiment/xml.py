@@ -291,7 +291,7 @@ class WriterConfig():
                                  of ``dest_root``. This key is required.
 
                 ``src_tag`` - The name of the tag within ``src_parent`` to write
-                              out.This key is required.
+                              out. This key is required.
 
                 ``dest_root`` - The new name of ``src_root`` when writing out
                                 the partial XML tree to a new file. This key is
@@ -329,12 +329,12 @@ class Writer():
         self.tree = tree
         self.logger = logging.getLogger(__name__)
 
-    def __call__(self, write_config: WriterConfig, base_path: str) -> None:
+    def __call__(self, write_config: WriterConfig, base_opath: str) -> None:
         for config in write_config.values:
-            self._write_with_config(base_path, config)
+            self._write_with_config(base_opath, config)
 
-    def _write_with_config(self, base_path: str, config: dict) -> None:
-        tree, src_root, opath = self._write_prepare_tree(base_path, config)
+    def _write_with_config(self, base_opath: str, config: dict) -> None:
+        tree, src_root, opath = self._write_prepare_tree(base_opath, config)
 
         if tree is None:
             self.logger.warning("Cannot write non-existent tree@%s to %s",
@@ -385,7 +385,7 @@ class Writer():
         # have been generated correctly.
         if sys.version_info < (3, 9):
             from xml.dom import minidom
-            with open(opath, "w") as f:
+            with open(opath, "w", encoding='utf-8') as f:
                 raw = ET.tostring(to_write.getroot())
                 pretty = minidom.parseString(raw).toprettyxml(indent="  ")
                 f.write(pretty)
@@ -394,7 +394,7 @@ class Writer():
             to_write.write(opath, encoding='utf-8')
 
     def _write_prepare_tree(self,
-                            base_path: str,
+                            base_opath: str,
                             config: dict) -> tp.Tuple[tp.Optional[ET.Element],
                                                       str,
                                                       str]:
@@ -408,9 +408,9 @@ class Writer():
 
         # Customizing the output write path is not required
         if 'opath_leaf' in config and config['opath_leaf'] is not None:
-            opath = base_path + config['opath_leaf']
+            opath = base_opath + config['opath_leaf']
         else:
-            opath = base_path
+            opath = base_opath
 
         return (tree_out, src_root, opath)
 

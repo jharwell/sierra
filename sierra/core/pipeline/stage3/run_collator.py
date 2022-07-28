@@ -48,9 +48,9 @@ from sierra.core import types, storage, utils, config
 class ExperimentalRunParallelCollator:
     """Generates :term:`Collated .csv` files for each :term:`Experiment`.
 
-    :term:`Collectade .csv` files generated from :term:`Output .csv` files
-     across :term:`Experimental Run`s.  Gathered in parallel for each experiment
-     for speed, unless disabled with ``--processing-serial``.
+    :term:`Collated .csv` files generated from :term:`Output .csv` files across
+     :term:`Experimental Runs <Experimental Run>`.  Gathered in parallel for
+     each experiment for speed, unless disabled with ``--processing-serial``.
 
     """
 

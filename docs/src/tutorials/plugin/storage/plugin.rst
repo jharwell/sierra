@@ -1,24 +1,9 @@
-.. _ln-sierra-tutorials-plugin-storage:
+Within this file, you must define the following classes, which must be named
+**EXACTLY** as specified, otherwise SIERRA will not detect them.
 
-=============================
-Creating a New Storage Plugin
-=============================
+.. code-block:: python
 
-For the purposes of this tutorial, I will assume you are creating a new storage
-:term: `Plugin` ``infinite``, and the code for that plugin lives in
-``$HOME/git/plugins/storage/infinite``.
-
-Create the Code
-===============
-
-#. Create the following filesystem structure in
-   ``$HOME/git/plugins/storage/infinite``:
-
-   .. tabs::
-
-      .. code-tab::  python ``plugin.py``
-
-         import pandas as pd
+        import pandas as pd
 
 
         def df_read(path: str, **kwargs) -> pd.DataFrame:
@@ -39,9 +24,3 @@ Create the Code
             you add it.
 
             """
-
-Connect to SIERRA
-=================
-
-#. Put ``$HOME/git/plugins`` on your :envvar:`SIERRA_PLUGIN_PATH`. Then
-   your plugin can be selected as ``--exec-env=storage.infinite``.

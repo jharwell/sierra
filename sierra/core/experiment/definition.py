@@ -26,6 +26,7 @@ Currently, experiments can be specified in:
 import typing as tp
 import logging
 import xml.etree.ElementTree as ET
+import sys
 
 # 3rd party packages
 
@@ -59,6 +60,10 @@ class XMLExpDef:
 
         self.logger = logging.getLogger(__name__)
 
+        if sys.version_info < (3, 9):
+            self.logger.warning(("XML files written with python < 3.9 "
+                                 "are not human readable"))
+
     def write_config_set(self, config: xml.WriterConfig) -> None:
         """Set the write config for the object.
 
@@ -68,12 +73,15 @@ class XMLExpDef:
         """
         self.write_config = config
 
-    def write(self, base_path: str) -> None:
+    def write(self, base_opath: str) -> None:
         """Write the XML stored in the object to the filesystem.
 
         """
+        assert self.write_config is not None, \
+            "Can't write without write config"
+
         writer = xml.Writer(self.tree)
-        writer(self.write_config, base_path)
+        writer(self.write_config, base_opath)
 
     def attr_get(self, path: str, attr: str):
         """Retrieve the specified attribute of the element at the specified path.

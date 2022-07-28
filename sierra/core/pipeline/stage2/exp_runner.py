@@ -174,9 +174,11 @@ class BatchExpRunner:
                          self.cmdopts['platform'],
                          self.cmdopts['exec_env'])
 
-        module = pm.pipeline.get_plugin_module(
-            self.cmdopts['platform'])
-        module.pre_exp_diagnostics(self.cmdopts, self.logger)
+        module = pm.pipeline.get_plugin_module(self.cmdopts['platform'])
+
+        # Output some useful information before running
+        if hasattr(module, 'pre_exp_diagnostics'):
+            module.pre_exp_diagnostics(self.cmdopts, self.logger)
 
         exp_all = [os.path.join(self.batch_exp_root, d)
                    for d in self.criteria.gen_exp_dirnames(self.cmdopts)]
@@ -186,7 +188,11 @@ class BatchExpRunner:
                                           self.criteria)
 
         # Verify environment is OK before running anything
-        platform.ExecEnvChecker(self.cmdopts)()
+        if hasattr(platform, 'ExecEnvChecker'):
+            self.logger.debug("Checking execution environment")
+            platform.ExecEnvChecker(self.cmdopts)()
+        else:
+            self.logger.debug("Skip execution environment checking--not needed")
 
         # Calculate path for to file for logging execution times
         now = datetime.datetime.now()

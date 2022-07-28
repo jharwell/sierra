@@ -76,38 +76,61 @@ class ExpRunShellCmdsGenerator():
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
         self.criteria = criteria
-        module = pm.pipeline.get_plugin_module(
-            self.cmdopts['platform'])
-        self.platform = module.ExpRunShellCmdsGenerator(self.cmdopts,
-                                                        self.criteria,
-                                                        n_robots,
-                                                        exp_num)
-        module = pm.pipeline.get_plugin_module(
-            self.cmdopts['exec_env'])
-        self.env = module.ExpRunShellCmdsGenerator(self.cmdopts,
-                                                   self.criteria,
-                                                   n_robots,
-                                                   exp_num)
+        module = pm.pipeline.get_plugin_module(self.cmdopts['platform'])
+
+        if hasattr(module, 'ExpRunShellCmdsGenerator'):
+            self.platform = module.ExpRunShellCmdsGenerator(self.cmdopts,
+                                                            self.criteria,
+                                                            n_robots,
+                                                            exp_num)
+        else:
+            self.platform = None
+
+        module = pm.pipeline.get_plugin_module(self.cmdopts['exec_env'])
+        if hasattr(module, 'ExpRunShellCmdsGenerator'):
+            self.env = module.ExpRunShellCmdsGenerator(self.cmdopts,
+                                                       self.criteria,
+                                                       n_robots,
+                                                       exp_num)
+        else:
+            self.env = None
 
     def pre_run_cmds(self,
                      host: str,
                      input_fpath: str,
                      run_num: int) -> tp.List[types.ShellCmdSpec]:
-        cmds = self.platform.pre_run_cmds(host, input_fpath, run_num)
-        cmds.extend(self.env.pre_run_cmds(host, input_fpath, run_num))
+        cmds = []
+        if self.platform:
+            cmds.extend(self.platform.pre_run_cmds(host, input_fpath, run_num))
+
+        if self.env:
+            cmds.extend(self.env.pre_run_cmds(host, input_fpath, run_num))
+
         return cmds
 
     def exec_run_cmds(self,
                       host: str,
                       input_fpath: str,
                       run_num: int) -> tp.List[types.ShellCmdSpec]:
-        cmds = self.platform.exec_run_cmds(host, input_fpath, run_num)
-        cmds.extend(self.env.exec_run_cmds(host, input_fpath, run_num))
+        cmds = []
+
+        if self.platform:
+            cmds.extend(self.platform.exec_run_cmds(host, input_fpath, run_num))
+
+        if self.env:
+            cmds.extend(self.env.exec_run_cmds(host, input_fpath, run_num))
+
         return cmds
 
     def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
-        cmds = self.platform.post_run_cmds(host)
-        cmds.extend(self.env.post_run_cmds(host))
+        cmds = []
+
+        if self.platform:
+            cmds.extend(self.platform.post_run_cmds(host))
+
+        if self.env:
+            cmds.extend(self.env.post_run_cmds(host))
+
         return cmds
 
 
@@ -127,28 +150,61 @@ class ExpShellCmdsGenerator():
                  cmdopts: types.Cmdopts,
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
-        module = pm.pipeline.get_plugin_module(
-            self.cmdopts['platform'])
-        self.platform = module.ExpShellCmdsGenerator(self.cmdopts,
-                                                     exp_num)
-        module = pm.pipeline.get_plugin_module(
-            self.cmdopts['exec_env'])
-        self.env = module.ExpShellCmdsGenerator(self.cmdopts,
-                                                exp_num)
+        self.logger = logging.getLogger(__name__)
+
+        module = pm.pipeline.get_plugin_module(self.cmdopts['platform'])
+        if hasattr(module, 'ExpShellCmdsGenerator'):
+            self.logger.debug(("Skipping generating experiment shell commands "
+                               "for --platform=%s"),
+                              self.cmdopts['platform'])
+
+            self.platform = module.ExpShellCmdsGenerator(self.cmdopts,
+                                                         exp_num)
+        else:
+            self.platform = None
+
+        module = pm.pipeline.get_plugin_module(self.cmdopts['exec_env'])
+        if hasattr(module, 'ExpShellCmdsGenerator'):
+            self.logger.debug(("Skipping generating experiment shell commands "
+                               "for --exec-env=%s"),
+                              self.cmdopts['exec_env'])
+
+            self.env = module.ExpShellCmdsGenerator(self.cmdopts,
+                                                    exp_num)
+        else:
+            self.env = None
 
     def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
-        cmds = self.platform.pre_exp_cmds()
-        cmds.extend(self.env.pre_exp_cmds())
+        cmds = []
+
+        if self.platform:
+            cmds.extend(self.platform.pre_exp_cmds())
+
+        if self.env:
+            cmds.extend(self.env.pre_exp_cmds())
+
         return cmds
 
     def exec_exp_cmds(self, exec_opts: types.SimpleDict) -> tp.List[types.ShellCmdSpec]:
-        cmds = self.platform.exec_exp_cmds(exec_opts)
-        cmds.extend(self.env.exec_exp_cmds(exec_opts))
+        cmds = []
+
+        if self.platform:
+            cmds.extend(self.platform.exec_exp_cmds(exec_opts))
+
+        if self.env:
+            cmds.extend(self.env.exec_exp_cmds(exec_opts))
+
         return cmds
 
     def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
-        cmds = self.platform.post_exp_cmds()
-        cmds.extend(self.env.post_exp_cmds())
+        cmds = []
+
+        if self.platform:
+            cmds.extend(self.platform.post_exp_cmds())
+
+        if self.env:
+            cmds.extend(self.env.post_exp_cmds())
+
         return cmds
 
 
@@ -169,24 +225,34 @@ class ParsedCmdlineConfigurer():
         self.logger = logging.getLogger(__name__)
 
         module = pm.pipeline.get_plugin_module(self.platform)
-        self.platformg = module.ParsedCmdlineConfigurer(exec_env)
+        if hasattr(module, 'ParsedCmdlineConfigurer'):
+            self.platformg = module.ParsedCmdlineConfigurer(exec_env)
+        else:
+            self.platformg = None
+            self.logger.debug("Skipping configuring cmdline from --platform=%s",
+                              self.platform)
 
         module = pm.pipeline.get_plugin_module(self.exec_env)
-        self.envg = module.ParsedCmdlineConfigurer(exec_env)
+        if hasattr(module, 'ParsedCmdlineConfigurer'):
+            self.envg = module.ParsedCmdlineConfigurer(exec_env)
+        else:
+            self.envg = None
+            self.logger.debug("Skipping configuring cmdline from --exec-env=%s",
+                              self.exec_env)
 
     def __call__(self, args: argparse.Namespace) -> argparse.Namespace:
         # Configure for selected execution enivornment first, to check for
         # low-level details.
-        self.logger.debug("Configuring cmdline from --exec_env=%s",
-                          self.exec_env)
         args.__dict__['exec_env'] = self.exec_env
-        self.envg(args)
+
+        if self.envg:
+            self.envg(args)
 
         # Configure for selected platform
-        self.logger.debug("Configuring cmdline from --platform=%s",
-                          self.platform)
         args.__dict__['platform'] = self.platform
-        self.platformg(args)
+
+        if self.platformg:
+            self.platformg(args)
 
         return args
 
@@ -216,11 +282,10 @@ class ExpConfigurer():
 
 
 class ExecEnvChecker():
-    """Verify the execution environment perior to running experiments in stage 2.
+    """Base class for verifying execution environments before running experiments.
 
-    Verifies ``--exec-env`` for the configured ``--platform``.  This is needed
-    in addition to the checks performed during stage 1, because stage 2 can be
-    run on its own without running stage 1 first on the same SIERRA invocation.
+    Platforms and/or execution environments needed to perform verification
+    should derive from this class to use the common functionality present in it.
 
     """
 
@@ -295,9 +360,12 @@ class ExecEnvChecker():
 
     def __call__(self) -> None:
         module = pm.pipeline.get_plugin_module(self.cmdopts['platform'])
-        module.ExecEnvChecker(self.cmdopts)()
+        if hasattr(module, 'ExecEnvChecker'):
+            module.ExecEnvChecker(self.cmdopts)()
+
         module = pm.pipeline.get_plugin_module(self.cmdopts['exec_env'])
-        module.ExecEnvChecker(self.cmdopts)()
+        if hasattr(module, 'ExecEnvChecker'):
+            module.ExecEnvChecker(self.cmdopts)()
 
     def check_connectivity(self,
                            login: str,

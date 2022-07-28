@@ -333,7 +333,7 @@ class BatchExpCreator:
         # writing template XML input files for each experiment in the batch with
         # changes from the batch criteria added.
         exp_def = definition.XMLExpDef(input_fpath=self.batch_config_template,
-                                       write_config=xml.WriterConfig([{'.': ''}]))
+                                       write_config=None)
 
         self.criteria.scaffold_exps(exp_def, self.cmdopts)
 

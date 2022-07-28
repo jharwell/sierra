@@ -180,33 +180,6 @@ class ExpShellCmdsGenerator():
         return ret
 
 
-@implements.implements(bindings.IExpRunShellCmdsGenerator)
-class ExpRunShellCmdsGenerator():
-    def __init__(self,
-                 cmdopts: types.Cmdopts,
-                 criteria: bc.IConcreteBatchCriteria,
-                 n_robots: int,
-                 exp_num: int) -> None:
-        self.criteria = criteria
-        self.cmdopts = cmdopts
-        self.exp_num = exp_num
-
-    def pre_run_cmds(self,
-                     host: str,
-                     input_fpath: str,
-                     run_num: int) -> tp.List[types.ShellCmdSpec]:
-        return []
-
-    def exec_run_cmds(self,
-                      host: str,
-                      input_fpath: str,
-                      run_num: int) -> tp.List[types.ShellCmdSpec]:
-        return []
-
-    def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
-        return []
-
-
 class ExecEnvChecker(platform.ExecEnvChecker):
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         super().__init__(cmdopts)

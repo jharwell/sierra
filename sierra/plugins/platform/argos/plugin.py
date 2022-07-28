@@ -311,6 +311,20 @@ def population_size_from_pickle(chgs: tp.Union[xml.AttrChangeSet,
     return -1
 
 
+def arena_dims_from_criteria(criteria: bc.BatchCriteria) -> tp.List[utils.ArenaExtent]:
+    dims = []
+    for exp in criteria.gen_attr_changelist():
+        for c in exp:
+            if c.path == ".//arena" and c.attr == "size":
+                d = utils.Vector3D.from_str(c.value)
+                dims.append(utils.ArenaExtent(d))
+
+    assert len(dims) > 0,\
+        "Scenario dimensions not contained in batch criteria"
+
+    return dims
+
+
 def robot_type_from_def(exp_def: definition.XMLExpDef) -> tp.Optional[str]:
     """
     Get the entity type of the robots managed by ARGoS.
@@ -328,11 +342,6 @@ def population_size_from_def(exp_def: definition.XMLExpDef,
                              main_config: types.YAMLDict,
                              cmdopts: types.Cmdopts) -> int:
     return population_size_from_pickle(exp_def.attr_chgs, main_config, cmdopts)
-
-
-def robot_prefix_extract(main_config: types.YAMLDict,
-                         cmdopts: types.Cmdopts) -> tp.Optional[str]:
-    return None
 
 
 def pre_exp_diagnostics(cmdopts: types.Cmdopts,

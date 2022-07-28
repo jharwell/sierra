@@ -232,25 +232,20 @@ class BatchCriteria():
         """
         return []
 
-    def arena_dims(self) -> tp.List[utils.ArenaExtent]:
+    def arena_dims(self, cmdopts: types.Cmdopts) -> tp.List[utils.ArenaExtent]:
         """Get the arena dimensions used for each experiment in the batch.
 
         Not applicable to all criteria.
 
-        """
-        dims = []
-        for exp in self.gen_attr_changelist():
-            for c in exp:
-                if c.path == ".//arena" and c.attr == "size":
-                    x, y, z = c.value.split(',')
-                    dims.append(utils.ArenaExtent(Vector3D(int(float(x)),
-                                                           int(float(
-                                                               y)),
-                                                           int(float(z)))))
+        Must be implemented on a per-platform basis, as different platforms have
+        different means of computing the size of the arena.
 
-        assert len(dims) > 0,\
-            "Scenario dimensions not contained in batch criteria"
-        return dims
+        """
+        module = pm.pipeline.get_plugin_module(cmdopts['platform'])
+        assert hasattr(module, 'arena_dims_from_criteria'), \
+            f"Platform plugin {module.__name__} does not implement arena_dims_from_criteria()"
+
+        return module.arena_dims_from_criteria(self)
 
     def n_exp(self) -> int:
         self.verify_mods()
@@ -432,9 +427,10 @@ class UnivarBatchCriteria(BatchCriteria):
 
         module = pm.pipeline.get_plugin_module(cmdopts['platform'])
         for d in dirs:
-            exp_def = definition.unpickle(os.path.join(self.batch_input_root,
-                                                       d,
-                                                       sierra.core.config.kPickleLeaf))
+            path = os.path.join(self.batch_input_root,
+                                d,
+                                sierra.core.config.kPickleLeaf)
+            exp_def = definition.unpickle(path)
 
             sizes.append(module.population_size_from_pickle(exp_def,
                                                             self.main_config,

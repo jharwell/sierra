@@ -51,15 +51,24 @@ def exec_env_sanity_checks(module) -> None:
     """
     logging.trace("Verifying --exec-env plugin interface")  # type: ignore
 
-    classes = ['ParsedCmdlineConfigurer',
-               'ExpRunShellCmdsGenerator',
-               'ExpShellCmdsGenerator',
-               'ExecEnvChecker'
-               ]
+    req_classes = []
     in_module = inspect.getmembers(module, inspect.isclass)
-    for c in classes:
+
+    for c in req_classes:
         assert (any(c in name for (name, _) in in_module)),\
             f"Execution environment plugin '{module.__name__}' does not define '{c}'"
+
+    opt_classes = ['ParsedCmdlineConfigurer',
+                   'ExpRunShellCmdsGenerator',
+                   'ExpShellCmdsGenerator',
+                   'ExecEnvChecker']
+
+    for c in opt_classes:
+        if not any(c in name for (name, _) in in_module):
+            logging.debug(("Execution environment plugin '%s' does not define "
+                           "'%s'"),
+                          module.__name__,
+                          c)
 
 
 def platform_sanity_checks(module) -> None:
@@ -68,28 +77,49 @@ def platform_sanity_checks(module) -> None:
     """
     logging.trace("Verifying --platform plugin interface")  # type: ignore
 
-    classes = ['ParsedCmdlineConfigurer',
-               'ExpRunShellCmdsGenerator',
-               'ExpShellCmdsGenerator',
-               'ExpConfigurer',
-               'ExecEnvChecker',
-               'CmdlineParserGenerator'
-               ]
-    functions = ['population_size_from_def',
-                 'population_size_from_pickle',
-                 'robot_prefix_extract'
-                 ]
+    req_classes = ['ExpConfigurer',
+                   'CmdlineParserGenerator'
+                   ]
+
+    req_functions = ['population_size_from_def',
+                     'population_size_from_pickle',
+                     ]
+
+    opt_classes = ['ParsedCmdlineConfigurer',
+                   'ExpRunShellCmdsGenerator',
+                   'ExpShellCmdsGenerator',
+                   'ExecEnvChecker']
+
+    opt_functions = ['robot_prefix_extract',
+                     'arena_dims_from_criteria']
+
     in_module = inspect.getmembers(module, inspect.isclass)
 
-    for c in classes:
+    for c in req_classes:
         assert (any(c in name for (name, _) in in_module)),\
             f"Platform plugin '{module.__name__}' does not define '{c}'"
 
+    for f in opt_classes:
+        if not any(f in name for (name, _) in in_module):
+            logging.debug(("Platform plugin '%s' not define define '%s'"
+                           "--some SIERRA functionality may not be available. "
+                           "See docs for details."),
+                          module.__name__,
+                          f)
+
     in_module = inspect.getmembers(module, inspect.isfunction)
 
-    for f in functions:
+    for f in req_functions:
         assert (any(f in name for (name, _) in in_module)),\
-            f"Platform plugin '{module.__name__}' does not define '{f}'"
+            f"Platform plugin '{module.__name__}' does not define '{f}()'"
+
+    for f in opt_functions:
+        if not any(f in name for (name, _) in in_module):
+            logging.debug(("Platform plugin '%s' not define define '%s()'"
+                           "--some SIERRA functionality may not be available. "
+                           "See docs for details."),
+                          module.__name__,
+                          f)
 
 
 __api__ = {

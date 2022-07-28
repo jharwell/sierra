@@ -310,7 +310,7 @@ class IExpConfigurer(implements.Interface):
 
         - ``per-exp`` - A single GNU parallel cmds file per experiment.
 
-        - ``per-run` - A single GNU parallel cmds file per run.
+        - ``per-run`` - A single GNU parallel cmds file per run.
 
         """
         raise NotImplementedError

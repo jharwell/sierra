@@ -105,6 +105,7 @@ setup(
             'nox',
             'pytest',
             'mypy',
+            'xmldiff',
 
             # Deployment packages
             'build',

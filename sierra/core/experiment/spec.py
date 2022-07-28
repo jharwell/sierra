@@ -77,12 +77,12 @@ class ExperimentSpec():
         # Need to get per-experiment arena dimensions from batch criteria, as
         # they might be different for each experiment
         if from_univar_bc:
-            self.arena_dim = criteria.arena_dims()[exp_num]
+            self.arena_dim = criteria.arena_dims(cmdopts)[exp_num]
             self.scenario_name = criteria.exp_scenario_name(exp_num)
             self.logger.debug("Read scenario dimensions '%s' from univariate batch criteria",
                               self.arena_dim)
         elif from_bivar_bc1 or from_bivar_bc2:
-            self.arena_dim = criteria.arena_dims()[exp_num]
+            self.arena_dim = criteria.arena_dims(cmdopts)[exp_num]
             self.logger.debug("Read scenario dimensions '%s' bivariate batch criteria",
                               self.arena_dim)
             self.scenario_name = criteria.exp_scenario_name(exp_num)
