@@ -10,6 +10,8 @@
 - [ ] Testing specific command line options
 - [ ] Testing that the generated experiments match between python versions
       (i.e., file contents is the same).
+- [ ] Testing PBS execution environment--pretty sure I can script a local setup
+      like for slurm.
 
 ** TODO [#B] Add --version flag
 This really should be there.... And not require a valid --project to be passed.

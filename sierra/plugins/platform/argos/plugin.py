@@ -23,6 +23,7 @@ import multiprocessing
 import re
 import shutil
 import logging
+import sys
 
 # 3rd party packages
 import implements
@@ -140,20 +141,17 @@ class ParsedCmdlineConfigurer():
     def _hpc_adhoc(self, args: argparse.Namespace) -> None:
         self.logger.debug("Configuring ARGoS for ADHOC execution")
 
-        with utils.utf8open(args.nodefile, 'r') as f:
-            lines = f.readlines()
-            n_nodes = len(lines)
-
-            ppn = 0
-            for line in lines:
-                ppn = min(ppn, int(line.split('/')[0]))
+        nodes = platform.ExecEnvChecker.parse_nodefile(args.nodefile)
+        ppn = sys.maxsize
+        for node in nodes:
+            ppn = min(ppn, node['n_cores'])
 
         # For HPC, we want to use the the maximum # of simultaneous jobs per
         # node such that there is no thread oversubscription. We also always
         # want to allocate each physics engine its own thread for maximum
         # performance, per the original ARGoS paper.
         if args.exec_jobs_per_node is None:
-            args.exec_jobs_per_node = int(float(args.n_runs) / n_nodes)
+            args.exec_jobs_per_node = int(float(args.n_runs) / len(nodes))
 
         args.physics_n_engines = int(ppn / args.exec_jobs_per_node)
 
@@ -195,18 +193,10 @@ class ExpRunShellCmdsGenerator():
                       host: str,
                       input_fpath: str,
                       run_num: int) -> tp.List[types.ShellCmdSpec]:
-        exec_env = self.cmdopts['exec_env']
-        if exec_env in ['hpc.local', 'hpc.adhoc']:
-            cmd = '{0} -c {1}{2}'.format(config.kARGoS['launch_cmd'],
-                                         input_fpath,
-                                         config.kARGoS['launch_file_ext'])
-        elif exec_env in ['hpc.slurm', 'hpc.pbs']:
-            cmd = '{0}-{1} -c {2}{3}'.format(config.kARGoS['launch_cmd'],
-                                             os.environ['SIERRA_ARCH'],
-                                             input_fpath,
-                                             config.kARGoS['launch_file_ext'])
-        else:
-            assert False, f"Unsupported exec environment '{exec_env}'"
+        shellname = platform.get_executable_shellname(config.kARGoS['launch_cmd'])
+        cmd = '{0} -c {1}{2}'.format(shellname,
+                                     input_fpath,
+                                     config.kARGoS['launch_file_ext'])
 
         # ARGoS is pretty good about not printing stuff if we pass these
         # arguments. We don't want to pass > /dev/null so that we get the

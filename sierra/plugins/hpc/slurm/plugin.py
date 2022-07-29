@@ -43,8 +43,6 @@ class ParsedCmdlineConfigurer():
     - ``SLURM_TASKS_PER_NODE``
     - ``SLURM_JOB_NODELIST``
     - ``SLURM_JOB_ID``
-    - ``SLURM_ARCH``
-    - ``PARALLEL``
 
     """
 
@@ -55,9 +53,7 @@ class ParsedCmdlineConfigurer():
         keys = ['SLURM_CPUS_PER_TASK',
                 'SLURM_TASKS_PER_NODE',
                 'SLURM_JOB_NODELIST',
-                'SLURM_JOB_ID',
-                'SIERRA_ARCH',
-                'PARALLEL']
+                'SLURM_JOB_ID']
 
         for k in keys:
             assert k in os.environ,\

@@ -40,24 +40,29 @@ Environment Variables
 
 .. envvar:: SIERRA_ARCH
 
-   Used to determine the names of ARGoS executables via ``argos3-$SIERRA_ARCH``,
-   so that in HPC environments with multiple queues/sub-clusters with different
-   architectures ARGoS can be compiled natively for each for maximum
-   performance.  Can be any string. Used when generating ARGoS cmds in stage 1,
-   and only if SIERRA is run on a cluster.
+   Can be used to determine the names of executables launch in HPC environment,
+   so that in environments with multiple queues/sub-clusters with different
+   architectures simulators can be compiled natively for each for maximum
+   performance. Can be any string. If defined, then instead of searching for the
+   ``foobar`` executable for some platform on ``PATH``, SIERRA will look for
+   ``foobar-$SIERRA_ARCH``.
+
+   .. IMPORTANT:: Not all platforms use this variable--see the docs for your
+                  platform of interest.
 
 .. envvar:: SIERRA_NODEFILE
 
    Points to a file suitable for passing to :program:`parallel` via
-   ``--sshloginfile``. See :program:`parallel` docs for content/formatting
-   requirements.
+   ``--sshloginfile``. See :program:`parallel` docs for general
+   content/formatting requirements.
 
    Used by SIERRA to configure experiments during stage 1,2; if it is not
    defined and ``--nodefile`` is not passed SIERRA will throw an error.
 
 .. envvar:: PARALLEL
 
-   Any and all environment variables needed by your :term:`Project` must be
+   When running on some execution environments, such as ``hpc.slurm,hpc.pbs``,
+   any and all environment variables needed by your :term:`Project` should be
    exported via the ``PARALLEL`` environment variable before invoking SIERRA,
    because GNU parallel does not export the environment of the node it is
    launched from to slave nodes (or even on the local machine). Something like::
@@ -82,10 +87,8 @@ Environment Variables
      --env SIERRA_ARCH \
      --env SIERRA_PLUGIN_PATH"
 
-   Should be a good starting point. Only used if SIERRA is run on a cluster with
-   ``exec_env=hpc.slurm|hpc.pbs``. Don't forget to include
-   :envvar:`ARGOS_PLUGIN_PATH`, :envvar:`ROS_PACKAGE_PATH`, etc., depending on
-   your chosen :term:`Platform`.
+   Don't forget to include :envvar:`ARGOS_PLUGIN_PATH`,
+   :envvar:`ROS_PACKAGE_PATH`, etc., depending on your chosen :term:`Platform`.
 
 .. envvar:: PARALLEL_SHELL
 

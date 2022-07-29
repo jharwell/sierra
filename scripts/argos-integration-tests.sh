@@ -3,28 +3,28 @@
 ################################################################################
 # Setup Environment
 ################################################################################
-export SIERRA_ROOT=$HOME/test
+setup_env() {
+    export SIERRA_ROOT=$HOME/test
 
-if [ "$GITHUB_ACTIONS" = true ]; then
-    export SAMPLE_ROOT=$HOME/work/sierra-sample-project
-    export ARGOS_INSTALL_PREFIX=/usr/local
-else
-    export SAMPLE_ROOT=$HOME/git/sierra-sample-project
-    export ARGOS_INSTALL_PREFIX=/$HOME/.local
-fi
+    if [ "$GITHUB_ACTIONS" = true ]; then
+        export SAMPLE_ROOT=$HOME/work/sierra-sample-project
+        export ARGOS_INSTALL_PREFIX=/usr/local
+    else
+        export SAMPLE_ROOT=$HOME/git/sierra-sample-project
+        export ARGOS_INSTALL_PREFIX=/$HOME/.local
+    fi
 
-# Set ARGoS library search path. Must contain both the ARGoS core libraries path
-# AND the sample project library path.
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ARGOS_INSTALL_PREFIX/lib/argos3
-export ARGOS_PLUGIN_PATH=$ARGOS_INSTALL_PREFIX/lib/argos3:$SAMPLE_ROOT/argos/build
+    # Set ARGoS library search path. Must contain both the ARGoS core libraries path
+    # AND the sample project library path.
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ARGOS_INSTALL_PREFIX/lib/argos3
+    export ARGOS_PLUGIN_PATH=$ARGOS_INSTALL_PREFIX/lib/argos3:$SAMPLE_ROOT/argos/build
+    export SIERRA_PLUGIN_PATH=$SAMPLE_ROOT/projects
 
-export SIERRA_PLUGIN_PATH=$SAMPLE_ROOT/projects
-
-export SIERRA_BASE_CMD="sierra-cli \
+    export SIERRA_BASE_CMD="sierra-cli \
        --sierra-root=$SIERRA_ROOT \
        --platform=platform.argos \
        --project=argos_project \
-       --exp-setup=exp_setup.T1000.K5 \
+       --exp-setup=exp_setup.T5000.K5 \
        --n-runs=4 \
        --exec-strict \
        --template-input-file=$SAMPLE_ROOT/exp/argos/template.argos \
@@ -35,6 +35,12 @@ export SIERRA_BASE_CMD="sierra-cli \
        --exec-no-devnull \
        --log-level=DEBUG"
 
+    export PARALLEL="--env ARGOS_PLUGIN_PATH --env LD_LIBRARY_PATH"
+}
+
+################################################################################
+# Utility funcs
+################################################################################
 sanity_check_pipeline() {
     SIERRA_CMD="$*"
 
@@ -160,14 +166,39 @@ stage2_outputs_test() {
     batch_root=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"argos_project\",[\"population_size.Linear3.C3\"],\"LowBlockCount.10x10x1\",\"foraging.footbot_foraging\", \"template\"))")
 
     output_root=$batch_root/exp-outputs/
-    rm -rf $SIERRA_ROOT
 
-    SIERRA_CMD="$SIERRA_BASE_CMD \
+    export SIERRA_CMD="$SIERRA_BASE_CMD \
     --physics-n-engines=1 \
     --batch-criteria population_size.Linear3.C3 \
     --pipeline 1 2 "
 
-    $SIERRA_CMD
+    env=$1
+
+    rm -rf $SIERRA_ROOT
+
+    if [ "$env" = "hpc.local" ]; then
+        $SIERRA_CMD --exec-env=hpc.local
+    elif [ "$env" = "hpc.adhoc" ]; then
+        # : -> "run on localhost" in GNU parallel
+        echo ":" > /tmp/nodefile
+        export SIERRA_NODEFILE=/tmp/nodefile
+        $SIERRA_CMD --exec-env=hpc.adhoc
+    elif [ "$env" = "hpc.slurm" ]; then
+        sbatch --wait -v --export=ALL ./scripts/slurm-test.sh
+        # cat R-*
+        # sudo cat /var/log/slurm-llnl/slurmd.log
+        # sudo cat /var/log/slurm-llnl/slurmctld.log
+        # sinfo
+    elif [ "$env" = "hpc.pbs" ]; then
+        false
+    fi
+
+    stage2_check_outputs $batch_root
+    rm -rf $SIERRA_ROOT
+}
+
+stage2_check_outputs() {
+    output_root=$1/exp-outputs
 
     # Check SIERRA directory structure
     [ -d "$output_root/exp0/template_0_output" ] || false
@@ -195,7 +226,6 @@ stage2_outputs_test() {
     [ -f "$output_root/exp2/template_1_output/output/collected-data.csv" ] || false
     [ -f "$output_root/exp2/template_2_output/output/collected-data.csv" ] || false
 
-    rm -rf $SIERRA_ROOT
 }
 
 ################################################################################
@@ -286,15 +316,29 @@ stage4_outputs_test() {
 ################################################################################
 # Run Tests
 ################################################################################
+setup_env
+
 # Exit anytime SIERRA crashes or a command fails
 set -e
 
 # Echo cmds to stdout
 set -x
 
-batch_criteria_test
-physics_engines_test
-stage1_outputs_test
-stage2_outputs_test
-stage3_outputs_test
-stage4_outputs_test
+options=$(getopt -o f:,e: --long func:,env:  -n "ARGoS integration tests" -- "$@")
+
+eval set -- "$options"
+func=NONE
+exec_env=''
+
+while true; do
+
+    case "$1" in
+        -f|--func) func=$2; shift;;
+        -e|--env) exec_env=$2; shift;;
+        --) break;;
+        *) break;;
+    esac
+    shift;
+done
+
+$func $exec_env

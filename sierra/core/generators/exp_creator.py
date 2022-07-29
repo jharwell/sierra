@@ -89,7 +89,7 @@ class ExpCreator:
 
         if self.preserve_seeds:
             if utils.path_exists(self.seeds_fpath):
-                with utils.utf8open(self.seeds_fpath, 'rb') as f:
+                with open(self.seeds_fpath, 'rb') as f:
                     self.random_seeds = pickle.load(f)
 
         if self.random_seeds is not None:

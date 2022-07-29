@@ -29,7 +29,6 @@ import implements
 # Project packages
 from sierra.core import types
 from sierra.core.experiment import bindings
-import sierra.core.variables.batch_criteria as bc
 
 
 @implements.implements(bindings.IParsedCmdlineConfigurer)
@@ -42,8 +41,6 @@ class ParsedCmdlineConfigurer():
     - ``PBS_NUM_PPN``
     - ``PBS_NODEFILE``
     - ``PBS_JOBID``
-    - ``SIERRA_ARCH``
-    - ``PARALLEL``
 
     """
 
@@ -51,8 +48,10 @@ class ParsedCmdlineConfigurer():
         pass
 
     def __call__(self, args: argparse.Namespace) -> None:
-        keys = ['PBS_NUM_PPN', 'PBS_NODEFILE',
-                'PBS_JOBID', 'SIERRA_ARCH', 'PARALLEL']
+        keys = ['PBS_NUM_PPN',
+                'PBS_NODEFILE',
+                'PBS_JOBID'
+                ]
 
         for k in keys:
             assert k in os.environ,\

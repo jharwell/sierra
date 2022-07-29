@@ -23,6 +23,7 @@ import multiprocessing
 import os
 import re
 import typing as tp
+import sys
 
 # 3rd party packages
 import packaging.version
@@ -88,16 +89,13 @@ class ParsedCmdlineConfigurer():
                           args.exec_jobs_per_node)
 
     def _hpc_adhoc(self, args: argparse.Namespace) -> None:
-        with open(args.nodefile, 'r') as f:
-            lines = f.readlines()
-            n_nodes = len(lines)
-
-            ppn = 0
-            for line in lines:
-                ppn = min(ppn, int(line.split('/')[0]))
+        nodes = platform.ExecEnvChecker.parse_nodefile(args.nodefile)
+        ppn = sys.maxsize
+        for node in nodes:
+            ppn = min(ppn, node['n_cores'])
 
         if args.exec_jobs_per_node is None:
-            args.exec_jobs_per_node = int(float(args.n_runs) / n_nodes)
+            args.exec_jobs_per_node = int(float(args.n_runs) / len(nodes))
 
         self.logger.debug("Allocated %s physics threads/run, %s parallel runs/node",
                           args.physics_n_threads,

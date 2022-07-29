@@ -316,7 +316,7 @@ class ExecEnvChecker():
             cores = 1
             ssh = line
 
-        identifier_re = r"[a-zA-Z0-9_.]+"
+        identifier_re = r"[a-zA-Z0-9_.:]+"
         port_re = r"ssh -p\s*([0-9]+)"
         username_at_host_re = f"({identifier_re})+@({identifier_re})"
         port_and_username_at_host_re = port_re + r"\*s" + username_at_host_re
@@ -425,15 +425,7 @@ class ExecEnvChecker():
         self.logger.info("%s@%s online", host_type, hostname)
 
     def check_for_simulator(self, name: str):
-        if self.exec_env in ['hpc.local', 'hpc.adhoc']:
-            shellname = name
-        elif self.exec_env in ['hpc.pbs', 'hpc.slurm']:
-            arch = os.environ.get('SIERRA_ARCH')
-            shellname = f'{name}-{arch}'
-        else:
-            assert False, \
-                "Bad --exec-env '{0}' for platform '{1}'".format(self.exec_env,
-                                                                 self.platform)
+        shellname = get_executable_shellname(name)
 
         version_cmd = f'{shellname} -v'
         self.logger.debug("Check version for '%s' via '%s'",
@@ -451,6 +443,14 @@ class ExecEnvChecker():
                 "Bad --exec-env '{0}' for platform '{1}': cannot find '{2}'".format(self.exec_env,
                                                                                     self.platform,
                                                                                     name)
+
+
+def get_executable_shellname(base: str) -> str:
+    if 'SIERRA_ARCH' in os.environ:
+        arch = os.environ['SIERRA_ARCH']
+        return f'{base}-{arch}'
+    else:
+        return base
 
 
 def get_free_port() -> int:

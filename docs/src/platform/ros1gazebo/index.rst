@@ -25,6 +25,11 @@ from randomly for each robot.
 
    batch_criteria.rst
 
+Environment Variables
+=====================
+
+This platform ignores :envvar:`SIERRA_ARCH`.
+
 Random Seeding For Reproducibility
 ==================================
 

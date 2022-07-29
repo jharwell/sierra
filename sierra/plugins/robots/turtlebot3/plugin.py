@@ -38,10 +38,10 @@ import sierra.core.variables.batch_criteria as bc
 class ParsedCmdlineConfigurer():
     """Configure SIERRA for the turtlebot3 execution environment.
 
-    Uses the following environment variables (if they are not defined SIERRA
-    will throw an error):
+    May use the following environment variables:
 
-    - ``SIERRA_NODEFILE``
+    - ``SIERRA_NODEFILE`` - If this is not defined ``--nodefile`` must be
+      passed.
 
     """
 

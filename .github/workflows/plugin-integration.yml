@@ -1,0 +1,23 @@
+name: Plugin CI
+
+on:
+  push:
+    branches:
+      # - master
+      # - devel
+    paths:
+      - 'sierra/**'
+
+jobs:
+
+  argos-ci:
+    uses: ./.github/workflows/argos-integration.yml
+    secrets: inherit
+
+  ros1gazebo-ci:
+    uses: ./.github/workflows/ros1gazebo-integration.yml
+    secrets: inherit
+
+  exec-env-ci:
+    uses: ./.github/workflows/exec-env-integration.yml
+    secrets: inherit

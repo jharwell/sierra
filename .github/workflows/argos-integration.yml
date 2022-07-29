@@ -1,0 +1,110 @@
+name: ARGoS CI
+
+on:
+  workflow_call:
+  # push:
+  #   branches:
+  #     # - master
+  #     # - devel
+  #   paths:
+  #     - 'sierra/**'
+
+jobs:
+  batch-criteria:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9']
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/sierra-setup
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: argos
+
+      - name: Integration tests
+        run: |
+          ./scripts/argos-integration-tests.sh --func batch_criteria_test
+
+  physics-engines:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9']
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/sierra-setup
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: argos
+
+      - name: Integration tests
+        run: |
+          ./scripts/argos-integration-tests.sh --func physics_engines_test
+
+  stage1:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9']
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/sierra-setup
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: argos
+
+      - name: Integration tests
+        run: |
+          ./scripts/argos-integration-tests.sh --func stage1_outputs_test
+
+  stage2:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9']
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/slurm-setup
+      - uses: ./.github/actions/sierra-setup
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: argos
+
+      - name: Integration tests
+        run: |
+          ./scripts/argos-integration-tests.sh --func stage2_outputs_test --env=hpc.local
+
+  stage3:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9']
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/sierra-setup
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: argos
+
+      - name: Integration tests
+        run: |
+          ./scripts/argos-integration-tests.sh --func stage3_outputs_test
+
+  stage4:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9']
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/sierra-setup
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: argos
+
+      - name: Integration tests
+        run: |
+          ./scripts/argos-integration-tests.sh --func stage4_outputs_test

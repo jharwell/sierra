@@ -1,0 +1,48 @@
+name: ROS1+Gazebo CI
+
+on:
+  workflow_call:
+  # push:
+  #   branches:
+  #     # - master
+  #     # - devel
+  #   paths:
+  #     - 'sierra/**'
+
+jobs:
+  batch-criteria:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9']
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/sierra-setup
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: ros1gazebo
+          rosdistro: noetic
+
+      - name: Integration tests
+        run: |
+          ./scripts/ros1gazebo-integration-tests.sh --func batch_criteria_test
+
+  stage2:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9']
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/slurm-setup
+      - uses: ./.github/actions/sierra-setup
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: ros1gazebo
+          rosdistro: noetic
+
+      - name: Integration tests
+        run: |
+          ./scripts/ros1gazebo-integration-tests.sh --func stage2_test --env hpc.local

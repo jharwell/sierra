@@ -1,0 +1,59 @@
+name: Exec env CI
+
+on:
+  workflow_call:
+  # push:
+  #   branches:
+  #     # - master
+  #     # - devel
+  #   paths:
+  #     - 'sierra/**'
+
+jobs:
+
+  adhoc:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9']
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/sierra-setup
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: argos
+
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: ros1gazebo
+          rosdistro: noetic
+
+      - name: Adhoc
+        run: |
+          ./scripts/argos-integration-tests.sh --func stage2_outputs_test --env hpc.adhoc
+          ./scripts/ros1gazebo-integration-tests.sh --func stage2_test --env hpc.adhoc
+
+  slurm:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9']
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/slurm-setup
+      - uses: ./.github/actions/sierra-setup
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: argos
+
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: ros1gazebo
+          rosdistro: noetic
+
+      - name: SLURM
+        run: |
+          ./scripts/argos-integration-tests.sh --func stage2_outputs_test --env hpc.slurm
+          ./scripts/ros1gazebo-integration-tests.sh --func stage2_test --env hpc.slurm

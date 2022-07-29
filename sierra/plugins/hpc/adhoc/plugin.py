@@ -38,9 +38,10 @@ import sierra.core.variables.batch_criteria as bc
 class ParsedCmdlineConfigurer():
     """Configure SIERRA for ad-hoc HPC.
 
-    Uses the following environment variables:
+    May use the following environment variables:
 
-    - ``SIERRA_NODEFILE``
+    - ``SIERRA_NODEFILE`` - If this is not defined ``--nodefile`` must be
+      passed.
 
     """
 
@@ -50,7 +51,8 @@ class ParsedCmdlineConfigurer():
     def __call__(self, args: argparse.Namespace) -> None:
         if args.nodefile is None:
             assert 'SIERRA_NODEFILE' in os.environ,\
-                "Non-Adhoc environment detected: 'SIERRA_NODEFILE' not found"
+                ("Non-hpc.adhoc environment detected: --nodefile not "
+                 "passed and 'SIERRA_NODEFILE' not found")
             args.nodefile = os.environ['SIERRA_NODEFILE']
 
         assert utils.path_exists(args.nodefile), \
@@ -123,7 +125,7 @@ class ExpShellCmdsGenerator():
                                    os.path.join(exec_opts['scratch_dir'],
                                                 "parallel.log"),
                                    exec_opts['scratch_dir'],
-                                   exec_opts['cmdfile_stem'] + exec_opts['cmdfile_ext'])
+                                   exec_opts['cmdfile_stem_path'] + exec_opts['cmdfile_ext'])
 
         ret.append({
             'cmd': parallel,

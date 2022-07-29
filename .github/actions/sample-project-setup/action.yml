@@ -17,8 +17,13 @@ runs:
       shell: bash
       working-directory: ../../
       run: |
+        if [ ! -d sierra-sample-project ]; then
         git clone https://github.com/swarm-robotics/sierra-sample-project.git
         cd sierra-sample-project
+        else
+        cd sierra-sample-project
+        git pull
+        fi
         git checkout devel
 
     - name: Install ARGoS dependencies

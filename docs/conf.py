@@ -264,6 +264,10 @@ man_pages = [
      'The platforms SIERRA supports, and platform-specific Batch Criteria.',
      [author],
      7),
+    ('man/sierra-exec-envs', 'sierra-exec-envs',
+     'The execution environments SIERRA supports.',
+     [author],
+     7),
     ('man/sierra-examples', 'sierra-examples',
      ('Examples of SIERRA usage. These examples all assume that you have '
       'successfully set up SIERRA with a project of your choice.'),

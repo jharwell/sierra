@@ -18,14 +18,13 @@ ARGoS Setup on HPC Clusters
 The steps to properly configure the C++ libraries for :term:`ARGoS` and your
 :term:`Project` for use with SIERRA in one of the above environments are:
 
-#. Build ARGoS natively on each different type of compute node SIERRA might be
-   run on, for maximum efficiency with large swarms. For example, if your HPC
-   cluster is 1/2 Intel chips and 1/2 AMD chips, you will want to compile ARGoS
-   twice, natively on each chipset, and link the architecture-dependent ARGoS
-   into your ``PATH`` via ``argos3-<arch>``, where ``<arch>`` is anything you
-   like; :envvar:`SIERRA_ARCH` will need to be set to ``<arch>`` before invoking
-   SIERRA so that the correct ARGoS commands can be generated, depending on what
-   the chipset is for the nodes you request for your HPC job.
+#. Build ARGoS natively for your cluster for maximum efficiency.
+
+   .. NOTE:: If your HPC cluster is 1/2 Intel chips and 1/2 AMD chips, you may
+             want to compile ARGoS twice, natively on each chipset. If you do
+             this, you can set :envvar:`SIERRA_ARCH` prior to invoking SIERRA so
+             that the correct ARGoS commands can be generated, depending on what
+             the chipset is for the nodes you request for your HPC job.
 
 #. Your project ``.so`` should be built natively on each different type of
    compute node SIERRA might be run on, just like ARGOS, for maximum efficiency

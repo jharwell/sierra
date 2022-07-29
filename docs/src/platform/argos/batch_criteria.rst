@@ -13,9 +13,6 @@ you.  The following batch criteria are defined which can be used with any
 - :ref:`ln-sierra-platform-argos-bc-population-constant-density`
 - :ref:`ln-sierra-platform-argos-bc-population-variable-density`
 
-You *should* be able to combine any two of the criteria above, or use them
-independently. I have not tried all combinations, so YMMV.
-
 .. _ln-sierra-platform-argos-bc-population-size:
 
 Population Size
