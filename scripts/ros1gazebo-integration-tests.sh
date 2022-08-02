@@ -17,7 +17,14 @@ setup_env() {
 
     . $SIERRA_ROSBRIDGE_INSTALL_PREFIX/setup.bash
 
-    export SIERRA_BASE_CMD="sierra-cli \
+    localsite=$(python3 -m site --user-site)
+    localbase=$(python3 -m site --user-base)
+    export COVERAGE_CMD="coverage \
+    run \
+     --append \
+     $localbase/bin/sierra-cli"
+
+    export SIERRA_BASE_CMD="$COVERAGE_CMD \
        --sierra-root=$SIERRA_ROOT \
        --platform=platform.ros1gazebo \
        --project=ros1gazebo_project \

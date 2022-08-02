@@ -1,7 +1,7 @@
 .. _ln-sierra-req:
 
 ==========================
-Requirements to use SIERRA
+Requirements To Use SIERRA
 ==========================
 
 This page details the parameters you must meet in order to be able to use SIERRA

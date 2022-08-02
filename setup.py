@@ -27,7 +27,7 @@ import os
 here = pathlib.Path(__file__).parent
 
 # The text of the README file
-readme = (here / "README.md").read_text()
+readme = (here / "README.rst").read_text()
 
 # Get version
 ver_ns = {}
@@ -39,7 +39,7 @@ with open(ver_path) as ver_file:
 setup(
     name="sierra-research",
     version=ver_ns['__version__'],
-    description="Research experimental pipeline automation for multi-agent simulations and real robots",
+    description="Automation framework for the scientific method in AI research",
     long_description=readme,
     long_description_content_type="text/markdown",
     url="https://github.com/swarm-robotics/sierra",
@@ -107,6 +107,8 @@ setup(
             'pytest',
             'mypy',
             'xmldiff',
+            'coverage',
+            'coveralls',
 
             # Deployment packages
             'build',

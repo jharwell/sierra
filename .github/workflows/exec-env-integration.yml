@@ -34,6 +34,11 @@ jobs:
           ./scripts/argos-integration-tests.sh --func stage2_outputs_test --env hpc.adhoc
           ./scripts/ros1gazebo-integration-tests.sh --func stage2_test --env hpc.adhoc
 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ci-exec-env-adhoc-${{ matrix.python-version }}-coverage
+          path: .coverage
+
   slurm:
     runs-on: ubuntu-latest
     strategy:
@@ -57,3 +62,8 @@ jobs:
         run: |
           ./scripts/argos-integration-tests.sh --func stage2_outputs_test --env hpc.slurm
           ./scripts/ros1gazebo-integration-tests.sh --func stage2_test --env hpc.slurm
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ci-exec-env-slurm-${{ matrix.python-version }}-coverage
+          path: .coverage

@@ -45,7 +45,7 @@ runs:
         git checkout devel
         mkdir -p build && cd build
         cmake -DARGOS_DOCUMENTATION=OFF ../src
-        make
+        make -j 2
         sudo make install
 
 
@@ -57,7 +57,7 @@ runs:
         cd sierra-sample-project/argos
         mkdir -p build && cd build
         cmake -DARGOS_INSTALL_DIR=/usr/local ..
-        make
+        make -j 2
 
     - name: Install ROS1 platform dependency
       if: ${{ inputs.platform == 'ros1gazebo' }}

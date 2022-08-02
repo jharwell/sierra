@@ -1,18 +1,17 @@
 .. _ln-sierra-usage:
 
-=================
-How To Use SIERRA
-=================
+====================================
+SIERRA Overview: A Practical Summary
+====================================
 
-This page contains more in-depth documentation on how to use SIERRA/required
-configuration beyond the minimum needed to get started, and assumes that you
-have either gotten SIERRA working via :ref:`ln-sierra-trial` or
-:ref:`ln-sierra-getting-started`. Once you've done that, the docs on this page provide
-a good way to understand how to get the most out of SIERRA.
+This page contains more in-depth documentation on how SIERRA works beyond the
+minimum needed to get started, and assumes that you have either gotten SIERRA
+working via :ref:`ln-sierra-trial` or :ref:`ln-sierra-getting-started`. Once
+you've done that, the docs on this page provide a good way to understand how to
+get the most out of SIERRA.
 
 .. toctree::
    :maxdepth: 1
-   :caption: Understanding How SIERRA Works
 
    pipeline.rst
    cli.rst
@@ -23,13 +22,7 @@ a good way to understand how to get the most out of SIERRA.
 
 .. toctree::
    :maxdepth: 1
-   :caption: Advanced Features
+   :caption: Advanced Usage
 
    visual_capture.rst
    stage5.rst
-
-.. toctree::
-   :maxdepth: 1
-   :caption: SIERRA Usage Examples
-
-   examples.rst

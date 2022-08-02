@@ -20,7 +20,15 @@ setup_env() {
     export ARGOS_PLUGIN_PATH=$ARGOS_INSTALL_PREFIX/lib/argos3:$SAMPLE_ROOT/argos/build
     export SIERRA_PLUGIN_PATH=$SAMPLE_ROOT/projects
 
-    export SIERRA_BASE_CMD="sierra-cli \
+    localsite=$(python3 -m site --user-site)
+    localbase=$(python3 -m site --user-base)
+    export PYTHONPATH=.
+    export COVERAGE_CMD="coverage \
+    run \
+     --append \
+     $localbase/bin/sierra-cli"
+
+    export SIERRA_BASE_CMD="$COVERAGE_CMD \
        --sierra-root=$SIERRA_ROOT \
        --platform=platform.argos \
        --project=argos_project \

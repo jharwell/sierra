@@ -1,8 +1,11 @@
 .. _ln-sierra-usage-examples:
 
-*********************
-SIERRA Usage Examples
-*********************
+***********************
+SIERRA Usage By Example
+***********************
+
+This page contains reference examples of SIERRA usage to help you craft your own
+SIERRA invocation.
 
 ==============
 ARGoS Examples
@@ -11,6 +14,9 @@ ARGoS Examples
 These examples assumes a project named ``fordyca`` which contains a controller
 defined in the ``controllers.yaml`` as ``d0.CRW``, with a runtime environment of
 the local machine.
+
+In all examples, ``$HOME/git/mycode`` contains the ARGoS C++ library, and
+``$HOME/git/sierra-projects`` contains the ``fordyca`` SIERRA project.
 
 Basic Example
 =============
@@ -28,8 +34,7 @@ Basic Example
    --exp-setup=exp_setup.T10000 \
    --controller=d0.CRW \
    --scenario=SS.12x6x1 \
-   --batch-criteria population_size.Log64 \
-   --n-blocks=20
+   --batch-criteria population_size.Log64
 
 This will run a batch of 7 experiments using a correlated random walk robot
 controller (CRW), across which the swarm size will be varied from 1..64, by
@@ -39,6 +44,50 @@ reasonable machine it should take about 10 minutes or so to run. After it
 finishes, you can go to ``$HOME/exp`` and find all the simulation outputs. For
 an explanation of SIERRA's runtime directory tree, see
 :ref:`ln-sierra-usage-runtime-exp-tree`.
+
+HPC Example
+===========
+
+In order to run on a SLURM managed cluster, you need to invoke SIERRA within a
+script submitted with ``sbatch``, or via ``srun`` with the correspond cmdline
+options set.
+
+::
+
+   #!/bin/bash -l
+   #SBATCH --time=01:00:00
+   #SBATCH --nodes 10
+   #SBATCH --tasks-per-node=6
+   #SBATCH --cpus-per-task=4
+   #SBATCH --mem-per-cpu=2G
+   #SBATCH --output=R-%x.%j.out
+   #SBATCH --error=R-%x.%j.err
+   #SBATCH -J argos-slurm-example
+
+   # setup environment
+   export ARGOS_INSTALL_PREFIX=/$HOME/.local
+   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ARGOS_INSTALL_PREFIX/lib/argos3
+   export ARGOS_PLUGIN_PATH=$ARGOS_INSTALL_PREFIX/lib/argos3:$HOME/git/mycode
+   export SIERRA_PLUGIN_PATH=$HOME/git/sierra-projects
+   export PARALLEL="--env ARGOS_PLUGIN_PATH --env LD_LIBRARY_PATH"
+
+   sierra-cli \
+   --sierra-root=$HOME/exp \
+   --template-input-file=exp/your-experiment.argos \
+   --n-runs=96 \
+   --platform=platform.argos\
+   --project=fordyca \
+   --exec-env=hpc.slurm \
+   --exp-setup=exp_setup.T10000 \
+   --controller=d0.CRW \
+   --scenario=SS.12x6x1 \
+   --batch-criteria population_size.Log64
+
+In this example, the user requests 10 nodes with 24 cores each, and wants to run
+ARGoS with 4 physics engines ( 4 * 6 = 24), with 8GB memory per core. Note that
+we don't pass ``--physics-n-engines`` -- SIERRA computes this from the SLURM
+parameters. SIERRA will run each of the 96 simulations per experiment in
+parallel, 6 at a time on each allocated node.
 
 Rendering Example
 =================
@@ -118,6 +167,7 @@ environment of the local machine.
    --platform=platform.ros1gazebo \
    --project=fordyca \
    --n-runs=4 \
+   --exec-env=hpc.local \
    --template-input-file=exp/your-experiment.launch \
    --scenario=HouseWorld.10x10x1 \
    --sierra-root=$HOME/exp/test \
@@ -134,6 +184,45 @@ different random seeds), for a total of 16 Gazebo simulations. On a reasonable
 machine it should take about 10 minutes or so to run. After it finishes, you can
 go to ``$HOME/exp`` and find all the simulation outputs. For an explanation of
 SIERRA's runtime directory tree, see :ref:`ln-sierra-usage-runtime-exp-tree`.
+
+HPC Example
+===========
+
+In order to run on a SLURM managed cluster, you need to invoke SIERRA within a
+script submitted with ``sbatch``, or via ``srun`` with the correspond cmdline
+options set.
+
+::
+
+   #!/bin/bash -l
+   #SBATCH --time=01:00:00
+   #SBATCH --nodes 4
+   #SBATCH --tasks-per-node=6
+   #SBATCH --cpus-per-task=4
+   #SBATCH --mem-per-cpu=2G
+   #SBATCH --output=R-%x.%j.out
+   #SBATCH --error=R-%x.%j.err
+   #SBATCH -J ros1gazebo-slurm-example
+
+   # setup environment
+   export SIERRA_PLUGIN_PATH=$HOME/git/sierra-projects
+
+   sierra-cli \
+   --platform=platform.ros1gazebo \
+   --project=fordyca \
+   --n-runs=96 \
+   --exec-env=hpc.slurm \
+   --template-input-file=exp/your-experiment.launch \
+   --scenario=HouseWorld.10x10x1 \
+   --sierra-root=$HOME/exp/test \
+   --batch-criteria population_size.Log8 \
+   --controller=turtlebot3_sim.wander \
+   --exp-overwrite \
+   --exp-setup=exp_setup.T10 \
+   --robot turtlebot3
+
+In this example, the user requests 10 nodes with 24 cores each. SIERRA will run
+each of the 96 runs in parallel, 24 at a time on each allocated node.
 
 ===================
 ROS1+Robot Examples

@@ -3,38 +3,38 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-=====================================================================
-SIERRA: Automation for the Scientific Method and Agent-Based Research
-=====================================================================
+===========================================================================
+SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
+===========================================================================
 
 .. figure:: figures/architecture.png
 
-   Architecture of SIERRA, organized by pipeline stage. Pipeline stages are
-   listed left to right, and an approximate joint architectural/functional stack
-   is top to bottom for each stage. “... ” indicates areas where SIERRA is
-   designed via python plugins to be easily extensible. “Host machine” indicates
-   the machine SIERRA was invoked on.
+   SIERRA architecture, organized by pipeline stage. Stages are listed left to
+   right, and an approximate joint architectural/functional stack is top to
+   bottom for each stage. “...” indicates areas where SIERRA is designed via
+   plugins to be easily extensible. “Host machine” indicates the machine SIERRA
+   was invoked on.
 
 .. include:: src/description.rst
 
 .. toctree::
-   :maxdepth: 1
    :hidden:
    :caption: Contents:
 
    src/getting_started.rst
    src/trial.rst
 
-   src/packages.rst
-   src/platform/index.rst
+   src/usage/examples.rst
+
    src/requirements.rst
+   src/matrix.rst
+
+   src/packages.rst
 
    src/tutorials/index.rst
    src/usage/index.rst
 
-   src/exec_env/index.rst
-
-   src/storage/index.rst
+   src/plugins/index.rst
 
    src/philosophy.rst
    src/faq.rst
@@ -65,7 +65,6 @@ If you use SIERRA and find it helpful, please cite the following paper::
 
 SIERRA In The Wild
 ==================
-
 
 Here is a non-exhaustive list of some of the different ways SIERRA has been
 used.

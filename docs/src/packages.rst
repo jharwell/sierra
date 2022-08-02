@@ -34,6 +34,9 @@ manpages are:
 - ``sierra-glossary`` - Glossary of SIERRA terminology to make things
   easier to understand.
 
+- ``sierra-exec-envs`` - The execution environments that SIERRA currently
+  supports (e.g., SLURM).
+
 Installing SIERRA
 -----------------
 

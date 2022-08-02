@@ -1,8 +1,8 @@
 .. _ln-sierra-tutorials:
 
-==================
-Configuring SIERRA
-==================
+=====================================
+Configuration and Extension Tutorials
+=====================================
 
 This page contains tutorials to setup and/or extend SIERRA according to your
 needs.

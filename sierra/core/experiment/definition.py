@@ -98,7 +98,7 @@ class XMLExpDef:
                     path: str,
                     attr: str,
                     value: str,
-                    noprint: bool = False) -> None:
+                    noprint: bool = False) -> bool:
         """Change the specified attribute of the element at the specified path.
 
         Only the attribute of the *FIRST* element matching the specified path is
@@ -120,27 +120,29 @@ class XMLExpDef:
         if el is None:
             if not noprint:
                 self.logger.warning("Node '%s' not found", path)
-            return
+            return False
 
         if attr not in el.attrib:
             if not noprint:
                 self.logger.warning("Attribute '%s' not found in in path '%s'",
                                     attr,
                                     path)
-            return
+            return False
 
         el.attrib[attr] = value
         self.logger.trace("Modify attribute: '%s/%s' = '%s'",
                           path,
                           attr,
                           value)
+
         self.attr_chgs.add(xml.AttrChange(path, attr, value))
+        return True
 
     def attr_add(self,
                  path: str,
                  attr: str,
                  value: str,
-                 noprint: bool = False) -> None:
+                 noprint: bool = False) -> bool:
         """Add the specified attribute to the element matching the specified path.
 
         Only the *FIRST* element matching the specified path searching from the
@@ -162,14 +164,14 @@ class XMLExpDef:
         if el is None:
             if not noprint:
                 self.logger.warning("Node '%s' not found", path)
-            return
+            return False
 
         if attr in el.attrib:
             if not noprint:
                 self.logger.warning("Attribute '%s' already in path '%s'",
                                     attr,
                                     path)
-            return
+            return False
 
         el.set(attr, value)
         self.logger.trace("Add new attribute: '%s/%s' = '%s'",  # type: ignore
@@ -177,11 +179,18 @@ class XMLExpDef:
                           attr,
                           value)
         self.attr_chgs.add(xml.AttrChange(path, attr, value))
+        return True
 
     def has_tag(self, path: str) -> bool:
         return self.root.find(path) is not None
 
-    def tag_change(self, path: str, tag: str, value: str) -> None:
+    def has_attr(self, path: str, attr: str) -> bool:
+        el = self.root.find(path)
+        if el is None:
+            return False
+        return attr in el.attrib
+
+    def tag_change(self, path: str, tag: str, value: str) -> bool:
         """
         Change the specified tag of the element matching the specified path.
 
@@ -198,7 +207,7 @@ class XMLExpDef:
         el = self.root.find(path)
         if el is None:
             self.logger.warning("Parent node '%s' not found", path)
-            return
+            return False
 
         for child in el:
             if child.tag == tag:
@@ -207,10 +216,12 @@ class XMLExpDef:
                                   path,
                                   tag,
                                   value)
-                return
-        self.logger.warning("No such element '%s' found in '%s'", tag, path)
+                return True
 
-    def tag_remove(self, path: str, tag: str, noprint: bool = False) -> None:
+        self.logger.warning("No such element '%s' found in '%s'", tag, path)
+        return False
+
+    def tag_remove(self, path: str, tag: str, noprint: bool = False) -> bool:
         """Remove the specified child in the enclosing parent specified by the path.
 
         If more than one tag matches, only one is removed. If the path does not
@@ -231,7 +242,7 @@ class XMLExpDef:
         if parent is None:
             if not noprint:
                 self.logger.warning("Parent node '%s' not found", path)
-            return
+            return False
 
         victim = parent.find(tag)
         if victim is None:
@@ -239,14 +250,15 @@ class XMLExpDef:
                 self.logger.warning("No victim '%s' found in parent '%s'",
                                     tag,
                                     path)
-            return
+            return False
 
         parent.remove(victim)
+        return True
 
     def tag_remove_all(self,
                        path: str,
                        tag: str,
-                       noprint: bool = False) -> None:
+                       noprint: bool = False) -> bool:
         """Remove the specified tag(s) in the enclosing parent specified by the path.
 
         If more than one tag matches in the parent, all matching child tags are
@@ -267,15 +279,15 @@ class XMLExpDef:
         if parent is None:
             if not noprint:
                 self.logger.warning("Parent node '%s' not found", path)
-            return
+            return False
 
         victims = parent.findall(tag)
-        if victims is None:
+        if not victims:
             if not noprint:
                 self.logger.warning("No victim '%s' found in parent '%s'",
                                     tag,
                                     path)
-            return
+            return False
 
         for victim in victims:
             parent.remove(victim)
@@ -283,12 +295,14 @@ class XMLExpDef:
                               path,
                               tag)
 
+        return True
+
     def tag_add(self,
                 path: str,
                 tag: str,
                 attr={},
                 allow_dup: bool = True,
-                noprint: bool = False) -> None:
+                noprint: bool = False) -> bool:
         """
         Add tag name as a child element of enclosing parent.
         """
@@ -296,7 +310,7 @@ class XMLExpDef:
         if parent is None:
             if not noprint:
                 self.logger.warning("Parent node '%s' not found", path)
-            return
+            return False
 
         if not allow_dup:
             if parent.find(tag) is not None:
@@ -304,7 +318,7 @@ class XMLExpDef:
                     self.logger.warning("Child tag '%s' already in parent '%s'",
                                         tag,
                                         path)
-                return
+                return False
 
             ET.SubElement(parent, tag, attrib=attr)
             self.logger.trace("Add new unique tag: '%s/%s' = '%s'",  # type: ignore
@@ -320,7 +334,9 @@ class XMLExpDef:
                               path,
                               tag,
                               str(attr))
+
         self.tag_adds.append(xml.TagAdd(path, tag, attr, allow_dup))
+        return True
 
 
 def unpickle(fpath: str) -> tp.Optional[tp.Union[xml.AttrChangeSet,

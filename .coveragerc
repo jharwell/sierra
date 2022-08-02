@@ -1,0 +1,12 @@
+[paths]
+source =
+       sierra/
+
+[run]
+
+omit =
+     */sierra-sample-project/*
+
+     */site-packages/*
+
+     /usr/*

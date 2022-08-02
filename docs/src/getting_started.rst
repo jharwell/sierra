@@ -5,8 +5,8 @@ Getting Started With SIERRA
 ===========================
 
 If you're looking for the "I just want to try out SIERRA without doing any work"
-quickstart, see :ref:`ln-sierra-trial`. Otherwise, the steps to start using SIERRA
-are below.
+quickstart, see :ref:`ln-sierra-trial`. Otherwise, the steps to start using
+SIERRA are below.
 
 Basic Setup
 ===========
