@@ -68,14 +68,14 @@ What is SIERRA? See `What is SIERRA?`_
 
 Why should you use SIERRA? See `Why SIERRA?`_
 
-To install SIERRA:
+To install SIERRA (requires python 3.8+):
 
 ::
 
    pip3 install sierra-research
 
-To get started using SIERRA, see the `docs
-<https://swarm-robotics-sierra.readthedocs.io/en/master/>`_.
+To get started using SIERRA, see `getting started
+<https://swarm-robotics-sierra.readthedocs.io/en/master/getting_started.html>`_.
 
 Want to cite SIERRA? See `Citing`_.
 
@@ -119,9 +119,10 @@ Why SIERRA?
     my research query--GO!"
 
   Essentially, SIERRA handles the “engineering” parts of research on the
-  backend, such as: random seeds, algorithm stochasticity, configuration for a
-  given execution environment or platform, generating statistics from
-  experimental results, and generating visualizations from processed results.
+  backend, such as: generating experiments, configuring execution environments
+  or platforms, running the generated experiments, and processing experimental
+  results to generate statistics, and/or visualizations. It also handles random
+  seeds, algorithm stochasticity, and other low-level details.
 
 - It eliminates manual reconfiguration of experiments across platforms by
   decoupling the concepts of execution environment and platform; any supported
@@ -145,17 +146,17 @@ cases:
 - `Use Case #2: Alice The Contagion Modeler`_
 
 If aspects of either use case sound familiar, then there is a strong chance
-SIERRA could help you! SIERRA is well documented--see the `docs
+SIERRA could help you! SIERRA is well documented--see the `SIERRA docs
 <https://swarm-robotics-sierra.readthedocs.io/en/master/>`_ to get started.
 
 Use Case #1: Alice The Robotics Researcher
 ------------------------------------------
 
 Alice is a researcher at a large university that has developed a new distributed
-task allocation algorithm :math:`\alpha` for use in a foraging task where robots
-must coordinate to find objects of interest in an unknown environment and bring
-them to a central location. Alice wants to implement her algorithm so she can
-investigate:
+task allocation algorithm ``$\alpha$`` for use in a foraging task where
+robots must coordinate to find objects of interest in an unknown environment and
+bring them to a central location. Alice wants to implement her algorithm so she
+can investigate:
 
 - How well it scales with the number of robots, specifically if it remains
   efficient with up to 1000 robots in several different scenarios.
@@ -163,7 +164,7 @@ investigate:
 - How robust it is with respect to sensor and actuator noise.
 
 - How it compares to other similar state of the art algorithms on a foraging
-  task: :math:`\beta,\gamma`.
+  task: ``$\beta,\gamma$``.
 
 Alice is faced with the following heterogeneity matrix which she has to deal
 with to answer her research queries, *in addition to the technical challenges of
@@ -179,19 +180,19 @@ the AI elements themselves*:
 
      - Outputs data in?
 
-   * - :math:`\alpha`
+   * - ``$\alpha$``
 
      - Yes
 
      - CSV, rosbag
 
-   * - :math:`\beta`
+   * - ``$\beta$``
 
      - Yes
 
      - CSV, rosbag
 
-   * - :math:`\gamma`
+   * - ``$\gamma$``
 
      - No
 
@@ -208,12 +209,13 @@ Use Case #2: Alice The Contagion Modeler
 
 Alice has teamed with Bob, a biologist, to model the spread of contagion among
 agents in a population, and how that affects their individual and collective
-abilities to do tasks. She believes her :math:`\alpha` algorithm can be reused
+abilities to do tasks. She believes her ``$\alpha$`` algorithm can be reused
 in this context. However, Bob is not convinced and has selected several
-multi-agent models from recent papers: :math:`\delta,\epsilon`, and wants Alice
-to compare :math:`\alpha` to them. :math:`\delta` was originally developed in
-NetLogo, for modeling disease transmission in animals. :math:`\epsilon` was
-originally developed for ARGoS to model the effects of radiation on robots.
+multi-agent models from recent papers: ``$\delta,\epsilon$``, and wants
+Alice to compare ``$\alpha$`` to them. ``$\delta$`` was originally
+developed in NetLogo, for modeling disease transmission in
+animals. ``$\epsilon$`` was originally developed for ARGoS to model the
+effects of radiation on robots.
 
 Alice is faced with the following heterogeneity matrix which she must deal with
 with to answer her research query, *in addition to the technical challenges of
@@ -229,19 +231,19 @@ the AI elements themselves*:
 
      - Input Requirements?
 
-   * - :math:`\alpha`
+   * - ``$\alpha$``
 
      - ROS/Gazebo
 
      - XML
 
-   * - :math:`\delta`
+   * - ``$\delta$``
 
      - NetLogo
 
      - NetLogo
 
-   * - :math:`\epsilon`
+   * - ``$\epsilon$``
 
      -  ARGoS
 
@@ -259,15 +261,16 @@ does have a handful of servers in her lab which she can use.
 SIERRA Support Matrix
 =====================
 
-SIERRA supports multiple platforms which researchers can write code to target
-(`docs
-<https://swarm-robotics-sierra.readthedocs.io/en/master/src/platform/index.html>`_). SIERRA
-supports multiple execution environments for execution of experiments, such as
-High Performance Computing (HPC) environments (`docs
-<https://swarm-robotics-sierra.readthedocs.io/en/master/src/exec_env/hpc.html>`_)
-and real robots (`docs
-<https://swarm-robotics-sierra.readthedocs.io/en/master/src/exec_env/robots.html>`_). If
-your desired platform or execution environment is not listed, see the `docs
+SIERRA supports multiple (`platforms
+<https://swarm-robotics-sierra.readthedocs.io/en/master/src/platform/index.html>`_)
+which researchers can write code to target . SIERRA supports multiple execution
+environments for execution of experiments, such as `High Performance Computing
+(HPC) environments
+<https://swarm-robotics-sierra.readthedocs.io/en/master/src/exec_env/hpc.html>`_
+and `real robots
+<https://swarm-robotics-sierra.readthedocs.io/en/master/src/exec_env/robots.html>`_. If
+your desired platform or execution environment is not listed, see the `plugin
+tutorials
 <https://swarm-robotics-sierra.readthedocs.io/en/master/src/tutorials.html>`_
 for how to add it via a plugin.
 
@@ -324,7 +327,7 @@ for how to add it via a plugin.
        later is required.
 
 SIERRA also supports multiple output formats for experimental outputs. If the
-format for your experimental outputs is not listed, see the `docs
+format for your experimental outputs is not listed, see the `tutorials
 <https://swarm-robotics-sierra.readthedocs.io/en/master/src/tutorials.html>`_
 for how to add it via a plugin. SIERRA currently only supports XML experimental
 inputs.
@@ -339,11 +342,11 @@ inputs.
 
    * - CSV file
 
-     - Raw experimental outputs, transforming into heatmap images
+     - Raw experimental outputs, transforming into heatmap images.
 
    * - PNG file
 
-     - Stitching images together into videos
+     - Stitching images together into videos.
 
 SIERRA supports (mostly) mix-and-match between platforms, execution
 environments, experiment input/output formats as shown in its support matrix
@@ -409,7 +412,8 @@ The basic requirements are:
 
 - python >= 3.8.
 
-For more details, such as requirements for researcher code, see the `docs
+For more details, including the requirements for researcher code, see the
+`SIERRA requirements
 <https://swarm-robotics-sierra.readthedocs.io/en/master/src/requirements.html>`_.
 
 Citing

@@ -41,7 +41,7 @@ setup(
     version=ver_ns['__version__'],
     description="Automation framework for the scientific method in AI research",
     long_description=readme,
-    long_description_content_type="text/markdown",
+    long_description_content_type="text/x-rst",
     url="https://github.com/swarm-robotics/sierra",
     author="John Harwell",
     author_email="john.r.harwell@gmail.com",
@@ -54,7 +54,7 @@ setup(
               'reproducibility',
               'reusability'],
     classifiers=[
-        "Programming Language :: Python :: 3",
+        # "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
@@ -67,10 +67,29 @@ setup(
         "Topic :: Software Development :: Libraries :: Application Frameworks"
     ],
 
-    packages=['sierra', 'sierra.core', 'sierra.plugins'],
-    package_dir={"sierra": "sierra",
-                 'sierra.core': 'sierra/core',
-                 'sierra.plugins': 'sierra/plugins'},
+
+    packages=find_packages(where="sierra/",
+                           include="sierra/*",
+                           exclude="tests/*"),
+    package_dir={"sierra": "sierra"},
+
+    # packages=['sierra',
+    #           'sierra.core',
+    #           'sierra.core.experiment',
+    #           'sierra.core.generators',
+    #           'sierra.core.graphs',
+    #           'sierra.core.hpc',
+    #           'sierra.core.models',
+    #           'sierra.core.pipeline',
+    #           'sierra.core.ros1',
+    #           'sierra.core.variables',
+
+    #           'sierra.plugins'
+
+    #           ],
+    # package_dir={"sierra": "sierra",
+    #              'sierra.core': 'sierra/core',
+    #              'sierra.plugins': 'sierra/plugins'},
     include_package_data=True,
     data_files=[('share/man/man1', ['docs/_build/man/sierra-cli.1']),
                 ('share/man/man7', ['docs/_build/man/sierra-usage.7']),

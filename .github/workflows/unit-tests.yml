@@ -22,4 +22,6 @@ jobs:
 
       - name: pytest
         run: |
+          pwd
+          ls -alh
           pytest
