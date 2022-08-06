@@ -4,6 +4,8 @@ source =
 
 [run]
 
+concurrency = multiprocessing
+parallel = true
 omit =
      */sierra-sample-project/*
 

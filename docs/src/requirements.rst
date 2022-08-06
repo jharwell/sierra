@@ -14,7 +14,22 @@ still be accommodated with an appropriate plugin.
 OS Requirements
 ===============
 
-You must be on a recent version of Linux or OSX. Windows is not supported.
+One of the following:
+
+- Recent linux. SIERRA is tested with ubuntu 20.04+, though it will probably
+  work on less recent versions/other distros as well.
+
+- Recent OSX. SIERRA is tested with OSX 12+, though it *might* work on less
+  recent versions.
+
+
+.. ADMONITION:: Windows is not supported currently. Not because it can't be
+                supported, but because there are not currently any platform
+                plugins that which work on windows. SIERRA is written in pure
+                python, and could be made to work on windows with a little work.
+
+                If windows support would be helpful for your intended usage of
+                SIERRA, please get in touch with me.
 
 .. _ln-sierra-req-exp:
 

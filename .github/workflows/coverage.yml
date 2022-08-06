@@ -1,0 +1,74 @@
+name: Coverage CI
+
+on:
+  push:
+    branches:
+      # - master
+      # - devel
+    paths:
+      - 'sierra/**'
+
+jobs:
+  argos-ci:
+    uses: ./.github/workflows/argos.yml
+    secrets: inherit
+    with:
+      os: ubuntu-20.04
+
+  ros1gazebo-ci:
+    uses: ./.github/workflows/ros1gazebo.yml
+    secrets: inherit
+    with:
+      os: ubuntu-20.04
+
+  exec-env-ci:
+    uses: ./.github/workflows/exec-env-plugins.yml
+    secrets: inherit
+    with:
+      os: ubuntu-20.04
+
+  coverage:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - 3.9
+
+    needs:
+      - argos-ci
+      - ros1gazebo-ci
+      - exec-env-ci
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: ./.github/actions/sierra-setup
+
+      - uses: actions/download-artifact@v3
+
+      - name: Generate coverage report
+        run: |
+
+          coverage combine ci-*-Linux-${{ matrix.python-version }}-coverage/.coverage.*
+
+          coverage report
+          coverage xml
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ci-integration-coverage
+
+          path: .coverage
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ci-integration-coverage-xml
+          path: coverage.xml
+
+      - name: Coveralls
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+
+        run: |
+          coveralls

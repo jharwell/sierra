@@ -34,6 +34,7 @@ from sierra.core.variables import population_size
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
+@implements.implements(bc.IQueryableBatchCriteria)
 class PopulationSize(population_size.BasePopulationSize):
     """A univariate range of swarm sizes used to define batch experiments.
 
@@ -79,6 +80,9 @@ class PopulationSize(population_size.BasePopulationSize):
     def gen_exp_names(self, cmdopts: types.Cmdopts) -> tp.List[str]:
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
+
+    def n_robots(self, exp_num: int) -> int:
+        return self.size_list[exp_num]
 
 
 def factory(cli_arg: str,

@@ -188,7 +188,7 @@ works/is designed the way it is, and to help you find your way around.
       multiple :term:`Batch Experiments <Batch Experiment>` into a single
       CSV. Used during stage 5.
 
-   imagizing
+   Imagizing
 
       The process of turning a text file of some kind (e.g., CSV, ``.gml``)
       into an image.
@@ -198,6 +198,11 @@ works/is designed the way it is, and to help you find your way around.
       The `context` in which experiments are run: either via a simulator of some
       kind, or a run-time framework for deploying code to one or more real
       robots.
+
+      .. IMPORTANT:: In SIERRA terminology, platform != OS. A given OS such has
+                     linux might support multiple platforms like ARGoS, ROS,
+                     etc, while a different OS like OSX might support only
+                     ARGoS.
 
    Graph Category
 

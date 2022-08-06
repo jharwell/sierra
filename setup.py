@@ -70,23 +70,6 @@ setup(
     packages=find_packages(where="."),
     package_dir={"sierra,": "sierra"},
 
-    # packages=['sierra',
-    #           'sierra.core',
-    #           'sierra.core.experiment',
-    #           'sierra.core.generators',
-    #           'sierra.core.graphs',
-    #           'sierra.core.hpc',
-    #           'sierra.core.models',
-    #           'sierra.core.pipeline',
-    #           'sierra.core.ros1',
-    #           'sierra.core.variables',
-
-    #           'sierra.plugins'
-
-    #           ],
-    # package_dir={"sierra": "sierra",
-    #              'sierra.core': 'sierra/core',
-    #              'sierra.plugins': 'sierra/plugins'},
     include_package_data=True,
     data_files=[('share/man/man1', ['docs/_build/man/sierra-cli.1']),
                 ('share/man/man7', ['docs/_build/man/sierra-usage.7']),
@@ -99,6 +82,7 @@ setup(
     install_requires=[
         "pyyaml",
         "pandas",
+        "numpy",
         "matplotlib",
         "sympy",
         "psutil",

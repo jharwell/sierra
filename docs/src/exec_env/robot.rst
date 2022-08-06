@@ -1,4 +1,4 @@
-.. _ln-sierra-exec-env-robots:
+.. _ln-sierra-exec-env-robot:
 
 ========================================
 Real Robot Execution Environment Plugins
@@ -13,12 +13,12 @@ platforms out of the box too):
 
 - :ref:`ln-sierra-platform-plugins-ros1robot`
 
-.. _ln-sierra-robot-plugins-turtlebot3:
+.. _ln-sierra-exec-env-robot-plugins-turtlebot3:
 
 Turtlebot3
 ==========
 
-This real robot plugin can be selected via ``--exec-env=robots.turtlebot3``.
+This real robot plugin can be selected via ``--exec-env=robot.turtlebot3``.
 
 In this execution environment, SIERRA will run experiments spread across
 multiple turtlebots using GNU parallel.

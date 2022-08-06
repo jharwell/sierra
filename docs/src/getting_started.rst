@@ -34,33 +34,44 @@ Basic Setup
 
            .. group-tab:: Ubuntu
 
-              Install the following with ``apt install``:
+              Install the following required packages with ``apt install``:
 
               - ``parallel``
               - ``cm-super``
               - ``texlive-fonts-recommended``
               - ``texlive-latex-extra``
               - ``dvipng``
+
+              Install the following optional packages with ``apt install``:
+
               - ``pssh``
               - ``ffmpeg``
               - ``xvfb``
 
            .. group-tab:: OSX
 
-              Install the following with ``brew install``:
+              Install the following required packages with ``brew install``:
 
               - ``parallel``
               - ``--cask mactex``
               - ``pssh``
 
+              Install the following optional packages with ``brew install``:
+
+              - ``--cask xquartz``
+              - ``pssh``
+              - ``ffmpeg``
+
 
      If you are on a different Linux distribution you will have to find and
      install the equivalent packages.
 
-     .. IMPORTANT:: SIERRA will not work correctly in all cases if these
+     .. IMPORTANT:: SIERRA will not work correctly in all cases if the required
                     packages (or their equivalent) are not installed! It may
                     start, it might even not crash immediately depending on what
-                    you are using it to do.
+                    you are using it to do. If you are missing an optional
+                    package for a feature you try to use, you will get an
+                    error.
 
 Project Plugin Setup
 ====================

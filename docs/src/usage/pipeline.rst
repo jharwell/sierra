@@ -87,6 +87,10 @@ simplifying reproduction of previous results if you need to tweak a given graph
 
 - Videos built from captured experimental output .csv files.
 
+SIERRA also has a rich model framework allowing you to run arbitrary models,
+generate data, and plot it on the same figure as empirical results,
+automatically. See :ref:`ln-sierra-tutorials-project-models` for details.
+
 For some examples, see the "Generating Deliverables" section of
 :xref:`2022-aamas-demo`. See :ref:`ln-sierra-usage-vc` for details about
 rendering capabilities.

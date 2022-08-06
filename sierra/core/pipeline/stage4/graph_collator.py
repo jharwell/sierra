@@ -93,10 +93,10 @@ class UnivarGraphCollator:
             exts.extend([config.kStatsExt['stddev']])
 
         if self.cmdopts['dist_stats'] in ['bw', 'all']:
-            exts.extend([config.kStatsExt['min'],
-                         config.kStatsExt['max'],
-                         config.kStatsExt['whislo'],
+            exts.extend([config.kStatsExt['whislo'],
                          config.kStatsExt['whishi'],
+                         config.kStatsExt['q1'],
+                         config.kStatsExt['q3'],
                          config.kStatsExt['cilo'],
                          config.kStatsExt['cihi'],
                          config.kStatsExt['median']])
@@ -181,11 +181,11 @@ class BivarGraphCollator:
             exts = [config.kStatsExt['mean'],
                     config.kStatsExt['stddev']]
         elif self.cmdopts['dist_stats'] in ['bw', 'all']:
-            exts = [config.kStatsExt['min'],
-                    config.kStatsExt['max'],
-                    config.kStatsExt['mean'],
+            exts = [config.kStatsExt['mean'],
                     config.kStatsExt['whislo'],
                     config.kStatsExt['whishi'],
+                    config.kStatsExt['q1'],
+                    config.kStatsExt['q3'],
                     config.kStatsExt['cilo'],
                     config.kStatsExt['cihi'],
                     config.kStatsExt['median']]

@@ -26,57 +26,77 @@ runs:
         fi
         git checkout devel
 
+    - name: Get number of CPU cores
+      uses: SimenB/github-actions-cpu-cores@v1
+      id: cpu-cores
+
+    ############################################################################
+    # ARGoS setup
+    ############################################################################
     - name: Install ARGoS dependencies
       shell: bash
       working-directory: ../../
-      if: ${{ inputs.platform == 'argos' }}
       run: |
-        sudo apt-get install cmake libfreeimage-dev libfreeimageplus-dev \
-        qt5-default freeglut3-dev libxi-dev libxmu-dev liblua5.3-dev \
-        lua5.3 doxygen graphviz libgraphviz-dev asciidoc
+        if [ "${{ runner.os }}" == "macOS" ]; then
+          brew update
+          brew install pkg-config cmake libpng freeimage lua qt \
+          docbook asciidoc graphviz doxygen
+        elif [ "${{ runner.os }}" == "Linux" ]; then
+          sudo apt-get update
+          sudo apt-get install cmake libfreeimage-dev libfreeimageplus-dev \
+          qt5-default freeglut3-dev libxi-dev libxmu-dev liblua5.3-dev \
+          lua5.3 doxygen graphviz libgraphviz-dev asciidoc
+        fi
 
-    - name: Install ARGoS platform dependency
+    - name: Install ARGoS
+      if: inputs.platform == 'argos'
       shell: bash
       working-directory: ../../
-      if: ${{ inputs.platform == 'argos' }}
       run: |
-        git clone https://github.com/swarm-robotics/argos3.git
+        git clone https://github.com/ilpincy/argos3.git
         cd argos3
-        git checkout devel
         mkdir -p build && cd build
         cmake -DARGOS_DOCUMENTATION=OFF ../src
-        make -j 2
+        make -j ${{ steps.cpu-cores.outputs.count }}
         sudo make install
 
-
     - name: Build SIERRA project for ARGoS
-      if: ${{ inputs.platform == 'argos' }}
+      if: inputs.platform == 'argos'
       working-directory: ../../
       shell: bash
       run: |
         cd sierra-sample-project/argos
         mkdir -p build && cd build
         cmake -DARGOS_INSTALL_DIR=/usr/local ..
-        make -j 2
+        make -j ${{ steps.cpu-cores.outputs.count }}
 
+    ############################################################################
+    # ROS1+Gazebo setup
+    ############################################################################
     - name: Install ROS1 platform dependency
-      if: ${{ inputs.platform == 'ros1gazebo' }}
+      if: inputs.platform == 'ros1gazebo'
+      uses: ros-tooling/setup-ros@v0.3
+      with:
+        required-ros-distributions: ${{ inputs.rosdistro }}
+
+    - name: Install SIERRA ROSbridge dependencies
+      if: inputs.platform == 'ros1gazebo'
+      working-directory: ../..
       shell: bash
       run: |
-        sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
-        curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
-        sudo apt update
         sudo apt-get install ros-${{ inputs.rosdistro }}-desktop-full
         sudo apt-get install ros-${{ inputs.rosdistro }}-turtlebot3-description
         sudo apt-get install ros-${{ inputs.rosdistro }}-turtlebot3-msgs
         sudo apt-get install ros-${{ inputs.rosdistro }}-turtlebot3-gazebo
         sudo apt-get install ros-${{ inputs.rosdistro }}-turtlebot3-bringup
 
-    - name: Install SIERRA ROSBridge dependency
-      if: ${{ inputs.platform == 'ros1gazebo' }}
+    - name: Install SIERRA ROSBridge dependency (ubuntu)
+      if: inputs.platform == 'ros1gazebo'
       working-directory: ../..
       shell: bash
       run: |
+        source /opt/ros/${{ inputs.rosdistro }}/setup.bash
+
         pip3 install catkin_tools
         git clone https://github.com/swarm-robotics/sierra_rosbridge.git
         cd sierra_rosbridge

@@ -63,6 +63,14 @@ If you use SIERRA and find it helpful, please cite the following paper::
    series = {AAMAS '22}
    }
 
+You can also cite the following DOI for the specific version of SIERRA used, to
+help facilitate reproducibility:
+
+.. |doi| image:: https://zenodo.org/badge/125774567.svg
+         :target: https://zenodo.org/badge/latestdoi/125774567
+
+|doi|
+
 SIERRA In The Wild
 ==================
 
@@ -70,8 +78,8 @@ Here is a non-exhaustive list of some of the different ways SIERRA has been
 used.
 
 
-Papers using SIERRA
--------------------
+Papers
+------
 
 - :xref:`Harwell2021a-metrics`
 - :xref:`Harwell2022b-ode`
@@ -80,13 +88,13 @@ Papers using SIERRA
 - :xref:`White2019-social`
 - :xref:`Chen2019-battery`
 
-Projects Using SIERRA
----------------------
+Projects
+--------
 
 - :xref:`FORDYCA`
 - :xref:`PRISM`
 
-Demonstrations using SIERRA
----------------------------
+Demos
+-----
 
 - :xref:`2022-aamas-demo`

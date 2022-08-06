@@ -364,7 +364,8 @@ class PlatformExpRunDefUniqueGenerator:
                           self.run_num)
 
         if self.cmdopts['platform_vc']:
-            frames_fpath = self.run_output_path / config.kARGoS['frames_leaf']
+            argos = config.kRendering['argos']
+            frames_fpath = self.run_output_path / argos['frames_leaf']
             exp_def.attr_change(".//qt-opengl/frame_grabbing",
                                 "directory",
                                 str(frames_fpath))  # probably will not be present

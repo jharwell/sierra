@@ -108,8 +108,6 @@ kStatsExt: types.StrDict = {
     'stddev': '.stddev',
 
     # For calculating box and whisker plots
-    'min': '.min',
-    'max': '.max',
     'median': '.median',
     'q1': '.q1',
     'q3': '.q3',

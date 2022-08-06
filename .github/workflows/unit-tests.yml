@@ -1,4 +1,4 @@
-name: Unit Tests CI
+name: Unit Tests
 
 on:
   # workflow_call:
@@ -11,15 +11,21 @@ on:
 
 jobs:
   unit-tests:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: ['3.8', '3.9']
+        os:
+          - ubuntu-20.04 # ubuntu-latest, as of 8/22
+          - macos-12
+
+        python-version:
+          - 3.8
+          - 3.9
 
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/sierra-setup
 
-      - name: pytest
+      - name: Run nox
         run: |
-          pytest
+          nox --pythons ${{ matrix.python-version }} --sessions unit_tests

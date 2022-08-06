@@ -14,33 +14,46 @@ you clone things somewhere else.
 
    .. tabs::
 
-         .. group-tab:: Ubuntu
+           .. group-tab:: Ubuntu
 
-            Install the following with ``apt install``:
+              Install the following required packages with ``apt install``:
 
-            - ``parallel``
-            - ``cm-super``
-            - ``texlive-fonts-recommended``
-            - ``texlive-latex-extra``
-            - ``dvipng``
-            - ``pssh``
-            - ``ffmpeg``
-            - ``xvfb``
+              - ``parallel``
+              - ``cm-super``
+              - ``texlive-fonts-recommended``
+              - ``texlive-latex-extra``
+              - ``dvipng``
 
-         .. group-tab:: OSX
+              Install the following optional packages with ``apt install``:
 
-            Install the following with ``brew install``:
+              - ``pssh``
+              - ``ffmpeg``
+              - ``xvfb``
 
-            - ``parallel``
-            - ``--cask mactex``
-            - ``pssh``
+           .. group-tab:: OSX
+
+              Install the following required packages with ``brew install``:
+
+              - ``parallel``
+              - ``--cask mactex``
+              - ``pssh``
+
+              Install the following optional packages with ``brew install``:
+
+              - ``--cask xquartz``
+              - ``pssh``
+              - ``ffmpeg``
 
 
+     If you are on a different Linux distribution you will have to find and
+     install the equivalent packages.
 
-   .. IMPORTANT:: SIERRA will not work correctly in all cases if these packages
-                  (or their equivalent) are not installed! It may start, it
-                  might even not crash immediately depending on what you are
-                  using it to do.
+     .. IMPORTANT:: SIERRA will not work correctly in all cases if the required
+                    packages (or their equivalent) are not installed! It may
+                    start, it might even not crash immediately depending on what
+                    you are using it to do. If you are missing an optional
+                    package for a feature you try to use, you will get an
+                    error.
 
 #. Install SIERRA::
 
@@ -67,7 +80,7 @@ you clone things somewhere else.
 
             - `<http://wiki.ros.org/noetic/Installation/Ubuntu>`_
 
-            SIERRA only supports noetic.
+            SIERRA only supports kinetic,noetic.
 
          #. Install additional ROS packages for the turtlebot:
 

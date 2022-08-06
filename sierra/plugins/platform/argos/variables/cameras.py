@@ -60,10 +60,6 @@ class QTCameraTimeline():
                  setup: exp.ExpSetup,
                  cmdline: str,
                  extents: tp.List[ArenaExtent]) -> None:
-        self.interpolate = cmdline in ['argos.sw+interp',
-                                       'sierra.sw+interp',
-                                       'sierra.sw+interp+zoom']
-
         self.cmdline = cmdline
         self.extents = extents
         self.setup = setup
@@ -96,8 +92,7 @@ class QTCameraTimeline():
                                              {},
                                              False))
 
-            in_ticks = self.setup.n_secs_per_run * \
-                int(config.kARGoS['n_ticks_per_sec'])
+            in_ticks = self.setup.n_secs_per_run * self.setup.n_ticks_per_sec
             adds.append(xml.TagAdd('.//qt-opengl/camera',
                                    'timeline',
                                    {
@@ -105,20 +100,15 @@ class QTCameraTimeline():
                                    },
                                    False))
 
-            if self.cmdline in ['sierra.sw', 'sierra.sw+interp']:
-                n_cameras = self.kARGOS_N_CAMERAS
-            elif self.cmdline == 'sierra.sw+interp+zoom':
-                n_cameras = self.kARGOS_N_CAMERAS * 3
-
             for ext in self.extents:
                 # generate keyframes for switching between camera perspectives
-                self._gen_keyframes(adds, n_cameras, in_ticks)
+                self._gen_keyframes(adds, self.kARGOS_N_CAMERAS, in_ticks)
 
                 info = []
-                for c in range(0, n_cameras):
+                for c in range(0, self.kARGOS_N_CAMERAS):
                     info.append(self._gen_camera_config(ext,
                                                         c,
-                                                        n_cameras))
+                                                        self.kARGOS_N_CAMERAS))
 
                 for index, up, look_at, pos in info:
                     camera = xml.TagAdd('.//camera/placements',
@@ -153,7 +143,7 @@ class QTCameraTimeline():
                                    },
                                    True
                                    ))
-            if self.interpolate and c < n_cameras:
+            if 'interp' in self.cmdline and c < n_cameras:
                 adds.append(xml.TagAdd('.//qt-opengl/camera/timeline',
                                        'interpolate',
                                        {},
@@ -169,16 +159,9 @@ class QTCameraTimeline():
                            0.0)
         hyp = math.sqrt(2 * max(look_at.x, look_at.y) ** 2)
 
-        # As time proceeds and we interpolate between cameras, we want to slowly
-        # be zooming in/moving the cameras closer to the arena center.
-        if self.cmdline == 'sierra.sw+interp+zoom':
-            factor = math.sqrt((n_cameras + index) / n_cameras)
-        else:
-            factor = 1.0
-
-        pos_x = (hyp * math.cos(angle) + look_at.x) / factor
-        pos_y = (hyp * math.sin(angle) + look_at.y) / factor
-        pos_z = (max(ext.xsize(), ext.ysize()) * 0.50) / factor
+        pos_x = (hyp * math.cos(angle) + look_at.x)
+        pos_y = (hyp * math.sin(angle) + look_at.y)
+        pos_z = (max(ext.xsize(), ext.ysize()) * 0.50)
         pos = Vector3D(pos_x, pos_y, pos_z)
 
         # This is what the ARGoS source does for the up vector for the default
@@ -194,7 +177,7 @@ class QTCameraOverhead():
 
     Attributes:
 
-        extents: List of (X,Y,Zs) tuple of dimensions of arena areas to generate
+        extents: List of (X,Y,Z) tuple of dimensions of arena areas to generate
                  camera definitions for.
 
     """

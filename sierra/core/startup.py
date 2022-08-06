@@ -27,24 +27,35 @@ import subprocess
 # 3rd party packages
 
 # Project packages
+from sierra.core import types
 
-kRequiredDebPackages = ['parallel',
-                        'cm-super',
-                        'texlive-fonts-recommended',
-                        'texlive-latex-extra',
-                        'pssh',
-                        'ffmpeg',
-                        'xvfb',
-                        'dvipng']
+
+kOSXPackages = types.OSPackagesSpec('darwin',
+                                    'OSX',
+                                    pkgs={
+                                        'parallel': True,
+                                        'mactex': True,
+                                        'xquartz': False,
+                                        'pssh': False
+                                    })
 """
-The .deb packages SIERRA requires in debian-based distributions.
+The required/optional Homebrew packages.
 """
 
-kRequiredOSXPackages = ['parallel',
-                        'mactex',
-                        'pssh']
+kDebianPackages = types.OSPackagesSpec('linux',
+                                       'debian',
+                                       pkgs={
+                                           'parallel': True,
+                                           'cm-super': True,
+                                           'texlive-fonts-recommended': True,
+                                           'texlive-latex-extra': True,
+                                           'dvipng': True,
+                                           'pssh': False,
+                                           'ffmpeg': False,
+                                           'xvfb': False
+                                       })
 """
-The Homebrew packages SIERRA requires in OSX.
+The required/optional .deb packages for debian-based distributions.
 """
 
 
@@ -76,21 +87,7 @@ def _linux_pkg_checks() -> None:
     os_info = distro.os_release_info()
 
     if os_info['id_like'] in ['debian', 'ubuntu']:
-        import apt  # may fail on non-debian based systems
-        cache = apt.Cache()
-        missing = []
-
-        for pkg in kRequiredDebPackages:
-            logging.trace("Checking for .deb package '%s'", pkg)  # type: ignore
-            if pkg not in cache or not cache[pkg].is_installed:
-                missing.append(pkg)
-
-        if missing:
-            raise RuntimeError((f"Required .deb packages {missing} missing on "
-                                f"Linux distribution '{dist}'. Install all "
-                                "required packages before running SIERRA! "
-                                "(Did you read the \"Getting Started\" docs?)"))
-
+        _apt_pkg_checks(dist)
     else:
         logging.warning(("Unknown Linux distro '%s' detected: skipping package "
                          "check"),
@@ -99,20 +96,53 @@ def _linux_pkg_checks() -> None:
                          "all the required packages installed"))
 
 
+def _apt_pkg_checks(dist: str) -> None:
+    try:
+        import apt  # pytype: disable=import-error
+
+    except ImportError:
+        logging.warning(("Cannot check for required .deb packages: 'apt' "
+                         "module not found. Maybe '%s' != OS python version, "
+                         "or in virtualenv?"),
+                        sys.version)
+        return
+
+    cache = apt.Cache()
+    missing = []
+
+    for pkg, required in kDebianPackages.pkgs.items():
+        logging.trace("Checking for .deb package '%s'", pkg)  # type: ignore
+        if pkg not in cache or not cache[pkg].is_installed:
+            missing.append(pkg)
+
+    if missing:
+        if required:
+            raise RuntimeError((f"Required .deb packages {missing} missing on "
+                                f"Linux distribution '{dist}'. Install all "
+                                "required packages before running SIERRA! "
+                                "(Did you read the \"Getting Started\" docs?)"))
+
+        logging.debug(("Recommended .deb packages %s missing on Linux "
+                       "distribution '%s'. Some SIERRA functionality will "
+                       "not be available. "),
+                      dist,
+                      missing)
+
+
 def _osx_pkg_checks() -> None:
     """Check that all the packages required by SIERRA are installed on OSX.
 
     """
     missing = []
 
-    for pkg in kRequiredOSXPackages:
+    for pkg, required in kOSXPackages.pkgs.items():
         logging.trace("Checking for homebrew package '%s'",   # type: ignore
                       pkg)
-        p1 = subprocess.Popen('brew list | grep {pkg}',
+        p1 = subprocess.Popen(f'brew list | grep {pkg}',
                               shell=True,
                               stderr=subprocess.DEVNULL,
                               stdout=subprocess.DEVNULL)
-        p2 = subprocess.Popen('brew list --cask | grep {pkg}',
+        p2 = subprocess.Popen(f'brew list --cask | grep {pkg}',
                               shell=True,
                               stderr=subprocess.DEVNULL,
                               stdout=subprocess.DEVNULL)
@@ -123,7 +153,12 @@ def _osx_pkg_checks() -> None:
             missing.append(pkg)
 
     if missing:
-        raise RuntimeError((f"Required brew package {missing} missing on OSX. "
-                            "Install all required packages before running"
-                            "SIERRA! (Did you read the \"Getting Started\" "
-                            "docs?)"))
+        if required:
+            raise RuntimeError((f"Required brew package {missing} missing on "
+                                "OSX. Install all required packages before "
+                                "running SIERRA! (Did you read the \"Getting "
+                                "Started\" docs?)"))
+
+        logging.debug(("Recommended brew package %s missing on OSX. "
+                       "Some SIERRA functionality will not be available."),
+                      pkg)

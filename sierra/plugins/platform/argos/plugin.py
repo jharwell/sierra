@@ -249,7 +249,8 @@ class ExpConfigurer():
                     exp_input_root: pathlib.Path,
                     run_output_root: pathlib.Path) -> None:
         if self.cmdopts['platform_vc']:
-            frames_fpath = run_output_root / config.kARGoS['frames_leaf']
+            argos = config.kRendering['argos']
+            frames_fpath = run_output_root / argos['frames_leaf']
             utils.dir_create_checked(frames_fpath, exist_ok=True)
 
     def for_exp(self, exp_input_root: pathlib.Path) -> None:

@@ -39,3 +39,6 @@ Connect to SIERRA
 
 #. Put ``$HOME/git/plugins`` on your :envvar:`SIERRA_PLUGIN_PATH`. Then
    your plugin can be selected as ``--exec-env=hpc.HAL``.
+
+.. NOTE:: Execution environment plugin names have the same constraints as python
+   package names (e.g., no dots).

@@ -208,7 +208,7 @@ class BootstrapCmdline(BaseCmdline):
                                  :ref:`ln-sierra-hpc-plugins-adhoc` for a
                                  detailed description.
 
-                               - ``robots.turtlebot`` - This will direct SIERRA
+                               - ``robot.turtlebot3`` - This will direct SIERRA
                                  to run experiments on real Turtlebots.
 
                                Not all platforms support all execution
@@ -530,8 +530,8 @@ class CoreCmdline(BaseCmdline):
                                  skipped during experimental results processing,
                                  and outputs will be averaged directly.
 
-                                 If not all the corresponding ``.csv`` files in
-                                 all experiments generated the same # rows, then
+                                 If not all the corresponding CSV files in all
+                                 experiments generated the same # rows, then
                                  SIERRA will (probably) crash during experiments
                                  exist and/or have the stage4. Verification can
                                  take a long time with large # of runs and/or
