@@ -127,13 +127,15 @@ Why SIERRA?
 - It eliminates manual reconfiguration of experiments across simulator/robot
   platforms by decoupling the concepts of execution environment and platform;
   any supported pair can be selected in a mix-and-match fashion (see `SIERRA
-  Support Matrix`_).
-
-- It removes the need for throw-away scripts for data processing and deliverable
-  generation by providing rich, extensible faculties.
+  Support Matrix`_). Thus, it removes the need for throw-away scripts for data
+  processing and deliverable generation.
 
 - SIERRA can be used with code written in any language; only bindings must be
   written in python.
+
+- SIERRA has a rich model framework allowing you to run arbitrary models,
+  generate data, and plot it on the same figure as empirical results,
+  automatically.
 
 - Its deeply modular architecture makes it easy to customize for the needs
   of a specific research project.
@@ -421,9 +423,19 @@ Requirements To Use SIERRA
 
 The basic requirements are:
 
-- Recent OSX or Linux (Windows is not supported).
+- Recent OSX (tested with 12+) or Linux (tested with ubuntu 20.04+).
 
 - python >= 3.8.
+
+.. ADMONITION:: Windows is not supported currently. Not because it can't be
+                supported, but because there are not currently any platform
+                plugins that which work on windows. That is, SIERRA's OS support
+                is dictated by the OS support of its currently platform plugins,
+                none of which support windows.
+
+                If windows support would be helpful for your intended usage of
+                SIERRA, please get in touch with me--SIERRA is written in pure
+                python and can definitely be made to work on windows.
 
 For more details, including the requirements for researcher code, see the
 `SIERRA requirements

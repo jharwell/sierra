@@ -87,11 +87,11 @@ listed, see the :ref:`ln-sierra-tutorials` for how to add it via a plugin.
    * - `ROS1 <https://ros.org)+[Gazebo](https://www.gazebosim.org>`_
 
      - Using ROS1 with the Gazebo simulator. Requires Gazebo >= 11.9.0, ROS1
-       Noetic or later.
+       Kinetic or later.
 
    * - `ROS1+Robot <https://ros.org>`_
 
-     - Using ROS1 with a real robot platform of your choice. ROS1 Noetic or
+     - Using ROS1 with a real robot platform of your choice. ROS1 Kinetic or
        later is required.
 
 SIERRA also supports multiple output formats for experimental outputs. If the

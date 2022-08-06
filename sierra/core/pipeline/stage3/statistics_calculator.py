@@ -460,6 +460,7 @@ class ExpStatisticsCalculator:
 
         if self.avg_opts['dist_stats'] in ['none', 'all']:
             dfs = stat_kernels.mean.from_groupby(by_row_index)
+
         if self.avg_opts['dist_stats'] in ['conf95', 'all']:
             dfs = stat_kernels.conf95.from_groupby(by_row_index)
 

@@ -51,9 +51,9 @@ def lint(session):
                 '--no-assert sierra')
 
 
-# venv argument needed so the apt module can be found in the nox venv
-@nox.session(python=['3.8', '3.9'], venv_params=['--system-site-packages'])
-def static_analysis(session):
+# venv argument needed so the apt module can be found in the nox venv on linux
+@nox.session(python=['3.8', '3.9'])
+def analysis(session):
     session.install('.')  # same as 'pip3 install .'
     session.install('.[devel]')  # same as 'pip3 install .[devel]'
 
@@ -62,7 +62,8 @@ def static_analysis(session):
                 f'-j {cores}',
                 '-k',
                 '-d name-error,attribute-error,invalid-annotation,pyi-error',
-                'sierra')
+                'sierra',
+                external=True)
 
     session.run('mypyrun',
                 '--select',
@@ -151,4 +152,5 @@ def unit_tests(session):
     session.install('.')  # same as 'pip3 install .'
     session.install('.[devel]')  # same as 'pip3 install .[devel]'
 
-    session.run("pytest")
+    session.run('pytest',
+                '--cov')

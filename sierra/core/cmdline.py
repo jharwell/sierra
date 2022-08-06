@@ -208,7 +208,7 @@ class BootstrapCmdline(BaseCmdline):
                                  :ref:`ln-sierra-hpc-plugins-adhoc` for a
                                  detailed description.
 
-                               - ``robots.turtlebot`` - This will direct SIERRA
+                               - ``robot.turtlebot3`` - This will direct SIERRA
                                  to run experiments on real Turtlebots.
 
                                Not all platforms support all execution
@@ -530,8 +530,8 @@ class CoreCmdline(BaseCmdline):
                                  skipped during experimental results processing,
                                  and outputs will be averaged directly.
 
-                                 If not all the corresponding ``.csv`` files in
-                                 all experiments generated the same # rows, then
+                                 If not all the corresponding CSV files in all
+                                 experiments generated the same # rows, then
                                  SIERRA will (probably) crash during experiments
                                  exist and/or have the stage4. Verification can
                                  take a long time with large # of runs and/or
@@ -602,7 +602,10 @@ class CoreCmdline(BaseCmdline):
 
                                  Specify, as a percent in [0, 100], how much
                                  memory SIERRA should try to limit itself to
-                                 using.
+                                 using. This is useful on systems with limited
+                                 memory, or on systems which are shared with
+                                 other users without per-user memory
+                                 restrictions.
 
                                  """ + self.stage_usage_doc([3, 4]),
                                  default=90)
@@ -792,8 +795,8 @@ class CoreCmdline(BaseCmdline):
                            For example, in a bivariate batch criteria composed
                            of
 
-                           -: ref: `ln-sierra-platform-argos-bc-population-size` on the
-                             X axis(rows)
+                           - :ref:`ln-sierra-platform-argos-bc-population-size`
+                             on the X axis(rows)
 
                            - Another batch criteria which does not affect system
                              size
@@ -863,10 +866,11 @@ class CoreCmdline(BaseCmdline):
         rendering.add_argument("--project-imagizing",
                                help="""
 
-                               Enable generation of image files from CSV
-                               files captured during stage 2 and averaged during
-                               stage 3 for each experiment. See: ref: `ln-sierra-usage-rendering-project` for details and
-                               restrictions.
+                               Enable generation of image files from CSV files
+                               captured during stage 2 and averaged during stage
+                               3 for each experiment. See
+                               :ref:`ln-sierra-usage-rendering-project` for
+                               details and restrictions.
 
                                """ + self.stage_usage_doc([3, 4]),
                                action='store_true')
@@ -874,9 +878,11 @@ class CoreCmdline(BaseCmdline):
         rendering.add_argument("--project-rendering",
                                help="""
 
-                               Enable generation of videos from imagized
-                               CSV files created as a result of
-                               ``--project-imagizing``. See: ref: `ln-sierra-usage-rendering-project` for details.
+                               Enable generation of videos from imagized CSV
+                               files created as a result of
+                               ``--project-imagizing``. See
+                               :ref:`ln-sierra-usage-rendering-project` for
+                               details.
 
                                """ + self.stage_usage_doc([4]),
                                action='store_true')
@@ -1066,52 +1072,6 @@ class CoreCmdline(BaseCmdline):
                                  self.graphs_applicable_doc([':class:`~sierra.core.graphs.heatmap.Heatmap`']) +
                                  self.stage_usage_doc([5]),
                                  action='store_true')
-
-    @staticmethod
-    def cs_methods_doc() -> str:
-        return r"""
-
-        The following methods can be specified. Note that each some methods have
-        a defined normalized domain, and some do not, and that the normalized
-        domain may invert the meaning of lower values=better. If defined, the
-        normalized domain the default for a given measure.
-
-        - ``pcm`` - Partial Curve Mapping(Witowski2012).
-
-          - Intrinsic domain: math: `[0, \infty)`. Lower values indicate greater
-            similarity.
-
-          - Normalized domain: N/A.
-
-        - ``area_between`` - Area between the two curves(Jekel2018).
-
-          - Intrinsic domain::math:`[0, \infty)`. Lower values indicate greater
-            similarity.
-
-          - Normalized domain: N/A.
-
-        - ``frechet`` - Frechet distance(Frechet1906).
-
-          - Intrinsic domain::math:`[0, \infty)`. Lower values indicate greater
-            similarity.
-
-          - Normalized domain: N/A.
-
-        - ``dtw`` - Dynamic Time Warping(Berndt1994).
-
-          - Intrinsic domain::math:`[0, \infty)`. Lower values indicate greater
-            similarity.
-
-          - Normalized domain: [0, 1]. Higher values indicate greater
-            similarity.
-
-        - ``curve_length`` - Arc-length distance along the curve from the origin
-          of(applied - ideal) curve(Andrade-campos2009).
-
-          - Intrinsic domain::math:`[0, \infty)`.
-
-          - Normalized domain: N/A.
-        """
 
 
 class CoreCmdlineValidator():

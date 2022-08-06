@@ -101,12 +101,13 @@ class BatchExpParallelVideoRenderer:
         filtered = self._filter_sim_dirs(all_dirs, self.main_config)
 
         for sim in filtered:
-            frames_leaf = config.kRendering[self.cmdopts['platform']]['frames_leaf']
+            platform = self.cmdopts['platform'].split('.')[1]
+            frames_leaf = config.kRendering[platform]['frames_leaf']
             opts = {
-                'ofile_leaf': str(sim.with_suffix(config.kRenderFormat)),
+                'ofile_name': sim.name + config.kRenderFormat,
                 'input_dir': str(exp / sim / frames_leaf),
                 'output_dir': str(output_dir),
-                'cmd_opts': self.cmdopts['render_cmd_opts']
+                'ffmpeg_opts': self.cmdopts['render_cmd_opts']
             }
             utils.dir_create_checked(opts['output_dir'],
                                      exist_ok=True)
@@ -115,25 +116,24 @@ class BatchExpParallelVideoRenderer:
     def _project_rendering(self,
                            exp: pathlib.Path,
                            q: mp.JoinableQueue) -> None:
-        exp_imagize_root = pathlib.Path(
-            self.cmdopts['batch_imagize_root']) / exp.name
+        exp_imagize_root = pathlib.Path(self.cmdopts['batch_imagize_root'],
+                                        exp.name)
 
         # Project render targets are in
         # <averaged_output_root>/<metric_dir_name>, for all directories
         # in <averaged_output_root>.
-        output_dir = pathlib.Path(self.cmdopts['batch_video_root']) / exp.name
+        output_dir = pathlib.Path(self.cmdopts['batch_video_root'], exp.name)
 
         for candidate in exp_imagize_root.iterdir():
             if candidate.is_dir():
                 opts = {
                     'input_dir': str(candidate),
                     'output_dir': str(output_dir),
-                    'ofile_leaf': candidate.name + config.kRenderFormat,
-                    'cmd_opts': self.cmdopts['render_cmd_opts']
+                    'ofile_name': candidate.name + config.kRenderFormat,
+                    'ffmpeg_opts': self.cmdopts['render_cmd_opts']
                 }
 
-                utils.dir_create_checked(pathlib.Path(opts['output_dir']),
-                                         True)
+                utils.dir_create_checked(opts['output_dir'], True)
                 q.put(opts)
 
     @staticmethod
@@ -165,14 +165,16 @@ class ExpVideoRenderer:
     def __call__(self,
                  main_config: types.YAMLDict,
                  render_opts: tp.Dict[str, str]) -> None:
-        self.logger.info("Rendering images in %s,ofile_leaf=%s...",
-                         render_opts['input_dir'],
-                         render_opts['ofile_leaf'])
-        opts = render_opts['cmd_opts'].split(' ')
+        output_dir = pathlib.Path(render_opts['output_dir'])
 
-        ipaths = "'{0}/*.{1}'".format(render_opts['input_dir'], config.kImageExt)
+        self.logger.info("Rendering images in %s...", output_dir.name)
+
+        opts = render_opts['ffmpeg_opts'].split(' ')
+
+        ipaths = "'{0}/*{1}'".format(render_opts['input_dir'],
+                                     config.kImageExt)
         opath = pathlib.Path(render_opts['output_dir'],
-                             render_opts['ofile_leaf'])
+                             render_opts['ofile_name'])
         cmd = ["ffmpeg",
                "-y",
                "-pattern_type",
@@ -182,11 +184,27 @@ class ExpVideoRenderer:
         cmd.extend(opts)
         cmd.extend([str(opath)])
 
-        with subprocess.Popen(' '.join(cmd),
-                              shell=True,
-                              stderr=subprocess.DEVNULL,
-                              stdout=subprocess.DEVNULL) as p:
-            p.wait()
+        to_run = ' '.join(cmd)
+        self.logger.trace('Run cmd: %s', to_run)  # type: ignore
+
+        proc = subprocess.Popen(to_run,
+                                shell=True,
+                                stderr=subprocess.PIPE,
+                                stdout=subprocess.PIPE)
+        proc.wait()
+
+        # We use communicate(), not wait() to avoid issues with IO buffers
+        # becoming full (i.e., you get deadlocks with wait() regularly).
+        stdout_raw, stderr_raw = proc.communicate()
+
+        # Only show output if the process failed (i.e., did not return 0)
+        if proc.returncode != 0:
+            self.logger.error("Cmd '%s' failed!", to_run)
+            stdout_str = stdout_raw.decode("ascii")
+            stderr_str = stderr_raw.decode("ascii")
+
+            self.logger.error(stdout_str)
+            self.logger.error(stderr_str)
 
 
 __api__ = [

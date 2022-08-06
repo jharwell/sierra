@@ -125,8 +125,8 @@ circular pan around the arena during simulation).
           depending on simulation length, you usually want to have a very small
           ``--n-runs`` to avoid filling up the filesystem.
 
-Stage 5 Example
-===============
+Stage 5 Scenario Comparison Example
+===================================
 
 This example assumes that stages 1-4 have been run successfully with a project
 named ``fordyca`` and that a univariate batch criteria has been used (such as
@@ -144,10 +144,37 @@ named ``fordyca`` and that a univariate batch criteria has been used (such as
    --sierra-root=$HOME/exp
 
 
-This will compare all scenarios that all controllers with ``$HOME/exp`` which
-have been run on the same set of scenarios according to the configuration
-defined in ``stage5.yaml``. It will plot the 95% confidence intervals on all
-generated graphs for the univariate batch criteria.
+This will compare all scenarios that the ``d0.CRW`` controller has been run on
+according to the configuration defined in ``stage5.yaml``. SIERRA will plot the
+95% confidence intervals on all generated graphs for the univariate batch
+criteria.
+
+
+Stage 5 Controller Comparison Example
+=====================================
+
+This example assumes that stages 1-4 have been run successfully with a project
+named ``fordyca`` and that a univariate batch criteria has been used (such as
+:ref:`ln-sierra-platform-argos-bc-population-size`).
+
+::
+
+   sierra-cli \
+   --project=fordyca \
+   --pipeline 5 \
+   --controller-comparison \
+   --dist-stats=conf95 \
+   --bc-univar \
+   --controllers-list=d0.foobar,d0.fizzbuzz \
+   --sierra-root=$HOME/exp
+
+
+SIERRA will compute the list of scenarios that the ``d0.foobar`` and the
+``d0.fizzbuzz`` controllers have *all* been run. Comparison graphs for each
+scenario with the ``d0.foobar,d0.fizzbuz`` controllers will be generated
+according to the configuration defined in ``stage5.yaml``. SIERRA will plot the
+95% confidence intervals on all generated graphs for the univariate batch
+criteria.
 
 
 ====================
@@ -248,7 +275,7 @@ environment of a set of turtlebots.
    --controller=turtlebot3.wander \
    --robot turtlebot3 \
    --exp-setup=exp_setup.T100 \
-   --exec-env=robots.turtlebot3 \
+   --exec-env=robot.turtlebot3 \
    --nodefile=turtlebots.txt
    --exec-inter-run-pause=60 \
    --no-master-node \

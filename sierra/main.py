@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 #
 #  This file is part of SIERRA.

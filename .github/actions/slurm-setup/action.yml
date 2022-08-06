@@ -28,6 +28,8 @@ runs:
 
         sudo scontrol update nodename=localhost state=IDLE
 
+        sudo systemctl status slurmctld.service
+        # sudo journalctl -xe
         # sudo cat /var/log/slurm-llnl/slurmd.log
         # sudo cat /var/log/slurm-llnl/slurmctld.log
         # sinfo

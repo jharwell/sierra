@@ -73,3 +73,13 @@ class ParsedNodefileSpec():
         self.n_cores = n_cores
         self.login = login
         self.port = port
+
+
+class OSPackagesSpec():
+    def __init__(self,
+                 kernel: str,
+                 name: str,
+                 pkgs: tp.Dict[str, bool]) -> None:
+        self.kernel = kernel
+        self.name = name
+        self.pkgs = pkgs

@@ -183,8 +183,8 @@ class UnivarIntraScenarioComparator:
                             criteria=criteria,
                             cmdopts=cmdopts,
                             dest_stem=graph['dest_stem'],
-                            title=graph['title'],
-                            label=graph['label'],
+                            title=graph.get('title', ''),
+                            label=graph.get('label', ''),
                             inc_exps=graph.get('include_exp', None),
                             legend=legend)
 
@@ -418,8 +418,8 @@ class BivarIntraScenarioComparator:
                                criteria=criteria,
                                cmdopts=cmdopts,
                                dest_stem=graph['dest_stem'],
-                               title=graph['title'],
-                               label=graph['label'],
+                               title=graph.get('title', ''),
+                               label=graph.get('label', ''),
                                primary_axis=graph['primary_axis'],
                                inc_exps=graph.get('include_exp', None),
                                legend=legend)
@@ -428,8 +428,8 @@ class BivarIntraScenarioComparator:
                                criteria=criteria,
                                cmdopts=cmdopts,
                                dest_stem=graph['dest_stem'],
-                               title=graph['title'],
-                               label=graph['label'],
+                               title=graph.get('title', ''),
+                               label=graph.get('label', ''),
                                legend=legend,
                                comp_type=comp_type)
 
@@ -438,8 +438,8 @@ class BivarIntraScenarioComparator:
                               criteria=criteria,
                               cmdopts=cmdopts,
                               dest_stem=graph['dest_stem'],
-                              title=graph['title'],
-                              zlabel=graph['label'],
+                              title=graph.get('title', ''),
+                              zlabel=graph.get('label', ''),
                               legend=legend,
                               comp_type=comp_type)
 

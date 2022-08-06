@@ -46,12 +46,12 @@ class ParsedCmdlineConfigurer():
     """
 
     def __init__(self, exec_env: str) -> None:
-        self.logger = logging.getLogger("robots.turtlebot3")
+        self.logger = logging.getLogger("robot.turtlebot3")
 
     def __call__(self, args: argparse.Namespace) -> None:
         if args.nodefile is None:
             assert 'SIERRA_NODEFILE' in os.environ,\
-                ("Non-robots.turtlebot3 environment detected: --nodefile not "
+                ("Non-robot.turtlebot3 environment detected: --nodefile not "
                  "passed and 'SIERRA_NODEFILE' not found")
             args.nodefile = os.environ['SIERRA_NODEFILE']
 
@@ -60,7 +60,7 @@ class ParsedCmdlineConfigurer():
         self.logger.info("Using '%s' as robot hostnames file", args.nodefile)
 
         assert not args.platform_vc,\
-            "Platform visual capture not supported on robots.turtlebot3"
+            "Platform visual capture not supported on robot.turtlebot3"
 
 
 @implements.implements(bindings.IExpShellCmdsGenerator)
@@ -182,7 +182,7 @@ class ExecEnvChecker(platform.ExecEnvChecker):
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         super().__init__(cmdopts)
         self.cmdopts = cmdopts
-        self.logger = logging.getLogger('robots.turtlebot3')
+        self.logger = logging.getLogger('robot.turtlebot3')
 
     def __call__(self) -> None:
         nodes = self.parse_nodefile(self.cmdopts['nodefile'])
@@ -201,7 +201,6 @@ class ExecEnvChecker(platform.ExecEnvChecker):
 
 __api__ = [
     'ParsedCmdlineConfigurer',
-    'ExpRunShellCmdsGenerator',
     'ExpShellCmdsGenerator',
     'ExecEnvChecker'
 ]

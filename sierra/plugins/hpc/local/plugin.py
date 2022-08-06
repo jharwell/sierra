@@ -89,6 +89,5 @@ class ExpShellCmdsGenerator():
 
 
 __api__ = [
-    'ParsedCmdlineConfigurer',
     'ExpShellCmdsGenerator'
 ]

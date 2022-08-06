@@ -47,3 +47,6 @@ Connect to SIERRA
 #. Put ``$HOME/git/plugins/platform/matrix`` on your
    :envvar:`SIERRA_PLUGIN_PATH` so that your platform can be selected via
    ``--platform=platform.matrix``.
+
+.. NOTE:: Platform names have the same constraints as python package names
+   (e.g., no dots).

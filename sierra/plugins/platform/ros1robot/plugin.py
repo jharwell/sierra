@@ -340,8 +340,8 @@ class ExecEnvChecker():
                     k)
 
         # Check ROS distro
-        assert os.environ['ROS_DISTRO'] in ['noetic'],\
-            "SIERRA only supports ROS1 noetic"
+        assert os.environ['ROS_DISTRO'] in ['kinetic', 'noetic'],\
+            "SIERRA only supports ROS1 kinetic,noetic"
 
         # Check ROS version
         assert os.environ['ROS_VERSION'] == "1",\

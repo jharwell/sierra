@@ -298,10 +298,10 @@ class SummaryLineGraph:
     def _read_bw_stats(self) -> tp.Dict[str, tp.List[pd.DataFrame]]:
         dfs = {}
         reader = storage.DataFrameReader('storage.csv')
-        exts = [config.kStatsExt['min'],
-                config.kStatsExt['max'],
-                config.kStatsExt['whislo'],
+        exts = [config.kStatsExt['whislo'],
                 config.kStatsExt['whishi'],
+                config.kStatsExt['q1'],
+                config.kStatsExt['q3'],
                 config.kStatsExt['cilo'],
                 config.kStatsExt['cihi'],
                 config.kStatsExt['median']]

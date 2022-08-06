@@ -1,3 +1,5 @@
+.. _ln-sierra-tutorials-project-models:
+
 =============
 SIERRA Models
 =============

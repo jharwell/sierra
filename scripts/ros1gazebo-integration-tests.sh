@@ -19,20 +19,35 @@ setup_env() {
 
     localsite=$(python3 -m site --user-site)
     localbase=$(python3 -m site --user-base)
+
+    # I should NOT have to do this, but (apparentwly) PATH is reset
+    # between jobs in a workflow  on OSX, and doing this the way
+    # github says to do doesn't work.
+    export PATH=$pythonLocation/bin:$PATH
+
+    # Required to get coverage.py to work with the installed version
+    # of SIERRA. Omitting this results in either nothing getting
+    # measured because the local site-packages is omitted, or if that
+    # is included ALL locally installed packages get measured.
+    export PYTHONPATH=$PYTHONPATH:$PWD
+
+    which sierra-cli
+    which python3
+
     export COVERAGE_CMD="coverage \
     run \
-     --append \
-     $localbase/bin/sierra-cli"
+     --debug=debug \
+     $(which sierra-cli)"
 
     export SIERRA_BASE_CMD="$COVERAGE_CMD \
        --sierra-root=$SIERRA_ROOT \
        --platform=platform.ros1gazebo \
        --project=ros1gazebo_project \
-       --exp-setup=exp_setup.T10.K5\
+       --exp-setup=exp_setup.T10.K5.N50\
        --n-runs=4 \
        --exec-strict\
        --template-input-file=$SAMPLE_ROOT/exp/ros1gazebo/turtlebot3_house.launch \
-       --scenario=HouseWorld.10x10x1 \
+       --scenario=HouseWorld.10x10x2 \
        --controller=turtlebot3.wander \
        --robot turtlebot3\
        --exec-no-devnull \
@@ -74,6 +89,41 @@ batch_criteria_test() {
 
     sanity_check_pipeline $SIERRA_CMD
 
+}
+
+################################################################################
+# Check that stage 1 outputs what it is supposed to
+################################################################################
+stage1_outputs_test() {
+    batch_root=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"ros1gazebo_project\",[\"population_size.Linear3.C3\"],\"HouseWorld.10x10x2\",\"turtlebot3.wander\", \"turtlebot3_house\"))")
+
+    input_root=$batch_root/exp-inputs/
+    rm -rf $SIERRA_ROOT
+
+    SIERRA_CMD="$SIERRA_BASE_CMD \
+    --batch-criteria population_size.Linear3.C3 \
+    --pipeline 1 "
+
+    $SIERRA_CMD
+
+    # Check SIERRA directory structure
+    for i in {0..2}; do
+        [ -d "$input_root/exp$i" ] || false
+    done
+
+    # Check stage1 generated stuff
+    for exp in {0..2}; do
+        [ -f "$input_root/exp${exp}/commands.txt" ] || false
+        [ -f "$input_root/exp${exp}/exp_def.pkl" ] || false
+        [ -f "$input_root/exp${exp}/seeds.pkl" ] || false
+
+        for run in {0..3}; do
+            [ -f "$input_root/exp${exp}/turtlebot3_house_run${run}_master.launch" ] ||false
+            [ -f "$input_root/exp${exp}/turtlebot3_house_run${run}_robots.launch" ] || false
+        done
+    done
+
+    rm -rf $SIERRA_ROOT
 }
 
 ################################################################################
@@ -122,26 +172,16 @@ set -e
 set -x
 
 rospack find sierra_rosbridge
-cd $SAMPLE_ROOT
-ls -alh
-python3 -m projects.ros1gazebo_project.generators.scenario_generators
-cd -
 
-options=$(getopt -o f:,e: --long func:,env:  -n "ROS1+Gazebo integration tests" -- "$@")
-
-eval set -- "$options"
 func=NONE
 exec_env=''
 
-while true; do
-
-    case "$1" in
-        -f|--func) func=$2; shift;;
-        -e|--env) exec_env=$2; shift;;
-        --) break;;
-        *) break;;
+while getopts f:e: arg; do
+    case "$arg" in
+        f) func="$OPTARG";;
+        e) exec_env="$OPTARG";;
+        *) exit 2;;
     esac
-    shift;
 done
 
 $func $exec_env
