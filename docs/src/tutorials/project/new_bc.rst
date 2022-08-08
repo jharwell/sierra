@@ -95,9 +95,11 @@ following to get it to work with SIERRA as a :term:`Batch Criteria`:
 
    .. code-block:: python
 
+      import pathlib
+
       def factory(cli_arg: str,
                   main_config: dict,
-                  batch_input_root: str,
+                  batch_input_root: pathlib.path,
                   **kwargs) -> MyVar:
       """
       Arguments:

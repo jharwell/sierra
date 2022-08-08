@@ -16,12 +16,10 @@
 #
 
 # Core packages
-import os
 import textwrap
-import glob
-import re
 import typing as tp
 import logging
+import pathlib
 
 # 3rd party packages
 import numpy as np
@@ -30,7 +28,7 @@ import mpl_toolkits.axes_grid1
 import pandas as pd
 
 # Project packages
-from sierra.core import utils, config, storage
+from sierra.core import utils, config, storage, types
 
 
 class Heatmap:
@@ -55,16 +53,16 @@ class Heatmap:
         fig.set_size_inches(xsize, ysize)
 
     def __init__(self,
-                 input_fpath: str,
-                 output_fpath: str,
+                 input_fpath: pathlib.Path,
+                 output_fpath: pathlib.Path,
                  title: str,
                  xlabel: str,
                  ylabel: str,
+                 zlabel: tp.Optional[str] = None,
                  large_text: bool = False,
                  xtick_labels: tp.Optional[tp.List[str]] = None,
                  ytick_labels: tp.Optional[tp.List[str]] = None,
                  transpose: bool = False,
-                 zlabel: tp.Optional[str] = None,
                  interpolation: str = 'nearest') -> None:
         # Required arguments
         self.input_fpath = input_fpath
@@ -98,11 +96,11 @@ class Heatmap:
                 "Not generating heatmap: %s does not exist", self.input_fpath)
             return
 
-        # Read .csv and create raw heatmap from default configuration
+        # Read .csv and create raw heatmap pfrom default configuration
         data_df = storage.DataFrameReader('storage.csv')(self.input_fpath)
         self._plot_df(data_df, self.output_fpath)
 
-    def _plot_df(self, df: pd.DataFrame, opath: str) -> None:
+    def _plot_df(self, df: pd.DataFrame, opath: pathlib.Path) -> None:
         """
         Given a dataframe read from a file, plot it as a heatmap.
         """
@@ -172,26 +170,36 @@ class DualHeatmap:
 
     This graph does not plot standard deviation.
 
-    If there are not exactly two ``.mean`` files matching the pattern found, the
-    graph is not generated.
+    If there are not exactly two file paths passed, the graph is not generated.
 
     """
     kCardinality = 2
 
-    def __init__(self, **kwargs) -> None:
-        self.input_stem_pattern = os.path.abspath(kwargs['input_stem_pattern'])
-        self.output_fpath = kwargs['output_fpath']
-        self.title = kwargs['title']
-        self.legend = kwargs.get('legend', None)
-        self.zlabel = kwargs['zlabel']
+    def __init__(self,
+                 ipaths: types.PathList,
+                 output_fpath: pathlib.Path,
+                 title: str,
+                 xlabel: tp.Optional[str] = None,
+                 ylabel: tp.Optional[str] = None,
+                 zlabel: tp.Optional[str] = None,
+                 large_text: bool = False,
+                 xtick_labels: tp.Optional[tp.List[str]] = None,
+                 ytick_labels: tp.Optional[tp.List[str]] = None,
+                 legend: tp.Optional[tp.List[str]] = None) -> None:
+        self.ipaths = ipaths
+        self.output_fpath = output_fpath
+        self.title = title
 
-        self.xlabel = kwargs.get('xlabel', None)
-        self.ylabel = kwargs.get('ylabel', None)
-        self.xtick_labels = kwargs.get('xtick_labels', None)
-        self.ytick_labels = kwargs.get('ytick_labels', None)
+        self.legend = legend
+        self.xlabel = xlabel
+        self.ylabel = ylabel
+        self.zlabel = zlabel
+
+        self.xtick_labels = xtick_labels
+        self.ytick_labels = ytick_labels
 
         # Optional arguments
-        if kwargs.get('large_text', False):
+        if large_text:
             self.text_size = config.kGraphTextSizeLarge
         else:
             self.text_size = config.kGraphTextSizeSmall
@@ -200,12 +208,12 @@ class DualHeatmap:
 
     def generate(self) -> None:
         reader = storage.DataFrameReader('storage.csv')
-        dfs = [reader(f) for f in glob.glob(self.input_stem_pattern)
-               if re.search('_[0-9]+', f)]
+        dfs = [reader(f) for f in self.ipaths]
 
         if not dfs or len(dfs) != DualHeatmap.kCardinality:
-            self.logger.debug("Not generating dual heatmap: %s did not match %s CSV files",
-                              self.input_stem_pattern, DualHeatmap.kCardinality)
+            self.logger.debug(("Not generating dual heatmap: wrong # files "
+                               "(must be %s"),
+                              DualHeatmap.kCardinality)
             return
 
         # Scaffold graph. We can use either dataframe for setting the graph
@@ -333,8 +341,8 @@ class HeatmapSet():
     """
 
     def __init__(self,
-                 ipaths: tp.List[str],
-                 opaths: tp.List[str],
+                 ipaths: types.PathList,
+                 opaths: types.PathList,
                  titles: tp.List[str],
                  **kwargs) -> None:
         self.ipaths = ipaths

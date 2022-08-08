@@ -16,8 +16,8 @@
 
 # Core packages
 import typing as tp
-import os
 import logging
+import pathlib
 
 # 3rd party packages
 
@@ -25,9 +25,8 @@ import logging
 import sierra.core.variables.batch_criteria as bc
 from sierra.core.utils import ArenaExtent
 from sierra.core.vector import Vector3D
-import sierra.core.config
 import sierra.core.plugin_manager as pm
-from sierra.core import types
+from sierra.core import types, config
 
 
 class ExperimentSpec():
@@ -53,10 +52,11 @@ class ExperimentSpec():
                  exp_num: int,
                  cmdopts: types.Cmdopts) -> None:
         self.exp_num = exp_num
-        self.exp_input_root = os.path.join(cmdopts['batch_input_root'],
-                                           criteria.gen_exp_dirnames(cmdopts)[exp_num])
-        self.exp_def_fpath = os.path.join(self.exp_input_root,
-                                          sierra.core.config.kPickleLeaf)
+        exp_name = criteria.gen_exp_names(cmdopts)[exp_num]
+
+        self.exp_input_root = pathlib.Path(cmdopts['batch_input_root'], exp_name)
+        self.exp_def_fpath = self.exp_input_root / config.kPickleLeaf
+
         self.logger = logging.getLogger(__name__)
         self.criteria = criteria
 

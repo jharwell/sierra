@@ -21,9 +21,8 @@ Not necessarily HPC, but it fits well enough under that semantic umbrella.
 
 # Core packages
 import typing as tp
-import argparse
-import os
 import shutil
+import pathlib
 
 # 3rd party packages
 import implements
@@ -31,7 +30,6 @@ import implements
 # Project packages
 from sierra.core import types
 from sierra.core.experiment import bindings
-import sierra.core.variables.batch_criteria as bc
 
 
 @implements.implements(bindings.IExpShellCmdsGenerator)
@@ -51,7 +49,7 @@ class ExpShellCmdsGenerator():
     def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
         return []
 
-    def exec_exp_cmds(self, exec_opts: types.SimpleDict) -> tp.List[types.ShellCmdSpec]:
+    def exec_exp_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
         resume = ''
 
         # This can't be --resume, because then GNU parallel looks at the results
@@ -63,13 +61,11 @@ class ExpShellCmdsGenerator():
         # Make sure GNU parallel uses the right shell, because it seems to
         # defaults to /bin/sh since all cmds are run in a python shell which
         # does not have $SHELL set.
-        use_bash = {
-            'cmd': 'export PARALLEL_SHELL={0}'.format(shutil.which('bash')),
-            'shell': True,
-            'wait': True,
-            'env': True
-        }
-        ret = [use_bash]
+        shell = shutil.which('bash')
+        use_bash = types.ShellCmdSpec(cmd=f'export PARALLEL_SHELL={shell}',
+                                      shell=True,
+                                      wait=True,
+                                      env=True)
 
         parallel = 'parallel {1} ' \
             '--jobs {2} ' \
@@ -77,21 +73,19 @@ class ExpShellCmdsGenerator():
             '--joblog {3} '\
             '--no-notice < "{4}"'
 
+        log = pathlib.Path(exec_opts['scratch_dir'], "parallel.log")
         parallel = parallel.format(exec_opts['scratch_dir'],
                                    resume,
                                    exec_opts['n_jobs'],
-                                   os.path.join(exec_opts['scratch_dir'],
-                                                "parallel.log"),
+                                   log,
                                    exec_opts['cmdfile_stem_path'] +
                                    exec_opts['cmdfile_ext'])
 
-        ret.append({
-            'cmd': parallel,
-            'shell': True,
-            'wait': True
-        })
+        parallel_spec = types.ShellCmdSpec(cmd=parallel,
+                                           shell=True,
+                                           wait=True)
 
-        return ret
+        return [use_bash, parallel_spec]
 
 
 __api__ = [

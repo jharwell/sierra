@@ -65,11 +65,11 @@ collate additional CSV files by:
    .. code-block:: python
 
       import sierra.core.pipeline.stage3.run_collator as run_collator
+      import pathlib
 
       class ExperimentalRunCSVGatherer(run_collator.ExperimentalRunCSVGatherer):
           def gather_csvs_from_run(self,
-                                   exp_output_root: str,
-                                   run: str) -> tp.Dict[tp.Tuple[str, str], pd.DataFrame]:
+                                   run_output_root: pathlib.Path) -> tp.Dict[tp.Tuple[str, str], pd.DataFrame]:
               ...
 
 

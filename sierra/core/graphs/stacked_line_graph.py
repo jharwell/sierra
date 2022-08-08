@@ -18,8 +18,8 @@
 # Core packages
 import typing as tp
 import copy
-import os
 import logging
+import pathlib
 
 # 3rd party packages
 import pandas as pd
@@ -46,9 +46,9 @@ class StackedLineGraph:
     """
 
     def __init__(self,
-                 stats_root: str,
+                 stats_root: pathlib.Path,
                  input_stem: str,
-                 output_fpath: str,
+                 output_fpath: pathlib.Path,
                  title: str,
                  xlabel: tp.Optional[str] = None,
                  ylabel: tp.Optional[str] = None,
@@ -58,9 +58,9 @@ class StackedLineGraph:
                  linestyles: tp.Optional[tp.List[str]] = None,
                  dashstyles: tp.Optional[tp.List[str]] = None,
                  logyscale: bool = False,
-                 stddev_fpath=None,
+                 stddev_fpath:  tp.Optional[pathlib.Path] = None,
                  stats: str = 'none',
-                 model_root: tp.Optional[str] = None) -> None:
+                 model_root: tp.Optional[pathlib.Path] = None) -> None:
 
         # Required arguments
         self.stats_root = stats_root
@@ -87,8 +87,7 @@ class StackedLineGraph:
         self.logger = logging.getLogger(__name__)
 
     def generate(self) -> None:
-        input_fpath = os.path.join(self.stats_root, self.input_stem +
-                                   config.kStatsExt['mean'])
+        input_fpath = self.stats_root / (self.input_stem + config.kStatsExt['mean'])
         if not utils.path_exists(input_fpath):
             self.logger.debug("Not generating %s: %s does not exist",
                               self.output_fpath,
@@ -218,30 +217,31 @@ class StackedLineGraph:
         dfs = {}
         reader = storage.DataFrameReader('storage.csv')
         if self.stats in ['conf95', 'all']:
-            stddev_ipath = os.path.join(self.stats_root,
-                                        self.input_stem + config.kStatsExt['stddev'])
+            stddev_ipath = self.stats_root / \
+                (self.input_stem + config.kStatsExt['stddev'])
             if utils.path_exists(stddev_ipath):
                 dfs['stddev'] = reader(stddev_ipath)
             else:
-                self.logger.warning(
-                    "Stddev file not found for '%s'", self.input_stem)
+                self.logger.warning("Stddev file not found for '%s'",
+                                    self.input_stem)
 
         return dfs
 
     def _read_models(self) -> tp.Tuple[pd.DataFrame, tp.List[str]]:
         if self.model_root is not None:
-            model_fpath = os.path.join(self.model_root,
-                                       self.input_stem + config.kModelsExt['model'])
-            model_legend_fpath = os.path.join(self.model_root,
-                                              self.input_stem + config.kModelsExt['legend'])
+            model_fpath = self.model_root / \
+                (self.input_stem + config.kModelsExt['model'])
+            legend_fpath = self.model_root / \
+                (self.input_stem + config.kModelsExt['legend'])
+
             if utils.path_exists(model_fpath):
                 model = storage.DataFrameReader('storage.csv')(model_fpath)
-                if utils.path_exists(model_legend_fpath):
-                    with utils.utf8open(model_legend_fpath, 'r') as f:
+                if utils.path_exists(legend_fpath):
+                    with utils.utf8open(legend_fpath, 'r') as f:
                         model_legend = f.read().splitlines()
                 else:
-                    self.logger.warning(
-                        "No legend file for model '%s' found", model_fpath)
+                    self.logger.warning("No legend file for model '%s' found",
+                                        model_fpath)
                     model_legend = ['Model Prediction']
 
                 return (model, model_legend)

@@ -24,6 +24,7 @@ import os
 import typing as tp
 import argparse
 import shutil
+import pathlib
 
 # 3rd party packages
 import implements
@@ -31,7 +32,6 @@ import implements
 # Project packages
 from sierra.core import types, utils
 from sierra.core.experiment import bindings
-import sierra.core.variables.batch_criteria as bc
 
 
 @implements.implements(bindings.IParsedCmdlineConfigurer)
@@ -78,13 +78,13 @@ class ExpShellCmdsGenerator():
     def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
         return []
 
-    def exec_exp_cmds(self, exec_opts: types.SimpleDict) -> tp.List[types.ShellCmdSpec]:
+    def exec_exp_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
         jobid = os.getpid()
 
         # Even if we are passed --nodelist, we still make our own copy of it, so
         # that the user can safely modify it (if they want to) after running
         # stage 1.
-        nodelist = os.path.join(exec_opts['exp_input_root'],
+        nodelist = pathlib.Path(exec_opts['exp_input_root'],
                                 f"{jobid}-nodelist.txt")
 
         resume = ''
@@ -95,21 +95,18 @@ class ExpShellCmdsGenerator():
             resume = '--resume-failed'
 
         # Make sure there are no duplicate nodes
-        unique_nodes = {
-            'cmd': 'sort -u {0} > {1}'.format(exec_opts["nodefile"], nodelist),
-            'shell': True,
-            'wait': True
-        }
+        unique_nodes = types.ShellCmdSpec(
+            cmd='sort -u {0} > {1}'.format(exec_opts["nodefile"], nodelist),
+            shell=True,
+            wait=True)
         # Make sure GNU parallel uses the right shell, because it seems to
         # defaults to /bin/sh since all cmds are run in a python shell which
         # does not have $SHELL set.
-        use_bash = {
-            'cmd': 'export PARALLEL_SHELL={0}'.format(shutil.which('bash')),
-            'shell': True,
-            'wait': True,
-            'env': True
-        }
-        ret = [unique_nodes, use_bash]
+        use_bash = types.ShellCmdSpec(
+            cmd='export PARALLEL_SHELL={0}'.format(shutil.which('bash')),
+            shell=True,
+            wait=True,
+            env=True)
 
         # GNU parallel cmd
         parallel = 'parallel {2} ' \
@@ -119,21 +116,19 @@ class ExpShellCmdsGenerator():
             '--sshloginfile {0} ' \
             '--workdir {4} < "{5}"'
 
+        log = pathlib.Path(exec_opts['scratch_dir'], "parallel.log")
         parallel = parallel.format(nodelist,
                                    exec_opts['n_jobs'],
                                    resume,
-                                   os.path.join(exec_opts['scratch_dir'],
-                                                "parallel.log"),
+                                   log,
                                    exec_opts['scratch_dir'],
                                    exec_opts['cmdfile_stem_path'] + exec_opts['cmdfile_ext'])
 
-        ret.append({
-            'cmd': parallel,
-            'shell': True,
-            'wait': True
-        })
+        parallel_spec = types.ShellCmdSpec(cmd=parallel,
+                                           shell=True,
+                                           wait=True)
 
-        return ret
+        return [unique_nodes, use_bash, parallel_spec]
 
 
 __api__ = [

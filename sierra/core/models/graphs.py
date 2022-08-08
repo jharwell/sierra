@@ -21,6 +21,7 @@ plot the difference as error.
 """
 # Core packages
 import os
+import pathlib
 
 # 3rd party packages
 
@@ -39,14 +40,14 @@ class IntraExpModel2DGraphSet():
     - One for the difference between the model and the empirical data
     """
     @staticmethod
-    def model_exists(exp_model_root: str, target_stem: str):
-        return utils.path_exists(os.path.join(exp_model_root,
-                                              target_stem + config.kModelsExt['model']))
+    def model_exists(exp_model_root: pathlib.Path, target_stem: str):
+        leaf = target_stem + config.kModelsExt['model']
+        return utils.path_exists(exp_model_root / leaf)
 
     def __init__(self,
-                 exp_stat_root: str,
-                 exp_model_root: str,
-                 exp_graph_root: str,
+                 exp_stat_root: pathlib.Path,
+                 exp_model_root: pathlib.Path,
+                 exp_graph_root: pathlib.Path,
                  target_stem: str,
                  target_title: str,
                  **kwargs):
@@ -58,24 +59,27 @@ class IntraExpModel2DGraphSet():
         self.kwargs = kwargs
 
     def generate(self):
-        data_ipath = os.path.join(self.exp_stat_root,
-                                  self.target_stem + config.kStatsExt['mean'])
-        data_opath = os.path.join(self.exp_graph_root,
-                                  self.target_stem + '-HM' + config.kImageExt)
-        stddev_ipath = os.path.join(self.exp_stat_root,
-                                    self.target_stem + config.kStatsExt['stddev'])
-        stddev_opath = os.path.join(self.exp_graph_root,
-                                    self.target_stem + '-HM-stddev' + config.kImageExt)
+        stat_path = self.exp_stat_root / self.target_stem
+        graph_path = self.exp_graph_root / self.target_stem
+        model_path = self.exp_model_root / self.target_stem
 
-        model_ipath = os.path.join(self.exp_model_root,
-                                   self.target_stem + config.kModelsExt['model'])
-        model_opath = os.path.join(self.exp_graph_root,
-                                   self.target_stem + '-HM-model' + config.kImageExt)
+        data_ipath = stat_path.with_suffix(config.kStatsExt['mean'])
 
-        model_error_ipath = os.path.join(self.exp_model_root,
-                                         self.target_stem + '-HM-model-error' + config.kStatsExt['mean'])
-        model_error_opath = os.path.join(self.exp_graph_root,
-                                         self.target_stem + '-HM-model-error' + config.kImageExt)
+        data_opath = self.exp_graph_root / \
+            (self.target_stem + '-HM').with_suffix(config.kImageExt)
+
+        stddev_ipath = stat_path.with_suffix(config.kStatsExt['stddev'])
+        stddev_opath = graph_path.with_name(
+            self.target_stem + '-HM-stddev' + config.kImageExt)
+
+        model_ipath = model_path.with_suffix(config.kModelsExt['model'])
+        model_opath = graph_path.with_name(
+            self.target_stem + '-HM-model' + config.kImageExt)
+
+        model_error_ipath = model_path.with_name(
+            self.target_stem + '-HM-model-error' + config.kStatsExt['mean'])
+        model_error_opath = model_path.with_name(
+            self.target_stem + '-HM-model-error' + config.kImageExt)
 
         # Write the error .csv to the filesystem
         reader = storage.DataFrameReader('storage.csv')

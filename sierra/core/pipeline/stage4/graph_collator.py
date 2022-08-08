@@ -16,15 +16,15 @@
 
 
 # Core packages
-import os
 import multiprocessing as mp
 import queue
 import typing as tp
 import logging
+import pathlib
+import json
 
 # 3rd party packages
 import pandas as pd
-import json
 
 # Project packages
 from sierra.core import utils, config, types, storage
@@ -66,12 +66,17 @@ class UnivarGraphCollator:
     Results are put into a single :term:`Collated .csv` file.
     """
 
-    def __init__(self, main_config: dict, cmdopts: types.Cmdopts) -> None:
+    def __init__(self,
+                 main_config: types.YAMLDict,
+                 cmdopts: types.Cmdopts) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
         self.logger = logging.getLogger(__name__)
 
-    def __call__(self, criteria, target: dict, stat_collate_root: str) -> None:
+    def __call__(self,
+                 criteria,
+                 target: dict,
+                 stat_collate_root: pathlib.Path) -> None:
         self.logger.info("Stage4: Collating univariate files from batch in %s for graph '%s'...",
                          self.cmdopts['batch_output_root'],
                          target['src_stem'])
@@ -97,20 +102,16 @@ class UnivarGraphCollator:
                          config.kStatsExt['median']])
 
         stats = [UnivarGraphCollationInfo(df_ext=ext,
-                                          ylabels=[os.path.split(e)[1] for e in exp_dirs]) for ext in exts]
+                                          ylabels=[e.name for e in exp_dirs]) for ext in exts]
 
         for diri in exp_dirs:
-            # We get full paths back from the exp dirs calculation, and we need
-            # to work with path leaves
-            diri = os.path.split(diri)[1]
-            self._collate_exp(target, diri, stats)
+            self._collate_exp(target, diri.name, stats)
 
         writer = storage.DataFrameWriter('storage.csv')
         for stat in stats:
             if stat.all_srcs_exist:
                 writer(stat.df,
-                       os.path.join(stat_collate_root,
-                                    target['dest_stem'] + stat.df_ext),
+                       stat_collate_root / (target['dest_stem'] + stat.df_ext),
                        index=False)
 
             elif not stat.all_srcs_exist and stat.some_srcs_exist:
@@ -119,12 +120,15 @@ class UnivarGraphCollator:
                                     target['src_stem'],
                                     stat.df_ext)
 
-    def _collate_exp(self, target: dict, exp_dir: str, stats: tp.List[UnivarGraphCollationInfo]) -> None:
-        exp_stat_root = os.path.join(self.cmdopts['batch_stat_root'], exp_dir)
+    def _collate_exp(self,
+                     target: dict,
+                     exp_dir: str,
+                     stats: tp.List[UnivarGraphCollationInfo]) -> None:
+        exp_stat_root = pathlib.Path(self.cmdopts['batch_stat_root'], exp_dir)
 
         for stat in stats:
-            csv_ipath = os.path.join(
-                exp_stat_root, target['src_stem'] + stat.df_ext)
+            csv_ipath = pathlib.Path(exp_stat_root,
+                                     target['src_stem'] + stat.df_ext)
             if not utils.path_exists(csv_ipath):
                 stat.all_srcs_exist = False
                 continue
@@ -151,12 +155,17 @@ class BivarGraphCollator:
 
     """
 
-    def __init__(self, main_config: dict, cmdopts: types.Cmdopts) -> None:
+    def __init__(self,
+                 main_config: types.YAMLDict,
+                 cmdopts: types.Cmdopts) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
         self.logger = logging.getLogger(__name__)
 
-    def __call__(self, criteria: bc.IConcreteBatchCriteria, target: dict, stat_collate_root: str) -> None:
+    def __call__(self,
+                 criteria: bc.IConcreteBatchCriteria,
+                 target: dict,
+                 stat_collate_root: pathlib.Path) -> None:
         self.logger.info("Stage4: Collating bivariate files from batch in %s for graph '%s'...",
                          self.cmdopts['batch_output_root'],
                          target['src_stem'])
@@ -186,17 +195,13 @@ class BivarGraphCollator:
                                          ylabels=ylabels) for ext in exts]
 
         for diri in exp_dirs:
-            # We get full paths back from the exp dirs calculation, and we need
-            # to work with path leaves
-            diri = os.path.split(diri)[1]
             self._collate_exp(target, diri, stats)
 
         writer = storage.DataFrameWriter('storage.csv')
         for stat in stats:
             if stat.all_srcs_exist:
                 writer(stat.df,
-                       os.path.join(stat_collate_root,
-                                    target['dest_stem'] + stat.df_ext),
+                       stat_collate_root / (target['dest_stem'] + stat.df_ext),
                        index=False)
 
             elif stat.some_srcs_exist:
@@ -207,13 +212,14 @@ class BivarGraphCollator:
 
     def _collate_exp(self,
                      target: dict,
-                     exp_dir: str,
+                     exp_dir: pathlib.Path,
                      stats: tp.List[BivarGraphCollationInfo]) -> None:
-        exp_stat_root = os.path.join(self.cmdopts['batch_stat_root'], exp_dir)
+        exp_stat_root = pathlib.Path(self.cmdopts['batch_stat_root'], exp_dir)
 
         for stat in stats:
-            csv_ipath = os.path.join(
-                exp_stat_root, target['src_stem'] + stat.df_ext)
+            csv_ipath = pathlib.Path(exp_stat_root,
+                                     target['src_stem'] + stat.df_ext)
+
             if not utils.path_exists(csv_ipath):
                 stat.all_srcs_exist = False
                 continue
@@ -226,7 +232,7 @@ class BivarGraphCollator:
                 "{0} not in columns of {1}, which has {2}".format(target['col'],
                                                                   csv_ipath,
                                                                   data_df.columns)
-            xlabel, ylabel = exp_dir.split('+')
+            xlabel, ylabel = exp_dir.name.split('+')
             stat.df.loc[xlabel, ylabel] = data_df[target['col']].to_numpy()
 
 
@@ -237,7 +243,7 @@ class GraphParallelCollator():
     """
 
     def __init__(self,
-                 main_config: tp.Dict[str, types.Cmdopts],
+                 main_config: types.YAMLDict,
                  cmdopts: types.Cmdopts) -> None:
         self.main_config = main_config
         self.cmdopts = cmdopts
@@ -274,9 +280,9 @@ class GraphParallelCollator():
 
     @staticmethod
     def _thread_worker(q: mp.Queue,
-                       main_config: dict,
+                       main_config: types.YAMLDict,
                        cmdopts: types.Cmdopts,
-                       stat_collate_root: str,
+                       stat_collate_root: pathlib.Path,
                        criteria) -> None:
 
         collator: tp.Union[UnivarGraphCollator, BivarGraphCollator]

@@ -31,6 +31,7 @@ import socket
 import logging
 import pwd
 import re
+import pathlib
 
 # 3rd party packages
 import implements
@@ -71,7 +72,7 @@ class ExpRunShellCmdsGenerator():
 
     def __init__(self,
                  cmdopts: types.Cmdopts,
-                 criteria: bc.IConcreteBatchCriteria,
+                 criteria: bc.BatchCriteria,
                  n_robots: int,
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
@@ -97,7 +98,7 @@ class ExpRunShellCmdsGenerator():
 
     def pre_run_cmds(self,
                      host: str,
-                     input_fpath: str,
+                     input_fpath: pathlib.Path,
                      run_num: int) -> tp.List[types.ShellCmdSpec]:
         cmds = []
         if self.platform:
@@ -110,7 +111,7 @@ class ExpRunShellCmdsGenerator():
 
     def exec_run_cmds(self,
                       host: str,
-                      input_fpath: str,
+                      input_fpath: pathlib.Path,
                       run_num: int) -> tp.List[types.ShellCmdSpec]:
         cmds = []
 
@@ -185,7 +186,7 @@ class ExpShellCmdsGenerator():
 
         return cmds
 
-    def exec_exp_cmds(self, exec_opts: types.SimpleDict) -> tp.List[types.ShellCmdSpec]:
+    def exec_exp_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
         cmds = []
 
         if self.platform:
@@ -271,10 +272,12 @@ class ExpConfigurer():
         module = pm.pipeline.get_plugin_module(cmdopts['platform'])
         self.platform = module.ExpConfigurer(self.cmdopts)
 
-    def for_exp_run(self, exp_input_root: str, run_output_dir: str) -> None:
+    def for_exp_run(self,
+                    exp_input_root: pathlib.Path,
+                    run_output_dir: pathlib.Path) -> None:
         self.platform.for_exp_run(exp_input_root, run_output_dir)
 
-    def for_exp(self, exp_input_root: str) -> None:
+    def for_exp(self, exp_input_root: pathlib.Path) -> None:
         self.platform.for_exp(exp_input_root)
 
     def cmdfile_paradigm(self) -> str:
@@ -290,23 +293,24 @@ class ExecEnvChecker():
     """
 
     @staticmethod
-    def parse_nodefile(nodefile: str) -> tp.List[types.SimpleDict]:
+    def parse_nodefile(nodefile: str) -> tp.List[types.ParsedNodefileSpec]:
         ret = []
 
         with utils.utf8open(nodefile, 'r') as f:
             lines = f.readlines()
 
             for line in lines:
-                ret.append(ExecEnvChecker._parse_nodefile_line(line))
+                if parsed := ExecEnvChecker._parse_nodefile_line(line):
+                    ret.append(parsed)
 
         return ret
 
     @staticmethod
-    def _parse_nodefile_line(line: str) -> types.SimpleDict:
+    def _parse_nodefile_line(line: str) -> tp.Optional[types.ParsedNodefileSpec]:
         # Line starts with a comment--no parsing needed
         comment_re = r"^#"
         if res := re.search(comment_re, line):
-            return {}
+            return None
 
         cores_re = r"^[0-9]+/"
         if res := re.search(cores_re, line):
@@ -345,12 +349,10 @@ class ExecEnvChecker():
         else:
             raise ValueError(f"Bad ssh/hostname spec {ssh}")
 
-        return {
-            'hostname': hostname,
-            'n_cores': cores,
-            'login': login,
-            'port': port
-        }
+        return types.ParsedNodefileSpec(hostname=hostname,
+                                        n_cores=cores,
+                                        login=login,
+                                        port=port)
 
     def __init__(self, cmdopts: types.Cmdopts):
         self.cmdopts = cmdopts
@@ -371,7 +373,7 @@ class ExecEnvChecker():
                            login: str,
                            hostname: str,
                            port: int,
-                           host_type: str) -> bool:
+                           host_type: str) -> None:
         self.logger.info("Checking connectivity to %s", hostname)
         ssh_diag = f"{host_type},port={port} via {login}@{hostname}"
         nc_diag = f"{host_type},port={port} via {hostname}"

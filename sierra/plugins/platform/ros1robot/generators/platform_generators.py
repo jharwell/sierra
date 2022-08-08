@@ -21,7 +21,7 @@ ROS with a real robot execution environment.
 """
 # Core packages
 import logging
-import os
+import pathlib
 
 # 3rd party packages
 import yaml
@@ -87,15 +87,15 @@ class PlatformExpRunDefUniqueGenerator(ros1.generators.ROSExpRunDefUniqueGenerat
 
     def generate(self, exp_def: definition.XMLExpDef):
         exp_def = super().generate(exp_def)
-        main_path = os.path.join(self.cmdopts['project_config_root'],
-                                 config.kYAML['main'])
+        main_path = pathlib.Path(self.cmdopts['project_config_root'],
+                                 config.kYAML.main)
 
         with utils.utf8open(main_path) as f:
             main_config = yaml.load(f, yaml.FullLoader)
 
         n_robots = utils.get_n_robots(main_config,
                                       self.cmdopts,
-                                      os.path.dirname(self.launch_stem_path),
+                                      self.launch_stem_path.parent,
                                       exp_def)
 
         for i in range(0, n_robots):
@@ -104,10 +104,7 @@ class PlatformExpRunDefUniqueGenerator(ros1.generators.ROSExpRunDefUniqueGenerat
                 'src_parent': "./robot",
                 'src_tag': f"group/[@ns='{prefix}{i}']",
                 'opath_leaf': f'_robot{i}' + config.kROS['launch_file_ext'],
-                'create_tags': [xml.TagAdd(None,
-                                           'launch',
-                                           {},
-                                           False)],
+                'create_tags': [xml.TagAdd.as_root('launch', {})],
                 'dest_parent': ".",
                 'rename_to': None,
                 'child_grafts': ["./robot/group/[@ns='sierra']"]

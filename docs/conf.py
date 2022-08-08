@@ -20,11 +20,12 @@
 import os
 import sys
 import builtins
+import pathlib
 
 builtins.__sphinx_build__ = True
 
-sys.path.insert(0, os.path.abspath('..'))
-sys.path.append(os.path.abspath('_ext'))
+sys.path.insert(0, str(pathlib.Path('..').resolve()))
+sys.path.append(str(pathlib.Path('_ext').resolve()))
 
 # -- General configuration ------------------------------------------------
 
@@ -76,7 +77,7 @@ author = 'John Harwell'
 # built documents.
 #
 ver_ns = {}
-ver_path = os.path.join('..', 'sierra', 'version.py')
+ver_path = pathlib.Path('..') / 'sierra' / 'version.py'
 with open(ver_path) as ver_file:
     exec(ver_file.read(), ver_ns)
 

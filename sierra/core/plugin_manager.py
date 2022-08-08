@@ -23,6 +23,7 @@ import os
 import typing as tp
 import sys
 import logging
+import pathlib
 
 # 3rd party packages
 import json
@@ -53,14 +54,14 @@ class BasePluginManager():
         plugins = self.available_plugins()
         if name not in plugins:
             self.logger.fatal("Cannot locate plugin '%s'", name)
-            self.logger.fatal('Loaded plugins: %s',
-                              '\n' + json.dumps(self.loaded,
-                                                default=lambda x: '<ModuleSpec>',
-                                                indent=4))
+            self.logger.fatal('Loaded plugins: %s\n',
+                              json.dumps(self.loaded,
+                                         default=lambda x: '<ModuleSpec>',
+                                         indent=4))
             raise Exception(f"Cannot locate plugin '{name}'")
 
         if plugins[name]['type'] == 'pipeline':
-            parent_scope = os.path.basename(plugins[name]['parent_dir'].strip("/"))
+            parent_scope = pathlib.Path(plugins[name]['parent_dir']).name
             scoped_name = f'{parent_scope}.{name}'
 
             if name not in self.loaded:
@@ -97,10 +98,10 @@ class BasePluginManager():
             return self.loaded[name]
         except KeyError:
             self.logger.fatal("No such plugin '%s'", name)
-            self.logger.fatal('Loaded plugins: %s',
-                              '\n' + json.dumps(self.loaded,
-                                                default=lambda x: '<ModuleSpec>',
-                                                indent=4))
+            self.logger.fatal('Loaded plugins: %s\n',
+                              json.dumps(self.loaded,
+                                         default=lambda x: '<ModuleSpec>',
+                                         indent=4))
             raise
 
     def get_plugin_module(self, name: str) -> types.ModuleType:
@@ -108,10 +109,10 @@ class BasePluginManager():
             return self.loaded[name]['module']
         except KeyError:
             self.logger.fatal("No such plugin '%s'", name)
-            self.logger.fatal('Loaded plugins: %s',
-                              '\n' + json.dumps(self.loaded,
-                                                default=lambda x: '<ModuleSpec>',
-                                                indent=4))
+            self.logger.fatal('Loaded plugins: %s\n',
+                              json.dumps(self.loaded,
+                                         default=lambda x: '<ModuleSpec>',
+                                         indent=4))
             raise
 
     def has_plugin(self, name: str) -> bool:
@@ -127,9 +128,9 @@ class FilePluginManager(BasePluginManager):
 
     def __init__(self) -> None:
         super().__init__()
-        self.search_root = None  # type: tp.Optional[str]
+        self.search_root = None  # type: tp.Optional[pathlib.Path]
 
-    def initialize(self, project: str, search_root: str) -> None:
+    def initialize(self, project: str, search_root: pathlib.Path) -> None:
         self.search_root = search_root
 
     def available_plugins(self) -> tp.Dict[str, tp.Dict]:
@@ -140,10 +141,9 @@ class FilePluginManager(BasePluginManager):
         assert self.search_root is not None, \
             "FilePluginManager not initialized!"
 
-        for possible in os.listdir(self.search_root):
-            candidate = os.path.join(self.search_root, possible)
-            if os.path.isfile(candidate) and '.py' in candidate:
-                name = os.path.splitext(os.path.basename(candidate))[0]
+        for candidate in self.search_root.iterdir():
+            if candidate.is_file() and '.py' in candidate.name:
+                name = candidate.stem
                 spec = importlib.util.spec_from_file_location(name, candidate)
                 plugins[name] = {
                     'spec': spec,
@@ -160,7 +160,7 @@ class DirectoryPluginManager(BasePluginManager):
 
     """
 
-    def __init__(self, search_root: str) -> None:
+    def __init__(self, search_root: pathlib.Path) -> None:
         super().__init__()
         self.search_root = search_root
         self.main_module = 'plugin'
@@ -174,13 +174,13 @@ class DirectoryPluginManager(BasePluginManager):
         """
         plugins = {}
         try:
-            for possible in os.listdir(self.search_root):
-                location = os.path.join(self.search_root, possible)
-                if os.path.isdir(location) and self.main_module + '.py' in os.listdir(location):
-                    spec = importlib.util.spec_from_file_location(possible,
-                                                                  os.path.join(location,
-                                                                               self.main_module + '.py'))
-                    plugins[possible] = {
+            for location in self.search_root.iterdir():
+                plugin = location / (self.main_module + '.py')
+
+                if location.is_dir() and plugin in location.iterdir():
+                    spec = importlib.util.spec_from_file_location(location.name,
+                                                                  plugin)
+                    plugins[location.name] = {
                         'parent_dir': self.search_root,
                         'spec': spec,
                         'type': 'pipeline'
@@ -198,7 +198,7 @@ class ProjectPluginManager(BasePluginManager):
 
     """
 
-    def __init__(self, search_root: str, project: str) -> None:
+    def __init__(self, search_root: pathlib.Path, project: str) -> None:
         super().__init__()
 
         self.search_root = search_root
@@ -210,7 +210,7 @@ class ProjectPluginManager(BasePluginManager):
         #
         # 2021/07/19: If you put the entries at the end of sys.path it
         # doesn't work for some reason...
-        sys.path = [self.search_root] + sys.path[0:]
+        sys.path = [str(self.search_root)] + sys.path[0:]
 
     def available_plugins(self):
         """
@@ -218,10 +218,9 @@ class ProjectPluginManager(BasePluginManager):
         """
         plugins = {}
         try:
-            for possible in os.listdir(self.search_root):
-                location = os.path.join(self.search_root, possible)
-                if self.project in location:
-                    plugins[possible] = {
+            for location in self.search_root.iterdir():
+                if self.project in location.name:
+                    plugins[location.name] = {
                         'parent_dir': self.search_root,
                         'spec': None,
                         'type': 'project'
@@ -241,11 +240,13 @@ class CompositePluginManager(BasePluginManager):
     def loaded_plugins(self):
         return self.loaded.copy()
 
-    def initialize(self, project: str, search_path: tp.List[str]) -> None:
+    def initialize(self,
+                   project: str,
+                   search_path: tp.List[pathlib.Path]) -> None:
         self.logger.debug("Initializing with plugin search path %s",
-                          search_path)
+                          [str(p) for p in search_path])
         for d in search_path:
-            project_path = os.path.join(d, project)
+            project_path = d / project
 
             if utils.path_exists(project_path):
                 project_plugin = ProjectPluginManager(d, project)
@@ -259,6 +260,7 @@ class CompositePluginManager(BasePluginManager):
 
     def available_plugins(self):
         plugins = {}
+
         for c in self.components:
             plugins.update(c.available_plugins())
 

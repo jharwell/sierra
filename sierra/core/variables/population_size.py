@@ -38,12 +38,12 @@ class BasePopulationSize(bc.UnivarBatchCriteria):
 
     def graph_xticks(self,
                      cmdopts: types.Cmdopts,
-                     exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
+                     exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
 
-        if exp_dirs is None:
-            exp_dirs = self.gen_exp_dirnames(cmdopts)
+        if exp_names is None:
+            exp_names = self.gen_exp_names(cmdopts)
 
-        ret = list(map(float, self.populations(cmdopts, exp_dirs)))
+        ret = list(map(float, self.populations(cmdopts, exp_names)))
 
         if cmdopts['plot_log_xscale']:
             return [int(math.log2(x)) for x in ret]
@@ -54,12 +54,12 @@ class BasePopulationSize(bc.UnivarBatchCriteria):
 
     def graph_xticklabels(self,
                           cmdopts: types.Cmdopts,
-                          exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
+                          exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
 
-        if exp_dirs is None:
-            exp_dirs = self.gen_exp_dirnames(cmdopts)
+        if exp_names is None:
+            exp_names = self.gen_exp_names(cmdopts)
 
-        ret = map(float, self.populations(cmdopts, exp_dirs))
+        ret = map(float, self.populations(cmdopts, exp_names))
 
         return list(map(lambda x: str(int(round(x, 4))), ret))
 
@@ -80,7 +80,7 @@ class Parser():
             'max_size': int(),
             'model': str(),
             'cardinality': None
-        }  # type: tp.Dict[str, tp.Union[int, str, tp.Optional[int]]]
+        }  # type: tp.Dict[str, tp.Union[str, tp.Optional[int]]]
 
         sections = arg.split('.')
 
@@ -100,7 +100,8 @@ class Parser():
         res = re.search("[0-9]+", sections[0])
         assert res is not None, \
             "Bad population max in criteria section '{sections[0]}'"
-        ret['max_size'] = int(res.group(0))
+        max_size = int(res.group(0))
+        ret['max_size'] = max_size
 
         # Parse cardinality for linear models
         if ret['model'] == 'Linear':
@@ -112,11 +113,11 @@ class Parser():
             else:
                 ret['cardinality'] = int(ret['max_size'] / 10.0)   # type: ignore
         elif ret['model'] == 'Log':
-            ret['cardinality'] = len(range(0, int(math.log2(ret["max_size"])) + 1))
+            ret['cardinality'] = len(range(0, int(math.log2(max_size)) + 1))
 
         return ret
 
-    def to_sizes(self, attr: types.CLIArgSpec) -> tp.List[float]:
+    def to_sizes(self, attr: types.CLIArgSpec) -> tp.List[int]:
         """
         Generate the system sizes for each experiment in a batch.
         """
@@ -124,7 +125,7 @@ class Parser():
             increment = int(attr['max_size'] / attr['cardinality'])
             return [increment * x for x in range(1, attr['cardinality'] + 1)]
         elif attr["model"] == 'Log':
-            return [2 ** x for x in range(0, attr['cardinality'])]
+            return [int(2 ** x) for x in range(0, attr['cardinality'])]
         else:
             assert False
 

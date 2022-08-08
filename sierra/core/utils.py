@@ -19,12 +19,12 @@
 """
 
 # Core packages
-import os
 import typing as tp
 import time
 import logging
 import pickle
 import functools
+import pathlib
 
 # 3rd party packages
 import numpy as np
@@ -130,20 +130,24 @@ def scale_minmax(minval: float, maxval: float, val: float) -> float:
     return -1.0 + (val - minval) * (1 - (-1)) / (maxval - minval)
 
 
-def dir_create_checked(path: str, exist_ok: bool) -> None:
+def dir_create_checked(path: tp.Union[pathlib.Path, str],
+                       exist_ok: bool) -> None:
     """Create a directory idempotently.
 
     If the directory exists and it shouldn't, raise an error.
 
     """
+    if not isinstance(path, pathlib.Path):
+        path = pathlib.Path(path)
+
     try:
-        os.makedirs(path, exist_ok=exist_ok)
+        path.mkdir(exist_ok=exist_ok, parents=True)
     except FileExistsError:
-        logging.fatal("%s already exists! Not overwriting", path)
+        logging.fatal("%s already exists! Not overwriting", str(path))
         raise
 
 
-def path_exists(path: str) -> bool:
+def path_exists(path: tp.Union[pathlib.Path, str]) -> bool:
     """
     Check if a path exists, trying multiple times.
 
@@ -152,8 +156,12 @@ def path_exists(path: str) -> bool:
     time out as the FS goes and executes the query over the network.
     """
     res = []
+
+    if not isinstance(path, pathlib.Path):
+        path = pathlib.Path(path)
+
     for _ in range(0, 10):
-        if os.path.exists(path):
+        if path.exists():
             res.append(True)
         else:
             res.append(False)
@@ -184,14 +192,15 @@ def get_primary_axis(criteria,
 
 
 def exp_range_calc(cmdopts: types.Cmdopts,
-                   root_dir: str, criteria) -> tp.List[str]:
+                   root_dir: pathlib.Path,
+                   criteria) -> types.PathList:
     """
     Get the range of experiments to run/do stuff with. SUPER USEFUL.
     """
-    exp_all = [os.path.join(root_dir, d)
-               for d in criteria.gen_exp_dirnames(cmdopts)]
+    exp_all = [root_dir / d for d in criteria.gen_exp_names(cmdopts)]
 
     exp_range = cmdopts['exp_range']
+
     if cmdopts['exp_range'] is not None:
         min_exp = int(exp_range.split(':')[0])
         max_exp = int(exp_range.split(':')[1])
@@ -232,8 +241,8 @@ def exp_include_filter(inc_spec: tp.Optional[str],
     return target[slice(start, end, None)]
 
 
-def bivar_exp_labels_calc(exp_dirs: tp.List[str]) -> tp.Tuple[tp.List[str],
-                                                              tp.List[str]]:
+def bivar_exp_labels_calc(exp_dirs: types.PathList) -> tp.Tuple[tp.List[str],
+                                                                tp.List[str]]:
     """
     Calculate the labels for bivariant experiment graphs.
     """
@@ -244,7 +253,7 @@ def bivar_exp_labels_calc(exp_dirs: tp.List[str]) -> tp.Tuple[tp.List[str],
     xlabels_set = set()
     ylabels_set = set()
     for e in exp_dirs:
-        pair = os.path.split(e)[1].split('+')
+        pair = e.name.split('+')
         xlabels_set.add(pair[0])
         ylabels_set.add(pair[1])
 
@@ -281,6 +290,7 @@ def apply_to_expdef(var,
     if addsl:
         adds = addsl[0]
         for a in adds:
+            assert a.path is not None, "Can't add tag {a.tag} with no parent"
             exp_def.tag_add(a.path, a.tag, a.attr, a.allow_dup)
     else:
         adds = None
@@ -297,7 +307,7 @@ def apply_to_expdef(var,
 
 def pickle_modifications(adds: tp.Optional[xml.TagAddList],
                          chgs: tp.Optional[xml.AttrChangeSet],
-                         path: str) -> None:
+                         path: pathlib.Path) -> None:
     """
     After applying XML modifications, pickle changes for later retrieval.
     """
@@ -308,23 +318,22 @@ def pickle_modifications(adds: tp.Optional[xml.TagAddList],
         chgs.pickle(path)
 
 
-def batch_template_path(cmdopts: types.Cmdopts,
-                        batch_input_root: str,
-                        dirname: str) -> str:
+def exp_template_path(cmdopts: types.Cmdopts,
+                      batch_input_root: pathlib.Path,
+                      dirname: str) -> pathlib.Path:
     """Calculate the path to the template input file in the batch experiment root.
 
      The file at this path will be Used as the de-facto template for generating
      per-run input files.
 
     """
-    batch_config_leaf, _ = os.path.splitext(
-        os.path.basename(cmdopts['template_input_file']))
-    return os.path.join(batch_input_root, dirname, batch_config_leaf)
+    template = pathlib.Path(cmdopts['template_input_file'])
+    return batch_input_root / dirname / template.stem
 
 
 def get_n_robots(main_config: types.YAMLDict,
                  cmdopts: types.Cmdopts,
-                 exp_input_root: str,
+                 exp_input_root: pathlib.Path,
                  exp_def: definition.XMLExpDef) -> int:
     """
     Get the # robots used for a specific :term:`Experiment`.
@@ -342,9 +351,9 @@ def get_n_robots(main_config: types.YAMLDict,
     n_robots = module.population_size_from_def(exp_def,
                                                main_config,
                                                cmdopts)
+
     if n_robots <= 0:
-        pkl_def = definition.unpickle(os.path.join(exp_input_root,
-                                                   config.kPickleLeaf))
+        pkl_def = definition.unpickle(exp_input_root / config.kPickleLeaf)
         n_robots = module.population_size_from_pickle(pkl_def,
                                                       main_config,
                                                       cmdopts)
@@ -387,7 +396,8 @@ def gen_scenario_spec(cmdopts: types.Cmdopts, **kwargs) -> tp.Dict[str, tp.Any]:
 
 def sphinx_ref(ref: str) -> str:
     try:
-        if __sphinx_build_man__:
+        # This is kind of a hack...
+        if __sphinx_build_man__:  # type: ignore
             parts = ref.split('.')
             stripped = parts[-1]
             return stripped[:-1]
@@ -415,7 +425,7 @@ __api__ = [
     'exp_include_filter',
     'apply_to_expdef',
     'pickle_modifications',
-    'batch_template_path',
+    'exp_template_path',
     'get_n_robots',
     'df_fill',
     'utf8open',

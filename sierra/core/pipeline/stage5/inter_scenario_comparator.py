@@ -27,6 +27,7 @@ import copy
 import typing as tp
 import argparse
 import logging
+import pathlib
 
 # 3rd party packages
 import pandas as pd
@@ -75,7 +76,7 @@ class UnivarInterScenarioComparator:
     def __init__(self,
                  controller: str,
                  scenarios: tp.List[str],
-                 roots: tp.Dict[str, str],
+                 roots: tp.Dict[str, pathlib.Path],
                  cmdopts: types.Cmdopts,
                  cli_args: argparse.Namespace,
                  main_config: types.YAMLDict) -> None:
@@ -90,9 +91,11 @@ class UnivarInterScenarioComparator:
         self.main_config = main_config
         self.logger = logging.getLogger(__name__)
 
-    def __call__(self, graphs: tp.List[types.YAMLDict], legend: tp.List[str]) -> None:
+    def __call__(self,
+                 graphs: tp.List[types.YAMLDict],
+                 legend: tp.List[str]) -> None:
         # Obtain the list of experimental run results directories to draw from.
-        batch_leaves = os.listdir(os.path.join(self.cmdopts['sierra_root'],
+        batch_leaves = os.listdir(pathlib.Path(self.cmdopts['sierra_root'],
                                                self.cmdopts['project'],
                                                self.controller))
 
@@ -190,8 +193,8 @@ class UnivarInterScenarioComparator:
 
         """
         istem = dest_stem + "-" + self.controller
-        img_opath = os.path.join(self.sc_graph_root, dest_stem) + '-' + \
-            self.controller + config.kImageExt
+        img_opath = pathlib.Path(self.sc_graph_root,
+                                 dest_stem + '-' + self.controller + config.kImageExt)
 
         xticks = criteria.graph_xticks(cmdopts)
         xtick_labels = criteria.graph_xticklabels(cmdopts)
@@ -242,19 +245,20 @@ class UnivarInterScenarioComparator:
 
         """
 
-        csv_ipath = os.path.join(cmdopts['batch_output_root'],
+        csv_ipath = pathlib.Path(cmdopts['batch_output_root'],
                                  cmdopts['batch_stat_collate_root'],
                                  src_stem + config.kStatsExt['mean'])
-        stddev_ipath = os.path.join(cmdopts['batch_output_root'],
+        stddev_ipath = pathlib.Path(cmdopts['batch_output_root'],
                                     cmdopts['batch_stat_collate_root'],
                                     src_stem + config.kStatsExt['stddev'])
 
-        model_ipath_stem = os.path.join(cmdopts['batch_model_root'], src_stem)
-        model_opath_stem = os.path.join(self.sc_model_root,
+        model_ipath_stem = pathlib.Path(cmdopts['batch_model_root'], src_stem)
+        model_opath_stem = pathlib.Path(self.sc_model_root,
                                         dest_stem + "-" + self.controller)
 
-        opath_stem = os.path.join(self.sc_csv_root,
+        opath_stem = pathlib.Path(self.sc_csv_root,
                                   dest_stem + "-" + self.controller)
+        writer = storage.DataFrameWriter('storage.csv')
 
         # Some experiments might not generate the necessary performance measure
         # .csvs for graph generation, which is OK.
@@ -265,42 +269,42 @@ class UnivarInterScenarioComparator:
 
         # Collect performance measure results. Append to existing dataframe if
         # it exists, otherwise start a new one.
-        data_df = self._accum_df(csv_ipath,
-                                 opath_stem + config.kStatsExt['mean'],
-                                 src_stem)
-        writer = storage.DataFrameWriter('storage.csv')
+        csv_opath = opath_stem.with_suffix(config.kStatsExt['mean'])
+        data_df = self._accum_df(csv_ipath, csv_opath, src_stem)
+
         writer(data_df,
-               opath_stem + config.kStatsExt['mean'],
+               opath_stem.with_suffix(config.kStatsExt['mean']),
                index=False)
 
         # Collect performance results stddev. Append to existing dataframe if it
         # exists, otherwise start a new one.
-        stddev_df = self._accum_df(stddev_ipath,
-                                   opath_stem + config.kStatsExt['stddev'],
-                                   src_stem)
+        stddev_opath = opath_stem.with_suffix(config.kStatsExt['stddev'])
+        stddev_df = self._accum_df(stddev_ipath, stddev_opath, src_stem)
+
         if stddev_df is not None:
-            writer(stddev_df,
-                   opath_stem + config.kStatsExt['stddev'],
-                   index=False)
+            writer(stddev_df, stddev_opath, index=False)
 
         # Collect performance results models and legends. Append to existing
         # dataframes if they exist, otherwise start new ones.
-        model_df = self._accum_df(model_ipath_stem + config.kModelsExt['model'],
-                                  model_opath_stem + config.kModelsExt['model'],
-                                  src_stem)
+        model_opath = model_opath_stem.with_suffix(config.kModelsExt['model'])
+        model_ipath = model_ipath_stem.with_suffix(config.kModelsExt['model'])
+        legend_opath = model_opath_stem.with_suffix(config.kModelsExt['legend'])
+
+        model_df = self._accum_df(model_ipath, model_opath, src_stem)
         if model_df is not None:
-            writer(model_df,
-                   model_opath_stem + config.kModelsExt['model'],
-                   index=False)
-            with utils.utf8open(model_opath_stem + config.kModelsExt['legend'],
-                                'a') as f:
+            writer(model_df, model_opath, index=False)
+
+            with utils.utf8open(legend_opath, 'a') as f:
                 _, scenario, _ = rdg.parse_batch_leaf(batch_leaf)
                 sgp = pm.module_load_tiered(project=cmdopts['project'],
                                             path='generators.scenario_generator_parser')
                 kw = sgp.ScenarioGeneratorParser().to_dict(scenario)
                 f.write("{0} Prediction\n".format(kw['scenario_tag']))
 
-    def _accum_df(self, ipath: str, opath: str, src_stem: str) -> pd.DataFrame:
+    def _accum_df(self,
+                  ipath: pathlib.Path,
+                  opath: pathlib.Path,
+                  src_stem: str) -> pd.DataFrame:
         reader = storage.DataFrameReader('storage.csv')
         if utils.path_exists(opath):
             cum_df = reader(opath)
@@ -313,7 +317,9 @@ class UnivarInterScenarioComparator:
                 cum_df = pd.DataFrame(columns=t.columns)
 
             if len(t.index) != 1:
-                self.logger.warning("'%s.csv' is a collated inter-experiment csv, not a summary inter-experiment csv:  # rows %s != 1",
+                self.logger.warning(("'%s.csv' is a collated inter-experiment "
+                                     "not a summary inter-experiment csv: "
+                                     "# rows %s != 1"),
                                     src_stem,
                                     len(t.index))
                 self.logger.warning("Truncating '%s.csv' to last row", src_stem)

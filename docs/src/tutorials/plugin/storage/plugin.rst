@@ -4,9 +4,9 @@ Within this file, you must define the following classes, which must be named
 .. code-block:: python
 
         import pandas as pd
+        import pathlib
 
-
-        def df_read(path: str, **kwargs) -> pd.DataFrame:
+        def df_read(path: pathlib.Path, **kwargs) -> pd.DataFrame:
             """
             Return a dataframe containing the contents of the CSV at the
             specified path. For other storage methods (e.g. database), you can
@@ -16,7 +16,7 @@ Within this file, you must define the following classes, which must be named
             """
 
 
-        def df_write(df: pd.DataFrame, path: str, **kwargs) -> None:
+        def df_write(df: pd.DataFrame, path: pathlib.Path, **kwargs) -> None:
             """
             Write a dataframe containing to the specified path. For other
             storage methods (e.g. database), you can use a function of the path

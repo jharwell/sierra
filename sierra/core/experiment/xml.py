@@ -23,15 +23,16 @@ files.
 
 # Core packages
 import typing as tp
-import os
 import logging
 import pickle
 import xml.etree.ElementTree as ET
 import sys
+import pathlib
 
 # 3rd party packages
 
 # Project packages
+from sierra.core import types
 
 
 class AttrChange():
@@ -86,11 +87,15 @@ class TagAdd():
 
     The tag may be added idempotently, or duplicates can be allowed.
     """
+    @staticmethod
+    def as_root(tag: str,
+                attr: types.StrDict) -> 'TagAdd':
+        return TagAdd('', tag, attr, False)
 
     def __init__(self,
-                 path: tp.Optional[str],
+                 path: str,
                  tag: str,
-                 attr: dict,
+                 attr: types.StrDict,
                  allow_dup: bool):
         """
         Init the object.
@@ -116,10 +121,7 @@ class TagAdd():
         yield from [self.path, self.tag, self.attr]
 
     def __repr__(self) -> str:
-        if self.path is not None:
-            return self.path + '/' + self.tag + ': ' + str(self.attr)
-        else:
-            return '/' + self.tag + ': ' + str(self.attr)
+        return self.path + '/' + self.tag + ': ' + str(self.attr)
 
 
 class AttrChangeSet():
@@ -131,7 +133,7 @@ class AttrChangeSet():
 
     """
     @staticmethod
-    def unpickle(fpath: str) -> 'AttrChangeSet':
+    def unpickle(fpath: pathlib.Path) -> 'AttrChangeSet':
         """Unpickle XML changes.
 
         You don't know how many there are, so go until you get an exception.
@@ -172,11 +174,11 @@ class AttrChangeSet():
     def add(self, chg: AttrChange) -> None:
         self.changes.add(chg)
 
-    def pickle(self, fpath: str, delete: bool = False) -> None:
+    def pickle(self, fpath: pathlib.Path, delete: bool = False) -> None:
         from sierra.core import utils
 
         if delete and utils.path_exists(fpath):
-            os.remove(fpath)
+            fpath.unlink()
 
         with open(fpath, 'ab') as f:
             utils.pickle_dump(self.changes, f)
@@ -210,11 +212,11 @@ class TagRmList():
     def append(self, other: TagRm) -> None:
         self.rms.append(other)
 
-    def pickle(self, fpath: str, delete: bool = False) -> None:
+    def pickle(self, fpath: pathlib.Path, delete: bool = False) -> None:
         from sierra.core import utils
 
         if delete and utils.path_exists(fpath):
-            os.remove(fpath)
+            fpath.unlink()
 
         with open(fpath, 'ab') as f:
             utils.pickle_dump(self.rms, f)
@@ -230,7 +232,7 @@ class TagAddList():
     """
 
     @staticmethod
-    def unpickle(fpath: str) -> tp.Optional['TagAddList']:
+    def unpickle(fpath: pathlib.Path) -> tp.Optional['TagAddList']:
         """Unpickle XML modifications.
 
         You don't know how many there are, so go until you get an exception.
@@ -267,11 +269,11 @@ class TagAddList():
     def prepend(self, other: TagAdd) -> None:
         self.adds.insert(0, other)
 
-    def pickle(self, fpath: str, delete: bool = False) -> None:
+    def pickle(self, fpath: pathlib.Path, delete: bool = False) -> None:
         from sierra.core import utils
 
         if delete and utils.path_exists(fpath):
-            os.remove(fpath)
+            fpath.unlink()
 
         with open(fpath, 'ab') as f:
             utils.pickle_dump(self.adds, f)
@@ -293,14 +295,19 @@ class WriterConfig():
                 ``src_tag`` - The name of the tag within ``src_parent`` to write
                               out. This key is required.
 
-                ``dest_root`` - The new name of ``src_root`` when writing out
-                                the partial XML tree to a new file. This key is
-                                optional.
+                ``dest_parent`` - The new name of ``src_root`` when writing out
+                                  the partial XML tree to a new file. This key
+                                  is optional.
+
+                ``create_tags`` - Additional tags to create under
+                                  ``dest_parent``. Must form a tree with a
+                                  single root.
 
                 ``opath_leaf`` - Additional bits added to whatever the opath
                                  file stem that is set for the
                                  :class:`~sierra.core.experiment.definition.XMLExpDef`
-                                 instance. This key is optional.
+                                 instance. This key is optional. Can be used to
+                                 add an extension.
 
                 ``child_grafts`` - Additional bits of the XML tree to add under
                                    the new ``dest_root/src_tag``, specified as a
@@ -329,11 +336,15 @@ class Writer():
         self.tree = tree
         self.logger = logging.getLogger(__name__)
 
-    def __call__(self, write_config: WriterConfig, base_opath: str) -> None:
+    def __call__(self,
+                 write_config: WriterConfig,
+                 base_opath: pathlib.Path) -> None:
         for config in write_config.values:
             self._write_with_config(base_opath, config)
 
-    def _write_with_config(self, base_opath: str, config: dict) -> None:
+    def _write_with_config(self,
+                           base_opath: pathlib.Path,
+                           config: dict) -> None:
         tree, src_root, opath = self._write_prepare_tree(base_opath, config)
 
         if tree is None:
@@ -354,16 +365,17 @@ class Writer():
 
         # Adding tags not required
         if 'dest_parent' in config and config['dest_parent'] is not None:
+            # Create a new tree to add the specified tags in. After adding the
+            # tags, append the tree of newly created tags back into the parent.
+
             to_write = ET.ElementTree()
             if 'create_tags' in config and config['create_tags'] is not None:
-                for spec in config['create_tags']:
-                    if to_write.getroot() is None:
-                        to_write._setroot(ET.Element(spec.tag, spec.attr))
-                    else:
-                        elt = to_write.find(spec.path)
-                        ET.SubElement(elt, spec.tag, spec.attr)
+                self._write_add_tags(config, to_write)
 
             parent = to_write.getroot().find(config['dest_parent'])
+            assert parent is not None,\
+                "Could not find parent '{0}' of tags for appending".format(
+                    config['dest_parent'])
             parent.append(tree)
         else:
             to_write = ET.ElementTree(tree)
@@ -371,15 +383,7 @@ class Writer():
 
         # Grafts are not required
         if 'child_grafts' in config and config['child_grafts'] is not None:
-            dest_root = "{0}/{1}".format(config['dest_parent'],
-                                         config['src_tag'])
-            graft_parent = to_write.getroot().find(dest_root)
-            for g in config['child_grafts']:
-                self.logger.trace("Graft tree@%s as child under %s",  # type: ignore
-                                  g,
-                                  dest_root)
-                elt = tree.root.find(g)
-                graft_parent.append(elt)
+            self._write_add_grafts(config, tree, to_write)
 
         # Write out pretty XML to make it easier to read to see if things
         # have been generated correctly.
@@ -393,11 +397,47 @@ class Writer():
             ET.indent(to_write, space="\t", level=0)
             to_write.write(opath, encoding='utf-8')
 
+    def _write_add_grafts(self,
+                          config: dict,
+                          tree: ET.Element,
+                          to_write: ET.ElementTree) -> None:
+        dest_root = "{0}/{1}".format(config['dest_parent'],
+                                     config['src_tag'])
+        graft_parent = to_write.getroot().find(dest_root)
+        assert graft_parent is not None, \
+            "Bad parent {dest_root} for grafting"
+
+        for g in config['child_grafts']:
+            self.logger.trace("Graft tree@%s as child under %s",  # type: ignore
+                              g,
+                              dest_root)
+            elt = tree.root.find(g)
+            graft_parent.append(elt)
+
+    def _write_add_tags(self,
+                        config: dict,
+                        to_write: ET.ElementTree) -> None:
+        for spec in config['create_tags']:
+            # Tree has no root set--set root to specified tag
+            if to_write.getroot() is None:
+                to_write._setroot(ET.Element(spec.tag, spec.attr))
+            else:
+                elt = to_write.find(spec.path)
+                assert elt is not None,\
+                    (f"Could not find parent '{spec.path}' of tag '{spec.tag}' "
+                     "to add")
+
+                ET.SubElement(elt, spec.tag, spec.attr)
+
+            self.logger.trace("Create tag@%s as child under %s",  # type: ignore
+                              spec.tag,
+                              spec.path)
+
     def _write_prepare_tree(self,
-                            base_opath: str,
+                            base_opath: pathlib.Path,
                             config: dict) -> tp.Tuple[tp.Optional[ET.Element],
                                                       str,
-                                                      str]:
+                                                      pathlib.Path]:
         if config['src_parent'] is None:
             src_root = config['src_tag']
         else:
@@ -408,7 +448,7 @@ class Writer():
 
         # Customizing the output write path is not required
         if 'opath_leaf' in config and config['opath_leaf'] is not None:
-            opath = base_opath + config['opath_leaf']
+            opath = base_opath.with_name(base_opath.name + config['opath_leaf'])
         else:
             opath = base_opath
 

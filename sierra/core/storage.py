@@ -20,6 +20,8 @@ See :ref:`ln-sierra-tutorials-plugin-storage` for more details.
 """
 
 # Core packages
+import pathlib
+import typing as tp
 
 # 3rd party packages
 import pandas as pd
@@ -36,7 +38,10 @@ class DataFrameWriter():
     def __init__(self, medium: str):
         self.medium = medium
 
-    def __call__(self, df: pd.DataFrame, path: str, **kwargs) -> None:
+    def __call__(self,
+                 df: pd.DataFrame,
+                 path: tp.Union[pathlib.Path, str],
+                 **kwargs) -> None:
         storage = pm.pipeline.get_plugin_module(self.medium)
         return storage.df_write(df, path, **kwargs)  # type: ignore
 
@@ -50,7 +55,9 @@ class DataFrameReader():
     def __init__(self, medium: str):
         self.medium = medium
 
-    def __call__(self, path: str, **kwargs) -> pd.DataFrame:
+    def __call__(self,
+                 path: tp.Union[pathlib.Path, str],
+                 **kwargs) -> pd.DataFrame:
         storage = pm.pipeline.get_plugin_module(self.medium)
         return storage.df_read(path, **kwargs)  # type: ignore
 

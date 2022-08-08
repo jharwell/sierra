@@ -97,7 +97,7 @@ class QTCameraTimeline():
                                              False))
 
             in_ticks = self.setup.n_secs_per_run * \
-                config.kARGoS['n_ticks_per_sec']
+                int(config.kARGoS['n_ticks_per_sec'])
             adds.append(xml.TagAdd('.//qt-opengl/camera',
                                    'timeline',
                                    {

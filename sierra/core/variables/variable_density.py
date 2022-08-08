@@ -18,6 +18,7 @@
 # Core packages
 import re
 import typing as tp
+import pathlib
 
 # 3rd party packages
 
@@ -47,8 +48,8 @@ class VariableDensity(UnivarBatchCriteria):
 
     def __init__(self,
                  cli_arg: str,
-                 main_config: tp.Dict[str, str],
-                 batch_input_root: str,
+                 main_config: types.YAMLDict,
+                 batch_input_root: pathlib.Path,
                  densities: tp.List[float],
                  extent: ArenaExtent) -> None:
         UnivarBatchCriteria.__init__(

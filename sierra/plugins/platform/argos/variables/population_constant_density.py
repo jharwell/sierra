@@ -92,18 +92,18 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
         return self.attr_changes
 
-    def gen_exp_dirnames(self, cmdopts: types.Cmdopts) -> tp.List[str]:
+    def gen_exp_names(self, cmdopts: types.Cmdopts) -> tp.List[str]:
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
     def graph_xticks(self,
                      cmdopts: types.Cmdopts,
-                     exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
+                     exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
 
-        if exp_dirs is None:
-            exp_dirs = self.gen_exp_dirnames(cmdopts)
+        if exp_names is None:
+            exp_names = self.gen_exp_names(cmdopts)
 
-        ret = list(map(float, self.populations(cmdopts, exp_dirs)))
+        ret = list(map(float, self.populations(cmdopts, exp_names)))
 
         if cmdopts['plot_log_xscale']:
             return [int(math.log2(x)) for x in ret]
@@ -114,11 +114,11 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
     def graph_xticklabels(self,
                           cmdopts: types.Cmdopts,
-                          exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
-        if exp_dirs is None:
-            exp_dirs = self.gen_exp_dirnames(cmdopts)
+                          exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
+        if exp_names is None:
+            exp_names = self.gen_exp_names(cmdopts)
 
-        ret = map(float, self.populations(cmdopts, exp_dirs))
+        ret = map(float, self.populations(cmdopts, exp_names))
 
         return list(map(lambda x: str(int(round(x, 4))), ret))
 

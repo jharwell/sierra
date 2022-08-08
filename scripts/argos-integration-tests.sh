@@ -24,7 +24,7 @@ setup_env() {
     localbase=$(python3 -m site --user-base)
     export PYTHONPATH=.
     export COVERAGE_CMD="coverage \
-    run \
+    run --debug=trace\
      --append \
      $localbase/bin/sierra-cli"
 
@@ -41,7 +41,7 @@ setup_env() {
        --with-robot-leds \
        --with-robot-rab\
        --exec-no-devnull \
-       --log-level=DEBUG"
+       --log-level=TRACE"
 
     export PARALLEL="--env ARGOS_PLUGIN_PATH --env LD_LIBRARY_PATH"
 }

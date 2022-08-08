@@ -19,11 +19,11 @@
 """
 
 # Core packages
-import os
 import typing as tp
 import time
 import datetime
 import logging
+import pathlib
 
 # 3rd party packages
 import yaml
@@ -95,11 +95,11 @@ class PipelineStage4:
                  main_config: types.YAMLDict,
                  cmdopts: types.Cmdopts) -> None:
         self.cmdopts = cmdopts
-
         self.main_config = main_config
 
-        controllers_yaml = os.path.join(self.cmdopts['project_config_root'],
-                                        config.kYAML['controllers'])
+        self.project_config_root = pathlib.Path(self.cmdopts['project_config_root'])
+        controllers_yaml = self.project_config_root / config.kYAML.controllers
+
         with utils.utf8open(controllers_yaml) as f:
             self.controller_config = yaml.load(f, yaml.FullLoader)
         self.logger = logging.getLogger(__name__)
@@ -170,8 +170,7 @@ class PipelineStage4:
             self._run_inter_graph_generation(criteria)
 
     def _load_models(self) -> None:
-        project_models = os.path.join(self.cmdopts['project_config_root'],
-                                      'models.yaml')
+        project_models = self.project_config_root / config.kYAML.models
         self.models_intra = []
         self.models_inter = []
 

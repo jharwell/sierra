@@ -20,10 +20,10 @@ to the template XML file to scaffold the batch experiment.
 
 """
 # Core packages
-import os
 import typing as tp
 import logging
 import copy
+import pathlib
 
 # 3rd party packages
 import yaml
@@ -43,15 +43,14 @@ class ControllerGenerator():
 
     def __init__(self,
                  controller: str,
-                 config_root: str,
+                 config_root: pathlib.Path,
                  cmdopts: types.Cmdopts,
                  exp_spec: spec.ExperimentSpec) -> None:
-        controllers_yaml = os.path.join(config_root,
-                                        config.kYAML['controllers'])
+        controllers_yaml = config_root / config.kYAML.controllers
         with utils.utf8open(controllers_yaml) as f:
             self.controller_config = yaml.load(f, yaml.FullLoader)
 
-        main_yaml = os.path.join(config_root, config.kYAML['main'])
+        main_yaml = config_root / config.kYAML.main
         with utils.utf8open(main_yaml) as f:
             self.main_config = yaml.load(f, yaml.FullLoader)
 
@@ -74,11 +73,11 @@ class ControllerGenerator():
                         add: xml.TagAdd,
                         robot_id: tp.Optional[int] = None) -> xml.TagAdd:
         module = pm.pipeline.get_plugin_module(self.cmdopts['platform'])
+
         if '__UUID__' in add.path:
             prefix = module.robot_prefix_extract(self.main_config, self.cmdopts)
             add.path = add.path.replace('__UUID__', f"{prefix}{robot_id}")
 
-        add.attr = eval(add.attr)
         return add
 
     def _do_tag_add(self,
@@ -94,7 +93,7 @@ class ControllerGenerator():
             # haven't added any tags to the experiment definition yet, and if
             # the platform relies on added tags to calculate population sizes,
             # then this won't work.
-            controllers = config.kYAML['controllers']
+            controllers = config.kYAML.controllers
             assert hasattr(self.spec.criteria, 'n_robots'),\
                 (f"When using __UUID__ and tag_add in {controllers}, the batch "
                  "criteria must implement bc.IQueryableBatchCriteria")
@@ -121,24 +120,22 @@ class ControllerGenerator():
     def _generate_controller_support(self,
                                      exp_def: definition.XMLExpDef) -> None:
         # Setup controller support code (if any)
-        chgs = self.controller_config.get(self.category,
-                                          {}).get('xml',
-                                                  {}).get('attr_change',
-                                                          {})
+        xml_mods = self.controller_config.get(self.category, {}).get('xml', {})
+
+        chgs = xml_mods.get('attr_change', {})
         for t in chgs:
             exp_def.attr_change(t[0], t[1], t[2])
 
-        chgs = self.controller_config.get(self.category, {}).get('xml',
-                                                                 {}).get('tag_change',
-                                                                         {})
+        chgs = xml_mods. get('tag_change', {})
         for t in chgs:
             exp_def.tag_change(t[0], t[1], t[2])
 
-        adds = self.controller_config.get(self.category, {}).get('xml',
-                                                                 {}).get('tag_add',
-                                                                         {})
+        adds = xml_mods.get('tag_add', {})
         for t in adds:
-            self._do_tag_add(exp_def, t)
+            self._do_tag_add(exp_def, xml.TagAdd(t[0],
+                                                 t[1],
+                                                 eval(t[2]),
+                                                 False))
 
     def _generate_controller(self, exp_def: definition.XMLExpDef) -> None:
         if self.category not in self.controller_config:
@@ -151,8 +148,9 @@ class ControllerGenerator():
                               self.name)
             assert False
 
-        self.logger.debug(
-            "Applying changes from controllers.yaml (all experiments)")
+        self.logger.debug("Applying changes from %s (all experiments)",
+                          config.kYAML.controllers)
+
         for controller in self.controller_config[self.category]['controllers']:
             if controller['name'] != self.name:
                 continue
@@ -169,7 +167,7 @@ class ControllerGenerator():
             for t in adds:
                 self._do_tag_add(exp_def, xml.TagAdd(t[0],
                                                      t[1],
-                                                     t[2],
+                                                     eval(t[2]),
                                                      False))
 
 
@@ -221,7 +219,7 @@ def scenario_generator_create(exp_spec: spec.ExperimentSpec,
 
 
 def controller_generator_create(controller: str,
-                                config_root: str,
+                                config_root: pathlib.Path,
                                 cmdopts: types.Cmdopts,
                                 exp_spec: spec.ExperimentSpec):
     """

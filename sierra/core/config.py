@@ -19,10 +19,12 @@ Contains all SIERRA hard-coded configuration in one place.
 
 # Core packages
 import logging
+import typing as tp
 
 # 3rd party packages
 
 # Project packages
+from sierra.core import types
 
 ################################################################################
 # Matplotlib Configuration
@@ -77,13 +79,14 @@ kGraphDPI = 100
 
 kGraphBaseSize = 10.0  # inches
 
-kGraphTextSizeSmall = {
+kGraphTextSizeSmall: types.IntDict = {
     'title': 24,
     'xyz_label': 18,
     'tick_label': 12,
     'legend_label': 18
 }
-kGraphTextSizeLarge = {
+
+kGraphTextSizeLarge: types.IntDict = {
     'title': 36,
     'xyz_label': 24,
     'tick_label': 24,
@@ -93,11 +96,11 @@ kGraphTextSizeLarge = {
 # These are the file extensions that files read/written by a given storage
 # plugin should have. Once processed by SIERRA they are written out as CSV files
 # with new extensions contextualizing them.
-kStorageExt = {
+kStorageExt: types.StrDict = {
     'csv': '.csv'
 }
 
-kStatsExt = {
+kStatsExt: types.StrDict = {
     # The default for averaging
     'mean': '.mean',
 
@@ -115,16 +118,20 @@ kStatsExt = {
     'cilo': '.cilo',
     'cihi': '.cihi',
 }
-kModelsExt = {
+kModelsExt: types.StrDict = {
     'model': '.model',
     'legend': '.legend'
 }
 
-kARGoS = {
+kRendering = {
+    'argos': {
+        'frames_leaf': 'frames',
+    }
+}
+kARGoS: tp.Dict[str, tp.Any] = {
     'physics_iter_per_tick': 10,
     'min_version': 'beta53',
     'launch_cmd': 'argos3',
-    'frames_leaf': 'frames',
     'launch_file_ext': '.argos',
     'n_secs_per_run': 5000,  # seconds
     'n_ticks_per_sec': 5,
@@ -138,7 +145,8 @@ kARGoS = {
     }
 }
 
-kROS = {
+
+kROS: types.SimpleDict = {
     'launch_cmd': 'roslaunch',
     'launch_file_ext': '.launch',
     'param_file_ext': '.params',
@@ -148,10 +156,11 @@ kROS = {
     'inter_run_pause': 60  # seconds
 }
 
-kYAML = {
-    'main': 'main.yaml',
-    'controllers': 'controllers.yaml'
-}
+kYAML = types.YAMLConfigFileSpec(main='main.yaml',
+                                 controllers='controllers.yaml',
+                                 models='models.yaml',
+                                 stage5='stage5.yaml')
+
 kGazebo = {
     'launch_cmd': 'gazebo',
     'min_version': '11.0.0',
@@ -159,7 +168,7 @@ kGazebo = {
 
 }
 
-kGNUParallel = {
+kGNUParallel:  types.StrDict = {
     'cmdfile_stem': 'commands',
     'cmdfile_ext': '.txt'
 }

@@ -21,6 +21,7 @@ See :ref:`ln-sierra-platform-argos-bc-population-size` for usage documentation.
 
 # Core packages
 import typing as tp
+import pathlib
 
 # 3rd party packages
 import implements
@@ -56,9 +57,9 @@ class PopulationSize(population_size.BasePopulationSize):
 
     def __init__(self,
                  cli_arg: str,
-                 main_config: tp.Dict[str, str],
-                 batch_input_root: str,
-                 size_list: tp.List[float]) -> None:
+                 main_config: types.YAMLDict,
+                 batch_input_root: pathlib.Path,
+                 size_list: tp.List[int]) -> None:
         population_size.BasePopulationSize.__init__(self,
                                                     cli_arg,
                                                     main_config,
@@ -75,7 +76,7 @@ class PopulationSize(population_size.BasePopulationSize):
                 self.size_list)
         return self.attr_changes
 
-    def gen_exp_dirnames(self, cmdopts: types.Cmdopts) -> tp.List[str]:
+    def gen_exp_names(self, cmdopts: types.Cmdopts) -> tp.List[str]:
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 

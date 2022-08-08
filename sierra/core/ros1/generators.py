@@ -21,6 +21,7 @@ ROS1.
 """
 # Core packages
 import logging
+import pathlib
 
 # 3rd party packages
 
@@ -149,8 +150,8 @@ class ROSExpRunDefUniqueGenerator:
 
     def __init__(self,
                  run_num: int,
-                 run_output_path: str,
-                 launch_stem_path: str,
+                 run_output_path: pathlib.Path,
+                 launch_stem_path: pathlib.Path,
                  random_seed: int,
                  cmdopts: types.Cmdopts) -> None:
 
@@ -191,15 +192,17 @@ class ROSExpRunDefUniqueGenerator:
         """Generate XML changes for the parameter file for an experimental run.
 
         """
-        self.logger.trace("Generating parameter file changes for run%s",
+        self.logger.trace("Generating parameter file changes for run%s",  # type: ignore
                           self.run_num)
+
+        param_file = self.launch_stem_path.with_suffix(config.kROS['param_file_ext'])
 
         # Master node gets a copy of the parameter file
         exp_def.tag_add("./master/group/[@ns='sierra']",
                         "param",
                         {
                             "name": "experiment/param_file",
-                            "value": self.launch_stem_path + config.kROS['param_file_ext']
+                            "value": str(param_file)
                         })
 
         # Each robot gets a copy of the parameter file
@@ -213,7 +216,7 @@ class ROSExpRunDefUniqueGenerator:
                         "param",
                         {
                             "name": "experiment/param_file",
-                            "value": self.launch_stem_path + config.kROS['param_file_ext']
+                            "value": str(param_file)
                         })
 
 

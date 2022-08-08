@@ -103,7 +103,7 @@ class ROSCmdline(cmd.BaseCmdline):
                                      :ref:`ln-sierra-tutorials-project-main-config`
                                      for details.
 
-                            """.format(config.kYAML['main']) + self.stage_usage_doc([1]))
+                            """.format(config.kYAML.main) + self.stage_usage_doc([1]))
 
     @staticmethod
     def cmdopts_update(cli_args, cmdopts: types.Cmdopts) -> None:

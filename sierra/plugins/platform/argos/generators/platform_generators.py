@@ -22,8 +22,8 @@ the platform.
 # Core packages
 import typing as tp
 import logging
-import os
 import sys
+import pathlib
 
 # 3rd party packages
 
@@ -234,7 +234,8 @@ class PlatformExpDefGenerator():
         file.
 
         """
-        self.logger.trace("Generating changes for threading (all runs)")
+        self.logger.trace(   # type: ignore
+            "Generating changes for threading (all runs)")
         exp_def.attr_change(".//system",
                             "threads",
                             str(self.cmdopts["physics_n_engines"]))
@@ -265,7 +266,8 @@ class PlatformExpDefGenerator():
         file.
 
         """
-        self.logger.trace("Generating changes for library (all runs)")
+        self.logger.trace(  # type: ignore
+            "Generating changes for library (all runs)")
         run_config = self.spec.criteria.main_config['sierra']['run']
         lib_name = run_config.get('library_name',
                                   'lib' + self.cmdopts['project'])
@@ -323,8 +325,8 @@ class PlatformExpRunDefUniqueGenerator:
 
     def __init__(self,
                  run_num: int,
-                 run_output_path: str,
-                 launch_stem_path: str,
+                 run_output_path: pathlib.Path,
+                 launch_stem_path: pathlib.Path,
                  random_seed: int,
                  cmdopts: types.Cmdopts) -> None:
 
@@ -362,11 +364,10 @@ class PlatformExpRunDefUniqueGenerator:
                           self.run_num)
 
         if self.cmdopts['platform_vc']:
-            frames_fpath = os.path.join(self.run_output_path,
-                                        config.kARGoS['frames_leaf'])
+            frames_fpath = self.run_output_path / config.kARGoS['frames_leaf']
             exp_def.attr_change(".//qt-opengl/frame_grabbing",
                                 "directory",
-                                frames_fpath)  # probably will not be present
+                                str(frames_fpath))  # probably will not be present
 
 
 __api__ = [

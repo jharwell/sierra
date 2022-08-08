@@ -82,23 +82,24 @@ class PopulationVariableDensity(vd.VariableDensity):
 
         return self.attr_changes
 
-    def gen_exp_dirnames(self, cmdopts: types.Cmdopts) -> tp.List[str]:
+    def gen_exp_names(self, cmdopts: types.Cmdopts) -> tp.List[str]:
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
     def graph_xticks(self,
                      cmdopts: types.Cmdopts,
-                     exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
+                     exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
 
-        if exp_dirs is None:
-            exp_dirs = self.gen_exp_dirnames(cmdopts)
+        if exp_names is None:
+            exp_names = self.gen_exp_names(cmdopts)
 
-        return [p / self.extent.area() for p in self.populations(cmdopts, exp_dirs)]
+        return [p / self.extent.area() for p in self.populations(cmdopts, exp_names)]
 
     def graph_xticklabels(self,
                           cmdopts: types.Cmdopts,
-                          exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
-        return list(map(lambda x: str(round(x, 4)), self.graph_xticks(cmdopts, exp_dirs)))
+                          exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
+        return list(map(lambda x: str(round(x, 4)),
+                        self.graph_xticks(cmdopts, exp_names)))
 
     def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
         return r"Population Density"

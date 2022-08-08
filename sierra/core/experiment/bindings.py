@@ -17,6 +17,7 @@
 # Core packages
 import typing as tp
 import argparse
+import pathlib
 
 # 3rd party packages
 import implements
@@ -69,7 +70,7 @@ class IExpShellCmdsGenerator(implements.Interface):
         raise NotImplementedError
 
     def exec_exp_cmds(self,
-                      exec_opts: types.SimpleDict) -> tp.List[types.ShellCmdSpec]:
+                      exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
         """Generate shell commands to execute an :term:`Experiment`.
 
         This is (usually) a single GNU parallel command, but it does not have to
@@ -155,14 +156,14 @@ class IExpRunShellCmdsGenerator(implements.Interface):
 
     def __init__(self,
                  cmdopts: types.Cmdopts,
-                 criteria: bc.IConcreteBatchCriteria,
+                 criteria: bc.BatchCriteria,
                  n_robots: int,
                  exp_num: int) -> None:
         raise NotImplementedError
 
     def pre_run_cmds(self,
                      host: str,
-                     input_fpath: str,
+                     input_fpath: pathlib.Path,
                      run_num: int) -> tp.List[types.ShellCmdSpec]:
         """Generate shell commands to setup the experimental run environment.
 
@@ -187,7 +188,7 @@ class IExpRunShellCmdsGenerator(implements.Interface):
 
     def exec_run_cmds(self,
                       host: str,
-                      input_fpath: str,
+                      input_fpath: pathlib.Path,
                       run_num: int) -> tp.List[types.ShellCmdSpec]:
         """Generate shell commands to execute a single :term:`Experimental Run`.
 
@@ -280,7 +281,7 @@ class IExpConfigurer(implements.Interface):
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         raise NotImplementedError
 
-    def for_exp(self, exp_input_root: str) -> None:
+    def for_exp(self, exp_input_root: pathlib.Path) -> None:
         """
         Configure an experiment.
 
@@ -291,7 +292,9 @@ class IExpConfigurer(implements.Interface):
         """
         raise NotImplementedError
 
-    def for_exp_run(self, exp_input_root: str, run_output_root: str) -> None:
+    def for_exp_run(self,
+                    exp_input_root: pathlib.Path,
+                    run_output_root: pathlib.Path) -> None:
         """
         Configure an experimental run.
 

@@ -15,9 +15,9 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 # Core packages
-import os
 import typing as tp
 import logging
+import pathlib
 
 # 3rd party packages
 import yaml
@@ -44,7 +44,7 @@ class YAMLConfigLoader():
     def __init__(self) -> None:
         self.logger = logging.getLogger(__name__)
 
-    def __call__(self, cmdopts: types.Cmdopts) -> tp.Dict[str, tp.Dict[str, str]]:
+    def __call__(self, cmdopts: types.Cmdopts) -> tp.Dict[str, types.YAMLDict]:
         """
         Load YAML configuratoin for graphs.
 
@@ -65,12 +65,12 @@ class YAMLConfigLoader():
         intra_LN_config = {}
         intra_HM_config = {}
 
-        project_inter_LN = os.path.join(cmdopts['project_config_root'],
-                                        'inter-graphs-line.yaml')
-        project_intra_LN = os.path.join(cmdopts['project_config_root'],
-                                        'intra-graphs-line.yaml')
-        project_intra_HM = os.path.join(cmdopts['project_config_root'],
-                                        'intra-graphs-hm.yaml')
+        project_inter_LN = pathlib.Path(cmdopts['project_config_root']) / \
+            'inter-graphs-line.yaml'
+        project_intra_LN = pathlib.Path(cmdopts['project_config_root']) / \
+            'intra-graphs-line.yaml'
+        project_intra_HM = pathlib.Path(cmdopts['project_config_root']) / \
+            'intra-graphs-hm.yaml'
 
         if utils.path_exists(project_intra_LN):
             self.logger.info("Intra-experiment linegraph config for project '%s' from %s",

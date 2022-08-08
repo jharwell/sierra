@@ -23,6 +23,7 @@ documentation.
 # Core packages
 import typing as tp
 import logging
+import pathlib
 
 # 3rd party packages
 import implements
@@ -54,8 +55,8 @@ class PopulationSize(population_size.BasePopulationSize):
 
     def __init__(self,
                  cli_arg: str,
-                 main_config: tp.Dict[str, str],
-                 batch_input_root: str,
+                 main_config: types.YAMLDict,
+                 batch_input_root: pathlib.Path,
                  robot: str,
                  sizes: tp.List[int]) -> None:
         population_size.BasePopulationSize.__init__(self,
@@ -120,7 +121,7 @@ class PopulationSize(population_size.BasePopulationSize):
 
         return self.tag_adds
 
-    def gen_exp_dirnames(self, cmdopts: types.Cmdopts) -> tp.List[str]:
+    def gen_exp_names(self, cmdopts: types.Cmdopts) -> tp.List[str]:
         adds = self.gen_tag_addlist()
         return ['exp' + str(x) for x in range(0, len(adds))]
 

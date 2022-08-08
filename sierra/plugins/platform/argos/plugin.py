@@ -24,6 +24,7 @@ import re
 import shutil
 import logging
 import sys
+import pathlib
 
 # 3rd party packages
 import implements
@@ -144,7 +145,7 @@ class ParsedCmdlineConfigurer():
         nodes = platform.ExecEnvChecker.parse_nodefile(args.nodefile)
         ppn = sys.maxsize
         for node in nodes:
-            ppn = min(ppn, node['n_cores'])
+            ppn = min(ppn, node.n_cores)
 
         # For HPC, we want to use the the maximum # of simultaneous jobs per
         # node such that there is no thread oversubscription. We also always
@@ -164,7 +165,7 @@ class ParsedCmdlineConfigurer():
 class ExpRunShellCmdsGenerator():
     def __init__(self,
                  cmdopts: types.Cmdopts,
-                 criteria: bc.IConcreteBatchCriteria,
+                 criteria: bc.BatchCriteria,
                  n_robots: int,
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
@@ -172,7 +173,7 @@ class ExpRunShellCmdsGenerator():
 
     def pre_run_cmds(self,
                      host: str,
-                     input_fpath: str,
+                     input_fpath: pathlib.Path,
                      run_num: int) -> tp.List[types.ShellCmdSpec]:
         # When running ARGoS under Xvfb in order to headlessly render frames, we
         # need to start a per-instance Xvfb server that we tell ARGoS to use via
@@ -184,18 +185,22 @@ class ExpRunShellCmdsGenerator():
                 self.display_port = random.randint(0, 1000000)
                 cmd1 = f"Xvfb :{self.display_port} -screen 0, 1600x1200x24 &"
                 cmd2 = f"export DISPLAY=:{self.display_port};"
-                return [{'cmd': cmd1, 'shell': True, 'wait': True},
-                        {'cmd': cmd2, 'shell': True, 'wait': True, 'env': True}]
+                spec1 = types.ShellCmdSpec(cmd=cmd1, shell=True, wait=True)
+                spec2 = types.ShellCmdSpec(cmd=cmd2,
+                                           shell=True,
+                                           wait=True,
+                                           env=True)
+                return [spec1, spec2]
 
         return []
 
     def exec_run_cmds(self,
                       host: str,
-                      input_fpath: str,
+                      input_fpath: pathlib.Path,
                       run_num: int) -> tp.List[types.ShellCmdSpec]:
         shellname = platform.get_executable_shellname(config.kARGoS['launch_cmd'])
         cmd = '{0} -c {1}{2}'.format(shellname,
-                                     input_fpath,
+                                     str(input_fpath),
                                      config.kARGoS['launch_file_ext'])
 
         # ARGoS is pretty good about not printing stuff if we pass these
@@ -206,7 +211,7 @@ class ExpRunShellCmdsGenerator():
 
         cmd += ';'
 
-        return [{'cmd': cmd, 'shell': True, 'wait': True}]
+        return [types.ShellCmdSpec(cmd=cmd, shell=True, wait=True)]
 
     def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
         return []
@@ -222,7 +227,7 @@ class ExpShellCmdsGenerator():
     def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
         return []
 
-    def exec_exp_cmds(self, exec_opts: types.SimpleDict) -> tp.List[types.ShellCmdSpec]:
+    def exec_exp_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
         return []
 
     def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
@@ -230,11 +235,7 @@ class ExpShellCmdsGenerator():
         # was run with --exec-resume, then there may be no Xvfb processes to
         # kill, so we can't (in general) check the return code.
         if self.cmdopts['platform_vc']:
-            return [{
-                'cmd': 'killall Xvfb',
-                'shell': True,
-                'wait': True
-            }]
+            return [types.ShellCmdSpec(cmd='killall Xvfb', shell=True, wait=True)]
 
         return []
 
@@ -244,13 +245,14 @@ class ExpConfigurer():
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         self.cmdopts = cmdopts
 
-    def for_exp_run(self, exp_input_root: str, run_output_root: str) -> None:
+    def for_exp_run(self,
+                    exp_input_root: pathlib.Path,
+                    run_output_root: pathlib.Path) -> None:
         if self.cmdopts['platform_vc']:
-            frames_fpath = os.path.join(run_output_root,
-                                        config.kARGoS['frames_leaf'])
+            frames_fpath = run_output_root / config.kARGoS['frames_leaf']
             utils.dir_create_checked(frames_fpath, exist_ok=True)
 
-    def for_exp(self, exp_input_root: str) -> None:
+    def for_exp(self, exp_input_root: pathlib.Path) -> None:
         pass
 
     def cmdfile_paradigm(self) -> str:
@@ -266,8 +268,8 @@ class ExecEnvChecker(platform.ExecEnvChecker):
         keys = ['ARGOS_PLUGIN_PATH']
 
         for k in keys:
-            assert k in os.environ,\
-                "Non-ARGoS environment detected: '{0}' not found".format(k)
+            assert k in os.environ, \
+                f"Non-ARGoS environment detected: '{k}' not found"
 
         # Check we can find ARGoS
         proc = self.check_for_simulator(config.kARGoS['launch_cmd'])
@@ -283,8 +285,7 @@ class ExecEnvChecker(platform.ExecEnvChecker):
         min_version = packaging.version.parse(config.kARGoS['min_version'])
 
         assert version >= min_version,\
-            "ARGoS version {0} < min required {1}".format(version,
-                                                          min_version)
+            f"ARGoS version {version} < min required {min_version}"
 
         if self.cmdopts['platform_vc']:
             assert shutil.which('Xvfb') is not None, "Xvfb not found"

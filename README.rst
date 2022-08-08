@@ -114,9 +114,9 @@ Why SIERRA?
 
   to::
 
-    "OK SIERRA: Here is the environment and platform I want to use, the
-    deliverables I want to generate, and the data I want to appear on them for
-    my research query--GO!"
+    "OK SIERRA: Here is the environment and simulator/robot platform I want to
+    use, the deliverables I want to generate, and the data I want to appear on
+    them for my research query--GO!"
 
   Essentially, SIERRA handles the “engineering” parts of research on the
   backend, such as: generating experiments, configuring execution environments
@@ -124,10 +124,10 @@ Why SIERRA?
   results to generate statistics, and/or visualizations. It also handles random
   seeds, algorithm stochasticity, and other low-level details.
 
-- It eliminates manual reconfiguration of experiments across platforms by
-  decoupling the concepts of execution environment and platform; any supported
-  pair can be selected in a mix-and-match fashion (see `SIERRA Support
-  Matrix`_).
+- It eliminates manual reconfiguration of experiments across simulator/robot
+  platforms by decoupling the concepts of execution environment and platform;
+  any supported pair can be selected in a mix-and-match fashion (see `SIERRA
+  Support Matrix`_).
 
 - It removes the need for throw-away scripts for data processing and deliverable
   generation by providing rich, extensible faculties.
@@ -261,47 +261,18 @@ does have a handful of servers in her lab which she can use.
 SIERRA Support Matrix
 =====================
 
-SIERRA supports multiple (`platforms
-<https://swarm-robotics-sierra.readthedocs.io/en/master/src/platform/index.html>`_)
-which researchers can write code to target . SIERRA supports multiple execution
-environments for execution of experiments, such as `High Performance Computing
-(HPC) environments
-<https://swarm-robotics-sierra.readthedocs.io/en/master/src/exec_env/hpc.html>`_
-and `real robots
-<https://swarm-robotics-sierra.readthedocs.io/en/master/src/exec_env/robots.html>`_. If
-your desired platform or execution environment is not listed, see the `plugin
-tutorials
+SIERRA supports multiple `platforms
+<https://swarm-robotics-sierra.readthedocs.io/en/master/src/platform/index.html>`_
+which researchers can write code to target. In SIERRA terminology, a platform is
+a "thing" (usually a simulator or robot) that you want to write to code to run
+on. Note that platform != OS, in SIERRA terminology. If a SIERRA platform runs
+on a given OS, then SIERRA supports doing so; if it does not, then SIERRA does
+not. For example, SIERRA does not support running ARGoS on windows, because
+ARGoS does not support windows.
+
+If your desired platform is not listed, see the `plugin tutorials
 <https://swarm-robotics-sierra.readthedocs.io/en/master/src/tutorials.html>`_
 for how to add it via a plugin.
-
-.. list-table::
-   :header-rows: 1
-   :widths: 50,50
-
-   * - Execution Environment
-
-     - Description
-
-   * - `SLURM <https://slurm.schedmd.com/documentation.html>`_
-
-     - A cluster managed by the SLURM scheduler
-
-   * - `Torque/MOAB <https://adaptivecomputing.com/cherry-services/torque-resource-manager>`_
-
-     - A cluster managed by the Torque/MOAB scheduler
-
-   * - Adhoc
-
-     - Miscellaneous collection of networked compute nodes; not managed by a
-       scheduler
-
-   * - Local
-
-     - The SIERRA host machine,e.g., a researcher's laptop
-
-   * - `Turtlebot3 <https://emanual.robotis.com/docs/en/platform/turtlebot3/overview>`_
-
-     - Real turtlebot3 robots
 
 .. list-table::
    :header-rows: 1
@@ -325,6 +296,48 @@ for how to add it via a plugin.
 
      - Using ROS1 with a real robot platform of your choice. ROS1 Noetic or
        later is required.
+
+SIERRA supports multiple execution environments for execution of experiments,
+such as `High Performance Computing (HPC) environments
+<https://swarm-robotics-sierra.readthedocs.io/en/master/src/exec_env/hpc.html>`_
+and `real robots
+<https://swarm-robotics-sierra.readthedocs.io/en/master/src/exec_env/robots.html>`_.
+Which execution environment experiments targeting a given platform is (somewhat)
+independent of the platform itself (see below). If your desired execution
+environment is not listed, see the `plugin tutorials
+<https://swarm-robotics-sierra.readthedocs.io/en/master/src/tutorials.html>`_
+for how to add it via a plugin.
+
+
+.. list-table::
+   :header-rows: 1
+   :widths: 50,50
+
+   * - Execution Environment
+
+     - Description
+
+   * - `SLURM <https://slurm.schedmd.com/documentation.html>`_
+
+     - An HPC cluster managed by the SLURM scheduler
+
+   * - `Torque/MOAB <https://adaptivecomputing.com/cherry-services/torque-resource-manager>`_
+
+     - An HPC cluster managed by the Torque/MOAB scheduler
+
+   * - Adhoc
+
+     - Miscellaneous collection of networked HPC compute nodes or random
+       servers; not managed by a scheduler
+
+   * - HPC local
+
+     - The SIERRA host machine,e.g., a researcher's laptop
+
+   * - `Turtlebot3 <https://emanual.robotis.com/docs/en/platform/turtlebot3/overview>`_
+
+     - Real turtlebot3 robots
+
 
 SIERRA also supports multiple output formats for experimental outputs. If the
 format for your experimental outputs is not listed, see the `tutorials

@@ -428,7 +428,6 @@ class PhysicsEngines2D(PhysicsEngines):
     def __init__(self,
                  engine_type: str,
                  n_engines: int,
-                 n_robots: int,
                  spatial_hash_info: tp.Optional[tp.Dict[str, tp.Any]],
                  iter_per_tick: int,
                  layout: str,
@@ -440,7 +439,6 @@ class PhysicsEngines2D(PhysicsEngines):
                                 layout,
                                 extents)
 
-        self.n_robots = n_robots
         self.spatial_hash_info = spatial_hash_info
 
     def gen_single_engine(self,
@@ -513,7 +511,6 @@ def factory(engine_type: str,
 
         return PhysicsEngines2D(engine_type,
                                 n_engines,
-                                n_robots,
                                 spatial_hash,
                                 cmdopts['physics_iter_per_tick'],
                                 'uniform_grid2D',

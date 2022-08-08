@@ -19,10 +19,10 @@
 """
 
 # Core packages
-import os
 import time
 import datetime
 import logging
+import pathlib
 
 # 3rd party packages
 import yaml
@@ -64,11 +64,12 @@ class PipelineStage3:
         self._run_run_collation(self.main_config, self.cmdopts, criteria)
 
         if self.cmdopts['project_imagizing']:
-            intra_HM_path = os.path.join(self.cmdopts['project_config_root'],
-                                         'intra-graphs-hm.yaml')
+            intra_HM_path = pathlib.Path(self.cmdopts['project_config_root']) \
+                / pathlib.Path('intra-graphs-hm.yaml')
 
             if utils.path_exists(intra_HM_path):
-                self.logger.info("Loading intra-experiment heatmap config for project '%s'",
+                self.logger.info(("Loading intra-experiment heatmap config for "
+                                  "project '%s'"),
                                  self.cmdopts['project'])
                 intra_HM_config = yaml.load(utils.utf8open(intra_HM_path),
                                             yaml.FullLoader)

@@ -24,6 +24,7 @@ import os
 import re
 import typing as tp
 import sys
+import pathlib
 
 # 3rd party packages
 import packaging.version
@@ -92,7 +93,7 @@ class ParsedCmdlineConfigurer():
         nodes = platform.ExecEnvChecker.parse_nodefile(args.nodefile)
         ppn = sys.maxsize
         for node in nodes:
-            ppn = min(ppn, node['n_cores'])
+            ppn = min(ppn, node.n_cores)
 
         if args.exec_jobs_per_node is None:
             args.exec_jobs_per_node = int(float(args.n_runs) / len(nodes))
@@ -131,7 +132,7 @@ class ParsedCmdlineConfigurer():
 class ExpRunShellCmdsGenerator():
     def __init__(self,
                  cmdopts: types.Cmdopts,
-                 criteria: bc.IConcreteBatchCriteria,
+                 criteria: bc.BatchCriteria,
                  n_robots: int,
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
@@ -140,7 +141,7 @@ class ExpRunShellCmdsGenerator():
 
     def pre_run_cmds(self,
                      host: str,
-                     input_fpath: str,
+                     input_fpath: pathlib.Path,
                      run_num: int) -> tp.List[types.ShellCmdSpec]:
         if host == 'master':
             return []
@@ -151,25 +152,22 @@ class ExpRunShellCmdsGenerator():
         # accessible between instances of Gazebo.
         self.roscore_port = config.kROS['port_base'] + run_num * 2
 
-        roscore = [
-            {
-                # roscore will run on each slave node used during stage 2, so we
-                # have to use 'localhost' for binding.
-                'cmd': f'export ROS_MASTER_URI=http://localhost:{self.roscore_port};',
-                'shell': True,
-                'wait': True,
-                'env': True
-            },
-            {
-                # Each experiment gets their own roscore. Because each roscore
-                # has a different port, this prevents any robots from
-                # pre-emptively starting the next experiment before the rest of
-                # the robots have finished the current one.
-                'cmd': f'roscore -p {self.roscore_port} & ',
-                'shell': True,
-                'wait': False
-            }
-        ]
+        # roscore will run on each slave node used during stage 2, so we have to
+        # use 'localhost' for binding.
+        roscore_uri = types.ShellCmdSpec(
+            cmd=f'export ROS_MASTER_URI=http://localhost:{self.roscore_port};',
+            shell=True,
+            wait=True,
+            env=True)
+
+        # Each experiment gets their own roscore. Because each roscore has a
+        # different port, this prevents any robots from pre-emptively starting
+        # the next experiment before the rest of the robots have finished the
+        # current one.
+        roscore_process = types.ShellCmdSpec(
+            cmd=f'roscore -p {self.roscore_port} & ',
+            shell=True,
+            wait=False)
 
         # Second, the command to give Gazebo a unique port on the host during
         # stage 2. We need to be on a unique port so that multiple Gazebo
@@ -178,20 +176,18 @@ class ExpRunShellCmdsGenerator():
 
         # 2021/12/13: You can't use HTTPS for some reason or gazebo won't
         # start...
-        gazebo = [
-            {
-                'cmd': f'export GAZEBO_MASTER_URI=http://localhost:{self.gazebo_port};',
-                'shell': True,
-                'env': True,
-                'wait': True
-            }
-        ]
+        gazebo_uri = types.ShellCmdSpec(
+            cmd=f'export GAZEBO_MASTER_URI=http://localhost:{self.gazebo_port};',
+            shell=True,
+            env=True,
+            wait=True
+        )
 
-        return roscore + gazebo
+        return [roscore_uri, roscore_process, gazebo_uri]
 
     def exec_run_cmds(self,
                       host: str,
-                      input_fpath: str,
+                      input_fpath: pathlib.Path,
                       run_num: int) -> tp.List[types.ShellCmdSpec]:
         if host == 'master':
             return []
@@ -210,18 +206,14 @@ class ExpRunShellCmdsGenerator():
         # 2022/02/28: I don't use the -u argument here to set ROS_MASTER_URI,
         # because ROS works well enough when only running on the localhost, in
         # terms of respecting whatever the envvar is set to.
-        cmd = '{0} --wait {1}{2} {3}{4}; '.format(config.kROS['launch_cmd'],
-                                                  input_fpath + "_master",
-                                                  config.kROS['launch_file_ext'],
-                                                  input_fpath + "_robots",
-                                                  config.kROS['launch_file_ext'])
-        launch = {
-            'cmd': cmd,
-            'shell': True,
-            'check': True,
-        }
+        master = str(input_fpath) + "_master" + config.kROS['launch_file_ext']
+        robots = str(input_fpath) + "_robots" + config.kROS['launch_file_ext']
 
-        return [launch]
+        cmd = '{0} --wait {1} {2}; '.format(config.kROS['launch_cmd'],
+                                            master,
+                                            robots)
+
+        return [types.ShellCmdSpec(cmd=cmd, shell=True, wait=True)]
 
     def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
         return []
@@ -239,7 +231,7 @@ class ExpShellCmdsGenerator():
         return []
 
     def exec_exp_cmds(self,
-                      exec_opts: types.SimpleDict) -> tp.List[types.ShellCmdSpec]:
+                      exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
         return []
 
     def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
@@ -253,42 +245,38 @@ class ExpShellCmdsGenerator():
         #
         # Can't use killall, because that returns non-zero if things
         # are cleaned up nicely.
-        return [{
-                'cmd': 'if pgrep gzserver; then pkill gzserver; fi;',
-                'shell': True,
-                'wait': True
-                },
-                {
-                'cmd': 'if pgrep rosmaster; then pkill rosmaster; fi;',
-                    'shell': True,
-                    'wait': True
-                },
-                {
-                'cmd': 'if pgrep roscore; then pkill roscore; fi;',
-                    'shell': True,
-                    'wait': True
-                },
-                {
-                'cmd': 'if pgrep rosout; then pkill rosout; fi;',
-                    'shell': True,
-                    'wait': True
-                }]
+        return [types.ShellCmdSpec(cmd='if pgrep gzserver; then pkill gzserver; fi;',
+                                   shell=True,
+                                   wait=True),
+                types.ShellCmdSpec(cmd='if pgrep rosmaster; then pkill rosmaster; fi;',
+                                   shell=True,
+                                   wait=True),
+                types.ShellCmdSpec(cmd='if pgrep roscore; then pkill roscore; fi;',
+                                   shell=True,
+                                   wait=True),
+                types.ShellCmdSpec(cmd='if pgrep rosout; then pkill rosout; fi;',
+                                   shell=True,
+                                   wait=True)]
 
 
+@implements.implements(bindings.IExpConfigurer)
 class ExpConfigurer():
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         self.cmdopts = cmdopts
 
-    def for_exp_run(self, exp_input_root: str, run_output_root: str) -> None:
+    def for_exp_run(self,
+                    exp_input_root: pathlib.Path,
+                    run_output_root: pathlib.Path) -> None:
         pass
 
-    def for_exp(self, exp_input_root: str) -> None:
+    def for_exp(self, exp_input_root: pathlib.Path) -> None:
         pass
 
     def cmdfile_paradigm(self) -> str:
         return 'per-exp'
 
 
+@implements.implements(bindings.IExecEnvChecker)
 class ExecEnvChecker(platform.ExecEnvChecker):
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         super().__init__(cmdopts)

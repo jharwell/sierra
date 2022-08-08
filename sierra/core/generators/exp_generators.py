@@ -30,9 +30,9 @@ NOTE:: Generated definitions from batch criteria are not handled here; they are
 """
 
 # Core packages
-import os
 import typing as tp
 import logging
+import pathlib
 
 # 3rd party packages
 
@@ -50,8 +50,8 @@ class BatchExpDefGenerator:
 
     Attributes:
 
-        batch_config_template: Path (relative to current dir or absolute) to the
-                               root template XML configuration file.
+        batch_config_template: Absolute path to the root template XML
+                               configuration file.
 
         batch_input_root: Root directory for all generated XML input files all
                                experiments should be stored (relative to current
@@ -81,16 +81,16 @@ class BatchExpDefGenerator:
                  controller_name: str,
                  scenario_basename: str,
                  cmdopts: types.Cmdopts) -> None:
-        self.batch_config_template = cmdopts['template_input_file']
-        assert os.path.isfile(self.batch_config_template),\
+        self.batch_config_template = pathlib.Path(cmdopts['template_input_file'])
+
+        assert self.batch_config_template.is_file(), \
             "'{0}' is not a valid file".format(self.batch_config_template)
 
-        self.batch_config_leaf, _ = os.path.splitext(
-            os.path.basename(self.batch_config_template))
+        self.exp_template_stem = self.batch_config_template.stem
         self.batch_config_extension = None
 
-        self.batch_input_root = os.path.abspath(cmdopts['batch_input_root'])
-        self.batch_output_root = os.path.abspath(cmdopts['batch_output_root'])
+        self.batch_input_root = pathlib.Path(cmdopts['batch_input_root'])
+        self.batch_output_root = pathlib.Path(cmdopts['batch_output_root'])
 
         self.controller_name = controller_name
         self.scenario_basename = scenario_basename
@@ -122,7 +122,8 @@ class BatchExpDefGenerator:
         defs = []
         for i in range(0, len(mods_for_batch)):
             generator = self._create_exp_generator(i)
-            self.logger.debug("Generating scenario+controller changes from generator '%s' for exp%s",
+            self.logger.debug(("Generating scenario+controller changes from "
+                               "generator '%s' for exp%s"),
                               self.cmdopts['joint_generator'],
                               i)
 
@@ -140,15 +141,15 @@ class BatchExpDefGenerator:
         """
 
         exp_spec = spec.ExperimentSpec(self.criteria, exp_num, self.cmdopts)
-        template_fpath = os.path.join(exp_spec.exp_input_root,
-                                      self.batch_config_leaf)
+        template_fpath = exp_spec.exp_input_root / self.exp_template_stem
+        config_root = pathlib.Path(self.cmdopts['project_config_root'])
         scenario = gf.scenario_generator_create(controller=self.controller_name,
                                                 exp_spec=exp_spec,
                                                 template_input_file=template_fpath,
                                                 cmdopts=self.cmdopts)
 
         controller = gf.controller_generator_create(controller=self.controller_name,
-                                                    config_root=self.cmdopts['project_config_root'],
+                                                    config_root=config_root,
                                                     cmdopts=self.cmdopts,
                                                     exp_spec=exp_spec)
 

@@ -17,7 +17,6 @@
 # Core packages
 import pathlib
 from setuptools import setup, find_packages
-import os
 
 # 3rd party packages
 
@@ -31,7 +30,7 @@ readme = (here / "README.rst").read_text()
 
 # Get version
 ver_ns = {}
-ver_path = os.path.join('sierra', 'version.py')
+ver_path = pathlib.Path('sierra', 'version.py')
 with open(ver_path) as ver_file:
     exec(ver_file.read(), ver_ns)
 
@@ -126,6 +125,7 @@ setup(
             'xmldiff',
             'coverage',
             'coveralls',
+            'mypy-runner',
 
             # Deployment packages
             'build',

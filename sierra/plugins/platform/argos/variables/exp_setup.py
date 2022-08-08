@@ -43,7 +43,7 @@ class ExpSetup():
         duration: The simulation duration in seconds, NOT timesteps.
     """
     @staticmethod
-    def extract_time_params(exp_def: xml.AttrChangeSet) -> types.SimpleDict:
+    def extract_time_params(exp_def: xml.AttrChangeSet) -> types.IntDict:
         """
         Extract and return time parameters for the experiment.
 

@@ -23,6 +23,7 @@ import sys
 from collections.abc import Iterable
 import os
 import multiprocessing as mp
+import pathlib
 
 # 3rd party packages
 
@@ -52,21 +53,23 @@ class SIERRA():
 
         # Check SIERRA runtime environment
         sierra.core.startup.startup_checks(not bootstrap_args.skip_pkg_checks)
-        self.logger.info("Using python=%s.", sys.version)
+        self.logger.info("Using python=%s.", sys.version.replace('\n', ''))
 
-        sierra_root = os.path.dirname(os.path.abspath(__file__))
+        this_file = pathlib.Path(__file__)
+        install_root = pathlib.Path(this_file.parent)
 
         # Load plugins
         self.logger.info("Loading plugins")
         project = bootstrap_args.project
-        plugin_core_path = [os.path.join(sierra_root, 'plugins', 'hpc'),
-                            os.path.join(sierra_root, 'plugins', 'storage'),
-                            os.path.join(sierra_root, 'plugins', 'robots'),
-                            os.path.join(sierra_root, 'plugins', 'platform')]
+        plugin_core_path = [install_root / 'plugins' / 'hpc',
+                            install_root / 'plugins' / 'storage',
+                            install_root / 'plugins' / 'robots',
+                            install_root / 'plugins' / 'platform']
         plugin_search_path = plugin_core_path
         env = os.environ.get('SIERRA_PLUGIN_PATH')
         if env is not None:
-            plugin_search_path += env.split(os.pathsep)
+            for p in env.split(os.pathsep):
+                plugin_search_path.append(pathlib.Path(p))
 
         manager = pm.pipeline
         manager.initialize(project, plugin_search_path)

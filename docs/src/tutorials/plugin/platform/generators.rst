@@ -56,8 +56,8 @@ experiment runs for your platform and per-run changes, respectively.
         """
         def __init__(self,
                      run_num: int,
-                     run_output_path: str,
-                     launch_stem_path: str,
+                     run_output_path: pathlib.Path,
+                     launch_stem_path: pathlib.Path,
                      random_seed: int,
                      cmdopts: types.Cmdopts) -> None:
             pass

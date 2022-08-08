@@ -27,11 +27,13 @@ import typing as tp
 import logging
 import xml.etree.ElementTree as ET
 import sys
+import pathlib
 
 # 3rd party packages
 
 # Project packages
 from sierra.core.experiment import xml
+from sierra.core import types
 
 
 class XMLExpDef:
@@ -48,7 +50,7 @@ class XMLExpDef:
     """
 
     def __init__(self,
-                 input_fpath: str,
+                 input_fpath: pathlib.Path,
                  write_config: tp.Optional[xml.WriterConfig] = None) -> None:
 
         self.write_config = write_config
@@ -73,7 +75,7 @@ class XMLExpDef:
         """
         self.write_config = config
 
-    def write(self, base_opath: str) -> None:
+    def write(self, base_opath: pathlib.Path) -> None:
         """Write the XML stored in the object to the filesystem.
 
         """
@@ -130,7 +132,7 @@ class XMLExpDef:
             return False
 
         el.attrib[attr] = value
-        self.logger.trace("Modify attribute: '%s/%s' = '%s'",
+        self.logger.trace("Modify attribute: '%s/%s' = '%s'",  # type: ignore
                           path,
                           attr,
                           value)
@@ -300,13 +302,14 @@ class XMLExpDef:
     def tag_add(self,
                 path: str,
                 tag: str,
-                attr={},
+                attr: types.StrDict = {},
                 allow_dup: bool = True,
                 noprint: bool = False) -> bool:
         """
         Add tag name as a child element of enclosing parent.
         """
         parent = self.root.find(path)
+
         if parent is None:
             if not noprint:
                 self.logger.warning("Parent node '%s' not found", path)
@@ -339,8 +342,8 @@ class XMLExpDef:
         return True
 
 
-def unpickle(fpath: str) -> tp.Optional[tp.Union[xml.AttrChangeSet,
-                                                 xml.TagAddList]]:
+def unpickle(fpath: pathlib.Path) -> tp.Optional[tp.Union[xml.AttrChangeSet,
+                                                          xml.TagAddList]]:
     """Unickle all XML modifications from the pickle file at the path.
 
     You don't know how many there are, so go until you get an exception.

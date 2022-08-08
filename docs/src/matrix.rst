@@ -4,11 +4,43 @@
 SIERRA Support Matrix
 =====================
 
+SIERRA supports multiple :term:`Platforms <Platform>` which researchers can
+write code to target, as shown below.  If your desired platform is not listed,
+see the :ref:`ln-sierra-tutorials` for how to add it via a plugin.
+
+.. IMPORTANT:: In SIERRA terminology, platform != OS. If a SIERRA platform runs
+               on a given OS, then SIERRA supports doing so; if it does not,
+               then SIERRA does not. For example, SIERRA does not support
+               running ARGoS on windows, because ARGoS does not support windows.
+
+
+.. list-table::
+   :header-rows: 1
+   :widths: 50,50
+
+   * - Platform
+
+     - Description
+
+   * - `ARGoS <https://www.argos-sim.info/index.php>`_
+
+     - Simulator for fast simulation of large swarms. Requires ARGoS >=
+       3.0.0-beta59.
+
+   * - `ROS1 <https://ros.org)+[Gazebo](https://www.gazebosim.org>`_
+
+     - Using ROS1 with the Gazebo simulator. Requires Gazebo >= 11.9.0, ROS1
+       Noetic or later.
+
+   * - `ROS1+Robot <https://ros.org>`_
+
+     - Using ROS1 with a real robot platform of your choice. ROS1 Noetic or
+       later is required.
+
 SIERRA supports multiple HPC environments for execution of experiments in on HPC
 hardware (see :doc:`/src/exec_env/hpc`) and on real robots (see
-:doc:`/src/exec_env/robots`). If your desired platform or execution environment
-is not listed, see the :ref:`ln-sierra-tutorials` for how to add it via a
-plugin.
+:doc:`/src/exec_env/robots`). If your desired execution environment is not
+listed, see the :ref:`ln-sierra-tutorials` for how to add it via a plugin.
 
 .. list-table::
    :header-rows: 1
@@ -20,18 +52,18 @@ plugin.
 
    * - `SLURM <https://slurm.schedmd.com/documentation.html>`_
 
-     - A cluster managed by the SLURM scheduler
+     - An HPC cluster managed by the SLURM scheduler
 
    * - `Torque/MOAB <https://adaptivecomputing.com/cherry-services/torque-resource-manager>`_
 
-     - A cluster managed by the Torque/MOAB scheduler
+     - An HPC cluster managed by the Torque/MOAB scheduler
 
    * - Adhoc
 
-     - Miscellaneous collection of networked compute nodes; not managed by a
-       scheduler
+     - Miscellaneous collection of networked HPC compute nodes or random
+       servers; not managed by a scheduler
 
-   * - Local
+   * - HPC local
 
      - The SIERRA host machine,e.g., a researcher's laptop
 

@@ -16,11 +16,9 @@
 #
 
 # Core packages
-import os
-import glob
-import re
 import typing as tp
 import logging
+import pathlib
 
 # 3rd party packages
 import numpy as np
@@ -29,7 +27,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 # Project packages
-from sierra.core import config, storage
+from sierra.core import config, storage, types
 
 
 class StackedSurfaceGraph:
@@ -48,8 +46,8 @@ class StackedSurfaceGraph:
     kMaxSurfaces = 4
 
     def __init__(self,
-                 input_stem_pattern: str,
-                 output_fpath: str,
+                 ipaths: types.PathList,
+                 output_fpath: pathlib.Path,
                  title: str,
                  legend: tp.List[str],
                  xlabel: str,
@@ -60,7 +58,7 @@ class StackedSurfaceGraph:
                  comp_type: str,
                  large_text: bool = False) -> None:
 
-        self.input_stem_pattern = os.path.abspath(input_stem_pattern)
+        self.ipaths = ipaths
         self.output_fpath = output_fpath
         self.title = title
         self.legend = legend
@@ -80,12 +78,12 @@ class StackedSurfaceGraph:
 
     def generate(self) -> None:
         reader = storage.DataFrameReader('storage.csv')
-        pattern = self.input_stem_pattern + '*.' + config.kStatsExt['mean']
-        dfs = [reader(f) for f in glob.glob(pattern) if re.search('_[0-9]+', f)]
+        dfs = [reader(f) for f in self.ipaths]
 
-        if not dfs:  # empty list
-            self.logger.debug("Not generating stacked surface graph: %s did not match any CSV files",
-                              self.input_stem_pattern)
+        if not dfs or len(dfs) > StackedSurfaceGraph.kMaxSurfaces:
+            self.logger.debug(("Not generating stacked surface graph: wrong # "
+                               "files (must be > 0, <= %s"),
+                              StackedSurfaceGraph.kMaxSurfaces)
             return
 
         assert len(dfs) <= StackedSurfaceGraph.kMaxSurfaces,\
@@ -155,8 +153,8 @@ class StackedSurfaceGraph:
         ax.set_yticklabels(self.ytick_labels, rotation='vertical')
 
     def _plot_legend(self, ax, cmap_handles, handler_map):
-        # Legend should have ~3 entries per column, in order to maximize real estate on tightly
-        # constrained papers.
+        # Legend should have ~3 entries per column, in order to maximize real
+        # estate on tightly constrained papers.
         ax.legend(handles=cmap_handles,
                   handler_map=handler_map,
                   labels=self.legend,
@@ -187,11 +185,12 @@ class StackedSurfaceGraph:
             # The path we are passed may contain dots from the controller same,
             # so we extract the leaf of that for manipulation to add the angle
             # of the view right before the file extension.
-            path, leaf = os.path.split(self.output_fpath)
+            path = self.output_fpath.parent
+            leaf = self.output_fpath.name
             components = leaf.split('.')
             fname = ''.join(leaf[0:-2]) + '_' + \
                 str(angle) + '.' + components[-1]
-            fig.savefig(os.path.join(path, fname),
+            fig.savefig(path / fname,
                         bbox_inches='tight',
                         dpi=config.kGraphDPI,
                         pad_inches=0)

@@ -23,6 +23,7 @@ import os
 import copy
 import typing as tp
 import logging
+import pathlib
 
 # 3rd party packages
 import json
@@ -73,18 +74,18 @@ class BatchIntraExpGraphGenerator:
                                           criteria)
 
         for exp in exp_to_gen:
-            exp = os.path.split(exp)[1]
+            batch_output_root = pathlib.Path(self.cmdopts["batch_output_root"])
+            batch_stat_root = pathlib.Path(self.cmdopts["batch_stat_root"])
+            batch_input_root = pathlib.Path(self.cmdopts["batch_input_root"])
+            batch_graph_root = pathlib.Path(self.cmdopts["batch_graph_root"])
+            batch_model_root = pathlib.Path(self.cmdopts["batch_model_root"])
+
             cmdopts = copy.deepcopy(self.cmdopts)
-            cmdopts["exp_input_root"] = os.path.join(
-                self.cmdopts['batch_input_root'], exp)
-            cmdopts["exp_output_root"] = os.path.join(
-                self.cmdopts['batch_output_root'], exp)
-            cmdopts["exp_graph_root"] = os.path.join(
-                self.cmdopts['batch_graph_root'], exp)
-            cmdopts["exp_model_root"] = os.path.join(
-                cmdopts['batch_model_root'], exp)
-            cmdopts["exp_stat_root"] = os.path.join(
-                cmdopts["batch_stat_root"], exp)
+            cmdopts["exp_input_root"] = str(batch_input_root / exp.name)
+            cmdopts["exp_output_root"] = str(batch_output_root / exp.name)
+            cmdopts["exp_graph_root"] = str(batch_graph_root / exp.name)
+            cmdopts["exp_model_root"] = str(batch_model_root / exp.name)
+            cmdopts["exp_stat_root"] = str(batch_stat_root / exp.name)
 
             if os.path.isdir(cmdopts["exp_stat_root"]):
                 generator = pm.module_load_tiered(project=self.cmdopts['project'],
@@ -226,6 +227,8 @@ class LinegraphsGenerator:
         self.cmdopts = cmdopts
         self.targets = targets
         self.logger = logging.getLogger(__name__)
+        self.graph_root = pathlib.Path(self.cmdopts['exp_graph_root'])
+        self.stats_root = pathlib.Path(self.cmdopts['exp_stat_root'])
 
     def generate(self) -> None:
         self.logger.info("Linegraphs from %s", self.cmdopts['exp_stat_root'])
@@ -234,12 +237,12 @@ class LinegraphsGenerator:
         for category in self.targets:
             # For each graph in each category
             for graph in category['graphs']:
-                output_fpath = os.path.join(self.cmdopts['exp_graph_root'],
-                                            'SLN-' + graph['dest_stem'] + config.kImageExt)
+                output_fpath = self.graph_root / ('SLN-' + graph['dest_stem'] +
+                                                  config.kImageExt)
                 try:
                     self.logger.trace('\n' +  # type: ignore
                                       json.dumps(graph, indent=4))
-                    StackedLineGraph(stats_root=self.cmdopts['exp_stat_root'],
+                    StackedLineGraph(stats_root=self.stats_root,
                                      input_stem=graph['src_stem'],
                                      output_fpath=output_fpath,
                                      stats=self.cmdopts['dist_stats'],
@@ -278,9 +281,9 @@ class HeatmapsGenerator:
                  cmdopts: types.Cmdopts,
                  targets: tp.List[types.YAMLDict]) -> None:
 
-        self.exp_stat_root = cmdopts['exp_stat_root']
-        self.exp_graph_root = cmdopts["exp_graph_root"]
-        self.exp_model_root = cmdopts["exp_model_root"]
+        self.exp_stat_root = pathlib.Path(cmdopts['exp_stat_root'])
+        self.exp_graph_root = pathlib.Path(cmdopts["exp_graph_root"])
+        self.exp_model_root = pathlib.Path(cmdopts["exp_model_root"])
         self.large_text = cmdopts['plot_large_text']
 
         self.targets = targets
@@ -303,10 +306,10 @@ class HeatmapsGenerator:
                                             graph['src_stem'],
                                             graph.get('title', None)).generate()
                 else:
-                    input_fpath = os.path.join(self.exp_stat_root,
-                                               graph['src_stem'] + config.kStatsExt['mean'])
-                    output_fpath = os.path.join(self.exp_graph_root,
-                                                'HM-' + graph['src_stem'] + config.kImageExt)
+                    input_fpath = self.exp_stat_root / (graph['src_stem'] +
+                                                        config.kStatsExt['mean'])
+                    output_fpath = self.exp_graph_root / ('HM-' + graph['src_stem'] +
+                                                          config.kImageExt)
 
                     Heatmap(input_fpath=input_fpath,
                             output_fpath=output_fpath,

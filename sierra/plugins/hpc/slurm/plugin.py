@@ -18,10 +18,11 @@ HPC plugin for running SIERRA on HPC clusters using the SLURM scheduler.
 """
 
 # Core packages
-import os
 import typing as tp
 import argparse
 import shutil
+import pathlib
+import os
 
 # 3rd party packages
 import implements
@@ -29,7 +30,6 @@ import implements
 # Project packages
 from sierra.core import types
 from sierra.core.experiment import bindings
-import sierra.core.variables.batch_criteria as bc
 
 
 @implements.implements(bindings.IParsedCmdlineConfigurer)
@@ -87,9 +87,9 @@ class ExpShellCmdsGenerator():
     def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
         return []
 
-    def exec_exp_cmds(self, exec_opts: types.SimpleDict) -> tp.List[types.ShellCmdSpec]:
+    def exec_exp_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
         jobid = os.environ['SLURM_JOB_ID']
-        nodelist = os.path.join(exec_opts['exp_input_root'],
+        nodelist = pathlib.Path(exec_opts['exp_input_root'],
                                 f"{jobid}-nodelist.txt")
 
         resume = ''
@@ -99,45 +99,44 @@ class ExpShellCmdsGenerator():
         if exec_opts['exec_resume']:
             resume = '--resume-failed'
 
-        unique_nodes = {
-            'cmd': f'scontrol show hostnames $SLURM_JOB_NODELIST > {nodelist}',
-            'shell': True,
-            'wait': True
-        }
+        unique_nodes = types.ShellCmdSpec(
+            cmd=f'scontrol show hostnames $SLURM_JOB_NODELIST > {nodelist}',
+            shell=True,
+            wait=True)
+
         # Make sure GNU parallel uses the right shell, because it seems to
         # defaults to /bin/sh since all cmds are run in a python shell which
         # does not have $SHELL set.
-        use_bash = {
-            'cmd': 'export PARALLEL_SHELL={0}'.format(shutil.which('bash')),
-            'shell': True,
-            'wait': True,
-        }
-        ret = [unique_nodes, use_bash]
+        shell = shutil.which('bash')
+        use_bash = types.ShellCmdSpec(cmd=f'export PARALLEL_SHELL={shell}',
+                                      shell=True,
+                                      wait=True)
 
-        parallel = 'parallel {2} '\
-            '--jobs {1} '\
+        parallel = 'parallel {2} ' \
+            '--jobs {1} ' \
             '--results {4} ' \
-            '--joblog {3} '\
+            '--joblog {3} ' \
             '--sshloginfile {0} ' \
             '--workdir {4} < "{5}"'
+
+        log = pathlib.Path(exec_opts['scratch_dir'], "parallel.log")
         parallel = parallel.format(nodelist,
                                    exec_opts['n_jobs'],
                                    resume,
-                                   os.path.join(exec_opts['scratch_dir'],
-                                                "parallel.log"),
+                                   log,
                                    exec_opts['scratch_dir'],
                                    exec_opts['cmdfile_stem_path'] +
                                    exec_opts['cmdfile_ext'])
-        ret.append({
-            'cmd': parallel,
-            'shell': True,
-            'wait': True
-        })
+        parallel_spec = types.ShellCmdSpec(cmd=parallel,
+                                           shell=True,
+                                           wait=True)
 
-        return ret
+        return [unique_nodes, use_bash, parallel_spec]
 
 
 __api__ = [
     'ParsedCmdlineConfigurer',
     'ExpShellCmdsGenerator'
+
+
 ]

@@ -51,12 +51,7 @@ def exec_env_sanity_checks(module) -> None:
     """
     logging.trace("Verifying --exec-env plugin interface")  # type: ignore
 
-    req_classes = []
     in_module = inspect.getmembers(module, inspect.isclass)
-
-    for c in req_classes:
-        assert (any(c in name for (name, _) in in_module)),\
-            f"Execution environment plugin '{module.__name__}' does not define '{c}'"
 
     opt_classes = ['ParsedCmdlineConfigurer',
                    'ExpRunShellCmdsGenerator',

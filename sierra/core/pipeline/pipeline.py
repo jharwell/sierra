@@ -20,10 +20,10 @@ See :ref:`ln-sierra-usage-pipeline` for high-level documentation.
 """
 
 # Core packages
-import os
 import typing as tp
 import logging
 import argparse
+import pathlib
 
 # 3rd party packages
 import yaml
@@ -130,13 +130,12 @@ class Pipeline:
 
             module.Cmdline.cmdopts_update(self.args, self.cmdopts)
 
-        self.cmdopts['plugin_root'] = os.path.join('sierra', 'plugins')
-
         project = pm.pipeline.get_plugin(self.cmdopts['project'])
-        path = os.path.join(project['parent_dir'], self.cmdopts['project'])
-        self.cmdopts['project_root'] = path
-        self.cmdopts['project_config_root'] = os.path.join(path, 'config')
-        self.cmdopts['project_model_root'] = os.path.join(path, 'models')
+        path = project['parent_dir'] / self.cmdopts['project']
+
+        self.cmdopts['project_root'] = str(path)
+        self.cmdopts['project_config_root'] = str(path / 'config')
+        self.cmdopts['project_model_root'] = str(path / 'models')
 
         self._load_config()
 
@@ -155,7 +154,7 @@ class Pipeline:
         """
         if 1 in self.args.pipeline:
             PipelineStage1(self.cmdopts,
-                           self.controller,
+                           self.controller,  # type: ignore
                            self.batch_criteria).run()
 
         if 2 in self.args.pipeline:
@@ -178,8 +177,8 @@ class Pipeline:
         self.logger.debug("Loading project config from '%s'",
                           self.cmdopts['project_config_root'])
 
-        main_path = os.path.join(self.cmdopts['project_config_root'],
-                                 config.kYAML['main'])
+        main_path = pathlib.Path(self.cmdopts['project_config_root'],
+                                 config.kYAML.main)
         try:
             with utils.utf8open(main_path) as f:
                 self.main_config = yaml.load(f, yaml.FullLoader)
@@ -188,10 +187,10 @@ class Pipeline:
             self.logger.fatal("%s must exist!", main_path)
             raise
 
-        perf_path = os.path.join(self.cmdopts['project_config_root'],
+        perf_path = pathlib.Path(self.cmdopts['project_config_root'],
                                  self.main_config['sierra']['perf'])
         try:
-            perf_config = yaml.load(open(perf_path), yaml.FullLoader)
+            perf_config = yaml.load(utils.utf8open(perf_path), yaml.FullLoader)
 
         except FileNotFoundError:
             self.logger.warning("%s does not exist!", perf_path)

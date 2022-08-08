@@ -18,6 +18,7 @@
 """
 
 # Core packages
+import pathlib
 
 # 3rd party packages
 from retry import retry
@@ -27,9 +28,9 @@ import pandas as pd
 
 
 @retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=1.1)  # type:ignore
-def df_read(path: str, **kwargs) -> pd.DataFrame:
+def df_read(path: pathlib.Path, **kwargs) -> pd.DataFrame:
     """
-    Read a dataframe to a CSV file using pandas.
+    Read a dataframe from a CSV file using pandas.
     """
     # Always specify the datatype so pandas does not have to infer it--much
     # faster.
@@ -37,7 +38,7 @@ def df_read(path: str, **kwargs) -> pd.DataFrame:
 
 
 @retry(pd.errors.ParserError, tries=10, delay=0.100, backoff=1.1)  # type:ignore
-def df_write(df: pd.DataFrame, path: str, **kwargs) -> None:
+def df_write(df: pd.DataFrame, path: pathlib.Path, **kwargs) -> None:
     """
     Write a dataframe to a CSV file using pandas.
     """

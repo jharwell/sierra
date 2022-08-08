@@ -24,6 +24,8 @@ import time
 import sys
 import datetime
 import logging
+import pathlib
+import typing as tp
 
 # 3rd party packages
 
@@ -48,50 +50,49 @@ class ExpShell():
     def __init__(self, exec_strict: bool) -> None:
         self.env = os.environ.copy()
         self.logger = logging.getLogger(__name__)
-        self.procs = []
+        self.procs = []  # type: tp.List[subprocess.Popen]
         self.exec_strict = exec_strict
 
     def run_from_spec(self, spec: types.ShellCmdSpec) -> bool:
-        self.logger.trace("Cmd: %s", spec['cmd'])   # type: ignore
+        self.logger.trace("Cmd: %s", spec.cmd)   # type: ignore
 
         # We use a special marker at the end of the cmd's output to know when
         # the environment dump starts.
-        cmd = spec['cmd']
-        if 'env' in spec and spec['env']:
-            cmd += ' && echo ~~~~ENV_START~~~~ && env'
+        if spec.env:
+            spec.cmd += ' && echo ~~~~ENV_START~~~~ && env'
 
-        proc = subprocess.Popen(cmd,
-                                shell=spec['shell'],
+        proc = subprocess.Popen(spec.cmd,
+                                shell=spec.shell,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
                                 env=self.env)
 
-        if not spec['wait']:
+        if not spec.wait:
             self.procs.append(proc)
             return True
 
         # We use communicate(), not wait() to avoid issues with IO buffers
         # becoming full (i.e., you get deadlocks with wait() regularly).
-        stdout, stderr = proc.communicate()
+        stdout_raw, stderr_raw = proc.communicate()
 
         # Update the environment for all commands
-        if 'env' in spec and spec['env']:
-            self._update_env(stdout)
+        if spec.env:
+            self._update_env(stdout_raw)
 
         # Only show output if the process failed (i.e., did not return 0)
         if proc.returncode != 0:
-            self.logger.error("Cmd '%s' failed!", spec['cmd'])
-            stdout = stdout.decode("ascii")
-            stderr = stderr.decode("ascii")
+            self.logger.error("Cmd '%s' failed!", spec.cmd)
+            stdout_str = stdout_raw.decode("ascii")
+            stderr_str = stderr_raw.decode("ascii")
 
-            if 'env' in spec and spec['env']:
-                stdout = stdout.split("~~~~ENV_START~~~~", maxsplit=1)[0]
-                stderr = stderr.split("~~~~ENV_START~~~~", maxsplit=1)[0]
+            if spec.env:
+                stdout_str = stdout_str.split("~~~~ENV_START~~~~", maxsplit=1)[0]
+                stderr_str = stderr_str.split("~~~~ENV_START~~~~", maxsplit=1)[0]
 
             self.logger.error("Cmd stdout (last 10 lines): %s",
-                              '\n + ''\n'.join(stdout.split('\n')[-10:]))
+                              '\n + ''\n'.join(stdout_str.split('\n')[-10:]))
             self.logger.error("Cmd stderr (last 10 lines): %s",
-                              '\n' + '\n'.join(stderr.split('\n')[-10:]))
+                              '\n' + '\n'.join(stderr_str.split('\n')[-10:]))
 
             if self.exec_strict:
                 raise RuntimeError(("Command failed and strict checking was "
@@ -153,11 +154,10 @@ class BatchExpRunner:
         self.cmdopts = cmdopts
         self.criteria = criteria
 
-        self.batch_exp_root = os.path.abspath(self.cmdopts['batch_input_root'])
-        self.batch_stat_root = os.path.abspath(self.cmdopts['batch_stat_root'])
-        self.batch_stat_exec_root = os.path.join(self.batch_stat_root, 'exec')
-        self.batch_scratch_root = os.path.abspath(
-            self.cmdopts['batch_scratch_root'])
+        self.batch_exp_root = pathlib.Path(self.cmdopts['batch_input_root'])
+        self.batch_stat_root = pathlib.Path(self.cmdopts['batch_stat_root'])
+        self.batch_stat_exec_root = pathlib.Path(self.batch_stat_root / 'exec')
+        self.batch_scratch_root = pathlib.Path(self.cmdopts['batch_scratch_root'])
         self.exec_exp_range = self.cmdopts['exp_range']
 
         self.logger = logging.getLogger(__name__)
@@ -180,8 +180,8 @@ class BatchExpRunner:
         if hasattr(module, 'pre_exp_diagnostics'):
             module.pre_exp_diagnostics(self.cmdopts, self.logger)
 
-        exp_all = [os.path.join(self.batch_exp_root, d)
-                   for d in self.criteria.gen_exp_dirnames(self.cmdopts)]
+        exp_all = [self.batch_exp_root / d
+                   for d in self.criteria.gen_exp_names(self.cmdopts)]
 
         exp_to_run = utils.exp_range_calc(self.cmdopts,
                                           self.batch_exp_root,
@@ -196,8 +196,7 @@ class BatchExpRunner:
 
         # Calculate path for to file for logging execution times
         now = datetime.datetime.now()
-        exec_times_fpath = os.path.join(self.batch_stat_exec_root,
-                                        now.strftime("%Y-%m-%e-%H:%M"))
+        exec_times_fpath = self.batch_stat_exec_root / now.strftime("%Y-%m-%e-%H:%M")
 
         # Start a new process for the experiment shell so pre-run commands have
         # an effect (if they set environment variables, etc.).
@@ -237,7 +236,7 @@ class ExpRunner:
 
     def __init__(self,
                  cmdopts: types.Cmdopts,
-                 exec_times_fpath: str,
+                 exec_times_fpath: pathlib.Path,
                  generator: platform.ExpShellCmdsGenerator,
                  shell: ExpShell) -> None:
 
@@ -248,7 +247,7 @@ class ExpRunner:
         self.logger = logging.getLogger(__name__)
 
     def __call__(self,
-                 exp_input_root: str,
+                 exp_input_root: pathlib.Path,
                  exp_num: int) -> None:
         """Execute experimental runs for a single experiment.
         """
@@ -258,23 +257,20 @@ class ExpRunner:
                          exp_input_root)
         sys.stdout.flush()
 
-        wd = os.path.relpath(exp_input_root, os.path.expanduser("~"))
+        wd = exp_input_root.relative_to(pathlib.Path().home())
         start = time.time()
-        _, exp = os.path.split(exp_input_root)
 
-        scratch_root = os.path.join(self.cmdopts['batch_scratch_root'],
-                                    exp)
+        scratch_root = self.cmdopts['batch_scratch_root'] / exp_input_root.name
         utils.dir_create_checked(scratch_root, exist_ok=True)
 
         assert self.cmdopts['exec_jobs_per_node'] is not None, \
             "# parallel jobs can't be None"
 
         exec_opts = {
-            'exp_input_root': exp_input_root,
-            'work_dir': wd,
-            'scratch_dir': scratch_root,
-            'cmdfile_stem_path': os.path.join(exp_input_root,
-                                              config.kGNUParallel['cmdfile_stem']),
+            'exp_input_root': str(exp_input_root),
+            'work_dir': str(wd),
+            'scratch_dir': str(scratch_root),
+            'cmdfile_stem_path': str(exp_input_root / config.kGNUParallel['cmdfile_stem']),
             'cmdfile_ext': config.kGNUParallel['cmdfile_ext'],
             'exec_resume': self.cmdopts['exec_resume'],
             'n_jobs': self.cmdopts['exec_jobs_per_node'],
@@ -297,4 +293,6 @@ __api__ = [
     'BatchExpRunner',
     'ExpRunner',
     'ExpShell'
+
+
 ]

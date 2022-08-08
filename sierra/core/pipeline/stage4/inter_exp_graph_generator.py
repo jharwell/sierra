@@ -20,10 +20,10 @@ Classes for generating graphs across experiments in a batch.
 """
 
 # Core packages
-import os
 import copy
 import typing as tp
 import logging
+import pathlib
 
 # 3rd party packages
 import json
@@ -111,6 +111,8 @@ class LineGraphsGenerator:
     def generate(self, criteria: bc.IConcreteBatchCriteria) -> None:
         self.logger.info("LineGraphs from %s",
                          self.cmdopts['batch_stat_collate_root'])
+        graph_root = pathlib.Path(self.cmdopts['batch_graph_collate_root'])
+
         # For each category of linegraphs we are generating
         for category in self.targets:
             # For each graph in each category
@@ -118,10 +120,13 @@ class LineGraphsGenerator:
                 self.logger.trace('\n' +  # type: ignore
                                   json.dumps(graph, indent=4))
                 if graph.get('summary', False):
+                    summary_opath = graph_root / ('SM-' +
+                                                  graph['dest_stem'] +
+                                                  sierra.core.config.kImageExt)
+
                     SummaryLineGraph(stats_root=self.cmdopts['batch_stat_collate_root'],
                                      input_stem=graph['dest_stem'],
-                                     output_fpath=os.path.join(self.cmdopts['batch_graph_collate_root'],
-                                                               'SM-' + graph['dest_stem'] + sierra.core.config.kImageExt),
+                                     output_fpath=summary_opath,
                                      stats=self.cmdopts['dist_stats'],
                                      model_root=self.cmdopts['batch_model_root'],
                                      title=graph['title'],
@@ -133,11 +138,12 @@ class LineGraphsGenerator:
                                      logyscale=self.cmdopts['plot_log_yscale'],
                                      large_text=self.cmdopts['plot_large_text']).generate()
                 else:
+                    stacked_opath = graph_root / ('SLN-' + graph['dest_stem'] +
+                                                  sierra.core.config.kImageExt)
+
                     StackedLineGraph(stats_root=self.cmdopts['batch_stat_collate_root'],
                                      input_stem=graph['dest_stem'],
-                                     output_fpath=os.path.join(self.cmdopts['batch_graph_collate_root'],
-                                                               'SLN-' + graph['dest_stem'] +
-                                                               sierra.core.config.kImageExt),
+                                     output_fpath=stacked_opath,
                                      stats=self.cmdopts['dist_stats'],
                                      dashstyles=graph.get('dashes', None),
                                      linestyles=graph.get('lines', None),

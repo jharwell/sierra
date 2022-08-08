@@ -18,10 +18,10 @@
 
 """
 # Core packages
-import os
 import copy
 import typing as tp
 import logging
+import pathlib
 
 # 3rd party packages
 
@@ -49,34 +49,32 @@ class IntraExpModelRunner:
         exp_to_run = utils.exp_range_calc(self.cmdopts,
                                           self.cmdopts['batch_output_root'],
                                           criteria)
-        exp_dirnames = criteria.gen_exp_dirnames(self.cmdopts)
+        exp_dirnames = criteria.gen_exp_names(self.cmdopts)
 
         for exp in exp_to_run:
             self._run_models_in_exp(criteria, exp_dirnames, exp)
 
     def _run_models_in_exp(self,
                            criteria: bc.IConcreteBatchCriteria,
-                           exp_dirnames: tp.List[str],
-                           exp: str) -> None:
-        exp = os.path.split(exp)[1]
+                           exp_dirnames: tp.List[pathlib.Path],
+                           exp: pathlib.Path) -> None:
         exp_index = exp_dirnames.index(exp)
 
         cmdopts = copy.deepcopy(self.cmdopts)
-        cmdopts["exp0_output_root"] = os.path.join(self.cmdopts["batch_output_root"],
-                                                   exp_dirnames[0])
-        cmdopts["exp0_stat_root"] = os.path.join(self.cmdopts["batch_stat_root"],
-                                                 exp_dirnames[0])
+        batch_output_root = pathlib.Path(self.cmdopts["batch_output_root"])
+        batch_stat_root = pathlib.Path(self.cmdopts["batch_stat_root"])
+        batch_input_root = pathlib.Path(self.cmdopts["batch_input_root"])
+        batch_graph_root = pathlib.Path(self.cmdopts["batch_graph_root"])
+        batch_model_root = pathlib.Path(self.cmdopts["batch_model_root"])
 
-        cmdopts["exp_input_root"] = os.path.join(
-            self.cmdopts['batch_input_root'], exp)
-        cmdopts["exp_output_root"] = os.path.join(
-            self.cmdopts['batch_output_root'], exp)
-        cmdopts["exp_graph_root"] = os.path.join(
-            self.cmdopts['batch_graph_root'], exp)
-        cmdopts["exp_stat_root"] = os.path.join(
-            self.cmdopts["batch_stat_root"], exp)
-        cmdopts["exp_model_root"] = os.path.join(
-            cmdopts['batch_model_root'], exp)
+        cmdopts["exp0_output_root"] = str(batch_output_root / exp_dirnames[0].name)
+        cmdopts["exp0_stat_root"] = str(batch_stat_root / exp_dirnames[0].name)
+
+        cmdopts["exp_input_root"] = str(batch_input_root / exp.name)
+        cmdopts["exp_output_root"] = str(batch_output_root / exp.name)
+        cmdopts["exp_graph_root"] = str(batch_graph_root / exp.name)
+        cmdopts["exp_stat_root"] = str(batch_stat_root / exp.name)
+        cmdopts["exp_model_root"] = str(batch_model_root / exp.name)
 
         utils.dir_create_checked(cmdopts['exp_model_root'], exist_ok=True)
 
@@ -103,11 +101,10 @@ class IntraExpModelRunner:
         writer = storage.DataFrameWriter('storage.csv')
 
         for df, csv_stem in zip(dfs, model.target_csv_stems()):
-            path_stem = os.path.join(cmdopts['exp_model_root'],
-                                     csv_stem)
+            path_stem = pathlib.Path(cmdopts['exp_model_root']) / csv_stem
 
             # Write model legend file so the generated graph can find it
-            with utils.utf8open(path_stem + config.kModelsExt['legend'],
+            with utils.utf8open(path_stem.with_suffix(config.kModelsExt['legend']),
                                 'w') as f:
                 for j, search in enumerate(dfs):
                     if search.values.all() == df.values.all():
@@ -117,7 +114,7 @@ class IntraExpModelRunner:
 
             # Write model .csv file
             writer(df,
-                   path_stem + config.kModelsExt['model'],
+                   path_stem.with_suffix(config.kModelsExt['model']),
                    index=False)
 
 
@@ -156,16 +153,20 @@ class InterExpModelRunner:
             dfs = model.run(criteria, cmdopts)
 
             for df, csv_stem in zip(dfs, model.target_csv_stems()):
-                path_stem = os.path.join(cmdopts['batch_model_root'], csv_stem)
+                path_stem = pathlib.Path(cmdopts['batch_model_root']) / csv_stem
 
                 # Write model .csv file
                 writer = storage.DataFrameWriter('storage.csv')
-                writer(df, path_stem + config.kModelsExt['model'], index=False)
+                writer(df,
+                       path_stem.with_suffix(config.kModelsExt['model']),
+                       index=False)
 
                 # 1D dataframe -> line graph with legend
                 if len(df.index) == 1:
+                    legend_path = path_stem.with_suffix(config.kModelsExt['legend'])
+
                     # Write model legend file so the generated graph can find it
-                    with utils.utf8open(path_stem + config.kModelsExt['legend'], 'w') as f:
+                    with utils.utf8open(legend_path, 'w') as f:
                         for i, search in enumerate(dfs):
                             if search.values.all() == df.values.all():
                                 legend = model.legend_names()[i]
