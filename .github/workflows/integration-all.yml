@@ -1,10 +1,7 @@
-name: Plugins CI
+name: Integration Tests
 
 on:
   push:
-    branches:
-      # - master
-      # - devel
     paths:
       - 'sierra/**'
 
@@ -21,8 +18,26 @@ jobs:
     with:
       os: macos-12
 
+  sierra-core-ci-ubuntu:
+    uses: ./.github/workflows/sierra-core.yml
+    secrets: inherit
+    with:
+      os: ubuntu-20.04
+
+  sierra-core-ci-osx:
+    uses: ./.github/workflows/sierra-core.yml
+    secrets: inherit
+    with:
+      os: macos-12
+
   ros1gazebo-ci-ubuntu:
     uses: ./.github/workflows/ros1gazebo.yml
+    secrets: inherit
+    with:
+      os: ubuntu-20.04
+
+  ros1robot-ci-ubuntu:
+    uses: ./.github/workflows/ros1robot.yml
     secrets: inherit
     with:
       os: ubuntu-20.04
@@ -35,13 +50,23 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - 3.9
     needs:
       - argos-ci-ubuntu
       - argos-ci-osx
+      - sierra-core-ci-ubuntu
+      - sierra-core-ci-osx
       - ros1gazebo-ci-ubuntu
+      - ros1robot-ci-ubuntu
       - exec-env-ci-ubuntu
 
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/sierra-setup
       - uses: ./.github/actions/publish
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          pypi-token: ${{ secrets.PYPI_API_TOKEN }}
+          testpypi-token: ${{ secrets.TEST_PYPI_API_TOKEN }}

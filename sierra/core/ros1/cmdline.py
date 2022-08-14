@@ -36,8 +36,7 @@ class ROSCmdline(cmd.BaseCmdline):
 
     def __init__(self,
                  stages: tp.List[int]) -> None:
-        self.parser = argparse.ArgumentParser(prog='sierra-cli',
-                                              add_help=False,
+        self.parser = argparse.ArgumentParser(add_help=False,
                                               allow_abbrev=False)
         self.scaffold_cli()
         self.init_cli(stages)

@@ -107,26 +107,16 @@ class BatchExpDefGenerator:
             batch).
 
         """
-        chgs = self.criteria.gen_attr_changelist()
-        adds = self.criteria.gen_tag_addlist()
-
-        assert len(chgs) == 0 or len(adds) == 0,\
-            "Batch criteria cannot add AND change XML tags"
-
-        if len(chgs) != 0:
-            mods_for_batch = chgs
-        else:
-            mods_for_batch = adds
+        scaffold_spec = spec.scaffold_spec_factory(self.criteria)
 
         # Create and run generators
         defs = []
-        for i in range(0, len(mods_for_batch)):
+        for i in range(0, scaffold_spec.n_exps):
             generator = self._create_exp_generator(i)
             self.logger.debug(("Generating scenario+controller changes from "
                                "generator '%s' for exp%s"),
                               self.cmdopts['joint_generator'],
                               i)
-
             defs.append(generator.generate())
 
         return defs

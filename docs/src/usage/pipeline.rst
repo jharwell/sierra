@@ -92,7 +92,7 @@ generate data, and plot it on the same figure as empirical results,
 automatically. See :ref:`ln-sierra-tutorials-project-models` for details.
 
 For some examples, see the "Generating Deliverables" section of
-:xref:`2022-aamas-demo`. See :ref:`ln-sierra-usage-vc` for details about
+:xref:`2022-aamas-demo`. See :ref:`ln-sierra-usage-rendering` for details about
 rendering capabilities.
 
 Part of default pipeline.

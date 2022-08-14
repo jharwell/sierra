@@ -441,10 +441,10 @@ class ExecEnvChecker():
                                  shell=True)
             return res
         else:
-            assert False, \
-                "Bad --exec-env '{0}' for platform '{1}': cannot find '{2}'".format(self.exec_env,
-                                                                                    self.platform,
-                                                                                    name)
+            error = "Bad --exec-env '{0}' for platform '{1}': cannot find '{2}'".format(self.exec_env,
+                                                                                        self.platform,
+                                                                                        name)
+            raise RuntimeError(error)
 
 
 def get_executable_shellname(base: str) -> str:
@@ -486,9 +486,9 @@ def get_local_ip():
     active = list(filter('lo'.__ne__, active))
 
     if len(active) > 1:
-        logging.warning(("SIERRA host machine has > 1 non-loopback IP addresses"
-                         "/network interfaces--SIERRA may select the wrong "
-                         "one: %s"), active)
+        logging.critical(("SIERRA host machine has > 1 non-loopback IP addresses"
+                          "/network interfaces--SIERRA may select the wrong "
+                          "one: %s"), active)
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(("8.8.8.8", 80))
     return s.getsockname()[0]

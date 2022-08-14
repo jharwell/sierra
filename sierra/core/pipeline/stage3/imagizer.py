@@ -16,7 +16,7 @@
 
 """Classes for creating image files from ``.mean`` files for experiments.
 
-See :ref:`ln-sierra-usage-vc` for usage documentation.
+See :ref:`ln-sierra-usage-rendering` for usage documentation.
 
 """
 
@@ -27,6 +27,7 @@ import logging
 import pathlib
 
 # 3rd party packages
+import psutil
 
 # Project packages
 from sierra.core.graphs.heatmap import Heatmap
@@ -68,7 +69,7 @@ class BatchExpParallelImagizer:
         if self.cmdopts['processing_serial']:
             parallelism = 1
         else:
-            parallelism = mp.cpu_count()
+            parallelism = psutil.cpu_count()
 
         for _ in range(0, parallelism):
             p = mp.Process(target=BatchExpParallelImagizer._thread_worker,
@@ -109,8 +110,8 @@ class ExpImagizer:
     """Create images from the averaged ``.mean`` files from an experiment.
 
     If no ``.mean`` files suitable for averaging are found, nothing is done. See
-    :ref:`ln-sierra-usage-vc` for per-platform descriptions of what "suitable"
-    means.
+    :ref:`ln-sierra-usage-rendering` for per-platform descriptions of what
+    "suitable" means.
 
     Arguments:
 
@@ -140,7 +141,7 @@ class ExpImagizer:
                         match = graph
 
             if match is not None:
-                ipath = csv.with_suffix(config.kStatsExt['mean'])
+                ipath = csv.with_suffix(config.kStats['mean'].exts['mean'])
                 opath = imagize_opts['output_root'] / (csv.name + config.kImageExt)
                 Heatmap(input_fpath=ipath,
                         output_fpath=opath,

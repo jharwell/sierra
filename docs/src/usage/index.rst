@@ -24,5 +24,5 @@ get the most out of SIERRA.
    :maxdepth: 1
    :caption: Advanced Usage
 
-   visual_capture.rst
+   rendering.rst
    stage5.rst

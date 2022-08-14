@@ -342,16 +342,15 @@ def get_n_robots(main_config: types.YAMLDict,
 
     # Get # robots to send to shell cmds generator. We try:
     #
-    # 1. Getting it from the current experiment definition, which contains
-    #    all changes to the template input file EXCEPT those from batch
-    #    criteria, which have already been written pickled at this point.
+    # 1. Getting it from the current experiment definition, which contains all
+    #    changes to the template input file EXCEPT those from batch criteria,
+    #    which have already been written and pickled at this point.
     #
     # 2. Getting it from the pickled experiment definition (i.e., from the
     #    batch criteria which was used for this experiment).
     n_robots = module.population_size_from_def(exp_def,
                                                main_config,
                                                cmdopts)
-
     if n_robots <= 0:
         pkl_def = definition.unpickle(exp_input_root / config.kPickleLeaf)
         n_robots = module.population_size_from_pickle(pkl_def,

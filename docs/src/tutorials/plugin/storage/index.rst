@@ -17,7 +17,7 @@ Create the Code
    .. tabs::
 
       .. tab::  ``plugin.py``
-.
+
          .. include:: plugin.rst
 
 Connect to SIERRA

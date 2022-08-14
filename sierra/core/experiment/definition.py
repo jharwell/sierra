@@ -132,7 +132,7 @@ class XMLExpDef:
             return False
 
         el.attrib[attr] = value
-        self.logger.trace("Modify attribute: '%s/%s' = '%s'",  # type: ignore
+        self.logger.trace("Modify attr: '%s/%s' = '%s'",  # type: ignore
                           path,
                           attr,
                           value)

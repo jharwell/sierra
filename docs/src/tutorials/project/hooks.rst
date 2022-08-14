@@ -34,7 +34,7 @@ Criteria` in your project:
 
 - :class:`~sierra.core.variables.batch_criteria.BivarBatchCriteria`
 
-To do this, do following:
+To do this, do the following:
 
 #. Create ``variables/batch_criteria.py`` in the root directory for your
    project.
@@ -93,9 +93,10 @@ follows:
    .. code-block:: python
 
       import sierra.core.pipeline.stage4.yaml_config_loader as ycl
+      from sierra.core import types
 
       class YAMLConfigLoader(ycl.YAMLConfigLoader):
-          def __call__(self, cmdopts: types.Cmdopts) -> tp.Dict[str, tp.Dict[str, str]]:
+          def __call__(self, cmdopts: types.Cmdopts) -> tp.Dict[str, types.YAMLDict]:
               ...
 
 Intra-Experiment Graph Generation
@@ -125,7 +126,7 @@ Inter-Experiment Graph Generation
 You way want to extend the set of graphs which is generated across each each experiment
 in the batch (e.g., to create graphs of summary performance measures). To do so:
 
-#. Create ``pipeline/stage4/Inter_exp_graph_generator.py``.
+#. Create ``pipeline/stage4/inter_exp_graph_generator.py``.
 
 #. Override the
    :class:`sierra.core.pipeline.stage4.inter_exp_graph_generator.InterExpGraphGenerator`

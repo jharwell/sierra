@@ -168,10 +168,10 @@ class UnivarInterScenarioComparator:
                               self.cli_args,
                               self.scenarios[0])
 
-        self._gen_csv(cmdopts=cmdopts,
-                      batch_leaf=batch_leaf,
-                      src_stem=graph['src_stem'],
-                      dest_stem=graph['dest_stem'])
+        self._gen_csvs(cmdopts=cmdopts,
+                       batch_leaf=batch_leaf,
+                       src_stem=graph['src_stem'],
+                       dest_stem=graph['dest_stem'])
 
         self._gen_graph(criteria=criteria,
                         cmdopts=cmdopts,
@@ -220,20 +220,20 @@ class UnivarInterScenarioComparator:
                          large_text=cmdopts['plot_large_text'],
                          legend=legend).generate()
 
-    def _gen_csv(self,
-                 cmdopts: types.Cmdopts,
-                 batch_leaf: str,
-                 src_stem: str,
-                 dest_stem: str) -> None:
-        """Generate a set of .csv files for use in inter-scenario graph generation.
+    def _gen_csvs(self,
+                  cmdopts: types.Cmdopts,
+                  batch_leaf: str,
+                  src_stem: str,
+                  dest_stem: str) -> None:
+        """Generate a set of CSV files for use in inter-scenario graph generation.
 
         Generates:
 
-        - CSV file containing results for each scenario the controller is
-          being compared across, 1 per line.
+        - ``.mean`` CSV file containing results for each scenario the controller
+           is being compared across, 1 per line.
 
-        - ``.stddev`` file containing stddev for the generated CSV file, 1
-          per line.
+        - Stastics CSV files containing various statistics for the ``.mean`` CSV
+          file, 1 per line.
 
         - ``.model`` file containing model predictions for controller behavior
           during each scenario, 1 per line (not generated if models were not run
@@ -245,12 +245,19 @@ class UnivarInterScenarioComparator:
 
         """
 
-        csv_ipath = pathlib.Path(cmdopts['batch_output_root'],
-                                 cmdopts['batch_stat_collate_root'],
-                                 src_stem + config.kStatsExt['mean'])
-        stddev_ipath = pathlib.Path(cmdopts['batch_output_root'],
-                                    cmdopts['batch_stat_collate_root'],
-                                    src_stem + config.kStatsExt['stddev'])
+        csv_ipath_stem = pathlib.Path(cmdopts['batch_output_root'],
+                                      cmdopts['batch_stat_collate_root'],
+                                      src_stem)
+
+        # Some experiments might not generate the necessary performance measure
+        # CSVs for graph generation, which is OK.
+        csv_ipath_mean = csv_ipath_stem.with_suffix(
+            config.kStats['mean'].exts['mean'])
+        if not utils.path_exists(csv_ipath_mean):
+            self.logger.warning("%s missing for controller %s",
+                                csv_ipath_mean,
+                                self.controller)
+            return
 
         model_ipath_stem = pathlib.Path(cmdopts['batch_model_root'], src_stem)
         model_opath_stem = pathlib.Path(self.sc_model_root,
@@ -260,29 +267,20 @@ class UnivarInterScenarioComparator:
                                   dest_stem + "-" + self.controller)
         writer = storage.DataFrameWriter('storage.csv')
 
-        # Some experiments might not generate the necessary performance measure
-        # .csvs for graph generation, which is OK.
-        if not utils.path_exists(csv_ipath):
-            self.logger.warning("%s missing for controller %s",
-                                csv_ipath, self.controller)
-            return
-
         # Collect performance measure results. Append to existing dataframe if
         # it exists, otherwise start a new one.
-        csv_opath = opath_stem.with_suffix(config.kStatsExt['mean'])
-        data_df = self._accum_df(csv_ipath, csv_opath, src_stem)
+        exts = config.kStats['mean'].exts
+        exts.update(config.kStats['conf95'].exts)
+        exts.update(config.kStats['bw'].exts)
 
-        writer(data_df,
-               opath_stem.with_suffix(config.kStatsExt['mean']),
-               index=False)
-
-        # Collect performance results stddev. Append to existing dataframe if it
-        # exists, otherwise start a new one.
-        stddev_opath = opath_stem.with_suffix(config.kStatsExt['stddev'])
-        stddev_df = self._accum_df(stddev_ipath, stddev_opath, src_stem)
-
-        if stddev_df is not None:
-            writer(stddev_df, stddev_opath, index=False)
+        for k in exts:
+            # Can't use with_suffix() for opath, because that path contains the
+            # controller, which already has a '.' in it.
+            csv_opath = opath_stem.with_name(opath_stem.name + exts[k])
+            csv_ipath = csv_ipath_stem.with_suffix(exts[k])
+            df = self._accum_df(csv_ipath, csv_opath, src_stem)
+            if df is not None:
+                writer(df, csv_opath, index=False)
 
         # Collect performance results models and legends. Append to existing
         # dataframes if they exist, otherwise start new ones.
@@ -306,6 +304,7 @@ class UnivarInterScenarioComparator:
                   opath: pathlib.Path,
                   src_stem: str) -> pd.DataFrame:
         reader = storage.DataFrameReader('storage.csv')
+
         if utils.path_exists(opath):
             cum_df = reader(opath)
         else:

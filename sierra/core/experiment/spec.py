@@ -27,6 +27,94 @@ from sierra.core.utils import ArenaExtent
 from sierra.core.vector import Vector3D
 import sierra.core.plugin_manager as pm
 from sierra.core import types, config
+from sierra.core.experiment import xml
+
+
+class SimpleBatchScaffoldSpec():
+    def __init__(self,
+                 criteria: bc.BatchCriteria,
+                 log: bool = False) -> None:
+        self.criteria = criteria
+        self.chgs = criteria.gen_attr_changelist()
+        self.adds = criteria.gen_tag_addlist()
+        self.rms = criteria.gen_tag_rmlist()
+        self.logger = logging.getLogger(__name__)
+
+        self.n_exps = 0
+
+        self.mods = []
+        self.is_compound = False
+
+        assert len(self.rms) == 0,\
+            "Batch criteria cannot remove XML tags"
+
+        if self.chgs:
+            self.mods = self.chgs
+            self.n_exps = len(self.chgs)
+            if log:
+                self.logger.info(("Calculating scaffold: cli='%s': Modify %s "
+                                  "XML tags per experiment"),
+                                 self.criteria.cli_arg,
+                                 len(self.chgs[0]))
+        elif self.adds:
+            self.mods = self.adds
+            self.n_exps = len(self.adds)
+            if log:
+                self.logger.info(("Calculating scaffold: cli='%s': Add %s XML "
+                                  "tags per experiment"),
+                                 self.criteria.cli_arg,
+                                 len(self.adds[0]))
+        else:
+            raise RuntimeError(("This spec can't be used with compound "
+                                "scaffolding"))
+
+    def __iter__(self) -> tp.Iterator[tp.Union[xml.AttrChangeSet,
+                                               xml.TagAddList]]:
+        return iter(self.mods)
+
+    def __len__(self) -> int:
+        return self.n_exps
+
+
+class CompoundBatchScaffoldSpec():
+    def __init__(self,
+                 criteria: bc.BatchCriteria,
+                 log: bool = False) -> None:
+        self.criteria = criteria
+        self.chgs = criteria.gen_attr_changelist()
+        self.adds = criteria.gen_tag_addlist()
+        self.rms = criteria.gen_tag_rmlist()
+        self.logger = logging.getLogger(__name__)
+
+        self.n_exps = 0
+
+        self.is_compound = True
+        self.mods = []
+
+        assert len(self.rms) == 0,\
+            "Batch criteria cannot remove XML tags"
+
+        if self.chgs and self.adds:
+            for addlist in self.adds:
+                for chgset in self.chgs:
+                    t = addlist, chgset
+                    self.mods.append(t)
+                    self.n_exps += 1
+
+            if log:
+                self.logger.info(("Calculating scaffold: cli='%s': Add  "
+                                  "%s XML tags AND modify %s XML tags per "
+                                  "per experiment"),
+                                 self.criteria.cli_arg,
+                                 len(self.adds[0]),
+                                 len(self.chgs[0]))
+
+        else:
+            raise RuntimeError(("This spec can only be used with compound "
+                                "scaffolding"))
+
+    def __len__(self) -> int:
+        return self.n_exps
 
 
 class ExperimentSpec():
@@ -97,6 +185,22 @@ class ExperimentSpec():
                               self.arena_dim)
 
             self.scenario_name = cmdopts['scenario']
+
+
+def scaffold_spec_factory(criteria: bc.BatchCriteria,
+                          **kwargs) -> tp.Union[SimpleBatchScaffoldSpec,
+                                                CompoundBatchScaffoldSpec]:
+    chgs = criteria.gen_attr_changelist()
+    adds = criteria.gen_tag_addlist()
+
+    if chgs and adds:
+        logging.debug("Create compound batch experiment scaffolding for '%s'",
+                      criteria.cli_arg)
+        return CompoundBatchScaffoldSpec(criteria, **kwargs)
+    else:
+        logging.debug("Create simple batch experiment scaffolding for '%s'",
+                      criteria.cli_arg)
+        return SimpleBatchScaffoldSpec(criteria, **kwargs)
 
 
 __api__ = ['ExperimentSpec']

@@ -334,6 +334,7 @@ class Writer():
 
     def __init__(self, tree: ET.ElementTree) -> None:
         self.tree = tree
+        self.root = tree.getroot()
         self.logger = logging.getLogger(__name__)
 
     def __call__(self,
@@ -383,7 +384,7 @@ class Writer():
 
         # Grafts are not required
         if 'child_grafts' in config and config['child_grafts'] is not None:
-            self._write_add_grafts(config, tree, to_write)
+            self._write_add_grafts(config, to_write)
 
         # Write out pretty XML to make it easier to read to see if things
         # have been generated correctly.
@@ -399,7 +400,6 @@ class Writer():
 
     def _write_add_grafts(self,
                           config: dict,
-                          tree: ET.Element,
                           to_write: ET.ElementTree) -> None:
         dest_root = "{0}/{1}".format(config['dest_parent'],
                                      config['src_tag'])
@@ -411,7 +411,7 @@ class Writer():
             self.logger.trace("Graft tree@%s as child under %s",  # type: ignore
                               g,
                               dest_root)
-            elt = tree.root.find(g)
+            elt = self.root.find(g)
             graft_parent.append(elt)
 
     def _write_add_tags(self,

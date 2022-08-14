@@ -41,9 +41,6 @@ class BasePluginManager():
         self.logger = logging.getLogger(__name__)
         self.loaded = {}  # type: tp.Dict[str, tp.Dict]
 
-    def loaded_plugins(self):
-        return self.loaded.copy()
-
     def available_plugins(self):
         raise NotImplementedError
 
@@ -236,9 +233,6 @@ class CompositePluginManager(BasePluginManager):
     def __init__(self) -> None:
         super().__init__()
         self.components = []  # type: tp.List[tp.Union[DirectoryPluginManager,ProjectPluginManager]]
-
-    def loaded_plugins(self):
-        return self.loaded.copy()
 
     def initialize(self,
                    project: str,

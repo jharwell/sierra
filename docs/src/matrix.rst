@@ -39,7 +39,7 @@ see the :ref:`ln-sierra-tutorials` for how to add it via a plugin.
 
 SIERRA supports multiple HPC environments for execution of experiments in on HPC
 hardware (see :doc:`/src/exec_env/hpc`) and on real robots (see
-:doc:`/src/exec_env/robots`). If your desired execution environment is not
+:doc:`/src/exec_env/robot`). If your desired execution environment is not
 listed, see the :ref:`ln-sierra-tutorials` for how to add it via a plugin.
 
 .. list-table::

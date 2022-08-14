@@ -19,12 +19,12 @@ import argparse
 import os
 import random
 import typing as tp
-import multiprocessing
 import re
 import shutil
 import logging
 import sys
 import pathlib
+import psutil
 
 # 3rd party packages
 import implements
@@ -71,7 +71,7 @@ class ParsedCmdlineConfigurer():
         elif self.exec_env == 'hpc.pbs':
             self._hpc_pbs(args)
         else:
-            assert False, f"'{self.exec_env}' unsupported on ARGoS"
+            raise RuntimeError(f"'{self.exec_env}' unsupported on ARGoS")
 
     def _hpc_pbs(self, args: argparse.Namespace) -> None:
         self.logger.debug("Configuring ARGoS for PBS execution")
@@ -121,13 +121,12 @@ class ParsedCmdlineConfigurer():
 
         if args.exec_jobs_per_node is None:
             # Every physics engine gets at least 1 core
-            parallel_jobs = int(multiprocessing.cpu_count() /
-                                float(ppn_per_run_req))
+            parallel_jobs = int(psutil.cpu_count() / float(ppn_per_run_req))
             if parallel_jobs == 0:
-                self.logger.warning(("Local machine has %s cores, but %s "
-                                     "physics engines/run requested; "
+                self.logger.warning(("Local machine has %s logical cores, but "
+                                     "%s physics engines/run requested; "
                                      "allocating anyway"),
-                                    multiprocessing.cpu_count(),
+                                    psutil.cpu_count(),
                                     ppn_per_run_req)
                 parallel_jobs = 1
 
@@ -206,7 +205,7 @@ class ExpRunShellCmdsGenerator():
         # ARGoS is pretty good about not printing stuff if we pass these
         # arguments. We don't want to pass > /dev/null so that we get the
         # text of any exceptions that cause ARGoS to crash.
-        if not self.cmdopts['exec_no_devnull']:
+        if self.cmdopts['exec_devnull']:
             cmd += ' --log-file /dev/null --logerr-file /dev/null'
 
         cmd += ';'

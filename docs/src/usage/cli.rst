@@ -10,7 +10,6 @@ apply to a subset of the available :term:`Batch Criteria`.
 
 If an option is given more than once, the last such occurrence is used.
 
-
 SIERRA Core
 ===========
 

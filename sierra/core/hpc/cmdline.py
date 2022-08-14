@@ -29,8 +29,7 @@ from sierra.core import types, cmdline
 
 class HPCCmdline(cmdline.BaseCmdline):
     def __init__(self, stages: tp.List[int]) -> None:
-        self.parser = argparse.ArgumentParser(prog='sierra-cli',
-                                              add_help=False,
+        self.parser = argparse.ArgumentParser(add_help=False,
                                               allow_abbrev=False)
 
         self.scaffold_cli()
@@ -75,6 +74,21 @@ class HPCCmdline(cmdline.BaseCmdline):
                               type=int,
                               default=None)
 
+        self.hpc.add_argument("--exec-devnull",
+                              help="""
+
+                              Redirect ALL output from simulations to
+                              /dev/null. Useful for platform where you can't
+                              disable all INFO messages at compile time, and
+                              don't want to have to grep through lots of
+                              redundant stdout files to see if there were any
+                              errors.
+
+                              """ + self.stage_usage_doc([1, 2]),
+                              action='store_true',
+                              dest='exec_devnull',
+                              default=True)
+
         self.hpc.add_argument("--exec-no-devnull",
                               help="""
 
@@ -86,8 +100,8 @@ class HPCCmdline(cmdline.BaseCmdline):
                               errors.
 
                               """ + self.stage_usage_doc([1, 2]),
-                              action='store_true',
-                              default=False)
+                              action='store_false',
+                              dest='exec_devnull')
 
         self.hpc.add_argument("--exec-resume",
                               help="""
@@ -127,7 +141,7 @@ class HPCCmdline(cmdline.BaseCmdline):
         """
         updates = {
             # Multistage
-            'exec_no_devnull': cli_args.exec_no_devnull,
+            'exec_devnull': cli_args.exec_devnull,
             'exec_jobs_per_node': cli_args.exec_jobs_per_node,
             'exec_resume': cli_args.exec_resume,
             'exec_strict': cli_args.exec_strict
