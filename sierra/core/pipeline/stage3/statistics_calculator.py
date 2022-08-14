@@ -89,9 +89,9 @@ class BatchExpParallelCalculator:
         else:
             # Aways need to have at least one of each! If SIERRA is invoked on a
             # machine with 2 or less logical cores, the calculation with
-            # mp.cpu_count() will return 0 for # gatherers.
-            n_gatherers = max(1, int(mp.cpu_count() * 0.25))
-            n_processors = max(1, int(mp.cpu_count() * 0.75))
+            # psutil.cpu_count() will return 0 for # gatherers.
+            n_gatherers = max(1, int(psutil.cpu_count() * 0.25))
+            n_processors = max(1, int(psutil.cpu_count() * 0.75))
 
         with mp.Pool(processes=n_gatherers + n_processors) as pool:
             self._execute(exp_to_avg, avg_opts, n_gatherers, n_processors, pool)
@@ -458,14 +458,15 @@ class ExpStatisticsCalculator:
 
         by_row_index = csv_concat.groupby(csv_concat.index)
 
+        dfs = {}
         if self.avg_opts['dist_stats'] in ['none', 'all']:
-            dfs = stat_kernels.mean.from_groupby(by_row_index)
+            dfs.update(stat_kernels.mean.from_groupby(by_row_index))
 
         if self.avg_opts['dist_stats'] in ['conf95', 'all']:
-            dfs = stat_kernels.conf95.from_groupby(by_row_index)
+            dfs.update(stat_kernels.conf95.from_groupby(by_row_index))
 
         if self.avg_opts['dist_stats'] in ['bw', 'all']:
-            dfs = stat_kernels.bw.from_groupby(by_row_index)
+            dfs.update(stat_kernels.bw.from_groupby(by_row_index))
 
         for ext in dfs:
             opath = exp_stat_root / gather_spec.item_stem

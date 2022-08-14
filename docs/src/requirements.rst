@@ -23,13 +23,13 @@ One of the following:
   recent versions.
 
 
-.. ADMONITION:: Windows is not supported currently. Not because it can't be
-                supported, but because there are not currently any platform
-                plugins that which work on windows. SIERRA is written in pure
-                python, and could be made to work on windows with a little work.
+.. NOTE:: Windows is not supported currently. Not because it can't be supported,
+          but because there are not current any platform plugins that which work
+          on windows. SIERRA is written in pure python, and could be made to
+          work on windows with a little work.
 
-                If windows support would be helpful for your intended usage of
-                SIERRA, please get in touch with me.
+          If windows support would be helpful for your intended usage of SIERRA,
+          please get in touch with me.
 
 .. _ln-sierra-req-exp:
 
@@ -291,7 +291,7 @@ your code does not meet these assumptions, then you will need to make some
 
    For HPC execution environments (see :ref:`ln-sierra-exec-env-hpc`), this requirement
    is easy to meet. For real robot execution environments
-   (see :ref:`ln-sierra-exec-env-robots`), this can be more difficult to meet.
+   (see :ref:`ln-sierra-exec-env-robot`), this can be more difficult to meet.
 
 #. All experimental run outputs are in a format that SIERRA understands within
    the output directory for the run. See :ref:`ln-sierra-storage-plugins` for which

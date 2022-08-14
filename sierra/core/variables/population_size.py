@@ -127,7 +127,7 @@ class Parser():
         elif attr["model"] == 'Log':
             return [int(2 ** x) for x in range(0, attr['cardinality'])]
         else:
-            assert False
+            raise AssertionError
 
 
 __api__ = [

@@ -1,5 +1,5 @@
 # Only stuff that actually tests the platform should be here: stage 1 and 2.
-name: ROS1+Gazebo CI Tests
+name: ROS1+Robot CI Tests
 
 on:
   workflow_call:
@@ -7,12 +7,6 @@ on:
       os:
         required: True
         type: string
-  # push:
-  #   branches:
-  #     # - master
-  #     # - devel
-  #   paths:
-  #     - 'sierra/**'
 
 jobs:
   bc-univar-sanity:
@@ -30,20 +24,20 @@ jobs:
 
       - uses: ./.github/actions/sample-project-setup
         with:
-          platform: ros1gazebo
+          platform: ros1robot
           rosdistro: noetic
 
       - name: Integration tests
         shell: bash
         run: |
-          ./scripts/ros1gazebo-integration-tests.sh -f bc_univar_sanity_test
+          ./scripts/ros1robot-integration-tests.sh -f bc_univar_sanity_test
 
       - uses: actions/upload-artifact@v3
         with:
-          name: ci-platform-ros1gazebo-bc-univar-sanity-${{ runner.os }}-${{ matrix.python-version }}-coverage
+          name: ci-platform-ros1robot-bc-sanity-${{ runner.os }}-${{ matrix.python-version }}-coverage
           path: .coverage.*
 
-  stage2-univar:
+  stage1:
     runs-on: ${{ inputs.os }}
     strategy:
       matrix:
@@ -58,15 +52,15 @@ jobs:
 
       - uses: ./.github/actions/sample-project-setup
         with:
-          platform: ros1gazebo
+          platform: ros1robot
           rosdistro: noetic
 
       - name: Integration tests
         shell: bash
         run: |
-          ./scripts/ros1gazebo-integration-tests.sh -f stage2_univar_test -e hpc.local
+          ./scripts/ros1robot-integration-tests.sh -f stage1_test -e hpc.local
 
       - uses: actions/upload-artifact@v3
         with:
-          name: ci-platform-ros1gazebo-stage2-${{ runner.os }}-${{ matrix.python-version }}-coverage
+          name: ci-platform-ros1robot-stage1-${{ runner.os }}-${{ matrix.python-version }}-coverage
           path: .coverage.*

@@ -13,7 +13,7 @@ a real robot of your choice. To use this platform, you must setup the
 platform meant to work with most real robots which :term:`ROS1` supports, and as
 a starting point to derive more specific platform configuration for a given
 robot (if needed). For all execution environments using this platform (see
-:ref:`ln-sierra-exec-env-robots` for examples), SIERRA will run experiments
+:ref:`ln-sierra-exec-env-robot` for examples), SIERRA will run experiments
 spread across multiple robots using GNU parallel.
 
 SIERRA designates the host machine as the ROS master, and allows you to

@@ -38,6 +38,7 @@ import pathlib
 # 3rd party packages
 import pandas as pd
 import numpy as np
+import psutil
 
 # Project packages
 import sierra.core.variables.batch_criteria as bc
@@ -66,9 +67,9 @@ class ExperimentalRunParallelCollator:
         else:
             # Aways need to have at least one of each! If SIERRA is invoked on a
             # machine with 2 or less logical cores, the calculation with
-            # mp.cpu_count() will return 0 for # gatherers.
-            n_gatherers = max(1, int(mp.cpu_count() * 0.25))
-            n_processors = max(1, int(mp.cpu_count() * 0.75))
+            # psutil.cpu_count() will return 0 for # gatherers.
+            n_gatherers = max(1, int(psutil.cpu_count() * 0.25))
+            n_processors = max(1, int(psutil.cpu_count() * 0.75))
 
         pool = mp.Pool(processes=n_gatherers + n_processors)
 
@@ -177,7 +178,6 @@ class ExperimentalRunCSVGatherer:
         storage_medium: The name of the storage medium plugin to use to extract
                         dataframes from when reading run data.
 
-
         main_config: Parsed dictionary of main YAML configuration.
 
         logger: The handle to the logger for this class. If you extend this
@@ -226,7 +226,8 @@ class ExperimentalRunCSVGatherer:
             run_output_root = run / self.run_metrics_leaf
             gathered.append(self.gather_csvs_from_run(run_output_root))
 
-        self.processq.put({exp_leaf: (runs, gathered)})
+        names = [run.name for run in runs]
+        self.processq.put({exp_leaf: (names, gathered)})
 
     def gather_csvs_from_run(self,
                              run_output_root: pathlib.Path) -> tp.Dict[tp.Tuple[str, str],
@@ -286,10 +287,13 @@ class ExperimentalRunCollator:
                  gathered_dfs: tp.List[tp.Dict[tp.Tuple[str, str], pd.DataFrame]],
                  exp_leaf: str) -> None:
         collated = {}
+
         for run in gathered_runs:
             run_dfs = gathered_dfs[gathered_runs.index(run)]
+
             for csv_leaf, col in run_dfs.keys():
                 csv_df = run_dfs[(csv_leaf, col)]
+
                 # Invert performance if configured.
                 if self.invert_perf and csv_leaf in self.intra_perf_csv:
                     csv_df = 1.0 / csv_df

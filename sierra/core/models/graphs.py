@@ -63,12 +63,12 @@ class IntraExpModel2DGraphSet():
         graph_path = self.exp_graph_root / self.target_stem
         model_path = self.exp_model_root / self.target_stem
 
-        data_ipath = stat_path.with_suffix(config.kStatsExt['mean'])
+        data_ipath = stat_path.with_suffix(config.kStats['mean'].exts['mean'])
 
         data_opath = self.exp_graph_root / \
             (self.target_stem + '-HM').with_suffix(config.kImageExt)
 
-        stddev_ipath = stat_path.with_suffix(config.kStatsExt['stddev'])
+        stddev_ipath = stat_path.with_suffix(config.kStats['conf95'].exts['stddev'])
         stddev_opath = graph_path.with_name(
             self.target_stem + '-HM-stddev' + config.kImageExt)
 
@@ -77,7 +77,7 @@ class IntraExpModel2DGraphSet():
             self.target_stem + '-HM-model' + config.kImageExt)
 
         model_error_ipath = model_path.with_name(
-            self.target_stem + '-HM-model-error' + config.kStatsExt['mean'])
+            self.target_stem + '-HM-model-error' + config.kStats['mean'].exts['mean'])
         model_error_opath = model_path.with_name(
             self.target_stem + '-HM-model-error' + config.kImageExt)
 

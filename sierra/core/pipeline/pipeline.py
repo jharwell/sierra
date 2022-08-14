@@ -70,8 +70,16 @@ class Pipeline:
             'platform': self.args.platform,
             'processing_serial': self.args.processing_serial,
 
+            'plot_log_xscale': self.args.plot_log_xscale,
+            'plot_enumerated_xscale': self.args.plot_enumerated_xscale,
+            'plot_log_yscale': self.args.plot_log_yscale,
+            'plot_regression_lines': self.args.plot_regression_lines,
+            'plot_primary_axis': self.args.plot_primary_axis,
+            'plot_large_text': self.args.plot_large_text,
+            'plot_transpose_graphs': self.args.plot_transpose_graphs,
+
             # stage 1
-            'no_preserve_seeds': self.args.no_preserve_seeds,
+            'preserve_seeds': self.args.preserve_seeds,
 
             # stage 2
             'nodefile': self.args.nodefile,
@@ -86,16 +94,10 @@ class Pipeline:
             # stage 4
             'exp_graphs': self.args.exp_graphs,
 
-            'project_no_yaml_LN': self.args.project_no_yaml_LN,
-            'project_no_yaml_HM': self.args.project_no_yaml_HM,
+            'project_no_LN': self.args.project_no_LN,
+            'project_no_HM': self.args.project_no_HM,
             'project_rendering': self.args.project_rendering,
-
-            'plot_log_xscale': self.args.plot_log_xscale,
-            'plot_enumerated_xscale': self.args.plot_enumerated_xscale,
-            'plot_log_yscale': self.args.plot_log_yscale,
-            'plot_regression_lines': self.args.plot_regression_lines,
-            'plot_primary_axis': self.args.plot_primary_axis,
-            'plot_large_text': self.args.plot_large_text,
+            'bc_rendering': self.args.bc_rendering,
 
             'models_enable': self.args.models_enable,
 
@@ -107,7 +109,6 @@ class Pipeline:
             'scenario_comparison': self.args.scenario_comparison,
             'controller_comparison': self.args.controller_comparison,
             'comparison_type': self.args.comparison_type,
-            'transpose_graphs': self.args.transpose_graphs,
         }
 
         # Load additional cmdline options from platform

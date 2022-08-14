@@ -19,12 +19,12 @@ Provides platform-specific callbacks for the :term:`ROS1+Gazebo` platform.
 # Core packages
 import argparse
 import logging
-import multiprocessing
 import os
 import re
 import typing as tp
 import sys
 import pathlib
+import psutil
 
 # 3rd party packages
 import packaging.version
@@ -65,8 +65,7 @@ class ParsedCmdlineConfigurer():
         elif self.exec_env == 'hpc.pbs':
             self._hpc_pbs(args)
         else:
-            assert False,\
-                f"'{self.exec_env}' unsupported on ROS1+Gazebo"
+            raise RuntimeError(f"'{self.exec_env}' unsupported on ROS1+Gazebo")
 
     def _hpc_pbs(self, args: argparse.Namespace) -> None:
         # For now, nothing to do. If more stuff with physics engine
@@ -108,14 +107,13 @@ class ParsedCmdlineConfigurer():
         ppn_per_run_req = 1
 
         if args.exec_jobs_per_node is None:
-            parallel_jobs = int(multiprocessing.cpu_count() /
-                                float(ppn_per_run_req))
+            parallel_jobs = int(psutil.cpu_count() / float(ppn_per_run_req))
 
         if parallel_jobs == 0:
-            self.logger.warning(("Local machine has %s cores, but "
+            self.logger.warning(("Local machine has %s logical cores, but "
                                  "%s threads/run requested; "
                                  "allocating anyway"),
-                                multiprocessing.cpu_count(),
+                                psutil.cpu_count(),
                                 ppn_per_run_req)
             parallel_jobs = 1
 
@@ -209,9 +207,16 @@ class ExpRunShellCmdsGenerator():
         master = str(input_fpath) + "_master" + config.kROS['launch_file_ext']
         robots = str(input_fpath) + "_robots" + config.kROS['launch_file_ext']
 
-        cmd = '{0} --wait {1} {2}; '.format(config.kROS['launch_cmd'],
-                                            master,
-                                            robots)
+        cmd = '{0} --wait {1} {2} '.format(config.kROS['launch_cmd'],
+                                           master,
+                                           robots)
+
+        # ROS/Gazebo don't provide options to not print stuff, so we have to use
+        # the nuclear option.
+        if self.cmdopts['exec_devnull']:
+            cmd += '2>&1 > /dev/null'
+
+        cmd += ';'
 
         return [types.ShellCmdSpec(cmd=cmd, shell=True, wait=True)]
 

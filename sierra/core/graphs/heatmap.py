@@ -63,7 +63,7 @@ class Heatmap:
                  xtick_labels: tp.Optional[tp.List[str]] = None,
                  ytick_labels: tp.Optional[tp.List[str]] = None,
                  transpose: bool = False,
-                 interpolation: str = 'nearest') -> None:
+                 interpolation: tp.Optional[str] = None) -> None:
         # Required arguments
         self.input_fpath = input_fpath
         self.output_fpath = output_fpath
@@ -79,14 +79,18 @@ class Heatmap:
 
         self.transpose = transpose
         self.zlabel = zlabel
-        self.interpolation = interpolation
 
-        if not self.transpose:
-            self.xtick_labels = ytick_labels
-            self.ytick_labels = xtick_labels
+        if interpolation:
+            self.interpolation = interpolation
         else:
+            self.interpolation = 'nearest'
+
+        if self.transpose:
             self.xtick_labels = xtick_labels
             self.ytick_labels = ytick_labels
+        else:
+            self.xtick_labels = ytick_labels
+            self.ytick_labels = xtick_labels
 
         self.logger = logging.getLogger(__name__)
 
@@ -248,9 +252,9 @@ class DualHeatmap:
         ax2.yaxis.set_ticks_position('left')
 
         if self.legend is not None:
-            ax1.set_title("\n".join(textwrap.wrap(self.legend[0], 20)),
+            ax1.set_title("\n".join(textwrap.wrap(self.legend[0], 40)),
                           size=self.text_size['legend_label'])
-            ax2.set_title("\n".join(textwrap.wrap(self.legend[1], 20)),
+            ax2.set_title("\n".join(textwrap.wrap(self.legend[1], 40)),
                           size=self.text_size['legend_label'])
 
         # Add colorbar.

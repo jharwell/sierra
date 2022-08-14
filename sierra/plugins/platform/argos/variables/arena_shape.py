@@ -82,15 +82,21 @@ class ArenaShape():
         # - All robots start on the ground with Z=0.
         chgs.add(xml.AttrChange(".//arena/distribute/position",
                                 "max",
-                                "{0:.9f}, {1:.9f}, 0".format(xsize - 2.0 * kWALL_WIDTH - 2.0,
-                                                             ysize - 2.0 * kWALL_WIDTH - 2.0)))
+                                "{0:.9f}, {1:.9f}, 0".format(
+                                    xsize - 2.0 * kWALL_WIDTH * 1.1,
+                                    ysize - 2.0 * kWALL_WIDTH * 1.1)
+                                ))
         chgs.add(xml.AttrChange(".//arena/distribute/position",
                                 "min",
-                                "{0:.9f}, {1:.9f}, 0".format(2.0 * kWALL_WIDTH + 2.0, 2.0 * kWALL_WIDTH + 2.0)))
+                                "{0:.9f}, {1:.9f}, 0".format(
+                                    2.0 * kWALL_WIDTH * 1.1,
+                                    2.0 * kWALL_WIDTH * 1.1)
+                                ))
 
         chgs.add(xml.AttrChange(".//arena/*[@id='wall_north']",
                                 "size",
-                                "{0:.9f}, {1:.9f}, 0.5".format(xsize, kWALL_WIDTH)))
+                                "{0:.9f}, {1:.9f}, 0.5".format(xsize,
+                                                               kWALL_WIDTH)))
 
         chgs.add(xml.AttrChange(".//arena/*[@id='wall_north']/body",
                                 "position",

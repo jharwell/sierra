@@ -83,7 +83,7 @@ class ExpCreator:
 
         # If random seeds where previously generated, use them if configured
         self.seeds_fpath = self.exp_input_root / config.kRandomSeedsLeaf
-        self.preserve_seeds = not self.cmdopts['no_preserve_seeds']
+        self.preserve_seeds = self.cmdopts['preserve_seeds']
         self.random_seeds = None
 
         if self.preserve_seeds:
@@ -134,7 +134,6 @@ class ExpCreator:
                                       self.cmdopts,
                                       self.exp_input_root,
                                       exp_def)
-
         generator = platform.ExpRunShellCmdsGenerator(self.cmdopts,
                                                       self.criteria,
                                                       n_robots,
@@ -279,7 +278,7 @@ class ExpCreator:
                 line = ' '.join(pre_cmds + [e] + post_cmds) + '\n'
                 cmds_file.write(line)
         else:
-            assert False, f"Bad paradigm {paradigm}"
+            raise ValueError(f"Bad paradigm {paradigm}")
 
 
 class BatchExpCreator:

@@ -21,15 +21,13 @@ SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
    .. image:: https://img.shields.io/badge/python-3.9-blue.svg
       :target: https://www.python.org/downloads/release/python-390/
 
-.. |ci-plugin-master| image:: https://github.com/swarm-robotics/sierra/actions/workflows/plugin-integration.yml/badge.svg?branch=master
+.. |ci-integration-master| image:: https://github.com/swarm-robotics/sierra/actions/workflows/integration-all.yml/badge.svg?branch=master
 .. |ci-analysis-master| image:: https://github.com/swarm-robotics/sierra/actions/workflows/static-analysis.yml/badge.svg?branch=master
 .. |ci-coverage-master| image:: https://coveralls.io/repos/github/swarm-robotics/sierra/badge.svg?branch=master
-.. |ci-unit-tests-master| image:: https://github.com/swarm-robotics/sierra/actions/workflows/unit-tests.yml/badge.svg?branch=master
 
-.. |ci-plugin-devel| image:: https://github.com/swarm-robotics/sierra/actions/workflows/plugin-integration.yml/badge.svg?branch=devel
+.. |ci-integration-devel| image:: https://github.com/swarm-robotics/sierra/actions/workflows/integration-all.yml/badge.svg?branch=devel
 .. |ci-analysis-devel| image:: https://github.com/swarm-robotics/sierra/actions/workflows/static-analysis.yml/badge.svg?branch=devel
 .. |ci-coverage-devel| image:: https://coveralls.io/repos/github/swarm-robotics/sierra/badge.svg?branch=devel
-.. |ci-unit-tests-devel| image:: https://github.com/swarm-robotics/sierra/actions/workflows/unit-tests.yml/badge.svg?branch=devel
 
 .. |license| image:: https://img.shields.io/badge/License-GPLv3-blue.svg
              :target: https://www.gnu.org/licenses/gpl-3.0
@@ -50,11 +48,11 @@ SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
 
 :Release:
 
-   |ci-analysis-master| |ci-coverage-master| |ci-plugin-master| |ci-unit-tests-master|
+   |ci-analysis-master| |ci-integration-master| |ci-coverage-master|
 
 :Development:
 
-   |ci-analysis-devel| |ci-coverage-devel| |ci-plugin-devel| |ci-unit-tests-devel|
+   |ci-analysis-devel| |ci-integration-devel| |ci-coverage-devel|
 
 :Misc:
 
@@ -427,15 +425,15 @@ The basic requirements are:
 
 - python >= 3.8.
 
-.. ADMONITION:: Windows is not supported currently. Not because it can't be
-                supported, but because there are not currently any platform
-                plugins that which work on windows. That is, SIERRA's OS support
-                is dictated by the OS support of its currently platform plugins,
-                none of which support windows.
+.. NOTE:: Windows is not supported currently. Not because it can't be supported,
+          but because there are not currently any platform plugins that which
+          work on windows. That is, SIERRA's OS support is dictated by the OS
+          support of its current platform plugins, none of which support
+          windows.
 
-                If windows support would be helpful for your intended usage of
-                SIERRA, please get in touch with me--SIERRA is written in pure
-                python and can definitely be made to work on windows.
+          If windows support would be helpful for your intended usage of
+          SIERRA, please get in touch with me--SIERRA is written in pure
+          python and can definitely be made to work on windows.
 
 For more details, including the requirements for researcher code, see the
 `SIERRA requirements

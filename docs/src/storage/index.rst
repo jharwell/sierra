@@ -11,7 +11,6 @@ formats. Supported formats that come with SIERRA are:
 
 .. _ln-sierra-storage-plugins-csv:
 
-
 CSV
 ===
 

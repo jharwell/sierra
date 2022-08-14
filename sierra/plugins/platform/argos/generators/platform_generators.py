@@ -26,6 +26,7 @@ import sys
 import pathlib
 
 # 3rd party packages
+import psutil
 
 # Project packages
 from sierra.core.utils import ArenaExtent
@@ -158,7 +159,6 @@ class PlatformExpDefGenerator():
         self.logger.trace(("Generating changes for arena "    # type: ignore
                            "share (all runs)"))
         _, adds, chgs = utils.apply_to_expdef(shape, exp_def)
-
         utils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)
 
     def _generate_n_robots(self, exp_def: definition.XMLExpDef) -> None:
@@ -195,8 +195,9 @@ class PlatformExpDefGenerator():
 
         if not self.cmdopts["with_robot_rab"]:
             exp_def.tag_remove(".//media", "range_and_bearing", noprint=True)
-            exp_def.tag_remove(
-                ".//actuators", "range_and_bearing", noprint=True)
+            exp_def.tag_remove(".//actuators",
+                               "range_and_bearing",
+                               noprint=True)
             exp_def.tag_remove(".//sensors", "range_and_bearing", noprint=True)
 
         if not self.cmdopts["with_robot_leds"]:
@@ -242,15 +243,32 @@ class PlatformExpDefGenerator():
 
         # Only valid on linux, per ARGoS, so we ely on the user to add this
         # attribute to the input file if it is applicable.
-        if exp_def.attr_get(".//system", "pin_threads_to_cores"):
-            if sys.platform == "linux":
-                exp_def.attr_change(".//system",
-                                    "pin_threads_to_cores",
-                                    "true")
-            else:
-                self.logger.warning((".//system/pin_threads_to_cores only "
-                                     "valid on linux in ARGoS--configuration "
-                                     "error?"))
+        if not exp_def.attr_get(".//system", "pin_threads_to_cores"):
+            return
+
+        if sys.platform != "linux":
+            self.logger.critical((".//system/pin_threads_to_cores only "
+                                  "valid on linux--configuration error?"))
+            return
+
+        # If you don't do this, you will get runtime errors in ARGoS when you
+        # attempt to set thread affinity to a core that does not exist. This is
+        # better than modifying ARGoS source to only pin threads to cores that
+        # exist, because it implies a configuration error by the user, and
+        # SIERRA should fail as a result (correctness by construction).
+        if self.cmdopts['physics_n_engines'] > psutil.cpu_count():
+            self.logger.warning(("Disabling pinning threads to cores: "
+                                 "mores threads than cores! %s > %s"),
+                                self.cmdopts['physics_n_engines'],
+                                psutil.cpu_count())
+            exp_def.attr_change(".//system",
+                                "pin_threads_to_cores",
+                                "false")
+
+        else:
+            exp_def.attr_change(".//system",
+                                "pin_threads_to_cores",
+                                "true")
 
     def _generate_library(self, exp_def: definition.XMLExpDef) -> None:
         """Generate XML changes for ARGoS search paths for controller,loop functions.

@@ -105,3 +105,9 @@ runs:
         catkin config --extend /opt/ros/${{ inputs.rosdistro }}
         catkin config --install -DCMAKE_INSTALL_PREFIX=$HOME/.local
         catkin build
+
+    ############################################################################
+    # ROS1+Robot setup
+    ############################################################################
+
+    # None needed for the moment--stage 1 XML generation only.

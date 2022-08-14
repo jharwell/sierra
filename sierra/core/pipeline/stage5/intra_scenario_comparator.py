@@ -204,7 +204,7 @@ class UnivarIntraScenarioComparator:
         self.logger.debug("Gathering data for '%s' from %s -> %s",
                           controller, src_stem, dest_stem)
         ipath = pathlib.Path(cmdopts['batch_stat_collate_root'],
-                             src_stem + config.kStatsExt['mean'])
+                             src_stem + config.kStats['mean'].exts['mean'])
 
         # Some experiments might not generate the necessary performance measure
         # .csvs for graph generation, which is OK.
@@ -403,7 +403,7 @@ class BivarIntraScenarioComparator:
                                       batch_leaf=batch_leaf,
                                       src_stem=graph['src_stem'],
                                       dest_stem=graph['dest_stem'],
-                                      primary_axis=graph['primary_axis'],
+                                      primary_axis=graph.get('primary_axis', 0),
                                       inc_exps=graph.get('include_exp', None))
 
             elif 'HM' in comp_type or 'SU' in comp_type:
@@ -420,7 +420,7 @@ class BivarIntraScenarioComparator:
                                dest_stem=graph['dest_stem'],
                                title=graph.get('title', ''),
                                label=graph.get('label', ''),
-                               primary_axis=graph['primary_axis'],
+                               primary_axis=graph.get('primary_axis', 0),
                                inc_exps=graph.get('include_exp', None),
                                legend=legend)
         elif 'HM' in comp_type:
@@ -470,13 +470,14 @@ class BivarIntraScenarioComparator:
                           controller, src_stem, dest_stem)
 
         csv_ipath = pathlib.Path(cmdopts['batch_stat_collate_root'],
-                                 src_stem + config.kStatsExt['mean'])
+                                 src_stem + config.kStats['mean'].exts['mean'])
 
         # Some experiments might not generate the necessary performance measure
         # .csvs for graph generation, which is OK.
         if not utils.path_exists(csv_ipath):
-            self.logger.warning(
-                "%s missing for controller '%s'", csv_ipath, controller)
+            self.logger.warning("%s missing for controller '%s'",
+                                csv_ipath,
+                                controller)
             return
 
         df = storage.DataFrameReader('storage.csv')(csv_ipath)
@@ -485,11 +486,11 @@ class BivarIntraScenarioComparator:
                                                    dest_stem,
                                                    [self.controllers.index(controller)])
 
-        csv_opath_stem = self.cc_csv_root / opath_leaf
+        opath_stem = self.cc_csv_root / opath_leaf
+        opath = opath_stem.with_name(
+            opath_stem.name + config.kStats['mean'].exts['mean'])
         writer = storage.DataFrameWriter('storage.csv')
-        writer(df,
-               csv_opath_stem.with_suffix(config.kStatsExt['mean']),
-               index=False)
+        writer(df, opath, index=False)
 
     def _gen_csvs_for_1D(self,
                          cmdopts: types.Cmdopts,
@@ -512,14 +513,20 @@ class BivarIntraScenarioComparator:
                           controller, src_stem, dest_stem)
 
         csv_ipath = pathlib.Path(cmdopts['batch_stat_collate_root'],
-                                 src_stem + config.kStatsExt['mean'])
+                                 src_stem + config.kStats['mean'].exts['mean'])
 
         # Some experiments might not generate the necessary performance measure
         # .csvs for graph generation, which is OK.
         if not utils.path_exists(csv_ipath):
-            self.logger.warning(
-                "%s missing for controller '%s'", csv_ipath, controller)
+            self.logger.warning("%s missing for controller '%s'",
+                                csv_ipath,
+                                controller)
             return
+
+        if cmdopts['dist_stats'] != 'none':
+            self.logger.warning(("--dist-stats is not supported with "
+                                 "1D CSVs sliced from 2D CSV for linegraph "
+                                 "generation: no stats will be included"))
 
         if primary_axis == 0:
             preparer = StatsPreparer(ipath_stem=cmdopts['batch_stat_collate_root'],
@@ -529,7 +536,7 @@ class BivarIntraScenarioComparator:
 
             reader = storage.DataFrameReader('storage.csv')
             ipath = pathlib.Path(cmdopts['batch_stat_collate_root'],
-                                 src_stem + config.kStatsExt['mean'])
+                                 src_stem + config.kStats['mean'].exts['mean'])
             n_rows = len(reader(ipath).index)
 
             for i in range(0, n_rows):
@@ -571,7 +578,7 @@ class BivarIntraScenarioComparator:
                       legend: tp.List[str]) -> None:
         oleaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, None)
         csv_stem_root = self.cc_csv_root / oleaf
-        pattern = str(csv_stem_root) + '*.' + config.kStatsExt['mean']
+        pattern = str(csv_stem_root) + '*' + config.kStats['mean'].exts['mean']
         paths = [f for f in glob.glob(pattern) if re.search('_[0-9]+', f)]
 
         for i in range(0, len(paths)):
@@ -602,9 +609,10 @@ class BivarIntraScenarioComparator:
                                                         n_exp)
                 xlabel = criteria.graph_xlabel(cmdopts)
 
+            # TODO: Fix no statistics support for these graphs
             SummaryLineGraph(stats_root=self.cc_csv_root,
                              input_stem=opath_leaf,
-                             stats=cmdopts['dist_stats'],
+                             stats='none',
                              output_fpath=img_opath,
                              model_root=cmdopts['batch_model_root'],
                              title=title,
@@ -655,18 +663,20 @@ class BivarIntraScenarioComparator:
 
         Uses a configured controller of primary interest against all other
         controllers (one graph per pairing), after input files have been
-        gathered from each controller into :attr:`cc_csv_root`. Only valid if
-        the comparison type is ``scale2D`` or ``diff2D``.
+        gathered from each controller into :attr:`cc_csv_root`. 
 
         """
         opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, None)
-        csv_pattern_root = self.cc_csv_root / opath_leaf
-        pattern = str(csv_pattern_root) + '*' + config.kStatsExt['mean']
+        opath = self.cc_graph_root / (opath_leaf + config.kImageExt)
+        pattern = self.cc_csv_root / (opath_leaf + '*' +
+                                      config.kStats['mean'].exts['mean'])
 
-        self.logger.debug("Generating paired heatmaps from pattern='%s'",
-                          pattern)
+        paths = [pathlib.Path(f) for f in glob.glob(str(pattern))
+                 if re.search(r'_[0-9]+\.', f)]
 
-        paths = [f for f in glob.glob(pattern) if re.search('_[0-9]+', f)]
+        self.logger.debug("Generating paired heatmaps in %s -> %s",
+                          pattern,
+                          [str(f.relative_to(self.cc_csv_root)) for f in paths])
 
         if len(paths) < 2:
             self.logger.warning(("Not enough matches from pattern='%s'--"
@@ -679,15 +689,19 @@ class BivarIntraScenarioComparator:
 
         for i in range(1, len(paths)):
             df = reader(paths[i])
-
+            print(paths[i])
             if comp_type == 'HMscale':
                 plot_df = df / ref_df
             elif comp_type == 'HMdiff':
                 plot_df = df - ref_df
 
-            leaf = LeafGenerator.from_batch_leaf(
-                batch_leaf, dest_stem, [0, i])
-            ipath = self.cc_csv_root / (leaf + config.kStatsExt['mean'])
+            # Have to add something before the .mean to ensure that the diff CSV
+            # does not get picked up by the regex above as each controller is
+            # treated in turn as the primary.
+            leaf = LeafGenerator.from_batch_leaf(batch_leaf,
+                                                 dest_stem,
+                                                 [0, i]) + '_paired'
+            ipath = self.cc_csv_root / (leaf + config.kStats['mean'].exts['mean'])
             opath = self.cc_graph_root / (leaf + config.kImageExt)
 
             writer = storage.DataFrameWriter('storage.csv')
@@ -696,7 +710,7 @@ class BivarIntraScenarioComparator:
             Heatmap(input_fpath=ipath,
                     output_fpath=opath,
                     title=title,
-                    transpose=self.cmdopts['transpose_graphs'],
+                    transpose=self.cmdopts['plot_transpose_graphs'],
                     zlabel=self._gen_zaxis_label(label, comp_type),
                     xlabel=criteria.graph_xlabel(cmdopts),
                     ylabel=criteria.graph_ylabel(cmdopts),
@@ -720,19 +734,17 @@ class BivarIntraScenarioComparator:
         the comparison type is ``HMraw``.
 
         """
-
-        opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, None)
-        csv_pattern_root = self.cc_csv_root / opath_leaf
-        pattern = str(csv_pattern_root) + '*' + config.kStatsExt['mean']
-        paths = [f for f in csv_pattern_root.glob(pattern)
-                 if re.search('_[0-9]+', str(f))]
-
-        self.logger.debug("Generating paired heatmaps in %s -> %s",
-                          csv_pattern_root,
-                          paths)
-
         opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, None)
         opath = self.cc_graph_root / (opath_leaf + config.kImageExt)
+        pattern = self.cc_csv_root / (opath_leaf + '*' +
+                                      config.kStats['mean'].exts['mean'])
+
+        paths = [pathlib.Path(f) for f in glob.glob(str(pattern))
+                 if re.search('_[0-9]+', f)]
+
+        self.logger.debug("Generating dual heatmaps in %s -> %s",
+                          pattern,
+                          [str(f.relative_to(self.cc_csv_root)) for f in paths])
 
         DualHeatmap(ipaths=paths,
                     output_fpath=opath,
@@ -761,18 +773,17 @@ class BivarIntraScenarioComparator:
         :attr:`cc_csv_root`.
 
         """
-
         opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, None)
-        csv_pattern_root = self.cc_csv_root / opath_leaf
-        pattern = str(csv_pattern_root) + '*' + config.kStatsExt['mean']
-        paths = [f for f in csv_pattern_root.glob(pattern)
-                 if re.search('_[0-9]+', str(f))]
-
         opath = self.cc_graph_root / (opath_leaf + config.kImageExt)
+        pattern = self.cc_csv_root / (opath_leaf + '*' +
+                                      config.kStats['mean'].exts['mean'])
 
-        self.logger.debug("Generating stacked surface graphs %s -> %s",
-                          csv_pattern_root,
-                          paths)
+        paths = [pathlib.Path(f) for f in glob.glob(
+            str(pattern)) if re.search('_[0-9]+', f)]
+
+        self.logger.debug("Generating stacked surface graphs in %s -> %s",
+                          pattern,
+                          [str(f.relative_to(self.cc_csv_root)) for f in paths])
 
         StackedSurfaceGraph(ipaths=paths,
                             output_fpath=opath,
@@ -791,7 +802,7 @@ class BivarIntraScenarioComparator:
         """
         if 'scale' in comp_type:
             return label + ' (Scaled)'
-        elif 'diff' in comp_type == comp_type:
+        elif 'diff' in comp_type:
             return label + ' (Difference Comparison)'
         return label
 
@@ -828,11 +839,15 @@ class StatsPreparer():
         we then write the file system.
 
         """
-        for k in config.kStatsExt.keys():
+        exts = config.kStats['mean'].exts
+        exts.update(config.kStats['conf95'].exts)
+        exts.update(config.kStats['bw'].exts)
+
+        for k in exts:
             stat_ipath = pathlib.Path(self.ipath_stem,
-                                      self.ipath_leaf + config.kStatsExt[k])
+                                      self.ipath_leaf + exts[k])
             stat_opath = pathlib.Path(self.opath_stem,
-                                      opath_leaf + config.kStatsExt[k])
+                                      opath_leaf + exts[k])
             df = self._accum_df_by_col(stat_ipath,
                                        stat_opath,
                                        all_cols,
@@ -841,7 +856,7 @@ class StatsPreparer():
 
             if df is not None:
                 writer = storage.DataFrameWriter('storage.csv')
-                opath = self.opath_stem / (opath_leaf + config.kStatsExt[k])
+                opath = self.opath_stem / (opath_leaf + exts[k])
                 writer(df, opath, index=False)
 
     def across_rows(self,
@@ -856,17 +871,21 @@ class StatsPreparer():
         row-wise, which we then write the file system.
 
         """
-        for k in config.kStatsExt.keys():
+        exts = config.kStats['mean'].exts
+        exts.update(config.kStats['conf95'].exts)
+        exts.update(config.kStats['bw'].exts)
+
+        for k in exts:
             stat_ipath = pathlib.Path(self.ipath_stem,
-                                      self.ipath_leaf + config.kStatsExt[k])
+                                      self.ipath_leaf + exts[k])
             stat_opath = pathlib.Path(self.opath_stem,
-                                      opath_leaf + config.kStatsExt[k])
+                                      opath_leaf + exts[k])
             df = self._accum_df_by_row(stat_ipath, stat_opath, index, inc_exps)
 
             if df is not None:
                 writer = storage.DataFrameWriter('storage.csv')
                 writer(df,
-                       self.opath_stem / (opath_leaf + config.kStatsExt[k]),
+                       self.opath_stem / (opath_leaf + exts[k]),
                        index=False)
 
     def _accum_df_by_col(self,
@@ -904,7 +923,11 @@ class StatsPreparer():
             tp_df = tp_df[cols_from_index]
             tp_df.columns = all_cols
 
-            cum_df = cum_df.append(tp_df.loc[col_index, :])
+            # Series are columns, so we have to transpose before concatenating
+            cum_df = pd.concat([cum_df,
+                                tp_df.loc[col_index, :].to_frame().T])
+
+            # cum_df = pd.concat([cum_df, tp_df.loc[col_index, :]])
             return cum_df
 
         return None
@@ -933,8 +956,9 @@ class StatsPreparer():
             if cum_df is None:
                 cum_df = pd.DataFrame(columns=cols)
 
-            cum_df = cum_df.append(t.loc[index, cols])
-
+            # Series are columns, so we have to transpose before concatenating
+            cum_df = pd.concat([cum_df,
+                                t.loc[index, cols].to_frame().T])
             return cum_df
 
         return None

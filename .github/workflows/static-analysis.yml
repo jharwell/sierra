@@ -1,11 +1,8 @@
 name: Static Analysis
 
 on:
+  workflow_call:
   push:
-    branches:
-      # - master
-      # - devel
-
     paths:
       - 'sierra/**'
 

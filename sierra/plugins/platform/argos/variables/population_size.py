@@ -53,7 +53,9 @@ class PopulationSize(population_size.BasePopulationSize):
 
     @staticmethod
     def gen_attr_changelist_from_list(sizes: tp.List[int]) -> tp.List[xml.AttrChangeSet]:
-        return [xml.AttrChangeSet(xml.AttrChange(".//arena/distribute/entity", "quantity", str(s)))
+        return [xml.AttrChangeSet(xml.AttrChange(".//arena/distribute/entity",
+                                                 "quantity",
+                                                 str(s)))
                 for s in sizes]
 
     def __init__(self,

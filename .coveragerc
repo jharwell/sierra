@@ -19,3 +19,5 @@ omit =
      */site-packages/*
 
      /usr/*
+
+     */docs/*

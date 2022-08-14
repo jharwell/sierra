@@ -18,7 +18,7 @@
 
 # 3rd party packages
 import nox
-import multiprocessing as mp
+import psutil
 
 # Project packages
 
@@ -57,7 +57,7 @@ def analysis(session):
     session.install('.')  # same as 'pip3 install .'
     session.install('.[devel]')  # same as 'pip3 install .[devel]'
 
-    cores = mp.cpu_count()
+    cores = psutil.cpu_count()
     session.run('pytype',
                 f'-j {cores}',
                 '-k',

@@ -90,8 +90,7 @@ class StackedSurfaceGraph:
             f"Too many surfaces to plot: {len(dfs)} > {StackedSurfaceGraph.kMaxSurfaces}"
 
         # Scaffold graph
-        plt.figure(figsize=(config.kGraphBaseSize,
-                            config.kGraphBaseSize))
+        plt.figure(figsize=(config.kGraphBaseSize, config.kGraphBaseSize))
         ax = plt.axes(projection='3d')
         x = np.arange(len(dfs[0].columns))
         y = dfs[0].index
@@ -128,12 +127,15 @@ class StackedSurfaceGraph:
 
     def _plot_surfaces(self, X, Y, ax, colors, dfs):
         ax.plot_surface(X, Y, dfs[0], cmap=colors[0])
+
+        # We do the calculations between dataframes in here rather than in the
+        # comparator, because we can be comparing more than 2.
         for i in range(1, len(dfs)):
-            if self.comp_type == 'raw':
+            if self.comp_type == 'SUraw':
                 plot_df = dfs[i]
-            elif self.comp_type == 'scale3D':
+            elif self.comp_type == 'SUscale':
                 plot_df = dfs[i] / dfs[0]
-            elif self.comp_type == 'diff3D':
+            elif self.comp_type == 'SUdiff':
                 plot_df = dfs[i] - dfs[0]
             ax.plot_surface(X, Y, plot_df, cmap=colors[i], alpha=0.5)
 

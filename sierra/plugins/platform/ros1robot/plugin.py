@@ -48,7 +48,18 @@ class ParsedCmdlineConfigurer():
         self.logger = logging.getLogger('platform.ros1robot')
 
     def __call__(self, args: argparse.Namespace) -> None:
-        pass
+        if args.nodefile is None:
+            assert 'SIERRA_NODEFILE' in os.environ,\
+                ("Non-ros1robot environment detected: --nodefile not "
+                 "passed and 'SIERRA_NODEFILE' not found")
+            args.nodefile = os.environ['SIERRA_NODEFILE']
+
+        assert utils.path_exists(args.nodefile), \
+            f"SIERRA_NODEFILE '{args.nodefile}' does not exist"
+        self.logger.info("Using '%s' as robot hostnames file", args.nodefile)
+
+        assert not args.platform_vc,\
+            "Platform visual capture not supported on ros1robot"
 
 
 @implements.implements(bindings.IExpRunShellCmdsGenerator)
@@ -128,10 +139,13 @@ class ExpRunShellCmdsGenerator():
         exp_template_path = utils.exp_template_path(self.cmdopts,
                                                     self.criteria.batch_input_root,
                                                     exp_dirname)
+        cmd = '{0} --wait {1}_run{2}_master{3};'
 
-        launch = '{0}_run{1}_master{2};'.format(str(exp_template_path),
-                                                run_num,
-                                                config.kROS['launch_file_ext'])
+        cmd = cmd.format(config.kROS['launch_cmd'],
+                         str(exp_template_path),
+                         run_num,
+                         config.kROS['launch_file_ext'])
+
         # --wait tells roslaunch to wait for the configured master to come up
         # before launch the "master" code.
         #
@@ -139,10 +153,7 @@ class ExpRunShellCmdsGenerator():
         # at the specified ort, but to LAUNCH a new master at the specified
         # port. This is not really documented well.
 
-        master_node = types.ShellCmdSpec(
-            cmd='{0} --wait {1};'.format(config.kROS['launch_cmd'], launch),
-            shell=True,
-            wait=True)
+        master_node = types.ShellCmdSpec(cmd=cmd, shell=True, wait=True)
 
         return [master_node]
 
@@ -167,18 +178,14 @@ class ExpRunShellCmdsGenerator():
 
         ret = []  # type: tp.List[types.ShellCmdSpec]
         for i in range(0, self.n_robots):
-            ret.extend([
-
-                # --wait tells roslaunch to wait for the configured master to
-                # come up before launch the robot code.
-                types.ShellCmdSpec(
-                    cmd='{0} --wait {1}_robot{2}{3};'.format(config.kROS['launch_cmd'],
-                                                             input_fpath,
-                                                             i,
-                                                             config.kROS['launch_file_ext']),
-                    shell=True,
-                    wait=True)
-            ])
+            # --wait tells roslaunch to wait for the configured master to
+            # come up before launch the robot code.
+            cmd = '{0} --wait {1}_robot{2}{3} '
+            cmd = cmd.format(config.kROS['launch_cmd'],
+                             input_fpath,
+                             i,
+                             config.kROS['launch_file_ext'])
+            ret.extend([types.ShellCmdSpec(cmd=cmd, shell=True, wait=True)])
         return ret
 
     def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
@@ -196,7 +203,7 @@ class ExpRunShellCmdsGenerator():
             ]
 
 
-@ implements.implements(bindings.IExpShellCmdsGenerator)
+@implements.implements(bindings.IExpShellCmdsGenerator)
 class ExpShellCmdsGenerator():
     def __init__(self,
                  cmdopts: types.Cmdopts,
@@ -246,7 +253,7 @@ class ExpShellCmdsGenerator():
                                    wait=True)]
 
 
-@ implements.implements(bindings.IExpConfigurer)
+@implements.implements(bindings.IExpConfigurer)
 class ExpConfigurer():
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         self.cmdopts = cmdopts

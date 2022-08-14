@@ -83,3 +83,17 @@ class OSPackagesSpec():
         self.kernel = kernel
         self.name = name
         self.pkgs = pkgs
+
+
+class StatisticsSpec():
+    def __init__(self,
+                 exts: StrDict) -> None:
+        self.exts = exts
+
+
+__api__ = [
+    'ShellCmdSpec',
+    'YAMLConfigFileSpec',
+    'ParsedNodefileSpec',
+    'OSPackagesSpec'
+]

@@ -87,7 +87,8 @@ class StackedLineGraph:
         self.logger = logging.getLogger(__name__)
 
     def generate(self) -> None:
-        input_fpath = self.stats_root / (self.input_stem + config.kStatsExt['mean'])
+        ext = config.kStats['mean'].exts['mean']
+        input_fpath = self.stats_root / (self.input_stem + ext)
         if not utils.path_exists(input_fpath):
             self.logger.debug("Not generating %s: %s does not exist",
                               self.output_fpath,
@@ -217,13 +218,16 @@ class StackedLineGraph:
         dfs = {}
         reader = storage.DataFrameReader('storage.csv')
         if self.stats in ['conf95', 'all']:
-            stddev_ipath = self.stats_root / \
-                (self.input_stem + config.kStatsExt['stddev'])
-            if utils.path_exists(stddev_ipath):
-                dfs['stddev'] = reader(stddev_ipath)
-            else:
-                self.logger.warning("Stddev file not found for '%s'",
-                                    self.input_stem)
+            exts = config.kStats['conf95'].exts
+            for k in exts:
+                ipath = self.stats_root / (self.input_stem + exts[k])
+
+                if utils.path_exists(ipath):
+                    dfs[exts[k]] = reader(ipath)
+                else:
+                    self.logger.warning("%sfile not found for '%s'",
+                                        exts[k],
+                                        self.input_stem)
 
         return dfs
 

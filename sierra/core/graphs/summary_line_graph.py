@@ -118,13 +118,17 @@ class SummaryLineGraph:
 
     def generate(self) -> None:
         input_fpath = self.stats_root / (self.input_stem +
-                                         config.kStatsExt['mean'])
+                                         config.kStats['mean'].exts['mean'])
 
         if not utils.path_exists(input_fpath):
             self.logger.debug("Not generating %s: %s does not exist",
                               self.output_fpath,
                               input_fpath)
             return
+        else:
+            self.logger.debug("Generating %s from %s",
+                              self.output_fpath,
+                              input_fpath)
 
         data_dfy = storage.DataFrameReader('storage.csv')(input_fpath)
         model = self._read_models()
@@ -203,45 +207,72 @@ class SummaryLineGraph:
         """
         Plot statistics for all lines on the graph.
         """
-        if self.stats in ['conf95', 'all'] and 'stddev' in stat_dfs.keys():
-            for i in range(0, len(data_dfy.values)):
-                # 95% interval = 2 std stdeviations
-                plt.fill_between(xticks, data_dfy.values[i] - 2 * stat_dfs['stddev'].abs().values[i],
-                                 data_dfy.values[i] + 2 *
-                                 stat_dfs['stddev'].abs().values[i],
-                                 alpha=0.25, color="C{}".format(i), interpolate=True)
+        self._plot_conf95_stats(xticks, data_dfy, stat_dfs)
+        self._plot_bw_stats(ax, xticks, data_dfy, stat_dfs)
 
-        if self.stats in ['bw', 'all'] and all(k in stat_dfs.keys() for k in
-                                               ['whislo',
-                                                'whishi',
-                                                'median',
-                                                'q1',
-                                                'q3',
-                                                'cilo',
-                                                'cihi']):
-            for i in range(0, len(data_dfy.values)):
-                boxes = []
-                for j in range(0, len(data_dfy.columns)):
-                    boxes.append({
-                        # Bottom whisker position
-                        'whislo': stat_dfs['whislo'].iloc[i, j],
-                        # Top whisker position
-                        'whishi': stat_dfs['whishi'].iloc[i, j],
-                        # First quartile (25th percentile)
-                        'q1': stat_dfs['q1'].iloc[i, j],
-                        # Median         (50th percentile)
-                        'med': stat_dfs['median'].iloc[i, j],
-                        # Third quartile (75th percentile)
-                        'q3': stat_dfs['q3'].iloc[i, j],
-                        # Confidence interval lower bound
-                        'cilo': stat_dfs['cilo'].iloc[i, j],
-                        # Confidence interval upper bound
-                        'cihi': stat_dfs['cihi'].iloc[i, j],
-                        'fliers': []  # Ignoring outliers
-                    })
+    def _plot_conf95_stats(self,
+                           xticks,
+                           data_dfy: pd.DataFrame,
+                           stat_dfs: tp.Dict[str, pd.DataFrame]) -> None:
+        if self.stats not in ['conf95', 'all']:
+            return
 
-                ax.bxp(boxes, manage_ticks=False,
-                       positions=self.xticks, shownotches=True)
+        if not all(k in stat_dfs.keys() for k in config.kStats['conf95'].exts):
+            self.logger.warning(("Cannot plot 95%% confidence intervals: "
+                                 "missing some statistics: %s vs %s"),
+                                stat_dfs.keys(),
+                                config.kStats['conf95'].exts)
+            return
+
+        for i in range(0, len(data_dfy.values)):
+            stddev_i = stat_dfs['stddev'].abs().values[i]
+            # 95% interval = 2 std stdeviations
+            plt.fill_between(xticks,
+                             data_dfy.values[i] - 2 * stddev_i,
+                             data_dfy.values[i] + 2 * stddev_i,
+                             alpha=0.25,
+                             color="C{}".format(i),
+                             interpolate=True)
+
+    def _plot_bw_stats(self,
+                       ax,
+                       xticks,
+                       data_dfy: pd.DataFrame,
+                       stat_dfs: tp.Dict[str, pd.DataFrame]) -> None:
+        if self.stats not in ['bw', 'all']:
+            return
+
+        if not all(k in stat_dfs.keys() for k in config.kStats['bw'].exts):
+            self.logger.warning(("Cannot plot box-and-whisker plots: "
+                                 "missing some statistics: %s vs %s"),
+                                stat_dfs.keys(),
+                                config.kStats['bw'].exts)
+            return
+
+        for i in range(0, len(data_dfy.values)):
+            boxes = []
+            for j in range(0, len(data_dfy.columns)):
+                boxes.append({
+                    # Bottom whisker position
+                    'whislo': stat_dfs['whislo'].iloc[i, j],
+                    # Top whisker position
+                    'whishi': stat_dfs['whishi'].iloc[i, j],
+                    # First quartile (25th percentile)
+                    'q1': stat_dfs['q1'].iloc[i, j],
+                    # Median         (50th percentile)
+                    'med': stat_dfs['median'].iloc[i, j],
+                    # Third quartile (75th percentile)
+                    'q3': stat_dfs['q3'].iloc[i, j],
+                    # Confidence interval lower bound
+                    'cilo': stat_dfs['cilo'].iloc[i, j],
+                    # Confidence interval upper bound
+                    'cihi': stat_dfs['cihi'].iloc[i, j],
+                    'fliers': []  # Ignoring outliers
+                })
+            ax.bxp(boxes,
+                   manage_ticks=False,
+                   positions=self.xticks,
+                   shownotches=True)
 
     def _plot_ticks(self, ax) -> None:
         if self.logyscale:
@@ -280,42 +311,36 @@ class SummaryLineGraph:
     def _read_conf95_stats(self) -> tp.Dict[str, tp.List[pd.DataFrame]]:
         dfs = {}
         reader = storage.DataFrameReader('storage.csv')
-        exts = [config.kStatsExt['stddev']]
+        exts = config.kStats['conf95'].exts
 
         if self.stats in ['conf95', 'all']:
-            for ext in exts:
-                ipath = self.stats_root / (self.input_stem + ext)
+            for k in exts:
+                ipath = self.stats_root / (self.input_stem + exts[k])
 
-            if utils.path_exists(ipath):
-                dfs[ext] = reader(ipath)
-            else:
-                self.logger.warning("%s file not found for '%s'",
-                                    ext,
-                                    self.input_stem)
+                if utils.path_exists(ipath):
+                    dfs[k] = reader(ipath)
+                else:
+                    self.logger.warning("%s file not found for '%s'",
+                                        exts[k],
+                                        self.input_stem)
 
         return dfs
 
     def _read_bw_stats(self) -> tp.Dict[str, tp.List[pd.DataFrame]]:
         dfs = {}
         reader = storage.DataFrameReader('storage.csv')
-        exts = [config.kStatsExt['whislo'],
-                config.kStatsExt['whishi'],
-                config.kStatsExt['q1'],
-                config.kStatsExt['q3'],
-                config.kStatsExt['cilo'],
-                config.kStatsExt['cihi'],
-                config.kStatsExt['median']]
+        exts = config.kStats['bw'].exts
 
         if self.stats in ['bw', 'all']:
-            for ext in exts:
-                ipath = self.stats_root / (self.input_stem + ext)
+            for k in exts:
+                ipath = self.stats_root / (self.input_stem + exts[k])
 
-            if utils.path_exists(ipath):
-                dfs[ext] = reader(ipath)
-            else:
-                self.logger.warning("%s file not found for '%s'",
-                                    ext,
-                                    self.input_stem)
+                if utils.path_exists(ipath):
+                    dfs[k] = reader(ipath)
+                else:
+                    self.logger.warning("%s file not found for '%s'",
+                                        exts[k],
+                                        self.input_stem)
 
         return dfs
 

@@ -38,8 +38,8 @@ jobs:
 
       - name: Adhoc
         run: |
-          ./scripts/argos-integration-tests.sh -f stage2_outputs_test -e hpc.adhoc
-          ./scripts/ros1gazebo-integration-tests.sh -f stage2_test -e hpc.adhoc
+          ./scripts/argos-integration-tests.sh -f stage2_univar_test -e hpc.adhoc
+          ./scripts/ros1gazebo-integration-tests.sh -f stage2_univar_test -e hpc.adhoc
 
       - uses: actions/upload-artifact@v3
         with:
@@ -72,8 +72,8 @@ jobs:
 
       - name: SLURM
         run: |
-          ./scripts/argos-integration-tests.sh -f stage2_outputs_test -e hpc.slurm
-          ./scripts/ros1gazebo-integration-tests.sh -f stage2_test -e hpc.slurm
+          ./scripts/argos-integration-tests.sh -f stage2_univar_test -e hpc.slurm
+          ./scripts/ros1gazebo-integration-tests.sh -f stage2_univar_test -e hpc.slurm
 
       - uses: actions/upload-artifact@v3
         with:

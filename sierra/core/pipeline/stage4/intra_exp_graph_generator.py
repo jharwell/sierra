@@ -171,10 +171,10 @@ class IntraExpGraphGenerator:
     def generate(self,
                  LN_targets: tp.List[types.YAMLDict],
                  HM_targets: tp.List[types.YAMLDict]):
-        if not self.cmdopts['project_no_yaml_LN']:
+        if not self.cmdopts['project_no_LN']:
             LinegraphsGenerator(self.cmdopts, LN_targets).generate()
 
-        if not self.cmdopts['project_no_yaml_HM']:
+        if not self.cmdopts['project_no_HM']:
             HeatmapsGenerator(self.cmdopts, HM_targets).generate()
 
     def calc_targets(self) -> tp.Tuple[tp.List[types.YAMLDict],
@@ -235,6 +235,7 @@ class LinegraphsGenerator:
 
         # For each category of linegraphs we are generating
         for category in self.targets:
+
             # For each graph in each category
             for graph in category['graphs']:
                 output_fpath = self.graph_root / ('SLN-' + graph['dest_stem'] +
@@ -294,6 +295,7 @@ class HeatmapsGenerator:
 
         # For each category of heatmaps we are generating
         for category in self.targets:
+
             # For each graph in each category
             for graph in category['graphs']:
                 self.logger.trace('\n' +  # type: ignore
@@ -307,7 +309,7 @@ class HeatmapsGenerator:
                                             graph.get('title', None)).generate()
                 else:
                     input_fpath = self.exp_stat_root / (graph['src_stem'] +
-                                                        config.kStatsExt['mean'])
+                                                        config.kStats['mean'].exts['mean'])
                     output_fpath = self.exp_graph_root / ('HM-' + graph['src_stem'] +
                                                           config.kImageExt)
 

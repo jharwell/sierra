@@ -91,7 +91,7 @@ do so are:
 
 #. Select an execution environment for SIERRA that matches your available
    computational resources: :ref:`ln-sierra-exec-env-hpc` or
-   :ref:`ln-sierra-exec-env-robots`, following the appropriate setup guide. If
+   :ref:`ln-sierra-exec-env-robot`, following the appropriate setup guide. If
    there is nothing suitable, never fear! It's easy to create a new execution
    environment plugin, see :ref:`ln-sierra-tutorials-plugin-exec-env`.
 

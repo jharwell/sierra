@@ -43,7 +43,7 @@ setup_env() {
        --sierra-root=$SIERRA_ROOT \
        --platform=platform.ros1gazebo \
        --project=ros1gazebo_project \
-       --exp-setup=exp_setup.T10.K5.N50\
+       --exp-setup=exp_setup.T5.K5\
        --n-runs=4 \
        --exec-strict\
        --template-input-file=$SAMPLE_ROOT/exp/ros1gazebo/turtlebot3_house.launch \
@@ -57,44 +57,42 @@ setup_env() {
 }
 
 ################################################################################
-# Utility funcs
-################################################################################
-sanity_check_pipeline() {
-    SIERRA_CMD="$*"
-
-    rm -rf $SIERRA_ROOT
-
-    # The ROS1+gazebo sample project does not current output anything, so we
-    # can't run stage 3 or 4 :-(.
-    $SIERRA_CMD --pipeline 1
-
-    $SIERRA_CMD --pipeline 2
-
-    rm -rf $SIERRA_ROOT
-
-    $SIERRA_CMD --pipeline 1 2
-}
-
-################################################################################
 # Check that the batch criteria that come with SIERRA for ROS1+Gazebo work.
 ################################################################################
-batch_criteria_test() {
+bc_univar_sanity_test() {
+
     SIERRA_CMD="$SIERRA_BASE_CMD \
     --batch-criteria population_size.Linear3.C3"
 
-    sanity_check_pipeline $SIERRA_CMD
+    $SIERRA_CMD --pipeline 1 2
+    rm -rf $SIERRA_ROOT
 
     SIERRA_CMD="$SIERRA_BASE_CMD \
     --batch-criteria population_size.Log8"
 
-    sanity_check_pipeline $SIERRA_CMD
+    $SIERRA_CMD --pipeline 1 2
+    rm -rf $SIERRA_ROOT
 
 }
 
+bc_bivar_sanity_test() {
+    SIERRA_CMD="$SIERRA_BASE_CMD \
+    --batch-criteria population_size.Linear3.C3 max_speed.1.9.C5"
+
+    $SIERRA_CMD --pipeline 1 2
+    rm -rf $SIERRA_ROOT
+
+    SIERRA_CMD="$SIERRA_BASE_CMD \
+    --batch-criteria max_speed.1.9.C5 population_size.Linear3.C3"
+
+    $SIERRA_CMD --pipeline 1 2
+    rm -rf $SIERRA_ROOT
+
+}
 ################################################################################
 # Check that stage 1 outputs what it is supposed to
 ################################################################################
-stage1_outputs_test() {
+stage1_univar_test() {
     batch_root=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"ros1gazebo_project\",[\"population_size.Linear3.C3\"],\"HouseWorld.10x10x2\",\"turtlebot3.wander\", \"turtlebot3_house\"))")
 
     input_root=$batch_root/exp-inputs/
@@ -126,12 +124,83 @@ stage1_outputs_test() {
     rm -rf $SIERRA_ROOT
 }
 
+stage1_bivar_test() {
+    batch_root1=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"ros1gazebo_project\",[\"population_size.Linear3.C3\",\"max_speed.1.9.C5\"],\"HouseWorld.10x10x2\",\"turtlebot3.wander\", \"turtlebot3_house\"))")
+
+    input_root1=$batch_root1/exp-inputs/
+
+    batch_root2=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"ros1gazebo_project\",[\"max_speed.1.9.C5\",\"population_size.Linear3.C3\"],\"HouseWorld.10x10x2\",\"turtlebot3.wander\", \"turtlebot3_house\"))")
+
+    input_root2=$batch_root2/exp-inputs/
+
+    SIERRA_CMD="$SIERRA_BASE_CMD \
+    --batch-criteria population_size.Linear3.C3 max_speed.1.9.C5\
+    --pipeline 1"
+
+    rm -rf $SIERRA_ROOT
+
+    $SIERRA_CMD
+
+    # Check SIERRA directory structure
+    for i in {0..2}; do
+        for j in {0..4}; do
+            [ -d "$input_root1/c1-exp${i}+c2-exp${j}" ] || false
+        done
+    done
+
+    # Check stage1 generated stuff
+    for i in {0..2}; do
+        [ $(grep -r "max=\"1.0\"" $input_root1/c1-exp${i}+* | wc -l) -eq "5" ]
+        for j in {0..4}; do
+            [ -f "$input_root1/c1-exp${i}+c2-exp${j}/commands.txt" ] || false
+            [ -f "$input_root1/c1-exp${i}+c2-exp${j}/exp_def.pkl" ] || false
+            [ -f "$input_root1/c1-exp${i}+c2-exp${j}/seeds.pkl" ] || false
+
+            for run in {0..3}; do
+                [ -f "$input_root1/c1-exp${i}+c2-exp${j}/turtlebot3_house_run${run}_master.launch" ] ||false
+                [ -f "$input_root1/c1-exp${i}+c2-exp${j}/turtlebot3_house_run${run}_robots.launch" ] ||false
+            done
+        done
+    done
+
+    rm -rf $SIERRA_ROOT
+
+    SIERRA_CMD="$SIERRA_BASE_CMD \
+    --batch-criteria max_speed.1.9.C5 population_size.Linear3.C3\
+    --pipeline 1"
+
+    $SIERRA_CMD
+
+    # Check SIERRA directory structure
+    for i in {0..4}; do
+        for j in {0..2}; do
+            [ -d "$input_root2/c1-exp${i}+c2-exp${j}" ] || false
+        done
+    done
+
+    # Check stage1 generated stuff
+    for i in {0..4}; do
+        for j in {0..2}; do
+            [ $(grep -r "max=\"1.0\"" $input_root2/*+c2-exp${j} | wc -l) -eq "5" ]
+
+            [ -f "$input_root2/c1-exp${i}+c2-exp${j}/commands.txt" ] || false
+            [ -f "$input_root2/c1-exp${i}+c2-exp${j}/exp_def.pkl" ] || false
+            [ -f "$input_root2/c1-exp${i}+c2-exp${j}/seeds.pkl" ] || false
+        done
+    done
+
+    rm -rf $SIERRA_ROOT
+}
+
+
 ################################################################################
 # Check that stage 2 works for all exec envs
-#
-# Can't check outputs, only that SIERRA finishes and didn't crash.
 ################################################################################
-stage2_test() {
+stage2_univar_test() {
+    batch_root=$(python3 -c"import sierra.core.root_dirpath_generator as rdg;print(rdg.gen_batch_root(\"$SIERRA_ROOT\",\"ros1gazebo_project\",[\"population_size.Linear3.C3\"],\"HouseWorld.10x10x2\",\"turtlebot3.wander\", \"turtlebot3_house\"))")
+
+    scratch_root=$batch_root/scratch/
+
     export SIERRA_CMD="$SIERRA_BASE_CMD \
     --batch-criteria population_size.Linear3.C3 \
     --pipeline 1 2 "
@@ -142,22 +211,40 @@ stage2_test() {
 
     if [ "$env" = "hpc.local" ]; then
         $SIERRA_CMD --exec-env=hpc.local
+
+        rm -rf $SIERRA_ROOT
+
+        $SIERRA_CMD --exec-env=hpc.local --exec-devnull
+
+        # Check no output produced
+        for exp in {0..2}; do
+            [ ! -s "$scratch_root/exp${exp}/1/*/stdout" ]
+            [ ! -s "$scratch_root/exp${exp}/1/*/stderr" ]
+        done
+
+        rm -rf $SIERRA_ROOT
+
     elif [ "$env" = "hpc.adhoc" ]; then
         # : -> "run on localhost" in GNU parallel
         echo ":" > /tmp/nodefile
         export SIERRA_NODEFILE=/tmp/nodefile
+
         $SIERRA_CMD --exec-env=hpc.adhoc
+
+        rm -rf $SIERRA_ROOT
     elif [ "$env" = "hpc.slurm" ]; then
         sbatch --wait -v --export=ALL ./scripts/slurm-test.sh
         # cat R-*
         # sudo cat /var/log/slurm-llnl/slurmd.log
         # sudo cat /var/log/slurm-llnl/slurmctld.log
         # sinfo
+
+        rm -rf $SIERRA_ROOT
     elif [ "$env" = "hpc.pbs" ]; then
         false
+    else
+        false
     fi
-
-    rm -rf $SIERRA_ROOT
 }
 
 ################################################################################

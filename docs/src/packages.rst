@@ -1,8 +1,8 @@
 .. _ln-sierra-packages:
 
-===============
-SIERRA Packages
-===============
+=============================
+SIERRA Installation Reference
+=============================
 
 .. _ln-sierra-packages-pypi:
 

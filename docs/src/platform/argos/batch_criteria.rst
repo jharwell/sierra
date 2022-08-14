@@ -35,8 +35,8 @@ Cmdline Syntax
 
 - ``model`` - The population size model to use.
 
-  - ``Log`` - Population sizes for each experiment are distributed 1...N by powers
-    of 2.
+  - ``Log`` - Population sizes for each experiment are distributed 1...N by
+    powers of 2.
 
   - ``Linear`` - Population sizes for each experiment are distributed linearly
     between 1...N, split evenly into 10 different sizes.

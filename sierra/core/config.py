@@ -100,22 +100,24 @@ kStorageExt: types.StrDict = {
     'csv': '.csv'
 }
 
-kStatsExt: types.StrDict = {
+kStats: tp.Dict[str, types.StatisticsSpec] = {
     # The default for averaging
-    'mean': '.mean',
+    'mean': types.StatisticsSpec({'mean': '.mean'}),
 
     # For calculating 95% confidence intervals
-    'stddev': '.stddev',
+    'conf95': types.StatisticsSpec({'stddev': '.stddev'}),
 
     # For calculating box and whisker plots
-    'median': '.median',
-    'q1': '.q1',
-    'q3': '.q3',
-    'whislo': '.whislo',
-    'whishi': '.whishi',
-    'cilo': '.cilo',
-    'cihi': '.cihi',
+    'bw': types.StatisticsSpec({'median': '.median',
+                                'q1': '.q1',
+                                'q3': '.q3',
+                                'whislo': '.whislo',
+                                'whishi': '.whishi',
+                                'cilo': '.cilo',
+                                'cihi': '.cihi'
+                                })
 }
+
 kModelsExt: types.StrDict = {
     'model': '.model',
     'legend': '.legend'

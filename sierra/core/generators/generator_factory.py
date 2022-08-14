@@ -141,12 +141,12 @@ class ControllerGenerator():
         if self.category not in self.controller_config:
             self.logger.fatal("Controller category '%s' not found in YAML configuration",
                               self.category)
-            assert False
+            raise RuntimeError
 
         if not any(self.name in config['name'] for config in self.controller_config[self.category]['controllers']):
             self.logger.fatal("Controller name '%s' not found in YAML configuration",
                               self.name)
-            assert False
+            raise RuntimeError
 
         self.logger.debug("Applying changes from %s (all experiments)",
                           config.kYAML.controllers)
