@@ -13,19 +13,20 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-Classes for generating common XML changes for all :term:`ROS1`-based
-:term:`Platforms <Platform>`; i.e., changes which are platform-specific,
-but applicable to all projects using :term:`ROS1`.
+"""Classes for generating XML changes common to all :term:`ROS1` platforms.
+
+I.e., changes which are platform-specific, but applicable to all projects using
+ROS1.
+
 """
 # Core packages
 import logging
+import pathlib
 
 # 3rd party packages
 
 # Project packages
-from sierra.core.xml import XMLLuigi, XMLWriterConfig
-from sierra.core.experiment.spec import ExperimentSpec
+from sierra.core.experiment import definition, spec, xml
 import sierra.core.utils as scutils
 from sierra.core import types, config
 import sierra.core.ros1.variables.exp_setup as exp
@@ -47,27 +48,28 @@ class ROSExpDefGenerator():
     reasonable.
 
     Attributes:
+
         controller: The controller used for the experiment.
         cmdopts: Dictionary of parsed cmdline parameters.
 
     """
 
     def __init__(self,
-                 spec: ExperimentSpec,
+                 exp_spec: spec.ExperimentSpec,
                  controller: str,
                  cmdopts: types.Cmdopts,
                  **kwargs) -> None:
         self.controller = controller
-        self.spec = spec
+        self.spec = exp_spec
         self.cmdopts = cmdopts
         self.template_input_file = kwargs['template_input_file']
         self.kwargs = kwargs
         self.ros_param_server = False
         self.logger = logging.getLogger(__name__)
 
-    def generate(self) -> XMLLuigi:
-        exp_def = XMLLuigi(input_fpath=self.template_input_file)
-        wr_config = XMLWriterConfig([])
+    def generate(self) -> definition.XMLExpDef:
+        exp_def = definition.XMLExpDef(input_fpath=self.template_input_file)
+        wr_config = xml.WriterConfig([])
 
         if exp_def.has_tag('./params'):
             self.logger.debug("Using shared XML parameter file")
@@ -113,7 +115,7 @@ class ROSExpDefGenerator():
 
         return exp_def
 
-    def _generate_experiment(self, exp_def: XMLLuigi) -> None:
+    def _generate_experiment(self, exp_def: definition.XMLExpDef) -> None:
         """
         Generate XML tag changes to setup basic experiment parameters.
 
@@ -148,8 +150,8 @@ class ROSExpRunDefUniqueGenerator:
 
     def __init__(self,
                  run_num: int,
-                 run_output_path: str,
-                 launch_stem_path: str,
+                 run_output_path: pathlib.Path,
+                 launch_stem_path: pathlib.Path,
                  random_seed: int,
                  cmdopts: types.Cmdopts) -> None:
 
@@ -160,12 +162,11 @@ class ROSExpRunDefUniqueGenerator:
         self.run_num = run_num
         self.logger = logging.getLogger(__name__)
 
-    def generate(self, exp_def: XMLLuigi):
+    def generate(self, exp_def: definition.XMLExpDef):
         return exp_def
 
-    def generate_random(self, exp_def: XMLLuigi) -> None:
-        """Generate XML changes for random seeding for a specific: term: `Experimental
-        Run` in an: term: `Experiment` during the input generation process.
+    def generate_random(self, exp_def: definition.XMLExpDef) -> None:
+        """Generate XML changes for random seeding for an experimental run.
 
         """
         self.logger.trace("Generating random seed changes for run%s",  # type: ignore
@@ -187,21 +188,21 @@ class ROSExpRunDefUniqueGenerator:
                             "value": str(self.random_seed)
                         })
 
-    def generate_paramfile(self, exp_def: XMLLuigi) -> None:
-        """Generate XML changes for the parameter for for a specific
-        : term: `Experimental Run` in an: term: `Experiment` during the input
-        generation process.
+    def generate_paramfile(self, exp_def: definition.XMLExpDef) -> None:
+        """Generate XML changes for the parameter file for an experimental run.
 
         """
-        self.logger.trace("Generating parameter file changes for run%s",
+        self.logger.trace("Generating parameter file changes for run%s",  # type: ignore
                           self.run_num)
+
+        param_file = self.launch_stem_path.with_suffix(config.kROS['param_file_ext'])
 
         # Master node gets a copy of the parameter file
         exp_def.tag_add("./master/group/[@ns='sierra']",
                         "param",
                         {
                             "name": "experiment/param_file",
-                            "value": self.launch_stem_path + config.kROS['param_file_ext']
+                            "value": str(param_file)
                         })
 
         # Each robot gets a copy of the parameter file
@@ -215,7 +216,7 @@ class ROSExpRunDefUniqueGenerator:
                         "param",
                         {
                             "name": "experiment/param_file",
-                            "value": self.launch_stem_path + config.kROS['param_file_ext']
+                            "value": str(param_file)
                         })
 
 

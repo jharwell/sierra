@@ -13,9 +13,8 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-Kernels for the different types of statistics which can be generated from
-experiments.
+"""Kernels for the different types of statistics generated from experiments.
+
 """
 # Core packages
 import typing as tp
@@ -30,9 +29,13 @@ from sierra.core import config
 
 
 class conf95:
-    """
-    Generate stddev statistics suitable for 95% confidence intervals. Applicable
-    to line graphs.
+    """Generate stddev statistics plotting for 95% confidence intervals.
+
+    Applicable to:
+
+    - :class:`~sierra.core.graphs.stacked_line_graph.StackedLineGraph`
+    - :class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`
+
     """
     @staticmethod
     def from_groupby(groupby: pd.core.groupby.generic.DataFrameGroupBy) -> tp.Dict[str,
@@ -70,8 +73,12 @@ class mean:
 
 class bw:
     """
-    Generate statistics so that box and whisker plots can be included for each
-    data point. Applicable to line graphs.
+    Generate statistics for plotting box and whisker plots around data points.
+
+    Applicable to:
+
+    - :class:`~sierra.core.graphs.stacked_line_graph.StackedLineGraph`
+    - :class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`
     """
     @staticmethod
     def from_groupby(groupby: pd.core.groupby.generic.DataFrameGroupBy) -> tp.Dict[str, pd.DataFrame]:
@@ -98,8 +105,8 @@ def _conf95_kernel(df_like, groupby: bool) -> tp.Dict[str, pd.DataFrame]:
         df_like = df_like.iloc[0, :]
 
     return {
-        config.kStatsExt['mean']: _fillna(df_like.mean().round(8)),
-        config.kStatsExt['stddev']: _fillna(df_like.std().round(8))
+        config.kStats['mean'].exts['mean']: _fillna(df_like.mean().round(8)),
+        config.kStats['conf95'].exts['stddev']: _fillna(df_like.std().round(8))
     }
 
 
@@ -113,7 +120,7 @@ def _mean_kernel(df_like, groupby: bool) -> tp.Dict[str, pd.DataFrame]:
         df_like = df_like.iloc[0, :]
 
     return {
-        config.kStatsExt['mean']: _fillna(df_like.mean().round(8))
+        config.kStats['mean'].exts['mean']: _fillna(df_like.mean().round(8))
     }
 
 
@@ -143,14 +150,14 @@ def _bw_kernel(df_like, groupby: bool, n_runs: int) -> tp.Dict[str, pd.DataFrame
     csv_cihi = csv_median + 1.57 * iqr / math.sqrt(n_runs)
 
     return {
-        config.kStatsExt['mean']: csv_mean,
-        config.kStatsExt['median']: csv_median,
-        config.kStatsExt['q1']: csv_q1,
-        config.kStatsExt['q3']: csv_q3,
-        config.kStatsExt['cilo']: csv_cilo,
-        config.kStatsExt['cihi']: csv_cihi,
-        config.kStatsExt['whislo']: csv_whislo,
-        config.kStatsExt['whishi']: csv_whishi
+        config.kStats['mean'].exts['mean']: csv_mean,
+        config.kStats['bw'].exts['median']: csv_median,
+        config.kStats['bw'].exts['q1']: csv_q1,
+        config.kStats['bw'].exts['q3']: csv_q3,
+        config.kStats['bw'].exts['cilo']: csv_cilo,
+        config.kStats['bw'].exts['cihi']: csv_cihi,
+        config.kStats['bw'].exts['whislo']: csv_whislo,
+        config.kStats['bw'].exts['whishi']: csv_whishi
     }
 
 
@@ -164,7 +171,7 @@ def _fillna(df_like: tp.Union[pd.DataFrame, np.float64, float]) -> tp.Union[pd.D
     elif isinstance(df_like, (np.float64, float)):
         return np.nan_to_num(df_like, nan=0)
 
-    assert False, f"Unknown type={type(df_like)}, value={df_like}"
+    raise TypeError(f"Unknown type={type(df_like)}, value={df_like}")
 
 
 __api__ = [

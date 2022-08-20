@@ -18,6 +18,7 @@
 # Core packages
 import re
 import typing as tp
+import pathlib
 
 # 3rd party packages
 
@@ -35,6 +36,7 @@ class ConstantDensity(bc.UnivarBatchCriteria):
     increased. This class is a base class which should NEVER be used on its own.
 
     Attributes:
+
         target_density: The target density.
 
         dimensions: List of (X,Y) dimensions to use (creates rectangular
@@ -50,8 +52,8 @@ class ConstantDensity(bc.UnivarBatchCriteria):
 
     def __init__(self,
                  cli_arg: str,
-                 main_config: tp.Dict[str, str],
-                 batch_input_root: str,
+                 main_config: types.YAMLDict,
+                 batch_input_root: pathlib.Path,
                  target_density: float,
                  dimensions: tp.List[ArenaExtent],
                  scenario_tag: str) -> None:
@@ -65,10 +67,11 @@ class ConstantDensity(bc.UnivarBatchCriteria):
         self.attr_changes = ArenaShape(dimensions).gen_attr_changelist()
 
     def exp_scenario_name(self, exp_num: int) -> str:
-        """Given the exp number in the batch, compute a valid, parsable scenario
-        name. It is necessary to query this criteria after generating the
-        changelist in order to create generator classes for each experiment in
-        the batch with the correct name and definition.
+        """Given the exp number in the batch, compute a parsable scenario name.
+
+        It is necessary to query this criteria after generating the changelist
+        in order to create generator classes for each experiment in the batch
+        with the correct name and definition in some cases.
 
         Normally controller+scenario are used to look up all necessary changes
         for the specified arena size, but for this criteria the specified
@@ -84,15 +87,17 @@ class ConstantDensity(bc.UnivarBatchCriteria):
 
 
 class Parser():
-    """
-    Enforces the cmdline definition of a :class:`ConstantDensity` derived batch
-    criteria.
+    """Enforces specification of a :class:`ConstantDensity` derived batch criteria.
+
     """
 
     def __call__(self, arg: str) -> types.CLIArgSpec:
         """
+        Parse the cmdline argument.
+
         Returns:
-            Dictionary with keys:
+
+            Dict:
                 target_density: Floating point value of parsed target density
                 arena_size_inc: Integer increment for arena size
 

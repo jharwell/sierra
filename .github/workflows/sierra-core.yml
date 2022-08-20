@@ -1,0 +1,248 @@
+name: SIERRA Core CI
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        required: True
+        type: string
+
+jobs:
+
+  cmdline-opts:
+    runs-on: ${{ inputs.os }}
+    strategy:
+      matrix:
+        python-version:
+          - 3.8
+          - 3.9
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/sierra-setup
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: argos
+
+      - name: Cmdline Options
+        run: |
+          ./scripts/core-integration-tests.sh -f cmdline_opts_test
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ci-core-cmdline-opts-${{ runner.os }}-${{ matrix.python-version }}-coverage
+          path: .coverage.*
+
+  env-vars:
+    runs-on: ${{ inputs.os }}
+    strategy:
+      matrix:
+        python-version:
+          - 3.8
+          - 3.9
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/sierra-setup
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: argos
+
+      - name: Environment variables
+        run: |
+          ./scripts/core-integration-tests.sh -f env_vars_test
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ci-core-env-vars-${{ runner.os }}-${{ matrix.python-version }}-coverage
+          path: .coverage.*
+
+  bc-bivar-sanity:
+    runs-on: ${{ inputs.os }}
+    strategy:
+      matrix:
+        python-version:
+          - 3.8
+          - 3.9
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/sierra-setup
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: argos
+
+      - uses: ./.github/actions/sample-project-setup
+        if: runner.os == 'Linux'
+        with:
+          platform: ros1gazebo
+          rosdistro: noetic
+
+      - name: Bivariate batch criteria sanity (ARGoS)
+        run: |
+          ./scripts/argos-integration-tests.sh -f bc_bivar_sanity_test
+
+      - name: Bivariate batch criteria sanity (ROS1+Gazebo)
+        if: runner.os == 'Linux'
+        run: |
+          ./scripts/ros1gazebo-integration-tests.sh -f bc_bivar_sanity_test
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ci-core-bc-bivar-sanity-${{ runner.os }}-${{ matrix.python-version }}-coverage
+          path: .coverage.*
+
+  stage1-bivar:
+    runs-on: ${{ inputs.os }}
+    strategy:
+      matrix:
+        python-version:
+          - 3.8
+          - 3.9
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/sierra-setup
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: argos
+
+      - uses: ./.github/actions/sample-project-setup
+        if: runner.os == 'Linux'
+        with:
+          platform: ros1gazebo
+          rosdistro: noetic
+
+      - name: Bivariate batch criteria stage 1 (ARGoS)
+        run: |
+          ./scripts/argos-integration-tests.sh -f stage1_bivar_test
+
+      - name: Bivariate batch criteria stage 1 (ROS1+Gazebo)
+        if: runner.os == 'Linux'
+        run: |
+          ./scripts/ros1gazebo-integration-tests.sh -f stage1_bivar_test
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ci-core-stage1-bivar-${{ runner.os }}-${{ matrix.python-version }}-coverage
+          path: .coverage.*
+
+  stage3-univar:
+    runs-on: ${{ inputs.os }}
+    strategy:
+      matrix:
+        python-version:
+          - 3.8
+          - 3.9
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/sierra-setup
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: argos
+
+      - name: Integration tests
+        shell: bash
+        run: |
+          ./scripts/argos-integration-tests.sh -f stage3_univar_test
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ci-core-stage3-univar-${{ runner.os }}-${{ matrix.python-version }}-coverage
+          path: .coverage.*
+
+  stage3-bivar:
+    runs-on: ${{ inputs.os }}
+    strategy:
+      matrix:
+        python-version:
+          - 3.8
+          - 3.9
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/sierra-setup
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: argos
+
+      - name: Integration tests
+        shell: bash
+        run: |
+          ./scripts/argos-integration-tests.sh -f stage3_bivar_test
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ci-core-stage3-univar-${{ runner.os }}-${{ matrix.python-version }}-coverage
+          path: .coverage.*
+
+  stage4-univar:
+    runs-on: ${{ inputs.os }}
+    strategy:
+      matrix:
+        python-version:
+          - 3.8
+          - 3.9
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/sierra-setup
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: argos
+
+      - name: Integration tests
+        shell: bash
+        run: |
+          ./scripts/argos-integration-tests.sh -f stage4_univar_test
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ci-core-stage4-univar-${{ runner.os }}-${{ matrix.python-version }}-coverage
+          path: .coverage.*
+
+  stage5-univar:
+    runs-on: ${{ inputs.os }}
+    strategy:
+      matrix:
+        python-version:
+          - 3.8
+          - 3.9
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/sierra-setup
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: argos
+
+      - name: Integration tests
+        shell: bash
+        run: |
+          ./scripts/argos-integration-tests.sh -f stage5_univar_test
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ci-core-stage5-univar-${{ runner.os }}-${{ matrix.python-version }}-coverage
+          path: .coverage.*
+
+  stage5-bivar:
+    runs-on: ${{ inputs.os }}
+    strategy:
+      matrix:
+        python-version:
+          - 3.8
+          - 3.9
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/sierra-setup
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: argos
+
+      - name: Integration tests
+        shell: bash
+        run: |
+          ./scripts/argos-integration-tests.sh -f stage5_bivar_test
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ci-core-stage5-bivar-${{ runner.os }}-${{ matrix.python-version }}-coverage
+          path: .coverage.*

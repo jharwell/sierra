@@ -13,6 +13,11 @@ This is the default platform on which SIERRA will run experiments, and uses the
 
    batch_criteria.rst
 
+Environment Variables
+=====================
+
+This platform respects :envvar:`SIERRA_ARCH`.
+
 Random Seeding For Reproducibility
 ==================================
 

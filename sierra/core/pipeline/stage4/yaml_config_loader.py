@@ -15,16 +15,15 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 # Core packages
-import os
 import typing as tp
 import logging
+import pathlib
 
 # 3rd party packages
 import yaml
 
 # Project packages
-import sierra.core.utils
-from sierra.core import types
+from sierra.core import types, utils
 
 
 class YAMLConfigLoader():
@@ -45,51 +44,69 @@ class YAMLConfigLoader():
     def __init__(self) -> None:
         self.logger = logging.getLogger(__name__)
 
-    def __call__(self, cmdopts: types.Cmdopts) -> tp.Dict[str, tp.Dict[str, str]]:
+    def __call__(self, cmdopts: types.Cmdopts) -> tp.Dict[str, types.YAMLDict]:
         """
-        Loads the intra-experiment linegraph, inter-experiment linegraph, and
-        intra-experiment heatmap YAML configuration.
+        Load YAML configuratoin for graphs.
+
+        This includes:
+
+        - intra-experiment linegraphs
+
+        - inter-experiment linegraphs
+
+        - intra-experiment heatmaps
+
+        - inter-experiment heatmaps (bivariate batch criteria only)
 
         Returns:
+
             Dictionary of loaded configuration with keys for ``intra_LN,
-            inter_LN, intra_HM``.
+            inter_LN, intra_HM, inter_HM``.
         """
         inter_LN_config = {}
         intra_LN_config = {}
         intra_HM_config = {}
+        inter_HM_config = {}
 
-        project_inter_LN = os.path.join(cmdopts['project_config_root'],
-                                        'inter-graphs-line.yaml')
-        project_intra_LN = os.path.join(cmdopts['project_config_root'],
-                                        'intra-graphs-line.yaml')
-        project_intra_HM = os.path.join(cmdopts['project_config_root'],
-                                        'intra-graphs-hm.yaml')
+        root = pathlib.Path(cmdopts['project_config_root'])
+        project_inter_LN = root / 'inter-graphs-line.yaml'
+        project_intra_LN = root / 'intra-graphs-line.yaml'
+        project_intra_HM = root / 'intra-graphs-hm.yaml'
+        project_inter_HM = root / 'inter-graphs-hm.yaml'
 
-        if sierra.core.utils.path_exists(project_intra_LN):
+        if utils.path_exists(project_intra_LN):
             self.logger.info("Intra-experiment linegraph config for project '%s' from %s",
                              cmdopts['project'],
                              project_intra_LN)
-            with open(project_intra_LN) as f:
+            with utils.utf8open(project_intra_LN) as f:
                 intra_LN_config = yaml.load(f, yaml.FullLoader)
 
-        if sierra.core.utils.path_exists(project_inter_LN):
+        if utils.path_exists(project_inter_LN):
             self.logger.info("Inter-experiment linegraph config for project '%s' from %s",
                              cmdopts['project'],
                              project_inter_LN)
-            with open(project_inter_LN) as f:
+            with utils.utf8open(project_inter_LN) as f:
                 inter_LN_config = yaml.load(f, yaml.FullLoader)
 
-        if sierra.core.utils.path_exists(project_intra_HM):
+        if utils.path_exists(project_intra_HM):
             self.logger.info("Intra-experiment heatmap config for project '%s' from %s",
                              cmdopts['project'],
                              project_intra_HM)
-            with open(project_intra_HM) as f:
+            with utils.utf8open(project_intra_HM) as f:
                 intra_HM_config = yaml.load(f, yaml.FullLoader)
+
+        if utils.path_exists(project_inter_HM):
+            self.logger.info("Inter-experiment heatmap config for project '%s' from %s",
+                             cmdopts['project'],
+                             project_inter_HM)
+            with utils.utf8open(project_inter_HM) as f:
+                inter_HM_config = yaml.load(f, yaml.FullLoader)
 
         return {
             'intra_LN': intra_LN_config,
             'intra_HM': intra_HM_config,
-            'inter_LN': inter_LN_config
+            'inter_LN': inter_LN_config,
+            'inter_HM': inter_HM_config
         }
 
 

@@ -19,10 +19,12 @@ import argparse
 import os
 import random
 import typing as tp
-import multiprocessing
 import re
 import shutil
 import logging
+import sys
+import pathlib
+import psutil
 
 # 3rd party packages
 import implements
@@ -30,8 +32,8 @@ import packaging.version
 
 # Project packages
 from sierra.plugins.platform.argos import cmdline
-from sierra.core import hpc, xml, config, types, utils, platform
-from sierra.core.experiment import bindings
+from sierra.core import hpc, config, types, utils, platform
+from sierra.core.experiment import bindings, definition, xml
 import sierra.core.variables.batch_criteria as bc
 
 
@@ -69,7 +71,7 @@ class ParsedCmdlineConfigurer():
         elif self.exec_env == 'hpc.pbs':
             self._hpc_pbs(args)
         else:
-            assert False, f"'{self.exec_env}' unsupported on ARGoS"
+            raise RuntimeError(f"'{self.exec_env}' unsupported on ARGoS")
 
     def _hpc_pbs(self, args: argparse.Namespace) -> None:
         self.logger.debug("Configuring ARGoS for PBS execution")
@@ -119,13 +121,12 @@ class ParsedCmdlineConfigurer():
 
         if args.exec_jobs_per_node is None:
             # Every physics engine gets at least 1 core
-            parallel_jobs = int(multiprocessing.cpu_count() /
-                                float(ppn_per_run_req))
+            parallel_jobs = int(psutil.cpu_count() / float(ppn_per_run_req))
             if parallel_jobs == 0:
-                self.logger.warning(("Local machine has %s cores, but %s "
-                                     "physics engines/run requested; "
+                self.logger.warning(("Local machine has %s logical cores, but "
+                                     "%s physics engines/run requested; "
                                      "allocating anyway"),
-                                    multiprocessing.cpu_count(),
+                                    psutil.cpu_count(),
                                     ppn_per_run_req)
                 parallel_jobs = 1
 
@@ -140,20 +141,17 @@ class ParsedCmdlineConfigurer():
     def _hpc_adhoc(self, args: argparse.Namespace) -> None:
         self.logger.debug("Configuring ARGoS for ADHOC execution")
 
-        with open(args.nodefile, 'r') as f:
-            lines = f.readlines()
-            n_nodes = len(lines)
-
-            ppn = 0
-            for line in lines:
-                ppn = min(ppn, int(line.split('/')[0]))
+        nodes = platform.ExecEnvChecker.parse_nodefile(args.nodefile)
+        ppn = sys.maxsize
+        for node in nodes:
+            ppn = min(ppn, node.n_cores)
 
         # For HPC, we want to use the the maximum # of simultaneous jobs per
         # node such that there is no thread oversubscription. We also always
         # want to allocate each physics engine its own thread for maximum
         # performance, per the original ARGoS paper.
         if args.exec_jobs_per_node is None:
-            args.exec_jobs_per_node = int(float(args.n_runs) / n_nodes)
+            args.exec_jobs_per_node = int(float(args.n_runs) / len(nodes))
 
         args.physics_n_engines = int(ppn / args.exec_jobs_per_node)
 
@@ -166,7 +164,7 @@ class ParsedCmdlineConfigurer():
 class ExpRunShellCmdsGenerator():
     def __init__(self,
                  cmdopts: types.Cmdopts,
-                 criteria: bc.IConcreteBatchCriteria,
+                 criteria: bc.BatchCriteria,
                  n_robots: int,
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
@@ -174,7 +172,7 @@ class ExpRunShellCmdsGenerator():
 
     def pre_run_cmds(self,
                      host: str,
-                     input_fpath: str,
+                     input_fpath: pathlib.Path,
                      run_num: int) -> tp.List[types.ShellCmdSpec]:
         # When running ARGoS under Xvfb in order to headlessly render frames, we
         # need to start a per-instance Xvfb server that we tell ARGoS to use via
@@ -186,37 +184,33 @@ class ExpRunShellCmdsGenerator():
                 self.display_port = random.randint(0, 1000000)
                 cmd1 = f"Xvfb :{self.display_port} -screen 0, 1600x1200x24 &"
                 cmd2 = f"export DISPLAY=:{self.display_port};"
-                return [{'cmd': cmd1, 'shell': True, 'wait': True},
-                        {'cmd': cmd2, 'shell': True, 'wait': True, 'env': True}]
+                spec1 = types.ShellCmdSpec(cmd=cmd1, shell=True, wait=True)
+                spec2 = types.ShellCmdSpec(cmd=cmd2,
+                                           shell=True,
+                                           wait=True,
+                                           env=True)
+                return [spec1, spec2]
 
         return []
 
     def exec_run_cmds(self,
                       host: str,
-                      input_fpath: str,
+                      input_fpath: pathlib.Path,
                       run_num: int) -> tp.List[types.ShellCmdSpec]:
-        exec_env = self.cmdopts['exec_env']
-        if exec_env in ['hpc.local', 'hpc.adhoc']:
-            cmd = '{0} -c {1}{2}'.format(config.kARGoS['launch_cmd'],
-                                         input_fpath,
-                                         config.kARGoS['launch_file_ext'])
-        elif exec_env in ['hpc.slurm', 'hpc.pbs']:
-            cmd = '{0}-{1} -c {2}{3}'.format(config.kARGoS['launch_cmd'],
-                                             os.environ['SIERRA_ARCH'],
-                                             input_fpath,
-                                             config.kARGoS['launch_file_ext'])
-        else:
-            assert False, f"Unsupported exec environment '{exec_env}'"
+        shellname = platform.get_executable_shellname(config.kARGoS['launch_cmd'])
+        cmd = '{0} -c {1}{2}'.format(shellname,
+                                     str(input_fpath),
+                                     config.kARGoS['launch_file_ext'])
 
         # ARGoS is pretty good about not printing stuff if we pass these
         # arguments. We don't want to pass > /dev/null so that we get the
         # text of any exceptions that cause ARGoS to crash.
-        if not self.cmdopts['exec_no_devnull']:
+        if self.cmdopts['exec_devnull']:
             cmd += ' --log-file /dev/null --logerr-file /dev/null'
 
         cmd += ';'
 
-        return [{'cmd': cmd, 'shell': True, 'wait': True}]
+        return [types.ShellCmdSpec(cmd=cmd, shell=True, wait=True)]
 
     def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
         return []
@@ -232,7 +226,7 @@ class ExpShellCmdsGenerator():
     def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
         return []
 
-    def exec_exp_cmds(self, exec_opts: types.SimpleDict) -> tp.List[types.ShellCmdSpec]:
+    def exec_exp_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
         return []
 
     def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
@@ -240,11 +234,7 @@ class ExpShellCmdsGenerator():
         # was run with --exec-resume, then there may be no Xvfb processes to
         # kill, so we can't (in general) check the return code.
         if self.cmdopts['platform_vc']:
-            return [{
-                'cmd': 'killall Xvfb',
-                'shell': True,
-                'wait': True
-            }]
+            return [types.ShellCmdSpec(cmd='killall Xvfb', shell=True, wait=True)]
 
         return []
 
@@ -254,13 +244,15 @@ class ExpConfigurer():
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         self.cmdopts = cmdopts
 
-    def for_exp_run(self, exp_input_root: str, run_output_root: str) -> None:
+    def for_exp_run(self,
+                    exp_input_root: pathlib.Path,
+                    run_output_root: pathlib.Path) -> None:
         if self.cmdopts['platform_vc']:
-            frames_fpath = os.path.join(run_output_root,
-                                        config.kARGoS['frames_leaf'])
+            argos = config.kRendering['argos']
+            frames_fpath = run_output_root / argos['frames_leaf']
             utils.dir_create_checked(frames_fpath, exist_ok=True)
 
-    def for_exp(self, exp_input_root: str) -> None:
+    def for_exp(self, exp_input_root: pathlib.Path) -> None:
         pass
 
     def cmdfile_paradigm(self) -> str:
@@ -276,8 +268,8 @@ class ExecEnvChecker(platform.ExecEnvChecker):
         keys = ['ARGOS_PLUGIN_PATH']
 
         for k in keys:
-            assert k in os.environ,\
-                "Non-ARGoS environment detected: '{0}' not found".format(k)
+            assert k in os.environ, \
+                f"Non-ARGoS environment detected: '{k}' not found"
 
         # Check we can find ARGoS
         proc = self.check_for_simulator(config.kARGoS['launch_cmd'])
@@ -293,15 +285,14 @@ class ExecEnvChecker(platform.ExecEnvChecker):
         min_version = packaging.version.parse(config.kARGoS['min_version'])
 
         assert version >= min_version,\
-            "ARGoS version {0} < min required {1}".format(version,
-                                                          min_version)
+            f"ARGoS version {version} < min required {min_version}"
 
         if self.cmdopts['platform_vc']:
             assert shutil.which('Xvfb') is not None, "Xvfb not found"
 
 
-def population_size_from_pickle(chgs: tp.Union[xml.XMLAttrChangeSet,
-                                               xml.XMLTagAddList],
+def population_size_from_pickle(chgs: tp.Union[xml.AttrChangeSet,
+                                               xml.TagAddList],
                                 main_config: types.YAMLDict,
                                 cmdopts: types.Cmdopts) -> int:
     for path, attr, value in chgs:
@@ -311,11 +302,25 @@ def population_size_from_pickle(chgs: tp.Union[xml.XMLAttrChangeSet,
     return -1
 
 
-def robot_type_from_def(exp_def: xml.XMLLuigi) -> tp.Optional[str]:
+def arena_dims_from_criteria(criteria: bc.BatchCriteria) -> tp.List[utils.ArenaExtent]:
+    dims = []
+    for exp in criteria.gen_attr_changelist():
+        for c in exp:
+            if c.path == ".//arena" and c.attr == "size":
+                d = utils.Vector3D.from_str(c.value)
+                dims.append(utils.ArenaExtent(d))
+
+    assert len(dims) > 0,\
+        "Scenario dimensions not contained in batch criteria"
+
+    return dims
+
+
+def robot_type_from_def(exp_def: definition.XMLExpDef) -> tp.Optional[str]:
     """
     Get the entity type of the robots managed by ARGoS.
 
-    .. NOTE:: Assumes homgeneous swarms.
+    .. NOTE:: Assumes homgeneous systems.
     """
     for robot in config.kARGoS['spatial_hash2D']:
         if exp_def.has_tag(f'.//arena/distribute/entity/{robot}'):
@@ -324,15 +329,10 @@ def robot_type_from_def(exp_def: xml.XMLLuigi) -> tp.Optional[str]:
     return None
 
 
-def population_size_from_def(exp_def: xml.XMLLuigi,
+def population_size_from_def(exp_def: definition.XMLExpDef,
                              main_config: types.YAMLDict,
                              cmdopts: types.Cmdopts) -> int:
     return population_size_from_pickle(exp_def.attr_chgs, main_config, cmdopts)
-
-
-def robot_prefix_extract(main_config: types.YAMLDict,
-                         cmdopts: types.Cmdopts) -> tp.Optional[str]:
-    return None
 
 
 def pre_exp_diagnostics(cmdopts: types.Cmdopts,

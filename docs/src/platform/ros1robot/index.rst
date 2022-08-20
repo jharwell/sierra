@@ -13,7 +13,7 @@ a real robot of your choice. To use this platform, you must setup the
 platform meant to work with most real robots which :term:`ROS1` supports, and as
 a starting point to derive more specific platform configuration for a given
 robot (if needed). For all execution environments using this platform (see
-:ref:`ln-sierra-exec-env-robots` for examples), SIERRA will run experiments
+:ref:`ln-sierra-exec-env-robot` for examples), SIERRA will run experiments
 spread across multiple robots using GNU parallel.
 
 SIERRA designates the host machine as the ROS master, and allows you to
@@ -25,6 +25,11 @@ mounted filesystems).
 .. toctree::
 
    batch_criteria.rst
+
+Environment Variables
+=====================
+
+This platform ignores :envvar:`SIERRA_ARCH`.
 
 Random Seeding For Reproducibility
 ==================================
@@ -59,8 +64,9 @@ invocation:
   robot (this is a configuration parameter--see
   :ref:`ln-sierra-tutorials-project-main-config`).
 
-- ROS does not provide a way to say "Run this experiment for X seconds", SIERRA
-  inserts its own timekeeper node into each robot which will exit after X
-  seconds and take the roslaunch process with it.
+- ROS does not provide a way to say "Run this experiment for X seconds", so
+  SIERRA inserts its own timekeeper node into each robot which will exit after X
+  seconds and take the roslaunch process with it on each robot and/or the master
+  node.
 
 See also :ref:`ln-sierra-req-code-ros1robot`.

@@ -1,19 +1,29 @@
-.. _ln-sierra-usage-vc:
+.. _ln-sierra-usage-rendering:
 
-==============
-Visual Capture
-==============
+=========
+Rendering
+=========
 
-SIERRA's capabilities for capturing frames during :term:`Experimental Runs
-<Experimental Run>` and rendering them input video outputs are detailed in this
-section.
+SIERRA's capabilities for rendering video outputs are detailed in this
+section. SIERRA can render frames (images) into videos from 3 sources:
+
+- Those captured using ``--platform-vc``, details :ref:`here
+  <ln-sierra-usage-rendering-platform>`.
+
+- Those imagized from project CSV output files via ``--project-imagizing`` using
+  ``--project-rendering`` details :ref:`here
+  <ln-sierra-usage-rendering-project>`.
+
+- Inter-experiment heatmaps from bivariate batch criteria ``--bc-rendering``,
+  details :ref:`here <ln-sierra-usage-rendering-bc>`.
+
 
 .. NOTE:: Using BOTH the platform and project rendering capabilities
-   simultaneously IS possible, but discouraged unless you have multiple
-   terrabytes of disk space available. In general when using SIERRA's rendering
-   capabilities, ``--exp-range`` is your friend.
+   simultaneously IS possible (i.e., passing ``--platform-vc`` and
+   ``--project-rendering`` during stage 3), but discouraged unless you have
+   multiple terrabytes of disk space available. ``--exp-range`` is your friend.
 
-.. _ln-sierra-usage-vc-platform:
+.. _ln-sierra-usage-rendering-platform:
 
 Platform Visual Capture
 =======================
@@ -34,7 +44,7 @@ This is applicable to the following platforms:
                computing power available.
 
 
-.. _ln-sierra-usage-vc-platform-argos:
+.. _ln-sierra-usage-rendering-platform-argos:
 
 ARGos Visual Capture
 --------------------
@@ -110,3 +120,27 @@ To use, do the following:
       should only pass ``--project-vc`` the first time you run stage 4 after
       having run stage 3 with ``--project-vc`` (unless you are getting paid by
       the hour).
+
+
+.. _ln-sierra-usage-rendering-bc:
+
+Batch Criteria Rendering
+========================
+
+For bivariate batch criteria, if inter-experiment heatmaps are generated, they
+can be stitched together to make videos of how the two variables of interest
+affect some aspect of behavior over time.
+
+To use, do the following:
+
+#. Pass ``--bc-rendering`` during stage 4 when at least inter-experiment heatmap
+   is generated. SIERRA will take the generated PNG files previously created and
+   generate a set of a videos in ``<batch_root>/videos/<heatmap name>`` for each
+   heatmap.
+
+   .. IMPORTANT::
+
+      Rendering the heatmaps CSV does not happen automatically every time as
+      part of stage 4 because it can take a LONG time and is idempotent. You
+      should only pass ``--bc-rendering`` the first time you run stage 4 (unless
+      you are getting paid by the hour).

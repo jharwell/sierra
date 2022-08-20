@@ -16,11 +16,9 @@
 #
 
 # Core packages
-import os
-import glob
-import re
 import typing as tp
 import logging
+import pathlib
 
 # 3rd party packages
 import numpy as np
@@ -29,12 +27,11 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 # Project packages
-from sierra.core import config, storage
+from sierra.core import config, storage, types
 
 
 class StackedSurfaceGraph:
-    """Generates a plot of a set of 3D surface graphs from a set of ``.mean``
-    files.
+    """Generates a plot of a set of 3D surface graphs from a set of CSVs.
 
     ``.mean`` files must be named as``<input_stem_fpath>_X.mean``, where `X` is
     non-negative integer. Input CSV files must be 2D grids of the same
@@ -49,8 +46,8 @@ class StackedSurfaceGraph:
     kMaxSurfaces = 4
 
     def __init__(self,
-                 input_stem_pattern: str,
-                 output_fpath: str,
+                 ipaths: types.PathList,
+                 output_fpath: pathlib.Path,
                  title: str,
                  legend: tp.List[str],
                  xlabel: str,
@@ -61,7 +58,7 @@ class StackedSurfaceGraph:
                  comp_type: str,
                  large_text: bool = False) -> None:
 
-        self.input_stem_pattern = os.path.abspath(input_stem_pattern)
+        self.ipaths = ipaths
         self.output_fpath = output_fpath
         self.title = title
         self.legend = legend
@@ -81,20 +78,19 @@ class StackedSurfaceGraph:
 
     def generate(self) -> None:
         reader = storage.DataFrameReader('storage.csv')
-        pattern = self.input_stem_pattern + '*.' + config.kStatsExt['mean']
-        dfs = [reader(f) for f in glob.glob(pattern) if re.search('_[0-9]+', f)]
+        dfs = [reader(f) for f in self.ipaths]
 
-        if not dfs:  # empty list
-            self.logger.debug("Not generating stacked surface graph: %s did not match any CSV files",
-                              self.input_stem_pattern)
+        if not dfs or len(dfs) > StackedSurfaceGraph.kMaxSurfaces:
+            self.logger.debug(("Not generating stacked surface graph: wrong # "
+                               "files (must be > 0, <= %s"),
+                              StackedSurfaceGraph.kMaxSurfaces)
             return
 
         assert len(dfs) <= StackedSurfaceGraph.kMaxSurfaces,\
             f"Too many surfaces to plot: {len(dfs)} > {StackedSurfaceGraph.kMaxSurfaces}"
 
         # Scaffold graph
-        plt.figure(figsize=(config.kGraphBaseSize,
-                            config.kGraphBaseSize))
+        plt.figure(figsize=(config.kGraphBaseSize, config.kGraphBaseSize))
         ax = plt.axes(projection='3d')
         x = np.arange(len(dfs[0].columns))
         y = dfs[0].index
@@ -131,20 +127,24 @@ class StackedSurfaceGraph:
 
     def _plot_surfaces(self, X, Y, ax, colors, dfs):
         ax.plot_surface(X, Y, dfs[0], cmap=colors[0])
+
+        # We do the calculations between dataframes in here rather than in the
+        # comparator, because we can be comparing more than 2.
         for i in range(1, len(dfs)):
-            if self.comp_type == 'raw':
+            if self.comp_type == 'SUraw':
                 plot_df = dfs[i]
-            elif self.comp_type == 'scale3D':
+            elif self.comp_type == 'SUscale':
                 plot_df = dfs[i] / dfs[0]
-            elif self.comp_type == 'diff3D':
+            elif self.comp_type == 'SUdiff':
                 plot_df = dfs[i] - dfs[0]
             ax.plot_surface(X, Y, plot_df, cmap=colors[i], alpha=0.5)
 
     def _plot_ticks(self, ax, xvals, yvals):
-        """
-        Plot ticks and tick labels. If the labels are numerical and the numbers are
-        too large, force scientific notation (the ``rcParam`` way of doing this
-        does not seem to work...)
+        """Plot ticks and tick labels.
+
+        If the labels are numerical and the numbers are too large, force
+        scientific notation (the ``rcParam`` way of doing this does not seem to
+        work...)
 
         """
         ax.tick_params(labelsize=self.text_size['tick_label'])
@@ -155,8 +155,8 @@ class StackedSurfaceGraph:
         ax.set_yticklabels(self.ytick_labels, rotation='vertical')
 
     def _plot_legend(self, ax, cmap_handles, handler_map):
-        # Legend should have ~3 entries per column, in order to maximize real estate on tightly
-        # constrained papers.
+        # Legend should have ~3 entries per column, in order to maximize real
+        # estate on tightly constrained papers.
         ax.legend(handles=cmap_handles,
                   handler_map=handler_map,
                   labels=self.legend,
@@ -175,9 +175,11 @@ class StackedSurfaceGraph:
         ax.set_zlabel('\n' + self.zlabel, fontsize=self.text_size['xyz_label'])
 
     def _save_figs(self, fig, ax):
-        """Save multiple rotated copies of the same figure. Necessary for automation of
-        3D figure generation, because you can't really know a priori what views
-        are going to give the best results.
+        """Save multiple rotated copies of the same figure.
+
+        Necessary for automation of 3D figure generation, because you can't
+        really know a priori what views are going to give the best results. MPL
+        doesn't have a true 3D plot generator yet.
 
         """
         for angle in range(0, 360, 30):
@@ -185,11 +187,12 @@ class StackedSurfaceGraph:
             # The path we are passed may contain dots from the controller same,
             # so we extract the leaf of that for manipulation to add the angle
             # of the view right before the file extension.
-            path, leaf = os.path.split(self.output_fpath)
+            path = self.output_fpath.parent
+            leaf = self.output_fpath.name
             components = leaf.split('.')
             fname = ''.join(leaf[0:-2]) + '_' + \
                 str(angle) + '.' + components[-1]
-            fig.savefig(os.path.join(path, fname),
+            fig.savefig(path / fname,
                         bbox_inches='tight',
                         dpi=config.kGraphDPI,
                         pad_inches=0)

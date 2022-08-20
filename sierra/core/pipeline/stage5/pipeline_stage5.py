@@ -14,14 +14,13 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""
-Classes for implementing stage 5 of the experimental pipeline: comparing
-deliverables.
+"""Stage 5 of the experimental pipeline: comparing deliverables.
+
 """
 
 # Core packages
-import os
 import logging
+import pathlib
 
 # 3rd party packages
 import yaml
@@ -30,8 +29,7 @@ import yaml
 from sierra.core.pipeline.stage5 import intra_scenario_comparator as intrasc
 from sierra.core.pipeline.stage5 import inter_scenario_comparator as intersc
 import sierra.core.root_dirpath_generator as rdg
-import sierra.core.utils
-from sierra.core import types
+from sierra.core import types, utils, config
 
 
 class PipelineStage5:
@@ -62,12 +60,16 @@ class PipelineStage5:
 
     """
 
-    def __init__(self, main_config: dict, cmdopts: types.Cmdopts) -> None:
+    def __init__(self,
+                 main_config: types.YAMLDict,
+                 cmdopts: types.Cmdopts) -> None:
         self.cmdopts = cmdopts
         self.main_config = main_config
 
-        with open(os.path.join(self.cmdopts['project_config_root'],
-                               'stage5.yaml')) as f:
+        path = pathlib.Path(self.cmdopts['project_config_root'],
+                            config.kYAML.stage5)
+
+        with utils.utf8open(path) as f:
             self.stage5_config = yaml.load(f, yaml.FullLoader)
 
         self.logger = logging.getLogger(__name__)
@@ -78,11 +80,11 @@ class PipelineStage5:
                 # We add the controller list to the directory path for the .csv
                 # and graph directories so that multiple runs of stage5 with
                 # different controller sets do not overwrite each other
-                # (i.e. make stage5 idempotent).
-                'graphs': os.path.join(self.cmdopts['sierra_root'],
+                # (i.e. make stage5 more idempotent).
+                'graphs': pathlib.Path(self.cmdopts['sierra_root'],
                                        self.cmdopts['project'],
                                        '+'.join(self.controllers) + "-cc-graphs"),
-                'csvs': os.path.join(self.cmdopts['sierra_root'],
+                'csvs': pathlib.Path(self.cmdopts['sierra_root'],
                                      self.cmdopts['project'],
                                      '+'.join(self.controllers) + "-cc-csvs"),
             }
@@ -97,13 +99,13 @@ class PipelineStage5:
                 # and graph directories so that multiple runs of stage5 with
                 # different scenario sets do not overwrite each other (i.e. make
                 # stage5 idempotent).
-                'graphs': os.path.join(self.cmdopts['sierra_root'],
+                'graphs': pathlib.Path(self.cmdopts['sierra_root'],
                                        self.cmdopts['project'],
                                        '+'.join(self.scenarios) + "-sc-graphs"),
-                'csvs': os.path.join(self.cmdopts['sierra_root'],
+                'csvs': pathlib.Path(self.cmdopts['sierra_root'],
                                      self.cmdopts['project'],
                                      '+'.join(self.scenarios) + "-sc-csvs"),
-                'models': os.path.join(self.cmdopts['sierra_root'],
+                'models': pathlib.Path(self.cmdopts['sierra_root'],
                                        self.cmdopts['project'],
                                        '+'.join(self.scenarios) + "-sc-models"),
             }
@@ -111,8 +113,11 @@ class PipelineStage5:
         else:
             self.scenarios = []
 
+        self.project_root = pathlib.Path(self.cmdopts['sierra_root'],
+                                         self.cmdopts['project'])
+
     def run(self, cli_args) -> None:
-        """Runs stage 5 of the experimental pipeline.
+        """Run stage 5 of the experimental pipeline.
 
         If ``--controller-comparison`` was passed:
 
@@ -131,7 +136,7 @@ class PipelineStage5:
         """
         # Create directories for .csv files and graphs
         for v in self.output_roots.values():
-            sierra.core.utils.dir_create_checked(v, True)
+            utils.dir_create_checked(v, True)
 
         if self.cmdopts['controller_comparison']:
             self._run_cc(cli_args)
@@ -145,7 +150,7 @@ class PipelineStage5:
         else:
             legend = self.controllers
 
-        self._verify_controllers(self.controllers, cli_args)
+        self._verify_comparability(self.controllers, cli_args)
 
         self.logger.info(
             "Inter-batch controller comparison of %s...", self.controllers)
@@ -202,18 +207,17 @@ class PipelineStage5:
                          self.cmdopts['controller'],
                          self.scenarios)
 
-    def _verify_controllers(self, controllers, cli_args):
-        """Verify that all controllers have run the same set of experiments before
-        doing the comparison. If they have not, it is not `necessarily` an
-        error, but probably should be looked at, so it is only a warning, not
-        fatal.
+    def _verify_comparability(self, controllers, cli_args):
+        """Check if the specified controllers can be compared.
+
+        Comparable controllers have all been run on the same set of batch
+        experiments. If they have not, it is not `necessarily` an error, but
+        probably should be looked at, so it is only a warning, not fatal.
 
         """
         for t1 in controllers:
-            for item in os.listdir(os.path.join(self.cmdopts['sierra_root'],
-                                                self.cmdopts['project'],
-                                                t1)):
-                template_stem, scenario, _ = rdg.parse_batch_leaf(item)
+            for item in (self.project_root / t1).iterdir():
+                template_stem, scenario, _ = rdg.parse_batch_leaf(item.name)
                 batch_leaf = rdg.gen_batch_leaf(cli_args.batch_criteria,
                                                 template_stem,
                                                 scenario)
@@ -230,12 +234,14 @@ class PipelineStage5:
                     collate_root1 = opts1['batch_stat_collate_root']
                     collate_root2 = opts2['batch_stat_collate_root']
 
-                    if scenario in collate_root1 and scenario not in collate_root2:
-                        self.logger.warning(
-                            "%s does not exist in %s", scenario, collate_root2)
-                    if scenario in collate_root2 and scenario not in collate_root1:
-                        self.logger.warning(
-                            "%s does not exist in %s", scenario, collate_root1)
+                    if scenario in str(collate_root1) and scenario not in str(collate_root2):
+                        self.logger.warning("%s does not exist in %s",
+                                            scenario,
+                                            collate_root2)
+                    if scenario in str(collate_root2) and scenario not in str(collate_root1):
+                        self.logger.warning("%s does not exist in %s",
+                                            scenario,
+                                            collate_root1)
 
 
 __api__ = [

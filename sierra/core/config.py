@@ -19,39 +19,53 @@ Contains all SIERRA hard-coded configuration in one place.
 
 # Core packages
 import logging
+import typing as tp
 
 # 3rd party packages
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 
 # Project packages
+from sierra.core import types
 
 ################################################################################
 # Matplotlib Configuration
 ################################################################################
-mpl.rcParams['lines.linewidth'] = 3
-mpl.rcParams['lines.markersize'] = 10
-mpl.rcParams['figure.max_open_warning'] = 10000
-mpl.rcParams['axes.formatter.limits'] = (-4, 4)
 
-# Use latex to render all math, so that it matches how the math renders in
-# papers.
-mpl.rcParams['text.usetex'] = True
 
-# Turn off MPL messages when the log level is set to DEBUG or higher. Otherwise
-# you get HUNDREDS.
-logging.getLogger('matplotlib').setLevel(logging.WARNING)
-logging.getLogger('PIL').setLevel(logging.WARNING)
+def mpl_init():
+    # Turn off MPL messages when the log level is set to DEBUG or
+    # higher. Otherwise you get HUNDREDS. Must be before import to suppress
+    # messages which occur during import.
+    logging.getLogger('matplotlib').setLevel(logging.WARNING)
+    logging.getLogger('PIL').setLevel(logging.WARNING)
 
-# Set MPL backend (headless for non-interactive use)
-mpl.use('Agg')
+    import matplotlib as mpl
 
-# Set MPL style
-plt.style.use('seaborn-colorblind')
+    mpl.rcParams['lines.linewidth'] = 3
+    mpl.rcParams['lines.markersize'] = 10
+    mpl.rcParams['figure.max_open_warning'] = 10000
+    mpl.rcParams['axes.formatter.limits'] = (-4, 4)
+
+    # Use latex to render all math, so that it matches how the math renders in
+    # papers.
+    mpl.rcParams['text.usetex'] = True
+
+    # Set MPL backend (headless for non-interactive use). Must be BEFORE
+    # importing pyplot reduce import loading time.
+    mpl.use('agg')
+
+    import matplotlib.pyplot as plt
+
+    # Set MPL style
+    plt.style.use('seaborn-colorblind')
+
+
+# Actually initialize matplotlib
+mpl_init()
 
 ################################################################################
 # General Configuration
 ################################################################################
+
 
 kImageExt = '.png'
 
@@ -65,13 +79,14 @@ kGraphDPI = 100
 
 kGraphBaseSize = 10.0  # inches
 
-kGraphTextSizeSmall = {
+kGraphTextSizeSmall: types.IntDict = {
     'title': 24,
     'xyz_label': 18,
     'tick_label': 12,
     'legend_label': 18
 }
-kGraphTextSizeLarge = {
+
+kGraphTextSizeLarge: types.IntDict = {
     'title': 36,
     'xyz_label': 24,
     'tick_label': 24,
@@ -81,38 +96,42 @@ kGraphTextSizeLarge = {
 # These are the file extensions that files read/written by a given storage
 # plugin should have. Once processed by SIERRA they are written out as CSV files
 # with new extensions contextualizing them.
-kStorageExt = {
+kStorageExt: types.StrDict = {
     'csv': '.csv'
 }
 
-kStatsExt = {
+kStats: tp.Dict[str, types.StatisticsSpec] = {
     # The default for averaging
-    'mean': '.mean',
+    'mean': types.StatisticsSpec({'mean': '.mean'}),
 
     # For calculating 95% confidence intervals
-    'stddev': '.stddev',
+    'conf95': types.StatisticsSpec({'stddev': '.stddev'}),
 
     # For calculating box and whisker plots
-    'min': '.min',
-    'max': '.max',
-    'median': '.median',
-    'q1': '.q1',
-    'q3': '.q3',
-    'whislo': '.whislo',
-    'whishi': '.whishi',
-    'cilo': '.cilo',
-    'cihi': '.cihi',
+    'bw': types.StatisticsSpec({'median': '.median',
+                                'q1': '.q1',
+                                'q3': '.q3',
+                                'whislo': '.whislo',
+                                'whishi': '.whishi',
+                                'cilo': '.cilo',
+                                'cihi': '.cihi'
+                                })
 }
-kModelsExt = {
+
+kModelsExt: types.StrDict = {
     'model': '.model',
     'legend': '.legend'
 }
 
-kARGoS = {
+kRendering = {
+    'argos': {
+        'frames_leaf': 'frames',
+    }
+}
+kARGoS: tp.Dict[str, tp.Any] = {
     'physics_iter_per_tick': 10,
     'min_version': 'beta53',
     'launch_cmd': 'argos3',
-    'frames_leaf': 'frames',
     'launch_file_ext': '.argos',
     'n_secs_per_run': 5000,  # seconds
     'n_ticks_per_sec': 5,
@@ -126,7 +145,8 @@ kARGoS = {
     }
 }
 
-kROS = {
+
+kROS: types.SimpleDict = {
     'launch_cmd': 'roslaunch',
     'launch_file_ext': '.launch',
     'param_file_ext': '.params',
@@ -136,10 +156,11 @@ kROS = {
     'inter_run_pause': 60  # seconds
 }
 
-kYAML = {
-    'main': 'main.yaml',
-    'controllers': 'controllers.yaml'
-}
+kYAML = types.YAMLConfigFileSpec(main='main.yaml',
+                                 controllers='controllers.yaml',
+                                 models='models.yaml',
+                                 stage5='stage5.yaml')
+
 kGazebo = {
     'launch_cmd': 'gazebo',
     'min_version': '11.0.0',
@@ -147,7 +168,7 @@ kGazebo = {
 
 }
 
-kGNUParallel = {
+kGNUParallel:  types.StrDict = {
     'cmdfile_stem': 'commands',
     'cmdfile_ext': '.txt'
 }

@@ -13,9 +13,6 @@ you.  The following batch criteria are defined which can be used with any
 - :ref:`ln-sierra-platform-argos-bc-population-constant-density`
 - :ref:`ln-sierra-platform-argos-bc-population-variable-density`
 
-You *should* be able to combine any two of the criteria above, or use them
-independently. I have not tried all combinations, so YMMV.
-
 .. _ln-sierra-platform-argos-bc-population-size:
 
 Population Size
@@ -36,10 +33,10 @@ Cmdline Syntax
 
 ``population_size.{model}{N}[.C{cardinality}]``
 
-- ``model``
+- ``model`` - The population size model to use.
 
-  - ``Log`` - Population sizes for each experiment are distributed 1...N by powers
-    of 2.
+  - ``Log`` - Population sizes for each experiment are distributed 1...N by
+    powers of 2.
 
   - ``Linear`` - Population sizes for each experiment are distributed linearly
     between 1...N, split evenly into 10 different sizes.
@@ -83,9 +80,8 @@ Cmdline Syntax
 - ``density`` - <integer>p<integer> (i.e. 5p0 for 5.0)
 
 - ``Arena Size Increment`` - Size in meters that the X and Y dimensions should
-    increase by in between experiments. Larger values here will result in larger
-    arenas and more robots being simulated at a given density. Must be an
-    integer.
+  increase by in between experiments. Larger values here will result in larger
+  arenas and more robots being simulated at a given density. Must be an integer.
 
 - ``cardinality`` How many experiments should be generated?
 
@@ -93,8 +89,8 @@ Examples
 --------
 
 - ``population_constant_density.1p0.I16.C4``: Constant density of 1.0. Arena
-    dimensions will increase by 16 in both X and Y for each experiment in the
-    batch (4 total).
+  dimensions will increase by 16 in both X and Y for each experiment in the
+  batch (4 total).
 
 .. _ln-sierra-platform-argos-bc-population-variable-density:
 

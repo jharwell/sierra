@@ -14,10 +14,11 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
-"""
-Classes for the variable population density batch criteria. See
-:ref:`ln-sierra-platform-argos-bc-population-variable-density` for usage
+"""Classes for the variable population density batch criteria.
+
+See :ref:`ln-sierra-platform-argos-bc-population-variable-density` for usage
 documentation.
+
 """
 
 # Core packages
@@ -32,7 +33,7 @@ import implements
 from sierra.core.variables import variable_density as vd
 import sierra.core.variables.batch_criteria as bc
 from sierra.core.vector import Vector3D
-from sierra.core.xml import XMLAttrChange, XMLAttrChangeSet
+from sierra.core.experiment import xml
 from sierra.core import types, utils
 
 
@@ -51,10 +52,11 @@ class PopulationVariableDensity(vd.VariableDensity):
         self.already_added = False
         self.logger = logging.getLogger(__name__)
 
-    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
-        """
-        Generate list of sets of changes to input file to set the # robots for a
-        set of swarm densities. Robots are approximated as point masses.
+    def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
+        """Generate XML modifications to achieve the desired population densities.
+
+        Robots are approximated as point masses.
+
         """
         if not self.already_added:
             for density in self.densities:
@@ -67,9 +69,9 @@ class PopulationVariableDensity(vd.VariableDensity):
                     calculated as 0 for area=%d,density=%s",
                                         self.extent.area(),
                                         density)
-                changeset = XMLAttrChangeSet(XMLAttrChange(".//arena/distribute/entity",
-                                                           "quantity",
-                                                           str(n_robots)))
+                changeset = xml.AttrChangeSet(xml.AttrChange(".//arena/distribute/entity",
+                                                             "quantity",
+                                                             str(n_robots)))
                 self.attr_changes.append(changeset)
                 self.logger.debug("Calculated swarm size=%d for extent=%s,density=%s",
                                   n_robots,
@@ -80,23 +82,24 @@ class PopulationVariableDensity(vd.VariableDensity):
 
         return self.attr_changes
 
-    def gen_exp_dirnames(self, cmdopts: types.Cmdopts) -> tp.List[str]:
+    def gen_exp_names(self, cmdopts: types.Cmdopts) -> tp.List[str]:
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
     def graph_xticks(self,
                      cmdopts: types.Cmdopts,
-                     exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
+                     exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
 
-        if exp_dirs is None:
-            exp_dirs = self.gen_exp_dirnames(cmdopts)
+        if exp_names is None:
+            exp_names = self.gen_exp_names(cmdopts)
 
-        return [p / self.extent.area() for p in self.populations(cmdopts, exp_dirs)]
+        return [p / self.extent.area() for p in self.populations(cmdopts, exp_names)]
 
     def graph_xticklabels(self,
                           cmdopts: types.Cmdopts,
-                          exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
-        return list(map(lambda x: str(round(x, 4)), self.graph_xticks(cmdopts, exp_dirs)))
+                          exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
+        return list(map(lambda x: str(round(x, 4)),
+                        self.graph_xticks(cmdopts, exp_names)))
 
     def graph_xlabel(self, cmdopts: types.Cmdopts) -> str:
         return r"Population Density"
@@ -110,8 +113,7 @@ def factory(cli_arg: str,
             cmdopts: types.Cmdopts,
             **kwargs) -> PopulationVariableDensity:
     """
-    Factory to create :class:`PopulationVariableDensity` derived classes from
-    the command line definition.
+    Create a :class:`PopulationVariableDensity` derived class.
     """
     attr = vd.Parser()(cli_arg)
     kw = utils.gen_scenario_spec(cmdopts, **kwargs)

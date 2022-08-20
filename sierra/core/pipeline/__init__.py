@@ -13,11 +13,8 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-Container namespace for the main SIERRA pipeline.
-"""
-import sierra.core.pipeline.stage1
-import sierra.core.pipeline.stage2
-import sierra.core.pipeline.stage3
-import sierra.core.pipeline.stage4
-import sierra.core.pipeline.stage5
+# import sierra.core.pipeline.stage1
+# import sierra.core.pipeline.stage2
+# import sierra.core.pipeline.stage3
+# import sierra.core.pipeline.stage4
+# import sierra.core.pipeline.stage5

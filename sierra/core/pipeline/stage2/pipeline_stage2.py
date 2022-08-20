@@ -14,9 +14,8 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""
-Classes for implementing stage 2 of the experimental pipeline: running
-experiments.
+"""Stage 2 of the experimental pipeline: running experiments.
+
 """
 
 # Core packages

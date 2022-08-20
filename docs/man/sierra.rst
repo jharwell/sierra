@@ -22,6 +22,9 @@ The following manpages are available:
 - :manpage:`sierra-platforms` - The target platforms that SIERRA currently
   supports (e.g., ARGoS).
 
+- :manpage:`sierra-exec-envs` - The target execution environments that SIERRA
+  currently supports (e.g., the local machine).
+
 - :manpage:`sierra-examples` - Examples of SIERRA usage via command line
   invocations demonstrating various features.
 

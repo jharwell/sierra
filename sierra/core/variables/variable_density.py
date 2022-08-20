@@ -18,6 +18,7 @@
 # Core packages
 import re
 import typing as tp
+import pathlib
 
 # 3rd party packages
 
@@ -25,7 +26,7 @@ import typing as tp
 from sierra.core.variables.batch_criteria import UnivarBatchCriteria
 from sierra.core.utils import ArenaExtent
 from sierra.core import types
-from sierra.core.xml import XMLAttrChangeSet
+from sierra.core.experiment import xml
 
 
 class VariableDensity(UnivarBatchCriteria):
@@ -35,6 +36,7 @@ class VariableDensity(UnivarBatchCriteria):
     class which should NEVER be used on its own.
 
     Attributes:
+
         densities: List of densities to use.
 
         dist_type: The type of block distribution to use.
@@ -46,27 +48,29 @@ class VariableDensity(UnivarBatchCriteria):
 
     def __init__(self,
                  cli_arg: str,
-                 main_config: tp.Dict[str, str],
-                 batch_input_root: str,
+                 main_config: types.YAMLDict,
+                 batch_input_root: pathlib.Path,
                  densities: tp.List[float],
                  extent: ArenaExtent) -> None:
         UnivarBatchCriteria.__init__(
             self, cli_arg, main_config, batch_input_root)
         self.densities = densities
         self.extent = extent
-        self.attr_changes = []  # type: tp.List[XMLAttrChangeSet]
+        self.attr_changes = []  # type: tp.List[xml.AttrChangeSet]
 
 
 class Parser():
-    """
-    Enforces the cmdline definition of a :class:`VariableDensity` derived batch
-    criteria.
+    """Enforces specification of a :class:`VariableDensity` derived batch criteria.
+
     """
 
     def __call__(self, arg: str) -> types.CLIArgSpec:
         """
+        Parse the cmdline argument.
+
         Returns:
-            Dictionary with keys:
+
+            dict:
                 density_min: Floating point value of target minimum density.
                 density_max: Floating point value of target maximum density.
                 cardinality: # densities in [min,max] that should be created.

@@ -14,17 +14,17 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""
-Miscellaneous classes/functions used in mutiple places but that don't really fit
-anywhere else.
+"""Miscellaneous bits used in mutiple places but that don't fit anywhere else.
+
 """
 
 # Core packages
-import os
 import typing as tp
 import time
 import logging
 import pickle
+import functools
+import pathlib
 
 # 3rd party packages
 import numpy as np
@@ -33,8 +33,8 @@ from retry import retry
 
 # Project packages
 from sierra.core.vector import Vector3D
-from sierra.core.xml import XMLLuigi, XMLAttrChangeSet, XMLTagAddList, XMLTagRmList
-from sierra.core import types, xml, config
+from sierra.core.experiment import xml, definition
+from sierra.core import types, config
 from sierra.core import plugin_manager as pm
 
 
@@ -42,9 +42,10 @@ class ArenaExtent():
     """Representation of a 2D or 3D section/chunk/volume of the arena."""
     @staticmethod
     def from_corners(ll: Vector3D, ur: Vector3D) -> 'ArenaExtent':
-        """
-        Initialize an extent via LL and UR corners rather than an origin and a
-        set of dimensions.
+        """Initialize an extent via LL and UR corners.
+
+        As opposed to an origin and a set of dimensions.
+
         """
         return ArenaExtent(ur - ll, ll)
 
@@ -121,7 +122,7 @@ class ReLu():
 
 def scale_minmax(minval: float, maxval: float, val: float) -> float:
     """
-    Scale values from range [minval, maxval] -> [-1,1]
+    Scale values from range [minval, maxval] -> [-1,1].
 
     .. math::
        -1 + (value - minval) * (1 - \frac{-1}{maxval - minval})
@@ -129,19 +130,24 @@ def scale_minmax(minval: float, maxval: float, val: float) -> float:
     return -1.0 + (val - minval) * (1 - (-1)) / (maxval - minval)
 
 
-def dir_create_checked(path: str, exist_ok: bool) -> None:
+def dir_create_checked(path: tp.Union[pathlib.Path, str],
+                       exist_ok: bool) -> None:
+    """Create a directory idempotently.
+
+    If the directory exists and it shouldn't, raise an error.
+
     """
-    Create a directory idempotently, raising an error if the directory exists
-    and it shouldn't.
-    """
+    if not isinstance(path, pathlib.Path):
+        path = pathlib.Path(path)
+
     try:
-        os.makedirs(path, exist_ok=exist_ok)
+        path.mkdir(exist_ok=exist_ok, parents=True)
     except FileExistsError:
-        logging.fatal("%s already exists! Not overwriting", path)
+        logging.fatal("%s already exists! Not overwriting", str(path))
         raise
 
 
-def path_exists(path: str) -> bool:
+def path_exists(path: tp.Union[pathlib.Path, str]) -> bool:
     """
     Check if a path exists, trying multiple times.
 
@@ -150,8 +156,12 @@ def path_exists(path: str) -> bool:
     time out as the FS goes and executes the query over the network.
     """
     res = []
-    for i in range(0, 10):
-        if os.path.exists(path):
+
+    if not isinstance(path, pathlib.Path):
+        path = pathlib.Path(path)
+
+    for _ in range(0, 10):
+        if path.exists():
             res.append(True)
         else:
             res.append(False)
@@ -164,9 +174,7 @@ def get_primary_axis(criteria,
                      primary_axis_bc: tp.List,
                      cmdopts: types.Cmdopts) -> int:
     """
-    Determine which :class:`~sierra.core.variables.batch_criteria.BatchCriteria`
-    in a  :class:`~sierra.core.variables.batch_criteria.BivarBatchCriteria`
-    should be treated as the primary axis.
+    Determine axis in a bivariate batch criteria is the primary axis.
 
     This is obtained on a per-query basis depending on the query context, or can
     be overriden on the cmdline.
@@ -184,14 +192,15 @@ def get_primary_axis(criteria,
 
 
 def exp_range_calc(cmdopts: types.Cmdopts,
-                   root_dir: str, criteria) -> tp.List[str]:
+                   root_dir: pathlib.Path,
+                   criteria) -> types.PathList:
     """
     Get the range of experiments to run/do stuff with. SUPER USEFUL.
     """
-    exp_all = [os.path.join(root_dir, d)
-               for d in criteria.gen_exp_dirnames(cmdopts)]
+    exp_all = [root_dir / d for d in criteria.gen_exp_names(cmdopts)]
 
     exp_range = cmdopts['exp_range']
+
     if cmdopts['exp_range'] is not None:
         min_exp = int(exp_range.split(':')[0])
         max_exp = int(exp_range.split(':')[1])
@@ -206,12 +215,13 @@ def exp_range_calc(cmdopts: types.Cmdopts,
 def exp_include_filter(inc_spec: tp.Optional[str],
                        target: tp.List,
                        n_exps: int):
-    """
-    Takes a input list, and returns the sublist specified by the inc_spec (of
-    the form [x:y]). inc_spec is an `absolute` specification; if a given
-    performance measure excludes exp0 then that case is handled internally so
-    that array/list shapes work out when generating graphs if this function is
-    used consistently everywhere.
+    """Calculate which experiments to include in a calculation for something.
+
+    Take a input list of experiment numbers to include, and returns the sublist
+    specified by the inc_spec (of the form [x:y]). inc_spec is an `absolute`
+    specification; if a given performance measure excludes exp0 then that case
+    is handled internally so that array/list shapes work out when generating
+    graphs if this function is used consistently everywhere.
 
     """
     if inc_spec is None:
@@ -231,8 +241,8 @@ def exp_include_filter(inc_spec: tp.Optional[str],
     return target[slice(start, end, None)]
 
 
-def bivar_exp_labels_calc(exp_dirs: tp.List[str]) -> tp.Tuple[tp.List[str],
-                                                              tp.List[str]]:
+def bivar_exp_labels_calc(exp_dirs: types.PathList) -> tp.Tuple[tp.List[str],
+                                                                tp.List[str]]:
     """
     Calculate the labels for bivariant experiment graphs.
     """
@@ -243,7 +253,7 @@ def bivar_exp_labels_calc(exp_dirs: tp.List[str]) -> tp.Tuple[tp.List[str],
     xlabels_set = set()
     ylabels_set = set()
     for e in exp_dirs:
-        pair = os.path.split(e)[1].split('+')
+        pair = e.name.split('+')
         xlabels_set.add(pair[0])
         ylabels_set.add(pair[1])
 
@@ -254,16 +264,21 @@ def bivar_exp_labels_calc(exp_dirs: tp.List[str]) -> tp.Tuple[tp.List[str],
 
 
 def apply_to_expdef(var,
-                    exp_def: XMLLuigi) -> tp.Tuple[tp.Optional[XMLTagRmList],
-                                                   tp.Optional[XMLTagAddList],
-                                                   tp.Optional[XMLAttrChangeSet]]:
+                    exp_def: definition.XMLExpDef) -> tp.Tuple[tp.Optional[xml.TagRmList],
+                                                               tp.Optional[xml.TagAddList],
+                                                               tp.Optional[xml.AttrChangeSet]]:
     """
-    Remove existing XML tags, add new XML tags, and change existing XML
-    attributes (in that order) for the specified variable.
+    Apply a generated XML modifictions to an experiment definition.
+
+    In this order:
+
+    #. Remove existing XML tags
+    #. Add new XML tags
+    #. Change existing XML attributes
     """
-    rmsl = var.gen_tag_rmlist()  # type: tp.List[XMLTagRmList]
-    addsl = var.gen_tag_addlist()  # type: tp.List[XMLTagAddList]
-    chgsl = var.gen_attr_changelist()  # type: tp.List[XMLAttrChangeSet]
+    rmsl = var.gen_tag_rmlist()  # type: tp.List[xml.TagRmList]
+    addsl = var.gen_tag_addlist()  # type: tp.List[xml.TagAddList]
+    chgsl = var.gen_attr_changelist()  # type: tp.List[xml.AttrChangeSet]
 
     if rmsl:
         rms = rmsl[0]
@@ -275,6 +290,7 @@ def apply_to_expdef(var,
     if addsl:
         adds = addsl[0]
         for a in adds:
+            assert a.path is not None, "Can't add tag {a.tag} with no parent"
             exp_def.tag_add(a.path, a.tag, a.attr, a.allow_dup)
     else:
         adds = None
@@ -289,12 +305,11 @@ def apply_to_expdef(var,
     return rms, adds, chgs
 
 
-def pickle_modifications(adds: tp.Optional[XMLTagAddList],
-                         chgs: tp.Optional[XMLAttrChangeSet],
-                         path: str) -> None:
+def pickle_modifications(adds: tp.Optional[xml.TagAddList],
+                         chgs: tp.Optional[xml.AttrChangeSet],
+                         path: pathlib.Path) -> None:
     """
-    After applying XML attribute changes and/or adding new XML tags, pickle saxd
-    changes so they can be retrieved later.
+    After applying XML modifications, pickle changes for later retrieval.
     """
     if adds is not None:
         adds.pickle(path)
@@ -303,23 +318,23 @@ def pickle_modifications(adds: tp.Optional[XMLTagAddList],
         chgs.pickle(path)
 
 
-def batch_template_path(cmdopts: types.Cmdopts,
-                        batch_input_root: str,
-                        dirname: str) -> str:
+def exp_template_path(cmdopts: types.Cmdopts,
+                      batch_input_root: pathlib.Path,
+                      dirname: str) -> pathlib.Path:
+    """Calculate the path to the template input file in the batch experiment root.
+
+     The file at this path will be Used as the de-facto template for generating
+     per-run input files.
+
     """
-    Calculate the path to the template input file in the batch experiment root
-    which will be used as the de-facto template for generating per-run input
-    files.
-    """
-    batch_config_leaf, _ = os.path.splitext(
-        os.path.basename(cmdopts['template_input_file']))
-    return os.path.join(batch_input_root, dirname, batch_config_leaf)
+    template = pathlib.Path(cmdopts['template_input_file'])
+    return batch_input_root / dirname / template.stem
 
 
 def get_n_robots(main_config: types.YAMLDict,
                  cmdopts: types.Cmdopts,
-                 exp_input_root: str,
-                 exp_def: xml.XMLLuigi) -> int:
+                 exp_input_root: pathlib.Path,
+                 exp_def: definition.XMLExpDef) -> int:
     """
     Get the # robots used for a specific :term:`Experiment`.
     """
@@ -327,9 +342,9 @@ def get_n_robots(main_config: types.YAMLDict,
 
     # Get # robots to send to shell cmds generator. We try:
     #
-    # 1. Getting it from the current experiment definition, which contains
-    #    all changes to the template input file EXCEPT those from batch
-    #    criteria, which have already been written pickled at this point.
+    # 1. Getting it from the current experiment definition, which contains all
+    #    changes to the template input file EXCEPT those from batch criteria,
+    #    which have already been written and pickled at this point.
     #
     # 2. Getting it from the pickled experiment definition (i.e., from the
     #    batch criteria which was used for this experiment).
@@ -337,8 +352,7 @@ def get_n_robots(main_config: types.YAMLDict,
                                                main_config,
                                                cmdopts)
     if n_robots <= 0:
-        pkl_def = xml.unpickle(os.path.join(exp_input_root,
-                                            config.kPickleLeaf))
+        pkl_def = definition.unpickle(exp_input_root / config.kPickleLeaf)
         n_robots = module.population_size_from_pickle(pkl_def,
                                                       main_config,
                                                       cmdopts)
@@ -367,13 +381,10 @@ def pickle_dump(obj: object, f: tp.IO) -> None:
     pickle.dump(obj, f)
 
 
-def gen_scenario_spec(cmdopts: types.Cmdopts, **kwargs) -> dict[str, tp.Any]:
+def gen_scenario_spec(cmdopts: types.Cmdopts, **kwargs) -> tp.Dict[str, tp.Any]:
     # scenario is passed in kwargs during stage 5 (can't be passed via
     # --scenario in general )
-    if 'scenario' in kwargs:
-        scenario = kwargs['scenario']
-    else:
-        scenario = cmdopts['scenario']
+    scenario = kwargs.get('scenario', cmdopts['scenario'])
 
     sgp = pm.module_load_tiered(project=cmdopts['project'],
                                 path='generators.scenario_generator_parser')
@@ -381,6 +392,26 @@ def gen_scenario_spec(cmdopts: types.Cmdopts, **kwargs) -> dict[str, tp.Any]:
 
     return kw
 
+
+def sphinx_ref(ref: str) -> str:
+    try:
+        # This is kind of a hack...
+        if __sphinx_build_man__:  # type: ignore
+            parts = ref.split('.')
+            stripped = parts[-1]
+            return stripped[:-1]
+
+    except NameError:
+        pass
+
+    return ref
+
+
+utf8open = functools.partial(open, encoding='UTF-8')
+"""
+Explictly specify that the type of file being opened is UTF-8, which is should
+be for almost everything in SIERRA.
+"""
 
 __api__ = [
     'ArenaExtent',
@@ -393,8 +424,8 @@ __api__ = [
     'exp_include_filter',
     'apply_to_expdef',
     'pickle_modifications',
-    'batch_template_path',
+    'exp_template_path',
     'get_n_robots',
-    'df_fill'
-
+    'df_fill',
+    'utf8open',
 ]

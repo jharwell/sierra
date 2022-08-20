@@ -1,0 +1,23 @@
+[paths]
+source =
+       sierra/
+
+[report]
+# Regexes for lines to exclude from consideration
+exclude_lines =
+    # Don't complain if tests don't hit defensive assertion code:
+    raise AssertionError
+    raise NotImplementedError
+
+[run]
+
+concurrency = multiprocessing
+parallel = true
+omit =
+     */sierra-sample-project/*
+
+     */site-packages/*
+
+     /usr/*
+
+     */docs/*

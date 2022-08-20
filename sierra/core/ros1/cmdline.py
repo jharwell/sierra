@@ -14,8 +14,7 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
-"""Common cmdline parsing and validation for :term:`Platforms <Platform>` using
-:term:`ROS1`.
+"""Common cmdline classes :term:`Platforms <Platform>` using :term:`ROS1`.
 
 """
 
@@ -37,8 +36,7 @@ class ROSCmdline(cmd.BaseCmdline):
 
     def __init__(self,
                  stages: tp.List[int]) -> None:
-        self.parser = argparse.ArgumentParser(prog='sierra-cli',
-                                              add_help=False,
+        self.parser = argparse.ArgumentParser(add_help=False,
                                               allow_abbrev=False)
         self.scaffold_cli()
         self.init_cli(stages)
@@ -104,14 +102,11 @@ class ROSCmdline(cmd.BaseCmdline):
                                      :ref:`ln-sierra-tutorials-project-main-config`
                                      for details.
 
-                            """.format(config.kYAML['main']) + self.stage_usage_doc([1]))
+                            """.format(config.kYAML.main) + self.stage_usage_doc([1]))
 
     @staticmethod
     def cmdopts_update(cli_args, cmdopts: types.Cmdopts) -> None:
-        """
-        Updates the core cmdopts dictionary with (key,value) pairs from the
-        ROS-specific cmdline options.
-
+        """Update cmdopts with ROS-specific cmdline options.
         """
         updates = {
             # multistagev

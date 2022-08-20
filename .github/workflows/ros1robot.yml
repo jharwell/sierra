@@ -1,0 +1,66 @@
+# Only stuff that actually tests the platform should be here: stage 1 and 2.
+name: ROS1+Robot CI Tests
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        required: True
+        type: string
+
+jobs:
+  bc-univar-sanity:
+    runs-on: ${{ inputs.os }}
+    strategy:
+      matrix:
+        python-version:
+          - 3.8
+          - 3.9
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: ./.github/actions/sierra-setup
+
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: ros1robot
+          rosdistro: noetic
+
+      - name: Integration tests
+        shell: bash
+        run: |
+          ./scripts/ros1robot-integration-tests.sh -f bc_univar_sanity_test
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ci-platform-ros1robot-bc-sanity-${{ runner.os }}-${{ matrix.python-version }}-coverage
+          path: .coverage.*
+
+  stage1:
+    runs-on: ${{ inputs.os }}
+    strategy:
+      matrix:
+        python-version:
+          - 3.8
+          - 3.9
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: ./.github/actions/sierra-setup
+
+      - uses: ./.github/actions/sample-project-setup
+        with:
+          platform: ros1robot
+          rosdistro: noetic
+
+      - name: Integration tests
+        shell: bash
+        run: |
+          ./scripts/ros1robot-integration-tests.sh -f stage1_test -e hpc.local
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ci-platform-ros1robot-stage1-${{ runner.os }}-${{ matrix.python-version }}-coverage
+          path: .coverage.*

@@ -21,6 +21,7 @@ import typing as tp
 import os
 import subprocess
 import pwd
+import pathlib
 
 # 3rd party packages
 import implements
@@ -28,8 +29,8 @@ import yaml
 
 # Project packages
 from sierra.plugins.platform.ros1robot import cmdline
-from sierra.core import xml, platform, config, ros1, types, utils
-from sierra.core.experiment import bindings
+from sierra.core import platform, config, ros1, types, utils
+from sierra.core.experiment import bindings, definition, xml
 import sierra.core.variables.batch_criteria as bc
 
 
@@ -47,14 +48,25 @@ class ParsedCmdlineConfigurer():
         self.logger = logging.getLogger('platform.ros1robot')
 
     def __call__(self, args: argparse.Namespace) -> None:
-        pass
+        if args.nodefile is None:
+            assert 'SIERRA_NODEFILE' in os.environ,\
+                ("Non-ros1robot environment detected: --nodefile not "
+                 "passed and 'SIERRA_NODEFILE' not found")
+            args.nodefile = os.environ['SIERRA_NODEFILE']
+
+        assert utils.path_exists(args.nodefile), \
+            f"SIERRA_NODEFILE '{args.nodefile}' does not exist"
+        self.logger.info("Using '%s' as robot hostnames file", args.nodefile)
+
+        assert not args.platform_vc,\
+            "Platform visual capture not supported on ros1robot"
 
 
 @implements.implements(bindings.IExpRunShellCmdsGenerator)
 class ExpRunShellCmdsGenerator():
     def __init__(self,
                  cmdopts: types.Cmdopts,
-                 criteria: bc.IConcreteBatchCriteria,
+                 criteria: bc.BatchCriteria,
                  n_robots: int,
                  exp_num: int) -> None:
         self.cmdopts = cmdopts
@@ -65,80 +77,90 @@ class ExpRunShellCmdsGenerator():
 
     def pre_run_cmds(self,
                      host: str,
-                     input_fpath: str,
+                     input_fpath: pathlib.Path,
                      run_num: int) -> tp.List[types.ShellCmdSpec]:
 
         master_ip = platform.get_local_ip()
         port = config.kROS['port_base'] + self.exp_num
         master_uri = f'http://{master_ip}:{port}'
 
-        ros_master = {
-            'cmd': f'export ROS_MASTER_URI={master_uri};',
-            'shell': True,
-            'env': True,
-            'wait': True,
-        }
+        ros_master = types.ShellCmdSpec(cmd=f'export ROS_MASTER_URI={master_uri};',
+                                        shell=True,
+                                        env=True,
+                                        wait=True)
 
         if host == 'master':
             if self.cmdopts['no_master_node']:
                 return []
             else:
-                [ros_master]
+                return [ros_master]
 
         main_path = os.path.join(self.cmdopts['project_config_root'],
-                                 config.kYAML['main'])
+                                 config.kYAML.main)
 
-        main_config = yaml.load(open(main_path), yaml.FullLoader)
+        main_config = yaml.load(utils.utf8open(main_path), yaml.FullLoader)
 
         self.logger.debug("Generating pre-exec cmds for run%s slaves: %d robots",
                           run_num,
                           self.n_robots)
 
-        script = main_config['ros']['robots'][self.cmdopts['robot']].get(
-            'setup_script',
-            "$HOME/.bashrc")
+        script_yaml = main_config['ros']['robots'][self.cmdopts['robot']]
+        script_file = script_yaml.get('setup_script', "$HOME/.bashrc")
 
-        ros_setup = {
-            'cmd': f'. {script};',
-            'shell': True,
-            'env': True
-        }
+        ros_setup = types.ShellCmdSpec(cmd=f'. {script_file};',
+                                       shell=True,
+                                       wait=True,
+                                       env=True)
 
         return [ros_setup, ros_master]
 
     def exec_run_cmds(self,
                       host: str,
-                      input_fpath: str,
+                      input_fpath: pathlib.Path,
                       run_num: int) -> tp.List[types.ShellCmdSpec]:
         if host == 'master':
-            if self.cmdopts['no_master_node']:
-                return []
-            else:
-                self.logger.debug("Generating exec cmds for run%s master",
-                                  run_num)
+            return self._exec_run_cmds_master(host, input_fpath, run_num)
+        else:
+            return self._exec_run_cmds_slave(host, input_fpath, run_num)
 
-                # ROS master node
-                exp_dirname = self.criteria.gen_exp_dirnames(self.cmdopts)[
-                    self.exp_num]
-                batch_template_path = utils.batch_template_path(self.cmdopts,
-                                                                self.criteria.batch_input_root,
-                                                                exp_dirname)
+    def _exec_run_cmds_master(self,
+                              host: str,
+                              input_fpath: pathlib.Path,
+                              run_num: int) -> tp.List[types.ShellCmdSpec]:
 
-                master_node = {
-                    # --wait tells roslaunch to wait for the configured master to
-                    # come up before launch the "master" code.
-                    #
-                    # 2022/02/28: -p (apparently) tells roslaunch not to CONNECT to a
-                    # master at the specified ort, but to LAUNCH a new master at the
-                    # specified port. This is not really documented well.
-                    'cmd': '{0} --wait {1}_run{2}_master{3};'.format(config.kROS['launch_cmd'],
-                                                                     batch_template_path,
-                                                                     run_num,
-                                                                     config.kROS['launch_file_ext']),
-                    'shell': True,
-                    'wait': True
-                }
-                return [master_node]
+        if self.cmdopts['no_master_node']:
+            return []
+
+        self.logger.debug("Generating exec cmds for run%s master",
+                          run_num)
+
+        # ROS master node
+        exp_dirname = self.criteria.gen_exp_names(self.cmdopts)[self.exp_num]
+        exp_template_path = utils.exp_template_path(self.cmdopts,
+                                                    self.criteria.batch_input_root,
+                                                    exp_dirname)
+        cmd = '{0} --wait {1}_run{2}_master{3};'
+
+        cmd = cmd.format(config.kROS['launch_cmd'],
+                         str(exp_template_path),
+                         run_num,
+                         config.kROS['launch_file_ext'])
+
+        # --wait tells roslaunch to wait for the configured master to come up
+        # before launch the "master" code.
+        #
+        # 2022/02/28: -p (apparently) tells roslaunch not to CONNECT to a master
+        # at the specified ort, but to LAUNCH a new master at the specified
+        # port. This is not really documented well.
+
+        master_node = types.ShellCmdSpec(cmd=cmd, shell=True, wait=True)
+
+        return [master_node]
+
+    def _exec_run_cmds_slave(self,
+                             host: str,
+                             input_fpath: pathlib.Path,
+                             run_num: int) -> tp.List[types.ShellCmdSpec]:
 
         self.logger.debug("Generating exec cmds for run%s slaves: %d robots",
                           run_num,
@@ -154,21 +176,16 @@ class ExpRunShellCmdsGenerator():
                                  self.n_robots,
                                  len(nodes))
 
-        ret = []
+        ret = []  # type: tp.List[types.ShellCmdSpec]
         for i in range(0, self.n_robots):
-            ret.extend([
-
-                # --wait tells roslaunch to wait for the configured master to
-                # come up before launch the robot code.
-                {
-                    'cmd': '{0} --wait {1}_robot{2}{3};'.format(config.kROS['launch_cmd'],
-                                                                input_fpath,
-                                                                i,
-                                                                config.kROS['launch_file_ext']),
-                    'shell': True,
-                    'wait': True
-                }
-            ])
+            # --wait tells roslaunch to wait for the configured master to
+            # come up before launch the robot code.
+            cmd = '{0} --wait {1}_robot{2}{3} '
+            cmd = cmd.format(config.kROS['launch_cmd'],
+                             input_fpath,
+                             i,
+                             config.kROS['launch_file_ext'])
+            ret.extend([types.ShellCmdSpec(cmd=cmd, shell=True, wait=True)])
         return ret
 
     def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
@@ -176,13 +193,13 @@ class ExpRunShellCmdsGenerator():
             return []
         else:
             return [
-                {
+                types.ShellCmdSpec(
                     # Can't use killall, because that returns non-zero if things
                     # are cleaned up nicely.
-                    'cmd': 'if pgrep roslaunch; then pkill roslaunch; fi;',
-                    'shell': True,
-                    'wait': True
-                }
+                    cmd='if pgrep roslaunch; then pkill roslaunch; fi;',
+                    shell=True,
+                    wait=True
+                )
             ]
 
 
@@ -203,46 +220,37 @@ class ExpShellCmdsGenerator():
         self.logger.info("Using ROS_MASTER_URI=%s", master_uri)
 
         return[
-            {
+            types.ShellCmdSpec(
                 # roscore will run on the SIERRA host machine.
-                'cmd': f'export ROS_MASTER_URI={master_uri}',
-                'shell': True,
-                'env': True,
-                'wait': True
-            },
-            {
-
+                cmd=f'export ROS_MASTER_URI={master_uri}',
+                shell=True,
+                env=True,
+                wait=True),
+            types.ShellCmdSpec(
                 # Each exppperiment gets their own roscore. Because each roscore
                 # has a  different port, this prevents any robots from
                 # pre-emptively starting the next experiment before the rest of
                 # the robots have finished the current one.
-                'cmd': f'roscore -p {port} & ',
-                'shell': True,
-                'wait': False
-            }
+                cmd=f'roscore -p {port} & ',
+                shell=True,
+                wait=False)
         ]
 
-    def exec_exp_cmds(self, exec_opts: types.SimpleDict) -> tp.List[types.ShellCmdSpec]:
+    def exec_exp_cmds(self, exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
         return []
 
     def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
         # Cleanup roscore processes on the SIERRA host machine which are still
         # active because they don't know how to clean up after themselves.
-        return [{
-                'cmd': 'killall rosmaster;',
-                'shell': True,
-                'wait': True
-                },
-                {
-                'cmd': 'killall roscore;',
-                    'shell': True,
-                    'wait': True
-                },
-                {
-                'cmd': 'killall rosout;',
-                    'shell': True,
-                    'wait': True
-                }]
+        return [types.ShellCmdSpec(cmd='killall rosmaster;',
+                                   shell=True,
+                                   wait=True),
+                types.ShellCmdSpec(cmd='killall roscore;',
+                                   shell=True,
+                                   wait=True),
+                types.ShellCmdSpec(cmd='killall rosout;',
+                                   shell=True,
+                                   wait=True)]
 
 
 @implements.implements(bindings.IExpConfigurer)
@@ -254,10 +262,12 @@ class ExpConfigurer():
     def cmdfile_paradigm(self) -> str:
         return 'per-run'
 
-    def for_exp_run(self, exp_input_root: str, run_output_root: str) -> None:
+    def for_exp_run(self,
+                    exp_input_root: pathlib.Path,
+                    run_output_root: pathlib.Path) -> None:
         pass
 
-    def for_exp(self, exp_input_root: str) -> None:
+    def for_exp(self, exp_input_root: pathlib.Path) -> None:
         if self.cmdopts['skip_sync']:
             self.logger.info("Skipping syncing experiment inputs -> robots")
             return
@@ -273,9 +283,9 @@ class ExpConfigurer():
         prsync_base = 'parallel-rsync'
 
         for node in nodes:
-            remote_login = node['login']
-            remote_port = node['port']
-            remote_hostname = node['hostname']
+            remote_login = node.login
+            remote_port = node.port
+            remote_hostname = node.hostname
             current_username = pwd.getpwuid(os.getuid())[0]
 
             if not self.cmdopts['skip_online_check']:
@@ -289,8 +299,8 @@ class ExpConfigurer():
 
         # In case the user is different on the remote machine than this one,
         # and the location of the generated experiment is under /home.
-        robot_input_root = exp_input_root.replace(current_username,
-                                                  remote_login)
+        robot_input_root = str(exp_input_root).replace(current_username,
+                                                       remote_login)
 
         mkdir_cmd = (f"{pssh_base} "
                      f"-O StrictHostKeyChecking=no "
@@ -323,7 +333,7 @@ class ExpConfigurer():
             raise
 
 
-@implements.implements(bindings.IExecEnvChecker)
+@ implements.implements(bindings.IExecEnvChecker)
 class ExecEnvChecker():
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         pass
@@ -337,16 +347,16 @@ class ExecEnvChecker():
                     k)
 
         # Check ROS distro
-        assert os.environ['ROS_DISTRO'] in ['noetic'],\
-            "SIERRA only supports ROS1 noetic"
+        assert os.environ['ROS_DISTRO'] in ['kinetic', 'noetic'],\
+            "SIERRA only supports ROS1 kinetic,noetic"
 
         # Check ROS version
         assert os.environ['ROS_VERSION'] == "1",\
             "Wrong ROS version: This plugin is for ROS1"
 
 
-def population_size_from_pickle(adds_def: tp.Union[xml.XMLAttrChangeSet,
-                                                   xml.XMLTagAddList],
+def population_size_from_pickle(adds_def: tp.Union[xml.AttrChangeSet,
+                                                   xml.TagAddList],
                                 main_config: types.YAMLDict,
                                 cmdopts: types.Cmdopts) -> int:
     return ros1.callbacks.population_size_from_pickle(adds_def,
@@ -354,7 +364,7 @@ def population_size_from_pickle(adds_def: tp.Union[xml.XMLAttrChangeSet,
                                                       cmdopts)
 
 
-def population_size_from_def(exp_def: xml.XMLLuigi,
+def population_size_from_def(exp_def: definition.XMLExpDef,
                              main_config: types.YAMLDict,
                              cmdopts: types.Cmdopts) -> int:
     return ros1.callbacks.population_size_from_def(exp_def,

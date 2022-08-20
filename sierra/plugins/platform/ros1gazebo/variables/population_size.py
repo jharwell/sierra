@@ -13,25 +13,27 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-Classes for the population size batch criteria. See
-:ref:`ln-sierra-platform-ros1gazebo-bc-population-size` for usage documentation.
+"""Classes for the population size batch criteria.
+
+See :ref:`ln-sierra-platform-ros1gazebo-bc-population-size` for usage
+documentation.
+
 """
 
 # Core packages
 import typing as tp
 import random
 import logging
+import pathlib
 
 # 3rd party packages
 import implements
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
-from sierra.core.xml import XMLTagAdd, XMLTagAddList
-from sierra.core import types
+from sierra.core.experiment import xml
+from sierra.core import types, utils
 from sierra.core.vector import Vector3D
-import sierra.core.plugin_manager as pm
 from sierra.core.variables import population_size
 
 
@@ -47,6 +49,7 @@ class PopulationSize(population_size.BasePopulationSize):
     Note: Usage of this class assumes homogeneous systems.
 
     Attributes:
+
         size_list: List of integer system sizes defining the range of the
                    variable for the batch experiment.
 
@@ -54,8 +57,8 @@ class PopulationSize(population_size.BasePopulationSize):
 
     def __init__(self,
                  cli_arg: str,
-                 main_config: tp.Dict[str, str],
-                 batch_input_root: str,
+                 main_config: types.YAMLDict,
+                 batch_input_root: pathlib.Path,
                  robot: str,
                  sizes: tp.List[int],
                  positions: tp.List[Vector3D]) -> None:
@@ -71,12 +74,11 @@ class PopulationSize(population_size.BasePopulationSize):
             self.logger.warning("# possible positions < # robots: %s < %s",
                                 len(positions),
                                 self.sizes[-1])
-        self.tag_adds = []  # type: tp.List[XMLTagAddList]
+        self.tag_adds = []  # type: tp.List[xml.TagAddList]
 
-    def gen_tag_addlist(self) -> tp.List[XMLTagAddList]:
-        """
-        Generate list of sets of changes for system sizes to define a batch
-        experiment.
+    def gen_tag_addlist(self) -> tp.List[xml.TagAddList]:
+        """Generate XML modifications to set system sizes.
+
         """
         if not self.tag_adds:
             robot_config = self.main_config['ros']['robots'][self.robot]
@@ -91,26 +93,26 @@ class PopulationSize(population_size.BasePopulationSize):
 
             desc_cmd = f"$(find xacro)/xacro $(find {model_base}_description)/urdf/{model}.urdf.xacro"
             for s in self.sizes:
-                exp_adds = XMLTagAddList()
+                exp_adds = xml.TagAddList()
                 pos_i = random.randint(0, len(self.positions) - 1)
 
-                exp_adds.append(XMLTagAdd(".",
-                                          "master",
-                                          {},
-                                          True))
-                exp_adds.append(XMLTagAdd("./master",
-                                          "group",
-                                          {
-                                              'ns': 'sierra'
-                                          },
-                                          False))
-                exp_adds.append(XMLTagAdd("./master/group/[@ns='sierra']",
-                                          "param",
-                                          {
-                                              'name': 'experiment/n_robots',
-                                              'value': str(s)
-                                          },
-                                          False))
+                exp_adds.append(xml.TagAdd(".",
+                                           "master",
+                                           {},
+                                           True))
+                exp_adds.append(xml.TagAdd("./master",
+                                           "group",
+                                           {
+                                               'ns': 'sierra'
+                                           },
+                                           False))
+                exp_adds.append(xml.TagAdd("./master/group/[@ns='sierra']",
+                                           "param",
+                                           {
+                                               'name': 'experiment/n_robots',
+                                               'value': str(s)
+                                           },
+                                           False))
 
                 for i in range(0, s):
 
@@ -119,20 +121,20 @@ class PopulationSize(population_size.BasePopulationSize):
                     pos_i = (pos_i + 1) % len(self.positions)
                     spawn_cmd_args = f"-urdf -model {model}_{ns} -x {pos.x} -y {pos.y} -z {pos.z} -param robot_description"
 
-                    exp_adds.append(XMLTagAdd("./robot",
-                                              "group",
-                                              {
-                                                  'ns': ns
-                                              },
-                                              True))
+                    exp_adds.append(xml.TagAdd("./robot",
+                                               "group",
+                                               {
+                                                   'ns': ns
+                                               },
+                                               True))
 
-                    exp_adds.append(XMLTagAdd(f"./robot/group/[@ns='{ns}']",
-                                              "param",
-                                              {
-                                                  "name": "tf_prefix",
-                                                  "value": ns
-                                              },
-                                              True))
+                    exp_adds.append(xml.TagAdd(f"./robot/group/[@ns='{ns}']",
+                                               "param",
+                                               {
+                                                   "name": "tf_prefix",
+                                                   "value": ns
+                                               },
+                                               True))
 
                     # These two tag adds are OK to use because:
                     #
@@ -141,29 +143,29 @@ class PopulationSize(population_size.BasePopulationSize):
                     #
                     # - All robots in Gazebo will provide a robot description
                     #   .urdf.xacro per ROS naming conventions
-                    exp_adds.append(XMLTagAdd(f"./robot/group/[@ns='{ns}']",
-                                              "param",
-                                              {
-                                                  "name": "robot_description",
-                                                  "command": desc_cmd
-                                              },
-                                              True))
+                    exp_adds.append(xml.TagAdd(f"./robot/group/[@ns='{ns}']",
+                                               "param",
+                                               {
+                                                   "name": "robot_description",
+                                                   "command": desc_cmd
+                                               },
+                                               True))
 
-                    exp_adds.append(XMLTagAdd(f"./robot/group/[@ns='{ns}']",
-                                              "node",
-                                              {
-                                                  "name": "spawn_urdf",
-                                                  "pkg": "gazebo_ros",
-                                                  "type": "spawn_model",
-                                                  "args": spawn_cmd_args
-                                              },
-                                              True))
+                    exp_adds.append(xml.TagAdd(f"./robot/group/[@ns='{ns}']",
+                                               "node",
+                                               {
+                                                   "name": "spawn_urdf",
+                                                   "pkg": "gazebo_ros",
+                                                   "type": "spawn_model",
+                                                   "args": spawn_cmd_args
+                                               },
+                                               True))
 
                 self.tag_adds.append(exp_adds)
 
         return self.tag_adds
 
-    def gen_exp_dirnames(self, cmdopts: types.Cmdopts) -> tp.List[str]:
+    def gen_exp_names(self, cmdopts: types.Cmdopts) -> tp.List[str]:
         adds = self.gen_tag_addlist()
         return ['exp' + str(x) for x in range(0, len(adds))]
 
@@ -175,9 +177,7 @@ def factory(cli_arg: str,
             main_config: types.YAMLDict,
             cmdopts: types.Cmdopts,
             **kwargs) -> PopulationSize:
-    """
-    Factory to create :class:`PopulationSize` derived classes from the command
-    line definition.
+    """Create a :class:`PopulationSize` derived class from the cmdline definition.
 
     """
     parser = population_size.Parser()
@@ -190,17 +190,8 @@ def factory(cli_arg: str,
     else:
         # Get the dimensions of the effective arena from the scenario so we can
         # place robots randomly within it.
-        sgp = pm.module_load_tiered(project=cmdopts['project'],
-                                    path='generators.scenario_generator_parser')
+        kw = utils.gen_scenario_spec(cmdopts, **kwargs)
 
-        # scenario is passed in kwargs during stage 5 (can't be passed via
-        # --scenario in general )
-        if 'scenario' in kwargs:
-            scenario = kwargs['scenario']
-        else:
-            scenario = cmdopts['scenario']
-
-        kw = sgp.ScenarioGeneratorParser().to_dict(scenario)
         xs = random.choices(range(0, kw['arena_x']), k=max_sizes[-1])  # type: ignore
         ys = random.choices(range(0, kw['arena_y']), k=max_sizes[-1])  # type: ignore
         zs = random.choices(range(0, kw['arena_z']), k=max_sizes[-1])  # type: ignore

@@ -19,8 +19,13 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('..'))
-sys.path.append(os.path.abspath('_ext'))
+import builtins
+import pathlib
+
+builtins.__sphinx_build__ = True
+
+sys.path.insert(0, str(pathlib.Path('..').resolve()))
+sys.path.append(str(pathlib.Path('_ext').resolve()))
 
 # -- General configuration ------------------------------------------------
 
@@ -72,7 +77,7 @@ author = 'John Harwell'
 # built documents.
 #
 ver_ns = {}
-ver_path = os.path.join('..', 'sierra', 'version.py')
+ver_path = pathlib.Path('..') / 'sierra' / 'version.py'
 with open(ver_path) as ver_file:
     exec(ver_file.read(), ver_ns)
 
@@ -94,8 +99,10 @@ language = None
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'flycheck']
 
 if 'html' in sys.argv:
+    builtins.__sphinx_build_html__ = True
     exclude_patterns.extend(['man'])
 elif 'man' in sys.argv:
+    builtins.__sphinx_build_man__ = True
     exclude_patterns.extend(['api',
                              'src/tutorials',
                              'src/api.rst',
@@ -155,8 +162,10 @@ xref_links = {
                       "http://users.umiacs.umd.edu/~sarit/data/articles/rosenfeldetalbook06.pdf"),
     "SIERRA_GITHUB": ("https://github.com:swarm-robotics/sierra.git",
                       "https://github.com:swarm-robotics/sierra.git"),
-    "SIERRA_DOCS": ("https://swarm-robotics-fordyca.readthedocs.io",
-                    "https://swarm-robotics-fordyca.readthedocs.io"),
+    "SIERRA_SAMPLE_PROJECT": ("https://github.com:swarm-robotics/sierra-sample-project.git",
+                              "https://github.com:swarm-robotics/sierra-sample-project.git"),
+    "SIERRA_DOCS": ("https://swarm-robotics-sierra.readthedocs.io/en/master",
+                    "https://swarm-robotics-sierra.readthedocs.io/en/master"),
     "FORDYCA": ("FORDYCA", "https://swarm-robotics-fordyca.readthedocs.io"),
     "PRISM": ("PRISM", "https://swarm-robotics-prism.readthedocs.io"),
     "LIBRA": ("LIBRA", "https://swarm-robotics-libra.readthedocs.io"),
@@ -179,7 +188,10 @@ html_theme = 'sphinx_rtd_theme'
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {
+    'globaltoc_maxdepth': 2,
+    'collapse_navigation': False
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -258,6 +270,10 @@ man_pages = [
      'The platforms SIERRA supports, and platform-specific Batch Criteria.',
      [author],
      7),
+    ('man/sierra-exec-envs', 'sierra-exec-envs',
+     'The execution environments SIERRA supports.',
+     [author],
+     7),
     ('man/sierra-examples', 'sierra-examples',
      ('Examples of SIERRA usage. These examples all assume that you have '
       'successfully set up SIERRA with a project of your choice.'),
@@ -273,7 +289,7 @@ man_pages = [
      7)
 
 ]
-
+man_show_urls = True
 # -- Options for Texinfo output -------------------------------------------
 
 # Grouping the document tree into Texinfo files. List of tuples

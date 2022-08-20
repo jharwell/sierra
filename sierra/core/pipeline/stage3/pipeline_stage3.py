@@ -14,16 +14,15 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""
-Classes for implementing stage 3 of the experimental pipeline: processing
-experimental results.
+"""Stage 3 of the experimental pipeline: processing experimental results.
+
 """
 
 # Core packages
-import os
 import time
 import datetime
 import logging
+import pathlib
 
 # 3rd party packages
 import yaml
@@ -32,19 +31,17 @@ import yaml
 from sierra.core.pipeline.stage3.statistics_calculator import BatchExpParallelCalculator
 from sierra.core.pipeline.stage3.run_collator import ExperimentalRunParallelCollator
 from sierra.core.pipeline.stage3.imagizer import BatchExpParallelImagizer
-import sierra.core.utils
 import sierra.core.variables.batch_criteria as bc
-from sierra.core import types
+from sierra.core import types, utils
 
 
 class PipelineStage3:
-    """Processes results of :term:`Experimental Runs <Experimental Run>` within a
-    single :term:`Experiment` and across multiple experiments together.
+    """Processes the results of running a :term:`Batch Experiment`.
 
     Currently this includes:
 
     - Generating statistics from results for generating per-experiment graphs
-      during stage 4. This can generated :term:`Averaged .csv` files, among
+      during stage 4. This can generate :term:`Averaged .csv` files, among
       other statistics.
 
     - Collating results across experiments for generating inter-experiment
@@ -67,13 +64,14 @@ class PipelineStage3:
         self._run_run_collation(self.main_config, self.cmdopts, criteria)
 
         if self.cmdopts['project_imagizing']:
-            intra_HM_path = os.path.join(self.cmdopts['project_config_root'],
-                                         'intra-graphs-hm.yaml')
+            intra_HM_path = pathlib.Path(self.cmdopts['project_config_root']) \
+                / pathlib.Path('intra-graphs-hm.yaml')
 
-            if sierra.core.utils.path_exists(intra_HM_path):
-                self.logger.info("Loading intra-experiment heatmap config for project '%s'",
+            if utils.path_exists(intra_HM_path):
+                self.logger.info(("Loading intra-experiment heatmap config for "
+                                  "project '%s'"),
                                  self.cmdopts['project'])
-                intra_HM_config = yaml.load(open(intra_HM_path),
+                intra_HM_config = yaml.load(utils.utf8open(intra_HM_path),
                                             yaml.FullLoader)
                 self._run_imagizing(self.main_config,
                                     intra_HM_config,

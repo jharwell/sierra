@@ -1,0 +1,216 @@
+<?xml version="1.0" ?>
+
+<argos-configuration>
+
+  <framework>
+    <system threads="0" />
+    <experiment length="10000"
+                ticks_per_second="5"
+                random_seed="123" />
+  </framework>
+  <controllers>
+
+    <crw_controller id="ffc"
+                               library="libfordyca-argos-footbot">
+      <actuators>
+        <differential_steering implementation="default" />
+        <leds implementation="default" medium="leds" />
+        <range_and_bearing implementation="default" />
+      </actuators>
+      <sensors>
+        <differential_steering implementation="default" />
+        <footbot_proximity implementation="default" show_rays="true" />
+        <footbot_light implementation="rot_z_only" show_rays="false" />
+        <footbot_motor_ground implementation="rot_z_only" />
+        <range_and_bearing implementation="medium" medium="rab" />
+        <battery implementation="default" />
+        <positioning implementation="default"/>
+        <colored_blob_omnidirectional_camera implementation="rot_z_only"
+                                             medium="leds" />
+      </sensors>
+      <params>
+        <output
+          output_parent="output"
+          output_leaf="__current_date__"
+          />
+        <perception
+            los_dim="0.4">
+          <grid2D resolution="0.2"
+                dims="12, 6, 2"/>
+          <pheromone rho="0.00001"
+                     repeat_deposit="false"/>
+        </perception>
+        <nest dims="1.0, 4.0" center="2, 3" />
+        <strategy>
+          <blocks>
+            <explore
+                strategy="CRW"
+                min_duration="50"/>
+            </blocks>
+            <nest>
+              <acq
+                  strategy="wander"
+                  duration="20"
+                  />
+              <exit
+                  strategy="anti_phototaxis"
+                  />
+            </nest>
+        </strategy>
+        <sensing_subsystemQ3D>
+          <proximity_sensor fov="-2.61:2.61"
+                            delta="0.1" />
+
+
+          <env_sensor>
+            <nest range="0.6:0.8"
+                  consensus="3"/>
+            <block range="-0.05:0.05"
+                   consensus="4"/>
+            <cache range="0.3:0.5"
+                   consensus="3"/>
+          </env_sensor>
+        </sensing_subsystemQ3D>
+        <actuation_subsystem2D>
+          <force_calculator>
+            <avoidance_force lookahead="0.5"
+                             max="0.08"/>
+            <arrival_force slowing_radius="0.2"
+                           slowing_speed_min="0.01"
+                           max="0.08"/>
+            <wander_force circle_distance="4.0"
+                          circle_radius="100.0"
+                          max="0.09"
+                          interval="1">
+              <bias_angle src="uniform"
+                          max_delta="0.0872"/>
+            </wander_force>
+            <phototaxis_force max="0.08"/>
+          </force_calculator>
+
+          <diff_drive soft_turn_max="0.836"
+                      max_speed="0.09" />
+        </actuation_subsystem2D>
+      </params>
+    </crw_controller>
+
+  </controllers>
+
+  <loop_functions library="libfordyca-argos-footbot"
+                  label="d0_loop_functions">
+    <output output_parent="output"
+            output_leaf="__current_date__">
+      <metrics
+          metrics_path="metrics">
+        <sinks>
+          <file>
+            <append
+                output_interval="1000"
+                block_transporter="block-transporter.csv"
+                block_transportee="block-transportee.csv"
+                spatial_interference_counts="spatial-interference-counts.csv"
+                spatial_movement="spatial-movement.csv"
+                spatial_nest_zone='spatial-nest-zone'
+                block_acq_counts="block-acq-counts.csv"
+                block_manipulation="block-manipulation.csv"
+                />
+            <create
+                output_interval="10"
+                spatial_interference_locs2D="spatial-interference-locs.csv"
+                block_acq_locs2D="block-acq-locs.csv"
+                block_acq_explore_locs2D="block-acq-explore-locs.csv"
+                block_acq_vector_locs2D="block-acq-vector-locs.csv"
+                spatial_dist_pos2D="spatial-dist-pos2D.csv"/>
+          </file>
+        </sinks>
+      </metrics>
+    </output>
+
+    <arena_map>
+      <grid2D resolution="0.2"
+              dims="12, 6, 2"/>
+      <blocks>
+        <distribution
+            arena_resolution="0.2"
+            dist_type="random">
+          <manifest
+              n_cube="100"
+              n_ramp="0"
+              unit_dim="0.2"
+              />
+        </distribution>
+      </blocks>
+      <nests>
+        <nest dims="1.0, 4.0"
+              center="2, 3"
+              light_height="5.0"
+              light_intensity="10.0"/>
+      </nests>
+    </arena_map>
+    <visualization robot_id="true"
+                   robot_los="true"
+                   />
+  </loop_functions>
+
+  <arena size="12, 6, 2" center="6,3,1">
+
+    <floor id="floor"
+           source="loop_functions"
+           pixels_per_meter="50" />
+
+    <box id="wall_north" size="12,0.1,0.5" movable="false">
+      <body position="6,6,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_south" size="12,0.1,0.5" movable="false">
+      <body position="6,0,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_east" size="0.1,6,0.5" movable="false">
+      <body position="12,3,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_west" size="0.1,6,0.5" movable="false">
+      <body position="0,3,0" orientation="0,0,0" />
+    </box>
+
+    <distribute>
+      <position method="uniform" min="1,1,0" max="10,5,0" />
+      <orientation method="uniform" min="0,0,0" max="360,0,0" />
+      <entity quantity="16" max_trials="1000">
+        <foot-bot id="fb">
+          <controller config="ffc" />
+        </foot-bot>
+      </entity>
+    </distribute>
+
+  </arena>
+
+  <physics_engines>
+    <dynamics2d id="dyn2d0">
+    </dynamics2d>
+  </physics_engines>
+
+  <media>
+    <range_and_bearing id="rab" />
+    <led id="leds" />
+  </media>
+
+  <visualization>
+    <qt-opengl>
+      <camera>
+        <placement idx="0"
+                   position="6,3,6"
+                   look_at="6,3,0"
+                   lens_focal_length="20"
+                   up="0,1,0"
+                   />
+        <placement idx="1"
+                   position="6,0,5"
+                   look_at="6,3,0"
+                   lens_focal_length="20"
+                   up="0,1,0"
+                   />
+      </camera>
+      <user_functions label="d0_qt_user_functions" />
+    </qt-opengl>
+  </visualization>
+
+</argos-configuration>

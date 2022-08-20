@@ -13,7 +13,11 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
+"""Reusable classes for configuring general aspects of experiments.
 
+Aspects include experiment length, controller frequency, etc.
+
+"""
 # Core packages
 import re
 

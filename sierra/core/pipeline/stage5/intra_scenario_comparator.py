@@ -14,8 +14,9 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""Classes for handling univariate and bivariate controller comparisons within
-a set of scenarios for stage5 of the experimental pipeline.
+"""Classes for comparing deliverables within the same scenario.
+
+Univariate and bivariate batch criteria.
 
 """
 
@@ -27,6 +28,7 @@ import re
 import typing as tp
 import argparse
 import logging
+import pathlib
 
 # 3rd party packages
 import pandas as pd
@@ -37,7 +39,7 @@ from sierra.core.graphs.stacked_surface_graph import StackedSurfaceGraph
 from sierra.core.graphs.heatmap import Heatmap, DualHeatmap
 from sierra.core.variables import batch_criteria as bc
 import sierra.core.root_dirpath_generator as rdg
-from sierra.core import types, utils, config, storage, config
+from sierra.core import types, utils, config, storage
 
 
 class UnivarIntraScenarioComparator:
@@ -50,6 +52,7 @@ class UnivarIntraScenarioComparator:
     Univariate batch criteria only.
 
     Attributes:
+
         controllers: List of controller names to compare.
 
         cc_csv_root: Absolute directory path to the location controller CSV
@@ -73,11 +76,11 @@ class UnivarIntraScenarioComparator:
 
     def __init__(self,
                  controllers: tp.List[str],
-                 cc_csv_root: str,
-                 cc_graph_root: str,
+                 cc_csv_root: pathlib.Path,
+                 cc_graph_root: pathlib.Path,
                  cmdopts: types.Cmdopts,
                  cli_args,
-                 main_config: dict) -> None:
+                 main_config: types.YAMLDict) -> None:
         self.controllers = controllers
         self.cc_graph_root = cc_graph_root
         self.cc_csv_root = cc_csv_root
@@ -85,6 +88,8 @@ class UnivarIntraScenarioComparator:
         self.cmdopts = cmdopts
         self.cli_args = cli_args
         self.main_config = main_config
+        self.project_root = pathlib.Path(self.cmdopts['sierra_root'],
+                                         self.cmdopts['project'])
         self.logger = logging.getLogger(__name__)
 
     def __call__(self,
@@ -94,9 +99,7 @@ class UnivarIntraScenarioComparator:
         # Obtain the list of scenarios to use. We can just take the scenario
         # list of the first controllers, because we have already checked that
         # all controllers executed the same set scenarios.
-        batch_leaves = os.listdir(os.path.join(self.cmdopts['sierra_root'],
-                                               self.cmdopts['project'],
-                                               self.controllers[0]))
+        batch_leaves = os.listdir(self.project_root / self.controllers[0])
 
         # For each controller comparison graph we are interested in, generate it
         # using data from all scenarios
@@ -119,10 +122,11 @@ class UnivarIntraScenarioComparator:
                                     self.cli_args.batch_criteria)
 
     def _leaf_select(self, candidate: str) -> bool:
-        """Select which scenario to compare controllers within. You can only
-        compare controllers within the scenario directly generated from the
-        value of ``--batch-criteria``; other scenarios will (probably) cause
-        file not found errors.
+        """Determine if a controller can be included in the comparison for a scenario.
+
+        You can only compare controllers within the scenario directly generated
+        from the value of ``--batch-criteria``; other scenarios will (probably)
+        cause file not found errors.
 
         """
         template_stem, scenario, _ = rdg.parse_batch_leaf(candidate)
@@ -138,9 +142,8 @@ class UnivarIntraScenarioComparator:
                              legend: tp.List[str]) -> None:
 
         for controller in self.controllers:
-            dirs = [d for d in os.listdir(os.path.join(self.cmdopts['sierra_root'],
-                                                       self.cmdopts['project'],
-                                                       controller)) if batch_leaf in d]
+            dirs = [d for d in os.listdir(
+                self.project_root / controller) if batch_leaf in d]
             if len(dirs) == 0:
                 self.logger.warning("Controller %s was not run on experiment %s",
                                     controller,
@@ -180,8 +183,8 @@ class UnivarIntraScenarioComparator:
                             criteria=criteria,
                             cmdopts=cmdopts,
                             dest_stem=graph['dest_stem'],
-                            title=graph['title'],
-                            label=graph['label'],
+                            title=graph.get('title', ''),
+                            label=graph.get('label', ''),
                             inc_exps=graph.get('include_exp', None),
                             legend=legend)
 
@@ -193,21 +196,22 @@ class UnivarIntraScenarioComparator:
                  src_stem: str,
                  dest_stem: str,
                  inc_exps: tp.Optional[str]) -> None:
-        """Helper function for generating a set of .csv files for use in intra-scenario
-        graph generation (1 per controller).
+        """Generate a set of CSV files for use in intra-scenario graph generation.
+
+        1 CSV per controller.
 
         """
         self.logger.debug("Gathering data for '%s' from %s -> %s",
                           controller, src_stem, dest_stem)
-        ipath = os.path.join(
-            cmdopts['batch_stat_collate_root'],
-            src_stem + config.kStatsExt['mean'])
+        ipath = pathlib.Path(cmdopts['batch_stat_collate_root'],
+                             src_stem + config.kStats['mean'].exts['mean'])
 
         # Some experiments might not generate the necessary performance measure
         # .csvs for graph generation, which is OK.
         if not utils.path_exists(ipath):
-            self.logger.warning(
-                "%s missing for controller %s", ipath, controller)
+            self.logger.warning("%s missing for controller %s",
+                                ipath,
+                                controller)
             return
 
         preparer = StatsPreparer(ipath_stem=cmdopts['batch_stat_collate_root'],
@@ -226,11 +230,7 @@ class UnivarIntraScenarioComparator:
                    label: str,
                    inc_exps: tp.Optional[str],
                    legend: tp.List[str]) -> None:
-        """Generates a :class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`
-        comparing the specified controllers within the specified scenario after
-        input files have been gathered from each controller into
-        :attr:`cc_csv_root`.
-
+        """Generate a graph comparing the specified controllers within a scenario.
         """
         opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, None)
 
@@ -243,8 +243,7 @@ class UnivarIntraScenarioComparator:
             xticks = utils.exp_include_filter(
                 inc_exps, xticks, criteria.n_exp())
 
-        opath = os.path.join(self.cc_graph_root, opath_leaf +
-                             config.kImageExt)
+        opath = self.cc_graph_root / (opath_leaf + config.kImageExt)
 
         SummaryLineGraph(stats_root=self.cc_csv_root,
                          input_stem=opath_leaf,
@@ -270,6 +269,7 @@ class BivarIntraScenarioComparator:
     Bivariate batch criteria only.
 
     Attributes:
+
         controllers: List of controller names to compare.
 
         cc_csv_root: Absolute directory path to the location controller CSV
@@ -293,8 +293,8 @@ class BivarIntraScenarioComparator:
 
     def __init__(self,
                  controllers: tp.List[str],
-                 cc_csv_root: str,
-                 cc_graph_root: str,
+                 cc_csv_root: pathlib.Path,
+                 cc_graph_root: pathlib.Path,
                  cmdopts: types.Cmdopts,
                  cli_args: argparse.Namespace,
                  main_config: types.YAMLDict) -> None:
@@ -306,8 +306,11 @@ class BivarIntraScenarioComparator:
         self.main_config = main_config
         self.logger = logging.getLogger(__name__)
 
-        self.logger.debug("csv_root=%s", self.cc_csv_root)
-        self.logger.debug("graph_root=%s", self.cc_graph_root)
+        self.logger.debug("csv_root=%s", str(self.cc_csv_root))
+        self.logger.debug("graph_root=%s", str(self.cc_graph_root))
+
+        self.project_root = pathlib.Path(self.cmdopts['sierra_root'],
+                                         self.cmdopts['project'])
 
     def __call__(self,
                  graphs: tp.List[types.YAMLDict],
@@ -317,9 +320,7 @@ class BivarIntraScenarioComparator:
         # Obtain the list of scenarios to use. We can just take the scenario
         # list of the first controllers, because we have already checked that
         # all controllers executed the same set scenarios.
-        batch_leaves = os.listdir(os.path.join(self.cmdopts['sierra_root'],
-                                               self.cmdopts['project'],
-                                               self.controllers[0]))
+        batch_leaves = os.listdir(self.project_root / self.controllers[0])
 
         cmdopts = copy.deepcopy(self.cmdopts)
         for graph in graphs:
@@ -341,10 +342,11 @@ class BivarIntraScenarioComparator:
                                     self.cli_args.batch_criteria)
 
     def _leaf_select(self, candidate: str) -> bool:
-        """Select which scenario to compare controllers within. You can only compare
-        controllers within the scenario directly generated from the value of
-        ``--batch-criteria``; other scenarios will (probably) cause file not
-        found errors.
+        """Determine if a controller can be included in the comparison for a scenario.
+
+        You can only compare controllers within the scenario directly generated
+        from the value of ``--batch-criteria``; other scenarios will (probably)
+        cause file not found errors.
 
         """
         template_stem, scenario, _ = rdg.parse_batch_leaf(candidate)
@@ -359,14 +361,14 @@ class BivarIntraScenarioComparator:
                              batch_leaf: str,
                              legend: tp.List[str],
                              comp_type: str) -> None:
-        """Compares all controllers within the specified scenario, generating CSV
-        files and graphs according to configuration.
+        """Compare all controllers within the specified scenario.
 
+        Generates CSV files and graphs according to configuration.
         """
         for controller in self.controllers:
-            dirs = [d for d in os.listdir(os.path.join(self.cmdopts['sierra_root'],
-                                                       self.cmdopts['project'],
-                                                       controller)) if batch_leaf in d]
+            dirs = [d for d in os.listdir(
+                self.project_root / controller) if batch_leaf in d]
+
             if len(dirs) == 0:
                 self.logger.warning("Controller '%s' was not run on scenario '%s'",
                                     controller,
@@ -401,7 +403,7 @@ class BivarIntraScenarioComparator:
                                       batch_leaf=batch_leaf,
                                       src_stem=graph['src_stem'],
                                       dest_stem=graph['dest_stem'],
-                                      primary_axis=graph['primary_axis'],
+                                      primary_axis=graph.get('primary_axis', 0),
                                       inc_exps=graph.get('include_exp', None))
 
             elif 'HM' in comp_type or 'SU' in comp_type:
@@ -416,9 +418,9 @@ class BivarIntraScenarioComparator:
                                criteria=criteria,
                                cmdopts=cmdopts,
                                dest_stem=graph['dest_stem'],
-                               title=graph['title'],
-                               label=graph['label'],
-                               primary_axis=graph['primary_axis'],
+                               title=graph.get('title', ''),
+                               label=graph.get('label', ''),
+                               primary_axis=graph.get('primary_axis', 0),
                                inc_exps=graph.get('include_exp', None),
                                legend=legend)
         elif 'HM' in comp_type:
@@ -426,8 +428,8 @@ class BivarIntraScenarioComparator:
                                criteria=criteria,
                                cmdopts=cmdopts,
                                dest_stem=graph['dest_stem'],
-                               title=graph['title'],
-                               label=graph['label'],
+                               title=graph.get('title', ''),
+                               label=graph.get('label', ''),
                                legend=legend,
                                comp_type=comp_type)
 
@@ -436,8 +438,8 @@ class BivarIntraScenarioComparator:
                               criteria=criteria,
                               cmdopts=cmdopts,
                               dest_stem=graph['dest_stem'],
-                              title=graph['title'],
-                              zlabel=graph['label'],
+                              title=graph.get('title', ''),
+                              zlabel=graph.get('label', ''),
                               legend=legend,
                               comp_type=comp_type)
 
@@ -447,11 +449,12 @@ class BivarIntraScenarioComparator:
                                controller: str,
                                src_stem: str,
                                dest_stem: str) -> None:
-        """Helper function for generating a set of .csv files for use in intra-scenario
-        graph generation (1 per controller) for 2D/3D comparison types. Because
-        each CSV file corresponding to performance measures are 2D arrays,
-        we actually just copy and rename the performance measure CSV files
-        for each controllers into :attr:`cc_csv_root`.
+        """Generate a set of CSV files for use in intra-scenario graph generation.
+
+        1 CSV per controller, for 2D/3D comparison types only. Because each CSV
+        file corresponding to performance measures are 2D arrays, we actually
+        just copy and rename the performance measure CSV files for each
+        controllers into :attr:`cc_csv_root`.
 
         :class:`~sierra.core.graphs.stacked_surface_graph.StackedSurfaceGraph`
         expects an ``_[0-9]+.csv`` pattern for each 2D surfaces to graph in
@@ -466,14 +469,15 @@ class BivarIntraScenarioComparator:
         self.logger.debug("Gathering data for '%s' from %s -> %s",
                           controller, src_stem, dest_stem)
 
-        csv_ipath = os.path.join(cmdopts['batch_stat_collate_root'],
-                                 src_stem + config.kStatsExt['mean'])
+        csv_ipath = pathlib.Path(cmdopts['batch_stat_collate_root'],
+                                 src_stem + config.kStats['mean'].exts['mean'])
 
-        # Some experiments might not generate the necessary performance measure .csvs for
-        # graph generation, which is OK.
+        # Some experiments might not generate the necessary performance measure
+        # .csvs for graph generation, which is OK.
         if not utils.path_exists(csv_ipath):
-            self.logger.warning(
-                "%s missing for controller '%s'", csv_ipath, controller)
+            self.logger.warning("%s missing for controller '%s'",
+                                csv_ipath,
+                                controller)
             return
 
         df = storage.DataFrameReader('storage.csv')(csv_ipath)
@@ -482,11 +486,11 @@ class BivarIntraScenarioComparator:
                                                    dest_stem,
                                                    [self.controllers.index(controller)])
 
-        csv_opath_stem = os.path.join(self.cc_csv_root, opath_leaf)
+        opath_stem = self.cc_csv_root / opath_leaf
+        opath = opath_stem.with_name(
+            opath_stem.name + config.kStats['mean'].exts['mean'])
         writer = storage.DataFrameWriter('storage.csv')
-        writer(df,
-               csv_opath_stem + config.kStatsExt['mean'],
-               index=False)
+        writer(df, opath, index=False)
 
     def _gen_csvs_for_1D(self,
                          cmdopts: types.Cmdopts,
@@ -497,26 +501,32 @@ class BivarIntraScenarioComparator:
                          dest_stem: str,
                          primary_axis: int,
                          inc_exps: tp.Optional[str]) -> None:
-        """Helper function for generating a set of .csv files for use in intra-scenario
-        graph generation. Because we are targeting linegraphs, we draw the the
-        i-th row/col (as configured) from the performance results of each
-        controller .csv, and concatenate them into a new .csv file which can be
-        given to
+        """Generate a set of CSV files for use in intra-scenario graph generation.
+
+        Because we are targeting linegraphs, we draw the the i-th row/col (as
+        configured) from the performance results of each controller .csv, and
+        concatenate them into a new .csv file which can be given to
         :class:`~sierra.core.graphs.summary_line_graph.SummaryLineGraph`.
 
         """
         self.logger.debug("Gathering data for '%s' from %s -> %s",
                           controller, src_stem, dest_stem)
 
-        csv_ipath = os.path.join(cmdopts['batch_stat_collate_root'],
-                                 src_stem + config.kStatsExt['mean'])
+        csv_ipath = pathlib.Path(cmdopts['batch_stat_collate_root'],
+                                 src_stem + config.kStats['mean'].exts['mean'])
 
         # Some experiments might not generate the necessary performance measure
         # .csvs for graph generation, which is OK.
         if not utils.path_exists(csv_ipath):
-            self.logger.warning(
-                "%s missing for controller '%s'", csv_ipath, controller)
+            self.logger.warning("%s missing for controller '%s'",
+                                csv_ipath,
+                                controller)
             return
+
+        if cmdopts['dist_stats'] != 'none':
+            self.logger.warning(("--dist-stats is not supported with "
+                                 "1D CSVs sliced from 2D CSV for linegraph "
+                                 "generation: no stats will be included"))
 
         if primary_axis == 0:
             preparer = StatsPreparer(ipath_stem=cmdopts['batch_stat_collate_root'],
@@ -525,20 +535,24 @@ class BivarIntraScenarioComparator:
                                      n_exp=criteria.criteria2.n_exp())
 
             reader = storage.DataFrameReader('storage.csv')
-            n_rows = len(reader(os.path.join(cmdopts['batch_stat_collate_root'],
-                                             src_stem + config.kStatsExt['mean'])).index)
+            ipath = pathlib.Path(cmdopts['batch_stat_collate_root'],
+                                 src_stem + config.kStats['mean'].exts['mean'])
+            n_rows = len(reader(ipath).index)
+
             for i in range(0, n_rows):
-                opath_leaf = LeafGenerator.from_batch_leaf(
-                    batch_leaf, dest_stem, [i])
+                opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf,
+                                                           dest_stem,
+                                                           [i])
                 preparer.across_rows(opath_leaf=opath_leaf,
-                                     index=i, inc_exps=inc_exps)
+                                     index=i,
+                                     inc_exps=inc_exps)
         else:
             preparer = StatsPreparer(ipath_stem=cmdopts['batch_stat_collate_root'],
                                      ipath_leaf=src_stem,
                                      opath_stem=self.cc_csv_root,
                                      n_exp=criteria.criteria1.n_exp())
 
-            exp_dirs = criteria.gen_exp_dirnames(cmdopts)
+            exp_dirs = criteria.gen_exp_names(cmdopts)
             xlabels, ylabels = utils.bivar_exp_labels_calc(exp_dirs)
             xlabels = utils.exp_include_filter(
                 inc_exps, xlabels, criteria.criteria1.n_exp())
@@ -563,15 +577,14 @@ class BivarIntraScenarioComparator:
                       inc_exps: tp.Optional[str],
                       legend: tp.List[str]) -> None:
         oleaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, None)
-        csv_stem_root = os.path.join(self.cc_csv_root, oleaf)
-        pattern = csv_stem_root + '*.' + config.kStatsExt['mean']
+        csv_stem_root = self.cc_csv_root / oleaf
+        pattern = str(csv_stem_root) + '*' + config.kStats['mean'].exts['mean']
         paths = [f for f in glob.glob(pattern) if re.search('_[0-9]+', f)]
 
         for i in range(0, len(paths)):
             opath_leaf = LeafGenerator.from_batch_leaf(
                 batch_leaf, dest_stem, [i])
-            img_opath = os.path.join(
-                self.cc_graph_root, opath_leaf + config.kImageExt)
+            img_opath = self.cc_graph_root / (opath_leaf + config.kImageExt)
 
             if primary_axis == 0:
                 n_exp = criteria.criteria1.n_exp()
@@ -596,9 +609,10 @@ class BivarIntraScenarioComparator:
                                                         n_exp)
                 xlabel = criteria.graph_xlabel(cmdopts)
 
+            # TODO: Fix no statistics support for these graphs
             SummaryLineGraph(stats_root=self.cc_csv_root,
                              input_stem=opath_leaf,
-                             stats=cmdopts['dist_stats'],
+                             stats='none',
                              output_fpath=img_opath,
                              model_root=cmdopts['batch_model_root'],
                              title=title,
@@ -645,22 +659,24 @@ class BivarIntraScenarioComparator:
                              title: str,
                              label: str,
                              comp_type: str) -> None:
-        """
-        Generates a set of :class:`~sierra.core.graphs.heatmap.Heatmap` graphs a
-        controller of primary interest against all other controllers (one graph
-        per pairing), after input files have been gathered from each controller
-        into :attr:`cc_csv_root`. Only valid if the comparison type is
-        ``scale2D`` or ``diff2D``.
+        """Generate a set of :class:`~sierra.core.graphs.heatmap.Heatmap` graphs.
+
+        Uses a configured controller of primary interest against all other
+        controllers (one graph per pairing), after input files have been
+        gathered from each controller into :attr:`cc_csv_root`. 
 
         """
         opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, None)
-        csv_pattern_root = os.path.join(self.cc_csv_root, opath_leaf)
-        pattern = csv_pattern_root + '*' + config.kStatsExt['mean']
+        opath = self.cc_graph_root / (opath_leaf + config.kImageExt)
+        pattern = self.cc_csv_root / (opath_leaf + '*' +
+                                      config.kStats['mean'].exts['mean'])
 
-        self.logger.debug("Generating paired heatmaps from pattern='%s'",
-                          pattern)
+        paths = [pathlib.Path(f) for f in glob.glob(str(pattern))
+                 if re.search(r'_[0-9]+\.', f)]
 
-        paths = [f for f in glob.glob(pattern) if re.search('_[0-9]+', f)]
+        self.logger.debug("Generating paired heatmaps in %s -> %s",
+                          pattern,
+                          [str(f.relative_to(self.cc_csv_root)) for f in paths])
 
         if len(paths) < 2:
             self.logger.warning(("Not enough matches from pattern='%s'--"
@@ -673,18 +689,20 @@ class BivarIntraScenarioComparator:
 
         for i in range(1, len(paths)):
             df = reader(paths[i])
-
+            print(paths[i])
             if comp_type == 'HMscale':
                 plot_df = df / ref_df
             elif comp_type == 'HMdiff':
                 plot_df = df - ref_df
 
-            leaf = LeafGenerator.from_batch_leaf(
-                batch_leaf, dest_stem, [0, i])
-            ipath = os.path.join(self.cc_csv_root, leaf) + \
-                config.kStatsExt['mean']
-            opath = os.path.join(self.cc_graph_root,
-                                 leaf) + config.kImageExt
+            # Have to add something before the .mean to ensure that the diff CSV
+            # does not get picked up by the regex above as each controller is
+            # treated in turn as the primary.
+            leaf = LeafGenerator.from_batch_leaf(batch_leaf,
+                                                 dest_stem,
+                                                 [0, i]) + '_paired'
+            ipath = self.cc_csv_root / (leaf + config.kStats['mean'].exts['mean'])
+            opath = self.cc_graph_root / (leaf + config.kImageExt)
 
             writer = storage.DataFrameWriter('storage.csv')
             writer(plot_df, ipath, index=False)
@@ -692,7 +710,7 @@ class BivarIntraScenarioComparator:
             Heatmap(input_fpath=ipath,
                     output_fpath=opath,
                     title=title,
-                    transpose=self.cmdopts['transpose_graphs'],
+                    transpose=self.cmdopts['plot_transpose_graphs'],
                     zlabel=self._gen_zaxis_label(label, comp_type),
                     xlabel=criteria.graph_xlabel(cmdopts),
                     ylabel=criteria.graph_ylabel(cmdopts),
@@ -708,44 +726,36 @@ class BivarIntraScenarioComparator:
                            label: str,
                            legend: tp.List[str],
                            comp_type: str) -> None:
-        """
-        Generates a set of :class:`~sierra.core.graphs.heatmap.DualHeatmap` graphs
-        containing all pairs of (primary controller, other), one per graph,
-        within the specified scenario after input files have been gathered from
-        each controller into :attr:`cc_csv_root`. Only valid if the comparison
-        type is ``HMraw``.
+        """Generate a set of :class:`~sierra.core.graphs.heatmap.DualHeatmap` graphs.
+
+        Graphs contain all pairings of (primary controller, other), one per
+        graph, within the specified scenario after input files have been
+        gathered from each controller into :attr:`cc_csv_root`. Only valid if
+        the comparison type is ``HMraw``.
 
         """
-
         opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, None)
-        csv_pattern_root = os.path.join(self.cc_csv_root, opath_leaf)
-        pattern = csv_pattern_root + '*' + config.kStatsExt['mean']
-        self.logger.debug("Generating paired heatmaps from pattern='%s'",
-                          pattern)
-        paths = [f for f in glob.glob(pattern) if re.search('_[0-9]+', f)]
+        opath = self.cc_graph_root / (opath_leaf + config.kImageExt)
+        pattern = self.cc_csv_root / (opath_leaf + '*' +
+                                      config.kStats['mean'].exts['mean'])
 
-        if len(paths) < 2:
-            self.logger.warning(("Not enough matches from pattern='%s'--"
-                                 "skipping dual heatmap generation"),
-                                pattern)
-            return
+        paths = [pathlib.Path(f) for f in glob.glob(str(pattern))
+                 if re.search('_[0-9]+', f)]
 
-        for i in range(0, len(paths)):
-            opath_leaf = LeafGenerator.from_batch_leaf(
-                batch_leaf, dest_stem, None)
-            opath = os.path.join(self.cc_graph_root,
-                                 opath_leaf + config.kImageExt)
+        self.logger.debug("Generating dual heatmaps in %s -> %s",
+                          pattern,
+                          [str(f.relative_to(self.cc_csv_root)) for f in paths])
 
-            DualHeatmap(input_stem_pattern=pattern,
-                        output_fpath=opath,
-                        title=title,
-                        large_text=cmdopts['plot_large_text'],
-                        zlabel=self._gen_zaxis_label(label, comp_type),
-                        xlabel=criteria.graph_xlabel(cmdopts),
-                        ylabel=criteria.graph_ylabel(cmdopts),
-                        legend=legend,
-                        xtick_labels=criteria.graph_xticklabels(cmdopts),
-                        ytick_labels=criteria.graph_yticklabels(cmdopts)).generate()
+        DualHeatmap(ipaths=paths,
+                    output_fpath=opath,
+                    title=title,
+                    large_text=cmdopts['plot_large_text'],
+                    zlabel=self._gen_zaxis_label(label, comp_type),
+                    xlabel=criteria.graph_xlabel(cmdopts),
+                    ylabel=criteria.graph_ylabel(cmdopts),
+                    legend=legend,
+                    xtick_labels=criteria.graph_xticklabels(cmdopts),
+                    ytick_labels=criteria.graph_yticklabels(cmdopts)).generate()
 
     def _gen_graph3D(self,
                      batch_leaf: str,
@@ -756,20 +766,26 @@ class BivarIntraScenarioComparator:
                      zlabel: str,
                      legend: tp.List[str],
                      comp_type: str) -> None:
-        """Generates a
-        :class:`~sierra.core.graphs.stacked_surface_graph.StackedSurfaceGraph`
-        comparing the specified controllers within thespecified scenario after
-        input files have been gathered from each controllers into
+        """Generate a graph comparing the specified controllers within a scenario.
+
+        Graph contains the specified controllers within thes pecified scenario
+        after input files have been gathered from each controllers into
         :attr:`cc_csv_root`.
 
         """
-
         opath_leaf = LeafGenerator.from_batch_leaf(batch_leaf, dest_stem, None)
-        csv_stem_root = os.path.join(self.cc_csv_root, opath_leaf)
-        opath = os.path.join(self.cc_graph_root, opath_leaf +
-                             config.kImageExt)
+        opath = self.cc_graph_root / (opath_leaf + config.kImageExt)
+        pattern = self.cc_csv_root / (opath_leaf + '*' +
+                                      config.kStats['mean'].exts['mean'])
 
-        StackedSurfaceGraph(input_stem_pattern=csv_stem_root,
+        paths = [pathlib.Path(f) for f in glob.glob(
+            str(pattern)) if re.search('_[0-9]+', f)]
+
+        self.logger.debug("Generating stacked surface graphs in %s -> %s",
+                          pattern,
+                          [str(f.relative_to(self.cc_csv_root)) for f in paths])
+
+        StackedSurfaceGraph(ipaths=paths,
                             output_fpath=opath,
                             title=title,
                             ylabel=criteria.graph_xlabel(cmdopts),
@@ -781,13 +797,12 @@ class BivarIntraScenarioComparator:
                             comp_type=comp_type).generate()
 
     def _gen_zaxis_label(self, label: str, comp_type: str) -> str:
-        """
-        If we are doing something other than raw controller comparisons, put that on the graph
-        Z axis title.
+        """If the comparison type is not "raw", put it on the graph as Z axis title.
+
         """
         if 'scale' in comp_type:
             return label + ' (Scaled)'
-        elif 'diff' in comp_type == comp_type:
+        elif 'diff' in comp_type:
             return label + ' (Difference Comparison)'
         return label
 
@@ -802,9 +817,9 @@ class StatsPreparer():
     """
 
     def __init__(self,
-                 ipath_stem: str,
+                 ipath_stem: pathlib.Path,
                  ipath_leaf: str,
-                 opath_stem: str,
+                 opath_stem: pathlib.Path,
                  n_exp: int):
         self.ipath_stem = ipath_stem
         self.ipath_leaf = ipath_leaf
@@ -816,67 +831,83 @@ class StatsPreparer():
                     all_cols: tp.List[str],
                     col_index: int,
                     inc_exps: tp.Optional[str]) -> None:
-        """
-        The criteria of interest varies across the rows of controller .csvs. We take
-        row `index` from a given dataframe and take the rows specified by the
-        `inc_exps` and append them to a results dataframe column-wise, which we
-        then write the file system.
+        """Prepare statistics in column-major batch criteria.
+
+        The criteria of interest varies across the rows of controller CSVs.  We
+        take row `index` from a given dataframe and take the rows specified by
+        the `inc_exps` and append them to a results dataframe column-wise, which
+        we then write the file system.
 
         """
-        for k in config.kStatsExt.keys():
-            stat_ipath = os.path.join(self.ipath_stem,
-                                      self.ipath_leaf + config.kStatsExt[k])
-            stat_opath = os.path.join(self.opath_stem,
-                                      opath_leaf + config.kStatsExt[k])
-            df = self._accum_df_by_col(
-                stat_ipath, stat_opath, all_cols, col_index, inc_exps)
+        exts = config.kStats['mean'].exts
+        exts.update(config.kStats['conf95'].exts)
+        exts.update(config.kStats['bw'].exts)
+
+        for k in exts:
+            stat_ipath = pathlib.Path(self.ipath_stem,
+                                      self.ipath_leaf + exts[k])
+            stat_opath = pathlib.Path(self.opath_stem,
+                                      opath_leaf + exts[k])
+            df = self._accum_df_by_col(stat_ipath,
+                                       stat_opath,
+                                       all_cols,
+                                       col_index,
+                                       inc_exps)
 
             if df is not None:
-                storage.DataFrameWriter('storage.csv')(df,
-                                                       os.path.join(self.opath_stem,
-                                                                    opath_leaf + config.kStatsExt[k]),
-                                                       index=False)
+                writer = storage.DataFrameWriter('storage.csv')
+                opath = self.opath_stem / (opath_leaf + exts[k])
+                writer(df, opath, index=False)
 
     def across_rows(self,
                     opath_leaf: str,
                     index: int,
                     inc_exps: tp.Optional[str]) -> None:
-        """The criteria of interest varies across the columns of controller .csvs. We
-        take row `index` from a given dataframe and take the columns specified
-        by the `inc_exps` and append them to a results dataframe row-wise, which
-        we then write the file system.
+        """Prepare statistics in row-major batch criteria.
+
+        The criteria of interest varies across the columns of controller
+        CSVs. We take row `index` from a given dataframe and take the columns
+        specified by the `inc_exps` and append them to a results dataframe
+        row-wise, which we then write the file system.
 
         """
-        for k in config.kStatsExt.keys():
-            stat_ipath = os.path.join(self.ipath_stem,
-                                      self.ipath_leaf + config.kStatsExt[k])
-            stat_opath = os.path.join(self.opath_stem,
-                                      opath_leaf + config.kStatsExt[k])
+        exts = config.kStats['mean'].exts
+        exts.update(config.kStats['conf95'].exts)
+        exts.update(config.kStats['bw'].exts)
+
+        for k in exts:
+            stat_ipath = pathlib.Path(self.ipath_stem,
+                                      self.ipath_leaf + exts[k])
+            stat_opath = pathlib.Path(self.opath_stem,
+                                      opath_leaf + exts[k])
             df = self._accum_df_by_row(stat_ipath, stat_opath, index, inc_exps)
 
             if df is not None:
-                storage.DataFrameWriter('storage.csv')(df,
-                                                       os.path.join(self.opath_stem,
-                                                                    opath_leaf + config.kStatsExt[k]),
-                                                       index=False)
+                writer = storage.DataFrameWriter('storage.csv')
+                writer(df,
+                       self.opath_stem / (opath_leaf + exts[k]),
+                       index=False)
 
     def _accum_df_by_col(self,
-                         ipath: str,
-                         opath: str,
+                         ipath: pathlib.Path,
+                         opath: pathlib.Path,
                          all_cols: tp.List[str],
                          col_index: int,
                          inc_exps: tp.Optional[str]) -> pd.DataFrame:
+        reader = storage.DataFrameReader('storage.csv')
+
         if utils.path_exists(opath):
-            cum_df = storage.DataFrameReader('storage.csv')(opath)
+            cum_df = reader(opath)
         else:
             cum_df = None
 
         if utils.path_exists(ipath):
-            t = storage.DataFrameReader('storage.csv')(ipath)
+            t = reader(ipath)
 
             if inc_exps is not None:
-                cols_from_index = utils.exp_include_filter(
-                    inc_exps, list(t.index), self.n_exp)
+                cols_from_index = utils.exp_include_filter(inc_exps,
+                                                           list(t.index),
+                                                           self.n_exp)
             else:
                 cols_from_index = slice(None, None, None)
 
@@ -892,35 +923,42 @@ class StatsPreparer():
             tp_df = tp_df[cols_from_index]
             tp_df.columns = all_cols
 
-            cum_df = cum_df.append(tp_df.loc[col_index, :])
+            # Series are columns, so we have to transpose before concatenating
+            cum_df = pd.concat([cum_df,
+                                tp_df.loc[col_index, :].to_frame().T])
+
+            # cum_df = pd.concat([cum_df, tp_df.loc[col_index, :]])
             return cum_df
 
         return None
 
     def _accum_df_by_row(self,
-                         ipath: str,
-                         opath: str,
+                         ipath: pathlib.Path,
+                         opath: pathlib.Path,
                          index: int,
                          inc_exps: tp.Optional[str]) -> pd.DataFrame:
+        reader = storage.DataFrameReader('storage.csv')
         if utils.path_exists(opath):
-            cum_df = storage.DataFrameReader('storage.csv')(opath)
+            cum_df = reader(opath)
         else:
             cum_df = None
 
         if utils.path_exists(ipath):
-            t = storage.DataFrameReader('storage.csv')(ipath)
+            t = reader(ipath)
 
             if inc_exps is not None:
-                cols = utils.exp_include_filter(
-                    inc_exps, list(t.columns), self.n_exp)
+                cols = utils.exp_include_filter(inc_exps,
+                                                list(t.columns),
+                                                self.n_exp)
             else:
                 cols = t.columns
 
             if cum_df is None:
                 cum_df = pd.DataFrame(columns=cols)
 
-            cum_df = cum_df.append(t.loc[index, cols])
-
+            # Series are columns, so we have to transpose before concatenating
+            cum_df = pd.concat([cum_df,
+                                t.loc[index, cols].to_frame().T])
             return cum_df
 
         return None
@@ -928,20 +966,20 @@ class StatsPreparer():
 
 class LeafGenerator():
     @staticmethod
-    def from_controller(batch_root: str,
+    def from_controller(batch_root: pathlib.Path,
                         graph_stem: str,
                         controllers: tp.List[str],
-                        controller) -> str:
-        _, batch_leaf, _ = rdg.parse_batch_leaf(batch_root)
+                        controller: str) -> str:
+        _, batch_leaf, _ = rdg.parse_batch_leaf(str(batch_root))
         leaf = graph_stem + "-" + batch_leaf + \
             '_' + str(controllers.index(controller))
         return leaf
 
     @staticmethod
-    def from_batch_root(batch_root: str,
+    def from_batch_root(batch_root: pathlib.Path,
                         graph_stem: str,
                         index: tp.Union[int, None]):
-        _, scenario, _ = rdg.parse_batch_leaf(batch_root)
+        _, scenario, _ = rdg.parse_batch_leaf(str(batch_root))
         leaf = graph_stem + "-" + scenario
 
         if index is not None:

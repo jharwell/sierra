@@ -15,8 +15,7 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
 """
-Classes for generating graphs within a single :term:`Experiment` in a
-:term:`Batch Experiment`.
+Classes for generating graphs within a single :term:`Experiment`.
 """
 
 # Core packages
@@ -24,6 +23,7 @@ import os
 import copy
 import typing as tp
 import logging
+import pathlib
 
 # 3rd party packages
 import json
@@ -38,11 +38,6 @@ from sierra.core import types, config, utils
 
 
 class BatchIntraExpGraphGenerator:
-    """
-    Generates all intra-experiment graphs for a :term:`Batch Experiment`.
-
-    """
-
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         # Copy because we are modifying it and don't want to mess up the
         # arguments for graphs that are generated after us
@@ -55,7 +50,8 @@ class BatchIntraExpGraphGenerator:
                  LN_config: types.YAMLDict,
                  HM_config: types.YAMLDict,
                  criteria: bc.IConcreteBatchCriteria) -> None:
-        """
+        """Generate all intra-experiment graphs for a :term:`Batch Experiment`.
+
         Parameters:
 
             main_config: Parsed dictionary of main YAML configuration
@@ -71,24 +67,25 @@ class BatchIntraExpGraphGenerator:
 
             criteria:  The :term:`Batch Criteria` used for the batch
                        experiment.
+
         """
         exp_to_gen = utils.exp_range_calc(self.cmdopts,
                                           self.cmdopts['batch_output_root'],
                                           criteria)
 
         for exp in exp_to_gen:
-            exp = os.path.split(exp)[1]
+            batch_output_root = pathlib.Path(self.cmdopts["batch_output_root"])
+            batch_stat_root = pathlib.Path(self.cmdopts["batch_stat_root"])
+            batch_input_root = pathlib.Path(self.cmdopts["batch_input_root"])
+            batch_graph_root = pathlib.Path(self.cmdopts["batch_graph_root"])
+            batch_model_root = pathlib.Path(self.cmdopts["batch_model_root"])
+
             cmdopts = copy.deepcopy(self.cmdopts)
-            cmdopts["exp_input_root"] = os.path.join(
-                self.cmdopts['batch_input_root'], exp)
-            cmdopts["exp_output_root"] = os.path.join(
-                self.cmdopts['batch_output_root'], exp)
-            cmdopts["exp_graph_root"] = os.path.join(
-                self.cmdopts['batch_graph_root'], exp)
-            cmdopts["exp_model_root"] = os.path.join(
-                cmdopts['batch_model_root'], exp)
-            cmdopts["exp_stat_root"] = os.path.join(
-                cmdopts["batch_stat_root"], exp)
+            cmdopts["exp_input_root"] = str(batch_input_root / exp.name)
+            cmdopts["exp_output_root"] = str(batch_output_root / exp.name)
+            cmdopts["exp_graph_root"] = str(batch_graph_root / exp.name)
+            cmdopts["exp_model_root"] = str(batch_model_root / exp.name)
+            cmdopts["exp_stat_root"] = str(batch_stat_root / exp.name)
 
             if os.path.isdir(cmdopts["exp_stat_root"]):
                 generator = pm.module_load_tiered(project=self.cmdopts['project'],
@@ -158,7 +155,9 @@ class IntraExpGraphGenerator:
 
     def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
         """
-        Runs the following to generate graphs for each experiment in the batch:
+        Generate graphs.
+
+        Performs the following steps:
 
         # . :class:`~sierra.core.pipeline.stage4.intra_exp_graph_generator.LinegraphsGenerator`
             to generate linegraphs for each experiment in the batch.
@@ -172,23 +171,22 @@ class IntraExpGraphGenerator:
     def generate(self,
                  LN_targets: tp.List[types.YAMLDict],
                  HM_targets: tp.List[types.YAMLDict]):
-        if not self.cmdopts['project_no_yaml_LN']:
+        if not self.cmdopts['project_no_LN']:
             LinegraphsGenerator(self.cmdopts, LN_targets).generate()
 
-        if not self.cmdopts['project_no_yaml_HM']:
+        if not self.cmdopts['project_no_HM']:
             HeatmapsGenerator(self.cmdopts, HM_targets).generate()
 
     def calc_targets(self) -> tp.Tuple[tp.List[types.YAMLDict],
                                        tp.List[types.YAMLDict]]:
-        """
-        Use YAML configuration for controller and intra-experiment graphs to
-        calculate what graphs should be generated.
+        """Calculate what intra-experiment graphs should be generated.
 
+        Uses YAML configuration for controller and intra-experiment graphs.
         Returns a tuple of dictionaries: (intra-experiment linegraphs,
-        intra-experiment heatmaps) defined what graphs to generate. The
-        enabled graphs exist in their YAML respective YAML configuration
-        `and` are enabled by the YAML configuration for the selected
-        controller.
+        intra-experiment heatmaps) defined what graphs to generate. The enabled
+        graphs exist in their YAML respective YAML configuration `and` are
+        enabled by the YAML configuration for the selected controller.
+
         """
         keys = []
         for category in list(self.controller_config.keys()):
@@ -220,8 +218,7 @@ class IntraExpGraphGenerator:
 
 class LinegraphsGenerator:
     """
-    Generates linegraphs from :term:`Averaged .csv` files within a single
-    :term:`Experiment`.
+    Generates linegraphs from :term:`Averaged .csv` files within an experiment.
     """
 
     def __init__(self,
@@ -230,20 +227,23 @@ class LinegraphsGenerator:
         self.cmdopts = cmdopts
         self.targets = targets
         self.logger = logging.getLogger(__name__)
+        self.graph_root = pathlib.Path(self.cmdopts['exp_graph_root'])
+        self.stats_root = pathlib.Path(self.cmdopts['exp_stat_root'])
 
     def generate(self) -> None:
         self.logger.info("Linegraphs from %s", self.cmdopts['exp_stat_root'])
 
         # For each category of linegraphs we are generating
         for category in self.targets:
+
             # For each graph in each category
             for graph in category['graphs']:
-                output_fpath = os.path.join(self.cmdopts['exp_graph_root'],
-                                            'SLN-' + graph['dest_stem'] + config.kImageExt)
+                output_fpath = self.graph_root / ('SLN-' + graph['dest_stem'] +
+                                                  config.kImageExt)
                 try:
                     self.logger.trace('\n' +  # type: ignore
                                       json.dumps(graph, indent=4))
-                    StackedLineGraph(stats_root=self.cmdopts['exp_stat_root'],
+                    StackedLineGraph(stats_root=self.stats_root,
                                      input_stem=graph['src_stem'],
                                      output_fpath=output_fpath,
                                      stats=self.cmdopts['dist_stats'],
@@ -260,32 +260,31 @@ class LinegraphsGenerator:
                     self.logger.fatal(("Could not generate linegraph. "
                                        "Possible reasons include: "))
 
-                    one = ("1. The YAML configuration entry is missing "
-                           "required fields (e.g., 'cols')")
-                    two = ("2. 'cols' is present in YAML configuration entry "
-                           "and some of {0} are missing from '{1}.csv'").format(graph.get('cols',
-                                                                                          "MISSING_KEY"),
-                                                                                graph.get('src_stem',
-                                                                                          "MISSING_KEY"))
-                    self.logger.fatal(one)
-                    self.logger.fatal(two)
+                    self.logger.fatal(("1. The YAML configuration entry is "
+                                       "missing required fields"))
+                    missing_cols = graph.get('cols', "MISSING_KEY")
+                    missing_stem = graph.get('src_stem', "MISSING_KEY")
+                    self.logger.fatal(("2. 'cols' is present in YAML "
+                                       "configuration but some of %s are "
+                                       "missing from %s"),
+                                      missing_cols,
+                                      missing_stem)
 
                     raise
 
 
 class HeatmapsGenerator:
     """
-    Generates heatmaps from :term:`Averaged .csv` files for a single
-    :term:`Experiment`.
+    Generates heatmaps from :term:`Averaged .csv` files for a single experiment.
     """
 
     def __init__(self,
                  cmdopts: types.Cmdopts,
                  targets: tp.List[types.YAMLDict]) -> None:
 
-        self.exp_stat_root = cmdopts['exp_stat_root']
-        self.exp_graph_root = cmdopts["exp_graph_root"]
-        self.exp_model_root = cmdopts["exp_model_root"]
+        self.exp_stat_root = pathlib.Path(cmdopts['exp_stat_root'])
+        self.exp_graph_root = pathlib.Path(cmdopts["exp_graph_root"])
+        self.exp_model_root = pathlib.Path(cmdopts["exp_model_root"])
         self.large_text = cmdopts['plot_large_text']
 
         self.targets = targets
@@ -296,6 +295,7 @@ class HeatmapsGenerator:
 
         # For each category of heatmaps we are generating
         for category in self.targets:
+
             # For each graph in each category
             for graph in category['graphs']:
                 self.logger.trace('\n' +  # type: ignore
@@ -308,10 +308,10 @@ class HeatmapsGenerator:
                                             graph['src_stem'],
                                             graph.get('title', None)).generate()
                 else:
-                    input_fpath = os.path.join(self.exp_stat_root,
-                                               graph['src_stem'] + config.kStatsExt['mean'])
-                    output_fpath = os.path.join(self.exp_graph_root,
-                                                'HM-' + graph['src_stem'] + config.kImageExt)
+                    input_fpath = self.exp_stat_root / (graph['src_stem'] +
+                                                        config.kStats['mean'].exts['mean'])
+                    output_fpath = self.exp_graph_root / ('HM-' + graph['src_stem'] +
+                                                          config.kImageExt)
 
                     Heatmap(input_fpath=input_fpath,
                             output_fpath=output_fpath,

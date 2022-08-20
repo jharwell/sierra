@@ -1,0 +1,65 @@
+name: Publishing
+description: Publish SIERRA to PyPI and Github
+inputs:
+  github-token:
+    required: true
+  pypi-token:
+    required: true
+  testpypi-token:
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/checkout@v3
+    - uses: ./.github/actions/sierra-setup
+    - name: Build package
+      shell: bash
+      run: |
+        python3 -m build
+
+    - name: Set tag
+      if: github.ref == 'refs/heads/devel'
+      shell: bash
+      run: echo "RELEASE_TAG=v$(python3 setup.py --version).beta" >> $GITHUB_ENV
+
+    - name: Github beta release
+      if: github.ref == 'refs/heads/devel'
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ inputs.github-token }}"
+        automatic_release_tag: ${{ env.RELEASE_TAG }}
+        prerelease: true
+        title: "Development release ${{ env.RELEASE_TAG }}"
+
+    - name: Publish to TestPyPI
+      if: github.ref == 'refs/heads/devel'
+
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        skip_existing: true
+        user: __token__
+        password: ${{ inputs.testpypi-token }}
+        repository_url: https://test.pypi.org/legacy/
+
+    - name: Set tag
+      if: github.ref == 'refs/heads/master'
+      shell: bash
+      run: echo "RELEASE_TAG=v$(python3 setup.py --version)" >> $GITHUB_ENV
+
+    - name: Github release
+      if: github.ref == 'refs/heads/master'
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ inputs.github-token }}"
+        automatic_release_tag: ${{ env.RELEASE_TAG }}
+        prerelease: false
+        title: "Release ${{ env.RELEASE_TAG }}"
+
+    - name: Publish to PyPI
+      if: github.ref == 'refs/heads/master'
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        skip_existing: true
+        user: __token__
+        password: ${{ inputs.pypi-token }}

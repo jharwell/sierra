@@ -14,9 +14,9 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
-"""
-Classes for the constant population density batch criteria. See
-:ref:`ln-sierra-platform-argos-bc-population-constant-density` for usage
+"""Classes for the constant population density batch criteria.
+
+See :ref:`ln-sierra-platform-argos-bc-population-constant-density` for usage
 documentation.
 
 """
@@ -34,7 +34,7 @@ from sierra.plugins.platform.argos.variables import constant_density as cd
 from sierra.core import utils, types
 import sierra.core.variables.batch_criteria as bc
 from sierra.core.vector import Vector3D
-from sierra.core.xml import XMLAttrChange, XMLAttrChangeSet
+from sierra.core.experiment import xml
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
@@ -54,11 +54,10 @@ class PopulationConstantDensity(cd.ConstantDensity):
         self.already_added = False
         self.logger = logging.getLogger(__name__)
 
-    def gen_attr_changelist(self) -> tp.List[XMLAttrChangeSet]:
-        """
-        Generate list of sets of changes to input file to set the # robots for a
-        set of arena sizes such that the swarm density is constant. Robots are
-        approximated as point masses.
+    def gen_attr_changelist(self) -> tp.List[xml.AttrChangeSet]:
+        """Generate XML modifications to to maintain constant population density.
+
+        Robots are approximated as point masses.
 
         """
         if not self.already_added:
@@ -81,10 +80,10 @@ class PopulationConstantDensity(cd.ConstantDensity):
                                                 str(extent.area()),
                                                 self.target_density / 100.0)
 
-                        changeset.add(XMLAttrChange(".//arena/distribute/entity",
-                                                    "quantity",
-                                                    str(n_robots)))
-                        self.logger.debug("Calculated swarm size=%d for extent=%s,density=%s",
+                        changeset.add(xml.AttrChange(".//arena/distribute/entity",
+                                                     "quantity",
+                                                     str(n_robots)))
+                        self.logger.debug("Calculated population size=%d for extent=%s,density=%s",
                                           n_robots,
                                           str(extent), self.target_density)
                         break
@@ -93,33 +92,33 @@ class PopulationConstantDensity(cd.ConstantDensity):
 
         return self.attr_changes
 
-    def gen_exp_dirnames(self, cmdopts: types.Cmdopts) -> tp.List[str]:
+    def gen_exp_names(self, cmdopts: types.Cmdopts) -> tp.List[str]:
         changes = self.gen_attr_changelist()
         return ['exp' + str(x) for x in range(0, len(changes))]
 
     def graph_xticks(self,
                      cmdopts: types.Cmdopts,
-                     exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
+                     exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[float]:
 
-        if exp_dirs is None:
-            exp_dirs = self.gen_exp_dirnames(cmdopts)
+        if exp_names is None:
+            exp_names = self.gen_exp_names(cmdopts)
 
-        ret = list(map(float, self.populations(cmdopts, exp_dirs)))
+        ret = list(map(float, self.populations(cmdopts, exp_names)))
 
         if cmdopts['plot_log_xscale']:
             return [int(math.log2(x)) for x in ret]
         elif cmdopts['plot_enumerated_xscale']:
-            return [i for i in range(0, len(ret))]
+            return list(range(0, len(ret)))
         else:
             return ret
 
     def graph_xticklabels(self,
                           cmdopts: types.Cmdopts,
-                          exp_dirs: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
-        if exp_dirs is None:
-            exp_dirs = self.gen_exp_dirnames(cmdopts)
+                          exp_names: tp.Optional[tp.List[str]] = None) -> tp.List[str]:
+        if exp_names is None:
+            exp_names = self.gen_exp_names(cmdopts)
 
-        ret = map(float, self.populations(cmdopts, exp_dirs))
+        ret = map(float, self.populations(cmdopts, exp_names))
 
         return list(map(lambda x: str(int(round(x, 4))), ret))
 
@@ -162,9 +161,7 @@ def factory(cli_arg: str,
             main_config: types.YAMLDict,
             cmdopts: types.Cmdopts,
             **kwargs) -> PopulationConstantDensity:
-    """
-    Factory to create :class:`PopulationConstantDensity` derived classes from
-    the command line definition.
+    """Create a :class:`PopulationConstantDensity` derived class.
 
     """
     attr = cd.Parser()(cli_arg)

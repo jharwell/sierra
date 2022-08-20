@@ -16,8 +16,8 @@
 #
 
 # Core packages
-import os
 import logging
+import pathlib
 
 # 3rd party packages
 import numpy as np
@@ -29,15 +29,15 @@ from sierra.core import storage, config, utils
 
 
 class Scatterplot2D:
-    """
-    Generates a 2D scatterplot of rows vs. colums (X vs. Y) from the specified `.csv` file.
+    """Generates a 2D scatterplot of rows vs. colums (X vs. Y) from a CSV.
 
-    If the necessary `.csv` file does not exist, the graph is not generated.
+    If the necessary CSV file does not exist, the graph is not generated.
+
     """
 
     def __init__(self,
-                 input_fpath: str,
-                 output_fpath: str,
+                 input_fpath: pathlib.Path,
+                 output_fpath: pathlib.Path,
                  title: str,
                  xlabel: str,
                  ylabel: str,
@@ -46,7 +46,7 @@ class Scatterplot2D:
                  large_text: bool = False,
                  regression: bool = False) -> None:
 
-        self.input_fpath = os.path.abspath(input_fpath)
+        self.input_fpath = input_fpath
         self.output_fpath = output_fpath
         self.title = title
         self.xlabel = xlabel
@@ -65,7 +65,7 @@ class Scatterplot2D:
     def generate(self) -> None:
         if not utils.path_exists(self.input_fpath):
             self.logger.debug("Not generating 2D scatterplot: %s does not exist",
-                              self.input_fpath)
+                              str(self.input_fpath))
             return
 
         # Read .csv and scaffold graph

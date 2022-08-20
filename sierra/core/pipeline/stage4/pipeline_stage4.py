@@ -14,17 +14,16 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""
-Classes for implementing stage 4 of the experimental pipeline: generating
-deliverables.
+"""Stage 4 of the experimental pipeline: generating deliverables.
+
 """
 
 # Core packages
-import os
 import typing as tp
 import time
 import datetime
 import logging
+import pathlib
 
 # 3rd party packages
 import yaml
@@ -36,16 +35,16 @@ from sierra.core.pipeline.stage4.model_runner import IntraExpModelRunner
 from sierra.core.pipeline.stage4.model_runner import InterExpModelRunner
 import sierra.core.variables.batch_criteria as bc
 
-from sierra.core.pipeline.stage4.video_renderer import BatchExpParallelVideoRenderer
+from sierra.core.pipeline.stage4 import rendering
 import sierra.core.plugin_manager as pm
 from sierra.core import types, config, utils
 
 
 class PipelineStage4:
-    """Generates end-result experimental deliverables within single experiment
-    (intra-experiment) and across experiments in a batch (inter-experiment).
+    """Generates end-result experimental deliverables.
 
-    Currently this includes:
+    Delvirables can be within a single experiment (intra-experiment) and across
+    experiments in a batch (inter-experiment).  Currently this includes:
 
     - Graph generation controlled via YAML config files.
 
@@ -54,6 +53,7 @@ class PipelineStage4:
     This stage is idempotent.
 
     Attributes:
+
         cmdopts: Dictionary of parsed cmdline options.
 
         controller_config: YAML configuration file found in
@@ -89,16 +89,27 @@ class PipelineStage4:
                          controlled by
                          ``<project_config_root>/controllers.yaml``.
 
+        inter_HM_config: YAML configuration file found in
+                         ``<project_config_root>/inter-graphs-hm.yaml`` Contains
+                         configuration for categories of heatmaps that can
+                         potentially be generated for all controllers `across`
+                         each experiment in a batch. Which heatmaps are actually
+                         generated for a given controller in each experiment is
+                         controlled by
+                         ``<project_config_root>/controllers.yaml``.
+
     """
 
     def __init__(self,
                  main_config: types.YAMLDict,
                  cmdopts: types.Cmdopts) -> None:
         self.cmdopts = cmdopts
-
         self.main_config = main_config
-        with open(os.path.join(self.cmdopts['project_config_root'],
-                               config.kYAML['controllers'])) as f:
+
+        self.project_config_root = pathlib.Path(self.cmdopts['project_config_root'])
+        controllers_yaml = self.project_config_root / config.kYAML.controllers
+
+        with utils.utf8open(controllers_yaml) as f:
             self.controller_config = yaml.load(f, yaml.FullLoader)
         self.logger = logging.getLogger(__name__)
 
@@ -108,21 +119,15 @@ class PipelineStage4:
         graphs_config = loader.YAMLConfigLoader()(self.cmdopts)
         self.intra_LN_config = graphs_config['intra_LN']
         self.intra_HM_config = graphs_config['intra_HM']
+        self.inter_HM_config = graphs_config['inter_HM']
         self.inter_LN_config = graphs_config['inter_LN']
 
+        # Load models
         if self.cmdopts['models_enable']:
             self._load_models()
 
     def run(self, criteria: bc.IConcreteBatchCriteria) -> None:
-        """Runs experiment deliverable generation, CSV collation for
-        inter-experiment graph generation, and inter-experiment graph
-        generation.
-
-        Video generation: If images have previously been created, then the
-        following is run:
-
-        #. :class:`~sierra.core.pipeline.stage4.video_renderer.BatchExpParallelVideoRenderer`
-           to render videos for each experiment in the batch, or a subset.
+        """Run the pipeline stage.
 
         Intra-experiment graph generation: if intra-experiment graphs should be
         generated, according to cmdline configuration, the following is run:
@@ -147,10 +152,21 @@ class PipelineStage4:
         #. :class:`~sierra.core.pipeline.stage4.inter_exp_graph_generator.InterExpGraphGenerator`
            to perform graph generation from collated CSV files.
 
-        """
-        if self.cmdopts['project_rendering'] or self.cmdopts['platform_vc']:
-            self._run_rendering(criteria)
 
+        Video generation: The following is run:
+
+        #. :class:`~sierra.core.pipeline.stage4.rendering.PlatformFramesRenderer`,
+           if ``--platform-vc`` was passed
+
+        #. :class:`~sierra.core.pipeline.stage4.rendering.ProjectFramesRenderer`,
+           if ``--project-imagizing`` was passed previously to generate frames,
+           and ``--project-rendering`` is passed.
+
+        #. :class:`~sierra.core.pipeline.stage4.rendering.BivarHeatmapRenderer`,
+           if the batch criteria was bivariate and ``--HM-rendering`` was
+           passed.
+
+        """
         if self.cmdopts['exp_graphs'] == 'all' or self.cmdopts['exp_graphs'] == 'intra':
             if criteria.is_univar() and self.cmdopts['models_enable']:
                 self._run_intra_models(criteria)
@@ -168,9 +184,12 @@ class PipelineStage4:
 
             self._run_inter_graph_generation(criteria)
 
+        # Rendering must be after graph generation in case we should be
+        # rendering videos from generated graphs.
+        self._run_rendering(criteria)
+
     def _load_models(self) -> None:
-        project_models = os.path.join(self.cmdopts['project_config_root'],
-                                      'models.yaml')
+        project_models = self.project_config_root / config.kYAML.models
         self.models_intra = []
         self.models_inter = []
 
@@ -183,7 +202,8 @@ class PipelineStage4:
         self.logger.info("Loading models for project '%s'",
                          self.cmdopts['project'])
 
-        self.models_config = yaml.load(open(project_models), yaml.FullLoader)
+        self.models_config = yaml.load(utils.utf8open(project_models),
+                                       yaml.FullLoader)
         pm.models.initialize(self.cmdopts['project'],
                              self.cmdopts['project_model_root'])
 
@@ -238,10 +258,16 @@ class PipelineStage4:
                              len(self.models_inter),
                              self.cmdopts['project'])
 
-    def _calc_inter_LN_targets(self) -> tp.List[types.YAMLDict]:
-        """
-        Use YAML configuration for controllers and inter-experiment graphs to
-        what CSV files need to be collated/what graphs should be generated.
+    def _calc_inter_targets(self,
+                            name: str,
+                            category_prefix: str,
+                            loaded_graphs: types.YAMLDict) -> tp.List[types.YAMLDict]:
+        """Calculate what inter-experiment graphs to generate.
+
+        This also defines what CSV files need to be collated, as one graph is
+        always generated from one CSV file. Uses YAML configuration for
+        controllers and inter-experiment graphs.
+
         """
         keys = []
         for category in list(self.controller_config.keys()):
@@ -257,21 +283,51 @@ class PipelineStage4:
                     for inherit in controller['graphs_inherit']:
                         keys.extend(inherit)   # optional
 
-        self.logger.debug("Loaded linegraph categories: %s", keys)
-        filtered_keys = [k for k in self.inter_LN_config if k in keys]
-        targets = [self.inter_LN_config[k] for k in filtered_keys]
+        self.logger.debug("Loaded %s inter-experiment categories: %s",
+                          name,
+                          keys)
 
-        self.logger.debug("Enabled linegraph categories: %s", filtered_keys)
+        filtered_keys = [k for k in loaded_graphs if category_prefix in k]
+        filtered_keys = [k for k in loaded_graphs if k in keys]
+        targets = [loaded_graphs[k] for k in filtered_keys]
+
+        self.logger.debug("Enabled %s inter-experiment categories: %s", name,
+                          filtered_keys)
         return targets
 
     def _run_rendering(self, criteria: bc.IConcreteBatchCriteria) -> None:
+        """Render captured frames and/or imagized frames into videos.
+
         """
-        Render captured frames and/or frames created by imagizing in stage 3
-        into videos.
-        """
+        if ((not self.cmdopts['platform_vc']) and
+            (not self.cmdopts['project_rendering']) and
+                (not (criteria.is_bivar() and self.cmdopts['bc_rendering']))):
+            return
+
         self.logger.info("Rendering videos...")
         start = time.time()
-        BatchExpParallelVideoRenderer(self.main_config, self.cmdopts)(criteria)
+
+        if self.cmdopts['platform_vc']:
+            rendering.PlatformFramesRenderer(self.main_config,
+                                             self.cmdopts)(criteria)
+        else:
+            self.logger.debug(("--platform-vc not passed--skipping rendering "
+                               "frames captured by the platform"))
+
+        if self.cmdopts['project_rendering']:
+            rendering.ProjectFramesRenderer(self.main_config,
+                                            self.cmdopts)(criteria)
+        else:
+            self.logger.debug(("--project-rendering not passed--skipping "
+                               "rendering frames captured by the project"))
+
+        if criteria.is_bivar() and self.cmdopts['bc_rendering']:
+            rendering.BivarHeatmapRenderer(self.main_config,
+                                           self.cmdopts)(criteria)
+        else:
+            self.logger.debug(("--bc-rendering not passed or univariate batch "
+                               "criteria--skipping rendering generated graphs"))
+
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         self.logger.info("Rendering complete in %s", str(sec))
@@ -316,37 +372,50 @@ class PipelineStage4:
             "Intra-experiment graph generation complete: %s", str(sec))
 
     def _run_collation(self, criteria: bc.IConcreteBatchCriteria) -> None:
-        targets = self._calc_inter_LN_targets()
+        LN_targets = self._calc_inter_targets(name='linegraph',
+                                              category_prefix='LN',
+                                              loaded_graphs=self.inter_LN_config)
+        HM_targets = self._calc_inter_targets(name='heatmap',
+                                              category_prefix='HM',
+                                              loaded_graphs=self.inter_HM_config)
 
         if not self.cmdopts['skip_collate']:
-            self.logger.info("Collating inter-experiment .csv files...")
+            self.logger.info("Collating inter-experiment CSV files...")
             start = time.time()
-            GraphParallelCollator(
-                self.main_config, self.cmdopts)(criteria, targets)
+            collator = GraphParallelCollator(self.main_config, self.cmdopts)
+            collator(criteria, LN_targets)
+            collator(criteria, HM_targets)
             elapsed = int(time.time() - start)
             sec = datetime.timedelta(seconds=elapsed)
-            self.logger.info(
-                "Collating inter-experiment .csv files complete: %s", str(sec))
+            self.logger.info("Collating inter-experiment CSV files complete: %s",
+                             str(sec))
 
     def _run_inter_graph_generation(self, criteria: bc.IConcreteBatchCriteria) -> None:
         """
         Generate inter-experiment graphs (duh).
         """
-        targets = self._calc_inter_LN_targets()
+        LN_targets = self._calc_inter_targets(name='linegraph',
+                                              category_prefix='LN',
+                                              loaded_graphs=self.inter_LN_config)
+        HM_targets = self._calc_inter_targets(name='heatmap',
+                                              category_prefix='HM',
+                                              loaded_graphs=self.inter_HM_config)
 
         self.logger.info("Generating inter-experiment graphs...")
         start = time.time()
 
-        generator = pm.module_load_tiered(project=self.cmdopts['project'],
-                                          path='pipeline.stage4.inter_exp_graph_generator')
-        generator.InterExpGraphGenerator(self.main_config,
-                                         self.cmdopts,
-                                         targets)(criteria)
+        module = pm.module_load_tiered(project=self.cmdopts['project'],
+                                       path='pipeline.stage4.inter_exp_graph_generator')
+        generator = module.InterExpGraphGenerator(self.main_config,
+                                                  self.cmdopts,
+                                                  LN_targets,
+                                                  HM_targets)
+        generator(criteria)
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
 
-        self.logger.info(
-            "Inter-experiment graph generation complete: %s", str(sec))
+        self.logger.info("Inter-experiment graph generation complete: %s",
+                         str(sec))
 
 
 __api__ = [

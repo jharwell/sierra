@@ -15,13 +15,10 @@
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
 """
-Classes for generating statistics from all :term:`Experimental Runs
-<Experimental Run>` results within an :term:`Experiment`
-for all experiments in a :term:`Batch Experiment`.
+Classes for generating statistics within and across experiments in a batch.
 """
 
 # Core packages
-import os
 import re
 import multiprocessing as mp
 import typing as tp
@@ -29,6 +26,7 @@ import queue
 import time
 import datetime
 import logging
+import pathlib
 
 # 3rd party packages
 import pandas as pd
@@ -44,18 +42,20 @@ class GatherSpec:
     Data class for specifying .csv files to gather from an :term:`Experiment`.
     """
 
-    def __init__(self, exp_leaf: str, csv_stem: str, csv_leaf: str):
-        self.exp_leaf = exp_leaf
-        self.csv_stem = csv_stem
-        self.csv_leaf = csv_leaf
+    def __init__(self,
+                 exp_name: str,
+                 item_stem: str,
+                 imagize_csv_stem: tp.Optional[str]):
+        self.exp_name = exp_name
+        self.item_stem = item_stem
+        self.imagize_csv_stem = imagize_csv_stem
 
     def for_imagizing(self):
-        return self.csv_stem != ''
+        return self.imagize_csv_stem is not None
 
 
 class BatchExpParallelCalculator:
-    """Averages :term:`Output .csv` files for each experiment in the batch into
-    :term:`Averaged .csv` files.
+    """Process :term:`Output .csv` files for each experiment in the batch.
 
     In parallel for speed.
     """
@@ -71,8 +71,7 @@ class BatchExpParallelCalculator:
                                           self.cmdopts['batch_output_root'],
                                           criteria)
 
-        template_input_leaf, _ = os.path.splitext(
-            os.path.basename(self.cmdopts['template_input_file']))
+        template_input_leaf = pathlib.Path(self.cmdopts['template_input_file']).stem
 
         avg_opts = {
             'template_input_leaf': template_input_leaf,
@@ -90,26 +89,25 @@ class BatchExpParallelCalculator:
         else:
             # Aways need to have at least one of each! If SIERRA is invoked on a
             # machine with 2 or less logical cores, the calculation with
-            # mp.cpu_count() will return 0 for # gatherers.
-            n_gatherers = max(1, int(mp.cpu_count() * 0.25))
-            n_processors = max(1, int(mp.cpu_count() * 0.75))
+            # psutil.cpu_count() will return 0 for # gatherers.
+            n_gatherers = max(1, int(psutil.cpu_count() * 0.25))
+            n_processors = max(1, int(psutil.cpu_count() * 0.75))
 
         with mp.Pool(processes=n_gatherers + n_processors) as pool:
             self._execute(exp_to_avg, avg_opts, n_gatherers, n_processors, pool)
 
     def _execute(self,
-                 exp_to_avg: tp.List[str],
+                 exp_to_avg: tp.List[pathlib.Path],
                  avg_opts: types.SimpleDict,
                  n_gatherers: int,
                  n_processors: int,
-                 pool: mp.Pool) -> None:
+                 pool) -> None:
         m = mp.Manager()
         gatherq = m.Queue()
         processq = m.Queue()
 
         for exp in exp_to_avg:
-            _, leaf = os.path.split(exp)
-            gatherq.put((self.cmdopts['batch_output_root'], leaf))
+            gatherq.put(exp)
 
         # Start some threads gathering .csvs first to get things rolling.
         self.logger.debug("Starting %d gatherers, method=%s",
@@ -134,8 +132,12 @@ class BatchExpParallelCalculator:
         # worker threads. Any assertions will show and any exceptions will be
         # re-raised.
         self.logger.debug("Waiting for workers to finish")
-        [g.get() for g in gathered]
-        [p.get() for p in processed]
+
+        for g in gathered:
+            g.get()
+
+        for p in processed:
+            p.get()
 
         pool.close()
         pool.join()
@@ -144,7 +146,7 @@ class BatchExpParallelCalculator:
     @staticmethod
     def _gather_worker(gatherq: mp.Queue,
                        processq: mp.Queue,
-                       main_config: dict,
+                       main_config: types.YAMLDict,
                        avg_opts: tp.Dict[str, str]) -> None:
         gatherer = ExpCSVGatherer(main_config, avg_opts, processq)
 
@@ -158,9 +160,9 @@ class BatchExpParallelCalculator:
         n_tries = 0
         while n_tries < 2:
             try:
-                batch_output_root, exp = gatherq.get(True, timeout)
+                exp_output_root = gatherq.get(True, timeout)
 
-                gatherer(batch_output_root, exp)
+                gatherer(exp_output_root)
                 gatherq.task_done()
                 got_item = True
 
@@ -173,8 +175,8 @@ class BatchExpParallelCalculator:
 
     @staticmethod
     def _process_worker(processq: mp.Queue,
-                        main_config: dict,
-                        batch_stat_root: str,
+                        main_config: types.YAMLDict,
+                        batch_stat_root: pathlib.Path,
                         avg_opts: tp.Dict[str, str]) -> None:
         calculator = ExpStatisticsCalculator(main_config,
                                              avg_opts,
@@ -206,9 +208,7 @@ class BatchExpParallelCalculator:
 
 
 class ExpCSVGatherer:
-    """Gather all :term:`Output .csv` files from a set of
-    :term:`Experimental Runs<Experimental Run>` within a single
-    :term:`Experiment`.
+    """Gather all :term:`Output .csv` files from all runs within an experiment.
 
     "Gathering" in this context means creating a dictionary mapping which .csv
     came from where, so that statistics can be generated both across and with
@@ -216,7 +216,7 @@ class ExpCSVGatherer:
     """
 
     def __init__(self,
-                 main_config: dict,
+                 main_config: types.YAMLDict,
                  gather_opts: dict,
                  processq: mp.Queue) -> None:
         self.processq = processq
@@ -224,8 +224,7 @@ class ExpCSVGatherer:
 
         # Will get the main name and extension of the config file (without the
         # full absolute path).
-        self.template_input_fname = os.path.basename(
-            self.gather_opts['template_input_leaf'])
+        self.template_input_fname = self.gather_opts['template_input_leaf']
 
         self.main_config = main_config
 
@@ -233,28 +232,24 @@ class ExpCSVGatherer:
         self.videos_leaf = 'videos'
         self.project_imagize = gather_opts['project_imagizing']
 
-        self.output_name_format = "{}_{}_output"
-
         self.logger = logging.getLogger(__name__)
 
-    def __call__(self, batch_output_root: str, exp_leaf: str) -> None:
-        """Process the CSV files found in the output save path"""
-        exp_output_root = os.path.join(batch_output_root, exp_leaf)
-
+    def __call__(self, exp_output_root: pathlib.Path) -> None:
+        """Process the CSV files found in the output save path."""
         if not self.gather_opts['df_skip_verify']:
-            self._verify_exp(exp_output_root)
+            self._verify_exp_outputs(exp_output_root)
 
-        self.logger.info('Processing .csvs: %s...', exp_leaf)
+        self.logger.info('Processing .csvs: %s...', exp_output_root.name)
 
-        pattern = self.output_name_format.format(re.escape(self.gather_opts['template_input_leaf']),
-                                                 r'\d+')
+        pattern = "{}_{}_output".format(re.escape(self.gather_opts['template_input_leaf']),
+                                        r'\d+')
 
-        runs = os.listdir(exp_output_root)
-        assert(all(re.match(pattern, r) for r in runs)),\
+        runs = list(exp_output_root.iterdir())
+        assert(all(re.match(pattern, r.name) for r in runs)),\
             f"Extra files/not all dirs in '{exp_output_root}' are exp runs"
 
         # Maps (unique .csv stem, optional parent dir) to the averaged dataframe
-        to_gather = self._calc_gather_items(exp_output_root, exp_leaf, runs[0])
+        to_gather = self._calc_gather_items(runs[0], exp_output_root.name)
 
         for item in to_gather:
             self._wait_for_memory()
@@ -265,56 +260,53 @@ class ExpCSVGatherer:
 
         self.logger.debug("Enqueued %s items from %s for processing",
                           len(to_gather),
-                          exp_leaf)
+                          exp_output_root.name)
 
     def _calc_gather_items(self,
-                           exp_output_root: str,
-                           exp_leaf: str,
-                           sim0: str) -> tp.List[GatherSpec]:
-        sim_output_root = os.path.join(exp_output_root,
-                                       sim0,
-                                       self.run_metrics_leaf)
+                           run_output_root: pathlib.Path,
+                           exp_name: str) -> tp.List[GatherSpec]:
         to_gather = []
+
+        sim_output_root = run_output_root / self.run_metrics_leaf
 
         # The metrics folder should contain nothing but .csv files and
         # directories. For all directories it contains, they each should contain
         # nothing but .csv files (these are for video rendering later).
-        for item in os.listdir(sim_output_root):
-            item_path = os.path.join(sim_output_root, item)
-            csv_leaf = os.path.splitext(item)[0]
+        for item in sim_output_root.iterdir():
+            csv_stem = item.stem
 
-            if os.path.isfile(item_path):
-                to_gather.append(GatherSpec(exp_leaf, '', csv_leaf))
+            if item.is_file():
+                to_gather.append(GatherSpec(exp_name=exp_name,
+                                            item_stem=csv_stem,
+                                            imagize_csv_stem=None))
             else:
                 # This takes FOREVER, so only do it if we absolutely need to
                 if not self.project_imagize:
                     continue
 
-                for csv_fname in os.listdir(item_path):
-                    no_ext = os.path.splitext(csv_fname)[0]
-                    to_gather.append(GatherSpec(exp_leaf, csv_leaf, no_ext))
+                for csv_fname in item.iterdir():
+                    to_gather.append(GatherSpec(exp_name=exp_name,
+                                                item_stem=csv_stem,
+                                                imagize_csv_stem=csv_fname.stem))
 
         return to_gather
 
     def _gather_item_from_sims(self,
-                               exp_output_root: str,
+                               exp_output_root: pathlib.Path,
                                item: GatherSpec,
-                               runs: tp.List[str]) -> tp.Dict[GatherSpec,
-                                                              tp.List[pd.DataFrame]]:
+                               runs: tp.List[pathlib.Path]) -> tp.Dict[GatherSpec,
+                                                                       tp.List[pd.DataFrame]]:
         gathered = {}  # type: tp.Dict[GatherSpec, pd.DataFrame]
 
         for run in runs:
-            run_output_root = os.path.join(exp_output_root,
-                                           run,
-                                           self.run_metrics_leaf)
+            sim_output_root = run / self.run_metrics_leaf
 
             if item.for_imagizing():
-                item_path = os.path.join(run_output_root,
-                                         item.csv_stem,
-                                         item.csv_leaf + config.kStorageExt['csv'])
+                item_path = sim_output_root / item.item_stem / \
+                    (item.imagize_csv_stem + config.kStorageExt['csv'])
             else:
-                item_path = os.path.join(run_output_root,
-                                         item.csv_leaf + config.kStorageExt['csv'])
+                item_path = sim_output_root / \
+                    (item.item_stem + config.kStorageExt['csv'])
 
             reader = storage.DataFrameReader(self.gather_opts['storage_medium'])
             df = reader(item_path, index_col=False)
@@ -344,10 +336,9 @@ class ExpCSVGatherer:
                              free_limit)
             time.sleep(1)
 
-    def _verify_exp(self, exp_output_root: str) -> None:
+    def _verify_exp_outputs(self, exp_output_root: pathlib.Path) -> None:
         """
-        Verify the integrity of all :term:`Experimental Runs <Experimental Run>`
-        in an :term:`Experiment`.
+        Verify the integrity of all runs in an experiment.
 
         Specifically:
 
@@ -358,65 +349,65 @@ class ExpCSVGatherer:
 
         - No CSV files contain NaNs.
         """
-        experiments = os.listdir(exp_output_root)
+        experiments = exp_output_root.iterdir()
 
-        self.logger.info('Verifying results in %s...', exp_output_root)
+        self.logger.info('Verifying results in %s...', str(exp_output_root))
 
         start = time.time()
 
         for exp1 in experiments:
-            csv_root1 = os.path.join(exp_output_root,
-                                     exp1,
-                                     self.run_metrics_leaf)
+            csv_root1 = exp1 / self.run_metrics_leaf
 
             for exp2 in experiments:
-                csv_root2 = os.path.join(exp_output_root,
-                                         exp2,
-                                         self.run_metrics_leaf)
+                csv_root2 = exp2 / self.run_metrics_leaf
 
-                if not os.path.isdir(csv_root2):
+                if not csv_root2.is_dir():
                     continue
 
-                for csv in os.listdir(csv_root2):
-                    path1 = os.path.join(csv_root1, csv)
-                    path2 = os.path.join(csv_root2, csv)
-
-                    # .csvs for rendering that we don't verify (for now...)
-                    if os.path.isdir(path1) or os.path.isdir(path2):
-                        self.logger.debug("Not verifying '%s': contains rendering data",
-                                          path1)
-                        continue
-
-                    assert (utils.path_exists(path1) and utils.path_exists(path2)),\
-                        f"Either {path1} or {path2} does not exist"
-
-                    # Verify both dataframes have same # columns, and that
-                    # column sets are identical
-                    reader = storage.DataFrameReader(
-                        self.gather_opts['storage_medium'])
-                    df1 = reader(path1)
-                    df2 = reader(path2)
-
-                    assert (len(df1.columns) == len(df2.columns)), \
-                        (f"Dataframes from {path1} and {path2} do not have "
-                         "the same # columns")
-                    assert(sorted(df1.columns) == sorted(df2.columns)),\
-                        f"Columns from {path1} and {path2} not identical"
-
-                    # Verify the length of all columns in both dataframes is the same
-                    for c1 in df1.columns:
-                        assert(all(len(df1[c1]) == len(df1[c2]) for c2 in df1.columns)),\
-                            f"Not all columns from {path1} have same length"
-
-                        assert(all(len(df1[c1]) == len(df2[c2]) for c2 in df1.columns)),\
-                            (f"Not all columns from {path1} and {path2} have "
-                             "the same length")
+                self._verify_exp_outputs_pairwise(csv_root1, csv_root2)
 
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         self.logger.info("Done verifying results in %s: %s",
                          exp_output_root,
                          sec)
+
+    def _verify_exp_outputs_pairwise(self,
+                                     csv_root1: pathlib.Path,
+                                     csv_root2: pathlib.Path) -> None:
+        for csv in csv_root2.iterdir():
+            path1 = csv
+            path2 = csv_root2 / csv.name
+
+            # .csvs for rendering that we don't verify (for now...)
+            if path1.is_dir() or path2.is_dir():
+                self.logger.debug("Not verifying '%s': contains rendering data",
+                                  str(path1))
+                continue
+
+            assert (utils.path_exists(path1) and utils.path_exists(path2)),\
+                f"Either {path1} or {path2} does not exist"
+
+            # Verify both dataframes have same # columns, and that
+            # column sets are identical
+            reader = storage.DataFrameReader(self.gather_opts['storage_medium'])
+            df1 = reader(path1)
+            df2 = reader(path2)
+
+            assert (len(df1.columns) == len(df2.columns)), \
+                (f"Dataframes from {path1} and {path2} do not have "
+                 "the same # columns")
+            assert(sorted(df1.columns) == sorted(df2.columns)),\
+                f"Columns from {path1} and {path2} not identical"
+
+            # Verify the length of all columns in both dataframes is the same
+            for c1 in df1.columns:
+                assert(all(len(df1[c1]) == len(df1[c2]) for c2 in df1.columns)),\
+                    f"Not all columns from {path1} have same length"
+
+                assert(all(len(df1[c1]) == len(df2[c2]) for c2 in df1.columns)),\
+                    (f"Not all columns from {path1} and {path2} have "
+                     "the same length")
 
 
 class ExpStatisticsCalculator:
@@ -436,15 +427,14 @@ class ExpStatisticsCalculator:
     """
 
     def __init__(self,
-                 main_config: dict,
+                 main_config: types.YAMLDict,
                  avg_opts: dict,
-                 batch_stat_root: str) -> None:
+                 batch_stat_root: pathlib.Path) -> None:
         self.avg_opts = avg_opts
 
         # will get the main name and extension of the config file (without the
         # full absolute path)
-        self.template_input_fname = os.path.basename(
-            self.avg_opts['template_input_leaf'])
+        self.template_input_fname = self.avg_opts['template_input_leaf']
 
         self.main_config = main_config
         self.batch_stat_root = batch_stat_root
@@ -452,38 +442,41 @@ class ExpStatisticsCalculator:
         self.intra_perf_csv = main_config['sierra']['perf']['intra_perf_csv']
         self.intra_perf_col = main_config['sierra']['perf']['intra_perf_col']
 
-        self.output_name_format = "{}_{}_output"
-
     def __call__(self,
                  gather_spec: GatherSpec,
                  gathered_dfs: tp.List[pd.DataFrame]) -> None:
 
         csv_concat = pd.concat(gathered_dfs)
 
-        exp_stat_root = os.path.join(self.batch_stat_root,
-                                     gather_spec.exp_leaf)
+        exp_stat_root = self.batch_stat_root / gather_spec.exp_name
         utils.dir_create_checked(exp_stat_root, exist_ok=True)
 
         # Create directory for averaged .csv files for imagizing later.
         if gather_spec.for_imagizing():
-            utils.dir_create_checked(os.path.join(exp_stat_root,
-                                                  gather_spec.csv_stem),
+            utils.dir_create_checked(exp_stat_root / gather_spec.item_stem,
                                      exist_ok=True)
 
         by_row_index = csv_concat.groupby(csv_concat.index)
 
+        dfs = {}
         if self.avg_opts['dist_stats'] in ['none', 'all']:
-            dfs = stat_kernels.mean.from_groupby(by_row_index)
+            dfs.update(stat_kernels.mean.from_groupby(by_row_index))
+
         if self.avg_opts['dist_stats'] in ['conf95', 'all']:
-            dfs = stat_kernels.conf95.from_groupby(by_row_index)
+            dfs.update(stat_kernels.conf95.from_groupby(by_row_index))
 
         if self.avg_opts['dist_stats'] in ['bw', 'all']:
-            dfs = stat_kernels.bw.from_groupby(by_row_index)
+            dfs.update(stat_kernels.bw.from_groupby(by_row_index))
 
-        for ext in dfs.keys():
-            opath = os.path.join(exp_stat_root,
-                                 gather_spec.csv_stem,
-                                 gather_spec.csv_leaf + ext)
+        for ext in dfs:
+            opath = exp_stat_root / gather_spec.item_stem
+
+            if gather_spec.for_imagizing():
+                opath /= (gather_spec.imagize_csv_stem + ext)
+
+            else:
+                opath = opath.with_suffix(ext)
+
             df = utils.df_fill(dfs[ext], self.avg_opts['df_homogenize'])
             writer = storage.DataFrameWriter(self.avg_opts['storage_medium'])
             writer(df, opath, index=False)

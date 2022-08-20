@@ -14,11 +14,13 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 
-"""
-Classes for collating data from all :term:`Experimental Run` across all
-:term:`Experiment` for all experiments in a :term:`Batch Experiment`. This is
-needed to correctly calculate summary statistics for performance measures in
-stage 4: you can't just run the calculated stddev through the calculations for
+"""Classes for collating data within a :term:`Batch Experiment`.
+
+Collation is the process of "lifting" data from :term:`Experimental Runs
+<Experimental Run>` across all :term:`Experiment` for all experiments in a
+:term:`Batch Experiment` into a single CSV (a reduce operation).  This is needed
+to correctly calculate summary statistics for performance measures in stage 4:
+you can't just run the calculated stddev through the calculations for
 flexibility (for example) because comparing curves of stddev is not
 meaningful. Stage 4 needs access to raw-(er) run data to construct a
 `distribution` of performance measure values to then calculate the summary
@@ -27,15 +29,16 @@ statistics (such as stddev) over.
 """
 
 # Core packages
-import os
 import multiprocessing as mp
 import typing as tp
 import queue
 import logging
+import pathlib
 
 # 3rd party packages
 import pandas as pd
 import numpy as np
+import psutil
 
 # Project packages
 import sierra.core.variables.batch_criteria as bc
@@ -44,11 +47,11 @@ from sierra.core import types, storage, utils, config
 
 
 class ExperimentalRunParallelCollator:
-    """Gathers :term:`Output .csv` files from each :term:`Experimental Run` into
-    :term:`Collated .csv` files for each :term:`Experiment`.
+    """Generates :term:`Collated .csv` files for each :term:`Experiment`.
 
-    Gathered in parallel for each experiment for speed, unless disabled with
-    ``--processing-serial``.
+    :term:`Collated .csv` files generated from :term:`Output .csv` files across
+     :term:`Experimental Runs <Experimental Run>`.  Gathered in parallel for
+     each experiment for speed, unless disabled with ``--processing-serial``.
 
     """
 
@@ -64,9 +67,9 @@ class ExperimentalRunParallelCollator:
         else:
             # Aways need to have at least one of each! If SIERRA is invoked on a
             # machine with 2 or less logical cores, the calculation with
-            # mp.cpu_count() will return 0 for # gatherers.
-            n_gatherers = max(1, int(mp.cpu_count() * 0.25))
-            n_processors = max(1, int(mp.cpu_count() * 0.75))
+            # psutil.cpu_count() will return 0 for # gatherers.
+            n_gatherers = max(1, int(psutil.cpu_count() * 0.25))
+            n_processors = max(1, int(psutil.cpu_count() * 0.75))
 
         pool = mp.Pool(processes=n_gatherers + n_processors)
 
@@ -79,8 +82,7 @@ class ExperimentalRunParallelCollator:
                                            criteria)
 
         for exp in exp_to_proc:
-            _, leaf = os.path.split(exp)
-            gatherq.put((self.cmdopts['batch_output_root'], leaf))
+            gatherq.put((self.cmdopts['batch_output_root'], exp.name))
 
         self.logger.debug("Starting %d gatherers, method=%s",
                           n_gatherers,
@@ -107,8 +109,11 @@ class ExperimentalRunParallelCollator:
         # worker threads. Any assertions will show and any exceptions will be
         # re-raised.
         self.logger.debug("Waiting for workers to finish")
-        [g.get() for g in gathered]
-        [p.get() for p in processed]
+        for g in gathered:
+            g.get()
+
+        for p in processed:
+            p.get()
 
         pool.close()
         pool.join()
@@ -137,12 +142,12 @@ class ExperimentalRunParallelCollator:
 
     @staticmethod
     def _process_worker(processq: mp.Queue,
-                        main_config: dict,
-                        batch_stat_pm_root: str,
+                        main_config: types.YAMLDict,
+                        batch_stat_collate_root: pathlib.Path,
                         storage_medium: str,
                         df_homogenize: str) -> None:
         collator = ExperimentalRunCollator(main_config,
-                                           batch_stat_pm_root,
+                                           batch_stat_collate_root,
                                            storage_medium,
                                            df_homogenize)
         while True:
@@ -173,7 +178,6 @@ class ExperimentalRunCSVGatherer:
         storage_medium: The name of the storage medium plugin to use to extract
                         dataframes from when reading run data.
 
-
         main_config: Parsed dictionary of main YAML configuration.
 
         logger: The handle to the logger for this class. If you extend this
@@ -185,7 +189,7 @@ class ExperimentalRunCSVGatherer:
     """
 
     def __init__(self,
-                 main_config: dict,
+                 main_config: types.YAMLDict,
                  storage_medium: str,
                  processq: mp.Queue) -> None:
         self.processq = processq
@@ -198,11 +202,12 @@ class ExperimentalRunCSVGatherer:
         self.logger = logging.getLogger(__name__)
 
     def __call__(self,
-                 batch_output_root: str,
+                 batch_output_root: pathlib.Path,
                  exp_leaf: str):
         """
-        Gather data from all experimental runs within a single experiment and
-        put them in the queue for processing.
+        Gather CSV data from all experimental runs in an experiment.
+
+        Gathered data is put in a queue for processing.
 
         Arguments:
 
@@ -212,41 +217,39 @@ class ExperimentalRunCSVGatherer:
         """
         self.logger.info('Gathering .csvs: %s...', exp_leaf)
 
-        exp_output_root = os.path.join(batch_output_root, exp_leaf)
+        exp_output_root = batch_output_root / exp_leaf
 
-        runs = sorted(os.listdir(exp_output_root))
+        runs = sorted(exp_output_root.iterdir())
 
         gathered = []
         for run in runs:
-            gathered.append(self.gather_csvs_from_run(exp_output_root, run))
+            run_output_root = run / self.run_metrics_leaf
+            gathered.append(self.gather_csvs_from_run(run_output_root))
 
-        self.processq.put({exp_leaf: (runs, gathered)})
+        names = [run.name for run in runs]
+        self.processq.put({exp_leaf: (names, gathered)})
 
     def gather_csvs_from_run(self,
-                             exp_output_root: str,
-                             run: str) -> tp.Dict[tp.Tuple[str, str], pd.DataFrame]:
-        """
-        Gather all data from a single run within an experiment, so that
-        it can be placed in the queue for processing.
+                             run_output_root: pathlib.Path) -> tp.Dict[tp.Tuple[str, str],
+                                                                       pd.DataFrame]:
+        """Gather all data from a single run within an experiment.
 
         Returns:
-           A dictionary of <(``.csv`` file name, ``.csv`` performance column),
-           dataframe> key-value pairs. The ``.csv`` file name is the leaf part
-           of the path with the extension included.
+
+           dict: A dictionary of <(CSV file name, CSV performance column),
+                 dataframe> key-value pairs. The CSV file name is the leaf part
+                 of the path with the extension included.
+
         """
 
         intra_perf_csv = self.main_config['sierra']['perf']['intra_perf_csv']
         intra_perf_leaf = intra_perf_csv.split('.')[0]
         intra_perf_col = self.main_config['sierra']['perf']['intra_perf_col']
 
-        run_output_root = os.path.join(exp_output_root,
-                                       run,
-                                       self.run_metrics_leaf)
-
         reader = storage.DataFrameReader(self.storage_medium)
-        perf_df = reader(os.path.join(run_output_root,
-                                      intra_perf_leaf + config.kStorageExt['csv']),
-                         index_col=False)
+        perf_path = run_output_root / (intra_perf_leaf +
+                                       config.kStorageExt['csv'])
+        perf_df = reader(perf_path, index_col=False)
 
         return {
             (intra_perf_leaf, intra_perf_col): perf_df[intra_perf_col],
@@ -263,8 +266,8 @@ class ExperimentalRunCollator:
     """
 
     def __init__(self,
-                 main_config: dict,
-                 batch_stat_collate_root: str,
+                 main_config: types.YAMLDict,
+                 batch_stat_collate_root: pathlib.Path,
                  storage_medium: str,
                  df_homogenize: str) -> None:
         self.main_config = main_config
@@ -284,10 +287,13 @@ class ExperimentalRunCollator:
                  gathered_dfs: tp.List[tp.Dict[tp.Tuple[str, str], pd.DataFrame]],
                  exp_leaf: str) -> None:
         collated = {}
+
         for run in gathered_runs:
             run_dfs = gathered_dfs[gathered_runs.index(run)]
+
             for csv_leaf, col in run_dfs.keys():
                 csv_df = run_dfs[(csv_leaf, col)]
+
                 # Invert performance if configured.
                 if self.invert_perf and csv_leaf in self.intra_perf_csv:
                     csv_df = 1.0 / csv_df
@@ -306,11 +312,11 @@ class ExperimentalRunCollator:
                                                              columns=gathered_runs)
                 collated[(csv_leaf, col)][run] = csv_df
 
-        for (csv_leaf, col) in collated.keys():
+        for (csv_leaf, col) in collated:
             writer = storage.DataFrameWriter(self.storage_medium)
             df = utils.df_fill(collated[(csv_leaf, col)], self.df_homogenize)
             fname = f'{exp_leaf}-{csv_leaf}-{col}' + config.kStorageExt['csv']
-            opath = os.path.join(self.batch_stat_collate_root, fname)
+            opath = self.batch_stat_collate_root / fname
             writer(df, opath, index=False)
 
 

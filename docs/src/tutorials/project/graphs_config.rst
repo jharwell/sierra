@@ -31,6 +31,9 @@ Add a root level dictionary to one of the following YAML configuration files:
 - ``<project>/config/inter-graphs-line.yaml`` for inter-experiment line
   graphs. Dictionaries must start with ``LN_``.
 
+- ``<project>/config/inter-graphs-hm.yaml`` for inter-experiment
+  heatmaps. Dictionaries must start with ``HM_``.
+
 An example ``intra-graphs-line.yaml``, defining two categories of linegraphs:
 
 .. code-block:: YAML
@@ -147,6 +150,12 @@ Unless stated otherwise, all keys are mandatory.
      # matplotlib after all). Optional.
      - title: 'My Title'
 
+     # The type of interpolation to use. Defaults to 'nearest' if omitted.
+     - interpolation: 'nearest'
+
+     # The Z colorbar label to use. Optional.
+     - zlabel: 'My colorbar label'
+
 How to Add A New Inter-Experiment Graph
 =======================================
 
@@ -174,6 +183,30 @@ Each inter-experiment linegraph has an additional optional boolean field
 :class:`~sierra.core.graphs.stacked_line_graph.StackedLineGraph` (default if
 omitted).
 
+Heatmaps
+--------
+
+Inter-experiment heatmaps are appropriate if:
+
+- You are using bivariate batch criteria.
+
+- The data you want to graph can be represented by a line (i.e. is one
+  dimensional in some way).
+
+- The data you want to graph can be obtained from a single column from a single
+  CSV file.
+
+- The data you want to graph requires comparison between multiple experiments in
+  a batch.
+
+.. versionadded:: 1.2.20
+
+
+``HM_XXX`` YAML Config
+^^^^^^^^^^^^^^^^^^^^^^
+
+Same as intra-experiment heatmaps.
+
 
 How to Activate New Graph Category
 ==================================
@@ -182,29 +215,4 @@ If you added a new :term:`Graph Category`, it will not automatically be used to
 generate graphs for existing or new controllers. You will need to modify the
 ``<project>/config/controllers.yaml`` file to specify which controllers your new
 category of graphs should be generated for. See
-:ref:`ln-sierra-tutorial-project-main-config` for details.
-
-
-How to Generate Additional Graphs
-=================================
-
-This can be done by extending
-:class:`~sierra.core.pipeline.stage4.inter_exp_graph_generator.InterExpGraphGenerator`. Create
-``<project>/pipeline/stage4/inter_exp_graph_generator.py`` and define a
-``InterExpGraphGenerator`` class which inherits from
-:class:`~sierra.core.pipeline.stage4.inter_exp_graph_generator.InterExpGraphGenerator`. It's
-constructor must be::
-
-  def __init__(self,
-               main_config: types.ParsedYAMLDict,
-               cmdopts: types.Cmdopts,
-               targets: tp.List[types.ParsedYAMLDict]) -> None:
-
-And it must define::
-
-  def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
-
-
-SIERRA will then use this class when generating graphs during stage 4. You
-probably should have ``super().__call__(criteria)`` in the ``__call__()`` you
-define, but you don't have to.
+:ref:`ln-sierra-tutorials-project-main-config` for details.

@@ -39,8 +39,8 @@ works/is designed the way it is, and to help you find your way around.
 
    Project
 
-      The SIERRA plugin allowing you to use your compiled C++ library+ARGoS
-      within the SIERRA framework. A project is mainly a set of ``.yaml``
+      The SIERRA plugin allowing you to use your code on the platform of your
+      choice within the SIERRA framework. A project is mainly a set of ``.yaml``
       configuration files, project-specific :term:`Batch Criteria`, and some
       utility classes which allow SIERRA to translate the ``--scenario``
       argument passed on the cmdline to sets of XML changes as part of
@@ -68,12 +68,12 @@ works/is designed the way it is, and to help you find your way around.
    Batch Criteria
 
       A `variable` you wish to use with SIERRA to measure its effect on system
-       behavior. A batch criteria can has a single axis (such as
-       :ref:`ln-sierra-platform-argos-bc-population-size`), in which case it is
-       called `univariate`, or have two axes (such as
-       :ref:`ln-sierra-platform-argos-bc-population-size` and another batch
-       criteria such as one defining sensor and actuator noise to apply to the
-       robots), in which case it is called `bivariate`.
+      behavior. A batch criteria can has a single axis (such as
+      :ref:`ln-sierra-platform-argos-bc-population-size`), in which case it is
+      called `univariate`, or have two axes (such as
+      :ref:`ln-sierra-platform-argos-bc-population-size` and another batch
+      criteria such as one defining sensor and actuator noise to apply to the
+      robots), in which case it is called `bivariate`.
 
       Univariate batch criteria have one dimension, and so the graphs produced
       by them are (usually) linegraphs with a numerical representation of the
@@ -107,6 +107,7 @@ works/is designed the way it is, and to help you find your way around.
 
       SIERRA itself does not define any batch criteria.
 
+
    Batch Experiment
 
       A set of :term:`Experiments<Experiment>` each defined by XML changes
@@ -115,7 +116,7 @@ works/is designed the way it is, and to help you find your way around.
 
       For example, for the :ref:`ln-sierra-platform-argos-bc-population-size`
       batch criteria, each experiment is defined by a single XML change to the
-      provided `.argos` file: the number of robots in the swarm. Depending on
+      provided ``.argos`` file: the number of robots in the swarm. Depending on
       the specifics you set for the `range` of sizes you are interested in,
       several experiments will be generated from the template ``.argos`` file,
       each differing from the template in the configured swarm size.
@@ -131,8 +132,8 @@ works/is designed the way it is, and to help you find your way around.
       Meaning is :term:`Platform` dependent.
 
       For ``--platform=platform.argos`` it is an :term:`ARGoS` simulation that
-      runs as part of an experiment. For ``--platform=platform.ros1gazebo`` it is
-      a :term:`Gazebo` simulation that runs as part of an experiment
+      runs as part of an experiment. For ``--platform=platform.ros1gazebo`` it
+      is a :term:`Gazebo` simulation that runs as part of an experiment.
 
       The number of simulations which will be run by SIERRA in stage 2 and
       averaged together by SIERRA in stage 3 is controlled by ``--n-runs``.
@@ -188,7 +189,7 @@ works/is designed the way it is, and to help you find your way around.
       multiple :term:`Batch Experiments <Batch Experiment>` into a single
       CSV. Used during stage 5.
 
-   imagizing
+   Imagizing
 
       The process of turning a text file of some kind (e.g., CSV, ``.gml``)
       into an image.
@@ -198,6 +199,11 @@ works/is designed the way it is, and to help you find your way around.
       The `context` in which experiments are run: either via a simulator of some
       kind, or a run-time framework for deploying code to one or more real
       robots.
+
+      .. IMPORTANT:: In SIERRA terminology, platform != OS. A given OS such has
+                     linux might support multiple platforms like ARGoS, ROS,
+                     etc, while a different OS like OSX might support only
+                     ARGoS.
 
    Graph Category
 
@@ -240,3 +246,6 @@ works/is designed the way it is, and to help you find your way around.
 
       - Platform plugins - Plugins which correspond to different
         :term:`Platforms <Platform>`.
+
+      - Project  plugins - Plugins which correspond to different
+        :term:`Projects <Project>`.

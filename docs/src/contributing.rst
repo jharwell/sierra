@@ -28,30 +28,22 @@ step:
 
      pip3 install .[devel]
 
-#. Run the following on the code from the root of SIERRA::
+#. Run ``nox`` to check most things prior to commiting/pushing your changes. If
+   there are errors *you* have introduced, fix them. Some checkers (such as
+   pylint), will still report errors, as cleaning up the code is always a work
+   in progress::
 
-     pytype -k sierra
-
-   Fix ANY and ALL errors that arise, as SIERRA should get a clean bill of
-   health from the checker.
-
-#. Run the following on any module directories you changed, from the root of
-   SIERRA::
-
-     pylint <directory name>
-
-   Fix ANY errors your changes have introduced (there will probably still be
-   errors in the pylint output, because cleaning up the code is always a work in
-   progress).
+     nox
 
 #. Run the following on any module directories you changed, from the root of
    SIERRA::
 
      mypy --ignore-missing-imports --warn-unreachable sierra
 
-   Fix ANY errors your changes have introduced (there will probably still be
-   errors in the my output, because cleaning up the code is always a work in
-   progress), and also mypy just gives a lot of false positives in general.
+   Fix relevant errors your changes have introduced (there will probably still
+   be errors in the my output, because cleaning up the code is always a work in
+   progress), and mypy just gives a lot of false positives in general; this is
+   also why it's not part of what runs with ``nox``.
 
 
 SIERRA Source Code Directory Structure

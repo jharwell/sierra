@@ -30,9 +30,8 @@ import sierra.core.cmdline as cmd
 
 
 class PlatformCmdline(cmd.BaseCmdline):
-    """
-    Defines :term:`ROS1` extensions to the core command line arguments defined
-    in :class:`~sierra.core.cmdline.CoreCmdline`.
+    """Defines :term:`ROS1` extensions to :class:`~sierra.core.cmdline.CoreCmdline`.
+
     """
 
     def __init__(self,
@@ -40,13 +39,11 @@ class PlatformCmdline(cmd.BaseCmdline):
                  stages: tp.List[int]) -> None:
 
         if parents is not None:
-            self.parser = argparse.ArgumentParser(prog='sierra-cli',
-                                                  parents=parents,
+            self.parser = argparse.ArgumentParser(parents=parents,
                                                   add_help=False,
                                                   allow_abbrev=False)
         else:
-            self.parser = argparse.ArgumentParser(prog='sierra-cli',
-                                                  add_help=False,
+            self.parser = argparse.ArgumentParser(add_help=False,
                                                   allow_abbrev=False)
 
         self.scaffold_cli()
@@ -153,9 +150,7 @@ class PlatformCmdline(cmd.BaseCmdline):
 
     @staticmethod
     def cmdopts_update(cli_args, cmdopts: types.Cmdopts) -> None:
-        """
-        Updates the core cmdopts dictionary with (key,value) pairs from the
-        ROS1+robot-specific cmdline options.
+        """Update cmdopts with ROS1+robot-specific cmdline options.
 
         """
         ros1.cmdline.ROSCmdline.cmdopts_update(cli_args, cmdopts)
@@ -177,7 +172,9 @@ class PlatformCmdline(cmd.BaseCmdline):
 
 
 class CmdlineValidator(ros1.cmdline.ROSCmdlineValidator):
-    pass
+    """
+    Stub implementation.
+    """
 
 
 def sphinx_cmdline_stage1():

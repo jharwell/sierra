@@ -1,14 +1,17 @@
 .. _ln-sierra-tutorials:
 
-=================================
-Setup and Configuration Tutorials
-=================================
+=====================================
+Configuration and Extension Tutorials
+=====================================
+
+This page contains tutorials to setup and/or extend SIERRA according to your
+needs.
 
 .. _ln-sierra-tutorials-project:
 
 .. toctree::
    :maxdepth: 1
-   :caption: Project Configuration:
+   :caption: Configuring SIERRA projects:
 
    project/project.rst
    project/cmdline.rst
@@ -25,7 +28,7 @@ Setup and Configuration Tutorials
 
 .. toctree::
    :maxdepth: 1
-   :caption: HPC Configuration:
+   :caption: Configuring HPC environments:
 
    hpc/cluster_setup.rst
    hpc/local_setup.rst
@@ -34,8 +37,8 @@ Setup and Configuration Tutorials
 
 .. toctree::
    :maxdepth: 1
-   :caption: Customizing/Extending SIERRA:
+   :caption: Extending SIERRA with new plugins:
 
-   plugin/platform_plugin.rst
-   plugin/exec_env_plugin.rst
-   plugin/storage_plugin.rst
+   plugin/platform/index.rst
+   plugin/exec_env/index.rst
+   plugin/storage/index.rst

@@ -13,42 +13,44 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-Classes for generating XML changes to the :term:`ROS1` input file independent
-of any :term:`Project`; i.e., changes which are platform-specific, but
-applicable to all projects using ROS with a real robot execution environment.
+"""Classes for generating common XML modifications to :term:`ROS1` input files.
+
+I.e., changes which are platform-specific, but applicable to all projects using
+ROS with a real robot execution environment.
 
 """
 # Core packages
 import logging
-import os
+import pathlib
 
 # 3rd party packages
 import yaml
 
 # Project packages
-from sierra.core.xml import XMLLuigi, XMLTagAdd
-from sierra.core.experiment.spec import ExperimentSpec
+from sierra.core.experiment import spec, xml, definition
 from sierra.core import types, ros1, config, utils
 
 
 class PlatformExpDefGenerator(ros1.generators.ROSExpDefGenerator):
     """
+    Init the object.
+
     Attributes:
+
         controller: The controller used for the experiment.
         cmdopts: Dictionary of parsed cmdline parameters.
     """
 
     def __init__(self,
-                 spec: ExperimentSpec,
+                 exp_spec: spec.ExperimentSpec,
                  controller: str,
                  cmdopts: types.Cmdopts,
                  **kwargs) -> None:
-        super().__init__(spec, controller, cmdopts, **kwargs)
+        super().__init__(exp_spec, controller, cmdopts, **kwargs)
 
         self.logger = logging.getLogger(__name__)
 
-    def generate(self) -> XMLLuigi:
+    def generate(self) -> definition.XMLExpDef:
         exp_def = super().generate()
 
         self.logger.debug("Writing separate <master> launch file")
@@ -83,17 +85,17 @@ class PlatformExpRunDefUniqueGenerator(ros1.generators.ROSExpRunDefUniqueGenerat
         ros1.generators.ROSExpRunDefUniqueGenerator.__init__(
             self, *args, **kwargs)
 
-    def generate(self, exp_def: XMLLuigi):
+    def generate(self, exp_def: definition.XMLExpDef):
         exp_def = super().generate(exp_def)
-        main_path = os.path.join(self.cmdopts['project_config_root'],
-                                 config.kYAML['main'])
+        main_path = pathlib.Path(self.cmdopts['project_config_root'],
+                                 config.kYAML.main)
 
-        with open(main_path) as f:
+        with utils.utf8open(main_path) as f:
             main_config = yaml.load(f, yaml.FullLoader)
 
         n_robots = utils.get_n_robots(main_config,
                                       self.cmdopts,
-                                      os.path.dirname(self.launch_stem_path),
+                                      self.launch_stem_path.parent,
                                       exp_def)
 
         for i in range(0, n_robots):
@@ -102,10 +104,7 @@ class PlatformExpRunDefUniqueGenerator(ros1.generators.ROSExpRunDefUniqueGenerat
                 'src_parent': "./robot",
                 'src_tag': f"group/[@ns='{prefix}{i}']",
                 'opath_leaf': f'_robot{i}' + config.kROS['launch_file_ext'],
-                'create_tags': [XMLTagAdd(None,
-                                          'launch',
-                                          {},
-                                          False)],
+                'create_tags': [xml.TagAdd.as_root('launch', {})],
                 'dest_parent': ".",
                 'rename_to': None,
                 'child_grafts': ["./robot/group/[@ns='sierra']"]

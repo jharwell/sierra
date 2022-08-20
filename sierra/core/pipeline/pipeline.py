@@ -13,23 +13,24 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-Container module for the 5 pipeline stages implemented by SIERRA. See
-:ref:`ln-sierra-usage-pipeline` for high-level documentation.
+"""The 5 pipeline stages implemented by SIERRA.
+
+See :ref:`ln-sierra-usage-pipeline` for high-level documentation.
+
 """
 
 # Core packages
-import os
 import typing as tp
 import logging
 import argparse
+import pathlib
 
 # 3rd party packages
 import yaml
 
 # Project packages
 import sierra.core.plugin_manager as pm
-from sierra.core import types, config
+from sierra.core import types, config, utils
 
 from sierra.core.pipeline.stage1.pipeline_stage1 import PipelineStage1
 from sierra.core.pipeline.stage2.pipeline_stage2 import PipelineStage2
@@ -69,8 +70,16 @@ class Pipeline:
             'platform': self.args.platform,
             'processing_serial': self.args.processing_serial,
 
+            'plot_log_xscale': self.args.plot_log_xscale,
+            'plot_enumerated_xscale': self.args.plot_enumerated_xscale,
+            'plot_log_yscale': self.args.plot_log_yscale,
+            'plot_regression_lines': self.args.plot_regression_lines,
+            'plot_primary_axis': self.args.plot_primary_axis,
+            'plot_large_text': self.args.plot_large_text,
+            'plot_transpose_graphs': self.args.plot_transpose_graphs,
+
             # stage 1
-            'no_preserve_seeds': self.args.no_preserve_seeds,
+            'preserve_seeds': self.args.preserve_seeds,
 
             # stage 2
             'nodefile': self.args.nodefile,
@@ -85,16 +94,10 @@ class Pipeline:
             # stage 4
             'exp_graphs': self.args.exp_graphs,
 
-            'project_no_yaml_LN': self.args.project_no_yaml_LN,
-            'project_no_yaml_HM': self.args.project_no_yaml_HM,
+            'project_no_LN': self.args.project_no_LN,
+            'project_no_HM': self.args.project_no_HM,
             'project_rendering': self.args.project_rendering,
-
-            'plot_log_xscale': self.args.plot_log_xscale,
-            'plot_enumerated_xscale': self.args.plot_enumerated_xscale,
-            'plot_log_yscale': self.args.plot_log_yscale,
-            'plot_regression_lines': self.args.plot_regression_lines,
-            'plot_primary_axis': self.args.plot_primary_axis,
-            'plot_large_text': self.args.plot_large_text,
+            'bc_rendering': self.args.bc_rendering,
 
             'models_enable': self.args.models_enable,
 
@@ -106,7 +109,6 @@ class Pipeline:
             'scenario_comparison': self.args.scenario_comparison,
             'controller_comparison': self.args.controller_comparison,
             'comparison_type': self.args.comparison_type,
-            'transpose_graphs': self.args.transpose_graphs,
         }
 
         # Load additional cmdline options from platform
@@ -129,13 +131,12 @@ class Pipeline:
 
             module.Cmdline.cmdopts_update(self.args, self.cmdopts)
 
-        self.cmdopts['plugin_root'] = os.path.join('sierra', 'plugins')
-
         project = pm.pipeline.get_plugin(self.cmdopts['project'])
-        path = os.path.join(project['parent_dir'], self.cmdopts['project'])
-        self.cmdopts['project_root'] = path
-        self.cmdopts['project_config_root'] = os.path.join(path, 'config')
-        self.cmdopts['project_model_root'] = os.path.join(path, 'models')
+        path = project['parent_dir'] / self.cmdopts['project']
+
+        self.cmdopts['project_root'] = str(path)
+        self.cmdopts['project_config_root'] = str(path / 'config')
+        self.cmdopts['project_model_root'] = str(path / 'models')
 
         self._load_config()
 
@@ -154,7 +155,7 @@ class Pipeline:
         """
         if 1 in self.args.pipeline:
             PipelineStage1(self.cmdopts,
-                           self.controller,
+                           self.controller,  # type: ignore
                            self.batch_criteria).run()
 
         if 2 in self.args.pipeline:
@@ -177,20 +178,20 @@ class Pipeline:
         self.logger.debug("Loading project config from '%s'",
                           self.cmdopts['project_config_root'])
 
-        main_path = os.path.join(self.cmdopts['project_config_root'],
-                                 config.kYAML['main'])
+        main_path = pathlib.Path(self.cmdopts['project_config_root'],
+                                 config.kYAML.main)
         try:
-            with open(main_path) as f:
+            with utils.utf8open(main_path) as f:
                 self.main_config = yaml.load(f, yaml.FullLoader)
 
         except FileNotFoundError:
             self.logger.fatal("%s must exist!", main_path)
             raise
 
-        perf_path = os.path.join(self.cmdopts['project_config_root'],
+        perf_path = pathlib.Path(self.cmdopts['project_config_root'],
                                  self.main_config['sierra']['perf'])
         try:
-            perf_config = yaml.load(open(perf_path), yaml.FullLoader)
+            perf_config = yaml.load(utils.utf8open(perf_path), yaml.FullLoader)
 
         except FileNotFoundError:
             self.logger.warning("%s does not exist!", perf_path)

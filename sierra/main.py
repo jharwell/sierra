@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 #
 #  This file is part of SIERRA.
@@ -15,10 +14,7 @@
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
 #
-"""Main module/entry point for SIERRA, the helpful command line swarm-robotic
-automation tool.
-
-"""
+"""Main module/entry point for SIERRA."""
 
 # Core packages
 import logging
@@ -26,6 +22,7 @@ import sys
 from collections.abc import Iterable
 import os
 import multiprocessing as mp
+import pathlib
 
 # 3rd party packages
 
@@ -42,13 +39,10 @@ import sierra.version
 
 
 class SIERRA():
-    """
-    Initialize SIERRA and then launch the pipeline.
-    """
+    """Initialize SIERRA and then launch the pipeline."""
 
-    def __init__(self) -> None:
+    def __init__(self, bootstrap: cmd.BootstrapCmdline) -> None:
         # Bootstrap the cmdline
-        bootstrap = cmd.BootstrapCmdline()
         bootstrap_args, other_args = bootstrap.parser.parse_known_args()
 
         # Setup logging customizations
@@ -58,20 +52,23 @@ class SIERRA():
 
         # Check SIERRA runtime environment
         sierra.core.startup.startup_checks(not bootstrap_args.skip_pkg_checks)
+        self.logger.info("Using python=%s.", sys.version.replace('\n', ''))
 
-        sierra_root = os.path.dirname(os.path.abspath(__file__))
+        this_file = pathlib.Path(__file__)
+        install_root = pathlib.Path(this_file.parent)
 
         # Load plugins
         self.logger.info("Loading plugins")
         project = bootstrap_args.project
-        plugin_core_path = [os.path.join(sierra_root, 'plugins', 'hpc'),
-                            os.path.join(sierra_root, 'plugins', 'storage'),
-                            os.path.join(sierra_root, 'plugins', 'robots'),
-                            os.path.join(sierra_root, 'plugins', 'platform')]
+        plugin_core_path = [install_root / 'plugins' / 'hpc',
+                            install_root / 'plugins' / 'storage',
+                            install_root / 'plugins' / 'robots',
+                            install_root / 'plugins' / 'platform']
         plugin_search_path = plugin_core_path
         env = os.environ.get('SIERRA_PLUGIN_PATH')
         if env is not None:
-            plugin_search_path += env.split(os.pathsep)
+            for p in env.split(os.pathsep):
+                plugin_search_path.append(pathlib.Path(p))
 
         manager = pm.pipeline
         manager.initialize(project, plugin_search_path)
@@ -146,7 +143,16 @@ def main():
     # copy loaded modules, which results in the singleton plugin managers not
     # working.
     mp.set_start_method("fork")
-    SIERRA()()
+
+    # Bootstrap the cmdline to print version if needed
+    bootstrap = cmd.BootstrapCmdline()
+    bootstrap_args, _ = bootstrap.parser.parse_known_args()
+
+    if bootstrap_args.version:
+        sys.stdout.write(cmd.kVersionMsg)
+    else:
+        app = SIERRA(bootstrap)
+        app()
 
 
 if __name__ == "__main__":

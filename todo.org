@@ -1,13 +1,43 @@
 * SIERRA                                                            :sierra:
-** TODO [#B] Add additional integration tests [14%]
+** TODO [#B] Add additional integration tests [50%]
 - [X] Verifying ARGoS stage 1,2,3,4 outputs
-- [ ] Testing ARGoS video generation
-- [ ] Verifying ROS1+Gazebo stage 1,2 outputs
+- [X] Testing ARGoS video generation
+- [X] Verifying ROS1+Gazebo stage 1 outputs
 - [ ] ROS1+Gazebo sample should generate SOME outputs so I can test SIERRA stage
-   3,4 with that platform
-- [ ] Test bivariate batch criteria
-- [ ] Test on OSX (reall just getting the python environment setup).
-- [ ] Testing specific command line options
+   3,4 with that platform. Not critical, as those stages are currently getting
+  tested with ARGoS.
+- [X] Test bivariate batch criteria
+- [X] Test on OSX (reall just getting the python environment setup).
+- [ ] Testing specific command line options and other elements of the SIERRA
+  core not tested by the plugin integration tests. This should get its own
+  workflow file. What shows up as github badges should be a core+plugins yml
+  file with an "Integration tests" label.
+- [ ] Testing that the generated experiments match between python versions
+      (i.e., file contents is the same).
+- [ ] Simple model for testing in the sample project, associated tests
+- [ ] Switch from bash to something else (python/noxfile?); my scripts are
+  getting too complicated.
+
+** TODO Make bivariate inter-experiment heatmaps renderable into videos
+
+** TODO Add quick quick start: a linux VM with SIERRA all set up and ready to go
+** TODO Add additional unit tests [0%]
+- [ ] Parser unit tests (for CLI variables that can be used as batch criteria)
+- [ ] Nodefile parsing
+
+** TODO Added tutorial for creating a new model
+- And add an example in the sample project
+
+** TODO Add --seed to gazebo commands so experiments are more idempotent
+** TODO Change n_robots -> n_agents everywhere
+
+** TODO Add short options with some category prefixes
+- To emulate GCC syntax, which is really nice. Some ideas:
+-E -> --exec-
+-e -> --exp-
+-s -> --skip-
+-L -> --plot-
+-c -> --controller-
 
 ** TODO [#A] Add plugin interface for experimental inputs
 - This is needed as part of making SIERRA directly able to support platforms
@@ -41,8 +71,10 @@ setup written to the pkl file.
 I think this is bcause if you cancel a previous run, GNU parallel does not run
 the necessary commands to clean up the previous experiment and kill any
 remaining roslaunch bits
-** TODO Move stuff from --camera-config that relies on my changes to ARGoS to
-TITERRA.
+
+** DONE Move stuff from --camera-config that relies on my changes to ARGoS to
+   TITERRA.
+CLOSED: [2022-08-11 Thu 15:29]
 
 ** DONE [#B] Fix GNU parallel sync                                   :sierra:
    CLOSED: [2022-04-11 Mon 12:09]
@@ -110,3 +142,13 @@ TITERRA.
 ** DONE [#B] Switch all collated .csvs to have .mean extension to make things consistent
    CLOSED: [2022-07-06 Wed 13:52]
 Stat csv extension mapping should probably be put in the config module
+** DONE Switch to pathlib
+   CLOSED: [2022-08-11 Thu 11:08]
+- Much better than using raw strings everywhere for filesystem paths
+
+** DONE [#B] Add --version flag
+   CLOSED: [2022-08-11 Thu 11:08]
+This really should be there.... And not require a valid --project to be passed.
+** DONE Switch everything in examples.rst to use the sample project to increase
+   CLOSED: [2022-08-16 Tue 15:32]
+  cohesion

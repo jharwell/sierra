@@ -1,8 +1,8 @@
 .. _ln-sierra-usage-vars:
 
-========================================
-Externally Configurable SIERRA Variables
-========================================
+=============================
+Configurable SIERRA Variables
+=============================
 
 Non-:term:`Batch Criteria` variables which you can use to configure
 simulations. All batch criteria are variables, but not all variables are batch

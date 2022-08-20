@@ -1,0 +1,114 @@
+name: Coverage CI
+
+on:
+  push:
+    paths:
+      - 'sierra/**'
+
+jobs:
+  argos-ci:
+    uses: ./.github/workflows/argos.yml
+    secrets: inherit
+    with:
+      os: ubuntu-20.04
+
+  ros1gazebo-ci:
+    uses: ./.github/workflows/ros1gazebo.yml
+    secrets: inherit
+    with:
+      os: ubuntu-20.04
+
+  sierra-core-ci:
+    uses: ./.github/workflows/sierra-core.yml
+    secrets: inherit
+    with:
+      os: ubuntu-20.04
+
+  ros1robot-ci:
+    uses: ./.github/workflows/ros1robot.yml
+    secrets: inherit
+    with:
+      os: ubuntu-20.04
+
+  exec-env-ci:
+    uses: ./.github/workflows/exec-env-plugins.yml
+    secrets: inherit
+    with:
+      os: ubuntu-20.04
+
+  unit-tests:
+    uses: ./.github/workflows/unit-tests.yml
+    secrets: inherit
+    with:
+      os: ubuntu-20.04
+
+  # docs:
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       python-version:
+  #         - 3.9
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: ./.github/actions/sierra-setup
+
+  #     - name: Build docs
+  #       shell: bash
+  #       run: |
+  #          cd docs && coverage run $(which sphinx-build) -M html "." "_build"
+  #          cd docs && coverage combine
+  #          cd docs && coverage report
+  #          cd docs && coverage xml
+
+  #     - uses: actions/upload-artifact@v3
+  #       with:
+  #         name: ci-sphinx-docs-${{ runner.os }}-${{ matrix.python-version }}-coverage
+  #         path: docs/.coverage.*
+
+  coverage:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - 3.9
+
+    needs:
+      # - docs
+      - unit-tests
+      - argos-ci
+      - ros1gazebo-ci
+      - ros1robot-ci
+      - exec-env-ci
+      - sierra-core-ci
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/sierra-setup
+      - uses: actions/download-artifact@v3
+
+      - name: Generate coverage report
+        run: |
+
+          coverage combine ci-*-Linux-${{ matrix.python-version }}-coverage/.coverage.*  ci-*-Linux-${{ matrix.python-version }}-coverage/.coverage
+
+          coverage report
+          coverage xml
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ci-integration-coverage
+
+          path: .coverage
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ci-integration-coverage-xml
+          path: coverage.xml
+
+      - name: Coveralls
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+
+        run: |
+          coveralls

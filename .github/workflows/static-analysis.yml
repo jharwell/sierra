@@ -1,43 +1,28 @@
-name: Static analysis CI
+name: Static Analysis
 
 on:
+  workflow_call:
   push:
-    branches:
-      # - master
-      # - devel
-
     paths:
       - 'sierra/**'
 
 jobs:
-  sierra-analyze:
-
-    runs-on: ubuntu-latest
+  analyze:
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: ["3.9"]
+        os:
+          - ubuntu-20.04 # ubuntu-latest, as of 8/22
+          - macos-12
+
+        python-version:
+          - 3.8
+          - 3.9
 
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/sierra-setup
 
-      - name: Install checkers
+      - name: Run nox
         run: |
-          pip3 install flake8 mypy pylint pytype
-
-      - name: Check with flake8
-        run: |
-
-          # stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-
-          # exit-zero treats all errors as warnings.
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=80 --statistics
-
-      - name: Check with pytype
-        run: |
-          pytype -d name-error,attribute-error,invalid-annotation,pyi-error sierra
-
-      - name: Check with pylint
-        run: |
-          pylint sierra
+          nox --pythons ${{ matrix.python-version }} --sessions lint analysis docs

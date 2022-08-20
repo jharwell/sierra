@@ -13,23 +13,24 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-Classes for generating XML changes to the :term:`ARGoS` input file independent
-of any :term:`Project`; i.e., changes which are platform-specific, but
-applicable to all projects using the platform.
+"""Classes for generating common XML modifications for :term:`ARGoS`.
+
+I.e., changes which are platform-specific, but applicable to all projects using
+the platform.
+
 """
 # Core packages
 import typing as tp
 import logging
-import os
 import sys
+import pathlib
 
 # 3rd party packages
+import psutil
 
 # Project packages
-from sierra.core.xml import XMLLuigi, XMLWriterConfig
 from sierra.core.utils import ArenaExtent
-from sierra.core.experiment.spec import ExperimentSpec
+from sierra.core.experiment import spec, definition, xml
 from sierra.core import types, config, utils
 import sierra.core.plugin_manager as pm
 
@@ -43,38 +44,41 @@ import sierra.plugins.platform.argos.variables.exp_setup as exp
 
 class PlatformExpDefGenerator():
     """
+    Init the object.
+
     Attributes:
+
         controller: The controller used for the experiment.
+
         cmdopts: Dictionary of parsed cmdline parameters.
     """
 
     def __init__(self,
-                 spec: ExperimentSpec,
+                 exp_spec: spec.ExperimentSpec,
                  controller: str,
                  cmdopts: types.Cmdopts,
                  **kwargs) -> None:
         self.controller = controller
-        self.spec = spec
+        self.spec = exp_spec
         self.cmdopts = cmdopts
         self.template_input_file = kwargs['template_input_file']
         self.kwargs = kwargs
         self.logger = logging.getLogger(__name__)
 
-    def generate(self) -> XMLLuigi:
-        """
-        Generates XML changes to simulation input files that are common to all
-        experiments.
+    def generate(self) -> definition.XMLExpDef:
+        """Generate XML modifications common to all ARGoS experiments.
+
         """
         # ARGoS uses a single input file
-        wr_config = XMLWriterConfig([{'src_parent': None,
-                                      'src_tag': '.',
-                                      'opath_leaf': config.kARGoS['launch_file_ext'],
-                                      'create_tags': None,
-                                      'dest_parent': None,
-                                      'rename_to': None
-                                      }])
-        exp_def = XMLLuigi(input_fpath=self.template_input_file,
-                           write_config=wr_config)
+        wr_config = xml.WriterConfig([{'src_parent': None,
+                                       'src_tag': '.',
+                                       'opath_leaf': config.kARGoS['launch_file_ext'],
+                                       'create_tags': None,
+                                       'dest_parent': None,
+                                       'rename_to': None
+                                       }])
+        exp_def = definition.XMLExpDef(input_fpath=self.template_input_file,
+                                       write_config=wr_config)
 
         # Generate # robots
         self._generate_n_robots(exp_def)
@@ -97,15 +101,14 @@ class PlatformExpDefGenerator():
         return exp_def
 
     def generate_physics(self,
-                         exp_def: XMLLuigi,
+                         exp_def: definition.XMLExpDef,
                          cmdopts: types.Cmdopts,
                          engine_type: str,
                          n_engines: int,
                          extents: tp.List[ArenaExtent],
                          remove_defs: bool = True) -> None:
         """
-        Generates XML changes for the specified physics engines configuration
-        for the simulation.
+        Generate XML changes for the specified physics engines configuration.
 
         Physics engine definition removal is optional, because when mixing 2D/3D
         engine definitions, you only want to remove the existing definitions
@@ -146,7 +149,7 @@ class PlatformExpDefGenerator():
         utils.apply_to_expdef(pe, exp_def)
 
     def generate_arena_shape(self,
-                             exp_def: XMLLuigi,
+                             exp_def: definition.XMLExpDef,
                              shape: arena_shape.ArenaShape) -> None:
         """
         Generate XML changes for the specified arena shape.
@@ -156,13 +159,11 @@ class PlatformExpDefGenerator():
         self.logger.trace(("Generating changes for arena "    # type: ignore
                            "share (all runs)"))
         _, adds, chgs = utils.apply_to_expdef(shape, exp_def)
-
         utils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)
 
-    def _generate_n_robots(self, xml: XMLLuigi) -> None:
+    def _generate_n_robots(self, exp_def: definition.XMLExpDef) -> None:
         """
-        Generate XML changes to setup # robots if it was specified on the
-        cmdline.
+        Generate XML changes to setup # robots (if specified on cmdline).
 
         Writes generated changes to the simulation definition pickle file.
         """
@@ -174,27 +175,29 @@ class PlatformExpDefGenerator():
         chgs = population_size.PopulationSize.gen_attr_changelist_from_list(
             [self.cmdopts['n_robots']])
         for a in chgs[0]:
-            xml.attr_change(a.path, a.attr, a.value, True)
+            exp_def.attr_change(a.path, a.attr, a.value, True)
 
         # Write # robots info to file for later retrieval
         chgs[0].pickle(self.spec.exp_def_fpath)
 
-    def _generate_saa(self, exp_def: XMLLuigi) -> None:
-        """
-        Generates XML changes to disable selected sensors/actuators, which are
-        computationally expensive in large swarms, but not that costly if the
-        # robots is small.
+    def _generate_saa(self, exp_def: definition.XMLExpDef) -> None:
+        """Generate XML changes to disable selected sensors/actuators.
+
+        Some sensors and actuators are computationally expensive in large
+        populations, but not that costly if the # robots is small.
 
         Does not write generated changes to the simulation definition pickle
         file.
+
         """
         self.logger.trace(("Generating changes for SAA "   # type: ignore
                            "(all runs)"))
 
         if not self.cmdopts["with_robot_rab"]:
             exp_def.tag_remove(".//media", "range_and_bearing", noprint=True)
-            exp_def.tag_remove(
-                ".//actuators", "range_and_bearing", noprint=True)
+            exp_def.tag_remove(".//actuators",
+                               "range_and_bearing",
+                               noprint=True)
             exp_def.tag_remove(".//sensors", "range_and_bearing", noprint=True)
 
         if not self.cmdopts["with_robot_leds"]:
@@ -208,7 +211,7 @@ class PlatformExpDefGenerator():
             exp_def.tag_remove(".//sensors", "battery", noprint=True)
             exp_def.tag_remove(".//entity/*", "battery", noprint=True)
 
-    def _generate_time(self, exp_def: XMLLuigi) -> None:
+    def _generate_time(self, exp_def: definition.XMLExpDef) -> None:
         """
         Generate XML changes to setup simulation time parameters.
 
@@ -222,47 +225,67 @@ class PlatformExpDefGenerator():
         # Write time setup info to file for later retrieval
         utils.pickle_modifications(adds, chgs, self.spec.exp_def_fpath)
 
-    def _generate_threading(self, exp_def: XMLLuigi) -> None:
-        """
-        Generates XML changes to set the # of cores for a simulation to use,
-        which may be less than the total # available on the system, depending on
+    def _generate_threading(self, exp_def: definition.XMLExpDef) -> None:
+        """Generate XML changes to set the # of cores for a simulation to use.
+
+        This may be less than the total # available on the system, depending on
         the experiment definition and user preferences.
 
         Does not write generated changes to the simulation definition pickle
         file.
+
         """
-        self.logger.trace("Generating changes for threading (all runs)")
+        self.logger.trace(   # type: ignore
+            "Generating changes for threading (all runs)")
         exp_def.attr_change(".//system",
                             "threads",
                             str(self.cmdopts["physics_n_engines"]))
 
         # Only valid on linux, per ARGoS, so we ely on the user to add this
         # attribute to the input file if it is applicable.
-        if exp_def.attr_get(".//system", "pin_threads_to_cores"):
-            if sys.platform == "linux":
-                exp_def.attr_change(".//system",
-                                    "pin_threads_to_cores",
-                                    "true")
-            else:
-                self.logger.warning((".//system/pin_threads_to_cores only "
-                                     "valid on linux in ARGoS--configuration "
-                                     "error?"))
+        if not exp_def.attr_get(".//system", "pin_threads_to_cores"):
+            return
 
-    def _generate_library(self, exp_def: XMLLuigi) -> None:
-        """
-        Generates XML changes to set the library that controllers and loop
-        functions are sourced from to the name of the plugin passed on the
-        cmdline. The ``__CONTROLLER__`` tag is changed during stage 1, but since
-        this function is called as part of common def generation, it happens
-        BEFORE that, and so this is OK. If, for some reason that assumption
-        becomes invalid, a warning will be issued about a non-existent XML path,
-        so it won't be a silent error.
+        if sys.platform != "linux":
+            self.logger.critical((".//system/pin_threads_to_cores only "
+                                  "valid on linux--configuration error?"))
+            return
+
+        # If you don't do this, you will get runtime errors in ARGoS when you
+        # attempt to set thread affinity to a core that does not exist. This is
+        # better than modifying ARGoS source to only pin threads to cores that
+        # exist, because it implies a configuration error by the user, and
+        # SIERRA should fail as a result (correctness by construction).
+        if self.cmdopts['physics_n_engines'] > psutil.cpu_count():
+            self.logger.warning(("Disabling pinning threads to cores: "
+                                 "mores threads than cores! %s > %s"),
+                                self.cmdopts['physics_n_engines'],
+                                psutil.cpu_count())
+            exp_def.attr_change(".//system",
+                                "pin_threads_to_cores",
+                                "false")
+
+        else:
+            exp_def.attr_change(".//system",
+                                "pin_threads_to_cores",
+                                "true")
+
+    def _generate_library(self, exp_def: definition.XMLExpDef) -> None:
+        """Generate XML changes for ARGoS search paths for controller,loop functions.
+
+        Set to the name of the plugin passed on the cmdline, unless overriden in
+        configuration. The ``__CONTROLLER__`` tag is changed during stage 1, but
+        since this function is called as part of common def generation, it
+        happens BEFORE that, and so this is OK. If, for some reason that
+        assumption becomes invalid, a warning will be issued about a
+        non-existent XML path, so it won't be a silent error.
 
         Does not write generated changes to the simulation definition pickle
         file.
 
         """
-        self.logger.trace("Generating changes for library (all runs)")
+        self.logger.trace(  # type: ignore
+            "Generating changes for library (all runs)")
         run_config = self.spec.criteria.main_config['sierra']['run']
         lib_name = run_config.get('library_name',
                                   'lib' + self.cmdopts['project'])
@@ -273,13 +296,11 @@ class PlatformExpDefGenerator():
                             "library",
                             lib_name)
 
-    def _generate_visualization(self, exp_def: XMLLuigi) -> None:
-        """
+    def _generate_visualization(self, exp_def: definition.XMLExpDef) -> None:
+        """Generate XML changes to remove visualization elements from input file.
 
-        Generates XML changes to remove visualization elements from input file,
-        if configured to do so. This depends on cmdline parameters, as
-        visualization definitions should be left in if ARGoS should output
-        simulation frames for video creation.
+        This depends on cmdline parameters, as visualization definitions should
+        be left in if ARGoS should output simulation frames for video creation.
 
         Does not write generated changes to the simulation definition pickle
         file.
@@ -303,11 +324,10 @@ class PlatformExpDefGenerator():
 
 
 class PlatformExpRunDefUniqueGenerator:
-    """
-    Generate XML changes unique to a experimental run within an experiment for
-    ARGoS.
+    """Generate XML changes unique to each experimental run.
 
     These include:
+
     - Random seeds for each simulation.
 
     Attributes:
@@ -318,12 +338,13 @@ class PlatformExpRunDefUniqueGenerator:
                          root.
 
         cmdopts: Dictionary containing parsed cmdline options.
+
     """
 
     def __init__(self,
                  run_num: int,
-                 run_output_path: str,
-                 launch_stem_path: str,
+                 run_output_path: pathlib.Path,
+                 launch_stem_path: pathlib.Path,
                  random_seed: int,
                  cmdopts: types.Cmdopts) -> None:
 
@@ -336,8 +357,7 @@ class PlatformExpRunDefUniqueGenerator:
 
     def __generate_random(self, exp_def) -> None:
         """
-        Generate XML changes for random seeding for a specific simulation in an
-        experiment during the input generation process.
+        Generate XML changes for random seeding for a specific simulation.
         """
         self.logger.trace("Generating random seed changes for run%s",  # type: ignore
                           self.run_num)
@@ -347,26 +367,26 @@ class PlatformExpRunDefUniqueGenerator:
                             "random_seed",
                             str(self.random_seed))
 
-    def generate(self, exp_def: XMLLuigi):
+    def generate(self, exp_def: definition.XMLExpDef):
         # Setup simulation random seed
         self.__generate_random(exp_def)
 
         # Setup simulation visualization output
         self.__generate_visualization(exp_def)
 
-    def __generate_visualization(self, exp_def: XMLLuigi):
+    def __generate_visualization(self, exp_def: definition.XMLExpDef):
         """
-        Generates XML changes for setting up rendering for a specific simulation
+        Generate XML changes for setting up rendering for a specific simulation.
         """
         self.logger.trace("Generating visualization changes for run%s",  # type: ignore
                           self.run_num)
 
         if self.cmdopts['platform_vc']:
-            frames_fpath = os.path.join(self.run_output_path,
-                                        config.kARGoS['frames_leaf'])
+            argos = config.kRendering['argos']
+            frames_fpath = self.run_output_path / argos['frames_leaf']
             exp_def.attr_change(".//qt-opengl/frame_grabbing",
                                 "directory",
-                                frames_fpath)  # probably will not be present
+                                str(frames_fpath))  # probably will not be present
 
 
 __api__ = [

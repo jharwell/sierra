@@ -4,6 +4,7 @@ Configuration for summary performance measures. Does not have to be named
 
 .. code-block:: YAML
 
+   # Root key is required.
    perf:
 
      # Is the performance measure for the project inverted, meaning that

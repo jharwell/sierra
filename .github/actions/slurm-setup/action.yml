@@ -1,0 +1,35 @@
+name: 'Setup SLURM'
+description: 'Setup SLURM for CI and testing'
+# inputs:
+  # who-to-greet:  # id of input
+  #   description: 'Who to greet'
+  #   required: true
+  #   default: 'World'
+# outputs:
+#   time: # id of output
+#     description: 'The time we greeted you'
+runs:
+  using: 'composite'
+  steps:
+    - name: Install SLURM
+      shell: bash
+      run: |
+        sudo apt update
+        sudo apt-get install slurmd slurmctld
+
+    - name: Configure SLURM
+      shell: bash
+      run: |
+        sudo chmod 777 /etc/slurm-llnl
+        sudo cp -f ./scripts/slurm.conf /etc/slurm-llnl/slurm.conf
+
+        sudo systemctl start slurmctld
+        sudo systemctl start slurmd
+
+        sudo scontrol update nodename=localhost state=IDLE
+
+        sudo systemctl status slurmctld.service
+        # sudo journalctl -xe
+        # sudo cat /var/log/slurm-llnl/slurmd.log
+        # sudo cat /var/log/slurm-llnl/slurmctld.log
+        # sinfo

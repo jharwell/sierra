@@ -13,23 +13,26 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-Classes for the population size batch criteria. See
-:ref:`ln-sierra-platform-ros1robot-bc-population-size` for usage documentation.
+"""Classes for the population size batch criteria.
+
+See :ref:`ln-sierra-platform-ros1robot-bc-population-size` for usage
+documentation.
+
 """
 
 # Core packages
 import typing as tp
 import logging
+import pathlib
 
 # 3rd party packages
 import implements
 
 # Project packages
 from sierra.core.variables import batch_criteria as bc
-from sierra.core.xml import XMLTagAdd, XMLTagAddList
 from sierra.core import types
 from sierra.core.variables import population_size
+from sierra.core.experiment import xml
 
 
 @implements.implements(bc.IConcreteBatchCriteria)
@@ -44,6 +47,7 @@ class PopulationSize(population_size.BasePopulationSize):
     Note: Usage of this class assumes homogeneous systems.
 
     Attributes:
+
         size_list: List of integer system sizes defining the range of the
                    variable for the batch experiment.
 
@@ -51,8 +55,8 @@ class PopulationSize(population_size.BasePopulationSize):
 
     def __init__(self,
                  cli_arg: str,
-                 main_config: tp.Dict[str, str],
-                 batch_input_root: str,
+                 main_config: types.YAMLDict,
+                 batch_input_root: pathlib.Path,
                  robot: str,
                  sizes: tp.List[int]) -> None:
         population_size.BasePopulationSize.__init__(self,
@@ -62,36 +66,35 @@ class PopulationSize(population_size.BasePopulationSize):
         self.sizes = sizes
         self.robot = robot
         self.logger = logging.getLogger(__name__)
-        self.tag_adds = []  # type: tp.List[XMLTagAddList]
+        self.tag_adds = []  # type: tp.List[xml.TagAddList]
 
-    def gen_tag_addlist(self) -> tp.List[XMLTagAddList]:
+    def gen_tag_addlist(self) -> tp.List[xml.TagAddList]:
         """
-        Generate list of sets of changes for system sizes to define a batch
-        experiment.
+        Generate XML modifications to set system sizes.
         """
         if not self.tag_adds:
             robot_config = self.main_config['ros']['robots'][self.robot]
             prefix = robot_config['prefix']
 
             for s in self.sizes:
-                per_robot = XMLTagAddList()
-                per_robot.append(XMLTagAdd(".",
-                                           "master",
-                                           {},
-                                           True))
-                per_robot.append(XMLTagAdd("./master",
-                                           "group",
-                                           {
-                                               'ns': 'sierra'
-                                           },
-                                           False))
-                per_robot.append(XMLTagAdd("./master/group/[@ns='sierra']",
-                                           "param",
-                                           {
-                                               'name': 'experiment/n_robots',
-                                               'value': str(s)
-                                           },
-                                           False))
+                per_robot = xml.TagAddList()
+                per_robot.append(xml.TagAdd(".",
+                                            "master",
+                                            {},
+                                            True))
+                per_robot.append(xml.TagAdd("./master",
+                                            "group",
+                                            {
+                                                'ns': 'sierra'
+                                            },
+                                            False))
+                per_robot.append(xml.TagAdd("./master/group/[@ns='sierra']",
+                                            "param",
+                                            {
+                                                'name': 'experiment/n_robots',
+                                                'value': str(s)
+                                            },
+                                            False))
 
                 for i in range(0, s):
 
@@ -99,26 +102,26 @@ class PopulationSize(population_size.BasePopulationSize):
                     # here--we can't know the exact node/package names without
                     # using a lot of (brittle) config.
                     ns = f'{prefix}{i}'
-                    per_robot.append(XMLTagAdd("./robot",
-                                               "group",
-                                               {
-                                                   'ns': ns
-                                               },
-                                               True))
+                    per_robot.append(xml.TagAdd("./robot",
+                                                "group",
+                                                {
+                                                    'ns': ns
+                                                },
+                                                True))
 
-                    per_robot.append(XMLTagAdd(f"./robot/group/[@ns='{ns}']",
-                                               "param",
-                                               {
-                                                   "name": "tf_prefix",
-                                                   "value": ns
-                                               },
-                                               True))
+                    per_robot.append(xml.TagAdd(f"./robot/group/[@ns='{ns}']",
+                                                "param",
+                                                {
+                                                    "name": "tf_prefix",
+                                                    "value": ns
+                                                },
+                                                True))
 
                 self.tag_adds.append(per_robot)
 
         return self.tag_adds
 
-    def gen_exp_dirnames(self, cmdopts: types.Cmdopts) -> tp.List[str]:
+    def gen_exp_names(self, cmdopts: types.Cmdopts) -> tp.List[str]:
         adds = self.gen_tag_addlist()
         return ['exp' + str(x) for x in range(0, len(adds))]
 
@@ -130,9 +133,7 @@ def factory(cli_arg: str,
             main_config: types.YAMLDict,
             cmdopts: types.Cmdopts,
             **kwargs) -> PopulationSize:
-    """
-    Factory to create :class:`PopulationSize` derived classes from the command
-    line definition.
+    """Create a :class:`PopulationSize` derived class from the cmdline definition.
 
     """
     parser = population_size.Parser()

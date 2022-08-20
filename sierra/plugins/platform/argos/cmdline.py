@@ -39,13 +39,11 @@ class PlatformCmdline(cmd.BaseCmdline):
                  stages: tp.List[int]) -> None:
 
         if parents is not None:
-            self.parser = argparse.ArgumentParser(prog='sierra-cli',
-                                                  add_help=False,
+            self.parser = argparse.ArgumentParser(add_help=False,
                                                   parents=parents,
                                                   allow_abbrev=False)
         else:
-            self.parser = argparse.ArgumentParser(prog='sierra-cli',
-                                                  add_help=False,
+            self.parser = argparse.ArgumentParser(add_help=False,
                                                   allow_abbrev=False)
 
         self.scaffold_cli()
@@ -200,11 +198,8 @@ class PlatformCmdline(cmd.BaseCmdline):
         # Rendering options
         self.stage1_rendering.add_argument("--camera-config",
                                            choices=['overhead',
-                                                    'argos.sw',
-                                                    'argos.sw+interp',
-                                                    'sierra.sw',
-                                                    'sierra.sw+interp',
-                                                    'sierra.sw+interp+zoom'],
+                                                    'sw',
+                                                    'sw+interp'],
                                            help="""
 
                                            Select the camera configuration for
@@ -218,41 +213,14 @@ class PlatformCmdline(cmd.BaseCmdline):
                                              an appropriate height to see the
                                              whole arena.
 
-                                           - ``argos.sw`` - Use the default
-                                             ARGoS camera configuration (12
-                                             cameras equally spaced on the unit
-                                             circle), cycling through them
-                                             periodically throughout simulation
-                                             without interpolation. In this
-                                             configuration, cameras are set at
-                                             Z=arena height, so you need to make
-                                             sure your arena Z size is
-                                             sufficiently high to avoid only
-                                             looking at the wall (even for 2D
-                                             simulations).
-
-                                           - ``argos.sw+interp`` - Same as
-                                             ``argos.sw``, but with
+                                           - ``sw`` - Use the ARGoS camera
+                                             configuration (12 cameras), cycling
+                                             through them periodically
+                                             throughout simulation without
                                              interpolation.
 
-                                           - ``sierra.sw`` - Use the SIERRA
-                                             ARGoS camera configuration (12
-                                             cameras), cycling through them
-                                             periodically throughout simulation
-                                             without interpolation.
-
-                                           - ``sierra.sw+interp`` - Same as
-                                             ``sierra.static``, but with
-                                             interpolation.
-
-                                           - ``sierra.sw+interp+zoom`` - Same as
-                                             ``sierra.sw+interp``, but uses 36
-                                             cameras: 12 at 3 different levels
-                                             of zoom, forming a spiral of
-                                             vantage points. All cameras are
-                                             cycled through periodically
-                                             throughout simulation with
-                                             interpolation between positions.
+                                           - ``sw+interp`` - Same as ``sw``, but
+                                             with interpolation between cameras.
 
                                            """ + self.stage_usage_doc([1]),
                                            default='overhead')
@@ -304,8 +272,8 @@ class PlatformCmdline(cmd.BaseCmdline):
                                         inputs. Otherwise, the following XML
                                         tags are removed if they exist:
 
-                                        - `.//entity/*/battery`
-                                        - `.//sensors/battery`
+                                        - ``.//entity/*/battery``
+                                        - ``.//sensors/battery``
 
                                         """ + self.stage_usage_doc([1]),
                                         action="store_true",
@@ -327,9 +295,7 @@ class PlatformCmdline(cmd.BaseCmdline):
 
     @staticmethod
     def cmdopts_update(cli_args, cmdopts: types.Cmdopts) -> None:
-        """
-        Updates the core cmdopts dictionary with (key,value) pairs from the
-        ARGoS-specific cmdline options.
+        """Update cmdopts with ARGoS-specific cmdline options.
 
         """
         hpc.cmdline.HPCCmdline.cmdopts_update(cli_args, cmdopts)
@@ -359,9 +325,6 @@ class PlatformCmdline(cmd.BaseCmdline):
 
 
 class CmdlineValidator(cmd.CoreCmdlineValidator):
-    """
-    Stub implementation.
-    """
     pass
 
 

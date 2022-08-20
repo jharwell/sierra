@@ -41,13 +41,11 @@ class PlatformCmdline(corecmd.BaseCmdline):
                  stages: tp.List[int]) -> None:
 
         if parents is not None:
-            self.parser = argparse.ArgumentParser(prog='sierra-cli',
-                                                  parents=parents,
+            self.parser = argparse.ArgumentParser(parents=parents,
                                                   add_help=False,
                                                   allow_abbrev=False)
         else:
-            self.parser = argparse.ArgumentParser(prog='sierra-cli',
-                                                  add_help=False,
+            self.parser = argparse.ArgumentParser(add_help=False,
                                                   allow_abbrev=False)
 
         self.scaffold_cli()
@@ -146,7 +144,7 @@ class PlatformCmdline(corecmd.BaseCmdline):
                                          threads too).
 
                                          This only applies if
-                                         ``--physics-engine-type``\=ode.
+                                         ``--physics-engine-type``\\=ode.
 
                                          A value of 0=no threads.
 
@@ -180,7 +178,7 @@ class PlatformCmdline(corecmd.BaseCmdline):
                                          allocate to physics (Gazebo has other
                                          threads too).
 
-                                         This only applies if ``--physics-engine-type``=ode.
+                                         This only applies if ``--physics-engine-type``\\=ode.
 
                                          A value of 0=no threads.
 
@@ -190,9 +188,7 @@ class PlatformCmdline(corecmd.BaseCmdline):
     @staticmethod
     def cmdopts_update(cli_args: argparse.Namespace,
                        cmdopts: types.Cmdopts) -> None:
-        """
-        Updates the core cmdopts dictionary with (key,value) pairs from the
-        ROS1+Gazebo-specific cmdline options.
+        """Update cmdopts with ROS1+Gazebo-specific cmdline options.
 
         """
         hpc.cmdline.HPCCmdline.cmdopts_update(cli_args, cmdopts)
@@ -213,9 +209,8 @@ class PlatformCmdline(corecmd.BaseCmdline):
 
 class CmdlineValidator(corecmd.CoreCmdlineValidator):
     """
-    Sub implementation.
+    Stub implementation.
     """
-    pass
 
 
 def sphinx_cmdline_stage1():

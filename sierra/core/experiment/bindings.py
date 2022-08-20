@@ -17,6 +17,7 @@
 # Core packages
 import typing as tp
 import argparse
+import pathlib
 
 # 3rd party packages
 import implements
@@ -53,29 +54,33 @@ class IExpShellCmdsGenerator(implements.Interface):
         raise NotImplementedError
 
     def pre_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
-        """During stage 1, generate :term:`Platform`-specific shell commands to
-        run during stage 2 to setup the :term:`Experiment` environment. These
-        commands are run prior to each experiment in the batch, in a `new`
-        sub-shell which SIERRA uses to run all :term:`Experiment Runs
-        <Experimental Run>` within the experiment.
+        """Generate shell commands to setup the environment for an :term:`Experiment`.
 
         These commands can include setting up things which are common to/should
         be the same for all experimental runs within the experiment, such as
         launching daemons/background processes needed by the platform, setting
-        environment variables, etc.
+        environment variables, etc.  These commands are run prior to each
+        experiment in the batch during stage 2, in a `new` sub-shell which
+        SIERRA uses to run all :term:`Experiment Runs <Experimental Run>` within
+        the experiment.
+
+        Called during stage 1.
 
         """
         raise NotImplementedError
 
     def exec_exp_cmds(self,
-                      exec_opts: types.SimpleDict) -> tp.List[types.ShellCmdSpec]:
-        """During stage 1, generate the :term:`Platform`-specific shell commands
-        to run during stage 2 to execute a single :term:`Experiment` in a
-        :term:`Batch Experiment`. This is (usually) a single GNU parallel
-        command, but it does not have to be. These commands are run in the
-        `same` sub-shell as the pre- and post-exp commands.
+                      exec_opts: types.StrDict) -> tp.List[types.ShellCmdSpec]:
+        """Generate shell commands to execute an :term:`Experiment`.
+
+        This is (usually) a single GNU parallel command, but it does not have to
+        be. These commands are run in the `same` sub-shell as the pre- and
+        post-exp commands during stage 2.
+
+        Called during stage 2.
 
         Arguments:
+
             exec_opts: A dictionary containing:
 
                        - ``jobroot_path`` - The root directory for the batch
@@ -107,14 +112,18 @@ class IExpShellCmdsGenerator(implements.Interface):
         raise NotImplementedError
 
     def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
-        """During stage 1, generate :term:`Platform`-specific shell commands to
-        run during stage 2 after all :term:`Experimental Runs <Experimental
-        Run>` for an :term:`Experiment` have finished, but before the next
-        experiment in the :term:`Batch Experiment` is launched. These commands
-        are run in the `same` sub-shell as the pre- and exec-exp commands.
+        """Generate shell commands to run after an :term:`Experiment` has finished.
+
+        Commands are run during stage 2 after all :term:`Experimental runs`
+        <Experimental Run>` for an :term:`Experiment` have finished, but before
+        the next experiment in the :term:`Batch Experiment` is launched. These
+        commands are run in the `same` sub-shell as the pre- and exec-exp
+        commands.
 
         These commands include things like cleaning up/stopping background
         processes, visualization daemons, etc.
+
+        Called during stage 1.
 
         """
         raise NotImplementedError
@@ -147,24 +156,25 @@ class IExpRunShellCmdsGenerator(implements.Interface):
 
     def __init__(self,
                  cmdopts: types.Cmdopts,
-                 criteria: bc.IConcreteBatchCriteria,
+                 criteria: bc.BatchCriteria,
                  n_robots: int,
                  exp_num: int) -> None:
         raise NotImplementedError
 
     def pre_run_cmds(self,
                      host: str,
-                     input_fpath: str,
+                     input_fpath: pathlib.Path,
                      run_num: int) -> tp.List[types.ShellCmdSpec]:
-        """During stage 1, generate :term:`Platform`-specific shell commands to
-        run during stage 2 to setup the :term:`Experimental Run`
-        environment. These commands are run prior to each experimental run in
-        the :term:`Experiment`; that is prior to the :func:`exec_run_cmds()`.
+        """Generate shell commands to setup the experimental run environment.
 
-        These commands can include setting up things which are unique to/should
-        not be shared between experimental runs within the experiment, such as
+        These commands are run in stage 2 prior to each experimental run in the
+        :term:`Experiment`; that is prior to the :func:`exec_run_cmds()`.  These
+        commands can include setting up things which are unique to/should not be
+        shared between experimental runs within the experiment, such as
         launching daemons/background processes, setting environment variables,
         etc.
+
+        Called during stage 1.
 
         Arguments:
 
@@ -172,19 +182,23 @@ class IExpRunShellCmdsGenerator(implements.Interface):
                          experimental run.
 
             run_num: The 0 based ID of the experimental run.
+
         """
         raise NotImplementedError
 
     def exec_run_cmds(self,
                       host: str,
-                      input_fpath: str,
+                      input_fpath: pathlib.Path,
                       run_num: int) -> tp.List[types.ShellCmdSpec]:
-        """During stage 1, generate the :term:`Platform`-specific shell commands
-        to run during stage 2 to execute a single :term:`Experimental Run` in an
-        :term:`Experiment`. This is (usually) a command to launch the simulation
-        environment or start the controller code on a real robot, but it doesn't
-        have to be. These commands are run after the :func:`pre_run_cmds()` for
-        each experimental run in the :term:`Experiment`.
+        """Generate shell commands to execute a single :term:`Experimental Run`.
+
+        This is (usually) a command to launch the simulation environment or
+        start the controller code on a real robot, but it doesn't have to
+        be. These commands are run during stage 2 after the
+        :func:`pre_run_cmds()` for each experimental run in the
+        :term:`Experiment`.
+
+        Called during stage 1.
 
         Arguments:
 
@@ -197,14 +211,13 @@ class IExpRunShellCmdsGenerator(implements.Interface):
         raise NotImplementedError
 
     def post_run_cmds(self, host: str) -> tp.List[types.ShellCmdSpec]:
-        """During stage 1, generate :term:`Platform`-specific shell commands to
-        run during stage 2 after a given :term:`Experimental Run` for an
-        :term:`Experiment` has finished. These commands are run in the
-        `same` sub-shell as the pre- and exec-run commands.
+        """Generate shell commands to run after an experimental run has finished.
 
-        These commands include things like cleaning up/stopping background
-        processes, visualization daemons, etc.
+        These commands are run during stage 2 in the `same` sub-shell as the
+        pre- and exec-run commands.  These commands can include things like
+        cleaning up/stopping background processes, visualization daemons, etc.
 
+        Called during stage 1.
         """
         raise NotImplementedError
 
@@ -215,27 +228,14 @@ class IParsedCmdlineConfigurer(implements.Interface):
     """
 
     def __init__(self, exec_env: str) -> None:
-        """
-        Arguments:
-
-            exec_env: Whatever was passed to ``--exec-env``.
-        """
         raise NotImplementedError
 
     def __call__(self, args: argparse.Namespace) -> None:
-        """
-
-        Arguments:
-
-            args: The parsed namespace of cmdline arguments.
-        """
         raise NotImplementedError
 
 
 class ICmdlineParserGenerator(implements.Interface):
-    """
-    Return the argparse object containing ALL options accessible/relevant to the
-    platform.
+    """Return the argparse object containing ALL options relevant to the platform.
 
     This includes the options for whatever ``--exec-env`` are valid for the
     platform, making use of the ``parents`` option for the cmdline.
@@ -267,10 +267,9 @@ class IExecEnvChecker(implements.Interface):
 
 
 class IExpConfigurer(implements.Interface):
-    """Perform addition configuration after creating :term:`Experiments
-    <Experiment>`.
+    """Perform addition configuration after creating experiments.
 
-    e.g., creating directories store outputs in if they are not created by the
+    E.g., creating directories store outputs in if they are not created by the
     simulator/:term:`Project` code.
 
     Arguments:
@@ -282,8 +281,10 @@ class IExpConfigurer(implements.Interface):
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         raise NotImplementedError
 
-    def for_exp(self, exp_input_root: str) -> None:
+    def for_exp(self, exp_input_root: pathlib.Path) -> None:
         """
+        Configure an experiment.
+
         Arguments:
 
             exp_input_root: Absolute path to the input directory for the
@@ -291,8 +292,12 @@ class IExpConfigurer(implements.Interface):
         """
         raise NotImplementedError
 
-    def for_exp_run(self, exp_input_root: str, run_output_root: str) -> None:
+    def for_exp_run(self,
+                    exp_input_root: pathlib.Path,
+                    run_output_root: pathlib.Path) -> None:
         """
+        Configure an experimental run.
+
         Arguments:
 
             exp_input_root: Absolute path to the input directory for the
@@ -304,9 +309,12 @@ class IExpConfigurer(implements.Interface):
         raise NotImplementedError
 
     def cmdfile_paradigm(self) -> str:
-        """
-        Return either 'per-exp' or 'per-run' depending if a single GNU parallel
-        cmds file should be generated per experiment or per run.
+        """Return the paradigm for the platform, in terms of GNU parallel cmds.
+
+        - ``per-exp`` - A single GNU parallel cmds file per experiment.
+
+        - ``per-run`` - A single GNU parallel cmds file per run.
+
         """
         raise NotImplementedError
 

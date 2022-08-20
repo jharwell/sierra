@@ -13,13 +13,11 @@
 #
 #  You should have received a copy of the GNU General Public License along with
 #  SIERRA.  If not, see <http://www.gnu.org/licenses/
-"""
-The one and only place where the current SIERRA version is recorded.
-"""
+"""The one and only place where the current SIERRA version is recorded."""
 # Core packages
 
 # 3rd party packages
 
 # Project packages
 
-__version__ = "1.2.7"
+__version__ = "1.2.20"

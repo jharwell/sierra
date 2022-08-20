@@ -19,9 +19,9 @@ Linegraph for summarizing the results of a batch experiment in different ways.
 """
 
 # Core packages
-import os
 import typing as tp
 import logging
+import pathlib
 
 # 3rd party packages
 import matplotlib.ticker as mticker
@@ -39,14 +39,15 @@ class SummaryLineGraph:
     according to configuration.
 
     Attributes:
-        stats_root: The absolute/relative path to the ``statistics/`` directory
-                    for the batch experiment.
+
+        stats_root: The absolute path to the ``statistics/`` directory for the
+                    batch experiment.
 
         input_stem: Stem of the :term:`Summary .csv` file to generate a graph
                     from.
 
-        output_fpath: The absolute/relative path to the output image file to
-                      save generated graph to.
+        output_fpath: The absolute path to the output image file to save
+                      generated graph to.
 
         title: Graph title.
 
@@ -70,17 +71,17 @@ class SummaryLineGraph:
         stats: The type of statistics to include on the graph (from
                ``--dist-stats``).
 
-        model_root: The absolute/relative path to the ``models/`` directory for
-                     the batch experiment.
+        model_root: The absolute path to the ``models/`` directory for the batch
+                     experiment.
 
     """
     kLineStyles = ['-', '--', '.-', ':', '-', '--', '.-', ':']
     kMarkStyles = ['o', '^', 's', 'x', 'o', '^', 's', 'x']
 
     def __init__(self,
-                 stats_root: str,
+                 stats_root: pathlib.Path,
                  input_stem: str,
-                 output_fpath: str,
+                 output_fpath: pathlib.Path,
                  title: str,
                  xlabel: str,
                  ylabel: str,
@@ -90,7 +91,7 @@ class SummaryLineGraph:
                  legend: tp.List[str] = ['Empirical Data'],
                  logyscale: bool = False,
                  stats: str = 'none',
-                 model_root: tp.Optional[str] = None) -> None:
+                 model_root: tp.Optional[pathlib.Path] = None) -> None:
 
         # Required arguments
         self.stats_root = stats_root
@@ -116,13 +117,18 @@ class SummaryLineGraph:
         self.logger = logging.getLogger(__name__)
 
     def generate(self) -> None:
-        input_fpath = os.path.join(self.stats_root, self.input_stem +
-                                   config.kStatsExt['mean'])
+        input_fpath = self.stats_root / (self.input_stem +
+                                         config.kStats['mean'].exts['mean'])
+
         if not utils.path_exists(input_fpath):
             self.logger.debug("Not generating %s: %s does not exist",
                               self.output_fpath,
                               input_fpath)
             return
+        else:
+            self.logger.debug("Generating %s from %s",
+                              self.output_fpath,
+                              input_fpath)
 
         data_dfy = storage.DataFrameReader('storage.csv')(input_fpath)
         model = self._read_models()
@@ -158,7 +164,9 @@ class SummaryLineGraph:
         # Prevent memory accumulation (fig.clf() does not close everything)
         plt.close(fig)
 
-    def _plot_lines(self, data_dfy: pd.DataFrame, model: tp.Tuple[pd.DataFrame, tp.List[str]]) -> None:
+    def _plot_lines(self,
+                    data_dfy: pd.DataFrame,
+                    model: tp.Tuple[pd.DataFrame, tp.List[str]]) -> None:
         for i in range(0, len(data_dfy.values)):
             assert len(data_dfy.values[i]) == len(self.xticks),\
                 "Length mismatch between xticks,data: {0} vs {1}/{2} vs {3}".format(
@@ -171,7 +179,7 @@ class SummaryLineGraph:
             plt.plot(self.xticks,
                      data_dfy.values[i],
                      marker=self.kMarkStyles[i],
-                     color="C{}".format(i))
+                     color=f"C{i}")
 
             # Plot model prediction(s)
             if model[0] is not None:
@@ -199,45 +207,72 @@ class SummaryLineGraph:
         """
         Plot statistics for all lines on the graph.
         """
-        if self.stats in ['conf95', 'all'] and 'stddev' in stat_dfs.keys():
-            for i in range(0, len(data_dfy.values)):
-                # 95% interval = 2 std stdeviations
-                plt.fill_between(xticks, data_dfy.values[i] - 2 * stat_dfs['stddev'].abs().values[i],
-                                 data_dfy.values[i] + 2 *
-                                 stat_dfs['stddev'].abs().values[i],
-                                 alpha=0.25, color="C{}".format(i), interpolate=True)
+        self._plot_conf95_stats(xticks, data_dfy, stat_dfs)
+        self._plot_bw_stats(ax, xticks, data_dfy, stat_dfs)
 
-        if self.stats in ['bw', 'all'] and all(k in stat_dfs.keys() for k in
-                                               ['whislo',
-                                                'whishi',
-                                                'median',
-                                                'q1',
-                                                'q3',
-                                                'cilo',
-                                                'cihi']):
-            for i in range(0, len(data_dfy.values)):
-                boxes = []
-                for j in range(0, len(data_dfy.columns)):
-                    boxes.append({
-                        # Bottom whisker position
-                        'whislo': stat_dfs['whislo'].iloc[i, j],
-                        # Top whisker position
-                        'whishi': stat_dfs['whishi'].iloc[i, j],
-                        # First quartile (25th percentile)
-                        'q1': stat_dfs['q1'].iloc[i, j],
-                        # Median         (50th percentile)
-                        'med': stat_dfs['median'].iloc[i, j],
-                        # Third quartile (75th percentile)
-                        'q3': stat_dfs['q3'].iloc[i, j],
-                        # Confidence interval lower bound
-                        'cilo': stat_dfs['cilo'].iloc[i, j],
-                        # Confidence interval upper bound
-                        'cihi': stat_dfs['cihi'].iloc[i, j],
-                        'fliers': []  # Ignoring outliers
-                    })
+    def _plot_conf95_stats(self,
+                           xticks,
+                           data_dfy: pd.DataFrame,
+                           stat_dfs: tp.Dict[str, pd.DataFrame]) -> None:
+        if self.stats not in ['conf95', 'all']:
+            return
 
-                ax.bxp(boxes, manage_ticks=False,
-                       positions=self.xticks, shownotches=True)
+        if not all(k in stat_dfs.keys() for k in config.kStats['conf95'].exts):
+            self.logger.warning(("Cannot plot 95%% confidence intervals: "
+                                 "missing some statistics: %s vs %s"),
+                                stat_dfs.keys(),
+                                config.kStats['conf95'].exts)
+            return
+
+        for i in range(0, len(data_dfy.values)):
+            stddev_i = stat_dfs['stddev'].abs().values[i]
+            # 95% interval = 2 std stdeviations
+            plt.fill_between(xticks,
+                             data_dfy.values[i] - 2 * stddev_i,
+                             data_dfy.values[i] + 2 * stddev_i,
+                             alpha=0.25,
+                             color="C{}".format(i),
+                             interpolate=True)
+
+    def _plot_bw_stats(self,
+                       ax,
+                       xticks,
+                       data_dfy: pd.DataFrame,
+                       stat_dfs: tp.Dict[str, pd.DataFrame]) -> None:
+        if self.stats not in ['bw', 'all']:
+            return
+
+        if not all(k in stat_dfs.keys() for k in config.kStats['bw'].exts):
+            self.logger.warning(("Cannot plot box-and-whisker plots: "
+                                 "missing some statistics: %s vs %s"),
+                                stat_dfs.keys(),
+                                config.kStats['bw'].exts)
+            return
+
+        for i in range(0, len(data_dfy.values)):
+            boxes = []
+            for j in range(0, len(data_dfy.columns)):
+                boxes.append({
+                    # Bottom whisker position
+                    'whislo': stat_dfs['whislo'].iloc[i, j],
+                    # Top whisker position
+                    'whishi': stat_dfs['whishi'].iloc[i, j],
+                    # First quartile (25th percentile)
+                    'q1': stat_dfs['q1'].iloc[i, j],
+                    # Median         (50th percentile)
+                    'med': stat_dfs['median'].iloc[i, j],
+                    # Third quartile (75th percentile)
+                    'q3': stat_dfs['q3'].iloc[i, j],
+                    # Confidence interval lower bound
+                    'cilo': stat_dfs['cilo'].iloc[i, j],
+                    # Confidence interval upper bound
+                    'cihi': stat_dfs['cihi'].iloc[i, j],
+                    'fliers': []  # Ignoring outliers
+                })
+            ax.bxp(boxes,
+                   manage_ticks=False,
+                   positions=self.xticks,
+                   shownotches=True)
 
     def _plot_ticks(self, ax) -> None:
         if self.logyscale:
@@ -265,81 +300,47 @@ class SummaryLineGraph:
                    fontsize=self.text_size['legend_label'],
                    ncol=max(1, int(len(legend) / 3.0)))
 
-    def _read_stats(self) -> tp.Dict[str, list]:
+    def _read_stats(self) -> tp.Dict[str, tp.List[pd.DataFrame]]:
         dfs = {}
 
-        if self.stats == 'conf95' or self.stats == 'all':
-            stddev_ipath = os.path.join(self.stats_root,
-                                        self.input_stem + config.kStatsExt['stddev'])
+        dfs.update(self._read_conf95_stats())
+        dfs.update(self._read_bw_stats())
 
-            if utils.path_exists(stddev_ipath):
-                dfs['stddev'] = storage.DataFrameReader(
-                    'storage.csv')(stddev_ipath)
-            else:
-                self.logger.warning("stddev file not found for '%s'",
-                                    self.input_stem)
+        return dfs
 
-        if self.stats == 'bw' or self.stats == 'all':
-            whislo_ipath = os.path.join(self.stats_root,
-                                        self.input_stem + config.kStatsExt['whislo'])
-            whishi_ipath = os.path.join(self.stats_root,
-                                        self.input_stem + config.kStatsExt['whishi'])
-            median_ipath = os.path.join(self.stats_root,
-                                        self.input_stem + config.kStatsExt['median'])
-            q1_ipath = os.path.join(self.stats_root,
-                                    self.input_stem + config.kStatsExt['q1'])
-            q3_ipath = os.path.join(self.stats_root,
-                                    self.input_stem + config.kStatsExt['q3'])
+    def _read_conf95_stats(self) -> tp.Dict[str, tp.List[pd.DataFrame]]:
+        dfs = {}
+        reader = storage.DataFrameReader('storage.csv')
+        exts = config.kStats['conf95'].exts
 
-            cihi_ipath = os.path.join(self.stats_root,
-                                      self.input_stem + config.kStatsExt['cihi'])
-            cilo_ipath = os.path.join(self.stats_root,
-                                      self.input_stem + config.kStatsExt['cilo'])
+        if self.stats in ['conf95', 'all']:
+            for k in exts:
+                ipath = self.stats_root / (self.input_stem + exts[k])
 
-            if utils.path_exists(whislo_ipath):
-                dfs['whislo'] = storage.DataFrameReader(
-                    'storage.csv')(whislo_ipath)
-            else:
-                self.logger.warning(
-                    "whislo file not found for '%s'", self.input_stem)
+                if utils.path_exists(ipath):
+                    dfs[k] = reader(ipath)
+                else:
+                    self.logger.warning("%s file not found for '%s'",
+                                        exts[k],
+                                        self.input_stem)
 
-            if utils.path_exists(whishi_ipath):
-                dfs['whishi'] = storage.DataFrameReader(
-                    'storage.csv')(whishi_ipath)
-            else:
-                self.logger.warning(
-                    "whishi file not found for '%s'", self.input_stem)
+        return dfs
 
-            if utils.path_exists(cilo_ipath):
-                dfs['cilo'] = storage.DataFrameReader('storage.csv')(cilo_ipath)
-            else:
-                self.logger.warning(
-                    "cilo file not found for '%s'", self.input_stem)
+    def _read_bw_stats(self) -> tp.Dict[str, tp.List[pd.DataFrame]]:
+        dfs = {}
+        reader = storage.DataFrameReader('storage.csv')
+        exts = config.kStats['bw'].exts
 
-            if utils.path_exists(cihi_ipath):
-                dfs['cihi'] = storage.DataFrameReader('storage.csv')(cihi_ipath)
-            else:
-                self.logger.warning(
-                    "cihi file not found for '%s'", self.input_stem)
+        if self.stats in ['bw', 'all']:
+            for k in exts:
+                ipath = self.stats_root / (self.input_stem + exts[k])
 
-            if utils.path_exists(median_ipath):
-                dfs['median'] = storage.DataFrameReader(
-                    'storage.csv')(median_ipath)
-            else:
-                self.logger.warning(
-                    "median file not found for '%s'", self.input_stem)
-
-            if utils.path_exists(q1_ipath):
-                dfs['q1'] = storage.DataFrameReader('storage.csv')(q1_ipath)
-            else:
-                self.logger.warning(
-                    "q1 file not found for '%s'", self.input_stem)
-
-            if utils.path_exists(q3_ipath):
-                dfs['q3'] = storage.DataFrameReader('storage.csv')(q3_ipath)
-            else:
-                self.logger.warning(
-                    "q3 file not found for '%s'", self.input_stem)
+                if utils.path_exists(ipath):
+                    dfs[k] = reader(ipath)
+                else:
+                    self.logger.warning("%s file not found for '%s'",
+                                        exts[k],
+                                        self.input_stem)
 
         return dfs
 
@@ -349,19 +350,18 @@ class SummaryLineGraph:
                               self.model_root,
                               self.input_stem)
 
-            model_fpath = os.path.join(
-                self.model_root, self.input_stem + config.kModelsExt['model'])
-            model_legend_fpath = os.path.join(
-                self.model_root, self.input_stem + config.kModelsExt['legend'])
+            exts = config.kModelsExt
+            model = self.model_root / (self.input_stem + exts['model'])
+            legend = self.model_root / (self.input_stem + exts['legend'])
 
-            if utils.path_exists(model_fpath):
-                model = storage.DataFrameReader('storage.csv')(model_fpath)
-                if utils.path_exists(model_legend_fpath):
-                    with open(model_legend_fpath, 'r') as f:
+            if utils.path_exists(model):
+                model = storage.DataFrameReader('storage.csv')(model)
+                if utils.path_exists(legend):
+                    with utils.utf8open(legend, 'r') as f:
                         model_legend = f.read().splitlines()
                 else:
-                    self.logger.warning(
-                        "No legend file for model '%s' found", model_fpath)
+                    self.logger.warning("No legend file for model '%s' found",
+                                        model)
                     model_legend = ['Model Prediction']
 
                 return (model, model_legend)
