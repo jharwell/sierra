@@ -345,28 +345,35 @@ class SummaryLineGraph:
         return dfs
 
     def _read_models(self) -> tp.Tuple[pd.DataFrame, tp.List[str]]:
-        if self.model_root is not None:
-            self.logger.trace("Model root='%s',stem='%s'",   # type: ignore
-                              self.model_root,
-                              self.input_stem)
+        if self.model_root is None:
+            return (None, [])
 
-            exts = config.kModelsExt
-            model = self.model_root / (self.input_stem + exts['model'])
-            legend = self.model_root / (self.input_stem + exts['legend'])
+        self.logger.trace("Model root='%s'",   # type: ignore
+                          self.model_root)
 
-            if utils.path_exists(model):
-                model = storage.DataFrameReader('storage.csv')(model)
-                if utils.path_exists(legend):
-                    with utils.utf8open(legend, 'r') as f:
-                        model_legend = f.read().splitlines()
-                else:
-                    self.logger.warning("No legend file for model '%s' found",
-                                        model)
-                    model_legend = ['Model Prediction']
+        exts = config.kModelsExt
+        modelf = self.model_root / (self.input_stem + exts['model'])
+        legendf = self.model_root / (self.input_stem + exts['legend'])
 
-                return (model, model_legend)
+        if not utils.path_exists(modelf):
+            self.logger.trace("No model='%s' found in model root",  # type: ignore
+                              modelf)
+            return (None, [])
 
-        return (None, [])
+        model = storage.DataFrameReader('storage.csv')(modelf)
+        if utils.path_exists(legendf):
+            with utils.utf8open(legendf, 'r') as f:
+                legend = f.read().splitlines()
+        else:
+            self.logger.warning("No legend file for model '%s' found",
+                                modelf)
+            legend = ['Model Prediction']
+
+        self.logger.trace("Loaded model='%s',legend='%s'",  # type: ignore
+                          modelf.relative_to(self.model_root),
+                          legendf.relative_to(self.model_root))
+
+        return (model, legend)
 
 
 __api__ = [

@@ -81,7 +81,7 @@ class UnivarGraphCollator:
                  criteria,
                  target: dict,
                  stat_collate_root: pathlib.Path) -> None:
-        self.logger.info("Stage4: Collating univariate files from batch in %s for graph '%s'...",
+        self.logger.info("Univariate files from batch in %s for graph '%s'...",
                          self.cmdopts['batch_output_root'],
                          target['src_stem'])
         self.logger.trace(json.dumps(target, indent=4))   # type: ignore
@@ -165,7 +165,7 @@ class BivarGraphCollator:
                  criteria: bc.IConcreteBatchCriteria,
                  target: dict,
                  stat_collate_root: pathlib.Path) -> None:
-        self.logger.info("Stage4: Collating bivariate files from batch in %s for graph '%s'...",
+        self.logger.info("Bivariate files from batch in %s for graph '%s'...",
                          self.cmdopts['batch_output_root'],
                          target['src_stem'])
         self.logger.trace(json.dumps(target, indent=4))   # type: ignore

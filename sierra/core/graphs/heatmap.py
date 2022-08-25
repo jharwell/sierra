@@ -252,9 +252,9 @@ class DualHeatmap:
         ax2.yaxis.set_ticks_position('left')
 
         if self.legend is not None:
-            ax1.set_title("\n".join(textwrap.wrap(self.legend[0], 40)),
+            ax1.set_title("\n".join(textwrap.wrap(self.legend[0], 20)),
                           size=self.text_size['legend_label'])
-            ax2.set_title("\n".join(textwrap.wrap(self.legend[1], 40)),
+            ax2.set_title("\n".join(textwrap.wrap(self.legend[1], 20)),
                           size=self.text_size['legend_label'])
 
         # Add colorbar.
