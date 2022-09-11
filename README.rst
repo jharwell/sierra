@@ -35,8 +35,8 @@ SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
 .. |doi| image:: https://zenodo.org/badge/125774567.svg
          :target: https://zenodo.org/badge/latestdoi/125774567
 
-.. |docs| image:: https://readthedocs.org/projects/swarm-robotics-sierra/badge/?version=master
-          :target: https://readthedocs.org/projects/swarm-robotics-sierra/master
+.. |docs| image:: https://readthedocs.org/projects/sierra/badge/?version=master
+          :target: https://readthedocs.org/projects/sierra/master
 
 .. |maintenance| image:: https://img.shields.io/badge/Maintained%3F-yes-green.svg
                   :target: https://gitHub.com/swarm-robotics/sierra/graphs/commit-activity
@@ -73,7 +73,7 @@ To install SIERRA (requires python 3.8+):
    pip3 install sierra-research
 
 To get started using SIERRA, see `getting started
-<https://swarm-robotics-sierra.readthedocs.io/en/master/getting_started.html>`_.
+<https://sierra.readthedocs.io/en/master/getting_started.html>`_.
 
 Want to cite SIERRA? See `Citing`_.
 
@@ -147,7 +147,7 @@ cases:
 
 If aspects of either use case sound familiar, then there is a strong chance
 SIERRA could help you! SIERRA is well documented--see the `SIERRA docs
-<https://swarm-robotics-sierra.readthedocs.io/en/master/>`_ to get started.
+<https://sierra.readthedocs.io/en/master/>`_ to get started.
 
 Use Case #1: Alice The Robotics Researcher
 ------------------------------------------
@@ -262,16 +262,16 @@ SIERRA Support Matrix
 =====================
 
 SIERRA supports multiple `platforms
-<https://swarm-robotics-sierra.readthedocs.io/en/master/src/platform/index.html>`_
-which researchers can write code to target. In SIERRA terminology, a platform is
-a "thing" (usually a simulator or robot) that you want to write to code to run
+<https://sierra.readthedocs.io/en/master/src/platform/index.html>`_ which
+researchers can write code to target. In SIERRA terminology, a platform is a
+"thing" (usually a simulator or robot) that you want to write to code to run
 on. Note that platform != OS, in SIERRA terminology. If a SIERRA platform runs
 on a given OS, then SIERRA supports doing so; if it does not, then SIERRA does
 not. For example, SIERRA does not support running ARGoS on windows, because
 ARGoS does not support windows.
 
 If your desired platform is not listed, see the `plugin tutorials
-<https://swarm-robotics-sierra.readthedocs.io/en/master/src/tutorials.html>`_
+<https://sierrap.readthedocs.io/en/master/src/tutorials.html>`_
 for how to add it via a plugin.
 
 .. list-table::
@@ -299,14 +299,13 @@ for how to add it via a plugin.
 
 SIERRA supports multiple execution environments for execution of experiments,
 such as `High Performance Computing (HPC) environments
-<https://swarm-robotics-sierra.readthedocs.io/en/master/src/exec_env/hpc.html>`_
-and `real robots
-<https://swarm-robotics-sierra.readthedocs.io/en/master/src/exec_env/robots.html>`_.
+<https://sierra.readthedocs.io/en/master/src/exec_env/hpc.html>`_ and `real
+robots <https://sierra.readthedocs.io/en/master/src/exec_env/robots.html>`_.
 Which execution environment experiments targeting a given platform is (somewhat)
 independent of the platform itself (see below). If your desired execution
 environment is not listed, see the `plugin tutorials
-<https://swarm-robotics-sierra.readthedocs.io/en/master/src/tutorials.html>`_
-for how to add it via a plugin.
+<https://sierra.readthedocs.io/en/master/src/tutorials.html>`_ for how to add it
+via a plugin.
 
 
 .. list-table::
@@ -341,7 +340,7 @@ for how to add it via a plugin.
 
 SIERRA also supports multiple output formats for experimental outputs. If the
 format for your experimental outputs is not listed, see the `tutorials
-<https://swarm-robotics-sierra.readthedocs.io/en/master/src/tutorials.html>`_
+<https://sierra.readthedocs.io/en/master/src/tutorials.html>`_
 for how to add it via a plugin. SIERRA currently only supports XML experimental
 inputs.
 
@@ -437,7 +436,7 @@ The basic requirements are:
 
 For more details, including the requirements for researcher code, see the
 `SIERRA requirements
-<https://swarm-robotics-sierra.readthedocs.io/en/master/src/requirements.html>`_.
+<https://sierra.readthedocs.io/en/master/src/requirements.html>`_.
 
 Citing
 ======
@@ -467,5 +466,5 @@ Contributing
 
 I welcome all types of contributions, no matter how large or how small, and if
 you have an idea, I'm happy to talk about it at any point :-). See `here
-<https://swarm-robotics-sierra.readthedocs.io/en/master/src/contributing.html>`_
+<https://sierra.readthedocs.io/en/master/src/contributing.html>`_
 for the general procedure.

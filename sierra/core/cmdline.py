@@ -34,7 +34,7 @@ kVersionMsg = ("reSearch pIpEline for Reproducibility, Reusability and "
                "SIERRA comes with no warranty.\n\n"
 
                "See the documentation at "
-               "https://swarm-robotics-sierra.readthedocs.io/en/master/,\n"
+               "https://sierra.readthedocs.io/en/master/,\n"
                "or 'man sierra' for details.\n")
 
 

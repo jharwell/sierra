@@ -96,7 +96,7 @@ listed, see the :ref:`ln-sierra-tutorials` for how to add it via a plugin.
 
 SIERRA also supports multiple output formats for experimental outputs. If the
 format for your experimental outputs is not listed, see the `docs
-<https://swarm-robotics-sierra.readthedocs.io/en/master/src/tutorials.html>`_
+<https://sierra.readthedocs.io/en/master/src/tutorials.html>`_
 for how to add it via a plugin. SIERRA currently only supports XML experimental
 inputs.
 
