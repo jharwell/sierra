@@ -91,10 +91,10 @@ you clone things somewhere else.
 
             Where ``<distro>`` is replaced by your ROS distro.
 
-         #.  Install the `SIERRA ROSBridge <https:github.com/swarm-robotics/sierra_rosbridge.git>`_::
+         #.  Install the `SIERRA ROSBridge <https:github.com/jharwell/sierra_rosbridge.git>`_::
 
                pip3 install catkin_tools
-               git clone https://github.com/swarm-robotics/sierra_rosbridge.git
+               git clone https://github.com/jharwell/sierra_rosbridge.git
                cd sierra_rosbridge
                catkin init
                catkin config --extend /opt/ros/<distro>
@@ -117,7 +117,7 @@ you clone things somewhere else.
          Based on the `foraging example
          <https://www.argos-sim.info/examples.php>`_ from the ARGoS website::
 
-           git clone https://github.com/swarm-robotics/sierra-sample-project.git
+           git clone https://github.com/jharwell/sierra-sample-project.git
            cd sierra-sample-project/argos
            git checkout devel
            mkdir -p build && cd build
@@ -135,7 +135,7 @@ you clone things somewhere else.
          Based on one of the turtlebot3 `intro tutorials
          <https://github.com:ROBOTIS-GIT/turtlebot3_simulations.git>`_::
 
-           git clone https://github.com/swarm-robotics/sierra-sample-project.git
+           git clone https://github.com/jharwell/sierra-sample-project.git
            cd sierra-sample-project/ros1gazebo
            git checkout devel
            catkin init

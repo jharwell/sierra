@@ -41,7 +41,7 @@ setup(
     description="Automation framework for the scientific method in AI research",
     long_description=readme,
     long_description_content_type="text/x-rst",
-    url="https://github.com/swarm-robotics/sierra",
+    url="https://github.com/jharwell/sierra",
     author="John Harwell",
     author_email="john.r.harwell@gmail.com",
     license="GPLv3+",
