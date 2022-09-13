@@ -82,7 +82,7 @@ class StackedSurfaceGraph:
 
         if not dfs or len(dfs) > StackedSurfaceGraph.kMaxSurfaces:
             self.logger.debug(("Not generating stacked surface graph: wrong # "
-                               "files (must be > 0, <= %s"),
+                               "files (must be > 0, <= %s)"),
                               StackedSurfaceGraph.kMaxSurfaces)
             return
 

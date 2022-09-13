@@ -21,13 +21,13 @@ SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
    .. image:: https://img.shields.io/badge/python-3.9-blue.svg
       :target: https://www.python.org/downloads/release/python-390/
 
-.. |ci-integration-master| image:: https://github.com/swarm-robotics/sierra/actions/workflows/integration-all.yml/badge.svg?branch=master
-.. |ci-analysis-master| image:: https://github.com/swarm-robotics/sierra/actions/workflows/static-analysis.yml/badge.svg?branch=master
-.. |ci-coverage-master| image:: https://coveralls.io/repos/github/swarm-robotics/sierra/badge.svg?branch=master
+.. |ci-integration-master| image:: https://github.com/jharwell/sierra/actions/workflows/integration-all.yml/badge.svg?branch=master
+.. |ci-analysis-master| image:: https://github.com/jharwell/sierra/actions/workflows/static-analysis.yml/badge.svg?branch=master
+.. |ci-coverage-master| image:: https://coveralls.io/repos/github/jharwell/sierra/badge.svg?branch=master
 
-.. |ci-integration-devel| image:: https://github.com/swarm-robotics/sierra/actions/workflows/integration-all.yml/badge.svg?branch=devel
-.. |ci-analysis-devel| image:: https://github.com/swarm-robotics/sierra/actions/workflows/static-analysis.yml/badge.svg?branch=devel
-.. |ci-coverage-devel| image:: https://coveralls.io/repos/github/swarm-robotics/sierra/badge.svg?branch=devel
+.. |ci-integration-devel| image:: https://github.com/jharwell/sierra/actions/workflows/integration-all.yml/badge.svg?branch=devel
+.. |ci-analysis-devel| image:: https://github.com/jharwell/sierra/actions/workflows/static-analysis.yml/badge.svg?branch=devel
+.. |ci-coverage-devel| image:: https://coveralls.io/repos/github/jharwell/sierra/badge.svg?branch=devel
 
 .. |license| image:: https://img.shields.io/badge/License-GPLv3-blue.svg
              :target: https://www.gnu.org/licenses/gpl-3.0
@@ -35,11 +35,11 @@ SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
 .. |doi| image:: https://zenodo.org/badge/125774567.svg
          :target: https://zenodo.org/badge/latestdoi/125774567
 
-.. |docs| image:: https://readthedocs.org/projects/swarm-robotics-sierra/badge/?version=master
-          :target: https://readthedocs.org/projects/swarm-robotics-sierra/master
+.. |docs| image:: https://readthedocs.org/projects/sierra/badge/?version=master
+          :target: https://readthedocs.org/projects/sierra/master
 
 .. |maintenance| image:: https://img.shields.io/badge/Maintained%3F-yes-green.svg
-                  :target: https://gitHub.com/swarm-robotics/sierra/graphs/commit-activity
+                  :target: https://gitHub.com/jharwell/sierra/graphs/commit-activity
 
 
 :Usage:
@@ -73,7 +73,7 @@ To install SIERRA (requires python 3.8+):
    pip3 install sierra-research
 
 To get started using SIERRA, see `getting started
-<https://swarm-robotics-sierra.readthedocs.io/en/master/getting_started.html>`_.
+<https://sierra.readthedocs.io/en/master/src/getting_started.html>`_.
 
 Want to cite SIERRA? See `Citing`_.
 
@@ -82,7 +82,7 @@ Have an issue using SIERRA? See `Troubleshooting`_.
 What is SIERRA?
 ===============
 
-.. figure:: https://raw.githubusercontent.com/swarm-robotics/sierra/master/docs/figures/architecture.png
+.. figure:: https://raw.githubusercontent.com/jharwell/sierra/master/docs/figures/architecture.png
 
    SIERRA architecture, organized by pipeline stage. Stages are listed left to
    right, and an approximate joint architectural/functional stack is top to
@@ -147,7 +147,7 @@ cases:
 
 If aspects of either use case sound familiar, then there is a strong chance
 SIERRA could help you! SIERRA is well documented--see the `SIERRA docs
-<https://swarm-robotics-sierra.readthedocs.io/en/master/>`_ to get started.
+<https://sierra.readthedocs.io/en/master/>`_ to get started.
 
 Use Case #1: Alice The Robotics Researcher
 ------------------------------------------
@@ -262,17 +262,91 @@ SIERRA Support Matrix
 =====================
 
 SIERRA supports multiple `platforms
-<https://swarm-robotics-sierra.readthedocs.io/en/master/src/platform/index.html>`_
-which researchers can write code to target. In SIERRA terminology, a platform is
-a "thing" (usually a simulator or robot) that you want to write to code to run
+<https://sierra.readthedocs.io/en/master/src/platform/index.html>`_ which
+researchers can write code to target. In SIERRA terminology, a platform is a
+"thing" (usually a simulator or robot) that you want to write to code to run
 on. Note that platform != OS, in SIERRA terminology. If a SIERRA platform runs
 on a given OS, then SIERRA supports doing so; if it does not, then SIERRA does
 not. For example, SIERRA does not support running ARGoS on windows, because
 ARGoS does not support windows.
 
-If your desired platform is not listed, see the `plugin tutorials
-<https://swarm-robotics-sierra.readthedocs.io/en/master/src/tutorials.html>`_
-for how to add it via a plugin.
+SIERRA supports multiple execution environments for execution of experiments,
+such as `High Performance Computing (HPC) environments
+<https://sierra.readthedocs.io/en/master/src/exec_env/hpc.html>`_ and `real
+robots <https://sierra.readthedocs.io/en/master/src/exec_env/robots.html>`_.
+Which execution environment experiments targeting a given platform is (somewhat)
+independent of the platform itself (see below).
+
+SIERRA also supports multiple output formats for experimental outputs, as shown
+below. SIERRA currently only supports XML experimental inputs.
+
+SIERRA supports (mostly) mix-and-match between platforms, execution
+environments, experiment input/output formats as shown in its support matrix
+below. This is one of the most powerful features of SIERRA!  If your desired
+platform/execution environment is not listed, see the `plugin tutorials
+<https://sierrap.readthedocs.io/en/master/src/tutorials.html>`_ for how to add
+it via a plugin.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25,25,25,25
+
+   * - Execution Environment
+
+     - Platform
+
+     - Experimental Input Format
+
+     - Experimental Output Format
+
+   * - `SLURM <https://slurm.schedmd.com/documentation.html>`_: An HPC cluster
+       managed by the SLURM scheduler.
+
+     - ARGoS, ROS1+Gazebo
+
+     - XML
+
+     - CSV, PNG
+
+   * - `Torque/MOAB
+       <https://adaptivecomputing.com/cherry-services/torque-resource-manager>`_:
+       An HPC cluster managed by the Torque/MOAB scheduler.
+
+     - ARGoS, ROS1+Gazebo
+
+     - XML
+
+     - CSV, PNG
+
+   * - ADHOC: A miscellaneous collection of networked HPC compute nodes or
+       random servers; not managed by a scheduler.
+
+
+     - ARGoS, ROS1+Gazebo
+
+     - XML
+
+     - CSV, PNG
+
+   * - Local: The SIERRA host machine,e.g., a researcher's laptop.
+
+     - ARGoS, ROS1+Gazebo
+
+     - XML
+
+     - CSV, PNG
+
+   * - ROS1+Turtlebot3: `Turtlebot3
+       <https://emanual.robotis.com/docs/en/platform/turtlebot3/overview>`_
+       robots with ROS1.
+
+     - ROS1+Gazebo, ROS1+robot
+
+     - XML
+
+     - CSV, PNG
+
+For more details about the platforms out experimental output formats, see below.
 
 .. list-table::
    :header-rows: 1
@@ -287,7 +361,7 @@ for how to add it via a plugin.
      - Simulator for fast simulation of large swarms. Requires ARGoS >=
        3.0.0-beta59.
 
-   * - `ROS1 <https://ros.org)+[Gazebo](https://www.gazebosim.org>`_
+   * - `ROS1 <https://ros.org>`_ + `Gazebo <https://www.gazebosim.org>`_
 
      - Using ROS1 with the Gazebo simulator. Requires Gazebo >= 11.9.0, ROS1
        Noetic or later.
@@ -297,53 +371,6 @@ for how to add it via a plugin.
      - Using ROS1 with a real robot platform of your choice. ROS1 Noetic or
        later is required.
 
-SIERRA supports multiple execution environments for execution of experiments,
-such as `High Performance Computing (HPC) environments
-<https://swarm-robotics-sierra.readthedocs.io/en/master/src/exec_env/hpc.html>`_
-and `real robots
-<https://swarm-robotics-sierra.readthedocs.io/en/master/src/exec_env/robots.html>`_.
-Which execution environment experiments targeting a given platform is (somewhat)
-independent of the platform itself (see below). If your desired execution
-environment is not listed, see the `plugin tutorials
-<https://swarm-robotics-sierra.readthedocs.io/en/master/src/tutorials.html>`_
-for how to add it via a plugin.
-
-
-.. list-table::
-   :header-rows: 1
-   :widths: 50,50
-
-   * - Execution Environment
-
-     - Description
-
-   * - `SLURM <https://slurm.schedmd.com/documentation.html>`_
-
-     - An HPC cluster managed by the SLURM scheduler
-
-   * - `Torque/MOAB <https://adaptivecomputing.com/cherry-services/torque-resource-manager>`_
-
-     - An HPC cluster managed by the Torque/MOAB scheduler
-
-   * - Adhoc
-
-     - Miscellaneous collection of networked HPC compute nodes or random
-       servers; not managed by a scheduler
-
-   * - HPC local
-
-     - The SIERRA host machine,e.g., a researcher's laptop
-
-   * - `Turtlebot3 <https://emanual.robotis.com/docs/en/platform/turtlebot3/overview>`_
-
-     - Real turtlebot3 robots
-
-
-SIERRA also supports multiple output formats for experimental outputs. If the
-format for your experimental outputs is not listed, see the `tutorials
-<https://swarm-robotics-sierra.readthedocs.io/en/master/src/tutorials.html>`_
-for how to add it via a plugin. SIERRA currently only supports XML experimental
-inputs.
 
 .. list-table::
    :header-rows: 1
@@ -361,60 +388,6 @@ inputs.
 
      - Stitching images together into videos.
 
-SIERRA supports (mostly) mix-and-match between platforms, execution
-environments, experiment input/output formats as shown in its support matrix
-below. This is one of the most powerful features of SIERRA!
-
-.. list-table::
-   :header-rows: 1
-   :widths: 25,25,25,25
-
-   * - Execution Environment
-     - Platform
-
-     - Experimental Input Format
-
-     - Experimental Output Format
-
-   * - SLURM
-
-     - ARGoS, ROS1+Gazebo
-
-     - XML
-
-     - CSV, PNG
-
-   * - Torque/MOAB
-
-     - ARGoS, ROS1+Gazebo
-
-     - XML
-
-     - CSV, PNG
-
-   * - ADHOC
-
-     - ARGoS, ROS1+Gazebo
-
-     - XML
-
-     - CSV, PNG
-
-   * - Local
-
-     - ARGoS, ROS1+Gazebo
-
-     - XML
-
-     - CSV, PNG
-
-   * - ROS1+Turtlebot3
-
-     - ROS1+Gazebo, ROS1+robot
-
-     - XML
-
-     - CSV, PNG
 
 Requirements To Use SIERRA
 ==========================
@@ -437,7 +410,7 @@ The basic requirements are:
 
 For more details, including the requirements for researcher code, see the
 `SIERRA requirements
-<https://swarm-robotics-sierra.readthedocs.io/en/master/src/requirements.html>`_.
+<https://sierra.readthedocs.io/en/master/src/requirements.html>`_.
 
 Citing
 ======
@@ -467,5 +440,5 @@ Contributing
 
 I welcome all types of contributions, no matter how large or how small, and if
 you have an idea, I'm happy to talk about it at any point :-). See `here
-<https://swarm-robotics-sierra.readthedocs.io/en/master/src/contributing.html>`_
+<https://sierra.readthedocs.io/en/master/src/contributing.html>`_
 for the general procedure.

@@ -122,7 +122,7 @@ class ExperimentalRunParallelCollator:
     @staticmethod
     def _gather_worker(gatherq: mp.Queue,
                        processq: mp.Queue,
-                       main_config: dict,
+                       main_config: types.YAMLDict,
                        project: str,
                        storage_medium: str) -> None:
         module = pm.module_load_tiered(project=project,

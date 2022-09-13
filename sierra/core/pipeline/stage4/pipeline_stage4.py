@@ -205,7 +205,7 @@ class PipelineStage4:
         self.models_config = yaml.load(utils.utf8open(project_models),
                                        yaml.FullLoader)
         pm.models.initialize(self.cmdopts['project'],
-                             self.cmdopts['project_model_root'])
+                             pathlib.Path(self.cmdopts['project_model_root']))
 
         # All models present in the .yaml file are enabled/set to run
         # unconditionally

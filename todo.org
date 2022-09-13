@@ -18,12 +18,19 @@
 - [ ] Switch from bash to something else (python/noxfile?); my scripts are
   getting too complicated.
 
-** TODO Make bivariate inter-experiment heatmaps renderable into videos
-
-** TODO Add quick quick start: a linux VM with SIERRA all set up and ready to go
 ** TODO Add additional unit tests [0%]
 - [ ] Parser unit tests (for CLI variables that can be used as batch criteria)
 - [ ] Nodefile parsing
+
+** TODO Better tasking framework/organization
+- Switch to calling nox instead of calling bash directly from the yml workflow
+files. This will allow me to easily parameterize multiple versions of python,
+AND reduce the # of jobs I need/total workflow runtime on github by a good bit.
+
+** TODO Switch from cmdopts dictionary to a data class with fields--I will get
+WAY better help from the static analyzer
+
+** TODO Add quick quick start: a linux VM with SIERRA all set up and ready to go
 
 ** TODO Added tutorial for creating a new model
 - And add an example in the sample project
@@ -152,3 +159,5 @@ This really should be there.... And not require a valid --project to be passed.
 ** DONE Switch everything in examples.rst to use the sample project to increase
    CLOSED: [2022-08-16 Tue 15:32]
   cohesion
+** DONE Make bivariate inter-experiment heatmaps renderable into videos
+   CLOSED: [2022-08-25 Thu 12:56]

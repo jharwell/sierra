@@ -259,10 +259,6 @@ class UnivarInterScenarioComparator:
                                 self.controller)
             return
 
-        model_ipath_stem = pathlib.Path(cmdopts['batch_model_root'], src_stem)
-        model_opath_stem = pathlib.Path(self.sc_model_root,
-                                        dest_stem + "-" + self.controller)
-
         opath_stem = pathlib.Path(self.sc_csv_root,
                                   dest_stem + "-" + self.controller)
         writer = storage.DataFrameWriter('storage.csv')
@@ -284,11 +280,19 @@ class UnivarInterScenarioComparator:
 
         # Collect performance results models and legends. Append to existing
         # dataframes if they exist, otherwise start new ones.
-        model_opath = model_opath_stem.with_suffix(config.kModelsExt['model'])
-        model_ipath = model_ipath_stem.with_suffix(config.kModelsExt['model'])
-        legend_opath = model_opath_stem.with_suffix(config.kModelsExt['legend'])
+        # Can't use with_suffix() for opath, because that path contains the
+        # controller, which already has a '.' in it.
+        model_istem = pathlib.Path(cmdopts['batch_model_root'], src_stem)
+        model_ostem = pathlib.Path(self.sc_model_root,
+                                   dest_stem + "-" + self.controller)
 
+        model_ipath = model_istem.with_suffix(config.kModelsExt['model'])
+        model_opath = model_ostem.with_name(
+            model_ostem.name + config.kModelsExt['model'])
         model_df = self._accum_df(model_ipath, model_opath, src_stem)
+        legend_opath = model_ostem.with_name(
+            model_ostem.name + config.kModelsExt['legend'])
+
         if model_df is not None:
             writer(model_df, model_opath, index=False)
 
@@ -323,7 +327,11 @@ class UnivarInterScenarioComparator:
                                     len(t.index))
                 self.logger.warning("Truncating '%s.csv' to last row", src_stem)
 
-            cum_df = cum_df.append(t.loc[t.index[-1], t.columns.to_list()])
+            # Series are columns, so we have to transpose before concatenating
+            cum_df = pd.concat([cum_df,
+                                t.loc[t.index[-1], :].to_frame().T])
+
+            # cum_df = cum_df.append(t.loc[t.index[-1], t.columns.to_list()])
             return cum_df
 
         return None
