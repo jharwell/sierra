@@ -14,13 +14,6 @@ SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
 .. |linux-supported| image:: https://svgshare.com/i/Zhy.svg
 .. |osx-supported| image:: https://svgshare.com/i/ZjP.svg
 
-..
-   .. image:: https://img.shields.io/badge/python-3.8-blue.svg
-      :target: https://www.python.org/downloads/release/python-380/
-
-   .. image:: https://img.shields.io/badge/python-3.9-blue.svg
-      :target: https://www.python.org/downloads/release/python-390/
-
 .. |ci-integration-master| image:: https://github.com/jharwell/sierra/actions/workflows/integration-all.yml/badge.svg?branch=master
 .. |ci-analysis-master| image:: https://github.com/jharwell/sierra/actions/workflows/static-analysis.yml/badge.svg?branch=master
 .. |ci-coverage-master| image:: https://coveralls.io/repos/github/jharwell/sierra/badge.svg?branch=master

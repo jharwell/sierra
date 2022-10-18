@@ -88,6 +88,7 @@ setup(
         "psutil",
         "distro",
         "netifaces",
+        "haggis",
 
         "coloredlogs",
         "implements",
@@ -98,7 +99,7 @@ setup(
     extras_require={
         "devel": [
             # checkers, CI, etc.
-            'pylint',
+            'pylint==2.14.5',  # Temporarily, until the default 2.15.0 is fixed/superseded
             'pytype',
             'pydocstyle',
             'xenon',

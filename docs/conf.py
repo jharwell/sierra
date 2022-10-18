@@ -51,7 +51,7 @@ extensions = ['sphinx.ext.autodoc',
               'xref',
               'sphinx_last_updated_by_git',
               'sphinx_rtd_theme',
-              'sphinxcontrib.napoleon',
+              'sphinx.ext.napoleon',
               'autoapi.sphinx',
               'sphinx.ext.autosummary']
 

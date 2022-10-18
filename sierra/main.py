@@ -37,6 +37,8 @@ import sierra.core.logging  # type: ignore
 import sierra.core.startup
 import sierra.version
 
+kIssuesURL = "https://github.com/jharwell/sierra/issues"
+
 
 class SIERRA():
     """Initialize SIERRA and then launch the pipeline."""
@@ -138,11 +140,30 @@ class SIERRA():
             sys.exit()
 
 
+def excepthook(exc_type, exc_value, exc_traceback):
+    logging.fatal(("SIERRA has encountered an unexpected error and will now "
+                   "terminate.\n\n"
+                   "If you think this is a bug, please report it at:\n\n%s\n\n"
+                   "When reporting, please include as much information as you "
+                   "can. Ideally:\n\n"
+                   "1. The below traceback.\n"
+                   "2. The exact command you used to run sierra-cli.\n"
+                   "3. sierra-cli's logging output in the terminal.\n\n"
+                   "In some cases, creating a Minimum Working Example (MWE) "
+                   "reproducing the error with specific input files and/or "
+                   "data is also helpful for quick triage and fix.\n"),
+                  kIssuesURL,
+                  exc_info=(exc_type, exc_value, exc_traceback))
+
+
 def main():
     # Necessary on OSX, because python > 3.8 defaults to "spawn" which does not
     # copy loaded modules, which results in the singleton plugin managers not
     # working.
     mp.set_start_method("fork")
+
+    # Nice traceback on unexpected errors
+    sys.excepthook = excepthook
 
     # Bootstrap the cmdline to print version if needed
     bootstrap = cmd.BootstrapCmdline()

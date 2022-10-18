@@ -28,25 +28,16 @@ import logging
 
 # 3rd party packages
 import coloredlogs
+from haggis import logs
 
 # Project packages
 
-TRACE = logging.DEBUG - 5
 
-
-def initialize(log_level):
-    def log_for_level(self, message, *args, **kwargs):
-        if self.isEnabledFor(TRACE):
-            self._log(TRACE, message, args, **kwargs)
-
-    def log_to_root(message, *args, **kwargs):
-        logging.log(TRACE, message, *args, **kwargs)
-
-    logging.addLevelName(TRACE, "TRACE")
-    setattr(logging, "TRACE", TRACE)
-    setattr(logging.getLoggerClass(), "trace", log_for_level)
-    setattr(logging, "trace", log_to_root)
-
+def initialize(log_level: str):
+    logs.add_logging_level(level_name='TRACE',
+                           level_num=logging.DEBUG - 5,
+                           method_name=None,
+                           if_exists=logs.RAISE)
     # Needed for static analysis (mypy and/or pylint)
     setattr(logging, '_HAS_DYNAMIC_ATTRIBUTES', True)
 
