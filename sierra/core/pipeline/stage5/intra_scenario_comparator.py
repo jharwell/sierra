@@ -689,7 +689,6 @@ class BivarIntraScenarioComparator:
 
         for i in range(1, len(paths)):
             df = reader(paths[i])
-            print(paths[i])
             if comp_type == 'HMscale':
                 plot_df = df / ref_df
             elif comp_type == 'HMdiff':
