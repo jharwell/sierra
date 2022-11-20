@@ -29,7 +29,7 @@ SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
          :target: https://zenodo.org/badge/latestdoi/125774567
 
 .. |docs| image:: https://readthedocs.org/projects/sierra/badge/?version=master
-          :target: https://readthedocs.org/projects/sierra/master
+          :target: https://sierra.readthedocs.io/en/master/
 
 .. |maintenance| image:: https://img.shields.io/badge/Maintained%3F-yes-green.svg
                   :target: https://gitHub.com/jharwell/sierra/graphs/commit-activity

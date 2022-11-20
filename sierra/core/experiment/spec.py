@@ -167,11 +167,11 @@ class ExperimentSpec():
         if from_univar_bc:
             self.arena_dim = criteria.arena_dims(cmdopts)[exp_num]
             self.scenario_name = criteria.exp_scenario_name(exp_num)
-            self.logger.debug("Read scenario dimensions '%s' from univariate batch criteria",
+            self.logger.trace("Read scenario dimensions '%s' from univariate batch criteria",
                               self.arena_dim)
         elif from_bivar_bc1 or from_bivar_bc2:
             self.arena_dim = criteria.arena_dims(cmdopts)[exp_num]
-            self.logger.debug("Read scenario dimensions '%s' bivariate batch criteria",
+            self.logger.trace("Read scenario dimensions '%s' bivariate batch criteria",
                               self.arena_dim)
             self.scenario_name = criteria.exp_scenario_name(exp_num)
 
@@ -181,7 +181,7 @@ class ExperimentSpec():
             kw = sgp.ScenarioGeneratorParser().to_dict(cmdopts['scenario'])
             self.arena_dim = ArenaExtent(
                 Vector3D(kw['arena_x'], kw['arena_y'], kw['arena_z']))
-            self.logger.debug("Read scenario dimensions %s from cmdline spec",
+            self.logger.trace("Read scenario dimensions %s from cmdline spec",
                               self.arena_dim)
 
             self.scenario_name = cmdopts['scenario']

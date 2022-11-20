@@ -85,8 +85,8 @@ def _linux_pkg_checks() -> None:
 
     dist = distro.id()
     os_info = distro.os_release_info()
-
-    if os_info['id_like'] in ['debian', 'ubuntu']:
+    if any(candidate in os_info['id_like'] for candidate in ['debian',
+                                                             'ubuntu']):
         _apt_pkg_checks(dist)
     else:
         logging.warning(("Unknown Linux distro '%s' detected: skipping package "
@@ -125,8 +125,8 @@ def _apt_pkg_checks(dist: str) -> None:
         logging.debug(("Recommended .deb packages %s missing on Linux "
                        "distribution '%s'. Some SIERRA functionality will "
                        "not be available. "),
-                      dist,
-                      missing)
+                      missing,
+                      dist)
 
 
 def _osx_pkg_checks() -> None:

@@ -197,7 +197,11 @@ def gen_batch_root(root: str,
 
     """
     batch_leaf = gen_batch_leaf(criteria, template_stem, scenario)
-    sierra_root = pathlib.Path(root).resolve()
+
+    # Don't reslove() the path--that makes symlinked dirs under $HOME through
+    # errors which are fatal from pathlib's POV, but actually harmless.
+    sierra_root = pathlib.Path(root)
+
     return sierra_root / project / controller / batch_leaf
 
 

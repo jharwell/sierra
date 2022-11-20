@@ -209,7 +209,7 @@ class PlatformCmdline(cmd.BaseCmdline):
 
                                            - ``overhead`` - Use a single
                                              overhead camera at the center of
-                                             the aren looking straight down at
+                                             the arena looking straight down at
                                              an appropriate height to see the
                                              whole arena.
 
