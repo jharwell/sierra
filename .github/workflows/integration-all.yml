@@ -1,9 +1,17 @@
 name: Integration Tests
 
+# Run:
+#
+# - Every month. Scheduling helps keep drift/issues with updates
+#   to runners at bay.
+# - On pushes.
 on:
   push:
     paths:
       - 'sierra/**'
+
+  schedule:
+    - cron: '0 0 1 * *'
 
 jobs:
   argos-ci-ubuntu:
@@ -53,7 +61,7 @@ jobs:
     strategy:
       matrix:
         python-version:
-          - 3.9
+          - 3.8
     needs:
       - argos-ci-ubuntu
       - argos-ci-osx

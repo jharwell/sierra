@@ -20,9 +20,10 @@ jobs:
     runs-on: ${{ inputs.os }}
     strategy:
       matrix:
+        # You CANNOT use python 3.9 with ubuntu 20.04 with ROS, because 3.8 is
+        # the system python and things just don't work otherwise...
         python-version:
           - 3.8
-          - 3.9
 
     steps:
       - uses: actions/checkout@v3
@@ -50,9 +51,10 @@ jobs:
     runs-on: ${{ inputs.os }}
     strategy:
       matrix:
+        # You CANNOT use python 3.9 with ubuntu 20.04 with ROS, because 3.8 is
+        # the system python and things just don't work otherwise...
         python-version:
           - 3.8
-          - 3.9
 
     steps:
       - uses: actions/checkout@v3

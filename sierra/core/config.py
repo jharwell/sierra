@@ -1,18 +1,6 @@
 # Copyright 2020 John Harwell, All rights reserved.
 #
-#  This file is part of SIERRA.
-#
-#  SIERRA is free software: you can redistribute it and/or modify it under the
-#  terms of the GNU General Public License as published by the Free Software
-#  Foundation, either version 3 of the License, or (at your option) any later
-#  version.
-#
-#  SIERRA is distributed in the hope that it will be useful, but WITHOUT ANY
-#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-#  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License along with
-#  SIERRA.  If not, see <http://www.gnu.org/licenses/
+#  SPDX-License-Identifier: MIT
 """
 Contains all SIERRA hard-coded configuration in one place.
 """
@@ -20,6 +8,7 @@ Contains all SIERRA hard-coded configuration in one place.
 # Core packages
 import logging
 import typing as tp
+import packaging
 
 # 3rd party packages
 
@@ -130,7 +119,7 @@ kRendering = {
 }
 kARGoS: tp.Dict[str, tp.Any] = {
     'physics_iter_per_tick': 10,
-    'min_version': 'beta53',
+    'min_version': packaging.version.parse('3.0.0-beta53'),
     'launch_cmd': 'argos3',
     'launch_file_ext': '.argos',
     'n_secs_per_run': 5000,  # seconds
