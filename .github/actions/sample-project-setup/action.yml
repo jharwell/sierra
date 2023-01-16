@@ -37,10 +37,12 @@ runs:
       shell: bash
       working-directory: ../../
       run: |
+        # 2023/01/16: || true needed because homebrew installation of whatever
+        # dependencies these packages requires manual intervention to fix, and I
+        # don't have a mac.
         if [ "${{ runner.os }}" == "macOS" ]; then
-          brew update
           brew install pkg-config cmake libpng freeimage lua qt \
-          docbook asciidoc graphviz doxygen
+          docbook asciidoc graphviz doxygen|| true
         elif [ "${{ runner.os }}" == "Linux" ]; then
           sudo apt-get update
           sudo apt-get install cmake libfreeimage-dev libfreeimageplus-dev \
@@ -89,6 +91,19 @@ runs:
         sudo apt-get install ros-${{ inputs.rosdistro }}-turtlebot3-msgs
         sudo apt-get install ros-${{ inputs.rosdistro }}-turtlebot3-gazebo
         sudo apt-get install ros-${{ inputs.rosdistro }}-turtlebot3-bringup
+        sudo apt-get install python${{ matrix.python-version }} python${{ matrix.python-version }}-dev
+        sudo apt-get install python${{ matrix.python-version }}-venv python3-apt
+        sudo apt-get install python3-pip python3-cairo intltool python3-wheel python3-rospkg python3-empy
+
+        # 2023/1/18: You still need install these even after installing stuff
+        # with apt AND if the sysem python matches your current python. I don't
+        # know why.
+        pip3 install empy
+        pip3 install rospkg wheel pyparsing pyqt5
+        pip3 install  pyqt5 pysip numpy rospkg
+        pip3 install  matplotlib pyyaml psutil
+        pip3 install  pysip defusedxml pyparsing pydev
+        pip3 install  pyopengl opencv-python
 
     - name: Install SIERRA ROSBridge dependency (ubuntu)
       if: inputs.platform == 'ros1gazebo'
