@@ -1,18 +1,6 @@
 # Copyright 2021 John Harwell, All rights reserved.
 #
-#  This file is part of SIERRA.
-#
-#  SIERRA is free software: you can redistribute it and/or modify it under the
-#  terms of the GNU General Public License as published by the Free Software
-#  Foundation, either version 3 of the License, or (at your option) any later
-#  version.
-#
-#  SIERRA is distributed in the hope that it will be useful, but WITHOUT ANY
-#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-#  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License along with
-#  SIERRA.  If not, see <http://www.gnu.org/licenses/
+#  SPDX-License-Identifier: MIT
 
 # Core packages
 import argparse
@@ -263,6 +251,7 @@ class ExpConfigurer():
 class ExecEnvChecker(platform.ExecEnvChecker):
     def __init__(self, cmdopts: types.Cmdopts) -> None:
         super().__init__(cmdopts)
+        self.logger = logging.getLogger('platform.argos')
 
     def __call__(self) -> None:
         keys = ['ARGOS_PLUGIN_PATH']
@@ -277,12 +266,15 @@ class ExecEnvChecker(platform.ExecEnvChecker):
         # Check ARGoS version
         stdout = proc.stdout.decode('utf-8')
         stderr = proc.stderr.decode('utf-8')
-        res = re.search(r'beta[0-9]+', stdout)
+        res = re.search(r'[0-9]+.[0-9]+.[0-9]+-beta[0-9]+', stdout)
         assert res is not None, \
             f"ARGOS_VERSION not in stdout: stdout='{stdout}',stderr='{stderr}'"
 
+        self.logger.trace("Parsed ARGOS_VERSION: %s",  # type: ignore
+                          res.group(0))
+
         version = packaging.version.parse(res.group(0))
-        min_version = packaging.version.parse(config.kARGoS['min_version'])
+        min_version = config.kARGoS['min_version']
 
         assert version >= min_version,\
             f"ARGoS version {version} < min required {min_version}"

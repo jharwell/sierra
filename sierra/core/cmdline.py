@@ -1,18 +1,6 @@
 # Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 #
-#  This file is part of SIERRA.
-#
-#  SIERRA is free software: you can redistribute it and/or modify it under the
-#  terms of the GNU General Public License as published by the Free Software
-#  Foundation, either version 3 of the License, or (at your option) any later
-#  version.
-#
-#  SIERRA is distributed in the hope that it will be useful, but WITHOUT ANY
-#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-#  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License along with
-#  SIERRA.  If not, see <http://www.gnu.org/licenses/
+#  SPDX-License-Identifier: MIT
 #
 """Core command line parsing and validation classes."""
 
@@ -29,7 +17,7 @@ from sierra.core import utils
 
 kVersionMsg = ("reSearch pIpEline for Reproducibility, Reusability and "
                f"Automation (SIERRA) v{sierra.version.__version__}.\n"
-               "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
+               "License: MIT.\n"
                "This is free software: you are free to change and redistribute it.\n"
                "SIERRA comes with no warranty.\n\n"
 
