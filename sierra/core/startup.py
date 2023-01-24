@@ -1,18 +1,6 @@
 # Copyright 2021 John Harwell, All rights reserved.
 #
-#  This file is part of SIERRA.
-#
-#  SIERRA is free software: you can redistribute it and/or modify it under the
-#  terms of the GNU General Public License as published by the Free Software
-#  Foundation, either version 3 of the License, or (at your option) any later
-#  version.
-#
-#  SIERRA is distributed in the hope that it will be useful, but WITHOUT ANY
-#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-#  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License along with
-#  SIERRA.  If not, see <http://www.gnu.org/licenses/
+#  SPDX-License-Identifier: MIT
 """Startup checks performed by SIERRA.
 
 Tests for compatibility and testing for the required packages in its
@@ -85,8 +73,8 @@ def _linux_pkg_checks() -> None:
 
     dist = distro.id()
     os_info = distro.os_release_info()
-
-    if os_info['id_like'] in ['debian', 'ubuntu']:
+    if any(candidate in os_info['id_like'] for candidate in ['debian',
+                                                             'ubuntu']):
         _apt_pkg_checks(dist)
     else:
         logging.warning(("Unknown Linux distro '%s' detected: skipping package "
@@ -125,8 +113,8 @@ def _apt_pkg_checks(dist: str) -> None:
         logging.debug(("Recommended .deb packages %s missing on Linux "
                        "distribution '%s'. Some SIERRA functionality will "
                        "not be available. "),
-                      dist,
-                      missing)
+                      missing,
+                      dist)
 
 
 def _osx_pkg_checks() -> None:

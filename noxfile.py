@@ -47,7 +47,7 @@ def lint(session):
     session.run('xenon',
                 '--max-absolute C',
                 '--max-modules B',
-                '--max-average A'
+                '--max-average A',
                 '--no-assert sierra')
 
 

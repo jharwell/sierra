@@ -1,9 +1,16 @@
 name: Coverage CI
 
+# Run:
+#
+# - Every month.  Scheduling helps keep drift/issues with updates
+#   to runners at bay.
+# - On pushes.
 on:
   push:
     paths:
       - 'sierra/**'
+  schedule:
+    - cron: '0 0 1 * *'
 
 jobs:
   argos-ci:
@@ -42,38 +49,14 @@ jobs:
     with:
       os: ubuntu-20.04
 
-  # docs:
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix:
-  #       python-version:
-  #         - 3.9
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - uses: ./.github/actions/sierra-setup
-
-  #     - name: Build docs
-  #       shell: bash
-  #       run: |
-  #          cd docs && coverage run $(which sphinx-build) -M html "." "_build"
-  #          cd docs && coverage combine
-  #          cd docs && coverage report
-  #          cd docs && coverage xml
-
-  #     - uses: actions/upload-artifact@v3
-  #       with:
-  #         name: ci-sphinx-docs-${{ runner.os }}-${{ matrix.python-version }}-coverage
-  #         path: docs/.coverage.*
-
   coverage:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version:
-          - 3.9
+          - 3.8
 
     needs:
-      # - docs
       - unit-tests
       - argos-ci
       - ros1gazebo-ci

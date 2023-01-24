@@ -27,8 +27,8 @@
 files. This will allow me to easily parameterize multiple versions of python,
 AND reduce the # of jobs I need/total workflow runtime on github by a good bit.
 
-** TODO Switch from cmdopts dictionary to a data class with fields--I will get
-WAY better help from the static analyzer
+** TODO Switch from cmdopts dictionary to a data class with fields
+I will get WAY better help from the static analyzer
 
 ** TODO Add quick quick start: a linux VM with SIERRA all set up and ready to go
 
@@ -161,3 +161,9 @@ This really should be there.... And not require a valid --project to be passed.
   cohesion
 ** DONE Make bivariate inter-experiment heatmaps renderable into videos
    CLOSED: [2022-08-25 Thu 12:56]
+** DONE Switch from my logging hack to haggis module
+CLOSED: [2022-10-18 Tue 15:02]
+Does what I do, but much better
+
+** DONE Add sys.excepthook hook asking the user to file a bug.
+CLOSED: [2022-10-18 Tue 15:02]

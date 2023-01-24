@@ -1,18 +1,6 @@
 # Copyright 2018 London Lowmanstone, John Harwell, All rights reserved.
 #
-#  This file is part of SIERRA.
-#
-#  SIERRA is free software: you can redistribute it and/or modify it under the
-#  terms of the GNU General Public License as published by the Free Software
-#  Foundation, either version 3 of the License, or (at your option) any later
-#  version.
-#
-#  SIERRA is distributed in the hope that it will be useful, but WITHOUT ANY
-#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-#  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License along with
-#  SIERRA.  If not, see <http://www.gnu.org/licenses/
+#  SPDX-License-Identifier: MIT
 #
 """Main module/entry point for SIERRA."""
 
@@ -36,6 +24,8 @@ import sierra.core.plugin_manager as pm
 import sierra.core.logging  # type: ignore
 import sierra.core.startup
 import sierra.version
+
+kIssuesURL = "https://github.com/jharwell/sierra/issues"
 
 
 class SIERRA():
@@ -138,11 +128,32 @@ class SIERRA():
             sys.exit()
 
 
+def excepthook(exc_type, exc_value, exc_traceback):
+    logging.fatal(("SIERRA has encountered an unexpected error and will now "
+                   "terminate.\n\n"
+                   "If you think this is a bug, please report it at:\n\n%s\n\n"
+                   "When reporting, please include as much information as you "
+                   "can. Ideally:\n\n"
+                   "1. What you were trying to do in SIERRA.\n"
+                   "2. The terminal output of sierra-cli, including the "
+                   "below traceback.\n"
+                   "3. The exact command you used to run SIERRA.\n"
+                   "\n"
+                   "In some cases, creating a Minimum Working Example (MWE) "
+                   "reproducing the error with specific input files and/or "
+                   "data is also helpful for quick triage and fix.\n"),
+                  kIssuesURL,
+                  exc_info=(exc_type, exc_value, exc_traceback))
+
+
 def main():
     # Necessary on OSX, because python > 3.8 defaults to "spawn" which does not
     # copy loaded modules, which results in the singleton plugin managers not
     # working.
     mp.set_start_method("fork")
+
+    # Nice traceback on unexpected errors
+    sys.excepthook = excepthook
 
     # Bootstrap the cmdline to print version if needed
     bootstrap = cmd.BootstrapCmdline()

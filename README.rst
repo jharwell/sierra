@@ -14,13 +14,6 @@ SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
 .. |linux-supported| image:: https://svgshare.com/i/Zhy.svg
 .. |osx-supported| image:: https://svgshare.com/i/ZjP.svg
 
-..
-   .. image:: https://img.shields.io/badge/python-3.8-blue.svg
-      :target: https://www.python.org/downloads/release/python-380/
-
-   .. image:: https://img.shields.io/badge/python-3.9-blue.svg
-      :target: https://www.python.org/downloads/release/python-390/
-
 .. |ci-integration-master| image:: https://github.com/jharwell/sierra/actions/workflows/integration-all.yml/badge.svg?branch=master
 .. |ci-analysis-master| image:: https://github.com/jharwell/sierra/actions/workflows/static-analysis.yml/badge.svg?branch=master
 .. |ci-coverage-master| image:: https://coveralls.io/repos/github/jharwell/sierra/badge.svg?branch=master
@@ -29,14 +22,13 @@ SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
 .. |ci-analysis-devel| image:: https://github.com/jharwell/sierra/actions/workflows/static-analysis.yml/badge.svg?branch=devel
 .. |ci-coverage-devel| image:: https://coveralls.io/repos/github/jharwell/sierra/badge.svg?branch=devel
 
-.. |license| image:: https://img.shields.io/badge/License-GPLv3-blue.svg
-             :target: https://www.gnu.org/licenses/gpl-3.0
+.. |license| image:: https://img.shields.io/badge/License-MIT-blue.svg
 
 .. |doi| image:: https://zenodo.org/badge/125774567.svg
          :target: https://zenodo.org/badge/latestdoi/125774567
 
 .. |docs| image:: https://readthedocs.org/projects/sierra/badge/?version=master
-          :target: https://readthedocs.org/projects/sierra/master
+          :target: https://sierra.readthedocs.io/en/master/
 
 .. |maintenance| image:: https://img.shields.io/badge/Maintained%3F-yes-green.svg
                   :target: https://gitHub.com/jharwell/sierra/graphs/commit-activity

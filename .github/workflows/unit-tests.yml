@@ -28,7 +28,6 @@ jobs:
           which sierra-cli
           which python3
           nox --pythons ${{ matrix.python-version }} --sessions unit_tests
-          ls -alh
 
       - uses: actions/upload-artifact@v3
         with:
