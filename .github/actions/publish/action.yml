@@ -21,7 +21,7 @@ runs:
     - name: Set tag
       if: github.ref == 'refs/heads/devel'
       shell: bash
-      run: echo "RELEASE_TAG=v$(python3 setup.py --version).beta" >> $GITHUB_ENV
+      run: echo "RELEASE_TAG=$(python3 setup.py --version).beta" >> $GITHUB_ENV
 
     - name: Github beta release
       if: github.ref == 'refs/heads/devel'
@@ -45,7 +45,7 @@ runs:
     - name: Set tag
       if: github.ref == 'refs/heads/master'
       shell: bash
-      run: echo "RELEASE_TAG=v$(python3 setup.py --version)" >> $GITHUB_ENV
+      run: echo "RELEASE_TAG=$(python3 setup.py --version)" >> $GITHUB_ENV
 
     - name: Github release
       if: github.ref == 'refs/heads/master'
