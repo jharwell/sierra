@@ -105,6 +105,7 @@ setup(
             'xenon',
             'flake8',
             'nox',
+            'psutil',
             'pytest',
             'pytest-cov',
             'mypy',

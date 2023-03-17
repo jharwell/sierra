@@ -23,6 +23,7 @@ you clone things somewhere else.
               - ``texlive-fonts-recommended``
               - ``texlive-latex-extra``
               - ``dvipng``
+              - ``psmisc``
 
               Install the following optional packages with ``apt install``:
 

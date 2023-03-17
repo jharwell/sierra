@@ -16,7 +16,7 @@ OS Requirements
 
 One of the following:
 
-- Recent linux. SIERRA is tested with ubuntu 20.04+, though it will probably
+- Recent linux. SIERRA is tested with Ubuntu 20.04+, though it will probably
   work on less recent versions/other distros as well.
 
 - Recent OSX. SIERRA is tested with OSX 12+, though it *might* work on less
@@ -30,6 +30,12 @@ One of the following:
 
           If windows support would be helpful for your intended usage of SIERRA,
           please get in touch with me.
+
+Python Requirements
+===================
+
+Python 3.8+. Tested with 3.8-3.9. It may work for newer versions, probably won't
+for older.
 
 .. _ln-sierra-req-exp:
 
@@ -331,6 +337,19 @@ ROS1+Robot Platform
    otherwise can correctly report their address to the ROS master. You can
    verify this by trying to launch a ROS master on each robot: if it launches
    without errors, then these values are setup properly.
+
+.. _ln-sierra-req-models:
+
+============================
+Model Framework Requirements
+============================
+
+When running models during stage 4 (see
+:ref:`ln-sierra-tutorials-project-models`) SIERRA requires that:
+
+- All models return :class:`pandas.DataFrame` (if they don't do this natively,
+  then their python bindings will have to do it). This is enforced by the
+  interfaces models must implement.
 
 .. _ln-sierra-req-xml:
 

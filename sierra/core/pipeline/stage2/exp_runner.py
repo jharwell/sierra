@@ -207,10 +207,10 @@ class BatchExpRunner:
                                shell)
             runner(exp, exp_num)
 
-        # Run cmds to cleanup platform-specific things now that the experiment
-        # is done (if needed).
-        for spec in generator.post_exp_cmds():
-            shell.run_from_spec(spec)
+            # Run cmds to cleanup platform-specific things now that the experiment
+            # is done (if needed).
+            for spec in generator.post_exp_cmds():
+                shell.run_from_spec(spec)
 
 
 class ExpRunner:

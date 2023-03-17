@@ -13,9 +13,7 @@ on:
   #     # - devel
   #   paths:
   #     - 'sierra/**'
-
 jobs:
-
   adhoc:
     runs-on: ${{ inputs.os }}
     strategy:

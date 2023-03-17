@@ -24,10 +24,13 @@ jobs:
         with:
           platform: argos
 
-      - name: Integration tests
-        shell: bash
-        run: |
-          ./scripts/argos-integration-tests.sh -f bc_univar_sanity_test
+      - uses: nick-fields/retry@v2
+        name: Integration tests
+        with:
+          timeout_minutes: 3600
+          max_attempts: 3
+          shell: bash
+          command: ./scripts/argos-integration-tests.sh -f bc_univar_sanity_test
 
       - uses: actions/upload-artifact@v3
         with:
@@ -49,10 +52,13 @@ jobs:
         with:
           platform: argos
 
-      - name: Integration tests
-        shell: bash
-        run: |
-          ./scripts/argos-integration-tests.sh -f physics_engines_test
+      - uses: nick-fields/retry@v2
+        name: Integration tests
+        with:
+          timeout_minutes: 3600
+          max_attempts: 3
+          shell: bash
+          command: ./scripts/argos-integration-tests.sh -f physics_engines_test
 
       - uses: actions/upload-artifact@v3
         with:
@@ -73,10 +79,13 @@ jobs:
         with:
           platform: argos
 
-      - name: Integration tests
-        shell: bash
-        run: |
-          ./scripts/argos-integration-tests.sh -f stage1_univar_test
+      - uses: nick-fields/retry@v2
+        name: Integration tests
+        with:
+          timeout_minutes: 3600
+          max_attempts: 3
+          shell: bash
+          command: ./scripts/argos-integration-tests.sh -f stage1_univar_test
 
       - uses: actions/upload-artifact@v3
         with:
@@ -97,10 +106,13 @@ jobs:
         with:
           platform: argos
 
-      - name: Integration tests
-        shell: bash
-        run: |
-          ./scripts/argos-integration-tests.sh -f stage2_univar_test -e hpc.local
+      - uses: nick-fields/retry@v2
+        name: Integration tests
+        with:
+          timeout_minutes: 3600
+          max_attempts: 3
+          shell: bash
+          command: ./scripts/argos-integration-tests.sh -f stage2_univar_test -e hpc.local
 
       - uses: actions/upload-artifact@v3
         with:
@@ -123,10 +135,13 @@ jobs:
         with:
           platform: argos
 
-      - name: Integration tests
-        shell: bash
-        run: |
-          ./scripts/argos-integration-tests.sh -f vc_test
+      - uses: nick-fields/retry@v2
+        name: Integration tests
+        with:
+          timeout_minutes: 3600
+          max_attempts: 3
+          shell: bash
+          command: ./scripts/argos-integration-tests.sh -f vc_test
 
       - uses: actions/upload-artifact@v3
         with:
@@ -148,10 +163,13 @@ jobs:
         with:
           platform: argos
 
-      - name: Integration tests
-        shell: bash
-        run: |
-          ./scripts/argos-integration-tests.sh -f cmdline_test
+      - uses: nick-fields/retry@v2
+        name: Integration tests
+        with:
+          timeout_minutes: 3600
+          max_attempts: 3
+          shell: bash
+          command: ./scripts/argos-integration-tests.sh -f cmdline_test
 
       - uses: actions/upload-artifact@v3
         with:

@@ -68,9 +68,9 @@ runs:
         # 2023/01/16: || true needed because homebrew installation of whatever
         # dependencies these packages requires manual intervention to fix, and I
         # don't have a mac.
-        brew install parallel pssh ffmpeg || true
-        brew install --cask mactex || true
-        brew install --cask xquartz || true
+        brew update && brew install parallel pssh ffmpeg || true
+        brew update && brew install --cask mactex || true
+        brew update && brew install --cask xquartz || true
         python -m pip install --upgrade pip
         python -m pip install wheel
 

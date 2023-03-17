@@ -8,7 +8,6 @@ For example, you can always compare the model value to the empirical value, and
 plot the difference as error.
 """
 # Core packages
-import os
 import pathlib
 
 # 3rd party packages

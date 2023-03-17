@@ -8,7 +8,6 @@ on:
         type: string
 
 jobs:
-
   cmdline-opts:
     runs-on: ${{ inputs.os }}
     strategy:
