@@ -181,7 +181,7 @@ class StackedLineGraph:
         # which is more amenable to inclusion in academic papers.
 
         # If the legend is not specified, then we assume this is not a graph
-        # that will contain any models.
+        # that will contain any models and/or no legend is desired.
         legend = self.legend
 
         if self.legend is not None:
@@ -197,21 +197,24 @@ class StackedLineGraph:
                       ncol=1,
                       fontsize=self.text_size['legend_label'])
         else:
-            ax.legend(loc='lower center',
-                      bbox_to_anchor=(0.5, -0.5),
-                      ncol=1,
-                      fontsize=self.text_size['legend_label'])
+            ax.legend().remove()
+        #     ax.legend(loc='lower center',
+        #               bbox_to_anchor=(0.5, -0.5),
+        #               ncol=1,
+        #               fontsize=self.text_size['legend_label'])
 
     def _read_stats(self) -> tp.Dict[str, pd.DataFrame]:
         dfs = {}
+
         reader = storage.DataFrameReader('storage.csv')
         if self.stats in ['conf95', 'all']:
             exts = config.kStats['conf95'].exts
+
             for k in exts:
                 ipath = self.stats_root / (self.input_stem + exts[k])
 
                 if utils.path_exists(ipath):
-                    dfs[exts[k]] = reader(ipath)
+                    dfs[k] = reader(ipath)
                 else:
                     self.logger.warning("%sfile not found for '%s'",
                                         exts[k],

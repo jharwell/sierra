@@ -52,7 +52,7 @@ class SIERRA():
         project = bootstrap_args.project
         plugin_core_path = [install_root / 'plugins' / 'hpc',
                             install_root / 'plugins' / 'storage',
-                            install_root / 'plugins' / 'robots',
+                            install_root / 'plugins' / 'robot',
                             install_root / 'plugins' / 'platform']
         plugin_search_path = plugin_core_path
         env = os.environ.get('SIERRA_PLUGIN_PATH')

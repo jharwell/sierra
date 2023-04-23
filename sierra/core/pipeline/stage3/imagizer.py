@@ -138,7 +138,8 @@ class ExpImagizer:
                         ylabel='Y').generate()
 
             else:
-                self.logger.warning("No match for graph with src_stem=%s found",
+                self.logger.warning(("No match for graph with src_stem='%s' "
+                                     "found in configuration"),
                                     imagize_opts['graph_stem'])
 
 
