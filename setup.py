@@ -120,7 +120,7 @@ setup(
             'setuptools',
 
             # Sphinx packages
-            "sphinx",
+            "sphinx==4.4.0",
             "docutils==0.16",
             "sphinx-rtd-theme",
             "sphinx-argparse",
