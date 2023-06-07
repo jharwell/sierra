@@ -38,6 +38,7 @@ kDebianPackages = types.OSPackagesSpec('linux',
                                            'texlive-fonts-recommended': True,
                                            'texlive-latex-extra': True,
                                            'dvipng': True,
+                                           'psmisc': True,
                                            'pssh': False,
                                            'ffmpeg': False,
                                            'xvfb': False

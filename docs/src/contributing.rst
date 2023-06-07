@@ -21,8 +21,8 @@ Writing the code
 ----------------
 
 To contribute to the SIERRA core, in you should follow the general workflow and
-python development guide outlined in :xref:`LIBRA`. For the static analysis
-step:
+python development guide outlined in :ref:`ln-libra-python-dev-guide` and
+:ref:`ln-libra-dev-workflow`. For the static analysis step:
 
 #. Install development packages for SIERRA (from the SIERRA repo root)::
 

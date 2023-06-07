@@ -12,6 +12,10 @@ on:
   schedule:
     - cron: '0 0 1 * *'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   argos-ci:
     uses: ./.github/workflows/argos.yml

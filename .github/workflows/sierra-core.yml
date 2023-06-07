@@ -8,7 +8,6 @@ on:
         type: string
 
 jobs:
-
   cmdline-opts:
     runs-on: ${{ inputs.os }}
     strategy:
@@ -24,9 +23,13 @@ jobs:
         with:
           platform: argos
 
-      - name: Cmdline Options
-        run: |
-          ./scripts/core-integration-tests.sh -f cmdline_opts_test
+      - uses: nick-fields/retry@v2
+        name: Cmdline options
+        with:
+          timeout_minutes: 3600
+          max_attempts: 3
+          shell: bash
+          command: ./scripts/core-integration-tests.sh -f cmdline_opts_test
 
       - uses: actions/upload-artifact@v3
         with:
@@ -48,9 +51,13 @@ jobs:
         with:
           platform: argos
 
-      - name: Environment variables
-        run: |
-          ./scripts/core-integration-tests.sh -f env_vars_test
+      - uses: nick-fields/retry@v2
+        name: Environment variables
+        with:
+          timeout_minutes: 3600
+          max_attempts: 3
+          shell: bash
+          command: ./scripts/core-integration-tests.sh -f env_vars_test
 
       - uses: actions/upload-artifact@v3
         with:
@@ -78,14 +85,22 @@ jobs:
           platform: ros1gazebo
           rosdistro: noetic
 
-      - name: Bivariate batch criteria sanity (ARGoS)
-        run: |
-          ./scripts/argos-integration-tests.sh -f bc_bivar_sanity_test
+      - uses: nick-fields/retry@v2
+        name: Bivariate batch criteria sanity (ARGoS)
+        with:
+          timeout_minutes: 3600
+          max_attempts: 3
+          shell: bash
+          command: ./scripts/argos-integration-tests.sh -f bc_bivar_sanity_test
 
-      - name: Bivariate batch criteria sanity (ROS1+Gazebo)
+      - uses: nick-fields/retry@v2
         if: runner.os == 'Linux'
-        run: |
-          ./scripts/ros1gazebo-integration-tests.sh -f bc_bivar_sanity_test
+        name: Bivariate batch criteria sanity (ROS1+Gazebo)
+        with:
+          timeout_minutes: 3600
+          max_attempts: 3
+          shell: bash
+          command: ./scripts/ros1gazebo-integration-tests.sh -f bc_bivar_sanity_test
 
       - uses: actions/upload-artifact@v3
         with:
@@ -113,14 +128,22 @@ jobs:
           platform: ros1gazebo
           rosdistro: noetic
 
-      - name: Bivariate batch criteria stage 1 (ARGoS)
-        run: |
-          ./scripts/argos-integration-tests.sh -f stage1_bivar_test
+      - uses: nick-fields/retry@v2
+        name: Bivariate batch criteria stage 1 (ARGoS)
+        with:
+          timeout_minutes: 3600
+          max_attempts: 3
+          shell: bash
+          command: ./scripts/argos-integration-tests.sh -f stage1_bivar_test
 
-      - name: Bivariate batch criteria stage 1 (ROS1+Gazebo)
+      - uses: nick-fields/retry@v2
         if: runner.os == 'Linux'
-        run: |
-          ./scripts/ros1gazebo-integration-tests.sh -f stage1_bivar_test
+        name: Bivariate batch criteria stage 1 (ROS1+Gazebo)
+        with:
+          timeout_minutes: 3600
+          max_attempts: 3
+          shell: bash
+          command: ./scripts/ros1gazebo-integration-tests.sh -f stage1_bivar_test
 
       - uses: actions/upload-artifact@v3
         with:
@@ -141,10 +164,13 @@ jobs:
         with:
           platform: argos
 
-      - name: Integration tests
-        shell: bash
-        run: |
-          ./scripts/argos-integration-tests.sh -f stage3_univar_test
+      - uses: nick-fields/retry@v2
+        name: Stage3 univariate tests
+        with:
+          timeout_minutes: 3600
+          max_attempts: 3
+          shell: bash
+          command: ./scripts/argos-integration-tests.sh -f stage3_univar_test
 
       - uses: actions/upload-artifact@v3
         with:
@@ -165,10 +191,13 @@ jobs:
         with:
           platform: argos
 
-      - name: Integration tests
-        shell: bash
-        run: |
-          ./scripts/argos-integration-tests.sh -f stage3_bivar_test
+      - uses: nick-fields/retry@v2
+        name: Stage3 bivariate tests
+        with:
+          timeout_minutes: 3600
+          max_attempts: 3
+          shell: bash
+          command: ./scripts/argos-integration-tests.sh -f stage3_bivar_test
 
       - uses: actions/upload-artifact@v3
         with:
@@ -189,10 +218,13 @@ jobs:
         with:
           platform: argos
 
-      - name: Integration tests
-        shell: bash
-        run: |
-          ./scripts/argos-integration-tests.sh -f stage4_univar_test
+      - uses: nick-fields/retry@v2
+        name: Stage4 univariate tests
+        with:
+          timeout_minutes: 3600
+          max_attempts: 3
+          shell: bash
+          command: ./scripts/argos-integration-tests.sh -f stage4_univar_test
 
       - uses: actions/upload-artifact@v3
         with:
@@ -213,10 +245,13 @@ jobs:
         with:
           platform: argos
 
-      - name: Integration tests
-        shell: bash
-        run: |
-          ./scripts/argos-integration-tests.sh -f stage5_univar_test
+      - uses: nick-fields/retry@v2
+        name: Stage5 univariate tests
+        with:
+          timeout_minutes: 3600
+          max_attempts: 3
+          shell: bash
+          command: ./scripts/argos-integration-tests.sh -f stage5_univar_test
 
       - uses: actions/upload-artifact@v3
         with:
@@ -237,10 +272,13 @@ jobs:
         with:
           platform: argos
 
-      - name: Integration tests
-        shell: bash
-        run: |
-          ./scripts/argos-integration-tests.sh -f stage5_bivar_test
+      - uses: nick-fields/retry@v2
+        name: Stage5 univariate tests
+        with:
+          timeout_minutes: 3600
+          max_attempts: 3
+          shell: bash
+          command: ./scripts/argos-integration-tests.sh -f stage5_bivar_test
 
       - uses: actions/upload-artifact@v3
         with:

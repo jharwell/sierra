@@ -168,7 +168,6 @@ xref_links = {
                     "https://sierra.readthedocs.io/en/master"),
     "FORDYCA": ("FORDYCA", "https://swarm-robotics-fordyca.readthedocs.io"),
     "PRISM": ("PRISM", "https://swarm-robotics-prism.readthedocs.io"),
-    "LIBRA": ("LIBRA", "https://swarm-robotics-libra.readthedocs.io"),
     "2022-aamas-demo": ("2022 AAMAS Demo",
                         "https://www-users.cse.umn.edu/~harwe006/showcase/aamas-2022-demo")
 
@@ -303,14 +302,16 @@ texinfo_documents = [
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'python3': ('https://docs.python.org/3', None),
-                       'numpy': ('https://numpy.org/doc/stable/', None),
-                       'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
-                       'matplotlib': ('https://matplotlib.org', None),
-                       'sphinx': ('https://www.sphinx-doc.org/en/stable/', None),
-                       'pandas': ('https://pandas.pydata.org/pandas-docs/dev', None),
-                       'implements': ('https://implements.readthedocs.io/en/latest/', None)
-                       }
+intersphinx_mapping = {
+    'python3': ('https://docs.python.org/3', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
+    'matplotlib': ('https://matplotlib.org', None),
+    'sphinx': ('https://www.sphinx-doc.org/en/stable/', None),
+    'pandas': ('https://pandas.pydata.org/pandas-docs/dev', None),
+    'implements': ('https://implements.readthedocs.io/en/latest/', None),
+    'libra': ('https://libra2.readthedocs.io/en/master', None)
+}
 
 # This is the expected signature of the handler for this event, cf doc
 
