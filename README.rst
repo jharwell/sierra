@@ -11,8 +11,8 @@ SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
 .. |supported-pythons| image:: https://img.shields.io/pypi/pyversions/sierra-research.svg
                        :target: https://pypi.python.org/pypi/sierra-research/
 
-.. |linux-supported| image:: https://svgshare.com/i/Zhy.svg
-.. |osx-supported| image:: https://svgshare.com/i/ZjP.svg
+.. |linux-supported| image:: https://img.shields.io/badge/os-Linux-crimson
+.. |osx-supported| image:: https://img.shields.io/badge/os-OSX-crimson
 
 .. |ci-integration-master| image:: https://github.com/jharwell/sierra/actions/workflows/integration-all.yml/badge.svg?branch=master
 .. |ci-analysis-master| image:: https://github.com/jharwell/sierra/actions/workflows/static-analysis.yml/badge.svg?branch=master
