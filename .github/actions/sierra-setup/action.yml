@@ -64,7 +64,7 @@ runs:
     - name: Install SIERRA
       shell: bash
       run: |
-        python -m pip install -r docs/requirements.txt
+        python3 -m pip install -r docs/requirements.txt
         cd docs && make man && cd ..
         python3 -m pip install .
         python3 -m pip install .[devel]

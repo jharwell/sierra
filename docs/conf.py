@@ -160,10 +160,10 @@ xref_links = {
                    "https://www.cs.unm.edu/~wjust/CS523/S2018/Readings/Hecker_Beyond_Pheromones_Swarm_Intelligence.pdf"),
     "Rosenfeld2006": ("Rosenfeld2006",
                       "http://users.umiacs.umd.edu/~sarit/data/articles/rosenfeldetalbook06.pdf"),
-    "SIERRA_GITHUB": ("https://github.com:jharwell/sierra.git",
-                      "https://github.com:jharwell/sierra.git"),
-    "SIERRA_SAMPLE_PROJECT": ("https://github.com:jharwell/sierra-sample-project.git",
-                              "https://github.com:jharwell/sierra-sample-project.git"),
+    "SIERRA_GITHUB": ("https://github.com/jharwell/sierra.git",
+                      "https://github.com/jharwell/sierra.git"),
+    "SIERRA_SAMPLE_PROJECT": ("https://github.com/jharwell/sierra-sample-project.git",
+                              "https://github.com/jharwell/sierra-sample-project.git"),
     "SIERRA_DOCS": ("https://sierra.readthedocs.io/en/master",
                     "https://sierra.readthedocs.io/en/master"),
     "FORDYCA": ("FORDYCA", "https://swarm-robotics-fordyca.readthedocs.io"),
@@ -310,7 +310,7 @@ intersphinx_mapping = {
     'sphinx': ('https://www.sphinx-doc.org/en/stable/', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/dev', None),
     'implements': ('https://implements.readthedocs.io/en/latest/', None),
-    'libra': ('https://libra2.readthedocs.io/en/master', None)
+    'libra': ('https://jharwell.github.io/libra', None)
 }
 
 # This is the expected signature of the handler for this event, cf doc

@@ -27,7 +27,7 @@ see the :ref:`ln-sierra-tutorials` for how to add it via a plugin.
      - Simulator for fast simulation of large swarms. Requires ARGoS >=
        3.0.0-beta59.
 
-   * - `ROS1 <https://ros.org)+[Gazebo](https://www.gazebosim.org>`_
+   * - `ROS1 <https://ros.org>`_ + `Gazebo <https://www.gazebosim.org/home>`_
 
      - Using ROS1 with the Gazebo simulator. Requires Gazebo >= 11.9.0, ROS1
        Noetic or later.
@@ -84,7 +84,7 @@ listed, see the :ref:`ln-sierra-tutorials` for how to add it via a plugin.
      - Simulator for fast simulation of large swarms. Requires ARGoS >=
        3.0.0-beta59.
 
-   * - `ROS1 <https://ros.org)+[Gazebo](https://www.gazebosim.org>`_
+   * - `ROS1 <https://ros.org>`_ + `Gazebo <https://www.gazebosim.org/home>`_
 
      - Using ROS1 with the Gazebo simulator. Requires Gazebo >= 11.9.0, ROS1
        Kinetic or later.
@@ -95,10 +95,9 @@ listed, see the :ref:`ln-sierra-tutorials` for how to add it via a plugin.
        later is required.
 
 SIERRA also supports multiple output formats for experimental outputs. If the
-format for your experimental outputs is not listed, see the `docs
-<https://sierra.readthedocs.io/en/master/src/tutorials.html>`_
-for how to add it via a plugin. SIERRA currently only supports XML experimental
-inputs.
+format for your experimental outputs is not listed, see the
+:ref:`ln-sierra-tutorials` for how to add it via a plugin. SIERRA currently only
+supports XML experimental inputs.
 
 .. list-table::
    :header-rows: 1

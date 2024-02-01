@@ -120,12 +120,13 @@ setup(
             'setuptools',
 
             # Sphinx packages
-            "sphinx==4.4.0",
-            "docutils==0.16",
+            "sphinx==5.0.2",
+            "docutils==0.18.1",
             "sphinx-rtd-theme",
             "sphinx-argparse",
             "sphinx-tabs",
             "sphinxcontrib-napoleon",
+            "psutil",
             "sphinx-last-updated-by-git",
             "autoapi",
             "graphviz"

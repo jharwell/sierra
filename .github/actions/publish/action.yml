@@ -17,6 +17,7 @@ runs:
       shell: bash
       run: |
         python3 -m build
+        cd docs && make linkcheck
 
     - name: Set tag
       if: github.ref == 'refs/heads/devel'
