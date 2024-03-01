@@ -216,7 +216,7 @@ These requirements apply to any :term:`Platform` which uses :term:`ROS1` (e.g.,
    the elapsed time in seconds, and which exits (and takes down the roslaunch
    when it does) after the specified experiment time has elapsed. This node is
    inserted into all ``.launch`` files. All ROS projects must depend on this
-   `ROS bridge <https://github.com/jharwell/sierra_rosbridge.git>`_
+   `ROS bridge <https://github.com/jharwell/sierra_rosbridge>`_
    package so the necessary nodes can be found by ROS at runtime.
 
 

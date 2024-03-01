@@ -27,7 +27,7 @@ see the :ref:`ln-sierra-tutorials` for how to add it via a plugin.
      - Simulator for fast simulation of large swarms. Requires ARGoS >=
        3.0.0-beta59.
 
-   * - `ROS1 <https://ros.org>`_ + `Gazebo <https://www.gazebosim.org/home>`_
+   * - `ROS1 <https://ros.org>`_ + `Gazebo <https://github.com/gazebosim/gz-sim>`_
 
      - Using ROS1 with the Gazebo simulator. Requires Gazebo >= 11.9.0, ROS1
        Noetic or later.
@@ -84,7 +84,7 @@ listed, see the :ref:`ln-sierra-tutorials` for how to add it via a plugin.
      - Simulator for fast simulation of large swarms. Requires ARGoS >=
        3.0.0-beta59.
 
-   * - `ROS1 <https://ros.org>`_ + `Gazebo <https://www.gazebosim.org/home>`_
+   * - `ROS1 <https://ros.org>`_ + `Gazebo <https://github.com/gazebosim/gz-sim>`_
 
      - Using ROS1 with the Gazebo simulator. Requires Gazebo >= 11.9.0, ROS1
        Kinetic or later.

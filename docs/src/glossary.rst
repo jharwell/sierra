@@ -19,7 +19,7 @@ works/is designed the way it is, and to help you find your way around.
 
       A state-of-the-art robotics simulator with many features including .urdf
       robot models, realistic 3D rendering, and more. The Gazebo website is at
-      `http://gazebosim.org <http://gazebosim.org>`_.
+      `https://gazebosim.org <https://gazebosim.org>`_.
 
    ROS1
 
