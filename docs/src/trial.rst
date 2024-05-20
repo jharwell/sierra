@@ -176,8 +176,7 @@ you clone things somewhere else.
               . /path/to/setup.bash
 
 
-#. Run SIERRA (invocation inspired by :ref:`ln-sierra-usage-examples`). You can do this
-   from any directory! (yay SIERRA!)
+#. Run SIERRA (invocation inspired by :ref:`ln-sierra-usage-examples`).
 
    .. tabs::
 
@@ -187,7 +186,7 @@ you clone things somewhere else.
 
             sierra-cli \
             --sierra-root=$HOME/research/exp \
-            --template-input-file=exp/argos/template.argos \
+            --template-input-file=$HOME/research/exp/argos/template.argos \
             --n-runs=4 \
             --platform=platform.argos \
             --project=argos_project \
@@ -224,7 +223,7 @@ you clone things somewhere else.
 
             sierra-cli \
             --sierra-root=$HOME/research/exp \
-            --template-input-file=exp/ros1gazebo/turtlebot3_house.launch \
+            --template-input-file=$HOME/research/exp/ros1gazebo/turtlebot3_house.launch \
             --n-runs=4 \
             --platform=platform.ros1gazebo \
             --project=ros1gazebo_project \
