@@ -1,0 +1,37 @@
+name: Static Analysis Top-level
+
+# Run:
+#
+# - Every month. Scheduling helps keep drift/issues with updates
+#   to runners at bay.
+# - On pushes.
+on:
+  push:
+    paths:
+      - 'sierra/**'
+
+  schedule:
+    - cron: '0 0 1 * *'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze-ci-ubuntu-2004:
+    uses: ./.github/workflows/analyze-nox.yml
+    secrets: inherit
+    with:
+      os: ubuntu-20.04
+
+  analyze-ci-ubuntu-2204:
+    uses: ./.github/workflows/analyze-nox.yml
+    secrets: inherit
+    with:
+      os: ubuntu-22.04
+
+  analyze-ci-osx:
+    uses: ./.github/workflows/analyze-nox.yml
+    secrets: inherit
+    with:
+      os: macos-12

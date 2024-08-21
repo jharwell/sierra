@@ -1,0 +1,58 @@
+name: Unit Tests Top-level
+
+# Run:
+#
+# - Every month.  Scheduling helps keep drift/issues with updates
+#   to runners at bay.
+# - On pushes.
+on:
+  push:
+    paths:
+      - 'sierra/**'
+  schedule:
+    - cron: '0 0 1 * *'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci-unit-tests:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-20.04
+          - ubuntu-22.04
+          - macos-12
+
+        # 2024/08/26: Test the earliest and latest supported version, to speed
+        # up CI.
+        python-version:
+          - 3.8
+          - 3.11
+
+        exclude:
+          - python-version: 3.11
+            os: ubuntu-20.04
+
+          - python-version: 3.8
+            os: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/sierra-setup
+
+      - name: Run nox
+        run: |
+          export PATH=$pythonLocation/bin:$PATH
+          export PYTHONPATH=$PYTHONPATH:$PWD
+
+          which sierra-cli
+          which python3
+          nox --pythons ${{ matrix.python-version }} --sessions unit_tests
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ci-unit-tests-${{ runner.os }}-${{ matrix.python-version }}-coverage
+          path: .coverage

@@ -11,15 +11,14 @@ SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
 .. |supported-pythons| image:: https://img.shields.io/pypi/pyversions/sierra-research.svg
                        :target: https://pypi.python.org/pypi/sierra-research/
 
-.. |linux-supported| image:: https://svgshare.com/i/Zhy.svg
-.. |osx-supported| image:: https://svgshare.com/i/ZjP.svg
+.. |os-supported| image:: https://img.shields.io/badge/os-linux%20%7C%20macOS-blue
 
-.. |ci-integration-master| image:: https://github.com/jharwell/sierra/actions/workflows/integration-all.yml/badge.svg?branch=master
-.. |ci-analysis-master| image:: https://github.com/jharwell/sierra/actions/workflows/static-analysis.yml/badge.svg?branch=master
+.. |ci-integration-master| image:: https://github.com/jharwell/sierra/actions/workflows/integration-top.yml/badge.svg?branch=master
+.. |ci-analysis-master| image:: https://github.com/jharwell/sierra/actions/workflows/analysis-top.yml/badge.svg?branch=master
 .. |ci-coverage-master| image:: https://coveralls.io/repos/github/jharwell/sierra/badge.svg?branch=master
 
-.. |ci-integration-devel| image:: https://github.com/jharwell/sierra/actions/workflows/integration-all.yml/badge.svg?branch=devel
-.. |ci-analysis-devel| image:: https://github.com/jharwell/sierra/actions/workflows/static-analysis.yml/badge.svg?branch=devel
+.. |ci-integration-devel| image:: https://github.com/jharwell/sierra/actions/workflows/integration-top.yml/badge.svg?branch=devel
+.. |ci-analysis-devel| image:: https://github.com/jharwell/sierra/actions/workflows/analysis-top.yml/badge.svg?branch=devel
 .. |ci-coverage-devel| image:: https://coveralls.io/repos/github/jharwell/sierra/badge.svg?branch=devel
 
 .. |license| image:: https://img.shields.io/badge/License-MIT-blue.svg
@@ -35,8 +34,7 @@ SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
 
 
 :Usage:
-   |pepy-downloads| |pypi-version| |supported-pythons| |linux-supported|
-   |osx-supported|
+   |pepy-downloads| |pypi-version| |supported-pythons| |os-supported|
 
 :Release:
 

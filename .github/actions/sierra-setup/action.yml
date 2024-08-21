@@ -16,7 +16,7 @@ runs:
     # Ubuntu setup
     ############################################################################
     - name: Setup python (ubuntu)
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       if: runner.os == 'Linux'
       with:
         python-version: ${{ matrix.python-version }}
@@ -26,8 +26,9 @@ runs:
       shell: bash
       run: |
         sudo apt-get update
-        sudo apt-get install parallel cm-super texlive-fonts-recommended
-        sudo apt-get install texlive-latex-extra dvipng pssh ffmpeg xvfb
+        sudo apt-get install parallel cm-super texlive-fonts-recommended -y
+        sudo apt-get install texlive-latex-extra dvipng pssh ffmpeg xvfb -y
+
         python3 -m pip install --upgrade pip
         python3 -m pip install wheel
 
@@ -36,7 +37,7 @@ runs:
     ############################################################################
 
     - name: Setup python (OSX)
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       if: runner.os == 'macOS'
       with:
         python-version: ${{ matrix.python-version }}
@@ -55,8 +56,8 @@ runs:
           brew update && brew install parallel pssh ffmpeg
           brew update && brew install --cask mactex
           brew update && brew install --cask xquartz
-          python -m pip install --upgrade pip
-          python -m pip install wheel
+          python3 -m pip install --upgrade pip
+          python3 -m pip install wheel
 
     ############################################################################
     # SIERRA install
