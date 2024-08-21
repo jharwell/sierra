@@ -365,7 +365,7 @@ def df_fill(df: pd.DataFrame, policy: str) -> pd.DataFrame:
 
 
 @retry(OSError, tries=10, delay=0.100, backoff=1.1)  # type:ignore
-def pickle_dump(obj: object, f: tp.IO) -> None:
+def pickle_dump(obj: object, f) -> None:
     pickle.dump(obj, f)
 
 

@@ -1,0 +1,43 @@
+name: OS Static Analysis
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        required: True
+        type: string
+
+jobs:
+  nox:
+    runs-on: ${{ inputs.os }}
+    strategy:
+      matrix:
+        os:
+          - ${{ inputs.os }}
+
+        # 2024/08/26: Test the earliest and latest supported version, to speed
+        # up CI.
+        python-version:
+          - 3.8
+          - 3.11
+
+        session:
+          - lint
+          - docs
+          - analyze_pytype
+          - analyze_mypy
+
+        exclude:
+          - python-version: 3.11
+            os: ubuntu-20.04
+
+          - python-version: 3.8
+            os: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/sierra-setup
+
+      - name: Run nox
+        run: |
+          nox --pythons ${{ matrix.python-version }} --sessions ${{ matrix.session }}
