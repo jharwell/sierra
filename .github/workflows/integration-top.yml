@@ -1,0 +1,58 @@
+name: Integration Top-level
+
+# Run:
+#
+# - Every month. Scheduling helps keep drift/issues with updates
+#   to runners at bay.
+# - On pushes.
+on:
+  push:
+    paths:
+      - 'sierra/**'
+
+  schedule:
+    - cron: '0 0 1 * *'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # 2024/08/27: We don't test the core with OSX, because if it works on linux,
+  # it should work on OSX. Plus, the plugin tests utilize a lot of "core"
+  # functionality, it the core is already largely tested on OSX via that
+  # route. Plugins are another story, and are explicitly tested on OSX where
+  # feasible.
+  # sierra-core-ci-ubuntu-2004:
+  #   uses: ./.github/workflows/sierra-core.yml
+  #   secrets: inherit
+  #   with:
+  #     os: ubuntu-20.04
+
+  # sierra-core-ci-ubuntu-2204:
+  #   uses: ./.github/workflows/sierra-core.yml
+  #   secrets: inherit
+  #   with:
+  #     os: ubuntu-22.04
+  # plugin-ci:
+  #   uses: ./.github/workflows/plugin.yml
+  #   secrets: inherit
+
+  publish:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - 3.8
+    # needs:
+    #   - plugin-ci
+    #   - sierra-core-ci-ubuntu-2004
+    #   - sierra-core-ci-ubuntu-2204
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/publish
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pypi-token: ${{ secrets.PYPI_API_TOKEN }}
+          testpypi-token: ${{ secrets.TEST_PYPI_API_TOKEN }}

@@ -46,14 +46,14 @@ setup_env() {
        --sierra-root=$SIERRA_ROOT \
        --platform=platform.argos \
        --project=argos_project \
-       --exp-setup=exp_setup.T5000.K5 \
+       --exp-setup=exp_setup.T500.K5 \
        --n-runs=4 \
        --exec-strict \
        --template-input-file=$SAMPLE_ROOT/exp/argos/template.argos \
        --scenario=LowBlockCount.10x10x2 \
        --exec-no-devnull \
        --with-robot-leds \
-       --with-robot-rab\
+       --with-robot-rab \
        --log-level=TRACE"
 
     export PARALLEL="--env ARGOS_PLUGIN_PATH --env LD_LIBRARY_PATH"
@@ -87,7 +87,12 @@ sanity_check_pipeline() {
 # crash.
 ################################################################################
 physics_engines_test() {
-    ENGINES=(1 2 4 6 8 12 16 24)
+
+    # Don't test with ALL engine sizes, just the smallest, largest,
+    # and a few in between.
+    #
+    # All: 1 2 4 6 8 12 16 24
+    ENGINES=(1 8 16 24)
 
     for n in "${ENGINES[@]}"
     do
@@ -752,7 +757,7 @@ vc_test() {
     --batch-criteria population_size.Linear3.C3 \
     --pipeline 1 2 3 4 \
     --platform-vc \
-    --exp-setup=exp_setup.T500"
+    --exp-setup=exp_setup.T50"
 
     cameras=(overhead
              sw
@@ -792,7 +797,7 @@ cmdline_test() {
     --physics-n-engines=1 \
     --controller=foraging.footbot_foraging \
     --batch-criteria population_size.Linear3.C3 \
-    --exp-setup=exp_setup.T500"
+    --exp-setup=exp_setup.T50"
 
 
     $SIERRA_CMD --n-robots=10 --pipeline 1

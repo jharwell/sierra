@@ -34,8 +34,8 @@ One of the following:
 Python Requirements
 ===================
 
-Python 3.8+. Tested with 3.8-3.9. It may work for newer versions, probably won't
-for older.
+Python 3.8+. Tested with 3.8-3.10. It may work for newer versions, probably
+won't for older.
 
 .. _ln-sierra-req-exp:
 
