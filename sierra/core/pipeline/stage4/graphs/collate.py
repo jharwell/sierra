@@ -246,7 +246,7 @@ class BivarGraphCollator:
                     stat.df_seq[row] = df
 
 
-class GraphParallelCollator():
+class ParallelCollator():
     """
     Generate :term:`Collated .csv` files from :term:`Summary .csv`.
 
@@ -278,7 +278,7 @@ class GraphParallelCollator():
             parallelism = psutil.cpu_count()
 
         for _ in range(0, parallelism):
-            p = mp.Process(target=GraphParallelCollator._thread_worker,
+            p = mp.Process(target=ParallelCollator._thread_worker,
                            args=(q,
                                  self.main_config,
                                  self.cmdopts,
@@ -316,5 +316,6 @@ __api__ = [
     'UnivarGraphCollator',
     'BivarGraphCollator',
     'UnivarGraphCollationInfo',
-    'BivarGraphCollationInfo'
+    'BivarGraphCollationInfo',
+    'ParallelCollator'
 ]

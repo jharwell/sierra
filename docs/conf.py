@@ -31,7 +31,8 @@ sys.path.append(str(pathlib.Path('_ext').resolve()))
 
 # If your documentation needs a minimal Sphinx version, state it here.
 #
-needs_sphinx = '4.4.0'
+needs_sphinx = '6.0.0'
+language = 'en'
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom

@@ -68,7 +68,7 @@ class ArenaExtent():
 
 
 class Sigmoid():
-    """
+    r"""
     Sigmoid activation function.
 
     .. math::

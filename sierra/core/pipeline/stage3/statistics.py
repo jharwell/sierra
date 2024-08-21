@@ -42,7 +42,7 @@ class GatherSpec:
         return self.imagize_csv_stem is not None
 
 
-class BatchExpParallelCalculator:
+class BatchExpCalculator:
     """Process :term:`Output .csv` files for each experiment in the batch.
 
     In parallel for speed.
@@ -101,7 +101,7 @@ class BatchExpParallelCalculator:
         self.logger.debug("Starting %d gatherers, method=%s",
                           n_gatherers,
                           mp.get_start_method())
-        gathered = [pool.apply_async(BatchExpParallelCalculator._gather_worker,
+        gathered = [pool.apply_async(BatchExpCalculator._gather_worker,
                                      (gatherq,
                                       processq,
                                       self.main_config,
@@ -110,7 +110,7 @@ class BatchExpParallelCalculator:
         self.logger.debug("Starting %d processors, method=%s",
                           n_processors,
                           mp.get_start_method())
-        processed = [pool.apply_async(BatchExpParallelCalculator._process_worker,
+        processed = [pool.apply_async(BatchExpCalculator._process_worker,
                                       (processq,
                                        self.main_config,
                                        self.cmdopts['batch_stat_root'],
@@ -166,9 +166,9 @@ class BatchExpParallelCalculator:
                         main_config: types.YAMLDict,
                         batch_stat_root: pathlib.Path,
                         avg_opts: tp.Dict[str, str]) -> None:
-        calculator = ExpStatisticsCalculator(main_config,
-                                             avg_opts,
-                                             batch_stat_root)
+        calculator = ExpCalculator(main_config,
+                                   avg_opts,
+                                   batch_stat_root)
 
         # Wait for 3 seconds after the queue is empty before bailing, at the
         # start. If that is not long enough then exponentially increase from
@@ -196,10 +196,10 @@ class BatchExpParallelCalculator:
 
 
 class ExpCSVGatherer:
-    """Gather all :term:`Output .csv` files from all runs within an experiment.
+    """Gather all :term:`Output .csv`s from all exp runs in an experiment.
 
     "Gathering" in this context means creating a dictionary mapping which .csv
-    came from where, so that statistics can be generated both across and with
+    came from where, so that statistics can be generated both across and within
     experiments in the batch.
     """
 
@@ -398,7 +398,7 @@ class ExpCSVGatherer:
                      "the same length")
 
 
-class ExpStatisticsCalculator:
+class ExpCalculator:
     """Generate statistics from output files for all runs within an experiment.
 
     .. IMPORTANT:: You *CANNOT* use logging ANYWHERE during processing .csv
@@ -472,7 +472,7 @@ class ExpStatisticsCalculator:
 
 __api__ = [
     'GatherSpec',
-    'BatchExpParallelCalculator',
+    'BatchExpCalculator',
     'ExpCSVGatherer',
-    'ExpStatisticsCalculator'
+    'ExpCalculator'
 ]

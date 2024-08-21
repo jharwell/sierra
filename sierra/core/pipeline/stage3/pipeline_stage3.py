@@ -16,9 +16,7 @@ import pathlib
 import yaml
 
 # Project packages
-from sierra.core.pipeline.stage3.statistics_calculator import BatchExpParallelCalculator
-from sierra.core.pipeline.stage3.run_collator import ExperimentalRunParallelCollator
-from sierra.core.pipeline.stage3.imagizer import BatchExpParallelImagizer
+from sierra.core.pipeline.stage3 import (imagize, collate, statistics)
 import sierra.core.variables.batch_criteria as bc
 from sierra.core import types, utils
 
@@ -79,7 +77,7 @@ class PipelineStage3:
         self.logger.info("Generating statistics from experiment outputs in %s...",
                          cmdopts['batch_output_root'])
         start = time.time()
-        BatchExpParallelCalculator(main_config, cmdopts)(criteria)
+        statistics.BatchExpCalculator(main_config, cmdopts)(criteria)
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         self.logger.info("Statistics generation complete in %s", str(sec))
@@ -92,7 +90,7 @@ class PipelineStage3:
             self.logger.info("Collating experiment run outputs into %s...",
                              cmdopts['batch_stat_collate_root'])
             start = time.time()
-            ExperimentalRunParallelCollator(main_config, cmdopts)(criteria)
+            collate.ExpParallelCollator(main_config, cmdopts)(criteria)
             elapsed = int(time.time() - start)
             sec = datetime.timedelta(seconds=elapsed)
             self.logger.info(
@@ -106,8 +104,7 @@ class PipelineStage3:
         self.logger.info("Imagizing .csvs in %s...",
                          cmdopts['batch_output_root'])
         start = time.time()
-        BatchExpParallelImagizer(main_config, cmdopts)(
-            intra_HM_config, criteria)
+        imagize.proc_batch_exp(main_config, cmdopts, intra_HM_config, criteria)
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         self.logger.info("Imagizing complete: %s", str(sec))
