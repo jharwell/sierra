@@ -30,6 +30,7 @@ you clone things somewhere else.
               - ``pssh``
               - ``ffmpeg``
               - ``xvfb``
+              - ``psmisc``
 
            .. group-tab:: OSX
 
@@ -92,7 +93,7 @@ you clone things somewhere else.
 
             Where ``<distro>`` is replaced by your ROS distro.
 
-         #.  Install the `SIERRA ROSBridge <https:github.com/jharwell/sierra_rosbridge.git>`_::
+         #.  Install the `SIERRA ROSBridge <https//:github.com/jharwell/sierra_rosbridge.git>`_::
 
                pip3 install catkin_tools
                git clone https://github.com/jharwell/sierra_rosbridge.git

@@ -7,9 +7,7 @@ inputs:
   rosdistro:
     description: 'The version of ROS to test with'
     default: 'noetic'
-# outputs:
-#   time: # id of output
-#     description: 'The time we greeted you'
+
 runs:
   using: 'composite'
   steps:
@@ -18,7 +16,7 @@ runs:
       working-directory: ../../
       run: |
         if [ ! -d sierra-sample-project ]; then
-        git clone https://github.com/swarm-robotics/sierra-sample-project.git
+        git clone https://github.com/jharwell/sierra-sample-project.git
         cd sierra-sample-project
         else
         cd sierra-sample-project
@@ -41,13 +39,34 @@ runs:
         # dependencies these packages requires manual intervention to fix, and I
         # don't have a mac.
         if [ "${{ runner.os }}" == "macOS" ]; then
-          brew install pkg-config cmake libpng freeimage lua qt \
-          docbook asciidoc graphviz doxygen|| true
+          brew install \
+               pkg-config \
+               cmake \
+               libpng \
+               freeimage \
+               lua \
+               qt \
+               docbook \
+               asciidoc \
+               graphviz \
+               doxygen \
+               || true
         elif [ "${{ runner.os }}" == "Linux" ]; then
           sudo apt-get update
-          sudo apt-get install cmake libfreeimage-dev libfreeimageplus-dev \
-          qt5-default freeglut3-dev libxi-dev libxmu-dev liblua5.3-dev \
-          lua5.3 doxygen graphviz libgraphviz-dev asciidoc
+          sudo apt-get install -y \
+                       cmake \
+                       libfreeimage-dev \
+                       libfreeimageplus-dev \
+                       qtbase5-dev \
+                       freeglut3-dev \
+                       libxi-dev \
+                       libxmu-dev \
+                       liblua5.3-dev \
+                       lua5.3 \
+                       doxygen \
+                       graphviz \
+                       libgraphviz-dev \
+                       asciidoc
         fi
 
     - name: Install ARGoS
@@ -86,24 +105,42 @@ runs:
       working-directory: ../..
       shell: bash
       run: |
-        sudo apt-get install ros-${{ inputs.rosdistro }}-desktop-full
-        sudo apt-get install ros-${{ inputs.rosdistro }}-turtlebot3-description
-        sudo apt-get install ros-${{ inputs.rosdistro }}-turtlebot3-msgs
-        sudo apt-get install ros-${{ inputs.rosdistro }}-turtlebot3-gazebo
-        sudo apt-get install ros-${{ inputs.rosdistro }}-turtlebot3-bringup
-        sudo apt-get install python${{ matrix.python-version }} python${{ matrix.python-version }}-dev
-        sudo apt-get install python${{ matrix.python-version }}-venv python3-apt
-        sudo apt-get install python3-pip python3-cairo intltool python3-wheel python3-rospkg python3-empy
+        sudo apt-get install -y \
+        ros-${{ inputs.rosdistro }}-desktop-full \
+        ros-${{ inputs.rosdistro }}-turtlebot3-description \
+        ros-${{ inputs.rosdistro }}-turtlebot3-msgs \
+        ros-${{ inputs.rosdistro }}-turtlebot3-gazebo \
+        ros-${{ inputs.rosdistro }}-turtlebot3-bringup \
+        python${{ matrix.python-version }} \
+        python${{ matrix.python-version }}-dev \
+        python${{ matrix.python-version }}-venv \
+        python3-apt \
+        python3-pip \
+        python3-cairo \
+        intltool \
+        python3-wheel \
+        python3-rospkg \
+        python3-empy
+
 
         # 2023/1/18: You still need install these even after installing stuff
         # with apt AND if the sysem python matches your current python. I don't
         # know why.
-        pip3 install empy
-        pip3 install rospkg wheel pyparsing pyqt5
-        pip3 install  pyqt5 pysip numpy rospkg
-        pip3 install  matplotlib pyyaml psutil
-        pip3 install  pysip defusedxml pyparsing pydev
-        pip3 install  pyopengl opencv-python
+        pip3 install empy \
+                     rospkg \
+                     wheel \
+                     pyparsing \
+                     pyqt5 \
+                     pysip \
+                     numpy \
+                     matplotlib \
+                     pyyaml \
+                     psutil \
+                     defusedxml \
+                     pyparsing \
+                     pydev \
+                     pyopengl \
+                     opencv-python
 
     - name: Install SIERRA ROSBridge dependency (ubuntu)
       if: inputs.platform == 'ros1gazebo'

@@ -1,72 +1,32 @@
-name: Coverage CI
+name: Coverage Top-level
 
 # Run:
 #
 # - Every month.  Scheduling helps keep drift/issues with updates
 #   to runners at bay.
 # - On pushes.
+#
+# This is a dependent workflow that collects the results of other workflows to
+# avoid duplicating things and speed up CI.
 on:
-  push:
-    paths:
-      - 'sierra/**'
-  schedule:
-    - cron: '0 0 1 * *'
+  workflow_run:
+    workflows:
+      - "Unit Tests Top-level"
+      - "Integration Top-level"
+    types:
+      - completed
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  argos-ci:
-    uses: ./.github/workflows/argos.yml
-    secrets: inherit
-    with:
-      os: ubuntu-20.04
-
-  ros1gazebo-ci:
-    uses: ./.github/workflows/ros1gazebo.yml
-    secrets: inherit
-    with:
-      os: ubuntu-20.04
-
-  sierra-core-ci:
-    uses: ./.github/workflows/sierra-core.yml
-    secrets: inherit
-    with:
-      os: ubuntu-20.04
-
-  ros1robot-ci:
-    uses: ./.github/workflows/ros1robot.yml
-    secrets: inherit
-    with:
-      os: ubuntu-20.04
-
-  exec-env-ci:
-    uses: ./.github/workflows/exec-env-plugins.yml
-    secrets: inherit
-    with:
-      os: ubuntu-20.04
-
-  unit-tests:
-    uses: ./.github/workflows/unit-tests.yml
-    secrets: inherit
-    with:
-      os: ubuntu-20.04
-
   coverage:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version:
           - 3.8
-
-    needs:
-      - unit-tests
-      - argos-ci
-      - ros1gazebo-ci
-      - ros1robot-ci
-      - exec-env-ci
-      - sierra-core-ci
 
     steps:
       - uses: actions/checkout@v3

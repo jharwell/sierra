@@ -45,7 +45,7 @@ def mpl_init():
     import matplotlib.pyplot as plt
 
     # Set MPL style
-    plt.style.use('seaborn-colorblind')
+    plt.style.use('seaborn-v0_8-colorblind')
 
 
 # Actually initialize matplotlib

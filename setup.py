@@ -16,6 +16,7 @@
 
 # Core packages
 import pathlib
+import re
 from setuptools import setup, find_packages
 
 # 3rd party packages
@@ -25,8 +26,20 @@ from setuptools import setup, find_packages
 # The directory containing this file
 here = pathlib.Path(__file__).parent
 
-# The text of the README file
-readme = (here / "README.rst").read_text()
+# The text of the README file. Regexes are VERY brittle, but work for now.
+lines = (here / "README.rst").read_text().splitlines()
+idx1 = None
+idx2 = None
+
+for i, item, in enumerate(lines):
+    if idx1 is None and re.search('pepy', item):
+        idx1 = i
+    if idx2 is None and re.search('TL;DR', item):
+        idx2 = i
+
+pypi_text = '\n'.join(lines[:idx1] + lines[idx2:])
+(here / "README-pypi.rst").write_text(pypi_text)
+pypi_readme = (here / "README-pypi.rst").read_text()
 
 # Get version
 ver_ns = {}
@@ -39,7 +52,7 @@ setup(
     name="sierra-research",
     version=ver_ns['__version__'],
     description="Automation framework for the scientific method in AI research",
-    long_description=readme,
+    long_description=pypi_readme,
     long_description_content_type="text/x-rst",
     url="https://github.com/jharwell/sierra",
     author="John Harwell",
@@ -56,6 +69,9 @@ setup(
         # "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "License :: OSI Approved :: MIT License",
         "Environment :: Console",
         "Operating System :: MacOS :: MacOS X",
