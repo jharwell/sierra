@@ -9,17 +9,13 @@ SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
                   :target: https://pypi.python.org/pypi/sierra-research/
 
 .. |supported-pythons| image:: https://img.shields.io/pypi/pyversions/sierra-research.svg
-                       :target: https://pypi.python.org/pypi/sierra-research/
 
-.. |linux-supported| image:: https://img.shields.io/badge/os-Linux-crimson
-.. |osx-supported| image:: https://img.shields.io/badge/os-OSX-crimson
+.. |os-supported| image:: https://img.shields.io/badge/os-linux%20%7C%20macOS-blue
 
-.. |ci-integration-master| image:: https://github.com/jharwell/sierra/actions/workflows/integration-all.yml/badge.svg?branch=master
-.. |ci-analysis-master| image:: https://github.com/jharwell/sierra/actions/workflows/static-analysis.yml/badge.svg?branch=master
+.. |ci-analysis-master| image:: https://github.com/jharwell/sierra/actions/workflows/analysis-top.yml/badge.svg?branch=master
 .. |ci-coverage-master| image:: https://coveralls.io/repos/github/jharwell/sierra/badge.svg?branch=master
 
-.. |ci-integration-devel| image:: https://github.com/jharwell/sierra/actions/workflows/integration-all.yml/badge.svg?branch=devel
-.. |ci-analysis-devel| image:: https://github.com/jharwell/sierra/actions/workflows/static-analysis.yml/badge.svg?branch=devel
+.. |ci-analysis-devel| image:: https://github.com/jharwell/sierra/actions/workflows/analysis-top.yml/badge.svg?branch=devel
 .. |ci-coverage-devel| image:: https://coveralls.io/repos/github/jharwell/sierra/badge.svg?branch=devel
 
 .. |license| image:: https://img.shields.io/badge/License-MIT-blue.svg
@@ -31,24 +27,17 @@ SIERRA (reSearch pIpEline for Reproducibility, Reusability, and Automation)
           :target: https://sierra.readthedocs.io/en/master/
 
 .. |maintenance| image:: https://img.shields.io/badge/Maintained%3F-yes-green.svg
-                  :target: https://gitHub.com/jharwell/sierra/graphs/commit-activity
 
 
-:Usage:
-   |pepy-downloads| |pypi-version| |supported-pythons| |linux-supported|
-   |osx-supported|
-
-:Release:
-
-   |ci-analysis-master| |ci-integration-master| |ci-coverage-master|
-
-:Development:
-
-   |ci-analysis-devel| |ci-integration-devel| |ci-coverage-devel|
-
-:Misc:
-
-   |license| |doi| |docs| |maintenance|
++---------------+--------------------------------------------------------------------+
+| Usage         | |pepy-downloads| |pypi-version| |supported-pythons| |os-supported| |
++---------------+--------------------------------------------------------------------+
+| Release       | |ci-analysis-master| |ci-coverage-master|                          |
++---------------+--------------------------------------------------------------------+
+| Development   | |ci-analysis-devel| |ci-coverage-devel|                            |
++---------------+--------------------------------------------------------------------+
+| Miscellaneous |    |license| |doi| |docs| |maintenance|                            |
++---------------+--------------------------------------------------------------------+
 
 
 TL;DR

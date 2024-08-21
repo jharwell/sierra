@@ -7,7 +7,7 @@ setup_env() {
     export SIERRA_ROOT=$HOME/test
 
     if [ "$GITHUB_ACTIONS" = true ]; then
-        export SAMPLE_ROOT=$HOME/work/sierra-sample-project
+        export SAMPLE_ROOT=$GITHUB_WORKSPACE/sierra-sample-project
     else
         export SAMPLE_ROOT=$HOME/git/sierra-sample-project
     fi

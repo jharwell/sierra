@@ -25,7 +25,7 @@ from setuptools import setup, find_packages
 # The directory containing this file
 here = pathlib.Path(__file__).parent
 
-# The text of the README file
+# The text of the README file.
 readme = (here / "README.rst").read_text()
 
 # Get version
@@ -56,6 +56,9 @@ setup(
         # "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "License :: OSI Approved :: MIT License",
         "Environment :: Console",
         "Operating System :: MacOS :: MacOS X",
@@ -119,9 +122,9 @@ setup(
             'twine',
             'setuptools',
 
-            # Sphinx packages
-            "sphinx==5.0.2",
-            "docutils==0.18.1",
+            # sphinx packages
+            "sphinx==6.0.0",
+            "docutils==0.19",
             "sphinx-rtd-theme",
             "sphinx-argparse",
             "sphinx-tabs",
