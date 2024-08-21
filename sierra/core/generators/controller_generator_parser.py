@@ -16,10 +16,9 @@ class ControllerGeneratorParser:
 
     Return:
 
-      Parsed controller specification, the generator is missing from the command
-      line altogether; this can occur if the user is only running stage [4,5],
-      and is not an error. In that case, None is returned.
-
+    Parsed controller specification, the generator is missing from the command
+    line altogether; this can occur if the user is only running stage [4,5], and
+    is not an error.  In that case, None is returned.
     """
 
     def __call__(self, args: argparse.Namespace) -> tp.Optional[str]:

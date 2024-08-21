@@ -67,20 +67,27 @@ it runs:
             as well as a ``commands.txt`` used by GNU parallel to run them all
             in parallel. The leaf of the ``--template-input-file``, sans
             extension, has the experimental run # appended to it
-            (e.g. ``my-template_0.argos`` is the input file for simulation 0).
+            (e.g. ``my-template_run0.argos`` is the input file for simulation 0).
 
               - ``commands.txt``
-              - ``my-template_0.argos``
-              - ``my-template_1.argos``
-              - ``my-template_2.argos``
-              - ``my-template_3.argos``
+
+              - ``my-template_run0.argos``
+
+              - ``my-template_run1.argos``
+
+              - ``my-template_run2.argos``
+
+              - ``my-template_run3.argos``
 
           - ``exp1``
 
-            - ``my-template_0.argos``
-            - ``my-template_1.argos``
-            - ``my-template_2.argos``
-            - ``my-template_3.argos``
+            - ``my-template_run0.argos``
+
+            - ``my-template_run1.argos``
+
+            - ``my-template_run2.argos``
+
+            - ``my-template_run3.argos``
 
           - ``exp2``
 
@@ -96,17 +103,23 @@ it runs:
             each experimental run's output, including metrics, grabbed frames,
             etc., as configured in the XML input file.
 
-            - ``my-template_0_output``
-            - ``my-template_1_output``
-            - ``my-template_2_output``
-            - ``my-template_3_output``
+            - ``my-template_run0_output``
+
+            - ``my-template_run1_output``
+
+            - ``my-template_run2_output``
+
+            - ``my-template_run3_output``
 
           - ``exp1``
 
-            - ``my-template_0_output``
-            - ``my-template_1_output``
-            - ``my-template_2_output``
-            - ``my-template_3_output``
+            - ``my-template_run0_output``
+
+            - ``my-template_run1_output``
+
+            - ``my-template_run2_output``
+
+            - ``my-template_run3_output``
 
           - ``exp2``
 
@@ -155,9 +168,13 @@ it runs:
           `intra`\-experiment graphs.
 
           - ``exp0``
+
           - ``exp1``
+
           - ``exp2``
+
           - ``exp3``
+
           - ``collated`` - Graphs which are generated across experiments in the
             batch from collated .csv data, rather than from the averaged results
             within each experiment, are output here.
@@ -172,10 +189,10 @@ additions to the experiment tree for stage 5.
 
 First, the experiment tree for `scenario comparison`::
 
-   --pipeline 5\
-   --scenario-comparison\
-   --batch-criteria population_size.Log8\
-   --scenarios-list=RN.16x16x2,PL.16x16x2\
+   --pipeline 5 \
+   --scenario-comparison \
+   --batch-criteria population_size.Log8 \
+   --scenarios-list=RN.16x16x2,PL.16x16x2 \
    --sierra-root=$HOME/exp"
 
 
@@ -195,10 +212,10 @@ it runs:
 
 Second, the experiment tree for `controller comparison` ::
 
-  --pipeline 5\
-  --controller-comparison\
-  --batch-criteria population_size.Log8\
-  --controllers-list d0.CRW,d0.DPO\
+  --pipeline 5 \
+  --controller-comparison \
+  --batch-criteria population_size.Log8 \
+  --controllers-list d0.CRW,d0.DPO \
   --sierra-root=$HOME/exp"
 
 

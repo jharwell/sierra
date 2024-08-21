@@ -22,8 +22,10 @@ import psutil
 
 # Project packages
 
+versions = ['3.8', '3.9', '3.10', '3.11']
 
-@nox.session(python=['3.8', '3.9'])
+
+@nox.session(python=versions)
 def lint(session):
     session.install('.')  # same as 'pip3 install .'
     session.install('.[devel]')  # same as 'pip3 install .[devel]'
@@ -52,8 +54,8 @@ def lint(session):
 
 
 # venv argument needed so the apt module can be found in the nox venv on linux
-@nox.session(python=['3.8', '3.9'])
-def analysis(session):
+@nox.session(python=versions)
+def analyze_pytype(session):
     session.install('.')  # same as 'pip3 install .'
     session.install('.[devel]')  # same as 'pip3 install .[devel]'
 
@@ -64,6 +66,15 @@ def analysis(session):
                 '-d name-error,attribute-error,invalid-annotation,pyi-error',
                 'sierra',
                 external=True)
+
+
+# venv argument needed so the apt module can be found in the nox venv on linux
+@nox.session(python=versions)
+def analyze_mypy(session):
+    session.install('.')  # same as 'pip3 install .'
+    session.install('.[devel]')  # same as 'pip3 install .[devel]'
+
+    cores = psutil.cpu_count()
 
     session.run('mypyrun',
                 '--select',
@@ -126,7 +137,7 @@ def analysis(session):
                 'sierra')
 
 
-@nox.session(python=['3.8', '3.9'])
+@nox.session(python=versions)
 def docs(session):
     session.install('.')  # same as 'pip3 install .'
     session.install('.[devel]')  # same as 'pip3 install .[devel]'
@@ -147,7 +158,7 @@ def docs(session):
                 'sierra')
 
 
-@nox.session(python=['3.8', '3.9'])
+@nox.session(python=versions)
 def unit_tests(session):
     session.install('.')  # same as 'pip3 install .'
     session.install('.[devel]')  # same as 'pip3 install .[devel]'

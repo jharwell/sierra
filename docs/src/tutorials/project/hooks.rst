@@ -56,18 +56,18 @@ Experimental Run Collation
 In order to generate additional inter-experiment graphs, you have to also
 collate additional CSV files by:
 
-#. Create ``pipeline/stage3/run_collator.py``.
+#. Create ``pipeline/stage3/collate.py``.
 
-#. Override the
-   :class:`sierra.core.pipeline.stage3.run_collator.ExperimentalRunCSVGatherer`
+#. Extend the
+   :class:`sierra.core.pipeline.stage3.collate.ExpRunCSVGatherer`
    class:
 
    .. code-block:: python
 
-      import sierra.core.pipeline.stage3.run_collator as run_collator
+      from sierra.core.pipeline.stage3 import collate
       import pathlib
 
-      class ExperimentalRunCSVGatherer(run_collator.ExperimentalRunCSVGatherer):
+      class ExpRunCSVGatherer(collate.ExpRunCSVGatherer):
           def gather_csvs_from_run(self,
                                    run_output_root: pathlib.Path) -> tp.Dict[tp.Tuple[str, str], pd.DataFrame]:
               ...
@@ -87,7 +87,7 @@ follows:
 
 #. Create ``pipeline/stage4/yaml_config_loader.py``.
 
-#. Override the
+#. Extend the
    :class:`sierra.core.pipeline.stage4.yaml_config_loader.YAMLConfigLoader` class:
 
    .. code-block:: python
@@ -106,37 +106,58 @@ You way want to extend the set of graphs which is generated for each experiment
 in the batch, based on what batch criteria is selected, or for some other
 reason. To do so:
 
-#. Create ``pipeline/stage4/intra_exp_graph_generator.py``.
+#. Create ``pipeline/stage4/graphs/intra/generate.py``.
 
 #. Override the
-   :class:`sierra.core.pipeline.stage4.inter_exp_graph_generator.InterExpGraphGenerator`
-   class:
+   :ref:`sierra.core.pipeline.stage4.graphs.intra.generate.generate()`
+   function:
 
    .. code-block:: python
 
-      import sierra.core.pipeline.stage4 as stage4
+      # Core packages
+      import typing as tp
 
-      class IntraExpGraphGenerator(stage4.intra_exp_graph_generator.IntraExpGraphGenerator):
-          def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
-              ...
+      # 3rd party packages
+
+      # Project packages
+      from sierra.core.variables import batch_criteria as bc
+      from sierra.core import types
+
+      def generate(main_config: types.YAMLDict,
+                   cmdopts: types.Cmdopts,
+                   controller_config: types.YAMLDict,
+                   LN_targets: tp.List[types.YAMLDict],
+                   HM_targets: tp.List[types.YAMLDict],
+                   criteria: bc.IConcreteBatchCriteria) -> None:
+          ...
 
 Inter-Experiment Graph Generation
 ---------------------------------
 
-You way want to extend the set of graphs which is generated across each each experiment
-in the batch (e.g., to create graphs of summary performance measures). To do so:
+You way want to extend the set of graphs which is generated across each each
+experiment in the batch (e.g., to create graphs of summary performance
+measures). To do so:
 
-#. Create ``pipeline/stage4/inter_exp_graph_generator.py``.
+#. Create ``pipeline/stage4/graphs/inter/generate.py``.
 
 #. Override the
-   :class:`sierra.core.pipeline.stage4.inter_exp_graph_generator.InterExpGraphGenerator`
-   class:
+   :func:`sierra.core.pipeline.stage4.graphs.inter.generate.generate()`
+   function:
 
    .. code-block:: python
 
-      import sierra.core.pipeline.stage4 as stage4
-      import sierra.core.batch_criteria as bc
+      # Core packages
+      import typing as tp
 
-      class InterExpGraphGenerator(stage4.inter_exp_graph_generator.InterExpGraphGenerator):
-          def __call__(self, criteria: bc.IConcreteBatchCriteria) -> None:
-              ...
+      # 3rd party packages
+
+      # Project packages
+      from sierra.core.variables import batch_criteria as bc
+      from sierra.core import types
+
+      def generate(main_config: types.YAMLDict,
+                   cmdopts: types.Cmdopts,
+                   LN_targets: tp.List[types.YAMLDict],
+                   HM_targets: tp.List[types.YAMLDict],
+                   criteria: bc.IConcreteBatchCriteria) -> None:
+          ...

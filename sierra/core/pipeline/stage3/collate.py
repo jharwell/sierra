@@ -34,7 +34,7 @@ import sierra.core.plugin_manager as pm
 from sierra.core import types, storage, utils, config
 
 
-class ExperimentalRunParallelCollator:
+class ExpParallelCollator:
     """Generates :term:`Collated .csv` files for each :term:`Experiment`.
 
     :term:`Collated .csv` files generated from :term:`Output .csv` files across
@@ -76,7 +76,7 @@ class ExperimentalRunParallelCollator:
                           n_gatherers,
                           mp.get_start_method())
 
-        gathered = [pool.apply_async(ExperimentalRunParallelCollator._gather_worker,
+        gathered = [pool.apply_async(ExpParallelCollator._gather_worker,
                                      (gatherq,
                                       processq,
                                       self.main_config,
@@ -86,7 +86,7 @@ class ExperimentalRunParallelCollator:
         self.logger.debug("Starting %d processors, method=%s",
                           n_processors,
                           mp.get_start_method())
-        processed = [pool.apply_async(ExperimentalRunParallelCollator._process_worker,
+        processed = [pool.apply_async(ExpParallelCollator._process_worker,
                                       (processq,
                                        self.main_config,
                                        self.cmdopts['batch_stat_collate_root'],
@@ -114,10 +114,10 @@ class ExperimentalRunParallelCollator:
                        project: str,
                        storage_medium: str) -> None:
         module = pm.module_load_tiered(project=project,
-                                       path='pipeline.stage3.run_collator')
-        gatherer = module.ExperimentalRunCSVGatherer(main_config,
-                                                     storage_medium,
-                                                     processq)
+                                       path='pipeline.stage3.collate')
+        gatherer = module.ExpRunCSVGatherer(main_config,
+                                            storage_medium,
+                                            processq)
         while True:
             # Wait for 3 seconds after the queue is empty before bailing
             try:
@@ -134,10 +134,10 @@ class ExperimentalRunParallelCollator:
                         batch_stat_collate_root: pathlib.Path,
                         storage_medium: str,
                         df_homogenize: str) -> None:
-        collator = ExperimentalRunCollator(main_config,
-                                           batch_stat_collate_root,
-                                           storage_medium,
-                                           df_homogenize)
+        collator = ExpRunCollator(main_config,
+                                  batch_stat_collate_root,
+                                  storage_medium,
+                                  df_homogenize)
         while True:
             # Wait for 3 seconds after the queue is empty before bailing
             try:
@@ -151,29 +151,26 @@ class ExperimentalRunParallelCollator:
                 break
 
 
-class ExperimentalRunCSVGatherer:
+class ExpRunCSVGatherer:
     """Gather :term:`Output .csv` files across all runs within an experiment.
 
-    This class can be extended/overriden using a :term:`Project` hook. See
+    This class can be extended/overriden using a :term:`Project` hook.  See
     :ref:`ln-sierra-tutorials-project-hooks` for details.
 
     Attributes:
 
-        processq: The multiprocessing-safe producer-consumer queue that the data
-                  gathered from experimental runs will be placed in for
-                  processing.
+    processq: The multiprocessing-safe producer-consumer queue that the data
+    gathered from experimental runs will be placed in for processing.
 
-        storage_medium: The name of the storage medium plugin to use to extract
-                        dataframes from when reading run data.
+    storage_medium: The name of the storage medium plugin to use to extract
+    dataframes from when reading run data.
 
-        main_config: Parsed dictionary of main YAML configuration.
+    main_config: Parsed dictionary of main YAML configuration.
 
-        logger: The handle to the logger for this class. If you extend this
-                class, you should save/restore this variable in tandem with
-                overriding it in order to get logging messages have unique
-                logger names between this class and your derived class, in order
-                to reduce confusion.
-
+    logger: The handle to the logger for this class.  If you extend this class,
+    you should save/restore this variable in tandem with overriding it in order
+    to get logging messages with unique logger names between this class and your
+    derived class, in order to reduce confusion.
     """
 
     def __init__(self,
@@ -244,7 +241,7 @@ class ExperimentalRunCSVGatherer:
         }
 
 
-class ExperimentalRunCollator:
+class ExpRunCollator:
     """Collate gathered :term:`Output .csv` files together (reduce operation).
 
     :term:`Output .csv`s gathered from N :term:`Experimental Runs <Experimental
@@ -309,9 +306,9 @@ class ExperimentalRunCollator:
 
 
 __api__ = [
-    'ExperimentalRunParallelCollator',
-    'ExperimentalRunCSVGatherer',
-    'ExperimentalRunCollator'
+    'ExpParallelCollator',
+    'ExpRunCSVGatherer',
+    'ExpRunCollator'
 
 
 ]

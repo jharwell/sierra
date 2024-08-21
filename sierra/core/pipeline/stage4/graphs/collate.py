@@ -124,7 +124,7 @@ class UnivarGraphCollator:
 
             data_df = storage.DataFrameReader('storage.csv')(csv_ipath)
 
-            assert target['col'] in data_df.columns.values,\
+            assert target['col'] in data_df.columns.values, \
                 "{0} not in columns of {1}".format(target['col'],
                                                    target['src_stem'] + stat.df_ext)
 
@@ -221,7 +221,7 @@ class BivarGraphCollator:
 
             data_df = storage.DataFrameReader('storage.csv')(csv_ipath)
 
-            assert target['col'] in data_df.columns.values,\
+            assert target['col'] in data_df.columns.values, \
                 "{0} not in columns of {1}, which has {2}".format(target['col'],
                                                                   csv_ipath,
                                                                   data_df.columns)
@@ -238,14 +238,15 @@ class BivarGraphCollator:
             # in sequence, to generate a SEQUENCE of 2D dataframes.
             for row in data_df[target['col']].index:
                 if row in stat.df_seq.keys():
-                    stat.df_seq[row].loc[xlabel][ylabel] = data_df[target['col']][row]
+                    stat.df_seq[row].loc[xlabel][ylabel] = data_df.loc[row,
+                                                                       target['col']]
                 else:
                     df = pd.DataFrame(columns=stat.ylabels, index=stat.xlabels)
-                    df.loc[xlabel][ylabel] = data_df[target['col']][row]
+                    df.loc[xlabel][ylabel] = data_df.loc[row, target['col']]
                     stat.df_seq[row] = df
 
 
-class GraphParallelCollator():
+class ParallelCollator():
     """
     Generate :term:`Collated .csv` files from :term:`Summary .csv`.
 
@@ -277,7 +278,7 @@ class GraphParallelCollator():
             parallelism = psutil.cpu_count()
 
         for _ in range(0, parallelism):
-            p = mp.Process(target=GraphParallelCollator._thread_worker,
+            p = mp.Process(target=ParallelCollator._thread_worker,
                            args=(q,
                                  self.main_config,
                                  self.cmdopts,
@@ -315,5 +316,6 @@ __api__ = [
     'UnivarGraphCollator',
     'BivarGraphCollator',
     'UnivarGraphCollationInfo',
-    'BivarGraphCollationInfo'
+    'BivarGraphCollationInfo',
+    'ParallelCollator'
 ]

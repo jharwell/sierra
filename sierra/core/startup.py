@@ -74,8 +74,8 @@ def _linux_pkg_checks() -> None:
 
     dist = distro.id()
     os_info = distro.os_release_info()
-    if any(candidate in os_info['id_like'] for candidate in ['debian',
-                                                             'ubuntu']):
+    if any(candidate in os_info['id'] for candidate in ['debian',
+                                                        'ubuntu']):
         _apt_pkg_checks(dist)
     else:
         logging.warning(("Unknown Linux distro '%s' detected: skipping package "

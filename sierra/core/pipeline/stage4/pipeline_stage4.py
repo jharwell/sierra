@@ -17,8 +17,7 @@ import pathlib
 import yaml
 
 # Project packages
-from sierra.core.pipeline.stage4.graph_collator import GraphParallelCollator
-from sierra.core.pipeline.stage4.intra_exp_graph_generator import BatchIntraExpGraphGenerator
+from sierra.core.pipeline.stage4 import graphs
 from sierra.core.pipeline.stage4.model_runner import IntraExpModelRunner
 from sierra.core.pipeline.stage4.model_runner import InterExpModelRunner
 import sierra.core.variables.batch_criteria as bc
@@ -122,22 +121,22 @@ class PipelineStage4:
 
         #. Model generation for each enabled and loaded model.
 
-        #. :class:`~sierra.core.pipeline.stage4.intra_exp_graph_generator.BatchIntraExpGraphGenerator`
+        #. :ref:`~sierra.core.pipeline.stage4.graphs.intra.generate()
            to generate graphs for each experiment in the batch, or a subset.
 
         Inter-experiment graph generation: if inter-experiment graphs should be
         generated according to cmdline configuration, the following is run:
 
-        #. :class:`~sierra.core.pipeline.stage4.graph_collator.UnivarGraphCollator`
+        #. :class:`~sierra.core.pipeline.stage4.graphs.collate.UnivarGraphCollator`
            or
-           :class:`~sierra.core.pipeline.stage4.graph_collator.BivarGraphCollator`
+           :class:`~sierra.core.pipeline.stage4.graphs.collate.BivarGraphCollator`
            as appropriate (depending on which type of
            :class:`~sierra.core.variables.batch_criteria.BatchCriteria` was
            specified on the cmdline).
 
         #. Model generation for each enabled and loaded model.
 
-        #. :class:`~sierra.core.pipeline.stage4.inter_exp_graph_generator.InterExpGraphGenerator`
+        #. :func:`~sierra.core.pipeline.stage4.graphs.inter.generate()`
            to perform graph generation from collated CSV files.
 
 
@@ -349,11 +348,12 @@ class PipelineStage4:
         """
         self.logger.info("Generating intra-experiment graphs...")
         start = time.time()
-        BatchIntraExpGraphGenerator(self.cmdopts)(self.main_config,
-                                                  self.controller_config,
-                                                  self.intra_LN_config,
-                                                  self.intra_HM_config,
-                                                  criteria)
+        graphs.intra.generate.generate(self.main_config,
+                                       self.cmdopts,
+                                       self.controller_config,
+                                       self.intra_LN_config,
+                                       self.intra_HM_config,
+                                       criteria)
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
         self.logger.info(
@@ -370,7 +370,8 @@ class PipelineStage4:
         if not self.cmdopts['skip_collate']:
             self.logger.info("Collating inter-experiment CSV files...")
             start = time.time()
-            collator = GraphParallelCollator(self.main_config, self.cmdopts)
+            collator = graphs.collate.ParallelCollator(
+                self.main_config, self.cmdopts)
             collator(criteria, LN_targets)
             collator(criteria, HM_targets)
             elapsed = int(time.time() - start)
@@ -393,12 +394,12 @@ class PipelineStage4:
         start = time.time()
 
         module = pm.module_load_tiered(project=self.cmdopts['project'],
-                                       path='pipeline.stage4.inter_exp_graph_generator')
-        generator = module.InterExpGraphGenerator(self.main_config,
-                                                  self.cmdopts,
-                                                  LN_targets,
-                                                  HM_targets)
-        generator(criteria)
+                                       path='pipeline.stage4.graphs.inter.generate')
+        module.generate(self.main_config,
+                        self.cmdopts,
+                        LN_targets,
+                        HM_targets,
+                        criteria)
         elapsed = int(time.time() - start)
         sec = datetime.timedelta(seconds=elapsed)
 

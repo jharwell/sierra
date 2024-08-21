@@ -42,7 +42,7 @@ class GatherSpec:
         return self.imagize_csv_stem is not None
 
 
-class BatchExpParallelCalculator:
+class BatchExpCalculator:
     """Process :term:`Output .csv` files for each experiment in the batch.
 
     In parallel for speed.
@@ -101,7 +101,7 @@ class BatchExpParallelCalculator:
         self.logger.debug("Starting %d gatherers, method=%s",
                           n_gatherers,
                           mp.get_start_method())
-        gathered = [pool.apply_async(BatchExpParallelCalculator._gather_worker,
+        gathered = [pool.apply_async(BatchExpCalculator._gather_worker,
                                      (gatherq,
                                       processq,
                                       self.main_config,
@@ -110,7 +110,7 @@ class BatchExpParallelCalculator:
         self.logger.debug("Starting %d processors, method=%s",
                           n_processors,
                           mp.get_start_method())
-        processed = [pool.apply_async(BatchExpParallelCalculator._process_worker,
+        processed = [pool.apply_async(BatchExpCalculator._process_worker,
                                       (processq,
                                        self.main_config,
                                        self.cmdopts['batch_stat_root'],
@@ -166,9 +166,9 @@ class BatchExpParallelCalculator:
                         main_config: types.YAMLDict,
                         batch_stat_root: pathlib.Path,
                         avg_opts: tp.Dict[str, str]) -> None:
-        calculator = ExpStatisticsCalculator(main_config,
-                                             avg_opts,
-                                             batch_stat_root)
+        calculator = ExpCalculator(main_config,
+                                   avg_opts,
+                                   batch_stat_root)
 
         # Wait for 3 seconds after the queue is empty before bailing, at the
         # start. If that is not long enough then exponentially increase from
@@ -196,10 +196,10 @@ class BatchExpParallelCalculator:
 
 
 class ExpCSVGatherer:
-    """Gather all :term:`Output .csv` files from all runs within an experiment.
+    """Gather all :term:`Output .csv`s from all exp runs in an experiment.
 
     "Gathering" in this context means creating a dictionary mapping which .csv
-    came from where, so that statistics can be generated both across and with
+    came from where, so that statistics can be generated both across and within
     experiments in the batch.
     """
 
@@ -229,11 +229,11 @@ class ExpCSVGatherer:
 
         self.logger.info('Processing .csvs: %s...', exp_output_root.name)
 
-        pattern = "{}_{}_output".format(re.escape(self.gather_opts['template_input_leaf']),
-                                        r'\d+')
+        pattern = "{}_run{}_output".format(re.escape(self.gather_opts['template_input_leaf']),
+                                           r'\d+')
 
         runs = list(exp_output_root.iterdir())
-        assert(all(re.match(pattern, r.name) for r in runs)),\
+        assert (all(re.match(pattern, r.name) for r in runs)), \
             f"Extra files/not all dirs in '{exp_output_root}' are exp runs"
 
         # Maps (unique .csv stem, optional parent dir) to the averaged dataframe
@@ -299,7 +299,7 @@ class ExpCSVGatherer:
             reader = storage.DataFrameReader(self.gather_opts['storage_medium'])
             df = reader(item_path, index_col=False)
 
-            if df.dtypes[0] == 'object':
+            if df.dtypes.iloc[0] == 'object':
                 df[df.columns[0]] = df[df.columns[0]].apply(lambda x: float(x))
 
             if item not in gathered:
@@ -373,7 +373,7 @@ class ExpCSVGatherer:
                                   str(path1))
                 continue
 
-            assert (utils.path_exists(path1) and utils.path_exists(path2)),\
+            assert (utils.path_exists(path1) and utils.path_exists(path2)), \
                 f"Either {path1} or {path2} does not exist"
 
             # Verify both dataframes have same # columns, and that
@@ -385,20 +385,20 @@ class ExpCSVGatherer:
             assert (len(df1.columns) == len(df2.columns)), \
                 (f"Dataframes from {path1} and {path2} do not have "
                  "the same # columns")
-            assert(sorted(df1.columns) == sorted(df2.columns)),\
+            assert (sorted(df1.columns) == sorted(df2.columns)), \
                 f"Columns from {path1} and {path2} not identical"
 
             # Verify the length of all columns in both dataframes is the same
             for c1 in df1.columns:
-                assert(all(len(df1[c1]) == len(df1[c2]) for c2 in df1.columns)),\
+                assert (all(len(df1[c1]) == len(df1[c2]) for c2 in df1.columns)), \
                     f"Not all columns from {path1} have same length"
 
-                assert(all(len(df1[c1]) == len(df2[c2]) for c2 in df1.columns)),\
+                assert (all(len(df1[c1]) == len(df2[c2]) for c2 in df1.columns)), \
                     (f"Not all columns from {path1} and {path2} have "
                      "the same length")
 
 
-class ExpStatisticsCalculator:
+class ExpCalculator:
     """Generate statistics from output files for all runs within an experiment.
 
     .. IMPORTANT:: You *CANNOT* use logging ANYWHERE during processing .csv
@@ -472,7 +472,7 @@ class ExpStatisticsCalculator:
 
 __api__ = [
     'GatherSpec',
-    'BatchExpParallelCalculator',
+    'BatchExpCalculator',
     'ExpCSVGatherer',
-    'ExpStatisticsCalculator'
+    'ExpCalculator'
 ]

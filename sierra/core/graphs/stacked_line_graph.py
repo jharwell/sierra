@@ -222,7 +222,9 @@ class StackedLineGraph:
 
         return dfs
 
-    def _read_models(self) -> tp.Tuple[pd.DataFrame, tp.List[str]]:
+    # 2024/09/13 [JRH]: The union is for compatability with type checkers in
+    # python {3.8,3.11}.
+    def _read_models(self) -> tp.Tuple[pd.DataFrame, tp.Union[tp.List[str], tp.List[bytes]]]:
         if self.model_root is not None:
             model_fpath = self.model_root / \
                 (self.input_stem + config.kModelsExt['model'])

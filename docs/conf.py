@@ -31,7 +31,8 @@ sys.path.append(str(pathlib.Path('_ext').resolve()))
 
 # If your documentation needs a minimal Sphinx version, state it here.
 #
-needs_sphinx = '4.4.0'
+needs_sphinx = '6.0.0'
+language = 'en'
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -159,11 +160,13 @@ xref_links = {
     "Hecker2015": ("Hecker2015",
                    "https://www.cs.unm.edu/~wjust/CS523/S2018/Readings/Hecker_Beyond_Pheromones_Swarm_Intelligence.pdf"),
     "Rosenfeld2006": ("Rosenfeld2006",
-                      "https://users.umiacs.umd.edu/~sarit/data/articles/rosenfeldetalbook06.pdf"),
-    "SIERRA_GITHUB": ("https://github.com/jharwell/sierra",
-                      "https://github.com/jharwell/sierra"),
-    "SIERRA_SAMPLE_PROJECT": ("https://github.com/jharwell/sierra-sample-project",
-                              "https://github.com/jharwell/sierra-sample-project"),
+                      "http://users.umiacs.umd.edu/~sarit/data/articles/rosenfeldetalbook06.pdf"),
+    "SIERRA_GITHUB": ("https://github.com/jharwell/sierra.git",
+                      "https://github.com/jharwell/sierra.git"),
+    "SIERRA_ROSBRIDGE": ("https://github.com/jharwell/sierra_rosbridge.git",
+                         "https://github.com/jharwell/sierra_rosbridge.git"),
+    "SIERRA_SAMPLE_PROJECT": ("https://github.com/jharwell/sierra-sample-project.git",
+                              "https://github.com/jharwell/sierra-sample-project.git"),
     "SIERRA_DOCS": ("https://sierra.readthedocs.io/en/master",
                     "https://sierra.readthedocs.io/en/master"),
     "FORDYCA": ("FORDYCA", "https://swarm-robotics-fordyca.readthedocs.io"),

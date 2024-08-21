@@ -100,11 +100,11 @@ class IExpShellCmdsGenerator(implements.Interface):
         raise NotImplementedError
 
     def post_exp_cmds(self) -> tp.List[types.ShellCmdSpec]:
-        """Generate shell commands to run after an :term:`Experiment` has finished.
+        """Generate shell cmds to run after an :term:`Experiment` has finished.
 
-        Commands are run during stage 2 after all :term:`Experimental runs`
+        Commands are run during stage 2 after all :term:`Experimental Runs
         <Experimental Run>` for an :term:`Experiment` have finished, but before
-        the next experiment in the :term:`Batch Experiment` is launched. These
+        the next experiment in the :term:`Batch Experiment` is launched.  These
         commands are run in the `same` sub-shell as the pre- and exec-exp
         commands.
 
@@ -112,7 +112,6 @@ class IExpShellCmdsGenerator(implements.Interface):
         processes, visualization daemons, etc.
 
         Called during stage 1.
-
         """
         raise NotImplementedError
 

@@ -7,7 +7,7 @@ setup_env() {
     export SIERRA_ROOT=$HOME/test
 
     if [ "$GITHUB_ACTIONS" = true ]; then
-        export SAMPLE_ROOT=$HOME/work/sierra-sample-project
+        export SAMPLE_ROOT=$GITHUB_WORKSPACE/sierra-sample-project
         export ARGOS_INSTALL_PREFIX=/usr/local
 
     else

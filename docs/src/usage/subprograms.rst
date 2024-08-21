@@ -20,3 +20,7 @@ depending on what you are doing.
 
 - :program:`parallel-rsync` - Used during stage 1 when generating experiments
   experiments (:term:`ROS1+Robot` platform).
+
+- :program:`killall` - Used during stage 2 when running :term:
+  :term:`ARGoS`, :term:`ROS1+Gazebo` experiments to cleanup after each
+  experimental run.
